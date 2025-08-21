@@ -4,11 +4,11 @@ import { DESKTOP_UP, TABLET_UP } from './media.js';
 export const styles = css`
     :host {
         --consonant-merch-card-background-color: #fff;
-        --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
+        --merch-card-custom-border: 1px solid var(--consonant-merch-card-border-color);
         -webkit-font-smoothing: antialiased;
         background-color: var(--consonant-merch-card-background-color);
         border-radius: var(--consonant-merch-spacing-xs);
-        border: var(--consonant-merch-card-border);
+        border: var(--merch-card-custom-border);
         box-sizing: border-box;
         display: flex;
         flex-direction: column;

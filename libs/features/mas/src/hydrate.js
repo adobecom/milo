@@ -98,14 +98,23 @@ function processBadge(fields, merchCard, mapping) {
     } else {
         if (fields.badge) {
             merchCard.setAttribute('badge-text', fields.badge);
-            merchCard.setAttribute(
-                'badge-color',
-                fields.badgeColor || DEFAULT_BADGE_COLOR,
-            );
-            merchCard.setAttribute(
-                'badge-background-color',
-                fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
-            );
+            
+            // Only set badge-color if not disabled
+            if (!mapping.disabledAttributes?.includes('badgeColor')) {
+                merchCard.setAttribute(
+                    'badge-color',
+                    fields.badgeColor || DEFAULT_BADGE_COLOR,
+                );
+            }
+            
+            // Only set badge-background-color if not disabled
+            if (!mapping.disabledAttributes?.includes('badgeBackgroundColor')) {
+                merchCard.setAttribute(
+                    'badge-background-color',
+                    fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+                );
+            }
+            
             merchCard.setAttribute(
                 'border-color',
                 fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
@@ -122,7 +131,9 @@ function processBadge(fields, merchCard, mapping) {
 export function processTrialBadge(fields, merchCard, mapping) {
     if (mapping.trialBadge && fields.trialBadge) {
         if (!fields.trialBadge.startsWith('<merch-badge')) {
-            const borderColorToUse = fields.trialBadgeBorderColor || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
+            // Only use trialBadgeBorderColor if not disabled
+            const borderColorToUse = (!mapping.disabledAttributes?.includes('trialBadgeBorderColor') && fields.trialBadgeBorderColor) 
+                || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
             fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${borderColorToUse}">${fields.trialBadge}</merch-badge>`;
         }
         appendSlot('trialBadge', fields, merchCard, mapping);
@@ -181,10 +192,30 @@ export function processBorderColor(fields, merchCard, variantMapping) {
             merchCard.style.setProperty(customBorderColor, 'transparent');
         }
     } else if (fields.borderColor && borderColorConfig) {
-        if (/-gradient/.test(fields.borderColor)) {
+        // Check if it's a gradient using specialValues or pattern matching
+        const specialValue = borderColorConfig?.specialValues?.[fields.borderColor];
+        const isGradient = specialValue?.includes('gradient') || /-gradient/.test(fields.borderColor);
+        
+        if (isGradient) {
+            // For gradients, set both attributes needed for CSS selectors
             merchCard.setAttribute('gradient-border', 'true');
+            
+            // Find the key name for this gradient value
+            let borderColorKey = fields.borderColor;
+            if (borderColorConfig?.specialValues) {
+                // Reverse lookup: find which key maps to this value
+                for (const [key, value] of Object.entries(borderColorConfig.specialValues)) {
+                    if (value === fields.borderColor) {
+                        borderColorKey = key;
+                        break;
+                    }
+                }
+            }
+            
+            merchCard.setAttribute('border-color', borderColorKey);
             merchCard.style.removeProperty(customBorderColor);
         } else {
+            // For regular colors, use CSS variable
             merchCard.style.setProperty(
                 customBorderColor,
                 `var(--${fields.borderColor})`,
@@ -226,7 +257,29 @@ export function processBackgroundImage(
     }
 }
 
+/**
+ * Process tooltips in HTML content
+ * Ensures mas-tooltip elements have proper structure
+ */
+function processTooltips(htmlContent) {
+    if (!htmlContent || typeof htmlContent !== 'string') return htmlContent;
+    
+    // This function ensures mas-tooltip elements are properly formed
+    // The actual parsing happens when the HTML is added to the DOM
+    // and the mas-tooltip web component initializes
+    
+    // Import mas-tooltip to ensure it's loaded when tooltips are used
+    if (htmlContent.includes('<mas-tooltip')) {
+        import('./mas-tooltip.js').catch(console.error);
+    }
+    
+    return htmlContent;
+}
+
 export function processPrices(fields, merchCard, mapping) {
+    if (fields.prices) {
+        fields.prices = processTooltips(fields.prices);
+    }
     appendSlot('prices', fields, merchCard, mapping);
 }
 
@@ -245,7 +298,7 @@ function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
     let newButtonElement;
 
     if (merchCard.consonant) {
-        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle);
+        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle, isPrimary);
     } else if (isLinkStyle) {
         newButtonElement = linkElement;
     } else {
@@ -288,6 +341,14 @@ function processDescriptionLinks(merchCard, aemFragmentMapping) {
 }
 
 export function processDescription(fields, merchCard, mapping) {
+    // Process tooltips in description field
+    if (fields.description) {
+        fields.description = processTooltips(fields.description);
+    }
+    if (fields.promoText) {
+        fields.promoText = processTooltips(fields.promoText);
+    }
+    
     appendSlot('promoText', fields, merchCard, mapping);
     appendSlot('description', fields, merchCard, mapping);
     processDescriptionLinks(merchCard, mapping);
@@ -486,7 +547,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, is
     return spectrumCta;
 }
 
-function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
+function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle, isPrimary) {
     let button = cta;
     if (isCheckout) {
         const CheckoutLink = customElements.get('checkout-link');
@@ -496,9 +557,12 @@ function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
         );
     }
     if(!isLinkStyle) {
-        button.classList.add('con-button');
+        button.classList.add('button', 'con-button');
         if (isAccent) {
             button.classList.add('blue');
+        }
+        if (isPrimary) {
+            button.classList.add('primary');
         }
     }
     return button;
@@ -506,6 +570,9 @@ function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
 
 export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
     if (fields.ctas) {
+        // Process tooltips in CTAs
+        fields.ctas = processTooltips(fields.ctas);
+        
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fields.ctas);
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
