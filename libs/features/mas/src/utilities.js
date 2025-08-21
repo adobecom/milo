@@ -22,7 +22,7 @@ export const FETCH_INFO_HEADERS = {
  */
 export function selectOffers(
     offers,
-    { country, forceTaxExclusive, perpetual },
+    { country, forceTaxExclusive },
 ) {
     let selected;
     if (offers.length < 2) selected = offers;
