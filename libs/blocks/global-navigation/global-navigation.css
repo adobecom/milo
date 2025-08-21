@@ -1095,7 +1095,6 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-cta--secondary {
   margin: 12px;
   height: unset;
-  display: inline-block;
   line-height: 1.2;
   text-wrap: wrap;
   min-width: 100px;
