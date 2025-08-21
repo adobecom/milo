@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   run-nala-tests:
-    name: Running on • ${{ matrix.project }} • shard ${{ matrix.shard }}
+    name: Running on • ${{ matrix.browser }} • shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -27,6 +27,13 @@ jobs:
         node-version: [20.x]
         project: [milo-live-chromium, milo-live-firefox, milo-live-webkit]
         shard: [1/2, 2/2]
+        include:
+          - project: milo-live-chromium
+            browser: "Chromium"
+          - project: milo-live-firefox
+            browser: "Firefox"
+          - project: milo-live-webkit
+            browser: "WebKit"
 
     steps:
       - name: Checkout repository
