@@ -1,4 +1,5 @@
 /* eslint no-use-before-define:0 */
+/* eslint no-multi-spaces:0 */
 // type Form = {
 //   title: string;
 //   radioGroupLabel: string;
@@ -6,6 +7,92 @@
 //   feedBackLabel: string;
 //   contactMeString: string;
 // }
+
+// ############################################
+// Messages
+// ############################################
+
+const Ready        = 'Ready';
+const Acknowledged = 'Acknowledged';
+const Cancel       = 'Cancel';
+const Submit       = 'Submit';
+const ErrorMsg     = 'Error';
+export const READY  = { type: Ready };
+export const ACK    = { type: Acknowledged };
+export const CANCEL = { type: Cancel };
+export const ERROR  = (message) => ({
+  type: ErrorMsg,
+  message,
+});
+export const SUBMIT = (data) => ({
+  type: Submit,
+  data,
+});
+const MSG_TIMEOUT = 300;
+
+export const recieveMessage = (timeoutMessage) => new Promise((resolve, reject) => {
+  const timeout = setTimeout(() => {
+    if (timeoutMessage) reject(new Error(timeoutMessage));
+  }, MSG_TIMEOUT);
+  const handler = (event) => {
+    clearTimeout(timeout);
+    const message = (() => {
+      try {
+        return JSON.parse(event.data);
+      } catch (e) {
+        reject(new Error(`Failed to parse message: ${e.message}`));
+      }
+      return '';
+    })();
+    resolve(message);
+  };
+  window.addEventListener('message', handler, { once: true });
+});
+
+// Alternative approach: Use a generator function to
+// get a stream of events, but the current use case
+// does't justify doing it that way yet.
+export const expectMessage = async (m, timeoutMessage = null) => {
+  if (!m.type) throw new Error('Not a valid message');
+  // Cancel is handled by the general message listener
+  if (m.type === Cancel) return m;
+
+  const message = await recieveMessage(timeoutMessage);
+  // Cancel is handled by the general message listener
+  // So no need to error out
+  if (message.type === Cancel) {
+    return message;
+  }
+  if (m.type !== message?.type) {
+    const em = `Unexpected message. Expected ${m.type}`;
+    throw new Error(em);
+  }
+  return message;
+};
+
+const acknowledgement = () => expectMessage(ACK, 'Timeout waiting for ACK');
+
+const sendMessage = (obj) => {
+  const message = JSON.stringify(obj);
+  window.parent.postMessage(message, '*');
+};
+
+const sendMessageAndWaitForAck = async (obj) => {
+  sendMessage(obj);
+  await acknowledgement();
+};
+
+const cancelActions = (() => {
+  let cancelActionsDone = false;
+  return () => {
+    if (cancelActionsDone) return;
+    cancelActionsDone = true;
+  };
+})();
+
+// ############################################
+// HTML
+// ############################################
 
 const buildForm = ({
   title,
@@ -73,7 +160,7 @@ const createIdForLabel = (label) => label
   .toLowerCase()
   .replaceAll(/\s/g, '-');
 
-export default (block) => {
+export default async (block) => {
   const data = {
     title: 'Help us improve [Product Name]',
     radioGroupLabel: 'Overall how satisfied are you with [Product Name]?',
@@ -92,28 +179,84 @@ export default (block) => {
     .createContextualFragment(buildForm(data));
   block.append(formFragment);
 
+  // The form will still be interactable in case
+  // Acknowledgement fails
+  sendMessageAndWaitForAck(READY).catch((e) => {
+    const errorMessage = e?.message || e?.toString() || 'Unknown error occurred';
+    sendMessage(ERROR(errorMessage));
+    console.error(e); // eslint-disable-line
+  });
+
+  window.addEventListener('message', (event) => {
+    if (event.origin === window.location.origin) return;
+    const message = (() => {
+      try {
+        return JSON.parse(event.data);
+      } catch (e) {
+        const errorMessage = e?.message || e?.toString() || 'Unknown error occurred';
+        sendMessage(ERROR(errorMessage));
+        return '';
+      }
+    })();
+    switch (message?.type) {
+      case Cancel:
+        sendMessage(ACK);
+        cancelActions();
+        break;
+      case Ready:
+      case Acknowledged:
+      case Submit:
+        break;
+      case ErrorMsg:
+        console.error(message.message); // eslint-disable-line
+        break;
+      default:
+        sendMessage(ERROR(`Unexpected Message: ${JSON.stringify(message)}`));
+    }
+  });
+
   // Add form validation handler - only show errors after submit attempt
   const form = block.querySelector('#nps');
   const radioGroup = block.querySelector('.nps-radio-group');
 
+  let submitted = false;
   form.addEventListener('submit', (e) => {
-    // Mark that form has been submitted
-    block.classList.add('submitted');
+    e.preventDefault();
+    if (submitted) return;
+    block.classList.add('submit-clicked');
 
     const radioButtons = form.querySelectorAll('input[type="radio"]');
     const isRadioSelected = Array.from(radioButtons).some((r) => r.checked);
 
     if (!isRadioSelected) {
-      e.preventDefault();
       radioGroup.classList.add('show-error');
+      return;
     }
+
+    submitted = true;
+    const formData = new FormData(form);
+    const feedback = formData.get('feedback');
+    const explanation = formData.get('explanation');
+    const contactMe = formData.get('contact-me') === 'on';
+    const d = {
+      feedback,
+      explanation,
+      contactMe,
+    };
+    sendMessage(SUBMIT(d));
+    console.log(d);
   });
 
+  const cancelButton = form.querySelector('button.nps-cancel');
+  cancelButton?.addEventListener('click', () => {
+    cancelActions();
+    sendMessageAndWaitForAck(CANCEL);
+  }, { once: true });
   // Remove error when radio button is selected (after submission attempt)
   const radioButtons = form.querySelectorAll('input[type="radio"]');
   radioButtons.forEach((r) => {
     r.addEventListener('change', () => {
-      if (block.classList.contains('submitted')) {
+      if (block.classList.contains('submit-clicked')) {
         radioGroup.classList.remove('show-error');
       }
     });

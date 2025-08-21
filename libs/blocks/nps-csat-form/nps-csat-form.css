@@ -142,12 +142,12 @@
 }
 
 /* Show error only after form submission attempt when no radio button is selected */
-.nps-csat-form.submitted .nps-radio-group:has(input[type="radio"]:invalid) .error-message {
+.nps-csat-form.submit-clicked .nps-radio-group:has(input[type="radio"]:invalid) .error-message {
   display: flex;
 }
 
 /* Alternative fallback for browsers that don't support :has() */
-.nps-csat-form.submitted .nps-radio-group.show-error .error-message {
+.nps-csat-form.submit-clicked .nps-radio-group.show-error .error-message {
   display: flex;
 }
 
