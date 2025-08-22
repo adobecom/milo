@@ -3,10 +3,11 @@ import { loadStyle, getConfig } from './utils.js';
 
 let wasDismissed = false;
 let sidekickObserver;
-const sk = document.querySelector('aem-sidekick, helix-sidekick');
+let linkCheckListener;
+const sidekick = document.querySelector('aem-sidekick');
 function openPreflightPanel() {
-  if (sk) {
-    sk.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
+  if (sidekick) {
+    sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
   }
 }
 
@@ -40,18 +41,45 @@ async function createPreflightNotification() {
   closeBtn.addEventListener('click', () => {
     overlay.remove();
     wasDismissed = true;
+    if (linkCheckListener) {
+      window.removeEventListener('preflightLinksComplete', linkCheckListener);
+      linkCheckListener = null;
+    }
   });
 
   document.body.appendChild(overlay);
 }
 
+function setupLinkCheckListener() {
+  if (linkCheckListener) return;
+
+  linkCheckListener = async (event) => {
+    const { hasFailures } = event.detail;
+
+    if (hasFailures && !wasDismissed) {
+      const existingNotification = document.querySelector('.milo-preflight-overlay');
+      const isPublishButtonDisabled = sidekick?.shadowRoot
+        ?.querySelector('plugin-action-bar')?.shadowRoot
+        ?.querySelector('sk-action-button.publish[disabled]');
+
+      if (!existingNotification && !isPublishButtonDisabled) {
+        await createPreflightNotification();
+      }
+    }
+
+    window.removeEventListener('preflightLinksComplete', linkCheckListener);
+    linkCheckListener = null;
+  };
+
+  window.addEventListener('preflightLinksComplete', linkCheckListener);
+}
+
 function createObserver() {
   if (sidekickObserver) return;
   sidekickObserver = new MutationObserver(async () => {
-    const sidekick = document.querySelector('aem-sidekick');
     const notification = document.querySelector('.milo-preflight-overlay');
 
-    if (!sidekick || (sidekick && sidekick.getAttribute('open') !== 'true')) {
+    if (!sidekick || sidekick.getAttribute('open') !== 'true') {
       if (notification) {
         notification.remove();
       }
@@ -86,10 +114,13 @@ export default async function show() {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
 
-  const sidekick = document.querySelector('aem-sidekick');
   const isPublishButtonDisabled = sidekick?.shadowRoot
     ?.querySelector('plugin-action-bar')?.shadowRoot
     ?.querySelector('sk-action-button.publish[disabled]');
-  if (!hasFailures || wasDismissed || isPublishButtonDisabled) return;
-  await createPreflightNotification();
+
+  if (hasFailures && !wasDismissed && !isPublishButtonDisabled) {
+    await createPreflightNotification();
+  } else if (!wasDismissed && !isPublishButtonDisabled) {
+    setupLinkCheckListener();
+  }
 }

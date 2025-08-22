@@ -1,4 +1,4 @@
-import { STATUS, CHECKS } from './constants.js';
+import { STATUS, CHECKS, SEVERITY } from './constants.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import { getConfig, updateConfig } from '../../../utils/utils.js';
 
@@ -339,6 +339,9 @@ export async function checkLinks({ area, urlHash, envName }) {
     linksCache.set(urlHash, result);
   }
 
+  const hasFailures = status === STATUS.FAIL;
+  const event = new CustomEvent('preflightLinksComplete', { detail: { result, hasFailures } });
+  window.dispatchEvent(event);
   return result;
 }
 
