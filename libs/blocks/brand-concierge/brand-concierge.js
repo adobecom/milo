@@ -132,8 +132,15 @@ function decorateInput(el, input) {
 
 function decorateLegal(el, legal) {
   const legalSection = createTag('section', { class: 'bc-legal' });
-  const legalContent = createTag('p', {}, legal.querySelector('div').innerHTML);
-  legalSection.append(legalContent);
+  const hTag = legal.querySelector('h1, h2, h3, h4, h5, h6');
+  const legalCopy = legal.querySelector('p');
+
+  if (hTag && legalCopy) {
+    legalSection.append(hTag, legalCopy);
+  } else {
+    const legalContent = createTag('p', {}, legal.querySelector('div').innerHTML);
+    legalSection.append(legalContent);
+  }
   el.append(legalSection);
   el.removeChild(legal);
 }
