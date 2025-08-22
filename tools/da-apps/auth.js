@@ -3,7 +3,7 @@ const ORG_MAP = {
   'da-bacom-blog': 'DA BACOM BLOG',
   'da-cc-sandbox': 'DA BACOM',
   'da-gwp-playground': 'DA GWP PLAYGROUND',
-  'da-dx-partners': ' DA DX PARTNERS'
+  'da-dx-partners': 'DA DX PARTNERS',
 };
 
 (async function init() {
