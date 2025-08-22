@@ -3,9 +3,8 @@ import { loadStyle, getConfig } from './utils.js';
 
 let wasDismissed = false;
 let sidekickObserver;
-
+const sk = document.querySelector('aem-sidekick, helix-sidekick');
 function openPreflightPanel() {
-  const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) {
     sk.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
   }
@@ -52,20 +51,21 @@ function createObserver() {
     const sidekick = document.querySelector('aem-sidekick');
     const notification = document.querySelector('.milo-preflight-overlay');
 
-    if (!sidekick && notification) {
-      notification.remove();
+    if (!sidekick || (sidekick && sidekick.getAttribute('open') !== 'true')) {
+      if (notification) {
+        notification.remove();
+      }
       return;
     }
-    if (!sidekick) return;
 
-    if (sidekick.getAttribute('open') !== 'open' || wasDismissed) return;
-
-    const { hasFailures } = await getPreflightResults({
-      url: window.location.href,
-      area: document,
-    });
-    if (hasFailures && !wasDismissed) {
-      await createPreflightNotification();
+    if (sidekick.getAttribute('open') === 'true' && !wasDismissed) {
+      const { hasFailures } = await getPreflightResults({
+        url: window.location.href,
+        area: document,
+      });
+      if (hasFailures) {
+        await createPreflightNotification();
+      }
     }
   });
 
