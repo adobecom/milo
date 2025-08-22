@@ -108,7 +108,7 @@ export default class MasPlans {
     };
 
     // Plans students card properties:
-    this.studentsCssProp = { card: { width: '568px' } };
+    this.studentsCssProp = { card: { width: '486px' } };
   }
 
   getCard(id) {
