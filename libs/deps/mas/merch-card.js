@@ -1560,6 +1560,11 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     .plans-edu .columns .row-1 {
         grid-template-columns: calc(var(--consonant-merch-card-plans-students-width) * 2 + var(--spacing-m));
     }
+
+    .plans-edu-inst .text .foreground {
+        max-width: 1200px;
+        margin: auto;
+    }
 }
 
 /* Large desktop */
