@@ -92,11 +92,24 @@ export const createLinkMarkup = (
 };
 
 export async function loadOstEnv() {
+  const searchParameters = new URLSearchParams(window.location.search);
+  const ostSearchParameters = new URLSearchParams();
+  // deprecate unsupported parameters
+  if (searchParameters.get('wcsLandscape') || searchParameters.get('commerce.env')) {
+    const wcsLandscape = searchParameters.get('wcsLandscape');
+    if (wcsLandscape) {
+      searchParameters.set('commerce.landscape', wcsLandscape);
+      searchParameters.delete('wcsLandscape');
+    }
+    if (searchParameters.get('commerce.env')?.toLowerCase() === 'stage') {
+      searchParameters.set('commerce.landscape', 'DRAFT');
+      searchParameters.delete('commerce.env');
+    }
+    window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
+  }
   /* c8 ignore next */
   const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
-
-  // Load initService
-  await initService(MAS_COMMERCE_SERVICE);
+  await initService(true, { 'allow-override': 'true' });
   // Load commerce.js based on masLibs parameter
   await loadMasComponent(MAS_COMMERCE_SERVICE);
 
@@ -111,9 +124,6 @@ export async function loadOstEnv() {
     // Loaded as module
     ({ Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js'));
   }
-
-  const searchParameters = new URLSearchParams(window.location.search);
-  const ostSearchParameters = new URLSearchParams();
 
   const defaultPlaceholderOptions = Object.fromEntries([
     ['term', 'displayRecurrence', 'true'],
