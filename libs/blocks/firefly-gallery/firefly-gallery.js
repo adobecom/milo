@@ -3,7 +3,7 @@ import { createTag, getConfig } from '../../utils/utils.js';
 const FIREFLY_API_URL =
   'https://community-hubs.adobe.io/api/v2/ff_community/assets';
 const API_PARAMS =
-  '?size=32&sort=updated_desc&include_pending_assets=false&category_id=text2Image&cursor=';
+  '?size=23&sort=updated_desc&include_pending_assets=false&category_id=text2Image&cursor=';
 const API_KEY = 'alfred-community-hubs';
 const RENDITION_SIZE = 350;
 
@@ -36,13 +36,12 @@ const replaceRenditionUrl = (url, format, dimension, size) =>
 
 function getImageRendition(asset) {
   if (!asset) return '';
-
   // Check if rendition_url exists
   const renditionUrl = replaceRenditionUrl(
     asset._links.rendition.href,
     'jpg',
     'width',
-    350
+    RENDITION_SIZE,
   );
   return renditionUrl;
 }
@@ -73,6 +72,17 @@ function createSkeletonLayout(container) {
   // Define different item sizes for the masonry layout
   const itemSizes = [
     // { class: 'large', width: 2, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
+    { class: 'medium', width: 1, height: 2 },
     { class: 'medium', width: 1, height: 2 },
     { class: 'medium', width: 1, height: 2 },
     { class: 'medium', width: 1, height: 2 },
@@ -148,6 +158,9 @@ function loadImageIntoSkeleton(
     });
     imageContainer.appendChild(img);
 
+    const imageKey = imageUrl.split('/rendition/').pop().split('/')[0];
+    const productUrl = `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=urn:aaid:sc:US:${imageKey}`;
+
     // Add prompt overlay
     if (promptText) {
       const overlay = createTag('div', {
@@ -212,6 +225,12 @@ function loadImageIntoSkeleton(
       skeletonItem.innerHTML = '';
       skeletonItem.appendChild(imageContainer);
     }
+
+    imageContainer.addEventListener('click', () => {
+      window.open(productUrl, '_blank');
+    });
+    console.log('imageUrl:', imageUrl);
+    console.log('imageKey:', imageKey);
 
     resolve();
   });
@@ -290,7 +309,7 @@ async function loadFireflyImages(skeletonItems) {
         imageUrl,
         altText,
         promptText,
-        userInfo
+        userInfo,
       );
     });
 
