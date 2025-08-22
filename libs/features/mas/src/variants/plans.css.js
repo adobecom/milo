@@ -273,6 +273,10 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     margin-bottom: 40px;
 }
 
+.plans-edu .columns .row-3 {
+    margin-bottom: 48px;
+}
+
 .plans-individual .content,
 .plans-team .content,
 .plans-edu-inst .content {
