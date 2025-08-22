@@ -8,15 +8,18 @@ const inputIcon = '<svg title="Ask AI" xmlns="http://www.w3.org/2000/svg" width=
 const inputLabelText = 'Ask AI';
 const mountId = 'brand-concierge-mount';
 
+function getBetaLabel() {
+  return createTag('span', { class: 'bc-beta-label' }, 'Beta');
+}
+
 function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA}|bc#${step}`;
 }
 
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
-  const header = createTag('div', { class: 'bc-modal-header' });
   const title = createTag('span', { class: 'bc-modal-title' }, 'AI Assistant');
-  header.append(title);
+  const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel()]);
   const mountEl = createTag('div', { id: mountId });
   if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
   innerModal.append(header, mountEl);

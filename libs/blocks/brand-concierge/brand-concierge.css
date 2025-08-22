@@ -297,6 +297,16 @@
   color: #000;
 }
 
+.bc-beta-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #5258E4;
+  background: #E0E2FF;
+  padding: 1px 4px;
+  margin-left: 8px;
+}
+
 #brand-concierge-modal #brand-concierge-mount {
   height: calc(100% - var(--modal-header-height));
 }
