@@ -202,11 +202,13 @@ export function getLocale(locales, pathname = window.location.pathname) {
   if ([LANGSTORE, PREVIEW].includes(localeString)) {
     const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
     if (ietf) locale = locales[ietf];
-    locale.prefix = `/${localeString}/${split[2]}`;
+    const pathSegment = split[2] ? `/${split[2]}` : '';
+    locale.prefix = `/${localeString}${pathSegment}`;
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
-  locale.prefix = isUS ? '' : `/${localeString}`;
+  const localePathPrefix = localeString ? `/${localeString}` : '';
+  locale.prefix = isUS ? '' : localePathPrefix;
   locale.region = isUS ? 'us' : localeString.split('_')[0];
   return locale;
 }
