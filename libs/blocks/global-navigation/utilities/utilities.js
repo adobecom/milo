@@ -486,7 +486,7 @@ export async function fetchAndProcessPlainHtml({
     });
     return null;
   }
-  const text = await res.text();
+  const text = await (plainHTMLPromise ? res.clone().text() : res.text());
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
