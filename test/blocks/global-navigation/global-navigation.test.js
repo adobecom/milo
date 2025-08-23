@@ -547,14 +547,7 @@ describe('global navigation', () => {
       });
 
       it('should set signInCtaStyle to primary when config is set to primary', async () => {
-        const customConfig = {
-          unav: {
-            profile: {
-              signInCtaStyle: 'primary'
-            }
-          }
-        };
-
+        const customConfig = { unav: { profile: { signInCtaStyle: 'primary' } } };
         await createFullGlobalNavigation({ unavContent: 'on', customConfig });
         const profileAttributes = window.UniversalNav.getCall(0).args[0].children
           .find((c) => c.name === 'profile').attributes;
@@ -567,15 +560,7 @@ describe('global navigation', () => {
         metaTag.name = 'signin-cta-style';
         metaTag.content = 'primary';
         document.head.appendChild(metaTag);
-
-        const customConfig = {
-          unav: {
-            profile: {
-              signInCtaStyle: 'secondary'
-            }
-          }
-        };
-
+        const customConfig = { unav: { profile: { signInCtaStyle: 'secondary' } } };
         await createFullGlobalNavigation({ unavContent: 'on', customConfig });
         const profileAttributes = window.UniversalNav.getCall(0).args[0].children
           .find((c) => c.name === 'profile').attributes;

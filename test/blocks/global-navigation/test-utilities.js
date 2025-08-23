@@ -178,7 +178,7 @@ export const createFullGlobalNavigation = async ({
   setConfig({ ...config, ...customConfig });
   await setViewport(viewports[viewport]);
   window.lana = { log: stub() };
-  
+
   // Mock URLSearchParams to return the correct unavVersion
   const originalURLSearchParams = window.URLSearchParams;
   window.URLSearchParams = class extends originalURLSearchParams {
