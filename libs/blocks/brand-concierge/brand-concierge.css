@@ -1,6 +1,6 @@
 .brand-concierge {
   --bc-card-radius: 12px;
-  --bc-inpu-radius: 12px;
+  --bc-input-radius: 12px;
   --bc-input-height: 54px;
   --bc-input-border: linear-gradient(98.11deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%);
   --bc-button-dimensions: 32px;
@@ -95,7 +95,7 @@
 .bc-input-field-container {
   align-items: center;
   background: #fff;
-  border-radius: calc(var(--bc-inpu-radius) - 2px);
+  border-radius: calc(var(--bc-input-radius) - 2px);
   display: flex;
   height: var(--bc-input-height);
   margin-bottom: 40px;
@@ -106,7 +106,7 @@
 
 .bc-input-field::before {
   background: var(--bc-input-border);
-  border-radius: var(--bc-inpu-radius);
+  border-radius: var(--bc-input-radius);
   content: '';
   height: 100%;
   left: 50%;
@@ -120,7 +120,7 @@
 
 .bc-input-field::after {
   background: var(--bc-input-border);
-  border-radius: var(--bc-inpu-radius);
+  border-radius: var(--bc-input-radius);
   content: '';
   filter: blur(30px);
   height: 100%;
@@ -244,6 +244,10 @@
   text-align: center;
 }
 
+.bc-legal a {
+  color: #4B4B4B;
+}
+
 #brand-concierge-modal {
   --modal-header-height: 56px;
 }
@@ -284,6 +288,9 @@
   height: 56px;
   padding: 12px 16px;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .bc-modal-title {
@@ -291,6 +298,19 @@
   line-height: 32px;
   font-weight: 700;
   color: #000;
+}
+
+.bc-beta-label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-transform: uppercase;
+  color: #5258E4;
+  background: #E0E2FF;
+  border-radius: 4px;
+  height: 14px;
+  width: 30px;
+  text-align: center;
 }
 
 #brand-concierge-modal #brand-concierge-mount {
@@ -340,6 +360,11 @@
     max-width: calc(670px - 4px);
   }
 
+  .bc-legal {
+    margin: 0 auto;
+    max-width: calc(670px - 4px);
+  }
+
   #brand-concierge-modal.dialog-modal {
     height: calc(100vh - 32px);
     margin-top: 32px;
@@ -353,7 +378,12 @@
     max-width: 768px;
   }
 
-  .bc-input-field {
+  .bc-legal {
+    max-width: 678px;
+  }
+
+  .bc-input-field,
+  .sticky .bc-legal {
     max-width: calc(768px - 4px);
   }
 }
