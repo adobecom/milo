@@ -1057,24 +1057,21 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-function getCountry() {
-  return getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
-}
-export function hasC0002() {
-  const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
-  if (kndctrCookie?.includes('general=out')) return false;
-  if (kndctrCookie?.includes('general=in')) return true;
 
-  const optanonCookie = getCookie('OptanonConsent');
-  if (optanonCookie?.includes('C0002:0')) return false;
-  if (optanonCookie?.includes('C0002:1')) return true;
+export function getConsentLevels() {
+  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  if (kndctr?.includes('general=out')) return { nonMarketing: false, marketing: false };
+  if (kndctr?.includes('general=in')) return { nonMarketing: true, marketing: true };
 
-  const explicitConsentCountries = [
-    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu', 'lv', 'hr', 'fr', 'hu', 'se', 'si',
-    'mc', 'sk', 'mf', 'sm', 'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr', 'it', 'es',
-    'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
-  ];
-  return !explicitConsentCountries.includes(getCountry());
+  const optanon = getCookie('OptanonConsent');
+  if (optanon) {
+    return {
+      nonMarketing: optanon.includes('C0002:1') || optanon.includes('C0003:1'),
+      marketing: optanon.includes('C0004:1'),
+    };
+  }
+
+  return { nonMarketing: true, marketing: false };
 }
 export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
@@ -1118,7 +1115,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
-  manifestConfig.marketingAction = 'marketing';
+
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
@@ -1136,15 +1133,18 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
       executionOrder[key] = index > -1 ? index : 1;
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
-    const action = infoObj['manifest-marketing-action']?.toLowerCase();
-    if (action) manifestConfig.marketingAction = action;
+    manifestConfig.marketingAction = infoObj['manifest-marketing-action']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
-  const safeActions = ['analytics', 'data-science', 'non-marketing'];
-  if (!safeActions.includes(manifestConfig.marketingAction) && !hasC0002()) return null;
+
+  const isNonPzn = manifestConfig.marketingAction === 'non-personalization';
+  const isNonMarketing = manifestConfig.marketingAction === 'non-marketing';
+  const consent = getConfig()?.mep?.consent;
+  const canServe = isNonPzn || (consent?.nonMarketing && isNonMarketing) || consent?.marketing;
+  if (!canServe) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1553,6 +1553,7 @@ export async function init(enablements = {}) {
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
+      consent: getConsentLevels(),
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
