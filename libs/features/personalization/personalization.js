@@ -1084,7 +1084,7 @@ export function getConsentLevels() {
 export function canServeManifest(action, sources, consent) {
   const isNotPzn = action === 'core services' || sources?.includes('promo');
   const isNonMktg = ['non-marketing', 'data science', 'analytics'].includes(action);
-  return isNotPzn || (consent?.nonMktg && isNonMktg) || consent?.mktg;
+  return isNotPzn || (consent?.nonMktg && isNonMktg) || (consent?.mktg && !isNonMktg);
 }
 
 async function getManifestConfig(

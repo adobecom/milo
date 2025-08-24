@@ -56,7 +56,7 @@ describe('canServeManifest', () => {
     expect(result).to.be.true;
   });
   it('should return false if the action is non-marketing and nonMktg is false', () => {
-    const result = canServeManifest('non-marketing', null, { nonMktg: false, mktg: false });
+    const result = canServeManifest('non-marketing', null, { nonMktg: false, mktg: true });
     expect(result).to.be.false;
   });
   it('should return true if the action is null and mktg is true', () => {
