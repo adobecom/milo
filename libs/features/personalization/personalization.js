@@ -1056,7 +1056,7 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export function getCanServe(action, source, consent) {
+export function canServe(action, source, consent) {
   const isNonPzn = action === 'non-personalization' || source === 'promo';
   const isNonMktg = action === 'non-marketing';
   return isNonPzn || (consent?.nonMktg && isNonMktg) || consent?.mktg;
@@ -1131,7 +1131,7 @@ async function getManifestConfig(
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
-  if (!getCanServe(manifestConfig.mktgAction, source, consent)) return null;
+  if (!canServe(manifestConfig.mktgAction, source, consent)) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
