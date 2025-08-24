@@ -1061,7 +1061,7 @@ export function getConsentLevels() {
   const optanon = getCookie('OptanonConsent');
   if (optanon) {
     return {
-      nonMktg: !optanon.includes('C0002:0') && !optanon.includes('C0003:0'),
+      nonMktg: !optanon.includes('C0002:0') || !optanon.includes('C0003:0'),
       mktg: optanon.includes('C0004:1'),
     };
   }
