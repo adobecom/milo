@@ -1503,17 +1503,29 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
-export function hasC0002() {
-  const akamaiLocale = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
-  const explicitConsentCountries = [
-    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
-    'lv', 'hr', 'fr', 'hu', 'se', 'si', 'mc', 'sk', 'mf', 'sm',
-    'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr',
-    'it', 'es', 'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
-  ];
-  return explicitConsentCountries.includes(akamaiLocale) ? 1 : 2;
+export function getCookie(key) {
+  const cookie = document.cookie.split(';')
+    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
+    .find(([k]) => k === key);
+  return cookie ? cookie[1] : null;
 }
+export async function hasC0002() {
+  const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  if (kndctrCookie?.includes('general=out')) return false;
+  if (kndctrCookie?.includes('general=in')) return true;
 
+  const optanonCookie = getCookie('OptanonConsent');
+  if (optanonCookie?.includes('C0002:0')) return false;
+  if (optanonCookie?.includes('C0002:1')) return true;
+
+  const explicitConsentCountries = [
+    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu', 'lv', 'hr', 'fr', 'hu', 'se', 'si',
+    'mc', 'sk', 'mf', 'sm', 'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr', 'it', 'es',
+    'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
+  ];
+  const country = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  return !explicitConsentCountries.includes(country);
+}
 export async function init(enablements = {}) {
   let manifests = [];
   const {
