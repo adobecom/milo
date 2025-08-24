@@ -1123,9 +1123,9 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   }
 
   const isNonPzn = manifestConfig.marketingAction === 'non-personalization';
-  const isNonMarketing = manifestConfig.marketingAction === 'non-marketing';
+  const isNonMktg = manifestConfig.marketingAction === 'non-marketing';
   const consent = getConfig()?.mep?.consent;
-  const canServe = isNonPzn || (consent?.nonMarketing && isNonMarketing) || consent?.marketing;
+  const canServe = isNonPzn || (consent?.nonMktg && isNonMktg) || consent?.mktg;
   if (!canServe) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
@@ -1510,18 +1510,18 @@ const awaitMartech = () => new Promise((resolve) => {
 
 export function getConsentLevels() {
   const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
-  if (kndctr?.includes('general=out')) return { nonMarketing: false, marketing: false };
-  if (kndctr?.includes('general=in')) return { nonMarketing: true, marketing: true };
+  if (kndctr?.includes('general=out')) return { nonMktg: false, mktg: false };
+  if (kndctr?.includes('general=in')) return { nonMktg: true, mktg: true };
 
   const optanon = getCookie('OptanonConsent');
   if (optanon) {
     return {
-      nonMarketing: optanon.includes('C0002:1') || optanon.includes('C0003:1'),
-      marketing: optanon.includes('C0004:1'),
+      nonMktg: optanon.includes('C0002:1') || optanon.includes('C0003:1'),
+      mktg: optanon.includes('C0004:1'),
     };
   }
 
-  return { nonMarketing: true, marketing: false };
+  return { nonMktg: true, mktg: false };
 }
 
 export async function init(enablements = {}) {
