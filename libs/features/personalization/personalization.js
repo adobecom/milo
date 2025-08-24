@@ -1056,22 +1056,6 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-
-export function getConsentLevels() {
-  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
-  if (kndctr?.includes('general=out')) return { nonMarketing: false, marketing: false };
-  if (kndctr?.includes('general=in')) return { nonMarketing: true, marketing: true };
-
-  const optanon = getCookie('OptanonConsent');
-  if (optanon) {
-    return {
-      nonMarketing: optanon.includes('C0002:1') || optanon.includes('C0003:1'),
-      marketing: optanon.includes('C0004:1'),
-    };
-  }
-
-  return { nonMarketing: true, marketing: false };
-}
 export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
     name,
@@ -1114,7 +1098,6 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
-
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
@@ -1524,6 +1507,22 @@ const awaitMartech = () => new Promise((resolve) => {
   const listener = (event) => resolve(event.detail);
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
+
+export function getConsentLevels() {
+  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  if (kndctr?.includes('general=out')) return { nonMarketing: false, marketing: false };
+  if (kndctr?.includes('general=in')) return { nonMarketing: true, marketing: true };
+
+  const optanon = getCookie('OptanonConsent');
+  if (optanon) {
+    return {
+      nonMarketing: optanon.includes('C0002:1') || optanon.includes('C0003:1'),
+      marketing: optanon.includes('C0004:1'),
+    };
+  }
+
+  return { nonMarketing: true, marketing: false };
+}
 
 export async function init(enablements = {}) {
   let manifests = [];
