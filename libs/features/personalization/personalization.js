@@ -1056,10 +1056,25 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export function canServe(action, source, consent) {
-  const isNonPzn = action === 'non-personalization' || source === 'promo';
-  const isNonMktg = action === 'non-marketing';
-  return isNonPzn || (consent?.nonMktg && isNonMktg) || consent?.mktg;
+export function getConsentLevels() {
+  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  if (kndctr?.includes('general=out')) return { nonMktg: false, mktg: false };
+  if (kndctr?.includes('general=in')) return { nonMktg: true, mktg: true };
+
+  const optanon = getCookie('OptanonConsent');
+  if (optanon) {
+    return {
+      nonMktg: !optanon.includes('C0002:0') && !optanon.includes('C0003:0'),
+      mktg: optanon.includes('C0004:1'),
+    };
+  }
+
+  return { nonMktg: true, mktg: false };
+}
+export function canServeManifest(action, source, consent) {
+  const isNotPzn = action === 'none' || source === 'promo';
+  const isNonMktg = ['non-marketing', 'data science', 'analytics'].includes(action);
+  return isNotPzn || (consent?.nonMktg && isNonMktg) || consent?.mktg;
 }
 
 async function getManifestConfig(
@@ -1131,7 +1146,7 @@ async function getManifestConfig(
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
-  if (!canServe(manifestConfig.mktgAction, source, consent)) return null;
+  if (!canServeManifest(manifestConfig.mktgAction, source, consent)) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1278,21 +1293,6 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export function getConsentLevels() {
-  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
-  if (kndctr?.includes('general=out')) return { nonMktg: false, mktg: false };
-  if (kndctr?.includes('general=in')) return { nonMktg: true, mktg: true };
-
-  const optanon = getCookie('OptanonConsent');
-  if (optanon) {
-    return {
-      nonMktg: optanon.includes('C0002:1') || optanon.includes('C0003:1'),
-      mktg: optanon.includes('C0004:1'),
-    };
-  }
-
-  return { nonMktg: true, mktg: false };
-}
 export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
