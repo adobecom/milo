@@ -1056,7 +1056,11 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(info = {}, variantOverride = false) {
+export async function getManifestConfig(
+  info = {},
+  variantOverride = false,
+  consent = { nonMktg: true, mktg: false },
+) {
   const {
     name,
     manifestData,
@@ -1115,16 +1119,15 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
       executionOrder[key] = index > -1 ? index : 1;
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
-    manifestConfig.marketingAction = infoObj['manifest-marketing-action']?.toLowerCase();
+    manifestConfig.mktgAction = infoObj['manifest-marketing-action']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
 
-  const isNonPzn = manifestConfig.marketingAction === 'non-personalization';
-  const isNonMktg = manifestConfig.marketingAction === 'non-marketing';
-  const consent = getConfig()?.mep?.consent;
+  const isNonPzn = manifestConfig.mktgAction === 'non-personalization' || source === 'promo';
+  const isNonMktg = manifestConfig.mktgAction === 'non-marketing';
   const canServe = isNonPzn || (consent?.nonMktg && isNonMktg) || consent?.mktg;
   if (!canServe) return null;
 
@@ -1273,14 +1276,31 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
+export function getConsentLevels() {
+  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  if (kndctr?.includes('general=out')) return { nonMktg: false, mktg: false };
+  if (kndctr?.includes('general=in')) return { nonMktg: true, mktg: true };
+
+  const optanon = getCookie('OptanonConsent');
+  if (optanon) {
+    return {
+      nonMktg: optanon.includes('C0002:1') || optanon.includes('C0003:1'),
+      mktg: optanon.includes('C0004:1'),
+    };
+  }
+
+  return { nonMktg: true, mktg: false };
+}
 export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
+  const consent = getConsentLevels();
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],
       config.mep?.variantOverride,
+      consent,
     );
   }
   experiments = cleanAndSortManifestList(experiments, config);
@@ -1508,22 +1528,6 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
-export function getConsentLevels() {
-  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
-  if (kndctr?.includes('general=out')) return { nonMktg: false, mktg: false };
-  if (kndctr?.includes('general=in')) return { nonMktg: true, mktg: true };
-
-  const optanon = getCookie('OptanonConsent');
-  if (optanon) {
-    return {
-      nonMktg: optanon.includes('C0002:1') || optanon.includes('C0003:1'),
-      mktg: optanon.includes('C0004:1'),
-    };
-  }
-
-  return { nonMktg: true, mktg: false };
-}
-
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1551,7 +1555,6 @@ export async function init(enablements = {}) {
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
-      consent: getConsentLevels(),
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
