@@ -1080,7 +1080,7 @@ export function getConsentLevels() {
   const isExplicitConsentCountry = explicitConsentCountries.includes(country);
   if (isExplicitConsentCountry) return { nonMktg: false, mktg: false };
 
-  return { nonMktg: true, mktg: false };
+  return { nonMktg: true, mktg: true };
 }
 export function canServeManifest(action, sources, consent) {
   const isNotPzn = action === 'core services' || sources?.includes('promo');

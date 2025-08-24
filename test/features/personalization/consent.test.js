@@ -13,7 +13,7 @@ describe('getConsentLevels', () => {
   });
   it('should return the default consent levels for non-explicit consent countries', () => {
     const consent = getConsentLevels();
-    expect(consent).to.deep.equal({ nonMktg: true, mktg: false });
+    expect(consent).to.deep.equal({ nonMktg: true, mktg: true });
   });
   it('should return everything true if the country is an explicit consent country', () => {
     sessionStorage.setItem('akamai', 'ca');
