@@ -10,6 +10,7 @@ import {
   localizeLink,
   getFederatedUrl,
   isSignedOut,
+  getMepEnablement,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
@@ -1088,10 +1089,12 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
+  manifestConfig.consentLevel = 2;
   const infoKeyMap = {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
+  manifestConfig.marketingAction = 'marketing';
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
@@ -1109,11 +1112,16 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
       executionOrder[key] = index > -1 ? index : 1;
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+    const action = infoObj['manifest-marketing-action']?.toLowerCase();
+    if (action) manifestConfig.marketingAction = action;
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
+  const { mep } = getConfig();
+  const safeActions = ['analytics', 'data-science', 'non-marketing'];
+  if (!safeActions.includes(manifestConfig.marketingAction) && !mep.hasC0002) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1495,6 +1503,17 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
+export function hasC0002() {
+  const akamaiLocale = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  const explicitConsentCountries = [
+    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
+    'lv', 'hr', 'fr', 'hu', 'se', 'si', 'mc', 'sk', 'mf', 'sm',
+    'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr',
+    'it', 'es', 'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
+  ];
+  return explicitConsentCountries.includes(akamaiLocale) ? 1 : 2;
+}
+
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1522,6 +1541,7 @@ export async function init(enablements = {}) {
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
+      hasC0002: hasC0002(),
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
