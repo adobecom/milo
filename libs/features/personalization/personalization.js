@@ -1056,7 +1056,13 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(
+export function getCanServe(action, source, consent) {
+  const isNonPzn = action === 'non-personalization' || source === 'promo';
+  const isNonMktg = action === 'non-marketing';
+  return isNonPzn || (consent?.nonMktg && isNonMktg) || consent?.mktg;
+}
+
+async function getManifestConfig(
   info = {},
   variantOverride = false,
   consent = { nonMktg: true, mktg: false },
@@ -1125,11 +1131,7 @@ export async function getManifestConfig(
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
-
-  const isNonPzn = manifestConfig.mktgAction === 'non-personalization' || source === 'promo';
-  const isNonMktg = manifestConfig.mktgAction === 'non-marketing';
-  const canServe = isNonPzn || (consent?.nonMktg && isNonMktg) || consent?.mktg;
-  if (!canServe) return null;
+  if (!getCanServe(manifestConfig.mktgAction, source, consent)) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
