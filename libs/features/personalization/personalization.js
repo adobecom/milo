@@ -86,6 +86,12 @@ const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
 
+export function getCookie(key) {
+  const cookie = document.cookie.split(';')
+    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
+    .find(([k]) => k === key);
+  return cookie ? cookie[1] : null;
+}
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
@@ -1051,6 +1057,23 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
+export function hasC0002() {
+  const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  if (kndctrCookie?.includes('general=out')) return false;
+  if (kndctrCookie?.includes('general=in')) return true;
+
+  const optanonCookie = getCookie('OptanonConsent');
+  if (optanonCookie?.includes('C0002:0')) return false;
+  if (optanonCookie?.includes('C0002:1')) return true;
+
+  const explicitConsentCountries = [
+    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu', 'lv', 'hr', 'fr', 'hu', 'se', 'si',
+    'mc', 'sk', 'mf', 'sm', 'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr', 'it', 'es',
+    'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
+  ];
+  const country = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  return !explicitConsentCountries.includes(country);
+}
 export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
     name,
@@ -1089,7 +1112,6 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
-  manifestConfig.consentLevel = 2;
   const infoKeyMap = {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
@@ -1119,9 +1141,8 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
-  const { mep } = getConfig();
   const safeActions = ['analytics', 'data-science', 'non-marketing'];
-  if (!safeActions.includes(manifestConfig.marketingAction) && !mep.hasC0002) return null;
+  if (!safeActions.includes(manifestConfig.marketingAction) && !hasC0002()) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1503,29 +1524,6 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
-export function getCookie(key) {
-  const cookie = document.cookie.split(';')
-    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
-    .find(([k]) => k === key);
-  return cookie ? cookie[1] : null;
-}
-export async function hasC0002() {
-  const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
-  if (kndctrCookie?.includes('general=out')) return false;
-  if (kndctrCookie?.includes('general=in')) return true;
-
-  const optanonCookie = getCookie('OptanonConsent');
-  if (optanonCookie?.includes('C0002:0')) return false;
-  if (optanonCookie?.includes('C0002:1')) return true;
-
-  const explicitConsentCountries = [
-    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu', 'lv', 'hr', 'fr', 'hu', 'se', 'si',
-    'mc', 'sk', 'mf', 'sm', 'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr', 'it', 'es',
-    'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
-  ];
-  const country = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
-  return !explicitConsentCountries.includes(country);
-}
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1553,7 +1551,6 @@ export async function init(enablements = {}) {
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
-      hasC0002: hasC0002(),
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
