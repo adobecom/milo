@@ -10,7 +10,6 @@ import {
   localizeLink,
   getFederatedUrl,
   isSignedOut,
-  getMepEnablement,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
