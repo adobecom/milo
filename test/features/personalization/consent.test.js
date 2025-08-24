@@ -47,7 +47,7 @@ describe('canServeManifest', () => {
     expect(result).to.be.true;
   });
   it('should return true if the source is promo', () => {
-    const result = canServeManifest(null, 'promo', { nonMktg: false, mktg: false });
+    const result = canServeManifest(null, ['promo'], { nonMktg: false, mktg: false });
     expect(result).to.be.true;
   });
   it('should return true if the action is non-marketing and nonMktg is true', () => {
