@@ -10,6 +10,7 @@ import {
   localizeLink,
   getFederatedUrl,
   isSignedOut,
+  getMepEnablement,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
@@ -1068,6 +1069,16 @@ export function getConsentLevels() {
       mktg: optanon.includes('C0004:1'),
     };
   }
+
+  const explicitConsentCountries = [
+    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
+    'lv', 'hr', 'fr', 'hu', 'se', 'si', 'mc', 'sk', 'mf', 'sm',
+    'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr',
+    'it', 'es', 'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
+  ];
+  const country = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  const isExplicitConsentCountry = explicitConsentCountries.includes(country);
+  if (isExplicitConsentCountry) return { nonMktg: false, mktg: false };
 
   return { nonMktg: true, mktg: false };
 }
