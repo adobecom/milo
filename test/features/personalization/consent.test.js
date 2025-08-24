@@ -42,12 +42,12 @@ describe('getConsentLevels', () => {
 });
 
 describe('canServeManifest', () => {
-  it('should return true if the action is non-personalization', () => {
-    const result = canServeManifest('none', null, { nonMktg: true, mktg: false });
+  it('should return true if the action is core services', () => {
+    const result = canServeManifest('core services', null, { nonMktg: false, mktg: false });
     expect(result).to.be.true;
   });
   it('should return true if the source is promo', () => {
-    const result = canServeManifest(null, 'promo', { nonMktg: true, mktg: false });
+    const result = canServeManifest(null, 'promo', { nonMktg: false, mktg: false });
     expect(result).to.be.true;
   });
   it('should return true if the action is non-marketing and nonMktg is true', () => {
