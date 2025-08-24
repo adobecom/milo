@@ -1058,10 +1058,6 @@ export const addMepAnalytics = (config, header) => {
   });
 };
 export function getConsentLevels() {
-  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
-  if (kndctr?.includes('general=out')) return { nonMktg: false, mktg: false };
-  if (kndctr?.includes('general=in')) return { nonMktg: true, mktg: true };
-
   const optanon = getCookie('OptanonConsent');
   if (optanon) {
     return {
@@ -1069,6 +1065,9 @@ export function getConsentLevels() {
       mktg: optanon.includes('C0004:1'),
     };
   }
+
+  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  if (kndctr?.includes('general=in')) return { nonMktg: true, mktg: false };
 
   const explicitConsentCountries = [
     'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
