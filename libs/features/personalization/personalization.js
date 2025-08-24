@@ -1057,6 +1057,9 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
+function getCountry() {
+  return getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+}
 export function hasC0002() {
   const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
   if (kndctrCookie?.includes('general=out')) return false;
@@ -1071,8 +1074,7 @@ export function hasC0002() {
     'mc', 'sk', 'mf', 'sm', 'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr', 'it', 'es',
     'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
   ];
-  const country = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
-  return !explicitConsentCountries.includes(country);
+  return !explicitConsentCountries.includes(getCountry());
 }
 export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
