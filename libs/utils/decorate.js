@@ -18,6 +18,7 @@ let videoLabels = {
   playIcon: 'Play icon',
   hasFetched: false,
 };
+const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
 export function decorateButtons(el, size) {
@@ -293,15 +294,15 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
 }
 
 function isVideoReady(video) {
-  return video.readyState > 1;
+  return video.readyState > 1 && document.visibilityState === 'visible';
 }
 
 export function handlePause(event) {
-  event.stopPropagation();
   if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
     return;
   }
   event.preventDefault();
+  event.stopPropagation();
   const video = event.target.closest('.video-holder').parentElement.querySelector('video');
   if (event.type === 'blur') {
     video.pause();
@@ -334,9 +335,13 @@ export function applyAccessibilityEvents(videoEl) {
     pausePlayWrapper.addEventListener('keydown', handlePause);
   }
   if (videoEl.hasAttribute('autoplay')) {
-    videoEl.addEventListener('canplay', () => videoEl.play());
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
+    if (isReducedMotion) {
+      videoEl.pause();
+      return;
+    }
+    videoEl.addEventListener('canplay', () => isVideoReady(videoEl) && videoEl.play());
   }
 }
 

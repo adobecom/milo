@@ -481,7 +481,7 @@ export async function fetchEntitlements() {
   fetchEntitlements.promise = fetchEntitlements.promise
     ?? import('../global-navigation/utilities/getUserEntitlements.js').then(
       ({ default: getUserEntitlements }) => getUserEntitlements({
-        params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }],
+        params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT_V2' }],
         format: 'raw',
       }),
     );
@@ -585,7 +585,7 @@ export async function getDownloadAction(
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
-    ({ offer: { product_arrangement: { family: subscriptionFamily } } }) => {
+    ({ offer: { product_arrangement_v2: { family: subscriptionFamily } } }) => {
       if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
       if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
       const singleAppFamily = CC_SINGLE_APPS.find(
@@ -751,7 +751,7 @@ const closeModalWithoutEvent = (modalId) => {
     .forEach((element) => element.removeAttribute('aria-disabled'));
 };
 
-// Modal state handling: see merch.md
+// Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
 
 export async function updateModalState({ cta, closedByUser } = {}) {
@@ -987,6 +987,11 @@ export async function initService(force = false, attributes = {}) {
         if (miloEnv?.name !== 'prod') {
           service.setAttribute('allow-override', '');
         }
+        const ffDefaults = getMetadata('mas-ff-defaults');
+        if (!ffDefaults) {
+          // On milo, if ff is not enabled explicitly, disable it by default
+          service.dataset.masFfDefaults = 'off';
+        }
         // Register checkout action if method exists (for backward compatibility)
         if (typeof service.registerCheckoutAction === 'function') {
           service.registerCheckoutAction(getCheckoutAction);
@@ -1129,6 +1134,12 @@ export async function buildCta(el, params) {
     cta.classList.toggle('button-l', large);
     cta.classList.toggle('blue', strong);
   }
+
+  const customClasses = el.href.matchAll(/#_button-([a-zA-Z-]+)/g);
+  for (const match of customClasses) {
+    cta.classList.add(match[1]);
+  }
+
   if (context.entitlement !== 'false') {
     cta.classList.add(LOADING_ENTITLEMENTS);
     cta.onceSettled().finally(() => {

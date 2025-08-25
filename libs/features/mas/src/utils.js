@@ -13,7 +13,7 @@ export function debounce(func, delay) {
 }
 
 export const getSlotText = (element, name) =>
-    element.querySelector(`[slot="${name}"]`)?.textContent?.trim();
+    element?.querySelector(`[slot="${name}"]`)?.textContent?.trim();
 
 /**
  * Helper function to create an element with attributes
@@ -80,4 +80,36 @@ export function discoverService(getConfig, { once = false } = {}) {
 
 export function getService() {
   return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
+}
+
+export function historyPushState(queryParams) {
+    if (!window.history.pushState) return;
+    const newURL = new URL(window.location.href);
+    newURL.search = `?${queryParams}`;
+    window.history.pushState({ path: newURL.href }, '', newURL.href);    
+}
+
+export function updateHash(key, value) {
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    hash.set(key, value);
+    window.location.hash = hash.toString();
+}
+
+/**
+ * Convert the query params to hash
+ * @param {string[]} keys - The keys to convert to hash
+ */
+export function paramsToHash(keys = []) {
+    keys.forEach(key => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const value = urlParams.get(key);
+        if (!value) return;
+        if (window.location.hash.includes(`${key}=`)) { // in case the key already exists in the hash, update the hash
+            updateHash(key, value);
+        } else { // otherwise, add the key to the hash
+            window.location.hash = window.location.hash ? `${window.location.hash}&${key}=${value}` : `${key}=${value}`;
+        }
+        urlParams.delete(key);
+        historyPushState(urlParams.toString());
+    });
 }

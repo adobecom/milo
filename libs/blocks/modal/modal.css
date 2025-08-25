@@ -1,6 +1,7 @@
 :root {
   --modal-focus-color: #109cde;
   --modal-max-height: calc((100vh - 6px) - 2em);
+  --modal-max-height-mobile: calc((100% - 6px) - 2em);
   --modal-z-index: 102;
   --modal-z-index-curtain: 101;
   --modal-close-accent-color: #707070;
@@ -330,6 +331,10 @@
 
   .dialog-modal.upgrade-flow-modal {
     border-radius: 0;
+  }
+
+  .dialog-modal:not(.tall-video, .three-in-one, .commerce-frame, .upgrade-flow-modal) {
+    max-height: var(--modal-max-height-mobile);
   }
 
   .dialog-modal.commerce-frame > .fragment,

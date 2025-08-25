@@ -8,7 +8,9 @@ import {
 } from '../constants.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
+    cardName: { attribute: 'name' },
     title: { tag: 'h3', slot: 'heading-xs' },
+    subtitle: { tag: 'p', slot: 'subtitle' },
     prices: { tag: 'p', slot: 'heading-m' },
     promoText: { tag: 'p', slot: 'promo-text' },
     description: { tag: 'div', slot: 'body-xs' },
@@ -35,6 +37,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     whatsIncluded: { tag: 'div', slot: 'whats-included' },
     ctas: { slot: 'footer', size: 'm' },
     style: 'consonant',
+    perUnitLabel: { tag: 'span', slot: 'per-unit-label' },
 };
 
 export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
@@ -43,13 +46,12 @@ export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
     return rest;
   }()),
   title: { tag: 'h3', slot: 'heading-s' },
-  subtitle: { tag: 'p', slot: 'subtitle' },
   secureLabel: false
 }
 
 export const PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
   ...(function(){
-    const { whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    const { subtitle, whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
     return rest;
   }())
 }
@@ -93,15 +95,26 @@ export class Plans extends VariantLayout {
         if (!sizes.includes(size)) return;
         
 
-        footer?.classList.toggle('wide-footer', !isMobile());
+        footer?.classList.toggle('wide-footer', isDesktop());
         if (!shouldBeInFooter && slotInFooter) {
-            slotInBody
-                ? slotInFooter.remove()
-                : body.appendChild(slotInFooter);
+            if (slotInBody) 
+                slotInFooter.remove();
+            else {
+                const bodyPlaceholder = body.querySelector(`[data-placeholder-for="${name}"]`);
+                if (bodyPlaceholder) bodyPlaceholder.replaceWith(slotInFooter);
+                else body.appendChild(slotInFooter);
+            }
             return;
         }
         if (shouldBeInFooter && slotInBody) {
-            slotInFooter ? slotInBody.remove() : footer.prepend(slotInBody);
+            const bodyPlaceholder = document.createElement('div');
+            bodyPlaceholder.setAttribute('data-placeholder-for', name);
+            bodyPlaceholder.classList.add('slot-placeholder');
+            if (!slotInFooter) {
+                const slotInBodyClone = slotInBody.cloneNode(true);
+                footer.prepend(slotInBodyClone);
+            }
+            slotInBody.replaceWith(bodyPlaceholder)
         }
     }
 
@@ -115,7 +128,7 @@ export class Plans extends VariantLayout {
             return;
         }
         
-        this.adjustSlotPlacement('addon', ['wide', 'super-wide'], !isMobile());
+        this.adjustSlotPlacement('addon', ['super-wide'], isDesktop());
         this.adjustSlotPlacement('callout-content', ['super-wide'], isDesktop());
     }
 
@@ -144,19 +157,12 @@ export class Plans extends VariantLayout {
         }
     }
 
-    adjustPrices() {
-        if (!this.headingM) return;
-        this.headingM.setAttribute('role', 'heading');
-        this.headingM.setAttribute('aria-level', '2');
-    }
-
     postCardUpdateHook() {
         this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
-        this.adjustPrices();
     }
 
     get headingM() {
@@ -178,6 +184,7 @@ export class Plans extends VariantLayout {
 
     async adjustLegal() {
         await this.card.updateComplete;
+        await customElements.whenDefined('inline-price');
         if (this.legalAdjusted) return;
         this.legalAdjusted = true;
         const prices = [];
@@ -273,12 +280,16 @@ export class Plans extends VariantLayout {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
             --merch-card-plans-min-width: 244px;
-            --merch-card-plans-max-width: 244px;
             --merch-card-plans-padding: 15px;
+            --merch-card-plans-subtitle-display: contents;
             --merch-card-plans-heading-min-height: 23px;
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
             font-weight: 400;
+        }
+
+        :host([variant^='plans']) .slot-placeholder {
+            display: none;
         }
 
         :host([variant='plans-education']) {
@@ -291,19 +302,27 @@ export class Plans extends VariantLayout {
             font-style: italic;
             font-weight: 400;
         }
+        
         :host([variant='plans-education']) .divider {
             border: 0;
             border-top: 1px solid #E8E8E8;
             margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        :host([variant='plans']) slot[name="subtitle"] {
+            display: var(--merch-card-plans-subtitle-display);
+            min-height: 18px;
+            margin-top: 8px;
+            margin-bottom: -8px;
         }
 
         :host([variant='plans']) ::slotted([slot='heading-xs']) {
             min-height: var(--merch-card-plans-heading-min-height);
         }
 
-        :host([variant='plans']) .body {
+        :host([variant^='plans']) .body {
             min-width: var(--merch-card-plans-min-width);
-            max-width: var(--merch-card-plans-max-width);
             padding: var(--merch-card-plans-padding);
         }
 
@@ -340,7 +359,7 @@ export class Plans extends VariantLayout {
             height: 12px;
         }
 
-        :host([variant='plans']) footer {
+        :host([variant^='plans']) footer {
             padding: var(--merch-card-plans-padding);
             padding-top: 1px;
         }
@@ -361,4 +380,17 @@ export class Plans extends VariantLayout {
             padding: 2px 10px 3px;
         }
     `;
+
+    static collectionOptions = {
+        customHeaderArea: (collection) => {
+            if (!collection.sidenav) return nothing;
+            return html`<slot name="resultsText"></slot>`
+        },
+        headerVisibility: {
+            search: false,
+            sort: false,
+            result: ['mobile', 'tablet'],
+            custom: ['desktop']
+        }
+    }
 }

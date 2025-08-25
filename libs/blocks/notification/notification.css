@@ -30,6 +30,12 @@
   background: var(--color-white);
 }
 
+.temp-focus {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
 .notification.ribbon {
   min-block-size: var(--min-block-size-ribbon);
 }
@@ -99,7 +105,8 @@
   overflow: unset;
 }
 
-.notification.pill .background {
+.notification.pill .background,
+.notification.pill > :first-child {
   border-radius: inherit;
 }
 
@@ -187,6 +194,17 @@
   inline-size: 100%;
 }
 
+.notification.button-full-width {
+  min-block-size: 90px;
+  block-size: 90px;
+}
+
+.notification.button-full-width .action-area,
+.notification.button-full-width .con-button {
+  width: 100%;
+  max-width: 328px;
+  align-self: center;
+}
 
 .notification.ribbon.space-between [class*="heading-"]:only-child {
   margin-block-end: 0;
@@ -589,6 +607,10 @@
     inline-size: auto;
     margin-inline-end: var(--spacing-xs);
     margin-block-end: 0;
+  }
+
+  .notification.button-full-width {
+    display: none;
   }
 
   .notification.ribbon .close {

@@ -15,7 +15,7 @@ function decorateVideo(videoEl, figEl) {
 }
 
 export function buildFigure(blockEl) {
-  const figEl = createTag('figure', { class: 'figure' });
+  const figEl = createTag('figure');
   Array.from(blockEl.children).forEach((child) => {
     // picture, video, or embed link is NOT wrapped in P tag
     const tags = ['PICTURE', 'VIDEO', 'A'];

@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
-import { readFile, sendKeys } from '@web/test-runner-commands';
+import { readFile, sendKeys, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
 import { mockFetch } from '../../helpers/generalHelpers.js';
-import { getConfig } from '../../../libs/utils/utils.js';
+import { getConfig, createTag } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -142,6 +142,7 @@ describe('Modals', () => {
   it('Locks focus when tabbing backward through tabbable elements', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
+    await delay(200);
     expect(document.getElementById('milo')).to.exist;
     expect(document.activeElement.getAttribute('id')).to.equal('milo-button-1');
     await sendKeys({ down: 'Shift' });
@@ -165,6 +166,7 @@ describe('Modals', () => {
     document.head.append(meta);
     window.location.hash = '#paragraph';
     await waitForElement('#paragraph');
+    await delay(200);
     expect(document.getElementById('paragraph')).to.exist;
     expect(document.activeElement.classList.contains('dialog-close')).to.be.true;
     window.location.hash = '';
@@ -177,6 +179,7 @@ describe('Modals', () => {
     meta.content = 'http://localhost:2000/test/blocks/modals/mocks/title';
     document.head.append(meta);
     window.location.hash = '#title';
+    await delay(200);
     await waitForElement('#title');
     expect(document.getElementById('title')).to.exist;
     expect(document.activeElement.getAttribute('id')).to.equal('test-title');
@@ -213,6 +216,7 @@ describe('Modals', () => {
   });
 
   it('shows the modal with a delay, and remembers it was shown on this page', async () => {
+    await setViewport({ width: 1200, height: 800 });
     window.sessionStorage.removeItem('shown:#delayed-modal');
     const anchor = document.createElement('a');
     anchor.setAttribute('data-modal-path', '/fragments/promos/fragments/cc-all-apps-promo-full-bleed-image');
@@ -231,6 +235,7 @@ describe('Modals', () => {
   });
 
   it('does not show the modal if it was shown on this page', async () => {
+    await setViewport({ width: 1200, height: 800 });
     const el = document.createElement('a');
     el.setAttribute('data-modal-hash', '#dm:delay=1');
     window.sessionStorage.setItem('shown:#dm', window.location.pathname);
@@ -240,6 +245,14 @@ describe('Modals', () => {
     const modal = document.querySelector('#dm');
     expect(modal).to.not.exist;
     window.sessionStorage.removeItem('shown:#dm');
+    el.remove();
+  });
+
+  it('does not show the modal if the viewport width is less than 1200px', async () => {
+    await setViewport({ width: 1199, height: 800 });
+    const el = document.createElement('a');
+    el.setAttribute('data-modal-hash', '#dm:delay=1');
+    expect(delayedModal(el)).to.be.false;
     el.remove();
   });
 
@@ -262,6 +275,61 @@ describe('Modals', () => {
     config.mep = { fragments: { '/milo': { action: 'remove' } } };
     const modal = init(document.getElementById('milo-modal-link'));
     expect(modal).to.be.null;
+  });
+
+  it('sets modal and iframe title/aria-label from CTA aria-label', async () => {
+    document.body.appendChild(createTag('a', {
+      id: 'cta-with-aria-label',
+      href: '#test-modal',
+      'data-modal-hash': '#test-modal',
+      'aria-label': 'Test Modal Description',
+    }, 'Open Modal'));
+
+    const customContent = createTag('div');
+    const iframe = createTag('iframe', { src: 'about:blank' });
+    customContent.appendChild(iframe);
+
+    const custom = {
+      id: 'test-modal',
+      content: customContent,
+      title: 'Modal: Test Modal Description',
+    };
+
+    const modal = await getModal(null, custom);
+    expect(modal).to.exist;
+
+    expect(modal.getAttribute('aria-label')).to.equal('Modal: Test Modal Description');
+
+    const modalIframe = modal.querySelector('iframe');
+    expect(modalIframe).to.exist;
+    expect(modalIframe.getAttribute('title')).to.equal('Modal: Test Modal Description');
+  });
+
+  it('custom modal gets title from findDetails when no title provided', async () => {
+    const ctaWithAriaLabel = createTag('a', {
+      id: 'cta-for-custom-modal',
+      href: '#custom-no-title',
+      'data-modal-hash': '#custom-no-title',
+      'aria-label': 'Auto Title from CTA',
+    }, 'Open Modal');
+    document.body.appendChild(ctaWithAriaLabel);
+    window.location.hash = '#custom-no-title';
+    const iframe = createTag('iframe', { src: 'about:blank' });
+
+    const customContent = createTag('div');
+    customContent.appendChild(iframe);
+
+    const custom = {
+      id: 'custom-no-title',
+      content: customContent,
+    };
+    const modal = await getModal(null, custom);
+    expect(modal).to.exist;
+    expect(modal.getAttribute('aria-label')).to.equal('Modal: Auto Title from CTA');
+
+    const modalIframe = modal.querySelector('iframe');
+    expect(modalIframe).to.exist;
+    expect(modalIframe.getAttribute('title')).to.equal('Modal: Auto Title from CTA');
   });
 });
 

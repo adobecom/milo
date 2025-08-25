@@ -1,14 +1,25 @@
-.figure {
-  margin: 40px 0;
+:root {
+  --figure-padding: 40px;
 }
 
-.figure .figure {
-  margin-top: 16px;
-  margin-bottom: 16px;
+.figure {
+  padding: var(--figure-padding) 0;
+}
+
+.figure + .figure {
+  padding-top: 0;
+}
+
+.figure figure {
+  margin: 0;
   text-align: center;
 }
 
-.figure .figure img {
+.figure-list figure {
+  margin: 16px 0;
+}
+
+.figure figure img {
   max-width: 100%;
   max-height: 600px;
 }
@@ -22,12 +33,12 @@
   flex-direction: column;
 }
 
-.figure-list .figure {
+.figure-list figure {
   box-sizing: border-box;
   display: inline-block;
 }
 
-.figure-list .figure img {
+.figure-list figure img {
   width: 100%;
   min-width: unset;
 }
@@ -39,39 +50,43 @@
     margin-left: 32px;
   }
 
-  .figure-list-2 .figure {
+  .figure-list-2 figure {
     margin: 0;
     width: calc(100% / 2 - 16px);
   }
 
-  .figure-list-3 .figure {
+  .figure-list-3 figure {
     margin: 0;
     width: calc(100% / 3 - 22px);
   }
 
-  .figure-list-3 .figure:nth-of-type(2) {
+  .figure-list-3 figure:nth-of-type(2) {
     margin-right: 32px;
     margin-left: 32px;
   }
 
-  .figure-list-2 .figure:last-of-type {
+  .figure-list-2 figure:last-of-type {
     margin-left: 32px;
   }
 
-  html[dir='rtl'] .figure-list-2 .figure:last-of-type {
+  html[dir='rtl'] .figure-list-2 figure:last-of-type {
     margin-left: auto;
     margin-right: 32px;
   }
-
 }
 
 @media (min-width: 700px) {
-  .figure .figure {
+  .figure figure {
     margin: 0 auto;
     max-width: 800px;
   }
 
+  .figure.figure-list + .figure:not(.figure-list) {
+    padding-top: var(--figure-padding);
+  }
+
   .figure-list {
+    padding: 0;
     margin: 0 auto;
     max-width: 800px;
   }

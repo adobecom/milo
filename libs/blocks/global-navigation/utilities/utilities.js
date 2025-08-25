@@ -11,8 +11,8 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
-import { replaceKey, replaceText } from '../../../features/placeholders.js';
-import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
+import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
+import { PERSONALIZATION_TAGS, FLAGS, handleCommands } from '../../../features/personalization/personalization.js';
 
 loadLana();
 
@@ -22,6 +22,7 @@ const FEDERAL_PATH_KEY = 'federal';
 const DEFAULT_LOCALNAV_HEIGHT = 40;
 const LANA_CLIENT_ID = 'feds-milo';
 const FEDS_PROMO_HEIGHT = 72;
+export const KEYBOARD_DELAY = 8000;
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
@@ -71,6 +72,15 @@ export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
     tags,
     errorType,
   });
+};
+
+let keyboardNav;
+export const setupKeyboardNav = async (newMobileWithLnav, isFooter) => {
+  keyboardNav = keyboardNav || new Promise((resolve) => {
+    import('./keyboard/index.js')
+      .then(({ default: Navigation }) => resolve(new Navigation(newMobileWithLnav, isFooter)));
+  });
+  return keyboardNav;
 };
 
 const usedMeasurementNames = new Set();
@@ -246,6 +256,16 @@ export function setCurtainState(state) {
 }
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isDesktopForContext = (context = 'viewport') => {
+  const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
+  if (context === 'footer' && isContainerResponsiveFooter) {
+    const footerElement = document.querySelector('footer.global-footer');
+    return footerElement && !footerElement.classList.contains('mobile');
+  }
+
+  // Default to viewport width for all other contexts
+  return isDesktop.matches;
+};
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
 export function setActiveDropdown(elem, type) {
@@ -470,10 +490,16 @@ export async function fetchAndProcessPlainHtml({
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
-  const commands = mepGnav?.commands;
+  let commands = mepGnav?.commands || [];
+
+  const gnavMepCommands = config?.mep?.commands?.filter(
+    (command) => command?.modifiers?.find((modifier) => modifier === FLAGS?.includeGnav),
+  ) || [];
+
+  commands = commands.concat(gnavMepCommands);
+
   if (commands?.length) {
     /* c8 ignore next 3 */
-    const { handleCommands } = await import('../../../features/personalization/personalization.js');
     handleCommands(commands, body, true, true);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
@@ -577,6 +603,21 @@ const promoCrossCloudTab = async (popup) => {
   }];
 };
 
+export async function getMainMenuPlaceholder() {
+  const config = getConfig();
+  const cloudPlaceholders = await fetchPlaceholders({ config });
+  let mainMenuLabel = cloudPlaceholders['main-menu'];
+  if (!mainMenuLabel) {
+    mainMenuLabel = (await fetchPlaceholders({ config: getFedsPlaceholderConfig() }))['main-menu'] || 'Main menu';
+  }
+  return `
+    <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
+      <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
+      ${mainMenuLabel}
+    </button>
+  `;
+}
+
 // returns a cleanup function
 export const transformTemplateToMobile = async ({
   popup,
@@ -596,12 +637,6 @@ export const transformTemplateToMobile = async ({
   )).concat(isLoading ? [] : await promoCrossCloudTab(popup));
 
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
-  const mainMenu = `
-      <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
-        <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
-        {{main-menu}}
-      </button>
-  `;
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
   const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
@@ -610,7 +645,7 @@ export const transformTemplateToMobile = async ({
   }
   popup.innerHTML = `
     <div class="top-bar">
-      ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
+      ${localnav ? brand : await getMainMenuPlaceholder()}
     </div>
     <div class="title">
       ${breadCrumbs || '<div class="breadcrumbs"></div>'}

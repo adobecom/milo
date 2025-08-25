@@ -80,8 +80,11 @@ export default async function loadBlock(configs, customLib) {
     return;
   }
   const branch = new URLSearchParams(window.location.search).get('navbranch');
-  const miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
-
+  let miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
+  const useLocal = new URLSearchParams(window.location.search).get('useLocal') || false;
+  if (useLocal) {
+    miloLibs = 'http://localhost:6456';
+  }
   // The below css imports will fail when using the non-bundled standalone gnav
   // and fallback to using loadStyle. On the other hand, the bundler will rewrite
   // the css imports to attach the styles to the head (and point to the dist folder
@@ -168,12 +171,14 @@ export default async function loadBlock(configs, customLib) {
         }
       }
       if (block.key === 'footer') {
-        import('./footer.css').catch(() => {
-          loadStyle(`${miloLibs}/libs/navigation/footer.css`);
-        });
         try {
+          import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
           const { default: init } = await import('../blocks/global-footer/global-footer.js');
-          await bootstrapBlock(init, { ...block, footerSource });
+          await bootstrapBlock(init, {
+            ...block,
+            footerSource,
+            isContainerResponsive: configBlock.isContainerResponsive,
+          });
         } catch (e) {
           configBlock.onError?.(e);
           window.lana.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {

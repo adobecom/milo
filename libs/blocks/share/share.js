@@ -37,52 +37,57 @@ export async function getSVGsfromFile(path, selectors) {
 
 function getPlatforms(el) {
   const manualShares = el.querySelectorAll('a');
-  if (manualShares.length === 0) return ['facebook', 'twitter', 'linkedin', 'pinterest', 'reddit'];
+  if (manualShares.length === 0) return ['facebook', 'x', 'linkedin', 'pinterest', 'reddit'];
   const platforms = [];
   [...manualShares].forEach((share) => {
     const { href } = share;
     const url = new URL(href);
     const parts = url.host.split('.');
-    platforms.push(parts[parts.length - 2]);
+    const platform = parts[parts.length - 2] !== 'twitter' ? parts[parts.length - 2] : 'x';
+    platforms.push(platform);
     const parentP = share.closest('p');
     parentP?.remove();
   });
   return platforms;
 }
 
+function getPrevHeadingLevel(block) {
+  const prevHeading = [...document.querySelectorAll('h2, h3, h4, h5, h6')]
+    .reverse()
+    /* eslint-disable-next-line no-bitwise */
+    .find((heading) => heading.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING);
+  const prevHeadingTag = prevHeading?.tagName.toLowerCase() ?? 'h2';
+  return prevHeadingTag.replace('h', '');
+}
+
+function toSentenceCase(str) {
+  if (!str || typeof str !== 'string') return '';
+  /* eslint-disable-next-line no-useless-escape */
+  return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
+}
+
 export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(block);
-  const rows = block.querySelectorAll(':scope > div');
-  const childDiv = rows[0]?.querySelector(':scope > div');
-  const emptyRow = rows.length && childDiv?.innerText.trim() === '';
-  const toSentenceCase = (str) => {
-    if (!str || typeof str !== 'string') return '';
-    /* eslint-disable-next-line no-useless-escape */
-    return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
-  };
+  let firstRow = block.querySelector(':scope > div');
+  let headingElem;
 
-  if (block.classList.contains('inline')) {
-    rows[0].innerHTML = '';
+  if (block.matches('.inline')) firstRow?.remove();
+  else if (firstRow?.textContent.trim().length) {
+    headingElem = firstRow.querySelector('p, div:not(:has(p, h1, h2, h3, h4, h5, h6))');
   } else {
-    rows[0]?.classList.add('tracking-header');
-    // add share placeholder if empty row
-    if (!rows.length || emptyRow) {
-      const heading = toSentenceCase(await replaceKey('share-this-page', config));
-      block.append(createTag('p', null, heading));
+    headingElem = createTag('p', null, toSentenceCase(await replaceKey('share-this-page', config)));
+    if (firstRow) firstRow.replaceChildren(headingElem);
+    else {
+      firstRow = createTag('div', null, headingElem);
+      block.append(firstRow);
     }
   }
 
-  // wrap innerHTML in <p> tag if none are present
-  if (childDiv && !emptyRow) {
-    const innerPs = childDiv.querySelectorAll(':scope > p');
-    if (innerPs.length === 0) {
-      const text = childDiv.innerText;
-      childDiv.innerText = '';
-      childDiv.append(createTag('p', null, text));
-    }
-  }
+  firstRow?.classList.add('tracking-header');
+  headingElem?.setAttribute('role', 'heading');
+  headingElem?.setAttribute('aria-level', getPrevHeadingLevel(block));
 
   const clipboardSupport = !!navigator.clipboard;
   if (clipboardSupport) platforms.push('clipboard');
@@ -103,10 +108,10 @@ export default async function decorate(block) {
           title: 'Facebook',
           href: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
         };
-      case 'twitter':
+      case 'x':
         return {
-          title: 'Twitter',
-          href: `https://twitter.com/share?&url=${url}`,
+          title: 'X',
+          href: `https://x.com/share?&url=${url}`,
         };
       case 'linkedin':
         return {
@@ -129,7 +134,7 @@ export default async function decorate(block) {
     }
   };
 
-  const container = createTag('p', { class: 'icon-container' });
+  const container = createTag('ul', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
     if (svg.name === 'clipboard') return;
 
@@ -145,7 +150,9 @@ export default async function decorate(block) {
       },
       svg.svg,
     );
-    container.append(shareLink);
+    const li = createTag('li');
+    li.appendChild(shareLink);
+    container.append(li);
     shareLink.addEventListener('click', (e) => {
       /* c8 ignore next 2 */
       e.preventDefault();
@@ -169,12 +176,26 @@ export default async function decorate(block) {
       },
       clipboardSvg.svg,
     );
-    container.append(copyButton);
+    const li = createTag('li');
+    const copyAriaLive = createTag(
+      'div',
+      {
+        'aria-live': 'polite',
+        role: 'status',
+        class: 'aria-live-container',
+      },
+    );
+    li.append(copyButton, copyAriaLive);
+    container.append(li);
+    let changeText = false;
     copyButton.addEventListener('click', (e) => {
       /* c8 ignore next 6 */
       e.preventDefault();
+      copyAriaLive.textContent = '';
       navigator.clipboard.writeText(window.location.href).then(() => {
         copyButton.classList.add('copy-to-clipboard-copied');
+        copyAriaLive.textContent = copiedTooltip + (changeText ? '\u200b' : '');
+        changeText = !changeText;
         setTimeout(() => document.activeElement.blur(), 500);
         setTimeout(
           () => copyButton.classList.remove('copy-to-clipboard-copied'),
