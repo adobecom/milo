@@ -85,5 +85,21 @@ module.exports = {
       },
       tags: '@commerce @smoke @regression',
     },
+    {
+      tcid: '10',
+      name: '@Commerce-Volume-Discount',
+      browserParams: '?georouting=off&martech=off',
+      path: '/drafts/nala/features/commerce/prices-volume-discount',
+      data: { promotionCode: 'TDARCH_3LIC_7PT5' },
+      tags: '@commerce @smoke @regression',
+    },
+    {
+      tcid: '11',
+      name: '@Commerce-Volume-Discount-Annual',
+      browserParams: '?georouting=off&martech=off',
+      path: '/drafts/nala/features/commerce/prices-volume-discount-annual',
+      data: { promotionCode: 'TDARCH_3LIC_7PT5' },
+      tags: '@commerce @smoke @regression',
+    },
   ],
 };
