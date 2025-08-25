@@ -1776,10 +1776,7 @@ export async function loadArea(area = document) {
 
     if (isMarqueeAndNoMedia && section.idx === 1) {
       const imgs = section.el.querySelectorAll('img');
-      imgs.forEach((img) => {
-        img.setAttribute('loading', 'eager');
-        img.setAttribute('fetchpriority', 'high');
-      });
+      imgs.forEach((img) => img.setAttribute('loading', 'eager'));
     }
 
     const isLastSection = section.idx === sections.length - 1;
