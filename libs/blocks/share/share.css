@@ -45,8 +45,8 @@
   gap: 18px;
 }
 
-.share p {
-  padding-bottom: 8px;
+.share :is([role="heading"], h1, h2, h3, h4, h5, h6) {
+  padding-block-end: 8px;
 }
 
 .share.dark p {
