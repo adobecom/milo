@@ -253,6 +253,8 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+(() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
+
 const handleEntitlements = (() => {
   const { martech } = Object.fromEntries(PAGE_URL.searchParams);
   if (martech === 'off') return () => { };
@@ -1101,7 +1103,11 @@ async function decorateHeader() {
 async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
-  const { base } = config;
+  const { base, iconsExcludeBlocks } = config;
+  if (iconsExcludeBlocks) {
+    const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
+    if (excludedIconsCount === icons.length) return;
+  }
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
