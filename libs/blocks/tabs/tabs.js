@@ -63,14 +63,14 @@ const generateStorageName = (tabId) => {
 };
 
 const loadActiveTab = (config) => {
-  if (config['remember'] !== 'on') return 0;
+  if (config.remember !== 'on') return 0;
 
   const tabId = config['tab-id'];
   return sessionStorage.getItem(generateStorageName(tabId));
 };
 
 const saveActiveTabInStorage = (targetId, config) => {
-  if (config['remember'] !== 'on') return;
+  if (config.remember !== 'on') return;
 
   const delimiterIndex = targetId.lastIndexOf('-');
   const activeTabIndex = targetId.substring(delimiterIndex + 1);
