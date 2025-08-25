@@ -469,12 +469,6 @@ export async function polyfills() {
     },
   });
 
-  if (!globalThis.structuredClone) {
-    globalThis.structuredClone = function cloneObject(obj) {
-      return JSON.parse(JSON.stringify(obj));
-    };
-  }
-
   if (isSupported) {
     polyfills.promise = Promise.resolve();
   } else {
