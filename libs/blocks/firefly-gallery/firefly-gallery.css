@@ -326,14 +326,14 @@
 
 .firefly-gallery-view-button {
   background: var(--color-white);
-  color: var(--color-gray-700);
-  padding: calc(var(--spacing-xxs) / 4) var(--spacing-xs) ;
+  color: #292929;
+  padding: 1px 12px ;
   border-radius: 16px; /* Pill shape */
   align-self: flex-end;
   margin-top: auto;
   margin-bottom: var(--spacing-xs);
   margin-right: var(--spacing-xs);
-  font-size: var(--prompt-font-size);
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }
