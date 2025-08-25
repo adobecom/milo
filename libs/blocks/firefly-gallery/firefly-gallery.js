@@ -290,6 +290,9 @@ function createGalleryStructure() {
     'Get inspired by the community'
   );
   const galleryContent = createTag('div', { class: 'firefly-gallery-content' });
+  const galleryOverlay = createTag('div', { class: 'firefly-gallery-fade' });
+
+  galleryContent.appendChild(galleryOverlay);
 
   galleryHeader.appendChild(galleryTitle);
   galleryContainer.appendChild(galleryHeader);
@@ -308,36 +311,53 @@ function createSkeletonLayout(container) {
   const masonryGrid = createTag('div', {
     class: 'firefly-gallery-masonry-grid loading',
   });
-  
+
   const skeletonItems = [];
 
   // Number of items to create (will be replaced with actual images)
-  const numItems = 16;
+  const numItems = 30;
 
   // Define placeholder aspect ratios - we'll replace these with real ones
-  // Varied aspect ratios for visual interest during loading
-  // We create a balanced distribution of item types for a pleasing initial layout
+  // Optimized for 5-column desktop layout: 30 items = 6 items per column
+  // Pattern ensures balanced distribution across all responsive breakpoints
   const placeholderTypes = [
-    // First 4 items - one of each type for visual balance
+    // Column flow pattern optimized for 5 columns (6 items per column)
+    // row 1
     'short',
     'square',
     'portrait',
     'tall',
-    // Next 4 items - different order
+    'short',
+    // row 2
     'portrait',
     'short',
     'tall',
     'square',
-    // Next 4 items - another pattern
+    'portrait',
+    // row 3
     'square',
     'tall',
     'short',
     'portrait',
-    // Last 4 items - final pattern
+    'tall',
+    // row 4
     'tall',
     'portrait',
     'square',
     'short',
+    'square',
+    // row 5
+    'short',
+    'square',
+    'portrait',
+    'tall',
+    'portrait',
+    // row 6
+    'portrait',
+    'tall',
+    'short',
+    'square',
+    'tall',
   ];
 
   // Initial aspect ratios for placeholder types - these will be replaced with actual ratios
@@ -378,8 +398,8 @@ function createSkeletonLayout(container) {
 
     skeletonItems.push(skeletonItem);
   }
-
-  container.appendChild(masonryGrid);
+  container.insertBefore(masonryGrid, container.firstChild);
+  // container.appendChild(masonryGrid);
   return { masonryGrid, skeletonItems };
 }
 
@@ -671,7 +691,7 @@ function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
   const handleResize = debounce(() => {
     // Column count now handled by CSS media queries automatically
     // We only need to update image URLs
-    
+
     // Only update if we have both assets and skeleton items
     if (
       assets &&
@@ -720,34 +740,29 @@ export default async function init(el) {
   // Replace block content with our gallery structure
   el.appendChild(container);
 
-  // Add additional classes for styling
-  el.classList.add('max-width-10-desktop');
-
   // Allow the skeleton UI to render and be scrollable
   // before waiting for image data
-  setTimeout(() => {
-    // Load Firefly images
-    fetchFireflyImages()
-      .then((assets) => {
-        if (assets && assets.length) {
-          // Pass assets to the function to enable progressive loading
-          const observer = loadFireflyImages(skeletonItems, assets);
+  // Load Firefly images
+  fetchFireflyImages()
+    .then((assets) => {
+      if (assets && assets.length) {
+        // Pass assets to the function to enable progressive loading
+        const observer = loadFireflyImages(skeletonItems, assets);
 
-          // Set up resize handler for responsive image sizes
-          handleResizeForGallery(assets, skeletonItems, masonryGrid);
+        // Set up resize handler for responsive image sizes
+        handleResizeForGallery(assets, skeletonItems, masonryGrid);
 
-          // Remove loading class after initial items are loaded (5 second timeout)
-          setTimeout(() => {
-            masonryGrid.classList.remove('loading');
-          }, 5000);
-        } else {
-          // Remove loading state if no assets found
+        // Remove loading class after initial items are loaded (5 second timeout)
+        setTimeout(() => {
           masonryGrid.classList.remove('loading');
-        }
-      })
-      .catch((error) => {
-        logError('Error fetching Firefly images:', error);
+        }, 5000);
+      } else {
+        // Remove loading state if no assets found
         masonryGrid.classList.remove('loading');
-      });
-  }, 0);
+      }
+    })
+    .catch((error) => {
+      logError('Error fetching Firefly images:', error);
+      masonryGrid.classList.remove('loading');
+    });
 }

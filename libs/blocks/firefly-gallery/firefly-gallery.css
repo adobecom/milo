@@ -53,6 +53,8 @@
 }
 
 .firefly-gallery-content {
+  height: 720px;
+  overflow: hidden;
   position: relative;
   width: 100%;
 }
@@ -63,6 +65,16 @@
   column-count: 2;
   column-gap: var(--gap);
   margin-bottom: var(--spacing-l);
+  width: 100%;
+}
+
+.firefly-gallery-fade {
+  background: linear-gradient(0deg, rgb(255 255 255 / 100%) 10%, rgb(255 255 255 / 0%) 100%);
+  height: 200px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
   width: 100%;
 }
 
@@ -399,8 +411,8 @@
 /* Tablet styles (601px - 900px) */
 @media screen and (min-width: 601px) {
   :root {
-    --gap: 12px;
-    --item-margin: 12px;
+    --gap: 12px; /* Between --spacing-xxs (8px) and --spacing-xs (16px) - keep custom */
+    --item-margin: 12px; /* Between --spacing-xxs (8px) and --spacing-xs (16px) - keep custom */
     --padding: var(--spacing-m) 0;
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.85);
     --prompt-line-height: 1.2;
@@ -422,8 +434,8 @@
 /* Desktop styles (901px+) */
 @media screen and (min-width: 901px) {
   :root {
-    --gap: 16px;
-    --item-margin: 16px;
+    --gap: var(--spacing-xs); /* 16px */
+    --item-margin: var(--spacing-xs); /* 16px */
     --padding: var(--spacing-l) 0;
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.9);
     --prompt-max-width: 90%;
@@ -431,6 +443,6 @@
   
   /* Update column gap to match columns */
   .firefly-gallery-masonry-grid {
-    column-gap: 16px;
+    column-gap: var(--spacing-xs);
   }
 }
