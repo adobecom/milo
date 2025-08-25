@@ -24,11 +24,13 @@ const config = {
     timeout: 5000,
   },
   testMatch: '**/*.test.js',
+  /*
   testIgnore: [
     'features/osttools/**',
     'features/promotions/**',
     'features/mas/**',
   ],
+  */
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

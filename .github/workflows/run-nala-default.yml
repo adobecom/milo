@@ -26,7 +26,7 @@ jobs:
       matrix:
         node-version: [20.x]
         project: [milo-live-chromium, milo-live-firefox, milo-live-webkit]
-        shard: [1/2, 2/2]
+        # shard: [1/2, 2/2] # disable sharding for now
         include:
           - project: milo-live-chromium
             browser: "Chromium"
@@ -74,7 +74,7 @@ jobs:
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
           PROJECT: ${{ matrix.project }}
-          SHARD: ${{ matrix.shard }}
+          # SHARD: ${{ matrix.shard }} # disable sharding for now
           reporter: list,blob
 
       - name: Upload blob report
