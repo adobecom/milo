@@ -66,7 +66,7 @@ const loadActiveTab = (config) => {
   if (config['remember-selected-tab'] !== 'on') return 0;
 
   const tabId = config['tab-id'];
-  return sessionStorage.getItem(generateStorageName(tabId)) || '1';
+  return sessionStorage.getItem(generateStorageName(tabId));
 };
 
 const saveActiveTabInStorage = (targetId, config) => {
