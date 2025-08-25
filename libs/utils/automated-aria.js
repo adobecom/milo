@@ -1,5 +1,5 @@
 import { getConfig, getFederatedContentRoot } from './utils.js';
-
+// AdobePatentID="P14125-US"
 const h1h2Regex = /^h[1-2]$/i;
 const traverseForTextBeforeHeader = (node, regex) => {
   if (regex.test(node.tagName)) return { text: '', foundHeader: true };
