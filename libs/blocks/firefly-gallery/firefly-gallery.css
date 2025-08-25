@@ -23,13 +23,12 @@
   width: 100%;
 }
 
-/* Masonry grid layout */
+/* Masonry grid layout using CSS columns for true masonry effect */
 .firefly-gallery-masonry-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 100px;
-  grid-gap: 16px;
+  column-count: 4;
+  column-gap: 16px;
   margin-bottom: var(--spacing-l);
+  width: 100%;
 }
 
 /* Skeleton item base styles */
@@ -39,36 +38,63 @@
   overflow: hidden;
   position: relative;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  margin-bottom: 16px; /* Space between items in the column */
+  padding: 0;
+  display: inline-block; /* Important for column layout */
+  break-inside: avoid; /* Prevent items from breaking across columns */
 }
 
-/* Item size variations */
-.firefly-gallery-item-small {
-  grid-column: span 1;
-  grid-row: span 1;
+/* Item size variations - with CSS column layout, we just need to define aspect ratios */
+.firefly-gallery-item-short {
+  position: relative;
+}
+.firefly-gallery-item-short::before {
+  content: "";
+  display: block;
+  padding-top: 70%; /* 0.7:1 aspect ratio - landscape */
 }
 
-.firefly-gallery-item-medium {
-  grid-column: span 1;
-  grid-row: span 2;
+.firefly-gallery-item-square {
+  position: relative;
+}
+.firefly-gallery-item-square::before {
+  content: "";
+  display: block;
+  padding-top: 100%; /* 1:1 aspect ratio - square */
 }
 
-.firefly-gallery-item-medium-wide {
-  grid-column: span 2;
-  grid-row: span 1;
+.firefly-gallery-item-portrait {
+  position: relative;
+}
+.firefly-gallery-item-portrait::before {
+  content: "";
+  display: block;
+  padding-top: 130%; /* 1.3:1 aspect ratio - portrait */
 }
 
-.firefly-gallery-item-large {
-  grid-column: span 2;
-  grid-row: span 2;
+.firefly-gallery-item-tall {
+  position: relative;
+}
+.firefly-gallery-item-tall::before {
+  content: "";
+  display: block;
+  padding-top: 170%; /* 1.7:1 aspect ratio - tall portrait */
 }
 
 /* Skeleton animation */
 .skeleton-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  position: relative;
   overflow: hidden;
   background-color: var(--color-gray-100);
+  display: block;
+  border-radius: 8px; /* Match the item border radius */
 }
 
 .skeleton-animation {
@@ -122,10 +148,17 @@
 .firefly-gallery-image {
   width: 100%;
   height: 100%;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
   overflow: hidden;
   opacity: 1;
   animation: fade-in 0.5s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes fade-in {
@@ -137,11 +170,20 @@
   }
 }
 
-.firefly-gallery-image img {
+.firefly-gallery-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.firefly-gallery-item:hover .firefly-gallery-img {
+  transform: scale(1.05); /* Subtle zoom effect on hover */
 }
 
 /* Overlay and prompt styles */
@@ -157,8 +199,8 @@
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 2;
-  padding-top:var(--spacing-xxs);
-  padding-left:var(--spacing-xxs);
+  padding: var(--spacing-xxs);
+  border-radius: 8px; /* Match the item border radius */
 }
 
 .firefly-gallery-prompt {
@@ -233,17 +275,25 @@
 }
 
 /* Responsive styling */
-@media (max-width: 1024px) {
+@media screen and (max-width: 1200px) {
   .firefly-gallery-masonry-grid {
-    grid-template-columns: repeat(3, 1fr);
+    column-count: 3; /* 3 columns for larger tablets/small desktops */
+    column-gap: 14px;
+  }
+  
+  .firefly-gallery-item {
+    margin-bottom: 14px;
   }
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 900px) {
   .firefly-gallery-masonry-grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 12px;
-    grid-auto-rows: 80px;
+    column-count: 2; /* 2 columns for tablets */
+    column-gap: 12px;
+  }
+  
+  .firefly-gallery-item {
+    margin-bottom: 12px;
   }
   
   .firefly-gallery-block {
@@ -277,21 +327,17 @@
   }
 }
 
-@media (max-width: 480px) {
-  .firefly-gallery-item-large,
-  .firefly-gallery-item-medium-wide {
-    grid-column: span 2;
-    grid-row: span 1;
-  }
-  
-  .firefly-gallery-item-medium {
-    grid-column: span 1;
-    grid-row: span 1;
-  }
-  
+@media screen and (max-width: 600px) {
   .firefly-gallery-masonry-grid {
-    grid-auto-rows: 70px;
+    column-count: 2; /* Keep 2 columns for mobile, but with smaller gap */
+    column-gap: 8px;
   }
+  
+  .firefly-gallery-item {
+    margin-bottom: 8px;
+  }
+  
+  /* We don't need to adjust the aspect ratios since they're preserved */
   
   .firefly-gallery-user-avatar {
     width: 24px;

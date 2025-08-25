@@ -5,7 +5,33 @@ const FIREFLY_API_URL =
 const API_PARAMS =
   '?size=16&sort=updated_desc&include_pending_assets=false&category_id=text2Image&cursor=';
 const API_KEY = 'alfred-community-hubs';
-const RENDITION_SIZE = 350;
+// Define different rendition sizes for different item types and screen sizes
+const RENDITION_SIZES = {
+  short: {
+    default: 350,
+    desktop: 350,
+    tablet: 300,
+    mobile: 250,
+  },
+  square: {
+    default: 400,
+    desktop: 400,
+    tablet: 350,
+    mobile: 280,
+  },
+  portrait: {
+    default: 450,
+    desktop: 450,
+    tablet: 400,
+    mobile: 300,
+  },
+  tall: {
+    default: 500,
+    desktop: 500,
+    tablet: 450,
+    mobile: 350,
+  },
+};
 
 async function fetchFireflyImages() {
   try {
@@ -34,15 +60,31 @@ const replaceRenditionUrl = (url, format, dimension, size) =>
     .replace(/{dimension}/g, dimension)
     .replace(/{size}/g, size);
 
-function getImageRendition(asset) {
+function getImageRendition(asset, itemType = 'medium') {
   if (!asset) return '';
+
+  // Determine screen size category
+  let screenSize = 'default';
+  const viewportWidth = window.innerWidth;
+
+  if (viewportWidth <= 600) {
+    screenSize = 'mobile';
+  } else if (viewportWidth <= 900) {
+    screenSize = 'tablet';
+  } else {
+    screenSize = 'desktop';
+  }
+
+  // Get appropriate size based on item type and screen size
+  const sizeObj = RENDITION_SIZES[itemType] || RENDITION_SIZES.medium;
+  const size = sizeObj[screenSize] || sizeObj.default;
 
   // Check if rendition_url exists
   const renditionUrl = replaceRenditionUrl(
     asset._links.rendition.href,
     'jpg',
     'width',
-    350
+    size
   );
   return renditionUrl;
 }
@@ -55,7 +97,7 @@ function createGalleryStructure() {
   const galleryTitle = createTag(
     'h2',
     { class: 'firefly-gallery-title heading-xl' },
-    'Firefly Gallery'
+    'Get inspired by the community'
   );
   const galleryContent = createTag('div', { class: 'firefly-gallery-content' });
 
@@ -70,31 +112,32 @@ function createGalleryStructure() {
 }
 
 function createSkeletonLayout(container) {
-  // Define different item sizes for the masonry layout
+  // Define different item sizes for the masonry layout with varying heights
+  // Each item has width of 1 column but different height ratios for true masonry effect
   const itemSizes = [
-    // { class: 'large', width: 2, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    { class: 'medium', width: 1, height: 2 },
-    // { class: 'medium', width: 1, height: 2 },
-    { class: 'small', width: 1, height: 1 },
-    // { class: 'small', width: 1, height: 1 },
-    // { class: 'medium-wide', width: 2, height: 1 },
-    // { class: 'small', width: 1, height: 1 },
-    // { class: 'medium', width: 1, height: 2 },
-    // { class: 'small', width: 1, height: 1 },
-    // { class: 'large', width: 2, height: 2 },
-    // { class: 'small', width: 1, height: 1 },
-    // { class: 'medium-wide', width: 2, height: 1 },
-    // { class: 'small', width: 1, height: 1 },
+    // First row - variety of heights but all 1 column wide
+    { class: 'short', width: 1, height: 0.7 },   // column 1 - landscape orientation
+    { class: 'square', width: 1, height: 1.0 },  // column 2 - square
+    { class: 'portrait', width: 1, height: 1.3 }, // column 3 - portrait orientation
+    { class: 'tall', width: 1, height: 1.7 },    // column 4 - tall portrait
+
+    // Second row - different height variations
+    { class: 'square', width: 1, height: 1.0 },  // column 1 - square
+    { class: 'portrait', width: 1, height: 1.3 }, // column 2 - portrait orientation
+    { class: 'short', width: 1, height: 0.7 },   // column 3 - landscape orientation
+    { class: 'square', width: 1, height: 1.0 },  // column 4 - square
+
+    // Third row - more height variations
+    { class: 'portrait', width: 1, height: 1.3 }, // column 1 - portrait orientation
+    { class: 'tall', width: 1, height: 1.7 },    // column 2 - tall portrait
+    { class: 'square', width: 1, height: 1.0 },  // column 3 - square
+    { class: 'short', width: 1, height: 0.7 },   // column 4 - landscape orientation
+    
+    // Fourth row - different pattern
+    { class: 'tall', width: 1, height: 1.7 },    // column 1 - tall portrait
+    { class: 'short', width: 1, height: 0.7 },   // column 2 - landscape orientation
+    { class: 'portrait', width: 1, height: 1.3 }, // column 3 - portrait orientation
+    { class: 'square', width: 1, height: 1.0 },  // column 4 - square
   ];
 
   // Create the masonry grid container
@@ -102,6 +145,8 @@ function createSkeletonLayout(container) {
     class: 'firefly-gallery-masonry-grid loading',
   });
   const skeletonItems = [];
+
+  // CSS handles the aspect ratios and layout with columns
 
   // Create skeleton items with different sizes
   itemSizes.forEach((size) => {
@@ -139,6 +184,7 @@ function loadImageIntoSkeleton(
       src: imageUrl,
       alt: altText,
       loading: 'lazy',
+      class: 'firefly-gallery-img',
     });
 
     const imageContainer = createTag('div', {
@@ -195,13 +241,11 @@ function loadImageIntoSkeleton(
       imageContainer.appendChild(overlay);
     }
 
-    // Handle image load event
-    console.log('Image loaded successfully:', imageUrl);
-
     // Add loaded class to trigger transition
     skeletonItem.classList.add('loaded');
 
     // Replace skeleton wrapper with actual image after animation
+    // but maintain the aspect ratio structure
     const skeletonWrapper = skeletonItem.querySelector('.skeleton-wrapper');
     if (skeletonWrapper) {
       skeletonItem.replaceChild(imageContainer, skeletonWrapper);
@@ -211,6 +255,8 @@ function loadImageIntoSkeleton(
       skeletonItem.appendChild(imageContainer);
     }
 
+    // Image successfully loaded
+    console.log('Image loaded successfully:', imageUrl);
     resolve();
   });
 }
@@ -236,8 +282,18 @@ async function loadFireflyImages(skeletonItems) {
     const loadPromises = skeletonItems.map((item, index) => {
       if (index >= assets.length) return Promise.resolve();
 
+      // Get the item type from the skeleton item class
+      const itemClasses = item.className.split(' ');
+      const sizeClassRegex = /firefly-gallery-item-(\S+)/;
+      const sizeClassMatch = itemClasses.find((cls) =>
+        sizeClassRegex.test(cls)
+      );
+      const itemType = sizeClassMatch
+        ? sizeClassMatch.match(sizeClassRegex)[1]
+        : 'medium';
+
       const asset = assets[index];
-      const imageUrl = getImageRendition(asset);
+      const imageUrl = getImageRendition(asset, itemType);
       const altText = asset.title || 'Firefly generated image';
 
       // Get localized prompt text
@@ -302,6 +358,55 @@ async function loadFireflyImages(skeletonItems) {
   }
 }
 
+/**
+ * Handles window resize events to optimize the gallery layout
+ * @param {Array} assets - The array of image assets
+ * @param {Array} skeletonItems - The skeleton item elements
+ */
+function handleResizeForGallery(assets, skeletonItems) {
+  let resizeTimer;
+
+  window.addEventListener('resize', () => {
+    // Debounce resize events
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      // Only update if we have both assets and skeleton items
+      if (
+        assets &&
+        assets.length > 0 &&
+        skeletonItems &&
+        skeletonItems.length > 0
+      ) {
+        // Update image URLs based on current viewport
+        skeletonItems.forEach((item, index) => {
+          if (index >= assets.length) return;
+
+          // Get item type from class
+          const itemClasses = item.className.split(' ');
+          const sizeClassRegex = /firefly-gallery-item-(\S+)/;
+          const sizeClassMatch = itemClasses.find((cls) =>
+            sizeClassRegex.test(cls)
+          );
+          const itemType = sizeClassMatch
+            ? sizeClassMatch.match(sizeClassRegex)[1]
+            : 'square';
+
+          // Get image element if it exists
+          const imgElement = item.querySelector('img');
+          if (imgElement) {
+            // Update src with new rendition size
+            const newSrc = getImageRendition(assets[index], itemType);
+            // Only update if URL changed (prevents unnecessary reloads)
+            if (newSrc !== imgElement.src) {
+              imgElement.src = newSrc;
+            }
+          }
+        });
+      }
+    }, 250); // Wait 250ms after resize ends to recalculate
+  });
+}
+
 export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
 
@@ -321,5 +426,12 @@ export default async function init(el) {
   el.classList.add('max-width-10-desktop');
 
   // Load Firefly images
-  loadFireflyImages(skeletonItems);
+  const assets = await fetchFireflyImages();
+
+  if (assets && assets.length) {
+    await loadFireflyImages(skeletonItems);
+
+    // Set up resize handler for responsive image sizes
+    handleResizeForGallery(assets, skeletonItems);
+  }
 }
