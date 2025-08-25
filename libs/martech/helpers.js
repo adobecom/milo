@@ -791,6 +791,7 @@ export const loadAnalyticsAndInteractionData = async (
     };
   } catch (err) {
     if (err.message !== 'No propositions found') {
+      // eslint-disable-next-line no-console
       console.log(err);
     }
     setGpvCookie(pageName);
