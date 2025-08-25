@@ -72,7 +72,10 @@ export class MerchQuantitySelect extends LitElement {
     selectValue() {
         if (!this.closed) {
             const option = this.options[this.highlightedIndex];
-            if (!option) return;
+            if (!option) {
+                this.closed = true;
+                return;
+            }
             this.selectedValue = option;
             this.handleMenuOption(this.selectedValue);
             this.closed = true;
@@ -122,8 +125,12 @@ export class MerchQuantitySelect extends LitElement {
 
     handleInput() {
         const inputField = this.shadowRoot.querySelector('.text-field-input');
-        const inputValue = parseInt(inputField.value);
-        if (isNaN(inputValue)) return;
+        const numericValue = inputField.value.replace(/\D/g, '');
+        inputField.value = numericValue;
+        const inputValue = parseInt(numericValue);
+        if (isNaN(inputValue)) {
+            return;
+        }
         if (inputValue > 0 && inputValue !== this.selectedValue) {
             let adjustedInputValue = inputValue;
             if (this.maxInput && inputValue > this.maxInput)
@@ -275,7 +282,8 @@ export class MerchQuantitySelect extends LitElement {
                     aria-controls="qsPopover"
                     aria-activedescendant="${!this.closed ? `qs-item-${this.highlightedIndex}` : ''}"
                     .value="${this.selectedValue}"
-                    type="number"
+                    type="text"
+                    autocomplete="off"
                     @keydown="${this.handleKeydown}"
                     @keyup="${this.handleKeyupDebounced}"
                     @click="${this.toggleMenu}"
