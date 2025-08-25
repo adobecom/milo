@@ -60,7 +60,7 @@ const replaceRenditionUrl = (url, format, dimension, size) =>
     .replace(/{dimension}/g, dimension)
     .replace(/{size}/g, size);
 
-function getImageRendition(asset, itemType = 'medium') {
+function getImageRendition(asset, itemType = 'square') {
   if (!asset) return '';
 
   // Determine screen size category
@@ -76,16 +76,36 @@ function getImageRendition(asset, itemType = 'medium') {
   }
 
   // Get appropriate size based on item type and screen size
-  const sizeObj = RENDITION_SIZES[itemType] || RENDITION_SIZES.medium;
-  const size = sizeObj[screenSize] || sizeObj.default;
-
-  // Check if rendition_url exists
+  const sizeObj = RENDITION_SIZES[itemType] || RENDITION_SIZES.square;
+  const width = sizeObj[screenSize] || sizeObj.default;
+  
+  // Extract actual aspect ratio from the asset
+  let aspectRatio = 1; // Default to square
+  
+  if (asset._links?.rendition?.max_width && asset._links?.rendition?.max_height) {
+    aspectRatio = asset._links.rendition.max_width / asset._links.rendition.max_height;
+  } else if (asset.custom?.input?.['firefly#inputModel']) {
+    try {
+      const inputModel = JSON.parse(asset.custom.input['firefly#inputModel']);
+      if (inputModel.aspectRatio) {
+        aspectRatio = parseFloat(inputModel.aspectRatio);
+      }
+    } catch (e) {
+      console.warn('Could not parse aspect ratio from inputModel', e);
+    }
+  }
+  
+  // Calculate height based on width and aspect ratio to maintain proper proportions
+  const height = Math.round(width / aspectRatio);
+  
+  // Create rendition URL with appropriate size
   const renditionUrl = replaceRenditionUrl(
     asset._links.rendition.href,
     'jpg',
     'width',
-    size
+    width
   );
+  
   return renditionUrl;
 }
 
@@ -112,47 +132,27 @@ function createGalleryStructure() {
 }
 
 function createSkeletonLayout(container) {
-  // Define different item sizes for the masonry layout with varying heights
-  // Each item has width of 1 column but different height ratios for true masonry effect
-  const itemSizes = [
-    // First row - variety of heights but all 1 column wide
-    { class: 'short', width: 1, height: 0.7 },   // column 1 - landscape orientation
-    { class: 'square', width: 1, height: 1.0 },  // column 2 - square
-    { class: 'portrait', width: 1, height: 1.3 }, // column 3 - portrait orientation
-    { class: 'tall', width: 1, height: 1.7 },    // column 4 - tall portrait
-
-    // Second row - different height variations
-    { class: 'square', width: 1, height: 1.0 },  // column 1 - square
-    { class: 'portrait', width: 1, height: 1.3 }, // column 2 - portrait orientation
-    { class: 'short', width: 1, height: 0.7 },   // column 3 - landscape orientation
-    { class: 'square', width: 1, height: 1.0 },  // column 4 - square
-
-    // Third row - more height variations
-    { class: 'portrait', width: 1, height: 1.3 }, // column 1 - portrait orientation
-    { class: 'tall', width: 1, height: 1.7 },    // column 2 - tall portrait
-    { class: 'square', width: 1, height: 1.0 },  // column 3 - square
-    { class: 'short', width: 1, height: 0.7 },   // column 4 - landscape orientation
-    
-    // Fourth row - different pattern
-    { class: 'tall', width: 1, height: 1.7 },    // column 1 - tall portrait
-    { class: 'short', width: 1, height: 0.7 },   // column 2 - landscape orientation
-    { class: 'portrait', width: 1, height: 1.3 }, // column 3 - portrait orientation
-    { class: 'square', width: 1, height: 1.0 },  // column 4 - square
-  ];
-
   // Create the masonry grid container
   const masonryGrid = createTag('div', {
     class: 'firefly-gallery-masonry-grid loading',
   });
   const skeletonItems = [];
 
-  // CSS handles the aspect ratios and layout with columns
-
-  // Create skeleton items with different sizes
-  itemSizes.forEach((size) => {
-    const itemClass = `firefly-gallery-item firefly-gallery-item-${size.class} skeleton-item`;
+  // Number of items to create (will be replaced with actual images)
+  const numItems = 16;
+  
+  // Define placeholder aspect ratios - we'll replace these with real ones
+  // Varied aspect ratios for visual interest during loading
+  const placeholderTypes = ['square', 'short', 'portrait', 'tall'];
+  
+  // Create skeleton items
+  for (let i = 0; i < numItems; i++) {
+    // Rotate through the placeholder types for varied loading appearance
+    const placeholderType = placeholderTypes[i % placeholderTypes.length];
+    
+    const itemClass = `firefly-gallery-item firefly-gallery-item-${placeholderType} skeleton-item`;
     const skeletonItem = createTag('div', { class: itemClass });
-
+    
     // Add a wrapper for the skeleton animation
     const skeletonWrapper = createTag('div', { class: 'skeleton-wrapper' });
 
@@ -164,7 +164,7 @@ function createSkeletonLayout(container) {
     masonryGrid.appendChild(skeletonItem);
 
     skeletonItems.push(skeletonItem);
-  });
+  }
 
   container.appendChild(masonryGrid);
   return { masonryGrid, skeletonItems };
@@ -198,6 +198,11 @@ function loadImageIntoSkeleton(
         class: 'firefly-gallery-overlay',
       });
 
+      // Create info container for user avatar, name, and prompt
+      const infoContainer = createTag('div', {
+        class: 'firefly-gallery-info-container',
+      });
+      
       // Add user info container at the top left
       if (userInfo.name || userInfo.avatarUrl) {
         const userInfoContainer = createTag('div', {
@@ -226,9 +231,10 @@ function loadImageIntoSkeleton(
           userInfoContainer.appendChild(username);
         }
 
-        overlay.appendChild(userInfoContainer);
+        infoContainer.appendChild(userInfoContainer);
       }
 
+      // Add prompt right after user info
       const promptElement = createTag(
         'div',
         {
@@ -237,7 +243,8 @@ function loadImageIntoSkeleton(
         promptText
       );
 
-      overlay.appendChild(promptElement);
+      infoContainer.appendChild(promptElement);
+      overlay.appendChild(infoContainer);
       imageContainer.appendChild(overlay);
     }
 
@@ -282,17 +289,53 @@ async function loadFireflyImages(skeletonItems) {
     const loadPromises = skeletonItems.map((item, index) => {
       if (index >= assets.length) return Promise.resolve();
 
-      // Get the item type from the skeleton item class
-      const itemClasses = item.className.split(' ');
-      const sizeClassRegex = /firefly-gallery-item-(\S+)/;
-      const sizeClassMatch = itemClasses.find((cls) =>
-        sizeClassRegex.test(cls)
-      );
-      const itemType = sizeClassMatch
-        ? sizeClassMatch.match(sizeClassRegex)[1]
-        : 'medium';
-
       const asset = assets[index];
+      
+      // Extract aspect ratio from the asset
+      let aspectRatio = 1; // Default to square if we can't determine
+      
+      // Method 1: Extract from rendition max dimensions
+      if (asset._links?.rendition?.max_width && asset._links?.rendition?.max_height) {
+        const maxWidth = asset._links.rendition.max_width;
+        const maxHeight = asset._links.rendition.max_height;
+        aspectRatio = maxWidth / maxHeight;
+      } 
+      // Method 2: Extract from firefly#inputModel if available
+      else if (asset.custom?.input?.['firefly#inputModel']) {
+        try {
+          const inputModel = JSON.parse(asset.custom.input['firefly#inputModel']);
+          if (inputModel.aspectRatio) {
+            aspectRatio = parseFloat(inputModel.aspectRatio);
+          }
+        } catch (e) {
+          console.warn('Could not parse aspect ratio from inputModel', e);
+        }
+      }
+      
+      // Determine item type based on aspect ratio
+      let itemType;
+      if (aspectRatio < 0.8) {
+        itemType = 'tall'; // Portrait (tall)
+      } else if (aspectRatio >= 0.8 && aspectRatio < 1.0) {
+        itemType = 'portrait'; // Portrait (less tall)
+      } else if (aspectRatio >= 1.0 && aspectRatio < 1.2) {
+        itemType = 'square'; // Approximately square
+      } else {
+        itemType = 'short'; // Landscape
+      }
+      
+      console.log(`Asset ${index} aspect ratio: ${aspectRatio}, assigned type: ${itemType}`);
+      
+      // Update the item's class to match the aspect ratio
+      const existingClasses = item.className.split(' ');
+      const newClasses = existingClasses
+        .filter(cls => !cls.match(/firefly-gallery-item-(short|square|portrait|tall)/))
+        .concat([`firefly-gallery-item-${itemType}`]);
+      item.className = newClasses.join(' ');
+      
+      // Set the exact aspect ratio as a custom property for precise sizing
+      item.style.setProperty('--aspect-ratio', aspectRatio);
+
       const imageUrl = getImageRendition(asset, itemType);
       const altText = asset.title || 'Firefly generated image';
 
