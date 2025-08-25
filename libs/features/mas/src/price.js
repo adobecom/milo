@@ -24,11 +24,19 @@ import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 export function Price({ literals, providers, settings }) {
     function collectPriceOptions(overrides, placeholder = null) {
+        // Fallback for structuredClone on older browsers (iOS 15.2)
+        const deepClone = (obj) => {
+            if (typeof structuredClone !== 'undefined') {
+                return structuredClone(obj);
+            }
+            return JSON.parse(JSON.stringify(obj));
+        };
+        
         let options = {
             country: settings.country,
             language: settings.language,
             locale: settings.locale,
-            literals: structuredClone(literals.price),
+            literals: deepClone(literals.price),
         };
 
         if (placeholder && providers?.price) {
