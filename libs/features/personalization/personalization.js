@@ -1058,7 +1058,7 @@ export const addMepAnalytics = (config, header) => {
   });
 };
 export function canServeManifest(action, sources, consent) {
-  const isCoreServices = action === 'core services' || sources?.includes('promo');
+  const isCoreServices = action === 'core services' || (!action && sources?.includes('promo'));
   if (isCoreServices) return true;
   const { performance, advertising } = consent.configuration;
   const isPerformance = ['non-marketing', 'data science', 'analytics'].includes(action);
@@ -1066,11 +1066,7 @@ export function canServeManifest(action, sources, consent) {
   return advertising;
 }
 
-async function getManifestConfig(
-  info = {},
-  variantOverride = false,
-  consent = { nonMktg: true, mktg: false },
-) {
+async function getManifestConfig(info, variantOverride, consent) {
   const {
     name,
     manifestData,
