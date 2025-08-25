@@ -143,15 +143,43 @@ function createSkeletonLayout(container) {
   
   // Define placeholder aspect ratios - we'll replace these with real ones
   // Varied aspect ratios for visual interest during loading
-  const placeholderTypes = ['square', 'short', 'portrait', 'tall'];
+  // We create a balanced distribution of item types for a pleasing initial layout
+  const placeholderTypes = [
+    // First 4 items - one of each type for visual balance
+    'short', 'square', 'portrait', 'tall',
+    // Next 4 items - different order
+    'portrait', 'short', 'tall', 'square',
+    // Next 4 items - another pattern
+    'square', 'tall', 'short', 'portrait',
+    // Last 4 items - final pattern
+    'tall', 'portrait', 'square', 'short'
+  ];
   
-  // Create skeleton items
+  // Initial aspect ratios for placeholder types - these will be replaced with actual ratios
+  const initialAspectRatios = {
+    short: 1.43,    // landscape orientation (width/height = 1.43)
+    square: 1.0,    // square (width/height = 1)
+    portrait: 0.77, // portrait orientation (width/height = 0.77)
+    tall: 0.59      // tall portrait (width/height = 0.59)
+  };
+  
+  // Create skeleton items with appropriate initial dimensions
   for (let i = 0; i < numItems; i++) {
-    // Rotate through the placeholder types for varied loading appearance
-    const placeholderType = placeholderTypes[i % placeholderTypes.length];
+    // Get the placeholder type from our predefined sequence
+    const placeholderType = placeholderTypes[i];
     
+    // Create the skeleton item with appropriate classes
     const itemClass = `firefly-gallery-item firefly-gallery-item-${placeholderType} skeleton-item`;
     const skeletonItem = createTag('div', { class: itemClass });
+    
+    // Set the aspect ratio as a CSS custom property
+    // This ensures proper rendering even before API data is received
+    const aspectRatio = initialAspectRatios[placeholderType];
+    skeletonItem.style.setProperty('--aspect-ratio', aspectRatio);
+    
+    // Add a height attribute proportional to the width and aspect ratio
+    // This ensures the skeleton maintains its height during load and doesn't jump
+    skeletonItem.dataset.heightRatio = aspectRatio;
     
     // Add a wrapper for the skeleton animation
     const skeletonWrapper = createTag('div', { class: 'skeleton-wrapper' });
@@ -268,13 +296,13 @@ function loadImageIntoSkeleton(
   });
 }
 
-async function loadFireflyImages(skeletonItems) {
+function loadFireflyImages(skeletonItems) {
   try {
-    // Fetch assets from Firefly API
-    const assets = await fetchFireflyImages();
+    // We'll now take assets as an argument since they're fetched earlier
+    const assets = arguments[1] || [];
 
     if (!assets || !assets.length) {
-      console.warn('No assets returned from Firefly API');
+      console.warn('No assets provided for loading');
       return;
     }
 
@@ -284,13 +312,30 @@ async function loadFireflyImages(skeletonItems) {
 
     // Get current locale or fallback to default
     const locale = getConfig().locale?.ietf || 'en-US';
-
-    // Load images into skeleton items
-    const loadPromises = skeletonItems.map((item, index) => {
-      if (index >= assets.length) return Promise.resolve();
-
-      const asset = assets[index];
-      
+    
+    // Set up intersection observer to load images only when they're visible
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const item = entry.target;
+          const index = parseInt(item.dataset.index, 10);
+          
+          // Stop observing this item
+          observer.unobserve(item);
+          
+          // Load the image if we have an asset for it
+          if (index >= 0 && index < assets.length) {
+            processItem(item, assets[index], index, locale);
+          }
+        }
+      });
+    }, {
+      rootMargin: '200px 0px', // Start loading when within 200px of viewport
+      threshold: 0.01 // Trigger when at least 1% is visible
+    });
+    
+    // Function to process a single item when it's visible
+    function processItem(item, asset, index, locale) {
       // Extract aspect ratio from the asset
       let aspectRatio = 1; // Default to square if we can't determine
       
@@ -332,6 +377,13 @@ async function loadFireflyImages(skeletonItems) {
         .filter(cls => !cls.match(/firefly-gallery-item-(short|square|portrait|tall)/))
         .concat([`firefly-gallery-item-${itemType}`]);
       item.className = newClasses.join(' ');
+      
+      // Get the original height ratio from the skeleton item
+      const originalHeightRatio = parseFloat(item.dataset.heightRatio) || 1;
+      
+      // Calculate a transition ratio that gradually moves from the placeholder to the real one
+      // to minimize layout shifts
+      const transitionRatio = (originalHeightRatio + aspectRatio) / 2;
       
       // Set the exact aspect ratio as a custom property for precise sizing
       item.style.setProperty('--aspect-ratio', aspectRatio);
@@ -382,22 +434,37 @@ async function loadFireflyImages(skeletonItems) {
       }
 
       console.log(`Loading image ${index + 1}/${assets.length}: ${imageUrl}`);
-      return loadImageIntoSkeleton(
+      loadImageIntoSkeleton(
         item,
         imageUrl,
         altText,
         promptText,
         userInfo
       );
+    }
+    
+    // Set up each skeleton item for observation and loading
+    skeletonItems.forEach((item, index) => {
+      // Store the index as data attribute for the observer callback
+      item.dataset.index = index;
+      
+      // Start observing this item
+      observer.observe(item);
     });
-
-    await Promise.all(loadPromises);
-    console.log('All images loaded successfully');
+    
+    // Also process the first few items immediately for a faster initial view
+    const immediateLoadCount = Math.min(4, skeletonItems.length);
+    for (let i = 0; i < immediateLoadCount; i++) {
+      if (i < assets.length) {
+        processItem(skeletonItems[i], assets[i], i, locale);
+        observer.unobserve(skeletonItems[i]); // Stop observing items we've already processed
+      }
+    }
+    
+    return observer; // Return the observer in case we need to disconnect it later
+    
   } catch (error) {
     console.error('Error loading Firefly images:', error);
-  } finally {
-    const grid = skeletonItems[0]?.parentElement;
-    if (grid) grid.classList.remove('loading');
   }
 }
 
@@ -420,23 +487,25 @@ function handleResizeForGallery(assets, skeletonItems) {
         skeletonItems &&
         skeletonItems.length > 0
       ) {
-        // Update image URLs based on current viewport
+        // Update image URLs based on current viewport - but only for loaded images
+        // This prevents loading images that haven't been scrolled to yet
         skeletonItems.forEach((item, index) => {
           if (index >= assets.length) return;
-
-          // Get item type from class
-          const itemClasses = item.className.split(' ');
-          const sizeClassRegex = /firefly-gallery-item-(\S+)/;
-          const sizeClassMatch = itemClasses.find((cls) =>
-            sizeClassRegex.test(cls)
-          );
-          const itemType = sizeClassMatch
-            ? sizeClassMatch.match(sizeClassRegex)[1]
-            : 'square';
-
-          // Get image element if it exists
+          
+          // Only update images that are already loaded (have been scrolled to)
+          // This is determined by presence of the image element
           const imgElement = item.querySelector('img');
           if (imgElement) {
+            // Get item type from class
+            const itemClasses = item.className.split(' ');
+            const sizeClassRegex = /firefly-gallery-item-(\S+)/;
+            const sizeClassMatch = itemClasses.find((cls) =>
+              sizeClassRegex.test(cls)
+            );
+            const itemType = sizeClassMatch
+              ? sizeClassMatch.match(sizeClassRegex)[1]
+              : 'square';
+
             // Update src with new rendition size
             const newSrc = getImageRendition(assets[index], itemType);
             // Only update if URL changed (prevents unnecessary reloads)
@@ -460,7 +529,7 @@ export default async function init(el) {
   const { container, content } = createGalleryStructure();
 
   // Create and append skeleton layout
-  const { skeletonItems } = createSkeletonLayout(content);
+  const { skeletonItems, masonryGrid } = createSkeletonLayout(content);
 
   // Replace block content with our gallery structure
   el.appendChild(container);
@@ -468,13 +537,29 @@ export default async function init(el) {
   // Add additional classes for styling
   el.classList.add('max-width-10-desktop');
 
-  // Load Firefly images
-  const assets = await fetchFireflyImages();
+  // Allow the skeleton UI to render and be scrollable
+  // before waiting for image data
+  setTimeout(() => {
+    // Load Firefly images
+    fetchFireflyImages().then(assets => {
+      if (assets && assets.length) {
+        // Pass assets to the function to enable progressive loading
+        const observer = loadFireflyImages(skeletonItems, assets);
 
-  if (assets && assets.length) {
-    await loadFireflyImages(skeletonItems);
-
-    // Set up resize handler for responsive image sizes
-    handleResizeForGallery(assets, skeletonItems);
-  }
+        // Set up resize handler for responsive image sizes
+        handleResizeForGallery(assets, skeletonItems);
+        
+        // Remove loading class after initial items are loaded (5 second timeout)
+        setTimeout(() => {
+          masonryGrid.classList.remove('loading');
+        }, 5000);
+      } else {
+        // Remove loading state if no assets found
+        masonryGrid.classList.remove('loading');
+      }
+    }).catch(error => {
+      console.error('Error fetching Firefly images:', error);
+      masonryGrid.classList.remove('loading');
+    });
+  }, 0);
 }

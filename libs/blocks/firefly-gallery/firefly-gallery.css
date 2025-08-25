@@ -43,6 +43,30 @@
   padding: 0;
   display: inline-block; /* Important for column layout */
   break-inside: avoid; /* Prevent items from breaking across columns */
+  will-change: transform; /* Optimize for animation performance */
+  contain: layout size; /* Improve performance by isolating layout */
+}
+
+/* Fixed minimum heights for skeleton items during loading */
+.skeleton-item {
+  min-height: 200px; /* Default minimum height for all skeletons */
+}
+
+/* Different heights for different skeleton types during loading */
+.skeleton-item.firefly-gallery-item-short {
+  min-height: 140px; /* 70% of default - landscape orientation */
+}
+
+.skeleton-item.firefly-gallery-item-square {
+  min-height: 200px; /* 1:1 ratio */
+}
+
+.skeleton-item.firefly-gallery-item-portrait {
+  min-height: 260px; /* 130% of default - portrait orientation */
+}
+
+.skeleton-item.firefly-gallery-item-tall {
+  min-height: 340px; /* 170% of default - tall portrait orientation */
 }
 
 /* Item size variations - using dynamically calculated aspect ratio */
@@ -55,6 +79,7 @@
   content: "";
   display: block;
   padding-top: calc(1 / var(--aspect-ratio, 1) * 100%); /* Dynamic aspect ratio calculation */
+  transition: padding-top 0.5s ease; /* Smooth transition when aspect ratio changes */
 }
 
 /* Fallback styles for cases where custom property isn't set */
@@ -87,19 +112,46 @@
   background-color: var(--color-gray-100);
   display: block;
   border-radius: 8px; /* Match the item border radius */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth during loading */
 }
 
+/* Enhanced skeleton animation */
 .skeleton-animation {
   width: 100%;
   height: 100%;
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.8) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
+/* Background pattern for skeleton items */
+.skeleton-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(110deg, 
+    var(--color-gray-100) 0%, 
+    var(--color-gray-100) 40%,
+    var(--color-gray-200) 42%, 
+    var(--color-gray-200) 58%, 
+    var(--color-gray-100) 60%);
+  background-size: 200% 100%;
+  opacity: 0.4;
+  z-index: 1;
 }
 
 @keyframes skeleton-loading {
@@ -112,28 +164,60 @@
 }
 
 /* Loading state */
+/* Don't set a minimum height on the grid container, allow items to define the height */
+.firefly-gallery-masonry-grid.loading {
+  /* no min-height here - let it be determined by its contents */
+  min-height: auto;
+}
+
 .firefly-gallery-masonry-grid.loading .skeleton-item {
   animation: skeleton-pulse 2s infinite alternate ease-in-out;
+  height: auto; /* Allow height based on min-height and content */
+  transform: translateZ(0); /* Force GPU acceleration for smoother animations */
+}
+
+/* Add distribution hints for better column layout during loading */
+.firefly-gallery-masonry-grid.loading {
+  column-fill: balance; /* Try to balance content across columns */
 }
 
 @keyframes skeleton-pulse {
   0% {
     opacity: 0.7;
+    transform: translateY(0);
   }
   100% {
     opacity: 1;
+    transform: translateY(-2px); /* Subtle movement for more visible loading state */
   }
 }
 
-/* Loaded state transitions */
+/* Loaded state transitions - enhanced for smoother effect */
+.firefly-gallery-item .skeleton-wrapper {
+  opacity: 1;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  z-index: 2;
+}
+
 .firefly-gallery-item.loaded .skeleton-wrapper {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transform: scale(1.03);
+  pointer-events: none; /* Prevent interaction with the hidden skeleton */
+}
+
+.firefly-gallery-image {
+  opacity: 0;
+  transition: opacity 0.5s ease 0.2s; /* Slight delay to allow skeleton to fade out first */
+}
+
+.firefly-gallery-item.loaded .firefly-gallery-image {
+  opacity: 1;
 }
 
 .firefly-gallery-item.loaded {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-4px);
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
 }
 
 /* Image container styles */
@@ -146,21 +230,13 @@
   bottom: 0;
   right: 0;
   overflow: hidden;
-  opacity: 1;
-  animation: fade-in 0.5s ease-in-out;
+  /* opacity now controlled by loaded state class */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
+/* Remove unused animation since we're now using transitions */
 
 .firefly-gallery-img {
   width: 100%;
