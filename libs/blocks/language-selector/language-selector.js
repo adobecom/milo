@@ -212,7 +212,7 @@ function renderLanguages({
     if (filteredLanguages.length === 0 && searchTerm.trim() && noSearchResult) {
       const noResultItem = createTag('li', { class: 'language-item no-search-result', role: 'none' });
       const noResultText = createTag('span', { class: 'no-search-result-text' });
-      noResultText.textContent = noSearchResult.trim();
+      noResultText.innerHTML = noSearchResult.trim().replace(/\n/g, '<br><span style="display: block; height: 8px;"></span>');
       noResultItem.appendChild(noResultText);
       fragment.appendChild(noResultItem);
     } else {

@@ -135,6 +135,8 @@
   font-size: var(--type-body-xxs-size);
   font-family: var(--body-font-family);
   color: var(--color-gray-500);
+  line-height: 1.4;
+  display: block;
 }
 
 .language-dropdown.fixed-height {
