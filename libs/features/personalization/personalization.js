@@ -10,8 +10,14 @@ import {
   localizeLink,
   getFederatedUrl,
   isSignedOut,
-  getMepEnablement,
 } from '../../utils/utils.js';
+import {
+  getConsentState,
+  getConsentConfiguration,
+  getAllCookies,
+  KNDCTR_CONSENT_COOKIE,
+  OPT_ON_AND_CONSENT_COOKIE,
+} from '../mep/helpers.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -86,12 +92,6 @@ const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
 
-export function getCookie(key) {
-  const cookie = document.cookie.split(';')
-    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
-    .find(([k]) => k === key);
-  return cookie ? cookie[1] : null;
-}
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
@@ -1057,34 +1057,13 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export function getConsentLevels() {
-  const optanon = getCookie('OptanonConsent');
-  if (optanon) {
-    return {
-      nonMktg: !optanon.includes('C0002:0') || !optanon.includes('C0003:0'),
-      mktg: optanon.includes('C0004:1'),
-    };
-  }
-
-  const kndctr = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
-  if (kndctr?.includes('general=in')) return { nonMktg: true, mktg: false };
-
-  const explicitConsentCountries = [
-    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
-    'lv', 'hr', 'fr', 'hu', 'se', 'si', 'mc', 'sk', 'mf', 'sm',
-    'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr',
-    'it', 'es', 'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
-  ];
-  const country = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
-  const isExplicitConsentCountry = explicitConsentCountries.includes(country);
-  if (isExplicitConsentCountry) return { nonMktg: false, mktg: false };
-
-  return { nonMktg: true, mktg: true };
-}
 export function canServeManifest(action, sources, consent) {
-  const isNotPzn = action === 'core services' || sources?.includes('promo');
-  const isNonMktg = ['non-marketing', 'data science', 'analytics'].includes(action);
-  return isNotPzn || (consent?.nonMktg && isNonMktg) || (consent?.mktg && !isNonMktg);
+  const isCoreServices = action === 'core services' || sources?.includes('promo');
+  if (isCoreServices) return true;
+  const { performance, advertising } = consent.configuration;
+  const isPerformance = ['non-marketing', 'data science', 'analytics'].includes(action);
+  if (isPerformance) return performance;
+  return advertising;
 }
 
 async function getManifestConfig(
@@ -1307,7 +1286,13 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
-  const consent = getConsentLevels();
+
+  const cookies = getAllCookies();
+  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE] || '';
+  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
+  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
+  const consent = getConsentConfiguration({ consentState, optOnConsentCookie });
+
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],
