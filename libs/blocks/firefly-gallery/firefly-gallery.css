@@ -320,6 +320,22 @@
   padding: var(--spacing-xxs);
   border-radius: 8px; /* Match the item border radius */
   transform: translateY(5px); /* Start slightly below */
+  cursor: pointer;
+  text-decoration: none; /* Remove link underline */
+}
+
+.firefly-gallery-view-button {
+  background: var(--color-white);
+  color: var(--color-gray-700);
+  padding: calc(var(--spacing-xxs) / 4) var(--spacing-xs) ;
+  border-radius: 16px; /* Pill shape */
+  align-self: flex-end;
+  margin-top: auto;
+  margin-bottom: var(--spacing-xs);
+  margin-right: var(--spacing-xs);
+  font-size: var(--prompt-font-size);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .firefly-gallery-prompt {

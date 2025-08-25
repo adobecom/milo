@@ -226,6 +226,15 @@ const replaceRenditionUrl = (url, format, dimension, size) =>
     .replace(/{dimension}/g, dimension)
     .replace(/{size}/g, size);
 
+/**
+ * Creates Firefly gallery URL for opening asset in new tab
+ * @param {string} urn - Asset URN identifier
+ * @return {string} - Complete Firefly URL
+ */
+function createFireflyURL(urn) {
+  return `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${urn}`;
+}
+
 function getImageRendition(asset, itemType = 'square') {
   if (!asset) return '';
 
@@ -393,14 +402,19 @@ function createImageElement(imageUrl, altText) {
 }
 
 /**
- * Creates overlay with prompt and user info
+ * Creates clickable overlay with prompt and user info
  * @param {string} promptText - The prompt text to display
  * @param {Object} userInfo - User information (name, avatarUrl)
- * @return {HTMLElement} - The created overlay element
+ * @param {string} fireflyUrl - URL to open when clicked
+ * @return {HTMLElement} - The created clickable overlay element
  */
-function createOverlayElement(promptText, userInfo = {}) {
-  const overlay = createTag('div', {
+function createOverlayElement(promptText, userInfo = {}, fireflyUrl) {
+  const overlay = createTag('a', {
     class: 'firefly-gallery-overlay',
+    href: fireflyUrl,
+    target: '_blank',
+    rel: 'noopener',
+    'aria-label': `Open "${promptText}" in Firefly`,
   });
 
   // Create info container for user avatar, name, and prompt
@@ -446,6 +460,17 @@ function createOverlayElement(promptText, userInfo = {}) {
   }
 
   overlay.appendChild(infoContainer);
+
+  // Add View button
+  const viewButton = createTag(
+    'div',
+    {
+      class: 'firefly-gallery-view-button',
+    },
+    'View'
+  );
+  overlay.appendChild(viewButton);
+
   return overlay;
 }
 
@@ -456,6 +481,7 @@ function createOverlayElement(promptText, userInfo = {}) {
  * @param {string} altText - Alt text for the image
  * @param {string} promptText - Prompt text to show in overlay
  * @param {Object} userInfo - User information (name, avatarUrl)
+ * @param {string} assetUrn - Asset URN for generating Firefly URL
  * @return {Promise} - Resolves when image is loaded
  */
 function loadImageIntoSkeleton(
@@ -463,7 +489,8 @@ function loadImageIntoSkeleton(
   imageUrl,
   altText,
   promptText,
-  userInfo = {}
+  userInfo = {},
+  assetUrn
 ) {
   return new Promise((resolve) => {
     debug('Loading image:', imageUrl);
@@ -477,9 +504,10 @@ function loadImageIntoSkeleton(
     const img = createImageElement(imageUrl, altText);
     imageContainer.appendChild(img);
 
-    // Create and append overlay if prompt exists
+    // Create and append clickable overlay if prompt exists
     if (promptText) {
-      const overlay = createOverlayElement(promptText, userInfo);
+      const fireflyUrl = createFireflyURL(assetUrn);
+      const overlay = createOverlayElement(promptText, userInfo, fireflyUrl);
       imageContainer.appendChild(overlay);
     }
 
@@ -576,7 +604,14 @@ function processItem(item, asset, index, locale, assets) {
   }
 
   debug(`Loading image ${index + 1}/${assets.length}: ${imageUrl}`);
-  loadImageIntoSkeleton(item, imageUrl, altText, promptText, userInfo);
+  loadImageIntoSkeleton(
+    item,
+    imageUrl,
+    altText,
+    promptText,
+    userInfo,
+    asset.urn
+  );
 }
 
 function loadFireflyImages(skeletonItems) {
