@@ -1,10 +1,23 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 
+// Enable/disable debug mode for the component
+const DEBUG = false;
+
+// API configuration
 const FIREFLY_API_URL =
   'https://community-hubs.adobe.io/api/v2/ff_community/assets';
 const API_PARAMS =
   '?size=32&sort=updated_desc&include_pending_assets=false&category_id=text2Image&cursor=';
 const API_KEY = 'alfred-community-hubs';
+
+// Item type thresholds for categorization
+const ITEM_TYPE_THRESHOLDS = {
+  tall: 0.8, // aspect ratio < 0.8 = tall
+  portrait: 1.0, // 0.8 <= aspect ratio < 1.0 = portrait
+  square: 1.2, // 1.0 <= aspect ratio < 1.2 = square
+  // anything >= 1.2 = short (landscape)
+};
+
 // Define different rendition sizes for different item types and screen sizes
 const RENDITION_SIZES = {
   short: {
@@ -33,9 +46,188 @@ const RENDITION_SIZES = {
   },
 };
 
+/**
+ * Logs debug messages when debug mode is enabled
+ * @param {string} message - The message to log
+ * @param {*} data - Optional data to log
+ */
+function debug(message, data) {
+  if (!DEBUG) return;
+
+  if (data !== undefined) {
+    console.log(`[FireflyGallery] ${message}`, data);
+  } else {
+    console.log(`[FireflyGallery] ${message}`);
+  }
+}
+
+/**
+ * Logs errors with consistent formatting
+ * @param {string} message - Error message
+ * @param {Error} error - Error object
+ */
+function logError(message, error) {
+  console.error(`[FireflyGallery Error] ${message}`, error);
+}
+
+/**
+ * Safely attempts to parse JSON with error handling
+ * @param {string} jsonString - The JSON string to parse
+ * @param {*} defaultValue - Default value to return if parsing fails
+ * @return {*} - Parsed object or default value
+ */
+function safeJsonParse(jsonString, defaultValue = {}) {
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    logError('Failed to parse JSON', e);
+    return defaultValue;
+  }
+}
+
+/**
+ * Gets a localized string from an object based on locale
+ * @param {Object} localizations - Object with locale keys
+ * @param {string} currentLocale - Current locale code
+ * @param {string} defaultValue - Default value if no match found
+ * @return {string} - Localized string or default
+ */
+function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
+  if (!localizations) return defaultValue;
+
+  // Try exact match
+  if (localizations[currentLocale]) {
+    return localizations[currentLocale];
+  }
+
+  // Try language match (e.g., 'en-US' -> 'en')
+  const language = currentLocale.split('-')[0];
+  const languageMatch = Object.keys(localizations).find((key) =>
+    key.startsWith(language)
+  );
+  if (languageMatch) {
+    return localizations[languageMatch];
+  }
+
+  // Try English as fallback
+  if (localizations['en-US']) {
+    return localizations['en-US'];
+  }
+
+  // Get any available value
+  const firstAvailable = Object.values(localizations)[0];
+  if (firstAvailable) {
+    return firstAvailable;
+  }
+
+  return defaultValue;
+}
+
+/**
+ * Debounces a function call
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in ms
+ * @return {Function} - Debounced function
+ */
+function debounce(func, wait) {
+  let timeout;
+
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+/**
+ * Gets screen size category based on viewport width
+ * Using exact breakpoints to match CSS media queries
+ * @return {string} - 'mobile', 'tablet', or 'desktop'
+ */
+function getScreenSizeCategory() {
+  const viewportWidth = window.innerWidth;
+
+  if (viewportWidth < 601) {
+    return 'mobile';
+  } else if (viewportWidth < 901) {
+    return 'tablet';
+  } else {
+    return 'desktop';
+  }
+}
+
+/**
+ * Extracts the aspect ratio from a Firefly asset
+ * @param {Object} asset - The Firefly asset object
+ * @return {number} - The aspect ratio (width/height), defaults to 1 if not found
+ */
+function extractAspectRatio(asset) {
+  let aspectRatio = 1; // Default to square
+
+  // Method 1: Extract from rendition max dimensions
+  if (
+    asset._links?.rendition?.max_width &&
+    asset._links?.rendition?.max_height
+  ) {
+    aspectRatio =
+      asset._links.rendition.max_width / asset._links.rendition.max_height;
+  }
+  // Method 2: Extract from firefly#inputModel if available
+  else if (asset.custom?.input?.['firefly#inputModel']) {
+    try {
+      const inputModel = safeJsonParse(
+        asset.custom.input['firefly#inputModel']
+      );
+      if (inputModel.aspectRatio) {
+        aspectRatio = parseFloat(inputModel.aspectRatio);
+      }
+    } catch (e) {
+      logError('Could not parse aspect ratio from inputModel', e);
+    }
+  }
+
+  return aspectRatio;
+}
+
+/**
+ * Determines the item type based on aspect ratio
+ * @param {number} aspectRatio - The aspect ratio (width/height)
+ * @return {string} - Item type: 'tall', 'portrait', 'square', or 'short'
+ */
+function getItemTypeFromAspectRatio(aspectRatio) {
+  if (aspectRatio < ITEM_TYPE_THRESHOLDS.tall) {
+    return 'tall'; // Portrait (very tall)
+  } else if (aspectRatio < ITEM_TYPE_THRESHOLDS.portrait) {
+    return 'portrait'; // Portrait (moderately tall)
+  } else if (aspectRatio < ITEM_TYPE_THRESHOLDS.square) {
+    return 'square'; // Approximately square
+  } else {
+    return 'short'; // Landscape
+  }
+}
+
+/**
+ * Updates item class based on determined item type
+ * @param {HTMLElement} item - The item element to update
+ * @param {string} itemType - The determined item type
+ */
+function updateItemTypeClass(item, itemType) {
+  const existingClasses = item.className.split(' ');
+  const newClasses = existingClasses
+    .filter(
+      (cls) => !cls.match(/firefly-gallery-item-(short|square|portrait|tall)/)
+    )
+    .concat([`firefly-gallery-item-${itemType}`]);
+  item.className = newClasses.join(' ');
+}
+
 async function fetchFireflyImages() {
   try {
-    console.log('Fetching Firefly images...');
+    debug('Fetching Firefly images...');
     const response = await fetch(`${FIREFLY_API_URL}${API_PARAMS}`, {
       headers: {
         'x-api-key': API_KEY,
@@ -47,10 +239,10 @@ async function fetchFireflyImages() {
     }
 
     const data = await response.json();
-    console.log('Firefly API response:', data);
+    debug('Firefly API response:', data);
     return data._embedded.assets || [];
   } catch (error) {
-    console.error('Error fetching Firefly images:', error);
+    logError('Error fetching Firefly images:', error);
     return [];
   }
 }
@@ -64,40 +256,14 @@ function getImageRendition(asset, itemType = 'square') {
   if (!asset) return '';
 
   // Determine screen size category
-  let screenSize = 'default';
-  const viewportWidth = window.innerWidth;
-
-  if (viewportWidth <= 600) {
-    screenSize = 'mobile';
-  } else if (viewportWidth <= 900) {
-    screenSize = 'tablet';
-  } else {
-    screenSize = 'desktop';
-  }
+  const screenSize = getScreenSizeCategory();
 
   // Get appropriate size based on item type and screen size
   const sizeObj = RENDITION_SIZES[itemType] || RENDITION_SIZES.square;
   const width = sizeObj[screenSize] || sizeObj.default;
 
   // Extract actual aspect ratio from the asset
-  let aspectRatio = 1; // Default to square
-
-  if (
-    asset._links?.rendition?.max_width &&
-    asset._links?.rendition?.max_height
-  ) {
-    aspectRatio =
-      asset._links.rendition.max_width / asset._links.rendition.max_height;
-  } else if (asset.custom?.input?.['firefly#inputModel']) {
-    try {
-      const inputModel = JSON.parse(asset.custom.input['firefly#inputModel']);
-      if (inputModel.aspectRatio) {
-        aspectRatio = parseFloat(inputModel.aspectRatio);
-      }
-    } catch (e) {
-      console.warn('Could not parse aspect ratio from inputModel', e);
-    }
-  }
+  const aspectRatio = extractAspectRatio(asset);
 
   // Calculate height based on width and aspect ratio to maintain proper proportions
   const height = Math.round(width / aspectRatio);
@@ -135,11 +301,37 @@ function createGalleryStructure() {
   };
 }
 
+/**
+ * Gets the appropriate column count based on screen width
+ * This must match the CSS media query breakpoints EXACTLY
+ * CSS uses min-width: 601px, 901px, and 1201px
+ * @return {number} - The column count
+ */
+function getColumnCount() {
+  const width = window.innerWidth;
+  
+  if (width < 601) {
+    return 2; // Mobile (< 601px)
+  } else if (width < 901) {
+    return 3; // Tablet (601px-900px)
+  } else if (width < 1201) {
+    return 4; // Small desktop (901px-1200px)
+  } else {
+    return 5; // Desktop (≥ 1201px)
+  }
+}
+
 function createSkeletonLayout(container) {
   // Create the masonry grid container
   const masonryGrid = createTag('div', {
     class: 'firefly-gallery-masonry-grid loading',
   });
+  
+  // Set initial column count programmatically to match CSS media queries
+  const columnCount = getColumnCount();
+  // Apply column count directly with inline style to override any CSS
+  masonryGrid.style.columnCount = columnCount;
+  
   const skeletonItems = [];
 
   // Number of items to create (will be replaced with actual images)
@@ -214,6 +406,87 @@ function createSkeletonLayout(container) {
   return { masonryGrid, skeletonItems };
 }
 
+/**
+ * Creates and returns image element with proper attributes
+ * @param {string} imageUrl - URL of the image to load
+ * @param {string} altText - Alt text for the image
+ * @return {HTMLElement} - The created image element
+ */
+function createImageElement(imageUrl, altText) {
+  return createTag('img', {
+    src: imageUrl,
+    alt: altText,
+    loading: 'lazy',
+    class: 'firefly-gallery-img',
+  });
+}
+
+/**
+ * Creates overlay with prompt and user info
+ * @param {string} promptText - The prompt text to display
+ * @param {Object} userInfo - User information (name, avatarUrl)
+ * @return {HTMLElement} - The created overlay element
+ */
+function createOverlayElement(promptText, userInfo = {}) {
+  const overlay = createTag('div', {
+    class: 'firefly-gallery-overlay',
+  });
+
+  // Create info container for user avatar, name, and prompt
+  const infoContainer = createTag('div', {
+    class: 'firefly-gallery-info-container',
+  });
+
+  // Add user info if available
+  if (userInfo.name || userInfo.avatarUrl) {
+    const userInfoContainer = createTag('div', {
+      class: 'firefly-gallery-user-info',
+    });
+
+    if (userInfo.avatarUrl) {
+      const avatar = createTag('img', {
+        src: userInfo.avatarUrl,
+        alt: `${userInfo.name || 'Artist'}'s avatar`,
+        class: 'firefly-gallery-user-avatar',
+      });
+      userInfoContainer.appendChild(avatar);
+    }
+
+    if (userInfo.name) {
+      const username = createTag(
+        'span',
+        { class: 'firefly-gallery-username' },
+        userInfo.name
+      );
+      userInfoContainer.appendChild(username);
+    }
+
+    infoContainer.appendChild(userInfoContainer);
+  }
+
+  // Add prompt text
+  if (promptText) {
+    const promptElement = createTag(
+      'div',
+      { class: 'firefly-gallery-prompt' },
+      promptText
+    );
+    infoContainer.appendChild(promptElement);
+  }
+
+  overlay.appendChild(infoContainer);
+  return overlay;
+}
+
+/**
+ * Loads an image into a skeleton item with proper overlay and transitions
+ * @param {HTMLElement} skeletonItem - The skeleton item to load the image into
+ * @param {string} imageUrl - URL of the image to load
+ * @param {string} altText - Alt text for the image
+ * @param {string} promptText - Prompt text to show in overlay
+ * @param {Object} userInfo - User information (name, avatarUrl)
+ * @return {Promise} - Resolves when image is loaded
+ */
 function loadImageIntoSkeleton(
   skeletonItem,
   imageUrl,
@@ -222,73 +495,20 @@ function loadImageIntoSkeleton(
   userInfo = {}
 ) {
   return new Promise((resolve) => {
-    console.log('Loading image:', imageUrl);
+    debug('Loading image:', imageUrl);
 
-    const img = createTag('img', {
-      src: imageUrl,
-      alt: altText,
-      loading: 'lazy',
-      class: 'firefly-gallery-img',
-    });
-
+    // Create image container
     const imageContainer = createTag('div', {
       class: 'firefly-gallery-image',
     });
+
+    // Create and append image
+    const img = createImageElement(imageUrl, altText);
     imageContainer.appendChild(img);
 
-    // Add prompt overlay
+    // Create and append overlay if prompt exists
     if (promptText) {
-      const overlay = createTag('div', {
-        class: 'firefly-gallery-overlay',
-      });
-
-      // Create info container for user avatar, name, and prompt
-      const infoContainer = createTag('div', {
-        class: 'firefly-gallery-info-container',
-      });
-
-      // Add user info container at the top left
-      if (userInfo.name || userInfo.avatarUrl) {
-        const userInfoContainer = createTag('div', {
-          class: 'firefly-gallery-user-info',
-        });
-
-        // Add user avatar if available
-        if (userInfo.avatarUrl) {
-          const avatar = createTag('img', {
-            src: userInfo.avatarUrl,
-            alt: `${userInfo.name || 'Artist'}'s avatar`,
-            class: 'firefly-gallery-user-avatar',
-          });
-          userInfoContainer.appendChild(avatar);
-        }
-
-        // Add username if available
-        if (userInfo.name) {
-          const username = createTag(
-            'span',
-            {
-              class: 'firefly-gallery-username',
-            },
-            userInfo.name
-          );
-          userInfoContainer.appendChild(username);
-        }
-
-        infoContainer.appendChild(userInfoContainer);
-      }
-
-      // Add prompt right after user info
-      const promptElement = createTag(
-        'div',
-        {
-          class: 'firefly-gallery-prompt',
-        },
-        promptText
-      );
-
-      infoContainer.appendChild(promptElement);
-      overlay.appendChild(infoContainer);
+      const overlay = createOverlayElement(promptText, userInfo);
       imageContainer.appendChild(overlay);
     }
 
@@ -307,9 +527,85 @@ function loadImageIntoSkeleton(
     }
 
     // Image successfully loaded
-    console.log('Image loaded successfully:', imageUrl);
+    debug('Image loaded successfully:', imageUrl);
     resolve();
   });
+}
+
+/**
+ * Process a single item when it's visible
+ * @param {HTMLElement} item - The item element to process
+ * @param {Object} asset - The asset data
+ * @param {number} index - The index of this item
+ * @param {string} locale - The current locale
+ */
+function processItem(item, asset, index, locale, assets) {
+  // Extract aspect ratio from the asset
+  const aspectRatio = extractAspectRatio(asset);
+
+  // Determine item type based on aspect ratio
+  const itemType = getItemTypeFromAspectRatio(aspectRatio);
+
+  debug(
+    `Asset ${index} aspect ratio: ${aspectRatio}, assigned type: ${itemType}`
+  );
+
+  // Update the item's class to match the aspect ratio
+  updateItemTypeClass(item, itemType);
+
+  // Get the original height ratio from the skeleton item
+  const originalHeightRatio = parseFloat(item.dataset.heightRatio) || 1;
+
+  // Calculate a transition ratio that gradually moves from the placeholder to the real one
+  // to minimize layout shifts
+  const transitionRatio = (originalHeightRatio + aspectRatio) / 2;
+
+  // Set the exact aspect ratio as a custom property for precise sizing
+  item.style.setProperty('--aspect-ratio', aspectRatio);
+
+  const imageUrl = getImageRendition(asset, itemType);
+  const altText = asset.title || 'Firefly generated image';
+
+  // Get localized prompt text
+  let promptText = '';
+  if (asset?.custom?.input?.['firefly#prompts']) {
+    // Use the getLocalizedValue utility
+    promptText = getLocalizedValue(
+      asset.custom.input['firefly#prompts'],
+      locale,
+      asset.title || 'Firefly generated image'
+    );
+  } else {
+    // Use title as fallback
+    promptText = asset.title || 'Firefly generated image';
+  }
+
+  // Get user info
+  const userInfo = {};
+  if (asset?._embedded?.owner) {
+    const owner = asset._embedded.owner;
+    userInfo.name =
+      owner.display_name ||
+      `${owner.first_name} ${owner.last_name}`.trim() ||
+      owner.user_name ||
+      'Unknown Artist';
+
+    // Get the user avatar image - find the one closest to 24px
+    if (owner._links?.images && owner._links.images.length > 0) {
+      // We want an image that's at least 24px but not too much larger
+      // First sort by size to find closest match to our target 24px size
+      const sortedImages = [...owner._links.images].sort((a, b) => {
+        const aDiff = Math.abs(a.width - 24);
+        const bDiff = Math.abs(b.width - 24);
+        return aDiff - bDiff; // Sort by closest to 24px
+      });
+
+      userInfo.avatarUrl = sortedImages[0].href; // Use the closest to 24px
+    }
+  }
+
+  debug(`Loading image ${index + 1}/${assets.length}: ${imageUrl}`);
+  loadImageIntoSkeleton(item, imageUrl, altText, promptText, userInfo);
 }
 
 function loadFireflyImages(skeletonItems) {
@@ -318,11 +614,11 @@ function loadFireflyImages(skeletonItems) {
     const assets = arguments[1] || [];
 
     if (!assets || !assets.length) {
-      console.warn('No assets provided for loading');
+      debug('No assets provided for loading');
       return;
     }
 
-    console.log(
+    debug(
       `Loading ${assets.length} Firefly images into ${skeletonItems.length} placeholders`
     );
 
@@ -342,7 +638,7 @@ function loadFireflyImages(skeletonItems) {
 
             // Load the image if we have an asset for it
             if (index >= 0 && index < assets.length) {
-              processItem(item, assets[index], index, locale);
+              processItem(item, assets[index], index, locale, assets);
             }
           }
         });
@@ -352,119 +648,6 @@ function loadFireflyImages(skeletonItems) {
         threshold: 0.01, // Trigger when at least 1% is visible
       }
     );
-
-    // Function to process a single item when it's visible
-    function processItem(item, asset, index, locale) {
-      // Extract aspect ratio from the asset
-      let aspectRatio = 1; // Default to square if we can't determine
-
-      // Method 1: Extract from rendition max dimensions
-      if (
-        asset._links?.rendition?.max_width &&
-        asset._links?.rendition?.max_height
-      ) {
-        const maxWidth = asset._links.rendition.max_width;
-        const maxHeight = asset._links.rendition.max_height;
-        aspectRatio = maxWidth / maxHeight;
-      }
-      // Method 2: Extract from firefly#inputModel if available
-      else if (asset.custom?.input?.['firefly#inputModel']) {
-        try {
-          const inputModel = JSON.parse(
-            asset.custom.input['firefly#inputModel']
-          );
-          if (inputModel.aspectRatio) {
-            aspectRatio = parseFloat(inputModel.aspectRatio);
-          }
-        } catch (e) {
-          console.warn('Could not parse aspect ratio from inputModel', e);
-        }
-      }
-
-      // Determine item type based on aspect ratio
-      let itemType;
-      if (aspectRatio < 0.8) {
-        itemType = 'tall'; // Portrait (tall)
-      } else if (aspectRatio >= 0.8 && aspectRatio < 1.0) {
-        itemType = 'portrait'; // Portrait (less tall)
-      } else if (aspectRatio >= 1.0 && aspectRatio < 1.2) {
-        itemType = 'square'; // Approximately square
-      } else {
-        itemType = 'short'; // Landscape
-      }
-
-      console.log(
-        `Asset ${index} aspect ratio: ${aspectRatio}, assigned type: ${itemType}`
-      );
-
-      // Update the item's class to match the aspect ratio
-      const existingClasses = item.className.split(' ');
-      const newClasses = existingClasses
-        .filter(
-          (cls) =>
-            !cls.match(/firefly-gallery-item-(short|square|portrait|tall)/)
-        )
-        .concat([`firefly-gallery-item-${itemType}`]);
-      item.className = newClasses.join(' ');
-
-      // Get the original height ratio from the skeleton item
-      const originalHeightRatio = parseFloat(item.dataset.heightRatio) || 1;
-
-      // Calculate a transition ratio that gradually moves from the placeholder to the real one
-      // to minimize layout shifts
-      const transitionRatio = (originalHeightRatio + aspectRatio) / 2;
-
-      // Set the exact aspect ratio as a custom property for precise sizing
-      item.style.setProperty('--aspect-ratio', aspectRatio);
-
-      const imageUrl = getImageRendition(asset, itemType);
-      const altText = asset.title || 'Firefly generated image';
-
-      // Get localized prompt text
-      let promptText = '';
-      if (asset?.custom?.input?.['firefly#prompts']) {
-        // Try to get prompt for current locale
-        promptText =
-          asset.custom.input['firefly#prompts'][locale] ||
-          // Fallback to English
-          asset.custom.input['firefly#prompts']['en-US'] ||
-          // Fallback to any available locale
-          Object.values(asset.custom.input['firefly#prompts'])[0] ||
-          // Final fallback
-          asset.title ||
-          'Firefly generated image';
-      } else {
-        // Use title as fallback
-        promptText = asset.title || 'Firefly generated image';
-      }
-
-      // Get user info
-      const userInfo = {};
-      if (asset?._embedded?.owner) {
-        const owner = asset._embedded.owner;
-        userInfo.name =
-          owner.display_name ||
-          `${owner.first_name} ${owner.last_name}`.trim() ||
-          owner.user_name ||
-          'Unknown Artist';
-
-        // Get the user avatar image - find the one closest to 24px
-        if (owner._links?.images && owner._links.images.length > 0) {
-          // We want an image that's at least 24px but not too much larger
-          // First sort by size to find closest match to our target 24px size
-          const sortedImages = [...owner._links.images].sort((a, b) => {
-            const aDiff = Math.abs(a.width - 24);
-            const bDiff = Math.abs(b.width - 24);
-            return aDiff - bDiff; // Sort by closest to 24px
-          });
-
-          userInfo.avatarUrl = sortedImages[0].href; // Use the closest to 24px
-        }
-      }
-
-      console.log(`Loading image ${index + 1}/${assets.length}: ${imageUrl}`);
-      loadImageIntoSkeleton(item, imageUrl, altText, promptText, userInfo);
-    }
 
     // Set up each skeleton item for observation and loading
     skeletonItems.forEach((item, index) => {
@@ -479,15 +662,27 @@ function loadFireflyImages(skeletonItems) {
     const immediateLoadCount = Math.min(4, skeletonItems.length);
     for (let i = 0; i < immediateLoadCount; i++) {
       if (i < assets.length) {
-        processItem(skeletonItems[i], assets[i], i, locale);
+        processItem(skeletonItems[i], assets[i], i, locale, assets);
         observer.unobserve(skeletonItems[i]); // Stop observing items we've already processed
       }
     }
 
     return observer; // Return the observer in case we need to disconnect it later
   } catch (error) {
-    console.error('Error loading Firefly images:', error);
+    logError('Error loading Firefly images:', error);
   }
+}
+
+/**
+ * Extract item type from element's class names
+ * @param {HTMLElement} item - The item element
+ * @return {string} - The item type or 'square' as fallback
+ */
+function getItemTypeFromClass(item) {
+  const itemClasses = item.className.split(' ');
+  const sizeClassRegex = /firefly-gallery-item-(\S+)/;
+  const sizeClassMatch = itemClasses.find((cls) => sizeClassRegex.test(cls));
+  return sizeClassMatch ? sizeClassMatch.match(sizeClassRegex)[1] : 'square';
 }
 
 /**
@@ -495,50 +690,46 @@ function loadFireflyImages(skeletonItems) {
  * @param {Array} assets - The array of image assets
  * @param {Array} skeletonItems - The skeleton item elements
  */
-function handleResizeForGallery(assets, skeletonItems) {
-  let resizeTimer;
+function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
+  const handleResize = debounce(() => {
+    // Update column count based on current viewport
+    if (masonryGrid) {
+      const columnCount = getColumnCount();
+      // Apply column count directly with inline style
+      masonryGrid.style.columnCount = columnCount;
+    }
+    
+    // Only update if we have both assets and skeleton items
+    if (
+      assets &&
+      assets.length > 0 &&
+      skeletonItems &&
+      skeletonItems.length > 0
+    ) {
+      // Update image URLs based on current viewport - but only for loaded images
+      // This prevents loading images that haven't been scrolled to yet
+      skeletonItems.forEach((item, index) => {
+        if (index >= assets.length) return;
 
-  window.addEventListener('resize', () => {
-    // Debounce resize events
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      // Only update if we have both assets and skeleton items
-      if (
-        assets &&
-        assets.length > 0 &&
-        skeletonItems &&
-        skeletonItems.length > 0
-      ) {
-        // Update image URLs based on current viewport - but only for loaded images
-        // This prevents loading images that haven't been scrolled to yet
-        skeletonItems.forEach((item, index) => {
-          if (index >= assets.length) return;
+        // Only update images that are already loaded (have been scrolled to)
+        // This is determined by presence of the image element
+        const imgElement = item.querySelector('img');
+        if (imgElement) {
+          // Get item type from class
+          const itemType = getItemTypeFromClass(item);
 
-          // Only update images that are already loaded (have been scrolled to)
-          // This is determined by presence of the image element
-          const imgElement = item.querySelector('img');
-          if (imgElement) {
-            // Get item type from class
-            const itemClasses = item.className.split(' ');
-            const sizeClassRegex = /firefly-gallery-item-(\S+)/;
-            const sizeClassMatch = itemClasses.find((cls) =>
-              sizeClassRegex.test(cls)
-            );
-            const itemType = sizeClassMatch
-              ? sizeClassMatch.match(sizeClassRegex)[1]
-              : 'square';
-
-            // Update src with new rendition size
-            const newSrc = getImageRendition(assets[index], itemType);
-            // Only update if URL changed (prevents unnecessary reloads)
-            if (newSrc !== imgElement.src) {
-              imgElement.src = newSrc;
-            }
+          // Update src with new rendition size
+          const newSrc = getImageRendition(assets[index], itemType);
+          // Only update if URL changed (prevents unnecessary reloads)
+          if (newSrc !== imgElement.src) {
+            imgElement.src = newSrc;
           }
-        });
-      }
-    }, 250); // Wait 250ms after resize ends to recalculate
-  });
+        }
+      });
+    }
+  }, 250); // Wait 250ms after resize ends to recalculate
+
+  window.addEventListener('resize', handleResize);
 }
 
 export default async function init(el) {
@@ -570,7 +761,7 @@ export default async function init(el) {
           const observer = loadFireflyImages(skeletonItems, assets);
 
           // Set up resize handler for responsive image sizes
-          handleResizeForGallery(assets, skeletonItems);
+          handleResizeForGallery(assets, skeletonItems, masonryGrid);
 
           // Remove loading class after initial items are loaded (5 second timeout)
           setTimeout(() => {
@@ -582,7 +773,7 @@ export default async function init(el) {
         }
       })
       .catch((error) => {
-        console.error('Error fetching Firefly images:', error);
+        logError('Error fetching Firefly images:', error);
         masonryGrid.classList.remove('loading');
       });
   }, 0);

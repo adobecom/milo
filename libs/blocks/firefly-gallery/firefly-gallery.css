@@ -1,5 +1,39 @@
+/* Define breakpoints and common values as CSS variables */
+/* Define breakpoints */
+:root {
+  --breakpoint-mobile: 600px;
+  --breakpoint-tablet: 900px;
+  --breakpoint-desktop: 1200px;
+}
+
+/* Default values for all breakpoints that get overridden by media queries as needed */
+:root {
+  /* Mobile values (default for screens <= 600px) */
+  --columns: 2;
+  --gap: 8px;
+  --item-margin: 8px;
+  --padding: var(--spacing-m) 0;
+  
+  /* Typography scale */
+  --prompt-font-size: calc(var(--type-body-xs-size) * 0.8);
+  --prompt-line-height: 1.2;
+  --prompt-max-width: 80%;
+  --username-max-width: 80px;
+  
+  /* Avatar dimensions */
+  --avatar-size: 24px;
+  
+  /* Border radius values */
+  --border-radius-standard: 8px;
+  --border-radius-round: 50%;
+  
+  /* Animation durations */
+  --transition-speed-fast: 0.3s;
+  --transition-speed-medium: 0.5s;
+}
+
 .firefly-gallery-block {
-  padding: var(--spacing-l) 0;
+  padding: var(--padding);
   position: relative;
 }
 
@@ -25,8 +59,8 @@
 
 /* Masonry grid layout using CSS columns for true masonry effect */
 .firefly-gallery-masonry-grid {
-  column-count: 5;
-  column-gap: 16px;
+  column-count: var(--columns);
+  column-gap: var(--gap);
   margin-bottom: var(--spacing-l);
   width: 100%;
 }
@@ -34,12 +68,12 @@
 /* Skeleton item base styles */
 .firefly-gallery-item {
   background-color: var(--color-gray-50);
-  border-radius: 8px;
+  border-radius: var(--border-radius-standard);
   overflow: hidden;
   position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--transition-speed-fast) ease, box-shadow var(--transition-speed-fast) ease;
   width: 100%;
-  margin-bottom: 16px; /* Space between items in the column */
+  margin-bottom: var(--item-margin); /* Space between items in the column */
   padding: 0;
   display: inline-block; /* Important for column layout */
   break-inside: avoid; /* Prevent items from breaking across columns */
@@ -47,31 +81,44 @@
   contain: layout size; /* Improve performance by isolating layout */
 }
 
+/* Define skeleton dimensions using custom properties for easier maintenance */
+:root {
+  --skeleton-height-default: 200px;
+  --skeleton-height-short: calc(var(--skeleton-height-default) * 0.7); /* 70% of default */
+  --skeleton-height-square: var(--skeleton-height-default);
+  --skeleton-height-portrait: calc(var(--skeleton-height-default) * 1.3); /* 130% of default */
+  --skeleton-height-tall: calc(var(--skeleton-height-default) * 1.7); /* 170% of default */
+}
+
 /* Fixed minimum heights for skeleton items during loading */
 .skeleton-item {
-  min-height: 200px; /* Default minimum height for all skeletons */
+  min-height: var(--skeleton-height-default);
 }
 
 /* Different heights for different skeleton types during loading */
 .skeleton-item.firefly-gallery-item-short {
-  min-height: 140px; /* 70% of default - landscape orientation */
+  min-height: var(--skeleton-height-short);
 }
 
 .skeleton-item.firefly-gallery-item-square {
-  min-height: 200px; /* 1:1 ratio */
+  min-height: var(--skeleton-height-square);
 }
 
 .skeleton-item.firefly-gallery-item-portrait {
-  min-height: 260px; /* 130% of default - portrait orientation */
+  min-height: var(--skeleton-height-portrait);
 }
 
 .skeleton-item.firefly-gallery-item-tall {
-  min-height: 340px; /* 170% of default - tall portrait orientation */
+  min-height: var(--skeleton-height-tall);
 }
 
 /* Item size variations - using dynamically calculated aspect ratio */
-.firefly-gallery-item {
-  position: relative;
+:root {
+  /* Aspect ratio percentages */
+  --aspect-ratio-short: 70%;
+  --aspect-ratio-square: 100%;
+  --aspect-ratio-portrait: 130%;
+  --aspect-ratio-tall: 170%;
 }
 
 /* For all items, use the custom --aspect-ratio property if available */
@@ -79,27 +126,32 @@
   content: "";
   display: block;
   padding-top: calc(1 / var(--aspect-ratio, 1) * 100%); /* Dynamic aspect ratio calculation */
-  transition: padding-top 0.5s ease; /* Smooth transition when aspect ratio changes */
+  transition: padding-top var(--transition-speed-medium) ease; /* Smooth transition when aspect ratio changes */
 }
 
 /* Fallback styles for cases where custom property isn't set */
 .firefly-gallery-item-short::before {
-  padding-top: 70%; /* 0.7:1 aspect ratio - landscape (height is 70% of width) */
+  padding-top: var(--aspect-ratio-short); /* 0.7:1 aspect ratio - landscape */
 }
 
 .firefly-gallery-item-square::before {
-  padding-top: 100%; /* 1:1 aspect ratio - square */
+  padding-top: var(--aspect-ratio-square); /* 1:1 aspect ratio - square */
 }
 
 .firefly-gallery-item-portrait::before {
-  padding-top: 130%; /* 1.3:1 aspect ratio - portrait */
+  padding-top: var(--aspect-ratio-portrait); /* 1.3:1 aspect ratio - portrait */
 }
 
 .firefly-gallery-item-tall::before {
-  padding-top: 170%; /* 1.7:1 aspect ratio - tall portrait */
+  padding-top: var(--aspect-ratio-tall); /* 1.7:1 aspect ratio - tall portrait */
 }
 
 /* Skeleton animation */
+:root {
+  --skeleton-bg-color: var(--color-gray-100);
+  --skeleton-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .skeleton-wrapper {
   position: absolute;
   top: 0;
@@ -109,10 +161,10 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: var(--color-gray-100);
+  background-color: var(--skeleton-bg-color);
   display: block;
-  border-radius: 8px; /* Match the item border radius */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth during loading */
+  border-radius: var(--border-radius-standard);
+  box-shadow: var(--skeleton-shadow);
 }
 
 /* Enhanced skeleton animation */
@@ -128,6 +180,15 @@
 }
 
 /* Background pattern for skeleton items */
+:root {
+  --skeleton-gradient: linear-gradient(110deg, 
+    var(--color-gray-100) 0%, 
+    var(--color-gray-100) 40%,
+    var(--color-gray-200) 42%, 
+    var(--color-gray-200) 58%, 
+    var(--color-gray-100) 60%);
+}
+
 .skeleton-wrapper::before {
   content: "";
   position: absolute;
@@ -135,12 +196,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: linear-gradient(110deg, 
-    var(--color-gray-100) 0%, 
-    var(--color-gray-100) 40%,
-    var(--color-gray-200) 42%, 
-    var(--color-gray-200) 58%, 
-    var(--color-gray-100) 60%);
+  background-image: var(--skeleton-gradient);
   background-size: 200% 100%;
   opacity: 0.4;
   z-index: 1;
@@ -203,19 +259,16 @@
   bottom: 0;
   right: 0;
   overflow: hidden;
-  /* opacity now controlled by loaded state class */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Remove unused animation since we're now using transitions */
-
 .firefly-gallery-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-speed-fast) ease;
   position: absolute;
   top: 0;
   left: 0;
@@ -247,16 +300,16 @@
 
 .firefly-gallery-prompt {
   color: white;
-  font-size: calc(var(--type-body-xs-size) * 0.9);
+  font-size: var(--prompt-font-size);
   text-align: left;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
-  max-width: 90%;
-  line-height: 1.3;
-  max-height: 2.6em;
+  max-width: var(--prompt-max-width);
+  line-height: var(--prompt-line-height);
+  max-height: calc(var(--prompt-line-height) * 2em);
   margin: var(--spacing-xxs) 0;
 }
 
@@ -277,11 +330,11 @@
 }
 
 .firefly-gallery-user-avatar {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  max-width: 24px;
-  border-radius: 50%;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  min-width: var(--avatar-size);
+  max-width: var(--avatar-size);
+  border-radius: var(--border-radius-round);
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.5);
   flex-shrink: 0;
@@ -289,13 +342,13 @@
 
 .firefly-gallery-username {
   color: white;
-  font-size: var(--type-body-xs-size);
+  font-size: var(--prompt-font-size);
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: calc(100% - 30px);
+  max-width: var(--username-max-width);
 }
 
 /* Hover effects for loaded images */
@@ -329,89 +382,44 @@
   left: 0;
 }
 
-/* Responsive styling */
-@media screen and (max-width: 1200px) {
-  .firefly-gallery-masonry-grid {
-    column-count: 4; /* 4 columns for larger tablets/small desktops */
-    column-gap: 14px;
-  }
-  
-  .firefly-gallery-item {
-    margin-bottom: 14px;
-  }
-}
+/* Responsive styling with mobile-first approach using the same breakpoints in both CSS and JS */
 
-@media screen and (max-width: 900px) {
-  .firefly-gallery-masonry-grid {
-    column-count: 3; /* 2 columns for tablets */
-    column-gap: 12px;
+/* Tablet styles (601px - 900px) */
+@media screen and (min-width: 601px) {
+  :root {
+    --columns: 3;
+    --gap: 12px;
+    --item-margin: 12px;
+    --padding: var(--spacing-m) 0;
+    --prompt-font-size: calc(var(--type-body-xs-size) * 0.85);
+    --prompt-line-height: 1.2;
+    --prompt-max-width: 85%;
+    --username-max-width: auto;
   }
   
-  .firefly-gallery-item {
-    margin-bottom: 12px;
-  }
-  
-  .firefly-gallery-block {
-    padding: var(--spacing-m) 0;
-  }
-  
+  /* Only override specific properties that change at this breakpoint */
   .firefly-gallery-user-info {
-    top: var(--spacing-xxs);
-    left: var(--spacing-xxs);
     gap: calc(var(--spacing-xxs) / 2);
   }
-  
-  .firefly-gallery-user-avatar {
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    max-width: 24px;
-  }
-  
-  .firefly-gallery-username {
-    font-size: calc(var(--type-body-xs-size) * 0.9);
-  }
-  
-  .firefly-gallery-prompt {
-    font-size: calc(var(--type-body-xs-size) * 0.85);
-    max-width: 85%;
-    bottom: var(--spacing-xs);
-    -webkit-line-clamp: 2;
-    line-height: 1.2;
-    max-height: 2.4em;
+}
+
+/* Large tablet/small desktop styles (901px - 1200px) */
+@media screen and (min-width: 901px) {
+  :root {
+    --columns: 4;
+    --gap: 14px;
+    --item-margin: 14px;
+    --padding: var(--spacing-l) 0;
+    --prompt-font-size: calc(var(--type-body-xs-size) * 0.9);
+    --prompt-max-width: 90%;
   }
 }
 
-@media screen and (max-width: 600px) {
-  .firefly-gallery-masonry-grid {
-    column-count: 2; /* Keep 2 columns for mobile, but with smaller gap */
-    column-gap: 8px;
-  }
-  
-  .firefly-gallery-item {
-    margin-bottom: 8px;
-  }
-  
-  /* We don't need to adjust the aspect ratios since they're preserved */
-  
-  .firefly-gallery-user-avatar {
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    max-width: 24px;
-  }
-  
-  .firefly-gallery-username {
-    font-size: calc(var(--type-body-xs-size) * 0.8);
-    max-width: 80px;
-  }
-  
-  .firefly-gallery-prompt {
-    font-size: calc(var(--type-body-xs-size) * 0.8);
-    max-width: 80%;
-    bottom: calc(var(--spacing-xxs) * 1.5);
-    -webkit-line-clamp: 2;
-    line-height: 1.2;
-    max-height: 2.4em;
+/* Desktop styles (1201px+) */
+@media screen and (min-width: 1201px) {
+  :root {
+    --columns: 5;
+    --gap: 16px;
+    --item-margin: 16px;
   }
 }
