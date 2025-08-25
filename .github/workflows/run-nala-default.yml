@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   run-nala-tests:
-    name: Running on • ${{ matrix.browser }} • shard ${{ matrix.shard }}
+    name: Running on • ${{ matrix.browser }} # • shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -75,13 +75,13 @@ jobs:
           IMS_PASS: ${{ secrets.IMS_PASS }}
           PROJECT: ${{ matrix.project }}
           # SHARD: ${{ matrix.shard }} # disable sharding for now
-          reporter: list,blob
+          # reporter: list,blob # disable list, blob reporter for now from yaml
 
       - name: Upload blob report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.project }}-shard-${{ env.SAFE_SHARD }}
+          name: blob-report-${{ matrix.project }} # -shard-${{ env.SAFE_SHARD }}
           path: blob-report
           if-no-files-found: ignore
           overwrite: true
