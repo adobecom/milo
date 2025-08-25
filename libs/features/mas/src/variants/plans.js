@@ -1,8 +1,9 @@
 import { VariantLayout } from './variant-layout';
 import { html, css, nothing } from 'lit';
 import { CSS } from './plans.css.js';
-import { isMobile, matchMobile, isDesktop, matchDesktop } from '../media.js';
+import Media from '../media.js';
 import {
+    EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED,
     SELECTOR_MAS_INLINE_PRICE,
     TEMPLATE_PRICE_LEGAL,
 } from '../constants.js';
@@ -95,7 +96,7 @@ export class Plans extends VariantLayout {
         if (!sizes.includes(size)) return;
         
 
-        footer?.classList.toggle('wide-footer', isDesktop());
+        footer?.classList.toggle('wide-footer', Media.isDesktopOrUp);
         if (!shouldBeInFooter && slotInFooter) {
             if (slotInBody) 
                 slotInFooter.remove();
@@ -128,8 +129,8 @@ export class Plans extends VariantLayout {
             return;
         }
         
-        this.adjustSlotPlacement('addon', ['super-wide'], isDesktop());
-        this.adjustSlotPlacement('callout-content', ['super-wide'], isDesktop());
+        this.adjustSlotPlacement('addon', ['super-wide'], Media.isDesktopOrUp);
+        this.adjustSlotPlacement('callout-content', ['super-wide'], Media.isDesktopOrUp);
     }
 
     adjustCallout() {
@@ -234,21 +235,13 @@ export class Plans extends VariantLayout {
     }
 
     connectedCallbackHook() {
-        const mobileWatcher = matchMobile();
-        if (mobileWatcher?.addEventListener)
-            mobileWatcher.addEventListener('change', this.adaptForMedia);
-        const desktopWatcher = matchDesktop();
-        if (desktopWatcher?.addEventListener)
-            desktopWatcher.addEventListener('change', this.adaptForMedia);
+        Media.matchMobile.addEventListener('change', this.adaptForMedia);
+        Media.matchDesktopOrUp.addEventListener('change', this.adaptForMedia);
     }
 
     disconnectedCallbackHook() {
-        const mobileWatcher = matchMobile();
-        if (mobileWatcher?.removeEventListener)
-            mobileWatcher.removeEventListener('change', this.adaptForMedia);
-        const desktopWatcher = matchDesktop();
-        if (desktopWatcher?.removeEventListener)
-            desktopWatcher.removeEventListener('change', this.adaptForMedia);
+        Media.matchMobile.removeEventListener('change', this.adaptForMedia);
+        Media.matchDesktopOrUp.removeEventListener('change', this.adaptForMedia);
     }
 
     renderLayout() {
@@ -391,6 +384,34 @@ export class Plans extends VariantLayout {
             sort: false,
             result: ['mobile', 'tablet'],
             custom: ['desktop']
+        },
+        onSidenavAttached: (collection) => {
+            const minifyOverflowingWideCards = () => {
+                const merchCards = collection.querySelectorAll('merch-card');
+                for (const merchCard of merchCards) {
+                    merchCard.classList.remove('minified');
+                }
+                if (!Media.isDesktop) return;
+                let columns = 0;
+                for (const merchCard of merchCards) {
+                    if (merchCard.style.display === 'none') continue;
+                    const size = merchCard.getAttribute('size');
+                    let columnCount = size === 'wide' ? 2 : size === 'super-wide' ? 3 : 1;
+                    if (columnCount === 2 && columns % 3 === 2) {
+                        merchCard.classList.add('minified');
+                        columnCount = 1;
+                    }
+                    columns += columnCount;
+                }
+            }
+
+            Media.matchDesktop.addEventListener('change', minifyOverflowingWideCards);
+            collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, minifyOverflowingWideCards);
+
+            collection.onUnmount.push(() => {
+                Media.matchDesktop.removeEventListener('change', minifyOverflowingWideCards);
+                collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, minifyOverflowingWideCards);
+            });
         }
     }
 }

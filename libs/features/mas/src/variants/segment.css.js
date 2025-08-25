@@ -1,4 +1,4 @@
-import { TABLET_UP, DESKTOP_UP, MOBILE_LANDSCAPE,} from '../media.js';
+import { TABLET_UP, DESKTOP_UP, MOBILE_LANDSCAPE } from '../media.js';
 export const CSS = `
 :root {
   --consonant-merch-card-segment-width: 378px;
