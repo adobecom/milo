@@ -301,36 +301,13 @@ function createGalleryStructure() {
   };
 }
 
-/**
- * Gets the appropriate column count based on screen width
- * This must match the CSS media query breakpoints EXACTLY
- * CSS uses min-width: 601px, 901px, and 1201px
- * @return {number} - The column count
- */
-function getColumnCount() {
-  const width = window.innerWidth;
-  
-  if (width < 601) {
-    return 2; // Mobile (< 601px)
-  } else if (width < 901) {
-    return 3; // Tablet (601px-900px)
-  } else if (width < 1201) {
-    return 4; // Small desktop (901px-1200px)
-  } else {
-    return 5; // Desktop (≥ 1201px)
-  }
-}
+// Column count is now handled entirely by CSS media queries
 
 function createSkeletonLayout(container) {
   // Create the masonry grid container
   const masonryGrid = createTag('div', {
     class: 'firefly-gallery-masonry-grid loading',
   });
-  
-  // Set initial column count programmatically to match CSS media queries
-  const columnCount = getColumnCount();
-  // Apply column count directly with inline style to override any CSS
-  masonryGrid.style.columnCount = columnCount;
   
   const skeletonItems = [];
 
@@ -692,12 +669,8 @@ function getItemTypeFromClass(item) {
  */
 function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
   const handleResize = debounce(() => {
-    // Update column count based on current viewport
-    if (masonryGrid) {
-      const columnCount = getColumnCount();
-      // Apply column count directly with inline style
-      masonryGrid.style.columnCount = columnCount;
-    }
+    // Column count now handled by CSS media queries automatically
+    // We only need to update image URLs
     
     // Only update if we have both assets and skeleton items
     if (

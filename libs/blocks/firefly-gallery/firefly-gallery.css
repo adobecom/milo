@@ -59,10 +59,25 @@
 
 /* Masonry grid layout using CSS columns for true masonry effect */
 .firefly-gallery-masonry-grid {
-  column-count: var(--columns);
+  /* Set base column count for mobile */
+  column-count: 2;
   column-gap: var(--gap);
   margin-bottom: var(--spacing-l);
   width: 100%;
+}
+
+/* Tablet styles */
+@media screen and (min-width: 601px) {
+  .firefly-gallery-masonry-grid {
+    column-count: 3;
+  }
+}
+
+/* Desktop styles - 5 columns for any screen ≥ 901px */
+@media screen and (min-width: 901px) {
+  .firefly-gallery-masonry-grid {
+    column-count: 5;
+  }
 }
 
 /* Skeleton item base styles */
@@ -276,9 +291,6 @@
   bottom: 0;
 }
 
-.firefly-gallery-item:hover .firefly-gallery-img {
-  transform: scale(1.05); /* Subtle zoom effect on hover */
-}
 
 /* Overlay and prompt styles */
 .firefly-gallery-overlay {
@@ -382,12 +394,11 @@
   left: 0;
 }
 
-/* Responsive styling with mobile-first approach using the same breakpoints in both CSS and JS */
+/* Responsive styling with mobile-first approach */
 
 /* Tablet styles (601px - 900px) */
 @media screen and (min-width: 601px) {
   :root {
-    --columns: 3;
     --gap: 12px;
     --item-margin: 12px;
     --padding: var(--spacing-m) 0;
@@ -397,29 +408,29 @@
     --username-max-width: auto;
   }
   
+  /* Update column gap to match columns */
+  .firefly-gallery-masonry-grid {
+    column-gap: 12px;
+  }
+  
   /* Only override specific properties that change at this breakpoint */
   .firefly-gallery-user-info {
     gap: calc(var(--spacing-xxs) / 2);
   }
 }
 
-/* Large tablet/small desktop styles (901px - 1200px) */
+/* Desktop styles (901px+) */
 @media screen and (min-width: 901px) {
   :root {
-    --columns: 4;
-    --gap: 14px;
-    --item-margin: 14px;
+    --gap: 16px;
+    --item-margin: 16px;
     --padding: var(--spacing-l) 0;
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.9);
     --prompt-max-width: 90%;
   }
-}
-
-/* Desktop styles (1201px+) */
-@media screen and (min-width: 1201px) {
-  :root {
-    --columns: 5;
-    --gap: 16px;
-    --item-margin: 16px;
+  
+  /* Update column gap to match columns */
+  .firefly-gallery-masonry-grid {
+    column-gap: 16px;
   }
 }
