@@ -25,7 +25,7 @@
 
 /* Masonry grid layout using CSS columns for true masonry effect */
 .firefly-gallery-masonry-grid {
-  column-count: 4;
+  column-count: 5;
   column-gap: 16px;
   margin-bottom: var(--spacing-l);
   width: 100%;
@@ -119,14 +119,6 @@
 .skeleton-animation {
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
   position: absolute;
   top: 0;
   left: 0;
@@ -154,14 +146,7 @@
   z-index: 1;
 }
 
-@keyframes skeleton-loading {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
+/* Keyframes removed to eliminate white overlay animation */
 
 /* Loading state */
 /* Don't set a minimum height on the grid container, allow items to define the height */
@@ -171,7 +156,6 @@
 }
 
 .firefly-gallery-masonry-grid.loading .skeleton-item {
-  animation: skeleton-pulse 2s infinite alternate ease-in-out;
   height: auto; /* Allow height based on min-height and content */
   transform: translateZ(0); /* Force GPU acceleration for smoother animations */
 }
@@ -181,33 +165,22 @@
   column-fill: balance; /* Try to balance content across columns */
 }
 
-@keyframes skeleton-pulse {
-  0% {
-    opacity: 0.7;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(-2px); /* Subtle movement for more visible loading state */
-  }
-}
+/* Removed skeleton-pulse animation to eliminate white overlay effect */
 
 /* Loaded state transitions - enhanced for smoother effect */
 .firefly-gallery-item .skeleton-wrapper {
   opacity: 1;
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0s;
   z-index: 2;
 }
 
 .firefly-gallery-item.loaded .skeleton-wrapper {
   opacity: 0;
-  transform: scale(1.03);
   pointer-events: none; /* Prevent interaction with the hidden skeleton */
 }
 
 .firefly-gallery-image {
-  opacity: 0;
-  transition: opacity 0.5s ease 0.2s; /* Slight delay to allow skeleton to fade out first */
+  opacity: 1; /* Show image immediately */
 }
 
 .firefly-gallery-item.loaded .firefly-gallery-image {
@@ -359,7 +332,7 @@
 /* Responsive styling */
 @media screen and (max-width: 1200px) {
   .firefly-gallery-masonry-grid {
-    column-count: 3; /* 3 columns for larger tablets/small desktops */
+    column-count: 4; /* 4 columns for larger tablets/small desktops */
     column-gap: 14px;
   }
   
@@ -370,7 +343,7 @@
 
 @media screen and (max-width: 900px) {
   .firefly-gallery-masonry-grid {
-    column-count: 2; /* 2 columns for tablets */
+    column-count: 3; /* 2 columns for tablets */
     column-gap: 12px;
   }
   
