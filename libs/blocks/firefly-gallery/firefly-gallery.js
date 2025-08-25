@@ -1,6 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-
-// Enable/disable debug mode for the component
+import { debounce } from '../../utils/action.js';
 const DEBUG = false;
 
 // API configuration
@@ -46,11 +45,6 @@ const RENDITION_SIZES = {
   },
 };
 
-/**
- * Logs debug messages when debug mode is enabled
- * @param {string} message - The message to log
- * @param {*} data - Optional data to log
- */
 function debug(message, data) {
   if (!DEBUG) return;
 
@@ -121,26 +115,6 @@ function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
   }
 
   return defaultValue;
-}
-
-/**
- * Debounces a function call
- * @param {Function} func - Function to debounce
- * @param {number} wait - Wait time in ms
- * @return {Function} - Debounced function
- */
-function debounce(func, wait) {
-  let timeout;
-
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
 }
 
 /**
