@@ -468,13 +468,13 @@ export async function polyfills() {
       isSupported = true;
     },
   });
-  
+
   if (!globalThis.structuredClone) {
-    globalThis.structuredClone = function(obj) {
+    globalThis.structuredClone = function cloneObject(obj) {
       return JSON.parse(JSON.stringify(obj));
     };
   }
-  
+
   if (isSupported) {
     polyfills.promise = Promise.resolve();
   } else {
