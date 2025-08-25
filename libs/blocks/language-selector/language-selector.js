@@ -525,16 +525,16 @@ export default async function init(block) {
   const languagesList = getLanguages(links, languages, locales);
   const currentLang = getCurrentLanguage(languagesList);
   const wrapper = block.closest('.feds-regionPicker-wrapper');
-  const regionPickerElem = wrapper.querySelector('.feds-regionPicker');
-  regionPickerElem.setAttribute('href', '#');
-  const regionPickerTextElem = regionPickerElem.querySelector('.feds-regionPicker-text');
-  regionPickerTextElem.textContent = currentLang.name;
-  regionPickerElem.setAttribute('id', 'language-selector-combobox');
-  regionPickerElem.setAttribute('aria-haspopup', 'listbox');
-  regionPickerElem.setAttribute('aria-expanded', 'false');
-  regionPickerElem.setAttribute('aria-controls', 'language-selector-listbox');
-  regionPickerElem.setAttribute('tabindex', '0');
-  regionPickerElem.setAttribute('aria-label', ariaLabel);
+  const regionPickerElem = wrapper?.querySelector('.feds-regionPicker');
+  regionPickerElem?.setAttribute('href', '#');
+  const regionPickerTextElem = regionPickerElem?.querySelector('.feds-regionPicker-text');
+  regionPickerTextElem?.textContent = currentLang.name;
+  regionPickerElem?.setAttribute('id', 'language-selector-combobox');
+  regionPickerElem?.setAttribute('aria-haspopup', 'listbox');
+  regionPickerElem?.setAttribute('aria-expanded', 'false');
+  regionPickerElem?.setAttribute('aria-controls', 'language-selector-listbox');
+  regionPickerElem?.setAttribute('tabindex', '0');
+  regionPickerElem?.setAttribute('aria-label', ariaLabel);
   const {
     dropdown,
     searchContainer,
