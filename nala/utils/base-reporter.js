@@ -79,23 +79,6 @@ class BaseReporter {
 
   async onEnd() {
     const summary = this.printResultSummary();
-
-    // Print shard execution summary to console ---
-    const project = process.env.PROJECT || 'unknown-project';
-    const shard = (process.env.SHARD || '').trim();
-    const shardSummary = [
-      `### Nala Shard Summary (${project}${shard ? ` • shard ${shard}` : ''})`,
-      `- **Total**: ${this.results.length}`,
-      `- **Passed**: ${this.passedTests}`,
-      `- **Flaky**: ${this.flakyTests}`,
-      `- **Failed**: ${this.failedTests}`,
-      `- **Skipped**: ${this.skippedTests}`,
-    ].join('\n');
-
-    console.log('\n========= Shard Summary =========');
-    console.log(shardSummary);
-    console.log('=================================\n');
-
     const resultSummary = { summary };
 
     if (process.env.SLACK_WH) {
