@@ -1,3 +1,5 @@
+import { getMepEnablement } from '../../utils/utils.js';
+
 export const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
 export const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
 const explicitConsentCountries = [
@@ -71,7 +73,7 @@ export function getConsentConfiguration({ consentState, optOnConsentCookie }) {
   };
 }
 export const getConsentState = ({ optOnConsentCookie, kndctrConsentCookie }) => {
-  const serverTimingCountry = sessionStorage.getItem('akamai');
+  const serverTimingCountry = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
   const isExplicitConsentCountry = serverTimingCountry
   && explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
 
