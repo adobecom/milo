@@ -90,14 +90,6 @@ echo "Tags: ${TAGS:-No @tags or annotations on this PR}"
 # Navigate to the GitHub Action path and install dependencies
 cd "$GITHUB_ACTION_PATH"
 
-# Install dependencies only if node_modules cache is not hit
-if [[ "${NODE_MODULES_CACHE_HIT:-false}" != 'true' ]]; then
-  echo "node_modules cache miss → running npm ci"
-  npm ci --no-audit --no-fund --prefer-offline
-else
-  echo "node_modules cache hit → skipping npm ci"
-fi
-
 # Build matrix-aware args
 PROJECT_ARG=()
 [[ -n "${PROJECT:-}" ]] && PROJECT_ARG=(--project="$PROJECT")

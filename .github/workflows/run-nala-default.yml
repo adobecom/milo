@@ -65,7 +65,7 @@ jobs:
             ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-
 
       # Install only the browser needed for this matrix job (fast; uses the cache above)
-      - name: Install Playwright browser for this job
+      - name: Install Playwright (${{ matrix.browser }})
         run: |
           case "${{ matrix.browser }}" in
             chromium) npx playwright install chromium ;;
