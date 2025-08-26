@@ -96,7 +96,7 @@
 .firefly-gallery-item {
   background-color: var(--color-gray-50);
   border-radius: var(--border-radius-standard);
-  overflow: hidden;
+  overflow: clip;
   position: relative;
   transition: transform var(--transition-speed-fast) ease, box-shadow var(--transition-speed-fast) ease;
   width: 100%;
@@ -317,6 +317,7 @@
   transform: translateY(5px); /* Start slightly below */
   cursor: pointer;
   text-decoration: none; /* Remove link underline */
+  will-change: transform; /* Optimize for animation performance */
 }
 
 .firefly-gallery-view-button {
