@@ -92,7 +92,7 @@ const config = {
       use: {
         ...devices['Desktop Safari'],
         userAgent: USER_AGENT_DESKTOP,
-        workers: 4,
+        workers: 6,
       },
     },
     /* MAS test */
