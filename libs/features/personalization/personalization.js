@@ -13,7 +13,7 @@ import {
 } from '../../utils/utils.js';
 import {
   getConsentState,
-  getConsentConfiguration,
+  parseOptanonConsent,
   getAllCookies,
   KNDCTR_CONSENT_COOKIE,
   OPT_ON_AND_CONSENT_COOKIE,
@@ -1057,6 +1057,19 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
+
+export function getMepConsentConfiguration({ consentState, optOnConsentCookie }) {
+  if (!optOnConsentCookie || consentState === 'pre') {
+    return {
+      configuration: {
+        performance: true,
+        advertising: consentState === 'post',
+      },
+    };
+  }
+  return parseOptanonConsent(optOnConsentCookie);
+}
+
 export function canServeManifest(action, sources, consent) {
   const isCoreServices = action === 'core services' || (!action && sources?.includes('promo'));
   if (isCoreServices) return true;
@@ -1287,7 +1300,7 @@ export async function applyPers({ manifests }) {
   const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE] || '';
   const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
   const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
-  const consent = getConsentConfiguration({ consentState, optOnConsentCookie });
+  const consent = getMepConsentConfiguration({ consentState, optOnConsentCookie });
 
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(

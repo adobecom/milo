@@ -1,12 +1,10 @@
 import {
-  getConsentState,
-  getConsentConfiguration,
-  getAllCookies,
-  getCookie,
-  setCookie,
   KNDCTR_CONSENT_COOKIE,
   OPT_ON_AND_CONSENT_COOKIE,
-  getDomainWithoutWWW,
+  getConsentState,
+  getAllCookies,
+  getCookie,
+  parseOptanonConsent,
 } from '../features/mep/helpers.js';
 
 /* eslint-disable no-underscore-dangle */
@@ -22,6 +20,14 @@ const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2', 
 const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd', business: '2eedf777-b932-4f2a-a0c5-b559788929bf' };
 
 let dataStreamId = '';
+
+function getDomainWithoutWWW() {
+  const parts = window.location.hostname.toLowerCase().split('.');
+  if (parts.length >= 2) {
+    return parts.slice(-2).join('.');
+  }
+  return window.location.hostname.toLowerCase();
+}
 
 const hitTypeEventTypeMap = {
   propositionFetch: 'decisioning.propositionFetch',
@@ -54,6 +60,15 @@ function getDeviceInfo() {
     viewportWidth: window.innerWidth,
     viewportHeight: window.innerHeight,
   };
+}
+
+function setCookie(key, value, options = {}) {
+  const expires = options.expires || 730;
+  const date = new Date();
+  date.setTime(date.getTime() + expires * 24 * 60 * 60 * 1000);
+  const expiresString = `expires=${date.toUTCString()}`;
+
+  document.cookie = `${key}=${value}; ${expiresString}; path=/ ; domain=.${getDomainWithoutWWW()};`;
 }
 
 export const getVisitorStatus = ({
@@ -328,6 +343,20 @@ const getMartechCookies = () => document.cookie.split(';')
   .map((x) => x.trim().split('='))
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
+
+function getConsentConfiguration({ consentState, optOnConsentCookie }) {
+  if (consentState === 'post' && !optOnConsentCookie) {
+    return {
+      configuration: {
+        performance: true,
+        functional: true,
+        advertising: true,
+      },
+    };
+  }
+
+  return parseOptanonConsent(optOnConsentCookie);
+}
 
 function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
   const cookies = getAllCookies();
