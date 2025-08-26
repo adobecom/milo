@@ -1,6 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { asoCache } from '../checks/asoApi.js';
-import { SEO_IDS, SEO_TITLES, STATUS, ASO_TIMEOUT_MS } from '../checks/constants.js';
+import { asoCache, getASOToken } from '../checks/asoApi.js';
+import { SEO_IDS, SEO_TITLES, STATUS, ASO_TIMEOUT_MS, ASO_POLL_INTERVAL_MS } from '../checks/constants.js';
 import { getChecksSuite, getPreflightResults } from '../checks/preflightApi.js';
 
 const DEF_ICON = 'purple';
@@ -54,6 +54,7 @@ const linksResult = signal({
 });
 const aiSuggestions = signal([]);
 const authErrorMessage = signal('');
+const asoSessionTrigger = signal(0);
 
 const isAso = getChecksSuite() === 'ASO';
 
@@ -180,13 +181,35 @@ async function getResults() {
   });
 }
 
+async function handleAsoSignIn() {
+  await window.asoIMS.signIn();
+
+  const sessionIntervalId = setInterval(async () => {
+    try {
+      const res = await window.asoIMS.refreshToken();
+      if (res?.tokenInfo) {
+        authErrorMessage.value = '';
+        await getASOToken();
+        asoSessionTrigger.value += 1;
+        clearInterval(sessionIntervalId);
+      }
+    } catch (e) {
+      // no-op
+    }
+  }, ASO_POLL_INTERVAL_MS);
+
+  setTimeout(() => {
+    clearInterval(sessionIntervalId);
+  }, ASO_TIMEOUT_MS);
+}
+
 export default function SEO() {
   useEffect(() => {
     getResults();
     if (!isAso) return;
 
     if (!asoCache.sessionToken) {
-      authErrorMessage.value = 'Please make sure you are authenticated with IMS and via the correct organisation';
+      authErrorMessage.value = 'Please make sure you are authenticated with IMS';
       return;
     }
 
@@ -216,9 +239,15 @@ export default function SEO() {
       clearInterval(intervalIdSuggest);
       clearTimeout(timeoutId);
     };
-  }, []);
+  // eslint-disable-next-line
+  }, [asoSessionTrigger.value]);
 
-  return authErrorMessage.value ? html`<p class="warning">${authErrorMessage.value}</p>` : html`
+  return authErrorMessage.value ? html`
+  <div class="preflight-auth-error"><p class="warning">${authErrorMessage.value}</p>
+    <button class="preflight-action" onclick=${handleAsoSignIn}>
+      Sign in
+    </button>
+  </div>` : html`
     <div class=preflight-columns>
       <div class=preflight-column>
         <${SeoItem} id=${SEO_IDS.title} supportsAi icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />

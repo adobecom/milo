@@ -26,17 +26,19 @@ const lanaLog = (message) => {
   });
 };
 
-async function getASOToken() {
-  window.adobeImsFactory.createIMSLib({
-    client_id: 'milo-tools',
-    scope: 'AdobeID,openid,gnav,read_organizations,additional_info.projectedProductContext,additional_info.roles',
-    environment: 'prod',
-    autoValidateToken: true,
-    useLocalStorage: false,
-  }, 'asoIMS');
-  // TODO: We should only initialize (or re-initialize) AFTER
-  // we get a 'logged-in' sidekick event
-  window.asoIMS.initialize();
+export async function getASOToken() {
+  if (!window.asoIMS) {
+    window.adobeImsFactory.createIMSLib({
+      client_id: 'milo-tools',
+      scope: 'AdobeID,openid,gnav,read_organizations,additional_info.projectedProductContext,additional_info.roles',
+      environment: 'prod',
+      autoValidateToken: true,
+      useLocalStorage: false,
+      modalMode: true,
+    }, 'asoIMS');
+    await window.asoIMS.initialize();
+  }
+
   if (!window.asoIMS.getAccessToken()?.token) return null;
 
   try {
