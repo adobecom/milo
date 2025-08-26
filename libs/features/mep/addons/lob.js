@@ -1,5 +1,5 @@
 import { getConfig } from '../../../utils/utils.js';
-import { getCookie } from '../helpers.js';
+import { getCookie } from '../../../martech/helpers.js';
 
 export async function getSpectraLOB(lastVisitedPage) {
   const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
