@@ -1058,28 +1058,32 @@ export const addMepAnalytics = (config, header) => {
   });
 };
 
-export function getMepConsentConfiguration({ consentState, optOnConsentCookie }) {
+export function getMepConsentConfig() {
+  const cookies = getAllCookies();
+  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
+  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
+  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
+
   if (!optOnConsentCookie || consentState === 'pre') {
     return {
-      configuration: {
-        performance: true,
-        advertising: consentState === 'post',
-      },
+      performance: true,
+      advertising: consentState !== 'pre',
     };
   }
-  return parseOptanonConsent(optOnConsentCookie);
+  return parseOptanonConsent(optOnConsentCookie).configuration;
 }
 
-export function canServeManifest(action, sources, consent) {
+export function canServeManifest(action, sources) {
   const isCoreServices = action === 'core services' || (!action && sources?.includes('promo'));
   if (isCoreServices) return true;
-  const { performance, advertising } = consent.configuration;
+
+  const consent = getMepConsentConfig();
+  const { performance, advertising } = consent;
   const isPerformance = ['non-marketing', 'data science', 'analytics'].includes(action);
-  if (isPerformance) return performance;
-  return advertising;
+  return isPerformance ? performance : advertising;
 }
 
-async function getManifestConfig(info, variantOverride, consent) {
+async function getManifestConfig(info, variantOverride) {
   const {
     name,
     manifestData,
@@ -1144,7 +1148,7 @@ async function getManifestConfig(info, variantOverride, consent) {
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
-  if (!canServeManifest(manifestConfig.mktgAction, source, consent)) return null;
+  if (!canServeManifest(manifestConfig.mktgAction, source)) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1296,17 +1300,10 @@ export async function applyPers({ manifests }) {
   let experiments = manifests;
   const config = getConfig();
 
-  const cookies = getAllCookies();
-  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE] || '';
-  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
-  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
-  const consent = getMepConsentConfiguration({ consentState, optOnConsentCookie });
-
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],
       config.mep?.variantOverride,
-      consent,
     );
   }
   experiments = cleanAndSortManifestList(experiments, config);
