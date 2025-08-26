@@ -1438,7 +1438,7 @@ async function checkForPageMods() {
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
-  loadLink(`${getConfig().base}/features/mep/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  loadLink(`${getConfig().base}/libs/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
   if (mepgeolocation) {
