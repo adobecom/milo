@@ -8,15 +8,19 @@ const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like M
 
 // MAS tests
 const masFeatures = [
+  'features/mas/**/*.test.js',
+  'features/commerce/**/*.test.js',
+  'features/promotions/**/*.test.js',
+  'features/osttools/**/*.test.js',
+];
+
+// Milo test ( or Non-MAS tests)
+const miloIgnore = [
   'features/mas/**',
   'features/commerce/**',
   'features/promotions/**',
   'features/osttools/**',
 ];
-
-// Milo test ( or Non-MAS tests)
-const miloIgnore = masFeatures;
-
 /**
  * @see https://playwright.dev/docs/test-configuration
  * @type {import('@playwright/test').PlaywrightTestConfig}
