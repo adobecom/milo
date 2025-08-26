@@ -14,6 +14,13 @@ const GPV_COOKIE = 'gpv';
 const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2', business: '0fd7a243-507d-4035-9c75-e42e42f866a0' };
 const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd', business: '2eedf777-b932-4f2a-a0c5-b559788929bf' };
 
+const _explicitConsentCountries = [
+  'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
+  'lv', 'hr', 'fr', 'hu', 'se', 'si', 'mc', 'sk', 'mf', 'sm',
+  'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr',
+  'it', 'es', 'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
+];
+
 let dataStreamId = '';
 
 function getDomainWithoutWWW() {
@@ -394,14 +401,8 @@ function getConsentConfiguration({ consentState, optOnConsentCookie }) {
 }
 export const getConsentState = ({ optOnConsentCookie, kndctrConsentCookie }) => {
   const serverTimingCountry = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
-  const explicitConsentCountries = [
-    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
-    'lv', 'hr', 'fr', 'hu', 'se', 'si', 'mc', 'sk', 'mf', 'sm',
-    'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr',
-    'it', 'es', 'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
-  ];
   const isExplicitConsentCountry = serverTimingCountry
-  && explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
+  && _explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
 
   if (kndctrConsentCookie || (serverTimingCountry && !isExplicitConsentCountry)) {
     return 'post';
