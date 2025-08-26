@@ -53,7 +53,6 @@
 }
 
 .firefly-gallery-content {
-  padding-top: 4px;
   height: 720px;
   overflow: hidden;
   position: relative;
@@ -389,7 +388,6 @@
 
 /* Hover effects for loaded images */
 .firefly-gallery-item:hover {
-  transform: translateY(-3px); /* Slight lift effect */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
 }
 
