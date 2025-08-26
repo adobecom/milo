@@ -49,6 +49,12 @@ export function sendAnalytics(event) {
   }
 }
 
+function focusTriggerElement(modalId) {
+  const triggerElement = document.querySelector(`[data-modal-hash="#${modalId}"][data-is-modal-trigger="true"]`);
+  triggerElement?.focus();
+  triggerElement?.removeAttribute('data-is-modal-trigger');
+}
+
 export function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
@@ -78,11 +84,7 @@ export function closeModal(modal) {
       }
       mod.remove();
     }
-    const triggerElement = document.querySelector(`[data-modal-hash="#${mod.id}"][data-is-modal-trigger="true"]`);
-    if (triggerElement) {
-      triggerElement.focus();
-      triggerElement.removeAttribute('data-is-modal-trigger');
-    }
+    focusTriggerElement(mod.id);
   });
 
   if (!document.querySelectorAll('.modal-curtain').length) {
@@ -109,11 +111,7 @@ export function closeModal(modal) {
     return;
   }
 
-  const triggerElement = document.querySelector(`[data-modal-id="${id}"][data-is-modal-trigger="true"]`);
-  if (triggerElement) {
-    triggerElement.focus();
-    triggerElement.removeAttribute('data-is-modal-trigger');
-  }
+  focusTriggerElement(id);
 }
 
 function isElementInView(element) {
@@ -164,6 +162,7 @@ function addIframeKeydownListener(iframe, dialog) {
 }
 
 export async function getModal(details, custom) {
+  document.activeElement.dataset.isModalTrigger = 'true';
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
   isDeepLink = deepLink;
