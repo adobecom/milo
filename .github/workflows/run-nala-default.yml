@@ -51,8 +51,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            **/node_modules
-          key: node-modules-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+            ~/.npm
+          key: npm-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
 
       # Cache Playwright browser binaries across runs
       - name: Cache Playwright browsers
