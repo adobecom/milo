@@ -17,14 +17,14 @@ permissions:
 
 jobs:
   run-nala-tests:
-    name: Running on • ${{ matrix.browser }} browser
+    name: ${{ matrix.project == 'mas' && 'Running MAS (all browsers)' || format('Running on • {0} browser', matrix.browser) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         node-version: [20.x]
-        project: [milo-live-chromium, milo-live-firefox, milo-live-webkit]
+        project: [milo-live-chromium, milo-live-firefox, milo-live-webkit, mas]
         include:
           - project: milo-live-chromium
             browser: chromium
@@ -32,6 +32,9 @@ jobs:
             browser: firefox
           - project: milo-live-webkit
             browser: webkit
+          - project: mas
+            browser: MAS (All Browsers)
+            # shard: 1
 
     steps:
       - name: Checkout repository
@@ -70,11 +73,17 @@ jobs:
       # Install only the browser needed for this matrix job (fast; uses the cache above)
       - name: Install Playwright (${{ matrix.browser }})
         run: |
-          case "${{ matrix.browser }}" in
-            chromium) npx playwright install chromium ;;
-            firefox)  npx playwright install firefox  ;;
-            webkit)   npx playwright install --with-deps webkit ;;
-          esac
+          if [[ "${{ matrix.project }}" == "mas" ]]; then
+            echo "Installing all browsers for MAS..."
+            npx playwright install --with-deps chromium firefox webkit
+            exit 0
+          else
+            case "${{ matrix.browser }}" in
+              chromium) npx playwright install chromium ;;
+              firefox)  npx playwright install firefox  ;;
+              webkit)   npx playwright install --with-deps webkit ;;
+            esac
+          fi
 
       - name: Set execute permission for pr.run.sh
         run: chmod +x ./nala/utils/pr.run.sh

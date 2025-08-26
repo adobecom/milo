@@ -92,7 +92,14 @@ cd "$GITHUB_ACTION_PATH"
 
 # Build matrix-aware args
 PROJECT_ARG=()
-[[ -n "${PROJECT:-}" ]] && PROJECT_ARG=(--project="$PROJECT")
+if [[ -n "${PROJECT:-}" ]]; then
+  if [[ "$PROJECT" == "mas" ]]; then
+    # run ALL 3 MAS projects together
+    PROJECT_ARG=(--project=mas-chromium --project=mas-firefox --project=mas-webkit)
+  else
+    PROJECT_ARG=(--project="$PROJECT")
+  fi
+fi
 
 SHARD_ARG=()
 [[ -n "${SHARD:-}" ]] && SHARD_ARG=(--shard="$SHARD")
