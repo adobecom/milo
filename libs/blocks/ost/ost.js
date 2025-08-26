@@ -95,13 +95,14 @@ export async function loadOstEnv() {
   const searchParameters = new URLSearchParams(window.location.search);
   const ostSearchParameters = new URLSearchParams();
   // deprecate unsupported parameters
-  if (searchParameters.get('wcsLandscape') || searchParameters.get('commerce.env')) {
-    const wcsLandscape = searchParameters.get('wcsLandscape');
+  const wcsLandscape = searchParameters.get('wcsLandscape');
+  const commerceEnv = searchParameters.get('commerce.env');
+  if (wcsLandscape || commerceEnv) {
     if (wcsLandscape) {
       searchParameters.set('commerce.landscape', wcsLandscape);
       searchParameters.delete('wcsLandscape');
     }
-    if (searchParameters.get('commerce.env')?.toLowerCase() === 'stage') {
+    if (commerceEnv?.toLowerCase() === 'stage') {
       searchParameters.set('commerce.landscape', 'DRAFT');
       searchParameters.delete('commerce.env');
     }
