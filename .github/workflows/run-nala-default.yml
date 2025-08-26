@@ -46,9 +46,8 @@ jobs:
           cache: npm
           cache-dependency-path: '**/package-lock.json'
 
-      # Cache node_modules so we can skip npm ci entirely on cache hit
+      # Cache node_modules
       - name: Cache node_modules
-        id: nm-cache
         uses: actions/cache@v4
         with:
           path: |
@@ -63,6 +62,10 @@ jobs:
           key: ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-
+
+      # Install dependencies (cheap on cache hit, ensures Playwright is in node_modules)
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund --prefer-offline
 
       # Install only the browser needed for this matrix job (fast; uses the cache above)
       - name: Install Playwright (${{ matrix.browser }})
@@ -91,7 +94,6 @@ jobs:
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
           PROJECT: ${{ matrix.project }}
-          NODE_MODULES_CACHE_HIT: ${{ steps.nm-cache.outputs.cache-hit }}
           # SHARD: ${{ matrix.shard }}     # disabled for now
           # reporter: list,blob            # disabled for now (as it is driven from playwright.config.js)
 
