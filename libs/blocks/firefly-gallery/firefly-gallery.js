@@ -762,9 +762,7 @@ export default async function init(el) {
         handleResizeForGallery(assets, skeletonItems, masonryGrid);
 
         // Remove loading class after initial items are loaded (5 second timeout)
-        setTimeout(() => {
-          masonryGrid.classList.remove('loading');
-        }, 5000);
+        masonryGrid.classList.remove('loading');
       } else {
         // Remove loading state if no assets found
         masonryGrid.classList.remove('loading');

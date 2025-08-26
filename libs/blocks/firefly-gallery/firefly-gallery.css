@@ -53,6 +53,7 @@
 }
 
 .firefly-gallery-content {
+  padding-top: 4px;
   height: 720px;
   overflow: hidden;
   position: relative;
@@ -235,17 +236,13 @@
 /* Don't set a minimum height on the grid container, allow items to define the height */
 .firefly-gallery-masonry-grid.loading {
   /* no min-height here - let it be determined by its contents */
+  column-fill: balance; /* Try to balance content across columns */
   min-height: auto;
 }
 
 .firefly-gallery-masonry-grid.loading .skeleton-item {
   height: auto; /* Allow height based on min-height and content */
   transform: translateZ(0); /* Force GPU acceleration for smoother animations */
-}
-
-/* Add distribution hints for better column layout during loading */
-.firefly-gallery-masonry-grid.loading {
-  column-fill: balance; /* Try to balance content across columns */
 }
 
 /* Removed skeleton-pulse animation to eliminate white overlay effect */
@@ -272,7 +269,6 @@
 
 .firefly-gallery-item.loaded {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-4px);
   transition: transform 0.5s ease, box-shadow 0.5s ease;
 }
 
