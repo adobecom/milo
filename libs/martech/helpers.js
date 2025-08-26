@@ -1,11 +1,4 @@
-import {
-  KNDCTR_CONSENT_COOKIE,
-  OPT_ON_AND_CONSENT_COOKIE,
-  getConsentState,
-  getAllCookies,
-  getCookie,
-  parseOptanonConsent,
-} from '../features/mep/helpers.js';
+import { getMepEnablement } from '../utils/utils.js';
 
 /* eslint-disable no-underscore-dangle */
 const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
@@ -14,6 +7,8 @@ const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
 ];
 
+export const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
+export const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
 const GPV_COOKIE = 'gpv';
 
 const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2', business: '0fd7a243-507d-4035-9c75-e42e42f866a0' };
@@ -60,6 +55,18 @@ function getDeviceInfo() {
     viewportWidth: window.innerWidth,
     viewportHeight: window.innerHeight,
   };
+}
+
+export function getAllCookies() {
+  return document.cookie.split(';').reduce((cookies, cookieStr) => {
+    const [key, ...valParts] = cookieStr.trim().split('=');
+    cookies[key] = decodeURIComponent(valParts.join('='));
+    return cookies;
+  }, {});
+}
+
+export function getCookie(name) {
+  return getAllCookies()[name];
 }
 
 function setCookie(key, value, options = {}) {
@@ -344,6 +351,34 @@ const getMartechCookies = () => document.cookie.split(';')
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 
+export function parseOptanonConsent(optOnConsentCookie) {
+  let consent = {};
+
+  if (optOnConsentCookie) {
+    if (optOnConsentCookie.includes('groups=')) {
+      const groupsMatch = optOnConsentCookie.match(/groups=([^&]*)/);
+      if (groupsMatch) {
+        const groupsString = groupsMatch[1];
+        consent = Object.fromEntries(
+          groupsString.split(',').map((group) => group.split(':')),
+        );
+      }
+    } else {
+      consent = Object.fromEntries(
+        optOnConsentCookie.split(';').map((cat) => cat.split(':')),
+      );
+    }
+  }
+
+  return {
+    configuration: {
+      performance: consent.C0002 === '1',
+      functional: consent.C0003 === '1',
+      advertising: consent.C0004 === '1',
+    },
+  };
+}
+
 function getConsentConfiguration({ consentState, optOnConsentCookie }) {
   if (consentState === 'post' && !optOnConsentCookie) {
     return {
@@ -357,6 +392,27 @@ function getConsentConfiguration({ consentState, optOnConsentCookie }) {
 
   return parseOptanonConsent(optOnConsentCookie);
 }
+export const getConsentState = ({ optOnConsentCookie, kndctrConsentCookie }) => {
+  const serverTimingCountry = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  const explicitConsentCountries = [
+    'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
+    'lv', 'hr', 'fr', 'hu', 'se', 'si', 'mc', 'sk', 'mf', 'sm',
+    'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr',
+    'it', 'es', 'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
+  ];
+  const isExplicitConsentCountry = serverTimingCountry
+  && explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
+
+  if (kndctrConsentCookie || (serverTimingCountry && !isExplicitConsentCountry)) {
+    return 'post';
+  }
+
+  if (optOnConsentCookie || isExplicitConsentCountry) {
+    return 'pre';
+  }
+
+  return 'unknown';
+};
 
 function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
   const cookies = getAllCookies();

@@ -17,7 +17,7 @@ import {
   getAllCookies,
   KNDCTR_CONSENT_COOKIE,
   OPT_ON_AND_CONSENT_COOKIE,
-} from '../mep/helpers.js';
+} from '../../martech/helpers.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -1067,7 +1067,7 @@ export function getMepConsentConfig() {
   if (!optOnConsentCookie || consentState === 'pre') {
     return {
       performance: true,
-      advertising: consentState !== 'pre',
+      advertising: isSignedOut() && consentState !== 'pre',
     };
   }
   return parseOptanonConsent(optOnConsentCookie).configuration;
