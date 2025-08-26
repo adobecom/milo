@@ -73,7 +73,7 @@ jobs:
           case "${{ matrix.browser }}" in
             chromium) npx playwright install chromium ;;
             firefox)  npx playwright install firefox  ;;
-            webkit)   npx playwright install webkit --with-deps webkit ;;
+            webkit)   npx playwright install --with-deps webkit ;;
           esac
 
       - name: Set execute permission for pr.run.sh

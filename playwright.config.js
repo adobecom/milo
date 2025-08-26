@@ -82,6 +82,7 @@ const config = {
       use: {
         ...devices['Desktop Safari'],
         userAgent: USER_AGENT_DESKTOP,
+        workers: 4,
       },
     },
     /* Test Against Mobile View ports */
