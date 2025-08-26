@@ -210,7 +210,7 @@ function renderLanguages({
         'aria-label': 'No search results found'
       });
       const noResultText = createTag('span', { class: 'no-search-result-text', role: 'text', 'aria-label': noSearchResult.trim() });
-      noResultText.innerHTML = noSearchResult.trim().replace(/\n/g, '<br><span style="display: block; height: 8px;"></span>');
+      noResultText.innerHTML = noSearchResult.trim().replace(/[\n|]+/g, '<br><span style="display: block; height: 8px;"></span>');
       noResultItem.appendChild(noResultText);
       fragment.appendChild(noResultItem);
     } else {

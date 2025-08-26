@@ -773,9 +773,6 @@ describe('Language Selector Block - Network Event Handling', () => {
     expect(noSearchResultText.innerHTML).to.include('Your search did not yield any results');
     expect(noSearchResultText.innerHTML).to.include('Try a different search term');
     expect(noSearchResultText.innerHTML).to.include('<span style="display: block; height: 8px;"></span>');
-
-    // Debug: log the actual HTML content to see what's being generated
-    console.log('No search result HTML:', noSearchResultText.innerHTML);
   });
 
   it('does not display no search result message when search matches languages', async () => {
@@ -789,6 +786,42 @@ describe('Language Selector Block - Network Event Handling', () => {
     expect(noSearchResultItem).to.not.exist;
     const languageItems = document.querySelectorAll('.language-item:not(.no-search-result)');
     expect(languageItems.length).to.be.greaterThan(0);
+  });
+
+  it('handles line breaks with both newline and pipe characters', async () => {
+    // Wait for dropdown to be fully loaded using fake timers
+    await clock.runAllAsync();
+
+    // Get the search input and type a search term that won't match any language
+    const searchInput = document.querySelector('.search-input');
+    expect(searchInput).to.exist;
+
+    // Type a search term that won't match any language
+    searchInput.value = 'xyz123';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // Wait for the search to process using fake timers
+    await clock.runAllAsync();
+
+    // Check if no search result message is displayed
+    const noSearchResultItem = document.querySelector('.language-item.no-search-result');
+    expect(noSearchResultItem).to.exist;
+
+    // Check the text content
+    const noSearchResultText = noSearchResultItem.querySelector('.no-search-result-text');
+    expect(noSearchResultText).to.exist;
+
+    // Check that the text content is properly formatted with line breaks
+    expect(noSearchResultText.innerHTML).to.include('<br>');
+    expect(noSearchResultText.innerHTML).to.include('Your search did not yield any results');
+    expect(noSearchResultText.innerHTML).to.include('Try a different search term');
+    expect(noSearchResultText.innerHTML).to.include('<span style="display: block; height: 8px;"></span>');
+
+    // Verify that consecutive line break characters are treated as single breaks
+    // The regex should replace \n with <br> and not create double line breaks
+    const htmlContent = noSearchResultText.innerHTML;
+    const brCount = (htmlContent.match(/<br>/g) || []).length;
+    expect(brCount).to.equal(1); // Should only have one <br> tag
   });
 });
 
