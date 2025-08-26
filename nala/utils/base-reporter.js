@@ -14,7 +14,7 @@ const pattern = [
 const ansiRegex = new RegExp(pattern, 'g');
 
 // limit failed status
-const failedStatus = ['failed', 'flaky', 'timedOut', 'interrupted'];
+const failedStatus = ['failed', 'timedOut', 'interrupted'];
 
 function stripAnsi(str) {
   if (!str || typeof str !== 'string') return str;
