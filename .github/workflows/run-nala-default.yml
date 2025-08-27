@@ -55,14 +55,17 @@ jobs:
         with:
           path: |
             ~/.npm
+            **/node_modules
           key: npm-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-${{ matrix.node-version }}-
 
       # Cache Playwright browser binaries across runs
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-${{ matrix.browser }}-${{ hashFiles('**/package-lock.json') }}
+          key: ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-${{ matrix.browser }}
           restore-keys: |
             ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-
 
@@ -74,9 +77,8 @@ jobs:
       - name: Install Playwright (${{ matrix.browser }})
         run: |
           if [[ "${{ matrix.project }}" == "mas" ]]; then
-            echo "Installing all browsers for MAS..."
+            echo "Installing all browsers for MAS test run..."
             npx playwright install --with-deps chromium firefox webkit
-            exit 0
           else
             case "${{ matrix.browser }}" in
               chromium) npx playwright install chromium ;;
