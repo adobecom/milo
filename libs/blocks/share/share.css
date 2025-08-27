@@ -45,8 +45,8 @@
   gap: 18px;
 }
 
-.share p {
-  padding-bottom: 8px;
+.share :is([role="heading"], h1, h2, h3, h4, h5, h6) {
+  padding-block-end: 8px;
 }
 
 .share.dark p {
@@ -85,8 +85,7 @@
 
 .share .copy-to-clipboard::before {
   content: attr(data-copy-to-clipboard);
-  display: block;        
-  pointer-events: none;
+  display: block;
   position : absolute;
   bottom: 100%;
   left: -45%;
@@ -119,7 +118,6 @@
 .share .copy-to-clipboard::after {
   content: '';
   display: block;
-  pointer-events: none;
   position : absolute;
   bottom: 100%;
   left: 50%;
@@ -144,7 +142,6 @@
   visibility: visible;
   opacity: 1;
   transition-delay: 0ms;
-  pointer-events: auto;
   cursor: default;
 }
 

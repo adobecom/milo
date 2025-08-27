@@ -2,36 +2,45 @@ import { expect, test } from '@playwright/test';
 import { features } from './plansdocs.spec.js';
 import MasPlans from './plans.page.js';
 import WebUtil from '../../../../libs/webutil.js';
+import { createWorkerPageSetup, DOCS_BASE_PATH } from '../../../../libs/commerce.js';
 
 let acomPage;
 let webUtil;
 const COMMERCE_LINK_REGEX = /https:\/\/commerce\.adobe\.com\/store\/email\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&apc=FY25PLES256MROW&cli=adobe_com&ctx=fp&co=US&lang=en)/i;
 
-const miloLibs = process.env.MILO_LIBS || '';
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
+const workerSetup = createWorkerPageSetup({
+  pages: [
+    { name: 'US', url: DOCS_BASE_PATH.plans },
+  ],
+});
 
 test.describe('ACOM MAS cards feature test suite', () => {
-  test.beforeEach(async ({ page, browserName }) => {
-    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+  test.beforeAll(async ({ browser, baseURL }) => {
+    await workerSetup.setupWorkerPages({ browser, baseURL });
+  });
 
-    webUtil = new WebUtil(page);
-    acomPage = new MasPlans(page);
-    if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
-    }
+  test.afterAll(async () => {
+    await workerSetup.cleanupWorkerPages();
+  });
+
+  test.afterEach(async ({}, testInfo) => { // eslint-disable-line no-empty-pattern
+    workerSetup.attachWorkerErrorsToFailure(testInfo);
   });
 
   // *** PLANS CARDS: ***
 
   // @MAS-Plans
-  test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[0].path}${miloLibs}`;
+  test(`${features[0].name},${features[0].tags}`, async () => {
     const { data } = features[0];
-    console.info('[Test Page]: ', testPage);
 
     await test.step('step-1: Go to Plans Merch Card feature test page', async () => {
-      await page.goto(testPage);
-      await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}`);
+      const page = workerSetup.getPage('US');
+      acomPage = new MasPlans(page);
+      webUtil = new WebUtil(page);
+
+      await workerSetup.verifyPageURL('US', DOCS_BASE_PATH.plans, expect);
     });
 
     await test.step('step-2: Verify Plans Merch Card content', async () => {
@@ -60,15 +69,15 @@ test.describe('ACOM MAS cards feature test suite', () => {
   });
 
   // @MAS-Plans-CSS
-  test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[1].path}${miloLibs}`;
+  test(`${features[1].name},${features[1].tags}`, async () => {
     const { data } = features[1];
-    console.info('[Test Page]: ', testPage);
 
     await test.step('step-1: Go to Plans Merch Card feature test page', async () => {
-      await page.goto(testPage);
-      await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[1].path}`);
+      const page = workerSetup.getPage('US');
+      acomPage = new MasPlans(page);
+      webUtil = new WebUtil(page);
+
+      await workerSetup.verifyPageURL('US', DOCS_BASE_PATH.plans, expect);
     });
 
     await test.step('step-2: Verify Plans Merch Card CSS', async () => {
@@ -91,15 +100,15 @@ test.describe('ACOM MAS cards feature test suite', () => {
   });
 
   // @MAS-Plans-Students-CSS
-  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
+  test(`${features[2].name},${features[2].tags}`, async () => {
     const { data } = features[2];
-    console.info('[Test Page]: ', testPage);
 
     await test.step('step-1: Go to Plans Merch Card feature test page', async () => {
-      await page.goto(testPage);
-      await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[2].path}`);
+      const page = workerSetup.getPage('US');
+      acomPage = new MasPlans(page);
+      webUtil = new WebUtil(page);
+
+      await workerSetup.verifyPageURL('US', DOCS_BASE_PATH.plans, expect);
     });
 
     await test.step('step-2: Verify Plans Students Merch Card CSS', async () => {
