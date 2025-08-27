@@ -72,7 +72,7 @@ export function closeModal(modal) {
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
-      const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
+      const modalCurtain = !mod.matches('.dialog-modal.curtain-off') && document.querySelector(`#${id}~.modal-curtain`);
       if (modalCurtain) {
         modalCurtain.remove();
       }
@@ -94,9 +94,15 @@ export function closeModal(modal) {
   }
   if (prevHash) prevHash = '';
 
-  if (isDeepLink) {
-    document.querySelector('#onetrust-banner-sdk')?.focus();
+  const isGeoPopup = id === 'locale-modal-v2';
+  if (isDeepLink || isGeoPopup) {
+    const onetrustBanner = document.querySelector('#onetrust-banner-sdk');
+    const geoPopupFocus = document.querySelector('.dialog-modal#locale-modal-v2')?.querySelector('a.con-button');
+    const toFocus = isGeoPopup
+      ? onetrustBanner
+      : geoPopupFocus ?? onetrustBanner;
     isDeepLink = false;
+    toFocus?.focus();
     return;
   }
 
@@ -158,7 +164,7 @@ function addIframeKeydownListener(iframe, dialog) {
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
-  isDeepLink = deepLink;
+  if (id !== 'locale-modal-v2') isDeepLink = deepLink;
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
