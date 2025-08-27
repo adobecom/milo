@@ -1,12 +1,9 @@
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
+import { getGrayboxExperienceId } from '../../../libs/blocks/caas/utils.js';
 
 // Mock the DOM environment
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-
-// Import the function we want to test
-import { getGrayboxExperienceId } from '../../../libs/blocks/caas/utils.js';
 
 describe('Bulk Publish to CaaS - Graybox Experience ID Integration', () => {
   describe('getGrayboxExperienceId from host parameter', () => {
@@ -59,7 +56,7 @@ describe('Bulk Publish to CaaS - Graybox Experience ID Integration', () => {
       // This test simulates the integration logic in bulk-publish-to-caas.js
       const host = 'test-exp.graybox.adobe.com';
       const grayboxExperienceId = getGrayboxExperienceId(host, '');
-      
+
       // Simulate the caasProps object
       const caasProps = {
         entityId: 'test-entity-id',
@@ -78,7 +75,7 @@ describe('Bulk Publish to CaaS - Graybox Experience ID Integration', () => {
     it('should not add gbExperienceID when no graybox pattern is found', () => {
       const host = 'business.adobe.com';
       const grayboxExperienceId = getGrayboxExperienceId(host, '');
-      
+
       const caasProps = {
         entityId: 'test-entity-id',
         title: 'Test Title',
