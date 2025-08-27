@@ -57,7 +57,28 @@ export function getRedirectionUrl(linkedTabsList, targetId) {
   return currentUrl;
 }
 
-function changeTabs(e) {
+const generateStorageName = (tabId) => {
+  const { pathname } = window.location;
+  return `${pathname}/${tabId}-tab-state`;
+};
+
+const loadActiveTab = (config) => {
+  if (config.remember !== 'on') return 0;
+
+  const tabId = config['tab-id'];
+  return sessionStorage.getItem(generateStorageName(tabId));
+};
+
+const saveActiveTabInStorage = (targetId, config) => {
+  if (config.remember !== 'on') return;
+
+  const delimiterIndex = targetId.lastIndexOf('-');
+  const activeTabIndex = targetId.substring(delimiterIndex + 1);
+  const storageName = generateStorageName(config['tab-id']);
+  sessionStorage.setItem(storageName, activeTabIndex);
+};
+
+function changeTabs(e, config) {
   const { target } = e;
   const targetId = target.getAttribute('id');
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
@@ -99,6 +120,7 @@ function changeTabs(e) {
   targetContent?.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
   window.dispatchEvent(tabChangeEvent);
+  saveActiveTabInStorage(targetId, config);
 }
 
 function getStringKeyName(str) {
@@ -164,7 +186,7 @@ function initTabs(elm, config, rootElem) {
     });
   });
   tabs.forEach((tab) => {
-    tab.addEventListener('click', changeTabs);
+    tab.addEventListener('click', (e) => changeTabs(e, config));
   });
   if (config) configTabs(config, rootElem);
 }
@@ -290,6 +312,10 @@ const init = (block) => {
   });
   const tabId = config.id || getUniqueId(block, rootElem);
   config['tab-id'] = tabId;
+
+  const activeTabIndex = loadActiveTab(config);
+  if (activeTabIndex) config['active-tab'] = activeTabIndex;
+
   block.id = `tabs-${tabId}`;
   parentSection?.classList.add(`tablist-${tabId}-section`);
 
