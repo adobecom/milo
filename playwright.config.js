@@ -16,10 +16,10 @@ const masFeatures = [
 
 // Milo test ( or Non-MAS tests)
 const miloIgnore = [
-  'features/mas/**',
-  'features/commerce/**',
-  'features/promotions/**',
-  'features/osttools/**',
+  // 'features/mas/**',
+  // 'features/commerce/**',
+  // 'features/promotions/**',
+  // 'features/osttools/**',
 ];
 /**
  * @see https://playwright.dev/docs/test-configuration

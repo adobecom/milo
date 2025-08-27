@@ -32,8 +32,8 @@ jobs:
             browser: firefox
           - project: milo-live-webkit
             browser: webkit
-          - project: mas
-            browser: MAS (All Browsers)
+          - #project: mas
+            #browser: MAS (All Browsers)
             # shard: 1
 
     steps:
