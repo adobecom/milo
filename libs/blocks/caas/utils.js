@@ -666,8 +666,10 @@ export const getGrayboxExperienceId = (
   // Check for graybox.adobe.com format: https://[exn].[pn]-graybox.adobe.com/[path].html
   if (isAdobeGraybox) {
     const parts = hostname.split('.');
-    if (parts.length >= 3 && parts[1].includes('graybox')) {
-      return parts[0]; // Return the experience ID (first part)
+    if (parts.length >= 3) {
+      if (parts[1] === 'graybox' || parts[1].includes('-graybox')) {
+        return parts[0]; // Return the experience ID (first part)
+      }
     }
   }
 
