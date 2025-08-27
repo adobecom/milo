@@ -15,6 +15,10 @@
       {
         "key": "manifest-execution-order",
         "value": "Normal"
+      },
+      {
+        "key": "manifest-marketing-action",
+        "value": "Non-marketing"
       }
     ]
   },
