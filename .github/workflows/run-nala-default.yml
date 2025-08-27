@@ -83,7 +83,11 @@ jobs:
             case "${{ matrix.browser }}" in
               chromium) npx playwright install chromium ;;
               firefox)  npx playwright install firefox  ;;
-              webkit)   npx playwright install --with-deps webkit ;;
+              webkit)   
+                echo "Installing WebKit system dependencies via apt..."
+                sudo npx playwright install-deps webkit
+                echo "Installing WebKit binary..."
+                npx playwright install webkit ;;
             esac
           fi
 
