@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   run-nala-tests:
-    name: ${{ matrix.project == 'mas' && 'Running MAS (all browsers)' || format('Running on • {0} browser', matrix.browser) }}
+    name: ${{ matrix.project == 'mas' && 'Running MAS Tests (all browsers)' || format('Running on • {0} browser', matrix.browser) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -62,7 +62,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-${{ matrix.browser }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-
 
