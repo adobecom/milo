@@ -1437,6 +1437,10 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
         max-width: var(--consonant-merch-card-plans-students-width);
         width: 100%;
     }
+
+    merch-card[variant="plans-education"] .spacer {
+        height: 0px;
+    }
 }
 
 merch-card[variant^="plans"]:not([size]) {
