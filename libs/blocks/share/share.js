@@ -51,39 +51,43 @@ function getPlatforms(el) {
   return platforms;
 }
 
+function getPrevHeadingLevel(block) {
+  const prevHeading = [...document.querySelectorAll('h2, h3, h4, h5, h6')]
+    .reverse()
+    /* eslint-disable-next-line no-bitwise */
+    .find((heading) => heading.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING);
+  const prevHeadingTag = prevHeading?.tagName.toLowerCase() ?? 'h2';
+  return prevHeadingTag.replace('h', '');
+}
+
+function toSentenceCase(str) {
+  if (!str || typeof str !== 'string') return '';
+  /* eslint-disable-next-line no-useless-escape */
+  return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
+}
+
 export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(block);
-  const rows = block.querySelectorAll(':scope > div');
-  const childDiv = rows[0]?.querySelector(':scope > div');
-  const emptyRow = rows.length && childDiv?.innerText.trim() === '';
-  const toSentenceCase = (str) => {
-    if (!str || typeof str !== 'string') return '';
-    /* eslint-disable-next-line no-useless-escape */
-    return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
-  };
+  let firstRow = block.querySelector(':scope > div');
+  let headingElem;
 
-  if (block.classList.contains('inline')) {
-    rows[0].innerHTML = '';
+  if (block.matches('.inline')) firstRow?.remove();
+  else if (firstRow?.textContent.trim().length) {
+    headingElem = firstRow.querySelector('p, div:not(:has(p, h1, h2, h3, h4, h5, h6))');
   } else {
-    rows[0]?.classList.add('tracking-header');
-    // add share placeholder if empty row
-    if (!rows.length || emptyRow) {
-      const heading = toSentenceCase(await replaceKey('share-this-page', config));
-      block.append(createTag('p', null, heading));
+    headingElem = createTag('p', null, toSentenceCase(await replaceKey('share-this-page', config)));
+    if (firstRow) firstRow.replaceChildren(headingElem);
+    else {
+      firstRow = createTag('div', null, headingElem);
+      block.append(firstRow);
     }
   }
 
-  // wrap innerHTML in <p> tag if none are present
-  if (childDiv && !emptyRow) {
-    const innerPs = childDiv.querySelectorAll(':scope > p');
-    if (innerPs.length === 0) {
-      const text = childDiv.innerText;
-      childDiv.innerText = '';
-      childDiv.append(createTag('p', null, text));
-    }
-  }
+  firstRow?.classList.add('tracking-header');
+  headingElem?.setAttribute('role', 'heading');
+  headingElem?.setAttribute('aria-level', getPrevHeadingLevel(block));
 
   const clipboardSupport = !!navigator.clipboard;
   if (clipboardSupport) platforms.push('clipboard');

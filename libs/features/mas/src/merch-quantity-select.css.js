@@ -44,6 +44,8 @@ export const styles = css`
         border: var(--border-width) solid var(--border-color);
         border-top-left-radius: var(--radius);
         border-bottom-left-radius: var(--radius);
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
         border-right: none;
         padding-inline-start: 12px;
         box-sizing: border-box;

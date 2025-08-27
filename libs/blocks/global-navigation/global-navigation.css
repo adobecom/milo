@@ -311,7 +311,14 @@ header.global-navigation {
   white-space: nowrap;
 }
 
-.feds-cta--secondary:hover {
+.global-navigation:not(.feds--dark) .feds-promo .feds-cta--secondary {
+  background-color: rgb(255, 255, 255);
+  border-color: rgb(75, 75, 75);
+  color: rgb(75, 75, 75);
+}
+
+.feds-cta--secondary:hover,
+.global-navigation:not(.feds--dark) .feds-promo .feds-cta--secondary:hover {
   border-color: #C6C6C6;
   background: #E9E9E9;
   color: #292929;
@@ -1095,7 +1102,6 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-cta--secondary {
   margin: 12px;
   height: unset;
-  display: inline-block;
   line-height: 1.2;
   text-wrap: wrap;
   min-width: 100px;
