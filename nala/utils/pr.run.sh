@@ -1,32 +1,36 @@
 #!/bin/bash
+set -euo pipefail
 
 TAGS=""
 REPORTER=""
 EXCLUDE_TAGS="--grep-invert nopr"
 EXIT_STATUS=0
 
-echo "GITHUB_REF: $GITHUB_REF"
-echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
+echo "GITHUB_REF: ${GITHUB_REF:-}"
+echo "GITHUB_HEAD_REF: ${GITHUB_HEAD_REF:-}"
+echo "PROJECT: ${PROJECT:-<all>}"
+echo "SHARD:   ${SHARD:-<none>}"
 
-if [[ "$GITHUB_REF" == refs/pull/* ]]; then
+if [[ "${GITHUB_REF:-}" == refs/pull/* ]]; then
   # extract PR number and branch name
   PR_NUMBER=$(echo "$GITHUB_REF" | awk -F'/' '{print $3}')
-  FEATURE_BRANCH="$GITHUB_HEAD_REF"
-elif [[ "$GITHUB_REF" == refs/heads/* ]]; then
+  FEATURE_BRANCH="${GITHUB_HEAD_REF:-}"
+elif [[ "${GITHUB_REF:-}" == refs/heads/* ]]; then
   # extract branch name from GITHUB_REF
   FEATURE_BRANCH=$(echo "$GITHUB_REF" | awk -F'/' '{print $3}')
 else
   echo "Unknown reference format"
+  FEATURE_BRANCH="${branch:-unknown}"
 fi
 
 # Replace "/" characters in the feature branch name with "-"
 FEATURE_BRANCH=$(echo "$FEATURE_BRANCH" | sed 's/\//-/g')
 
-echo "PR Number: ${PR_NUMBER:-"N/A"}"
+echo "PR Number: ${PR_NUMBER:-N/A}"
 echo "Feature Branch Name: $FEATURE_BRANCH"
 
 repository=${GITHUB_REPOSITORY}
-repoParts=(${repository//\// }) 
+repoParts=(${repository//\// })
 toRepoOrg=${repoParts[0]}
 toRepoName=${repoParts[1]}
 
@@ -46,12 +50,12 @@ export PR_NUMBER
 
 echo "PR Branch live URL: $PR_BRANCH_LIVE_URL_GH"
 
-# Purge the PR branch before running tests
+# Purge the PR branch before running tests.
 echo "Purging branch: $FEATURE_BRANCH"
 PURGE_URL="https://admin.hlx.page/code/$prOrg/$prRepo/$FEATURE_BRANCH/*"
 
 echo "Executing: curl -si -X POST \"$PURGE_URL\""
-PURGE_RESPONSE=$(curl -si -X POST "$PURGE_URL")
+PURGE_RESPONSE=$(curl -si -X POST "$PURGE_URL" || true)
 
 echo "Waiting 10 seconds for purge to complete..."
 sleep 10
@@ -65,7 +69,7 @@ else
 fi
 
 # Convert GitHub Tag(@) labels that can be grepped
-for label in ${labels}; do
+for label in ${labels:-}; do
   if [[ "$label" = \@* ]]; then
     label="${label:1}"
     TAGS+="|$label"
@@ -73,28 +77,42 @@ for label in ${labels}; do
 done
 
 # Remove the first pipe from tags if tags are not empty
-[[ ! -z "$TAGS" ]] && TAGS="${TAGS:1}" && TAGS="-g $TAGS"
+[[ -n "$TAGS" ]] && TAGS="${TAGS:1}" && TAGS="-g $TAGS"
 
 # Retrieve GitHub reporter parameter if not empty
 # Otherwise, use reporter settings in playwright.config.js
-REPORTER=$reporter
-[[ ! -z "$REPORTER" ]] && REPORTER="--reporter $REPORTER"
+REPORTER="${reporter:-}"
+[[ -n "$REPORTER" ]] && REPORTER="--reporter $REPORTER"
 
-echo "Running Nala on branch: $FEATURE_BRANCH "
-echo "Tags : ${TAGS:-"No @tags or annotations on this PR"}"
-echo "Run Command : npx playwright test ${TAGS} ${EXCLUDE_TAGS} ${REPORTER}"
-echo -e "\n"
-echo "*******************************"
+echo "Running Nala on branch: $FEATURE_BRANCH"
+echo "Tags: ${TAGS:-No @tags or annotations on this PR}"
 
 # Navigate to the GitHub Action path and install dependencies
-cd "$GITHUB_ACTION_PATH" || exit
-npm ci
-npx playwright install --with-deps
+cd "$GITHUB_ACTION_PATH"
 
-# Run Playwright tests on the specific projects using root-level playwright.config.js
-# This will be changed later
-echo "*** Running tests on specific projects ***"
-npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
+# Build matrix-aware args
+PROJECT_ARG=()
+if [[ -n "${PROJECT:-}" ]]; then
+  if [[ "$PROJECT" == "mas" ]]; then
+    # run ALL 3 MAS projects together
+    PROJECT_ARG=(--project=mas-chromium --project=mas-firefox --project=mas-webkit)
+  else
+    PROJECT_ARG=(--project="$PROJECT")
+  fi
+fi
+
+SHARD_ARG=()
+[[ -n "${SHARD:-}" ]] && SHARD_ARG=(--shard="$SHARD")
+
+echo "Run Command : npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} ${PROJECT_ARG[*]} ${SHARD_ARG[*]} ${REPORTER}"
+echo "*******************************"
+
+# Run Playwright tests using root-level playwright.config.js
+npx playwright test --config=./playwright.config.js \
+  ${TAGS} ${EXCLUDE_TAGS} \
+  "${PROJECT_ARG[@]}" \
+  "${SHARD_ARG[@]}" \
+  ${REPORTER} || EXIT_STATUS=$?
 
 # Check if tests passed or failed
 if [ $EXIT_STATUS -ne 0 ]; then
@@ -103,3 +121,4 @@ if [ $EXIT_STATUS -ne 0 ]; then
 else
   echo "All tests passed successfully."
 fi
+echo "*******************************"
