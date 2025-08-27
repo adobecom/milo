@@ -22,6 +22,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       fail-fast: false
+      max-parallel: 4
       matrix:
         node-version: [20.x]
         project: [milo-live-chromium, milo-live-firefox, milo-live-webkit, mas]
