@@ -16,14 +16,11 @@ var oe=Object.defineProperty;var $=s=>{throw TypeError(s)};var ae=(s,t,e)=>t in 
             grid-column: 1 / -1;
             justify-self: stretch;
             color: var(--merch-color-grey-80);
+            order: 1000;
         }
 
         sp-theme {
             display: contents;
-        }
-
-        #footer {
-            order: 1000;
         }
     `);C.SortOrder=E;customElements.define(te,C);var Re={filters:["noResultText","resultText","resultsText"],filtersMobile:["noResultText","resultMobileText","resultsMobileText"],search:["noSearchResultsText","searchResultText","searchResultsText"],searchMobile:["noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"]},ge=(s,t,e)=>{s.querySelectorAll(`[data-placeholder="${t}"]`).forEach(i=>{i.innerText=e||""})},Se={search:["mobile","tablet"],filter:["mobile","tablet"],sort:!0,result:!0,custom:!1},xe={catalog:"l"},d,L,M=class extends J{constructor(){super();R(this,d);R(this,L);S(this,"tablet",new N(this,U));S(this,"desktop",new N(this,k));this.collection=null,x(this,d,{search:!1,filter:!1,sort:!1,result:!1,custom:!1}),this.updateLiterals=this.updateLiterals.bind(this),this.handleSidenavAttached=this.handleSidenavAttached.bind(this)}connectedCallback(){super.connectedCallback(),this.collection?.addEventListener(D,this.updateLiterals),this.collection?.addEventListener(H,this.handleSidenavAttached),x(this,L,customElements.get("merch-card"))}disconnectedCallback(){super.disconnectedCallback(),this.collection?.removeEventListener(D,this.updateLiterals),this.collection?.removeEventListener(H,this.handleSidenavAttached)}willUpdate(){n(this,d).search=this.getVisibility("search"),n(this,d).filter=this.getVisibility("filter"),n(this,d).sort=this.getVisibility("sort"),n(this,d).result=this.getVisibility("result"),n(this,d).custom=this.getVisibility("custom")}parseVisibilityOptions(e,r){if(!e||!Object.hasOwn(e,r))return null;let i=e[r];return i===!1?!1:i===!0?!0:i.includes(this.currentMedia)}getVisibility(e){let r=n(this,L).getCollectionOptions(this.collection?.variant)?.headerVisibility,i=this.parseVisibilityOptions(r,e);return i!==null?i:this.parseVisibilityOptions(Se,e)}get sidenav(){return this.collection?.sidenav}get search(){return this.collection?.search}get resultCount(){return this.collection?.resultCount}get variant(){return this.collection?.variant}get isMobile(){return!this.isTablet&&!this.isDesktop}get isTablet(){return this.tablet.matches&&!this.desktop.matches}get isDesktop(){return this.desktop.matches}get currentMedia(){return this.isDesktop?"desktop":this.isTablet?"tablet":"mobile"}get searchAction(){if(!n(this,d).search)return m;let e=O(this,"searchText");return e?T`
               <merch-search deeplink="search" id="search">

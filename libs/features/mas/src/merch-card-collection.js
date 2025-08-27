@@ -474,14 +474,11 @@ export class MerchCardCollection extends LitElement {
             grid-column: 1 / -1;
             justify-self: stretch;
             color: var(--merch-color-grey-80);
+            order: 1000;
         }
 
         sp-theme {
             display: contents;
-        }
-
-        #footer {
-            order: 1000;
         }
     `;
 }
