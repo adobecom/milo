@@ -32,7 +32,7 @@ jobs:
             browser: firefox
           - project: milo-live-webkit
             browser: webkit
-          - #project: mas
+            #project: mas
             #browser: MAS (All Browsers)
             # shard: 1
 
