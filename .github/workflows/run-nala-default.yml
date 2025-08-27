@@ -87,7 +87,8 @@ jobs:
                 echo "Installing WebKit system dependencies via apt..."
                 sudo npx playwright install-deps webkit
                 echo "Installing WebKit binary..."
-                npx playwright install webkit ;;
+                npx playwright install webkit
+                ;;
             esac
           fi
 
