@@ -127,7 +127,6 @@ test.describe('ThreeInOne Block test suite', () => {
       await cta.waitFor({ state: 'visible' });
       await openModal(cta);
       const modal = threeInOne.getModal();
-      await page.waitForSelector('.dialog-modal');
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrcNoAddOn);
@@ -148,11 +147,28 @@ test.describe('ThreeInOne Block test suite', () => {
       await cta.waitFor({ state: 'visible' });
       await openModal(cta);
       const modal = threeInOne.getModal();
-      await page.waitForSelector('.dialog-modal');
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrcWithAddOn);
       await threeInOne.closeModal();
+    });
+  });
+
+  test(`${features[5].name}, ${features[5].tags}`, async ({ page, baseURL }) => {
+    const threeInOne = new ThreeInOne(page);
+    console.info(`[Test Page]: ${baseURL}${features[5].path}${miloLibs}`);
+
+    await test.step('Validate fallback step CTA is visible and has proper attributes', async () => {
+      const { sectionId, attributes } = features[5];
+      await page.goto(`${baseURL}${features[5].path}${features[5].browserParams}&${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      const cta = threeInOne.getFallbackCta(sectionId);
+      for (const [key, value] of Object.entries(attributes)) {
+        await expect(cta).toHaveAttribute(key, value);
+      }
+      await cta.click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${attributes.href}`);
     });
   });
 });
