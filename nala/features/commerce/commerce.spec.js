@@ -57,7 +57,7 @@ module.exports = {
     {
       tcid: '7',
       name: '@Commerce-DE',
-      path: '/de/drafts/nala/features/commerce/promo-placeholders',
+      path: '/de/drafts/nala/features/commerce/promo-placeholders-page',
       data: {
         promo: 'PEMAP50AASTE2',
         CO: 'co=DE',
