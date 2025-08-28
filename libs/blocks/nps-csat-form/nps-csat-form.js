@@ -64,7 +64,7 @@ export const expectMessage = async (m, timeoutMessage = null) => {
     return message;
   }
   if (m.type !== message?.type) {
-    const em = `Unexpected message. Expected ${m.type}`;
+    const em = `Unexpected message ${message.type}. Expected ${m.type}`;
     throw new Error(em);
   }
   return message;
