@@ -166,7 +166,8 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Validate manifest is on served on the page but inactive', async () => {
-      await PROMO.mepMenuOpen.click();
+      await page.waitForLoadState('networkidle');
+      await PROMO.mepMenuOpen.click({ force: true });
       await expect(await PROMO.mepManifestList).toBeVisible();
       await expect(await PROMO.mepManifestList).toContainText(data.status1);
       await expect(await PROMO.mepManifestList).toContainText(data.status2);
@@ -231,9 +232,7 @@ test.describe('Promotions feature test suite', () => {
   });
 
   // @Promo-with-personalization-and-target - Validate promo together with personalization and target ON
-  test(`${features[7].name},${features[7].tags}`, async ({ page, baseURL, browserName }) => {
-    test.skip(browserName === 'chromium' || browserName === 'webkit', 'Skipping test for Chromium and webkit browsers');
-
+  test(`${features[7].name},${features[7].tags}`, async ({ page, baseURL }) => {
     const testPage = `${baseURL}${features[7].path}${miloLibs}`;
     const { data } = features[7];
     console.info('[Test Page]: ', testPage);
@@ -244,6 +243,7 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Verify only default test page marquee is visible', async () => {
+      await page.waitForLoadState('networkidle');
       await expect(await PROMO.marqueeDefault).toBeVisible();
       await expect(await PROMO.marqueeDefault).toContainText(data.textMarquee);
       await expect(await PROMO.textDefault).not.toBeVisible();
@@ -273,7 +273,8 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Validate all manifests are served and active on the page', async () => {
-      await PROMO.mepMenuOpen.click();
+      await page.waitForLoadState('networkidle');
+      await PROMO.mepMenuOpen.click({ force: true });
       await expect(await PROMO.mepManifestList).toBeVisible();
       await expect(await PROMO.mepManifestList).not.toContainText(data.inactiveStatus);
       await expect(await PROMO.mepManifestList).toContainText(data.manifestInsertFile);
@@ -299,7 +300,7 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Disable insert manifest and preview', async () => {
       await PROMO.mepSelectInsert.selectOption('Default (control)');
-      await PROMO.mepPreviewButton.click();
+      await PROMO.mepPreviewButton.click({ force: true });
 
       await page.waitForLoadState('domcontentloaded');
       previewPage = decodeURIComponent(page.url());
@@ -321,10 +322,10 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Enable insert and disable replace manifest and preview', async () => {
-      await PROMO.mepMenuOpen.click();
+      await PROMO.mepMenuOpen.click({ force: true });
       await PROMO.mepSelectInsert.selectOption('all');
       await PROMO.mepSelectReplace.selectOption('Default (control)');
-      await PROMO.mepPreviewButton.click();
+      await PROMO.mepPreviewButton.click({ force: true });
 
       await page.waitForLoadState('domcontentloaded');
       previewPage = decodeURIComponent(page.url());
@@ -348,10 +349,10 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Desable all manifests and preview', async () => {
-      await PROMO.mepMenuOpen.click();
+      await PROMO.mepMenuOpen.click({ force: true });
       await PROMO.mepSelectInsert.selectOption('Default (control)');
       await PROMO.mepSelectReplace.selectOption('Default (control)');
-      await PROMO.mepPreviewButton.click();
+      await PROMO.mepPreviewButton.click({ force: true });
 
       await page.waitForLoadState('domcontentloaded');
       previewPage = decodeURIComponent(page.url());
