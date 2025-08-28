@@ -10,7 +10,7 @@ import {
     getCollectionOptions,
 } from './variants/variants.js';
 
-import './global.css.js';
+import { getGlobalStyleSheet } from './global.css.js';
 import './aem-fragment.js';
 import './merch-badge.js';
 import './merch-mnemonic-list.js';
@@ -154,6 +154,12 @@ export class MerchCard extends LitElement {
     };
 
     static styles = [styles, ...sizeStyles()];
+    
+    static globalStyleSheet = null;
+    
+    static {    
+        MerchCard.globalStyleSheet = getGlobalStyleSheet();
+    }
 
     static registerVariant = registerVariant;
 
@@ -421,6 +427,7 @@ export class MerchCard extends LitElement {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
+
     connectedCallback() {
         super.connectedCallback();
         if (!this.#internalId) {
@@ -429,6 +436,14 @@ export class MerchCard extends LitElement {
         if (!this.aemFragment) {
           this.#resolveHydration?.();
           this.#resolveHydration = undefined;
+        }
+        
+        if (MerchCard.globalStyleSheet && this.shadowRoot && 
+            !this.shadowRoot.adoptedStyleSheets.includes(MerchCard.globalStyleSheet)) {
+            this.shadowRoot.adoptedStyleSheets = [
+                ...this.shadowRoot.adoptedStyleSheets, 
+                MerchCard.globalStyleSheet
+            ];
         }
         this.id ??=
             this.getAttribute('id') ??

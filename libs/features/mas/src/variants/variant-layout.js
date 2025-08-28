@@ -2,7 +2,8 @@ import { html, nothing } from 'lit';
 import { getFragmentMapping } from './variants';
 
 export class VariantLayout {
-    static styleMap = {};
+    static variantStyleSheets = new Map();
+    static initializationPromises = new Map();
 
     card;
 
@@ -16,12 +17,47 @@ export class VariantLayout {
         return this.#container;
     }
 
-    insertVariantStyle() {
-        if (!VariantLayout.styleMap[this.card.variant]) {
-            VariantLayout.styleMap[this.card.variant] = true;
-            const styles = document.createElement('style');
-            styles.innerHTML = this.getGlobalCSS();
-            document.head.appendChild(styles);
+    static async ensureVariantStyle(variant, cssContent) {
+        if (VariantLayout.variantStyleSheets.has(variant)) {
+            return Promise.resolve(VariantLayout.variantStyleSheets.get(variant));
+        }
+
+        if (VariantLayout.initializationPromises.has(variant)) {
+            return VariantLayout.initializationPromises.get(variant);
+        }
+
+        const initPromise = new Promise((resolve) => {
+            try {
+                const styleSheet = new CSSStyleSheet();
+                styleSheet.replaceSync(cssContent);
+                
+                VariantLayout.variantStyleSheets.set(variant, styleSheet);
+                
+                if (!document.adoptedStyleSheets.includes(styleSheet)) {
+                    document.adoptedStyleSheets = [...document.adoptedStyleSheets, styleSheet];
+                }
+                
+                resolve(styleSheet);
+            } catch (err) {
+                console.error(`Failed to create stylesheet for variant ${variant}:`, err);
+                resolve(null);
+            }
+        });
+
+        VariantLayout.initializationPromises.set(variant, initPromise);
+        return initPromise;
+    }
+
+    async insertVariantStyle() {
+        const variant = this.card.variant;
+        const cssContent = this.getGlobalCSS();
+        
+        if (!cssContent) return;
+        
+        const styleSheet = await VariantLayout.ensureVariantStyle(variant, cssContent);
+        
+        if (styleSheet && this.card.shadowRoot && !this.card.shadowRoot.adoptedStyleSheets.includes(styleSheet)) {
+            this.card.shadowRoot.adoptedStyleSheets = [...this.card.shadowRoot.adoptedStyleSheets, styleSheet];
         }
     }
 
@@ -49,7 +85,6 @@ export class VariantLayout {
 
     constructor(card) {
         this.card = card;
-        this.insertVariantStyle();
     }
 
     get badge() {

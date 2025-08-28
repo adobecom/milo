@@ -214,7 +214,6 @@ export default async function init(el) {
       initServicePromise,
       merchCardCollectionDep,
       import('../merch-card/merch-card.js'),
-      loadMasComponent(MAS_MERCH_CARD),
     ];
 
     ({ base, mep } = config);
