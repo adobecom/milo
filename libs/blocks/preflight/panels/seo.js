@@ -182,7 +182,7 @@ async function getResults() {
 }
 
 async function handleAsoSignIn() {
-  await window.asoIMS.signIn();
+  await window.asoIMS.signIn({ profile_filter: 'inc@AdobeOrg' });
 
   const sessionIntervalId = setInterval(async () => {
     try {
