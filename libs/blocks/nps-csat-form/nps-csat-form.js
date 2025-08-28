@@ -76,7 +76,7 @@ const sendMessage = (() => {
   const parent = typeof window.uxpHost?.postMessage === 'function'
     ? window.uxpHost
     : window.parent;
-  if (parent === window.top) {
+  if (parent === window) {
     console.warn('No parent document found'); // eslint-disable-line
   }
   return (obj) => {
