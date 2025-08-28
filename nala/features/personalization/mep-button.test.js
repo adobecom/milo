@@ -22,8 +22,8 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
 });
 
 // Test 1: the mep parameter enables the mep button
-test(`${features[1].name},${features[1].tags}`, async ({ page, browserName }) => {
-  test.skip(browserName === 'webkit', 'Skipping float-button test on WebKit');
+test(`${features[1].name},${features[1].tags}`, async ({ page }) => {
+  // test.skip(browserName === 'webkit', 'Skipping float-button test on WebKit');
   const URL = features[1].path;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
