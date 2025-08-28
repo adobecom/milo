@@ -115,6 +115,9 @@ var L=Object.defineProperty;var k=(s,e,t)=>e in s?L(s,e,{enumerable:!0,configura
             --merch-sidenav-checkbox-group-label-top-margin: 8px;
             --merch-sidenav-checkbox-group-height: 40px;
             /* Modal */
+            --merch-sidenav-modal-close-font-size: 15px;
+            --merch-sidenav-modal-close-line-height: 19px;
+            --merch-sidenav-modal-close-gap: 10px;
             --merch-sidenav-modal-border-radius: 8px;
             --merch-sidenav-modal-padding: var(--merch-sidenav-padding);
 
@@ -193,18 +196,20 @@ var L=Object.defineProperty;var k=(s,e,t)=>e in s?L(s,e,{enumerable:!0,configura
         sp-dialog-base #sidenav {
             box-sizing: border-box;
             max-width: 300px;
-            max-height: 90dvh;
+            max-height: 95dvh;
             background: #ffffff 0% 0% no-repeat padding-box;
             box-shadow: 0px 1px 4px #00000026;
+        }
+
+        :host(:not([autoclose])) #sidenav h2 {
+            margin-top: calc(var(--merch-sidenav-modal-close-gap) + var(--merch-sidenav-modal-close-line-height));
         }
 
         sp-link {
             position: absolute;
             top: 16px;
             right: 16px;
-            padding: var(--merch-sidenav-title-padding);
-            padding-inline: 0;
-            padding-bottom: 0;
-            line-height: var(--merch-sidenav-title-line-height);
+            font-size: var(--merch-sidenav-modal-close-font-size);
+            line-height: var(--merch-sidenav-modal-close-line-height);
         }
     `);customElements.define("merch-sidenav",E);export{E as MerchSideNav};
