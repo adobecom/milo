@@ -28,6 +28,21 @@ const [createLiveRegion, updateLiveRegion] = (() => {
   ];
 })();
 
+let previousActiveElement = null;
+let currentActiveElement = null;
+
+const trackPreviousElement = () => {
+  const newActiveElement = document.activeElement;
+  if (currentActiveElement === newActiveElement) return;
+
+  previousActiveElement = currentActiveElement;
+  currentActiveElement = newActiveElement;
+};
+
+const getErrorMessage = (element) => element?.parentElement.querySelector('.errorMessage')?.textContent;
+
+const isErrorMessageDifferent = (message, element) => message !== getErrorMessage(element);
+
 const createValidationObserver = () => new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') return;
@@ -47,8 +62,13 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
       field.setAttribute('aria-describedby', `${id}_em_`);
     });
 
-    const errorMessage = rowElement.querySelector('.errorMessage');
-    updateLiveRegion(errorMessage?.textContent);
+    const errorMessage = rowElement.querySelector('.errorMessage')?.textContent;
+
+    if (isErrorMessageDifferent(errorMessage, previousActiveElement)
+        && isErrorMessageDifferent(errorMessage, currentActiveElement)
+    ) return;
+
+    updateLiveRegion(errorMessage);
   });
 });
 
@@ -67,8 +87,14 @@ const loadFaas = async (a) => {
     const faasForm = faas.querySelector('.faas-form');
     if (!faasForm) return;
 
+    faasForm.addEventListener('focusin', trackPreviousElement);
+
     createLiveRegion(faasForm);
     const validationObserver = createValidationObserver();
+
+    faasForm.addEventListener('submit', () => {
+      if (faasForm.querySelector('.faas-form-overlay')) updateLiveRegion('Form loading');
+    });
 
     [...faasForm.querySelectorAll('.row')].forEach((row) => {
       validationObserver.observe(row, { attributes: true, attributeFilter: ['class'] });

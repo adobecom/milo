@@ -76,7 +76,7 @@ describe('marketo-config', () => {
     const accordion = await waitForElement('.accordion');
     expect(accordion).to.exist;
 
-    const marketo = await waitForElement('.marketo');
+    const marketo = await waitForElement('iframe');
     expect(marketo).to.exist;
   });
 
