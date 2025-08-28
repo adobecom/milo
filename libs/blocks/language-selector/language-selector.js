@@ -180,6 +180,15 @@ const isEnglishMappingMatch = (name, searchLower, searchNormalized, mappingData)
     || getNormalizedText(englishMapping.Native) === nativeNameNormalized);
 };
 
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function renderLanguages({
   languageList,
   languagesList,
@@ -203,14 +212,16 @@ function renderLanguages({
     const fragment = document.createDocumentFragment();
 
     if (filteredLanguages.length === 0 && searchTerm.trim() && noSearchResult) {
-      const noResultItem = createTag('li', { 
-        class: 'language-item no-search-result', 
+      const noResultItem = createTag('li', {
+        class: 'language-item no-search-result',
         role: 'status',
         'aria-live': 'polite',
-        'aria-label': 'No search results found'
+        'aria-label': 'No search results found',
       });
       const noResultText = createTag('span', { class: 'no-search-result-text', role: 'text', 'aria-label': noSearchResult.trim() });
-      noResultText.innerHTML = noSearchResult.trim().replace(/[\n|]+/g, '<br><span style="display: block; height: 8px;"></span>');
+      // Escape before inserting, then format line breaks
+      const safeHtml = escapeHTML(noSearchResult.trim()).replace(/[\n|]+/g, '<br><span style="display: block; height: 8px;"></span>');
+      noResultText.innerHTML = safeHtml;
       noResultItem.appendChild(noResultText);
       fragment.appendChild(noResultItem);
     } else {
