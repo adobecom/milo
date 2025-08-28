@@ -8,18 +8,41 @@ let miloIconsPromise;
 let tooltipListenersPromise = false;
 
 function decorateToolTip(icon, iconName) {
-  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
-  if (!hasTooltip) return;
-
   const wrapper = icon.closest('em');
+  if (!wrapper || !wrapper.textContent.includes('|')) return;
+
   wrapper.className = 'tooltip-wrapper';
-  const conf = wrapper.textContent.split('|');
-  const content = conf.pop()?.trim();
+
+  const rawParts = wrapper.textContent.split('|').map((s) => s?.trim()).filter((s) => s !== undefined);
+  const content = rawParts.pop()?.trim();
   if (!content) return;
 
+  const placementRaw = (rawParts.pop() || 'right').toLowerCase();
+
   icon.dataset.tooltip = content;
-  const place = conf.pop()?.trim().toLowerCase() || 'right';
-  icon.className = `icon icon-${iconName} milo-tooltip ${place}`;
+
+  const allowed = new Set(['left', 'right', 'top', 'bottom']);
+  let base = 'right';
+  let tablet;
+  let desktop;
+  if (placementRaw.includes(',')) {
+    const [d, t, m] = placementRaw.split(',').map((p) => p.trim().toLowerCase());
+    desktop = allowed.has(d) ? d : undefined;
+    tablet = allowed.has(t) ? t : undefined;
+    base = allowed.has(m) ? m : 'right';
+  } else {
+    base = allowed.has(placementRaw) ? placementRaw : 'right';
+  }
+
+  const isLegacyTooltip = [...icon.classList].some((cls) => cls.includes('icon-tooltip'));
+  if (isLegacyTooltip) {
+    icon.className = 'icon icon-info';
+  }
+
+  icon.classList.add('milo-tooltip');
+  icon.classList.add(base);
+  if (tablet) icon.classList.add(`dir-tablet-${tablet}`);
+  if (desktop) icon.classList.add(`dir-desktop-${desktop}`);
 
   [['tabindex', '0'], ['aria-label', content], ['role', 'button']].forEach(([attr, value]) => {
     icon.setAttribute(attr, value);

@@ -123,6 +123,20 @@ describe('Icon Support', () => {
     expect(tooltip).to.exist;
   });
 
+  it('Creates responsive tooltip classes (desktop, tablet, mobile)', async () => {
+    const tooltipWrapper = createTag('em', {}, 'top, left, bottom|Responsive tooltip text.');
+    const tooltipIcon = createTag('span', { class: 'icon icon-tooltip' });
+    tooltipWrapper.appendChild(tooltipIcon);
+    document.body.appendChild(tooltipWrapper);
+
+    await loadIcons([tooltipIcon], config);
+    const tooltip = document.querySelector('.milo-tooltip');
+    expect(tooltip).to.exist;
+    expect(tooltip.classList.contains('bottom')).to.be.true; // base/mobile
+    expect(tooltip.classList.contains('dir-tablet-left')).to.be.true;
+    expect(tooltip.classList.contains('dir-desktop-top')).to.be.true;
+  });
+
   it('Handles invalid SVG response', async () => {
     const icon = createTag('span', { class: 'icon icon-invalid' });
     document.body.appendChild(icon);

@@ -107,6 +107,127 @@
   display: block;
 }
 
+/* Responsive placement overrides */
+@media (min-width: 600px) {
+  .milo-tooltip.dir-tablet-left::before {
+    left: initial;
+    margin: initial;
+    right: 100%;
+    margin-right: 8px;
+  }
+
+  .milo-tooltip.dir-tablet-left::after {
+    left: 0;
+    margin-right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 8px solid #0469E3;
+    border-color: transparent transparent transparent #0469E3;
+  }
+
+  .milo-tooltip.dir-tablet-top::before {
+    left: calc(50% - 11px);
+    transform: translateX(-50%) translateY(-100%);
+    top: -6px;
+    margin-bottom: 15px;
+  }
+
+  .milo-tooltip.dir-tablet-top::after {
+    left: 50%;
+    top: 2px;
+    transform: translateY(-50%);
+    border: 8px solid #0469E3;
+    border-color: #0469E3 transparent transparent;
+  }
+
+  .milo-tooltip.dir-tablet-right::before {
+    left: 100%;
+    margin-left: 7px;
+    right: initial;
+    margin-right: initial;
+  }
+
+  .milo-tooltip.dir-tablet-right::after {
+    left: 100%;
+    margin-left: -8px;
+    border-color: transparent #0469E3 transparent transparent;
+  }
+
+  .milo-tooltip.dir-tablet-bottom::before {
+    left: calc(50% - 11px);
+    transform: translateX(-50%);
+    top: 100%;
+    margin-top: 9px;
+  }
+
+  .milo-tooltip.dir-tablet-bottom::after {
+    left: 50%;
+    top: calc(100% + 1px);
+    transform: translateY(-50%);
+    border-color: transparent transparent #0469E3;
+  }
+}
+
+@media (min-width: 1200px) {
+  .milo-tooltip.dir-desktop-left::before {
+    left: initial;
+    margin: initial;
+    right: 100%;
+    margin-right: 8px;
+  }
+
+  .milo-tooltip.dir-desktop-left::after {
+    left: 0;
+    margin-right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 8px solid #0469E3;
+    border-color: transparent transparent transparent #0469E3;
+  }
+
+  .milo-tooltip.dir-desktop-top::before {
+    left: calc(50% - 11px);
+    transform: translateX(-50%) translateY(-100%);
+    top: -6px;
+    margin-bottom: 15px;
+  }
+
+  .milo-tooltip.dir-desktop-top::after {
+    left: 50%;
+    top: 2px;
+    transform: translateY(-50%);
+    border: 8px solid #0469E3;
+    border-color: #0469E3 transparent transparent;
+  }
+
+  .milo-tooltip.dir-desktop-right::before {
+    left: 100%;
+    margin-left: 7px;
+    right: initial;
+    margin-right: initial;
+  }
+
+  .milo-tooltip.dir-desktop-right::after {
+    left: 100%;
+    margin-left: -8px;
+    border-color: transparent #0469E3 transparent transparent;
+  }
+
+  .milo-tooltip.dir-desktop-bottom::before {
+    left: calc(50% - 11px);
+    transform: translateX(-50%);
+    top: 100%;
+    margin-top: 9px;
+  }
+
+  .milo-tooltip.dir-desktop-bottom::after {
+    left: 50%;
+    top: calc(100% + 1px);
+    transform: translateY(-50%);
+    border-color: transparent transparent #0469E3;
+  }
+}
+
 .milo-tooltip.hide-tooltip::before,
 .milo-tooltip.hide-tooltip::after {
   display: none;

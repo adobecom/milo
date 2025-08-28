@@ -1101,6 +1101,19 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
+  // Materialize icon tokens inside emphasis wrappers for tooltip authoring
+  const emWrappers = area.querySelectorAll('em');
+  emWrappers.forEach((em) => {
+    if (!em.textContent.includes('|')) return;
+    const hasSpanIcon = em.querySelector(':scope > span.icon');
+    if (hasSpanIcon) return;
+    const match = em.textContent.match(/:(?<name>[a-z0-9-]+):/i);
+    if (!match?.groups?.name) return;
+    const iconName = match.groups.name.toLowerCase();
+    const span = createTag('span', { class: `icon icon-${iconName}` });
+    em.insertBefore(span, em.firstChild);
+  });
+
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
