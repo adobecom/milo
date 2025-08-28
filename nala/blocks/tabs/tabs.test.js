@@ -193,8 +193,7 @@ test.describe('Milo Tab block feature test suite', () => {
     await test.step('step-2: Verify tab selection based on custom deeplink parameter', async () => {
       const newUrl = new URL(page.url());
       newUrl.searchParams.set('plans', data.deeplinkValue);
-      await page.goto(newUrl.toString());
-      await page.waitForLoadState('domcontentloaded');
+      await page.goto(newUrl.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
 
       // Verify the correct tab is selected based on deeplink
       const selectedTab = await tab.tab3;

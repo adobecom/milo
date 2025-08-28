@@ -233,8 +233,6 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-with-personalization-and-target - Validate promo together with personalization and target ON
   test(`${features[7].name},${features[7].tags}`, async ({ page, baseURL }) => {
-    // test.skip(browserName === 'chromium' || browserName === 'webkit', 'Skipping test for Chromium and webkit browsers');
-
     const testPage = `${baseURL}${features[7].path}${miloLibs}`;
     const { data } = features[7];
     console.info('[Test Page]: ', testPage);
@@ -245,6 +243,7 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Verify only default test page marquee is visible', async () => {
+      await page.waitForLoadState('networkidle');
       await expect(await PROMO.marqueeDefault).toBeVisible();
       await expect(await PROMO.marqueeDefault).toContainText(data.textMarquee);
       await expect(await PROMO.textDefault).not.toBeVisible();

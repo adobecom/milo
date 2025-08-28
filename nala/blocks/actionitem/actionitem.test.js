@@ -160,8 +160,10 @@ test.describe('Milo Action-Item block test suite', () => {
     });
     await test.step('step-3: Click the float button', async () => {
       const oldUrl = page.url();
-      await actionItem.floatButton.click();
-      await page.waitForFunction((url) => window.location.href !== url, oldUrl);
+      await Promise.all([
+        page.waitForURL((url) => url.toString() !== oldUrl, { timeout: 60000 }),
+        actionItem.floatButton.click(),
+      ]);
       expect(page.url()).not.toBe(oldUrl);
     });
   });
