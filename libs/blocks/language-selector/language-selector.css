@@ -126,16 +126,15 @@
 
 .language-item.no-search-result {
   padding: 8px 16px;
-  color: #505050;
   cursor: default;
   pointer-events: none;
 }
 
 .no-search-result-text {
   font-size: var(--type-body-xxs-size);
-  font-family: var(--body-font-family);
-  color: var(--color-gray-500);
   line-height: var(--type-body-xxs-lh);
+  font-family: var(--body-font-family);
+  color: #505050;
   display: block;
 }
 
