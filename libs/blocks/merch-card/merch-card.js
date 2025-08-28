@@ -507,23 +507,14 @@ const decorateFooterRows = async (merchCard, footerRows) => {
   if (isCheckmark) {
     const firstRow = footerRows[0];
     const firstRowContent = firstRow.querySelector('div > div:first-child').innerHTML.split(',');
-    let bgStyle = '#E8E8E8';
     let defaultChevronState = 'close';
 
     firstRowContent.forEach((item) => {
       const trimmedItem = item.trim();
-      if (trimmedItem.startsWith('#')) {
-        bgStyle = trimmedItem;
-      } else if (trimmedItem === 'open' || trimmedItem === 'close') {
+      if (trimmedItem === 'open' || trimmedItem === 'close') {
         defaultChevronState = trimmedItem;
       }
     });
-
-    if (!isMobile) {
-      const hrElem = createTag('hr', { style: `background: ${bgStyle}` });
-      footerRowsSlot.appendChild(hrElem);
-      merchCard.classList.add('has-divider');
-    }
 
     const merchCardHeading = merchCard.querySelector('h3')?.id;
     if (merchCardHeading) {
@@ -541,7 +532,9 @@ const decorateFooterRows = async (merchCard, footerRows) => {
     footerRowsSlot.appendChild(firstRowTextParagraph);
 
     footerRows.splice(0, 1);
-    footerRowsSlot.style.padding = 'var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs) var(--consonant-merch-spacing-xs)';
+    if (isMobile) {
+      footerRowsSlot.style.padding = 'var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs) var(--consonant-merch-spacing-xs)';
+    }
   }
   footerRowsSlot.appendChild(ulContainer);
 
@@ -555,7 +548,8 @@ const decorateFooterRows = async (merchCard, footerRows) => {
 
 const setMiniCompareOfferSlot = (merchCard, offers) => {
   if (merchCard.variant !== MINI_COMPARE_CHART) return;
-  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]');
+  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]')
+    || merchCard.appendChild(createTag('div', { slot: 'offers' }));
   if (offers) {
     miniCompareOffers.append(offers);
   } else {
@@ -794,10 +788,6 @@ export default async function init(el) {
     if (MULTI_OFFER_CARDS.includes(cardType)) {
       const quantitySelect = extractQuantitySelect(el, merchCard);
       const offerSelection = el.querySelector('ul');
-      if (merchCard.variant === MINI_COMPARE_CHART) {
-        const miniCompareOffers = createTag('div', { slot: 'offers' });
-        merchCard.append(miniCompareOffers);
-      }
       if (offerSelection) {
         const { initOfferSelection } = await import('./merch-offer-select.js');
         setMiniCompareOfferSlot(merchCard, undefined);
