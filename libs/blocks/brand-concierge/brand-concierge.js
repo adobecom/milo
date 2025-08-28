@@ -33,7 +33,7 @@ async function openChatModal(initialMessage, el) {
   // eslint-disable-next-line no-underscore-dangle
   window._satellite?.track('bootstrapConversationalExperience', {
     selector: `#${mountId}`,
-    src: 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+    src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
     stylingConfigurations: chatUIConfig,
   });
 }

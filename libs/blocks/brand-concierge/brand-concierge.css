@@ -101,7 +101,7 @@
   margin-bottom: 40px;
   padding: 0 12px;
   position: relative;
-  z-index: 10;
+  z-index: 1;
 }
 
 .bc-input-field::before {
@@ -115,7 +115,6 @@
   top: 50%;
   transform: translate(-50%, -50%);
   width: 100%;
-  z-index: 5;
 }
 
 .bc-input-field::after {
@@ -130,7 +129,6 @@
   top: 50%;
   transform: translate(-50%, -50%);
   width: 100%;
-  z-index: 1;
 }
 
 .bc-input-field-container:has(input:focus-visible){
