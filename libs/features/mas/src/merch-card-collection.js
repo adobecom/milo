@@ -101,6 +101,8 @@ export class MerchCardCollection extends LitElement {
     #service;
     #log;
 
+    #merchCardElement;
+
     constructor() {
         super();
         // set defaults
@@ -113,6 +115,7 @@ export class MerchCardCollection extends LitElement {
         this.hydrating = false;
         this.hydrationReady = null;
         this.literalsHandlerAttached = false;
+        this.onUnmount = [];
     }
 
     render() {
@@ -217,6 +220,7 @@ export class MerchCardCollection extends LitElement {
         super.connectedCallback();
         this.#service = getService();
         this.#log = this.#service.Log.module(MERCH_CARD_COLLECTION);
+        this.#merchCardElement = customElements.get('merch-card');
         this.buildOverrideMap();
         this.init();
     }
@@ -236,6 +240,7 @@ export class MerchCardCollection extends LitElement {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.stopDeeplink?.();
+        for (const callback of this.onUnmount) callback();
     }
 
     initializeHeader() {
@@ -277,6 +282,9 @@ export class MerchCardCollection extends LitElement {
             this.sidenav.setAttribute('autoclose', '');
         this.initializeHeader();
         this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));
+
+        const onSidenavAttached = this.#merchCardElement.getCollectionOptions(this.variant)?.onSidenavAttached;
+        onSidenavAttached && onSidenavAttached(this);
     }
 
     #fail(error, details = {}, dispatch = true) {
