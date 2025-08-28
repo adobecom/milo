@@ -77,7 +77,7 @@ const sendMessage = (() => {
     ? window.uxpHost
     : window.parent;
   if (parent === window.top) {
-    console.warn('No parent document found; communication will be faulty'); // eslint-disable-line
+    console.warn('No parent document found'); // eslint-disable-line
   }
   return (obj) => {
     const message = JSON.stringify(obj);
