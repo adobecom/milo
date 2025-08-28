@@ -91,7 +91,8 @@ export function setSelectedLocalesAndRegions() {
       });
     } else {
       livecopiesArr.forEach((liveCopy) => {
-        activeLocales[liveCopy] = language;
+        const localeKey = `${languagecode}|${liveCopy}`;
+        activeLocales[localeKey] = language;
       });
     }
     selectedLocale.push(...livecopiesArr);
