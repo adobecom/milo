@@ -98,6 +98,16 @@ function changeTabs(e) {
     .forEach((p) => p.setAttribute('hidden', true));
   targetContent?.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
+
+  // Remove paddles after first real user interaction for segmented-control variant
+  if (tabsBlock.classList.contains('segmented-control') && !tabsBlock.dataset.interacted && e.isTrusted) {
+    const leftPaddle = tabsBlock.querySelector('.paddle-left');
+    const rightPaddle = tabsBlock.querySelector('.paddle-right');
+    if (leftPaddle) leftPaddle.remove();
+    if (rightPaddle) rightPaddle.remove();
+    tabsBlock.dataset.interacted = 'true';
+  }
+
   window.dispatchEvent(tabChangeEvent);
 }
 
@@ -147,19 +157,28 @@ function initTabs(elm, config, rootElem) {
 
   tabLists.forEach((tabList) => {
     tabList.addEventListener('keydown', (e) => {
-      const isRtl = document.dir === 'rtl';
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        if (e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight')) {
+        if (e.key === 'ArrowRight') {
           tabFocus += 1;
           /* c8 ignore next */
           if (tabFocus >= tabs.length) tabFocus = 0;
-        } else if (e.key === (isRtl ? 'ArrowRight' : 'ArrowLeft')) {
+        } else if (e.key === 'ArrowLeft') {
           tabFocus -= 1;
           /* c8 ignore next */
           if (tabFocus < 0) tabFocus = tabs.length - 1;
         }
         tabs[tabFocus].setAttribute('tabindex', 0);
         tabs[tabFocus].focus();
+
+        // Remove paddles after first real user keyboard interaction for segmented-control variant
+        const tabsBlock = tabs[tabFocus].closest('.tabs');
+        if (tabsBlock?.classList.contains('segmented-control') && !tabsBlock.dataset.interacted && e.isTrusted) {
+          const leftPaddle = tabsBlock.querySelector('.paddle-left');
+          const rightPaddle = tabsBlock.querySelector('.paddle-right');
+          if (leftPaddle) leftPaddle.remove();
+          if (rightPaddle) rightPaddle.remove();
+          tabsBlock.dataset.interacted = 'true';
+        }
       }
     });
   });
@@ -311,7 +330,7 @@ const init = (block) => {
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
-    const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xs';
+    const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xxs'; /* Mweb specific; xxs was xs */
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
@@ -349,8 +368,17 @@ const init = (block) => {
   // Tab Paddles
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
-  tabList.insertAdjacentElement('afterend', paddleRight);
-  block.prepend(paddleLeft);
+
+  // For segmented-control variant, add paddles inside the tabList
+  if (block.classList.contains('segmented-control')) {
+    // tabList.prepend(paddleLeft);
+    tabList.append(paddleRight);
+  } else {
+    // Default behavior for other variants
+    tabList.insertAdjacentElement('afterend', paddleRight);
+    block.prepend(paddleLeft);
+  }
+
   initPaddles(tabList, paddleLeft, paddleRight, isRadio);
 
   // Tab Sections

@@ -28,6 +28,7 @@
   --tabs-radio-blue: #0265dc;
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
+  --m-rounded-corners: 8px;
 }
 
 :root .dark {
@@ -159,6 +160,11 @@
 
 .tabs .tab-content {
   border-bottom: 1px solid var(--tabs-border-color);
+}
+
+/* mweb design */
+.tabs.no-border-bottom .tab-content {
+  border-bottom: none;
 }
 
 /* contained tabs content */
@@ -492,6 +498,52 @@
   text-shadow: revert;
 }
 
+/* Segmented Control Variant */
+.tabs.segmented-control .tabList {
+  background: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.tabs.segmented-control .tabList .tab-list-container {
+  padding: 1px;
+  background: #f8f8f8;
+  overflow: hidden;
+  border-radius: var(--m-rounded-corners);
+  /* flex: 1; */
+}
+
+.tabs.segmented-control .tabList button {
+  padding: 10px 10.16px;
+  border-radius: var(--m-rounded-corners);
+  border: none;
+  font-weight: 700;
+  color: var(--tabs-pill-bg-color);
+}
+
+.tabs.segmented-control .tabList button[aria-selected="true"],
+.tabs.segmented-control .tabList button[aria-checked="true"] {
+  background: var(--tabs-pill-bg-color);
+  color: var(--color-white);
+  box-shadow: 0 2px 8px 0 #00000029;
+}
+
+.tabs.segmented-control .paddle {
+  position: absolute
+  border-bottom: none;
+  background: linear-gradient(270deg, #FFF 70%, rgba(255, 255, 255, 0.00) 100%);
+  width: 54px;
+  height: 40px;
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+.tabs.segmented-control .paddle:disabled {
+  background: none;
+}
+
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs .tabList,
@@ -547,6 +599,10 @@
     padding-block: var(--spacing-xs);
     padding-inline: 0;
     min-block-size: 56px;
+  }
+
+  .tabs.segmented-control .tabList button {
+    padding: 10px 17.5px;
   }
 }
 
