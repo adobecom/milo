@@ -216,10 +216,8 @@ function renderLanguages({
         class: 'language-item no-search-result',
         role: 'status',
         'aria-live': 'polite',
-        'aria-label': 'No search results found',
       });
       const noResultText = createTag('span', { class: 'no-search-result-text', role: 'text', 'aria-label': noSearchResult.trim() });
-      // Escape before inserting, then format line breaks
       const safeHtml = escapeHTML(noSearchResult.trim()).replace(/[\n|]+/g, '<br><span style="display: block; height: 8px;"></span>');
       noResultText.innerHTML = safeHtml;
       noResultItem.appendChild(noResultText);

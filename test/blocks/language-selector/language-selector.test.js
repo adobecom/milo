@@ -760,7 +760,6 @@ describe('Language Selector Block - Network Event Handling', () => {
     // Check accessibility attributes
     expect(noSearchResultItem.getAttribute('role')).to.equal('status');
     expect(noSearchResultItem.getAttribute('aria-live')).to.equal('polite');
-    expect(noSearchResultItem.getAttribute('aria-label')).to.equal('No search results found');
 
     // Check the text content
     const noSearchResultText = noSearchResultItem.querySelector('.no-search-result-text');
