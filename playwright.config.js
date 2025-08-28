@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable import/no-extraneous-dependencies */
 
 const { devices } = require('@playwright/test');
@@ -5,6 +6,9 @@ const { devices } = require('@playwright/test');
 const USER_AGENT_DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.6900.0 Safari/537.36 NALA-Acom';
 const USER_AGENT_MOBILE_CHROME = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.6900.0 Mobile Safari/537.36 NALA-Acom';
 const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1 NALA-Acom';
+
+const isCI = !!process.env.CI;
+const isLocal = !isCI;
 
 // MAS tests
 const masFeatures = [
@@ -14,13 +18,16 @@ const masFeatures = [
   'features/osttools/**/*.test.js',
 ];
 
-// Milo test ( or Non-MAS tests)
-const miloIgnore = [
-  'features/mas/**',
-  'features/commerce/**',
-  'features/promotions/**',
-  'features/osttools/**',
-];
+// Milo tests (non-MAS)
+const miloIgnore = isCI
+  ? [
+    'features/mas/**',
+    'features/commerce/**',
+    'features/promotions/**',
+    'features/osttools/**',
+  ]
+  : []; // In local runs → allow @mas annotations to work
+
 /**
  * @see https://playwright.dev/docs/test-configuration
  * @type {import('@playwright/test').PlaywrightTestConfig}
@@ -98,17 +105,17 @@ const config = {
     /* MAS test */
     {
       name: 'mas-chromium',
-      testMatch: masFeatures,
+      testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: { ...devices['Desktop Chrome'], userAgent: USER_AGENT_DESKTOP },
     },
     {
       name: 'mas-firefox',
-      testMatch: masFeatures,
+      testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: { ...devices['Desktop Firefox'], userAgent: USER_AGENT_DESKTOP },
     },
     {
       name: 'mas-webkit',
-      testMatch: masFeatures,
+      testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: { ...devices['Desktop Safari'], userAgent: USER_AGENT_DESKTOP },
     },
     /* Test Against Mobile View ports */
