@@ -17,7 +17,7 @@ const viewportTooSmall = signal(isViewportTooSmall());
  * Runs asset checks and updates signals with the results.
  */
 async function getResults() {
-  const checks = runChecks(window.location.pathname, document);
+  const checks = runChecks(window.location.pathname, document, true);
 
   const result = await Promise.resolve(checks[0]).catch((error) => ({
     title: 'Assets - Image Dimensions',
