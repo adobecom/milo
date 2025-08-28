@@ -1,25 +1,41 @@
-name: Run Nala Tests
+name: Nala E2E UI Tests
 
 on:
   push:
-    branches:
-      - stage
-      - main
+    branches: [stage, main]
   pull_request:
-    branches:
-      - stage
-      - main
+    branches: [stage, main]
     types: [opened, synchronize, reopened]
-  
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   run-nala-tests:
-    name: Running Nala E2E UI Tests
+    name: ${{ matrix.project == 'mas' && 'Running MAS (all browsers)' || format('Running on • {0} browser', matrix.browser) }}
     runs-on: ubuntu-latest
+    timeout-minutes: 18
     strategy:
+      fail-fast: false
       matrix:
         node-version: [20.x]
+        project: [milo-live-chromium, milo-live-firefox, milo-live-webkit, mas]
+        include:
+          - project: milo-live-chromium
+            browser: chromium
+          - project: milo-live-firefox
+            browser: firefox
+          - project: milo-live-webkit
+            browser: webkit
+          - project: mas
+            browser: MAS (All Browsers)
+            # shard: 1
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -30,8 +46,48 @@ jobs:
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
 
-      - name: Set execute permission for nalarun.sh
+      # Cache node_modules
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            **/node_modules
+          key: npm-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-${{ matrix.node-version }}-
+
+      # Cache Playwright browser binaries across runs
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-${{ matrix.browser }}
+          restore-keys: |
+            ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-
+
+      # Install dependencies (cheap on cache hit, ensures Playwright is in node_modules)
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund --prefer-offline
+
+      # Install only the browser needed for this matrix job (fast; uses the cache above)
+      - name: Install Playwright (${{ matrix.browser }})
+        run: |
+          if [[ "${{ matrix.project }}" == "mas" ]]; then
+            echo "Installing all browsers for MAS test run..."
+            npx playwright install --with-deps chromium firefox webkit
+          else
+            case "${{ matrix.browser }}" in
+              chromium) npx playwright install chromium ;;
+              firefox)  npx playwright install firefox  ;;
+              webkit)  npx playwright install --with-deps chromium firefox webkit ;;
+            esac
+          fi
+
+      - name: Set execute permission for pr.run.sh
         run: chmod +x ./nala/utils/pr.run.sh
 
       - name: Run Nala Tests via pr.run.sh
@@ -48,3 +104,15 @@ jobs:
           GITHUB_ACTION_PATH: ${{ github.workspace }}
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
+          PROJECT: ${{ matrix.project }}
+          # SHARD: ${{ matrix.shard }}     # disabled for now
+          # reporter: list,blob            # disabled for now (as it is driven from playwright.config.js)
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ matrix.project }}
+          path: blob-report
+          if-no-files-found: ignore
+          overwrite: true
