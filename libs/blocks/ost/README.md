@@ -26,10 +26,10 @@ perform the following:
 
 ## Settings
 
-| Parameter                    | WCS & AOS Env    |  WCS & AOS landscape   |  Example                                               |
-| :---:   | :---: | :---: | :---: |
-| default (no parameter)       | Prod             | PUBLISHED              | https://milo.adobe.com/tools/ost                       |
-| ?commerce.landscape                | Prod             | DRAFT                  | https://milo.adobe.com/tools/ost?commerce.landscape=DRAFT    |
+| Parameter                    | WCS & AOS Env    |  WCS & AOS landscape   |  Example                                                     |
+| :---:                        | :---:            | :---:                  | :---:                                                        |
+| default (no parameter)       | Prod             | PUBLISHED              | https://milo.adobe.com/tools/ost                             |
+| ?commerce.landscape          | Prod             | DRAFT                  | https://milo.adobe.com/tools/ost?commerce.landscape=DRAFT    |
 
 ?wcsLandscape=[DRAFT|PUBLISHED] parameter is deprecated and will redirect to ?commerce.landscape=[DRAFT|PUBLISHED]
 ?commerce.env=stage parameter is not supported and will redirect to ?commerce.landscape=DRAFT
