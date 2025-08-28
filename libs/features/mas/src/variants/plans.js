@@ -389,7 +389,10 @@ export class Plans extends VariantLayout {
             const minifyOverflowingWideCards = () => {
                 const merchCards = collection.querySelectorAll('merch-card');
                 for (const merchCard of merchCards) {
-                    merchCard.classList.remove('minified');
+                    if (merchCard.hasAttribute('data-size')) {
+                        merchCard.setAttribute('size', merchCard.getAttribute('data-size'));
+                        merchCard.removeAttribute('data-size');
+                    }
                 }
                 if (!Media.isDesktop) return;
                 let columns = 0;
@@ -398,7 +401,8 @@ export class Plans extends VariantLayout {
                     const size = merchCard.getAttribute('size');
                     let columnCount = size === 'wide' ? 2 : size === 'super-wide' ? 3 : 1;
                     if (columnCount === 2 && columns % 3 === 2) {
-                        merchCard.classList.add('minified');
+                        merchCard.setAttribute('data-size', size);
+                        merchCard.removeAttribute('size');
                         columnCount = 1;
                     }
                     columns += columnCount;

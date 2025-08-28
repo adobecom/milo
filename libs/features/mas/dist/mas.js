@@ -1240,10 +1240,6 @@ merch-card[variant^="plans"][size="wide"], merch-card[variant^="plans"][size="su
     width: auto;
 }
 
-merch-card[variant^="plans"][size="wide"].minified {
-    grid-column: span 1;
-}
- 
 merch-card[variant="plans-students"] {
     width: 100%;
 }
@@ -1657,7 +1653,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
             line-height: 21px;
             padding: 2px 10px 3px;
         }
-    `),f(ae,"collectionOptions",{customHeaderArea:e=>e.sidenav?x`<slot name="resultsText"></slot>`:H,headerVisibility:{search:!1,sort:!1,result:["mobile","tablet"],custom:["desktop"]},onSidenavAttached:e=>{let r=()=>{let n=e.querySelectorAll("merch-card");for(let i of n)i.classList.remove("minified");if(!re.isDesktop)return;let o=0;for(let i of n){if(i.style.display==="none")continue;let a=i.getAttribute("size"),s=a==="wide"?2:a==="super-wide"?3:1;s===2&&o%3===2&&(i.classList.add("minified"),s=1),o+=s}};re.matchDesktop.addEventListener("change",r),e.addEventListener(Jr,r),e.onUnmount.push(()=>{re.matchDesktop.removeEventListener("change",r),e.removeEventListener(Jr,r)})}});var Mc=`
+    `),f(ae,"collectionOptions",{customHeaderArea:e=>e.sidenav?x`<slot name="resultsText"></slot>`:H,headerVisibility:{search:!1,sort:!1,result:["mobile","tablet"],custom:["desktop"]},onSidenavAttached:e=>{let r=()=>{let n=e.querySelectorAll("merch-card");for(let i of n)i.hasAttribute("data-size")&&(i.setAttribute("size",i.getAttribute("data-size")),i.removeAttribute("data-size"));if(!re.isDesktop)return;let o=0;for(let i of n){if(i.style.display==="none")continue;let a=i.getAttribute("size"),s=a==="wide"?2:a==="super-wide"?3:1;s===2&&o%3===2&&(i.setAttribute("data-size",a),i.removeAttribute("size"),s=1),o+=s}};re.matchDesktop.addEventListener("change",r),e.addEventListener(Jr,r),e.onUnmount.push(()=>{re.matchDesktop.removeEventListener("change",r),e.removeEventListener(Jr,r)})}});var Mc=`
 :root {
   --consonant-merch-card-product-width: 300px;
 }

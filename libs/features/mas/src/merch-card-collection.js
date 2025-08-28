@@ -235,9 +235,6 @@ export class MerchCardCollection extends LitElement {
             this.startDeeplink();
         }
         this.initializePlaceholders();
-
-        const onMount = this.#merchCardElement.getCollectionOptions(this.variant)?.onMount;
-        onMount && onMount();
     }
 
     disconnectedCallback() {

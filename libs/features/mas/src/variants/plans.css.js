@@ -16,10 +16,6 @@ merch-card[variant^="plans"][size="wide"], merch-card[variant^="plans"][size="su
     width: auto;
 }
 
-merch-card[variant^="plans"][size="wide"].minified {
-    grid-column: span 1;
-}
- 
 merch-card[variant="plans-students"] {
     width: 100%;
 }
