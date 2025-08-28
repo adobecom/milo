@@ -18,10 +18,6 @@ export class MiniCompareChart extends VariantLayout {
     return CSS;
   }
 
-  // For addon tiitle is it ok if we hardocde it in card settings?
-  // For addon is it ok if we hardcode it as placeholder key?
-  // How to add the price?
-
   getMiniCompareFooter = () => {
     const secureLabel = this.card.secureLabel
         ? html`<slot name="secure-transaction-label">
@@ -70,13 +66,14 @@ export class MiniCompareChart extends VariantLayout {
     const badge = this.card.shadowRoot.querySelector(
         '.mini-compare-chart-badge',
     );
-    if (badge && badge.textContent !== '') {
+    if (badge?.textContent !== '') {
         this.getContainer().style.setProperty(
             '--consonant-merch-card-mini-compare-chart-top-section-mobile-height',
             '32px',
         );
     }
   }
+
   adjustMiniCompareFooterRows() {
     if (this.card.getBoundingClientRect().width === 0) return;
     const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
@@ -179,16 +176,18 @@ async adjustAddon() {
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains('bullet-list') 
+        ${this.card.classList.contains('bullet-list')
         ?
           html`<slot name="heading-m-price"></slot>
           <slot name="price-commitment"></slot>
-          <slot name="body-m"></slot>`
+          <slot name="body-m"></slot>
+          <slot name="body-xxs"></slot>`
         :
           html`<slot name="body-m"></slot>
-          <slot name="heading-m-price"></slot>`}
-        <slot name="body-xxs"></slot>
-        <slot name="price-commitment"></slot>
+          <slot name="heading-m-price"></slot>
+          <slot name="body-xxs"></slot>
+          <slot name="price-commitment"></slot>
+          `}
         <slot name="offers"></slot>
         <slot name="promo-text"></slot>
         <slot name="callout-content"></slot>
@@ -210,6 +209,14 @@ async adjustAddon() {
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
+
+    :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+        padding: 2px 10px;
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+        font-weight: 700;
+    }
+
     :host([variant='mini-compare-chart']) footer {
         min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
         padding: var(--consonant-merch-spacing-s);
@@ -240,12 +247,6 @@ async adjustAddon() {
     }
 
     @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)} {
-      :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
-        padding: 2px 10px;
-        font-size: var(--consonant-merch-card-body-xs-font-size);
-        line-height: var(--consonant-merch-card-body-xs-line-height);
-      }
-
       :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
         font-size: var(--consonant-merch-card-body-xs-font-size);
       }
@@ -311,9 +312,6 @@ async adjustAddon() {
         min-height: var(
             --consonant-merch-card-mini-compare-chart-addon-height
         );
-    }
-    :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
-        justify-content: flex-start;
     }
   `;
 };
