@@ -72,10 +72,18 @@ export const expectMessage = async (m, timeoutMessage = null) => {
 
 const acknowledgement = () => expectMessage(ACK, 'Timeout waiting for ACK');
 
-const sendMessage = (obj) => {
-  const message = JSON.stringify(obj);
-  window.parent.postMessage(message, '*');
-};
+const sendMessage = (() => {
+  const parent = typeof window.uxpHost?.postMessage === 'function'
+    ? window.uxpHost
+    : window.parent;
+  if (parent === window.top) {
+    console.warn('No parent document found; communication will be faulty'); // eslint-disable-line
+  }
+  return (obj) => {
+    const message = JSON.stringify(obj);
+    parent.postMessage(message, '*');
+  };
+})();
 
 const sendMessageAndWaitForAck = async (obj) => {
   sendMessage(obj);
