@@ -217,9 +217,8 @@ function renderLanguages({
         role: 'status',
         'aria-live': 'polite',
       });
-      const noResultText = createTag('span', { class: 'no-search-result-text', role: 'text', 'aria-label': noSearchResult.trim() });
-      const safeHtml = escapeHTML(noSearchResult.trim()).replace(/[\n|]+/g, '<br><span style="display: block; height: 8px;"></span>');
-      noResultText.innerHTML = safeHtml;
+      const noResultText = createTag('span', { class: 'no-search-result-text', role: 'text', 'aria-label': noSearchResult });
+      noResultText.innerHTML = escapeHTML(noSearchResult).replace(/[\n|]+/g, '<br><span style="display: block; height: 8px;"></span>');
       noResultItem.appendChild(noResultText);
       fragment.appendChild(noResultItem);
     } else {
