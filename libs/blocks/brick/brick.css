@@ -354,7 +354,6 @@
   .brick.split.row .foreground .brick-media .video-container video {
     width: 100%;
   }
-
   .brick .foreground .brick-media video,
   .brick.split.row .foreground .brick-media video {
     object-fit: fill;
@@ -410,7 +409,7 @@
 
 /* Mweb specific */
 @media screen and (max-width: 599px) {
-  body.mweb-enabled .brick:has(.icon-stack-area) {
+  .brick:has(.icon-stack-area) {
     min-height: unset;
   }
 }
