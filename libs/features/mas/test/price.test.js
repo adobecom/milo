@@ -669,7 +669,7 @@ describe('class "InlinePrice"', () => {
 
         TESTS.forEach((test) => {
             SEGMENTS.forEach((segment, index) => {
-                it.only(`renders price with tax info for "${test.locale}" and "${segment}"`, async () => {
+                it(`renders price with tax info for "${test.locale}" and "${segment}"`, async () => {
                     const localeArray = test.locale.split('_');
                     const country = localeArray[0];
                     const language = localeArray[1];
