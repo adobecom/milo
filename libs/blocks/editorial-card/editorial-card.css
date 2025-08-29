@@ -283,6 +283,7 @@
 .editorial-card.footer-align-left .action-area { justify-content: start; }
 .editorial-card.footer-align-center .action-area { justify-content: center; }
 
+
 /* Tablet up */
 @media screen and (min-width: 600px) {
   .editorial-card .vp-media .mobile-only,
@@ -296,6 +297,7 @@
     white-space: nowrap;
   }
 }
+
 
 /* desktop up */
 @media screen and (min-width: 1200px) {

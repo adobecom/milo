@@ -89,7 +89,6 @@ function handleClickableCard(el) {
   }
 }
 
-
 const init = async (el) => {
   el.classList.add('con-block');
   const hasOpenClass = el.className.includes('open');
