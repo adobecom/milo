@@ -49,6 +49,10 @@
   text-transform: none;
 }
 
+.aside.container-mobile .supplemental-text{
+  font-weight: 700;
+}
+
 .aside .title-l {
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
@@ -1283,10 +1287,4 @@
   display: inline-block;
   height: unset;
   margin-bottom: unset;
-}
-
-@media screen and (max-width: 599px) {
-  .aside.container-mobile .supplemental-text{
-    font-weight: 700;
-  }
 }
