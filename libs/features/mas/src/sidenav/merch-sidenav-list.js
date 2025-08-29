@@ -85,6 +85,15 @@ export class MerchSidenavList extends LitElement {
         }
     }
 
+    markCurrentItem(element) {
+        const sidenav = element.closest('sp-sidenav');
+        if (!sidenav) return;
+        sidenav.querySelectorAll('sp-sidenav-item[aria-current]').forEach((currentItem) => {
+          currentItem.removeAttribute('aria-current');
+        });
+        element.setAttribute('aria-current', 'true');
+    }
+
     /**
      * click handler to manage first level items state of sidenav
      * @param {*} param
@@ -92,6 +101,7 @@ export class MerchSidenavList extends LitElement {
     handleClick({ target: item }, shouldUpdateHash = true) {
         const { value, parentNode } = item;
         this.selectElement(item);
+        this.markCurrentItem(item);
         if (parentNode?.tagName === 'SP-SIDENAV') {
             //swc does not consider, in multilevel, first level as a potential selection
             //and does not close other parents, we'll do that here          
