@@ -76,9 +76,10 @@ const loadFaas = async (a) => {
   await loadFaasFiles();
   const encodedConfig = a.href.split('#')[1];
   const faas = initFaas(parseEncodedConfig(encodedConfig), a);
+  const modal = faas.closest('.dialog-modal');
 
   // if FaaS is in Modal, make it column2 style.
-  if (faas && faas.closest('.dialog-modal')) {
+  if (faas && modal) {
     faas.querySelector('.faas').classList.add('column2');
   }
 
@@ -86,6 +87,13 @@ const loadFaas = async (a) => {
   const formObserver = new MutationObserver(() => {
     const faasForm = faas.querySelector('.faas-form');
     if (!faasForm) return;
+    const currentlyFocused = document.activeElement;
+    if (modal && (!modal.contains(currentlyFocused) || currentlyFocused.matches('button.dialog-close'))) {
+      const heading = faas.querySelector('h1, h2, h3, h4, h5, h6');
+      if (heading && !modal.getAttribute('aria-label')) modal.setAttribute('aria-label', heading.textContent?.trim());
+      const focusableInput = faasForm.querySelector('input:not([type="hidden"]), textarea:not([type="hidden"]), select:not([type="hidden"])');
+      focusableInput?.focus();
+    }
 
     faasForm.addEventListener('focusin', trackPreviousElement);
 
