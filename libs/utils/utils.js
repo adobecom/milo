@@ -954,8 +954,9 @@ export function decorateLinks(el) {
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
-    if (!a.dataset?.localized) a.href = localizeLink(a.href);
-    a.dataset.localized = true;
+    const hasDnt = a.href.includes('#_dnt');
+    if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
+    if (hasDnt) a.dataset.hasDnt = true;
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
