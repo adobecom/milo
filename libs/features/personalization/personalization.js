@@ -812,14 +812,17 @@ export async function createMartechMetadata(placeholders, config, column) {
   await import('../../martech/attributes.js').then(({ processTrackingLabels }) => {
     config.mep.analyticLocalization ??= {};
 
+    console.log(placeholders);
     placeholders.forEach((item, i) => {
       const firstRow = placeholders[i];
       let usValue = firstRow[US_GEO] || firstRow.us || firstRow.en || firstRow.key;
 
       if (!usValue) return;
 
+      const columnIncludingNewHtml = (column === 'value' && item.textValue) ? 'textValue' : 'value';
+
       usValue = processTrackingLabels(usValue);
-      const translatedValue = processTrackingLabels(item[column]);
+      const translatedValue = processTrackingLabels(item[columnIncludingNewHtml]);
       config.mep.analyticLocalization[translatedValue] = usValue;
     });
   });
@@ -1058,7 +1061,6 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-
 
 export function getMepConsentConfig() {
   const cookies = getAllCookies();
@@ -1553,9 +1555,9 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, pznroc, mph, mphPromise, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP, promises,
+    mepParam, mepHighlight, mepButton, pzn, pznroc, mph, mphPromise, mphUSPromise, promo,
+    enablePersV2, target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise,
+    calculatedTimeout, postLCP, promises,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1576,6 +1578,7 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       mphPromise,
+      mphUSPromise,
       targetInteractionPromise,
       promises,
     };

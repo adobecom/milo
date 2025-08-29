@@ -1430,6 +1430,7 @@ async function checkForPageMods() {
   let targetInteractionPromise = null;
   let countryIPPromise = null;
   let mphPromise = null;
+  let mphUSPromise = null;
 
   let calculatedTimeout = null;
 
@@ -1459,7 +1460,8 @@ async function checkForPageMods() {
   }
   if (mph) {
     const { default: getMepLocPlaceHolders } = await import('../features/personalization/mepLocPlaceholders.js');
-    mphPromise = getMepLocPlaceHolders(localizeLink(mph));
+    mphPromise = getMepLocPlaceHolders(mph, localizeLink);
+    mphUSPromise = getMepLocPlaceHolders(mph);
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1500,6 +1502,7 @@ async function checkForPageMods() {
     pzn,
     mph,
     mphPromise,
+    mphUSPromise,
     pznroc,
     promo,
     target,

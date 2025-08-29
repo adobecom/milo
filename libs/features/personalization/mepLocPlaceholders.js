@@ -7,13 +7,14 @@ async function customFetch({ resource, withCacheRules }) {
   return fetch(resource, options);
 }
 
-export default async function getMepLocPlaceHolders(localizedPath) {
-  if (!localizedPath) return null;
-  const resp = await customFetch({ resource: `${localizedPath}.plain.html`, withCacheRules: true })
+export default async function getMepLocPlaceHolders(path, localizeLink = null) {
+  if (!path) return null;
+  const placeholderPath = localizeLink ? localizeLink(path) : path;
+  const resp = await customFetch({ resource: `${placeholderPath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
   if (!resp?.ok) {
-    window.lana?.log(`Could not get mep placeholders: ${localizedPath}.plain.html`);
+    window.lana?.log(`Could not get mep placeholders: ${placeholderPath}.plain.html`);
     return null;
   }
   const html = await resp.text();
@@ -22,8 +23,10 @@ export default async function getMepLocPlaceHolders(localizedPath) {
   const mepPlaceHolders = rows.map((row) => {
     const key = row.children[0]?.textContent?.trim();
     const value = row.children[1].innerHTML;
+    const textValue = row.children[1].textContent?.trim();
+
     if (key && value) {
-      return { key, value };
+      return { key, value, textValue };
     }
     return null;
   }).filter(Boolean);
