@@ -273,7 +273,19 @@
             "offerType": "BASE",
             "pricePoint": "REGULAR",
             "language": "MULT",
-            "merchant": "ADOBE"
+            "merchant": "ADOBE",
+            "promotion": {
+              "id": "bc765b5a-d887-4b3b-9847-430f4c31a3af",
+              "promotionCode": "NACCTPPROQ3FY25",
+              "start": "2025-07-07T07:00:00.000Z",
+              "end": "9025-09-23T06:59:00.000Z",
+              "displaySummary": {
+                  "outcomeType": "PERCENTAGE_DISCOUNT",
+                  "duration": "P12M",
+                  "amount": 45,
+                  "minProductQuantity": 1
+              }
+            }
         }
     ],
     "m2m-promo-mult": [

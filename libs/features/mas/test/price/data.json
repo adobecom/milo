@@ -6,7 +6,8 @@
         "taxDisplay": "TAX_EXCLUSIVE",
         "taxTerm": "TAX",
         "term": "MONTHLY",
-        "usePrecision": true
+        "usePrecision": true,
+        "priceWithoutDiscount": 1.2345
     },
     "M2M: currency first, currency space, no precision, tax exclusive": {
         "commitment": "MONTH",
@@ -15,7 +16,8 @@
         "taxDisplay": "TAX_EXCLUSIVE",
         "taxTerm": "TAX",
         "term": "MONTHLY",
-        "usePrecision": false
+        "usePrecision": false,
+        "priceWithoutDiscount": 12.3456
     },
     "PERPETUAL: currency first, no currency space, precision, tax inclusive": {
         "commitment": "PERPETUAL",
@@ -24,7 +26,8 @@
         "taxDisplay": "TAX_INCLUSIVE_DETAILS",
         "taxTerm": "TAX",
         "term": "NONE",
-        "usePrecision": true
+        "usePrecision": true,
+        "priceWithoutDiscount": 123.4567
     },
     "PUF: currency last, no currency space, no precision, tax inclusive": {
         "commitment": "YEAR",
@@ -33,7 +36,8 @@
         "taxDisplay": "TAX_INCLUSIVE_DETAILS",
         "taxTerm": "TAX",
         "term": "ANNUAL",
-        "usePrecision": false
+        "usePrecision": false,
+        "priceWithoutDiscount": 1234.5678
     },
     "PUF-CHF-1YEAR: currency first, currency space, precision, tax inclusive": {
         "commitment": "YEAR",
@@ -42,7 +46,8 @@
         "taxDisplay": "TAX_INCLUSIVE_DETAILS",
         "taxTerm": "TAX",
         "term": "ANNUAL",
-        "usePrecision": true
+        "usePrecision": true,
+        "priceWithoutDiscount": 1234.5678
     },
     "PUF-CHF-2YEARS: currency first, currency space, precision, tax inclusive": {
         "commitment": "YEAR",
@@ -51,6 +56,7 @@
         "taxDisplay": "TAX_INCLUSIVE_DETAILS",
         "taxTerm": "TAX",
         "term": "TWO_YEARS",
-        "usePrecision": true
+        "usePrecision": true,
+        "priceWithoutDiscount": 2345.6789
     }
 }
