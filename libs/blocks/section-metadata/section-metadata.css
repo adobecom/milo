@@ -226,6 +226,37 @@ main > .section[class*='-up'] > .content {
   max-width: unset;
 }
 
+/* show-more-button */
+.section .show-more-button {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0;
+  gap: 10px;
+  border-radius: 8px;
+}
+
+.section .show-more-button button {
+  background-color: #F8F8F8;
+  border: none;
+  color: #070707;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 22px;
+  padding: 8px 24px;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.section .show-more-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
 /* mobile only */
 @media (max-width: 600px) {
   .section.two-up.reverse-mobile > div:nth-child(1) {
@@ -238,6 +269,21 @@ main > .section[class*='-up'] > .content {
 
   .section[class*='grid-width-'] {
     display: block;
+  }
+
+  .section:has(.con-block ~ .show-more-button),
+  .section.show-all:has(.con-block) {
+    margin-inline: 30px;
+    padding: var(--spacing-xs);
+    margin-bottom: 24px;
+  }
+
+  .section .con-block:nth-child(n+4) {
+    display: none;
+  }
+
+  .section.show-all .con-block:nth-child(n+4) {
+    display: flex;
   }
 }
 
@@ -257,12 +303,20 @@ main > .section[class*='-up'] > .content {
   .section.masonry-layout .grid-full-width {
     grid-column: 1 / -1;
   }
+
+  .section .show-more-button {
+    display: none;
+  }
 }
 
 @media screen and (min-width: 720px) {
   .section.grid-width-6 {
     padding-left: calc((100vw - 600px) / 2);
     padding-right: calc((100vw - 600px) / 2);
+  }
+
+  .section .show-more-button {
+    display: none;
   }
 }
 
