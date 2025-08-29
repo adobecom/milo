@@ -25,6 +25,13 @@
 
 .text-block div > *:last-child { margin-bottom: 0; }
 
+.text-block.unstyled-list :is(ul, ol) {
+  list-style: none;
+  padding-inline-start: 0;
+}
+
+.text-block.unstyled-list :is(ul, ol)[class^="body-"] > li:not(:first-child) { margin: inherit; }
+
 .grid .text-block div > *:last-child { margin-bottom: var(--spacing-s); }
 
 .text-block .foreground > div *:first-child { margin-top: 0; }
@@ -335,11 +342,11 @@
   .text-block.center .foreground > .tablet-up {
     justify-content: center;
   }
-  
+
   .text-block.right .foreground > .tablet-up {
     justify-content: end;
   }
-  
+
   .text-block .foreground > .mobile-up,
   .text-block .foreground > .desktop-up,
   .text-block.icon-inline .foreground > .mobile-up,
@@ -363,11 +370,11 @@
   .text-block.center .foreground > .desktop-up {
     justify-content: center;
   }
-  
+
   .text-block.right .foreground > .desktop-up {
     justify-content: end;
   }
-  
+
   .text-block .foreground > .mobile-up,
   .text-block .foreground > .tablet-up,
   .text-block.icon-inline .foreground > .mobile-up,
