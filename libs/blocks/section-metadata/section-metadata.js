@@ -97,7 +97,6 @@ async function handleShowMoreButton(section) {
 
 async function handleCollapseSection(text, section) {
   if (!text || !section) return;
-  section.classList.add('collapse-ups-mobile');
   const blocks = section.querySelectorAll('.con-block');
   const existingShowMoreButton = section.querySelector('.show-more-button');
   if (text === 'on' && blocks.length > 3 && !existingShowMoreButton) {
@@ -135,6 +134,6 @@ export default async function init(el) {
   if (metadata.delay) handleDelay(metadata.delay.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text, section);
   // eslint-disable-next-line max-len
-  if (metadata.collapse) await handleCollapseSection(metadata.collapse.text, section);
+  if (metadata['collapse-ups-mobile']) await handleCollapseSection(metadata['collapse-ups-mobile'].text, section);
   addListAttrToSection(section);
 }
