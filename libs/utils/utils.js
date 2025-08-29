@@ -253,6 +253,8 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+(() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
+
 const handleEntitlements = (() => {
   const { martech } = Object.fromEntries(PAGE_URL.searchParams);
   if (martech === 'off') return () => { };
@@ -1435,6 +1437,8 @@ async function checkForPageMods() {
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
+
+  loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
   if (mepgeolocation) {

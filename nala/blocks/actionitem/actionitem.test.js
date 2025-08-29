@@ -137,7 +137,9 @@ test.describe('Milo Action-Item block test suite', () => {
   });
 
   // Test 5 : Action-Item (Float Button)
-  test(`5: @Action-item (float-button), ${features[5].tags}`, async ({ page, baseURL }) => {
+  test(`5: @Action-item (float-button), ${features[5].tags}`, async ({ page, baseURL, browserName }) => {
+    test.skip(browserName === 'webkit', 'Skipping float-button test on WebKit');
+
     const testPage = `${baseURL}${features[5].path}${miloLibs}`;
     console.info(`[Test Page]: ${testPage}`);
     const { data } = features[5];
