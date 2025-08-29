@@ -466,6 +466,14 @@ describe('Utils', () => {
       expect(httpLink.dataset.httpLink).to.equal('true');
     });
 
+    it('Add data-attribute "hasDnt" for links with #_dnt hash to avoid localizing when in deeply nested inline fragments', () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><a class="dnt-link" href="https://www.adobe.com/test#_dnt">Do Not Track Link</a></p>';
+      utils.decorateLinks(container);
+      const dntLink = container.querySelector('.dnt-link');
+      expect(dntLink.dataset.hasDnt).to.equal('true');
+    });
+
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
