@@ -16,6 +16,7 @@ class MasSidenav extends HTMLElement {
       <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
       <a href="/libs/features/mas/docs/ccd-mini.html">CCD Mini</a>
       <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
+      <a href="/libs/features/mas/docs/express.html">Express Gallery</a>
       <a href="/libs/features/mas/docs/plans.html">Plans Gallery</a>
       <a href="/libs/features/mas/docs/commerce.html">Commerce Gallery</a>
       <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>

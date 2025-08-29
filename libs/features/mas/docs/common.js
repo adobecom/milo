@@ -51,7 +51,7 @@ const toggleLocale = (event, params) => {
   window.location.reload();
 }
 
-const createMasCommerceService = (params, commerceEnv) => {
+const createMasCommerceService = async (params, commerceEnv) => {
   const old = document.querySelector('mas-commerce-service');
   if (old) {
     old.remove();
@@ -67,6 +67,13 @@ const createMasCommerceService = (params, commerceEnv) => {
     if (value) masCommerceService.setAttribute(attribute, value);
   });
   document.head.appendChild(masCommerceService);
+  
+  // Wait for the service to be ready before returning
+  if (masCommerceService.readyPromise) {
+    await masCommerceService.readyPromise;
+  }
+  
+  return masCommerceService;
 }
 
 const init = async (params = {}) => {
@@ -78,8 +85,8 @@ const init = async (params = {}) => {
   // theme
   toggleTheme(urlParams.get('theme') ?? 'light');
 
-  // mas-commerce-service
-  createMasCommerceService({...params, ...Object.fromEntries(urlParams.entries())}, commerceEnv);
+  // mas-commerce-service - wait for it to be ready
+  await createMasCommerceService({...params, ...Object.fromEntries(urlParams.entries())}, commerceEnv);
   await import('../dist/mas.js');
 
   document.querySelectorAll('a.theme-toggle').forEach((link) => 

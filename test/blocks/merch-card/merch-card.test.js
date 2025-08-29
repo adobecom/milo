@@ -7,7 +7,7 @@ const { default: init } = await import('../../../libs/blocks/merch-card/merch-ca
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const conf = { locales };
+const conf = { codeRoot: '/libs', locales };
 setConfig(conf);
 
 document.head.appendChild(document.createElement('mas-commerce-service'));
