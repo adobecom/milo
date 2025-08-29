@@ -286,9 +286,8 @@ export class MerchQuantitySelect extends LitElement {
                     autocomplete="off"
                     @keydown="${this.handleKeydown}"
                     @keyup="${this.handleKeyupDebounced}"
-                    @click="${this.toggleMenu}"
                 />
-                <button class="picker-button" aria-controls="qsPopover" aria-expanded=${!this.closed} aria-labelledby="qsLabel" tabindex="-1" @click="${this.toggleMenu}">
+                <button class="picker-button" role="presentation" aria-controls="qsPopover" aria-expanded=${!this.closed} aria-labelledby="qsLabel" tabindex="-1" @click="${this.toggleMenu}">
                     <div
                         class="picker-button-fill ${this.closed
                             ? 'open'

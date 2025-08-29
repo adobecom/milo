@@ -3052,7 +3052,7 @@ merch-card [slot='callout-content'] .icon-button::before {
         overflow: hidden;
         z-index: 100;
         transition: var(--qs-transition);
-        display: none;
+        visibility: hidden;
         box-sizing: border-box;
     }
 
@@ -3067,13 +3067,13 @@ merch-card [slot='callout-content'] .icon-button::before {
     }
 
     .popover.open {
-        display: block;
+        visibility: visible;
         background: #ffffff;
         border: var(--border-width) solid var(--border-color);
     }
 
     .popover.closed {
-        display: none;
+        visibility: hidden;
         pointer-events: none;
         transition: none;
     }
@@ -3129,9 +3129,8 @@ merch-card [slot='callout-content'] .icon-button::before {
                     autocomplete="off"
                     @keydown="${this.handleKeydown}"
                     @keyup="${this.handleKeyupDebounced}"
-                    @click="${this.toggleMenu}"
                 />
-                <button class="picker-button" aria-controls="qsPopover" aria-expanded=${!this.closed} aria-labelledby="qsLabel" tabindex="-1" @click="${this.toggleMenu}">
+                <button class="picker-button" role="presentation" aria-controls="qsPopover" aria-expanded=${!this.closed} aria-labelledby="qsLabel" tabindex="-1" @click="${this.toggleMenu}">
                     <div
                         class="picker-button-fill ${this.closed?"open":"closed"}"
                     ></div>

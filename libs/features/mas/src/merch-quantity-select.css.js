@@ -102,7 +102,7 @@ export const styles = css`
         overflow: hidden;
         z-index: 100;
         transition: var(--qs-transition);
-        display: none;
+        visibility: hidden;
         box-sizing: border-box;
     }
 
@@ -117,13 +117,13 @@ export const styles = css`
     }
 
     .popover.open {
-        display: block;
+        visibility: visible;
         background: #ffffff;
         border: var(--border-width) solid var(--border-color);
     }
 
     .popover.closed {
-        display: none;
+        visibility: hidden;
         pointer-events: none;
         transition: none;
     }
