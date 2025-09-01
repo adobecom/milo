@@ -63,6 +63,10 @@ export class MerchQuantitySelect extends LitElement {
         );
     }
 
+    get button() {
+        return this.shadowRoot.querySelector('button');
+    }
+
     handleKeyup(e) {
         if (e.key === ARROW_DOWN || e.key === ARROW_UP) return
         this.handleInput();
@@ -112,6 +116,7 @@ export class MerchQuantitySelect extends LitElement {
                 break;
             case ENTER:
                 this.selectValue();
+                if (this.button.classList.contains('focused')) e.preventDefault();
                 break;
         }
         if (e.composedPath().includes(this)) e.stopPropagation();
@@ -269,7 +274,15 @@ export class MerchQuantitySelect extends LitElement {
         }
     }
 
-    render() {
+    onButtonFocus(e) {
+        e.target.classList.add('focused');
+    }
+
+    onButtonBlur(e) {
+        e.target.classList.remove('focused');
+    }
+
+  render() {
         return html`
             <div class="label" id="qsLabel">${this.title}</div>
             <div class="text-field">
@@ -287,7 +300,9 @@ export class MerchQuantitySelect extends LitElement {
                     @keydown="${this.handleKeydown}"
                     @keyup="${this.handleKeyupDebounced}"
                 />
-                <button class="picker-button" role="presentation" aria-controls="qsPopover" aria-expanded=${!this.closed} aria-labelledby="qsLabel" tabindex="-1" @click="${this.toggleMenu}">
+                <button class="picker-button" aria-activedescendant="${!this.closed ? `qs-item-${this.highlightedIndex}` : ''}" 
+                        @focus="${this.onButtonFocus}" @blur="${this.onButtonBlur}"
+                        aria-controls="qsPopover" aria-expanded=${!this.closed} aria-labelledby="qsLabel" @click="${this.toggleMenu}">
                     <div
                         class="picker-button-fill ${this.closed
                             ? 'open'
