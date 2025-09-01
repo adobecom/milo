@@ -3,12 +3,14 @@ const ORG_MAP = {
   'da-bacom-blog': 'DA BACOM BLOG',
   'da-cc-sandbox': 'DA BACOM',
   'da-gwp-playground': 'DA GWP PLAYGROUND',
+  'da-dx-partners': 'DA DX PARTNERS',
 };
 
 (async function init() {
   document.body.style.visibility = 'hidden';
 
   const searchParams = new URLSearchParams(window.location.search);
+
   const repo = searchParams.get('tenant');
   const token = searchParams.get('token');
   const ref = searchParams.get('ref');
@@ -30,7 +32,9 @@ const ORG_MAP = {
     return;
   }
 
-  const fullURL = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}${window.location.pathname}#/${redirectPath}`;
+  const fullURL = `${window.location.protocol}//${window.location.hostname}${
+    window.location.port ? `:${window.location.port}` : ''
+  }${window.location.pathname}#/${redirectPath}`;
   window.history.replaceState({}, null, fullURL);
   document.body.style.visibility = 'visible';
 }());

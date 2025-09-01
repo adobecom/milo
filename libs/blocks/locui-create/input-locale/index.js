@@ -209,11 +209,15 @@ export default function useInputLocale() {
       const { [regionKey]: _, ...rest } = prev;
       return rest;
     });
+    const localesToRemove = Array.from(selectedLocaleSet).filter((localeKey) => {
+      const locale = getLocaleFromKey(localeKey);
+      return regionCountryCodes.includes(locale);
+    });
     setSelectedLocale((prev) => prev.filter((localeKey) => {
       const locale = getLocaleFromKey(localeKey);
       return !regionCountryCodes.includes(locale);
     }));
-    removeLocalesFromActive(regionCountryCodes);
+    removeLocalesFromActive(localesToRemove);
   };
 
   const updateRegionStates = useCallback((localeList) => {
