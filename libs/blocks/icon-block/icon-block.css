@@ -402,6 +402,7 @@
 .section:has(.icon-block.container-mobile + .action-scroller) {
   width: var(--grid-container-width);
   margin: auto;
+  background: #EEE !important;
   border-radius: var(--l-rounded-corners);
 }
 
