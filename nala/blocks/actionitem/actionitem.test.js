@@ -155,16 +155,35 @@ test.describe('Milo Action-Item block test suite', () => {
       await expect(await actionItem.floatOutlineButton).toContainText(data.floatButtonText);
     });
 
-    await test.step('step-4: Verify the accessibility test on the Action-Item (Float Button) block', async () => {
+    await test.step('step-3: Verify the accessibility test on the Action-Item (Float Button) block', async () => {
       await runAccessibilityTest({ page, testScope: actionItem.actionItemFloat });
     });
-    await test.step('step-3: Click the float button', async () => {
+
+    await test.step('step-4: Click the float button', async () => {
+      const context = page.context();
       const oldUrl = page.url();
-      await Promise.all([
-        page.waitForURL((url) => url.toString() !== oldUrl, { timeout: 60000 }),
-        actionItem.floatButton.click(),
-      ]);
-      expect(page.url()).not.toBe(oldUrl);
+      const pagesBefore = context.pages().length;
+
+      await actionItem.floatButton.click();
+
+      let targetPage = page;
+      const startTime = Date.now();
+      const timeout = 5000;
+
+      while (Date.now() - startTime < timeout) {
+        const pagesAfter = context.pages();
+        if (pagesAfter.length > pagesBefore) {
+          targetPage = pagesAfter.at(-1);
+          await targetPage.waitForLoadState();
+          break;
+        }
+        if (page.url() !== oldUrl) {
+          targetPage = page;
+          break;
+        }
+        await page.waitForTimeout(100);
+      }
+      expect(targetPage.url()).not.toBe(oldUrl);
     });
   });
 
