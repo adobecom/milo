@@ -171,12 +171,11 @@ export default function useInputLocale() {
     });
   };
 
-  const removeLocalesFromActive = (localesToRemove, languageCode) => {
+  const removeLocalesFromActive = (localesToRemove) => {
     setActiveLocales((prev) => {
       const updatedActiveLocales = { ...prev };
       localesToRemove.forEach((locale) => {
-        const localeKey = `${languageCode}|${locale}`;
-        delete updatedActiveLocales[localeKey];
+        delete updatedActiveLocales[locale];
       });
       return updatedActiveLocales;
     });
