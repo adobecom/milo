@@ -49,6 +49,18 @@ export function sendAnalytics(event) {
   }
 }
 
+function focusAfterModalClose(modal) {
+  const { id } = modal;
+  const isGeoPopup = id === 'locale-modal-v2';
+  const onetrustBanner = (isDeepLink || isGeoPopup) && document.querySelector('#onetrust-banner-sdk');
+  const geoPopupFocus = !isGeoPopup && document.querySelector('.dialog-modal#locale-modal-v2')?.querySelector('a.con-button');
+  const toFocus = geoPopupFocus || onetrustBanner || null;
+  toFocus?.focus();
+  isDeepLink = false;
+
+  return toFocus;
+}
+
 export function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
@@ -66,7 +78,7 @@ export function closeModal(modal) {
   }
 
   if (modal._documentKeydownListener) {
-    document.removeEventListener('keydown', modal._documentKeydownListener);
+    modal.removeEventListener('keydown', modal._documentKeydownListener);
     delete modal._documentKeydownListener;
   }
 
@@ -94,17 +106,7 @@ export function closeModal(modal) {
   }
   if (prevHash) prevHash = '';
 
-  const isGeoPopup = id === 'locale-modal-v2';
-  if (isDeepLink || isGeoPopup) {
-    const onetrustBanner = document.querySelector('#onetrust-banner-sdk');
-    const geoPopupFocus = document.querySelector('.dialog-modal#locale-modal-v2')?.querySelector('a.con-button');
-    const toFocus = isGeoPopup
-      ? onetrustBanner
-      : geoPopupFocus ?? onetrustBanner;
-    isDeepLink = false;
-    toFocus?.focus();
-    return;
-  }
+  if (focusAfterModalClose(modal)) return;
 
   if (document.querySelector('.notification-curtain')) {
     window.dispatchEvent(new Event('milo:modal:closed:notification'));
@@ -226,7 +228,7 @@ export async function getModal(details, custom) {
   });
 
   const documentKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
-  document.addEventListener('keydown', documentKeydownListener);
+  dialog.addEventListener('keydown', documentKeydownListener);
   dialog._documentKeydownListener = documentKeydownListener;
 
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
