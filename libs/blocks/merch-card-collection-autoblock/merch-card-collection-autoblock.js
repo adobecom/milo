@@ -113,7 +113,7 @@ function getSidenav(collection) {
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       const iconPath = localizeIconPath(node.icon);
       if (iconPath) {
-        createTag('img', { src: iconPath, slot: 'icon' }, null, { parent: item });
+        createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };
