@@ -1,3 +1,9 @@
+/* Mobile-first CSS architecture
+ * Base styles: Mobile (0px and up) - includes container-mobile variants
+ * Tablet styles: 600px - 1200px (unsets mobile container styles + tablet enhancements)
+ * Desktop styles: 1200px and up (unsets mobile container styles + desktop enhancements)
+ */
+
 .icon-block {
   display: block;
   width: 100%;
@@ -375,7 +381,78 @@
   width: 100%;
 }
 
+/* Mobile container variants (base styles) */
+.icon-block.container-mobile.left-mobile .foreground {
+  text-align: start;
+}
+
+.icon-block.container-mobile.left-mobile .foreground .icon-area {
+  margin-inline: unset;
+}
+
+.icon-block.container-mobile .icon-area img {
+  height: var(--icon-size-s);
+}
+
+.icon-block.container-mobile.full-width .foreground .icon-area,
+.icon-block.container-mobile .foreground .icon-area {
+  margin-bottom: var(--spacing-xs);
+}
+
+.section:has(.icon-block.container-mobile + .action-scroller) {
+  width: var(--grid-container-width);
+  margin: auto;
+  border-radius: var(--l-rounded-corners);
+}
+
+.section:has(.icon-block.container-mobile + .action-scroller) .action-scroller .scroller {
+  --mask-width: var(--grid-margins-width);
+  padding-inline: var(--grid-margins-width);
+  gap: var(--spacing-xs);
+}
+
+.section:has(.icon-block.container-mobile + .action-scroller) .action-item .main-image {
+  max-width: 60px;
+  margin-inline: auto;
+}
+
+/* Tablet styles (600px - 1200px) */
 @media screen and (min-width: 600px) and (max-width: 1200px) {
+  /* Unset mobile-specific container styles */
+  .icon-block.container-mobile.left-mobile .foreground {
+    text-align: center;
+  }
+
+  .icon-block.container-mobile.left-mobile .foreground .icon-area {
+    margin-inline: auto;
+  }
+
+  .icon-block.container-mobile .icon-area img {
+    height: auto;
+  }
+
+  .icon-block.container-mobile.full-width .foreground .icon-area,
+  .icon-block.container-mobile .foreground .icon-area {
+    margin-bottom: revert;
+  }
+
+  .section:has(.icon-block.container-mobile + .action-scroller) {
+    width: auto;
+    margin: unset;
+    border-radius: unset;
+  }
+
+  .section:has(.icon-block.container-mobile + .action-scroller) .action-scroller .scroller {
+    --mask-width: unset;
+    padding-inline: unset;
+    gap: unset;
+  }
+
+  .section:has(.icon-block.container-mobile + .action-scroller) .action-item .main-image {
+    max-width: unset;
+    margin-inline: unset;
+  }
+
   .icon-block .foreground .icon-area {
     max-width: 234px;
   }
@@ -405,9 +482,49 @@
   .five-up .icon-block .foreground .text-content .icon-area {
     text-align: center;
   }
+
+  .section:has(.icon-block.container-mobile + .action-scroller) {
+    background: none;
+  }
 }
 
+/* Desktop styles (1200px and up) */
 @media screen and (min-width: 1200px) {
+  /* Unset mobile-specific container styles */
+  .icon-block.container-mobile.left-mobile .foreground {
+    text-align: center;
+  }
+
+  .icon-block.container-mobile.left-mobile .foreground .icon-area {
+    margin-inline: auto;
+  }
+
+  .icon-block.container-mobile .icon-area img {
+    height: auto;
+  }
+
+  .icon-block.container-mobile.full-width .foreground .icon-area,
+  .icon-block.container-mobile .foreground .icon-area {
+    margin-bottom: revert;
+  }
+
+  .section:has(.icon-block.container-mobile + .action-scroller) {
+    width: auto;
+    margin: unset;
+    border-radius: unset;
+  }
+
+  .section:has(.icon-block.container-mobile + .action-scroller) .action-scroller .scroller {
+    --mask-width: unset;
+    padding-inline: unset;
+    gap: unset;
+  }
+
+  .section:has(.icon-block.container-mobile + .action-scroller) .action-item .main-image {
+    max-width: unset;
+    margin-inline: unset;
+  }
+
   .icon-block.full-width .foreground,
   .icon-block.bio .foreground {
     max-width: 800px;
@@ -500,4 +617,10 @@
   .section.five-up {
     grid-template-columns: repeat(5, 1fr) !important;
   }
+
+  .section:has(.icon-block.container-mobile + .action-scroller) {
+    background: none;
+  }
 }
+
+
