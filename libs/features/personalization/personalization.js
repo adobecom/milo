@@ -11,6 +11,13 @@ import {
   getFederatedUrl,
   isSignedOut,
 } from '../../utils/utils.js';
+import {
+  getConsentState,
+  parseOptanonConsent,
+  getAllCookies,
+  KNDCTR_CONSENT_COOKIE,
+  OPT_ON_AND_CONSENT_COOKIE,
+} from '../../martech/helpers.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -1050,7 +1057,33 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(info = {}, variantOverride = false) {
+
+export function getMepConsentConfig() {
+  const cookies = getAllCookies();
+  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
+  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
+  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
+
+  if (!optOnConsentCookie || consentState === 'pre') {
+    return {
+      performance: true,
+      advertising: isSignedOut() && consentState !== 'pre',
+    };
+  }
+  return parseOptanonConsent(optOnConsentCookie).configuration;
+}
+
+export function canServeManifest(action, sources) {
+  const isCoreServices = action === 'core services' || (!action && sources?.includes('promo'));
+  if (isCoreServices) return true;
+
+  const consent = getMepConsentConfig();
+  const { performance, advertising } = consent;
+  const isPerformance = ['non-marketing', 'data science', 'analytics'].includes(action);
+  return isPerformance ? performance : advertising;
+}
+
+async function getManifestConfig(info, variantOverride) {
   const {
     name,
     manifestData,
@@ -1109,11 +1142,13 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
       executionOrder[key] = index > -1 ? index : 1;
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+    manifestConfig.mktgAction = infoObj['manifest-marketing-action']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
+  if (!canServeManifest(manifestConfig.mktgAction, source)) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1264,6 +1299,7 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
+
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],

@@ -147,7 +147,7 @@ var ne=Object.defineProperty;var Y=s=>{throw TypeError(s)};var ae=(s,t,e)=>t in 
           `}get resultSlotName(){let e=`${this.search?"search":"filters"}${this.isMobile||this.isTablet?"Mobile":""}`;return Se[e][Math.min(this.resultCount,2)]}get resultLabel(){if(!a(this,d).result)return m;if(!this.sidenav)return m;let e=this.search?"search":"filter",r=this.resultCount?this.resultCount===1?"single":"multiple":"none";return T`
             <div id="result" aria-live="polite" type=${e} quantity=${r}>
                 <slot name="${this.resultSlotName}"></slot>
-            </div>`}get customArea(){if(!a(this,d).custom)return m;let e=a(this,L).getCollectionOptions(this.collection?.variant)?.customHeaderArea;if(!e)return m;let r=e(this.collection);return!r||r===m?m:T`<div id="custom">${r}</div>`}openFilters(e){this.sidenav.showModal(e)}updateLiterals(e){Object.keys(e.detail).forEach(r=>{Ce(this,r,e.detail[r])}),this.requestUpdate()}handleSidenavAttached(){this.requestUpdate()}render(){return T`
+            </div>`}get customArea(){if(!a(this,d).custom)return m;let e=a(this,L).getCollectionOptions(this.collection?.variant)?.customHeaderArea;if(!e)return m;let r=e(this.collection);return!r||r===m?m:T`<div id="custom" role="heading" aria-level="2">${r}</div>`}openFilters(e){this.sidenav.showModal(e)}updateLiterals(e){Object.keys(e.detail).forEach(r=>{Ce(this,r,e.detail[r])}),this.requestUpdate()}handleSidenavAttached(){this.requestUpdate()}render(){return T`
             <sp-theme color="light" scale="medium">
               <div id="header">${this.searchAction}${this.filterAction}${this.sortAction}${this.resultLabel}${this.customArea}</div>
             </sp-theme>
