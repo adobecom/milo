@@ -389,7 +389,7 @@ export class MerchCardCollection extends LitElement {
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();
-            resolveHydration();
+            resolveHydration(true);
         });
         await this.hydrationReady;
     }
