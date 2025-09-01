@@ -72,6 +72,18 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
   });
 });
 
+function focusModalInput(modal, faas, faasForm) {
+  const currentlyFocused = document.activeElement;
+
+  if (!modal || (modal.contains(currentlyFocused) && !currentlyFocused.matches('button.dialog-close'))) return;
+
+  const heading = faas.querySelector('h1, h2, h3, h4, h5, h6');
+  if (heading && !modal.getAttribute('aria-label')) modal.setAttribute('aria-label', heading.textContent?.trim());
+
+  const focusableInput = faasForm.querySelector('input:not([type="hidden"]), textarea:not([type="hidden"]), select:not([type="hidden"])');
+  focusableInput?.focus();
+}
+
 const loadFaas = async (a) => {
   await loadFaasFiles();
   const encodedConfig = a.href.split('#')[1];
@@ -87,14 +99,8 @@ const loadFaas = async (a) => {
   const formObserver = new MutationObserver(() => {
     const faasForm = faas.querySelector('.faas-form');
     if (!faasForm) return;
-    const currentlyFocused = document.activeElement;
-    if (modal && (!modal.contains(currentlyFocused) || currentlyFocused.matches('button.dialog-close'))) {
-      const heading = faas.querySelector('h1, h2, h3, h4, h5, h6');
-      if (heading && !modal.getAttribute('aria-label')) modal.setAttribute('aria-label', heading.textContent?.trim());
-      const focusableInput = faasForm.querySelector('input:not([type="hidden"]), textarea:not([type="hidden"]), select:not([type="hidden"])');
-      focusableInput?.focus();
-    }
 
+    focusModalInput(modal, faas, faasForm);
     faasForm.addEventListener('focusin', trackPreviousElement);
 
     createLiveRegion(faasForm);
