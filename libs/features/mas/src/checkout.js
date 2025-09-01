@@ -54,8 +54,9 @@ export function Checkout({ settings, providers }) {
             wcsOsi,
             extraOptions,
             ...rest
-        } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});  
-        let workflowStep = toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep);
+        } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});
+        const workflowStep = toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep);
+
         options = omitProperties({
             ...rest,
             extraOptions,

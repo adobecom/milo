@@ -12,7 +12,7 @@ const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" w
   </g>
 </svg>`;
 
-let isDelayedModal = false;
+let delayedModalId = null;
 let prevHash = '';
 let isDeepLink = false;
 const dialogLoadingSet = new Set();
@@ -167,7 +167,7 @@ export async function getModal(details, custom) {
   if (custom && !custom?.title) custom.title = findDetails(window.location.hash, null)?.title;
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
-  if (isDelayedModal) {
+  if (delayedModalId === id) {
     dialog.classList.add('delayed-modal');
     const mediaBlock = dialog.querySelector('div.media');
     if (mediaBlock) {
@@ -176,6 +176,7 @@ export async function getModal(details, custom) {
       const base = miloLibs || codeRoot;
       loadStyle(`${base}/styles/rounded-corners.css`);
     }
+    delayedModalId = null;
   }
 
   const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
@@ -315,7 +316,7 @@ export function delayedModal(el) {
   const { hash, delay } = getHashParams(el?.dataset.modalHash);
   const isDesktop = window.matchMedia('(min-width: 1200px)').matches;
   if (delay === undefined || !hash || !isDesktop) return false;
-  isDelayedModal = true;
+  delayedModalId = hash.replace('#', '');
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
   el.dataset.modalHash = hash;
