@@ -96,7 +96,7 @@ async function handleShowMoreButton(section, showMoreBtn) {
 
 async function handleCollapseSection(text, section) {
   if (!text || !section) return;
-  const blocks = section.querySelectorAll('.con-block');
+  const blocks = section.querySelectorAll('div:not(:last-child)');
   const existingShowMoreButton = section.querySelector('.show-more-button');
   if (text === 'on' && blocks.length > 3 && !existingShowMoreButton) {
     const showMoreButton = createTag('div', { class: 'show-more-button' });
