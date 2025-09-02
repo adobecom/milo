@@ -162,26 +162,23 @@ test.describe('Milo Action-Item block test suite', () => {
     await test.step('step-4: Click the float button', async () => {
       const context = page.context();
       const oldUrl = page.url();
-      const pagesBefore = context.pages().length;
 
-      await actionItem.floatButton.click();
+      const [popup] = await Promise.all([
+        context.waitForEvent('page', { timeout: 5000 }).catch(() => null),
+        actionItem.floatButton.click(),
+      ]);
 
-      let targetPage = page;
-      const startTime = Date.now();
-      const timeout = 5000;
+      const targetPage = popup || page;
 
-      while (Date.now() - startTime < timeout) {
-        const pagesAfter = context.pages();
-        if (pagesAfter.length > pagesBefore) {
-          targetPage = pagesAfter.at(-1);
-          await targetPage.waitForLoadState();
-          break;
+      if (popup) {
+        await targetPage.waitForLoadState();
+      } else {
+        const startTime = Date.now();
+        const timeout = 5000;
+        while (Date.now() - startTime < timeout) {
+          if (page.url() !== oldUrl) break;
+          await page.waitForTimeout(1000);
         }
-        if (page.url() !== oldUrl) {
-          targetPage = page;
-          break;
-        }
-        await page.waitForTimeout(100);
       }
       expect(targetPage.url()).not.toBe(oldUrl);
     });
