@@ -281,7 +281,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     }
 
     .collection-container.plans:has(merch-sidenav) {
-        width: 100vw;
+        width: fit-content;
         position: relative;
         left: 50%;
         transform: translateX(-50vw);
