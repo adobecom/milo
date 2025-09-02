@@ -552,6 +552,7 @@ export default async function init(block) {
   const languagesList = getLanguages(links, languages, locales);
   const currentLang = getCurrentLanguage(languagesList);
   const wrapper = block.closest('.feds-regionPicker-wrapper');
+  if (!wrapper) return;
   const regionPickerElem = wrapper.querySelector('.feds-regionPicker');
   regionPickerElem.setAttribute('href', '#');
   const regionPickerTextElem = regionPickerElem.querySelector('.feds-regionPicker-text');
