@@ -199,6 +199,15 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
     line-height: 20.8px;
   }
 
+  /* Fix spacing between cards on mobile */
+  main merch-card-collection.simplified-pricing-express p:has(merch-card[variant="simplified-pricing-express"]),
+  main .section p:has(merch-card[variant="simplified-pricing-express"]) {
+    margin: 0;
+  }
+}
+
+/* Collapse/expand styles for all tablet and mobile viewports */
+@media screen and ${TABLET_DOWN} {
   /* Collapsed state - hide content sections */
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="body-xs"],
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="price"],
@@ -211,12 +220,6 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
     height: 0;
     margin: 0;
     padding: 0;
-  }
-
-  /* Fix spacing between cards on mobile */
-  main merch-card-collection.simplified-pricing-express p:has(merch-card[variant="simplified-pricing-express"]),
-  main .section p:has(merch-card[variant="simplified-pricing-express"]) {
-    margin: 0;
   }
 
   /* Expanded state - explicitly show content */
