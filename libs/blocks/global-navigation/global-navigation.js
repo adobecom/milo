@@ -224,7 +224,7 @@ export const CONFIG = {
           signInCtaStyle: getSignInCtaStyle(),
           isSignUpRequired: false,
           callbacks: {
-            onSignIn: () => window.adobeIMS?.signIn(SIGNIN_CONTEXT),
+            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
