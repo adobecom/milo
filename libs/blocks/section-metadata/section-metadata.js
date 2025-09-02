@@ -79,6 +79,7 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
 
 async function handleShowMoreButton(section, showMoreBtn) {
   // const showMoreBtn = section.querySelector('.show-more-button button');
+
   if (!showMoreBtn) return;
   const iconSpan = createTag('span', {
     class: 'show-more-icon',
