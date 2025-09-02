@@ -533,7 +533,6 @@ export async function getCountryAndLang({ autoCountryLang, country, language }) 
           countryStr = geoCountry.toUpperCase();
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         countryStr = 'xx'; // fallback
       }
     }
