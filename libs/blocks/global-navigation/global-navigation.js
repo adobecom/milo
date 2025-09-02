@@ -174,9 +174,11 @@ const getMessageEventListener = () => {
 };
 
 const getSignInCtaStyle = () => {
-  if (getMetadata('signin-cta-style') === 'primary') return 'primary';
-  if (getConfig()?.unav?.profile?.signInCtaStyle === 'primary') return 'primary';
-  return 'secondary';
+  const isPrimary = (
+    getMetadata('signin-cta-style') === 'primary'
+    || getConfig()?.unav?.profile?.signInCtaStyle === 'primary'
+  );
+  return isPrimary ? 'primary' : 'secondary';
 };
 
 export const CONFIG = {
