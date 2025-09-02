@@ -307,6 +307,11 @@ main > .section[class*='-up'] > .content {
   .section .show-more-button {
     display: none;
   }
+
+  .section:has(.con-block ~ .show-more-button),
+  .section.show-all:has(.con-block) {
+    background: none;
+  }
 }
 
 @media screen and (min-width: 720px) {
@@ -317,6 +322,11 @@ main > .section[class*='-up'] > .content {
 
   .section .show-more-button {
     display: none;
+  }
+
+  .section:has(.con-block ~ .show-more-button),
+  .section.show-all:has(.con-block) {
+    background: none;
   }
 }
 
