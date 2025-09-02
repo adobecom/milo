@@ -310,7 +310,7 @@ main > .section[class*='-up'] > .content {
 
   .section:has(.con-block ~ .show-more-button),
   .section.show-all:has(.con-block) {
-    background: none;
+    background: none !important;
   }
 }
 
@@ -326,7 +326,7 @@ main > .section[class*='-up'] > .content {
 
   .section:has(.con-block ~ .show-more-button),
   .section.show-all:has(.con-block) {
-    background: none;
+    background: none !important;
   }
 }
 
