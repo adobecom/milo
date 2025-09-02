@@ -1,9 +1,9 @@
 import { handleFocalpoint } from '../../utils/decorate.js';
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getFedsPlaceholderConfig } from '../../utils/utils.js';
 import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-const replacePlaceholder = async (key) => replaceKey(key, getConfig());
+const replacePlaceholder = async (key) => replaceKey(key, getFedsPlaceholderConfig());
 const ADD_MORE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" fill="none"><path fill="#292929" d="M12 24.24c-6.617 0-12-5.383-12-12s5.383-12 12-12 12 5.383 12 12-5.383 12-12 12Zm0-21.943c-5.483 0-9.943 4.46-9.943 9.943s4.46 9.943 9.943 9.943 9.943-4.46 9.943-9.943S17.483 2.297 12 2.297Z"/><path fill="#292929" d="M16.55 11.188h-3.5v-3.5a1.05 1.05 0 0 0-2.1 0v3.5h-3.5a1.05 1.05 0 0 0 0 2.1h3.5v3.5a1.05 1.05 0 0 0 2.1 0v-3.5h3.5a1.05 1.05 0 0 0 0-2.1Z"/></svg>';
 
 export function handleBackground(div, section) {
@@ -77,16 +77,14 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, {});
 
-async function handleShowMoreButton(section, showMoreBtn) {
-  // const showMoreBtn = section.querySelector('.show-more-button button');
-
+function handleShowMoreButton(section, showMoreBtn, seeMoreText) {
   if (!showMoreBtn) return;
   const iconSpan = createTag('span', {
     class: 'show-more-icon',
     'aria-hidden': 'true',
   }, `${ADD_MORE_ICON}`);
   showMoreBtn.appendChild(iconSpan);
-  showMoreBtn.setAttribute('aria-label', `${await replacePlaceholder('see-more-features')}`);
+  showMoreBtn.setAttribute('aria-label', seeMoreText);
 
   showMoreBtn.addEventListener('click', () => {
     section.classList.add('show-all');
@@ -99,12 +97,13 @@ async function handleCollapseSection(text, section) {
   const blocks = section.querySelectorAll('div:not(:last-child)');
   const existingShowMoreButton = section.querySelector('.show-more-button');
   if (text === 'on' && blocks.length > 3 && !existingShowMoreButton) {
+    const seeMoreText = await replacePlaceholder('see-more-features');
     const showMoreButton = createTag('div', { class: 'show-more-button' });
     const button = createTag('button', {}, '');
-    button.innerHTML = `${await replacePlaceholder('see-more-features')}`;
+    button.innerHTML = seeMoreText;
     showMoreButton.append(button);
     section.append(showMoreButton);
-    await handleShowMoreButton(section, button);
+    handleShowMoreButton(section, button, seeMoreText);
     decorateDefaultLinkAnalytics(showMoreButton);
   }
 }

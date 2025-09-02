@@ -245,7 +245,7 @@ main > .section[class*='-up'] > .content {
   font-style: normal;
   font-weight: 700;
   line-height: 22px;
-  padding: 8px 24px;
+  padding: var(--spacing-xxs) var(--spacing-s);
   border-radius: 40px;
   display: flex;
   align-items: center;
