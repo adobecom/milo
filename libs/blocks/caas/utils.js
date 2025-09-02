@@ -534,8 +534,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language }) 
         }
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.warn('Failed to get GEO IP country for langFirst:', error);
-        countryStr = 'US'; // fallback
+        countryStr = 'xx'; // fallback
       }
     }
     if (typeof countryStr === 'object') {
