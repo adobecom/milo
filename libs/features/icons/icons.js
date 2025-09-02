@@ -29,7 +29,7 @@ function decorateToolTip(icon, iconName) {
 
   if (!tooltipListenersPromise) {
     tooltipListenersPromise = import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
-      addTooltipListeners();
+      addTooltipListeners(icon);
     });
   }
 }

@@ -73,7 +73,7 @@ function setTooltipPosition(tooltips) {
 export default function addTooltipListeners(ownerElement) {
   ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur', 'click'].forEach((eventType) => {
     document.addEventListener(eventType, (event) => {
-      if (!ownerElement.classList.contains('hide-tooltip')) {
+      if (ownerElement && !ownerElement.classList.contains('hide-tooltip')) {
         if (eventType === 'click' || (
           eventType === 'keydown' && event.key === 'Escape'
         )) {
