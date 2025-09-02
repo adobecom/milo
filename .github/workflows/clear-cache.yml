@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clear Cache
-        uses: jdmevo123/akamai-purge-action@1.7
+        uses: jdmevo123/akamai-purge-action@962351e8415c03abe809a146403cb813c8dc3be4
         env:
           EDGERC: ${{ secrets.EDGERC }}
         with:
