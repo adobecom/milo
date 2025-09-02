@@ -293,6 +293,37 @@
   line-height: var(--type-body-xxs-lh);
 }
 
+/* Mweb specific changes for body typography */
+.mweb-enabled .body-xxl {
+  font-size: var(--type-body-xl-size);
+  line-height: var(--type-body-xl-lh);
+}
+
+.mweb-enabled .body-xl {
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+}
+
+.mweb-enabled .body-l {
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+}
+
+.mweb-enabled .body-m {
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+
+.mweb-enabled .body-s {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+}
+
+.mweb-enabled .body-xs {
+  font-size: var(--type-body-xxs-size);
+  line-height: var(--type-body-xxs-lh);
+}
+
 .detail-xl {
   font-size: var(--type-detail-l-size);
   line-height: var(--type-detail-l-lh);
@@ -1090,6 +1121,42 @@ a.static:active  {
   /* margin */
   .con-block.margin-top-desktop { margin-top: var(--spacing-s); }
   .con-block.margin-bottom-desktop { margin-bottom: var(--spacing-s); }
+
+  /* Mweb specific changes for body typography */
+  .mweb-enabled .body-xxl {
+    font-size: var(--type-body-xxl-size);
+    line-height: var(--type-body-xxl-lh);
+  }
+
+  .mweb-enabled .body-xl {
+    font-size: var(--type-body-xl-size);
+    line-height: var(--type-body-xl-lh);
+  }
+  
+  .mweb-enabled .body-l {
+    font-size: var(--type-body-l-size);
+    line-height: var(--type-body-l-lh);
+  }
+  
+  .mweb-enabled .body-m {
+    font-size: var(--type-body-m-size);
+    line-height: var(--type-body-m-lh);
+  }
+  
+  .mweb-enabled .body-s {
+    font-size: var(--type-body-s-size);
+    line-height: var(--type-body-s-lh);
+  }
+  
+  .mweb-enabled .body-xs {
+    font-size: var(--type-body-xs-size);
+    line-height: var(--type-body-xs-lh);
+  }
+  
+  .mweb-enabled .body-xxs {
+    font-size: var(--type-body-xxs-size);
+    line-height: var(--type-body-xxs-lh);
+  }
 }
 
 /* desktop large < 1440 */
