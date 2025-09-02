@@ -514,7 +514,7 @@ const getFilterArray = async (state, country, lang, strs) => {
   return filters;
 };
 
-export function getCountryAndLang({ autoCountryLang, country, language }) {
+export async function getCountryAndLang({ autoCountryLang, country, language }) {
   const locales = getMetadata('caas-locales') || '';
   const langFirst = getMetadata('langfirst');
   /* if it is a language first localized page don't use the milo locales.
@@ -523,6 +523,21 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
     const pathArr = pageConfigHelper()?.pathname?.split('/') || [];
     const langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
+
+    // If no country found in URL path, try GEO IP lookup
+    if (countryStr === 'xx') {
+      try {
+        const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+        const geoCountry = await getAkamaiCode(true);
+        if (geoCountry) {
+          countryStr = geoCountry.toUpperCase();
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to get GEO IP country for langFirst:', error);
+        countryStr = 'US'; // fallback
+      }
+    }
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
@@ -685,7 +700,7 @@ export const getGrayboxExperienceId = (
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const { country, language, locales } = getCountryAndLang(state);
+  const { country, language, locales } = await getCountryAndLang(state);
   const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
