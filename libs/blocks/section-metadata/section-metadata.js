@@ -4,7 +4,7 @@ import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const replacePlaceholder = async (key) => replaceKey(key, getConfig());
-const ADD_MORE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none"><path d="M12 24.24C5.38258 24.24 0 18.8574 0 12.24C0 5.62257 5.38258 0.23999 12 0.23999C18.6174 0.23999 24 5.62257 24 12.24C24 18.8574 18.6174 24.24 12 24.24ZM12 2.29713C6.51696 2.29713 2.05714 6.75695 2.05714 12.24C2.05714 17.723 6.51696 22.1828 12 22.1828C17.483 22.1828 21.9429 17.723 21.9429 12.24C21.9429 6.75695 17.483 2.29713 12 2.29713Z" fill="#292929"/><path d="M16.5504 11.1884H13.0504V7.68843C13.0504 7.10874 12.5801 6.63843 12.0004 6.63843C11.4207 6.63843 10.9504 7.10874 10.9504 7.68843V11.1884H7.45039C6.87071 11.1884 6.40039 11.6587 6.40039 12.2384C6.40039 12.8181 6.87071 13.2884 7.45039 13.2884H10.9504V16.7884C10.9504 17.3681 11.4207 17.8384 12.0004 17.8384C12.5801 17.8384 13.0504 17.3681 13.0504 16.7884V13.2884H16.5504C17.1301 13.2884 17.6004 12.8181 17.6004 12.2384C17.6004 11.6587 17.1301 11.1884 16.5504 11.1884Z" fill="#292929"/></svg>';
+const ADD_MORE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" fill="none"><path fill="#292929" d="M12 24.24c-6.617 0-12-5.383-12-12s5.383-12 12-12 12 5.383 12 12-5.383 12-12 12Zm0-21.943c-5.483 0-9.943 4.46-9.943 9.943s4.46 9.943 9.943 9.943 9.943-4.46 9.943-9.943S17.483 2.297 12 2.297Z"/><path fill="#292929" d="M16.55 11.188h-3.5v-3.5a1.05 1.05 0 0 0-2.1 0v3.5h-3.5a1.05 1.05 0 0 0 0 2.1h3.5v3.5a1.05 1.05 0 0 0 2.1 0v-3.5h3.5a1.05 1.05 0 0 0 0-2.1Z"/></svg>';
 
 export function handleBackground(div, section) {
   const pic = div.background.content?.querySelector('picture');
@@ -77,15 +77,13 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, {});
 
-async function handleShowMoreButton(section) {
-  const showMoreBtn = section.querySelector('.show-more-button button');
+async function handleShowMoreButton(section, showMoreBtn) {
+  // const showMoreBtn = section.querySelector('.show-more-button button');
   if (!showMoreBtn) return;
   const iconSpan = createTag('span', {
     class: 'show-more-icon',
     'aria-hidden': 'true',
   }, `${ADD_MORE_ICON}`);
-
-  showMoreBtn.innerHTML = `${await replacePlaceholder('see-more-features')}`;
   showMoreBtn.appendChild(iconSpan);
   showMoreBtn.setAttribute('aria-label', `${await replacePlaceholder('see-more-features')}`);
 
@@ -102,9 +100,10 @@ async function handleCollapseSection(text, section) {
   if (text === 'on' && blocks.length > 3 && !existingShowMoreButton) {
     const showMoreButton = createTag('div', { class: 'show-more-button' });
     const button = createTag('button', {}, '');
+    button.innerHTML = `${await replacePlaceholder('see-more-features')}`;
     showMoreButton.append(button);
     section.append(showMoreButton);
-    await handleShowMoreButton(section);
+    await handleShowMoreButton(section, button);
     decorateDefaultLinkAnalytics(showMoreButton);
   }
 }

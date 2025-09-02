@@ -236,7 +236,7 @@ main > .section[class*='-up'] > .content {
 }
 
 .section .show-more-button button {
-  background-color: #F8F8F8;
+  background-color: var(--color-gray-100);
   border: none;
   color: #070707;
   text-decoration: none;
@@ -278,7 +278,7 @@ main > .section[class*='-up'] > .content {
     margin-bottom: 24px;
   }
 
-  .section .con-block:nth-child(n+4) {
+  .section:has(.con-block ~ .show-more-button) .con-block:nth-child(n+4) {
     display: none;
   }
 
