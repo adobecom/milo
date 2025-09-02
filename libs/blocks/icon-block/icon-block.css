@@ -4,6 +4,11 @@
  * Desktop styles: 1200px and up (unsets mobile container styles + desktop enhancements)
  */
 
+ :root {
+  /* border-radius sizes */
+  --l-rounded-corners: 16px;
+}
+
 .icon-block {
   display: block;
   width: 100%;
