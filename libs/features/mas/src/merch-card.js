@@ -755,11 +755,10 @@ export class MerchCard extends LitElement {
     }
 
     get ctas() {
-        return Array.from(
-            this.querySelector('[slot="ctas"], [slot="footer"]')?.querySelectorAll(
-                `${SELECTOR_MAS_CHECKOUT_LINK}, a`,
-            ),
+        const ctas = this.querySelector('[slot="ctas"], [slot="footer"]')?.querySelectorAll(
+            `${SELECTOR_MAS_CHECKOUT_LINK}, a`,
         );
+        return Array.from(ctas ?? []);
     }
 
     #getCta(element) {

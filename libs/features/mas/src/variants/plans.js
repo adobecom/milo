@@ -82,13 +82,16 @@ export class Plans extends VariantLayout {
         const shadowRoot = this.card.shadowRoot;
         const footer = shadowRoot.querySelector('footer');
         const size = this.card.getAttribute('size');
+        if (!size)
+            return;
+
         const slotInFooter = shadowRoot.querySelector(
             `footer slot[name="${name}"]`,
         );
         const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
         const body = shadowRoot.querySelector('.body');
 
-        if (!size || !size.includes('wide')) {
+        if (!size.includes('wide')) {
             footer?.classList.remove('wide-footer');
             if (slotInFooter) slotInFooter.remove();
         }
