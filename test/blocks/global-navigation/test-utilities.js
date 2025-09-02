@@ -105,12 +105,14 @@ export const unavLocalesTestData = (LANGMAP) => Object.entries(LANGMAP).reduce((
 export const loadStyles = (path) => new Promise((resolve) => loadStyle(path, resolve));
 
 export const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
-  resolve({
+  const response = {
     status,
     ok,
     json: () => payload,
     text: () => payload,
-  });
+  };
+  response.clone = () => response; // eslint-disable-line
+  resolve(response);
 });
 
 export const waitForElement = (selector, parent) => new Promise((resolve, reject) => {
