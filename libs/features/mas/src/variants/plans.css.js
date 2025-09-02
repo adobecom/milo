@@ -39,6 +39,10 @@ merch-card[variant="plans"] [slot="subtitle"] {
 merch-card[variant^="plans"] span.price-unit-type {
     display: block;
 }
+
+merch-card[variant^="plans"] .price-unit-type:not(.disabled)::before {
+    content: "";
+}
 merch-card[variant^="plans"] [slot="callout-content"] span.price-unit-type,
 merch-card[variant^="plans"] [slot="addon"] span.price-unit-type,
 merch-card[variant^="plans"] .price.price-strikethrough span.price-unit-type,
