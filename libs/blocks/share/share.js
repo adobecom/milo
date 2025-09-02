@@ -169,13 +169,28 @@ export default async function decorate(block) {
       'button',
       {
         type: 'button',
-        class: 'copy-to-clipboard',
+        class: 'copy-to-clipboard hide-copy-tooltip',
         'aria-label': clipboardToolTip,
         'data-copy-to-clipboard': clipboardToolTip,
         'data-copied': `${copiedTooltip}!`,
       },
       clipboardSvg.svg,
     );
+
+    let clipboardTimeout;
+    ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
+      copyButton.addEventListener(eventType, (event) => {
+        clearTimeout(clipboardTimeout);
+        if (['mouseenter', 'focus'].includes(eventType)) {
+          copyButton.classList.remove('hide-copy-tooltip');
+        } else if (['mouseleave', 'blur'].includes(eventType)
+          || (eventType === 'keydown' && event.key === 'Escape')) {
+          copyButton.classList.add('hide-copy-tooltip');
+          copyButton.classList.remove('copy-to-clipboard-copied');
+        }
+      });
+    });
+
     const li = createTag('li');
     const copyAriaLive = createTag(
       'div',
@@ -194,13 +209,13 @@ export default async function decorate(block) {
       copyAriaLive.textContent = '';
       navigator.clipboard.writeText(window.location.href).then(() => {
         copyButton.classList.add('copy-to-clipboard-copied');
+        copyButton.classList.remove('hide-copy-tooltip');
         copyAriaLive.textContent = copiedTooltip + (changeText ? '\u200b' : '');
         changeText = !changeText;
-        setTimeout(() => document.activeElement.blur(), 500);
-        setTimeout(
-          () => copyButton.classList.remove('copy-to-clipboard-copied'),
-          2000,
-        );
+        clipboardTimeout = setTimeout(() => {
+          copyButton.classList.add('hide-copy-tooltip');
+          copyButton.classList.remove('copy-to-clipboard-copied');
+        }, 2000);
       });
     });
   }
