@@ -228,10 +228,14 @@ function initPaddles(tabList, left, right, isRadio) {
     }
   });
 
+  // Use the tab-list-container as the root for intersection observer
+  // since it's the actual container that constrains the visible area
+  const tabListContainer = tabList.querySelector('.tab-list-container');
+  const observerRoot = tabListContainer || tabList;
   const options = {
-    root: tabList,
+    root: observerRoot,
     rootMargin: '0px',
-    threshold: 0.9,
+    threshold: tabListContainer ? 1 : 0.9, // Slightly higher threshold for better detection
   };
 
   const callback = (entries) => {
