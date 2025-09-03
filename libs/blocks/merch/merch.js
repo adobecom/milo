@@ -1005,6 +1005,7 @@ export async function initService(force = false, attributes = {}) {
         service = createTag('mas-commerce-service', {
           locale,
           language,
+          country,
           ...attributes,
           ...commerce,
         });
