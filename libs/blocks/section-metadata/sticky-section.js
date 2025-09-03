@@ -18,17 +18,17 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
 
       const { target, isIntersecting } = entry;
 
+      const abovePromoStart = (target === stickySectionEl && isIntersecting)
+        || stickySectionEl?.getBoundingClientRect().y > 0;
+
       if (target === document.querySelector('footer')) {
         el.classList.toggle('fill-sticky-section', isIntersecting);
-      } else if (target === stickySectionEl) {
-        const abovePromoStart = isIntersecting || stickySectionEl?.getBoundingClientRect().y > 0;
-        el.classList.toggle('hide-sticky-section', abovePromoStart);
       } else if (target === document.querySelector('.hide-at-intersection')) {
         const shouldHideSticky = isIntersecting
         || entry.boundingClientRect.top < 0
         || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', shouldHideSticky);
-      }
+      } else el.classList.toggle('hide-sticky-section', abovePromoStart);
     });
   }, options);
 }

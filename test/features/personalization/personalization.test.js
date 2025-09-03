@@ -486,4 +486,21 @@ describe('MEP Utils', () => {
       expect(result.selectedVariant.commands[0].action).to.equal('append');
     });
   });
+  describe('handleTwpButtons', async () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/personalization-twp.html' });
+      await loadManifestAndSetResponse('./mocks/manifest-remove-twp.json');
+    });
+    it('should remove TWP buttons if TWP buttons are present', async () => {
+      let allLinks = document.querySelectorAll('a');
+      let ftLinks = [...allLinks].filter((link) => link.innerHTML.toLowerCase().match(/free.trial/));
+      expect(ftLinks.length).to.not.equal(0);
+
+      await init(mepSettings);
+
+      allLinks = document.querySelectorAll('a');
+      ftLinks = [...allLinks].filter((link) => link.innerHTML.toLowerCase().match(/free.trial/));
+      expect(ftLinks.length).to.equal(0);
+    });
+  });
 });
