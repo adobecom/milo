@@ -13,6 +13,18 @@ export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 const TEXT_TRUNCATE_SUFFIX = '...';
 
+/**
+ * Normalizes variant names for consistency.
+ * Converts any variant starting with 'plans' to just 'plans'.
+ * @param {string} variant - The variant name to normalize
+ * @returns {string} The normalized variant name
+ */
+export function normalizeVariant(variant) {
+    if (!variant) return variant;
+    if (variant.startsWith('plans')) return 'plans';
+    return variant;
+}
+
 export function appendSlot(fieldName, fields, el, mapping) {
     const config = mapping[fieldName];
     if (fields[fieldName] && config) {

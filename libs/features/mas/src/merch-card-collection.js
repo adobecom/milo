@@ -16,6 +16,7 @@ import {
 import { styles } from './merch-card-collection.css.js';
 import { getService, getSlotText } from './utils.js';
 import { getFragmentMapping } from './variants/variants.js';
+import { normalizeVariant } from './hydrate.js';
 import './mas-commerce-service';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
@@ -412,8 +413,7 @@ export class MerchCardCollection extends LitElement {
             }
 
             let nmbOfColumns = '';
-            let variant = cards[0]?.fields?.variant;
-            if (variant?.startsWith('plans')) variant = 'plans';
+            let variant = normalizeVariant(cards[0]?.fields?.variant);
             this.variant = variant;
             if (variant === 'plans' && cards.length === 3 && !cards.some((card) => card.fields?.size?.includes('wide'))) nmbOfColumns = 'ThreeColumns';
             if (variant) {
