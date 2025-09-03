@@ -231,7 +231,6 @@ export async function getGeoLocaleSettings(miloLocale) {
   if (country) {
     country = country.toUpperCase();
     settings.country = country;
-    settings.locale = `${settings.language}_${country}`;
   }
   return settings;
 }
