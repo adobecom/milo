@@ -3,6 +3,7 @@
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
+const LOCALE_MODAL_ID = 'locale-modal-v2';
 const FOCUSABLES = 'a:not(.hide-video), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
@@ -50,10 +51,9 @@ export function sendAnalytics(event) {
 }
 
 function focusAfterModalClose(modal) {
-  const { id } = modal;
-  const isGeoPopup = id === 'locale-modal-v2';
+  const isGeoPopup = modal?.id === LOCALE_MODAL_ID;
   const onetrustBanner = (isDeepLink || isGeoPopup) && document.querySelector('#onetrust-banner-sdk');
-  const geoPopupFocus = !isGeoPopup && document.querySelector('.dialog-modal#locale-modal-v2')?.querySelector('a.con-button');
+  const geoPopupFocus = !isGeoPopup && document.querySelector(`.dialog-modal#${LOCALE_MODAL_ID} a.con-button`);
   const toFocus = geoPopupFocus || onetrustBanner || null;
   toFocus?.focus();
   isDeepLink = false;
@@ -166,7 +166,7 @@ function addIframeKeydownListener(iframe, dialog) {
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
-  if (id !== 'locale-modal-v2') isDeepLink = deepLink;
+  if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
