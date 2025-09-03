@@ -689,7 +689,7 @@ const RESULT_TEXT_SLOT_NAMES = {
           if (!customHeaderAreaGetter) return nothing;
           const customHeaderArea = customHeaderAreaGetter(this.collection);
           if (!customHeaderArea || customHeaderArea === nothing) return nothing;
-          return html`<div id="custom">${customHeaderArea}</div>`;
+          return html`<div id="custom" role="heading" aria-level="2">${customHeaderArea}</div>`;
       }
   
       // #region Handlers
