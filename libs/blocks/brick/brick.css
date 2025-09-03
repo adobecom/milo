@@ -409,7 +409,7 @@
 }
 
 /* Mweb specific */
-@media screen and (max-width: 599px) {
+@media screen and (max-width: 796px) {
   .brick:has(.icon-stack-area) {
     min-height: unset;
   }
