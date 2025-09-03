@@ -149,13 +149,11 @@
   z-index: 8;
 }
 
-.share .copy-to-clipboard::before,
-.share .copy-to-clipboard::before {
+.share .copy-to-clipboard:not(.hide-copy-tooltip)::before {
   transform: translate(-50%, -6px);
 }
 
-.share .copy-to-clipboard::after,
-.share .copy-to-clipboard::after {
+.share .copy-to-clipboard:not(.hide-copy-tooltip)::after {
   transform: translate(-50%, -2px);
 }
 
