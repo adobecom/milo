@@ -1,5 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
+import { loadLitDependency } from '../merch-card-autoblock/merch-card-autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import {
@@ -37,7 +38,10 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load service first */
+  /** Load lit first as it's needed by MAS components */
+  await loadLitDependency();
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {

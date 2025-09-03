@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
@@ -13,6 +13,24 @@ import {
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
+let litPromise;
+
+/**
+ * Loads lit dependency dynamically when needed
+ * @returns {Promise} Promise that resolves when lit is loaded
+ */
+export async function loadLitDependency() {
+  if (litPromise) return litPromise;
+
+  if (window.customElements?.get('lit-element')) {
+    return Promise.resolve();
+  }
+
+  const { base } = getConfig();
+  litPromise = loadScript(`${base}/deps/lit-all.min.js`, 'module');
+
+  return litPromise;
+}
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -21,7 +39,10 @@ function getTimeoutPromise() {
 }
 
 async function loadDependencies() {
-  /** Load service first */
+  /** Load lit first as it's needed by MAS components */
+  await loadLitDependency();
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {
