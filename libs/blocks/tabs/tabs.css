@@ -507,7 +507,7 @@
   position: relative;
   padding: 1px;
   border-radius: var(--m-rounded-corners);
-  background: #f8f8f8;
+  /* background: #f8f8f8; */
   /* margin: 0; */
 }
 
@@ -515,6 +515,7 @@
   background: #f8f8f8;
   overflow: hidden;
   border-radius: var(--m-rounded-corners);
+  padding: 1px;
 }
 
 .tabs.segmented-control .tabList button {
@@ -542,6 +543,7 @@
   flex-shrink: 0;
   justify-content: end;
   padding: 0 !important;
+  top: 1px;
   /* top: 1px;
   right: 1px; */
 }
@@ -553,8 +555,12 @@
   color: #505050;
 }
 
-.tabs.segmented-control .paddle:disabled {
+.tabs.segmented-control .tabList button.paddle:disabled {
   background: none;
+}
+
+.tabs.segmented-control .paddle:disabled svg {
+  opacity: 0;
 }
 
 /* Section Metadata */
