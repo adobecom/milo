@@ -505,15 +505,14 @@
   display: flex;
   align-items: center;
   position: relative;
+  padding: 1px;
   /* margin: 0; */
 }
 
 .tabs.segmented-control .tabList .tab-list-container {
-  padding: 1px;
   background: #f8f8f8;
   overflow: hidden;
   border-radius: var(--m-rounded-corners);
-  /* flex: 1; */
 }
 
 .tabs.segmented-control .tabList button {
@@ -531,16 +530,18 @@
   box-shadow: 0 2px 8px 0 #00000029;
 }
 
-.tabs.segmented-control .paddle {
+.tabs.segmented-control .tabList button.paddle {
   position: absolute;
   border-bottom: none;
   background: linear-gradient(270deg, #FFF 49.7%, rgba(255, 255, 255, 0.00) 71.52%);
   width: 54px;
-  height: 40px;
+  height: 38px;
   box-shadow: none;
   flex-shrink: 0;
   justify-content: end;
   padding: 0 !important;
+  top: 1px;
+  right: 1px;
 }
 
 .tabs.segmented-control .paddle svg {
