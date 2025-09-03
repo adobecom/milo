@@ -148,8 +148,8 @@
 }
 
 /* center tabs */
-.tabs.center > .tabList::after,
-.tabs.center > .tabList::before {
+.tabs.center:not(.segmented-control) > .tabList::after,
+.tabs.center:not(.segmented-control) > .tabList::before {
   content: "";
   margin: auto;
 }
@@ -505,6 +505,7 @@
   display: flex;
   align-items: center;
   position: relative;
+  /* margin: 0; */
 }
 
 .tabs.segmented-control .tabList .tab-list-container {
@@ -531,13 +532,22 @@
 }
 
 .tabs.segmented-control .paddle {
-  position: absolute
+  position: absolute;
   border-bottom: none;
-  background: linear-gradient(270deg, #FFF 70%, rgba(255, 255, 255, 0.00) 100%);
+  background: linear-gradient(270deg, #FFF 49.7%, rgba(255, 255, 255, 0.00) 71.52%);
   width: 54px;
   height: 40px;
   box-shadow: none;
   flex-shrink: 0;
+  justify-content: end;
+  padding: 0 !important;
+}
+
+.tabs.segmented-control .paddle svg {
+  margin: unset;
+  width: 24px;
+  height: 24px;
+  color: #505050;
 }
 
 .tabs.segmented-control .paddle:disabled {

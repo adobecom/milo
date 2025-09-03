@@ -6,6 +6,7 @@ import { createTag, MILO_EVENTS, getConfig, localizeLink } from '../../utils/uti
 import { processTrackingLabels } from '../../martech/attributes.js';
 
 const PADDLE = '<svg aria-hidden="true" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
+const PADDLE_SEGMENT = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9.29999 19.7578C9.07499 19.7578 8.85117 19.6746 8.67655 19.5059C8.31796 19.1613 8.30625 18.5918 8.65194 18.2344L14.6508 11.9977L8.66717 5.77735C8.32146 5.41993 8.33319 4.8504 8.69178 4.50587C9.04686 4.16134 9.61991 4.17071 9.96327 4.53048L16.548 11.3742C16.8843 11.7223 16.8843 12.273 16.548 12.6211L9.94803 19.4813C9.77225 19.6652 9.53554 19.7578 9.29999 19.7578Z" fill="#505050"/></svg>';
 const tabColor = {};
 const linkedTabs = {};
 const tabChangeEvent = new Event('milo:tab:changed');
@@ -366,12 +367,12 @@ const init = (block) => {
   }
 
   // Tab Paddles
-  const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
-  const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
+  const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, block.classList.contains('segmented-control') ? PADDLE_SEGMENT : PADDLE);
+  const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, block.classList.contains('segmented-control') ? PADDLE_SEGMENT : PADDLE);
 
   // For segmented-control variant, add paddles inside the tabList
   if (block.classList.contains('segmented-control')) {
-    // tabList.prepend(paddleLeft);
+    tabList.prepend(paddleLeft);
     tabList.append(paddleRight);
   } else {
     // Default behavior for other variants
