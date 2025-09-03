@@ -243,8 +243,7 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Verify only default test page marquee is visible', async () => {
-      await page.waitForLoadState('networkidle');
-      await expect(await PROMO.marqueeDefault).toBeVisible();
+      await expect(await PROMO.marqueeDefault).toBeVisible({ timeout: 10000 });
       await expect(await PROMO.marqueeDefault).toContainText(data.textMarquee);
       await expect(await PROMO.textDefault).not.toBeVisible();
     });

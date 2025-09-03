@@ -29,6 +29,8 @@ test(`${features[1].name},${features[1].tags}`, async ({ page }) => {
   await expect(mepButtonLoc.mepButton).toHaveCount(0);
 
   await page.goto(`${URL}?mep`); // with mep parameter
+  await page.waitForLoadState('domcontentloaded');
+  await expect(mepButtonLoc.mepButton).toBeVisible();
   await expect(mepButtonLoc.mepButton).toHaveCount(1);
 });
 

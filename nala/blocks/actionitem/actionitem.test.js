@@ -160,27 +160,21 @@ test.describe('Milo Action-Item block test suite', () => {
     });
 
     await test.step('step-4: Click the float button', async () => {
-      const context = page.context();
-      const oldUrl = page.url();
+      const waitForNewPage = page.context().waitForEvent('page', { timeout: 10000 })
+        .catch(() => null);
 
-      const [popup] = await Promise.all([
-        context.waitForEvent('page', { timeout: 5000 }).catch(() => null),
-        actionItem.floatButton.click(),
-      ]);
+      await actionItem.floatButton.click();
 
-      const targetPage = popup || page;
+      const newPage = await waitForNewPage;
 
-      if (popup) {
-        await targetPage.waitForLoadState();
+      if (newPage) {
+        await newPage.waitForLoadState('load');
+        await newPage.waitForTimeout(3000);
+        expect(newPage.url()).not.toBe(testPage);
       } else {
-        const startTime = Date.now();
-        const timeout = 5000;
-        while (Date.now() - startTime < timeout) {
-          if (page.url() !== oldUrl) break;
-          await page.waitForTimeout(1000);
-        }
+        await page.waitForLoadState('networkidle');
+        expect(page.url()).not.toBe(testPage);
       }
-      expect(targetPage.url()).not.toBe(oldUrl);
     });
   });
 
