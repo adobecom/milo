@@ -489,6 +489,7 @@ export async function polyfills() {
       isSupported = true;
     },
   });
+
   if (isSupported) {
     polyfills.promise = Promise.resolve();
   } else {
