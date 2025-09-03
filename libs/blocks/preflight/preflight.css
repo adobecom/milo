@@ -856,6 +856,18 @@ img:hover ~ .asset-meta,
   visibility: visible;
 }
 
+.ai-suggestion {
+  display: flex;
+  margin: 0;
+  font-style: italic;
+}
+
+.ai-suggestion .result-icon {
+  width: 30px;
+  height: 30px;
+  background-size: contain;
+}
+
 /* Accessibility Tab */
 .accessibility-columns {
   display: grid;
@@ -1018,3 +1030,9 @@ img:hover ~ .asset-meta,
   border-top: 2px rgba(0, 0, 0, 0.2);
 }
 
+.preflight-auth-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}

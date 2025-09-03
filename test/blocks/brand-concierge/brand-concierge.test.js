@@ -105,7 +105,7 @@ describe('Brand Concierge', () => {
     expect(trackStub.firstCall.args[0]).to.equal('bootstrapConversationalExperience');
     expect(trackStub.firstCall.args[1]).to.deep.include({
       selector: '#brand-concierge-mount',
-      src: 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
       stylingConfigurations: chatUIConfig,
     });
 
