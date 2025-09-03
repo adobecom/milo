@@ -81,7 +81,7 @@ const init = async (params = {}) => {
   toggleTheme(urlParams.get('theme') ?? 'light');
 
   // mas-commerce-service - wait for it to be ready
-  await createMasCommerceService({...params, ...Object.fromEntries(urlParams.entries())}, commerceEnv);
+  createMasCommerceService({...params, ...Object.fromEntries(urlParams.entries())}, commerceEnv);
   await import('../dist/mas.js');
 
   document.querySelectorAll('a.theme-toggle').forEach((link) => 
