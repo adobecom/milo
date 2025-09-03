@@ -1,9 +1,3 @@
-/* Mobile-first CSS architecture
- * Base styles: Mobile (0px and up) - includes container-mobile variants
- * Tablet styles: 600px - 1200px (unsets mobile container styles + tablet enhancements)
- * Desktop styles: 1200px and up (unsets mobile container styles + desktop enhancements)
- */
-
  :root {
   /* border-radius sizes */
   --l-rounded-corners: 16px;
@@ -386,7 +380,6 @@
   width: 100%;
 }
 
-/* Mobile container variants (base styles) */
 @media (max-width: 600px) {
   
   .icon-block.container-mobile.left-mobile .foreground {
@@ -409,7 +402,6 @@
   .section:has(.icon-block.container-mobile + .action-scroller) {
     width: var(--grid-container-width);
     margin: auto;
-    /* background: #EEE !important; */
     border-radius: var(--l-rounded-corners);
   }
 
@@ -426,7 +418,6 @@
 
 }
 
-/* Tablet styles (600px - 1200px) */
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
@@ -463,7 +454,6 @@
   }
 }
 
-/* Desktop styles (1200px and up) */
 @media screen and (min-width: 1200px) {
   .icon-block.full-width .foreground,
   .icon-block.bio .foreground {
