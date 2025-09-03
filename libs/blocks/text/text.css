@@ -330,12 +330,12 @@
     gap: var(--spacing-xxs);
   }
 
-  .text.text-block.left-mobile .action-area:not(:has(> a:only-child)),
+  .text.text-block.left-mobile .action-area,
   .text.text-block.left-mobile .icon-area {
     justify-content: start;
   }
 
-  .text.text-block.center-mobile .action-area:not(:has(> a:only-child)),
+  .text.text-block.center-mobile .action-area,
   .text.text-block.center-mobile .icon-area {
     justify-content: center;
   }
