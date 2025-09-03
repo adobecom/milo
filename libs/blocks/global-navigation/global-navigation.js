@@ -1549,7 +1549,7 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${item.classList.contains('merch') ? await merch.default(item) : decorateCta({ elem: item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item): item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
