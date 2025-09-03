@@ -84,7 +84,7 @@ runTests(async () => {
             await delay(100);
             // For simplified-pricing-express, border color should be set as CSS variable
             const computedStyle = window.getComputedStyle(cardWithBorder);
-            const borderColorVar = computedStyle.getPropertyValue('--merch-card-custom-border-color');
+            const borderColorVar = computedStyle.getPropertyValue('--consonant-merch-card-border-color');
             // Since the attribute is set directly (not via hydration), the CSS variable may not be set
             // Instead, check that the attribute is properly set
             expect(cardWithBorder.borderColor).to.equal('#E91E63');

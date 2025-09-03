@@ -209,7 +209,7 @@ export class MerchCard extends LitElement {
             changedProperties.has('borderColor')
         ) {
             this.style.setProperty(
-                '--merch-card-custom-border',
+                '--consonant-merch-card-border',
                 this.computedBorderStyle,
             );
         }

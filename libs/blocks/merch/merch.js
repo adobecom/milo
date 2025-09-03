@@ -1018,7 +1018,6 @@ export async function initService(force = false, attributes = {}) {
           service.registerCheckoutAction(getCheckoutAction);
         }
         document.head.append(service);
-        await service.readyPromise;
 
         // Polyfill for older commerce service versions that don't have prefillWcsCache
         if (typeof service.prefillWcsCache !== 'function') {

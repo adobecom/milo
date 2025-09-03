@@ -32,7 +32,7 @@ const SIDENAV_AUTOCLOSE = {
 }
 
 const categoryFilter = (elements, { filter }) =>
-    elements.filter((element) => element.filters && element.filters.hasOwnProperty(filter));
+    elements.filter((element) => element?.filters && element?.filters.hasOwnProperty(filter));
 
 const typeFilter = (elements, { types }) => {
     if (!types) return elements;
@@ -218,16 +218,8 @@ export class MerchCardCollection extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         this.#service = getService();
-        // Add defensive check for Log property
-        if (this.#service && this.#service.Log) {
+        if (this.#service) {
             this.#log = this.#service.Log.module(MERCH_CARD_COLLECTION);
-        } else {
-            // Fallback logging if service isn't ready
-            this.#log = {
-                debug: () => {},
-                error: console.error,
-                warn: console.warn,
-            };
         }
         this.buildOverrideMap();
         this.init();
@@ -396,7 +388,7 @@ export class MerchCardCollection extends LitElement {
                     for (const node of level) {
                         const index = node.cards.indexOf(fragmentId);
                         if (index === -1) continue;
-                        const name = node.queryLabel || (node.label ? node.label.toLowerCase() : '');
+                        const name = node.queryLabel ?? node?.label?.toLowerCase() ?? '';
                         merchCard.filters[name] = { order: index + 1, size: fragment.fields.size };
                         populateFilters(node.collections);
                     }

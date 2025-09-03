@@ -763,7 +763,7 @@ describe('processBorderColor', () => {
 
         expect(
             merchCard.style.getPropertyValue(
-                '--merch-card-custom-border-color',
+                '--consonant-merch-card-border-color',
             ),
         ).to.equal('var(--spectrum-gray-800)');
     });
@@ -775,7 +775,7 @@ describe('processBorderColor', () => {
 
         expect(
             merchCard.style.getPropertyValue(
-                '--merch-card-custom-border-color',
+                '--consonant-merch-card-border-color',
             ),
         ).to.be.empty;
     });
@@ -788,7 +788,7 @@ describe('processBorderColor', () => {
 
         expect(
             merchCard.style.getPropertyValue(
-                '--merch-card-custom-border-color',
+                '--consonant-merch-card-border-color',
             ),
         ).to.be.empty;
     });

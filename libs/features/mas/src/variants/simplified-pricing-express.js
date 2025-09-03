@@ -16,7 +16,15 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     badge: {
         tag: 'div',
         slot: 'badge',
+        default: 'spectrum-blue-400',
     },
+    allowedBadgeColors: [
+        'spectrum-blue-400',
+        'spectrum-gray-300',
+        'spectrum-yellow-300',
+        'gradient-purple-blue',
+        'gradient-firefly-spectrum',
+    ],
     description: {
         tag: 'div',
         slot: 'body-xs',
@@ -40,7 +48,7 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
             'gradient-firefly-spectrum': 'linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)',
         },
     },
-    disabledAttributes: ['badgeColor', 'trialBadgeColor', 'trialBadgeBorderColor'],
+    disabledAttributes: ['trialBadgeColor', 'trialBadgeBorderColor'],
     supportsDefaultChild: true,
 };
 
@@ -256,7 +264,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
         
         :host([variant='simplified-pricing-express']:not([gradient-border='true'])) .card-content {
             background: var(--spectrum-gray-50);
-            border: 1px solid var(--merch-card-custom-border-color, var(--spectrum-gray-100));
+            border: 1px solid var(--consonant-merch-card-border-color, var(--spectrum-gray-100));
         }
         
         /* Collapsed state for non-gradient cards */
@@ -272,7 +280,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
         
         /* When badge exists with regular border, ensure top border */
         :host([variant='simplified-pricing-express']:not([gradient-border='true']):has([slot="badge"]:not(:empty))) .card-content {
-            border-top: 1px solid var(--merch-card-custom-border-color, var(--spectrum-gray-100));
+            border-top: 1px solid var(--consonant-merch-card-border-color, var(--spectrum-gray-100));
         }
         
         /* When badge has content, ensure seamless connection */

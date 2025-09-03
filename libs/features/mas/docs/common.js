@@ -68,11 +68,6 @@ const createMasCommerceService = async (params, commerceEnv) => {
   });
   document.head.appendChild(masCommerceService);
   
-  // Wait for the service to be ready before returning
-  if (masCommerceService.readyPromise) {
-    await masCommerceService.readyPromise;
-  }
-  
   return masCommerceService;
 }
 

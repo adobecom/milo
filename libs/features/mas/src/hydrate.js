@@ -184,7 +184,7 @@ export function processBackgroundColor(fields, merchCard, allowedColors, backgro
 
 export function processBorderColor(fields, merchCard, variantMapping) {
     const borderColorConfig = variantMapping?.borderColor;
-    const customBorderColor = '--merch-card-custom-border-color';
+    const customBorderColor = '--consonant-merch-card-border-color';
 
     if (fields.borderColor?.toLowerCase() === 'transparent') {
         merchCard.style.removeProperty(customBorderColor);
