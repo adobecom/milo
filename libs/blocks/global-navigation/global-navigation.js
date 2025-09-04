@@ -107,6 +107,7 @@ const {
   getUnavWidthCSS,
   setupKeyboardNav,
   KEYBOARD_DELAY,
+  isSmallScreen,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -504,6 +505,7 @@ class Gnav {
 
     document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
+    isSmallScreen.addEventListener('change', this.updateGnavTop)
   }, 'Error in global navigation init', 'gnav', 'e');
 
   revealGnav = async () => {
@@ -1187,15 +1189,17 @@ class Gnav {
   };
 
   updateGnavTop = () => {
+    const promo = document.querySelector('.feds-promo-aside-wrapper');
+    if (!promo) return;
     const promoHeight = `${this.elements.aside.clientHeight}px`;
     const header = document.querySelector('header');
     const localNav = document.querySelector('.feds-localnav');
 
-    document.querySelector('.feds-promo-aside-wrapper').style.height = promoHeight;
-    header.style.top = promoHeight;
+    promo.style.height = promoHeight;
+    header.style.top = isSmallScreen.matches ? 0 : promoHeight;
     if (!isDesktop.matches && localNav) {
       header.style.top = 0;
-      localNav.style.top = promoHeight;
+      localNav.style.top = isSmallScreen.matches ? 0 : promoHeight;
     }
     if (!isDesktop.matches) this.updatePopupPosition();
   };
