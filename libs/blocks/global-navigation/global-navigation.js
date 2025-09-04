@@ -1554,7 +1554,10 @@ class Gnav {
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
-          const linkElem = item.querySelector('a');
+          let linkElem = item.querySelector('a');
+          if (linkElem.classList.contains('merch')) {
+            linkElem = await merch.default(linkElem);
+          }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
           linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
