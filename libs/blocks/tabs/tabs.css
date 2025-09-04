@@ -552,6 +552,10 @@
   right: 1px; */
 }
 
+.tabs.segmented-control .tabList button.paddle-left {
+  display: none;
+}
+
 .tabs.segmented-control .paddle svg {
   margin: unset;
   width: 24px;
