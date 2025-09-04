@@ -51,7 +51,7 @@ const toggleLocale = (event, params) => {
   window.location.reload();
 }
 
-const createMasCommerceService = async (params, commerceEnv) => {
+const createMasCommerceService = (params, commerceEnv) => {
   const old = document.querySelector('mas-commerce-service');
   if (old) {
     old.remove();
@@ -80,7 +80,7 @@ const init = async (params = {}) => {
   // theme
   toggleTheme(urlParams.get('theme') ?? 'light');
 
-  // mas-commerce-service - wait for it to be ready
+  // mas-commerce-service
   createMasCommerceService({...params, ...Object.fromEntries(urlParams.entries())}, commerceEnv);
   await import('../dist/mas.js');
 

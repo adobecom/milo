@@ -446,7 +446,7 @@ export async function loadLitDependency() {
   }
 
   const { base } = getConfig();
-  litPromise = loadScript(`${base}/deps/lit-all.min.js`, 'module');
+  litPromise = import(`${base}/deps/lit-all.min.js`);
 
   return litPromise;
 }
