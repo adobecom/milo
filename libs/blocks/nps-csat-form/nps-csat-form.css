@@ -270,27 +270,3 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 640px) {
-  .nps-csat-form {
-    padding: 24px;
-    width: 95%;
-  }
-  
-  .radio-options {
-    gap: 16px;
-  }
-  
-  .radio-options label {
-    min-width: 60px;
-    font-size: 11px;
-  }
-  
-  .nps-submit-area {
-    flex-direction: column-reverse;
-  }
-  
-  .nps-cancel,
-  .nps-submit {
-    width: 100%;
-  }
-} 
