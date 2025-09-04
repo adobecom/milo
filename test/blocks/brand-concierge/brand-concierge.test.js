@@ -105,7 +105,7 @@ describe('Brand Concierge', () => {
     expect(trackStub.firstCall.args[0]).to.equal('bootstrapConversationalExperience');
     expect(trackStub.firstCall.args[1]).to.deep.include({
       selector: '#brand-concierge-mount',
-      src: 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
       stylingConfigurations: chatUIConfig,
     });
 
@@ -125,5 +125,48 @@ describe('Brand Concierge', () => {
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
     expect(mount.dataset.initialMessage).to.contain('Prompt two');
+  });
+
+  describe('Privacy Consent Handling', () => {
+    let block;
+    let originalAdobePrivacy;
+    let originalLana;
+
+    beforeEach(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      block = document.querySelector('.brand-concierge');
+      originalAdobePrivacy = window.adobePrivacy;
+      originalLana = window.lana;
+    });
+
+    afterEach(() => {
+      window.adobePrivacy = originalAdobePrivacy;
+      window.lana = originalLana;
+      sinon.restore();
+    });
+
+    it('shows the block if privacy hasnt loaded yet', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+    });
+
+    it('hides the block if the user rejects all cookies', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+      window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001']) };
+      window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
+      expect(block.classList.contains('hide-block')).to.be.true;
+    });
+
+    it('hides the block if the user rejects performance cookies', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+      window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001', 'C0003']) };
+      window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
+      expect(block.classList.contains('hide-block')).to.be.true;
+    });
   });
 });
