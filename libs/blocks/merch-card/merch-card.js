@@ -2,8 +2,14 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import { loadLitDependency } from '../merch-card-autoblock/merch-card-autoblock.js';
-import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_QUANTITY_SELECT, MAS_MERCH_OFFER_SELECT } from '../merch/merch.js';
+import {
+  initService,
+  loadLitDependency,
+  loadMasComponent,
+  MAS_MERCH_CARD,
+  MAS_MERCH_QUANTITY_SELECT,
+  MAS_MERCH_OFFER_SELECT,
+} from '../merch/merch.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 

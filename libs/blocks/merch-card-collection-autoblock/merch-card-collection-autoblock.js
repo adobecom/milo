@@ -1,6 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
-import { loadLitDependency } from '../merch-card-autoblock/merch-card-autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import {
@@ -9,6 +8,7 @@ import {
   MEP_SELECTOR,
   overrideOptions,
   updateModalState,
+  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,

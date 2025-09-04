@@ -1,5 +1,4 @@
-import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION } from '../merch/merch.js';
-import { loadLitDependency } from '../merch-card-autoblock/merch-card-autoblock.js';
+import { initService, loadLitDependency, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION } from '../merch/merch.js';
 import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,

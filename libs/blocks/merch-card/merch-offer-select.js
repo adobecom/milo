@@ -1,7 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import { loadLitDependency } from '../merch-card-autoblock/merch-card-autoblock.js';
-import { loadMasComponent, MAS_MERCH_OFFER_SELECT } from '../merch/merch.js';
+import { loadLitDependency, loadMasComponent, MAS_MERCH_OFFER_SELECT } from '../merch/merch.js';
 
 const TWP = 'twp';
 const MINI_COMPARE_CHART = 'mini-compare-chart';
