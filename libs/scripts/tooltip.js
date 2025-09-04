@@ -71,14 +71,14 @@ function setTooltipPosition(tooltips) {
 }
 
 export default function addTooltipListeners(ownerElement) {
-  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur', 'click'].forEach((eventType) => {
+  ownerElement?.addEventListener('click', () => {
+    ownerElement.classList.add('hide-tooltip');
+  });
+  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
     document.addEventListener(eventType, (event) => {
-      if (ownerElement && !ownerElement.classList.contains('hide-tooltip')) {
-        if (eventType === 'click' || (
-          eventType === 'keydown' && event.key === 'Escape'
-        )) {
-          ownerElement.classList.add('hide-tooltip');
-        }
+      if (ownerElement && !ownerElement.classList.contains('hide-tooltip')
+        && eventType === 'keydown' && event.key === 'Escape') {
+        ownerElement.classList.add('hide-tooltip');
       }
 
       const isTooltip = event.target?.matches?.('.milo-tooltip');
