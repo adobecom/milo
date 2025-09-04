@@ -4,6 +4,8 @@ export default class MasPlans {
     this.price = page.locator('span[data-template="price"]');
     this.priceStrikethrough = page.locator('span[data-template="strikethrough"]');
     this.cardIcon = page.locator('merch-icon');
+    this.sidenav = page.locator('merch-sidenav sp-sidenav');
+    this.collectionContainerIndividuals = page.locator('#tab-panel-plan-1 .collection-container');
 
     // Plans individual card properties:
     this.cssProp = {
@@ -147,11 +149,15 @@ export default class MasPlans {
 
   getCardDescription(id) {
     const card = this.getCard(id);
-    return card.locator('div[slot="body-xs"] p');
+    return card.locator('div[slot="body-xs"]');
   }
 
   getSeeAllPlansLink(id) {
     return this.getCardDescription(id).locator('a.modal-Link');
+  }
+
+  getSeeAllPlans3in1Link(id) {
+    return this.getCardDescription(id).locator('a[is="checkout-link"]');
   }
 
   getCardCTA(id) {
@@ -159,12 +165,12 @@ export default class MasPlans {
     return card.locator('div[slot="footer"] > a[is="checkout-link"]');
   }
 
-  getStockCheckbox(id) {
-    return this.getCard(id).locator('[id="stock-checkbox"]');
+  getCardStockCheckbox(id) {
+    return this.getCard(id).locator('merch-addon');
   }
 
-  getStockCheckboxIcon(id) {
-    return this.getCard(id).locator('[id="stock-checkbox"] > span');
+  getCardStockCheckboxIcon(id) {
+    return this.getCard(id).locator('merch-addon > span');
   }
 
   getCardSecureTransaction(id) {
