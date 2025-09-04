@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { styles } from './merch-quantity-select.css.js';
 import { debounce } from './utils.js';
 
@@ -282,7 +282,7 @@ export class MerchQuantitySelect extends LitElement {
         e.target.classList.remove('focused');
     }
 
-  render() {
+    render() {
         return html`
             <div class="label" id="qsLabel">${this.title}</div>
             <div class="text-field">
@@ -293,14 +293,14 @@ export class MerchQuantitySelect extends LitElement {
                     role="combobox"
                     aria-expanded=${!this.closed}
                     aria-controls="qsPopover"
-                    aria-activedescendant="${!this.closed ? `qs-item-${this.highlightedIndex}` : ''}"
+                    aria-activedescendant="${!this.closed ? `qs-item-${this.highlightedIndex}` : nothing}"
                     .value="${this.selectedValue}"
                     type="text"
                     autocomplete="off"
                     @keydown="${this.handleKeydown}"
                     @keyup="${this.handleKeyupDebounced}"
                 />
-                <button class="picker-button" aria-activedescendant="${!this.closed ? `qs-item-${this.highlightedIndex}` : ''}" 
+                <button class="picker-button" aria-activedescendant="${!this.closed ? `qs-item-${this.highlightedIndex}` : nothing}" 
                         @focus="${this.onButtonFocus}" @blur="${this.onButtonBlur}"
                         aria-controls="qsPopover" aria-expanded=${!this.closed} aria-labelledby="qsLabel" @click="${this.toggleMenu}">
                     <div
