@@ -78,6 +78,7 @@ const searcher = (elements, { search }) => {
 
 export class MerchCardCollection extends LitElement {
     static properties = {
+        id: { type: String, attribute: 'id', reflect: true },
         displayResult: { type: Boolean, attribute: 'display-result' },
         filter: { type: String, attribute: 'filter', reflect: true },
         filtered: { type: String, attribute: 'filtered', reflect: true }, // freeze filter
@@ -107,6 +108,7 @@ export class MerchCardCollection extends LitElement {
     constructor() {
         super();
         // set defaults
+        this.id = null;
         this.filter = 'all';
         this.hasMore = false;
         this.resultCount = undefined;
@@ -302,6 +304,7 @@ export class MerchCardCollection extends LitElement {
 
         const aemFragment = this.querySelector('aem-fragment');
         if (!aemFragment) return;
+        this.id = aemFragment.getAttribute('fragment');
 
         this.hydrating = true;
         let resolveHydration;
@@ -422,7 +425,7 @@ export class MerchCardCollection extends LitElement {
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();
-            resolveHydration();
+            resolveHydration(true);
         });
         await this.hydrationReady;
     }
