@@ -527,7 +527,6 @@
   font-weight: 700;
   color: var(--tabs-pill-bg-color);
   font-size: 14px;
-  /* flex: 1 0 0; */
 }
 
 .tabs.segmented-control .tabList button[aria-selected="true"],
@@ -561,6 +560,7 @@
 
 .tabs.segmented-control .tabList button.paddle:disabled {
   background: none;
+  display: none;
 }
 
 .tabs.segmented-control .paddle:disabled svg {
