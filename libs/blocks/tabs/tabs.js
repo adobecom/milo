@@ -238,6 +238,25 @@ function initPaddles(tabList, left, right, isRadio) {
     threshold: tabListContainer ? 1 : 0.9, // Slightly higher threshold for better detection
   };
 
+  const checkTabListContainerMargin = () => {
+    if (tabListContainer) {
+      const computedStyle = window.getComputedStyle(tabListContainer);
+      const marginLeft = parseFloat(computedStyle.marginLeft);
+      const marginRight = parseFloat(computedStyle.marginRight);
+
+      // If margin becomes zero, remove disabled from right arrow
+      if (marginLeft === 0 || marginRight === 0) {
+        removeAttributes(right, ['disabled', 'aria-hidden']);
+        return;
+      }
+
+      // If margins reappear and last tab is in view, re-disable right arrow
+      if (isTabInTabListView(lastTab)) {
+        setAttributes(right, { disabled: '', 'aria-hidden': true });
+      }
+    }
+  };
+
   const callback = (entries) => {
     entries.forEach((entry) => {
       if (entry.target === firstTab) {
@@ -251,6 +270,8 @@ function initPaddles(tabList, left, right, isRadio) {
           setAttributes(right, { disabled: '', 'aria-hidden': true });
         } else {
           removeAttributes(right, ['disabled', 'aria-hidden']);
+          // Also check margin when lastTab becomes visible/invisible
+          checkTabListContainerMargin();
         }
       }
     });
@@ -260,6 +281,18 @@ function initPaddles(tabList, left, right, isRadio) {
 
   observer.observe(firstTab);
   observer.observe(lastTab);
+
+  // Monitor for changes that might affect margins
+  if (tabListContainer) {
+    // Check margins on window resize
+    window.addEventListener('resize', checkTabListContainerMargin);
+
+    // Check margins on scroll events that might affect layout
+    tabList.addEventListener('scroll', checkTabListContainerMargin);
+
+    // Initial margin check
+    checkTabListContainerMargin();
+  }
 }
 
 const handleDeferredImages = (block) => {
