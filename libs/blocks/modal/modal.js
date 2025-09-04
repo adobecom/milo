@@ -49,6 +49,12 @@ export function sendAnalytics(event) {
   }
 }
 
+function focusTriggerElement(modalId) {
+  const triggerElement = document.querySelector(`[data-modal-hash="#${modalId}"][data-is-modal-trigger="true"]`);
+  triggerElement?.focus();
+  triggerElement?.removeAttribute('data-is-modal-trigger');
+}
+
 export function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
@@ -78,7 +84,7 @@ export function closeModal(modal) {
       }
       mod.remove();
     }
-    document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
+    focusTriggerElement(mod.id);
   });
 
   if (!document.querySelectorAll('.modal-curtain').length) {
@@ -105,7 +111,7 @@ export function closeModal(modal) {
     return;
   }
 
-  document.querySelector(`a[data-modal-id="${id}"].con-button`)?.focus();
+  focusTriggerElement(id);
 }
 
 function isElementInView(element) {
@@ -156,6 +162,7 @@ function addIframeKeydownListener(iframe, dialog) {
 }
 
 export async function getModal(details, custom) {
+  document.activeElement.dataset.isModalTrigger = 'true';
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
   isDeepLink = deepLink;
