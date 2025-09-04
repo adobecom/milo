@@ -94,6 +94,14 @@ function getSidenav(collection) {
   spSidenav.setAttribute('manageTabIndex', true);
   const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
 
+  sidenavList.updateComplete.then(() => {
+    sidenavList.querySelector('sp-sidenav')?.setAttribute('role', 'tablist');
+    sidenavList.querySelectorAll('sp-sidenav-item').forEach((item) => {
+      item.removeAttribute('role');
+      item.shadowRoot?.querySelector('a')?.setAttribute('role', 'tab');
+    });
+  });
+
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
@@ -169,8 +177,13 @@ export async function createCollection(el, options) {
   if (paragraph) toReplace = paragraph;
   toReplace.replaceWith(container);
 
-  await collection.checkReady();
-
+  const success = await collection.checkReady();
+  if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
+  }
   container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */

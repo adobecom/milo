@@ -54,7 +54,7 @@ const getHowToInfo = (el) => {
   if (!infoDiv) return {};
 
   const heading = infoDiv.firstElementChild;
-  heading.classList.add('heading-xl');
+  heading.classList.add('heading-l');
   if (!heading.id) {
     heading.id = heading.textContent.replace(/\s+/g, '-').toLowerCase();
   }
@@ -128,12 +128,12 @@ export default function init(el) {
   if (steps) orderedList.append(...steps);
 
   if (mainImage) {
-    const imageClass = `how-to-media${isLargeMedia ? ' how-to-media-large' : ''}`;
+    const imageClass = `how-to-media${isLargeMedia ? ' how-to-media-large' : ' mini-image'}`;
     el.append(createTag('div', { class: imageClass }, mainImage));
   }
 
   if (mainVideo) {
-    const videoClass = `how-to-media${isLargeMedia ? ' how-to-media-large video' : ''}`;
+    const videoClass = `how-to-media${isLargeMedia ? ' how-to-media-large' : ''}`;
     el.append(createTag('div', { class: videoClass }, mainVideo));
   }
 
@@ -144,8 +144,7 @@ export default function init(el) {
   decorateTextOverrides(el);
   const rows = el.querySelectorAll(':scope > div');
   const foreground = createTag('div', { class: 'foreground' });
-  if (mainImage) foreground.classList.add('has-image');
-  if (mainVideo) foreground.classList.add('has-video');
+  if (mainImage || mainVideo) foreground.classList.add('has-image');
   rows.forEach((row) => { foreground.appendChild(row); });
   foreground.appendChild(orderedList);
   el.appendChild(foreground);

@@ -160,5 +160,37 @@ module.exports = {
       },
       tags: '@promo @commerce @regression',
     },
+    {
+      tcid: '14',
+      name: '@Promo-mas-replace-card-in-collection',
+      path: '/drafts/nala/features/commerce/plans?mep=/drafts/nala/features/promotions/manifests/promo-replace-card-in-collection.json',
+      data: {
+        collectionId: 'cffc325f-3405-4619-8892-75c303a37966',
+        baseCardId: '7819acb2-fb23-46c5-ab7f-f59b2e29ee1e',
+        promoCardId: 'eccb6135-55ea-490f-889a-a7a7f324f347',
+        overrideAttributes: '7819acb2-fb23-46c5-ab7f-f59b2e29ee1e:eccb6135-55ea-490f-889a-a7a7f324f347',
+      },
+      tags: '@promo @commerce @regression',
+    },
+    {
+      tcid: '15',
+      name: '@Promo-mas-replace-collection-with-collection',
+      path: '/drafts/nala/features/commerce/plans?mep=/drafts/nala/features/promotions/manifests/promo-replace-collection-with-collection.json',
+      data: {
+        baseCollectionId: 'cffc325f-3405-4619-8892-75c303a37966',
+        promoCollectionId: '3d48f7cb-5285-46a9-a1cc-a242b8a39db8',
+      },
+      tags: '@promo @commerce @regression',
+    },
+    {
+      tcid: '16',
+      name: '@Promo-mas-replace-collection-with-fragment',
+      path: '/drafts/nala/features/commerce/plans?mep=/drafts/nala/features/promotions/manifests/promo-replace-collection-with-fragment.json',
+      data: {
+        collectionId: 'cffc325f-3405-4619-8892-75c303a37966',
+        fragmentPath: '/drafts/nala/features/promotions/fragments/mas-collection-replacement-frag',
+      },
+      tags: '@promo @commerce @regression',
+    },
   ],
 };
