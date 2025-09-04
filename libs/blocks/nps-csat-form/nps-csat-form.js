@@ -255,7 +255,12 @@ export default async (block) => {
   });
 
   const cancelButton = form.querySelector('button.nps-cancel');
+  const closeButton = form.querySelector('button.nps-close');
   cancelButton?.addEventListener('click', () => {
+    cancelActions();
+    sendMessageAndWaitForAck(CANCEL);
+  }, { once: true });
+  closeButton?.addEventListener('click', () => {
     cancelActions();
     sendMessageAndWaitForAck(CANCEL);
   }, { once: true });
