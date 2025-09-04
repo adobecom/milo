@@ -505,7 +505,7 @@
   display: flex;
   align-items: center;
   position: relative;
-  padding: 1px;
+  /* padding: 1px; */
   border-radius: var(--m-rounded-corners);
   /* min-width: 298px; */
   /* background: #f8f8f8; */
@@ -527,6 +527,7 @@
   font-weight: 700;
   color: var(--tabs-pill-bg-color);
   font-size: 14px;
+  /* flex: 1 0 0; */
 }
 
 .tabs.segmented-control .tabList button[aria-selected="true"],
@@ -546,7 +547,7 @@
   flex-shrink: 0;
   justify-content: end;
   padding: 0 !important;
-  top: 1px;
+  /* top: 1px; */
   /* top: 1px;
   right: 1px; */
 }
