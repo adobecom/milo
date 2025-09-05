@@ -196,8 +196,8 @@ function getDefaultLangstoreCountry(language) {
   return country || 'US';
 }
 
-export function getMiloLocaleSettings(locale) {
-  const localePrefix = locale?.prefix || 'US_en';
+export function getMiloLocaleSettings(miloLocale) {
+  const localePrefix = miloLocale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
   let [country = 'US', language = 'en'] = (GeoMap[geo] ?? geo).split('_', 2);
 
@@ -218,6 +218,29 @@ export function getMiloLocaleSettings(locale) {
     country,
     locale: `${language}_${country}`,
   };
+}
+
+export async function getGeoLocaleSettings(miloLocale) {
+  const settings = getMiloLocaleSettings(miloLocale);
+  let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
+    || sessionStorage.getItem('akamai');
+  if (!country) {
+    const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+    country = await getAkamaiCode(true);
+  }
+  if (country) {
+    country = country.toUpperCase();
+    settings.country = country;
+  }
+  return settings;
+}
+
+export async function getLocaleSettings(miloLocale) {
+  const geoDetection = getMetadata('mas-geo-detection');
+  if (!geoDetection || !['on', 'true'].includes(geoDetection)) {
+    return Promise.resolve(getMiloLocaleSettings(miloLocale));
+  }
+  return getGeoLocaleSettings(miloLocale);
 }
 
 /* Optional checkout link params that are appended to checkout urls as is */
@@ -468,6 +491,7 @@ export async function polyfills() {
       isSupported = true;
     },
   });
+
   if (isSupported) {
     polyfills.promise = Promise.resolve();
   } else {
@@ -974,23 +998,19 @@ export async function initService(force = false, attributes = {}) {
         }
       }
 
-      const { language, locale, country } = getMiloLocaleSettings(miloLocale);
+      const { language, locale, country } = await getLocaleSettings(miloLocale);
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
           locale,
           language,
+          country,
           ...attributes,
           ...commerce,
         });
         if (miloEnv?.name !== 'prod') {
           service.setAttribute('allow-override', '');
-        }
-        const ffDefaults = getMetadata('mas-ff-defaults');
-        if (!ffDefaults) {
-          // On milo, if ff is not enabled explicitly, disable it by default
-          service.dataset.masFfDefaults = 'off';
         }
         // Register checkout action if method exists (for backward compatibility)
         if (typeof service.registerCheckoutAction === 'function') {
