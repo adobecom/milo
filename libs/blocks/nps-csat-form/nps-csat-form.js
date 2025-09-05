@@ -202,9 +202,10 @@ export default async (block) => {
       } catch (e) {
         const errorMessage = e?.message || e?.toString() || 'Unknown error occurred';
         sendMessage(ERROR(errorMessage));
-        return '';
+        return e;
       }
     })();
+    if (message instanceof Error) return;
     switch (message?.type) {
       case Cancel:
         sendMessage(ACK);
