@@ -53,7 +53,7 @@ export default {
     },
     privacyNotice: {
       title: 'Privacy Notice',
-      text: 'By using this automated chatbot, you consent that any personal information you provide in the chat may be collected, used, analyzed, disclosed, and retained by Adobe and its service providers, in accordance with the Adobe {Privacy Policy}. Please do not enter any sensitive personal information (e.g., financial or health data).',
+      text: 'By using this automated chatbot, you consent that any personal information you provide in the chat may be collected, used, analyzed, disclosed, and retained by Adobe and its service providers, in accordance with the Adobe {Privacy Policy}. Please do not enter any personal information or sensitive information (e.g., financial or health data).',
       links: [
         {
           text: 'Privacy Policy',
