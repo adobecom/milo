@@ -1,0 +1,26 @@
+{
+  "urls": {
+    "total": 4,
+    "offset": 0,
+    "limit": 4,
+    "data": [
+      {
+        "url": "/not/a/valid/path",
+        "group": "gwp-test",
+        "message": "Publishing disabled until the test is over"
+      }
+    ]
+  },
+  "gwp-test": {
+    "total": 2,
+    "offset": 0,
+    "limit": 2,
+    "data": [
+      { "allow": "testuser@adobe.com" },
+      { "allow": "testuser1@adobe.com" }
+    ]
+  },
+  ":version": 3,
+  ":names": ["urls", "gwp-US", "no-publish", "gwp-FR"],
+  ":type": "multi-sheet"
+}
