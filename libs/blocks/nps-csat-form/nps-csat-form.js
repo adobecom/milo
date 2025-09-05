@@ -201,7 +201,12 @@ export default async (block) => {
         return JSON.parse(event.data);
       } catch (e) {
         const errorMessage = e?.message || e?.toString() || 'Unknown error occurred';
-        sendMessage(ERROR(`Malformed JSON; ${event.data};  ${errorMessage}`));
+        const msgObject = {
+          errorType: 'Malformed JSON',
+          eventData: event.data,
+          errorMessage,
+        };
+        sendMessage(ERROR(msgObject));
         return e;
       }
     })();
