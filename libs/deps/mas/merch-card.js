@@ -2148,6 +2148,7 @@ merch-card-collection.simplified-pricing-express p {
 
 merch-card[variant="simplified-pricing-express"] p {
     margin: 0 !important; /* needed to override express-milo default margin to all <p> */
+    font-size: inherit;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="heading-xs"] {
@@ -2243,6 +2244,12 @@ merch-card[variant="simplified-pricing-express"] span.placeholder-resolved[data-
 
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price {
   color: var(--spectrum-gray-500);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] p a {
+  color: var(--spectrum-indigo-800);
+  font-weight: 500;
+  text-decoration: underline;
 }
 
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-integer,
@@ -2379,7 +2386,7 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent,
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.spectrum-Button--accent {
-    background-color: var(--spectrum-indigo-900);
+    background-color: var(--spectrum-indigo-800);
     width: 100%;
 }
 `;var tt=()=>window.matchMedia(L).matches,At={title:{tag:"h3",slot:"heading-xs",maxCount:250,withSuffix:!0},badge:{tag:"div",slot:"badge",default:"spectrum-blue-400"},allowedBadgeColors:["spectrum-blue-400","spectrum-gray-300","spectrum-yellow-300","gradient-purple-blue","gradient-firefly-spectrum"],description:{tag:"div",slot:"body-xs",maxCount:2e3,withSuffix:!1},prices:{tag:"div",slot:"price"},ctas:{slot:"cta",size:"XL"},borderColor:{attribute:"border-color",specialValues:{gray:"var(--spectrum-gray-300)",blue:"var(--spectrum-blue-400)","gradient-purple-blue":"linear-gradient(96deg, #B539C8 0%, #7155FA 66%, #3B63FB 100%)","gradient-firefly-spectrum":"linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)"}},disabledAttributes:["trialBadgeColor","trialBadgeBorderColor"],supportsDefaultChild:!0},be=class extends b{getGlobalCSS(){return wr}get aemFragmentMapping(){return At}get headingSelector(){return'[slot="heading-xs"]'}connectedCallbackHook(){!this.card||this.card.failed||(this.setupAccordion(),requestAnimationFrame(()=>{this.card?.hasAttribute("data-default-card")&&tt()&&this.card.setAttribute("data-expanded","true")}))}setupAccordion(){let t=this.card;if(!t)return;let e=()=>{if(tt()){let a=t.hasAttribute("data-default-card");t.setAttribute("data-expanded",a?"true":"false")}else t.removeAttribute("data-expanded")};e();let r=window.matchMedia(L);this.mediaQueryListener=()=>{e()},r.addEventListener("change",this.mediaQueryListener),this.attributeObserver=new MutationObserver(a=>{a.forEach(n=>{n.type==="attributes"&&n.attributeName==="data-default-card"&&this.card.hasAttribute("data-default-card")&&tt()&&this.card.setAttribute("data-expanded","true")})}),this.attributeObserver.observe(this.card,{attributes:!0,attributeOldValue:!0})}disconnectedCallbackHook(){this.mediaQueryListener&&window.matchMedia(L).removeEventListener("change",this.mediaQueryListener),this.attributeObserver&&this.attributeObserver.disconnect()}handleChevronClick(t){t.preventDefault(),t.stopPropagation();let e=this.card;if(!e||!tt())return;let n=e.getAttribute("data-expanded")==="true"?"false":"true";e.setAttribute("data-expanded",n)}renderLayout(){return wi`

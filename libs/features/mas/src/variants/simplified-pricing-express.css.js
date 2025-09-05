@@ -41,6 +41,7 @@ merch-card-collection.simplified-pricing-express p {
 
 merch-card[variant="simplified-pricing-express"] p {
     margin: 0 !important; /* needed to override express-milo default margin to all <p> */
+    font-size: inherit;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="heading-xs"] {
@@ -136,6 +137,12 @@ merch-card[variant="simplified-pricing-express"] span.placeholder-resolved[data-
 
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price {
   color: var(--spectrum-gray-500);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] p a {
+  color: var(--spectrum-indigo-800);
+  font-weight: 500;
+  text-decoration: underline;
 }
 
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-integer,
@@ -272,7 +279,7 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent,
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.spectrum-Button--accent {
-    background-color: var(--spectrum-indigo-900);
+    background-color: var(--spectrum-indigo-800);
     width: 100%;
 }
 `;
