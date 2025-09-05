@@ -1840,7 +1840,7 @@ merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-te
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] p a {
-  color: var(--spectrum-indigo-800);
+  color: var(--spectrum-indigo-900);
   font-weight: 500;
   text-decoration: underline;
 }
@@ -1863,7 +1863,7 @@ merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-te
 /* Apply indigo-800 color to optical price when preceded by strikethrough */
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'],
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol {
-  color: var(--spectrum-indigo-800);
+  color: var(--spectrum-indigo-900);
 }
 
 /* Hide screen reader only text */
@@ -1984,7 +1984,7 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent,
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.spectrum-Button--accent {
-    background-color: var(--spectrum-indigo-800);
+    background-color: var(--spectrum-indigo-900);
     color: var(--spectrum-white, #ffffff);
     width: 100%;
 }
