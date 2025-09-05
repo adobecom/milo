@@ -17,77 +17,116 @@ const Acknowledged = 'Acknowledged';
 const Cancel       = 'Cancel';
 const Submit       = 'Submit';
 const ErrorMsg     = 'Error';
+
 export const READY  = { type: Ready };
 export const ACK    = { type: Acknowledged };
 export const CANCEL = { type: Cancel };
-export const ERROR  = (message) => ({
+export const ERROR  = (errorType) => (eventData, errorMessage) => ({
   type: ErrorMsg,
-  message,
+  errorType,
+  message: {
+    eventData,
+    errorMessage,
+  },
 });
+const MISSING_TYPE_ERROR      = ERROR('missingType');
+const UNEXPECTED_TYPE_ERROR   = ERROR('unexpectedType');
+const UNRECOGNIZED_TYPE_ERROR = ERROR('unrecognizedType');
+const TIMEOUT_ERROR           = ERROR('timeoutErr');
+const MALFORMED_JSON_ERROR    = ERROR('malformedJSON');
 export const SUBMIT = (data) => ({
   type: Submit,
   data,
 });
-const MSG_TIMEOUT = 1000;
+export const MSG_TIMEOUT = 1000;
 
-export const recieveMessage = (timeoutMessage) => new Promise((resolve, reject) => {
-  const timeout = setTimeout(() => {
-    if (timeoutMessage) reject(new Error(timeoutMessage));
-  }, MSG_TIMEOUT);
-  const handler = (event) => {
-    clearTimeout(timeout);
+const STATE_BASE = 0;
+const STATE_EXPECT_ACK = 1;
+
+const initMessageClient = () => {
+  let state = STATE_BASE;
+  let timeout;
+
+  const sendMessage = (() => {
+    const parent = typeof window.uxpHost?.postMessage === 'function'
+      ? window.uxpHost
+      : window.parent;
+    if (parent === window) {
+      console.warn('No parent document found'); // eslint-disable-line
+    }
+    return (obj) => {
+      switch (obj?.type) {
+        case Cancel:
+        case Ready: {
+          state = STATE_EXPECT_ACK;
+          timeout = setTimeout(() => {
+            sendMessage(TIMEOUT_ERROR(null, 'Timed out waiting for "Acknowledged"'));
+            state = STATE_BASE;
+          }, MSG_TIMEOUT);
+          break;
+        }
+        case Acknowledged:
+          break;
+        case Submit:
+          break;
+        case ErrorMsg:
+          break;
+        default:
+          break;
+      }
+      const message = JSON.stringify(obj);
+      parent.postMessage(message, '*');
+    };
+  })();
+
+  window.addEventListener('message', (event) => {
     const message = (() => {
       try {
         return JSON.parse(event.data);
       } catch (e) {
-        reject(new Error(`Failed to parse message: ${e.message}`));
+        return e;
       }
-      return '';
     })();
-    resolve(message);
-  };
-  window.addEventListener('message', handler, { once: true });
-});
-
-// Alternative approach: Use a generator function to
-// get a stream of events, but the current use case
-// does't justify doing it that way yet.
-export const expectMessage = async (m, timeoutMessage = null) => {
-  if (!m.type) throw new Error('Not a valid message');
-  // Cancel is handled by the general message listener
-  if (m.type === Cancel) return m;
-
-  const message = await recieveMessage(timeoutMessage);
-  // Cancel is handled by the general message listener
-  // So no need to error out
-  if (message.type === Cancel) {
-    return message;
-  }
-  if (m.type !== message?.type) {
-    const em = `Unexpected message ${message.type}. Expected ${m.type}`;
-    throw new Error(em);
-  }
-  return message;
-};
-
-const acknowledgement = () => expectMessage(ACK, 'Timeout waiting for ACK');
-
-const sendMessage = (() => {
-  const parent = typeof window.uxpHost?.postMessage === 'function'
-    ? window.uxpHost
-    : window.parent;
-  if (parent === window) {
-    console.warn('No parent document found'); // eslint-disable-line
-  }
-  return (obj) => {
-    const message = JSON.stringify(obj);
-    parent.postMessage(message, '*');
-  };
-})();
-
-const sendMessageAndWaitForAck = async (obj) => {
-  sendMessage(obj);
-  await acknowledgement();
+    if (message instanceof Error) {
+      sendMessage(MALFORMED_JSON_ERROR(event.data, message));
+      return;
+    }
+    if (!message.type) {
+      sendMessage(MISSING_TYPE_ERROR(message, 'Message is missing the type property'));
+      return;
+    }
+    switch (message.type) {
+      case Cancel:
+        if (state === STATE_EXPECT_ACK) {
+          state = STATE_BASE;
+          clearTimeout(timeout);
+        }
+        sendMessage(ACK);
+        cancelActions();
+        break;
+      case Acknowledged: {
+        if (state === STATE_EXPECT_ACK) {
+          state = STATE_BASE;
+          clearTimeout(timeout);
+        }
+        break;
+      }
+      case Ready:
+      case Submit: {
+        if (state === STATE_BASE) return;
+        if (state === STATE_EXPECT_ACK) {
+          sendMessage(UNEXPECTED_TYPE_ERROR(message, `Unexpected Message Type ${message.type}. Expected ${Acknowledged}`));
+        }
+        break;
+      }
+      case ErrorMsg:
+        console.error(message.message); // eslint-disable-line
+        break;
+      default:
+        sendMessage(UNRECOGNIZED_TYPE_ERROR(message, `Message type ${message.type} is wrong`));
+    }
+  });
+  return sendMessage;
 };
 
 const cancelActions = (() => {
@@ -187,46 +226,10 @@ export default async (block) => {
     .createContextualFragment(buildForm(data));
   block.append(formFragment);
 
+  const sendMessage = initMessageClient();
   // The form will still be interactable in case
   // Acknowledgement fails
-  sendMessageAndWaitForAck(READY).catch((e) => {
-    const errorMessage = e?.message || e?.toString() || 'Unknown error occurred';
-    sendMessage(ERROR(errorMessage));
-    console.error(e); // eslint-disable-line
-  });
-
-  window.addEventListener('message', (event) => {
-    const message = (() => {
-      try {
-        return JSON.parse(event.data);
-      } catch (e) {
-        const errorMessage = e?.message || e?.toString() || 'Unknown error occurred';
-        const msgObject = {
-          errorType: 'Malformed JSON',
-          eventData: event.data,
-          errorMessage,
-        };
-        sendMessage(ERROR(msgObject));
-        return e;
-      }
-    })();
-    if (message instanceof Error) return;
-    switch (message?.type) {
-      case Cancel:
-        sendMessage(ACK);
-        cancelActions();
-        break;
-      case Ready:
-      case Acknowledged:
-      case Submit:
-        break;
-      case ErrorMsg:
-        console.error(message.message); // eslint-disable-line
-        break;
-      default:
-        sendMessage(ERROR(`Unexpected Message: ${JSON.stringify(message)}`));
-    }
-  });
+  sendMessage(READY);
 
   // Add form validation handler - only show errors after submit attempt
   const form = block.querySelector('#nps');
@@ -264,11 +267,11 @@ export default async (block) => {
   const closeButton = form.querySelector('button.nps-close');
   cancelButton?.addEventListener('click', () => {
     cancelActions();
-    sendMessageAndWaitForAck(CANCEL);
+    sendMessage(CANCEL);
   }, { once: true });
   closeButton?.addEventListener('click', () => {
     cancelActions();
-    sendMessageAndWaitForAck(CANCEL);
+    sendMessage(CANCEL);
   }, { once: true });
   // Remove error when radio button is selected (after submission attempt)
   const radioButtons = form.querySelectorAll('input[type="radio"]');
