@@ -43,15 +43,6 @@
   width: 100%;
 }
 
-.firefly-gallery-header {
-  margin-bottom: var(--spacing-m);
-  text-align: center;
-}
-
-.firefly-gallery-title {
-  margin-bottom: var(--spacing-s);
-}
-
 .firefly-gallery-content {
   height: 720px;
   overflow: hidden;

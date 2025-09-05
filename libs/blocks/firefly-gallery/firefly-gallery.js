@@ -6,7 +6,7 @@ const DEBUG = false;
 const FIREFLY_API_URL =
   'https://community-hubs.adobe.io/api/v2/ff_community/assets';
 const API_PARAMS =
-  '?size=32&sort=updated_desc&include_pending_assets=false&category_id=text2Image&cursor=';
+  '?size=32&sort=updated_desc&include_pending_assets=false&cursor=';
 const API_KEY = 'alfred-community-hubs';
 
 // Item type thresholds for categorization
@@ -199,14 +199,17 @@ function updateItemTypeClass(item, itemType) {
   item.className = newClasses.join(' ');
 }
 
-async function fetchFireflyImages() {
+async function fetchFireflyAssets(categoryId) {
   try {
     debug('Fetching Firefly images...');
-    const response = await fetch(`${FIREFLY_API_URL}${API_PARAMS}`, {
-      headers: {
-        'x-api-key': API_KEY,
-      },
-    });
+    const response = await fetch(
+      `${FIREFLY_API_URL}${API_PARAMS}&category_id=${categoryId}`,
+      {
+        headers: {
+          'x-api-key': API_KEY,
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
@@ -266,19 +269,11 @@ function createGalleryStructure() {
   const galleryContainer = createTag('div', {
     class: 'firefly-gallery-container',
   });
-  const galleryHeader = createTag('div', { class: 'firefly-gallery-header' });
-  const galleryTitle = createTag(
-    'h2',
-    { class: 'firefly-gallery-title heading-xl' },
-    'Get inspired by the community'
-  );
   const galleryContent = createTag('div', { class: 'firefly-gallery-content' });
   const galleryOverlay = createTag('div', { class: 'firefly-gallery-fade' });
 
   galleryContent.appendChild(galleryOverlay);
 
-  galleryHeader.appendChild(galleryTitle);
-  galleryContainer.appendChild(galleryHeader);
   galleryContainer.appendChild(galleryContent);
 
   return {
@@ -737,6 +732,9 @@ function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
 export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
 
+  // Extract category_id - should be text2Image / VideoGeneration
+  const categoryId = el.innerText.replaceAll('\n', '').replaceAll(' ', '');
+
   // Clear existing content
   el.textContent = '';
 
@@ -752,7 +750,7 @@ export default async function init(el) {
   // Allow the skeleton UI to render and be scrollable
   // before waiting for image data
   // Load Firefly images
-  fetchFireflyImages()
+  fetchFireflyAssets(categoryId)
     .then((assets) => {
       if (assets && assets.length) {
         // Pass assets to the function to enable progressive loading
