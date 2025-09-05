@@ -295,8 +295,10 @@
 
 /* Mweb specific changes for body typography */
 .mweb-enabled .body-xxl {
-  font-size: var(--type-body-xl-size);
-  line-height: var(--type-body-xl-lh);
+  --type-body-xxl-size-mweb: calc(var(--font-size-multiplier, 1) * 24px);
+  --type-body-xxl-lh-mweb: 36px;
+  font-size: var(--type-body-xxl-size-mweb);
+  line-height: var(--type-body-xxl-lh-mweb);
 }
 
 .mweb-enabled .body-xl {
@@ -319,10 +321,6 @@
   line-height: var(--type-body-xs-lh);
 }
 
-.mweb-enabled .body-xs {
-  font-size: var(--type-body-xxs-size);
-  line-height: var(--type-body-xxs-lh);
-}
 
 .detail-xl {
   font-size: var(--type-detail-l-size);
@@ -1146,16 +1144,6 @@ a.static:active  {
   .mweb-enabled .body-s {
     font-size: var(--type-body-s-size);
     line-height: var(--type-body-s-lh);
-  }
-  
-  .mweb-enabled .body-xs {
-    font-size: var(--type-body-xs-size);
-    line-height: var(--type-body-xs-lh);
-  }
-  
-  .mweb-enabled .body-xxs {
-    font-size: var(--type-body-xxs-size);
-    line-height: var(--type-body-xxs-lh);
   }
 }
 
