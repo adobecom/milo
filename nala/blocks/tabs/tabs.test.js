@@ -148,9 +148,7 @@ test.describe('Milo Tab block feature test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[3].tcid}] ${features[3].tags}`, async ({ page, baseURL, browserName }) => {
-    test.skip(browserName === 'webkit', 'Skipping test on WebKit');
-
+  test(`[Test Id - ${features[3].tcid}] ${features[3].tags}`, async ({ page, baseURL }) => {
     console.log(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
     await page.goto(`${baseURL}${features[3].path}${miloLibs}`);
     await page.waitForLoadState('networkidle');
@@ -195,8 +193,7 @@ test.describe('Milo Tab block feature test suite', () => {
     await test.step('step-2: Verify tab selection based on custom deeplink parameter', async () => {
       const newUrl = new URL(page.url());
       newUrl.searchParams.set('plans', data.deeplinkValue);
-      await page.goto(newUrl.toString());
-      await page.waitForLoadState('domcontentloaded');
+      await page.goto(newUrl.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
 
       // Verify the correct tab is selected based on deeplink
       const selectedTab = await tab.tab3;
