@@ -2271,6 +2271,12 @@ merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-
   text-decoration-thickness: 2px;
 }
 
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
+  text-decoration: line-through;
+}
+
 /* Apply indigo-800 color to optical price when preceded by strikethrough */
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'],
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol {
