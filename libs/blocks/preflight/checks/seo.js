@@ -1,10 +1,33 @@
-import { STATUS, SEO_TITLES } from './constants.js';
+import { STATUS, SEO_TITLES, SEO_IDS, SEO_DESCRIPTIONS } from './constants.js';
 import getServiceConfig from '../../../utils/service-config.js';
+import { getConfig, updateConfig } from '../../../utils/utils.js';
 
 const KNOWN_BAD_URLS = ['news.adobe.com'];
 const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
 
 const linksCache = new Map();
+
+// Wait for footer using onFooterReady callback
+function waitForFooter() {
+  return new Promise((resolve) => {
+    const config = getConfig();
+    if (config.footerReady) {
+      resolve();
+      return;
+    }
+
+    const originalCallback = config.onFooterReady;
+
+    config.onFooterReady = async () => {
+      if (originalCallback) await originalCallback();
+      await window.milo?.deferredPromise;
+      config.footerReady = true;
+      resolve();
+    };
+
+    updateConfig(config);
+  });
+}
 
 export function checkH1s(area) {
   const h1s = area.querySelectorAll('h1');
@@ -19,11 +42,12 @@ export function checkH1s(area) {
     description = `Found ${h1s.length} H1 headings. Each page should have exactly one H1 heading.`;
   } else {
     status = STATUS.PASS;
-    description = 'Found exactly one H1 heading.';
+    description = SEO_DESCRIPTIONS.h1Count;
   }
 
   return {
-    title: SEO_TITLES.H1Count,
+    id: SEO_IDS.h1Count,
+    title: SEO_TITLES.h1Count,
     status,
     description,
   };
@@ -42,11 +66,12 @@ export function checkTitle(area) {
     description = 'Title size is too long. A title should not exceed 70 characters.';
   } else {
     status = STATUS.PASS;
-    description = 'Title size is appropriate.';
+    description = SEO_DESCRIPTIONS.title;
   }
 
   return {
-    title: SEO_TITLES.TitleSize,
+    id: SEO_IDS.title,
+    title: SEO_TITLES.title,
     status,
     description,
   };
@@ -72,7 +97,7 @@ export async function checkCanon(area) {
         description = 'Reason: Canonical reference redirects';
       } else {
         status = STATUS.PASS;
-        description = 'Canonical reference is valid.';
+        description = SEO_DESCRIPTIONS.canonical;
       }
     } catch (e) {
       status = STATUS.LIMBO;
@@ -81,7 +106,8 @@ export async function checkCanon(area) {
   }
 
   return {
-    title: SEO_TITLES.Canonical,
+    id: SEO_IDS.canonical,
+    title: SEO_TITLES.canonical,
     status,
     description,
   };
@@ -110,30 +136,29 @@ export async function checkDescription(area) {
   }
 
   return {
-    title: SEO_TITLES.MetaDescription,
+    id: SEO_IDS.description,
+    title: SEO_TITLES.description,
     status,
     description,
   };
 }
 
 export async function checkBody(area) {
-  const nonContentEls = '#preflight, .asset-meta, aem-sidekick';
-  const bodyClone = area.body.cloneNode(true);
-  bodyClone.querySelectorAll(nonContentEls).forEach((el) => el.remove());
-  const { length } = bodyClone.innerText.replace(/\n/g, '').trim();
+  const { length } = area.documentElement.innerText.trim();
   let status;
   let description;
 
   if (length > 100) {
     status = STATUS.PASS;
-    description = 'Body content has a good length.';
+    description = SEO_DESCRIPTIONS.bodySize;
   } else {
     status = STATUS.FAIL;
     description = 'Reason: Not enough content.';
   }
 
   return {
-    title: SEO_TITLES.BodySize,
+    id: SEO_IDS.bodySize,
+    title: SEO_TITLES.bodySize,
     status,
     description,
   };
@@ -150,11 +175,12 @@ export async function checkLorem(area) {
     description = 'Reason: Lorem ipsum is used on the page.';
   } else {
     status = STATUS.PASS;
-    description = 'No Lorem ipsum is used on the page.';
+    description = SEO_DESCRIPTIONS.loremIpsum;
   }
 
   return {
-    title: SEO_TITLES.Lorem,
+    id: SEO_IDS.loremIpsum,
+    title: SEO_TITLES.loremIpsum,
     status,
     description,
   };
@@ -168,7 +194,8 @@ function makeGroups(arr, n = 20) {
 
 export function connectionError() {
   return {
-    title: SEO_TITLES.Links,
+    id: SEO_IDS.links,
+    title: SEO_TITLES.links,
     status: STATUS.LIMBO,
     description: 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.',
     details: { badLinks: [] },
@@ -279,24 +306,19 @@ export async function checkLinks({ area, urlHash, envName }) {
     badResults.push(...spidyResults);
   }
 
-  const uniqueBadResults = badResults.reduce((acc, result) => {
-    if (!acc.some((item) => item.url === result.url)) acc.push(result);
-    return acc;
-  }, []);
-
-  const badLinks = links.filter(
-    (link) => uniqueBadResults.some((result) => compareResults(result, link)),
-  );
+  const badLinks = badResults.map((result) => links.find((link) => compareResults(result, link)))
+    .filter(Boolean);
 
   const count = badLinks.length;
   const linkText = count > 1 || count === 0 ? 'links' : 'link';
   const status = count > 0 ? STATUS.FAIL : STATUS.PASS;
   const description = status === STATUS.FAIL
     ? `Reason: ${count} problem ${linkText}. Use the list below to fix them.`
-    : 'Links are valid.';
+    : SEO_DESCRIPTIONS.links;
 
   const result = {
-    title: SEO_TITLES.Links,
+    id: SEO_IDS.links,
+    title: SEO_TITLES.links,
     status,
     description,
     details: { badLinks },
@@ -317,6 +339,9 @@ export function runChecks({ url, area = document, envName }) {
     checkDescription(area),
     checkBody(area),
     checkLorem(area),
-    checkLinks({ area, url, envName }),
+    (async () => {
+      await waitForFooter();
+      return checkLinks({ area, url, envName });
+    })(),
   ];
 }
