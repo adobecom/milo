@@ -166,11 +166,7 @@ function safeguardMetadataImages(dom) {
 const map = {}
 const projectExclude = {
   'da-express-milo': [
-    'default/metadata.json',
-    'floating-cta-metadata.json',
-    'metadata-optimization.json',
-    'redirects.json',
-    'ax-promotions.json',
+    '.json',
   ],
 };
 
