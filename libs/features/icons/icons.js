@@ -5,8 +5,6 @@ import { getConfig } from '../../utils/utils.js';
 const iconCache = new Map();
 let miloIconsPromise;
 
-let tooltipListenersPromise = false;
-
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
   if (!hasTooltip) return;
@@ -27,11 +25,9 @@ function decorateToolTip(icon, iconName) {
 
   wrapper.parentElement.replaceChild(icon, wrapper);
 
-  if (!tooltipListenersPromise) {
-    tooltipListenersPromise = import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
-      addTooltipListeners();
-    });
-  }
+  import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
+    addTooltipListeners(icon);
+  });
 }
 
 async function getSVGsfromFile(path) {
