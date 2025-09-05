@@ -2265,7 +2265,6 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] p a {
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-integer,
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals-delimiter,
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals {
-  text-decoration: line-through;
   font-size: 28px;
   font-weight: 700;
   line-height: 36.4px;
