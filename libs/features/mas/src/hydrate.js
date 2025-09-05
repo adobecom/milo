@@ -199,10 +199,7 @@ export function processBorderColor(fields, merchCard, variantMapping) {
     const customBorderColor = '--consonant-merch-card-border-color';
 
     if (fields.borderColor?.toLowerCase() === 'transparent') {
-        merchCard.style.removeProperty(customBorderColor);
-        if (variantMapping?.allowedBorderColors?.includes(variantMapping?.badge?.default)) {
-            merchCard.style.setProperty(customBorderColor, 'transparent');
-        }
+        merchCard.style.setProperty(customBorderColor, 'transparent');
     } else if (fields.borderColor && borderColorConfig) {
         // Check if it's a gradient using specialValues or pattern matching
         const specialValue = borderColorConfig?.specialValues?.[fields.borderColor];
