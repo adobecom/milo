@@ -68,6 +68,16 @@ describe('text block', () => {
         expect(div.children[0].tagName).to.equal('H3');
       });
     });
+    it('adds list roles', () => {
+      const divElements = document.querySelectorAll('.link-farm .foreground:nth-child(2) div');
+      divElements.forEach((div) => {
+        expect(div.getAttribute('role')).to.equal('list');
+        [...div.children].forEach((child) => {
+          if (child.classList.contains('no-heading')) return;
+          expect(child.getAttribute('role')).to.equal('listitem');
+        });
+      });
+    });
   });
   describe('two content rows', () => {
     it('has viewport classes', () => {

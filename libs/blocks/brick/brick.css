@@ -354,7 +354,7 @@
   .brick.split.row .foreground .brick-media .video-container video {
     width: 100%;
   }
-  
+
   .brick .foreground .brick-media video,
   .brick.split.row .foreground .brick-media video {
     object-fit: fill;
@@ -405,5 +405,12 @@
     border-radius: 0;
     border-top-right-radius: inherit;
     border-bottom-right-radius: inherit;
+  }
+}
+
+/* Mweb specific */
+@media screen and (max-width: 796px) {
+  .brick:has(.icon-stack-area) {
+    min-height: unset;
   }
 }

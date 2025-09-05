@@ -148,7 +148,7 @@ describe('commerce service', () => {
                     checkoutWorkflowStep: 'email',
                     country: 'US',
                     displayOldPrice: false,
-                    displayPerUnit: true,
+                    displayPerUnit: false,
                     displayRecurrence: true,
                     displayTax: false,
                     displayPlanType: false,

@@ -6,12 +6,12 @@ export default class DefaultFlags {
     this.prices = {
       seat: {
         el: page.locator('[data-wcs-osi="1KfaN_o5h4Gvmvh_QwfK7KB7xGPpNpsTXsdhqpJUT5Y"] .price-unit-type'),
-        textEN: 'per license',
-        textFR: 'par licence',
-        textNG: 'per license',
+        textEN: '',
+        textFR: '',
+        textNG: '',
       },
       old: {
-        el: page.locator('[data-wcs-osi="yvRTCmcn7NN6BV4R6FZzgaZhFYry-uFfNwV1auPZEvo"] .price.price-strikethrough'),
+        el: page.locator('[data-wcs-osi="yIcVsmjmQCHKQ-TvUJxH3-kop4ifvwoMBBzVg3qfaTg"] .price.price-strikethrough'),
         textEN: '',
         textFR: '',
         textNG: '',

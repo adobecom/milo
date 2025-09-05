@@ -21,6 +21,7 @@ import merch, {
   getMasBase,
   getOptions,
   appendDexterParameters,
+  getLocaleSettings,
   getMiloLocaleSettings,
   setCtaHash,
   openModal,
@@ -226,6 +227,38 @@ describe('Merch Block', () => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
       });
+    });
+
+    it.only('should use geo locale for lang-first sites', async () => {
+      sessionStorage.setItem('akamai', 'ES');
+      const geoDetectionMeta = document.createElement('meta');
+      geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
+      geoDetectionMeta.setAttribute('content', 'on');
+      document.head.append(geoDetectionMeta);
+      const data = [
+        { prefix: '/ar', expectedLocale: 'es_AR', expectedCountry: 'ES' },
+        { prefix: '/africa', expectedLocale: 'en_MU', expectedCountry: 'ES' },
+        { prefix: '', expectedLocale: 'en_US', expectedCountry: 'ES' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_AE', expectedCountry: 'ES' },
+        { prefix: '/langstore/en', expectedLocale: 'en_US', expectedCountry: 'ES' },
+        { prefix: '/langstore/es', expectedLocale: 'es_ES', expectedCountry: 'ES' },
+        { prefix: '/langstore/de', expectedLocale: 'de_DE', expectedCountry: 'ES' },
+        { prefix: '/langstore/id', expectedLocale: 'id_ID', expectedCountry: 'ES' },
+        { prefix: '/langstore/hi', expectedLocale: 'hi_IN', expectedCountry: 'ES' },
+        { prefix: '/langstore/ar', expectedLocale: 'ar_DZ', expectedCountry: 'ES' },
+        { prefix: '/langstore/nb', expectedLocale: 'nb_NO', expectedCountry: 'ES' },
+        { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_TW', expectedCountry: 'ES' },
+        { prefix: '/langstore/el', expectedLocale: 'el_GR', expectedCountry: 'ES' },
+        { prefix: '/langstore/uk', expectedLocale: 'uk_UA', expectedCountry: 'ES' },
+        { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES', expectedCountry: 'ES' },
+      ];
+      for (const { prefix, expectedLocale, expectedCountry } of data) {
+        const settings = await getLocaleSettings({ prefix });
+        expect(settings?.locale).to.equal(expectedLocale);
+        expect(settings?.country).to.equal(expectedCountry);
+      }
+      sessionStorage.removeItem('akamai');
+      geoDetectionMeta.remove();
     });
   });
 

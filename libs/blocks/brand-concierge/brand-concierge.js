@@ -148,7 +148,20 @@ function decorateLegal(el, legal) {
   el.removeChild(legal);
 }
 
+function handleConsent(el) {
+  if (!window.adobePrivacy) return;
+  const cookieGrp = window.adobePrivacy.activeCookieGroups();
+  if (!cookieGrp?.includes('C0002')) {
+    el.classList.add('hide-block');
+    window.lana?.log('Block hidden because user has not consented to cookies', { tags: 'brand-concierge' });
+  }
+}
+
 export default async function init(el) {
+  handleConsent(el);
+  window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
+  window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+
   const rows = el.querySelectorAll(':scope > div');
   let isDefault = false;
   let fieldFirst = false;

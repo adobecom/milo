@@ -64,6 +64,8 @@ function decorateLinkFarms(el) {
   title.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading-l');
   foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
   foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
+    divElem.setAttribute('role', 'list');
+    [...divElem.children].forEach((child) => child.setAttribute('role', 'listitem'));
     const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
     heading?.classList.add('heading-xs');
     if (!hCount) return;

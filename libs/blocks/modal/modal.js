@@ -3,6 +3,7 @@
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
+const LOCALE_MODAL_ID = 'locale-modal-v2';
 const FOCUSABLES = 'a:not(.hide-video, .faas), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
@@ -49,6 +50,17 @@ export function sendAnalytics(event) {
   }
 }
 
+function focusAfterModalClose(modal) {
+  const isGeoPopup = modal?.id === LOCALE_MODAL_ID;
+  const onetrustBanner = (isDeepLink || isGeoPopup) && document.querySelector('#onetrust-banner-sdk');
+  const geoPopupFocus = !isGeoPopup && document.querySelector(`.dialog-modal#${LOCALE_MODAL_ID} a.con-button`);
+  const toFocus = geoPopupFocus || onetrustBanner || null;
+  toFocus?.focus();
+  isDeepLink = false;
+
+  return toFocus;
+}
+
 export function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
@@ -66,13 +78,13 @@ export function closeModal(modal) {
   }
 
   if (modal._documentKeydownListener) {
-    document.removeEventListener('keydown', modal._documentKeydownListener);
+    modal.removeEventListener('keydown', modal._documentKeydownListener);
     delete modal._documentKeydownListener;
   }
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
-      const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
+      const modalCurtain = !mod.matches('.dialog-modal.curtain-off') && document.querySelector(`#${id}~.modal-curtain`);
       if (modalCurtain) {
         modalCurtain.remove();
       }
@@ -94,11 +106,7 @@ export function closeModal(modal) {
   }
   if (prevHash) prevHash = '';
 
-  if (isDeepLink) {
-    document.querySelector('#onetrust-banner-sdk')?.focus();
-    isDeepLink = false;
-    return;
-  }
+  if (focusAfterModalClose(modal)) return;
 
   if (document.querySelector('.notification-curtain')) {
     window.dispatchEvent(new Event('milo:modal:closed:notification'));
@@ -158,7 +166,7 @@ function addIframeKeydownListener(iframe, dialog) {
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
-  isDeepLink = deepLink;
+  if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
@@ -221,7 +229,7 @@ export async function getModal(details, custom) {
   });
 
   const documentKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
-  document.addEventListener('keydown', documentKeydownListener);
+  dialog.addEventListener('keydown', documentKeydownListener);
   dialog._documentKeydownListener = documentKeydownListener;
 
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
