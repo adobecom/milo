@@ -49,6 +49,7 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         },
     },
     disabledAttributes: ['trialBadgeColor', 'trialBadgeBorderColor'],
+    supportsDefaultChild: true,
 };
 
 export class SimplifiedPricingExpress extends VariantLayout {
@@ -70,6 +71,12 @@ export class SimplifiedPricingExpress extends VariantLayout {
         }
         
         this.setupAccordion();
+        
+        requestAnimationFrame(() => {
+            if (this.card?.hasAttribute('data-default-card') && isTabletOrBelow()) {
+                this.card.setAttribute('data-expanded', 'true');
+            }
+        });
     }
 
     setupAccordion() {
@@ -80,8 +87,8 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
         const updateExpandedState = () => {
             if (isTabletOrBelow()) {
-                // All cards are expanded by default on mobile/tablet
-                merchCard.setAttribute('data-expanded', 'true');
+                const isDefaultCard = merchCard.hasAttribute('data-default-card');
+                merchCard.setAttribute('data-expanded', isDefaultCard ? 'true' : 'false');
             } else {
                 merchCard.removeAttribute('data-expanded');
             }
@@ -97,12 +104,31 @@ export class SimplifiedPricingExpress extends VariantLayout {
         };
         mediaQuery.addEventListener('change', this.mediaQueryListener);
 
+        // Watch for default card attribute changes
+        this.attributeObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && 
+                    mutation.attributeName === 'data-default-card' && 
+                    this.card.hasAttribute('data-default-card') && 
+                    isTabletOrBelow()) {
+                    this.card.setAttribute('data-expanded', 'true');
+                }
+            });
+        });
+        
+        this.attributeObserver.observe(this.card, { 
+            attributes: true,
+            attributeOldValue: true
+        });
     }
 
     disconnectedCallbackHook() {
         if (this.mediaQueryListener) {
             const mediaQuery = window.matchMedia(TABLET_DOWN);
             mediaQuery.removeEventListener('change', this.mediaQueryListener);
+        }
+        if (this.attributeObserver) {
+            this.attributeObserver.disconnect();
         }
     }
 

@@ -331,6 +331,9 @@ export class MerchCardCollection extends LitElement {
                         cards: fields.cards ? fields.cards.map(cardId => overrideMap[cardId] || cardId) : [],
                         collections: []
                     };
+                    if (fields.defaultchild) {
+                        collection.defaultchild = overrideMap[fields.defaultchild] || fields.defaultchild;
+                    }
                     root.push(collection);
                     traverseReferencesTree(collection.collections, reference.referencesTree);
                 }
@@ -354,7 +357,18 @@ export class MerchCardCollection extends LitElement {
             this.data = normalizePayload(event.detail, this.#overrideMap);
             const { cards, hierarchy } = this.data;
             
+            const rootDefaultChild = hierarchy.length === 0 && event.detail.fields?.defaultchild 
+                ? (this.#overrideMap[event.detail.fields.defaultchild] || event.detail.fields.defaultchild)
+                : null;
+            
             aemFragment.cache.add(...cards);
+            const checkDefaultChild = (collections, fragmentId) => {
+                for (const collection of collections) {
+                    if (collection.defaultchild === fragmentId) return true;
+                    if (collection.collections && checkDefaultChild(collection.collections, fragmentId)) return true;
+                }
+                return false;
+            };
 
             for (const fragment of cards) {
                 const merchCard = document.createElement('merch-card');
@@ -362,6 +376,17 @@ export class MerchCardCollection extends LitElement {
                 merchCard.setAttribute('consonant', '');
                 merchCard.setAttribute('style', '');
 
+                // Check if this variant supports default child through mapping
+                const variantMapping = getFragmentMapping(fragment.fields.variant);
+                if (variantMapping?.supportsDefaultChild) {
+                    const isDefault = rootDefaultChild 
+                        ? fragmentId === rootDefaultChild
+                        : checkDefaultChild(hierarchy, fragmentId);
+                    
+                    if (isDefault) {
+                        merchCard.setAttribute('data-default-card', 'true');
+                    }
+                }
 
                 function populateFilters(level) {
                     for (const node of level) {
@@ -386,7 +411,7 @@ export class MerchCardCollection extends LitElement {
                         },
                     };
                 }
-                // Append card after all attributes are set
+                // Append card after all attributes are set (including data-default-card)
                 this.append(merchCard);
             }
 

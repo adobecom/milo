@@ -264,16 +264,6 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
   merch-card[variant="simplified-pricing-express"][gradient-border="true"]:not([data-expanded="true"]) {
     max-height: 85px;
   }
-
-  /* Mobile-specific price styling */
-  merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] {
-    font-size: 22px;
-    line-height: 28.6px;
-  }
-
-  merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"][data-template="optical"] {
-    font-size: 22px;
-  }
 }
 
 /* Tablet styles - extending mobile styles with specific adjustments */
