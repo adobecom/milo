@@ -28,7 +28,7 @@ export const SUBMIT = (data) => ({
   type: Submit,
   data,
 });
-const MSG_TIMEOUT = 300;
+const MSG_TIMEOUT = 1000;
 
 export const recieveMessage = (timeoutMessage) => new Promise((resolve, reject) => {
   const timeout = setTimeout(() => {
