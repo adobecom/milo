@@ -140,6 +140,7 @@ export default {
     '--message-blocker-height': '90px',
     '--message-border-radius': '10px',
     '--message-concierge-background': '#FFFFFF',
+    '--message-concierge-border-width': '0',
     '--message-concierge-link-decoration': 'underline',
     '--message-concierge-text': '#292929',
     '--message-max-width': '100%',
