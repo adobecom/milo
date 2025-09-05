@@ -1257,7 +1257,7 @@ class Gnav {
     `;
 
     // Get all main menu items, but exclude any that are nested inside other features
-    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
+    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a, p:only-child > a.merch')]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
 
     // Save number of items to decide whether a hamburger menu is required
@@ -1265,7 +1265,7 @@ class Gnav {
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
-      const mainNavItem = this.decorateMainNavItem(item, index);
+      const mainNavItem = await this.decorateMainNavItem(item, index);
       if (mainNavItem) {
         this.elements.mainNav.appendChild(mainNavItem);
       }
@@ -1323,7 +1323,7 @@ class Gnav {
     }
   };
 
-  decorateMainNavItem = (item, index) => {
+  decorateMainNavItem = async (item, index) => {
     performance.mark(`Decorate-MainNav-Item-${index}-Start`);
     const itemType = this.getMainNavItemType(item);
 
@@ -1495,7 +1495,7 @@ class Gnav {
     };
 
     // Decorate item based on its type
-    const returnValue = (() => {
+    const returnValue = await (async () => {
       switch (itemType) {
         case 'syncDropdownTrigger':
         case 'asyncDropdownTrigger': {
@@ -1549,12 +1549,15 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
-          const linkElem = item.querySelector('a');
+          let linkElem = item.querySelector('a');
+          if (linkElem.classList.contains('merch')) {
+            linkElem = await merch.default(linkElem);
+          }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
           linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
@@ -1589,7 +1592,7 @@ class Gnav {
         }
         case 'text':
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.textContent}
+              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
             </div>`, item);
         default:
           /* c8 ignore next 3 */
