@@ -288,4 +288,11 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.
     color: var(--spectrum-white, #ffffff);
     width: 100%;
 }
+
+/* Ensure text color is applied to the label span element for accessibility */
+merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"] .spectrum-Button-label,
+merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent .spectrum-Button-label,
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.spectrum-Button--accent .spectrum-Button-label {
+    color: var(--spectrum-white, #ffffff);
+}
 `;
