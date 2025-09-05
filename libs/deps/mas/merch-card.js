@@ -2245,9 +2245,9 @@ merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-te
   color: var(--spectrum-gray-500);
 }
 
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-integer,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals {
   text-decoration: line-through;
   font-size: 28px;
   font-weight: 700;
