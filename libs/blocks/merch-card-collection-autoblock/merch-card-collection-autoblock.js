@@ -8,6 +8,7 @@ import {
   MEP_SELECTOR,
   overrideOptions,
   updateModalState,
+  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -37,7 +38,10 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load service first */
+  /** Load lit first as it's needed by MAS components */
+  await loadLitDependency();
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {

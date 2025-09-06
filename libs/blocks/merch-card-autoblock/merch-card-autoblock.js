@@ -6,6 +6,7 @@ import {
   initService,
   getOptions,
   overrideOptions,
+  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -21,7 +22,10 @@ function getTimeoutPromise() {
 }
 
 async function loadDependencies() {
-  /** Load service first */
+  /** Load lit first as it's needed by MAS components */
+  await loadLitDependency();
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {
@@ -54,7 +58,13 @@ export async function checkReady(masElement) {
 export async function createCard(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
-  el.replaceWith(merchCard);
+  // If the element is wrapped in a <p> tag, replace the parent instead to simplify the DOM
+  const parent = el.parentElement;
+  if (parent && parent.tagName === 'P' && parent.children.length === 1) {
+    parent.replaceWith(merchCard);
+  } else {
+    el.replaceWith(merchCard);
+  }
   await checkReady(merchCard);
   await postProcessAutoblock(merchCard, true);
 }

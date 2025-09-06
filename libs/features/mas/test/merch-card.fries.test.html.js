@@ -42,7 +42,7 @@ runTests(async () => {
 
         it('should apply border-color attribute correctly', async () => {
             expect(merchCard.style.getPropertyValue(
-                '--merch-card-custom-border-color',
+                '--consonant-merch-card-border-color',
             )).to.equal('var(--spectrum-gray-300)');
         });
 

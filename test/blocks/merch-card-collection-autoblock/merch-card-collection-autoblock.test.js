@@ -15,7 +15,6 @@ describe('merch-card-collection autoblock', () => {
   describe('init method', () => {
     // Create mock mas-commerce-service element
     const mockService = document.createElement('mas-commerce-service');
-    mockService.readyPromise = Promise.resolve();
     document.head.appendChild(mockService);
     before(async () => {
       sinon.stub(window, 'fetch').callsFake(async (url) => {
