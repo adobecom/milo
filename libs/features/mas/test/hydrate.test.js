@@ -780,7 +780,7 @@ describe('processBorderColor', () => {
         ).to.be.empty;
     });
 
-    it('should ignore transparent border color', () => {
+    it('should set transparent border color', () => {
         const fields = { borderColor: 'transparent' };
         const borderColorConfig = { attribute: 'border-color' };
 
@@ -790,7 +790,7 @@ describe('processBorderColor', () => {
             merchCard.style.getPropertyValue(
                 '--consonant-merch-card-border-color',
             ),
-        ).to.be.empty;
+        ).to.equal('transparent');
     });
 });
 
