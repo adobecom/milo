@@ -49,10 +49,6 @@ html[lang="ja-jp"] .hero-marquee .action-area {
   display: block;
 }
 
-html[lang="ja-jp"] .hero-marquee .action-area a {
-  margin-top: var(--spacing-s);
-}
-
 html[lang="ja-jp"] .hero-marquee .action-area wbr:last-of-type{
   display: none;
 }
@@ -320,6 +316,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
   .hero-marquee.bg-bottom-mobile .background {
     order: 2;
+  }
+
+  html[lang="ja-jp"] .hero-marquee .action-area a:not(:first-of-type) {
+    margin-top: var(--spacing-s);
   }
 
   .hero-marquee.media-hidden-mobile .foreground .asset,
