@@ -244,7 +244,7 @@ const MultiSelectCheckbox = ({ label, options, prop, onChange, sort }) => {
   function isSelected(ele) {
     return context.state.qjs69?.includes(ele) ? 'selected' : '';
   }
-  const onChecked = (e) => {
+  const onChecked = () => {
     const selectedOptions = Array.from(document.querySelectorAll('.multi-field input[type=checkbox]:checked')).map((element) => element.value);
     debouncedDispatch(selectedOptions);
     if (typeof onChange === 'function') {
