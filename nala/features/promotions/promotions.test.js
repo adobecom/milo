@@ -232,7 +232,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-with-personalization-and-target - Validate promo together with personalization and target ON
   test(`${features[7].name},${features[7].tags}`, async ({ page, baseURL, browserName }) => {
-    test.skip(browserName === 'chromium', 'Skipping test for Chromium browser');
+    test.skip(browserName === 'chromium' || browserName === 'webkit', 'Skipping test for Chromium and webkit browsers');
 
     const testPage = `${baseURL}${features[7].path}${miloLibs}`;
     const { data } = features[7];
@@ -530,6 +530,72 @@ test.describe('Promotions feature test suite', () => {
     await test.step('Validate content insert before text component', async () => {
       await expect(await PROMO.textInsertBeforeText).toBeVisible();
       await expect(await PROMO.textInsertBeforeText).toContainText(data.textBeforeMarquee);
+    });
+  });
+
+  // @Promo-mas-replace-card-in-collection - Validate promo replace card in collection
+  test(`${features[14].name},${features[14].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[14].path}${miloLibs}`;
+    const { data } = features[14];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('Go to the test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+    });
+
+    await test.step('Validate promo replace card in collection', async () => {
+      const collection = await PROMO.getMerchCardCollection(data.collectionId);
+      await expect(collection).toBeVisible();
+      expect(await collection.getAttribute('overrides')).toBe(data.overrideAttributes);
+
+      // check that the base card is not visible
+      const baseCard = await PROMO.getMerchCard(data.baseCardId);
+      await expect(baseCard).not.toBeAttached();
+
+      // check that the promo card is visible
+      const promoCard = await PROMO.getMerchCard(data.promoCardId);
+      await expect(promoCard).toBeVisible();
+    });
+  });
+
+  // @Promo-mas-replace-collection-with-collection - Validate promo replace collection with collection
+  test(`${features[15].name},${features[15].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[15].path}${miloLibs}`;
+    const { data } = features[15];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('Go to the test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+    });
+
+    await test.step('Validate promo replace collection with collection', async () => {
+      const baseCollection = await PROMO.getMerchCardCollection(data.baseCollectionId);
+      expect(baseCollection).not.toBeAttached;
+
+      const promoCollection = await PROMO.getMerchCardCollection(data.promoCollectionId);
+      await expect(promoCollection).toBeAttached();
+    });
+  });
+
+  // @Promo-mas-replace-collection-with-fragment - Validate promo replace collection with fragment
+  test(`${features[16].name},${features[16].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[16].path}${miloLibs}`;
+    const { data } = features[16];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('Go to the test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+    });
+
+    await test.step('Validate promo replace collection with fragment', async () => {
+      const collection = await PROMO.getMerchCardCollection(data.collectionId);
+      await expect(collection).not.toBeAttached();
+
+      const fragment = await PROMO.getFragment(data.fragmentPath);
+      await expect(fragment).toBeVisible();
     });
   });
 });
