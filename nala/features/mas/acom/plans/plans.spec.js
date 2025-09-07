@@ -36,7 +36,6 @@ module.exports = {
               ot: 'BASE',
               cs: 'INDIVIDUAL',
               pa: 'ccsn_direct_individual',
-              ao: 'stks_direct_individual',
               rtc: 't',
               lo: 'sl',
               af: 'uc_new_user_iframe,uc_new_system_close',
@@ -74,7 +73,7 @@ module.exports = {
           },
         ],
       },
-      tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-load',
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
     },
     {
       tcid: '1',
@@ -111,7 +110,7 @@ module.exports = {
             ],
             count: 24,
           },
-          photo: {
+          'Photo': {
             products: [
               'Creative Cloud Pro',
               'Photography',
@@ -124,8 +123,10 @@ module.exports = {
             ],
             count: 8,
             browserFilter: '#filter=photography',
+            sidenavValue: 'photography',
+            daaLh: 'photography--cat',
           },
-          'graphic-design': {
+          'Graphic Design': {
             products: [
               'Creative Cloud Pro',
               'Photoshop',
@@ -141,8 +142,10 @@ module.exports = {
             ],
             count: 11,
             browserFilter: '#filter=design',
+            sidenavValue: 'design',
+            daaLh: 'design--cat',
           },
-          video: {
+          'Video': {
             products: [
               'Creative Cloud Pro',
               'Adobe Premiere Pro',
@@ -157,8 +160,10 @@ module.exports = {
             ],
             count: 10,
             browserFilter: '#filter=video-audio',
+            sidenavValue: 'video-audio',
+            daaLh: 'video-audio--cat',
           },
-          illustration: {
+          'Illustration': {
             products: [
               'Creative Cloud Pro',
               'Photoshop',
@@ -170,8 +175,10 @@ module.exports = {
             ],
             count: 7,
             browserFilter: '#filter=illustration',
+            sidenavValue: 'illustration',
+            daaLh: 'illustration--cat',
           },
-          'acrobat-pdf': {
+          'Acrobat and PDF': {
             products: [
               'Creative Cloud Pro',
               'Acrobat Pro',
@@ -180,16 +187,20 @@ module.exports = {
             ],
             count: 4,
             browserFilter: '#filter=acrobat',
+            sidenavValue: 'acrobat',
+            daaLh: 'acrobat--cat',
           },
-          '3d-ar': {
+          '3D and AR': {
             products: [
               'Adobe Substance 3D Collection',
               'Adobe Substance 3D Texturing',
             ],
             count: 2,
             browserFilter: '#filter=3dar',
+            sidenavValue: '3dar',
+            daaLh: '3dar--cat',
           },
-          'social-media': {
+          'Social Media': {
             products: [
               'Adobe Express',
               'Adobe Premiere Pro',
@@ -197,29 +208,114 @@ module.exports = {
             ],
             count: 3,
             browserFilter: '#filter=social',
+            sidenavValue: 'social',
+            daaLh: 'social--cat',
           },
         },
       },
-      tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-category-switching',
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
     },
     {
       tcid: '2',
       name: '@MAS-Plans-Tabs-Deeplink',
       path: PLANS_NALA_PATH.US,
-      browserParams: {
-        edu: '?plan=edu',
-        team: '?plan=team',
-        edu_inst: '?plan=edu_inst',
-        individual: '?plan=individual',
+      data: {
+        tabs: {
+          'Education': {
+            tabId: 'edu',
+            urlParam: '?plan=edu',
+          },
+          'Business': {
+            tabId: 'team',
+            urlParam: '?plan=team',
+          },
+          'Schools & Universities': {
+            tabId: 'edu_inst',
+            urlParam: '?plan=edu_inst',
+          },
+          'Individual': {
+            tabId: 'individual',
+            urlParam: '?plan=individual',
+          },
+        },
       },
-      tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-tabs-deeplink',
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
     },
     {
       tcid: '3',
       name: '@MAS-Plans-Modal-Deeplink',
       path: PLANS_NALA_PATH.US,
       browserParams: '#miniplans-buy-all-apps',
-      tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-modal-deeplink',
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '4',
+      name: '@MAS-Plans-Single-App-Deeplink',
+      path: PLANS_NALA_PATH.US,
+      data: {
+        cardid: '75019c6c-ca13-4b14-b665-c44f0188638b',
+        filter: 'Illustration',
+        selectedValue: 'illustration',
+      },
+      browserParams: { 
+        landing: '?single_app=illustrator', 
+        expected: '#filter=illustration&single_app=illustrator',
+      },
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '5',
+      name: '@MAS-Plans-Filter-Hash',
+      path: PLANS_NALA_PATH.US,
+      data: {
+        filter: 'Photo',
+        selectedValue: 'photography',
+      },
+      browserParams: {
+        landing:'?filter=photography',
+        expected: '#filter=photography',
+      },
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '6',
+      name: '@MAS-Plans-Buynow-Modal-Stock',
+      path: PLANS_NALA_PATH.US,
+      data: {
+        cardid: '41f417d4-34ad-4b3e-828f-ab42fe782e27',
+        stockOSI: 'CCR5FPiUwE6AfLMkubkLibOiapCnMlqqnbUWIPXVuvQ',
+        stockCheckoutParam: 'ao=stks_direct_individual',
+      },
+      browserParams: '?plan=edu',
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '7',
+      name: '@MAS-Plans-See-All-Plans-Modal-Stock',
+      path: PLANS_NALA_PATH.US,
+      data: {
+        cardid: '146fec18-3d9c-4f93-908b-fd5e4ee76436',
+        stockOSI: 'JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE',
+        stockCheckoutParam: 'ao=stks_direct_individual',
+      },
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '8',
+      name: '@MAS-Plans-Quantity-Selector',
+      path: PLANS_NALA_PATH.US,
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '9',
+      name: '@MAS-Plans-literals-override',
+      path: PLANS_NALA_PATH.US,
+      data: {
+        cardid: '0a12998f-01d6-4ff2-a71e-3fd48999f6b8',
+        unitText: 'per user',
+      },
+      browserParams: '?plan=edu_inst',
+      tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
     },
   ],
 };

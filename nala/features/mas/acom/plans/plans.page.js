@@ -4,9 +4,16 @@ export default class MasPlans {
     this.price = page.locator('span[data-template="price"]');
     this.priceStrikethrough = page.locator('span[data-template="strikethrough"]');
     this.cardIcon = page.locator('merch-icon');
+    this.sidenavList = page.locator('merch-sidenav-list');
     this.sidenav = page.locator('merch-sidenav sp-sidenav');
     this.collectionContainerIndividuals = page.locator('#tab-panel-plan-1 .collection-container');
-
+    this.threeInOneModal = page.locator('.dialog-modal.three-in-one');
+    this.threeInOneStockCheckbox = page.locator('//input[contains(@id, "addon-checkbox")]');
+    this.closeModal = async () => {
+      const modal = await this.threeInOneModal;
+      await modal.dispatchEvent('closeModal');
+      await this.page.waitForTimeout(1000);
+    };
     // Plans individual card properties:
     this.cssProp = {
       card: {
