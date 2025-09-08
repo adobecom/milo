@@ -82,6 +82,19 @@ export function decorateDefaultLinkAnalytics(block, config) {
 }
 
 export async function decorateSectionAnalytics(section, idx, config) {
+  if (config.mep?.mphUSPromise && config.mep.analyticLocalization) {
+    config.mep.usmph = await config.mep.mphUSPromise;
+    if (config.mep.usmph) {
+      Object.entries(config.mep.analyticLocalization).forEach(([key, value]) => {
+        config.mep.usmph.forEach((mph) => {
+          if (mph.key === value) {
+            config.mep.analyticLocalization[key] = mph.textValue;
+          }
+        });
+      });
+    }
+  }
+
   const id = Number.isInteger(idx) ? `s${idx + 1}` : idx;
   document.querySelector('main')?.setAttribute('daa-im', 'true');
   section.setAttribute('daa-lh', id);
