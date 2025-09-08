@@ -14,6 +14,7 @@ module.exports = {
         cards: [
           {
             id: '146fec18-3d9c-4f93-908b-fd5e4ee76436',
+            badge: 'Best value',
             title: 'Creative Cloud Pro',
             description: 'Get 20+ apps, including Photoshop, Illustrator, Premiere Pro, and Acrobat Pro, plus Adobe Firefly standard and premium creative AI features for images, video, and audio.',
             price: PRICE_PATTERN.US.mo,
@@ -304,6 +305,11 @@ module.exports = {
       tcid: '8',
       name: '@MAS-Plans-Quantity-Selector',
       path: PLANS_NALA_PATH.US,
+      data: {
+        cardid: '676ce087-a941-4a50-adae-97601e5a448b',
+        quantity: '3',
+      },
+      browserParams: '?plan=team',
       tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
     },
     {

@@ -43,6 +43,9 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(await masPlans.getCard(data.cards[0].id)).toHaveAttribute('size', 'wide');
       await expect(await masPlans.getCard(data.cards[1].id)).toBeVisible();
 
+      await expect(await masPlans.getCardBadge(data.cards[0].id)).toBeVisible();
+      await expect(await masPlans.getCardBadge(data.cards[0].id)).toContainText(new RegExp(data.cards[0].badge));
+
       await expect(await masPlans.getCardIcon(data.cards[0].id)).toBeVisible();
       const card2Icons = await masPlans.getCardIcon(data.cards[1].id);
       expect(await card2Icons.count()).toBe(2);
@@ -339,6 +342,36 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeChecked();
 
       await masPlans.closeModal();
+    });
+  }); 
+
+  // @MAS-Plans-Quantity-Selector
+  test(`${features[8].name},${features[8].tags}`, async ({ page }) => {
+    const { data } = features[8];
+    masPlans = new MasPlans(page);
+
+    await test.step('step-1: Go to Plans page', async () => {
+      await page.goto(`${PLANS_NALA_PATH.US}${features[8].browserParams}`);
+      await page.waitForLoadState('domcontentloaded');
+    });
+
+    await test.step('step-2: Change quantity', async () => {
+      await expect(await masPlans.getCard(data.cardid)).toBeVisible({ timeout: 10000});
+      await expect(await masPlans.getCardQS(data.cardid).locator('input')).toHaveValue('1');
+      await masPlans.getCardQS(data.cardid).locator('button').click();
+      await expect(await masPlans.getCardQS(data.cardid).locator('.popover')).toBeVisible();
+      await masPlans.getCardQS(data.cardid).locator('.popover').locator(`.item:has-text("${data.quantity}")`).click();
+      await expect(await masPlans.getCardQS(data.cardid).locator('input')).toHaveValue(`${data.quantity}`);
+    });
+
+    await test.step('step-2: Open modal and verify quantity', async () => {
+      await expect(await masPlans.getCardCTA(data.cardid)).toBeVisible();
+      await expect(await masPlans.getCardCTA(data.cardid)).not.toHaveClass(/loading-entitlements|placeholder-pending|placeholder-failed/);
+      await masPlans.getCardCTA(data.cardid).click();
+      await expect(await masPlans.threeInOneModal).toBeVisible();
+      const frame = page.frameLocator('iframe:visible');
+      await expect(frame.locator(masPlans.threeInOneQuantitySelector)).toBeVisible({ timeout: 20000});
+      await expect(frame.locator(masPlans.threeInOneQuantitySelector).locator('button')).toContainText(`${data.quantity}`);
     });
   }); 
 

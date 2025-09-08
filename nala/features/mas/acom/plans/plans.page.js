@@ -9,6 +9,7 @@ export default class MasPlans {
     this.collectionContainerIndividuals = page.locator('#tab-panel-plan-1 .collection-container');
     this.threeInOneModal = page.locator('.dialog-modal.three-in-one');
     this.threeInOneStockCheckbox = page.locator('//input[contains(@id, "addon-checkbox")]');
+    this.threeInOneQuantitySelector = page.locator('//*[@data-testid="quantity-selector-container"]');
     this.closeModal = async () => {
       const modal = await this.threeInOneModal;
       await modal.dispatchEvent('closeModal');
@@ -186,6 +187,11 @@ export default class MasPlans {
 
   getCardCallout(id) {
     return this.getCard(id).locator('div[slot="callout-content"] > p');
+  }
+
+  getCardQS(id) {
+    const card = this.getCard(id);
+    return card.locator('merch-quantity-select');
   }
 
   getCategoryFilter(label) {
