@@ -73,9 +73,9 @@
   align-items: center;
   color: var(--bc-button-color);
   display: flex;
-  font-size: var(--type-body-xs-size);
+  font-size: var(--type-body-s-size);
   gap: 8px;
-  line-height: var(--type-body-xs-lh);
+  line-height: var(--type-body-s-lh);
   margin: 0;
   padding: 12px 16px;
   text-align: left;
