@@ -505,11 +505,8 @@
   display: flex;
   align-items: center;
   position: relative;
-  /* padding: 1px; */
   border-radius: var(--m-rounded-corners);
-  /* min-width: 298px; */
-  /* background: #f8f8f8; */
-  /* margin: 0; */
+  overflow: hidden;
 }
 
 .tabs.segmented-control .tabList .tab-list-container {
