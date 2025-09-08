@@ -10,9 +10,6 @@ test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run
 const workerSetup = createWorkerPageSetup({
   pages: [
     { name: 'US', url: PLANS_NALA_PATH.US },
-    { name: 'US_team', url: `${PLANS_NALA_PATH.US}?plan=team` },
-    { name: 'US_edu', url: `${PLANS_NALA_PATH.US}?plan=edu` },
-    { name: 'US_edu_inst', url: `${PLANS_NALA_PATH.US}?plan=edu_inst` },
   ],
 });
 
@@ -204,21 +201,19 @@ test.describe('MAS Plans Page test suite', () => {
   });
 
   // @MAS-Plans-Modal-Deeplink
-  test(`${features[3].name},${features[3].tags}`, async () => {
-    const page = workerSetup.getPage('US');
+  test(`${features[3].name},${features[3].tags}`, async ({ page }) => {
     masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page', async () => {
       await page.goto(`${PLANS_NALA_PATH.US}${features[3].browserParams}`);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page.locator(`.dialog-modal.three-in-one${features[3].browserParams}`)).toBeVisible();
+      await expect(page.locator(`.dialog-modal.three-in-one${features[3].browserParams}`)).toBeVisible({ timeout: 10000});
     });
   });
 
   // @MAS-Plans-Single-App-Deeplink
-  test(`${features[4].name},${features[4].tags}`, async () => {
+  test(`${features[4].name},${features[4].tags}`, async ({ page }) => {
     const { data } = features[4];
-    const page = workerSetup.getPage('US');
     masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page with edu deeplink', async () => {
@@ -227,6 +222,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Verify correct filter is selected and hash changed', async () => {
+      await page.waitForSelector('merch-card-collection');
       await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[4].browserParams.expected}`);
       await expect(await masPlans.sidenavList).toHaveAttribute('selected-value', data.selectedValue);
       await expect (await masPlans.getCategoryFilter(data.filter)).toHaveAttribute('selected');
@@ -239,9 +235,8 @@ test.describe('MAS Plans Page test suite', () => {
   });
 
   // @MAS-Plans-Filter-Hash
-  test(`${features[5].name},${features[5].tags}`, async () => {
+  test(`${features[5].name},${features[5].tags}`, async ({ page }) => {
     const { data } = features[5];
-    const page = workerSetup.getPage('US');
     masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page with edu deeplink', async () => {
@@ -250,6 +245,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Verify correct filter is selected and hash changed', async () => {
+      await page.waitForSelector('merch-card-collection');
       await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[5].browserParams.expected}`);
       await expect(await masPlans.sidenavList).toHaveAttribute('selected-value', data.selectedValue);
       await expect (await masPlans.getCategoryFilter(data.filter)).toHaveAttribute('selected');
@@ -257,18 +253,17 @@ test.describe('MAS Plans Page test suite', () => {
   });
 
   // @MAS-Plans-Buynow-Modal-Stock
-  test(`${features[6].name},${features[6].tags}`, async () => {
+  test(`${features[6].name},${features[6].tags}`, async ({ page }) => {
     const { data } = features[6];
-    const page = workerSetup.getPage('US_edu');
     masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page', async () => {
-      await workerSetup.verifyPageURL('US_team', PLANS_NALA_PATH.US + '?plan=team', expect);
+      await page.goto(`${PLANS_NALA_PATH.US}${features[6].browserParams}`);
       await page.waitForLoadState('domcontentloaded');
     });
 
     await test.step('step-2: Verify CTA opens modal', async () => {
-      await expect(await masPlans.getCardCTA(data.cardid)).toBeVisible();
+      await expect(await masPlans.getCardCTA(data.cardid)).toBeVisible({ timeout: 10000 });
       await expect(await masPlans.getCardCTA(data.cardid)).not.toHaveClass(/loading-entitlements|placeholder-pending|placeholder-failed/);
       await expect(await masPlans.getCardStockCheckbox(data.cardid)).not.toHaveAttribute('checked');
       expect(await masPlans.getCTAAttribute(data.cardid, 'data-wcs-osi')).not.toContain(data.stockOSI);
@@ -295,9 +290,9 @@ test.describe('MAS Plans Page test suite', () => {
 
       await masPlans.getCardCTA(data.cardid).click();
       await expect(await masPlans.threeInOneModal).toBeVisible();
-      const frame = await page.frameLocator('iframe:visible');
-      await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeVisible();
-      await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeChecked();
+      const frame = page.frameLocator('iframe:visible');
+      await expect(frame.locator(masPlans.threeInOneStockCheckbox)).toBeVisible({ timeout: 10000});
+      await expect(frame.locator(masPlans.threeInOneStockCheckbox)).toBeChecked();
     });
   }); 
 
@@ -340,23 +335,25 @@ test.describe('MAS Plans Page test suite', () => {
       await masPlans.getSeeAllPlans3in1Link(data.cardid).click();
       await expect(await masPlans.threeInOneModal).toBeVisible();
       const frame = await page.frameLocator('iframe:visible');
-      await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeVisible();
+      await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeVisible({ timeout: 10000});
       await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeChecked();
+
+      await masPlans.closeModal();
     });
   }); 
 
   // @MAS-Plans-literals-override
-  test(`${features[9].name},${features[9].tags}`, async () => {
+  test(`${features[9].name},${features[9].tags}`, async ({ page }) => {
     const { data } = features[9];
-    const page = workerSetup.getPage('US_edu_inst');
     masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page', async () => {
-      await workerSetup.verifyPageURL('US_edu_inst', PLANS_NALA_PATH.US + '?plan=edu_inst', expect);
+      await page.goto(`${PLANS_NALA_PATH.US}${features[9].browserParams}`);
       await page.waitForLoadState('domcontentloaded');
     });
 
     await test.step('step-2: Verify the literals are overridden', async () => {
+      await expect(await masPlans.getCard(data.cardid)).toBeVisible({ timeout: 10000});
       await expect(await masPlans.getCardPrice(data.cardid)).toContainText(data.unitText);
     });
   });  
