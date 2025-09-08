@@ -177,8 +177,13 @@ export async function createCollection(el, options) {
   if (paragraph) toReplace = paragraph;
   toReplace.replaceWith(container);
 
-  await collection.checkReady();
-
+  const success = await collection.checkReady();
+  if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
+  }
   container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */
