@@ -384,7 +384,7 @@ const init = (block) => {
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
-    const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xxs'; /* Mweb specific; xxs was xs */
+    const btnClass = pillVariant ? handlePillSize(pillVariant) : (block.classList.contains('segmented-control') ? 'heading-xxs' : 'heading-xs');
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
