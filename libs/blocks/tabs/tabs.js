@@ -111,7 +111,6 @@ function changeTabs(e) {
   targetContent?.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
 
-  // Remove paddles after first real user interaction for segmented-control variant
   handleSegmentedControlInteraction(target, e);
 
   window.dispatchEvent(tabChangeEvent);
@@ -177,7 +176,6 @@ function initTabs(elm, config, rootElem) {
         tabs[tabFocus].setAttribute('tabindex', 0);
         tabs[tabFocus].focus();
 
-        // Remove paddles after first real user keyboard interaction for segmented-control variant
         handleSegmentedControlInteraction(tabs[tabFocus], e);
       }
     });
