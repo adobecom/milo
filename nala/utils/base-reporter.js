@@ -14,7 +14,7 @@ const pattern = [
 const ansiRegex = new RegExp(pattern, 'g');
 
 // limit failed status
-const failedStatus = ['failed', 'flaky', 'timedOut', 'interrupted'];
+const failedStatus = ['failed', 'timedOut', 'interrupted'];
 
 function stripAnsi(str) {
   if (!str || typeof str !== 'string') return str;
@@ -28,6 +28,7 @@ class BaseReporter {
     this.passedTests = 0;
     this.failedTests = 0;
     this.skippedTests = 0;
+    this.retriedTests = 0;
   }
 
   onBegin(config, suite) {
@@ -47,6 +48,7 @@ class BaseReporter {
       retry,
     } = result;
 
+    // Skip intermediate failed attempts; only keep the final result
     if (retry < retries && status === 'failed') {
       return;
     }
@@ -69,6 +71,9 @@ class BaseReporter {
       retry,
     });
     if (status === 'passed') {
+      if (retry > 0) {
+        this.retriedTests += 1; //  track retried & passed
+      }
       this.passedTests += 1;
     } else if (failedStatus.includes(status)) {
       this.failedTests += 1;
@@ -87,6 +92,11 @@ class BaseReporter {
       } catch (error) {
         console.log('----Failed to publish result to slack channel----');
       }
+    }
+
+    // enforce non-zero exit if any test finally failed
+    if (this.failedTests > 0) {
+      process.exitCode = 1;
     }
   }
 
@@ -124,6 +134,7 @@ class BaseReporter {
     \x1b[1m\x1b[33m# Test Pass          :\x1b[0m \x1b[32m${this.passedTests} (${passPercentage}%)\x1b[0m
     \x1b[1m\x1b[33m# Test Fail          :\x1b[0m \x1b[31m${this.failedTests} (${failPercentage}%)\x1b[0m
     \x1b[1m\x1b[33m# Test Skipped       :\x1b[0m \x1b[32m${this.skippedTests}\x1b[0m
+    \x1b[1m\x1b[33m# Test Retried&Passed: \x1b[0m \x1b[36m${this.retriedTests}\x1b[0m
     \x1b[1m\x1b[33m** Application URL  :\x1b[0m \x1b[32m${envURL}\x1b[0m
     \x1b[1m\x1b[33m** Executed on      :\x1b[0m \x1b[32m${exeEnv}\x1b[0m
     \x1b[1m\x1b[33m** Execution details:\x1b[0m \x1b[32m${runUrl}\x1b[0m

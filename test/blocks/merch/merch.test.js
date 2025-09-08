@@ -21,12 +21,15 @@ import merch, {
   getMasBase,
   getOptions,
   appendDexterParameters,
+  getLocaleSettings,
   getMiloLocaleSettings,
   setCtaHash,
   openModal,
   PRICE_TEMPLATE_LEGAL,
   modalState,
   updateModalState,
+  isFallbackStepUsed,
+  getWorkflowStep,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -154,6 +157,13 @@ const createCtaInMerchCard = () => {
   return el;
 };
 
+const disable3in1 = () => {
+  const meta = document.createElement('meta');
+  meta.setAttribute('name', 'mas-ff-3in1');
+  meta.setAttribute('content', 'off');
+  document.querySelector('head').appendChild(meta);
+};
+
 describe('Merch Block', () => {
   let setCheckoutLinkConfigs;
   let setSubscriptionsData;
@@ -217,6 +227,38 @@ describe('Merch Block', () => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
       });
+    });
+
+    it.only('should use geo locale for lang-first sites', async () => {
+      sessionStorage.setItem('akamai', 'ES');
+      const geoDetectionMeta = document.createElement('meta');
+      geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
+      geoDetectionMeta.setAttribute('content', 'on');
+      document.head.append(geoDetectionMeta);
+      const data = [
+        { prefix: '/ar', expectedLocale: 'es_AR', expectedCountry: 'ES' },
+        { prefix: '/africa', expectedLocale: 'en_MU', expectedCountry: 'ES' },
+        { prefix: '', expectedLocale: 'en_US', expectedCountry: 'ES' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_AE', expectedCountry: 'ES' },
+        { prefix: '/langstore/en', expectedLocale: 'en_US', expectedCountry: 'ES' },
+        { prefix: '/langstore/es', expectedLocale: 'es_ES', expectedCountry: 'ES' },
+        { prefix: '/langstore/de', expectedLocale: 'de_DE', expectedCountry: 'ES' },
+        { prefix: '/langstore/id', expectedLocale: 'id_ID', expectedCountry: 'ES' },
+        { prefix: '/langstore/hi', expectedLocale: 'hi_IN', expectedCountry: 'ES' },
+        { prefix: '/langstore/ar', expectedLocale: 'ar_DZ', expectedCountry: 'ES' },
+        { prefix: '/langstore/nb', expectedLocale: 'nb_NO', expectedCountry: 'ES' },
+        { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_TW', expectedCountry: 'ES' },
+        { prefix: '/langstore/el', expectedLocale: 'el_GR', expectedCountry: 'ES' },
+        { prefix: '/langstore/uk', expectedLocale: 'uk_UA', expectedCountry: 'ES' },
+        { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES', expectedCountry: 'ES' },
+      ];
+      for (const { prefix, expectedLocale, expectedCountry } of data) {
+        const settings = await getLocaleSettings({ prefix });
+        expect(settings?.locale).to.equal(expectedLocale);
+        expect(settings?.country).to.equal(expectedCountry);
+      }
+      sessionStorage.removeItem('akamai');
+      geoDetectionMeta.remove();
     });
   });
 
@@ -1031,6 +1073,94 @@ describe('Merch Block', () => {
       expect(div.querySelector('.link1').getAttribute('href')).to.equal('/test/milo/path');
       expect(div.querySelector('.link2').getAttribute('href')).to.equal('/test/cc/path');
       expect(div.querySelector('.link3').getAttribute('href')).to.equal('https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
+    });
+  });
+
+  describe('isFallbackStepUsed', () => {
+    it('returns true if modal is 3-in-1, fallbackStep is provided and 3-in-1 is disabled', () => {
+      disable3in1();
+      expect(isFallbackStepUsed({
+        modal: 'twp',
+        fallbackStep: 'commitment',
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        checkoutClientId: 'doc_cloud',
+      })).to.be.true;
+      expect(isFallbackStepUsed({
+        modal: 'd2p',
+        fallbackStep: 'commitment',
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        checkoutClientId: 'doc_cloud',
+      })).to.be.true;
+      expect(isFallbackStepUsed({
+        modal: 'crm',
+        fallbackStep: 'commitment',
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        checkoutClientId: 'doc_cloud',
+      })).to.be.true;
+      document.querySelector('meta[name="mas-ff-3in1"]').remove();
+    });
+
+    it('returns false if 3-in-1 is enabled', () => {
+      expect(isFallbackStepUsed({
+        modal: 'crm',
+        fallbackStep: 'commitment',
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        checkoutClientId: 'adobe_com',
+      })).to.be.false;
+    });
+
+    it('returns false if modal is not 3-in-1', () => {
+      expect(isFallbackStepUsed({
+        modal: undefined,
+        fallbackStep: 'commitment',
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        checkoutClientId: 'doc_cloud',
+      })).to.be.false;
+      expect(isFallbackStepUsed({
+        modal: 'typo',
+        fallbackStep: 'commitment',
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        checkoutClientId: 'doc_cloud',
+      })).to.be.false;
+    });
+  });
+
+  describe('getWorkflowStep', () => {
+    it('returns checkoutWorkflowStep if 3-in-1 is enabled', () => {
+      const workflowStep = getWorkflowStep({
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        modal: 'twp',
+        fallbackStep: 'commitment',
+        checkoutWorkflowStep: 'segmentation',
+        checkoutClientId: 'doc_cloud',
+      });
+      expect(workflowStep).to.equal('segmentation');
+    });
+
+    it('returns checkoutWorkflowStep if fallbackStep is not provided', () => {
+      disable3in1();
+      const workflowStep = getWorkflowStep({
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        modal: 'twp',
+        fallbackStep: undefined,
+        checkoutWorkflowStep: 'segmentation',
+        checkoutClientId: 'adobe_com',
+      });
+      expect(workflowStep).to.equal('segmentation');
+      document.querySelector('meta[name="mas-ff-3in1"]').remove();
+    });
+
+    it('returns fallbackStep if fallbackStep is provided, and 3-in-1 is disabled', () => {
+      disable3in1();
+      const workflowStep = getWorkflowStep({
+        wcsOsi: 'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs',
+        modal: 'twp',
+        fallbackStep: 'commitment',
+        checkoutWorkflowStep: 'segmentation',
+        checkoutClientId: 'doc_cloud',
+      });
+      expect(workflowStep).to.equal('commitment');
+      document.querySelector('meta[name="mas-ff-3in1"]').remove();
     });
   });
 });

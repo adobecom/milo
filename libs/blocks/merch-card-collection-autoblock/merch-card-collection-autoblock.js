@@ -8,6 +8,7 @@ import {
   MEP_SELECTOR,
   overrideOptions,
   updateModalState,
+  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -37,7 +38,10 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load service first */
+  /** Load lit first as it's needed by MAS components */
+  await loadLitDependency();
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {
@@ -93,6 +97,14 @@ function getSidenav(collection) {
   const spSidenav = createTag('sp-sidenav', { manageTabIndex: true });
   spSidenav.setAttribute('manageTabIndex', true);
   const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
+
+  sidenavList.updateComplete.then(() => {
+    sidenavList.querySelector('sp-sidenav')?.setAttribute('role', 'tablist');
+    sidenavList.querySelectorAll('sp-sidenav-item').forEach((item) => {
+      item.removeAttribute('role');
+      item.shadowRoot?.querySelector('a')?.setAttribute('role', 'tab');
+    });
+  });
 
   let multilevel = false;
   function generateLevelItems(level, parent) {
@@ -169,8 +181,13 @@ export async function createCollection(el, options) {
   if (paragraph) toReplace = paragraph;
   toReplace.replaceWith(container);
 
-  await collection.checkReady();
-
+  const success = await collection.checkReady();
+  if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
+  }
   container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */
