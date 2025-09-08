@@ -288,7 +288,7 @@ function initPaddles(tabList, left, right, isRadio) {
     window.addEventListener('resize', checkTabListContainerMargin);
 
     // Check margins on scroll events that might affect layout
-    tabList.addEventListener('scroll', checkTabListContainerMargin);
+    // tabList.addEventListener('scroll', checkTabListContainerMargin);
 
     // Initial margin check
     checkTabListContainerMargin();
@@ -407,7 +407,7 @@ const init = (block) => {
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, block.classList.contains('segmented-control') ? PADDLE_SEGMENT : PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, block.classList.contains('segmented-control') ? PADDLE_SEGMENT : PADDLE);
 
-  // For segmented-control variant, add paddles inside the tabList
+  // For segmented-control variant, add paddles relative to tab-list-container
   if (block.classList.contains('segmented-control')) {
     tabList.prepend(paddleLeft);
     tabList.append(paddleRight);
