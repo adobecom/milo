@@ -529,11 +529,32 @@ export async function fetchCheckoutLinkConfigs(base = '', env = '') {
   return fetchCheckoutLinkConfigs.promise;
 }
 
+function getSvar(extraOptions) {
+  if (!extraOptions) return;
+
+  const extraOptionsObj = JSON.parse(extraOptions);
+  return extraOptionsObj.svar;
+}
+
+function isProductMatch(config, productCode, svar, configs) {
+  const match = config[NAME_PRODUCT_FAMILY] === productCode || (svar && config[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
+  const alreadyThere = configs.some((item) => item[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
+  return match && !alreadyThere
+}
+
 export async function getCheckoutLinkConfig(
   productFamily,
   productCode,
   paCode,
+  options
 ) {
+  const extraOptions = options?.extraOptions;
+  const svar = getSvar(extraOptions);
+  if (svar) {
+    const extraOptionsObj = JSON.parse(extraOptions);
+    delete extraOptionsObj.svar;
+    options.extraOptions = JSON.stringify(extraOptionsObj);
+  }
   let { base } = getConfig();
   const { env } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
@@ -544,14 +565,21 @@ export async function getCheckoutLinkConfig(
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
+  // place items with extra options first
+  checkoutLinkConfigs.data.sort((itema, itemb) => {
+    const apf = itema[NAME_PRODUCT_FAMILY];
+    const bpf = itemb[NAME_PRODUCT_FAMILY];
+    return apf.includes('+') && !bpf.includes('+') ? -1 : 1;
+  });
+
   const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } = checkoutLinkConfigs
     .data.reduce(
       (acc, config) => {
-        if (config[NAME_PRODUCT_FAMILY] === paCode) {
+        if (isProductMatch(config, paCode, svar, acc.paCodeConfigs)) {
           acc.paCodeConfigs.push(config);
-        } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
+        } else if (isProductMatch(config, productCode, svar, acc.productCodeConfigs)) {
           acc.productCodeConfigs.push(config);
-        } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
+        } else if (isProductMatch(config, productFamily, svar, acc.productFamilyConfigs)) {
           acc.productFamilyConfigs.push(config);
         }
         return acc;
@@ -606,6 +634,7 @@ export async function getDownloadAction(
     offerFamily,
     productCode,
     productArrangementCode,
+    options,
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
@@ -914,6 +943,7 @@ export async function getModalAction(offers, options, el) {
     offerFamily,
     productCode,
     productArrangementCode,
+    options,
   );
   if (!checkoutLinkConfig) return undefined;
   const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
