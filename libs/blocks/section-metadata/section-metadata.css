@@ -271,19 +271,19 @@ main > .section[class*='-up'] > .content {
     display: block;
   }
 
-  .section:has(.con-block ~ .show-more-button),
-  .section.show-all:has(.con-block) {
+  .section:has(.show-more-button),
+  .section.show-all {
     margin-inline: 30px;
     padding: var(--spacing-xs);
     margin-bottom: 24px;
     border-radius: 8px;
   }
 
-  .section:has(.con-block ~ .show-more-button) .con-block:nth-child(n+4) {
+  .section:has(.show-more-button) > *:nth-child(n+4):not(.show-more-button):not(.section-metadata) {
     display: none;
   }
 
-  .section.show-all .con-block:nth-child(n+4) {
+  .section.show-all > *:nth-child(n+4):not(.show-more-button):not(.section-metadata) {
     display: flex;
   }
 }
@@ -309,8 +309,8 @@ main > .section[class*='-up'] > .content {
     display: none;
   }
 
-  .section:has(.con-block ~ .show-more-button),
-  .section.show-all:has(.con-block) {
+  .section:has(.show-more-button),
+  .section.show-all {
     background: none !important;
   }
 }
@@ -325,8 +325,8 @@ main > .section[class*='-up'] > .content {
     display: none;
   }
 
-  .section:has(.con-block ~ .show-more-button),
-  .section.show-all:has(.con-block) {
+  .section:has(.show-more-button),
+  .section.show-all {
     background: none !important;
   }
 }
