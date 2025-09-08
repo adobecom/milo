@@ -159,14 +159,20 @@ export async function decoratePlaceholderArea({
   if (!nodes.length) return;
   const config = getConfig();
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
-  const range = document.createRange();
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
-      const replaced = await replaceText(nodeEl.nodeValue, config);
-      if (replaced === nodeEl.nodeValue) return;
-      range.selectNode(nodeEl);
-      range.deleteContents();
-      range.insertNode(range.createContextualFragment(replaced));
+      const originalValue = nodeEl.nodeValue;
+      const replaced = await replaceText(originalValue, config);
+      if (replaced === originalValue) return;
+      const containsHTML = /<[^>]*>/g.test(replaced);
+      if (containsHTML) {
+        const range = document.createRange();
+        range.selectNode(nodeEl);
+        range.deleteContents();
+        range.insertNode(range.createContextualFragment(replaced));
+      } else {
+        nodeEl.nodeValue = replaced;
+      }
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
       const attrPromises = [...nodeEl.attributes].map(async (attr) => {
         const attrVal = await replaceText(attr.value, config);
