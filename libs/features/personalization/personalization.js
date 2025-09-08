@@ -812,7 +812,6 @@ export async function createMartechMetadata(placeholders, config, column) {
   await import('../../martech/attributes.js').then(({ processTrackingLabels }) => {
     config.mep.analyticLocalization ??= {};
 
-    console.log(placeholders);
     placeholders.forEach((item, i) => {
       const firstRow = placeholders[i];
       let usValue = firstRow[US_GEO] || firstRow.us || firstRow.en || firstRow.key;
