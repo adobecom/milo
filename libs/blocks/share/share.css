@@ -86,8 +86,7 @@
   outline-offset: 1px;
 }
 
-.share .copy-to-clipboard:not(.hide-copy-tooltip) svg,
-.share a svg.icon:hover {
+.share :is(a, .copy-to-clipboard) svg.icon:hover {
   filter: brightness(0.7);
 }
 
