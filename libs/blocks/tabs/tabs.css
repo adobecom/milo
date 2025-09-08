@@ -518,7 +518,7 @@
 }
 
 .tabs.segmented-control .tabList button {
-  padding: 10px 11px;
+  padding: 10px;
   border-radius: var(--m-rounded-corners);
   border: none;
   font-weight: 700;
