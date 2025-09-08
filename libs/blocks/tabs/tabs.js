@@ -241,29 +241,60 @@ function initPaddles(tabList, left, right, isRadio) {
       const computedStyle = window.getComputedStyle(tabListContainer);
       const marginLeft = parseFloat(computedStyle.marginLeft);
       const marginRight = parseFloat(computedStyle.marginRight);
+      const isRtl = document.dir === 'rtl';
       if (marginLeft === 0 || marginRight === 0) {
-        removeAttributes(right, ['disabled', 'aria-hidden']);
+        if (isRtl) {
+          removeAttributes(left, ['disabled', 'aria-hidden']);
+        } else {
+          removeAttributes(right, ['disabled', 'aria-hidden']);
+        }
         return;
       }
       if (isTabInTabListView(lastTab)) {
-        setAttributes(right, { disabled: '', 'aria-hidden': true });
+        if (isRtl) {
+          setAttributes(left, { disabled: '', 'aria-hidden': true });
+        } else {
+          setAttributes(right, { disabled: '', 'aria-hidden': true });
+        }
       }
     }
   };
 
   const callback = (entries) => {
     entries.forEach((entry) => {
+      const isRtl = document.dir === 'rtl';
+
       if (entry.target === firstTab) {
         if (entry.isIntersecting) {
-          setAttributes(left, { disabled: '', 'aria-hidden': true });
+          // In RTL, first tab is visually on the right, so disable right paddle
+          if (isRtl) {
+            setAttributes(right, { disabled: '', 'aria-hidden': true });
+          } else {
+            setAttributes(left, { disabled: '', 'aria-hidden': true });
+          }
+        } else if (isRtl) {
+          // In RTL, enable right paddle when first tab is not visible
+          removeAttributes(right, ['disabled', 'aria-hidden']);
         } else {
           removeAttributes(left, ['disabled', 'aria-hidden']);
         }
       } else if (entry.target === lastTab) {
         if (entry.isIntersecting) {
-          setAttributes(right, { disabled: '', 'aria-hidden': true });
+          // In RTL, last tab is visually on the left, so disable left paddle
+          if (isRtl) {
+            setAttributes(left, { disabled: '', 'aria-hidden': true });
+          } else {
+            setAttributes(right, { disabled: '', 'aria-hidden': true });
+          }
+        } else if (isRtl) {
+          // In RTL, enable left paddle when last tab is not visible
+          removeAttributes(left, ['disabled', 'aria-hidden']);
+          // Also check margin when lastTab becomes visible/invisible
+          checkTabListContainerMargin();
         } else {
           removeAttributes(right, ['disabled', 'aria-hidden']);
+          // Also check margin when lastTab becomes visible/invisible
+          checkTabListContainerMargin();
         }
       }
     });

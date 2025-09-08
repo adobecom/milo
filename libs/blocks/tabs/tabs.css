@@ -536,18 +536,22 @@
 .tabs.segmented-control .tabList button.paddle {
   position: absolute;
   border-bottom: none;
-  background: linear-gradient(270deg, #FFF 49.7%, rgba(255, 255, 255, 0.00) 71.52%);
   width: 54px;
   height: 40px;
   box-shadow: none;
   flex-shrink: 0;
   justify-content: end;
   padding: 0 !important;
+  z-index: 4;
 }
 
-/* .tabs.segmented-control .tabList button.paddle-left {
-  display: none;
-} */
+.tabs.segmented-control .tabList button.paddle-left { 
+  background: linear-gradient(270deg, rgba(255, 255, 255, 0.00) 28.48%, #FFF 50.3%);
+}
+
+.tabs.segmented-control .tabList button.paddle-right { 
+  background: linear-gradient(270deg, #FFF 49.7%, rgba(255, 255, 255, 0.00) 71.52%);
+}
 
 .tabs.segmented-control .paddle svg {
   margin: unset;
