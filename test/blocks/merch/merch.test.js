@@ -95,7 +95,7 @@ const CHECKOUT_LINK_CONFIGS = {
     FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1',
     BUY_NOW_PATH: 'https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1',
     LOCALE: '',
-  }
+  },
   ],
 };
 
@@ -814,18 +814,14 @@ describe('Merch Block', () => {
     });
 
     it('getCheckoutLinkConfig: finds using paCode and svar', async () => {
-      const options = {
-        extraOptions : '{"svar": "abc", "other": "xyz"}'
-      };
+      const options = { extraOptions: '{"svar": "abc", "other": "xyz"}' };
       const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
       expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1');
       expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1');
     });
 
     it('getCheckoutLinkConfig: finds using paCode and no svar', async () => {
-      const options = {
-        extraOptions : '{"other": "xyz"}'
-      };
+      const options = { extraOptions: '{"other": "xyz"}' };
       const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
       expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1');
       expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');

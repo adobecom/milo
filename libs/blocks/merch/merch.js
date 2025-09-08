@@ -530,7 +530,7 @@ export async function fetchCheckoutLinkConfigs(base = '', env = '') {
 }
 
 function getSvar(extraOptions) {
-  if (!extraOptions) return;
+  if (!extraOptions) return undefined;
 
   const extraOptionsObj = JSON.parse(extraOptions);
   return extraOptionsObj.svar;
@@ -539,14 +539,14 @@ function getSvar(extraOptions) {
 function isProductMatch(config, productCode, svar, configs) {
   const match = config[NAME_PRODUCT_FAMILY] === productCode || (svar && config[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
   const alreadyThere = configs.some((item) => item[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
-  return match && !alreadyThere
+  return match && !alreadyThere;
 }
 
 export async function getCheckoutLinkConfig(
   productFamily,
   productCode,
   paCode,
-  options
+  options,
 ) {
   const extraOptions = options?.extraOptions;
   const svar = getSvar(extraOptions);
