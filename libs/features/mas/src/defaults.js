@@ -9,7 +9,7 @@ export const Defaults = Object.freeze({
     checkoutWorkflowStep: CheckoutWorkflowStep.EMAIL,
     country: 'US',
     displayOldPrice: false,
-    displayPerUnit: true,
+    displayPerUnit: false,
     displayRecurrence: true,
     displayTax: false,
     displayPlanType: false,

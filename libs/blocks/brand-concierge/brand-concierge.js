@@ -33,7 +33,7 @@ async function openChatModal(initialMessage, el) {
   // eslint-disable-next-line no-underscore-dangle
   window._satellite?.track('bootstrapConversationalExperience', {
     selector: `#${mountId}`,
-    src: 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+    src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
     stylingConfigurations: chatUIConfig,
   });
 }
@@ -74,11 +74,9 @@ function decorateCards(el, cards) {
 
     cardButton.addEventListener('click', () => {
       const input = el.querySelector('.bc-input-field input');
-      const button = el.querySelector('button.input-field-button');
 
       input.value = cardText.textContent.trim();
-      button.disabled = false;
-      button.click();
+      openChatModal(input.value, el);
     });
   });
 
@@ -148,7 +146,20 @@ function decorateLegal(el, legal) {
   el.removeChild(legal);
 }
 
+function handleConsent(el) {
+  if (!window.adobePrivacy) return;
+  const cookieGrp = window.adobePrivacy.activeCookieGroups();
+  if (!cookieGrp?.includes('C0002')) {
+    el.classList.add('hide-block');
+    window.lana?.log('Block hidden because user has not consented to cookies', { tags: 'brand-concierge' });
+  }
+}
+
 export default async function init(el) {
+  handleConsent(el);
+  window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
+  window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+
   const rows = el.querySelectorAll(':scope > div');
   let isDefault = false;
   let fieldFirst = false;

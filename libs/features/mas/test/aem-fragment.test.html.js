@@ -427,6 +427,20 @@ runTests(async () => {
                     'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
                 );
             });
+            it('fetches fragment from freyja on publish with overriden country', async () => {
+                cache.clear();
+                const masCommerceService = document.querySelector(
+                    'mas-commerce-service',
+                );
+                masCommerceService.setAttribute('country', 'CA');
+                masCommerceService.setAttribute('locale', 'en_US');
+                masCommerceService.activate();
+                const aemFragment = addFragment('fragment-cc-all-apps');
+                await aemFragment.updateComplete;
+                expect(fetch.lastCall.firstArg).to.equal(
+                    'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US&country=CA',
+                );
+            });
         });
     });
 });
