@@ -37,6 +37,17 @@ const removeAttributes = (el, attrsKeys) => {
   attrsKeys.forEach((key) => el.removeAttribute(key));
 };
 
+function handleSegmentedControlInteraction(element, e) {
+  const tabsBlock = element.closest('.tabs');
+  if (tabsBlock?.classList.contains('segmented-control') && !tabsBlock.dataset.interacted && e?.isTrusted !== false) {
+    const leftPaddle = tabsBlock.querySelector('.paddle-left');
+    const rightPaddle = tabsBlock.querySelector('.paddle-right');
+    if (leftPaddle) leftPaddle.remove();
+    if (rightPaddle) rightPaddle.remove();
+    tabsBlock.dataset.interacted = 'true';
+  }
+}
+
 const scrollStackedMobile = (content) => {
   if (!window.matchMedia('(max-width: 600px)').matches) return;
   const rects = content.getBoundingClientRect();
@@ -101,13 +112,7 @@ function changeTabs(e) {
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
 
   // Remove paddles after first real user interaction for segmented-control variant
-  if (tabsBlock.classList.contains('segmented-control') && !tabsBlock.dataset.interacted && e.isTrusted) {
-    const leftPaddle = tabsBlock.querySelector('.paddle-left');
-    const rightPaddle = tabsBlock.querySelector('.paddle-right');
-    if (leftPaddle) leftPaddle.remove();
-    if (rightPaddle) rightPaddle.remove();
-    tabsBlock.dataset.interacted = 'true';
-  }
+  handleSegmentedControlInteraction(target, e);
 
   window.dispatchEvent(tabChangeEvent);
 }
@@ -158,12 +163,13 @@ function initTabs(elm, config, rootElem) {
 
   tabLists.forEach((tabList) => {
     tabList.addEventListener('keydown', (e) => {
+      const isRtl = document.dir === 'rtl';
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        if (e.key === 'ArrowRight') {
+        if (e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight')) {
           tabFocus += 1;
           /* c8 ignore next */
           if (tabFocus >= tabs.length) tabFocus = 0;
-        } else if (e.key === 'ArrowLeft') {
+        } else if (e.key === (isRtl ? 'ArrowRight' : 'ArrowLeft')) {
           tabFocus -= 1;
           /* c8 ignore next */
           if (tabFocus < 0) tabFocus = tabs.length - 1;
@@ -172,14 +178,7 @@ function initTabs(elm, config, rootElem) {
         tabs[tabFocus].focus();
 
         // Remove paddles after first real user keyboard interaction for segmented-control variant
-        const tabsBlock = tabs[tabFocus].closest('.tabs');
-        if (tabsBlock?.classList.contains('segmented-control') && !tabsBlock.dataset.interacted && e.isTrusted) {
-          const leftPaddle = tabsBlock.querySelector('.paddle-left');
-          const rightPaddle = tabsBlock.querySelector('.paddle-right');
-          if (leftPaddle) leftPaddle.remove();
-          if (rightPaddle) rightPaddle.remove();
-          tabsBlock.dataset.interacted = 'true';
-        }
+        handleSegmentedControlInteraction(tabs[tabFocus], e);
       }
     });
   });
@@ -207,7 +206,7 @@ function initPaddles(tabList, left, right, isRadio) {
   const firstTab = tabListItemsArray[0];
   const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
 
-  left.addEventListener('click', () => {
+  left.addEventListener('click', (e) => {
     const previous = tabListItemsArray.find(previousTab);
     if (previous) {
       scrollTabIntoView(previous, 'end');
@@ -216,8 +215,9 @@ function initPaddles(tabList, left, right, isRadio) {
       const { width } = tabList.getBoundingClientRect();
       tabList.scrollBy({ left: -(width / 2), behavior: 'smooth' });
     }
+    handleSegmentedControlInteraction(tabList, e);
   });
-  right.addEventListener('click', () => {
+  right.addEventListener('click', (e) => {
     const next = tabListItemsArray.find(nextTab);
     if (next) {
       scrollTabIntoView(next, 'start');
@@ -226,16 +226,14 @@ function initPaddles(tabList, left, right, isRadio) {
       const { width } = tabList.getBoundingClientRect();
       tabList.scrollBy({ left: width / 2, behavior: 'smooth' });
     }
+    handleSegmentedControlInteraction(tabList, e);
   });
 
-  // Use the tab-list-container as the root for intersection observer
-  // since it's the actual container that constrains the visible area
   const tabListContainer = tabList.querySelector('.tab-list-container');
-  const observerRoot = tabListContainer || tabList;
   const options = {
-    root: observerRoot,
+    root: tabList,
     rootMargin: '0px',
-    threshold: tabListContainer ? 1 : 0.9, // Slightly higher threshold for better detection
+    threshold: 0.9,
   };
 
   const checkTabListContainerMargin = () => {
@@ -243,14 +241,10 @@ function initPaddles(tabList, left, right, isRadio) {
       const computedStyle = window.getComputedStyle(tabListContainer);
       const marginLeft = parseFloat(computedStyle.marginLeft);
       const marginRight = parseFloat(computedStyle.marginRight);
-
-      // If margin becomes zero, remove disabled from right arrow
       if (marginLeft === 0 || marginRight === 0) {
         removeAttributes(right, ['disabled', 'aria-hidden']);
         return;
       }
-
-      // If margins reappear and last tab is in view, re-disable right arrow
       if (isTabInTabListView(lastTab)) {
         setAttributes(right, { disabled: '', 'aria-hidden': true });
       }
@@ -270,8 +264,6 @@ function initPaddles(tabList, left, right, isRadio) {
           setAttributes(right, { disabled: '', 'aria-hidden': true });
         } else {
           removeAttributes(right, ['disabled', 'aria-hidden']);
-          // Also check margin when lastTab becomes visible/invisible
-          checkTabListContainerMargin();
         }
       }
     });
@@ -282,15 +274,8 @@ function initPaddles(tabList, left, right, isRadio) {
   observer.observe(firstTab);
   observer.observe(lastTab);
 
-  // Monitor for changes that might affect margins
   if (tabListContainer) {
-    // Check margins on window resize
     window.addEventListener('resize', checkTabListContainerMargin);
-
-    // Check margins on scroll events that might affect layout
-    // tabList.addEventListener('scroll', checkTabListContainerMargin);
-
-    // Initial margin check
     checkTabListContainerMargin();
   }
 }

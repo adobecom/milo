@@ -539,19 +539,15 @@
   background: linear-gradient(270deg, #FFF 49.7%, rgba(255, 255, 255, 0.00) 71.52%);
   width: 54px;
   height: 40px;
-  /* height: 38px; */
   box-shadow: none;
   flex-shrink: 0;
   justify-content: end;
   padding: 0 !important;
-  /* top: 1px; */
-  /* top: 1px;
-  right: 1px; */
 }
 
-.tabs.segmented-control .tabList button.paddle-left {
+/* .tabs.segmented-control .tabList button.paddle-left {
   display: none;
-}
+} */
 
 .tabs.segmented-control .paddle svg {
   margin: unset;
