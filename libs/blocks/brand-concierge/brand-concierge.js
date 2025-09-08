@@ -74,11 +74,9 @@ function decorateCards(el, cards) {
 
     cardButton.addEventListener('click', () => {
       const input = el.querySelector('.bc-input-field input');
-      const button = el.querySelector('button.input-field-button');
 
       input.value = cardText.textContent.trim();
-      button.disabled = false;
-      button.click();
+      openChatModal(input.value, el);
     });
   });
 
