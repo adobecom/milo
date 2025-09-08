@@ -111,7 +111,7 @@ module.exports = {
             ],
             count: 24,
           },
-          'Photo': {
+          Photo: {
             products: [
               'Creative Cloud Pro',
               'Photography',
@@ -146,7 +146,7 @@ module.exports = {
             sidenavValue: 'design',
             daaLh: 'design--cat',
           },
-          'Video': {
+          Video: {
             products: [
               'Creative Cloud Pro',
               'Adobe Premiere Pro',
@@ -164,7 +164,7 @@ module.exports = {
             sidenavValue: 'video-audio',
             daaLh: 'video-audio--cat',
           },
-          'Illustration': {
+          Illustration: {
             products: [
               'Creative Cloud Pro',
               'Photoshop',
@@ -222,11 +222,11 @@ module.exports = {
       path: PLANS_NALA_PATH.US,
       data: {
         tabs: {
-          'Education': {
+          Education: {
             tabId: 'edu',
             urlParam: '?plan=edu',
           },
-          'Business': {
+          Business: {
             tabId: 'team',
             urlParam: '?plan=team',
           },
@@ -234,7 +234,7 @@ module.exports = {
             tabId: 'edu_inst',
             urlParam: '?plan=edu_inst',
           },
-          'Individual': {
+          Individual: {
             tabId: 'individual',
             urlParam: '?plan=individual',
           },
@@ -258,8 +258,8 @@ module.exports = {
         filter: 'Illustration',
         selectedValue: 'illustration',
       },
-      browserParams: { 
-        landing: '?single_app=illustrator', 
+      browserParams: {
+        landing: '?single_app=illustrator',
         expected: '#filter=illustration&single_app=illustrator',
       },
       tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
@@ -273,7 +273,7 @@ module.exports = {
         selectedValue: 'photography',
       },
       browserParams: {
-        landing:'?filter=photography',
+        landing: '?filter=photography',
         expected: '#filter=photography',
       },
       tags: '@mas-acom @mas-plans-page @commerce @smoke @regression @milo',
