@@ -284,7 +284,7 @@ main > .section[class*='-up'] > .content {
   }
 
   .section.show-all > *:nth-child(n+4):not(.show-more-button):not(.section-metadata) {
-    display: flex;
+    display: block;
   }
 }
 
