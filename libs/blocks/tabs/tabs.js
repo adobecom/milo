@@ -266,34 +266,28 @@ function initPaddles(tabList, left, right, isRadio) {
 
       if (entry.target === firstTab) {
         if (entry.isIntersecting) {
-          // In RTL, first tab is visually on the right, so disable right paddle
           if (isRtl) {
             setAttributes(right, { disabled: '', 'aria-hidden': true });
           } else {
             setAttributes(left, { disabled: '', 'aria-hidden': true });
           }
         } else if (isRtl) {
-          // In RTL, enable right paddle when first tab is not visible
           removeAttributes(right, ['disabled', 'aria-hidden']);
         } else {
           removeAttributes(left, ['disabled', 'aria-hidden']);
         }
       } else if (entry.target === lastTab) {
         if (entry.isIntersecting) {
-          // In RTL, last tab is visually on the left, so disable left paddle
           if (isRtl) {
             setAttributes(left, { disabled: '', 'aria-hidden': true });
           } else {
             setAttributes(right, { disabled: '', 'aria-hidden': true });
           }
         } else if (isRtl) {
-          // In RTL, enable left paddle when last tab is not visible
           removeAttributes(left, ['disabled', 'aria-hidden']);
-          // Also check margin when lastTab becomes visible/invisible
           checkTabListContainerMargin();
         } else {
           removeAttributes(right, ['disabled', 'aria-hidden']);
-          // Also check margin when lastTab becomes visible/invisible
           checkTabListContainerMargin();
         }
       }
