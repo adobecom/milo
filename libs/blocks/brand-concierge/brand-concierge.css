@@ -37,7 +37,6 @@
   margin: 0;
 }
 
-
 .bc-prompt-cards {
   display: flex;
   flex-wrap: wrap;
@@ -258,9 +257,17 @@
   gap: 8px;
 }
 
-
-
 /* Sticky */
+@keyframes sticky-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .brand-concierge.sticky {
   animation-name: sticky-in;
   animation-duration: 0.4s;
@@ -373,16 +380,6 @@
 .sticky .bc-legal-close:focus-visible {
   border-radius: 8px;
   outline: 2px solid var(--bc-keyboard-focus-color);
-}
-
-@keyframes sticky-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
 }
 
 #brand-concierge-modal {
