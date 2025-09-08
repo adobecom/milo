@@ -77,35 +77,36 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, {});
 
-function handleShowMoreButton(section, showMoreBtn, seeMoreText) {
-  if (!showMoreBtn) return;
+async function createShowMoreButton(section) {
+  const seeMoreText = await replacePlaceholder('see-more-features');
+  const showMoreButton = createTag('div', { class: 'show-more-button' });
+  const button = createTag('button', {}, '');
+  button.innerHTML = seeMoreText;
+
   const iconSpan = createTag('span', {
     class: 'show-more-icon',
     'aria-hidden': 'true',
   }, `${ADD_MORE_ICON}`);
-  showMoreBtn.appendChild(iconSpan);
-  showMoreBtn.setAttribute('aria-label', seeMoreText);
+  button.appendChild(iconSpan);
+  button.setAttribute('aria-label', seeMoreText);
 
-  showMoreBtn.addEventListener('click', () => {
+  button.addEventListener('click', () => {
     section.classList.add('show-all');
-    section.querySelector('.show-more-button').remove(); // Remove the entire show-more-button div
+    section.querySelector('.show-more-button').remove();
   });
+
+  showMoreButton.append(button);
+  return showMoreButton;
 }
 
 async function handleCollapseSection(text, section) {
   if (!text || !section) return;
   const blocks = section.querySelectorAll('div:not(:last-child)');
   const existingShowMoreButton = section.querySelector('.show-more-button');
-  if (text === 'on' && blocks.length > 3 && !existingShowMoreButton) {
-    const seeMoreText = await replacePlaceholder('see-more-features');
-    const showMoreButton = createTag('div', { class: 'show-more-button' });
-    const button = createTag('button', {}, '');
-    button.innerHTML = seeMoreText;
-    showMoreButton.append(button);
-    section.append(showMoreButton);
-    handleShowMoreButton(section, button, seeMoreText);
-    decorateDefaultLinkAnalytics(showMoreButton);
-  }
+  if (text !== 'on' || blocks.length <= 3 || existingShowMoreButton) return;
+  const showMoreButton = await createShowMoreButton(section);
+  section.append(showMoreButton);
+  decorateDefaultLinkAnalytics(showMoreButton);
 }
 
 function addListAttrToSection(section) {
