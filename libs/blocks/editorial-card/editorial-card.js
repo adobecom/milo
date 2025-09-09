@@ -92,9 +92,8 @@ function handleClickableCard(el) {
 function handleOpenClasses(el, hasOpenClass) {
   const openClasses = ['no-border', 'l-rounded-corners-image', 'static-links-copy'];
   if (hasOpenClass) el.classList.add(...openClasses);
-  const isNestedInUpsCarousel = el.closest('.carousel.ups-desktop');
 
-  if (!isNestedInUpsCarousel) return;
+  if (!el.closest('.carousel.ups-desktop')) return;
 
   const isCarouselDesktop = window.matchMedia('(min-width: 900px)');
   const toggleOpenClasses = () => {
