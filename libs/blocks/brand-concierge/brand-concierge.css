@@ -287,16 +287,16 @@
 }
 
 .sticky .bc-input-field::before {
-  border-radius: var(--bc-sticky-input-radius);
+  border-radius: 50%;
 }
 
 .sticky .bc-input-field::after {
-  border-radius: var(--bc-sticky-input-radius);
+  border-radius: 50%;
   opacity: 0;
 }
 
 .sticky .bc-input-field-container {
-  border-radius: calc(var(--bc-sticky-input-radius) - 2px);
+  border-radius: 50%;
   box-shadow: 0 2px 8px 0 rgba(0 0 0 / 16%);
   height: var(--bc-sticky-input-height);
   margin: 0;
@@ -508,7 +508,16 @@
     display: flex;
   }
 
+  .sticky .bc-input-field::before {
+    border-radius: var(--bc-sticky-input-radius);
+  }
+  
+  .sticky .bc-input-field::after {
+    border-radius: var(--bc-sticky-input-radius);
+  }
+
   .sticky .bc-input-field-container {
+    border-radius: calc(var(--bc-sticky-input-radius) - 2px);
     padding: 0 12px;
   }
 
