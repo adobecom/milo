@@ -196,8 +196,7 @@ describe('Placeholders', () => {
       const testConfig = {
         locale: {},
         env: {
-          name: 'prod'
-        }
+          name: 'prod'}
       };
       
       const result = getPlaceholderRoot(testConfig);
