@@ -68,7 +68,7 @@ export class AHPromotedPlans extends VariantLayout {
             );
             --merch-card-ah-promoted-plans-price-line-height: 17px;
             --merch-card-ah-promoted-plans-outline: transparent;
-            --merch-card-custom-border-width: 1px;
+            --consonant-merch-card-border-width: 1px;
             height: 100%;
             min-width: var(--merch-card-ah-promoted-plans-min-width);
             max-width: var(--merch-card-ah-promoted-plans-max-width);
@@ -78,7 +78,7 @@ export class AHPromotedPlans extends VariantLayout {
             );
             color: var(--consonant-merch-card-heading-xxxs-color);
             border-radius: 10px;
-            border: 1px solid var(--merch-card-custom-border-color, transparent);
+            border: 1px solid var(--consonant-merch-card-border-color, transparent);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -143,4 +143,3 @@ export class AHPromotedPlans extends VariantLayout {
     `;
 }
 
-customElements.define('ah-promoted-plans', AHPromotedPlans);

@@ -1,22 +1,14 @@
+/* eslint-disable no-underscore-dangle */
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
 const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
-
-// Prevent external script injection during tests
-const externalScriptSrc = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-const originalHeadAppendChild = document.head.appendChild.bind(document.head);
-document.head.appendChild = (node) => {
-  if (node && node.tagName === 'SCRIPT' && node.src === externalScriptSrc) {
-    // Swallow external script
-    return node;
-  }
-  return originalHeadAppendChild(node);
-};
+const { default: chatUIConfig } = await import('../../../libs/blocks/brand-concierge/chat-ui-config.js');
 
 describe('Brand Concierge', () => {
   it('decorates default variant with header, cards, input and legal, and sets background', async () => {
@@ -75,6 +67,12 @@ describe('Brand Concierge', () => {
   it('enables send button on input and opens modal on Enter', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
+
+    // Mock window._satellite.track before init
+    const oldSatellite = window._satellite;
+    const trackStub = sinon.stub();
+    window._satellite = { track: trackStub };
+
     await init(block);
 
     const input = block.querySelector('.bc-input-field input');
@@ -101,6 +99,18 @@ describe('Brand Concierge', () => {
 
     // input cleared after opening
     expect(block.querySelector('.bc-input-field input').value).to.equal('');
+
+    // Verify bootstrapConversationalExperience was called
+    expect(trackStub.calledOnce).to.be.true;
+    expect(trackStub.firstCall.args[0]).to.equal('bootstrapConversationalExperience');
+    expect(trackStub.firstCall.args[1]).to.deep.include({
+      selector: '#brand-concierge-mount',
+      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+      stylingConfigurations: chatUIConfig,
+    });
+
+    // Clean up
+    window._satellite = oldSatellite;
   });
 
   it('clicking a prompt card fills input and opens modal with card text', async () => {
@@ -115,5 +125,48 @@ describe('Brand Concierge', () => {
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
     expect(mount.dataset.initialMessage).to.contain('Prompt two');
+  });
+
+  describe('Privacy Consent Handling', () => {
+    let block;
+    let originalAdobePrivacy;
+    let originalLana;
+
+    beforeEach(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      block = document.querySelector('.brand-concierge');
+      originalAdobePrivacy = window.adobePrivacy;
+      originalLana = window.lana;
+    });
+
+    afterEach(() => {
+      window.adobePrivacy = originalAdobePrivacy;
+      window.lana = originalLana;
+      sinon.restore();
+    });
+
+    it('shows the block if privacy hasnt loaded yet', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+    });
+
+    it('hides the block if the user rejects all cookies', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+      window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001']) };
+      window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
+      expect(block.classList.contains('hide-block')).to.be.true;
+    });
+
+    it('hides the block if the user rejects performance cookies', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+      window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001', 'C0003']) };
+      window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
+      expect(block.classList.contains('hide-block')).to.be.true;
+    });
   });
 });
