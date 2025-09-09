@@ -122,10 +122,8 @@ describe('Placeholders', () => {
       document.head.appendChild(meta);
 
       const testConfig = {
-        locale: {prefix: '/bg'
-        },
-        env: {name: 'prod'
-        },
+        locale: {prefix: '/bg'},
+        env: {name: 'prod'},
       };
       
       const result = getPlaceholderRoot(testConfig);
@@ -144,12 +142,8 @@ describe('Placeholders', () => {
       document.head.appendChild(originMeta);
 
       const testConfig = {
-        locale: {
-          prefix: '/bg'
-        },
-        env: {
-          name: 'stage'
-        }
+        locale: {prefix: '/bg'},
+        env: {name: 'stage'},
       };
       
       const result = getPlaceholderRoot(testConfig);
@@ -173,11 +167,8 @@ describe('Placeholders', () => {
       // Note: This test assumes the current window.location.origin has an invalid format
       // In a real test environment, this would need proper mocking
       const testConfig = {
-        locale: {
-          prefix: '/bg'
-        },
-        env: {
-          name: 'stage'}
+        locale: {prefix: '/bg'},
+        env: {name: 'stage'},
       };
       const result = getPlaceholderRoot(testConfig);
       // Since we can't easily mock window.location, this test will use the actual origin
@@ -194,8 +185,7 @@ describe('Placeholders', () => {
 
       const testConfig = {
         locale: {},
-        env: {
-          name: 'prod'}
+        env: {name: 'prod'},
       };
       
       const result = getPlaceholderRoot(testConfig);
@@ -209,9 +199,7 @@ describe('Placeholders', () => {
       document.head.appendChild(meta);
 
       const testConfig = {
-        env: {
-          name: 'prod'
-        }
+        env: {name: 'prod'},
       };
       
       const result = getPlaceholderRoot(testConfig);
