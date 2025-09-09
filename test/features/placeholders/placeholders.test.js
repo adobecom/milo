@@ -192,7 +192,7 @@ describe('Placeholders', () => {
       meta.content = 'cc-shared';
       document.head.appendChild(meta);
 
-      const testConfig = { env: { name: 'prod' }};
+      const testConfig = { env: { name: 'prod' } };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/cc-shared');
     });
