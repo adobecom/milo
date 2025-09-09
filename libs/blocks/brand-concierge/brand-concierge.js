@@ -149,13 +149,14 @@ function decorateInput(el, input) {
     });
 
     fieldInput.addEventListener('focus', () => {
-      el.querySelector('.bc-legal').classList.add('legal-shown');
-      if (stickyLegalContent.legalSection) {
+      const bcLegal = el.querySelector('.bc-legal');
+      if (stickyLegalContent.legalSection && !bcLegal.classList.contains('legal-shown')) {
         stickyLegalContent.legalSection.append(
           stickyLegalContent.headerContainer,
           stickyLegalContent.legalCopy,
         );
       }
+      bcLegal.classList.add('legal-shown');
     });
     // used to prevent the block from going over the global footer.
     window.addEventListener('scroll', handleScroll);
