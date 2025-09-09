@@ -121,8 +121,8 @@ describe('Placeholders', () => {
       document.head.appendChild(meta);
 
       const testConfig = {
-        locale: {prefix: '/bg'},
-        env: {name: 'prod'},
+        locale: { prefix: '/bg' },
+        env: { name: 'prod' },
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/bg/cc-shared');
@@ -140,7 +140,7 @@ describe('Placeholders', () => {
       document.head.appendChild(originMeta);
 
       const testConfig = {
-        locale: {prefix: '/bg'},
+        locale: { prefix: '/bg' },
         env: {name: 'stage'},
       };
       const result = getPlaceholderRoot(testConfig);
@@ -164,7 +164,7 @@ describe('Placeholders', () => {
       // Note: This test assumes the current window.location.origin has an invalid format
       // In a real test environment, this would need proper mocking
       const testConfig = {
-        locale: {prefix: '/bg'},
+        locale: { prefix: '/bg' },
         env: {name: 'stage'},
       };
       const result = getPlaceholderRoot(testConfig);
@@ -182,7 +182,7 @@ describe('Placeholders', () => {
 
       const testConfig = {
         locale: {},
-        env: {name: 'prod'},
+        env: { name: 'prod' },
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/cc-shared');
@@ -195,7 +195,7 @@ describe('Placeholders', () => {
       document.head.appendChild(meta);
 
       const testConfig = {
-        env: {name: 'prod'},
+        env: { name: 'prod' },
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/cc-shared');
