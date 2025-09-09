@@ -209,10 +209,10 @@ test.describe('MAS Plans Page test suite', () => {
   });
 
   // @MAS-Plans-Single-App-Deeplink
-  test(`${features[4].name},${features[4].tags}`, async ({ page }) => {
+  test(`${features[4].name},${features[4].tags}`, async ({ page, browserName }) => {
     // remove once hash transformation is fixed in Safari and Firefox
     test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping test for Firefox and webkit browsers');
-    
+
     const { data } = features[4];
     const masPlans = new MasPlans(page);
 
@@ -235,7 +235,7 @@ test.describe('MAS Plans Page test suite', () => {
   });
 
   // @MAS-Plans-Filter-Hash
-  test(`${features[5].name},${features[5].tags}`, async ({ page }) => {
+  test(`${features[5].name},${features[5].tags}`, async ({ page, browserName }) => {
     // remove once hash transformation is fixed in Safari and Firefox
     test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping test for Firefox and webkit browsers');
 
