@@ -167,6 +167,10 @@ function extractAspectRatio(asset) {
   return aspectRatio;
 }
 
+function constructVideoUrl(assetId) {
+  return `https://cdn.cp.adobe.io/content/2/dcx/${assetId}/content/manifest/version/0/component/path/output/resource`;
+}
+
 /**
  * Determines the item type based on aspect ratio
  * @param {number} aspectRatio - The aspect ratio (width/height)
@@ -201,7 +205,7 @@ function updateItemTypeClass(item, itemType) {
 
 async function fetchFireflyAssets(categoryId) {
   try {
-    debug('Fetching Firefly images...');
+    debug('Fetching Firefly assets...');
     const response = await fetch(
       `${FIREFLY_API_URL}${API_PARAMS}&category_id=${categoryId}`,
       {
@@ -217,7 +221,11 @@ async function fetchFireflyAssets(categoryId) {
 
     const data = await response.json();
     debug('Firefly API response:', data);
-    return data._embedded.assets || [];
+    const assets = data._embedded.assets || [];
+    assets.forEach((asset) => {
+      asset.assetType = categoryId === 'VideoGeneration' ? 'video' : 'image';
+    });
+    return assets;
   } catch (error) {
     logError('Error fetching Firefly images:', error);
     return [];
@@ -234,8 +242,10 @@ const replaceRenditionUrl = (url, format, dimension, size) =>
  * @param {string} urn - Asset URN identifier
  * @return {string} - Complete Firefly URL
  */
-function createFireflyURL(urn) {
-  return `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${urn}`;
+function createFireflyURL(urn, assetType = 'image') {
+  const assetTypeParam =
+    assetType === 'video' ? 'VideoGeneration' : 'ImageGeneration';
+  return `https://firefly.adobe.com/open?assetOrigin=community&assetType=${assetTypeParam}&id=${urn}`;
 }
 
 function getImageRendition(asset, itemType = 'square') {
@@ -515,7 +525,8 @@ function loadImageIntoSkeleton(
   altText,
   promptText,
   userInfo = {},
-  assetUrn
+  assetUrn,
+  assetData = {}
 ) {
   return new Promise((resolve) => {
     debug('Loading image:', imageUrl);
@@ -525,6 +536,12 @@ function loadImageIntoSkeleton(
       class: 'firefly-gallery-image',
     });
 
+    // Add asset type to container for styling
+    if (assetData.assetType === 'video') {
+      imageContainer.classList.add('firefly-gallery-video-item');
+      skeletonItem.classList.add('video-item');
+    }
+
     // Create and append image
     const img = createImageElement(imageUrl, altText);
     imageContainer.appendChild(img);
@@ -532,7 +549,61 @@ function loadImageIntoSkeleton(
     // Create and append clickable overlay if prompt exists
     if (promptText) {
       const fireflyUrl = createFireflyURL(assetUrn);
-      const overlay = createOverlayElement(promptText, userInfo, fireflyUrl);
+      const overlayPromptText =
+        assetData.assetType === 'video' ? '' : promptText;
+      const overlay = createOverlayElement(
+        overlayPromptText,
+        userInfo,
+        fireflyUrl
+      );
+      if (assetData.assetType === 'video') {
+        overlay.classList.add('firefly-gallery-video-overlay');
+      }
+
+      // Add video element inside the overlay for video assets
+      if (assetData.assetType === 'video' && assetData.id) {
+        const videoUrl = constructVideoUrl(assetData.id);
+        const video = createTag('video', {
+          src: videoUrl,
+          class: 'firefly-gallery-video',
+          muted: true,
+          loop: true,
+          preload: 'none',
+          playsinline: true,
+        });
+
+        video.addEventListener('loadeddata', () => {
+          debug('Video loaded:', videoUrl);
+        });
+
+        video.addEventListener('error', (e) => {
+          logError('Video loading error:', e);
+        });
+
+        overlay.appendChild(video);
+
+        // Add hover event listeners for video playback
+        let hoverTimeout;
+        overlay.addEventListener('mouseenter', () => {
+          // Clear any existing timeout
+          clearTimeout(hoverTimeout);
+          // Start video after a short delay (prevents flickering on quick mouse movements)
+          hoverTimeout = setTimeout(() => {
+            video.style.opacity = '1';
+            video.play().catch((err) => {
+              logError('Video play failed:', err);
+            });
+          }, 150);
+        });
+
+        overlay.addEventListener('mouseleave', () => {
+          // Stop video when hover ends
+          clearTimeout(hoverTimeout);
+          video.pause();
+          video.style.opacity = '0';
+        });
+      }
+
       imageContainer.appendChild(overlay);
     }
 
@@ -551,7 +622,7 @@ function loadImageIntoSkeleton(
     }
 
     // Image successfully loaded
-    debug('Image loaded successfully:', imageUrl);
+    debug(`${assetData.assetType || 'Image'} loaded successfully:`, imageUrl);
     resolve();
   });
 }
@@ -628,14 +699,22 @@ function processItem(item, asset, index, locale, assets) {
     }
   }
 
-  debug(`Loading image ${index + 1}/${assets.length}: ${imageUrl}`);
+  // Prepare asset data for video handling
+  const assetData = {
+    assetType: asset.assetType || 'image',
+    id: asset.id,
+  };
+  debug(
+    `Loading ${assetData.assetType} ${index + 1}/${assets.length}: ${imageUrl}`
+  );
   loadImageIntoSkeleton(
     item,
     imageUrl,
     altText,
     promptText,
     userInfo,
-    asset.urn
+    asset.urn,
+    assetData
   );
 }
 
@@ -759,6 +838,40 @@ function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
   window.addEventListener('resize', handleResize);
 }
 
+/**
+ * Sets tabindex=-1 for overlay elements that are hidden by the firefly-gallery-fade overlay
+ * to prevent keyboard focus on elements that aren't fully visible.
+ *
+ * @param {HTMLElement} galleryContent - The gallery content element with class 'firefly-gallery-content'
+ */
+function setTabindexForHiddenOverlays(galleryContent) {
+  if (!galleryContent) return;
+
+  const fadeOverlay = galleryContent.querySelector('.firefly-gallery-fade');
+  if (!fadeOverlay) return;
+
+  // Get overlay elements that can be focused (with tabindex="0")
+  const overlayElements = galleryContent.querySelectorAll(
+    '.firefly-gallery-overlay'
+  );
+
+  // Get fade dimensions
+  const contentRect = galleryContent.getBoundingClientRect();
+  const fadeHeight = parseInt(window.getComputedStyle(fadeOverlay).height, 10);
+  const fadeStartsAt = contentRect.height - fadeHeight;
+
+  // Check each overlay and set tabindex accordingly
+  overlayElements.forEach((overlay) => {
+    const overlayRect = overlay.getBoundingClientRect();
+    const overlayTop = overlayRect.top - contentRect.top;
+    const overlayBottom = overlayRect.bottom - contentRect.top;
+
+    if (overlayTop >= fadeStartsAt) {
+      overlay.setAttribute('tabindex', '-1');
+    }
+  });
+}
+
 export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
 
@@ -793,8 +906,14 @@ export default async function init(el) {
         // Set up resize handler for responsive image sizes
         handleResizeForGallery(assets, skeletonItems, masonryGrid);
 
-        // Remove loading class after initial items are loaded (5 second timeout)
+        // Remove loading class after initial items are loaded
         masonryGrid.classList.remove('loading');
+        setTimeout(() => {
+          const galleryContent = document.querySelector(
+            '.firefly-gallery-content'
+          );
+          if (galleryContent) setTabindexForHiddenOverlays(galleryContent);
+        }, 100);
       } else {
         // Remove loading state if no assets found
         masonryGrid.classList.remove('loading');

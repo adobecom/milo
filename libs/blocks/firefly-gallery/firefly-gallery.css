@@ -311,12 +311,6 @@
   scroll-behavior: auto;
 }
 
-.firefly-gallery-content a:focus,
-.firefly-gallery-content button:focus {
-  outline: 2px solid #378ef0;
-  outline-offset: 2px;
-}
-
 .firefly-gallery-overlay {
   position: absolute;
   display: flex;
@@ -325,7 +319,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(0, 0, 0, 0.647);
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 2;
@@ -416,14 +410,66 @@
 
 /* Focus styles to prevent visual shifting during keyboard navigation */
 .firefly-gallery-overlay:focus {
-  outline: 2px solid #378ef0; /* Use Adobe blue for focus outline */
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: inset 0 0 0 2px #378ef0; /* Creates an inner border effect */
   opacity: 1;
-  transform: translateY(0); /* Match hover behavior */
+  transform: translateY(0);
 }
 
 .firefly-gallery-item:focus-within {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Match hover shadow on parent */
+}
+
+/* Video-specific styles */
+.firefly-gallery-item.video-item .firefly-gallery-image::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%0A%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg filter='url(%23filter0_d_2130_42049)'%3E%3Cpath d='M8.10166 1.05157L17.859 6.36527C19.3136 7.15745 19.3137 9.27194 17.859 10.0641L8.10166 15.3778C6.72273 16.1288 5.05 15.1173 5.05 13.5285V2.901C5.05 1.3121 6.72273 0.300614 8.10166 1.05157Z' fill='white' fill-opacity='0.98' stroke='white' stroke-width='0.1'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_2130_42049' x='1' y='0.748535' width='22' height='22.9321' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='4'/%3E%3CfeGaussianBlur stdDeviation='2'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0'/%3E%3CfeBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow_2130_42049'/%3E%3CfeBlend mode='normal' in='SourceGraphic' in2='effect1_dropShadow_2130_42049' result='shape'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E%0A");
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+
+.firefly-gallery-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.firefly-gallery-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  transition: opacity 0.3s ease;
+}
+
+.firefly-gallery-play-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Ensure overlay changes for videos */
+.firefly-gallery-overlay:hover .firefly-gallery-play-icon {
+  opacity: 0;
 }
 
 /* Error state */
