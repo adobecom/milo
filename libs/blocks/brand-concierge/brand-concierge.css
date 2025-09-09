@@ -528,10 +528,7 @@
   }
 
   .sticky .bc-mobile-button {
-    height: 0;
-    width: 0;
-    opacity: 0;
-    pointer-events: none;
+    display: none;
   }
 
   #brand-concierge-modal.dialog-modal {
