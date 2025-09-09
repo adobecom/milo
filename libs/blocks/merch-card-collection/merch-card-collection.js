@@ -1,4 +1,4 @@
-import { initService } from '../merch/merch.js';
+import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION } from '../merch/merch.js';
 import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
@@ -19,6 +19,8 @@ const LITERAL_SLOTS = [
   'noResultText',
   'resultText',
   'resultsText',
+  'resultMobileText',
+  'resultsMobileText',
   'searchResultText',
   'searchResultsText',
   'searchResultMobileText',
@@ -205,16 +207,14 @@ export default async function init(el) {
   let mep;
   let merchStyles;
   let merchCardStyles;
-  const merchCardCollectionDep = import(
-    '../../deps/mas/merch-card-collection.js'
-  );
+  const merchCardCollectionDep = loadMasComponent(MAS_MERCH_CARD_COLLECTION);
   try {
     const cardsDataPromise = fetchCardsData(config, endpointElement, type, el);
     deps = [
       initServicePromise,
       merchCardCollectionDep,
       import('../merch-card/merch-card.js'),
-      import('../../deps/mas/merch-card.js'),
+      loadMasComponent(MAS_MERCH_CARD),
     ];
 
     ({ base, mep } = config);
@@ -296,6 +296,9 @@ export default async function init(el) {
       }
     });
     let index = 0;
+    // To remove after cc filters reauthoring
+    // - 4 because one of the literals is actually made of 5 children
+    const literalsCount = literalsEl.children.length - 4;
     while (literalsEl?.firstElementChild) {
       const literalEl = literalsEl?.firstElementChild;
       let slot;
@@ -311,6 +314,22 @@ export default async function init(el) {
       literalEl.remove();
       if (slot) {
         slot.setAttribute('slot', LITERAL_SLOTS[index]);
+        slot.setAttribute('placeholder', '');
+        // To remove after cc filters reauthoring
+        if (type === 'catalog' && LITERAL_SLOTS.length > literalsCount) {
+          const slotName = LITERAL_SLOTS[index];
+          if (slotName === 'resultText') {
+            const mobileSlot = slot.cloneNode(true);
+            mobileSlot.setAttribute('slot', 'resultMobileText');
+            literalSlots.push(mobileSlot);
+          }
+          if (slotName === 'resultsText') {
+            const mobileSlot = slot.cloneNode(true);
+            mobileSlot.setAttribute('slot', 'resultsMobileText');
+            literalSlots.push(mobileSlot);
+            index += 2;
+          }
+        }
         index += 1;
       }
       literalSlots.push(slot);
@@ -320,6 +339,7 @@ export default async function init(el) {
   await merchCardCollectionDep;
   performance.mark('merch-card-collection-render:start');
   const merchCardCollection = createTag('merch-card-collection', attributes);
+  merchCardCollection.variant = type;
   el.replaceWith(merchCardCollection);
   if (literalSlots.length > 0) {
     merchCardCollection.append(...literalSlots);

@@ -53,19 +53,19 @@ function closePanel(btn, panel) {
   panel.setAttribute('hidden', '');
 }
 
-function closeMediaPanel(displayArea, el, dd, clickedId) {
+function closeMediaPanel({ displayArea, el, dd, clickedId }) {
   closePanel(el, dd);
   const clickedMedia = displayArea.childNodes[clickedId - 1];
   const video = clickedMedia?.querySelector('video');
   if (video) pauseVideo(video);
   const otherExpandedPanels = el.closest('.accordion').querySelectorAll('.accordion-trigger[aria-expanded="true"]');
   if (!otherExpandedPanels.length) return;
-  clickedMedia.classList.remove('expanded');
+  clickedMedia?.classList?.remove('expanded');
   const newExpandedId = otherExpandedPanels[0].id.split('trigger-')[1] - 1;
-  displayArea.childNodes[newExpandedId].classList.add('expanded');
+  displayArea.childNodes[newExpandedId]?.classList?.add('expanded');
 }
 
-function openMediaPanel(displayArea, el, dd, clickedId) {
+function openMediaPanel({ displayArea, el, dd, clickedId, shouldClose = true }) {
   const accordionId = el.getAttribute('aria-controls').split('-')[1];
   [...mediaCollection[accordionId]].forEach((mediaCollectionItem, idx) => {
     const video = mediaCollectionItem.querySelector('video');
@@ -78,7 +78,7 @@ function openMediaPanel(displayArea, el, dd, clickedId) {
     mediaCollectionItem.classList.remove('expanded');
     const trigger = document.querySelector(`#accordion-${accordionId}-trigger-${idx + 1}`);
     const content = document.querySelector(`#accordion-${accordionId}-content-${idx + 1}`);
-    closePanel(trigger, content);
+    if (shouldClose) closePanel(trigger, content);
     if (video) pauseVideo(video);
   });
 }
@@ -97,10 +97,10 @@ function handleClick(el, dd, num) {
   const expanded = el.getAttribute('aria-expanded') === 'true';
   if (closestEditorial) {
     if (expanded) {
-      closeMediaPanel(closestEditorial.querySelector('.accordion-media'), el, dd, num);
+      closeMediaPanel({ displayArea: closestEditorial.querySelector('.accordion-media'), el, dd, clickedId: num });
       return;
     }
-    openMediaPanel(closestEditorial.querySelector('.accordion-media'), el, dd, num);
+    openMediaPanel({ displayArea: closestEditorial.querySelector('.accordion-media'), el, dd, clickedId: num });
     return;
   }
 
@@ -115,7 +115,7 @@ function defaultOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('.descr-details'), 1);
 }
 
-function createItem(accordion, id, heading, num, edit) {
+function createItem(accordion, id, heading, num, isEditorial) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
@@ -139,15 +139,7 @@ function createItem(accordion, id, heading, num, edit) {
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
   const dt = createTag('div', dtAttrs, dtHtml);
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
-  const dm = createTag('div', { class: 'media-p' });
-
-  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
-
-  if (edit && isMobile) {
-    const ogMedia = mediaCollection[id][num - 1];
-    dm.append(ogMedia);
-    dd.prepend(dm);
-  }
+  if (isEditorial) dd.prepend(mediaCollection[id][num - 1]);
 
   button.addEventListener('click', (e) => { handleClick(e.target, dd, num, id); });
   accordion.append(dt, dd);
@@ -208,6 +200,43 @@ async function createExpandAllContainer(accordionItems, isEditorial, mediaEl) {
   return container;
 }
 
+function handleResponsiveMedia(accordionMedia, id, el, hasExpandAll) {
+  const moveMedia = (mediaQuery) => {
+    if (!mediaCollection[id]) return;
+
+    if (mediaQuery?.matches) {
+      [...mediaCollection[id]].forEach((mediaItem) => {
+        if (accordionMedia && !accordionMedia.contains(mediaItem)) accordionMedia.append(mediaItem);
+      });
+
+      const activeEl = el.querySelector('.accordion-trigger[aria-expanded="true"]');
+      const activeElIndex = activeEl?.id?.match(/\d+$/)?.[0];
+      const triggerIsExpanded = el.querySelectorAll('.accordion-trigger[aria-expanded="true"]')?.length === 1;
+      const mediaNotExpanded = !el.querySelector('.accordion-media .expanded')?.length;
+
+      if ((hasExpandAll && triggerIsExpanded) || mediaNotExpanded) {
+        openMediaPanel({
+          displayArea: accordionMedia,
+          el: activeEl,
+          dd: el.querySelectorAll('.descr-details')[activeElIndex - 1],
+          clickedId: activeElIndex,
+          shouldClose: false,
+        });
+      }
+      return;
+    }
+
+    [...mediaCollection[id]].forEach((mediaItem, idx) => {
+      const panel = el.querySelector(`#accordion-${id}-content-${idx + 1}`);
+      if (panel && !panel.contains(mediaItem)) panel.prepend(mediaItem);
+    });
+  };
+
+  const isDesktop = window.matchMedia('(min-width: 1200px)');
+  moveMedia(isDesktop);
+  isDesktop.addEventListener('change', moveMedia);
+}
+
 export default async function init(el) {
   const id = getUniqueId(el);
   const accordion = createTag('div', { class: 'descr-list accordion', id: `accordion-${id}`, role: 'presentation' });
@@ -232,7 +261,6 @@ export default async function init(el) {
       heading,
       idx + 1,
       isEditorial,
-      accordionMedia,
     ),
   );
 
@@ -247,6 +275,7 @@ export default async function init(el) {
   if (isEditorial) {
     el.append(accordionMedia);
     defaultOpen(el);
+    handleResponsiveMedia(accordionMedia, id, el, hasExpandAll);
   }
   if (hasExpandAll) {
     const expandAllContainer = await createExpandAllContainer(items, isEditorial, accordionMedia);

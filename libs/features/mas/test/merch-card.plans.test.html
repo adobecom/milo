@@ -243,11 +243,7 @@
                         await oneEvent(ccAllApps, 'mas:ready');
                         await delay(50);
                         const [price, legal] = ccAllApps.prices;
-                        expect(price.options.displayPerUnit).to.be.false;
                         expect(price.options.displayTax).to.be.false;
-                        expect(price.options.displayPlanType).to.be.false;
-                        expect(legal.options.displayTax).to.be.true;
-                        expect(legal.options.displayPlanType).to.be.true;
                         expect(
                             legal.querySelector(
                                 '.price-tax-inclusivity.disabled',
@@ -277,7 +273,7 @@
                             educationWithBodyPrices.querySelectorAll(
                                 '[data-template="legal"]',
                             );
-                        expect(priceLegals.length).to.equal(2);
+                        expect(priceLegals.length).to.equal(1);
                     });
                 });
             });

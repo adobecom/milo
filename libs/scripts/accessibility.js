@@ -20,6 +20,8 @@ function scrollTabFocusedElIntoView() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Tab') {
+      if (e.target.closest('.notification')?.parentElement?.querySelector('.notification-curtain')) return;
+
       isFocused = false;
       setTimeout(() => {
         if (isFocused) return;
@@ -63,6 +65,19 @@ export const setDialogAndElementAttributes = ({ element, title }) => {
   element.closest('.dialog-modal')?.setAttribute('aria-label', title);
 };
 
+function sectionUpToList() {
+  const childrenSelector = '.action-item, .icon-block';
+  const upSections = document.querySelectorAll(`.section[class*="-up"]:has(${childrenSelector})`);
+  upSections.forEach((section) => {
+    section.setAttribute('role', 'list');
+    [...section.children].forEach((child) => {
+      if (child.classList.contains('section-metadata')) return;
+      child.setAttribute('role', 'listitem');
+    });
+  });
+}
+
 export default function init() {
+  sectionUpToList();
   scrollTabFocusedElIntoView();
 }

@@ -206,7 +206,8 @@ input.sk-library-search-input:focus {
  * Margin height equal to search bar height
 */
 .sk-library ul.con-blocks-list.inset,
-.sk-library ul.con-templates-list.inset  {
+.sk-library ul.con-templates-list.inset,
+.sk-library ul.con-icons-list.inset  {
   margin-bottom: 39px;
 }
 
@@ -244,6 +245,7 @@ input.sk-library-search-input:focus {
 }
 
 .sk-library .block-group.is-hidden,
+.sk-library .icon-item.is-hidden,
 .con-templates-list .template.is-hidden {
   display: none;
 }
@@ -288,6 +290,10 @@ input.sk-library-search-input:focus {
   display: flex;
   gap: 12px;
   padding: 0 12px;
+}
+
+.sk-library li.icon-item img.icon-fed {
+  filter: invert(100%);
 }
 
 .sk-library li.template {

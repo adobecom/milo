@@ -171,20 +171,6 @@ function handleAddOnContent(table) {
   table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
 }
 
-function setTooltipPosition(el) {
-  if (!['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize())) return;
-
-  const isRtl = document.documentElement.dir === 'rtl';
-  const classesToCheck = isRtl ? ['top', 'bottom', 'left'] : ['top', 'bottom', 'right'];
-  const selector = classesToCheck.map((cls) => `.milo-tooltip.${cls}`).join(',');
-  const tooltips = el.querySelectorAll(selector);
-
-  tooltips.forEach((tooltip) => {
-    tooltip.classList.remove(...classesToCheck);
-    tooltip.classList.add(isRtl ? 'right' : 'left');
-  });
-}
-
 async function setAriaLabelForIcons(el) {
   const config = getConfig();
   const expendableIcons = el.querySelectorAll('.icon.expand[role="button"]');
@@ -476,7 +462,6 @@ async function handleScrollEffect(table) {
   }
   const topOffset = gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0);
   headingRow.style.top = `${topOffset}px`;
-
   const intercept = table.querySelector('.intercept') || createTag('div', { class: 'intercept' });
   intercept.setAttribute('data-observer-intercept', '');
   headingRow.insertAdjacentElement('beforebegin', intercept);
@@ -542,7 +527,17 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       }
 
       rows.forEach((row) => {
+        const firstFilterCol = row.querySelector(`.col-${filters[0] + 1}`);
         const secondFilterCol = row.querySelector(`.col-${filters[1] + 1}`);
+
+        if (firstFilterCol?.classList.contains('col-heading')) {
+          firstFilterCol.classList.remove('right-round');
+          firstFilterCol.classList.add('left-round');
+        }
+        if (secondFilterCol?.classList.contains('col-heading')) {
+          secondFilterCol.classList.remove('left-round');
+          secondFilterCol.classList.add('right-round');
+        }
         if (secondFilterCol) secondFilterCol.classList.add('force-last');
       });
 
@@ -552,11 +547,17 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           const selectedColumn = row.querySelector(`.col-${selectedCol}`);
           if (!selectedColumn) return;
 
-          selectedColumn.classList.remove('force-last');
-          selectedColumn.classList.remove('rounded-left', 'rounded-right');
           const clone = selectedColumn.cloneNode(true);
           clone.setAttribute('data-cloned', 'true');
-          clone.classList.remove('rounded-left', 'rounded-right');
+          selectedColumn.classList.remove('force-last');
+
+          if (selectedColumn.classList.contains('col-heading')) {
+            selectedColumn.classList.remove('right-round');
+            selectedColumn.classList.add('left-round');
+            clone.classList.remove('left-round');
+            clone.classList.add('right-round');
+          }
+
           row.appendChild(clone);
         });
       }
@@ -616,7 +617,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
     mobileRenderer();
   } else {
-    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+    table.querySelectorAll('.hide-mobile, .left-round, .right-round').forEach((col) => { col.classList.remove('hide-mobile', 'left-round', 'right-round'); });
     [...(table.querySelector('.row-heading')?.children || [])]
       .forEach((column) => [...column.children].forEach((row) => row.style.removeProperty('height')));
     table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
@@ -691,13 +692,12 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
-      setTooltipPosition(el);
     };
     handleResize();
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
-      debounce(handleEqualHeight(el, '.row-heading'), 300);
+      debounce(handleEqualHeight(el, '.row-heading'));
       handleStickyHeader(el);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
@@ -720,6 +720,9 @@ export default function init(el) {
       handleTable();
     }
   });
+
+  const debouncedStickyHeader = debounce(() => handleStickyHeader(el));
+  new ResizeObserver(debouncedStickyHeader).observe(el);
 
   window.addEventListener(tabChangeEvent, () => handleStickyHeader(el));
   observer.observe(el);

@@ -38,8 +38,8 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(await masPlans.getCardTitle(data.cards[0].id)).toHaveText(data.cards[0].title);
       await expect(await masPlans.getCardTitle(data.cards[1].id)).toHaveText(data.cards[1].title);
 
-      await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(data.cards[0].price);
-      await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(data.cards[1].price);
+      await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(new RegExp(data.cards[0].price));
+      await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(new RegExp(data.cards[1].price));
 
       await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(data.cards[0].abmLabel);
       await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(data.cards[1].abmLabel);
@@ -207,6 +207,17 @@ test.describe('MAS Plans Page test suite', () => {
       const controlledContentId = await businessTab.getAttribute('aria-controls');
       const controlledContent = page.locator(`#${controlledContentId}`);
       await expect(controlledContent).toBeVisible();
+    });
+  });
+
+  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('step-1: Go to Plans page', async () => {
+      await page.goto(`${testPage}${features[2].browserParams}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page.locator('.dialog-modal#miniplans-buy-all-apps')).toBeVisible();
     });
   });
 });

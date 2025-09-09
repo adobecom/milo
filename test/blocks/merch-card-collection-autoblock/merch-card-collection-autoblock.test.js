@@ -1,5 +1,7 @@
+/* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { delay } from '../../helpers/waitfor.js';
 import init from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
@@ -7,6 +9,7 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales, miloLibs: '/libs' };
 setConfig(conf);
 
+const satellite = { track: sinon.spy() };
 const originalFetch = window.fetch;
 describe('merch-card-collection autoblock', () => {
   describe('init method', () => {
@@ -24,6 +27,11 @@ describe('merch-card-collection autoblock', () => {
         });
         return result;
       });
+    });
+
+    beforeEach(() => {
+      window._satellite = satellite;
+      window._satellite.track.called = false;
     });
 
     afterEach(() => {
@@ -57,6 +65,31 @@ describe('merch-card-collection autoblock', () => {
       expect(collection).to.exist;
       const sidenav = document.querySelector('merch-sidenav');
       expect(sidenav).to.exist;
+    });
+
+    it('test analytics', async () => {
+      const root = document.createElement('div');
+      root.setAttribute('daa-lh', 'topdaalh');
+      const content = document.createElement('div');
+      root.append(content);
+      content.setAttribute('daa-lh', 'test-analytics');
+      content.classList.add('content');
+      content.classList.add('tabs');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368');
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      content.append(a);
+      document.body.append(root);
+      await init(a);
+      document.querySelector('.collection-container')?.setAttribute('daa-lh', 'all--cat');
+      const sidenav = document.querySelector('merch-sidenav');
+
+      window._satellite.track.called = false;
+      const lastFilter = sidenav.querySelector('sp-sidenav-item:last-of-type');
+      sidenav.filters.selectElement(lastFilter);
+      await delay(100);
+      expect(window._satellite.track.called).to.be.true;
+      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('cat-changed|topdaalh|test-analytics|cloud--cat');
     });
 
     it('creates does not create sidenav if specified in the query params', async () => {

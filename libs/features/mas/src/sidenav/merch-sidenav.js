@@ -1,86 +1,78 @@
-import { html, css, LitElement } from 'lit';
+import { html, css, LitElement, nothing } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-import { headingStyles } from './merch-sidenav-heading.css.js';
 import '../merch-search.js';
 import './merch-sidenav-list.js';
 import './merch-sidenav-checkbox-group.js';
 import { SPECTRUM_MOBILE_LANDSCAPE, TABLET_DOWN } from '../media.js';
-import { disableBodyScroll, enableBodyScroll } from '../bodyScrollLock.js';
+import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
+
+const SEARCH_SIZE = {
+    catalog: 'l'
+};
+
+const CHECKBOX_SIZE = {
+    catalog: 'xl'
+};
 
 export class MerchSideNav extends LitElement {
     static properties = {
         sidenavTitle: { type: String },
         closeText: { type: String, attribute: 'close-text' },
-        modal: { type: Boolean, attribute: 'modal', reflect: true },
+        modal: { type: Boolean, reflect: true },
+        open: { type: Boolean, state: true, reflect: true },
+        autoclose: { type: Boolean, attribute: 'autoclose', reflect: true }
     };
-
-    // modal target
-    #target;
 
     constructor() {
         super();
-        this.modal = false;
+        this.open = false;
+        this.autoclose = false;
+        this.variant = null;
+        this.closeModal = this.closeModal.bind(this);
+        this.handleSelection = this.handleSelection.bind(this);
     }
 
-    static styles = [
-        css`
-            :host {
-                display: block;
-                z-index: 2;
-            }
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener(EVENT_MERCH_SIDENAV_SELECT, this.handleSelection);
+    }
 
-            :host h2 {
-              color: var(--spectrum-global-color-gray-900);
-              font-size: 12px;
-            }
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.removeEventListener(EVENT_MERCH_SIDENAV_SELECT, this.handleSelection);
+    }
 
-            :host(:not([modal])) {
-                --mod-sidenav-item-background-default-selected: #222;
-                --mod-sidenav-content-color-default-selected: #fff;
-            }
+    firstUpdated() {
+        /* Adjust search size */
+        const searchSize = SEARCH_SIZE[this.variant];
+        if (searchSize) {
+            const search = this.querySelector('merch-search sp-search');
+            search.setAttribute('size', searchSize);
+        }
 
-            #content {
-                width: 100%;
-                min-width: 300px;
-                height: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: baseline;
-            }
-            
+        /* Adjust checkboxes size */
+        const checkboxSize = CHECKBOX_SIZE[this.variant];
+        if (checkboxSize) {
+            const checkboxes = this.querySelectorAll('merch-sidenav-checkbox-group sp-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.setAttribute('size', checkboxSize);
+            });
+        }
+    }
 
-            :host([modal]) ::slotted(merch-search) {
-                display: none;
-            }
-
-            #sidenav {
-                display: flex;
-                flex-direction: column;
-                max-width: 248px;
-                overflow-y: auto;
-                place-items: center;
-                position: relative;
-                width: 100%;
-                padding-bottom: 16px;
-            }
-
-            sp-dialog-base #sidenav {
-                padding-top: 16px;
-                max-width: 300px;
-                max-height: 80dvh;
-                min-height: min(500px, 80dvh);
-                background: #ffffff 0% 0% no-repeat padding-box;
-                box-shadow: 0px 1px 4px #00000026;
-            }
-
-            sp-link {
-                position: absolute;
-                top: 16px;
-                right: 16px;
-            }
-        `,
-        headingStyles,
-    ];
+    updated() {
+        if (this.mobileAndTablet.matches) {
+            this.modal = true;
+            this.style.padding = 0;
+            this.style.margin = 0;
+        }
+        else {
+            this.modal = false;
+            this.style.removeProperty('padding');
+            this.style.removeProperty('margin');
+            if (this.open) this.closeModal();
+        }
+    }
 
     mobileDevice = new MatchMediaController(this, SPECTRUM_MOBILE_LANDSCAPE);
     mobileAndTablet = new MatchMediaController(this, TABLET_DOWN);
@@ -98,27 +90,29 @@ export class MerchSideNav extends LitElement {
     }
 
     get asDialog() {
-        if (!this.modal) return;
+        const closeButton = !this.autoclose ? 
+            html`<sp-link @click="${this.closeModal}"
+                >${this.closeText || 'Close'}</sp-link
+            >` : nothing;
         return html`
             <sp-theme  color="light" scale="medium">
-                <sp-dialog-base
-                    slot="click-content"
-                    dismissable
-                    underlay
-                    no-divider
-                >
-                    <div id="content">
-                        <div id="sidenav">
-                            <div>
-                                <h2>${this.sidenavTitle}</h2>
-                                <slot></slot>
+                <sp-overlay type="modal" ?open=${this.open} @close=${this.closeModal}>
+                    <sp-dialog-base
+                        dismissable
+                        underlay
+                        no-divider
+                    >
+                        <div id="content">
+                            <div id="sidenav">
+                                <div>
+                                    <h2>${this.sidenavTitle}</h2>
+                                    <slot></slot>
+                                </div>
+                                ${closeButton}
                             </div>
-                            <sp-link href="#" @click="${this.closeModal}"
-                                >${this.closeText || 'Close'}</sp-link
-                            >
                         </div>
-                    </div>
-                </sp-dialog-base>
+                    </sp-dialog-base>
+                </sp-overlay>
             </sp-theme>
         `;
     }
@@ -133,43 +127,160 @@ export class MerchSideNav extends LitElement {
     get dialog() {
         return this.shadowRoot.querySelector('sp-dialog-base');
     }
-
-    closeModal(e) {
-        e.preventDefault();
-        this.dialog?.close();
-        document.body.classList.remove('merch-modal');
+    
+    handleSelection() {
+        if (this.autoclose) 
+            this.closeModal();
     }
 
-    openModal() {
-        this.updateComplete.then(async () => {
-            disableBodyScroll(this.dialog);
-            document.body.classList.add('merch-modal');
-            const options = {
-                trigger: this.#target,
-                notImmediatelyClosable: true,
-                type: 'auto',
-            };
-            const overlay = await window.__merch__spectrum_Overlay.open(
-                this.dialog,
-                options,
-            );
-            overlay.addEventListener('close', () => {
-                this.modal = false;
-                document.body.classList.remove('merch-modal');
-                enableBodyScroll(this.dialog);
-            });
-            this.shadowRoot.querySelector('sp-theme').append(overlay);
-        });
+    closeModal() {
+        this.open = false;
+        document.querySelector('body')?.classList.remove('merch-modal');
     }
 
-    updated() {
-        if (this.modal) this.openModal();
+    showModal() {
+        this.open = true;
+        document.querySelector('body')?.classList.add('merch-modal');
     }
 
-    showModal({ target }) {
-        this.#target = target;
-        this.modal = true;
-    }
+    static styles = css`
+        :host {
+            --merch-sidenav-padding: 16px;
+            --merch-sidenav-collection-gap: 30px;
+            /* Title */
+            --merch-sidenav-title-font-size: 12px;
+            --merch-sidenav-title-font-weight: 400;
+            --merch-sidenav-title-line-height: 16px;
+            --merch-sidenav-title-color: var(--spectrum-gray-700, #464646);
+            --merch-sidenav-title-padding: 6px 12px 16px;
+            /* Search */
+            --merch-sidenav-search-gap: 10px;
+            /* List */
+            --merch-sidenav-list-gap: 0;
+            --merch-sidenav-list-title-color: var(--spectrum-gray-700, #464646);
+            --merch-sidenav-list-title-font-size: 14px;
+            --merch-sidenav-list-title-font-weight: 400;
+            --merch-sidenav-list-title-padding: 6px 12px 8px;
+            --merch-sidenav-list-title-line-height: 18px;
+            --merch-sidenav-item-height: unset;
+            --merch-sidenav-item-inline-padding: 12px;
+            --merch-sidenav-item-font-weight: 400;
+            --merch-sidenav-item-font-size: 14px;
+            --merch-sidenav-item-line-height: 18px;
+            --merch-sidenav-item-label-top-margin: 6px;
+            --merch-sidenav-item-label-bottom-margin: 8px;
+            --merch-sidenav-item-icon-top-margin: 7px;
+            --merch-sidenav-item-icon-gap: 8px;
+            --merch-sidenav-item-selected-color: var(--spectrum-gray-800, #222222);
+            --merch-sidenav-item-selected-background: var(--spectrum-gray-200, #E6E6E6);
+            --merch-sidenav-list-item-gap: 4px;
+            /* Checkbox group */
+            --merch-sidenav-checkbox-group-title-font-size: 14px;
+            --merch-sidenav-checkbox-group-title-font-weight: 400;
+            --merch-sidenav-checkbox-group-title-line-height: 18px;
+            --merch-sidenav-checkbox-group-title-color: var(--spectrum-gray-700, #464646);
+            --merch-sidenav-checkbox-group-title-padding: 6px 0 8px;
+            --merch-sidenav-checkbox-group-gap: 32px;
+            --merch-sidenav-checkbox-group-padding: 0 12px;
+            --merch-sidenav-checkbox-group-label-font-size: 17px;
+            --merch-sidenav-checkbox-group-checkbox-spacing: 22px;
+            --merch-sidenav-checkbox-group-label-gap: 13px;
+            --merch-sidenav-checkbox-group-label-top-margin: 8px;
+            --merch-sidenav-checkbox-group-height: 40px;
+            /* Modal */
+            --merch-sidenav-modal-border-radius: 8px;
+            --merch-sidenav-modal-padding: var(--merch-sidenav-padding);
+
+            display: block;
+            z-index: 2;
+            padding: var(--merch-sidenav-padding);
+            margin-right: var(--merch-sidenav-collection-gap);
+        }
+
+        ::slotted(merch-sidenav-list) {
+            --mod-sidenav-min-height: var(--merch-sidenav-item-height);
+            --mod-sidenav-inline-padding: var(--merch-sidenav-item-inline-padding);
+            --mod-sidenav-top-level-font-weight: var(--merch-sidenav-item-font-weight);
+            --mod-sidenav-top-level-font-size: var(--merch-sidenav-item-font-size);
+            --mod-sidenav-top-level-line-height: var(--merch-sidenav-item-line-height);
+            --mod-sidenav-top-to-label: var(--merch-sidenav-item-label-top-margin);
+            --mod-sidenav-bottom-to-label: var(--merch-sidenav-item-label-bottom-margin);
+            --mod-sidenav-top-to-icon: var(--merch-sidenav-item-icon-top-margin);
+            --mod-sidenav-icon-spacing: var(--merch-sidenav-item-icon-gap);
+            --mod-sidenav-content-color-default-selected: var(--merch-sidenav-item-selected-color);
+            --mod-sidenav-item-background-default-selected: var(--merch-sidenav-item-selected-background);
+            --mod-sidenav-gap: var(--merch-sidenav-list-item-gap);
+        }
+
+        ::slotted(merch-sidenav-checkbox-group) {
+            --mod-checkbox-font-size: var(--merch-sidenav-checkbox-group-label-font-size);
+            --mod-checkbox-spacing: var(--merch-sidenav-checkbox-group-checkbox-spacing);
+            --mod-checkbox-text-to-control: var(--merch-sidenav-checkbox-group-label-gap);
+            --mod-checkbox-top-to-text: var(--merch-sidenav-checkbox-group-label-top-margin);
+            --mod-checkbox-height: var(--merch-sidenav-checkbox-group-height);
+        }
+
+        :host h2 {
+            color: var(--merch-sidenav-title-color);
+            font-size: var(--merch-sidenav-title-font-size);
+            font-weight: var(--merch-sidenav-title-font-weight);
+            padding: var(--merch-sidenav-title-padding);
+            line-height: var(--merch-sidenav-title-line-height);
+            margin: 0;
+        }
+
+        #content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+        }
+        
+        ::slotted(merch-search) {
+            display: block;
+            margin-bottom: var(--merch-sidenav-search-gap);
+        }
+
+        :host([modal]) ::slotted(merch-search) {
+            display: none;
+        }
+
+        #sidenav {
+            display: flex;
+            flex-direction: column;
+            max-width: 248px;
+            overflow-y: auto;
+            place-items: center;
+            position: relative;
+            width: 100%;
+            border-radius: var(--merch-sidenav-modal-border-radius);
+            padding: var(--merch-sidenav-modal-padding);
+        }
+
+        sp-dialog-base {
+            --mod-modal-confirm-border-radius: var(--merch-sidenav-modal-border-radius);
+            --mod-modal-max-height: 100dvh;
+        }
+
+        sp-dialog-base #sidenav {
+            box-sizing: border-box;
+            max-width: 300px;
+            max-height: 90dvh;
+            background: #ffffff 0% 0% no-repeat padding-box;
+            box-shadow: 0px 1px 4px #00000026;
+        }
+
+        sp-link {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: var(--merch-sidenav-title-padding);
+            padding-inline: 0;
+            padding-bottom: 0;
+            line-height: var(--merch-sidenav-title-line-height);
+        }
+    `;
 }
 
 customElements.define('merch-sidenav', MerchSideNav);

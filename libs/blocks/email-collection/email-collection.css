@@ -1,9 +1,14 @@
+.email-collection {
+  --form-error-color: #D7373F;
+}
+
 .email-collection .foreground {
   display: flex;
   flex-direction: column;
   gap: 40px;
   padding: 40px 24px;
   min-height: 444px;
+  box-sizing: border-box;
 }
 
 .email-collection .foreground .text {
@@ -12,7 +17,7 @@
   justify-content: center;
 }
 
-.email-collection .hidden,
+.email-collection .foreground .hidden,
 .email-collection .foreground .image {
   display: none;
 }
@@ -26,34 +31,43 @@
 
 .email-collection .foreground .image img {
   object-fit: cover;
+  height: 100%;
 }
 
-.email-collection .foreground.success-message {
+.email-collection .foreground.message {
   padding: 40px 14px;
 }
 
-.email-collection .foreground.success-message .text {
+.email-collection .foreground.message .text {
   padding: 0 10px;
 }
 
-.email-collection .foreground.success-message .image {
+.email-collection .foreground.message .image {
   display: block;
 }
 
-.email-collection .foreground.success-message .image img {
+.email-collection .foreground.message .image img {
   max-height: 200px;
 }
 
 .email-collection .foreground .text .consent-string {
-  margin: 24px 0;
+  margin: 12px 0 24px 0;
 }
 
-.email-collection .foreground.success-message .action-area {
-  margin: 24px 0 0 0;
+.email-collection .foreground .text .consent-string.empty {
+  margin-bottom: 0;
 }
 
-.email-collection .foreground .text .consent-string > a {
+.email-collection .foreground.message .action-area {
+  margin-top: 24px;
+}
+
+.email-collection .foreground .text .consent-string a {
   color: inherit;
+}
+
+.email-collection .foreground .text .consent-string  p {
+  margin: 0;
 }
 
 .email-collection .foreground .text .icon-area {
@@ -69,7 +83,7 @@
 }
 
 .email-collection.mailing-list .foreground .text .icon-area,
-.email-collection .foreground.success-message .text .icon-area {
+.email-collection .foreground.message .text .icon-area {
   margin-bottom: 24px;
 }
 
@@ -78,7 +92,8 @@
 }
 
 .email-collection .foreground .text .icon-area :is(picture, img) {
-  height: 44px;
+  height: 45px;
+  width: 45px;
 }
 
 .email-collection .foreground .text form {
@@ -89,6 +104,11 @@
 
 .email-collection.mailing-list .foreground .text form {
   margin-top: 24px;
+}
+
+.email-collection .foreground .text .input-container {
+  display: flex;
+  flex-direction: column;
 }
 
 .email-collection .foreground .text form label {
@@ -109,24 +129,12 @@
   right: 0;
 }
 
-.email-collection .foreground .text form :is(input, textarea, select) {
-  box-sizing: border-box;
+.email-collection .foreground form input {
   margin-bottom: 12px;
   border: 2px #DADADA solid;
   border-radius: 8px;
   height: 32px;
   padding: 0 12px;
-}
-
-.email-collection .foreground .text form textarea {
-  padding-top: 6px;
-  padding-bottom: 8px;
-  height: 56px;
-  resize: none;
-}
-
-.email-collection .foreground .text form > *:last-child {
-  margin-bottom: 0;
 }
 
 .email-collection .foreground form .split-row,
@@ -135,41 +143,43 @@
   flex-direction: column;
 }
 
-.email-collection .foreground form .select-wrapper {
-  margin-bottom: 12px;
-  position: relative;
-}
-
-.email-collection .foreground form .select-wrapper select {
-  margin: 0;
-  width: 100%;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-.email-collection .foreground form .select-wrapper::after {
-  content: '';
-  background: url('/img/ui/chevron-down.svg') no-repeat center;
-  background-color: #E9E9E9;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 6px;
-  border-radius: 4px;
-  width: 20px;
-  height: 20px;
-  pointer-events: none;
-}
-
-.email-collection .foreground .text .submit-button {
+.email-collection .foreground .text form .button-container {
   margin-bottom: 0;
   display: flex;
   justify-content: flex-end;
 }
 
-.email-collection .foreground .text .submit-button button {
+.email-collection .foreground.message .text .button-container {
+  margin-top: 24px;
+}
+
+.email-collection .foreground .text .button-container button {
   font-family: inherit;
+}
+
+.email-collection .reset-form,
+.email-collection .subscribed-email {
+  display: none;
+}
+
+.email-collection .subscribed-email {
+  margin: 24px 0;
+}
+
+.email-collection .reset-form {
+  color: #1473E6;
+  cursor: pointer;
+}
+
+@media (min-width: 600px) {
+  .email-collection {
+    width: 80vw;
+  }
+
+  .email-collection .subscribed-email,
+  .email-collection .reset-form {
+    display: revert;
+  }
 }
 
 @media (min-width: 1200px) {
@@ -178,11 +188,12 @@
   }
 
   .email-collection .foreground,
-  .email-collection .foreground.success-message {
+  .email-collection .foreground.message {
     padding: 56px;
     display: flex;
     flex-direction: row;
     gap: 40px;
+    height: inherit;
   }
 
   .email-collection .foreground .image {
@@ -202,7 +213,7 @@
     flex: 1;
   }
 
-  .email-collection .foreground.success-message .text {
+  .email-collection .foreground.message .text {
     padding: unset;
   }
 
@@ -220,7 +231,7 @@
     position: relative;
   }
 
-  .email-collection .foreground.success-message .image img {
+  .email-collection .foreground.message .image img {
     max-height: unset;
   }
 
@@ -231,4 +242,55 @@
     height: 100%;
     width: calc(50% - 20px);
   }
+}
+
+.progress-circle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.email-collection > .progress-circle-container {
+  height: 444px;
+}
+
+.email-aria-live {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.email-collection .foreground form input.invalid {
+  border-color: var(--form-error-color);
+  margin-bottom: 0;
+}
+
+.email-collection .foreground form label.invalid { 
+  color: var(--form-error-color);
+}
+
+.email-collection form [id^="error"]:not(.hidden) {
+  color: var(--form-error-color);
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+.email-collection .foreground .text form label.required.invalid::after {
+  background: unset;
+  background-color: var(--form-error-color);
+  -webkit-mask: url('/img/ui/asterisk.svg') no-repeat center;
+  mask: url('/img/ui/asterisk.svg') no-repeat center;
+}
+
+.email-collection .foreground .text form input {
+  position: relative;
+}
+
+.email-collection .foreground .text form input.invalid {
+  background-image: url('/img/ui/attention.svg');
+  background-size: 18px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px);
 }

@@ -21,12 +21,14 @@
 
   function isProd() {
     const { host } = window.location;
-    if (host.substring(host.length - 10) === '.adobe.com'
-      && host.substring(host.length - 15) !== '.corp.adobe.com'
-      && host.substring(host.length - 16) !== '.stage.adobe.com') {
+
+    if (host.endsWith('.adobe.com')
+      && !host.endsWith('.corp.adobe.com')
+      && !host.endsWith('.stage.adobe.com')) {
       return true;
     }
-    return false;
+
+    return ['sign.ing', 'edit.ing'].includes(host);
   }
 
   function mergeOptions(op1, op2) {
