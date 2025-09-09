@@ -246,7 +246,7 @@ export class MerchCard extends LitElement {
 
     get computedBorderStyle() {
         if (
-            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans', 'simplified-pricing-express'].includes(
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans', 'simplified-pricing-express', 'full-pricing-express'].includes(
                 this.variant,
             )
         ) {
