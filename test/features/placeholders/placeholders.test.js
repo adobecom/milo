@@ -111,7 +111,6 @@ describe('Placeholders', () => {
         locale: {contentRoot: '/test/content/root'
         },
       };
-      
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('/test/content/root');
     });
