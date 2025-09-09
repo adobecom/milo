@@ -33,7 +33,7 @@ module.exports = {
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '2',
@@ -65,7 +65,7 @@ module.exports = {
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '3',
@@ -97,7 +97,7 @@ module.exports = {
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '4',
@@ -130,7 +130,7 @@ module.exports = {
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
   ],
 };
