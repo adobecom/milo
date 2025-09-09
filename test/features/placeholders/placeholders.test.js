@@ -108,8 +108,7 @@ describe('Placeholders', () => {
 
     it('Returns config.locale.contentRoot when no placeholders-content-root metadata', () => {
       const testConfig = {
-        locale: {
-          contentRoot: '/test/content/root'
+        locale: {contentRoot: '/test/content/root'
         }
       };
       
