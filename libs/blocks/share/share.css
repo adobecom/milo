@@ -1,11 +1,8 @@
 @import '../../styles/inline.css';
 
-:root {
+.share {
   --svg-icon-dimension: 28px;
   --copy-tooltip-background-color: #6D6D6D;
-}
-
-.share {
   margin-left: auto;
   margin-right: auto;
   text-align: center;
@@ -104,7 +101,7 @@
 }
 
 .share .copy-to-clipboard::before {
-  content: attr(data-copy-to-clipboard);
+  content: attr(aria-label);
   bottom: 100%;
   left: -45%;
   transform: translate(-50%, -4px);

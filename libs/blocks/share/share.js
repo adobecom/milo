@@ -177,7 +177,6 @@ export default async function decorate(block) {
         type: 'button',
         class: 'copy-to-clipboard hide-copy-tooltip',
         'aria-label': clipboardToolTip,
-        'data-copy-to-clipboard': clipboardToolTip,
         'data-copied': `${copiedTooltip}!`,
       },
       clipboardSvg.svg,
