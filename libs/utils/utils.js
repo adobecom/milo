@@ -1777,12 +1777,23 @@ export async function loadArea(area = document) {
 
   const areaBlocks = [];
   let lcpSectionId = null;
+  let isMarqueeAndNoMedia = null;
 
   for (const section of sections) {
-    const isLastSection = section.idx === sections.length - 1;
-    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
-      lcpSectionId = section.idx;
+    if (!section.idx && window.matchMedia('(max-width: 768px)').matches) {
+      isMarqueeAndNoMedia = section.el.querySelector('.hero-marquee.no-media, .marquee.no-media, .quiz-marquee.no-media');
     }
+
+    if (isMarqueeAndNoMedia && section.idx === 1) {
+      section.el.querySelectorAll('img')?.forEach((img) => img.setAttribute('loading', 'eager'));
+    }
+
+    const isLastSection = section.idx === sections.length - 1;
+
+    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
+      lcpSectionId = !isMarqueeAndNoMedia ? section.idx : section.idx + 1;
+    }
+
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
 
