@@ -1,7 +1,7 @@
-var h=Object.defineProperty;var u=(i,t,e)=>t in i?h(i,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):i[t]=e;var b=(i,t)=>()=>(i&&(t=i(i=0)),t);var x=(i,t)=>{for(var e in t)h(i,e,{get:t[e],enumerable:!0})};var s=(i,t,e)=>u(i,typeof t!="symbol"?t+"":t,e);var g={};x(g,{default:()=>r});import{LitElement as y,html as l,css as v}from"../lit-all.min.js";function S(){return customElements.get("sp-tooltip")!==void 0&&customElements.get("overlay-trigger")!==void 0&&document.querySelector("sp-theme")!==null}var r,d=b(()=>{r=class extends y{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?l`<merch-icon 
+var a=Object.defineProperty;var n=(o,t,e)=>t in o?a(o,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):o[t]=e;var s=(o,t,e)=>n(o,typeof t!="symbol"?t+"":t,e);import{LitElement as p,html as i,css as l}from"../lit-all.min.js";function c(){return customElements.get("sp-tooltip")!==void 0&&customElements.get("overlay-trigger")!==void 0&&document.querySelector("sp-theme")!==null}var r=class extends p{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?i`<merch-icon 
             src="${this.src}" 
             size="${this.size}"
-        ></merch-icon>`:l`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?S()?l`
+        ></merch-icon>`:i`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?c()?i`
                 <overlay-trigger placement="${e}">
                     <span slot="trigger">${this.renderIcon()}</span>
                     <sp-tooltip 
@@ -10,7 +10,7 @@ var h=Object.defineProperty;var u=(i,t,e)=>t in i?h(i,t,{enumerable:!0,configura
                         ${t}
                     </sp-tooltip>
                 </overlay-trigger>
-            `:l`
+            `:i`
                 <span 
                     class="css-tooltip ${e}"
                     data-tooltip="${t}"
@@ -19,7 +19,7 @@ var h=Object.defineProperty;var u=(i,t,e)=>t in i?h(i,t,{enumerable:!0,configura
                     aria-label="${t}">
                     ${this.renderIcon()}
                 </span>
-            `:this.renderIcon()}};s(r,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),s(r,"styles",v`
+            `:this.renderIcon()}};s(r,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),s(r,"styles",l`
         :host {
             display: contents;
             overflow: visible;
@@ -128,44 +128,4 @@ var h=Object.defineProperty;var u=(i,t,e)=>t in i?h(i,t,{enumerable:!0,configura
             margin-left: 5px;
             border-right-color: var(--spectrum-gray-800, #323232);
         }
-    `);customElements.define("mas-tooltip",r)});import{LitElement as $,html as f,css as w}from"../lit-all.min.js";function z(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var a=class extends ${constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}connectedCallback(){super.connectedCallback(),setTimeout(()=>this.handleTooltips(),0)}handleTooltips(){if(z())return;this.querySelectorAll("sp-tooltip, overlay-trigger").forEach(e=>{let n="",p="top";if(e.tagName==="SP-TOOLTIP")n=e.textContent,p=e.getAttribute("placement")||"top";else if(e.tagName==="OVERLAY-TRIGGER"){let o=e.querySelector("sp-tooltip");o&&(n=o.textContent,p=o.getAttribute("placement")||e.getAttribute("placement")||"top")}if(n){let o=document.createElement("mas-tooltip");o.setAttribute("content",n),o.setAttribute("placement",p);let c=this.querySelector("img"),m=this.querySelector("a");m&&m.contains(c)?o.appendChild(m):c&&o.appendChild(c),this.innerHTML="",this.appendChild(o),Promise.resolve().then(()=>d())}e.remove()})}render(){let{href:t}=this;return t?f`<a href="${t}">
-                  <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>`:f` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};s(a,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),s(a,"styles",w`
-        :host {
-            --img-width: 32px;
-            --img-height: 32px;
-            display: block;
-            width: var(--mod-img-width, var(--img-width));
-            height: var(--mod-img-height, var(--img-height));
-        }
-
-        :host([size='xxs']) {
-            --img-width: 13px;
-            --img-height: 13px;
-        }
-
-        :host([size='xs']) {
-            --img-width: 20px;
-            --img-height: 20px;
-        }
-
-        :host([size='s']) {
-            --img-width: 24px;
-            --img-height: 24px;
-        }
-
-        :host([size='m']) {
-            --img-width: 30px;
-            --img-height: 30px;
-        }
-
-        :host([size='l']) {
-            --img-width: 40px;
-            --img-height: 40px;
-        }
-
-        img {
-            width: var(--mod-img-width, var(--img-width));
-            height: var(--mod-img-height, var(--img-height));
-        }
-    `);customElements.define("merch-icon",a);export{a as default};
+    `);customElements.define("mas-tooltip",r);export{r as default};
