@@ -125,7 +125,7 @@ describe('Placeholders', () => {
         locale: {prefix: '/bg'
         },
         env: {name: 'prod'
-        }
+        },
       };
       
       const result = getPlaceholderRoot(testConfig);
