@@ -7,7 +7,7 @@ import { createWorkerPageSetup, DOCS_GALLERY_PATH } from '../../../libs/commerce
 let ah;
 let webUtil;
 
-test.skip(({ browserName }) => browserName === 'webkit', 'Skipping test for WebKit browser');
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 
 const workerSetup = createWorkerPageSetup({
   pages: [

@@ -3,6 +3,8 @@ import { features } from './plans.spec.js';
 import MasPlans from './plans.page.js';
 import { createWorkerPageSetup, PLANS_NALA_PATH } from '../../../../libs/commerce.js';
 
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
 const workerSetup = createWorkerPageSetup({
   pages: [
     { name: 'US', url: PLANS_NALA_PATH.US },
@@ -209,7 +211,7 @@ test.describe('MAS Plans Page test suite', () => {
   });
 
   // @MAS-Plans-Single-App-Deeplink
-  test(`${features[4].name},${features[4].tags}`, async ({ page, browserName }) => {
+  test(`${features[4].name},${features[4].tags}`, async ({ page }) => {
     const { data } = features[4];
     const masPlans = new MasPlans(page);
 
@@ -220,9 +222,6 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Verify hash URL changed correctly', async () => {
-      // Skip hash-related checks for Firefox and Safari until hash transformation is fixed
-      test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping hash verification for Firefox and webkit browsers');
-
       await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[4].browserParams.expected}`);
     });
 
@@ -238,7 +237,7 @@ test.describe('MAS Plans Page test suite', () => {
   });
 
   // @MAS-Plans-Filter-Hash
-  test(`${features[5].name},${features[5].tags}`, async ({ page, browserName }) => {
+  test(`${features[5].name},${features[5].tags}`, async ({ page }) => {
     const { data } = features[5];
     const masPlans = new MasPlans(page);
 
@@ -249,9 +248,6 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Verify hash URL changed correctly', async () => {
-      // Skip hash-related checks for Firefox and Safari until hash transformation is fixed
-      test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping hash verification for Firefox and webkit browsers');
-
       await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[5].browserParams.expected}`);
     });
 

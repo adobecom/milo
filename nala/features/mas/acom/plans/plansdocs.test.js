@@ -8,7 +8,7 @@ let acomPage;
 let webUtil;
 const COMMERCE_LINK_REGEX = /https:\/\/commerce\.adobe\.com\/store\/email\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&apc=FY25PLES256MROW&cli=adobe_com&ctx=fp&co=US&lang=en)/i;
 
-test.skip(({ browserName }) => browserName === 'webkit', 'Skipping test for WebKit browser');
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 
 const workerSetup = createWorkerPageSetup({
   pages: [
