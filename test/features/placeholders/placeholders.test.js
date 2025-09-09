@@ -179,8 +179,7 @@ describe('Placeholders', () => {
           prefix: '/bg'
         },
         env: {
-          name: 'stage'
-        }
+          name: 'stage'}
       };
       
       const result = getPlaceholderRoot(testConfig);
