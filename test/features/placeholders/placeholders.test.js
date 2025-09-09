@@ -124,8 +124,7 @@ describe('Placeholders', () => {
       const testConfig = {
         locale: {prefix: '/bg'
         },
-        env: {
-          name: 'prod'
+        env: {name: 'prod'
         }
       };
       
