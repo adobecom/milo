@@ -108,8 +108,7 @@ describe('Placeholders', () => {
 
     it('Returns config.locale.contentRoot when no placeholders-content-root metadata', () => {
       const testConfig = {
-        locale: { contentRoot: '/test/content/root'
-        },
+        locale: { contentRoot: '/test/content/root' },
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('/test/content/root');
@@ -125,7 +124,6 @@ describe('Placeholders', () => {
         locale: {prefix: '/bg'},
         env: {name: 'prod'},
       };
-      
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/bg/cc-shared');
     });
@@ -145,7 +143,6 @@ describe('Placeholders', () => {
         locale: {prefix: '/bg'},
         env: {name: 'stage'},
       };
-      
       const result = getPlaceholderRoot(testConfig);
       // Since we can't mock window.location, this will use the actual origin
       // The function should still work and return a valid URL
@@ -187,7 +184,6 @@ describe('Placeholders', () => {
         locale: {},
         env: {name: 'prod'},
       };
-      
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/cc-shared');
     });
@@ -201,7 +197,6 @@ describe('Placeholders', () => {
       const testConfig = {
         env: {name: 'prod'},
       };
-      
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/cc-shared');
     });
