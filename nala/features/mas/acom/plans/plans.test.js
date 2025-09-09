@@ -222,7 +222,7 @@ test.describe('MAS Plans Page test suite', () => {
     await test.step('step-2: Verify hash URL changed correctly', async () => {
       // Skip hash-related checks for Firefox and Safari until hash transformation is fixed
       test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping hash verification for Firefox and webkit browsers');
-      
+
       await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[4].browserParams.expected}`);
     });
 
@@ -251,7 +251,7 @@ test.describe('MAS Plans Page test suite', () => {
     await test.step('step-2: Verify hash URL changed correctly', async () => {
       // Skip hash-related checks for Firefox and Safari until hash transformation is fixed
       test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping hash verification for Firefox and webkit browsers');
-      
+
       await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[5].browserParams.expected}`);
     });
 
