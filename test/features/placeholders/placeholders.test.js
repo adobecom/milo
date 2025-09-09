@@ -122,8 +122,7 @@ describe('Placeholders', () => {
       document.head.appendChild(meta);
 
       const testConfig = {
-        locale: {
-          prefix: '/bg'
+        locale: {prefix: '/bg'
         },
         env: {
           name: 'prod'
