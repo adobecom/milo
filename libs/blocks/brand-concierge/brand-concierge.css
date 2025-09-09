@@ -363,6 +363,18 @@
   z-index: 9;
 }
 
+.sticky .bc-legal h1,
+.sticky .bc-legal h2,
+.sticky .bc-legal h3,
+.sticky .bc-legal h4,
+.sticky .bc-legal h5,
+.sticky .bc-legal h6 {
+  font-size: var(--type-body-xxs-size);
+  font-weight: normal;
+  line-height: var(--type-body-xxs-lh);
+  margin: 0;
+}
+
 .sticky .bc-legal p {
   margin: 0;
 }

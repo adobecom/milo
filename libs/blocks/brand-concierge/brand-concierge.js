@@ -8,6 +8,8 @@ const closeIcon = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" x
 
 const inputLabelText = 'Ask AI';
 const mountId = 'brand-concierge-mount';
+const stickyLegalContent = {};
+ // ^^ used to dynamically add content to legal for accessibility using aria-live
 
 function getAiChatIcon(maskId, fillId) {
   return `<svg title="Ask AI" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -148,6 +150,12 @@ function decorateInput(el, input) {
 
     fieldInput.addEventListener('focus', () => {
       el.querySelector('.bc-legal').classList.add('legal-shown');
+      if (stickyLegalContent.legalSection) {
+        stickyLegalContent.legalSection.append(
+          stickyLegalContent.headerContainer,
+          stickyLegalContent.legalCopy,
+        );
+      }
     });
     // used to prevent the block from going over the global footer.
     window.addEventListener('scroll', handleScroll);
@@ -171,6 +179,7 @@ function decorateLegal(el, legal) {
   const hTag = legal.querySelector('h1, h2, h3, h4, h5, h6');
   const legalCopy = legal.querySelector('p');
   if (el.classList.contains('sticky')) {
+    legalSection.setAttribute('aria-live', 'polite');
     const closeButton = createTag('button', { class: 'bc-legal-close', 'aria-label': 'Close' }, closeIcon);
     legalSection.append(closeButton);
     closeButton.addEventListener('click', () => {
@@ -179,8 +188,15 @@ function decorateLegal(el, legal) {
     });
   }
   if (hTag && legalCopy) {
-    const headerContainer = createTag('div', { class: 'bc-legal-header' }, [hTag.textContent, getBetaLabel()]);
-    legalSection.append(headerContainer, legalCopy);
+    const hTagTagname = hTag.tagName;
+    const headerContainer = createTag(hTagTagname, { class: 'bc-legal-header' }, [hTag.textContent, getBetaLabel()]);
+    if (el.classList.contains('sticky')) {
+      stickyLegalContent.legalSection = legalSection;
+      stickyLegalContent.headerContainer = headerContainer;
+      stickyLegalContent.legalCopy = legalCopy;
+    } else {
+      legalSection.append(headerContainer, legalCopy);
+    }
   } else {
     const legalContent = createTag('p', {}, legal.querySelector('div').innerHTML);
     legalSection.append(legalContent);
