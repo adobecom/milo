@@ -558,11 +558,11 @@ function getSvar(extraOptions) {
   return extraOptionsObj.svar;
 }
 
-function addToConfigsForMatchingProduct(config, productCode, svar, configs) {
+function addToConfigsForMatchingProduct(config, productCode, svar, targetConfigs) {
   const match = config[NAME_PRODUCT_FAMILY] === productCode || (svar && config[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
-  const alreadyThere = configs.some((item) => item[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
+  const alreadyThere = targetConfigs.some((item) => item[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
   if (match && !alreadyThere) {
-    configs.push(config);
+    targetConfigs.push(config);
   }
 }
 
