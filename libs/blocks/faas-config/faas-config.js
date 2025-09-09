@@ -240,12 +240,20 @@ const MultiSelectCheckbox = ({ label, options, prop, onChange, sort }) => {
       prop,
       value: selectedOptions,
     });
-  }, 5000);
+  }, 2000);
   function isSelected(ele) {
-    return context.state.qjs69?.includes(ele) ? 'selected' : '';
+    return context.state[prop]?.includes(ele) ? 'selected' : '';
   }
-  const onChecked = () => {
-    const selectedOptions = Array.from(document.querySelectorAll('.multi-field input[type=checkbox]:checked')).map((element) => element.value);
+  const onChecked = (e) => {
+    const selectedOptions = context.state[prop];
+    if (e.target.checked) {
+      selectedOptions.push(e.target.value);
+    } else {
+      const index = selectedOptions.indexOf(e.target.value);
+      if (index !== -1) {
+        selectedOptions.splice(index, 1);
+      }
+    }
     debouncedDispatch(selectedOptions);
     if (typeof onChange === 'function') {
       onChange();
@@ -258,9 +266,9 @@ const MultiSelectCheckbox = ({ label, options, prop, onChange, sort }) => {
       <div class="multi-field">
         ${optionsArray.map(([v, l]) => {
     if (isSelected(v)) {
-      return html`<label for="${v}"><input type="checkbox" id="${v}" name="${v}" checked onChange=${onChecked} value="${v}"/>${l} (${v})</label>`;
+      return html`<label for="${v}"><input type="checkbox" id="${v}" name="${v}" aria-label="${l}" checked onChange=${onChecked} value="${v}"/>${l} (${v})</label>`;
     }
-    return html`<label for="${v}"><input type="checkbox" id="${v}" name="${v}" onChange=${onChecked} value="${v}"/>${l} (${v})</label>`;
+    return html`<label for="${v}"><input type="checkbox" id="${v}" name="${v}" aria-label="${l}" onChange=${onChecked} value="${v}"/>${l} (${v})</label>`;
   })}
       </div>
       </div>
