@@ -95,7 +95,6 @@ function decorateSlideIndicators(slides, jumpTo) {
   return indicatorDots;
 }
 
-// ##mweb changes ##
 function updateButtonStates(carouselElements) {
   const { slides, nextPreviousBtns } = carouselElements;
   const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
@@ -130,7 +129,6 @@ function handlePrevious(previousElment, elements) {
   return elements[elements.length - 1];
 }
 
-// mweb-dev changes
 function setEqualHeight(slides, slideContainer) {
   const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
   const activeSlide = slides.find((slide) => slide.classList.contains('active')) || slides[0];
@@ -332,7 +330,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
 
-  // mweb Update heights dynamically
+  // Update heights dynamically for disable-button
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     setEqualHeight(slides, slideContainer);
   }
