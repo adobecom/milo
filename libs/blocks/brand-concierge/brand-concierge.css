@@ -329,7 +329,7 @@
 }
 
 .sticky .bc-legal, .bc-legal.legal-closed.legal-shown {
-  display: none;
+  opacity: 0;
 }
 
 .sticky .bc-mobile-button {
@@ -517,7 +517,7 @@
   }
 
   .sticky .bc-legal.legal-shown:not(.legal-closed) {
-    display: flex;
+    opacity: 1;
   }
 
   .sticky .bc-input-field::before {
