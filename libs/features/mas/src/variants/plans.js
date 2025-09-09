@@ -275,13 +275,15 @@ export class Plans extends VariantLayout {
                 <slot name="addon"></slot>
                 <slot name="badge"></slot>
             </div>
-            ${this.secureLabelFooter}`;
+            ${this.secureLabelFooter}
+            <slot></slot>`;
+            
     }
 
     static variantStyle = css`
         :host([variant^='plans']) {
             min-height: 273px;
-            border: 1px solid var(--merch-card-custom-border-color, #dadada);
+            border: 1px solid var(--consonant-merch-card-border-color, #dadada);
             --merch-card-plans-min-width: 244px;
             --merch-card-plans-padding: 15px;
             --merch-card-plans-subtitle-display: contents;

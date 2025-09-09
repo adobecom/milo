@@ -225,8 +225,12 @@ export async function getGeoLocaleSettings(miloLocale) {
   let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
     || sessionStorage.getItem('akamai');
   if (!country) {
-    const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
-    country = await getAkamaiCode(true);
+    try {
+      const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+      country = await getAkamaiCode(true);
+    } catch (error) {
+      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
+    }
   }
   if (country) {
     country = country.toUpperCase();
@@ -325,6 +329,7 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
 let upgradeOffer = null;
+let litPromise;
 
 /**
  * Given a url, calculates the hostname of MAS platform.
@@ -432,6 +437,23 @@ function getFragmentClientUrl() {
 const failedExternalLoads = new Set();
 
 const loadingPromises = new Map();
+
+/**
+ * Loads lit dependency dynamically when needed
+ * @returns {Promise} Promise that resolves when lit is loaded
+ */
+export async function loadLitDependency() {
+  if (litPromise) return litPromise;
+
+  if (window.customElements?.get('lit-element')) {
+    return Promise.resolve();
+  }
+
+  const { base } = getConfig();
+  litPromise = import(`${base}/deps/lit-all.min.js`);
+
+  return litPromise;
+}
 
 /**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
@@ -1017,7 +1039,6 @@ export async function initService(force = false, attributes = {}) {
           service.registerCheckoutAction(getCheckoutAction);
         }
         document.head.append(service);
-        await service.readyPromise;
 
         // Polyfill for older commerce service versions that don't have prefillWcsCache
         if (typeof service.prefillWcsCache !== 'function') {
