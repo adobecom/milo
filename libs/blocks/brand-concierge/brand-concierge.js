@@ -29,7 +29,7 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  el.querySelector('.bc-input-field input').value = '';
+  el.querySelector('.bc-input-field textarea').value = '';
   // eslint-disable-next-line no-underscore-dangle
   window._satellite?.track('bootstrapConversationalExperience', {
     selector: `#${mountId}`,
@@ -73,7 +73,7 @@ function decorateCards(el, cards) {
     cardSection.append(cardButton);
 
     cardButton.addEventListener('click', () => {
-      const input = el.querySelector('.bc-input-field input');
+      const input = el.querySelector('.bc-input-field textarea');
 
       input.value = cardText.textContent.trim();
       openChatModal(input.value, el);
@@ -94,9 +94,9 @@ function decorateInput(el, input) {
   }, `${inputIcon}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, inputLabelText);
   fieldLabel.append(fieldLabelToolTip);
-  const fieldInput = createTag('input', {
+  const fieldInput = createTag('textarea', {
     id: 'bc-input-field',
-    type: 'text',
+    rows: 1,
     placeholder: input.textContent.trim(),
   });
   const fieldButton = createTag('button', {
@@ -116,6 +116,8 @@ function decorateInput(el, input) {
     } else {
       fieldButton.disabled = true;
     }
+    fieldInput.style.height = 'auto';
+    fieldInput.style.height = `${fieldInput.scrollHeight}px`;
   });
 
   fieldInput.addEventListener('keyup', (e) => {
@@ -188,4 +190,26 @@ export default async function init(el) {
     }
     decorateLegal(el, legal);
   }
+
+  // Watch for data-block-status attribute changes on .section ancestor
+  const section = el.closest('.section');
+  if (!section) { return; }
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type !== 'attributes'
+        || mutation.attributeName !== 'data-status'
+        || section.getAttribute('data-status') === 'decorated') { return; }
+      const fieldInput = el.querySelector('.bc-input-field textarea');
+      if (fieldInput) {
+        fieldInput.style.height = 'auto';
+        fieldInput.style.height = `${fieldInput.scrollHeight}px`;
+        observer.disconnect();
+      }
+    });
+  });
+
+  observer.observe(section, {
+    attributes: true,
+    attributeFilter: ['data-status'],
+  });
 }
