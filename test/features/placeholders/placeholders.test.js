@@ -181,7 +181,6 @@ describe('Placeholders', () => {
         env: {
           name: 'stage'}
       };
-      
       const result = getPlaceholderRoot(testConfig);
       // Since we can't easily mock window.location, this test will use the actual origin
       // The function should still work and return a valid URL
