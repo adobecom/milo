@@ -76,7 +76,9 @@ test.describe('MAS Plans Page test suite', () => {
       expect(await masPlans.getCTAAttribute(data.cards[1].id, 'data-wcs-osi')).toEqual(data.cards[1].osi);
 
       await expect(await masPlans.getCardStockCheckbox(data.cards[0].id)).toBeVisible();
+      await expect(await masPlans.getCardStockCheckbox(data.cards[0].id)).toContainText(data.cards[0].stockCheckboxLabel);
       await expect(await masPlans.getCardStockCheckbox(data.cards[1].id)).toBeVisible();
+      await expect(await masPlans.getCardStockCheckbox(data.cards[1].id)).toContainText(data.cards[1].stockCheckboxLabel);
       await expect(await masPlans.getCardSecureTransaction(data.cards[0].id)).toBeVisible();
       await expect(await masPlans.getCardSecureTransaction(data.cards[1].id)).toBeVisible();
     });
