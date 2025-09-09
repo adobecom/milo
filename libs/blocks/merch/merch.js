@@ -558,10 +558,18 @@ function getSvar(extraOptions) {
   return extraOptionsObj.svar;
 }
 
-function isProductMatch(config, productCode, svar, configs) {
+function addToConfigsForMatchingProduct(config, productCode, svar, configs) {
   const match = config[NAME_PRODUCT_FAMILY] === productCode || (svar && config[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
   const alreadyThere = configs.some((item) => item[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
-  return match && !alreadyThere;
+  if (match && !alreadyThere) {
+    configs.push(config);
+  }
+}
+
+function addToConfigs(config, svar, configs, paCode, productCode, productFamily) {
+  addToConfigsForMatchingProduct(config, paCode, svar, configs.paCodeConfigs);
+  addToConfigsForMatchingProduct(config, productCode, svar, configs.productCodeConfigs);
+  addToConfigsForMatchingProduct(config, productFamily, svar, configs.productFamilyConfigs);
 }
 
 export async function getCheckoutLinkConfig(
@@ -597,13 +605,7 @@ export async function getCheckoutLinkConfig(
   const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } = checkoutLinkConfigs
     .data.reduce(
       (acc, config) => {
-        if (isProductMatch(config, paCode, svar, acc.paCodeConfigs)) {
-          acc.paCodeConfigs.push(config);
-        } else if (isProductMatch(config, productCode, svar, acc.productCodeConfigs)) {
-          acc.productCodeConfigs.push(config);
-        } else if (isProductMatch(config, productFamily, svar, acc.productFamilyConfigs)) {
-          acc.productFamilyConfigs.push(config);
-        }
+        addToConfigs(config, svar, acc, paCode, productCode, productFamily);
         return acc;
       },
       { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] },
