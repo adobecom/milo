@@ -95,6 +95,27 @@ function decorateSlideIndicators(slides, jumpTo) {
   return indicatorDots;
 }
 
+// ##mweb changes ##
+function updateButtonStates(carouselElements) {
+  const { slides, nextPreviousBtns } = carouselElements;
+  const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
+  nextPreviousBtns[0].disabled = activeSlideIndex === 0;
+  nextPreviousBtns[0].classList.toggle('disabled', activeSlideIndex === 0);
+  nextPreviousBtns[1].disabled = activeSlideIndex === slides.length - 1;
+  nextPreviousBtns[1].classList.toggle('disabled', activeSlideIndex === slides.length - 1);
+
+  const prevSlide = slides[slides.length - 1];
+  const nextSlide = slides[0];
+  if (activeSlideIndex === 0) {
+    if (prevSlide) prevSlide.classList.add('hide-left-hint');
+  } else if (activeSlideIndex === slides.length - 1) {
+    if (nextSlide) nextSlide.classList.add('hide-left-hint');
+  } else {
+    if (prevSlide) prevSlide.classList.remove('hide-left-hint');
+    if (nextSlide) nextSlide.classList.remove('hide-left-hint');
+  }
+}
+
 function handleNext(nextElement, elements) {
   if (nextElement.nextElementSibling) {
     return nextElement.nextElementSibling;
@@ -107,6 +128,20 @@ function handlePrevious(previousElment, elements) {
     return previousElment.previousElementSibling;
   }
   return elements[elements.length - 1];
+}
+
+// mweb-dev changes
+function setEqualHeight(slides, slideContainer) {
+  const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+  const activeSlide = slides.find((slide) => slide.classList.contains('active')) || slides[0];
+  slides.forEach((slide) => {
+    if (slide === activeSlide) {
+      slide.style.height = `${maxHeight}px`;
+    } else {
+      slide.style.height = `${maxHeight - 40}px`;
+    }
+  });
+  slideContainer.style.height = `${maxHeight}px`;
 }
 
 function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
@@ -296,6 +331,12 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
+
+  // mweb Update heights dynamically
+  if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
+    setEqualHeight(slides, slideContainer);
+  }
+
   activeSlideIndicator.classList.add('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
@@ -304,6 +345,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   for (let i = 2; i <= slides.length; i += 1) {
     referenceSlide = handleNext(referenceSlide, slides);
     referenceSlide.style.order = i;
+  }
+
+  if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
+    updateButtonStates(carouselElements);
   }
 
   /*
@@ -533,6 +578,16 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
+
+  function handleEqualHeight() {
+    setEqualHeight(slides, slideContainer);
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
+  }
+
+  if (el.classList.contains('disable-buttons') && window.innerWidth < 900) {
+    updateButtonStates(carouselElements);
+    parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
+  }
   handleChangingSlides(carouselElements);
   setAriaHiddenAndTabIndex(carouselElements, slides[0]);
   window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
