@@ -141,7 +141,7 @@ describe('Placeholders', () => {
 
       const testConfig = {
         locale: { prefix: '/bg' },
-        env: {name: 'stage'},
+        env: { name: 'stage' },
       };
       const result = getPlaceholderRoot(testConfig);
       // Since we can't mock window.location, this will use the actual origin
@@ -165,7 +165,7 @@ describe('Placeholders', () => {
       // In a real test environment, this would need proper mocking
       const testConfig = {
         locale: { prefix: '/bg' },
-        env: {name: 'stage'},
+        env: { name: 'stage' },
       };
       const result = getPlaceholderRoot(testConfig);
       // Since we can't easily mock window.location, this test will use the actual origin
