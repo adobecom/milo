@@ -733,7 +733,8 @@ export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
 
   // Extract category_id - should be text2Image / VideoGeneration
-  const categoryId = el.innerText.replaceAll('\n', '').replaceAll(' ', '');
+  const categoryId =
+    el.innerText.replaceAll('\n', '').replaceAll(' ', '') || 'text2Image';
 
   // Clear existing content
   el.textContent = '';
