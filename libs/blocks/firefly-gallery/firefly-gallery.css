@@ -307,6 +307,16 @@
 }
 
 /* Overlay and prompt styles */
+.firefly-gallery-content:focus-within {
+  scroll-behavior: auto;
+}
+
+.firefly-gallery-content a:focus,
+.firefly-gallery-content button:focus {
+  outline: 2px solid #378ef0;
+  outline-offset: 2px;
+}
+
 .firefly-gallery-overlay {
   position: absolute;
   display: flex;

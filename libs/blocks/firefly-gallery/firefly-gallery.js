@@ -282,6 +282,35 @@ function createGalleryStructure() {
   };
 }
 
+function preventScrollOnTab(contentElement) {
+  let savedScrollTop = 0;
+  let isTabbing = false;
+
+  contentElement.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      // Save position only when starting a tab sequence
+      if (!isTabbing) {
+        savedScrollTop = contentElement.scrollTop;
+      }
+      isTabbing = true;
+    }
+  });
+
+  // Use only a single focusin handler to restore scroll position
+  contentElement.addEventListener('focusin', () => {
+    if (isTabbing) {
+      // Use requestAnimationFrame for smoother visual updates
+      requestAnimationFrame(() => {
+        contentElement.scrollTop = savedScrollTop;
+        // Reset tabbing flag after a short delay
+        setTimeout(() => {
+          isTabbing = false;
+        }, 100);
+      });
+    }
+  });
+}
+
 // Column count is now handled entirely by CSS media queries
 
 function createSkeletonLayout(container) {
@@ -410,6 +439,7 @@ function createOverlayElement(promptText, userInfo = {}, fireflyUrl) {
     target: '_blank',
     rel: 'noopener',
     'aria-label': `Open "${promptText}" in Firefly`,
+    tabindex: '0',
   });
 
   // Create info container for user avatar, name, and prompt
@@ -744,6 +774,9 @@ export default async function init(el) {
 
   // Create and append skeleton layout
   const { skeletonItems, masonryGrid } = createSkeletonLayout(content);
+
+  // Add this line to prevent scrolling when tabbing
+  preventScrollOnTab(content);
 
   // Replace block content with our gallery structure
   el.appendChild(container);
