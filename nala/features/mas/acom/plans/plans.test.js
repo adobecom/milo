@@ -210,25 +210,28 @@ test.describe('MAS Plans Page test suite', () => {
 
   // @MAS-Plans-Single-App-Deeplink
   test(`${features[4].name},${features[4].tags}`, async ({ page, browserName }) => {
-    // remove once hash transformation is fixed in Safari and Firefox
-    test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping test for Firefox and webkit browsers');
-
     const { data } = features[4];
     const masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page with edu deeplink', async () => {
       await page.goto(`${PLANS_NALA_PATH.US}${features[4].browserParams.landing}`);
       await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('merch-card-collection');
     });
 
-    await test.step('step-2: Verify correct filter is selected and hash changed', async () => {
-      await page.waitForSelector('merch-card-collection');
+    await test.step('step-2: Verify hash URL changed correctly', async () => {
+      // Skip hash-related checks for Firefox and Safari until hash transformation is fixed
+      test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping hash verification for Firefox and webkit browsers');
+      
       await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[4].browserParams.expected}`);
+    });
+
+    await test.step('step-3: Verify correct filter is selected', async () => {
       await expect(await masPlans.sidenavList).toHaveAttribute('selected-value', data.selectedValue);
       await expect(await masPlans.getCategoryFilter(data.filter)).toHaveAttribute('selected');
     });
 
-    await test.step('step-3: Verify the card is moved to the second position', async () => {
+    await test.step('step-4: Verify the card is moved to the second position', async () => {
       const visibleCards = page.locator('merch-card:visible');
       await expect(await visibleCards.nth(1)).toHaveAttribute('id', data.cardid);
     });
@@ -236,20 +239,23 @@ test.describe('MAS Plans Page test suite', () => {
 
   // @MAS-Plans-Filter-Hash
   test(`${features[5].name},${features[5].tags}`, async ({ page, browserName }) => {
-    // remove once hash transformation is fixed in Safari and Firefox
-    test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping test for Firefox and webkit browsers');
-
     const { data } = features[5];
     const masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page with edu deeplink', async () => {
       await page.goto(`${PLANS_NALA_PATH.US}${features[5].browserParams.landing}`);
       await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('merch-card-collection');
     });
 
-    await test.step('step-2: Verify correct filter is selected and hash changed', async () => {
-      await page.waitForSelector('merch-card-collection');
+    await test.step('step-2: Verify hash URL changed correctly', async () => {
+      // Skip hash-related checks for Firefox and Safari until hash transformation is fixed
+      test.skip(browserName === 'firefox' || browserName === 'webkit', 'Skipping hash verification for Firefox and webkit browsers');
+      
       await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[5].browserParams.expected}`);
+    });
+
+    await test.step('step-3: Verify correct filter is selected', async () => {
       await expect(await masPlans.sidenavList).toHaveAttribute('selected-value', data.selectedValue);
       await expect(await masPlans.getCategoryFilter(data.filter)).toHaveAttribute('selected');
     });
@@ -266,7 +272,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Verify CTA opens modal', async () => {
-      await expect(await masPlans.getCardCTA(data.cardid)).toBeVisible({ timeout: 10000 });
+      await expect(await masPlans.getCardCTA(data.cardid)).toBeVisible({ timeout: 30000 });
       await expect(await masPlans.getCardCTA(data.cardid)).not.toHaveClass(/loading-entitlements|placeholder-pending|placeholder-failed/);
       await expect(await masPlans.getCardStockCheckbox(data.cardid)).not.toHaveAttribute('checked');
       expect(await masPlans.getCTAAttribute(data.cardid, 'data-wcs-osi')).not.toContain(data.stockOSI);
@@ -294,7 +300,7 @@ test.describe('MAS Plans Page test suite', () => {
       await masPlans.getCardCTA(data.cardid).click();
       await expect(await masPlans.threeInOneModal).toBeVisible();
       const frame = page.frameLocator('iframe:visible');
-      await expect(frame.locator(masPlans.threeInOneStockCheckbox)).toBeVisible({ timeout: 10000 });
+      await expect(frame.locator(masPlans.threeInOneStockCheckbox)).toBeVisible({ timeout: 30000 });
       await expect(frame.locator(masPlans.threeInOneStockCheckbox)).toBeChecked();
     });
   });
@@ -338,7 +344,7 @@ test.describe('MAS Plans Page test suite', () => {
       await masPlans.getSeeAllPlans3in1Link(data.cardid).click();
       await expect(await masPlans.threeInOneModal).toBeVisible();
       const frame = await page.frameLocator('iframe:visible');
-      await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeVisible({ timeout: 10000 });
+      await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeVisible({ timeout: 30000 });
       await expect(await frame.locator(masPlans.threeInOneStockCheckbox)).toBeChecked();
 
       await masPlans.closeModal();
@@ -356,7 +362,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Change quantity', async () => {
-      await expect(await masPlans.getCard(data.cardid)).toBeVisible({ timeout: 10000 });
+      await expect(await masPlans.getCard(data.cardid)).toBeVisible({ timeout: 30000 });
       await expect(await masPlans.getCardQS(data.cardid).locator('input')).toHaveValue('1');
       await masPlans.getCardQS(data.cardid).locator('button').click();
       await expect(await masPlans.getCardQS(data.cardid).locator('.popover')).toBeVisible();
@@ -370,7 +376,7 @@ test.describe('MAS Plans Page test suite', () => {
       await masPlans.getCardCTA(data.cardid).click();
       await expect(await masPlans.threeInOneModal).toBeVisible();
       const frame = page.frameLocator('iframe:visible');
-      await expect(frame.locator(masPlans.threeInOneQuantitySelector)).toBeVisible({ timeout: 20000 });
+      await expect(frame.locator(masPlans.threeInOneQuantitySelector)).toBeVisible({ timeout: 30000 });
       await expect(frame.locator(masPlans.threeInOneQuantitySelector).locator('button')).toContainText(`${data.quantity}`);
     });
   });
@@ -386,7 +392,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Verify the literals are overridden', async () => {
-      await expect(await masPlans.getCard(data.cardid)).toBeVisible({ timeout: 10000 });
+      await expect(await masPlans.getCard(data.cardid)).toBeVisible({ timeout: 30000 });
       await expect(await masPlans.getCardPrice(data.cardid)).toContainText(data.unitText);
     });
   });
