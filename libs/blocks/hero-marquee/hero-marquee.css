@@ -2,6 +2,7 @@
   --s-min-height: 248px; /* 360px */
   --m-min-height: 448px; /* 560px */
   --l-min-height: 588px; /* 700px */
+  --default-block-spacing: 5px;
 
   /* 112 = 56px default padding */
 
@@ -346,7 +347,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   html[lang="ja-jp"] .hero-marquee .action-area a:not(:first-of-type) {
-    margin-top: var(--spacing-s);
+    margin-top:  calc(var(--spacing-s) - var(--default-block-spacing));
   }
 
   .hero-marquee.media-hidden-mobile .foreground .asset,
@@ -440,7 +441,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.l-min-height-tablet { min-height: var(--l-min-height);}
 
   html[lang="ja-jp"] .hero-marquee .action-area a:last-of-type {
-    margin-left: var(--spacing-s);
+    margin-left: calc(var(--spacing-s) - var(--default-block-spacing));
   }  
 }
 
