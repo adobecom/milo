@@ -225,8 +225,12 @@ export async function getGeoLocaleSettings(miloLocale) {
   let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
     || sessionStorage.getItem('akamai');
   if (!country) {
-    const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
-    country = await getAkamaiCode(true);
+    try {
+      const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+      country = await getAkamaiCode(true);
+    } catch (error) {
+      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
+    }
   }
   if (country) {
     country = country.toUpperCase();
