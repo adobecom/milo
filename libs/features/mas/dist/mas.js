@@ -2762,15 +2762,69 @@ merch-card[variant="full-pricing-express"] p {
 
 /* Slot-specific styles */
 merch-card[variant="full-pricing-express"] [slot="heading-xs"] {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
-    line-height: 23.4px;
+    line-height: 26px;
     color: var(--spectrum-gray-800);
 }
 
-merch-card[variant="full-pricing-express"] [slot="body-xs"] {
-    font-size: 14px;
-    line-height: 21px;
+/* Inline mnemonics inside heading */
+merch-card[variant="full-pricing-express"] [slot="heading-xs"] mas-mnemonic {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    margin: 0 4px;
+}
+
+merch-card[variant="full-pricing-express"] [slot="heading-xs"] mas-mnemonic img {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+}
+
+/* Icons slot styling */
+merch-card[variant="full-pricing-express"] [slot="icons"] {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+merch-card[variant="full-pricing-express"] [slot="icons"] merch-icon {
+    --img-width: 20px;
+    --img-height: 20px;
+}
+
+merch-card[variant="full-pricing-express"] [slot="trial-badge"] {
+    position: absolute;
+    top: -8px;
+    right: 16px;
+    background: var(--spectrum-indigo-300);
+    border-radius: 4px;
+    font-size: var(--merch-card-full-pricing-express-trial-badge-font-size);
+    font-weight: var(--merch-card-full-pricing-express-trial-badge-font-weight);
+    line-height: var(--merch-card-full-pricing-express-trial-badge-line-height);
+    white-space: nowrap;
+    z-index: 2;
+    max-width: calc(100% - 24px);
+    text-align: right;
+}
+
+merch-card[variant="full-pricing-express"] [slot="trial-badge"] merch-badge {
+    font-size: var(--merch-card-full-pricing-express-trial-badge-font-size);
+    font-weight: var(--merch-card-full-pricing-express-trial-badge-font-weight);
+    line-height: var(--merch-card-full-pricing-express-trial-badge-line-height);
+    color: var(--spectrum-indigo-900);
+}
+
+merch-card[variant="full-pricing-express"] [slot="trial-badge"]:empty {
+    display: none;
+}
+
+merch-card[variant="full-pricing-express"] [slot="body-s"] {
+    font-size: 16px;
+    line-height: 20.8px;
     color: var(--spectrum-gray-700);
 }
 
@@ -2851,10 +2905,13 @@ merch-card[variant="full-pricing-express"] [slot="price"] p:empty {
     min-height: 15.6px;
 }
 
+merch-card[variant="full-pricing-express"] [slot="price"] strong {
+    color: var(--spectrum-indigo-900);
+}
 merch-card[variant="full-pricing-express"] [slot="price"] p a {
     color: var(--spectrum-indigo-900);
     font-weight: 500;
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 /* Strikethrough price styling */
@@ -2867,7 +2924,7 @@ merch-card[variant="full-pricing-express"] span.placeholder-resolved[data-templa
 }
 
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price {
-    color: var(--spectrum-gray-500);
+    color: var(--spectrum-indigo-900);
 }
 
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
@@ -2977,18 +3034,20 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
     overflow: visible;
     padding-top: 16px;
 }
-`;var Qo={title:{tag:"h3",slot:"heading-xs",maxCount:250,withSuffix:!0},badge:{tag:"div",slot:"badge",default:"spectrum-blue-400"},allowedBadgeColors:["spectrum-blue-400","spectrum-gray-300","spectrum-yellow-300","gradient-purple-blue","gradient-firefly-spectrum"],description:{tag:"div",slot:"body-xs",maxCount:2e3,withSuffix:!1},description2:{tag:"div",slot:"description2",maxCount:3e3,withSuffix:!1},prices:{tag:"div",slot:"price"},ctas:{slot:"cta",size:"XL"},borderColor:{attribute:"border-color",specialValues:{gray:"var(--spectrum-gray-300)",blue:"var(--spectrum-blue-400)","gradient-purple-blue":"linear-gradient(96deg, #B539C8 0%, #7155FA 66%, #3B63FB 100%)","gradient-firefly-spectrum":"linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)"}},disabledAttributes:["trialBadgeColor","trialBadgeBorderColor"]},Zt=class extends P{getGlobalCSS(){return ll}get aemFragmentMapping(){return Qo}get headingSelector(){return'[slot="heading-xs"]'}renderLayout(){return f`
+`;var Qo={title:{tag:"h3",slot:"heading-xs",maxCount:250,withSuffix:!0},badge:{tag:"div",slot:"badge",default:"spectrum-blue-400"},allowedBadgeColors:["spectrum-blue-400","spectrum-gray-300","spectrum-yellow-300","gradient-purple-blue","gradient-firefly-spectrum"],description:{tag:"div",slot:"body-s",maxCount:2e3,withSuffix:!1},description2:{tag:"div",slot:"description2",maxCount:3e3,withSuffix:!1},prices:{tag:"div",slot:"price"},trialBadge:{tag:"div",slot:"trial-badge"},ctas:{slot:"cta",size:"XL"},mnemonics:{size:"l"},borderColor:{attribute:"border-color",specialValues:{gray:"var(--spectrum-gray-300)",blue:"var(--spectrum-blue-400)","gradient-purple-blue":"linear-gradient(96deg, #B539C8 0%, #7155FA 66%, #3B63FB 100%)","gradient-firefly-spectrum":"linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)"}},disabledAttributes:[]},Zt=class extends P{getGlobalCSS(){return ll}get aemFragmentMapping(){return Qo}get headingSelector(){return'[slot="heading-xs"]'}renderLayout(){return f`
             <div class="badge-wrapper">
                 <slot name="badge"></slot>
             </div>
             <div class="card-content">
                 <div class="header">
                     <slot name="heading-xs"></slot>
+                    <slot name="icons"></slot>
                 </div>
                 <div class="description">
-                    <slot name="body-xs"></slot>
+                    <slot name="body-s"></slot>
                 </div>
                 <div class="price-container">
+                    <slot name="trial-badge"></slot>
                     <slot name="price"></slot>
                 </div>
                 <div class="cta">
@@ -3002,8 +3061,8 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
         `}};g(Zt,"variantStyle",v`
         :host([variant='full-pricing-express']) {
             /* CSS Variables */
-            --merch-card-full-pricing-express-width: 378px;
-            --merch-card-full-pricing-express-mobile-width: 365px;
+            --merch-card-full-pricing-express-width: 437px;
+            --merch-card-full-pricing-express-mobile-width: 303px;
             --merch-card-full-pricing-express-padding: 24px;
             --merch-card-full-pricing-express-padding-mobile: 20px;
             --merch-card-full-pricing-express-section-gap: 16px;
@@ -3014,6 +3073,9 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
             --merch-card-full-pricing-express-price-radius: 8px;
             
             /* Typography - matching simplified-pricing-express */
+            --merch-card-full-pricing-express-trial-badge-font-size: 12px;
+            --merch-card-full-pricing-express-trial-badge-font-weight: 700;
+            --merch-card-full-pricing-express-trial-badge-line-height: 15.6px;
             --merch-card-full-pricing-express-price-font-size: 28px;
             --merch-card-full-pricing-express-price-line-height: 36.4px;
             --merch-card-full-pricing-express-price-font-weight: 700;
@@ -3154,7 +3216,7 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
         :host([variant='full-pricing-express']) .header {
             display: flex;
             flex-direction: row;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: 8px;
         }
@@ -3164,6 +3226,19 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
             font-weight: 700;
             line-height: 23.4px;
             color: var(--spectrum-gray-800);
+        }
+
+        /* Icons/Mnemonics styling */
+        :host([variant='full-pricing-express']) [slot="icons"] {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        :host([variant='full-pricing-express']) [slot="icons"] merch-icon {
+            --img-width: 20px;
+            --img-height: 20px;
         }
 
         /* Description sections */
@@ -3185,11 +3260,14 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
         /* Price container with background */
         :host([variant='full-pricing-express']) .price-container {
             background: var(--merch-card-full-pricing-express-price-bg);
-            padding: var(--merch-card-full-pricing-express-price-padding);
+            padding: 24px 16px;
             border-radius: var(--merch-card-full-pricing-express-price-radius);
+            border: 1px solid #E0E2FF;
             display: flex;
             flex-direction: column;
             margin-top: auto;
+            position: relative;
+            overflow: visible;
         }
 
         /* CTA styling */
@@ -3402,6 +3480,7 @@ merch-card[variant="mini"] span.renewal-text {
     --spectrum-gray-700: #494949;
     --spectrum-gray-800: #2C2C2C;
     --spectrum-gray-900: #1C1C1C;
+    --spectrum-indigo-300: #D3D5FF;
     --spectrum-indigo-900: #5258E4;
   
     /* merch card generic */

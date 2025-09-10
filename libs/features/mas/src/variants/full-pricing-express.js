@@ -23,11 +23,11 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     ],
     description: {
         tag: 'div',
-        slot: 'body-xs',
+        slot: 'body-s',
         maxCount: 2000,
         withSuffix: false,
     },
-    description2: {  // NEW - Features list
+    description2: {
         tag: 'div',
         slot: 'description2',
         maxCount: 3000,
@@ -37,9 +37,16 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         tag: 'div',
         slot: 'price',
     },
+    trialBadge: {
+        tag: 'div',
+        slot: 'trial-badge',
+    },
     ctas: {
         slot: 'cta',
         size: 'XL',
+    },
+    mnemonics: {
+        size: 'l',
     },
     borderColor: {
         attribute: 'border-color',
@@ -50,7 +57,7 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
             'gradient-firefly-spectrum': 'linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)',
         },
     },
-    disabledAttributes: ['trialBadgeColor', 'trialBadgeBorderColor'],
+    disabledAttributes: [],
 };
 
 export class FullPricingExpress extends VariantLayout {
@@ -74,11 +81,13 @@ export class FullPricingExpress extends VariantLayout {
             <div class="card-content">
                 <div class="header">
                     <slot name="heading-xs"></slot>
+                    <slot name="icons"></slot>
                 </div>
                 <div class="description">
-                    <slot name="body-xs"></slot>
+                    <slot name="body-s"></slot>
                 </div>
                 <div class="price-container">
+                    <slot name="trial-badge"></slot>
                     <slot name="price"></slot>
                 </div>
                 <div class="cta">
@@ -95,8 +104,8 @@ export class FullPricingExpress extends VariantLayout {
     static variantStyle = css`
         :host([variant='full-pricing-express']) {
             /* CSS Variables */
-            --merch-card-full-pricing-express-width: 378px;
-            --merch-card-full-pricing-express-mobile-width: 365px;
+            --merch-card-full-pricing-express-width: 437px;
+            --merch-card-full-pricing-express-mobile-width: 303px;
             --merch-card-full-pricing-express-padding: 24px;
             --merch-card-full-pricing-express-padding-mobile: 20px;
             --merch-card-full-pricing-express-section-gap: 16px;
@@ -107,6 +116,9 @@ export class FullPricingExpress extends VariantLayout {
             --merch-card-full-pricing-express-price-radius: 8px;
             
             /* Typography - matching simplified-pricing-express */
+            --merch-card-full-pricing-express-trial-badge-font-size: 12px;
+            --merch-card-full-pricing-express-trial-badge-font-weight: 700;
+            --merch-card-full-pricing-express-trial-badge-line-height: 15.6px;
             --merch-card-full-pricing-express-price-font-size: 28px;
             --merch-card-full-pricing-express-price-line-height: 36.4px;
             --merch-card-full-pricing-express-price-font-weight: 700;
@@ -247,7 +259,7 @@ export class FullPricingExpress extends VariantLayout {
         :host([variant='full-pricing-express']) .header {
             display: flex;
             flex-direction: row;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: 8px;
         }
@@ -257,6 +269,19 @@ export class FullPricingExpress extends VariantLayout {
             font-weight: 700;
             line-height: 23.4px;
             color: var(--spectrum-gray-800);
+        }
+
+        /* Icons/Mnemonics styling */
+        :host([variant='full-pricing-express']) [slot="icons"] {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        :host([variant='full-pricing-express']) [slot="icons"] merch-icon {
+            --img-width: 20px;
+            --img-height: 20px;
         }
 
         /* Description sections */
@@ -278,11 +303,14 @@ export class FullPricingExpress extends VariantLayout {
         /* Price container with background */
         :host([variant='full-pricing-express']) .price-container {
             background: var(--merch-card-full-pricing-express-price-bg);
-            padding: var(--merch-card-full-pricing-express-price-padding);
+            padding: 24px 16px;
             border-radius: var(--merch-card-full-pricing-express-price-radius);
+            border: 1px solid #E0E2FF;
             display: flex;
             flex-direction: column;
             margin-top: auto;
+            position: relative;
+            overflow: visible;
         }
 
         /* CTA styling */
