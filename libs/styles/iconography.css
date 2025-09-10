@@ -144,12 +144,12 @@ dealing w/ groups of media and associated text
 .xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
 
 /* Mweb specific changes for lockup */
-.mweb-enabled .xs-lockup .lockup-area img { --icon-size-xs: 16px; }
-.mweb-enabled .s-lockup .lockup-area img { --icon-size-s: 24px; }
-.mweb-enabled .m-lockup .lockup-area img { --icon-size-m: 32px; }
-.mweb-enabled .l-lockup .lockup-area img { --icon-size-l: 40px; }
-.mweb-enabled .xl-lockup .lockup-area img { --icon-size-xl: 56px; }
-.mweb-enabled .xxl-lockup .lockup-area img { --icon-size-xxl: 64px; }
+.mweb-enabled .xs-lockup .lockup-area img { height: var(--icon-size-xxs); }
+.mweb-enabled .s-lockup .lockup-area img { height: var(--icon-size-xs); }
+.mweb-enabled .m-lockup .lockup-area img { height: var(--icon-size-s); }
+.mweb-enabled .l-lockup .lockup-area img { height: var(--icon-size-m); }
+.mweb-enabled .xl-lockup .lockup-area img { height: var(--icon-size-l); }
+.mweb-enabled .xxl-lockup .lockup-area img { height: var(--icon-size-xl); }
 
 @media (min-width: 1200px) {
   :root {
@@ -195,12 +195,12 @@ dealing w/ groups of media and associated text
     gap: 20px;
   }
 
-  .mweb-enabled .xs-lockup .lockup-area img { --icon-size-xs: 24px; }
-  .mweb-enabled .s-lockup .lockup-area img { --icon-size-s: 32px; }
-  .mweb-enabled .m-lockup .lockup-area img { --icon-size-m: 40px; }
-  .mweb-enabled .l-lockup .lockup-area img { --icon-size-l: 56px; }
-  .mweb-enabled .xl-lockup .lockup-area img { --icon-size-xl: 64px; }
-  .mweb-enabled .xxl-lockup .lockup-area img { --icon-size-xxl: 80px; }
+  .mweb-enabled .xs-lockup .lockup-area img { height: var(--icon-size-xs); }
+  .mweb-enabled .s-lockup .lockup-area img { height: var(--icon-size-s); }
+  .mweb-enabled .m-lockup .lockup-area img { height: var(--icon-size-m); }
+  .mweb-enabled .l-lockup .lockup-area img { height: var(--icon-size-l); }
+  .mweb-enabled .xl-lockup .lockup-area img { height: var(--icon-size-xl); }
+  .mweb-enabled .xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
 }
 
 .avatar-area {
