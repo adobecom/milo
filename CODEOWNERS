@@ -46,6 +46,7 @@
 /libs/blocks/columns/ @adobecom/milo-core
 /libs/blocks/commerce/ @adobecom/tacocat
 /libs/blocks/editorial-card/ @adobecom/milo-core
+/libs/blocks/email-collection/ @adobecom/milo-core
 /libs/blocks/event-rich-results/ @adobecom/milo-core
 /libs/blocks/faas-config/ @seanchoi-dev
 /libs/blocks/faas/ @seanchoi-dev
