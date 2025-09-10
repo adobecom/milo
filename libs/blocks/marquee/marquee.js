@@ -3,9 +3,9 @@
  */
 
 import { decorateButtons, getBlockSize, decorateBlockBg, loadCDT } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle, getMwebFlag } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle, getMetadata } from '../../utils/utils.js';
 
-const mwebSize = getMwebFlag() ? 'l' : 'm';
+const mwebSize = getMetadata('mweb') === 'on' ? 'l' : 'm';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {

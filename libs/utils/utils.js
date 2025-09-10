@@ -255,14 +255,7 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
-export const [setMwebFlag, getMwebFlag] = (() => {
-  let mwebFlag = false;
-  return [
-    (flag) => { mwebFlag = flag; },
-    () => mwebFlag,
-  ];
-})();
-(() => { if (getMetadata('mweb') === 'on') { setMwebFlag(true); document.body.classList.add('mweb-enabled'); } })();
+(() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
 
 const handleEntitlements = (() => {
   const { martech } = Object.fromEntries(PAGE_URL.searchParams);
