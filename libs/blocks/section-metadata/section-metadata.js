@@ -134,7 +134,6 @@ export default async function init(el) {
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.delay) handleDelay(metadata.delay.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text, section);
-  // eslint-disable-next-line max-len
   if (metadata['collapse-ups-mobile']?.text === 'on') await handleCollapseSection(section);
   addListAttrToSection(section);
 }
