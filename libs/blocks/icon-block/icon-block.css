@@ -449,9 +449,6 @@
     text-align: center;
   }
 
-  .section:has(.icon-block.container-mobile + .action-scroller) {
-    background: none !important;
-  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -548,7 +545,4 @@
     grid-template-columns: repeat(5, 1fr) !important;
   }
 
-  .section:has(.icon-block.container-mobile + .action-scroller) {
-    background: none !important;
-  }
 }
