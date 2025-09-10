@@ -377,7 +377,6 @@
 }
 
 @media (max-width: 600px) {
-  
   .icon-block.container-mobile.left-mobile .foreground {
     text-align: start;
   }
