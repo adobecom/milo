@@ -448,7 +448,6 @@
   .five-up .icon-block .foreground .text-content .icon-area {
     text-align: center;
   }
-
 }
 
 @media screen and (min-width: 1200px) {
@@ -544,5 +543,4 @@
   .section.five-up {
     grid-template-columns: repeat(5, 1fr) !important;
   }
-
 }
