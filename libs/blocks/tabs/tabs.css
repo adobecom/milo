@@ -28,6 +28,7 @@
   --tabs-radio-blue: #0265dc;
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
+  --m-rounded-corners-tabs: 8px;
 }
 
 :root .dark {
@@ -147,8 +148,8 @@
 }
 
 /* center tabs */
-.tabs.center > .tabList::after,
-.tabs.center > .tabList::before {
+.tabs.center:not(.segmented-control) > .tabList::after,
+.tabs.center:not(.segmented-control) > .tabList::before {
   content: "";
   margin: auto;
 }
@@ -159,6 +160,11 @@
 
 .tabs .tab-content {
   border-bottom: 1px solid var(--tabs-border-color);
+}
+
+/* mweb design */
+.tabs.no-border-bottom .tab-content {
+  border-bottom: none;
 }
 
 /* contained tabs content */
@@ -492,6 +498,73 @@
   text-shadow: revert;
 }
 
+/* Segmented Control Variant */
+.tabs.segmented-control .tabList {
+  background: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  position: relative;
+  border-radius: var(--m-rounded-corners-tabs);
+  overflow: hidden;
+}
+
+.tabs.segmented-control .tabList .tab-list-container {
+  background: var(--color-gray-100);
+  overflow: hidden;
+  border-radius: var(--m-rounded-corners-tabs);
+  padding: 1px;
+  min-width: 300px;
+}
+
+.tabs.segmented-control .tabList button {
+  padding: 10px;
+  border-radius: var(--m-rounded-corners-tabs);
+  border: none;
+  font-weight: 700;
+  color: var(--tabs-pill-bg-color);
+  font-size: 14px;
+  flex: 1 0 auto;
+}
+
+.tabs.segmented-control .tabList button[aria-selected="true"],
+.tabs.segmented-control .tabList button[aria-checked="true"] {
+  background: var(--tabs-pill-bg-color);
+  color: var(--color-white);
+}
+
+.tabs.segmented-control .tabList button.paddle {
+  position: absolute;
+  border-bottom: none;
+  width: 54px;
+  height: 40px;
+  box-shadow: none;
+  flex-shrink: 0;
+  justify-content: end;
+  padding: 0;
+  z-index: 4;
+}
+
+.tabs.segmented-control .tabList button.paddle-left { 
+  background: linear-gradient(270deg, rgba(255, 255, 255, 0.00) 28.48%, #FFF 50.3%);
+}
+
+.tabs.segmented-control .tabList button.paddle-right { 
+  background: linear-gradient(270deg, #FFF 49.7%, rgba(255, 255, 255, 0.00) 71.52%);
+}
+
+.tabs.segmented-control .paddle svg {
+  margin: unset;
+  width: 24px;
+  height: 24px;
+  color: #505050;
+}
+
+.tabs.segmented-control .tabList button.paddle:disabled {
+  background: none;
+  display: none;
+}
+
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs .tabList,
@@ -547,6 +620,10 @@
     padding-block: var(--spacing-xs);
     padding-inline: 0;
     min-block-size: 56px;
+  }
+
+  .tabs.segmented-control .tabList button {
+    padding: 10px 17px;
   }
 }
 
