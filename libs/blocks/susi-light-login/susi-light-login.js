@@ -60,7 +60,7 @@ export class SusiLight {
     const { env } = getConfig();
     const sentry = createTag('susi-sentry-light');
     const { classList } = this.el;
-    const layoutClass = layoutClasses.filter((layout) => classList.contains(layout.toLowerCase()));
+    const layoutClass = layoutClasses.find((layout) => classList.contains(layout.toLowerCase()));
 
     if (env.name !== 'prod') sentry.stage = true;
     sentry.variant = 'standard';
@@ -70,9 +70,8 @@ export class SusiLight {
     sentry.config = { consentProfile: 'free' };
     sentry.addEventListener('redirect', onRedirect);
     sentry.addEventListener('on-error', onError);
-    if (layoutClass.length > 0) {
-      const [layout] = layoutClass;
-      sentry.config.layout = layout;
+    if (layoutClass) {
+      sentry.config.layout = layoutClass;
     }
     return sentry;
   };
