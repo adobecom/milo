@@ -191,7 +191,6 @@ export default async function init(el) {
     decorateLegal(el, legal);
   }
 
-  // Watch for data-block-status attribute changes on .section ancestor
   const section = el.closest('.section');
   if (!section) { return; }
   const observer = new MutationObserver((mutations) => {
