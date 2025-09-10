@@ -151,10 +151,14 @@ function decorateInput(el, input) {
     fieldInput.addEventListener('focus', () => {
       const bcLegal = el.querySelector('.bc-legal');
       if (stickyLegalContent.legalSection && !bcLegal.classList.contains('legal-shown')) {
-        stickyLegalContent.legalSection.append(
-          stickyLegalContent.headerContainer,
-          stickyLegalContent.legalCopy,
-        );
+        // this timeout is necessary for screenreaders to properly register updates to aria-live
+        setTimeout(() => {
+          stickyLegalContent.legalSection.append(
+            stickyLegalContent.headerContainer,
+            stickyLegalContent.legalCopy,
+            stickyLegalContent.closeButton,
+          );
+        }, 100);
       }
       bcLegal.classList.add('legal-shown');
     });
@@ -182,7 +186,7 @@ function decorateLegal(el, legal) {
   if (el.classList.contains('sticky')) {
     legalSection.setAttribute('aria-live', 'polite');
     const closeButton = createTag('button', { class: 'bc-legal-close', 'aria-label': 'Close' }, closeIcon);
-    legalSection.append(closeButton);
+    stickyLegalContent.closeButton = closeButton;
     closeButton.addEventListener('click', () => {
       legalSection.classList.add('legal-closed');
       el.querySelector('.bc-input-field input').focus();
