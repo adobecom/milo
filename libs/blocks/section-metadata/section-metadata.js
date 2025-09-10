@@ -80,15 +80,13 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
 async function createShowMoreButton(section) {
   const seeMoreText = await replacePlaceholder('see-more-features');
   const showMoreButton = createTag('div', { class: 'show-more-button' });
-  const button = createTag('button', {}, '');
-  button.innerHTML = seeMoreText;
+  const button = createTag('button', {}, seeMoreText);
 
   const iconSpan = createTag('span', {
     class: 'show-more-icon',
     'aria-hidden': 'true',
   }, `${ADD_MORE_ICON}`);
   button.appendChild(iconSpan);
-  button.setAttribute('aria-label', seeMoreText);
 
   button.addEventListener('click', () => {
     section.classList.add('show-all');
@@ -99,13 +97,16 @@ async function createShowMoreButton(section) {
   return showMoreButton;
 }
 
-async function handleCollapseSection(text, section) {
-  if (!text || !section) return;
+async function handleCollapseSection(section) {
+  if (!section) return;
   const blocks = section.querySelectorAll('div:not(:last-child)');
   const existingShowMoreButton = section.querySelector('.show-more-button');
-  if (text !== 'on' || blocks.length <= 3 || existingShowMoreButton) return;
+  if (blocks.length <= 3 || existingShowMoreButton) return;
   const showMoreButton = await createShowMoreButton(section);
   section.append(showMoreButton);
+  if (window.innerWidth > 600) {
+    section.style.background = 'none';
+  }
   decorateDefaultLinkAnalytics(showMoreButton);
 }
 
@@ -134,6 +135,6 @@ export default async function init(el) {
   if (metadata.delay) handleDelay(metadata.delay.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text, section);
   // eslint-disable-next-line max-len
-  if (metadata['collapse-ups-mobile']) await handleCollapseSection(metadata['collapse-ups-mobile'].text, section);
+  if (metadata['collapse-ups-mobile']?.text === 'on') await handleCollapseSection(section);
   addListAttrToSection(section);
 }

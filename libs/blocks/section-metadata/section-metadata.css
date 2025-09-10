@@ -241,8 +241,7 @@ main > .section[class*='-up'] > .content {
   color: #070707;
   text-decoration: none;
   cursor: pointer;
-  font-size: 18px;
-  font-style: normal;
+  font-size: var(--type-body-m-size);
   font-weight: 700;
   line-height: 22px;
   padding: var(--spacing-xxs) var(--spacing-s);
@@ -308,11 +307,6 @@ main > .section[class*='-up'] > .content {
   .section .show-more-button {
     display: none;
   }
-
-  .section:has(.show-more-button),
-  .section.show-all {
-    background: none !important;
-  }
 }
 
 @media screen and (min-width: 720px) {
@@ -323,11 +317,6 @@ main > .section[class*='-up'] > .content {
 
   .section .show-more-button {
     display: none;
-  }
-
-  .section:has(.show-more-button),
-  .section.show-all {
-    background: none !important;
   }
 }
 
