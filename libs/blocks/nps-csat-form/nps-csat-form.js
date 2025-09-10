@@ -230,6 +230,10 @@ export default async (block) => {
   // The form will still be interactable in case
   // Acknowledgement fails
   sendMessage(READY);
+  sendMessage({
+    type: 'TMP_DEBUG_MSG_DELETE_LATER',
+    data: Object.fromEntries(new URLSearchParams(window.location.search.slice(1))),
+  });
 
   // Add form validation handler - only show errors after submit attempt
   const form = block.querySelector('#nps');
