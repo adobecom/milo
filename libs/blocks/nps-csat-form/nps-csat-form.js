@@ -234,6 +234,7 @@ export default async (block) => {
     type: 'TMP_DEBUG_MSG_DELETE_LATER',
     data: Object.fromEntries(new URLSearchParams(window.location.search.slice(1))),
   });
+  console.log(Object.fromEntries(new URLSearchParams(window.location.search.slice(1))));
 
   // Add form validation handler - only show errors after submit attempt
   const form = block.querySelector('#nps');
