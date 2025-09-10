@@ -159,7 +159,8 @@ html[dir="rtl"] .carousel .carousel-previous {
   will-change: transform;
 }
 
-.carousel.container.align-height .carousel-slides {
+.carousel.container.align-height .carousel-slides,
+.carousel.container.disable-buttons .carousel-slides {
   align-items: stretch;
 }
 
