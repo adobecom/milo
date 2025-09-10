@@ -1,9 +1,5 @@
- :root {
-  /* border-radius sizes */
-  --l-rounded-corners: 16px;
-}
-
 .icon-block {
+  --l-rounded-corners: 16px;
   display: block;
   width: 100%;
   position: relative;
