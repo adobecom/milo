@@ -19,14 +19,10 @@ function getAnalyticsLabel(step) {
 function updateModalHeight() {
   const modal = document.getElementById('brand-concierge-modal');
   if (!modal) return;
-
   const isMobile = window.innerWidth < 768;
   const marginTop = isMobile ? 22 : 32;
-
-  // Use the smaller of window.innerHeight or visual viewport height
   const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
   const modalHeight = Math.min(viewportHeight - marginTop, window.innerHeight - marginTop);
-
   modal.style.height = `${modalHeight}px`;
 }
 
@@ -46,28 +42,6 @@ async function openChatModal(initialMessage, el) {
   el.querySelector('.bc-input-field textarea').value = '';
 
   updateModalHeight();
-  const handleViewportResize = () => updateModalHeight();
-  const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
-  window.visualViewport?.addEventListener('resize', handleViewportResize);
-  window.addEventListener('resize', handleViewportResize);
-  window.addEventListener('orientationchange', handleOrientationChange);
-
-  const cleanup = () => {
-    window.visualViewport?.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('orientationchange', handleOrientationChange);
-  };
-
-  // Store cleanup function on the modal for later use
-  // eslint-disable-next-line no-underscore-dangle
-  modal._cleanupViewportListeners = cleanup;
-
-  // Listen for modal close event to clean up viewport listeners
-  const handleBCModalClose = () => {
-    cleanup();
-    window.removeEventListener('milo:modal:closed', handleBCModalClose);
-  };
-  window.addEventListener('milo:modal:closed', handleBCModalClose);
 
   // eslint-disable-next-line no-underscore-dangle
   window._satellite?.track('bootstrapConversationalExperience', {
@@ -75,6 +49,22 @@ async function openChatModal(initialMessage, el) {
     src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
     stylingConfigurations: chatUIConfig,
   });
+
+  const handleViewportResize = () => updateModalHeight();
+  const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
+  window.visualViewport?.addEventListener('resize', handleViewportResize);
+  window.addEventListener('resize', handleViewportResize);
+  window.addEventListener('orientationchange', handleOrientationChange);
+  const cleanup = () => {
+    window.visualViewport?.removeEventListener('resize', handleViewportResize);
+    window.removeEventListener('resize', handleViewportResize);
+    window.removeEventListener('orientationchange', handleOrientationChange);
+  };
+  const handleBCModalClose = () => {
+    cleanup();
+    window.removeEventListener('milo:modal:closed', handleBCModalClose);
+  };
+  window.addEventListener('milo:modal:closed', handleBCModalClose);
 }
 
 function decorateBackground(el, background) {
