@@ -81,7 +81,7 @@ const renderBulkTab = (component) => html`
       error: (err) => html`<p style="color: var(--error-color);">Error: ${err}</p>`,
     })}
 
-    ${component.bulkCopyStatus ? html`
+    ${component.bulkCopyStatus?.payload?.fileContent ? html`
       <div class="bulk-copy-status" style="margin-top: 24px; padding: 20px; background: var(--bg-primary); border-radius: 12px; border: 1px solid var(--border-color);">
         <!-- Header Section -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -96,7 +96,7 @@ const renderBulkTab = (component) => html`
               font-weight: 600;
               text-transform: uppercase;
             ">
-              ${component.bulkCopyStatus.payload.fileContent.overallStatus}
+              ${component.bulkCopyStatus.payload.fileContent.overallStatus || 'Unknown'}
             </div>
           </div>
         </div>
@@ -107,11 +107,11 @@ const renderBulkTab = (component) => html`
         <div style="margin-bottom: 20px;">
           <h4 style="margin: 0 0 16px 0; color: var(--text-primary); font-size: 16px;">Processing Steps</h4>
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            ${Object.entries(component.bulkCopyStatus.payload.fileContent.steps).map(([stepKey, step], index) => html`
+            ${component.bulkCopyStatus.payload.fileContent.steps ? Object.entries(component.bulkCopyStatus.payload.fileContent.steps).map(([stepKey, step], index) => html`
               <div style="
                 background: var(--bg-secondary); 
                 border-radius: 8px; 
-                border-left: 4px solid ${step.status === 'completed' ? '#4CAF50' : step.status === 'failed' ? '#F44336' : '#FF9800'};
+                border-left: 4px solid ${step?.status === 'completed' ? '#4CAF50' : step?.status === 'failed' ? '#F44336' : '#FF9800'};
                 overflow: hidden;
               ">
                 <!-- Step Header (Always Visible) -->
@@ -131,7 +131,7 @@ const renderBulkTab = (component) => html`
                       width: 24px; 
                       height: 24px; 
                       border-radius: 50%; 
-                      background: ${step.status === 'completed' ? '#4CAF50' : step.status === 'failed' ? '#F44336' : '#FF9800'};
+                      background: ${step?.status === 'completed' ? '#4CAF50' : step?.status === 'failed' ? '#F44336' : '#FF9800'};
                       display: flex; 
                       align-items: center; 
                       justify-content: center;
@@ -139,13 +139,13 @@ const renderBulkTab = (component) => html`
                       font-size: 12px;
                       font-weight: bold;
                     ">
-                      ${step.status === 'completed' ? '✓' : step.status === 'failed' ? '✗' : index + 1}
+                      ${step?.status === 'completed' ? '✓' : step?.status === 'failed' ? '✗' : index + 1}
                     </div>
                     <div>
-                      <h5 style="margin: 0; color: var(--text-primary); font-size: 14px; font-weight: 600;">${step.name}</h5>
+                      <h5 style="margin: 0; color: var(--text-primary); font-size: 14px; font-weight: 600;">${step?.name || 'Unknown Step'}</h5>
                       <div style="font-size: 12px; color: var(--text-secondary);">
-                        ${step.progress.completed}/${step.progress.total} completed
-                        ${step.endTime ? ` • ${new Date(step.endTime).toLocaleTimeString()}` : ''}
+                        ${step?.progress?.completed || 0}/${step?.progress?.total || 0} completed
+                        ${step?.endTime ? ` • ${new Date(step.endTime).toLocaleTimeString()}` : ''}
                       </div>
                     </div>
                   </div>
@@ -153,13 +153,13 @@ const renderBulkTab = (component) => html`
                     <div style="
                       padding: 2px 8px; 
                       border-radius: 12px; 
-                      background: ${step.status === 'completed' ? '#E8F5E8' : step.status === 'failed' ? '#FFEBEE' : '#FFF3CD'};
-                      color: ${step.status === 'completed' ? '#2E7D32' : step.status === 'failed' ? '#C62828' : '#856404'};
+                      background: ${step?.status === 'completed' ? '#E8F5E8' : step?.status === 'failed' ? '#FFEBEE' : '#FFF3CD'};
+                      color: ${step?.status === 'completed' ? '#2E7D32' : step?.status === 'failed' ? '#C62828' : '#856404'};
                       font-size: 11px;
                       font-weight: 600;
                       text-transform: uppercase;
                     ">
-                      ${step.status}
+                      ${step?.status || 'Unknown'}
                     </div>
                     <div style="
                       transform: ${component.expandedSteps?.has(stepKey) ? 'rotate(180deg)' : 'rotate(0deg)'};
@@ -179,7 +179,7 @@ const renderBulkTab = (component) => html`
                     <div style="margin-bottom: 16px;">
                       <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">
                         <span>Progress</span>
-                        <span>${step.progress.completed}/${step.progress.total}</span>
+                        <span>${step?.progress?.completed || 0}/${step?.progress?.total || 0}</span>
                       </div>
                       <div style="
                         width: 100%; 
@@ -189,20 +189,20 @@ const renderBulkTab = (component) => html`
                         overflow: hidden;
                       ">
                         <div style="
-                          width: ${(step.progress.completed / step.progress.total) * 100}%; 
+                          width: ${step?.progress?.total ? ((step.progress.completed || 0) / step.progress.total) * 100 : 0}%; 
                           height: 100%; 
-                          background: ${step.status === 'completed' ? '#4CAF50' : step.status === 'failed' ? '#F44336' : '#FF9800'};
+                          background: ${step?.status === 'completed' ? '#4CAF50' : step?.status === 'failed' ? '#F44336' : '#FF9800'};
                           transition: width 0.3s ease;
                         "></div>
                       </div>
                     </div>
 
                     <!-- Step Details -->
-                    ${step.details ? html`
+                    ${step?.details ? html`
                       <div style="margin-bottom: 16px;">
                         <h6 style="margin: 0 0 8px 0; color: var(--text-primary); font-size: 13px; font-weight: 600;">Details</h6>
                         <div style="font-size: 12px; color: var(--text-secondary);">
-                          ${Object.entries(step.details).map(([key, value]) => {
+                          ${Object.entries(step.details || {}).map(([key, value]) => {
                             if (Array.isArray(value)) {
                               return html`
                                 <div style="margin-bottom: 8px;">
@@ -246,7 +246,7 @@ const renderBulkTab = (component) => html`
                     ` : ''}
 
                     <!-- Timing Information -->
-                    ${step.startTime || step.endTime ? html`
+                    ${step?.startTime || step?.endTime ? html`
                       <div style="
                         padding: 8px 12px; 
                         background: var(--bg-primary); 
@@ -255,19 +255,20 @@ const renderBulkTab = (component) => html`
                         color: var(--text-secondary);
                       ">
                         <div style="display: flex; justify-content: space-between;">
-                          ${step.startTime ? html`<span>Started: ${new Date(step.startTime).toLocaleString()}</span>` : ''}
-                          ${step.endTime ? html`<span>Completed: ${new Date(step.endTime).toLocaleString()}</span>` : ''}
+                          ${step?.startTime ? html`<span>Started: ${new Date(step.startTime).toLocaleString()}</span>` : ''}
+                          ${step?.endTime ? html`<span>Completed: ${new Date(step.endTime).toLocaleString()}</span>` : ''}
                         </div>
                       </div>
                     ` : ''}
                   </div>
                 ` : ''}
               </div>
-            `)}
+            `) : html`<div style="padding: 16px; text-align: center; color: var(--text-secondary);">No steps available</div>`}
           </div>
         </div>
 
         <!-- Overall Timing -->
+        ${component.bulkCopyStatus.payload.fileContent.startTime || component.bulkCopyStatus.payload.fileContent.endTime ? html`
         <div style="
           padding: 12px; 
           background: var(--bg-secondary); 
@@ -278,10 +279,11 @@ const renderBulkTab = (component) => html`
           margin-top: 16px;
         ">
           <div style="display: flex; justify-content: space-between;">
-            <span>Started: ${new Date(component.bulkCopyStatus.payload.fileContent.startTime).toLocaleString()}</span>
-            <span>Completed: ${new Date(component.bulkCopyStatus.payload.fileContent.endTime).toLocaleString()}</span>
+            ${component.bulkCopyStatus.payload.fileContent.startTime ? html`<span>Started: ${new Date(component.bulkCopyStatus.payload.fileContent.startTime).toLocaleString()}</span>` : ''}
+            ${component.bulkCopyStatus.payload.fileContent.endTime ? html`<span>Completed: ${new Date(component.bulkCopyStatus.payload.fileContent.endTime).toLocaleString()}</span>` : ''}
           </div>
         </div>
+        ` : ''}
       </div>
     ` : ''}
   </div>

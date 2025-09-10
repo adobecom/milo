@@ -114,7 +114,7 @@ class GrayboxPromote extends LitElement {
     }
   }
 
-  async toggleTab(tab) {
+  toggleTab(tab) {
     this.activeTab = tab;
     if (tab === 'promote') {
       // Stop bulk copy polling when switching to promote tab
@@ -123,7 +123,6 @@ class GrayboxPromote extends LitElement {
     } else if (tab === 'bulk') {
       // Stop promote status polling when switching to bulk tab
       this.stopStatusPolling();
-      await this.setupTask.taskComplete;
       // Start bulk copy status polling when switching to bulk tab
       this.startBulkCopyStatusPolling();
     }
@@ -374,6 +373,11 @@ class GrayboxPromote extends LitElement {
     // Stop any existing polling first
     this.stopBulkCopyStatusPolling();
 
+    // Check if required properties are available
+    if (!this.baseUrl || !this.repo || !this.getEffectiveExperienceName()) {
+      return;
+    }
+
     // Create new poller instance
     this.bulkCopyPoller = pollBulkCopyStatus(
       this.baseUrl,
@@ -387,7 +391,10 @@ class GrayboxPromote extends LitElement {
           this.stopBulkCopyStatusPolling();
           this.showToast('Bulk copy completed successfully', 'success');
         }
-        this.requestUpdate();
+        // Only update if we're on the bulk tab
+        if (this.activeTab === 'bulk') {
+          this.requestUpdate();
+        }
       },
       (error) => {
         console.error('Error fetching bulk copy status:', error);
@@ -469,16 +476,26 @@ class GrayboxPromote extends LitElement {
 
   async fetchStatus() {
     try {
-      const { experienceName } = this.setup;
+      const experienceName = this.getEffectiveExperienceName();
+      if (!this.baseUrl || !this.repo || !experienceName) {
+        return;
+      }
       const data = await fetchPromoteStatus(this.baseUrl, this.repo, experienceName);
       this.currentStatus = data;
-      this.requestUpdate();
+      // Only update if we're on the promote tab
+      if (this.activeTab === 'promote') {
+        this.requestUpdate();
+      }
     } catch (error) {
       console.error('Error fetching status:', error);
     }
   }
 
   startStatusPolling() {
+    // Check if required properties are available
+    if (!this.baseUrl || !this.repo || !this.getEffectiveExperienceName()) {
+      return;
+    }
     this.startPollingTask('promote', () => this.fetchStatus());
   }
 
