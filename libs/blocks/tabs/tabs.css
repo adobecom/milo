@@ -28,7 +28,7 @@
   --tabs-radio-blue: #0265dc;
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
-  --m-rounded-corners: 8px;
+  --m-rounded-corners-tabs: 8px;
 }
 
 :root .dark {
@@ -505,21 +505,21 @@
   display: flex;
   align-items: center;
   position: relative;
-  border-radius: var(--m-rounded-corners);
+  border-radius: var(--m-rounded-corners-tabs);
   overflow: hidden;
 }
 
 .tabs.segmented-control .tabList .tab-list-container {
-  background: #f8f8f8;
+  background: var(--color-gray-100);
   overflow: hidden;
-  border-radius: var(--m-rounded-corners);
+  border-radius: var(--m-rounded-corners-tabs);
   padding: 1px;
-  min-width: 298px;
+  min-width: 300px;
 }
 
 .tabs.segmented-control .tabList button {
   padding: 10px;
-  border-radius: var(--m-rounded-corners);
+  border-radius: var(--m-rounded-corners-tabs);
   border: none;
   font-weight: 700;
   color: var(--tabs-pill-bg-color);
@@ -541,7 +541,7 @@
   box-shadow: none;
   flex-shrink: 0;
   justify-content: end;
-  padding: 0 !important;
+  padding: 0;
   z-index: 4;
 }
 
@@ -563,10 +563,6 @@
 .tabs.segmented-control .tabList button.paddle:disabled {
   background: none;
   display: none;
-}
-
-.tabs.segmented-control .paddle:disabled svg {
-  opacity: 0;
 }
 
 /* Section Metadata */
@@ -627,7 +623,7 @@
   }
 
   .tabs.segmented-control .tabList button {
-    padding: 10px 17.5px;
+    padding: 10px 17px;
   }
 }
 
