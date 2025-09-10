@@ -602,13 +602,8 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.dark.disable-buttons .carousel-button.disabled,
   .dark .carousel.disable-buttons .carousel-button.disabled {
     background-color: var(--carousel-nav-background-dark);
-    /* color: var(--text-color); */
   }
 
-   .carousel.dark.disable-buttons .carousel-slide div,
-  .dark .carousel.disable-buttons .carousel-slide div{
-    color: var(--text-color);
-  }
 
   .carousel.disable-buttons .carousel-slides {
     align-items: center;
