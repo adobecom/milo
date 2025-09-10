@@ -24,8 +24,10 @@ import {
   SLD,
   MILO_EVENTS,
 } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 const ROOT_MARGIN = 50;
+const IFRAME_TIMEOUT = 3000;
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
@@ -186,11 +188,72 @@ export const formSuccess = (formEl, formData) => {
   return false;
 };
 
+const handleIframeTimeout = (el) => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const config = getConfig();
+  const iframe = document.querySelector('iframe[src*="/index.php/form/XDFrame"]');
+  const formEl = el.querySelector('form');
+  let iframeTimeout = null;
+
+  const handleIframeReady = (event) => {
+    if (event.origin === 'https://engage.adobe.com') {
+      const message = JSON.parse(event.data);
+      if (message.mktoReady) {
+        if (iframeTimeout) clearTimeout(iframeTimeout);
+        const errorOverlay = el.querySelector('.marketo-overlay');
+        if (errorOverlay) {
+          errorOverlay.remove();
+          if (formEl) formEl.inert = false;
+        }
+        window.removeEventListener('message', handleIframeReady);
+      }
+    }
+  };
+
+  const decorateOverlay = async () => {
+    const cookieSize = document.cookie.length > 4096 ? '> 4k' : '< 4k';
+    window.lana?.log(`Marketo iframe timeout - Cookie Size ${cookieSize}`, { tags: 'error,marketo' });
+
+    if (el.querySelector('.marketo-overlay')) return;
+    if (!config.marketo?.showError && searchParams.get('marketoOverlay') !== 'error') return;
+
+    const marketoErrorText = await replaceKey('marketo-load-error', config);
+    if (formEl) formEl.inert = true;
+
+    const errorMessage = createTag('p', { class: 'error' }, marketoErrorText);
+    const retryButton = createTag('button', { class: 'retry-button' }, 'Try Again');
+    const formError = createTag('div', { class: 'error-container' }, [errorMessage, retryButton]);
+    const errorOverlay = createTag('div', { class: 'marketo-overlay' }, formError);
+
+    retryButton.addEventListener('click', () => {
+      const iframeSrc = iframe.src;
+      errorOverlay.remove();
+      if (formEl) formEl.inert = false;
+      iframe.src = '';
+      iframe.src = iframeSrc;
+      clearTimeout(iframeTimeout);
+      iframeTimeout = setTimeout(decorateOverlay, config.marketo?.iframeTimeout ?? IFRAME_TIMEOUT);
+    });
+
+    el.style.position = 'relative';
+    el.appendChild(errorOverlay);
+  };
+
+  if (searchParams.get('marketoOverlay') === 'error') {
+    decorateOverlay();
+    return;
+  }
+
+  iframeTimeout = setTimeout(decorateOverlay, config.marketo?.iframeTimeout ?? IFRAME_TIMEOUT);
+  window.addEventListener('message', handleIframeReady);
+};
+
 const readyForm = (form, formData) => {
   const formEl = form.getFormElem().get(0);
   const el = formEl.closest('.marketo');
   const isDesktop = matchMedia('(min-width: 900px)');
   el.classList.remove('loading');
+  handleIframeTimeout(el);
 
   formEl.addEventListener('focus', ({ target }) => {
     /* c8 ignore next 9 */
@@ -221,6 +284,7 @@ export const loadMarketo = (el, formData) => {
 
       MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
+
       /* c8 ignore next 3 */
       if (el.classList.contains('multi-step')) {
         import('./marketo-multi.js').then(({ default: multiStep }) => multiStep(el));
@@ -232,6 +296,42 @@ export const loadMarketo = (el, formData) => {
       window.lana?.log(`Error loading Marketo form for ${munchkinID}_${formID}`, { tags: 'error,marketo' });
     });
 };
+
+function decorateForm(el, formData) {
+  const formID = formData[FORM_ID];
+  const fragment = new DocumentFragment();
+  const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
+
+  if (formData.title) {
+    const title = createTag('h3', { class: 'marketo-title' }, formData.title);
+    formWrapper.append(title);
+  }
+
+  if (formData.description) {
+    const description = createTag('p', { class: 'marketo-description' }, formData.description);
+    formWrapper.append(description);
+  }
+
+  const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors', style: 'opacity:0;visibility:hidden;' });
+  const span1 = createTag('span', { id: 'mktoForms2BaseStyle', style: 'display:none;' });
+  const span2 = createTag('span', { id: 'mktoForms2ThemeStyle', style: 'display:none;' });
+  formWrapper.append(span1, span2, marketoForm);
+
+  fragment.append(formWrapper);
+  el.replaceChildren(fragment);
+  el.classList.add('loading');
+
+  const stepPreferences = formData['form.fldStepPref'] || {};
+  const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
+
+  /* c8 ignore next 6 */
+  if (count > 1) {
+    el.classList.add(`multi-${count}`);
+  }
+  if (el.classList.contains('multi-2') || el.classList.contains('multi-3')) {
+    el.classList.add('multi-step');
+  }
+}
 
 export default function init(el) {
   const children = Array.from(el.querySelectorAll(':scope > div'));
@@ -284,39 +384,7 @@ export default function init(el) {
   }
 
   setPreferences(formData);
-
-  const fragment = new DocumentFragment();
-  const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
-
-  if (formData.title) {
-    const title = createTag('h3', { class: 'marketo-title' }, formData.title);
-    formWrapper.append(title);
-  }
-
-  if (formData.description) {
-    const description = createTag('p', { class: 'marketo-description' }, formData.description);
-    formWrapper.append(description);
-  }
-
-  const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors', style: 'opacity:0;visibility:hidden;' });
-  const span1 = createTag('span', { id: 'mktoForms2BaseStyle', style: 'display:none;' });
-  const span2 = createTag('span', { id: 'mktoForms2ThemeStyle', style: 'display:none;' });
-  formWrapper.append(span1, span2, marketoForm);
-
-  fragment.append(formWrapper);
-  el.replaceChildren(fragment);
-  el.classList.add('loading');
-
-  const stepPreferences = formData['form.fldStepPref'] || {};
-  const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
-
-  /* c8 ignore next 6 */
-  if (count > 1) {
-    el.classList.add(`multi-${count}`);
-  }
-  if (el.classList.contains('multi-2') || el.classList.contains('multi-3')) {
-    el.classList.add('multi-step');
-  }
+  decorateForm(el, formData);
 
   loadLink(`https://${baseURL}`, { rel: 'dns-prefetch' });
 
