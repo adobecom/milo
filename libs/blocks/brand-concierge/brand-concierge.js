@@ -40,7 +40,6 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   el.querySelector('.bc-input-field textarea').value = '';
-
   updateModalHeight();
 
   // eslint-disable-next-line no-underscore-dangle
