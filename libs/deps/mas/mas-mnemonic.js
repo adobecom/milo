@@ -1,29 +1,25 @@
-import { LitElement, html, css } from 'lit';
-
-function hasSpectrumTooltip() {
-    // Only use Spectrum if ALL required components are available
-    return customElements.get('sp-tooltip') !== undefined && 
-           customElements.get('overlay-trigger') !== undefined &&
-           document.querySelector('sp-theme') !== null;
-}
-
-/**
- * MasTooltip - A web component that handles tooltips within MAS
- * Automatically detects if Spectrum Web Components are available and renders appropriately
- */
-export default class MasTooltip extends LitElement {
-    static properties = {
-        content: { type: String },
-        placement: { type: String },
-        variant: { type: String },
-        // Icon-based tooltip properties
-        src: { type: String },
-        size: { type: String },
-        tooltipText: { type: String, attribute: 'tooltip-text' },
-        tooltipPlacement: { type: String, attribute: 'tooltip-placement' },
-    };
-
-    static styles = css`
+var a=Object.defineProperty;var s=(o,t,e)=>t in o?a(o,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):o[t]=e;var n=(o,t,e)=>s(o,typeof t!="symbol"?t+"":t,e);import{LitElement as p,html as i,css as l}from"../lit-all.min.js";function c(){return customElements.get("sp-tooltip")!==void 0&&customElements.get("overlay-trigger")!==void 0&&document.querySelector("sp-theme")!==null}var r=class extends p{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.mnemonicText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.mnemonicPlacement||this.placement||"top"}renderIcon(){return this.src?i`<merch-icon 
+            src="${this.src}" 
+            size="${this.size}"
+        ></merch-icon>`:i`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?c()?i`
+                <overlay-trigger placement="${e}">
+                    <span slot="trigger">${this.renderIcon()}</span>
+                    <sp-tooltip 
+                        placement="${e}"
+                        variant="${this.variant}">
+                        ${t}
+                    </sp-tooltip>
+                </overlay-trigger>
+            `:i`
+                <span 
+                    class="css-tooltip ${e}"
+                    data-tooltip="${t}"
+                    tabindex="0"
+                    role="img"
+                    aria-label="${t}">
+                    ${this.renderIcon()}
+                </span>
+            `:this.renderIcon()}};n(r,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"},mnemonicText:{type:String,attribute:"mnemonic-text"},mnemonicPlacement:{type:String,attribute:"mnemonic-placement"}}),n(r,"styles",l`
         :host {
             display: contents;
             overflow: visible;
@@ -132,69 +128,4 @@ export default class MasTooltip extends LitElement {
             margin-left: 5px;
             border-right-color: var(--spectrum-gray-800, #323232);
         }
-    `;
-
-    constructor() {
-        super();
-        this.content = '';
-        this.placement = 'top';
-        this.variant = 'info';
-        this.size = 'xs';
-    }
-
-    get effectiveContent() {
-        return this.tooltipText || this.content || '';
-    }
-
-    get effectivePlacement() {
-        return this.tooltipPlacement || this.placement || 'top';
-    }
-
-    renderIcon() {
-        if (!this.src) return html`<slot></slot>`;
-        return html`<merch-icon 
-            src="${this.src}" 
-            size="${this.size}"
-        ></merch-icon>`;
-    }
-
-    render() {
-        const content = this.effectiveContent;
-        const placement = this.effectivePlacement;
-        
-        if (!content) {
-            return this.renderIcon();
-        }
-
-        // Check for Spectrum components at render time for better timing
-        const useSpectrum = hasSpectrumTooltip();
-
-        if (useSpectrum) {
-            // Use Spectrum tooltip if available
-            return html`
-                <overlay-trigger placement="${placement}">
-                    <span slot="trigger">${this.renderIcon()}</span>
-                    <sp-tooltip 
-                        placement="${placement}"
-                        variant="${this.variant}">
-                        ${content}
-                    </sp-tooltip>
-                </overlay-trigger>
-            `;
-        } else {
-            // Use CSS tooltip
-            return html`
-                <span 
-                    class="css-tooltip ${placement}"
-                    data-tooltip="${content}"
-                    tabindex="0"
-                    role="img"
-                    aria-label="${content}">
-                    ${this.renderIcon()}
-                </span>
-            `;
-        }
-    }
-}
-
-customElements.define('mas-tooltip', MasTooltip);
+    `);customElements.define("mas-mnemonic",r);export{r as default};
