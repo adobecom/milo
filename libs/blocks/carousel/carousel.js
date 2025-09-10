@@ -135,8 +135,10 @@ function setEqualHeight(slides, slideContainer) {
   slides.forEach((slide) => {
     if (slide === activeSlide) {
       slide.style.height = `${maxHeight}px`;
+      slide.style.transition = 'height 0.2s ease-out';
     } else {
       slide.style.height = `${maxHeight - 40}px`;
+      slide.style.transition = 'height 0.2s ease-out';
     }
   });
   slideContainer.style.height = `${maxHeight}px`;
@@ -381,17 +383,25 @@ export function getSwipeDirection(swipe, swipeDistance) {
   * Mobile swipe/touch direction detection
   */
 function mobileSwipeDetect(carouselElements) {
-  const { el } = carouselElements;
+  const { el, slides } = carouselElements;
   const swipe = { xMin: 50 };
   /* c8 ignore start */
   el.addEventListener('touchstart', (event) => {
     const touch = event.touches[0];
     swipe.xStart = touch.screenX;
+    swipe.yStart = touch.screenY;
   });
 
   el.addEventListener('touchmove', (event) => {
     const touch = event.touches[0];
     swipe.xEnd = touch.screenX;
+    swipe.yEnd = touch.screenY;
+    const xDistance = Math.abs(swipe.xEnd - swipe.xStart);
+    const yDistance = Math.abs(swipe.yEnd - swipe.yStart);
+    // If horizontal movement is greater than vertical, prevent default to stop vertical scrolling
+    if (xDistance > yDistance && xDistance > 10) {
+      event.preventDefault();
+    }
   });
 
   el.addEventListener('touchend', (event) => {
@@ -399,6 +409,15 @@ function mobileSwipeDetect(carouselElements) {
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     carouselElements.direction = getSwipeDirection(swipe, swipeDistance);
 
+    //stop swipe for disabled-buttons variant.
+    const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
+    if (carouselElements.el.classList.contains('disable-buttons')
+          && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
+          || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left'))) {
+      swipe.xStart = 0;
+      swipe.xEnd = 0;
+      return;
+    }
     // reset end swipe values
     swipe.xStart = 0;
     swipe.xEnd = 0;
