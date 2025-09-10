@@ -131,10 +131,52 @@ export async function findFragments(baseUrl, params) {
 }
 
 export async function fetchBulkCopyStatus(baseUrl, repo, experienceName) {
-  const statusUrl = `${baseUrl}/file-status.json?showContent=graybox_promote/${repo}/${experienceName}/bulk-copy-status.json`;
+  const statusUrl = `${baseUrl}/file-status.json?showContent=graybox_promote/`
+    + `${repo}/${experienceName}/bulk-copy-status.json`;
   const response = await fetch(statusUrl);
   if (!response.ok) throw new Error('Failed to fetch bulk copy status');
   return response.json();
+}
+
+// eslint-disable-next-line max-len
+export function pollBulkCopyStatus(baseUrl, repo, experienceName, onStatusUpdate, onError, intervalMs = 3000) {
+  let isPolling = false;
+  let intervalId = null;
+
+  const poll = async () => {
+    if (isPolling) {
+      try {
+        const status = await fetchBulkCopyStatus(baseUrl, repo, experienceName);
+        onStatusUpdate(status);
+      } catch (error) {
+        onError(error);
+      }
+    }
+  };
+
+  const start = () => {
+    if (!isPolling) {
+      isPolling = true;
+      // Initial fetch
+      poll();
+      // Set up interval for subsequent fetches
+      intervalId = setInterval(poll, intervalMs);
+    }
+  };
+
+  const stop = () => {
+    isPolling = false;
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
+
+  return {
+    start,
+    stop,
+    isPolling: () => isPolling,
+  };
 }
 
 export async function initiateBulkCopy(baseUrl, params) {

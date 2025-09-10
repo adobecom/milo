@@ -16,6 +16,7 @@ import {
   preview,
   findFragments,
   fetchBulkCopyStatus,
+  pollBulkCopyStatus,
   initiateBulkCopy,
   initiatePromotion,
   fetchPromoteStatus,
@@ -45,6 +46,8 @@ class GrayboxPromote extends LitElement {
   configData = null;
 
   pollingIntervals = {};
+
+  bulkCopyPoller = null;
 
   currentStatus = null;
 
@@ -100,9 +103,7 @@ class GrayboxPromote extends LitElement {
     if (!effectiveExperienceName) return;
 
     try {
-      const data = await fetchBulkCopyStatus(
-        this.baseUrl, this.repo, effectiveExperienceName,
-      );
+      const data = await fetchBulkCopyStatus(this.baseUrl, this.repo, effectiveExperienceName);
 
       if (data?.payload?.fileContent) {
         this.bulkCopyStatus = data;
@@ -116,12 +117,15 @@ class GrayboxPromote extends LitElement {
   async toggleTab(tab) {
     this.activeTab = tab;
     if (tab === 'promote') {
+      // Stop bulk copy polling when switching to promote tab
+      this.stopBulkCopyStatusPolling();
       this.startStatusPolling();
-    } else {
-      await this.setupTask.taskComplete;
+    } else if (tab === 'bulk') {
+      // Stop promote status polling when switching to bulk tab
       this.stopStatusPolling();
-      // Check bulk copy status when switching to bulk tab
-      this.fetchInitialBulkCopyStatus();
+      await this.setupTask.taskComplete;
+      // Start bulk copy status polling when switching to bulk tab
+      this.startBulkCopyStatusPolling();
     }
     this.requestUpdate();
   }
@@ -367,11 +371,55 @@ class GrayboxPromote extends LitElement {
   }
 
   startBulkCopyStatusPolling() {
-    this.startPollingTask('bulkCopy', () => this.fetchBulkCopyStatus());
+    // Stop any existing polling first
+    this.stopBulkCopyStatusPolling();
+
+    // Create new poller instance
+    this.bulkCopyPoller = pollBulkCopyStatus(
+      this.baseUrl,
+      this.repo,
+      this.getEffectiveExperienceName(),
+      (status) => {
+        this.bulkCopyStatus = status;
+
+        // Stop polling if status is completed
+        if (status?.payload?.fileContent?.status === 'completed') {
+          this.stopBulkCopyStatusPolling();
+          this.showToast('Bulk copy completed successfully', 'success');
+        }
+        this.requestUpdate();
+      },
+      (error) => {
+        console.error('Error fetching bulk copy status:', error);
+      },
+      3000, // 3 seconds interval
+    );
+
+    // Start the polling
+    this.bulkCopyPoller.start();
   }
 
   stopBulkCopyStatusPolling() {
+    if (this.bulkCopyPoller) {
+      this.bulkCopyPoller.stop();
+      this.bulkCopyPoller = null;
+    }
+    // Also stop the old polling method as backup
     this.stopPollingTask('bulkCopy');
+  }
+
+  toggleStepExpansion(stepKey) {
+    if (!this.expandedSteps) {
+      this.expandedSteps = new Set();
+    }
+
+    if (this.expandedSteps.has(stepKey)) {
+      this.expandedSteps.delete(stepKey);
+    } else {
+      this.expandedSteps.add(stepKey);
+    }
+
+    this.requestUpdate();
   }
 
   async handleBulkCopy() {
@@ -446,7 +494,7 @@ class GrayboxPromote extends LitElement {
   async firstUpdated() {
     await this.setupTask.taskComplete;
     if (this.activeTab === 'bulk') {
-      this.fetchInitialBulkCopyStatus();
+      this.startBulkCopyStatusPolling();
     } else if (this.activeTab === 'promote') {
       this.startStatusPolling();
     }
@@ -455,6 +503,8 @@ class GrayboxPromote extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     Object.keys(this.pollingIntervals).forEach((name) => this.stopPollingTask(name));
+    // Stop bulk copy polling
+    this.stopBulkCopyStatusPolling();
   }
 
   constructor() {
