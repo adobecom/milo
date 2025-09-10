@@ -202,6 +202,7 @@ function createWorkerPageSetup(config = {}) {
   let masRequestErrors = [];
 
   const miloLibs = process.env.MILO_LIBS || '';
+  const masLibs = process.env.MAS_LIBS || '';
 
   /**
    * Sets up worker-scoped pages and listeners
@@ -222,7 +223,28 @@ function createWorkerPageSetup(config = {}) {
 
     const pagePromises = pages.map(async (pageConfig) => {
       const { name, url } = pageConfig;
-      const fullUrl = `${baseURL}${url}${miloLibs}`;
+      // Construct URL with proper query parameter handling
+      let fullUrl = `${baseURL}${url}`;
+      
+      // Add miloLibs if present (expected to start with ? when used)
+      if (miloLibs) {
+        // If base URL already has query params, convert ? to & for miloLibs
+        if (fullUrl.includes('?')) {
+          fullUrl += `&${miloLibs.replace(/^\?/, '')}`;
+        } else {
+          fullUrl += miloLibs;
+        }
+      }
+      
+      // Add masLibs if present
+      if (masLibs) {
+        // If there are already query params (from miloLibs or base URL), use &, otherwise use ?
+        const hasQueryParams = fullUrl.includes('?');
+        const separator = hasQueryParams ? '&' : '?';
+        // Remove leading ? from masLibs if present, since we're adding our own separator
+        const cleanMasLibs = masLibs.replace(/^\?/, '');
+        fullUrl += `${separator}${cleanMasLibs}`;
+      }
 
       console.info(`[Worker Setup]: Creating page for ${name}:`, fullUrl);
 
@@ -332,7 +354,9 @@ function createWorkerPageSetup(config = {}) {
    */
   async function verifyPageURL(pageName, expectedPath, expect) {
     const page = getPage(pageName);
-    const regex = new RegExp(expectedPath.replace('?', '\\?'));
+    // Create regex that matches the expected path with optional miloLibs and masLibs parameters
+    const escapedPath = expectedPath.replace('?', '\\?');
+    const regex = new RegExp(`${escapedPath}.*`);
     await expect(page).toHaveURL(regex);
   }
 
