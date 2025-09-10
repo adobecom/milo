@@ -829,6 +829,69 @@ button:active {
   cursor: pointer;
 }
 
+/* Toggle Button Styles */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-container label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.toggle-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 48px;
+  height: 24px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  margin: 0;
+}
+
+.toggle-button:hover {
+  border-color: var(--accent-color);
+}
+
+.toggle-button.enabled {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.toggle-button.disabled {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-button.enabled .toggle-slider {
+  transform: translateX(24px);
+}
+
+.toggle-button.disabled .toggle-slider {
+  transform: translateX(0);
+}
+
 .bulk-copy-btn {
   width: 100%;
   margin-top: 16px;

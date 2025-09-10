@@ -34,14 +34,16 @@ const renderBulkTab = (component) => html`
     </div>
 
     <div class="form-group">
-      <label class="toggle-label">
-        <input 
-          type="checkbox" 
-          .checked=${component.fetchFragments}
-          @change=${component.toggleFetchFragments}
-        />
-        Fetch Fragments
-      </label>
+      <div class="toggle-container">
+        <label>Include Fragment</label>
+        <button 
+          class="toggle-button ${component.fetchFragments ? 'enabled' : 'disabled'}"
+          @click=${component.toggleFetchFragments}
+          type="button"
+        >
+          <span class="toggle-slider"></span>
+        </button>
+      </div>
     </div>
 
     <div class="form-group">

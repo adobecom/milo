@@ -14,7 +14,6 @@ import {
   getSharepointData,
   loginToSharepoint,
   preview,
-  findFragments,
   fetchBulkCopyStatus,
   pollBulkCopyStatus,
   initiateBulkCopy,
@@ -26,7 +25,6 @@ import {
   renderToast,
 } from './ui-components.js';
 import renderBulkTab from './bulk-tab.js';
-import renderFragmentsModal from './fragments-modal.js';
 import { renderConfigSummary, renderStatusBar } from './promote-tab.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -69,13 +67,9 @@ class GrayboxPromote extends LitElement {
 
   urls = [''];
 
-  fetchFragments = false;
+  fetchFragments = true;
 
   experienceName = '';
-
-  showFragmentsModal = false;
-
-  foundFragments = [];
 
   validationErrors = {
     urls: '',
@@ -141,31 +135,12 @@ class GrayboxPromote extends LitElement {
     }
   }
 
-  async updateUrl(index, value) {
+  updateUrl(index, value) {
     this.urls = [...this.urls.slice(0, index), value, ...this.urls.slice(index + 1)];
-    if (this.fetchFragments && value.trim()) {
-      try {
-        await this.setupTask.taskComplete;
-        const fragments = await this.findFragments();
-        // Normalize fragments to expected format
-        this.foundFragments = fragments.map((frag) => (
-          typeof frag === 'string'
-            ? [{ pathname: frag, valid: 'found' }]
-            : frag
-        ));
-        if (this.foundFragments && this.foundFragments.length > 0) {
-          this.showFragments();
-        }
-        this.requestUpdate();
-      } catch (error) {
-        console.error('Error finding fragments:', error);
-        alert('Error finding fragments. Please try again.');
-      }
-    }
     this.requestUpdate();
   }
 
-  async handleUrlPaste(e) {
+  handleUrlPaste(e) {
     e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
     const urls = pastedText
@@ -179,27 +154,6 @@ class GrayboxPromote extends LitElement {
     } else {
       // Just update the current URL
       this.updateUrl(0, urls[0]);
-    }
-
-    // If fetch fragments is enabled, find fragments for the new URLs
-    if (this.fetchFragments) {
-      try {
-        await this.setupTask.taskComplete;
-        const fragments = await this.findFragments();
-        // Normalize fragments to expected format
-        this.foundFragments = fragments.map((frag) => (
-          typeof frag === 'string'
-            ? [{ pathname: frag, valid: 'found' }]
-            : frag
-        ));
-        if (this.foundFragments && this.foundFragments.length > 0) {
-          this.showFragments();
-        }
-        this.requestUpdate();
-      } catch (error) {
-        console.error('Error finding fragments:', error);
-        alert('Error finding fragments. Please try again.');
-      }
     }
 
     this.requestUpdate();
@@ -222,33 +176,8 @@ class GrayboxPromote extends LitElement {
     this.requestUpdate();
   }
 
-  async toggleFetchFragments() {
+  toggleFetchFragments() {
     this.fetchFragments = !this.fetchFragments;
-    if (this.fetchFragments && this.urls.some((url) => url.trim())) {
-      try {
-        await this.setupTask.taskComplete;
-        const fragments = await this.findFragments();
-        console.log('fragments in toggleFetchFragments', fragments);
-        // Normalize fragments to expected format
-        this.foundFragments = fragments.map((frag) => (
-          typeof frag === 'string'
-            ? [{ pathname: frag, valid: 'found' }]
-            : frag
-        ));
-        if (this.foundFragments && this.foundFragments.length > 0) {
-          this.showFragments();
-        }
-        this.requestUpdate();
-      } catch (error) {
-        console.error('Error finding fragments:', error);
-        alert('Error finding fragments. Please try again.');
-        this.fetchFragments = false;
-        this.requestUpdate();
-      }
-    } else {
-      this.foundFragments = [];
-      this.showFragmentsModal = false;
-    }
     this.requestUpdate();
   }
 
@@ -286,58 +215,6 @@ class GrayboxPromote extends LitElement {
     const { locale } = getConfig();
     if (!locale?.prefix) return '';
     return locale.prefix;
-  }
-
-  static getUrls(fragments) {
-    return fragments.map((fragment) => ({
-      pathname: fragment.pathname,
-      valid: fragment.valid,
-    }));
-  }
-
-  async findFragments() {
-    const filteredUrls = this.urls.filter((url) => url.trim());
-    if (!filteredUrls.length) return [];
-
-    const params = new URLSearchParams({
-      sourcePaths: filteredUrls.join(', '),
-      adminPageUri: this.setup.adminPageUri,
-      driveId: this.setup.driveId,
-      gbRootFolder: this.setup.gbRootFolder,
-      rootFolder: this.setup.rootFolder,
-      experienceName: this.getEffectiveExperienceName(),
-      projectExcelPath: this.configData?.projectExcelPath,
-    });
-
-    const frags = await findFragments(this.baseUrl, params);
-    return frags;
-  }
-
-  showFragments() {
-    this.showFragmentsModal = true;
-    this.requestUpdate();
-  }
-
-  closeFragmentsModal() {
-    this.showFragmentsModal = false;
-    this.requestUpdate();
-  }
-
-  addFragmentsToUrls() {
-    // Get all valid fragment URLs with status 200
-    const validFragments = this.foundFragments.filter((fragment) => fragment.status === 200);
-    const fragmentUrls = validFragments.map((fragment) => fragment.fragmentPath);
-
-    const existingUrls = new Set(this.urls);
-    const urlsToAdd = fragmentUrls.filter((url) => !existingUrls.has(url));
-
-    if (urlsToAdd.length > 0) {
-      this.urls = [...this.urls, ...urlsToAdd];
-    }
-
-    // Close the modal
-    this.closeFragmentsModal();
-    this.requestUpdate();
   }
 
   async fetchBulkCopyStatus() {
@@ -575,6 +452,7 @@ class GrayboxPromote extends LitElement {
           experienceName: this.getEffectiveExperienceName(),
           projectExcelPath: this.configData?.projectExcelPath,
           spToken: this.setup?.spToken,
+          includeFragments: this.fetchFragments.toString(),
         });
 
         await initiateBulkCopy(this.baseUrl, params);
@@ -641,7 +519,6 @@ class GrayboxPromote extends LitElement {
           </div>
         </div>
         ${renderToast(this.isToastVisible, this.toastMessage, this.toastType)}
-        ${renderFragmentsModal(this)}
       </div>
     `;
   }
