@@ -262,21 +262,35 @@ function initPaddles(tabList, left, right, isRadio) {
   };
 
   const callback = (entries) => {
-    const isRtl = document.dir === 'rtl';
-
     entries.forEach((entry) => {
-      const isFirst = entry.target === firstTab;
-      const isLast = entry.target === lastTab;
+      const isRtl = document.dir === 'rtl';
 
-      if (isFirst) {
-      // First tab controls "left" in LTR, "right" in RTL
-        togglePaddle(isRtl ? right : left, !entry.isIntersecting);
-      }
-
-      if (isLast) {
-      // Last tab controls "right" in LTR, "left" in RTL
-        togglePaddle(isRtl ? left : right, !entry.isIntersecting);
-        if (!entry.isIntersecting) checkTabListContainerMargin();
+      if (entry.target === firstTab) {
+        if (entry.isIntersecting) {
+          if (isRtl) {
+            setAttributes(right, { disabled: '', 'aria-hidden': true });
+          } else {
+            setAttributes(left, { disabled: '', 'aria-hidden': true });
+          }
+        } else if (isRtl) {
+          removeAttributes(right, ['disabled', 'aria-hidden']);
+        } else {
+          removeAttributes(left, ['disabled', 'aria-hidden']);
+        }
+      } else if (entry.target === lastTab) {
+        if (entry.isIntersecting) {
+          if (isRtl) {
+            setAttributes(left, { disabled: '', 'aria-hidden': true });
+          } else {
+            setAttributes(right, { disabled: '', 'aria-hidden': true });
+          }
+        } else if (isRtl) {
+          removeAttributes(left, ['disabled', 'aria-hidden']);
+          checkTabListContainerMargin();
+        } else {
+          removeAttributes(right, ['disabled', 'aria-hidden']);
+          checkTabListContainerMargin();
+        }
       }
     });
   };
