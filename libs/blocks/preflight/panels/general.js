@@ -84,7 +84,7 @@ function findLinks(selector) {
     }, []);
 }
 
-async function setContent() {
+export async function setContent() {
   if (content.value.page) return;
 
   content.value = {
@@ -104,6 +104,10 @@ async function setContent() {
   sk?.addEventListener('status-fetched', async () => { // sidekick v7
     getStatuses();
   });
+
+  window.contentInsights = {
+    general: content.value
+  }
 }
 
 async function handleAction(action) {
