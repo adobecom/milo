@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './plans.spec.js';
 import MasPlans from './plans.page.js';
-import { createWorkerPageSetup, constructUrlWithParams, PLANS_NALA_PATH } from '../../../../libs/commerce.js';
+import { createWorkerPageSetup, addUrlQueryParams, PLANS_NALA_PATH } from '../../../../libs/commerce.js';
 
 test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 
@@ -190,10 +190,10 @@ test.describe('MAS Plans Page test suite', () => {
       const masPlans = new MasPlans(page);
 
       await test.step(`step-${stepNumber}: Verify ${tabName} tab deeplink and content`, async () => {
-        const targetUrl = constructUrlWithParams(PLANS_NALA_PATH.US, tabData.urlParam);
+        const targetUrl = addUrlQueryParams(PLANS_NALA_PATH.US, tabData.urlParam);
         await page.goto(targetUrl);
         await page.waitForLoadState('domcontentloaded');
-        const expectedUrl = constructUrlWithParams(PLANS_NALA_PATH.US, tabData.urlParam);
+        const expectedUrl = addUrlQueryParams(PLANS_NALA_PATH.US, tabData.urlParam);
         await workerSetup.verifyPageURL('US', expectedUrl, expect);
 
         const tab = masPlans.getTabs(tabData.tabId);
@@ -208,7 +208,7 @@ test.describe('MAS Plans Page test suite', () => {
   // @MAS-Plans-Modal-Deeplink
   test(`${features[3].name},${features[3].tags}`, async ({ page }) => {
     await test.step('step-1: Go to Plans page', async () => {
-      const targetUrl = constructUrlWithParams(PLANS_NALA_PATH.US, features[3].browserParams);
+      const targetUrl = addUrlQueryParams(PLANS_NALA_PATH.US, features[3].browserParams);
       await page.goto(targetUrl);
       await page.waitForLoadState('domcontentloaded');
       await expect(page.locator(`.dialog-modal.three-in-one${features[3].browserParams}`)).toBeVisible({ timeout: 10000 });
@@ -221,7 +221,7 @@ test.describe('MAS Plans Page test suite', () => {
     const masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page with edu deeplink', async () => {
-      const targetUrl = constructUrlWithParams(PLANS_NALA_PATH.US, features[4].browserParams.landing);
+      const targetUrl = addUrlQueryParams(PLANS_NALA_PATH.US, features[4].browserParams.landing);
       await page.goto(targetUrl);
       await page.waitForLoadState('domcontentloaded');
       await page.waitForSelector('merch-card-collection');
@@ -248,7 +248,7 @@ test.describe('MAS Plans Page test suite', () => {
     const masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page with edu deeplink', async () => {
-      const targetUrl = constructUrlWithParams(PLANS_NALA_PATH.US, features[5].browserParams.landing);
+      const targetUrl = addUrlQueryParams(PLANS_NALA_PATH.US, features[5].browserParams.landing);
       await page.goto(targetUrl);
       await page.waitForLoadState('domcontentloaded');
       await page.waitForSelector('merch-card-collection');
@@ -270,7 +270,7 @@ test.describe('MAS Plans Page test suite', () => {
     const masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page', async () => {
-      const targetUrl = constructUrlWithParams(PLANS_NALA_PATH.US, features[6].browserParams);
+      const targetUrl = addUrlQueryParams(PLANS_NALA_PATH.US, features[6].browserParams);
       await page.goto(targetUrl);
       await page.waitForLoadState('domcontentloaded');
     });
@@ -361,7 +361,7 @@ test.describe('MAS Plans Page test suite', () => {
     const masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page', async () => {
-      const targetUrl = constructUrlWithParams(PLANS_NALA_PATH.US, features[8].browserParams);
+      const targetUrl = addUrlQueryParams(PLANS_NALA_PATH.US, features[8].browserParams);
       await page.goto(targetUrl);
       await page.waitForLoadState('domcontentloaded');
     });
@@ -392,7 +392,7 @@ test.describe('MAS Plans Page test suite', () => {
     const masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page', async () => {
-      const targetUrl = constructUrlWithParams(PLANS_NALA_PATH.US, features[9].browserParams);
+      const targetUrl = addUrlQueryParams(PLANS_NALA_PATH.US, features[9].browserParams);
       await page.goto(targetUrl);
       await page.waitForLoadState('domcontentloaded');
     });

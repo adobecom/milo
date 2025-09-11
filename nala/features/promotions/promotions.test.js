@@ -1,19 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './promotions.spec.js';
 import PromoPage from './promotions.page.js';
-import { constructUrlWithParams } from '../../libs/commerce.js';
-
-const miloLibs = process.env.MILO_LIBS || '';
-const masLibs = process.env.MAS_LIBS || '';
-
-// Helper function to construct URLs with proper query parameter handling
-function constructTestUrl(baseURL, path, browserParams = '') {
-  let fullUrl = `${baseURL}${path}`;
-  fullUrl = constructUrlWithParams(fullUrl, browserParams);
-  fullUrl = constructUrlWithParams(fullUrl, miloLibs);
-  fullUrl = constructUrlWithParams(fullUrl, masLibs);
-  return fullUrl;
-}
+import { constructTestUrl } from '../../libs/commerce.js';
 
 let PROMO;
 test.beforeEach(async ({ page, baseURL }) => {
@@ -168,7 +156,7 @@ test.describe('Promotions feature test suite', () => {
   test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
     const testPage = constructTestUrl(baseURL, features[5].path);
     const { data } = features[5];
-    const previewPage = `${baseURL}${features[5].path}${'?mep='}${data.mepPath}&${miloLibs}${masLibs}`;
+    const previewPage = constructTestUrl(baseURL, features[5].path, `?mep=${data.mepPath}`);
     console.info('[Test Page]: ', testPage);
 
     await test.step('Go to the test page', async () => {
@@ -471,7 +459,7 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Go to the test page in DE locale', async () => {
-      testPage = `${baseURL}${data.CO_DE}${features[11].path}${miloLibs}${masLibs}`;
+      testPage = constructTestUrl(baseURL, `${data.CO_DE}${features[11].path}`);
       console.info('[Test Page][DE]: ', testPage);
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');
@@ -487,7 +475,7 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Go to the test page in FR locale', async () => {
-      testPage = `${baseURL}${data.CO_FR}${features[11].path}${miloLibs}${masLibs}`;
+      testPage = constructTestUrl(baseURL, `${data.CO_FR}${features[11].path}`);
       console.info('[Test Page][FR]: ', testPage);
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');

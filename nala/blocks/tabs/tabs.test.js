@@ -2,21 +2,9 @@ import { expect, test } from '@playwright/test';
 import { features } from './tabs.spec.js';
 import TabBlock from './tabs.page.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
-import { constructUrlWithParams } from '../../libs/commerce.js';
+import { constructTestUrl } from '../../libs/commerce.js';
 
 let tab;
-
-const miloLibs = process.env.MILO_LIBS || '';
-const masLibs = process.env.MAS_LIBS || '';
-
-// Helper function to construct URLs with proper query parameter handling
-function constructTestUrl(baseURL, path, browserParams = '') {
-  let fullUrl = `${baseURL}${path}`;
-  fullUrl = constructUrlWithParams(fullUrl, browserParams);
-  fullUrl = constructUrlWithParams(fullUrl, miloLibs);
-  fullUrl = constructUrlWithParams(fullUrl, masLibs);
-  return fullUrl;
-}
 
 const INTERVALS = Array(5).fill(1000);
 

@@ -2,21 +2,9 @@ import { expect, test } from '@playwright/test';
 import { features } from './merchcard.spec.js';
 import MerchCard from './merchcard.pages.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
-import { constructUrlWithParams } from '../../libs/commerce.js';
+import { constructTestUrl } from '../../libs/commerce.js';
 
 let merchCard;
-
-const miloLibs = process.env.MILO_LIBS || '';
-const masLibs = process.env.MAS_LIBS || '';
-
-// Helper function to construct URLs with proper query parameter handling
-function constructTestUrl(baseURL, path, browserParams = '') {
-  let fullUrl = `${baseURL}${path}`;
-  fullUrl = constructUrlWithParams(fullUrl, browserParams);
-  fullUrl = constructUrlWithParams(fullUrl, miloLibs);
-  fullUrl = constructUrlWithParams(fullUrl, masLibs);
-  return fullUrl;
-}
 
 test.describe('Milo Merchcard block test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {

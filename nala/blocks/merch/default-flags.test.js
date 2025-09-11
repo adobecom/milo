@@ -1,19 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './default-flags.spec.js';
 import DefaultFlags from './default-flags.page.js';
-import { constructUrlWithParams } from '../../libs/commerce.js';
-
-const miloLibs = process.env.MILO_LIBS || '';
-const masLibs = process.env.MAS_LIBS || '';
-
-// Helper function to construct URLs with proper query parameter handling
-function constructTestUrl(baseURL, path, browserParams = '') {
-  let fullUrl = `${baseURL}${path}`;
-  fullUrl = constructUrlWithParams(fullUrl, browserParams);
-  fullUrl = constructUrlWithParams(fullUrl, miloLibs);
-  fullUrl = constructUrlWithParams(fullUrl, masLibs);
-  return fullUrl;
-}
+import { constructTestUrl } from '../../libs/commerce.js';
 
 test.describe('DefaultFlags Block test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {

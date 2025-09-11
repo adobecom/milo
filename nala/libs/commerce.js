@@ -1,5 +1,8 @@
 const { test } = require('@playwright/test');
 
+const MILO_LIBS = process.env.MILO_LIBS || '';
+const MAS_LIBS = process.env.MAS_LIBS || '';
+
 const PRICE_PATTERN = {
   US: {
     mo: /US\$\d+\.\d\d\/mo/,
@@ -114,12 +117,28 @@ function attachMasRequestErrorsToFailure(testInfo, masRequestErrors) {
  * @param {string} browserParams - Browser parameters to append (may start with ? or &)
  * @returns {string} - Properly constructed URL
  */
-function constructUrlWithParams(baseUrl, browserParams) {
+function addUrlQueryParams(baseUrl, browserParams) {
   if (!browserParams) return baseUrl;
   const hasQueryParams = baseUrl.includes('?');
   const separator = hasQueryParams ? '&' : '?';
   const cleanParams = browserParams.replace(/^[?&]/, '');
   return `${baseUrl}${separator}${cleanParams}`;
+}
+
+/**
+ * Helper function to construct test URLs with proper query parameter handling
+ * Includes MILO_LIBS and MAS_LIBS environment variables
+ * @param {string} baseURL - The base URL from Playwright test context
+ * @param {string} path - The path to append to the base URL
+ * @param {string} browserParams - Browser parameters to append (optional, may start with ? or &)
+ * @returns {string} - Properly constructed URL with all parameters
+ */
+function constructTestUrl(baseURL, path, browserParams = '') {
+  let fullUrl = `${baseURL}${path}`;
+  fullUrl = addUrlQueryParams(fullUrl, browserParams);
+  fullUrl = addUrlQueryParams(fullUrl, MILO_LIBS);
+  fullUrl = addUrlQueryParams(fullUrl, MAS_LIBS);
+  return fullUrl;
 }
 
 async function setupMasRequestLogger(masRequestErrors) {
@@ -216,9 +235,6 @@ function createWorkerPageSetup(config = {}) {
   let consoleErrors = [];
   let masRequestErrors = [];
 
-  const miloLibs = process.env.MILO_LIBS || '';
-  const masLibs = process.env.MAS_LIBS || '';
-
   /**
    * Sets up worker-scoped pages and listeners
    * @param {Object} params - Playwright test parameters
@@ -240,8 +256,8 @@ function createWorkerPageSetup(config = {}) {
       const { name, url } = pageConfig;
 
       let fullUrl = `${baseURL}${url}`;
-      fullUrl = constructUrlWithParams(fullUrl, miloLibs);
-      fullUrl = constructUrlWithParams(fullUrl, masLibs);
+      fullUrl = addUrlQueryParams(fullUrl, MILO_LIBS);
+      fullUrl = addUrlQueryParams(fullUrl, MAS_LIBS);
 
       console.info(`[Worker Setup]: Creating page for ${name}:`, fullUrl);
 
@@ -382,7 +398,8 @@ module.exports = {
   setupMasRequestLogger,
   attachMasRequestErrorsToFailure,
   createWorkerPageSetup,
-  constructUrlWithParams,
+  addUrlQueryParams,
+  constructTestUrl,
   PRICE_PATTERN,
   DOCS_GALLERY_PATH,
   PLANS_NALA_PATH,
