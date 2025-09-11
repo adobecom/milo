@@ -117,6 +117,7 @@ export default {
     '--citations-desktop-button-font-size': '14px',
     '--citations-panel-padding': '0 9px',
     '--citations-text-font-weight': '700',
+    '--chat-container-background': '#FFFFFF',
     '--chat-history-bottom-padding': '0',
     '--chat-history-padding': '12px',
     '--chat-history-padding-top-expanded': '0',
