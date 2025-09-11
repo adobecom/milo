@@ -84,10 +84,8 @@ function findLinks(selector) {
     }, []);
 }
 
-export async function setContent() {
-  if (content.value.page) return;
-
-  content.value = {
+export function runGeneralChecks() {
+  const contentValue = {
     page: { items: [{ url: new URL(window.location.href), edit: null, preview: 'Fetching', live: 'Fetching' }] },
     fragments: { items: findLinks('main .fragment, a[data-modal-path], [data-path]') },
     links: { items: findLinks('main a[href^="/"') },
@@ -95,6 +93,18 @@ export async function setContent() {
     pdfs: { items: findLinks('main iframe') },
     nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
+  
+  window.contentInsights = {
+    general: contentValue
+  }
+
+  return contentValue;
+}
+
+async function setContent() {
+  if (content.value.page) return;
+
+  content.value = runGeneralChecks();
 
   getStatuses();
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
@@ -104,10 +114,6 @@ export async function setContent() {
   sk?.addEventListener('status-fetched', async () => { // sidekick v7
     getStatuses();
   });
-
-  window.contentInsights = {
-    general: content.value
-  }
 }
 
 async function handleAction(action) {
