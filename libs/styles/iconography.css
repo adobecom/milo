@@ -23,6 +23,14 @@ dealing w/ groups of media and associated text
   --type-lockup-xxs-size: 11px;
   --type-lockup-xxs-ls: -0.01em;
 
+  --type-lockup-xxl-gap: 20px;
+  --type-lockup-xl-gap: 17px;
+  --type-lockup-l-gap: 15px;
+  --type-lockup-m-gap: 10px;
+  --type-lockup-s-gap: 8px;
+  --type-lockup-xs-gap: 6px;
+  --type-lockup-xxs-gap: 4px;
+
   /* avatar sizes */
   --avatar-size-xxl: 64px;
   --avatar-size-xl: 56px;
@@ -51,86 +59,43 @@ dealing w/ groups of media and associated text
 .xxs-lockup .lockup-area {
   font-size: var(--type-lockup-xxs-size);
   letter-spacing:var(--type-lockup-xxs-ls);
-  gap: 4px;
+  gap: var(--type-lockup-xxs-gap);
 }
 
 .xs-lockup .lockup-area {
   font-size: var(--type-lockup-xs-size);
   letter-spacing:var(--type-lockup-xs-ls);
-  gap: 6px;
+  gap: var(--type-lockup-xs-gap);
 }
 
 .s-lockup .lockup-area {
   font-size: var(--type-lockup-s-size);
   letter-spacing:var(--type-lockup-s-ls);
-  gap: 8px;
+  gap: var(--type-lockup-s-gap);
 }
 
 .m-lockup .lockup-area {
   font-size: var(--type-lockup-m-size);
   letter-spacing:var(--type-lockup-m-ls);
-  gap: 10px;
+  gap: var(--type-lockup-m-gap);
 }
 
 .l-lockup .lockup-area {
   font-size: var(--type-lockup-l-size);
   letter-spacing:var(--type-lockup-l-ls);
-  gap: 15px;
+  gap: var(--type-lockup-l-gap);
 }
 
 .xl-lockup .lockup-area {
   font-size: var(--type-lockup-xl-size);
   letter-spacing:var(--type-lockup-xl-ls);
-  gap: 17px;
+  gap: var(--type-lockup-xl-gap);
 }
 
 .xxl-lockup .lockup-area {
   font-size: var(--type-lockup-xxl-size);
   letter-spacing:var(--type-lockup-xxl-ls);
-  gap: 20px;
-}
-
-/* Mweb specific changes for lockup */
-.mweb-enabled .xxs-lockup .lockup-area {
-  font-size: var(--type-lockup-xs-size);
-  letter-spacing:var(--type-lockup-xs-ls);
-  gap:4px;
-}
-
-.mweb-enabled .xs-lockup .lockup-area {
-  font-size: var(--type-lockup-xs-size);
-  letter-spacing:var(--type-lockup-xs-ls);
-  gap: 4px;
-}
-
-.mweb-enabled .s-lockup .lockup-area {
-  font-size: var(--type-lockup-xs-size);
-  letter-spacing:var(--type-lockup-xs-ls);
-  gap: 6px;
-}
-
-.mweb-enabled .m-lockup .lockup-area {
-  font-size: var(--type-lockup-s-size);
-  letter-spacing:var(--type-lockup-s-ls);
-  gap: 8px;
-}
-
-.mweb-enabled .l-lockup .lockup-area {
-  font-size: var(--type-lockup-m-size);
-  letter-spacing:var(--type-lockup-m-ls);
-  gap: 10px;
-}
-
-.mweb-enabled .xl-lockup .lockup-area {
-  font-size: var(--type-lockup-l-size);
-  letter-spacing:var(--type-lockup-l-ls);
-  gap: 15px;
-}
-
-.mweb-enabled .xxl-lockup .lockup-area {
-  font-size: var(--type-lockup-xl-size);
-  letter-spacing:var(--type-lockup-xl-ls);
-  gap: 17px;
+  gap: var(--type-lockup-xxl-gap);
 }
 
 .center:not(.tabs, .section) .lockup-area { justify-content: center; }
@@ -144,12 +109,32 @@ dealing w/ groups of media and associated text
 .xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
 
 /* Mweb specific changes for lockup */
-.mweb-enabled .xs-lockup .lockup-area img { height: var(--icon-size-xxs); }
-.mweb-enabled .s-lockup .lockup-area img { height: var(--icon-size-xs); }
-.mweb-enabled .m-lockup .lockup-area img { height: var(--icon-size-s); }
-.mweb-enabled .l-lockup .lockup-area img { height: var(--icon-size-m); }
-.mweb-enabled .xl-lockup .lockup-area img { height: var(--icon-size-l); }
-.mweb-enabled .xxl-lockup .lockup-area img { height: var(--icon-size-xl); }
+.mweb-enabled {
+  --type-lockup-xxs-size: 16px; 
+  --type-lockup-xxs-ls: 0;
+}
+
+/* tablet down */
+@media screen and (max-width: 1199px) { 
+  /* Mweb specific changes for lockup */
+  .mweb-enabled {  
+    /* Mweb specific lockup sizes */
+    --type-lockup-s-size: 16px; 
+    --type-lockup-s-ls: 0;
+    --type-lockup-m-size: 22px; 
+    --type-lockup-l-size: 27px; 
+    --type-lockup-l-ls: -0.02em;
+    --type-lockup-xl-size: 38px; 
+    --type-lockup-xxl-size: 44px; 
+
+    --type-lockup-xs-gap: 4px;
+    --type-lockup-s-gap: 6px;
+    --type-lockup-m-gap: 8px;
+    --type-lockup-l-gap: 10px;
+    --type-lockup-xl-gap: 15px;
+    --type-lockup-xxl-gap: 17px;
+  }
+}
 
 @media (min-width: 1200px) {
   :root {
@@ -157,50 +142,6 @@ dealing w/ groups of media and associated text
     --avatar-size-xl: 64px;
     --avatar-size-l: 56px;
   }
-  
- /* Mweb specific changes for lockup */ 
- .mweb-enabled .xs-lockup .lockup-area {
-  font-size: var(--type-lockup-xs-size);
-  letter-spacing:var(--type-lockup-xs-ls);
-  gap: 6px;
-}
-
- .mweb-enabled .s-lockup .lockup-area {
-  font-size: var(--type-lockup-s-size);
-  letter-spacing:var(--type-lockup-s-ls);
-  gap: 8px;
-}
-
- .mweb-enabled .m-lockup .lockup-area {
-  font-size: var(--type-lockup-m-size);
-  letter-spacing:var(--type-lockup-m-ls);
-  gap: 10px;
-}
-
- .mweb-enabled .l-lockup .lockup-area {
-  font-size: var(--type-lockup-l-size);
-  letter-spacing:var(--type-lockup-l-ls);
-  gap: 15px;
-}
-
- .mweb-enabled .xl-lockup .lockup-area {
-  font-size: var(--type-lockup-xl-size);
-  letter-spacing:var(--type-lockup-xl-ls);
-  gap: 17px;
-}
-
- .mweb-enabled .xxl-lockup .lockup-area {
-    font-size: var(--type-lockup-xxl-size);
-    letter-spacing:var(--type-lockup-xxl-ls);
-    gap: 20px;
-  }
-
-  .mweb-enabled .xs-lockup .lockup-area img { height: var(--icon-size-xs); }
-  .mweb-enabled .s-lockup .lockup-area img { height: var(--icon-size-s); }
-  .mweb-enabled .m-lockup .lockup-area img { height: var(--icon-size-m); }
-  .mweb-enabled .l-lockup .lockup-area img { height: var(--icon-size-l); }
-  .mweb-enabled .xl-lockup .lockup-area img { height: var(--icon-size-xl); }
-  .mweb-enabled .xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
 }
 
 .avatar-area {
