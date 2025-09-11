@@ -403,14 +403,12 @@ const init = (block) => {
   // Tab Paddles
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, block.classList.contains('segmented-control') ? PADDLE_SEGMENT : PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, block.classList.contains('segmented-control') ? PADDLE_SEGMENT : PADDLE);
-
   // For segmented-control variant, add paddles relative to tab-list-container
   if (block.classList.contains('segmented-control')) {
     const isRtl = document.dir === 'rtl';
     const [firstPaddle, secondPaddle] = isRtl
       ? [paddleLeft, paddleRight] // RTL: left first, right second
       : [paddleRight, paddleLeft]; // LTR: right first, left second
-
     tabList.prepend(firstPaddle);
     tabList.append(secondPaddle);
   } else {
