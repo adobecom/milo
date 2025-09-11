@@ -2,10 +2,10 @@ import { getCustomConfig } from '../../../tools/utils/utils.js';
 
 const userCanPublishPage = async (detail, isBulk = true) => {
   if (!detail) return false;
-  const { live, profile, webPath } = detail;
+  const { live, profile, webPath, origin = '' } = detail;
   let canPublish = isBulk ? live?.permissions?.includes('write') : true;
   let message = 'Publishing is currently disabled for this page';
-  const config = await getCustomConfig('/.milo/publish-permissions-config.json?limit=50000');
+  const config = await getCustomConfig(`${origin}/.milo/publish-permissions-config.json?limit=50000`);
   const item = config?.urls?.data?.find(({ url }) => (
     url.endsWith('**') ? webPath.includes(url.slice(0, -2)) : url === webPath
   ));

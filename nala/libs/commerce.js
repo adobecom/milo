@@ -1,24 +1,28 @@
+const { test } = require('@playwright/test');
+
 const PRICE_PATTERN = {
-  US_mo: /US\$\d+\.\d\d\/mo/,
-  US_yr: /US\$\d+\.\d\d\/yr/,
-  FR_mo: /\d+,\d\d\s€\/mois/,
+  US: {
+    mo: /US\$\d+\.\d\d\/mo/,
+    yr: /US\$\d+\.\d\d\/yr/,
+  },
+  FR: { mo: /\d+,\d\d\s€\/mois/ },
 };
 
-const CCD_BASE_PATH = {
-  US: '/libs/features/mas/docs/ccd.html',
-  FR: '/libs/features/mas/docs/ccd.html?locale=fr_FR',
-  MINI_US: '/libs/features/mas/docs/ccd-mini.html',
-  MINI_FR: '/libs/features/mas/docs/ccd-mini.html?country=FR&language=fr',
-};
+const PLANS_NALA_PATH = { US: '/drafts/nala/features/commerce/plans2' };
 
-const ADOBE_HOME_BASE_PATH = { US: '/libs/features/mas/docs/adobe-home.html' };
-
-const PLANS_BASE_PATH = { US: '/drafts/nala/features/commerce/plans' };
-
-const DOCS_BASE_PATH = {
-  merch_card: '/libs/features/mas/docs/merch-card.html',
-  checkout_link: '/libs/features/mas/docs/checkout-link.html',
-  plans: '/libs/features/mas/docs/plans.html',
+const DOCS_GALLERY_PATH = {
+  CCD: {
+    US: '/libs/features/mas/docs/ccd.html',
+    FR: '/libs/features/mas/docs/ccd.html?locale=fr_FR',
+  },
+  CCD_MINI: {
+    US: '/libs/features/mas/docs/ccd-mini.html',
+    FR: '/libs/features/mas/docs/ccd-mini.html?country=FR&language=fr',
+  },
+  ADOBE_HOME: { US: '/libs/features/mas/docs/adobe-home.html' },
+  PLANS: '/libs/features/mas/docs/plans.html',
+  CHECKOUT_LINK: '/libs/features/mas/docs/checkout-link.html',
+  MERCH_CARD: '/libs/features/mas/docs/merch-card.html',
 };
 
 async function setupMasConsoleListener(consoleErrors) {
@@ -181,6 +185,7 @@ async function setupMasRequestLogger(masRequestErrors) {
  * @param {Array} config.pages - Array of page configurations [{ name: 'US', url: '/path' }, ...]
  * @param {Object} config.extraHTTPHeaders - HTTP headers to set on the context
  * @param {number} config.loadTimeout - Timeout after networkidle (default: 5000ms)
+ * @param {number} config.setupTimeout - Timeout for beforeAll hook setup (default: 60000ms)
  * @returns {Object} - Setup object with pages, setup/cleanup methods, and error arrays
  */
 function createWorkerPageSetup(config = {}) {
@@ -188,6 +193,7 @@ function createWorkerPageSetup(config = {}) {
     pages = [],
     extraHTTPHeaders = { 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' },
     loadTimeout = 5000,
+    setupTimeout = 60000, // Default 60 second timeout for worker setup
   } = config;
 
   let workerContext;
@@ -205,6 +211,9 @@ function createWorkerPageSetup(config = {}) {
    */
   async function setupWorkerPages({ browser, baseURL }) {
     console.info('[Worker Setup]: Initializing worker-scoped pages...');
+
+    // Set timeout for the current test (beforeAll hook)
+    test.setTimeout(setupTimeout);
 
     workerContext = await browser.newContext({ extraHTTPHeaders });
 
@@ -353,8 +362,6 @@ module.exports = {
   attachMasRequestErrorsToFailure,
   createWorkerPageSetup,
   PRICE_PATTERN,
-  CCD_BASE_PATH,
-  ADOBE_HOME_BASE_PATH,
-  PLANS_BASE_PATH,
-  DOCS_BASE_PATH,
+  DOCS_GALLERY_PATH,
+  PLANS_NALA_PATH,
 };
