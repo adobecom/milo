@@ -1111,7 +1111,6 @@ a.static:active  {
   /* margin */
   .con-block.margin-top-desktop { margin-top: var(--spacing-s); }
   .con-block.margin-bottom-desktop { margin-bottom: var(--spacing-s); }
-
 }
 
 /* desktop large < 1440 */
