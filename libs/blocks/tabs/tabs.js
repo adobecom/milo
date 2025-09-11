@@ -182,6 +182,10 @@ function initTabs(elm, config, rootElem) {
   });
   tabs.forEach((tab) => {
     tab.addEventListener('click', changeTabs);
+    tab.addEventListener('focus', (e) => {
+      scrollTabIntoView(tab);
+      handleSegmentedControlInteraction(tab, e);
+    });
   });
   if (config) configTabs(config, rootElem);
 }
@@ -376,7 +380,14 @@ const init = (block) => {
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
-    const btnClass = pillVariant ? handlePillSize(pillVariant) : (block.classList.contains('segmented-control') ? 'heading-xxs' : 'heading-xs');
+    let btnClass;
+    if (pillVariant) {
+      btnClass = handlePillSize(pillVariant);
+    } else if (block.classList.contains('segmented-control')) {
+      btnClass = 'heading-xxs';
+    } else {
+      btnClass = 'heading-xs';
+    }
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
