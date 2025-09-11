@@ -79,6 +79,24 @@ export default {
       'Poor visual presentation',
       'Other',
     ],
+    'welcome.examples': [
+      {
+        text: 'I\'d like to explore templates to see what I can create.',
+        backgroundColor: '#FFFFFF',
+      },
+      {
+        text: 'I want to touch up and enhance my photos.',
+        backgroundColor: '#FFFFFF',
+      },
+      {
+        text: 'I\'d like to edit PDFs and make them interactive.',
+        backgroundColor: '#FFFFFF',
+      },
+      {
+        text: 'I want to turn my clips into polished videos.',
+        backgroundColor: '#FFFFFF',
+      },
+    ],
   },
   assets: { icons: { company: '' } },
   theme: {
