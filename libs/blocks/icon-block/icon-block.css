@@ -1,5 +1,8 @@
-.icon-block {
+.root {
   --l-rounded-corners: 16px;
+}
+
+.icon-block {
   display: block;
   width: 100%;
   position: relative;
