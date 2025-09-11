@@ -118,6 +118,7 @@ export default {
     '--citations-panel-padding': '0 9px',
     '--citations-text-font-weight': '700',
     '--chat-container-background': '#FFFFFF',
+    '--chat-container-bottom-background': '#FFFFFF',
     '--chat-history-bottom-padding': '0',
     '--chat-history-padding': '12px',
     '--chat-history-padding-top-expanded': '0',
