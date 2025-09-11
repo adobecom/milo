@@ -37,13 +37,6 @@ function updateModalHeight() {
   modal.style.height = `${modalHeight}px`;
 }
 
-function setInputHeight(el) {
-  const fieldInput = el.querySelector('#bc-input-field');
-  if (!fieldInput) return;
-  fieldInput.style.height = 'auto';
-  fieldInput.style.height = `${fieldInput.scrollHeight}px`;
-}
-
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('span', { class: 'bc-modal-title' }, 'AI Assistant');
@@ -57,7 +50,7 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  el.querySelector('.bc-input-field textarea').value = '';
+  el.querySelector('.bc-input-field input').value = '';
   updateModalHeight();
 
   // eslint-disable-next-line no-underscore-dangle
@@ -119,7 +112,7 @@ function decorateCards(el, cards) {
     cardSection.append(cardButton);
 
     cardButton.addEventListener('click', () => {
-      const input = el.querySelector('.bc-input-field textarea');
+      const input = el.querySelector('.bc-input-field input');
 
       input.value = cardText.textContent.trim();
       openChatModal(input.value, el);
@@ -140,9 +133,9 @@ function decorateInput(el, input) {
   }, `${getAiChatIcon('bc-label-mask', 'bc-label-fill')}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, inputLabelText);
   fieldLabel.append(fieldLabelToolTip);
-  const fieldInput = createTag('textarea', {
+  const fieldInput = createTag('input', {
     id: 'bc-input-field',
-    rows: 1,
+    type: 'text',
     placeholder: input.textContent.trim(),
   });
   const fieldButton = createTag('button', {
@@ -162,7 +155,6 @@ function decorateInput(el, input) {
     } else {
       fieldButton.disabled = true;
     }
-    setInputHeight(el);
   });
 
   if (el.classList.contains('sticky')) {
@@ -213,9 +205,6 @@ function decorateInput(el, input) {
     if (!fieldInput.value || fieldInput.value.trim() === '') return;
     openChatModal(fieldInput.value, el);
   });
-
-  const handleResize = () => setInputHeight(el);
-  window.addEventListener('resize', handleResize);
 }
 
 function decorateLegal(el, legal) {
@@ -299,21 +288,4 @@ export default async function init(el) {
     decorateLegal(el, legal);
     decorateInput(el, input);
   }
-
-  const section = el.closest('.section');
-  if (!section) { return; }
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type !== 'attributes'
-        || mutation.attributeName !== 'data-status'
-        || section.getAttribute('data-status') === 'decorated') { return; }
-      setInputHeight(el);
-      observer.disconnect();
-    });
-  });
-
-  observer.observe(section, {
-    attributes: true,
-    attributeFilter: ['data-status'],
-  });
 }

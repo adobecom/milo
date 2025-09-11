@@ -101,7 +101,7 @@
   background: #fff;
   border-radius: calc(var(--bc-input-radius) - 2px);
   display: flex;
-  min-height: var(--bc-input-height);
+  height: var(--bc-input-height);
   margin-bottom: 40px;
   padding: 0 12px 0 20px;
   position: relative;
@@ -201,7 +201,7 @@
   display: block;
 }
 
-.bc-input-field-container textarea {
+.bc-input-field-container input {
   background: transparent;
   border: none;
   flex: 1;
@@ -210,18 +210,9 @@
   line-height: 1.5;
   outline: none;
   width: 100%;
-  resize: none;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  min-height: var(--bc-input-height);
-  max-height: 416px;
-  overflow-y: auto;
-  padding: 14px 0;
-  box-sizing: border-box;
 }
 
-.bc-input-field-container textarea::placeholder {
+.bc-input-field-container input::placeholder {
   color: #757575;
 }
 
@@ -237,8 +228,6 @@
   height: var(--bc-button-dimensions);
   transition: background 0.3s ease;
   width: var(--bc-button-dimensions);
-  align-self: end;
-  margin-bottom: 10px;
 }
 
 .input-field-button:hover {
@@ -321,16 +310,16 @@
 }
 
 .sticky .bc-input-field-label,
-.sticky textarea,
+.sticky input,
 .sticky .input-field-button {
   display: none;
 }
 
-.bc-input-field-container:has(textarea:focus-visible) {
+.bc-input-field-container:has(input:focus-visible) {
   outline: 2px solid var(--bc-keyboard-focus-color);
 }
 
-.sticky .bc-input-field:has(textarea:focus-visible)::after {
+.sticky .bc-input-field:has(input:focus-visible)::after {
   opacity: 0.5;
 }
 
@@ -558,7 +547,7 @@
   }
 
   .sticky .bc-input-field-label,
-  .sticky textarea,
+  .sticky input,
   .sticky .input-field-button {
     display: flex;
   }
