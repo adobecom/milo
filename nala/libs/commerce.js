@@ -126,6 +126,59 @@ function addUrlQueryParams(baseUrl, browserParams) {
 }
 
 /**
+ * Helper function to validate commerce URLs with flexible query parameter checking
+ * @param {string} url - The URL to validate
+ * @param {Object} options - Validation options
+ * @param {string} options.country - Expected country code (default: 'US')
+ * @param {string} options.language - Expected language code (default: 'en')
+ * @param {Array<string>} options.requiredParams - Additional required parameters
+ * @returns {boolean} - Whether the URL matches commerce link pattern
+ *
+ * @example
+ * // Basic usage (US/English - default)
+ * validateCommerceUrl(url)
+ * validateCommerceUrl(url, { country: 'US', language: 'en' })
+ *
+ * @example
+ * // Different countries/languages
+ * validateCommerceUrl(url, { country: 'FR', language: 'fr' })
+ *
+ * @example
+ * // With additional required parameters
+ * validateCommerceUrl(url, { requiredParams: ['apc'] })
+ * validateCommerceUrl(url, { country: 'FR', language: 'fr', requiredParams: ['apc', 'promo'] })
+ */
+function validateCommerceUrl(url, options = {}) {
+  const { country = 'US', language = 'en', requiredParams = [] } = options;
+
+  try {
+    const urlObj = new URL(url);
+
+    if (!urlObj.origin.includes('commerce.adobe.com')) return false;
+    if (!urlObj.pathname.includes('/store/email')) return false;
+
+    const params = new URLSearchParams(urlObj.search);
+
+    const itemId = params.get('items[0][id]');
+    if (!itemId || !/^[A-F0-9]{32}$/.test(itemId)) return false;
+
+    if (params.get('cli') !== 'adobe_com') return false;
+    if (params.get('ctx') !== 'fp') return false;
+    if (params.get('co') !== country) return false;
+    if (params.get('lang') !== language) return false;
+
+    // Check any additional required parameters
+    for (const param of requiredParams) {
+      if (!params.has(param)) return false;
+    }
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
  * Helper function to construct test URLs with proper query parameter handling
  * Includes MILO_LIBS and MAS_LIBS environment variables
  * @param {string} baseURL - The base URL from Playwright test context
@@ -399,6 +452,7 @@ module.exports = {
   attachMasRequestErrorsToFailure,
   createWorkerPageSetup,
   addUrlQueryParams,
+  validateCommerceUrl,
   constructTestUrl,
   PRICE_PATTERN,
   DOCS_GALLERY_PATH,
