@@ -37,6 +37,13 @@ function updateModalHeight() {
   modal.style.height = `${modalHeight}px`;
 }
 
+function setInputHeight(el) {
+  const fieldInput = el.querySelector('#bc-input-field');
+  if (!fieldInput) return;
+  fieldInput.style.height = 'auto';
+  fieldInput.style.height = `${fieldInput.scrollHeight}px`;
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('span', { class: 'bc-modal-title' }, 'AI Assistant');
@@ -155,8 +162,7 @@ function decorateInput(el, input) {
     } else {
       fieldButton.disabled = true;
     }
-    fieldInput.style.height = 'auto';
-    fieldInput.style.height = `${fieldInput.scrollHeight}px`;
+    setInputHeight(el);
   });
 
   if (el.classList.contains('sticky')) {
@@ -207,6 +213,9 @@ function decorateInput(el, input) {
     if (!fieldInput.value || fieldInput.value.trim() === '') return;
     openChatModal(fieldInput.value, el);
   });
+
+  const handleResize = () => setInputHeight(el);
+  window.addEventListener('resize', handleResize);
 }
 
 function decorateLegal(el, legal) {
@@ -298,12 +307,8 @@ export default async function init(el) {
       if (mutation.type !== 'attributes'
         || mutation.attributeName !== 'data-status'
         || section.getAttribute('data-status') === 'decorated') { return; }
-      const fieldInput = el.querySelector('.bc-input-field textarea');
-      if (fieldInput) {
-        fieldInput.style.height = 'auto';
-        fieldInput.style.height = `${fieldInput.scrollHeight}px`;
-        observer.disconnect();
-      }
+      setInputHeight(el);
+      observer.disconnect();
     });
   });
 
