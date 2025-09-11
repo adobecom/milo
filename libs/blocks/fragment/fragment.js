@@ -81,19 +81,18 @@ async function getLangSpecificFragment(resource) {
     //   }
     //   return responses[1];
     // });
-
-    // Checking HEAD calls and loading one fragment
-    return Promise.all([
-      fetch(resource, { method: 'HEAD' }),
-      fetch(resource.replace('/ca/', ''), { method: 'HEAD' }),
-    ]).then((responses) => {
-      if (responses[0].ok) {
-        return customFetch({ resource, withCacheRules: true });
-      }
-      return customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true });
-    });
-    // // Loading JSON
-    // await fetch('https://main--da-bacom--adobecom.aem.live/ca/drafts/mepdev/fragments/lingo/urls.json');
+    // // Checking HEAD calls and loading one fragment
+    // return Promise.all([
+    //   fetch(resource, { method: 'HEAD' }),
+    //   fetch(resource.replace('/ca/', ''), { method: 'HEAD' }),
+    // ]).then((responses) => {
+    //   if (responses[0].ok) {
+    //     return customFetch({ resource, withCacheRules: true });
+    //   }
+    //   return customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true });
+    // });
+    // Loading JSON
+    await fetch('https://main--da-bacom--adobecom.aem.live/ca/drafts/mepdev/fragments/lingo/urls.json');
   }
   return customFetch({ resource, withCacheRules: true });
 }
