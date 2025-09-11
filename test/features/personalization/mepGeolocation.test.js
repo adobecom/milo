@@ -23,12 +23,18 @@ const setupEnvironment = async ({ sessionKey, sessionValue, cookieKey, cookieVal
   document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 };
 
+const setCookie = (key, value) => {
+  document.cookie = `${key}=${value}`;
+};
+
 describe('mepGeolocation', () => {
   beforeEach(async () => {
     const config = getConfig();
     config.locale = { ietf: 'en-US', prefix: '' };
     document.head.innerHTML = await readFile({ path: './mocks/metadata-mepgeolocation.html' });
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+    setCookie('OptanonConsent', 'groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0004%3A1');
+    setCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent', 'general=in');
   });
 
   afterEach(() => {

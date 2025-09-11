@@ -23,6 +23,8 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
+  setupKeyboardNav,
+  KEYBOARD_DELAY,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -95,7 +97,6 @@ const CONFIG = {
   delays: { decoration: 3000 },
   containerBreakpoint: 900,
 };
-
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
@@ -216,7 +217,13 @@ class Footer {
       await yieldToMain();
       await task();
     }
-
+    const fetchKeyboardNav = () => {
+      setupKeyboardNav(false);
+    };
+    const nav = document.querySelector('.global-navigation');
+    if (!nav || nav.children.length < 1) {
+      setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
+    }
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
     this.block.append(this.elements.footer);
@@ -340,7 +347,7 @@ class Footer {
 
     // Note: the region picker currently works only with Milo modals/fragments;
     // in the future we'll need to update this for non-Milo consumers
-    if (url.hash !== '') {
+    if (url.hash !== '' && url.hash !== '#_dnt') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
       regionPickerElem.href = url.hash;

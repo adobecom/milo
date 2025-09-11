@@ -8,6 +8,7 @@ import {
 } from '../constants.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
+    cardName: { attribute: 'name' },
     title: { tag: 'h3', slot: 'heading-xs' },
     subtitle: { tag: 'p', slot: 'subtitle' },
     prices: { tag: 'p', slot: 'heading-m' },
@@ -81,13 +82,16 @@ export class Plans extends VariantLayout {
         const shadowRoot = this.card.shadowRoot;
         const footer = shadowRoot.querySelector('footer');
         const size = this.card.getAttribute('size');
+        if (!size)
+            return;
+
         const slotInFooter = shadowRoot.querySelector(
             `footer slot[name="${name}"]`,
         );
         const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
         const body = shadowRoot.querySelector('.body');
 
-        if (!size || !size.includes('wide')) {
+        if (!size.includes('wide')) {
             footer?.classList.remove('wide-footer');
             if (slotInFooter) slotInFooter.remove();
         }
@@ -156,19 +160,12 @@ export class Plans extends VariantLayout {
         }
     }
 
-    adjustPrices() {
-        if (!this.headingM) return;
-        this.headingM.setAttribute('role', 'heading');
-        this.headingM.setAttribute('aria-level', '2');
-    }
-
     postCardUpdateHook() {
         this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
-        this.adjustPrices();
     }
 
     get headingM() {
@@ -278,13 +275,15 @@ export class Plans extends VariantLayout {
                 <slot name="addon"></slot>
                 <slot name="badge"></slot>
             </div>
-            ${this.secureLabelFooter}`;
+            ${this.secureLabelFooter}
+            <slot></slot>`;
+            
     }
 
     static variantStyle = css`
         :host([variant^='plans']) {
             min-height: 273px;
-            border: 1px solid var(--merch-card-custom-border-color, #dadada);
+            border: 1px solid var(--consonant-merch-card-border-color, #dadada);
             --merch-card-plans-min-width: 244px;
             --merch-card-plans-padding: 15px;
             --merch-card-plans-subtitle-display: contents;

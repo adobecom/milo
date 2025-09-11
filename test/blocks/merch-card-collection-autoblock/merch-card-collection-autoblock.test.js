@@ -13,6 +13,9 @@ const satellite = { track: sinon.spy() };
 const originalFetch = window.fetch;
 describe('merch-card-collection autoblock', () => {
   describe('init method', () => {
+    // Create mock mas-commerce-service element
+    const mockService = document.createElement('mas-commerce-service');
+    document.head.appendChild(mockService);
     before(async () => {
       sinon.stub(window, 'fetch').callsFake(async (url) => {
         const result = await originalFetch('/test/blocks/merch-card-collection-autoblock/mocks/fragment.json').then(async (res) => {
@@ -82,9 +85,8 @@ describe('merch-card-collection autoblock', () => {
       document.body.append(root);
       await init(a);
       document.querySelector('.collection-container')?.setAttribute('daa-lh', 'all--cat');
-      const sidenav = document.querySelector('merch-sidenav');
-
       window._satellite.track.called = false;
+      const sidenav = document.querySelector('merch-sidenav');
       const lastFilter = sidenav.querySelector('sp-sidenav-item:last-of-type');
       sidenav.filters.selectElement(lastFilter);
       await delay(100);
@@ -173,6 +175,62 @@ describe('merch-card-collection autoblock', () => {
       const collection = document.querySelector('merch-card-collection');
       expect(collection).to.exist;
       expect(collection.getAttribute('overrides')).to.equal('should-be-replaced:promo-1,should-also-be-replaced:promo-2');
+    });
+
+    it('sets filter parameter for illustrator single_app', async () => {
+      const originalUrl = window.location.href;
+      const url = new URL(originalUrl);
+      url.searchParams.append('single_app', 'illustrator');
+      url.searchParams.append('existing_param', 'value');
+      window.history.pushState({}, '', `${url.toString()}`);
+      const originalPushState = window.history.pushState;
+      const pushStateSpy = sinon.spy();
+      window.history.pushState = pushStateSpy;
+
+      const content = document.createElement('div');
+      content.classList.add('content');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368');
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      content.append(a);
+      document.body.append(content);
+      await init(a);
+
+      expect(pushStateSpy.called).to.be.true;
+      const callArgs = pushStateSpy.firstCall.args;
+      expect(callArgs[2]).to.include('filter=illustration');
+      expect(callArgs[2]).to.include('single_app=illustrator');
+      expect(callArgs[2]).to.include('existing_param=value');
+
+      window.history.pushState = originalPushState;
+      window.history.pushState({}, '', `${originalUrl}`);
+    });
+
+    it('does not set filter parameter when filter already exists', async () => {
+      const originalUrl = window.location.href;
+      const url = new URL(originalUrl);
+      url.searchParams.append('single_app', 'illustrator');
+      url.searchParams.append('filter', 'photography');
+      window.history.pushState({}, '', `${url.toString()}`);
+      const originalPushState = window.history.pushState;
+      const pushStateSpy = sinon.spy();
+      window.history.pushState = pushStateSpy;
+
+      const content = document.createElement('div');
+      content.classList.add('content');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368');
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      content.append(a);
+      document.body.append(content);
+      await init(a);
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('filter')).to.equal('photography');
+      expect(params.get('single_app')).to.equal('illustrator');
+
+      window.history.pushState = originalPushState;
+      window.history.pushState({}, '', `${originalUrl}`);
     });
   });
 });

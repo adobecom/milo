@@ -77,6 +77,10 @@ export default async function init(el) {
       text.classList.add('text');
       decorateAvatar(text);
       decorateBlockText(text, blockTypeSizes[size], blockType);
+      const plainActionArea = text.querySelector('[class*="body-"]:has(> a:not(.con-button)):last-child:not(.action-area)');
+      const hasTextNode = plainActionArea
+        && [...plainActionArea.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim() !== '');
+      if (!hasTextNode) plainActionArea?.classList.add('action-area-plain');
     }
     const image = row.querySelector(':scope > div:not([class])');
     image?.classList.add('image');

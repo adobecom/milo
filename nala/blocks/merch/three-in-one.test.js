@@ -4,13 +4,14 @@ import ThreeInOne from './three-in-one.page.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
-async function clickEntitledCta(cta) {
-  await expect(cta).not.toHaveClass(/loading-entitlements|placeholder-pending/);
+async function openModal(cta) {
+  await expect(cta).not.toHaveClass(/loading-entitlements|placeholder-pending|placeholder-failed/);
   await cta.click();
 }
-
 test.describe('ThreeInOne Block test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
     if (browserName === 'chromium') {
       await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
@@ -35,16 +36,16 @@ test.describe('ThreeInOne Block test suite', () => {
 
     await test.step('Validate if modal reopens on back navigation', async () => {
       const cta = await page.locator('[data-wcs-osi="ByqyQ6QmyXhzAOnjIcfHcoF1l6nfkeLgbzWz-aeM8GQ"][data-checkout-workflow-step="segmentation"]');
-      await clickEntitledCta(cta);
+      await openModal(cta);
       await page.waitForSelector('.dialog-modal');
-      const modal = threeInOne.getModal();
-      expect(modal).toBeVisible();
+      const modal = await threeInOne.getModal();
+      await expect(modal).toBeVisible();
       await page.goto('https://www.adobe.com');
       await page.goBack();
-      const newModal = threeInOne.getModal();
+      const newModal = await threeInOne.getModal();
       await expect(newModal).toBeVisible();
       await threeInOne.closeModal();
-      expect(newModal).not.toBeVisible();
+      await expect(newModal).not.toBeVisible({ timeout: 5000 });
     });
   });
 
@@ -60,7 +61,7 @@ test.describe('ThreeInOne Block test suite', () => {
         for (const [key, value] of Object.entries(attributes)) {
           await expect(cta).toHaveAttribute(key, value);
         }
-        await clickEntitledCta(cta);
+        await openModal(cta);
         const modal = threeInOne.getModal();
         const iframe = await modal.locator('iframe');
         await expect(iframe).toHaveAttribute('src', iframeSrc);
@@ -81,7 +82,7 @@ test.describe('ThreeInOne Block test suite', () => {
       for (const [key, value] of Object.entries(attributes)) {
         await expect(cta).toHaveAttribute(key, value);
       }
-      await clickEntitledCta(cta);
+      await openModal(cta);
       const modal = threeInOne.getModal();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrc);
@@ -100,7 +101,7 @@ test.describe('ThreeInOne Block test suite', () => {
       for (const [key, value] of Object.entries(attributes)) {
         await expect(cta).toHaveAttribute(key, value);
       }
-      await clickEntitledCta(cta);
+      await openModal(cta);
       const modal = threeInOne.getModal();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrc);
@@ -124,11 +125,8 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.waitFor({ state: 'visible' });
-
-      // Wait for entitlements to load
-      await clickEntitledCta(cta);
+      await openModal(cta);
       const modal = threeInOne.getModal();
-      await page.waitForSelector('.dialog-modal');
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrcNoAddOn);
@@ -147,13 +145,30 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.waitFor({ state: 'visible' });
-      await clickEntitledCta(cta);
+      await openModal(cta);
       const modal = threeInOne.getModal();
-      await page.waitForSelector('.dialog-modal');
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrcWithAddOn);
       await threeInOne.closeModal();
+    });
+  });
+
+  test(`${features[5].name}, ${features[5].tags}`, async ({ page, baseURL }) => {
+    const threeInOne = new ThreeInOne(page);
+    console.info(`[Test Page]: ${baseURL}${features[5].path}${miloLibs}`);
+
+    await test.step('Validate fallback step CTA is visible and has proper attributes', async () => {
+      const { sectionId, attributes } = features[5];
+      await page.goto(`${baseURL}${features[5].path}${features[5].browserParams}&${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      const cta = threeInOne.getFallbackCta(sectionId);
+      for (const [key, value] of Object.entries(attributes)) {
+        await expect(cta).toHaveAttribute(key, value);
+      }
+      await cta.click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${attributes.href}`);
     });
   });
 });

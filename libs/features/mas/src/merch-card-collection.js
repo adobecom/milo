@@ -1,7 +1,6 @@
 import { html, LitElement, css, unsafeCSS, nothing } from 'lit';
 import { DESKTOP_UP, TABLET_UP } from './media.js';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-import { getCollectionOptions } from './variants/variants.js';
 import { deeplink, pushState } from './deeplink.js';
 import {
     EVENT_MAS_ERROR,
@@ -16,6 +15,8 @@ import {
 } from './constants.js';
 import { styles } from './merch-card-collection.css.js';
 import { getService, getSlotText } from './utils.js';
+import { getFragmentMapping } from './variants/variants.js';
+import { normalizeVariant } from './hydrate.js';
 import './mas-commerce-service';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
@@ -32,7 +33,7 @@ const SIDENAV_AUTOCLOSE = {
 }
 
 const categoryFilter = (elements, { filter }) =>
-    elements.filter((element) => element.filters.hasOwnProperty(filter));
+    elements.filter((element) => element?.filters && element?.filters.hasOwnProperty(filter));
 
 const typeFilter = (elements, { types }) => {
     if (!types) return elements;
@@ -77,6 +78,7 @@ const searcher = (elements, { search }) => {
 
 export class MerchCardCollection extends LitElement {
     static properties = {
+        id: { type: String, attribute: 'id', reflect: true },
         displayResult: { type: Boolean, attribute: 'display-result' },
         filter: { type: String, attribute: 'filter', reflect: true },
         filtered: { type: String, attribute: 'filtered', reflect: true }, // freeze filter
@@ -106,6 +108,7 @@ export class MerchCardCollection extends LitElement {
     constructor() {
         super();
         // set defaults
+        this.id = null;
         this.filter = 'all';
         this.hasMore = false;
         this.resultCount = undefined;
@@ -218,7 +221,9 @@ export class MerchCardCollection extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         this.#service = getService();
-        this.#log = this.#service.Log.module(MERCH_CARD_COLLECTION);
+        if (this.#service) {
+            this.#log = this.#service.Log.module(MERCH_CARD_COLLECTION);
+        }
         this.buildOverrideMap();
         this.init();
     }
@@ -299,6 +304,7 @@ export class MerchCardCollection extends LitElement {
 
         const aemFragment = this.querySelector('aem-fragment');
         if (!aemFragment) return;
+        this.id = aemFragment.getAttribute('fragment');
 
         this.hydrating = true;
         let resolveHydration;
@@ -318,13 +324,16 @@ export class MerchCardCollection extends LitElement {
                     }
                     const { fields } = fragment.references[reference.identifier].value;
                     const collection = {
-                        label: fields.label,
+                        label: fields.label || '',
                         icon: fields.icon,
                         iconLight: fields.iconLight,
-                        navigationLabel: fields.navigationLabel,
-                        cards: fields.cards.map(cardId => overrideMap[cardId] || cardId),
+                        queryLabel: fields.queryLabel,
+                        cards: fields.cards ? fields.cards.map(cardId => overrideMap[cardId] || cardId) : [],
                         collections: []
                     };
+                    if (fields.defaultchild) {
+                        collection.defaultchild = overrideMap[fields.defaultchild] || fields.defaultchild;
+                    }
                     root.push(collection);
                     traverseReferencesTree(collection.collections, reference.referencesTree);
                 }
@@ -347,17 +356,43 @@ export class MerchCardCollection extends LitElement {
         aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
             this.data = normalizePayload(event.detail, this.#overrideMap);
             const { cards, hierarchy } = this.data;
+            
+            const rootDefaultChild = hierarchy.length === 0 && event.detail.fields?.defaultchild 
+                ? (this.#overrideMap[event.detail.fields.defaultchild] || event.detail.fields.defaultchild)
+                : null;
+            
+            aemFragment.cache.add(...cards);
+            const checkDefaultChild = (collections, fragmentId) => {
+                for (const collection of collections) {
+                    if (collection.defaultchild === fragmentId) return true;
+                    if (collection.collections && checkDefaultChild(collection.collections, fragmentId)) return true;
+                }
+                return false;
+            };
+
             for (const fragment of cards) {
                 const merchCard = document.createElement('merch-card');
                 const fragmentId = this.#overrideMap[fragment.id] || fragment.id;
                 merchCard.setAttribute('consonant', '');
                 merchCard.setAttribute('style', '');
 
+                // Check if this variant supports default child through mapping
+                const variantMapping = getFragmentMapping(fragment.fields.variant);
+                if (variantMapping?.supportsDefaultChild) {
+                    const isDefault = rootDefaultChild 
+                        ? fragmentId === rootDefaultChild
+                        : checkDefaultChild(hierarchy, fragmentId);
+                    
+                    if (isDefault) {
+                        merchCard.setAttribute('data-default-card', 'true');
+                    }
+                }
+
                 function populateFilters(level) {
                     for (const node of level) {
                         const index = node.cards.indexOf(fragmentId);
                         if (index === -1) continue;
-                        const name = node.label.toLowerCase();
+                        const name = node.queryLabel ?? node?.label?.toLowerCase() ?? '';
                         merchCard.filters[name] = { order: index + 1, size: fragment.fields.size };
                         populateFilters(node.collections);
                     }
@@ -376,19 +411,21 @@ export class MerchCardCollection extends LitElement {
                         },
                     };
                 }
+                // Append card after all attributes are set (including data-default-card)
                 this.append(merchCard);
             }
 
             let nmbOfColumns = '';
-            let variant = cards[0]?.fields.variant;
-            if (variant.startsWith('plans')) variant = 'plans';
+            let variant = normalizeVariant(cards[0]?.fields?.variant);
             this.variant = variant;
-            if (variant === 'plans' && cards.length === 3 && !cards.some((card) => card.fields.size?.includes('wide'))) nmbOfColumns = 'ThreeColumns';
-            this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[`${variant}${nmbOfColumns}`] || []));
+            if (variant === 'plans' && cards.length === 3 && !cards.some((card) => card.fields?.size?.includes('wide'))) nmbOfColumns = 'ThreeColumns';
+            if (variant) {
+                this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[`${variant}${nmbOfColumns}`] || []));
+            }
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();
-            resolveHydration();
+            resolveHydration(true);
         });
         await this.hydrationReady;
     }
@@ -530,11 +567,13 @@ const RESULT_TEXT_SLOT_NAMES = {
       }
   
       #visibility;
+      #merchCardElement;
   
       connectedCallback() {
           super.connectedCallback();
           this.collection?.addEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
           this.collection?.addEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
+          this.#merchCardElement = customElements.get('merch-card');
       }
   
       disconnectedCallback() {
@@ -561,7 +600,7 @@ const RESULT_TEXT_SLOT_NAMES = {
       }
   
       getVisibility(type) {
-          const visibility = getCollectionOptions(this.collection?.variant)?.headerVisibility;
+          const visibility = this.#merchCardElement.getCollectionOptions(this.collection?.variant)?.headerVisibility;
           const typeVisibility = this.parseVisibilityOptions(visibility, type);
           if (typeVisibility !== null) return typeVisibility;
           return this.parseVisibilityOptions(defaultVisibility, type);
@@ -685,11 +724,11 @@ const RESULT_TEXT_SLOT_NAMES = {
   
       get customArea() {
           if (!this.#visibility.custom) return nothing;
-          const customHeaderAreaGetter = getCollectionOptions(this.collection?.variant)?.customHeaderArea;
+          const customHeaderAreaGetter = this.#merchCardElement.getCollectionOptions(this.collection?.variant)?.customHeaderArea;
           if (!customHeaderAreaGetter) return nothing;
           const customHeaderArea = customHeaderAreaGetter(this.collection);
           if (!customHeaderArea || customHeaderArea === nothing) return nothing;
-          return html`<div id="custom">${customHeaderArea}</div>`;
+          return html`<div id="custom" role="heading" aria-level="2">${customHeaderArea}</div>`;
       }
   
       // #region Handlers
@@ -708,8 +747,6 @@ const RESULT_TEXT_SLOT_NAMES = {
       handleSidenavAttached() {
           this.requestUpdate();
       }
-  
-      // #endregion
   
       render() {
           return html`

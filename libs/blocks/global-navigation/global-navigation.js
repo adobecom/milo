@@ -14,7 +14,7 @@ import {
   shouldBlockFreeTrialLinks,
 } from '../../utils/utils.js';
 
-(async () => {
+const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
   const loadStylePromise = (u) => new Promise((resolve, reject) => {
@@ -105,6 +105,8 @@ const {
   addA11YMobileDropdowns,
   removeA11YMobileDropdowns,
   getUnavWidthCSS,
+  setupKeyboardNav,
+  KEYBOARD_DELAY,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -176,7 +178,7 @@ export const CONFIG = {
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
-    keyboardNav: 8000,
+    keyboardNav: KEYBOARD_DELAY,
   },
   features: [
     'gnav-brand',
@@ -342,15 +344,6 @@ const decorateProfileTrigger = async ({ avatar }) => {
   return buttonElem;
 };
 
-let keyboardNav;
-const setupKeyboardNav = async (newMobileWithLnav) => {
-  keyboardNav = keyboardNav || new Promise(async (resolve) => {
-    const { default: KeyboardNavigation } = await import('./utilities/keyboard/index.js');
-    const instance = new KeyboardNavigation(newMobileWithLnav);
-    resolve(instance);
-  });
-};
-
 const getBrandImage = (image, brandImageOnly) => {
   // Return the default Adobe logo if an image is not available
   if (!image) return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
@@ -513,7 +506,8 @@ class Gnav {
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'gnav', 'e');
 
-  revealGnav = () => {
+  revealGnav = async () => {
+    await cssPromise;
     this.block.classList.remove('gnav-hide');
     this.block.classList.add('ready');
     performance.mark('Gnav-Visible');
@@ -633,6 +627,10 @@ class Gnav {
       const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
+    });
+
+    localNav.querySelector('.feds-navItem--active')?.addEventListener('click', (elem) => {
+      if (!elem.currentTarget.querySelector('.feds-popup')) closeAllDropdowns();
     });
 
     const curtain = localNav.querySelector('.feds-localnav-curtain');
@@ -971,6 +969,21 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
+    const updatePromoZIndex = () => {
+      const isOpen = document.body.classList.contains('unav-no-scroll');
+      fedsPromo.style.zIndex = isOpen ? 10 : 11;
+    };
+    // Ensure promo appears behind unav if unav is active
+    if (fedsPromo && !isDesktop.matches) {
+      new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            updatePromoZIndex();
+          }
+        });
+      }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    }
     // In case we get it wrong
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
     performance.mark('Unav-End');
@@ -1246,7 +1259,7 @@ class Gnav {
     `;
 
     // Get all main menu items, but exclude any that are nested inside other features
-    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
+    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a, p:only-child > a.merch')]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
 
     // Save number of items to decide whether a hamburger menu is required
@@ -1254,7 +1267,7 @@ class Gnav {
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
-      const mainNavItem = this.decorateMainNavItem(item, index);
+      const mainNavItem = await this.decorateMainNavItem(item, index);
       if (mainNavItem) {
         this.elements.mainNav.appendChild(mainNavItem);
       }
@@ -1292,8 +1305,8 @@ class Gnav {
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
 
-    if (!this.isLocalNav()) {
-      if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+    if (!this.isLocalNav() && hasPromo) {
+      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       return;
     }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
@@ -1312,7 +1325,7 @@ class Gnav {
     }
   };
 
-  decorateMainNavItem = (item, index) => {
+  decorateMainNavItem = async (item, index) => {
     performance.mark(`Decorate-MainNav-Item-${index}-Start`);
     const itemType = this.getMainNavItemType(item);
 
@@ -1484,7 +1497,7 @@ class Gnav {
     };
 
     // Decorate item based on its type
-    const returnValue = (() => {
+    const returnValue = await (async () => {
       switch (itemType) {
         case 'syncDropdownTrigger':
         case 'asyncDropdownTrigger': {
@@ -1538,12 +1551,15 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
-          const linkElem = item.querySelector('a');
+          let linkElem = item.querySelector('a');
+          if (linkElem.classList.contains('merch')) {
+            linkElem = await merch.default(linkElem);
+          }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
           linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
@@ -1578,7 +1594,7 @@ class Gnav {
         }
         case 'text':
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.textContent}
+              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
             </div>`, item);
         default:
           /* c8 ignore next 3 */
