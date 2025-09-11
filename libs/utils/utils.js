@@ -546,7 +546,7 @@ export function localizeLink(
   try {
     const url = new URL(href);
     const relative = url.hostname === originHostName;
-    const processedHref = relative ? href.replace(url.origin, '') : href;
+    const processedHref = relative ? href.replace(url.origin, '').replace('#_roc', '') : href;
     const { hash } = url;
     if (hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
     const path = url.pathname;
@@ -562,7 +562,10 @@ export function localizeLink(
     if (isLocalizedLink) return processedHref;
 
     const prefix = getPrefixBySite(locale, url, relative);
-    const urlPath = `${prefix}${path}${url.search}${hash}`;
+    const urlParams = new URLSearchParams(window.location.search);
+    const country = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+    const countryPath = country === 'ca' && hash.includes('#_roc') ? '/ca' : '';
+    const urlPath = `${prefix}${countryPath}${path}${url.search}${hash.replace('#_roc', '')}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
     return href;
@@ -841,6 +844,34 @@ export function isTrustedAutoBlock(autoBlock, url) {
     || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
 }
 
+function mepLingoSwap(a) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const country = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  const block = a.closest('div[class]');
+  if (!block) return;
+
+  const row = a.closest('div').parentNode;
+  const col1 = row.children[0];
+  if (col1.textContent?.toLowerCase().trim() !== 'roc') return;
+  if (country !== 'ca') {
+    row.remove();
+    return;
+  }
+  a.href = a.href.replace('#_roc', '');
+  a.textContent = a.href;
+  const p = createTag('p', null, a);
+  const blockName = block.classList[0];
+  if (blockName === 'section-metadata') {
+    const section = block.parentNode;
+    while (section.firstChild) {
+      section.removeChild(section.firstChild);
+    }
+    section.appendChild(p);
+    return;
+  }
+  block.insertAdjacentElement('afterend', p);
+  block.remove();
+}
 export function decorateAutoBlock(a) {
   const config = getConfig();
   let url;
@@ -866,6 +897,8 @@ export function decorateAutoBlock(a) {
       if (a.href === window.location.href) {
         return false;
       }
+
+      mepLingoSwap(a);
 
       const isInlineFrag = url.hash.includes('#_inline');
       if (url.hash === '' || isInlineFrag) {
@@ -956,6 +989,7 @@ export function decorateLinks(el) {
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
+    if (a.href.includes('#_roc')) a.setAttribute('data-roc-link', 'true');
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
