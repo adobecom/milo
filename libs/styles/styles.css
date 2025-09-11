@@ -293,35 +293,6 @@
   line-height: var(--type-body-xxs-lh);
 }
 
-/* Mweb specific changes for body typography */
-.mweb-enabled .body-xxl {
-  --type-body-xxl-size-mweb: calc(var(--font-size-multiplier, 1) * 24px);
-  --type-body-xxl-lh-mweb: 36px;
-  font-size: var(--type-body-xxl-size-mweb);
-  line-height: var(--type-body-xxl-lh-mweb);
-}
-
-.mweb-enabled .body-xl {
-  font-size: var(--type-body-l-size);
-  line-height: var(--type-body-l-lh);
-}
-
-.mweb-enabled .body-l {
-  font-size: var(--type-body-m-size);
-  line-height: var(--type-body-m-lh);
-}
-
-.mweb-enabled .body-m {
-  font-size: var(--type-body-s-size);
-  line-height: var(--type-body-s-lh);
-}
-
-.mweb-enabled .body-s {
-  font-size: var(--type-body-xs-size);
-  line-height: var(--type-body-xs-lh);
-}
-
-
 .detail-xl {
   font-size: var(--type-detail-l-size);
   line-height: var(--type-detail-l-lh);
@@ -1067,6 +1038,27 @@ a.static:active  {
   }
 }
 
+/* tablet down */
+@media screen and (max-width: 1199px) {
+  /* Mweb specific changes for body typography */
+  .mweb-enabled {
+    --type-body-xxl-size: calc(var(--font-size-multiplier, 1) * 24px);
+    --type-body-xxl-lh: 36px;
+  
+    --type-body-xl-size: calc(var(--font-size-multiplier, 1) * 20px);
+    --type-body-xl-lh: 30px;
+  
+    --type-body-l-size: calc(var(--font-size-multiplier, 1) * 18px);
+    --type-body-l-lh: 27px;
+  
+    --type-body-m-size: calc(var(--font-size-multiplier, 1) * 16px);
+    --type-body-m-lh: 24px;
+  
+    --type-body-s-size: calc(var(--font-size-multiplier, 1) * 14px);
+    --type-body-s-lh: 21px;
+  }
+}
+
 /* desktop up */
 @media screen and (min-width: 1200px) {
   .con-block.max-width-6-desktop .foreground { max-width: 600px; }
@@ -1120,31 +1112,6 @@ a.static:active  {
   .con-block.margin-top-desktop { margin-top: var(--spacing-s); }
   .con-block.margin-bottom-desktop { margin-bottom: var(--spacing-s); }
 
-  /* Mweb specific changes for body typography */
-  .mweb-enabled .body-xxl {
-    font-size: var(--type-body-xxl-size);
-    line-height: var(--type-body-xxl-lh);
-  }
-
-  .mweb-enabled .body-xl {
-    font-size: var(--type-body-xl-size);
-    line-height: var(--type-body-xl-lh);
-  }
-  
-  .mweb-enabled .body-l {
-    font-size: var(--type-body-l-size);
-    line-height: var(--type-body-l-lh);
-  }
-  
-  .mweb-enabled .body-m {
-    font-size: var(--type-body-m-size);
-    line-height: var(--type-body-m-lh);
-  }
-  
-  .mweb-enabled .body-s {
-    font-size: var(--type-body-s-size);
-    line-height: var(--type-body-s-lh);
-  }
 }
 
 /* desktop large < 1440 */
