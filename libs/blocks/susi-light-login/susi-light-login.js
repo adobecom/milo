@@ -21,9 +21,7 @@ const onRedirect = (e) => window.location.assign(e.detail);
 const onError = (e) => window.lana?.log('Product Login pages: SUSI Light Error: ', e);
 
 const getText = (e) => e?.textContent?.trim();
-
 const layoutClasses = ['socialAndEmail', 'emailAndSocial', 'socialOnly', 'emailOnly'];
-
 export class SusiLight {
   constructor(el) {
     this.el = el;
@@ -40,6 +38,7 @@ export class SusiLight {
     this.isDesktop.addEventListener('change', this.handleViewportChange);
     this.setBackground();
     this.el.innerHTML = '';
+
     const loginContainer = this.createLoginContainer();
     this.el.append(loginContainer);
   };
@@ -61,7 +60,7 @@ export class SusiLight {
     const { env } = getConfig();
     const sentry = createTag('susi-sentry-light');
     const { classList } = this.el;
-    const layoutClass = layoutClasses.filter((layout) => classList.contains(layout.toLowerCase()));
+    const layoutClass = layoutClasses.find((layout) => classList.contains(layout.toLowerCase()));
 
     if (env.name !== 'prod') sentry.stage = true;
     sentry.variant = 'standard';
@@ -69,12 +68,11 @@ export class SusiLight {
     const dctxId = getMetadata('susi-light-dctx-id');
     if (dctxId) sentry.authParams.dctx_id = dctxId;
     sentry.config = { consentProfile: 'free' };
-    if (layoutClass.length > 0) {
-      const [layout] = layoutClass;
-      sentry.config.layout = layout;
-    }
     sentry.addEventListener('redirect', onRedirect);
     sentry.addEventListener('on-error', onError);
+    if (layoutClass) {
+      sentry.config.layout = layoutClass;
+    }
     return sentry;
   };
 
