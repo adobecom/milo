@@ -146,7 +146,11 @@ const buildForm = ({
   radioGroupLabel,
   radioGroup,
   feedbackLabel,
+  textboxPlaceholder,
   contactMeString,
+  cancelText,
+  submitText,
+  errorText,
 }) => `
   <form id="nps" method="get" action="/an/endpoint" novalidate>
     <button type="button" class="nps-close" aria-label="Close">&times;</button>
@@ -158,7 +162,7 @@ const buildForm = ({
       </div>
       <div class="error-message" id="feedback-error">
         <span class="error-icon">⚠</span>
-        <span class="error-text">Select your feedback</span>
+        <span class="error-text">${errorText}</span>
       </div>
     </fieldset>
     <fieldset class="nps-feedback-area">
@@ -166,7 +170,7 @@ const buildForm = ({
       <textarea
         id="explanation-input"
         name="explanation"
-        placeholder="Share your thoughts here..."
+        placeholder="${textboxPlaceholder}"
         rows="4"
       ></textarea>
     </fieldset>
@@ -181,8 +185,8 @@ const buildForm = ({
       </label>
     </fieldset>
     <fieldset class="nps-submit-area">
-      <button type="button" class="nps-cancel">Cancel</button>
-      <button type="submit" class="nps-submit">Submit</button>
+      <button type="button" class="nps-cancel">${cancelText}</button>
+      <button type="submit" class="nps-submit">${submitText}</button>
     </fieldset>
   </form>
   `;
@@ -208,23 +212,61 @@ const createIdForLabel = (label) => label
   .replaceAll(/\s/g, '-');
 
 export default async (block) => {
+  // parsing the block
+  const [
+    title,
+    question,
+    scale,
+    explanationString,
+    textboxPlaceholder,
+    contactMeString,
+    cancelText,
+    submitText,
+    errorText,
+  ] = [...block.children].map((c) => c
+    .firstElementChild
+    ?.nextElementSibling
+    ?.textContent).map((x) => !!x ? x : null); // eslint-disable-line
+  const radioGroupList = (() => {
+    if (scale !== '5' && scale !== '7') {
+      console.warn('Invalid scale specified; defaulting to a 5 pt scale. The value of scale has to be either \'5\' or \'7\'');
+    }
+    switch (scale) {
+      case '7': return [
+        'Extremely Dissatisfied',
+        'Moderately Dissatisfied',
+        'Slightly Dissatisfied',
+        'Neutral',
+        'Slightly Satisfied',
+        'Moderately Satisfied',
+        'Extremely Satisfied',
+      ];
+      case '5':
+      default: return [
+        'Very Dissatisfied',
+        'Dissatisfied',
+        'Neutral',
+        'Satisfied',
+        'Very Satisfied',
+      ];
+    }
+  })();
   const data = {
-    title: 'Help us improve [Product Name]',
-    radioGroupLabel: 'Overall how satisfied are you with [Product Name]?',
-    radioGroup: [
-      'Very Dissatisfied',
-      'Dissatisfied',
-      'Neutral',
-      'Satisfied',
-      'Very Satisfied',
-    ],
-    feedbackLabel: 'Kindly explain your rating',
-    contactMeString: 'Adobe can contact me about my rating',
+    title,
+    radioGroupLabel: question,
+    radioGroup: radioGroupList,
+    feedbackLabel: explanationString,
+    textboxPlaceholder,
+    contactMeString,
+    cancelText,
+    submitText,
+    errorText,
   };
+
   const formFragment = document
     .createRange()
     .createContextualFragment(buildForm(data));
-  block.append(formFragment);
+  block.replaceChildren(formFragment);
 
   const sendMessage = initMessageClient();
   // The form will still be interactable in case
