@@ -2,6 +2,7 @@ import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './full-pricing-express.css.js';
 import { isMobile } from '../media.js';
+import { EVENT_MERCH_CARD_COLLECTION_READY } from '../constants.js';
 
 export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -62,7 +63,10 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
 };
 
 export class FullPricingExpress extends VariantLayout {
-    #handleResize;
+    constructor(card) {
+        super(card);
+        this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+    }
 
     getGlobalCSS() {
         return CSS;
@@ -76,63 +80,140 @@ export class FullPricingExpress extends VariantLayout {
         return '[slot="heading-xs"]';
     }
 
-    adjustFullPricingExpressSlots() {
-        if (this.card.getBoundingClientRect().width === 0) return;
+    updateCardElementMinHeight(el, name) {
+        if (!el) return;
+        const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+        const height = Math.max(0, el.offsetHeight || 0);
+        const maxMinHeight =
+            parseInt(
+                this.getContainer().style.getPropertyValue(
+                    elMinHeightPropertyName,
+                ),
+            ) || 0;
 
-        // Synchronize header section
-        this.updateCardElementMinHeight(
-            this.card.shadowRoot.querySelector('.header'),
-            'header'
-        );
-
-        // Synchronize body-s slot (main description)
-        this.updateCardElementMinHeight(
-            this.card.shadowRoot.querySelector('slot[name="body-s"]'),
-            'body-s'
-        );
-
-        // Synchronize price container (critical for alignment)
-        this.updateCardElementMinHeight(
-            this.card.shadowRoot.querySelector('.price-container'),
-            'price-container'
-        );
-
-        // Synchronize CTA section
-        this.updateCardElementMinHeight(
-            this.card.shadowRoot.querySelector('.cta'),
-            'cta'
-        );
-
-        // Synchronize overall card content height
-        this.updateCardElementMinHeight(
-            this.card.shadowRoot.querySelector('.card-content'),
-            'card-content'
-        );
+        if (height > maxMinHeight) {
+            this.getContainer().style.setProperty(
+                elMinHeightPropertyName,
+                `${height}px`,
+            );
+        }
     }
 
-    postCardUpdateHook() {
-        if (!this.card.isConnected) return;
-        
-        // Only apply alignment on tablet/desktop (not mobile)
-        if (!isMobile()) {
+    updateCardElementMinHeightValue(height, name) {
+        if (!height) return;
+        const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+        const container = this.getContainer();
+        const maxMinHeight =
+            parseInt(
+                container.style.getPropertyValue(
+                    elMinHeightPropertyName,
+                ),
+            ) || 0;
+
+        if (height > maxMinHeight) {
+            container.style.setProperty(
+                elMinHeightPropertyName,
+                `${height}px`,
+            );
+        }
+    }
+
+    adjustFullPricingExpressSlots() {
+        if (this.card.getBoundingClientRect().width === 0) {
+            return;
+        }
+
+        const priceSlot = this.card.querySelector('[slot="price"]');
+        if (priceSlot) {
+            priceSlot.offsetHeight;
+            
+            const styles = window.getComputedStyle(priceSlot);
+            const marginTop = parseFloat(styles.marginTop) || 0;
+            const marginBottom = parseFloat(styles.marginBottom) || 0;
+            const height = priceSlot.offsetHeight + marginTop + marginBottom;
+            this.updateCardElementMinHeightValue(height, 'price');
+        }
+
+        const ctaSlot = this.card.querySelector('[slot="cta"]');
+        if (ctaSlot) {
+            ctaSlot.offsetHeight;
+            
+            const styles = window.getComputedStyle(ctaSlot);
+            const marginTop = parseFloat(styles.marginTop) || 0;
+            const marginBottom = parseFloat(styles.marginBottom) || 0;
+            const height = ctaSlot.offsetHeight + marginTop + marginBottom;
+            this.updateCardElementMinHeightValue(height, 'cta');
+        }
+
+        const description2Slot = this.card.querySelector('[slot="description2"]');
+        if (description2Slot) {
+            description2Slot.offsetHeight;
+            
+            const styles = window.getComputedStyle(description2Slot);
+            const marginTop = parseFloat(styles.marginTop) || 0;
+            const marginBottom = parseFloat(styles.marginBottom) || 0;
+            const height = description2Slot.offsetHeight + marginTop + marginBottom;
+            this.updateCardElementMinHeightValue(height, 'description2');
+        }
+    }
+
+    forceRemeasure() {
+        const container = this.getContainer();
+        if (container) {
+            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-price-height`);
+            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-cta-height`);
+            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-description2-height`);
+            
             this.adjustFullPricingExpressSlots();
         }
     }
 
-    connectedCallbackHook() {
+    async postCardUpdateHook() {
+        if (!this.card.isConnected) return;
+        
+        await this.card.updateComplete;
+        
+        if (this.card.prices?.length) {
+            await Promise.all(this.card.prices.map((price) => price.onceSettled?.()));
+        }
+        
         if (!isMobile()) {
-            // Add resize listener for responsive updates
-            this.#handleResize = () => {
+            requestAnimationFrame(() => {
                 this.adjustFullPricingExpressSlots();
-            };
-            window.addEventListener('resize', this.#handleResize);
+            });
+        }
+    }
+
+    connectedCallbackHook() {
+        window.addEventListener('resize', this.postCardUpdateHook);
+        
+        this.handleCollectionReady = async () => {
+            if (!isMobile()) {
+                if (this.card.prices?.length) {
+                    await Promise.all(this.card.prices.map((price) => price.onceSettled?.()));
+                }
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        this.adjustFullPricingExpressSlots();
+                    }, 200);
+                });
+            }
+        };
+        
+        const collection = this.card.closest('merch-card-collection');
+        if (collection) {
+            collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
         }
     }
 
     disconnectedCallbackHook() {
-        if (this.#handleResize) {
-            window.removeEventListener('resize', this.#handleResize);
-            this.#handleResize = null;
+        window.removeEventListener('resize', this.postCardUpdateHook);
+        
+        if (this.handleCollectionReady) {
+            const collection = this.card.closest('merch-card-collection');
+            if (collection) {
+                collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
+            }
         }
     }
 
@@ -272,7 +353,7 @@ export class FullPricingExpress extends VariantLayout {
         }
         
         :host([variant='full-pricing-express'][gradient-border='true']) .badge-wrapper ::slotted(*) {
-            color: white !important;
+            color: white;
         }
 
         :host([variant='full-pricing-express'][gradient-border='true']) .card-content {
@@ -371,7 +452,6 @@ export class FullPricingExpress extends VariantLayout {
             border: 1px solid #E0E2FF;
             display: flex;
             flex-direction: column;
-            margin-top: auto;
             position: relative;
             overflow: visible;
             margin-bottom: var(--merch-card-full-pricing-express-section-gap);
@@ -402,9 +482,9 @@ export class FullPricingExpress extends VariantLayout {
                 padding: calc(var(--merch-card-full-pricing-express-padding-mobile) + 2px);
             }
             
-            /* HIDE description2 (features) on mobile */
+            /* Show description2 container on mobile (content controlled by light DOM) */
             :host([variant='full-pricing-express']) .description2 {
-                display: none !important;
+                display: block;
             }
         }
 
@@ -416,28 +496,33 @@ export class FullPricingExpress extends VariantLayout {
                 height: auto;
             }
 
-            /* Apply synchronized heights for desktop/tablet only */
-            :host([variant='full-pricing-express']) .header {
-                min-height: var(--consonant-merch-card-full-pricing-express-header-height);
+            /* Make card-content fill parent and use flexbox */
+            :host([variant='full-pricing-express']) .card-content {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
             }
 
-            :host([variant='full-pricing-express']) slot[name='body-s'] {
-                min-height: var(--consonant-merch-card-full-pricing-express-body-s-height);
-                display: block;
-            }
-
+            /* Apply synchronized heights to shadow DOM containers */
             :host([variant='full-pricing-express']) .price-container {
-                min-height: var(--consonant-merch-card-full-pricing-express-price-container-height);
+                min-height: var(--consonant-merch-card-full-pricing-express-price-height);
+                display: flex;
+                flex-direction: column;
             }
 
             :host([variant='full-pricing-express']) .cta {
                 min-height: var(--consonant-merch-card-full-pricing-express-cta-height);
-                flex-shrink: 0;
-                margin-top: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
             }
 
-            :host([variant='full-pricing-express']) .card-content {
-                min-height: var(--consonant-merch-card-full-pricing-express-card-content-height);
+            /* Make description2 grow to fill remaining space */
+            :host([variant='full-pricing-express']) .description2 {
+                flex: 1;
+                min-height: var(--consonant-merch-card-full-pricing-express-description2-height);
+                display: flex;
+                flex-direction: column;
             }
         }
     `;

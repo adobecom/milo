@@ -4,8 +4,10 @@ import { MatchMediaController } from '@spectrum-web-components/reactive-controll
 import { deeplink, pushState } from './deeplink.js';
 import {
     EVENT_MAS_ERROR,
+    EVENT_MAS_READY,
     EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED,
     EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED,
+    EVENT_MERCH_CARD_COLLECTION_READY,
     EVENT_MERCH_SIDENAV_SELECT,
     EVENT_MERCH_CARD_COLLECTION_SORT,
     EVENT_MERCH_CARD_COLLECTION_SHOWMORE,
@@ -118,6 +120,11 @@ export class MerchCardCollection extends LitElement {
         this.hydrating = false;
         this.hydrationReady = null;
         this.literalsHandlerAttached = false;
+        // Card readiness tracking
+        this.cardsReady = new Set();
+        this.totalCards = 0;
+        this.allCardsReadyPromise = null;
+        this.resolveAllCardsReady = null;
     }
 
     render() {
@@ -216,6 +223,77 @@ export class MerchCardCollection extends LitElement {
           this.#overrideMap[key] = value;
         }
       });
+    }
+
+    initializeCardReadinessTracking() {
+        // Get all merch cards
+        const cards = this.querySelectorAll('merch-card');
+        this.totalCards = cards.length;
+        this.cardsReady.clear();
+        
+        if (this.totalCards === 0) return;
+        
+        // Create promise for when all cards are ready
+        this.allCardsReadyPromise = new Promise((resolve) => {
+            this.resolveAllCardsReady = resolve;
+        });
+        
+        // Listen for card ready events
+        cards.forEach((card) => {
+            // Check if card is already ready
+            if (card.classList.contains('ready')) {
+                this.markCardReady(card);
+            }
+            
+            // Listen for the ready event
+            card.addEventListener(EVENT_MAS_READY, () => {
+                this.markCardReady(card);
+            }, { once: true });
+        });
+    }
+
+    markCardReady(card) {
+        this.cardsReady.add(card);
+        
+        // Check if all cards are ready
+        if (this.cardsReady.size === this.totalCards) {
+            this.onAllCardsReady();
+        }
+    }
+
+    onAllCardsReady() {
+        // Dispatch collection ready event
+        this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_READY, {
+            bubbles: true,
+            composed: true,
+            detail: {
+                totalCards: this.totalCards,
+                variant: this.variant
+            }
+        }));
+        
+        // Trigger height synchronization for all variant cards
+        this.triggerHeightSync();
+        
+        // Resolve the promise
+        if (this.resolveAllCardsReady) {
+            this.resolveAllCardsReady();
+        }
+    }
+
+    triggerHeightSync() {
+        // Get all cards and trigger their height sync if they have the method
+        const cards = this.querySelectorAll('merch-card');
+        cards.forEach((card) => {
+            // Check variant and call appropriate adjustment method
+            if (card.variant === 'full-pricing-express' && card.variantLayout?.adjustFullPricingExpressSlots) {
+                card.variantLayout.adjustFullPricingExpressSlots();
+            } else if (card.variant === 'product' && card.variantLayout?.adjustProductBodySlots) {
+                card.variantLayout.adjustProductBodySlots();
+            } else if (card.variant === 'mini-compare-chart' && card.variantLayout?.adjustMiniCompareBodySlots) {
+                card.variantLayout.adjustMiniCompareBodySlots();
+            }
+        });
     }
 
     connectedCallback() {
@@ -426,6 +504,9 @@ export class MerchCardCollection extends LitElement {
             this.hydrating = false;
             aemFragment.remove();
             resolveHydration(true);
+            
+            // Initialize card readiness tracking after all cards are added
+            this.initializeCardReadinessTracking();
         });
         await this.hydrationReady;
     }
