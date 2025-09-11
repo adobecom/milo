@@ -1,4 +1,4 @@
-import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
+import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP, TABLET_DOWN } from '../media.js';
 export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 302px;
@@ -293,6 +293,12 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 }
 
 /* Tablet */
+@media screen and ${TABLET_DOWN} {
+    merch-card[variant="plans-education"]:last-of-type:nth-child(odd) .spacer {
+        height: 0px;
+    }
+}
+
 @media screen and ${TABLET_UP} {
     .four-merch-cards.plans .foreground {
         max-width: unset;
