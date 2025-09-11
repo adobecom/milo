@@ -154,8 +154,8 @@ function validateCommerceUrl(url, options = {}) {
   try {
     const urlObj = new URL(url);
 
-    if (!urlObj.origin.includes('commerce.adobe.com')) return false;
-    if (!urlObj.pathname.includes('/store/email')) return false;
+    if (urlObj.hostname !== 'commerce.adobe.com') return false;
+    if (!urlObj.pathname.startsWith('/store/email')) return false;
 
     const params = new URLSearchParams(urlObj.search);
 
