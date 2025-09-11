@@ -332,25 +332,16 @@ export async function checkLinks({ area, urlHash, envName }) {
 }
 
 export function runChecks({ url, area = document, envName, runCheckLinks = true }) {
-  const resultValue = [
+  return [
     checkH1s(area),
     checkTitle(area),
     checkCanon(area),
     checkDescription(area),
     checkBody(area),
     checkLorem(area),
-  ]
-  if (runCheckLinks) {
-    resultValue.push(
-      (async () => {
-        await waitForFooter();
-        return checkLinks({ area, url, envName });
-      })()
-    );
-  }
-  
-  if (!window.contentInsights) window.contentInsights = {};
-  window.contentInsights.seo = resultValue;
-  
-  return resultValue;
+    (async () => {
+      await waitForFooter();
+      return checkLinks({ area, url, envName });
+    })(),
+  ];
 }
