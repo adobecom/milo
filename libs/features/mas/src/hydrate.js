@@ -267,19 +267,19 @@ export function processBackgroundImage(
 }
 
 /**
- * Process tooltips in HTML content
- * Ensures mas-tooltip elements have proper structure
+ * Process mnemonic elements in HTML content
+ * Ensures mas-mnemonic elements have proper structure
  */
-function processTooltips(htmlContent) {
+function processMnemonicElements(htmlContent) {
     if (!htmlContent || typeof htmlContent !== 'string') return htmlContent;
     
-    // This function ensures mas-tooltip elements are properly formed
+    // This function ensures mas-mnemonic elements are properly formed
     // The actual parsing happens when the HTML is added to the DOM
-    // and the mas-tooltip web component initializes
+    // and the mas-mnemonic web component initializes
     
-    // Import mas-tooltip to ensure it's loaded when tooltips are used
-    if (htmlContent.includes('<mas-tooltip')) {
-        import('./mas-tooltip.js').catch(console.error);
+    // Import mas-mnemonic to ensure it's loaded when mnemonics are used
+    if (htmlContent.includes('<mas-mnemonic')) {
+        import('./mas-mnemonic.js').catch(console.error);
     }
     
     return htmlContent;
@@ -287,7 +287,7 @@ function processTooltips(htmlContent) {
 
 export function processPrices(fields, merchCard, mapping) {
     if (fields.prices) {
-        fields.prices = processTooltips(fields.prices);
+        fields.prices = processMnemonicElements(fields.prices);
     }
     appendSlot('prices', fields, merchCard, mapping);
 }
@@ -352,10 +352,10 @@ function processDescriptionLinks(merchCard, aemFragmentMapping) {
 export function processDescription(fields, merchCard, mapping) {
     // Process tooltips in description field
     if (fields.description) {
-        fields.description = processTooltips(fields.description);
+        fields.description = processMnemonicElements(fields.description);
     }
     if (fields.promoText) {
-        fields.promoText = processTooltips(fields.promoText);
+        fields.promoText = processMnemonicElements(fields.promoText);
     }
     
     appendSlot('promoText', fields, merchCard, mapping);
@@ -580,7 +580,7 @@ function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle, isPrimary
 export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
     if (fields.ctas) {
         // Process tooltips in CTAs
-        fields.ctas = processTooltips(fields.ctas);
+        fields.ctas = processMnemonicElements(fields.ctas);
         
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fields.ctas);
