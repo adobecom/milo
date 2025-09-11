@@ -67,6 +67,36 @@ function replaceDotMedia(path, doc) {
   resetAttributeBase('source', 'srcset');
 }
 
+async function getLangSpecificFragment(resource) {
+  const url = new URL(resource);
+  const { hash } = url;
+  if (hash.includes('#_roc')) {
+    // Loading both fragments
+    return Promise.all([
+      customFetch({ resource, withCacheRules: true }),
+      customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true }),
+    ]).then((responses) => {
+      if (responses[0].ok) {
+        return responses[0];
+      }
+      return responses[1];
+    });
+    // // Checking HEAD calls and loading one fragment
+    // return Promise.all([
+    //   fetch(resource, { method: 'HEAD' }),
+    //   fetch(resource.replace('/ca/', ''), { method: 'HEAD' }),
+    // ]).then((responses) => {
+    //   if (responses[0].ok) {
+    //     return customFetch({ resource, withCacheRules: true });
+    //   }
+    //   return customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true });
+    // });
+    // // Loading JSON
+    // await fetch('https://main--da-bacom--adobecom.aem.live/ca/drafts/mepdev/fragments/lingo/urls.json');
+  }
+  return customFetch({ resource, withCacheRules: true });
+}
+
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = localizeLink(a.href);
@@ -110,8 +140,8 @@ export default async function init(a) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
-  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
+
+  const resp = await getLangSpecificFragment(`${resourcePath}.plain.html`);
 
   if (!resp?.ok) {
     window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
