@@ -107,6 +107,20 @@ function attachMasRequestErrorsToFailure(testInfo, masRequestErrors) {
   return '';
 }
 
+/**
+ * Helper function to construct URLs with proper query parameter handling
+ * @param {string} baseUrl - The base URL (may already contain query parameters)
+ * @param {string} browserParams - Browser parameters to append (may start with ? or &)
+ * @returns {string} - Properly constructed URL
+ */
+function constructUrlWithParams(baseUrl, browserParams) {
+  if (!browserParams) return baseUrl;
+  const hasQueryParams = baseUrl.includes('?');
+  const separator = hasQueryParams ? '&' : '?';
+  const cleanParams = browserParams.replace(/^[?&]/, '');
+  return `${baseUrl}${separator}${cleanParams}`;
+}
+
 async function setupMasRequestLogger(masRequestErrors) {
   const seenRequests = new Set();
 
@@ -223,28 +237,10 @@ function createWorkerPageSetup(config = {}) {
 
     const pagePromises = pages.map(async (pageConfig) => {
       const { name, url } = pageConfig;
-      // Construct URL with proper query parameter handling
+
       let fullUrl = `${baseURL}${url}`;
-      
-      // Add miloLibs if present (expected to start with ? when used)
-      if (miloLibs) {
-        // If base URL already has query params, convert ? to & for miloLibs
-        if (fullUrl.includes('?')) {
-          fullUrl += `&${miloLibs.replace(/^\?/, '')}`;
-        } else {
-          fullUrl += miloLibs;
-        }
-      }
-      
-      // Add masLibs if present
-      if (masLibs) {
-        // If there are already query params (from miloLibs or base URL), use &, otherwise use ?
-        const hasQueryParams = fullUrl.includes('?');
-        const separator = hasQueryParams ? '&' : '?';
-        // Remove leading ? from masLibs if present, since we're adding our own separator
-        const cleanMasLibs = masLibs.replace(/^\?/, '');
-        fullUrl += `${separator}${cleanMasLibs}`;
-      }
+      fullUrl = constructUrlWithParams(fullUrl, miloLibs);
+      fullUrl = constructUrlWithParams(fullUrl, masLibs);
 
       console.info(`[Worker Setup]: Creating page for ${name}:`, fullUrl);
 
@@ -385,6 +381,7 @@ module.exports = {
   setupMasRequestLogger,
   attachMasRequestErrorsToFailure,
   createWorkerPageSetup,
+  constructUrlWithParams,
   PRICE_PATTERN,
   DOCS_GALLERY_PATH,
   PLANS_NALA_PATH,

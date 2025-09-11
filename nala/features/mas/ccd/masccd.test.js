@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { features } from './masccd.spec.js';
 import MerchCCD from './masccd.page.js';
 import WebUtil from '../../../libs/webutil.js';
-import { createWorkerPageSetup, DOCS_GALLERY_PATH } from '../../../libs/commerce.js';
+import { createWorkerPageSetup, constructUrlWithParams, DOCS_GALLERY_PATH } from '../../../libs/commerce.js';
 
 const COMMERCE_LINK_REGEX = (country = 'US', language = 'en') => new RegExp(`https://commerce.adobe.com/store/email\\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&cli=adobe_com&ctx=fp&co=${country}&lang=${language})`, 'i');
 
@@ -14,9 +14,9 @@ test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run
 const workerSetup = createWorkerPageSetup({
   pages: [
     { name: 'US_LIGHT', url: DOCS_GALLERY_PATH.CCD.US },
-    { name: 'US_DARK', url: `${DOCS_GALLERY_PATH.CCD.US}?theme=darkest` },
+    { name: 'US_DARK', url: constructUrlWithParams(DOCS_GALLERY_PATH.CCD.US, '?theme=darkest') },
     { name: 'FR_LIGHT', url: DOCS_GALLERY_PATH.CCD.FR },
-    { name: 'FR_DARK', url: `${DOCS_GALLERY_PATH.CCD.FR}&theme=darkest` },
+    { name: 'FR_DARK', url: constructUrlWithParams(DOCS_GALLERY_PATH.CCD.FR, '&theme=darkest') },
   ],
 });
 
