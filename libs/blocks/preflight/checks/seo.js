@@ -331,7 +331,7 @@ export async function checkLinks({ area, urlHash, envName }) {
   return result;
 }
 
-export function runChecks({ url, area = document, envName, runCheckLinks = true }) {
+export function runChecks({ url, area = document, envName }) {
   return [
     checkH1s(area),
     checkTitle(area),
