@@ -248,12 +248,9 @@ function initPaddles(tabList, left, right, isRadio) {
 
   const checkTabListContainerMargin = () => {
     if (!tabListContainer) return;
-
     const { marginLeft, marginRight } = window.getComputedStyle(tabListContainer);
     const isRtl = document.dir === 'rtl';
-
     const marginZero = (isRtl ? marginRight : marginLeft) === '0px';
-
     if (marginZero) {
       togglePaddle(isRtl ? left : right, true);
     } else if (isTabInTabListView(lastTab)) {
@@ -263,16 +260,13 @@ function initPaddles(tabList, left, right, isRadio) {
 
   const callback = (entries) => {
     const isRtl = document.dir === 'rtl';
-
     entries.forEach((entry) => {
       const isFirst = entry.target === firstTab;
       const isLast = entry.target === lastTab;
-
       if (isFirst) {
       // First tab controls "left" in LTR, "right" in RTL
         togglePaddle(isRtl ? right : left, !entry.isIntersecting);
       }
-
       if (isLast) {
       // Last tab controls "right" in LTR, "left" in RTL
         togglePaddle(isRtl ? left : right, !entry.isIntersecting);
