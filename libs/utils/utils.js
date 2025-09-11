@@ -536,7 +536,29 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
-export function localizeLink(
+const handleAvailableLanguage = async (url) => {
+  const { hash } = url;
+  if (hash.includes('#_roc')) {
+    // eslint-disable-next-line default-case
+    switch (true) {
+      case hash.includes('1'): // checking if language specific fragment exists
+        await fetch(url.url, { method: 'HEAD' });
+        break;
+      case hash.includes('2'): // checking both language specific and market specific fragments existance
+        // eslint-disable-next-line no-case-declarations
+        const isLanguageSpecific = await Promise.all([
+          fetch(url.url, { method: 'HEAD' }),
+          fetch(url.url.replace('/ca/', '/fr/'), { method: 'HEAD' }),
+        ]).then((responses) => responses[0].ok);
+        break;
+      case hash.includes('3'): // checking from JSON
+        await fetch('https://main--da-bacom--adobecom.aem.live/ca/drafts/mepdev/fragments/lingo/urls.json');
+        break;
+    }
+  }
+}
+
+export async function localizeLink(
   href,
   originHostName = window.location.hostname,
   overrideDomain = false,
@@ -559,6 +581,9 @@ export function localizeLink(
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
+    // LANG BUCKET SOLUTION TEST -start
+    await handleAvailableLanguage(url);
+    // LANG BUCKET SOLUTION TEST - end
     const prefix = getPrefixBySite(locale, url, relative);
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
@@ -946,15 +971,15 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   });
 }
 
-export function decorateLinks(el) {
+export async function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
-  const links = [...anchors].reduce((rdx, a) => {
+  const links = [...anchors].reduce(async (rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
-    a.href = localizeLink(a.href);
+    a.href = await localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
@@ -1205,8 +1230,8 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
-function decorateSection(section, idx) {
-  let links = decorateLinks(section);
+async function decorateSection(section, idx) {
+  let links = await decorateLinks(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
 
@@ -1246,9 +1271,9 @@ function decorateSection(section, idx) {
   };
 }
 
-function decorateSections(el, isDoc) {
+async function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
-  return [...el.querySelectorAll(selector)].map(decorateSection);
+  return Promise.all([...el.querySelectorAll(selector)].map(decorateSection));
 }
 
 export async function decorateFooterPromo(doc = document) {
@@ -1625,14 +1650,14 @@ function initSidekick() {
   }
 }
 
-function decorateMeta() {
+async function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."], [content*="/federal/"]');
-  contents.forEach((meta) => {
+  contents.forEach(async (meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {
       const url = new URL(meta.content);
-      const localizedLink = localizeLink(`${origin}${url.pathname}`);
+      const localizedLink = await localizeLink(`${origin}${url.pathname}`);
       const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
       meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
     } catch (e) {
@@ -1650,9 +1675,9 @@ function decorateMeta() {
   });
 }
 
-function decorateDocumentExtras() {
-  decorateMeta();
-  decorateHeader();
+async function decorateDocumentExtras() {
+  await decorateMeta();
+  await decorateHeader();
 }
 
 async function documentPostSectionLoading(config) {
@@ -1764,10 +1789,10 @@ export async function loadArea(area = document) {
   }
 
   if (isDoc) {
-    decorateDocumentExtras();
+    await decorateDocumentExtras();
   }
 
-  const sections = decorateSections(area, isDoc);
+  const sections = await decorateSections(area, isDoc);
 
   const areaBlocks = [];
   let lcpSectionId = null;

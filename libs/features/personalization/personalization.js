@@ -29,6 +29,30 @@ const isEdgeIOS = getUA().includes('EdgiOS');
 const isFirefoxIOS = getUA().includes('FxiOS');
 
 export const US_GEO = 'en-us';
+
+const LANGUAGE_BUCKETS = {
+  uk: ['id', 'ie', 'be', 'lu', 'mt', 'gr'],
+  au: ['in', 'sg', 'sa', 'hk', 'nz', 'za'],
+  fr: ['ca', 'be', 'ch', 'lu'],
+  de: ['at', 'ch', 'lu', 'be'],
+  es: ['mx', 'ar', 'cr', 'pr', 'la'],
+};
+
+const prcessUrlViaLanguageBuckets = (url) => {
+  // const config = getConfig();
+  // const { countryChoice } = config.mep || {};
+  // const region = config.locale.region.toLowerCase();
+  const path = url.split('://').pop();
+  const lang = path.split('/')[0];
+  const buckets = Object.keys(LANGUAGE_BUCKETS).map((k) => {
+    if (LANGUAGE_BUCKETS[k].includes(lang)) return k;
+    return null;
+  });
+  const newLang = '?';
+  // How do we know which bucket to use if multiple match?
+  return url.replace(`/${lang}/`, newLang);
+};
+
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => (getUA().includes('Chrome') && !getUA().includes('Edg')) || isChromeIOS,
