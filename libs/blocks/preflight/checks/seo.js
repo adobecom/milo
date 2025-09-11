@@ -331,17 +331,22 @@ export async function checkLinks({ area, urlHash, envName }) {
   return result;
 }
 
-export function runChecks({ url, area = document, envName }) {
-  return [
+export function runChecks({ url, area = document, envName, runCheckLinks = True }) {
+  const resultValue = [
     checkH1s(area),
     checkTitle(area),
     checkCanon(area),
     checkDescription(area),
     checkBody(area),
     checkLorem(area),
-    (async () => {
-      await waitForFooter();
-      return checkLinks({ area, url, envName });
-    })(),
-  ];
+  ]
+  if (runCheckLinks) {
+    resultValue.push(
+      (async () => {
+        await waitForFooter();
+        return checkLinks({ area, url, envName });
+      })()
+    );
+  }
+  return resultValue
 }
