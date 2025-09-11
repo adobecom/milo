@@ -5,13 +5,15 @@
 import { decorateButtons, getBlockSize, decorateBlockBg, loadCDT } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle, getMetadata } from '../../utils/utils.js';
 
-const mwebSize = getMetadata('mweb') === 'on' ? 'l' : 'm';
+const isMwebOn = getMetadata('mweb') === 'on';
+const mwebBodySize = isMwebOn ? 'l' : 'm';
+const mwebDetailSize = isMwebOn ? 'l' : 'm';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
   marquee: {
-    small: ['xl', mwebSize, mwebSize],
-    medium: ['xl', mwebSize, mwebSize],
+    small: ['xl', mwebBodySize, mwebDetailSize],
+    medium: ['xl', mwebBodySize, mwebDetailSize],
     large: ['xxl', 'xl', 'l'],
     xlarge: ['xxl', 'xl', 'l'],
   },
