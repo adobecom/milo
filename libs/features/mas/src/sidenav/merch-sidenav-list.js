@@ -1,7 +1,6 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css, nothing } from 'lit';
 import { deeplink, pushStateFromComponent } from '../deeplink.js';
-import { headingStyles } from './merch-sidenav-heading.css.js';
-import { debounce } from '../utils.js';
+import { debounce, updateHash, paramsToHash } from '../utils.js';
 import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
 
 export class MerchSidenavList extends LitElement {
@@ -19,36 +18,37 @@ export class MerchSidenavList extends LitElement {
             reflect: true,
             attribute: 'selected-value',
         },
+        toggleIconColor: {
+            type: Boolean,
+            attribute: 'toggle-icon-color'
+        }
     };
 
-    static styles = [
-        css`
-            :host {
-                display: block;
-                contain: content;
-            }
+    static styles = css`
+        :host {
+            display: block;
+            contain: content;
+            margin-top: var(--merch-sidenav-list-gap);
+        }
 
-            .right {
-                position: absolute;
-                right: 0;
-            }
+        :host h2 {
+            color: var(--merch-sidenav-list-title-color);
+            font-size: var(--merch-sidenav-list-title-font-size);
+            font-weight: var(--merch-sidenav-list-title-font-weight);
+            padding: var(--merch-sidenav-list-title-padding);
+            line-height: var(--merch-sidenav-list-title-line-height);
+            margin: 0;
+        }
 
-            ::slotted(sp-sidenav.resources) {
-                --mod-sidenav-item-background-default-selected: transparent;
-                --mod-sidenav-content-color-default-selected: var(
-                    --highcontrast-sidenav-content-color-default,
-                    var(
-                        --mod-sidenav-content-color-default,
-                        var(--spectrum-sidenav-content-color-default)
-                    )
-                );
-            }
-        `,
-        headingStyles,
-    ];
+        .right {
+            position: absolute;
+            right: 0;
+        }
+    `;
 
     constructor() {
         super();
+        this.toggleIconColor = false;
         this.handleClickDebounced = debounce(this.handleClick.bind(this));
     }
 
@@ -60,7 +60,7 @@ export class MerchSidenavList extends LitElement {
         const selectionElement = element.querySelector('.selection');
         selectionElement?.setAttribute('selected', selected);
         const selection = selectionElement?.dataset;
-        const iconSrc = selected ? selection?.light : selection?.dark;
+        const iconSrc = (selected && this.toggleIconColor) ? selection?.light : selection?.dark;
         if (iconSrc) {
           element.querySelector('img')?.setAttribute('src', iconSrc);
         }
@@ -85,7 +85,14 @@ export class MerchSidenavList extends LitElement {
         }
     }
 
-    
+    markCurrentItem(element) {
+        const sidenav = element.closest('sp-sidenav');
+        if (!sidenav) return;
+        sidenav.querySelectorAll('sp-sidenav-item[aria-current]').forEach((currentItem) => {
+            currentItem.removeAttribute('aria-current');
+        });
+        element.setAttribute('aria-current', 'true');
+    }
 
     /**
      * click handler to manage first level items state of sidenav
@@ -94,6 +101,7 @@ export class MerchSidenavList extends LitElement {
     handleClick({ target: item }, shouldUpdateHash = true) {
         const { value, parentNode } = item;
         this.selectElement(item);
+        this.markCurrentItem(item);
         if (parentNode?.tagName === 'SP-SIDENAV') {
             //swc does not consider, in multilevel, first level as a potential selection
             //and does not close other parents, we'll do that here          
@@ -102,6 +110,7 @@ export class MerchSidenavList extends LitElement {
                 .forEach((item) => {
                     if (item.value !== value) {
                         item.expanded = false;
+                        item.removeAttribute('aria-expanded');
                         this.selectElement(item, false);
                     }
                 });
@@ -117,6 +126,7 @@ export class MerchSidenavList extends LitElement {
           const topLevelItems = parentNode.closest('sp-sidenav')?.querySelectorAll(':scope > sp-sidenav-item');
           [...topLevelItems].filter((item) => item !== parentNode).forEach((item) => {
               item.expanded = false;
+              item.removeAttribute('aria-expanded');
           });
           parentNode.closest('sp-sidenav')?.querySelectorAll('sp-sidenav-item[selected]')
               .forEach((item) => {
@@ -135,7 +145,7 @@ export class MerchSidenavList extends LitElement {
      * @param {*} event
      */
     selectionChanged(event) {
-      const { target: { value, parentNode } } = event;
+        const { target: { value, parentNode } } = event;
         this.selectElement(
             this.querySelector(`sp-sidenav-item[value="${value}"]`),
         );
@@ -146,28 +156,36 @@ export class MerchSidenavList extends LitElement {
       this.stopDeeplink = deeplink(
           (params) => {
               const value = params[this.deeplink] ?? 'all';
-              const element = this.querySelector(
+              let element = this.querySelector(
                   `sp-sidenav-item[value="${value}"]`,
-              );
-              if (!element) return;
+              )
+              // fallback for invalid filter
+              if (!element) {
+                element = this.querySelector('sp-sidenav-item:first-child');
+                updateHash(this.deeplink, element.value);
+              }
+
               this.updateComplete.then(() => {
                   if (element.firstElementChild?.tagName === 'SP-SIDENAV-ITEM') {
                     element.expanded = true;
+                    element.setAttribute('aria-expanded', 'true');
                   } 
                   if (element.parentNode?.tagName === 'SP-SIDENAV-ITEM') {
                     element.parentNode.expanded = true;
+                    element.parentNode.setAttribute('aria-expanded', 'true');
                   }
                   this.handleClick({ target: element }, !!window.location.hash.includes('category'));
               });
           },
       );
-  }
+    }
 
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener('click', this.handleClickDebounced);
         this.updateComplete.then(() => {
             if (!this.deeplink) return;
+            paramsToHash(['filter', 'single_app']);
             this.startDeeplink();
         });
     }
@@ -183,7 +201,7 @@ export class MerchSidenavList extends LitElement {
             aria-label="${this.label}"
             @change="${(e) => this.selectionChanged(e)}"
         >
-            ${this.sidenavListTitle ? html`<h2>${this.sidenavListTitle}</h2>` : ''}
+            ${this.sidenavListTitle ? html`<h2>${this.sidenavListTitle}</h2>` : nothing}
             <slot></slot>
         </div>`;
     }

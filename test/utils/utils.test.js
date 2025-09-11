@@ -466,6 +466,14 @@ describe('Utils', () => {
       expect(httpLink.dataset.httpLink).to.equal('true');
     });
 
+    it('Add data-attribute "hasDnt" for links with #_dnt hash to avoid localizing when in deeply nested inline fragments', () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><a class="dnt-link" href="https://www.adobe.com/test#_dnt">Do Not Track Link</a></p>';
+      utils.decorateLinks(container);
+      const dntLink = container.querySelector('.dnt-link');
+      expect(dntLink.dataset.hasDnt).to.equal('true');
+    });
+
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
@@ -1198,16 +1206,26 @@ describe('Utils', () => {
           'site-languages': {
             data: [
               {
-                domainMatches: 'news.adobe.com\n--news--adobecom.',
+                pathMatches: 'news.adobe.com\n--news--adobecom.',
                 languages: 'en\nfr',
               },
             ],
           },
+          'langmap-native-to-en': { data: [] },
         };
-        window.fetch = async () => ({
-          ok: true,
-          json: () => Promise.resolve(mockConfig),
-        });
+
+        // Mock fetch to return the config
+        const originalFetch = window.fetch;
+        window.fetch = async (url) => {
+          if (url.includes('languages-config.json')) {
+            return {
+              ok: true,
+              json: () => Promise.resolve(mockConfig),
+            };
+          }
+          return originalFetch(url);
+        };
+
         utils.setConfig({
           ...baseConfig,
           pathname: '/de/ch/',
@@ -1223,12 +1241,17 @@ describe('Utils', () => {
             ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css' },
           },
         });
+
         await utils.loadLanguageConfig();
+
         const href = 'https://news.adobe.com/path';
         const result = utils.localizeLink(href);
         expect(utils.getConfig().locale.prefix).to.equal('/de/ch');
         expect(utils.getConfig().locale.language).to.equal('de');
         expect(result).to.equal('https://news.adobe.com/ch_de/path');
+
+        // Restore original fetch
+        window.fetch = originalFetch;
       });
 
       it('uses locale prefix for non-language-based when site matches but no language', async () => {
@@ -1237,11 +1260,12 @@ describe('Utils', () => {
           'site-languages': {
             data: [
               {
-                domainMatches: 'news.adobe.com\n--news--adobecom.',
+                pathMatches: 'news.adobe.com\n--news--adobecom.',
                 languages: 'en\nfr',
               },
             ],
           },
+          'langmap-native-to-en': { data: [] },
         };
         window.fetch = async () => ({
           ok: true,
@@ -1376,6 +1400,105 @@ describe('Utils', () => {
         const area = createTag('div', {}, link);
         expect(utils.hasLanguageLinks(area)).to.be.true;
       });
+    });
+  });
+
+  describe('decorateIcons exclusion logic', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '';
+      document.head.innerHTML = '';
+    });
+
+    afterEach(() => {
+      document.body.innerHTML = '';
+      document.head.innerHTML = '';
+    });
+
+    it('should return early when all icons are in excluded blocks', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = `
+        <main>
+          <div class="section">
+            <div class="block1">
+              <span class="icon">Icon 1</span>
+            </div>
+            <div class="block2">
+              <span class="icon">Icon 2</span>
+            </div>
+          </div>
+        </main>
+      `;
+
+      const testConfig = {
+        codeRoot: '/libs',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+        base: '/test-base',
+        iconsExcludeBlocks: ['block1', 'block2'],
+      };
+      utils.setConfig(testConfig);
+
+      await utils.loadArea();
+
+      // Should not load CSS when all icons are excluded
+      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      expect(cssLink).to.be.null;
+    });
+
+    it('should continue when some icons are not in excluded blocks', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = `
+        <main>
+          <div class="section">
+            <div class="block1">
+              <span class="icon">Icon 1</span>
+            </div>
+            <div class="other-block">
+              <span class="icon">Icon 2</span>
+            </div>
+          </div>
+        </main>
+      `;
+
+      const testConfig = {
+        codeRoot: '/libs',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+        base: '/test-base',
+        iconsExcludeBlocks: ['block1'],
+      };
+      utils.setConfig(testConfig);
+
+      await utils.loadArea();
+
+      // Should load CSS when some icons are not excluded
+      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      expect(cssLink).to.not.be.null;
+      expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
+    });
+
+    it('should continue when no iconsExcludeBlocks config is provided', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = `
+        <main>
+          <div class="section">
+            <span class="icon">Icon 1</span>
+            <span class="icon">Icon 2</span>
+          </div>
+        </main>
+      `;
+
+      const testConfig = {
+        codeRoot: '/libs',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+        base: '/test-base',
+      };
+      utils.setConfig(testConfig);
+
+      await utils.loadArea();
+
+      // Should load CSS when no exclusion config
+      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      expect(cssLink).to.not.be.null;
+      expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
   });
 });

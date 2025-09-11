@@ -657,7 +657,7 @@ export const getGrayboxExperienceId = (
   pathname = window.location?.pathname || '',
 ) => {
   // Only allow trusted Adobe graybox domains
-  const isAdobeGraybox = /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname);
+  const isAdobeGraybox = /^[^.]+\.([a-z-]+-)?graybox\.adobe\.com$/.test(hostname);
   const isStageGraybox = (
     (hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live'))
     && hostname.includes('graybox')
@@ -666,7 +666,7 @@ export const getGrayboxExperienceId = (
   // Check for graybox.adobe.com format: https://[exn].[pn]-graybox.adobe.com/[path].html
   if (isAdobeGraybox) {
     const parts = hostname.split('.');
-    if (parts.length >= 3 && parts[1].includes('-graybox')) {
+    if (parts.length >= 3 && (parts[1] === 'graybox' || parts[1].includes('-graybox'))) {
       return parts[0]; // Return the experience ID (first part)
     }
   }
@@ -785,6 +785,14 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
+      // Only include bladeCard when explicitly configured
+      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent) && {
+        bladeCard: {
+          reverse: !!state.bladeCardReverse,
+          lightText: !!state.bladeCardLightText,
+          transparent: !!state.bladeCardTransparent,
+        },
+      }),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,

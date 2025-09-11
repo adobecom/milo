@@ -8,6 +8,7 @@ import {
   MEP_SELECTOR,
   overrideOptions,
   updateModalState,
+  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -18,6 +19,18 @@ import {
 const DEPS_TIMEOUT = 10000;
 const DEFAULT_OPTIONS = { sidenav: true };
 
+// Map of single_app values to their corresponding filter values
+const SINGLE_APP_FILTER_MAP = {
+  illustrator: 'illustration',
+  indesign: 'design',
+  animate: 'video-audio',
+  premiere: 'video-audio',
+  aftereffects: 'video-audio',
+  audition: 'video-audio',
+  incopy: 'design',
+  lightroom_1tb: 'photography',
+};
+
 function getTimeoutPromise(timeout) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(false), timeout);
@@ -25,7 +38,10 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load service first */
+  /** Load lit first as it's needed by MAS components */
+  await loadLitDependency();
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {
@@ -60,6 +76,18 @@ async function loadDependencies(options) {
   await Promise.all(dependencyPromises);
 }
 
+function localizeIconPath(iconPath) {
+  if (window.location.hostname.endsWith('.adobe.com') && iconPath?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
+    try {
+      const url = new URL(iconPath);
+      return `https://www.adobe.com${url.pathname}`;
+    } catch (e) {
+      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`);
+    }
+  }
+  return iconPath;
+}
+
 function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders } = collection.data;
@@ -82,20 +110,29 @@ function getSidenav(collection) {
   spSidenav.setAttribute('manageTabIndex', true);
   const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
 
+  sidenavList.updateComplete.then(() => {
+    sidenavList.querySelector('sp-sidenav')?.setAttribute('role', 'tablist');
+    sidenavList.querySelectorAll('sp-sidenav-item').forEach((item) => {
+      item.removeAttribute('role');
+      item.shadowRoot?.querySelector('a')?.setAttribute('role', 'tab');
+    });
+  });
+
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
-      const value = node.label.toLowerCase();
+      const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
-      if (node.icon) {
-        createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
+      const iconPath = localizeIconPath(node.icon);
+      if (iconPath) {
+        createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };
         if (node.navigationLabel) attributes['data-selected-text'] = node.navigationLabel;
         if (node.iconLight) {
-          attributes['data-light'] = node.iconLight;
-          attributes['data-dark'] = node.icon;
+          attributes['data-light'] = localizeIconPath(node.iconLight);
+          attributes['data-dark'] = iconPath;
         }
         createTag('var', attributes, null, { parent: item });
       }
@@ -151,21 +188,38 @@ export async function createCollection(el, options) {
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
-  el.replaceWith(container);
+  let toReplace = el;
+  const contentParent = el.closest('.content');
+  const paragraph = contentParent?.querySelector(':scope > p');
+  if (paragraph) toReplace = paragraph;
+  toReplace.replaceWith(container);
 
-  await collection.checkReady();
-
+  const success = await collection.checkReady();
+  if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
+  }
   container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */
   if (options.sidenav) {
+    // Set filter based on single_app parameter if filter doesn't exist
+    const urlParams = new URLSearchParams(window.location.search);
+    const singleApp = urlParams.get('single_app');
+    if (singleApp && !urlParams.get('filter') && SINGLE_APP_FILTER_MAP[singleApp]) {
+      urlParams.set('filter', SINGLE_APP_FILTER_MAP[singleApp]);
+      const newUrl = `${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
+      window.history.pushState({}, '', newUrl);
+    }
     const sidenav = getSidenav(collection);
     if (sidenav) {
       collection.attachSidenav(sidenav);
     }
   }
 
-  postProcessAutoblock(collection, false);
+  await postProcessAutoblock(collection, false);
   collection.requestUpdate();
   // card analytics is enabled in postProcessAutoblock
   enableSidenavAnalytics(collection);

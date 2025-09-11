@@ -84,6 +84,19 @@ describe('OST: loadOstEnv', async () => {
     });
   });
 
+  it('redirects deprecated parameters', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, null, `${window.location.pathname}?wcsLandscape=DRAFT&commerce.env=stage&other=param`);
+    const { loadOstEnv } = await import('../../../libs/blocks/ost/ost.js');
+    await loadOstEnv();
+    const params = new URLSearchParams(window.location.search);
+    expect(params.get('commerce.landscape')).to.equal('DRAFT');
+    expect(params.get('wcsLandscape')).to.be.null;
+    expect(params.get('commerce.env')).to.be.null;
+    expect(params.get('other')).to.equal('param');
+    window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
+  });
+
   it('tolerates page metadata request fail', async () => {
     const { options: { country, language } } = mockOstDeps({ failMetadata: true });
 
@@ -200,7 +213,7 @@ describe('OST: init', () => {
     const {
       options: { country, language, workflow },
       params: { token },
-    } = mockOstDeps({ mockToken: true, overrideParams: { wcsLandscape: 'DRAFT', env: 'stage' } });
+    } = mockOstDeps({ mockToken: true, overrideParams: { 'commerce.landscape': 'DRAFT', env: 'stage' } });
 
     const {
       AOS_API_KEY,

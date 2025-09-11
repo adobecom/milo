@@ -71,7 +71,7 @@ Promise.all([
     buildLitComponent('merch-stock'),
     buildLitComponent('merch-whats-included'),
     buildLitComponent('merch-mnemonic-list'),
-    buildLitComponent('merch-card-collection-header'),
+    buildLitComponent('mas-tooltip'),
 ]).catch(() => process.exit(1));
 
 function rewriteImports() {

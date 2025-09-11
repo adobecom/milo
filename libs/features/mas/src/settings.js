@@ -49,6 +49,7 @@ function getSettings(config = {}, service) {
     // TODO: add alias names for meta, search and storage
     // See https://git.corp.adobe.com/wcms/tacocat.js/pull/348#discussion_r6557570
     const { commerce = {} } = config;
+
     let env = Env.PRODUCTION;
     let wcsURL = WCS_PROD_URL;
 
@@ -59,14 +60,10 @@ function getSettings(config = {}, service) {
       CheckoutWorkflowStep,
       Defaults.checkoutWorkflowStep,
   );
-    const displayOldPrice = toBoolean(
-        getParameter('displayOldPrice', commerce),
-        ffDefaults ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
-    );
-    const displayPerUnit = toBoolean(
-        getParameter('displayPerUnit', commerce),
-        ffDefaults ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
-    );
+    const displayOldPrice = Defaults.displayOldPrice;
+
+    const displayPerUnit = Defaults.displayPerUnit;
+
     const displayRecurrence = toBoolean(
         getParameter('displayRecurrence', commerce),
         Defaults.displayRecurrence,
