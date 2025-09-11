@@ -1,5 +1,5 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
-import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle, getMetadata as getGlobalMetadata } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import {
@@ -218,12 +218,10 @@ const appendCalloutContent = (element, merchCard) => {
 };
 
 const parseContent = async (el, merchCard) => {
-  let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
   let headingXsCount = 0;
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
-    bodySlotName = 'body-m';
     const priceSmallType = el.querySelectorAll('h6');
     // Filter out any h6 elements that contain an <em> tag
     const filteredPriceSmallType = Array.from(priceSmallType).filter((h6) => !h6.querySelector('em'));
@@ -231,7 +229,7 @@ const parseContent = async (el, merchCard) => {
   }
 
   let headingSize = 3;
-  const bodySlot = createTag('div', { slot: bodySlotName });
+  const bodySlot = createTag('div', { slot: `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}` });
   const mnemonicList = el.querySelector('.mnemonic-list');
   if (mnemonicList) {
     await loadMnemonicList(mnemonicList);
@@ -245,37 +243,36 @@ const parseContent = async (el, merchCard) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
-      if (slotName) {
-        if (['H2', 'H3', 'H4', 'H5', 'H6'].includes(tagName)) {
-          if (tagName === 'H3') headingXsCount += 1;
-          element.classList.add('card-heading');
-          if (merchCard.badgeText) {
-            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
-          }
-          if (HEADING_MAP[merchCard.variant]?.[tagName]) {
-            tagName = HEADING_MAP[merchCard.variant][tagName];
-          } else {
-            if (tagName === 'H2') {
-              headingMCount += 1;
-            }
-            if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
-              slotName = 'heading-m-price';
-            }
-            tagName = `H${headingSize}`;
-            headingSize += 1;
+      if (!slotName) return;
+      if (tagName === 'H3') headingXsCount += 1;
+      element.classList.add('card-heading');
+      if (merchCard.badgeText) {
+        element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
+      }
+      if (HEADING_MAP[merchCard.variant]?.[tagName]) {
+        tagName = HEADING_MAP[merchCard.variant][tagName];
+      } else {
+        if (tagName === 'H2') {
+          headingMCount += 1;
+        }
+        if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART && element.tagName === 'H2') {
+          slotName = 'heading-m-price';
+          if (getGlobalMetadata('mas-ff-annual-price')) {
+            element.classList.add('annual-price-new-line');
           }
         }
-        element.setAttribute('slot', slotName);
-        tagName = (headingXsCount === 1 && tagName === 'H3')
-        || (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') ? 'h3' : 'p';
-        const newElement = createTag(tagName);
-        Array.from(element.attributes).forEach((attr) => {
-          newElement.setAttribute(attr.name, attr.value);
-        });
-        newElement.innerHTML = element.innerHTML;
-        merchCard.append(newElement);
+        tagName = `H${headingSize}`;
+        headingSize += 1;
       }
-      return;
+      element.setAttribute('slot', slotName);
+      tagName = (headingXsCount === 1 && tagName === 'H3')
+        || (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') ? 'h3' : 'p';
+      const newElement = createTag(tagName);
+      Array.from(element.attributes).forEach((attr) => {
+        newElement.setAttribute(attr.name, attr.value);
+      });
+      newElement.innerHTML = element.innerHTML;
+      merchCard.append(newElement);
     }
     if (tagName === 'H6') {
       appendPaymentDetails(element, merchCard);
