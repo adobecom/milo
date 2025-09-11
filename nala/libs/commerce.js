@@ -23,6 +23,7 @@ const DOCS_GALLERY_PATH = {
   PLANS: '/libs/features/mas/docs/plans.html',
   CHECKOUT_LINK: '/libs/features/mas/docs/checkout-link.html',
   MERCH_CARD: '/libs/features/mas/docs/merch-card.html',
+  EXPRESS: '/libs/features/mas/docs/express.html',
 };
 
 async function setupMasConsoleListener(consoleErrors) {
