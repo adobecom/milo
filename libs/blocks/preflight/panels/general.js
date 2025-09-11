@@ -93,10 +93,9 @@ export function runGeneralChecks() {
     pdfs: { items: findLinks('main iframe') },
     nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
-  
-  window.contentInsights = {
-    general: contentValue
-  }
+
+  if (!window.contentInsights) window.contentInsights = {};
+  window.contentInsights.general = contentValue;
 
   return contentValue;
 }
