@@ -202,6 +202,14 @@ function nextTab(current, i, arr) {
   return (previous && isTabInTabListView(previous) && !isTabInTabListView(current));
 }
 
+function togglePaddle(paddle, enabled) {
+  if (enabled) {
+    removeAttributes(paddle, ['disabled', 'aria-hidden']);
+  } else {
+    setAttributes(paddle, { disabled: '', 'aria-hidden': true });
+  }
+}
+
 function initPaddles(tabList, left, right, isRadio) {
   const tabListItems = tabList.querySelectorAll(isRadio ? '[role="radio"]' : '[role="tab"]');
   const tabListItemsArray = [...tabListItems];
@@ -239,59 +247,35 @@ function initPaddles(tabList, left, right, isRadio) {
   };
 
   const checkTabListContainerMargin = () => {
-    if (tabListContainer) {
-      const computedStyle = window.getComputedStyle(tabListContainer);
-      const marginLeft = parseFloat(computedStyle.marginLeft);
-      const marginRight = parseFloat(computedStyle.marginRight);
-      const isRtl = document.dir === 'rtl';
-      if (marginLeft === 0 || marginRight === 0) {
-        if (isRtl) {
-          removeAttributes(left, ['disabled', 'aria-hidden']);
-        } else {
-          removeAttributes(right, ['disabled', 'aria-hidden']);
-        }
-        return;
-      }
-      if (isTabInTabListView(lastTab)) {
-        if (isRtl) {
-          setAttributes(left, { disabled: '', 'aria-hidden': true });
-        } else {
-          setAttributes(right, { disabled: '', 'aria-hidden': true });
-        }
-      }
+    if (!tabListContainer) return;
+
+    const { marginLeft, marginRight } = window.getComputedStyle(tabListContainer);
+    const isRtl = document.dir === 'rtl';
+
+    const marginZero = (isRtl ? marginRight : marginLeft) === '0px';
+
+    if (marginZero) {
+      togglePaddle(isRtl ? left : right, true);
+    } else if (isTabInTabListView(lastTab)) {
+      togglePaddle(isRtl ? left : right, false);
     }
   };
 
   const callback = (entries) => {
-    entries.forEach((entry) => {
-      const isRtl = document.dir === 'rtl';
+    const isRtl = document.dir === 'rtl';
 
-      if (entry.target === firstTab) {
-        if (entry.isIntersecting) {
-          if (isRtl) {
-            setAttributes(right, { disabled: '', 'aria-hidden': true });
-          } else {
-            setAttributes(left, { disabled: '', 'aria-hidden': true });
-          }
-        } else if (isRtl) {
-          removeAttributes(right, ['disabled', 'aria-hidden']);
-        } else {
-          removeAttributes(left, ['disabled', 'aria-hidden']);
-        }
-      } else if (entry.target === lastTab) {
-        if (entry.isIntersecting) {
-          if (isRtl) {
-            setAttributes(left, { disabled: '', 'aria-hidden': true });
-          } else {
-            setAttributes(right, { disabled: '', 'aria-hidden': true });
-          }
-        } else if (isRtl) {
-          removeAttributes(left, ['disabled', 'aria-hidden']);
-          checkTabListContainerMargin();
-        } else {
-          removeAttributes(right, ['disabled', 'aria-hidden']);
-          checkTabListContainerMargin();
-        }
+    entries.forEach((entry) => {
+      const isFirst = entry.target === firstTab;
+      const isLast = entry.target === lastTab;
+
+      if (isFirst) {
+      // First tab controls "left" in LTR, "right" in RTL
+        togglePaddle(isRtl ? right : left, !entry.isIntersecting);
+      }
+
+      if (isLast) {
+      // Last tab controls "right" in LTR, "left" in RTL
+        togglePaddle(isRtl ? left : right, !entry.isIntersecting);
       }
     });
   };
