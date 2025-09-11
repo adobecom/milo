@@ -189,6 +189,7 @@ export default {
     '--prompt-suggestion-button-gap': '8px',
     '--prompt-suggestion-button-padding': '8px 16px 8px 8px',
     '--prompt-suggestion-button-text-color': '#292929',
+    '--prompt-suggestion-container-bottom-margin': '12px',
     '--prompt-suggestions-align-items': 'stretch',
     '--prompt-suggestions-button-width': 'auto',
     '--prompt-suggestions-button-width-max': '100%',
