@@ -51,6 +51,7 @@ merch-card[variant="full-pricing-express"] [slot="heading-xs"] {
     font-weight: 700;
     line-height: 26px;
     color: var(--spectrum-gray-800);
+    margin-bottom: 8px;
 }
 
 /* Inline mnemonics inside heading */
@@ -59,7 +60,8 @@ merch-card[variant="full-pricing-express"] [slot="heading-xs"] mas-mnemonic {
     width: 14px;
     height: 14px;
     vertical-align: middle;
-    margin: 0 4px;
+    margin-right: 8px;
+    align-items: flex-end;
 }
 
 merch-card[variant="full-pricing-express"] [slot="heading-xs"] mas-mnemonic img {
@@ -111,12 +113,13 @@ merch-card[variant="full-pricing-express"] [slot="body-s"] {
     font-size: 16px;
     line-height: 20.8px;
     color: var(--spectrum-gray-700);
+    margin-bottom: var(--merch-card-full-pricing-express-section-gap);
 }
 
 merch-card[variant="full-pricing-express"] [slot="description2"] {
-    font-size: 14px;
-    line-height: 21px;
-    color: var(--spectrum-gray-700);
+    font-size: 16px;
+    line-height: 20.8px;
+    color: var(--spectrum-gray-900);
 }
 
 merch-card[variant="full-pricing-express"] [slot="description2"] ul {
@@ -133,6 +136,44 @@ merch-card[variant="full-pricing-express"] [slot="description2"] li:last-child {
     margin-bottom: 0;
 }
 
+merch-card[variant="full-pricing-express"] [slot="description2"] p {
+    padding: 8px;
+}
+
+merch-card[variant="full-pricing-express"] [slot="description2"] p a {
+    color: var(--spectrum-indigo-900);
+    font-weight: 700;
+}
+
+merch-card[variant="full-pricing-express"] [slot="description2"] p:first-child {
+    padding-top: 16px;
+}
+
+/* Empty p tags as separators in description2 */
+merch-card[variant="full-pricing-express"] [slot="description2"] p:empty {
+    display: inline-block;
+    width: 100%;
+    height: 1px;
+    padding: 0;
+    background-color: #E9E9E9;
+    margin: var(--merch-card-full-pricing-express-section-gap) 0 !important;
+    border: none;
+}
+
+/* Second p tag when empty (typically the first separator) - different margins */
+merch-card[variant="full-pricing-express"] [slot="description2"] p:nth-child(2):empty {
+    margin: 16px 0 24px 0 !important;
+}
+
+merch-card[variant="full-pricing-express"] [slot="description2"] p:last-child a {
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column;
+    color: var(--spectrum-indigo-900);
+}
 /* Price styling */
 merch-card[variant="full-pricing-express"] [slot="price"] {
     display: flex;
@@ -212,6 +253,14 @@ merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template
     color: var(--spectrum-indigo-900);
 }
 
+merch-card[variant="full-pricing-express"] [slot="price"] p .heading-xs,
+merch-card[variant="full-pricing-express"] [slot="price"] p .heading-s,
+merch-card[variant="full-pricing-express"] [slot="price"] p .heading-m,
+merch-card[variant="full-pricing-express"] [slot="price"] p .heading-l {
+    font-size: 22px;
+    line-height: 28.6px;
+}
+
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
@@ -229,6 +278,10 @@ merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template
 merch-card[variant="full-pricing-express"] [slot="cta"] {
     display: block;
     width: 100%;
+    margin-bottom: var(--merch-card-full-pricing-express-section-gap);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 merch-card[variant="full-pricing-express"] [slot="cta"] sp-button,

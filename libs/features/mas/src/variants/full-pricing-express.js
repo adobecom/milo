@@ -1,6 +1,7 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './full-pricing-express.css.js';
+import { isMobile } from '../media.js';
 
 export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -61,6 +62,8 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
 };
 
 export class FullPricingExpress extends VariantLayout {
+    #handleResize;
+
     getGlobalCSS() {
         return CSS;
     }
@@ -71,6 +74,66 @@ export class FullPricingExpress extends VariantLayout {
 
     get headingSelector() {
         return '[slot="heading-xs"]';
+    }
+
+    adjustFullPricingExpressSlots() {
+        if (this.card.getBoundingClientRect().width === 0) return;
+
+        // Synchronize header section
+        this.updateCardElementMinHeight(
+            this.card.shadowRoot.querySelector('.header'),
+            'header'
+        );
+
+        // Synchronize body-s slot (main description)
+        this.updateCardElementMinHeight(
+            this.card.shadowRoot.querySelector('slot[name="body-s"]'),
+            'body-s'
+        );
+
+        // Synchronize price container (critical for alignment)
+        this.updateCardElementMinHeight(
+            this.card.shadowRoot.querySelector('.price-container'),
+            'price-container'
+        );
+
+        // Synchronize CTA section
+        this.updateCardElementMinHeight(
+            this.card.shadowRoot.querySelector('.cta'),
+            'cta'
+        );
+
+        // Synchronize overall card content height
+        this.updateCardElementMinHeight(
+            this.card.shadowRoot.querySelector('.card-content'),
+            'card-content'
+        );
+    }
+
+    postCardUpdateHook() {
+        if (!this.card.isConnected) return;
+        
+        // Only apply alignment on tablet/desktop (not mobile)
+        if (!isMobile()) {
+            this.adjustFullPricingExpressSlots();
+        }
+    }
+
+    connectedCallbackHook() {
+        if (!isMobile()) {
+            // Add resize listener for responsive updates
+            this.#handleResize = () => {
+                this.adjustFullPricingExpressSlots();
+            };
+            window.addEventListener('resize', this.#handleResize);
+        }
+    }
+
+    disconnectedCallbackHook() {
+        if (this.#handleResize) {
+            window.removeEventListener('resize', this.#handleResize);
+            this.#handleResize = null;
+        }
     }
 
     renderLayout() {
@@ -108,7 +171,7 @@ export class FullPricingExpress extends VariantLayout {
             --merch-card-full-pricing-express-mobile-width: 303px;
             --merch-card-full-pricing-express-padding: 24px;
             --merch-card-full-pricing-express-padding-mobile: 20px;
-            --merch-card-full-pricing-express-section-gap: 16px;
+            --merch-card-full-pricing-express-section-gap: 24px;
             
             /* Price container specific */
             --merch-card-full-pricing-express-price-bg: #F8F8F8;
@@ -148,9 +211,9 @@ export class FullPricingExpress extends VariantLayout {
             padding: 4px 12px;
             border-radius: 8px 8px 0 0;
             text-align: center;
-            font-size: 12px;
-            font-weight: 500;
-            line-height: 15.6px;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 20.8px;
             color: var(--spectrum-gray-800);
             position: relative;
             min-height: 23px;
@@ -172,7 +235,6 @@ export class FullPricingExpress extends VariantLayout {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: var(--merch-card-full-pricing-express-section-gap);
             position: relative;
         }
         
@@ -302,6 +364,7 @@ export class FullPricingExpress extends VariantLayout {
 
         /* Price container with background */
         :host([variant='full-pricing-express']) .price-container {
+          min-height: 96px;
             background: var(--merch-card-full-pricing-express-price-bg);
             padding: 24px 16px;
             border-radius: var(--merch-card-full-pricing-express-price-radius);
@@ -311,6 +374,10 @@ export class FullPricingExpress extends VariantLayout {
             margin-top: auto;
             position: relative;
             overflow: visible;
+            margin-bottom: var(--merch-card-full-pricing-express-section-gap);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         /* CTA styling */
@@ -349,8 +416,28 @@ export class FullPricingExpress extends VariantLayout {
                 height: auto;
             }
 
+            /* Apply synchronized heights for desktop/tablet only */
+            :host([variant='full-pricing-express']) .header {
+                min-height: var(--consonant-merch-card-full-pricing-express-header-height);
+            }
+
+            :host([variant='full-pricing-express']) slot[name='body-s'] {
+                min-height: var(--consonant-merch-card-full-pricing-express-body-s-height);
+                display: block;
+            }
+
+            :host([variant='full-pricing-express']) .price-container {
+                min-height: var(--consonant-merch-card-full-pricing-express-price-container-height);
+            }
+
             :host([variant='full-pricing-express']) .cta {
+                min-height: var(--consonant-merch-card-full-pricing-express-cta-height);
                 flex-shrink: 0;
+                margin-top: auto;
+            }
+
+            :host([variant='full-pricing-express']) .card-content {
+                min-height: var(--consonant-merch-card-full-pricing-express-card-content-height);
             }
         }
     `;
