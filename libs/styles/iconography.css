@@ -1,13 +1,13 @@
 /* iconography.css
-This is consonant shared design patterns 
-dealing w/ groups of media and associated text 
+This is consonant shared design patterns
+dealing w/ groups of media and associated text
 - lockup
 - avatar
 */
 
 :root {
   /* lockup sizes */
-  --type-lockup-all-weight: 700;
+  --type-lockup-all-weight: 900;
   --type-lockup-xxl-size: 55px;
   --type-lockup-xxl-ls: -0.01em;
   --type-lockup-xl-size: 44px;
@@ -37,6 +37,16 @@ dealing w/ groups of media and associated text
   }
 }
 
+@font-face {
+  font-family: "Adobe Clean Display fallback";
+  /* src: local("Arial Black");
+  size-adjust: 84%;
+  descent-override: 40%; */
+  src: local("Verdana Bold");
+  size-adjust: 82%;
+  descent-override: 31%;
+}
+
 /* Lockup */
 .lockup-area {
   display: flex;
@@ -45,6 +55,7 @@ dealing w/ groups of media and associated text
   gap: var(--spacing-xs);
   margin-bottom: var(--spacing-s);
   font-weight: var(--type-lockup-all-weight);
+  font-family: adobe-clean-display, 'Adobe Clean Display fallback', sans-serif;
   line-height: 1.25em;
 }
 
@@ -100,13 +111,13 @@ dealing w/ groups of media and associated text
 
 .center:not(.tabs, .section) .lockup-area { justify-content: center; }
 .right:not(.tabs) .lockup-area { justify-content: flex-end; }
-.xxs-lockup .lockup-area img { height: var(--icon-size-xxs); }
-.xs-lockup .lockup-area img { height: var(--icon-size-xs); }
-.s-lockup .lockup-area img { height: var(--icon-size-s); }
-.m-lockup .lockup-area img { height: var(--icon-size-m); }
-.l-lockup .lockup-area img { height: var(--icon-size-l); }
-.xl-lockup .lockup-area img { height: var(--icon-size-xl); }
-.xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
+.xxs-lockup .lockup-area img { height: var(--icon-size-xxs); width: var(--icon-size-xxs); }
+.xs-lockup .lockup-area img { height: var(--icon-size-xs); width: var(--icon-size-xs); }
+.s-lockup .lockup-area img { height: var(--icon-size-s); width: var(--icon-size-s); }
+.m-lockup .lockup-area img { height: var(--icon-size-m); width: var(--icon-size-m); }
+.l-lockup .lockup-area img { height: var(--icon-size-l); width: var(--icon-size-l); }
+.xl-lockup .lockup-area img { height: var(--icon-size-xl); width: var(--icon-size-xl); }
+.xxl-lockup .lockup-area img { height: var(--icon-size-xxl); width: var(--icon-size-xxl); }
 
 .avatar-area {
   line-height: 0;
