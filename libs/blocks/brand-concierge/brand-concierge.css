@@ -309,6 +309,11 @@
   padding: 0;
 }
 
+.sticky .bc-input-field-label {
+  align-self: center;
+  margin: 0;
+}
+
 .sticky .bc-input-field-label,
 .sticky input,
 .sticky .input-field-button {
