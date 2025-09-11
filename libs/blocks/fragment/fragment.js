@@ -71,16 +71,16 @@ async function getLangSpecificFragment(resource) {
   const url = new URL(resource);
   const { hash } = url;
   if (hash.includes('#_roc')) {
-    // Loading both fragments
-    return Promise.all([
-      customFetch({ resource, withCacheRules: true }),
-      customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true }),
-    ]).then((responses) => {
-      if (responses[0].ok) {
-        return responses[0];
-      }
-      return responses[1];
-    });
+    // // Loading both fragments
+    // return Promise.all([
+    //   customFetch({ resource, withCacheRules: true }),
+    //   customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true }),
+    // ]).then((responses) => {
+    //   if (responses[0].ok) {
+    //     return responses[0];
+    //   }
+    //   return responses[1];
+    // });
     // // Checking HEAD calls and loading one fragment
     // return Promise.all([
     //   fetch(resource, { method: 'HEAD' }),
@@ -91,8 +91,8 @@ async function getLangSpecificFragment(resource) {
     //   }
     //   return customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true });
     // });
-    // // Loading JSON
-    // await fetch('https://main--da-bacom--adobecom.aem.live/ca/drafts/mepdev/fragments/lingo/urls.json');
+    // Loading JSON
+    await fetch('https://main--da-bacom--adobecom.aem.live/ca/drafts/mepdev/fragments/lingo/urls.json');
   }
   return customFetch({ resource, withCacheRules: true });
 }
