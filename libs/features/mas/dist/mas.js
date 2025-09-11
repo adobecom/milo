@@ -1108,6 +1108,10 @@ merch-card[variant="mini-compare-chart"].bullet-list merch-addon {
   margin: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xxs);
 }
 
+merch-card[variant="mini-compare-chart"].bullet-list merch-addon [is="inline-price"] {
+  font-weight: 400;
+}
+
 merch-card[variant="mini-compare-chart"].bullet-list footer {
   gap: var(--consonant-merch-spacing-xxs);
 }
