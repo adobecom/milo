@@ -348,5 +348,9 @@ export function runChecks({ url, area = document, envName, runCheckLinks = true 
       })()
     );
   }
-  return resultValue
+  
+  if (!window.contentInsights) window.contentInsights = {};
+  window.contentInsights.seo = resultValue;
+  
+  return resultValue;
 }
