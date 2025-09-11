@@ -62,7 +62,7 @@ export class FriesCard extends VariantLayout {
             --merch-card-fries-text-color: rgba(19, 19, 19);
             --merch-card-fries-price-line-height: 17px;
             --merch-card-fries-outline: transparent;
-            --merch-card-custom-border-width: 1px;
+            --consonant-merch-card-border-width: 1px;
             max-width: var(--merch-card-fries-max-width);
             min-height: var(--merch-card-fries-min-height);
             background-color: var(
@@ -71,7 +71,7 @@ export class FriesCard extends VariantLayout {
             );
             color: var(--consonant-merch-card-heading-xxxs-color);
             border-radius: 4px;
-            border: 1px solid var(--merch-card-custom-border-color, transparent);
+            border: 1px solid var(--consonant-merch-card-border-color, transparent);
             display: flex;
             flex-direction: row;
             overflow: hidden;
@@ -118,6 +118,4 @@ export class FriesCard extends VariantLayout {
         }
     `;
 }
-
-customElements.define('fries-card', FriesCard); 
 
