@@ -6,14 +6,14 @@ import { decorateButtons, getBlockSize, decorateBlockBg, loadCDT } from '../../u
 import { createTag, getConfig, loadStyle, getMetadata } from '../../utils/utils.js';
 
 const isMwebOn = getMetadata('mweb') === 'on';
-const mwebBodySize = isMwebOn ? 'l' : 'm';
-const mwebDetailSize = isMwebOn ? 'l' : 'm';
+const bodySize = isMwebOn ? 'l' : 'm';
+const detailSize = isMwebOn ? 'l' : 'm';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
   marquee: {
-    small: ['xl', mwebBodySize, mwebDetailSize],
-    medium: ['xl', mwebBodySize, mwebDetailSize],
+    small: ['xl', bodySize, detailSize],
+    medium: ['xl', bodySize, detailSize],
     large: ['xxl', 'xl', 'l'],
     xlarge: ['xxl', 'xl', 'l'],
   },
