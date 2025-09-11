@@ -394,7 +394,8 @@
     margin-bottom: var(--spacing-xs);
   }
 
-  .section:has(.icon-block.container-mobile + .action-scroller) {
+  .section:has(.icon-block.container-mobile + .action-scroller),
+  .section:has(.icon-block.container-mobile + .action-scroller) picture.section-background {
     width: var(--grid-container-width);
     margin: auto;
     border-radius: var(--l-rounded-corners);
