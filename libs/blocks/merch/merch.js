@@ -329,7 +329,6 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
 let upgradeOffer = null;
-let litPromise;
 
 /**
  * Given a url, calculates the hostname of MAS platform.
