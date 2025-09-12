@@ -438,7 +438,6 @@ const failedExternalLoads = new Set();
 
 const loadingPromises = new Map();
 
-
 /**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')

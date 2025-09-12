@@ -606,7 +606,6 @@ export default async function init(el) {
   const hasOfferSelection = el.querySelector('ul');
   const hasQuantitySelect = el.querySelector('.merch-offers');
 
-
   const componentPromises = [loadMasComponent(MAS_MERCH_CARD)];
 
   if (isMultiOfferCard && (hasOfferSelection || hasQuantitySelect)) {
