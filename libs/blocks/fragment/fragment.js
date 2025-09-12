@@ -81,7 +81,7 @@ async function getLangSpecificFragment(resource, dataset) {
     // });
     // Checking HEAD calls and loading one fragment
     return Promise.allSettled([
-      fetch(resource.replace('/ca/', ''), { method: 'HEAD' }),
+      fetch(resource.replace('/ca/', '/'), { method: 'HEAD' }),
       fetch(resource, { method: 'HEAD' }),
     ]).then((responses) => {
       if (responses[0].ok) {
