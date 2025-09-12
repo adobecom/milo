@@ -186,6 +186,7 @@ export default {
     '--product-card-title-font-size': '24px',
     '--product-card-title-font-weight': '700',
     '--prompt-suggestion-button-background': '#F8F8F8',
+    '--prompt-suggestion-button-background-hover': '#E1E1E1',
     '--prompt-suggestion-button-border-radius': '10px',
     '--prompt-suggestion-button-border-width': '0',
     '--prompt-suggestion-button-gap': '8px',
