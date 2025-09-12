@@ -454,9 +454,9 @@ export const shouldAllowKrTrial = (button, localePrefix) => {
 */
 export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
   if (shouldAllowKrTrial(button, localePrefix) || localePrefix !== '/kr'
-      || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
-         .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+    || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+        .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
   }
 
@@ -972,6 +972,10 @@ export function decorateLinks(el) {
     if (a.href.includes('#_nofollow')) {
       a.setAttribute('rel', 'nofollow');
       a.href = a.href.replace('#_nofollow', '');
+    }
+    if (a.href.includes('#_roc')) {
+      a.dataset.rocLink = 'true';
+      a.href = a.href.replace('#_roc', '');
     }
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
