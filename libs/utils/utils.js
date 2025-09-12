@@ -168,8 +168,7 @@ export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
-let localeToLanguageMap;
-let siteLanguages;
+let langConfig;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -203,11 +202,13 @@ export function getLocale(locales, pathname = window.location.pathname) {
   if ([LANGSTORE, PREVIEW].includes(localeString)) {
     const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
     if (ietf) locale = locales[ietf];
-    locale.prefix = `/${localeString}/${split[2]}`;
+    const pathSegment = split[2] ? `/${split[2]}` : '';
+    locale.prefix = `/${localeString}${pathSegment}`;
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
-  locale.prefix = isUS ? '' : `/${localeString}`;
+  const localePathPrefix = localeString ? `/${localeString}` : '';
+  locale.prefix = isUS ? '' : localePathPrefix;
   locale.region = isUS ? 'us' : localeString.split('_')[0];
   return locale;
 }
@@ -253,6 +254,8 @@ export function getMetadata(name, doc = document) {
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
+
+(() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
 
 const handleEntitlements = (() => {
   const { martech } = Object.fromEntries(PAGE_URL.searchParams);
@@ -384,7 +387,7 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 }
 
 export async function loadLanguageConfig() {
-  if (localeToLanguageMap && siteLanguages) return { siteLanguages, localeToLanguageMap };
+  if (langConfig) return langConfig;
 
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
@@ -392,14 +395,17 @@ export async function loadLanguageConfig() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
 
-    localeToLanguageMap = configJson['locale-to-language-map']?.data;
-    siteLanguages = configJson['site-languages']?.data?.map((site) => ({
-      ...site,
-      pathMatches: parseList(site.pathMatches),
-      languages: parseList(site.languages),
-    }));
+    langConfig = {
+      localeToLanguageMap: configJson['locale-to-language-map']?.data,
+      siteLanguages: configJson['site-languages']?.data?.map((site) => ({
+        ...site,
+        pathMatches: parseList(site.pathMatches),
+        languages: parseList(site.languages),
+      })),
+      nativeToEnglishMapping: configJson['langmap-native-to-en']?.data || [],
+    };
 
-    return { siteLanguages, localeToLanguageMap };
+    return langConfig;
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
@@ -497,19 +503,19 @@ function getExtension(path) {
 
 function getPrefixBySite(locale, url, relative) {
   let { prefix } = locale;
-  const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
-
-  const localeSiteWithLanguageTarget = !locale.language && site && localeToLanguageMap;
+  // eslint-disable-next-line max-len
+  const site = langConfig?.siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
+  const localeSiteWithLanguageTarget = !locale.language && site && langConfig?.localeToLanguageMap;
   const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
   if (localeSiteWithLanguageTarget) {
-    const mappedLanguageFromPrefix = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
+    const mappedLanguageFromPrefix = langConfig?.localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
     const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
     if (languageInUseBySite) {
       prefix = languageInUseBySite === DEFAULT_LANG ? '' : `/${languageInUseBySite}`;
     }
   }
   if (languageSiteWithLocaleTarget) {
-    const mappedLocaleFromLanguage = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
+    const mappedLocaleFromLanguage = langConfig?.localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
     prefix = mappedLocaleFromLanguage ? `${mappedLocaleFromLanguage.locale === '' ? '' : '/'}${mappedLocaleFromLanguage.locale}` : prefix;
   }
 
@@ -520,9 +526,9 @@ function isLocalizedPath(path, locales) {
   const langstorePath = path.startsWith(`/${LANGSTORE}`);
   const isMerchLink = path === '/tools/ost';
   const previewPath = path.startsWith(`/${PREVIEW}`);
-  const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
-    && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
-      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
+  const anyTypeOfLocaleOrLanguagePath = langConfig?.localeToLanguageMap
+    && (langConfig.localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
+      || (langConfig.localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
@@ -950,7 +956,9 @@ export function decorateLinks(el) {
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
-    a.href = localizeLink(a.href);
+    const hasDnt = a.href.includes('#_dnt');
+    if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
+    if (hasDnt) a.dataset.hasDnt = true;
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
@@ -1099,7 +1107,11 @@ async function decorateHeader() {
 async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
-  const { base } = config;
+  const { base, iconsExcludeBlocks } = config;
+  if (iconsExcludeBlocks) {
+    const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
+    if (excludedIconsCount === icons.length) return;
+  }
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
@@ -1430,6 +1442,8 @@ async function checkForPageMods() {
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
+  loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+
   const promises = loadMepAddons();
   if (mepgeolocation) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1603,7 +1617,9 @@ export async function loadDeferred(area, blocks, config) {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
+    const { getPreflightResults } = await import('../blocks/preflight/checks/preflightApi.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
+    getPreflightResults(window.location.href, document);
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {
@@ -1749,7 +1765,7 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
-  if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
+  if (!langConfig && (config.languages || hasLanguageLinks(area))) {
     await loadLanguageConfig();
   }
 
