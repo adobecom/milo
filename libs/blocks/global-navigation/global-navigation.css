@@ -181,7 +181,9 @@ header.global-navigation {
 
 /* Popup */
 .feds-popup {
-  display: none;
+  /* display: none; */ /* FrameIO comment out */
+  opacity: 0;
+  pointer-events: none;
   background-color: var(--feds-background-popup);
 }
 
@@ -613,12 +615,15 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
 
   /* Popup */
   .feds-popup {
+    display: flex !important; /* FrameIO addition */
+    flex-direction: column !important;  /* FrameIO addition */
     position: absolute;
-    top: 100%;
+    top: 80%; /* FrameIO update from 100% */
     left: 0;
     z-index: 1;
     box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
     transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
+    transition: top 0.3s ease-in-out, opacity 0.3s ease-in-out; /* FrameIO addition */
     padding: 12px 0;
   }
 
@@ -926,8 +931,6 @@ header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
   font-size: 20px;
   color: var(--feds-color-white-v2);
 }
-
-/* 
 
 /* Mega Menu */
 
@@ -1480,12 +1483,12 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 .feds-popup.loading .first-headline-one,
 .feds-popup.loading .first-headline-two,
 .feds-popup.loading .feds-navLink-content .feds-navLink-title,
-.feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+.feds-popup.loading .feds-navLink-content .feds-navLink-description,
 .feds-popup.loading .feds-cta-wrapper,
 .feds-popup.loading .feds-menu-headline:not(:has(div)),
 .feds-popup.loading .feds-crossCloudMenu-item .feds-navLink,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
   border-radius: 2px;
   opacity: var(--feds-skeleton-opacity);
@@ -1574,5 +1577,68 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
   header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
     padding: 15px 11px 15px 20px;
     min-height: max-content;
+  }
+}
+
+/* FrameIO overrides */
+body {
+  background: black;
+}
+
+.feds-topnav-wrapper {
+  backdrop-filter: saturate(110%) blur(80px);
+  border: 0 !important;
+}
+
+.feds-navItem {
+  font-weight: 600;
+}
+
+.feds-signIn {
+  font-weight: 600;
+  transition: color 0.3s ease-in-out;
+
+  &:hover {
+    color: var(--feds-color-link);
+  }
+}
+
+.feds-logo-image path {
+  fill: var(--feds-color-link);
+}
+
+.feds-navLink {
+  transition: color 0.3s ease-in-out;
+}
+
+.feds-topnav-wrapper:has(.feds-navLink:hover) :is(.feds-navLink:not(:hover), .feds-signIn),
+.feds-topnav-wrapper:has(.feds-signIn:hover) :is(.feds-navLink) {
+  color: rgb(234 234 255 / 50%) !important;
+}
+
+.feds-menu-headline {
+  border-bottom: 0 !important;
+}
+
+.feds-navLink--gray-gradient {
+  background: transparent !important;
+  color: rgb(97 153 246) !important;
+}
+
+.feds-menu-content :has(li > .feds-navLink) > li {
+  padding: 2px 0;
+}
+
+.feds-menu-content .feds-navLink {
+  padding: 4px 0 !important;
+}
+
+.feds-popup .feds-navLink:hover, .feds-popup .feds-navLink:focus {
+  background: none !important;
+  color: var(--feds-color-link) !important;
+
+  .feds-navLink-description {
+    transition: color 0.3s ease-in-out;
+    color: var(--feds-color-link) !important;
   }
 }

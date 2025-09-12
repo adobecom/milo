@@ -487,7 +487,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   .hero-marquee > .foreground.cols-2 {
-    grid-template-columns: minmax(50%, 1fr) minmax(50%, 1fr);
+    grid-template-columns: minmax(45%, 1fr) minmax(55%, 1fr); /* FrameIO update from minmax(50%, 1fr) minmax(50%, 1fr) */
     align-items: center;
     gap: 0;
   }
@@ -504,10 +504,11 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 
   .hero-marquee .foreground-media {
     position: absolute;
-    width: 50vw;
-    height: 100%;
+    width: 55vw; /* FrameIO update from 50vw */
+    /* height: 100%; */ /* FrameIO comment out */
     right: 0;
-    top: 0;
+    top: 50%; /* FrameIO update from 0 */
+    transform: translateY(-50%); /* FrameIO addition */
   }
 
   .hero-marquee.asset-left .foreground-media,
@@ -572,3 +573,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 }
 
+/* FrameIO overrides */
+.hero-marquee .foreground-media picture img, .hero-marquee .foreground-media video {
+  object-position: left top;
+}
