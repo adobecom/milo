@@ -1,4 +1,4 @@
-import { initService, loadLitDependency, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION } from '../merch/merch.js';
+import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION } from '../merch/merch.js';
 import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
@@ -209,7 +209,6 @@ export default async function init(el) {
   let merchCardStyles;
 
   // Load lit first as it's needed by MAS components
-  await loadLitDependency();
 
   const merchCardCollectionDep = loadMasComponent(MAS_MERCH_CARD_COLLECTION);
   try {
