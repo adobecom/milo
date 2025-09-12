@@ -13,7 +13,6 @@ merch-card-collection.full-pricing-express {
     justify-items: center;
     align-items: stretch;
     gap: 16px;
-    padding: var(--spacing-m);
 }
 
 /* Mobile - 1 column */
