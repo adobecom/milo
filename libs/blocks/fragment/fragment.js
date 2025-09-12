@@ -86,7 +86,8 @@ async function getLangSpecificFragment(resource, dataset) {
     ]).then(async (responses) => {
       let res;
       if (responses[0].ok) {
-        res = await fetch(resource);
+        res = await fetch(resource.replace('/ca/', '/'));
+        return res;
       }
       res = await fetch(resource);
       return res;
