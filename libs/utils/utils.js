@@ -718,8 +718,17 @@ export async function loadTemplate() {
 
 function getBlockData(block) {
   const name = block.classList[0];
-  const { miloLibs, codeRoot, mep } = getConfig();
-  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
+  const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
+
+  let base = codeRoot;
+  if (externalLibs) {
+    const list = Array.isArray(externalLibs) ? externalLibs : [externalLibs];
+    const match = list.find((lib) => Array.isArray(lib.blocks) && lib.blocks.includes(name));
+    if (match?.base) base = match.base;
+  }
+
+  if (miloLibs && MILO_BLOCKS.includes(name)) base = miloLibs;
+
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
   const blockPath = `${path}/${name}`;
