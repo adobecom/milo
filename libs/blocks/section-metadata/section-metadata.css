@@ -236,7 +236,7 @@ main > .section[class*='-up'] > .content {
 }
 
 .section .show-more-button button {
-  background-color: var(--color-gray-100);
+  background-color: inherit;
   border: none;
   color: #070707;
   text-decoration: none;
