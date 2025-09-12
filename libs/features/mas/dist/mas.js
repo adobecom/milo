@@ -1619,6 +1619,11 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     justify-content: center;
 }
 
+.plans-team:has([data-manifest-id="plans.json"]) .row-1 {
+    grid-template-columns: repeat(2, calc(var(--consonant-merch-card-plans-width) * 2 + 32px));
+    justify-content: center;
+}
+
 .plans-team .text .foreground,
 .plans-edu .text .foreground {
     max-width: unset;
@@ -1670,6 +1675,10 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 }
 
 @media screen and ${he} {
+    .plans-team:has([data-manifest-id="plans.json"]) .row-1 {
+        grid-template-columns: min-content
+    }
+
     .plans-edu-inst {
         display: grid;
         grid-template-columns: min-content;
@@ -1685,11 +1694,11 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 /* desktop */
 @media screen and ${B} {
     :root {
-            --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-plans-width: 276px;
     }
 
     merch-sidenav.plans {
-            --merch-sidenav-collection-gap: 30px;
+        --merch-sidenav-collection-gap: 30px;
     }
 
     .columns .four-merch-cards.plans {
