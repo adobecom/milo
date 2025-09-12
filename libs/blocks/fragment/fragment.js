@@ -67,25 +67,22 @@ function replaceDotMedia(path, doc) {
   resetAttributeBase('source', 'srcset');
 }
 
-async function getLangSpecificFragment(resource) {
-  const url = new URL(resource);
-  const { hash } = url;
-  if (hash.includes('#_roc')) {
+async function getLangSpecificFragment(resource, dataset) {
+  if (dataset.rocLink) {
     // // Loading both fragments
     // return Promise.all([
-    //   customFetch({ resource, withCacheRules: true }),
-    //   customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true }),
+    //   fetch(resource.replace('/ca/', '/')),
+    //   fetch(resource),
     // ]).then((responses) => {
     //   if (responses[0].ok) {
     //     return responses[0];
     //   }
     //   return responses[1];
     // });
-
     // Checking HEAD calls and loading one fragment
     return Promise.all([
-      fetch(resource, { method: 'HEAD' }),
       fetch(resource.replace('/ca/', ''), { method: 'HEAD' }),
+      fetch(resource, { method: 'HEAD' }),
     ]).then((responses) => {
       if (responses[0].ok) {
         return customFetch({ resource, withCacheRules: true });
@@ -141,8 +138,8 @@ export default async function init(a) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
-
-  const resp = await getLangSpecificFragment(`${resourcePath}.plain.html`);
+  // TEST here
+  const resp = await getLangSpecificFragment(resourcePath, a.dataset);
 
   if (!resp?.ok) {
     window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
@@ -163,7 +160,6 @@ export default async function init(a) {
 
   const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
   fragment.append(...sections);
-
   updateFragMap(fragment, a, relHref);
   if (a.dataset.manifestId
     || a.dataset.adobeTargetTestid
