@@ -2,11 +2,10 @@ import { expect, test } from '@playwright/test';
 import { features } from './plansdocs.spec.js';
 import MasPlans from './plans.page.js';
 import WebUtil from '../../../../libs/webutil.js';
-import { createWorkerPageSetup, DOCS_GALLERY_PATH } from '../../../../libs/commerce.js';
+import { createWorkerPageSetup, validateCommerceUrl, DOCS_GALLERY_PATH } from '../../../../libs/commerce.js';
 
 let acomPage;
 let webUtil;
-const COMMERCE_LINK_REGEX = /https:\/\/commerce\.adobe\.com\/store\/email\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&apc=FY25PLES256MROW&cli=adobe_com&ctx=fp&co=US&lang=en)/i;
 
 test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 
@@ -63,7 +62,8 @@ test.describe('ACOM MAS cards feature test suite', () => {
       await expect(await acomPage.getCardCTA(data.id)).toHaveAttribute('class', /con-button blue/);
       await expect(await acomPage.getCardCTA(data.id)).toHaveAttribute('data-wcs-osi', data.ctaOsi);
       await expect(await acomPage.getCardCTA(data.id)).toContainText(data.cta);
-      await expect((await acomPage.getCardCTA(data.id)).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX);
+      const ctaHref = await (await acomPage.getCardCTA(data.id)).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref, { requiredParams: ['apc'] })).toBe(true);
       await expect(await acomPage.getCardCTA(data.id)).toHaveAttribute('data-analytics-id', /.*/);
     });
   });

@@ -2,26 +2,37 @@ import { expect, test } from '@playwright/test';
 import { features } from './express.spec.js';
 import ExpressCard from './express.page.js';
 import { runAccessibilityTest } from '../../../libs/accessibility.js';
+import { createWorkerPageSetup, DOCS_GALLERY_PATH } from '../../../libs/commerce.js';
 
-const miloLibs = process.env.MILO_LIBS || '';
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
+const workerSetup = createWorkerPageSetup({
+  pages: [
+    { name: 'EXPRESS', url: DOCS_GALLERY_PATH.EXPRESS },
+  ],
+});
 
 test.describe('MAS Express Cards test suite', () => {
-  test.beforeEach(async ({ page, browserName }) => {
-    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
-
-    if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
-    }
+  test.beforeAll(async ({ browser, baseURL }) => {
+    await workerSetup.setupWorkerPages({ browser, baseURL });
   });
 
-  test(`[Test Id - ${features[0].tcid}] ${features[0].name}, ${features[0].tags}`, async ({ page, baseURL }) => {
-    const { data } = features[0];
-    console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
+  test.afterAll(async () => {
+    await workerSetup.cleanupWorkerPages();
+  });
 
-    await test.step('step-1: Go to Express page', async () => {
-      await page.goto(`${baseURL}${features[0].path}${miloLibs}`);
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}${miloLibs}`);
+  test.afterEach(async ({}, testInfo) => { // eslint-disable-line no-empty-pattern
+    workerSetup.attachWorkerErrorsToFailure(testInfo);
+  });
+
+  test(`[Test Id - ${features[0].tcid}] ${features[0].name}, ${features[0].tags}`, async () => {
+    const { data } = features[0];
+    const page = workerSetup.getPage('EXPRESS');
+
+    console.info(`[Test Page]: ${await page.url()}`);
+
+    await test.step('step-1: Wait for Express page elements', async () => {
+      await workerSetup.verifyPageURL('EXPRESS', DOCS_GALLERY_PATH.EXPRESS, expect);
 
       await page.waitForSelector('merch-card-collection', { timeout: 30000 });
       await page.waitForSelector('merch-card[variant="simplified-pricing-express"]', { timeout: 30000 });
@@ -39,7 +50,7 @@ test.describe('MAS Express Cards test suite', () => {
         await expect(card.badge).toContainText(data.badge);
       }
       await expect(card.description).toContainText(data.description);
-      await expect(card.price).toContainText(data.price);
+      await expect(card.price).toContainText(new RegExp(data.price));
       await expect(card.priceNote).toContainText(data.priceNote);
       await expect(card.ctaButton).toContainText(data.cta);
     });
@@ -50,14 +61,14 @@ test.describe('MAS Express Cards test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[1].tcid}] ${features[1].name}, ${features[1].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[1].tcid}] ${features[1].name}, ${features[1].tags}`, async () => {
     const { data } = features[1];
-    console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
+    const page = workerSetup.getPage('EXPRESS');
 
-    await test.step('step-1: Go to Express page', async () => {
-      await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(`${baseURL}${features[1].path}${miloLibs}`);
+    console.info(`[Test Page]: ${await page.url()}`);
+
+    await test.step('step-1: Wait for Express page elements', async () => {
+      await workerSetup.verifyPageURL('EXPRESS', DOCS_GALLERY_PATH.EXPRESS, expect);
 
       await page.waitForSelector('merch-card-collection', { timeout: 30000 });
       await page.waitForSelector('merch-card[variant="simplified-pricing-express"]', { timeout: 30000 });
@@ -80,7 +91,7 @@ test.describe('MAS Express Cards test suite', () => {
       if (viewportWidth >= 1200 && data.priceStrikethrough) {
         await expect(card.priceStrikethrough).toBeVisible();
       }
-      await expect(card.price).toContainText(data.price);
+      await expect(card.price).toContainText(new RegExp(data.price));
       await expect(card.priceNote).toContainText(data.priceNote);
 
       await expect(card.ctaButton).toContainText(data.cta);
@@ -114,14 +125,14 @@ test.describe('MAS Express Cards test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[2].tcid}] ${features[2].name}, ${features[2].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[2].tcid}] ${features[2].name}, ${features[2].tags}`, async () => {
     const { data } = features[2];
-    console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
+    const page = workerSetup.getPage('EXPRESS');
 
-    await test.step('step-1: Go to Express page', async () => {
-      await page.goto(`${baseURL}${features[2].path}${miloLibs}`);
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(`${baseURL}${features[2].path}${miloLibs}`);
+    console.info(`[Test Page]: ${await page.url()}`);
+
+    await test.step('step-1: Wait for Express page elements', async () => {
+      await workerSetup.verifyPageURL('EXPRESS', DOCS_GALLERY_PATH.EXPRESS, expect);
 
       await page.waitForSelector('merch-card-collection', { timeout: 30000 });
       await page.waitForSelector('merch-card[variant="simplified-pricing-express"]', { timeout: 30000 });
@@ -139,7 +150,7 @@ test.describe('MAS Express Cards test suite', () => {
         await expect(card.badge).toContainText(data.badge);
       }
       await expect(card.description).toContainText(data.description);
-      await expect(card.price).toContainText(data.price);
+      await expect(card.price).toContainText(new RegExp(data.price));
       await expect(card.priceNote).toContainText(data.priceNote);
       if (data.priceAdditionalNote) {
         await expect(card.priceAdditionalNote).toContainText(data.priceAdditionalNote);
