@@ -531,7 +531,7 @@ html[dir="rtl"] .carousel .move-indicators {
   opacity: .3;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 899px) {
   .carousel.container.hinting-mobile,
   .carousel.container.hinting-center-mobile {
     width: 100%;
@@ -754,6 +754,25 @@ html[dir="rtl"] .carousel .move-indicators {
     --offset: calc(round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
 
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-slides.is-ready {
+    flex-wrap: wrap;
+    align-items: stretch;
+    transform: none;
+    left: initial;
+    transform-style: initial;
+    scroll-snap-type: none;
+    will-change: unset;
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-slide {
+    flex-grow: unset;
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-button-container,
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card).lightbox .carousel-expand {
+    display: none;
   }
 }
 
