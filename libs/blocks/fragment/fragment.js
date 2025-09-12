@@ -85,9 +85,9 @@ async function getLangSpecificFragment(resource, dataset) {
       fetch(resource, { method: 'HEAD' }),
     ]).then((responses) => {
       if (responses[0].ok) {
-        return customFetch({ resource, withCacheRules: true });
+        return fetch(resource);
       }
-      return customFetch({ resource: resource.replace('/ca/', ''), withCacheRules: true });
+      return fetch(resource.replace('/ca/', '')).then((res) => res);
     });
     // // Loading JSON
     // await fetch('https://main--da-bacom--adobecom.aem.live/ca/drafts/mepdev/fragments/lingo/urls.json');
