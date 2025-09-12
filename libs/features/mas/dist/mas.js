@@ -2754,7 +2754,7 @@ merch-card[variant="full-pricing-express"] [slot="trial-badge"] {
     font-weight: var(--merch-card-full-pricing-express-trial-badge-font-weight);
     line-height: var(--merch-card-full-pricing-express-trial-badge-line-height);
     white-space: nowrap;
-    z-index: 2;
+    z-index: 0;
     max-width: calc(100% - 24px);
     text-align: right;
 }
@@ -2848,6 +2848,7 @@ merch-card[variant="full-pricing-express"] [slot="description2"] p:last-child a:
 merch-card[variant="full-pricing-express"] [slot="price"] {
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 merch-card[variant="full-pricing-express"] [slot="price"] > p:first-child {
@@ -2944,6 +2945,8 @@ merch-card[variant="full-pricing-express"] [slot="price"] p .heading-m,
 merch-card[variant="full-pricing-express"] [slot="price"] p .heading-l {
     font-size: 22px;
     line-height: 28.6px;
+    text-align: center;
+    width: 100%;
 }
 
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
@@ -3347,7 +3350,7 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
             margin-bottom: var(--merch-card-full-pricing-express-section-gap);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
         }
 
         /* CTA styling */

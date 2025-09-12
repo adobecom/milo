@@ -457,7 +457,7 @@ export class FullPricingExpress extends VariantLayout {
             margin-bottom: var(--merch-card-full-pricing-express-section-gap);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
         }
 
         /* CTA styling */
