@@ -1,315 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Merch Card Full Pricing Express Web Component demo page</title>
+    <title>Merch Card Full Pricing Express Web Component test page</title>
     <script>
         window.process = {
             env: {},
         };
     </script>
     <style>
-        main {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-direction: column;
-            padding-top: 80px;
-        }
-
-        main>div {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 378px));
-            gap: 32px;
+        body {
+            margin: 0;
             padding: 20px;
-            justify-content: center;
-        }
-
-        .dark {
-            background-color: #1e1e1e;
-        }
-
-        #sidenav {
-            display: none;
-        }
-
-        @media screen and (min-width: 1440px) {
-            #sidenav {
-                flex: 1;
-                justify-content: stretch;
-                padding-top: 8px;
-                display: flex;
-                position: fixed;
-                bottom: 0px;
-                left: 0px;
-                gap: 20px;
-                flex-direction: column;
-                width: 220px;
-            }
-
-            #sidenav > button {
-                text-align: left;
-                padding: 8px 16px;
-                border: 1px solid #ccc;
-                background-color: white;
-                cursor: pointer;
-            }
-
-            #sidenav > button:hover {
-                background-color: #f0f0f0;
-            }
-
-            main {
-                margin-left: 240px;
-            }
-        }
-
-        .section-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 20px 0;
-            width: 100%;
-            text-align: center;
-        }
-
-        .grid-1-col {
-            grid-template-columns: 1fr !important;
-            max-width: 365px;
-        }
-
-        .grid-2-col {
-            grid-template-columns: repeat(2, 1fr) !important;
-            max-width: calc(2 * 378px + 16px);
-        }
-
-        .grid-3-col {
-            grid-template-columns: repeat(3, 1fr) !important;
-            max-width: calc(3 * 378px + 32px);
         }
     </style>
 </head>
-
 <body>
-    <main>
-        <div id="sidenav">
-            <button onclick="scrollToSection('basic')">Basic Cards</button>
-            <button onclick="scrollToSection('gradient')">Gradient Borders</button>
-            <button onclick="scrollToSection('responsive')">Responsive Grid</button>
-        </div>
-
-        <div id="basic" class="section-title">Basic Full Pricing Express Cards</div>
-        <div class="grid-3-col">
-            <merch-card variant="full-pricing-express" name="express-free" border-color="gray">
-                <div slot="badge">Most popular</div>
-                <h3 slot="heading-xs">Adobe Express Free</h3>
-                <div slot="body-xs">
-                    For individuals who want quick and easy content creation with thousands of templates, quick actions, and Adobe Stock photos.
+    <merch-card-collection id="2cac02ae-da9b-4e4f-b187-ddec0d6415ab" filter="all" class="merch-card-collection full-pricing-express" filtered="all" page="1">
+        <merch-card consonant="" style="--consonant-merch-card-border-color: var(--spectrum-gray-300);" id="53fcf015-5c28-4214-bd2b-d4c22f1774b8" filters="all:1" types="" variant="full-pricing-express" data-analytics-id="ccfm">
+            <aem-fragment fragment="53fcf015-5c28-4214-bd2b-d4c22f1774b8"></aem-fragment>
+            <h3 slot="heading-xs">Free Plan</h3>
+            <div slot="price">
+                <p><span is="inline-price" data-template="price" data-wcs-osi="2yzU1dqwSmgxwAYD1qNk4vYjHn7aU4lnXlA7ttsE-cQ" class="placeholder-resolved">
+                    <span class="price">
+                        <span class="price-currency-symbol">US$</span>
+                        <span class="price-currency-space disabled"></span>
+                        <span class="price-integer">9</span>
+                        <span class="price-decimals-delimiter">.</span>
+                        <span class="price-decimals">99</span>
+                        <span class="price-recurrence">/mo</span>
+                        <span class="price-unit-type disabled"></span>
+                        <span class="price-tax-inclusivity disabled"></span>
+                    </span>
+                </span></p>
+                <p>Free to use. No credit card required.</p>
+            </div>
+            <div slot="body-s">
+                <p><strong>For individuals</strong> who want basic content creation tools, limited generative AI credits and assets.<br><br></p>
+            </div>
+            <div slot="description2">
+                <p><strong>Top features:</strong></p>
+                <div class="divider-wrapper" contenteditable="false">
+                    <sp-divider size="s" role="separator" dir="ltr"></sp-divider>
                 </div>
-                <div slot="description2">
-                    <ul>
-                        <li>Thousands of templates & quick actions</li>
-                        <li>Basic editing tools & effects</li>
-                        <li>2GB cloud storage</li>
-                        <li>Access to Adobe Fonts</li>
-                        <li>Limited premium templates</li>
-                    </ul>
+                <p><strong>Includes basic editing tools and limited assets</strong></p>
+                <p><strong>Templates:</strong> Access to 100,000+ static and video templates</p>
+                <p><strong>Assets:</strong> 1M+ royalty-free photos, videos, music tracks, and design elements<sup>2</sup></p>
+                <p><strong>Fonts:</strong> Access to 1,000+ custom fonts</p>
+                <p><strong>Editing tools:</strong> Standard photo, video, and document editing tools</p>
+                <p><strong>Content scheduling:</strong> Plan and schedule posts to 1 account per social network</p>
+                <p><strong>Version history:</strong> 10 days</p>
+                <p><strong>Storage:</strong> 5GB</p>
+                <p><strong>Devices:</strong> Works on desktop browsers and mobile phones</p>
+                <div class="divider-wrapper" contenteditable="false">
+                    <sp-divider size="s" role="separator" dir="ltr"></sp-divider>
                 </div>
-                <div slot="price">
-                    <p><span is="inline-price" data-template="optical">US$0.00/mo</span></p>
-                    <p>Free forever, no credit card required.</p>
-                </div>
-                <div slot="cta">
-                    <sp-button variant="accent" size="XL">Get started free</sp-button>
-                </div>
-            </merch-card>
-
-            <merch-card variant="full-pricing-express" name="express-premium" border-color="blue">
-                <div slot="badge">Best value</div>
-                <h3 slot="heading-xs">Adobe Express Premium</h3>
-                <div slot="body-xs">
-                    For individuals who want unlimited access to premium templates and advanced features for professional content creation.
-                </div>
-                <div slot="description2">
-                    <ul>
-                        <li>All free features plus:</li>
-                        <li>Unlimited premium templates</li>
-                        <li>Advanced design tools & Brand Kit</li>
-                        <li>100GB cloud storage</li>
-                        <li>Remove background & resize tools</li>
-                        <li>Schedule social media posts</li>
-                    </ul>
-                </div>
-                <div slot="price">
-                    <p><span is="inline-price" data-template="optical">US$9.99/mo</span></p>
-                    <p>Annual commitment required.</p>
-                </div>
-                <div slot="cta">
-                    <sp-button variant="accent" size="XL">Start free trial</sp-button>
-                </div>
-            </merch-card>
-
-            <merch-card variant="full-pricing-express" name="firefly-pro" border-color="gradient-purple-blue" gradient-border="true">
-                <div slot="badge">Best value</div>
-                <h3 slot="heading-xs">Adobe Firefly Pro</h3>
-                <div slot="body-xs">
-                    For individuals who want Adobe Express Premium plus 4,000 credits for creative AI and Adobe Photoshop on web and mobile for advanced image editing.
-                </div>
-                <div slot="description2">
-                    <ul>
-                        <li>Includes all Premium plan features, and more (except the 250 credits)</li>
-                        <li>Generative AI for video and audio: 4,000 monthly generative credits</li>
-                        <li>Generative AI for images: Unlimited access to standard image features</li>
-                        <li>Text to Video: Generate up to 40 five-second videos</li>
-                        <li>Third-party models: Access partner generative AI models</li>
-                        <li>Translation: Translate up to 13 minutes of video and audio</li>
-                        <li>Sound effects: Generate up to 400 sound effects</li>
-                        <li>Adobe Photoshop on web and mobile (full access)</li>
-                    </ul>
-                </div>
-                <div slot="price">
-                    <p><span is="inline-price" data-template="optical">US$19.99/mo</span></p>
-                    <p>No annual commitment, billed monthly.</p>
-                </div>
-                <div slot="cta">
-                    <sp-button variant="accent" size="XL">Start 7-day free trial</sp-button>
-                </div>
-            </merch-card>
-        </div>
-
-        <div id="gradient" class="section-title">Gradient Border Variants</div>
-        <div class="grid-3-col">
-            <merch-card variant="full-pricing-express" name="gradient-purple" border-color="gradient-purple-blue" gradient-border="true">
-                <div slot="badge">Popular</div>
-                <h3 slot="heading-xs">Creative Cloud All Apps</h3>
-                <div slot="body-xs">
-                    Get 20+ creative apps including Photoshop, Illustrator, and Premiere Pro.
-                </div>
-                <div slot="description2">
-                    <ul>
-                        <li>20+ desktop and mobile apps</li>
-                        <li>100GB cloud storage</li>
-                        <li>Adobe Portfolio & Adobe Fonts</li>
-                        <li>Behance Pro</li>
-                    </ul>
-                </div>
-                <div slot="price">
-                    <p><span is="inline-price" data-template="optical">US$54.99/mo</span></p>
-                    <p>Annual plan, paid monthly.</p>
-                </div>
-                <div slot="cta">
-                    <sp-button variant="accent" size="XL">Buy now</sp-button>
-                </div>
-            </merch-card>
-
-            <merch-card variant="full-pricing-express" name="gradient-firefly" border-color="gradient-firefly-spectrum" gradient-border="true">
-                <div slot="badge">New</div>
-                <h3 slot="heading-xs">Firefly Enterprise</h3>
-                <div slot="body-xs">
-                    Enterprise-grade AI content generation with advanced controls.
-                </div>
-                <div slot="description2">
-                    <ul>
-                        <li>Unlimited generative credits</li>
-                        <li>Custom brand styles</li>
-                        <li>API access</li>
-                        <li>Enterprise security</li>
-                        <li>Dedicated support</li>
-                    </ul>
-                </div>
-                <div slot="price">
-                    <p><span is="inline-price" data-template="optical">Contact sales</span></p>
-                    <p>Custom pricing for teams.</p>
-                </div>
-                <div slot="cta">
-                    <sp-button variant="accent" size="XL">Contact sales</sp-button>
-                </div>
-            </merch-card>
-        </div>
-
-        <div id="responsive" class="section-title">Responsive Grid Layouts</div>
+                <p class="button-container">
+                    <a class="spectrum-Link spectrum-Link--primary button accent" href="https://adobe.com/" target="_self" aria-label="Compare all features - Free Plan" daa-ll="Compare all features-1--Free Plan" title="Compare all features">Compare all features</a>
+                </p>
+            </div>
+            <div slot="cta">
+                <a is="checkout-link" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="e9EajiuZmNzRIvTlMzxZGERifEq2bZAMngbsemf3CT4" data-analytics-id="free-trial" class="button con-button primary placeholder-resolved" daa-ll="free-trial-1--ccfm--card" href="https://commerce.adobe.com/store/email" aria-label="Get free plan" target="_self" title="Get free plan">
+                    <span style="pointer-events: none;">Get free plan</span>
+                </a>
+            </div>
+        </merch-card>
         
-        <div class="section-title" style="font-size: 18px;">1 Column (Mobile)</div>
-        <div class="grid-1-col">
-            <merch-card variant="full-pricing-express" name="mobile-1">
-                <h3 slot="heading-xs">Mobile Card 1</h3>
-                <div slot="body-xs">This card is displayed in a single column layout.</div>
-                <div slot="description2">
-                    <ul>
-                        <li>Hidden on mobile viewport</li>
-                        <li>Feature 2</li>
-                    </ul>
+        <merch-card consonant="" style="--consonant-merch-card-border-color: var(--spectrum-gray-300);" id="025dfceb-c035-45b7-8ea1-8feed25c8009" filters="all:2" types="" variant="full-pricing-express" data-analytics-id="ccfm">
+            <aem-fragment fragment="025dfceb-c035-45b7-8ea1-8feed25c8009"></aem-fragment>
+            <h3 slot="heading-xs">
+                <mas-mnemonic src="https://milo.adobe.com/drafts/axel/assets/frame.svg" size="xs"></mas-mnemonic> Premium Plan
+            </h3>
+            <div slot="price">
+                <p><span is="inline-price" data-template="price" data-wcs-osi="2yzU1dqwSmgxwAYD1qNk4vYjHn7aU4lnXlA7ttsE-cQ" class="placeholder-resolved">
+                    <span class="price">
+                        <span class="price-currency-symbol">US$</span>
+                        <span class="price-currency-space disabled"></span>
+                        <span class="price-integer">9</span>
+                        <span class="price-decimals-delimiter">.</span>
+                        <span class="price-decimals">99</span>
+                        <span class="price-recurrence">/mo</span>
+                        <span class="price-unit-type disabled"></span>
+                        <span class="price-tax-inclusivity disabled"></span>
+                    </span>
+                </span></p>
+                <p>No annual commitment, billed monthly.<sup>1</sup></p>
+            </div>
+            <div slot="body-s">
+                <p><strong>For individuals</strong> who want millions of premium templates and assets, more generative AI credits, and time saving features.<br></p>
+            </div>
+            <div slot="description2">
+                <p><strong>Top features:</strong></p>
+                <div class="divider-wrapper" contenteditable="false">
+                    <sp-divider size="s" role="separator" dir="ltr"></sp-divider>
                 </div>
-                <div slot="price">
-                    <p><span is="inline-price" data-template="optical">US$9.99/mo</span></p>
+                <p><strong>Includes all Premium plan features, and more</strong></p>
+                <p><strong>Generative AI:</strong> 250 generative credits per month per user to generate images, templates, and more. Our generative AI tools are designed to be commercially safe.</p>
+                <p><strong>Templates:</strong> Access to all premium static and video templates.</p>
+                <p><strong>Assets:</strong> 200M+ royalty-free photos, videos, music tracks, and design elements.<sup>2</sup></p>
+                <p><strong>Fonts:</strong> Access to 25,000+ custom fonts</p>
+                <p><strong>Editing tools:</strong> Standard photo, video, and document tools, plus premium editing tools like one-click Resize, Remove Image and Video Background, drag and drop video editing, and more.</p>
+                <p><strong>Content scheduling:</strong> Plan and schedule posts to 3 accounts per social network.</p>
+                <p><strong>Version history:</strong> 30 days</p>
+                <p><strong>Storage:</strong> 100GB</p>
+                <p><strong>Devices:</strong> Works on desktop browsers and mobile phones</p>
+                <p><strong>One-click Resize:</strong> Automatically resize assets for multiple channels</p>
+                <p><strong>Brand management:</strong> Brand kits to maintain consistency across your content</p>
+                <div class="divider-wrapper" contenteditable="false">
+                    <sp-divider size="s" role="separator" dir="ltr"></sp-divider>
                 </div>
-                <div slot="cta">
-                    <sp-button variant="accent" size="XL">Get started</sp-button>
+                <p class="button-container">
+                    <a class="spectrum-Link spectrum-Link--primary button accent" href="https://adobe.com/" target="_self" aria-label="Compare all features - Premium Plan" daa-ll="Compare all features-3--Premium Plan" title="Compare all features">Compare all features</a>
+                </p>
+            </div>
+            <div slot="cta">
+                <a is="checkout-link" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="e9EajiuZmNzRIvTlMzxZGERifEq2bZAMngbsemf3CT4" data-analytics-id="free-trial" class="button con-button blue placeholder-resolved" daa-ll="free-trial-1--ccfm--card" href="https://commerce.adobe.com/store/email" aria-label="Start 30-day free trial" target="_self" title="Start 30-day free trial">
+                    <span style="pointer-events: none;">Start 30-day free trial</span>
+                </a>
+            </div>
+        </merch-card>
+        
+        <merch-card consonant="" style="" id="9406f1ae-7bee-48c3-9892-49af6816033e" filters="all:3" types="" variant="full-pricing-express" gradient-border="true" border-color="gradient-firefly-spectrum" data-analytics-id="ccfm">
+            <aem-fragment fragment="9406f1ae-7bee-48c3-9892-49af6816033e"></aem-fragment>
+            <div slot="badge">
+                <merch-badge background-color="transparent" border-color="default" variant="full-pricing-express" style="--merch-badge-border: 1px solid var(--default); --merch-badge-background-color: var(--transparent); --merch-badge-padding: 2px 10px 3px 10px; --merch-badge-border-radius: 4px 0 0 4px; --merch-badge-font-size: var(--consonant-merch-card-body-xs-font-size);">Best Value</merch-badge>
+            </div>
+            <h3 slot="heading-xs">Pro Plan</h3>
+            <div slot="price">
+                <p><span is="inline-price" data-display-recurrence="false" data-template="price" data-wcs-osi="2yzU1dqwSmgxwAYD1qNk4vYjHn7aU4lnXlA7ttsE-cQ" class="placeholder-resolved">
+                    <span class="price">
+                        <span class="price-currency-symbol">US$</span>
+                        <span class="price-currency-space disabled"></span>
+                        <span class="price-integer">9</span>
+                        <span class="price-decimals-delimiter">.</span>
+                        <span class="price-decimals">99</span>
+                        <span class="price-recurrence disabled"></span>
+                        <span class="price-unit-type disabled"></span>
+                        <span class="price-tax-inclusivity disabled"></span>
+                    </span>
+                </span></p>
+                <p>No annual commitment, billed monthly.<sup>1</sup></p>
+            </div>
+            <div slot="body-s">
+                <p><strong>For individuals</strong> who want Premium plus 4,000 credits for creative AI and advanced image editing.</p>
+            </div>
+            <div slot="description2">
+                <p><strong>Top features:</strong></p>
+                <div class="divider-wrapper" contenteditable="false">
+                    <sp-divider size="s" role="separator" dir="ltr"></sp-divider>
                 </div>
-            </merch-card>
-        </div>
-
-        <div class="section-title" style="font-size: 18px;">2 Columns (Tablet)</div>
-        <div class="grid-2-col">
-            <merch-card variant="full-pricing-express" name="tablet-1">
-                <h3 slot="heading-xs">Tablet Card 1</h3>
-                <div slot="body-xs">Two column layout for tablet viewports.</div>
-                <div slot="description2">
-                    <ul>
-                        <li>Visible on tablet</li>
-                        <li>Feature list shown</li>
-                    </ul>
+                <p><strong>Includes all Premium plan features, and more (except the 250 credits)</strong></p>
+                <p><strong>Generative AI for video and audio:</strong> 4,000 monthly <a class="spectrum-Link spectrum-Link--primary" href="https://helpx.adobe.com/creative-cloud/apps/generative-ai/generative-credits-faq.html" target="_self" aria-label="generative credits - Pro Plan" daa-ll="generative credits-5--Pro Plan" title="generative credits">generative credits</a> or premium AI video and audio features like Text to Video.</p>
+                <p><strong>Generative AI for images:</strong> Unlimited access to standard image features like Generative Fill</p>
+                <p><strong>Text to Video:</strong> Generate up to 40 five-second videos with creative AI</p>
+                <p><strong>Third-party models:</strong> Access partner generative AI models such as Google, OpenAI, Flux, and more</p>
+                <p><strong>Translation:</strong> Translate up to 13 minutes of video and audio</p>
+                <p><strong>Sound effects:</strong> Generate up to 400 sound effects</p>
+                <p><strong>Boards:</strong> Explore ideas and create mood boards with unlimited access</p>
+                <p><strong>Advanced editing on web and mobile (full access):</strong> Powerful image editing</p>
+                <div class="divider-wrapper" contenteditable="false">
+                    <sp-divider size="s" role="separator" dir="ltr"></sp-divider>
                 </div>
-                <div slot="price">
-                    <p><span is="inline-price" data-template="optical">US$14.99/mo</span></p>
-                </div>
-                <div slot="cta">
-                    <sp-button variant="accent" size="XL">Get started</sp-button>
-                </div>
-            </merch-card>
-            
-            <merch-card variant="full-pricing-express" name="tablet-2">
-                <h3 slot="heading-xs">Tablet Card 2</h3>
-                <div slot="body-xs">Second card in tablet layout.</div>
-                <div slot="description2">
-                    <ul>
-                        <li>Another feature</li>
-                        <li>More details</li>
-                    </ul>
-                </div>
-                <div slot="price">
-                    <p><span is="inline-price" data-template="optical">US$19.99/mo</span></p>
-                </div>
-                <div slot="cta">
-                    <sp-button variant="accent" size="XL">Buy now</sp-button>
-                </div>
-            </merch-card>
-        </div>
-    </main>
-
-    <script>
-        function scrollToSection(sectionId) {
-            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
-        }
-    </script>
+                <p class="button-container">
+                    <a class="spectrum-Link spectrum-Link--primary button accent" href="https://adobe.com/" target="_self" aria-label="Compare all features - Pro Plan" daa-ll="Compare all features-6--Pro Plan" title="Compare all features">Compare all features</a>
+                </p>
+            </div>
+            <div slot="cta">
+                <a is="checkout-link" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="e9EajiuZmNzRIvTlMzxZGERifEq2bZAMngbsemf3CT4" data-analytics-id="free-trial" class="button con-button blue placeholder-resolved" daa-ll="free-trial-1--ccfm--card" href="https://commerce.adobe.com/store/email" aria-label="Start 7-day free trial" target="_self" title="Start 7-day free trial">
+                    <span style="pointer-events: none;">Start 7-day free trial</span>
+                </a>
+            </div>
+        </merch-card>
+    </merch-card-collection>
     
-    <script type="module">
-        import { init } from '../src/merch-card.js';
-        import '../src/merch-badge.js';
-        import { mockFetch } from './mocks/fetch.js';
-        import { withWcs } from './mocks/wcs.js';
-        import './spectrum.js';
-        import { withLiterals } from './mocks/literals.js';
-
-        withWcs();
-        withLiterals();
-        mockFetch();
-        
-        setTimeout(() => {
-            document.querySelectorAll('merch-card').forEach(init);
-        }, 100);
-    </script>
+    <script type="module" src="./merch-card.full-pricing-express.test.html.js"></script>
 </body>
-
 </html>
