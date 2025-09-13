@@ -504,7 +504,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 
   .hero-marquee .foreground-media {
     position: absolute;
-    width: 55vw; /* FrameIO update from 50vw */
+    width: initial; /* FrameIO update from 50vw */
     /* height: 100%; */ /* FrameIO comment out */
     right: 0;
     top: 50%; /* FrameIO update from 0 */
@@ -576,4 +576,54 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 /* FrameIO overrides */
 .hero-marquee .foreground-media picture img, .hero-marquee .foreground-media video {
   object-position: left top;
+}
+
+
+/* below are all FrameIO overrides */
+.canvas-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+canvas.silky-background {
+  min-width: 100%;
+  height: 100%;
+  aspect-ratio: 5 / 4;
+}
+
+.hero-marquee .foreground {
+  padding-top: 250px;
+  will-change: opacity;
+  opacity: calc(1 - (clamp(30, var(--progress), 70) - 30) / 40);
+  transform: translateY(calc(20vh * (clamp(10, var(--progress), 70) - 10) / 60));
+}
+
+.hero-marquee .foreground-media {
+  top: initial;
+  right: initial;
+  transform: initial;
+  position: relative;
+  padding-top: 100px;
+}
+
+.hero-marquee .video-container {
+  background-color: rgba(157,157,255,0.10);
+  padding: 0.5rem;
+  border: 1px solid rgba(157,157,255,0.10);
+  border-radius: 1rem;
+  backdrop-filter: blur(16px);
+
+  min-width: var(--grid-container-width);
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.hero-marquee.frameio {
+  display: block;
+  padding-top: 0;
+  /* padding-bottom: 800px; */
+  min-height: 2200px !important;
 }
