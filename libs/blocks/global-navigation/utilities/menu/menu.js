@@ -200,9 +200,9 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
 
   // Otherwise, this might be a collection of elements;
   // decorate all links in the collection and return it
-  elem.querySelectorAll(linkSelector).forEach(async (link) => {
+  for (const link of elem.querySelectorAll(linkSelector)) {
     link.replaceWith(await decorateLink(link));
-  });
+  }
 
   return elem;
 };
