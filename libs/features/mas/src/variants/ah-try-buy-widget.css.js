@@ -54,7 +54,6 @@ export const CSS = `
     }
 
     merch-card[variant="ah-try-buy-widget"] [slot="price"] .price:not(.price-strikethrough) .price-recurrence {
-        display: inline-block;
         width: 21px;
         text-align: end;
         font-size: var(--consonant-merch-card-body-xxs-font-size);
