@@ -5,6 +5,8 @@ import { CSS } from './ah-try-buy-widget.css.js';
 export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 's' },
     title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40, withSuffix: true },
+    badge: { tag: 'div', slot: 'badge', default: 'fuchsia' },
+    allowedBadgeColors: ['fuchsia'],
     description: {
         tag: 'div',
         slot: 'body-xxs',

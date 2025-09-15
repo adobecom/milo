@@ -2813,7 +2813,8 @@ merch-card[variant="mini"] span.renewal-text {
 
     /* ah colors */
     --ah-gray-500: #717171;
-    
+    --fuchsia: #FDE9FF;
+
     /* plans colors */
     --spectrum-yellow-300-plans: #F5C700;
     --spectrum-green-900-plans: #05834E;
@@ -4220,6 +4221,20 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         word-break: break-word;
     }
 
+    merch-card[variant="ah-try-buy-widget"] [slot="badge"] {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+    }
+
+    merch-card[variant="ah-try-buy-widget"] [slot="badge"] merch-badge {
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: normal;
+        padding: 4px 9px 5px 9px;
+    }
+
     merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] a {
         color: var(--consonant-merch-card-body-xxs-color);
     }
@@ -4333,7 +4348,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     .spectrum--darkest merch-card[variant="ah-try-buy-widget"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
-`;var sa={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{}},allowedColors:{gray:"--spectrum-gray-100"},size:["single","double","triple"]},cr=class extends L{getGlobalCSS(){return Nl}get aemFragmentMapping(){return sa}renderLayout(){return g`
+`;var sa={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},badge:{tag:"div",slot:"badge",default:"fuchsia"},allowedBadgeColors:["fuchsia"],description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{}},allowedColors:{gray:"--spectrum-gray-100"},size:["single","double","triple"]},cr=class extends L{getGlobalCSS(){return Nl}get aemFragmentMapping(){return sa}renderLayout(){return g`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
