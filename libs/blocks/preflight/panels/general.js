@@ -94,9 +94,6 @@ export function runGeneralChecks() {
     nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
 
-  if (!window.contentInsights) window.contentInsights = {};
-  window.contentInsights.general = contentValue;
-
   return contentValue;
 }
 
