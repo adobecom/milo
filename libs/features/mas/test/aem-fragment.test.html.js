@@ -102,6 +102,25 @@ runTests(async () => {
                 cache.clear();
                 expect(cache.has('id123en_US')).to.false;
             });
+
+            it('ignores references if not an object', async () => {
+              cache.clear();
+              expect(cache).to.exist;
+              cache.add({ id: 'id123', test: 1, references: [{type: 'content-fragment', value: {id: 'ref123'}}] });
+              expect(cache.has('id123')).to.true;
+              expect(cache.has('ref123')).to.false;
+              cache.clear();
+            });
+
+            it('ignores references if asked explicitly', async () => {
+              cache.clear();
+              expect(cache).to.exist;
+              cache.add({ id: 'id123', test: 1, references: { 'ref123': {type: 'content-fragment', value: {id: 'ref123'}} } });
+              expect(cache.has('ref123')).to.true;
+              cache.add({ id: 'id456', test: 1, references: { 'ref456': {type: 'content-fragment', value: {id: 'ref456'}} } }, false);
+              expect(cache.has('ref456')).to.false;
+              cache.clear();
+            });
         });
 
         describe('aem-fragment with merch-card', () => {
@@ -406,6 +425,20 @@ runTests(async () => {
                 await aemFragment.updateComplete;
                 expect(fetch.lastCall.firstArg).to.equal(
                     'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
+                );
+            });
+            it('fetches fragment from freyja on publish with overriden country', async () => {
+                cache.clear();
+                const masCommerceService = document.querySelector(
+                    'mas-commerce-service',
+                );
+                masCommerceService.setAttribute('country', 'CA');
+                masCommerceService.setAttribute('locale', 'en_US');
+                masCommerceService.activate();
+                const aemFragment = addFragment('fragment-cc-all-apps');
+                await aemFragment.updateComplete;
+                expect(fetch.lastCall.firstArg).to.equal(
+                    'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US&country=CA',
                 );
             });
         });

@@ -51,39 +51,48 @@ function getPlatforms(el) {
   return platforms;
 }
 
+function getPrevHeadingLevel(block) {
+  const prevHeading = [...document.querySelectorAll('h2, h3, h4, h5, h6')]
+    .reverse()
+    /* eslint-disable-next-line no-bitwise */
+    .find((heading) => heading.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING);
+  const prevHeadingTag = prevHeading?.tagName.toLowerCase() ?? 'h2';
+  return prevHeadingTag.replace('h', '');
+}
+
+function toSentenceCase(str) {
+  if (!str || typeof str !== 'string') return '';
+  /* eslint-disable-next-line no-useless-escape */
+  return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
+}
+
+function showCopyTooltip({ copyButton, show = true, copied = false }) {
+  copyButton.classList.toggle('hide-copy-tooltip', !show);
+  copyButton.classList.toggle('copy-to-clipboard-copied', copied);
+}
+
 export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(block);
-  const rows = block.querySelectorAll(':scope > div');
-  const childDiv = rows[0]?.querySelector(':scope > div');
-  const emptyRow = rows.length && childDiv?.innerText.trim() === '';
-  const toSentenceCase = (str) => {
-    if (!str || typeof str !== 'string') return '';
-    /* eslint-disable-next-line no-useless-escape */
-    return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
-  };
+  let firstRow = block.querySelector(':scope > div');
+  let headingElem;
 
-  if (block.classList.contains('inline')) {
-    rows[0].innerHTML = '';
+  if (block.matches('.inline')) firstRow?.remove();
+  else if (firstRow?.textContent.trim().length) {
+    headingElem = firstRow.querySelector('p, div:not(:has(p, h1, h2, h3, h4, h5, h6))');
   } else {
-    rows[0]?.classList.add('tracking-header');
-    // add share placeholder if empty row
-    if (!rows.length || emptyRow) {
-      const heading = toSentenceCase(await replaceKey('share-this-page', config));
-      block.append(createTag('p', null, heading));
+    headingElem = createTag('p', null, toSentenceCase(await replaceKey('share-this-page', config)));
+    if (firstRow) firstRow.replaceChildren(headingElem);
+    else {
+      firstRow = createTag('div', null, headingElem);
+      block.append(firstRow);
     }
   }
 
-  // wrap innerHTML in <p> tag if none are present
-  if (childDiv && !emptyRow) {
-    const innerPs = childDiv.querySelectorAll(':scope > p');
-    if (innerPs.length === 0) {
-      const text = childDiv.innerText;
-      childDiv.innerText = '';
-      childDiv.append(createTag('p', null, text));
-    }
-  }
+  firstRow?.classList.add('tracking-header');
+  headingElem?.setAttribute('role', 'heading');
+  headingElem?.setAttribute('aria-level', getPrevHeadingLevel(block));
 
   const clipboardSupport = !!navigator.clipboard;
   if (clipboardSupport) platforms.push('clipboard');
@@ -155,6 +164,7 @@ export default async function decorate(block) {
       window.open(shareLink.href, 'newwindow', 'width=600, height=400');
     });
   });
+
   const clipboardSvg = svgs.find((svg) => svg.name === 'clipboard');
   if (clipboardSvg && clipboardSupport) {
     const clipboardToolTip = toSentenceCase(
@@ -165,14 +175,25 @@ export default async function decorate(block) {
       'button',
       {
         type: 'button',
-        class: 'copy-to-clipboard',
+        class: 'copy-to-clipboard hide-copy-tooltip',
         'aria-label': clipboardToolTip,
-        'data-copy-to-clipboard': clipboardToolTip,
         'data-copied': `${copiedTooltip}!`,
       },
       clipboardSvg.svg,
     );
+
+    let clipboardTimeout;
     const li = createTag('li');
+    ['keydown', 'focus', 'blur', 'mouseenter', 'mouseleave'].forEach((eventType) => {
+      const target = eventType.startsWith('mouse') ? li : copyButton;
+      target.addEventListener(eventType, (event) => {
+        const { type, key } = event;
+        if (type === 'keydown' && key !== 'Escape') return;
+        showCopyTooltip({ copyButton, show: !['mouseleave', 'blur', 'keydown'].includes(type) });
+        clearTimeout(clipboardTimeout);
+      });
+    });
+
     const copyAriaLive = createTag(
       'div',
       {
@@ -189,14 +210,12 @@ export default async function decorate(block) {
       e.preventDefault();
       copyAriaLive.textContent = '';
       navigator.clipboard.writeText(window.location.href).then(() => {
-        copyButton.classList.add('copy-to-clipboard-copied');
+        showCopyTooltip({ copyButton, copied: true });
         copyAriaLive.textContent = copiedTooltip + (changeText ? '\u200b' : '');
         changeText = !changeText;
-        setTimeout(() => document.activeElement.blur(), 500);
-        setTimeout(
-          () => copyButton.classList.remove('copy-to-clipboard-copied'),
-          2000,
-        );
+        clipboardTimeout = setTimeout(() => {
+          showCopyTooltip({ copyButton, show: false });
+        }, 2000);
       });
     });
   }
