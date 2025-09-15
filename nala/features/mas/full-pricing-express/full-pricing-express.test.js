@@ -222,7 +222,7 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
     });
   });
 
-  test('Collection alignment test', async ({ page, baseURL }) => {
+  test('3: @MAS-Full-Pricing-Express-Collection alignment test, @full-pricing-express @collection @smoke @regression @milo', async ({ page, baseURL }) => {
     const testPath = '/libs/features/mas/docs/full-pricing-express.html';
     console.info(`[Test Page]: ${baseURL}${testPath}${miloLibs}`);
 
