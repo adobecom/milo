@@ -5,6 +5,10 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
   border-radius: 50%;
 }
 
+merch-card[variant="ccd-slice"] [slot='body-s'] {
+  display: inherit;
+}
+  
 merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   font-size: var(--consonant-merch-card-body-xxs-font-size);
   font-style: normal;
