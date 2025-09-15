@@ -582,26 +582,41 @@ function loadImageIntoSkeleton(
 
         assetContainer.appendChild(video);
 
+        const playVideo = () => {
+          video.style.opacity = '1';
+          video.muted = true;
+          video.play().catch((err) => {
+            logError('Video play failed:', err);
+          });
+        };
+
+        const pauseVideo = () => {
+          video.pause();
+          video.style.opacity = '0';
+        };
+
         // Add hover event listeners for video playback
         let hoverTimeout;
         skeletonItem.addEventListener('mouseenter', () => {
           // Clear any existing timeout
           clearTimeout(hoverTimeout);
           // Start video after a short delay (prevents flickering on quick mouse movements)
-          hoverTimeout = setTimeout(() => {
-            video.style.opacity = '1';
-            video.muted = true;
-            video.play().catch((err) => {
-              logError('Video play failed:', err);
-            });
-          }, 150);
+          hoverTimeout = setTimeout(playVideo, 150);
         });
 
         skeletonItem.addEventListener('mouseleave', () => {
           // Stop video when hover ends
           clearTimeout(hoverTimeout);
-          video.pause();
-          video.style.opacity = '0';
+          pauseVideo();
+        });
+
+        // Handle keyboard focus for video playback
+        overlay.addEventListener('focus', () => {
+          playVideo();
+        });
+
+        overlay.addEventListener('blur', () => {
+          pauseVideo();
         });
       }
 

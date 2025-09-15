@@ -458,6 +458,16 @@
   );
 }
 
+.firefly-gallery-video-overlay:focus {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 70%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
 .firefly-gallery-item.video-item:hover .firefly-gallery-video {
   opacity: 1;
 }
