@@ -2072,7 +2072,6 @@ merch-card-collection.simplified-pricing-express {
     justify-items: center;
     align-items: stretch;
     gap: 16px;
-    padding: var(--spacing-m);
     /* Default to 1 column on mobile */
     grid-template-columns: 1fr;
 }
