@@ -29,6 +29,7 @@
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
   --m-rounded-corners-tabs: 8px;
+  --spectrum-gray-100: #F8F8F8
 }
 
 :root .dark {
@@ -499,21 +500,22 @@
 }
 
 /* Segmented Control Variant */
+.tabs.segmented-control {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
 .tabs.segmented-control .tabList {
   background: none;
   box-shadow: none;
-  display: flex;
-  align-items: center;
-  position: relative;
+  padding: 1px;
+  background: var(--spectrum-gray-100);
   border-radius: var(--m-rounded-corners-tabs);
-  overflow: hidden;
+  border: 1px solid var(--spectrum-gray-100);
 }
 
 .tabs.segmented-control .tabList .tab-list-container {
-  background: var(--color-gray-100);
-  overflow: hidden;
-  border-radius: var(--m-rounded-corners-tabs);
-  padding: 1px;
   min-width: 300px;
 }
 
@@ -523,7 +525,7 @@
   border: none;
   font-weight: 700;
   color: var(--tabs-pill-bg-color);
-  font-size: 14px;
+  font-size: var(--type-body-xs-size);
   flex: 1 0 auto;
 }
 
@@ -531,38 +533,6 @@
 .tabs.segmented-control .tabList button[aria-checked="true"] {
   background: var(--tabs-pill-bg-color);
   color: var(--color-white);
-}
-
-.tabs.segmented-control .tabList button.paddle {
-  position: absolute;
-  border-bottom: none;
-  width: 54px;
-  height: 40px;
-  box-shadow: none;
-  flex-shrink: 0;
-  justify-content: end;
-  padding: 0;
-  z-index: 4;
-}
-
-.tabs.segmented-control .tabList button.paddle-left { 
-  background: linear-gradient(270deg, rgba(255, 255, 255, 0.00) 28.48%, #FFF 50.3%);
-}
-
-.tabs.segmented-control .tabList button.paddle-right { 
-  background: linear-gradient(270deg, #FFF 49.7%, rgba(255, 255, 255, 0.00) 71.52%);
-}
-
-.tabs.segmented-control .paddle svg {
-  margin: unset;
-  width: 24px;
-  height: 24px;
-  color: #505050;
-}
-
-.tabs.segmented-control .tabList button.paddle:disabled {
-  background: none;
-  display: none;
 }
 
 /* Section Metadata */
