@@ -513,6 +513,7 @@
   background: var(--spectrum-gray-100);
   border-radius: var(--m-rounded-corners-tabs);
   border: 1px solid var(--spectrum-gray-100);
+  min-height: 40px;
 }
 
 .tabs.segmented-control .tabList .tab-list-container {
