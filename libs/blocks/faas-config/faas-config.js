@@ -245,7 +245,7 @@ const MultiSelectCheckbox = ({ label, options, prop, onChange, sort }) => {
     return context.state[prop]?.includes(ele) ? 'selected' : '';
   }
   const onChecked = (e) => {
-    const selectedOptions = context.state[prop];
+    const selectedOptions = context.state[prop] || [];
     if (e.target.checked) {
       selectedOptions.push(e.target.value);
     } else {
