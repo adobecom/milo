@@ -641,7 +641,7 @@ const makeHeadingLinkUnique = (merchCard) => {
   const headingLink = merchCard.querySelector('.card-heading a');
   const headingHref = headingLink?.getAttribute('href');
   const headingEl = merchCard.querySelector('.card-heading');
-  headingEl.innerHTML = headingLink.textContent;
+  headingEl.textContent = headingLink.textContent;
   headingEl.removeAttribute('slot');
   const newLink = createTag('a', { href: headingHref, class: 'unique-link' });
   newLink.setAttribute('slot', 'icons');
