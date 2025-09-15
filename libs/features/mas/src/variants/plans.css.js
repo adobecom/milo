@@ -36,10 +36,20 @@ merch-card[variant="plans"] [slot="subtitle"] {
     line-height: 18px;
 }
 
-merch-card[variant^="plans"] span.price-unit-type:not([slot="callout-content"] *):not([slot="addon"] *) {
+merch-card[variant^="plans"] span.price-unit-type {
     display: block;
 }
 
+merch-card[variant^="plans"] .price-unit-type:not(.disabled)::before {
+    content: "";
+}
+merch-card[variant^="plans"] [slot="callout-content"] span.price-unit-type,
+merch-card[variant^="plans"] [slot="addon"] span.price-unit-type,
+merch-card[variant^="plans"] .price.price-strikethrough span.price-unit-type,
+merch-card[variant^="plans"] span.price-unit-type.disabled {
+  display: inline; 
+}
+  
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
@@ -187,7 +197,6 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
     merch-whats-included [slot="heading"] {
         width: 100%;
     }
-
     merch-card[variant="plans-students"] {
         min-width: var(--consonant-merch-card-plans-width);
         max-width: var(--consonant-merch-card-plans-students-width);
@@ -246,15 +255,28 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     padding-left: 8px;
 }
 
+/* Tabs containers */
+#tabs-plan {
+    --tabs-active-text-color: #131313;
+    --tabs-border-color: #444444;
+}
+#tabs-plan .tab-list-container button[role="tab"][aria-selected="false"] {
+    border-top-color: #EAEAEA;
+    border-right-color: #EAEAEA;
+}
+#tabs-plan .tab-list-container button[role="tab"][aria-selected="false"]:first-of-type {
+    border-left-color: #EAEAEA;
+}
+
 /* Tablet */
 @media screen and ${TABLET_UP} {
-  .four-merch-cards.plans .foreground {
-      max-width: unset;
-  }
+    .four-merch-cards.plans .foreground {
+        max-width: unset;
+    }
   
-  .columns.merch-card > .row {
-      grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width) * 2 + var(--consonant-merch-spacing-m)));
-  }
+    .columns.merch-card > .row {
+        grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width) * 2 + var(--consonant-merch-spacing-m)));
+    }
 }
 
 /* desktop */
@@ -281,7 +303,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     }
 
     .collection-container.plans:has(merch-sidenav) {
-        width: 100vw;
+        width: fit-content;
         position: relative;
         left: 50%;
         transform: translateX(-50vw);
