@@ -22,14 +22,15 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
 });
 
 // Test 1: the mep parameter enables the mep button
-test(`${features[1].name},${features[1].tags}`, async ({ page, browserName }) => {
-  test.skip(browserName === 'webkit', 'Skipping float-button test on WebKit');
+test(`${features[1].name},${features[1].tags}`, async ({ page }) => {
   const URL = features[1].path;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
   await expect(mepButtonLoc.mepButton).toHaveCount(0);
 
   await page.goto(`${URL}?mep`); // with mep parameter
+  await page.waitForLoadState('domcontentloaded');
+  await expect(mepButtonLoc.mepButton).toBeVisible();
   await expect(mepButtonLoc.mepButton).toHaveCount(1);
 });
 
