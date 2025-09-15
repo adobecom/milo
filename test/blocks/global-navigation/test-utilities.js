@@ -79,7 +79,7 @@ export const analyticsTestData = {
   'unc|click|markUnread': 'Mark Notification as unread',
 };
 
-export const unavVersion = '1.4';
+export const unavVersion = '1.5';
 
 export const addMetaDataV2 = (value) => {
   const metaTag = document.createElement('meta');
@@ -180,6 +180,15 @@ export const createFullGlobalNavigation = async ({
   setConfig({ ...config, ...customConfig });
   await setViewport(viewports[viewport]);
   window.lana = { log: stub() };
+
+  // Mock URLSearchParams to return the correct unavVersion
+  const originalURLSearchParams = window.URLSearchParams;
+  window.URLSearchParams = class extends originalURLSearchParams {
+    get(key) {
+      if (key === 'unavVersion') return unavVersion;
+      return super.get(key);
+    }
+  };
   window.fetch = stub().callsFake((url) => {
     if (url.includes('profile')) { return mockRes({ payload: defaultProfile }); }
     if (url.includes('placeholders')) { return mockRes({ payload: placeholders || defaultPlaceholders }); }
@@ -265,6 +274,9 @@ export const createFullGlobalNavigation = async ({
   }
   await Promise.all(waitForElements);
   await imsPromise;
+
+  // Restore original URLSearchParams
+  window.URLSearchParams = originalURLSearchParams;
 
   window.fetch = ogFetch;
   window.adobeIMS = undefined;
