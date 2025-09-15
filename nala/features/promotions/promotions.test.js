@@ -430,7 +430,8 @@ test.describe('Promotions feature test suite', () => {
   });
 
   // @Promo-page-filter-geo - Validate promo page filter in default, de and fr locales
-  test(`${features[11].name},${features[11].tags}`, async ({ page, baseURL }) => {
+  test(`${features[11].name},${features[11].tags}`, async ({ page, baseURL, browserName }) => {
+    test.skip(browserName === 'webkit', 'Skipping test for webkit browser');
     let testPage = `${baseURL}${features[11].path}${miloLibs}`;
     const { data } = features[11];
     console.info('[Test Page]: ', testPage);

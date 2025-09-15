@@ -17,7 +17,7 @@ module.exports = {
         cta: 'Get Adobe Express Free',
         variant: 'simplified-pricing-express',
       },
-      tags: '@express @express-card @free @smoke @regression',
+      tags: '@express @express-card @free @commerce @smoke @regression @milo',
     },
     {
       tcid: '1',
@@ -34,7 +34,7 @@ module.exports = {
         variant: 'simplified-pricing-express',
         gradientBorder: false,
       },
-      tags: '@express @express-card @premium @smoke @regression',
+      tags: '@express @express-card @premium @commerce @smoke @regression @milo',
     },
     {
       tcid: '2',
@@ -52,7 +52,7 @@ module.exports = {
         variant: 'simplified-pricing-express',
         gradientBorder: true,
       },
-      tags: '@express @express-card @firefly-pro @regression',
+      tags: '@express @express-card @firefly-pro @commerce @smoke @regression @milo',
     },
   ],
 };
