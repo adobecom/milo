@@ -409,17 +409,28 @@ function convertMpcMp4(slides) {
   });
 }
 
-function readySlides(slides, slideContainer) {
+function readySlides(slides, slideContainer, isUpsDesktop) {
   slideContainer.classList.add('is-ready');
-  slides.forEach((slide, idx) => {
-    // Set last slide to be first in order and make reference.
-    if (slides.length - 1 === idx) {
-      slide.style.order = 1;
-      slide.classList.add('reference-slide');
-    } else {
-      slide.style.order = idx + 2;
-    }
-  });
+
+  const setOrder = () => {
+    slides.forEach((slide, idx) => {
+      const isLastSlide = slides.length - 1 === idx;
+      slide.style.order = isLastSlide ? 1 : idx + 2;
+      slide.classList.toggle('reference-slide', isLastSlide);
+    });
+  };
+
+  const isDesktop = window.matchMedia('(min-width: 900px)');
+  const setUpsOrder = () => {
+    if (!isDesktop.matches) setOrder();
+    else slides.forEach((slide) => { slide.style.order = ''; });
+  };
+
+  if (!isUpsDesktop) setOrder();
+  else {
+    setUpsOrder();
+    isDesktop.addEventListener('change', setUpsOrder);
+  }
 }
 
 export default function init(el) {
@@ -480,7 +491,8 @@ export default function init(el) {
    * before moveSlides is called for centering to work.
   */
   if (el.classList.contains('hinting-center-mobile')) {
-    readySlides(slides, slideContainer);
+    const isUpsDesktop = el.classList.contains('ups-desktop');
+    readySlides(slides, slideContainer, isUpsDesktop);
   }
 
   el.textContent = '';
