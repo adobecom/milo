@@ -9,7 +9,6 @@ import init, {
   handleOfferSearch,
 } from '../../../libs/blocks/commerce/commerce.js';
 
-import { setConfig } from '../../../libs/utils/utils.js';
 import { mockFetch, unmockFetch } from '../merch/mocks/fetch.js';
 
 document.head.appendChild(document.createElement('mas-commerce-service'));
@@ -36,7 +35,6 @@ describe('Merch Block', () => {
 
   before(async () => {
     await mockFetch();
-    setConfig({ codeRoot: '/libs' });
   });
 
   describe('filterOfferDetails', () => {

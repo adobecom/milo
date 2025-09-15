@@ -18,9 +18,9 @@ import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg, 
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
-const variants = ['split', 'inline', 'notification', 'container-mobile'];
+const variants = ['split', 'inline', 'notification'];
 const sizes = ['extra-small', 'small', 'medium', 'large'];
-const [split, inline, notification, containerMobile] = variants;
+const [split, inline, notification] = variants;
 const [xsmall, small, medium, large] = sizes;
 const blockConfig = {
   [split]: ['xl', 's', 'm'],
@@ -31,7 +31,6 @@ const blockConfig = {
     [medium]: ['s', 's'],
     [large]: ['l', 'm'],
   },
-  [containerMobile]: ['xl', 'l', 'l'],
 };
 const FORMAT_REGEX = /^format:/i;
 const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">

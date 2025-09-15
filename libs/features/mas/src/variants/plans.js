@@ -82,16 +82,13 @@ export class Plans extends VariantLayout {
         const shadowRoot = this.card.shadowRoot;
         const footer = shadowRoot.querySelector('footer');
         const size = this.card.getAttribute('size');
-        if (!size)
-            return;
-
         const slotInFooter = shadowRoot.querySelector(
             `footer slot[name="${name}"]`,
         );
         const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
         const body = shadowRoot.querySelector('.body');
 
-        if (!size.includes('wide')) {
+        if (!size || !size.includes('wide')) {
             footer?.classList.remove('wide-footer');
             if (slotInFooter) slotInFooter.remove();
         }
@@ -275,15 +272,13 @@ export class Plans extends VariantLayout {
                 <slot name="addon"></slot>
                 <slot name="badge"></slot>
             </div>
-            ${this.secureLabelFooter}
-            <slot></slot>`;
-            
+            ${this.secureLabelFooter}`;
     }
 
     static variantStyle = css`
         :host([variant^='plans']) {
             min-height: 273px;
-            border: 1px solid var(--consonant-merch-card-border-color, #dadada);
+            border: 1px solid var(--merch-card-custom-border-color, #dadada);
             --merch-card-plans-min-width: 244px;
             --merch-card-plans-padding: 15px;
             --merch-card-plans-subtitle-display: contents;

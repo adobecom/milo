@@ -29,10 +29,8 @@ test.describe('Milo HowTo block test suite', () => {
       await expect(howTo.howTo).toBeVisible();
       await expect(await howTo.list).toHaveCount(4);
 
-      expect(await webUtil.verifyCSS(howTo.howTo, howTo.cssProperties['.how-to'])).toBeTruthy();
       expect(await webUtil.verifyCSS(howTo.foreground, howTo.cssProperties['.how-to .foreground'])).toBeTruthy();
-      expect(await webUtil.verifyCSS(howTo.heading, howTo.cssProperties['how-to-heading'])).toBeTruthy();
-      expect(await webUtil.verifyCSS(howTo.headingL, howTo.cssProperties['heading-l'])).toBeTruthy();
+      expect(await webUtil.verifyCSS(howTo.heading, howTo.cssProperties['body-m'])).toBeTruthy();
       expect(await webUtil.verifyCSS(howTo.image, howTo.cssProperties['how-to-media'])).toBeTruthy();
     });
 
@@ -56,9 +54,7 @@ test.describe('Milo HowTo block test suite', () => {
       await expect(howTo.howToLarge).toBeVisible();
       await expect(await howTo.list).toHaveCount(4);
 
-      expect(await webUtil.verifyCSS(howTo.howToLarge, howTo.cssProperties['.how-to'])).toBeTruthy();
-      expect(await webUtil.verifyCSS(howTo.heading, howTo.cssProperties['how-to-heading'])).toBeTruthy();
-      expect(await webUtil.verifyCSS(howTo.headingL, howTo.cssProperties['heading-l'])).toBeTruthy();
+      expect(await webUtil.verifyCSS(howTo.heading, howTo.cssProperties['body-m'])).toBeTruthy();
       expect(await webUtil.verifyCSS(howTo.howToLarge, howTo.cssProperties['how-to-large-image'])).toBeTruthy();
       // eslint-disable-next-line max-len
       expect(await webUtil.verifyAttributes(await howTo.largeImage, howTo.attProperties['how-to-large-image'])).toBeTruthy();
@@ -83,9 +79,7 @@ test.describe('Milo HowTo block test suite', () => {
       await expect(howTo.howToSeo).toBeVisible();
       await expect(await howTo.list).toHaveCount(4);
 
-      expect(await webUtil.verifyCSS(howTo.howToSeo, howTo.cssProperties['.how-to'])).toBeTruthy();
-      expect(await webUtil.verifyCSS(howTo.heading, howTo.cssProperties['how-to-heading'])).toBeTruthy();
-      expect(await webUtil.verifyCSS(howTo.headingL, howTo.cssProperties['heading-l'])).toBeTruthy();
+      expect(await webUtil.verifyCSS(howTo.heading, howTo.cssProperties['body-m'])).toBeTruthy();
       expect(await webUtil.verifyCSS(howTo.howToSeo, howTo.cssProperties['how-to-seo'])).toBeTruthy();
     });
 

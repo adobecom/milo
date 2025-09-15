@@ -35,7 +35,7 @@ class FragmentCache {
      * Add fragment to cache
      * @param {Object} fragment fragment object.
      */
-    add(fragment, references = true) {
+    add(fragment) {
         if (this.has(fragment.id)) return;
         if (this.has(fragment.fields?.originalId)) return;
 
@@ -52,7 +52,7 @@ class FragmentCache {
             resolve();
         }
 
-        if (!references || typeof fragment.references !== 'object' || Array.isArray(fragment.references)) return;
+        if (!fragment.references) return;
 
         for (const key in fragment.references) {
             const { type, value } = fragment.references[key];
@@ -347,11 +347,8 @@ export class AemFragment extends HTMLElement {
             this.#rawData = fragment;
             return true;
         }
-        const { masIOUrl, wcsApiKey, country, locale } = this.#service.settings;
-        let endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
-        if (country && !locale.endsWith(`_${country}`)) {
-            endpoint += `&country=${country}`;
-        }
+        const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
+        const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
 
         fragment = await this.#getFragmentById(endpoint);
         fragment.fields.originalId ??= this.#fragmentId;

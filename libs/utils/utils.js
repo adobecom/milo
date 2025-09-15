@@ -202,13 +202,11 @@ export function getLocale(locales, pathname = window.location.pathname) {
   if ([LANGSTORE, PREVIEW].includes(localeString)) {
     const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
     if (ietf) locale = locales[ietf];
-    const pathSegment = split[2] ? `/${split[2]}` : '';
-    locale.prefix = `/${localeString}${pathSegment}`;
+    locale.prefix = `/${localeString}/${split[2]}`;
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
-  const localePathPrefix = localeString ? `/${localeString}` : '';
-  locale.prefix = isUS ? '' : localePathPrefix;
+  locale.prefix = isUS ? '' : `/${localeString}`;
   locale.region = isUS ? 'us' : localeString.split('_')[0];
   return locale;
 }
@@ -956,9 +954,7 @@ export function decorateLinks(el) {
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
-    const hasDnt = a.href.includes('#_dnt');
-    if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
-    if (hasDnt) a.dataset.hasDnt = true;
+    a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
@@ -1617,9 +1613,7 @@ export async function loadDeferred(area, blocks, config) {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    const { getPreflightResults } = await import('../blocks/preflight/checks/preflightApi.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
-    getPreflightResults(window.location.href, document);
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {

@@ -4,17 +4,7 @@ export default class MasPlans {
     this.price = page.locator('span[data-template="price"]');
     this.priceStrikethrough = page.locator('span[data-template="strikethrough"]');
     this.cardIcon = page.locator('merch-icon');
-    this.sidenavList = page.locator('merch-sidenav-list');
-    this.sidenav = page.locator('merch-sidenav sp-sidenav');
-    this.collectionContainerIndividuals = page.locator('#tab-panel-plan-1 .collection-container');
-    this.threeInOneModal = page.locator('.dialog-modal.three-in-one');
-    this.threeInOneStockCheckbox = page.locator('//input[contains(@id, "addon-checkbox")]');
-    this.threeInOneQuantitySelector = page.locator('//*[@data-testid="quantity-selector-container"]');
-    this.closeModal = async () => {
-      const modal = await this.threeInOneModal;
-      await modal.dispatchEvent('closeModal');
-      await this.page.waitForTimeout(1000);
-    };
+
     // Plans individual card properties:
     this.cssProp = {
       card: {
@@ -157,15 +147,11 @@ export default class MasPlans {
 
   getCardDescription(id) {
     const card = this.getCard(id);
-    return card.locator('div[slot="body-xs"]');
+    return card.locator('div[slot="body-xs"] p');
   }
 
   getSeeAllPlansLink(id) {
     return this.getCardDescription(id).locator('a.modal-Link');
-  }
-
-  getSeeAllPlans3in1Link(id) {
-    return this.getCardDescription(id).locator('a[is="checkout-link"]');
   }
 
   getCardCTA(id) {
@@ -173,12 +159,12 @@ export default class MasPlans {
     return card.locator('div[slot="footer"] > a[is="checkout-link"]');
   }
 
-  getCardStockCheckbox(id) {
-    return this.getCard(id).locator('merch-addon');
+  getStockCheckbox(id) {
+    return this.getCard(id).locator('[id="stock-checkbox"]');
   }
 
-  getCardStockCheckboxIcon(id) {
-    return this.getCard(id).locator('merch-addon > span');
+  getStockCheckboxIcon(id) {
+    return this.getCard(id).locator('[id="stock-checkbox"] > span');
   }
 
   getCardSecureTransaction(id) {
@@ -187,11 +173,6 @@ export default class MasPlans {
 
   getCardCallout(id) {
     return this.getCard(id).locator('div[slot="callout-content"] > p');
-  }
-
-  getCardQS(id) {
-    const card = this.getCard(id);
-    return card.locator('merch-quantity-select');
   }
 
   getCategoryFilter(label) {

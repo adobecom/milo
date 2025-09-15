@@ -8,7 +8,6 @@ import {
   MEP_SELECTOR,
   overrideOptions,
   updateModalState,
-  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -38,10 +37,7 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load lit first as it's needed by MAS components */
-  await loadLitDependency();
-
-  /** Load service */
+  /** Load service first */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {
@@ -76,18 +72,6 @@ async function loadDependencies(options) {
   await Promise.all(dependencyPromises);
 }
 
-function localizeIconPath(iconPath) {
-  if (window.location.hostname.endsWith('.adobe.com') && iconPath?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
-    try {
-      const url = new URL(iconPath);
-      return `https://www.adobe.com${url.pathname}`;
-    } catch (e) {
-      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`);
-    }
-  }
-  return iconPath;
-}
-
 function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders } = collection.data;
@@ -110,29 +94,20 @@ function getSidenav(collection) {
   spSidenav.setAttribute('manageTabIndex', true);
   const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
 
-  sidenavList.updateComplete.then(() => {
-    sidenavList.querySelector('sp-sidenav')?.setAttribute('role', 'tablist');
-    sidenavList.querySelectorAll('sp-sidenav-item').forEach((item) => {
-      item.removeAttribute('role');
-      item.shadowRoot?.querySelector('a')?.setAttribute('role', 'tab');
-    });
-  });
-
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
       const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
-      const iconPath = localizeIconPath(node.icon);
-      if (iconPath) {
-        createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
+      if (node.icon) {
+        createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };
         if (node.navigationLabel) attributes['data-selected-text'] = node.navigationLabel;
         if (node.iconLight) {
-          attributes['data-light'] = localizeIconPath(node.iconLight);
-          attributes['data-dark'] = iconPath;
+          attributes['data-light'] = node.iconLight;
+          attributes['data-dark'] = node.icon;
         }
         createTag('var', attributes, null, { parent: item });
       }
@@ -194,13 +169,8 @@ export async function createCollection(el, options) {
   if (paragraph) toReplace = paragraph;
   toReplace.replaceWith(container);
 
-  const success = await collection.checkReady();
-  if (!success) {
-    const { env } = getConfig();
-    if (env.name !== 'prod') {
-      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
-    }
-  }
+  await collection.checkReady();
+
   container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */

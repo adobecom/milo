@@ -246,7 +246,7 @@ export class MerchCard extends LitElement {
 
     get computedBorderStyle() {
         if (
-            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans', 'simplified-pricing-express'].includes(
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(
                 this.variant,
             )
         ) {
@@ -755,10 +755,11 @@ export class MerchCard extends LitElement {
     }
 
     get ctas() {
-        const ctas = this.querySelector('[slot="ctas"], [slot="footer"]')?.querySelectorAll(
-            `${SELECTOR_MAS_CHECKOUT_LINK}, a`,
+        return Array.from(
+            this.querySelector('[slot="ctas"], [slot="footer"]')?.querySelectorAll(
+                `${SELECTOR_MAS_CHECKOUT_LINK}, a`,
+            ),
         );
-        return Array.from(ctas ?? []);
     }
 
     #getCta(element) {

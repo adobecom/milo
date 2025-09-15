@@ -67,8 +67,6 @@ const createMasCommerceService = (params, commerceEnv) => {
     if (value) masCommerceService.setAttribute(attribute, value);
   });
   document.head.appendChild(masCommerceService);
-  
-  return masCommerceService;
 }
 
 const init = async (params = {}) => {

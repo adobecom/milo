@@ -14,7 +14,6 @@ import {
   getConfig,
   setConfig,
 } from './send-utils.js';
-import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
@@ -234,15 +233,7 @@ const processData = async (data, accessToken) => {
         continue;
       }
 
-      // Extract graybox experience ID from the host
-      const grayboxExperienceId = getGrayboxExperienceId(host, '');
-
       const caasProps = getCaasProps(caasMetadata, pageUrl);
-
-      // Add graybox experience ID to caasProps if found
-      if (grayboxExperienceId) {
-        caasProps.gbExperienceID = grayboxExperienceId;
-      }
 
       const response = await postDataToCaaS({
         accessToken,

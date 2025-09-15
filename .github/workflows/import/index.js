@@ -164,12 +164,6 @@ function safeguardMetadataImages(dom) {
 }
 
 const map = {}
-const projectExclude = {
-  'da-express-milo': [
-    '.json',
-  ],
-};
-
 async function importUrl(aemPath, importedMedia) {
   const extensionLessAemPath = aemPath.replace('.md', '');
   const url = new URL(importFrom + extensionLessAemPath);
@@ -179,11 +173,6 @@ async function importUrl(aemPath, importedMedia) {
   // Exclude auto publishing files from Sharepoint
   if (excludedFiles.some((excludedFile) => url.pathname === excludedFile)) {
     if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log(`Stopped processing ${url.pathname}`);
-    return;
-  }
-
-  if (projectExclude[toRepo]?.some((excludedFile) => url.pathname.endsWith(excludedFile))) {
-    if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log(`Stopped processing ${url.pathname} as project exclude`);
     return;
   }
 

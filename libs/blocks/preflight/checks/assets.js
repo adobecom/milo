@@ -198,7 +198,7 @@ export function isViewportTooSmall() {
   return !window.matchMedia('(min-width: 1200px)').matches;
 }
 
-export async function checkImageDimensions(url, area, injectVisualMetadata) {
+export async function checkImageDimensions(url, area) {
   if (isViewportTooSmall()) {
     return {
       title: ASSETS_TITLES.AssetDimensions,
@@ -239,11 +239,11 @@ export async function checkImageDimensions(url, area, injectVisualMetadata) {
   const assetsWithMismatch = [];
   const assetsWithMatch = [];
 
-  if (injectVisualMetadata) area.body.classList.add('preflight-assets-analysis');
+  area.body.classList.add('preflight-assets-analysis');
 
   for (const asset of assets) {
     const assetData = getAssetData(asset);
-    if (injectVisualMetadata) populateAssetMeta(asset, assetData);
+    populateAssetMeta(asset, assetData);
 
     if (assetData.hasMismatch) {
       assetsWithMismatch.push(assetData);
@@ -252,7 +252,7 @@ export async function checkImageDimensions(url, area, injectVisualMetadata) {
     }
   }
 
-  if (injectVisualMetadata) area.body.classList.remove('preflight-assets-analysis');
+  area.body.classList.remove('preflight-assets-analysis');
 
   const result = {
     title: ASSETS_TITLES.AssetDimensions,
@@ -274,6 +274,6 @@ export async function checkImageDimensions(url, area, injectVisualMetadata) {
   return result;
 }
 
-export function runChecks(url, area, injectVisualMetadata) {
-  return [checkImageDimensions(url, area, injectVisualMetadata)];
+export function runChecks(url, area) {
+  return [checkImageDimensions(url, area)];
 }

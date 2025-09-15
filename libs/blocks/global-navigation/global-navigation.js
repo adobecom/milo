@@ -173,14 +173,6 @@ const getMessageEventListener = () => {
   };
 };
 
-const getSignInCtaStyle = () => {
-  const isPrimary = (
-    getMetadata('signin-cta-style') === 'primary'
-    || getConfig()?.unav?.profile?.signInCtaStyle === 'primary'
-  );
-  return isPrimary ? 'primary' : 'secondary';
-};
-
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -201,8 +193,10 @@ export const CONFIG = {
       profile: {
         name: 'profile',
         attributes: {
-          accountMenuContext: {
-            sharedContextConfig: {
+          isSignUpRequired: false,
+          messageEventListener: getMessageEventListener(),
+          componentLoaderConfig: {
+            config: {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
@@ -214,15 +208,10 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
                 },
               },
-              complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
             },
-            messageEventListener: getMessageEventListener(),
           },
-          // UNav 1.5: Support for primary/secondary signIn CTA style
-          // Setting signInCtaStyle = 'primary' makes signIn CTA primary and signUp secondary
-          signInCtaStyle: getSignInCtaStyle(),
-          isSignUpRequired: false,
+          complexConfig: getConfig().unav?.profile?.complexConfig || null,
           callbacks: {
             onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
@@ -871,11 +860,7 @@ class Gnav {
       return 'linux';
     };
 
-    let unavVersion = new URLSearchParams(window.location.search).get('unavVersion');
-    // If versions follow a predictable format (digit.digit), validate using a regex
-    if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
-      unavVersion = '1.5';
-    }
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.4';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
@@ -1272,7 +1257,7 @@ class Gnav {
     `;
 
     // Get all main menu items, but exclude any that are nested inside other features
-    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a, p:only-child > a.merch')]
+    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
 
     // Save number of items to decide whether a hamburger menu is required
@@ -1280,7 +1265,7 @@ class Gnav {
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
-      const mainNavItem = await this.decorateMainNavItem(item, index);
+      const mainNavItem = this.decorateMainNavItem(item, index);
       if (mainNavItem) {
         this.elements.mainNav.appendChild(mainNavItem);
       }
@@ -1338,7 +1323,7 @@ class Gnav {
     }
   };
 
-  decorateMainNavItem = async (item, index) => {
+  decorateMainNavItem = (item, index) => {
     performance.mark(`Decorate-MainNav-Item-${index}-Start`);
     const itemType = this.getMainNavItemType(item);
 
@@ -1510,7 +1495,7 @@ class Gnav {
     };
 
     // Decorate item based on its type
-    const returnValue = await (async () => {
+    const returnValue = (() => {
       switch (itemType) {
         case 'syncDropdownTrigger':
         case 'asyncDropdownTrigger': {
@@ -1564,15 +1549,12 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
-          let linkElem = item.querySelector('a');
-          if (linkElem.classList.contains('merch')) {
-            linkElem = await merch.default(linkElem);
-          }
+          const linkElem = item.querySelector('a');
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
           linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
@@ -1607,7 +1589,7 @@ class Gnav {
         }
         case 'text':
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
+              ${item.textContent}
             </div>`, item);
         default:
           /* c8 ignore next 3 */

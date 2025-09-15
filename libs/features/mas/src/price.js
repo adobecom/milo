@@ -24,12 +24,11 @@ import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 export function Price({ literals, providers, settings }) {
     function collectPriceOptions(overrides, placeholder = null) {
-        
         let options = {
             country: settings.country,
             language: settings.language,
             locale: settings.locale,
-            literals: { ...literals.price },
+            literals: structuredClone(literals.price),
         };
 
         if (placeholder && providers?.price) {

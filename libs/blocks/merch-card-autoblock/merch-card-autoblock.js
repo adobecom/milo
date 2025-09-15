@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
@@ -6,7 +6,6 @@ import {
   initService,
   getOptions,
   overrideOptions,
-  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -22,10 +21,7 @@ function getTimeoutPromise() {
 }
 
 async function loadDependencies() {
-  /** Load lit first as it's needed by MAS components */
-  await loadLitDependency();
-
-  /** Load service */
+  /** Load service first */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {
@@ -47,10 +43,6 @@ export async function checkReady(masElement) {
   if (success === 'timeout') {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   } else if (!success) {
-    const { env } = getConfig();
-    if (env.name !== 'prod') {
-      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
-    }
     log.error(`${masElement.tagName} failed to initialize`);
   }
 }
@@ -58,13 +50,7 @@ export async function checkReady(masElement) {
 export async function createCard(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
-  // If the element is wrapped in a <p> tag, replace the parent instead to simplify the DOM
-  const parent = el.parentElement;
-  if (parent && parent.tagName === 'P' && parent.children.length === 1) {
-    parent.replaceWith(merchCard);
-  } else {
-    el.replaceWith(merchCard);
-  }
+  el.replaceWith(merchCard);
   await checkReady(merchCard);
   await postProcessAutoblock(merchCard, true);
 }

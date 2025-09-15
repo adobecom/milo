@@ -66,11 +66,6 @@ function toSentenceCase(str) {
   return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
 }
 
-function showCopyTooltip({ copyButton, show = true, copied = false }) {
-  copyButton.classList.toggle('hide-copy-tooltip', !show);
-  copyButton.classList.toggle('copy-to-clipboard-copied', copied);
-}
-
 export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
@@ -164,7 +159,6 @@ export default async function decorate(block) {
       window.open(shareLink.href, 'newwindow', 'width=600, height=400');
     });
   });
-
   const clipboardSvg = svgs.find((svg) => svg.name === 'clipboard');
   if (clipboardSvg && clipboardSupport) {
     const clipboardToolTip = toSentenceCase(
@@ -175,25 +169,14 @@ export default async function decorate(block) {
       'button',
       {
         type: 'button',
-        class: 'copy-to-clipboard hide-copy-tooltip',
+        class: 'copy-to-clipboard',
         'aria-label': clipboardToolTip,
+        'data-copy-to-clipboard': clipboardToolTip,
         'data-copied': `${copiedTooltip}!`,
       },
       clipboardSvg.svg,
     );
-
-    let clipboardTimeout;
     const li = createTag('li');
-    ['keydown', 'focus', 'blur', 'mouseenter', 'mouseleave'].forEach((eventType) => {
-      const target = eventType.startsWith('mouse') ? li : copyButton;
-      target.addEventListener(eventType, (event) => {
-        const { type, key } = event;
-        if (type === 'keydown' && key !== 'Escape') return;
-        showCopyTooltip({ copyButton, show: !['mouseleave', 'blur', 'keydown'].includes(type) });
-        clearTimeout(clipboardTimeout);
-      });
-    });
-
     const copyAriaLive = createTag(
       'div',
       {
@@ -210,12 +193,14 @@ export default async function decorate(block) {
       e.preventDefault();
       copyAriaLive.textContent = '';
       navigator.clipboard.writeText(window.location.href).then(() => {
-        showCopyTooltip({ copyButton, copied: true });
+        copyButton.classList.add('copy-to-clipboard-copied');
         copyAriaLive.textContent = copiedTooltip + (changeText ? '\u200b' : '');
         changeText = !changeText;
-        clipboardTimeout = setTimeout(() => {
-          showCopyTooltip({ copyButton, show: false });
-        }, 2000);
+        setTimeout(() => document.activeElement.blur(), 500);
+        setTimeout(
+          () => copyButton.classList.remove('copy-to-clipboard-copied'),
+          2000,
+        );
       });
     });
   }

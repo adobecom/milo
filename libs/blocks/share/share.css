@@ -1,8 +1,6 @@
 @import '../../styles/inline.css';
 
 .share {
-  --svg-icon-dimension: 28px;
-  --copy-tooltip-background-color: #6D6D6D;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
@@ -19,13 +17,18 @@
 }
 
 .share svg.icon {
-  height: var(--svg-icon-dimension);
+  height: 28px;
   transition: filter 0.3s;
   display: inline-block;
-  width: var(--svg-icon-dimension);
+  width: 28px;
   margin: 0;
   color: #adadad;
 }
+
+.share a svg.icon:hover {
+  filter: brightness(0.7);
+}
+
 
 .share ul.icon-container,
 .share ul.icon-container li,
@@ -46,25 +49,16 @@
   padding-block-end: 8px;
 }
 
-.share.dark :is([role="heading"], h1, h2, h3, h4, h5, h6),
-.share.dark ul.icon-container svg {
-  color: var(--color-white);
+.share.dark p {
+  color: #fff;
 }
 
 .share ul.icon-container svg {
   color: var(--color-gray-600);
 }
 
-.share li:has(.copy-to-clipboard) {
-  position: relative;
-}
-
-.share li:has(.copy-to-clipboard:not(.hide-copy-tooltip))::before {
-  content: '';
-  width: var(--svg-icon-dimension);
-  height: 5px;
-  position: absolute;
-  bottom: 100%;
+.share.dark ul.icon-container svg {
+  color: #fff;
 }
 
 .share .copy-to-clipboard {
@@ -75,57 +69,37 @@
   cursor: pointer;
   position: relative;
   transition: filter 0.3s;
-  border: none;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  outline: none;
   margin-left: -2px;
 }
 
-.share .icon-container li > :is(a, button) {
-  outline-offset: 1px;
+.share .copy-to-clipboard:focus-visible {
+  border: 2px solid black;
 }
 
-.share :is(a, .copy-to-clipboard) svg.icon:hover {
+.share .copy-to-clipboard:hover svg {
   filter: brightness(0.7);
 }
 
-.share .copy-to-clipboard::before,
-.share .copy-to-clipboard::after {
+.share .copy-to-clipboard::before {
+  content: attr(data-copy-to-clipboard);
   display: block;
   position : absolute;
   bottom: 100%;
-  transition: transform 130ms ease-in-out, opacity 130ms ease-in-out, visibility 0ms linear 130ms;
-  transition-delay: 0ms;
-  background-color: var(--copy-tooltip-background-color);
-  visibility: visible;
-  opacity: 1;
-  cursor: default;
-}
-
-.share .copy-to-clipboard::before {
-  content: attr(aria-label);
-  bottom: 100%;
   left: -45%;
   transform: translate(-50%, -4px);
-  color: var(--color-white);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 130ms ease-in-out, opacity 130ms ease-in-out, visibility 0ms linear 130ms;
+  background-color: #6d6d6d;
+  color: #fff;
   padding: 4px 9px 5px;
   font-size: 12px;
   line-height: 1.3;
   border-radius: 4px;
   white-space: nowrap;
-}
-
-.share .copy-to-clipboard::after {
-  content: '';
-  left: 50%;
-  transform: translate(-50%, 0);
-  height: 4px;
-  width: 8px;
-  clip-path: polygon(0 -5%, 50% 100%, 100% -5%);
-}
-
-.share .copy-to-clipboard.hide-copy-tooltip::before,
-.share .copy-to-clipboard.hide-copy-tooltip::after {
-  visibility: hidden;
-  opacity: 0;
 }
 
 [dir="rtl"] .share ul.icon-container {
@@ -141,15 +115,43 @@
   left: 150%;
 }
 
+.share .copy-to-clipboard::after {
+  content: '';
+  display: block;
+  position : absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 130ms ease-in-out, opacity 130ms ease-in-out, visibility 0ms linear 130ms;
+  height: 4px;
+  width: 8px;
+  background-color: #6d6d6d;
+  clip-path: polygon(0 -5%, 50% 100%, 100% -5%);
+}
+
 .share.inline .copy-to-clipboard::after {
   z-index: 8;
 }
 
-.share .copy-to-clipboard:not(.hide-copy-tooltip)::before {
+.share .copy-to-clipboard:hover::before,
+.share .copy-to-clipboard:focus::before,
+.share .copy-to-clipboard:hover::after,
+.share .copy-to-clipboard:focus::after {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0ms;
+  cursor: default;
+}
+
+.share .copy-to-clipboard:hover::before,
+.share .copy-to-clipboard:focus::before {
   transform: translate(-50%, -6px);
 }
 
-.share .copy-to-clipboard:not(.hide-copy-tooltip)::after {
+.share .copy-to-clipboard:hover::after,
+.share .copy-to-clipboard:focus::after {
   transform: translate(-50%, -2px);
 }
 
