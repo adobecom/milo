@@ -395,17 +395,9 @@ main > .section[class*='-up'] > .content {
   .section.masonry-layout .grid-span-11 {grid-column: span 11; }
 }
 
-.section.two-up.background-narrow {
+/* .section.two-up.background-narrow {
   background: 
-  linear-gradient(
-    to bottom, 
-    white 0%, 
-    white 25%, 
-    transparent 25%, 
-    transparent 75%, 
-    white 75%, 
-    white 100%
-  ),
+  
   linear-gradient(
     to right,
     transparent 0%,
@@ -416,5 +408,31 @@ main > .section[class*='-up'] > .content {
     transparent 100%
   )
 }
+
+.section > .editorial-narrow-container > .editorial-card {
+  padding-right: calc((100% - var(--grid-container-width)) / 2);
+  padding-left: calc((100% - var(--grid-container-width)) / 2);
+  margin: 0 auto;
+}
+
+.section > .editorial-narrow-container {
+  padding-top: var(--spacing-xs);
+  background:lightblue
+}
+
+.section.background-narrow:has(.editorial-narrow-container) {
+  gap: 0 !important;
+}
+
+.editorial-narrow-container:last-of-type {
+  border-bottom-left-radius: var(--l-rounded-corners);
+  border-bottom-right-radius: var(--l-rounded-corners);
+}
+
+.editorial-narrow-container:has(.editorial-card.first) {
+  border-top-left-radius: var(--l-rounded-corners);
+  border-top-right-radius: var(--l-rounded-corners);
+} */
+
 
 
