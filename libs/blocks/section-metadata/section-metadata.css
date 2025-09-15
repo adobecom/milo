@@ -274,7 +274,6 @@ main > .section[class*='-up'] > .content {
   .section.show-all {
     margin-inline: 30px;
     padding: var(--spacing-xs);
-    margin-bottom: 24px;
     border-radius: 8px;
   }
 
