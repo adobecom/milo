@@ -198,6 +198,27 @@ export function isViewportTooSmall() {
   return !window.matchMedia('(min-width: 1200px)').matches;
 }
 
+export async function openAllModals() {
+    const links = await document.querySelectorAll("main a[data-modal-hash]");
+    for (const [index, link] of links.entries()) {
+      try {
+        // Scroll into view if necessary
+        link.scrollIntoView({ behavior: "instant", block: "center" });
+        link.getAttribute("href"));
+        // Use JavaScript to simulate a click without closing the previous modal
+        const event = new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          });
+        link.dispatchEvent(event);
+      } catch (err) {
+        console.error(`Error clicking link ${index + 1}:`, err);
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+}
+
 export async function checkImageDimensions(url, area, injectVisualMetadata) {
   if (isViewportTooSmall()) {
     return {
