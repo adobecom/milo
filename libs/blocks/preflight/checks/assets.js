@@ -204,7 +204,7 @@ export async function openAllModals() {
       try {
         // Scroll into view if necessary
         link.scrollIntoView({ behavior: "instant", block: "center" });
-        link.getAttribute("href"));
+        link.getAttribute("href");
         // Use JavaScript to simulate a click without closing the previous modal
         const event = new MouseEvent("click", {
             bubbles: true,
