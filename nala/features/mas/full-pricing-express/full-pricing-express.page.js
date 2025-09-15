@@ -59,18 +59,18 @@ export default class FullPricingExpressCard {
   async getFeaturesList() {
     const paragraphs = await this.featureParagraphs.all();
     const features = [];
-    
+
     for (const p of paragraphs) {
       const text = await p.textContent();
       // Skip empty paragraphs, dividers, and special sections
-      if (text && 
-          !text.includes('Top features') && 
-          !text.includes('Compare all features') &&
-          text.trim() !== '') {
+      if (text
+          && !text.includes('Top features')
+          && !text.includes('Compare all features')
+          && text.trim() !== '') {
         features.push(text.trim());
       }
     }
-    
+
     return features;
   }
 
@@ -84,38 +84,38 @@ export default class FullPricingExpressCard {
   // Helper to check mobile view
   async checkMobileView() {
     const viewportWidth = this.page.viewportSize().width;
-    
+
     if (viewportWidth < 768) {
       // On mobile, check that only last divider and button are visible
       const dividers = await this.description2.locator('.divider-wrapper').all();
       const visibleDividers = [];
-      
+
       for (const divider of dividers) {
         if (await divider.isVisible()) {
           visibleDividers.push(divider);
         }
       }
-      
+
       const buttonVisible = await this.compareLink.isVisible();
-      
+
       return {
         isMobile: true,
         visibleDividerCount: visibleDividers.length,
         buttonVisible,
       };
     }
-    
+
     return { isMobile: false };
   }
 
   // Helper to verify alignment (for desktop view)
   async checkAlignment() {
     const viewportWidth = this.page.viewportSize().width;
-    
+
     if (viewportWidth >= 768) {
       // Check if description2 is using flexbox
       const description2Element = await this.description2.elementHandle();
-      const styles = await this.page.evaluate(el => {
+      const styles = await this.page.evaluate((el) => {
         const computed = window.getComputedStyle(el);
         return {
           display: computed.display,
@@ -123,14 +123,14 @@ export default class FullPricingExpressCard {
           minHeight: computed.minHeight,
         };
       }, description2Element);
-      
+
       return {
         isFlexContainer: styles.display === 'flex',
         flexDirection: styles.flexDirection,
         hasMinHeight: styles.minHeight !== '0px' && styles.minHeight !== '',
       };
     }
-    
+
     return null;
   }
 
