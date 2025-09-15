@@ -105,6 +105,7 @@ styles.innerHTML = `
 
     /* ah colors */
     --ah-gray-500: #717171;
+    --spectrum-pink-ah-try-buy: #FDE9FF;
     
     /* plans colors */
     --spectrum-yellow-300-plans: #F5C700;
