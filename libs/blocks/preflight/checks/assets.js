@@ -135,6 +135,7 @@ function getAssetData(asset) {
   return {
     type,
     src: asset.getAttribute(type === 'video' ? 'data-video-source' : 'src'),
+    fragmentPath: asset?.closest(".fragment")?.dataset?.path,
     naturalDimensions: `${naturalWidth}x${naturalHeight}`,
     displayDimensions: `${offsetWidth}x${offsetHeight}`,
     recommendedDimensions,
