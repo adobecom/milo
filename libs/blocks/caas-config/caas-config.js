@@ -77,6 +77,7 @@ const defaultOptions = {
     'text-card': 'Text Card',
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
+    'horizontal-card': 'Horizontal Card',
     'custom-card': 'Custom Card',
     'blade-card': 'Blade Card',
   },
