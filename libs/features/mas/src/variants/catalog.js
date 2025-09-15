@@ -118,6 +118,9 @@ export class Catalog extends VariantLayout {
 
     connectedCallbackHook() {
         this.card.addEventListener('mouseleave', this.toggleActionMenuFromCard);
+        if (this.card.classList.contains('unique-heading-link')) {
+            this.card.shadowRoot.querySelector('.catalog-badge')?.classList.add('position-abs-badge');
+        }
     }
 
     disconnectedCallbackHook() {
@@ -141,6 +144,12 @@ export class Catalog extends VariantLayout {
             top: 0;
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
+        }
+        
+        .body .catalog-badge.position-abs-badge {
+            position: absolute;
+            top: 16px;
+            left: 72px;
         }
     `;
 }

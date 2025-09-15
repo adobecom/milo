@@ -598,6 +598,61 @@ const addStartingAt = async (styles, merchCard) => {
   }
 };
 
+const addIcons = (merchCard, icons, withLink = true) => {
+  if (!icons || icons.length > 0) {
+    const iconImgs = Array.from(icons).map((icon) => {
+      const img = {
+        src: icon.querySelector('img').src,
+        alt: icon.querySelector('img').alt,
+        href: icon.closest('a')?.href ?? '',
+      };
+      return img;
+    });
+    iconImgs.forEach((icon) => {
+      const attributes = { slot: 'icons', src: icon.src, alt: icon.alt, size: 'l' };
+      if (withLink) {
+        attributes.href = icon.href;
+      }
+      const merchIcon = createTag('merch-icon', attributes);
+      // merchCard.appendChild(merchIcon);
+      merchCard.insertBefore(merchIcon, merchCard.firstChild);
+    });
+    icons.forEach((icon) => {
+      if (icon.parentElement.nodeName === 'A') icon.parentElement.remove();
+      else icon.remove();
+    });
+  }
+};
+
+const willMakeHeadingLinkUnique = (merchCard, icons) => {
+  if (icons?.length !== 1) return false;
+
+  const iconHref = icons[0].closest('a')?.href;
+  if (!iconHref) return false;
+
+  const headingLink = merchCard.querySelector('.card-heading a');
+  const headingHref = headingLink?.getAttribute('href');
+  if (!headingHref || iconHref !== headingHref) return false;
+
+  return true;
+};
+
+const makeHeadingLinkUnique = (merchCard) => {
+  const headingLink = merchCard.querySelector('.card-heading a');
+  const headingHref = headingLink?.getAttribute('href');
+  const headingEl = merchCard.querySelector('.card-heading');
+  headingEl.innerHTML = headingLink.textContent;
+  headingEl.removeAttribute('slot');
+  const newLink = createTag('a', { href: headingHref, class: 'unique-link' });
+  newLink.setAttribute('slot', 'icons');
+  newLink.setAttribute('aria-labelledby', headingEl.id);
+  merchCard.insertBefore(newLink, headingEl);
+  const iconEl = merchCard.querySelector('merch-icon');
+  iconEl.removeAttribute('slot');
+  newLink.append(iconEl);
+  newLink.append(headingEl);
+};
+
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
 
@@ -735,7 +790,7 @@ export default async function init(el) {
       actionMenu.classList.add('always-visible');
     });
     merchCard.addEventListener('focusout', (e) => {
-      if (!e.target.href || e.target.src || e.target.parentElement.classList.contains('card-heading')) {
+      if (!e.target.href || e.target.src || e.target.parentElement.classList.contains('card-heading') || e.target.classList.contains('unique-link')) {
         return;
       }
       const actionMenu = merchCard.shadowRoot.querySelector('.action-menu');
@@ -754,24 +809,6 @@ export default async function init(el) {
     imageSlot.appendChild(image);
     merchCard.appendChild(imageSlot);
   }
-  if (!icons || icons.length > 0) {
-    const iconImgs = Array.from(icons).map((icon) => {
-      const img = {
-        src: icon.querySelector('img').src,
-        alt: icon.querySelector('img').alt,
-        href: icon.closest('a')?.href ?? '',
-      };
-      return img;
-    });
-    iconImgs.forEach((icon) => {
-      const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon.src, alt: icon.alt, href: icon.href, size: 'l' });
-      merchCard.appendChild(merchIcon);
-    });
-    icons.forEach((icon) => {
-      if (icon.parentElement.nodeName === 'A') icon.parentElement.remove();
-      else icon.remove();
-    });
-  }
 
   addStock(merchCard, styles);
   addAddon(merchCard, styles);
@@ -784,6 +821,12 @@ export default async function init(el) {
 
   if (merchCard.variant !== TWP) {
     parseContent(el, merchCard);
+    const uniqueLink = willMakeHeadingLinkUnique(merchCard, icons);
+    addIcons(merchCard, icons, !uniqueLink);
+    if (uniqueLink) {
+      makeHeadingLinkUnique(merchCard);
+      merchCard.classList.add('unique-heading-link');
+    }
 
     const footer = createTag('div', { slot: 'footer' });
     if (ctas) {

@@ -682,7 +682,7 @@ merch-card[variant="catalog"] .payment-details {
                           ><slot name="callout-content"></slot>`:""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}getGlobalCSS(){return Yc}setAriaExpanded(r,i){r.setAttribute("aria-expanded",i)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};f(qt,"variantStyle",y`
+            <slot></slot>`}getGlobalCSS(){return Yc}setAriaExpanded(r,i){r.setAttribute("aria-expanded",i)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard),this.card.classList.contains("unique-heading-link")&&this.card.shadowRoot.querySelector(".catalog-badge")?.classList.add("position-abs-badge")}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};f(qt,"variantStyle",y`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -699,6 +699,12 @@ merch-card[variant="catalog"] .payment-details {
             top: 0;
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
+        }
+        
+        .body .catalog-badge.position-abs-badge {
+            position: absolute;
+            top: 16px;
+            left: 72px;
         }
     `);$();var Kc=`
 :root {
@@ -2985,12 +2991,21 @@ merch-card span.heading-xxs {
     letter-spacing: normal;
 }
 
+merch-card .unique-link .card-heading,
 merch-card [slot='heading-xs'],
 merch-card span.heading-xs {
     font-size: var(--consonant-merch-card-heading-xs-font-size);
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     color: var(--consonant-merch-card-heading-xs-color);
     margin: 0;
+}
+
+merch-card .unique-link:not(:hover) {
+    text-decoration: inherit;
+}
+
+merch-card .unique-link merch-icon {
+    margin-bottom: var(--consonant-merch-spacing-xxs);
 }
 
 merch-card.dc-pricing [slot='heading-xs'] {

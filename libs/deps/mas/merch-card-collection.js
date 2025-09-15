@@ -265,7 +265,7 @@ merch-card[variant="catalog"] .payment-details {
                           ><slot name="callout-content"></slot>`:""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}getGlobalCSS(){return Vi}setAriaExpanded(r,i){r.setAttribute("aria-expanded",i)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};g(De,"variantStyle",Bo`
+            <slot></slot>`}getGlobalCSS(){return Vi}setAriaExpanded(r,i){r.setAttribute("aria-expanded",i)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard),this.card.classList.contains("unique-heading-link")&&this.card.shadowRoot.querySelector(".catalog-badge")?.classList.add("position-abs-badge")}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};g(De,"variantStyle",Bo`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -282,6 +282,12 @@ merch-card[variant="catalog"] .payment-details {
             top: 0;
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
+        }
+        
+        .body .catalog-badge.position-abs-badge {
+            position: absolute;
+            top: 16px;
+            left: 72px;
         }
     `);import{html as ct}from"../lit-all.min.js";var qi=`
 :root {
