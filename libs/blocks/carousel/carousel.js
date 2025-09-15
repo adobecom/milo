@@ -409,7 +409,7 @@ function mobileSwipeDetect(carouselElements) {
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     carouselElements.direction = getSwipeDirection(swipe, swipeDistance);
 
-    //stop swipe for disabled-buttons variant.
+    // stop swipe for disabled-buttons variant.
     const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
     if (carouselElements.el.classList.contains('disable-buttons')
           && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
