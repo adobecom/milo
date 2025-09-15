@@ -198,7 +198,7 @@ export function isViewportTooSmall() {
   return !window.matchMedia('(min-width: 1200px)').matches;
 }
 
-export async function openAllModals() {
+export async function openAllModals(area = document) {
     const links = await document.querySelectorAll("main a[data-modal-hash]");
     for (const [index, link] of links.entries()) {
       try {
