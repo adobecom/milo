@@ -2,10 +2,9 @@ import { expect, test } from '@playwright/test';
 import { features } from './merchcard.spec.js';
 import MerchCard from './merchcard.pages.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
+import { constructTestUrl } from '../../libs/commerce.js';
 
 let merchCard;
-
-const miloLibs = process.env.MILO_LIBS || '';
 
 test.describe('Milo Merchcard block test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
@@ -17,13 +16,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 0 : Merch Card (Segment)
   test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[0].path)}`);
     const { data } = features[0];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[0].path}`);
+      await page.goto(constructTestUrl(baseURL, features[0].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[0].path));
     });
 
     await test.step('step-2: Verify Merch Card content/specs', async () => {
@@ -49,13 +48,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 1 : Merch Card (Segment) with Badge
   test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[1].path)}`);
     const { data } = features[1];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[1].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[1].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[1].path));
     });
 
     await test.step('step-2: Verify Merch Card with Badge content/specs', async () => {
@@ -91,13 +90,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 2 : Merch Card (Special Offers)
   test(`[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[2].path)}`);
     const { data } = features[2];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[2].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[2].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[2].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[2].path));
     });
 
     await test.step('step-2: Verify Merch Card special offers content/specs', async () => {
@@ -123,13 +122,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 3 : Merch Card (Special Offers) with badge
   test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[3].path)}`);
     const { data } = features[3];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[3].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[3].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[3].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[3].path));
     });
 
     await test.step('step-2: Verify Merch Card special offers content/specs', async () => {
@@ -163,13 +162,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 4 : Merch Card (plans)
   test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[4].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[4].path)}`);
     const { data } = features[4];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[4].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[4].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[4].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[4].path));
     });
 
     await test.step('step-2: Verify Merch Card special offers content/specs', async () => {
@@ -192,13 +191,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 5 : Merch Card (plans) with badge
   test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[5].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[5].path)}`);
     const { data } = features[5];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[5].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[5].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[5].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[5].path));
     });
 
     await test.step('step-2: Verify Merch Card special offers content/specs', async () => {
@@ -228,13 +227,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 6 : Merch Card (plans) with secure
   test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[6].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[6].path)}`);
     const { data } = features[6];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[6].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[6].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[6].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[6].path));
     });
 
     await test.step('step-2: Verify Merch Card special offers content/specs', async () => {
@@ -259,13 +258,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 7 : Merch Card (plans, secure) with badge
   test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[7].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[7].path)}`);
     const { data } = features[7];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[7].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[7].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[7].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[7].path));
     });
 
     await test.step('step-2: Verify Merch Card special offers content/specs', async () => {
@@ -292,13 +291,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 8 : Merch Card (catalog)
   test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[8].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[8].path)}`);
     const { data } = features[8];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[8].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[8].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[8].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[8].path));
     });
 
     await test.step('step-2: Verify Merch Card catalog content/specs', async () => {
@@ -324,13 +323,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 9 : Merch Card (catalog) with badge
   test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[9].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[9].path)}`);
     const { data } = features[9];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[9].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[9].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[9].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[9].path));
     });
 
     await test.step('step-2: Verify Merch Card catalog with badge content/specs', async () => {
@@ -365,13 +364,13 @@ test.describe('Milo Merchcard block test suite', () => {
 
   // Test 10 : Merch Card (catalog) with more info and badge
   test(`[Test Id - ${features[10].tcid}] ${features[10].name},${features[10].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[10].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[10].path)}`);
     const { data } = features[10];
 
     await test.step('step-1: Go to Merch Card feature test page', async () => {
-      await page.goto(`${baseURL}${features[10].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[10].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[10].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[10].path));
     });
 
     await test.step('step-2: Verify Merch Card catalog with badge content/specs', async () => {
