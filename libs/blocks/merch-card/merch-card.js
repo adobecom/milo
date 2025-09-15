@@ -624,7 +624,7 @@ const addIcons = (merchCard, icons, withLink = true) => {
   }
 };
 
-const willMakeHeadingLinkUnique = (merchCard, icons) => {
+const shouldMakeHeadingLinkUnique = (merchCard, icons) => {
   if (icons?.length !== 1) return false;
 
   const iconHref = icons[0].closest('a')?.href;
@@ -821,9 +821,9 @@ export default async function init(el) {
 
   if (merchCard.variant !== TWP) {
     parseContent(el, merchCard);
-    const uniqueLink = willMakeHeadingLinkUnique(merchCard, icons);
-    addIcons(merchCard, icons, !uniqueLink);
-    if (uniqueLink) {
+    const makeUniqueLink = shouldMakeHeadingLinkUnique(merchCard, icons);
+    addIcons(merchCard, icons, !makeUniqueLink);
+    if (makeUniqueLink) {
       makeHeadingLinkUnique(merchCard);
       merchCard.classList.add('unique-heading-link');
     }
