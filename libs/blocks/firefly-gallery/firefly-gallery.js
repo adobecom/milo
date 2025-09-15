@@ -448,7 +448,7 @@ function createOverlayElement(promptText, userInfo = {}, fireflyUrl) {
     href: fireflyUrl,
     target: '_blank',
     rel: 'noopener',
-    'aria-label': `Open "${promptText}" in Firefly`,
+    'aria-label': `Open in Firefly`,
     tabindex: '0',
   });
 
@@ -532,19 +532,19 @@ function loadImageIntoSkeleton(
     debug('Loading image:', imageUrl);
 
     // Create image container
-    const imageContainer = createTag('div', {
+    const assetContainer = createTag('div', {
       class: 'firefly-gallery-image',
     });
 
     // Add asset type to container for styling
     if (assetData.assetType === 'video') {
-      imageContainer.classList.add('firefly-gallery-video-item');
+      assetContainer.classList.add('firefly-gallery-video-item');
       skeletonItem.classList.add('video-item');
     }
 
     // Create and append image
     const img = createImageElement(imageUrl, altText);
-    imageContainer.appendChild(img);
+    assetContainer.appendChild(img);
 
     // Create and append clickable overlay if prompt exists
     if (promptText) {
@@ -580,23 +580,24 @@ function loadImageIntoSkeleton(
           logError('Video loading error:', e);
         });
 
-        overlay.appendChild(video);
+        assetContainer.appendChild(video);
 
         // Add hover event listeners for video playback
         let hoverTimeout;
-        overlay.addEventListener('mouseenter', () => {
+        skeletonItem.addEventListener('mouseenter', () => {
           // Clear any existing timeout
           clearTimeout(hoverTimeout);
           // Start video after a short delay (prevents flickering on quick mouse movements)
           hoverTimeout = setTimeout(() => {
             video.style.opacity = '1';
+            video.muted = true;
             video.play().catch((err) => {
               logError('Video play failed:', err);
             });
           }, 150);
         });
 
-        overlay.addEventListener('mouseleave', () => {
+        skeletonItem.addEventListener('mouseleave', () => {
           // Stop video when hover ends
           clearTimeout(hoverTimeout);
           video.pause();
@@ -604,7 +605,7 @@ function loadImageIntoSkeleton(
         });
       }
 
-      imageContainer.appendChild(overlay);
+      assetContainer.appendChild(overlay);
     }
 
     // Add loaded class to trigger transition
@@ -614,11 +615,11 @@ function loadImageIntoSkeleton(
     // but maintain the aspect ratio structure
     const skeletonWrapper = skeletonItem.querySelector('.skeleton-wrapper');
     if (skeletonWrapper) {
-      skeletonItem.replaceChild(imageContainer, skeletonWrapper);
+      skeletonItem.replaceChild(assetContainer, skeletonWrapper);
     } else {
       // Fallback if wrapper not found
       skeletonItem.innerHTML = '';
-      skeletonItem.appendChild(imageContainer);
+      skeletonItem.appendChild(assetContainer);
     }
 
     // Image successfully loaded
