@@ -16,6 +16,23 @@ button {
   color: white;
 }
 
+dd.content .field .multi-field {
+  overflow-y: scroll;
+  max-height: 200px;
+}
+
+dd.content .field .multi-field label {
+  display: flex;
+  margin-bottom: 4px;
+  gap: 10px;
+}
+
+dd.content .field.checkbox {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
 .success-message, .error-message {
   position: absolute;
   right: 15px;
