@@ -97,13 +97,9 @@ export const SEO_DESCRIPTIONS = {
 
 export const ASSETS_TITLES = { AssetDimensions: 'Asset Dimensions' };
 
-export const ASSETS_IDS = {
-  imageDimensions: 'image-dimensions',
-};
+export const ASSETS_IDS = { imageDimensions: 'image-dimensions' };
 
-export const ASSETS_SEVERITIES = {
-  imageDimensions: 'critical',
-};
+export const ASSETS_SEVERITIES = { imageDimensions: 'critical' };
 
 export const ASO_TIMEOUT_MS = 60_000;
 export const ASO_POLL_INTERVAL_MS = 2_000;
