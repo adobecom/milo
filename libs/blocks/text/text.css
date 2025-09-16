@@ -396,6 +396,19 @@
   }
 }
 
+/* tablet down */
+@media screen and (max-width: 1199px){
+  /* Mweb specific changes for lockup and icon-area */
+  .mweb-enabled .text-block.s-lockup .lockup-area {
+    font-size: var(--type-lockup-xs-size);
+    letter-spacing:var(--type-lockup-xs-ls);
+    gap: 6px;
+  }
+  .mweb-enabled .text-block.s-lockup .lockup-area img { height: var(--icon-size-xs); }
+
+  .mweb-enabled .text-block.l-icon .icon-area { height: var(--icon-size-m); }
+}
+
 /* Desktop up */
 @media screen and (min-width: 1200px) {
   .text-block .foreground > .desktop-up,
