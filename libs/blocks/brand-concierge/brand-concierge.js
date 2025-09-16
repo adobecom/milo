@@ -39,7 +39,7 @@ function updateModalHeight() {
 
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
-  const title = createTag('span', { class: 'bc-modal-title' }, 'AI Assistant');
+  const title = createTag('h1', { class: 'bc-modal-title' }, 'AI Assistant');
   const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel()]);
   const mountEl = createTag('div', { id: mountId });
   if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
