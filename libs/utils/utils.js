@@ -1849,3 +1849,7 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+window.addEventListener("content-insights-begin", () => {
+  await import('../blocks/preflight/checks/contentInsights.js');
+});
