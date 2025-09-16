@@ -9,20 +9,6 @@ export const CSS = `
         word-break: break-word;
     }
 
-    merch-card[variant="ah-try-buy-widget"] [slot="badge"] {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-    }
-
-    merch-card[variant="ah-try-buy-widget"] [slot="badge"] merch-badge {
-        border-radius: 7px;
-        font-size: 12px;
-        font-weight: normal;
-        line-height: normal;
-        padding: 2px 10px 3px 10px;
-    }
-
     merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] a {
         color: var(--consonant-merch-card-body-xxs-color);
     }

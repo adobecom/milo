@@ -5,8 +5,6 @@ import { CSS } from './ah-try-buy-widget.css.js';
 export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 's' },
     title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40, withSuffix: true },
-    badge: { tag: 'div', slot: 'badge', default: 'spectrum-pink-ah-try-buy' },
-    allowedBadgeColors: ['Fuchsia'],
     description: {
         tag: 'div',
         slot: 'body-xxs',
@@ -40,7 +38,6 @@ export class AHTryBuyWidget extends VariantLayout {
                 <div class="header">
                     <slot name="icons"></slot>
                     <slot name="heading-xxxs"></slot>
-                    ${this.badge}
                 </div>
                 <slot name="body-xxs"></slot>
                 <div class="price">
@@ -51,7 +48,6 @@ export class AHTryBuyWidget extends VariantLayout {
                 </div>
             </div>
             <slot name="image"></slot>
-            <slot name="badge"></slot>
             <slot></slot>
         `;
     }
