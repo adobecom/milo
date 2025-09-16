@@ -293,12 +293,6 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 }
 
 /* Tablet */
-@media screen and ${TABLET_DOWN} {
-    merch-card[variant="plans-education"]:last-of-type:nth-child(odd) .spacer {
-        height: 0px;
-    }
-}
-
 @media screen and ${TABLET_UP} {
     .four-merch-cards.plans .foreground {
         max-width: unset;
