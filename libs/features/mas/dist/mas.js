@@ -4224,7 +4224,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
 
     merch-card[variant="ah-try-buy-widget"] [slot="badge"] {
         position: absolute;
-        top: 12px;
+        top: 18px;
         right: 12px;
     }
 
@@ -4315,6 +4315,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         display: flex;
         padding-top: 24px;
         flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     merch-card[variant="ah-try-buy-widget"] [slot="image"] {
