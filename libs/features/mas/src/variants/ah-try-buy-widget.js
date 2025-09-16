@@ -40,6 +40,7 @@ export class AHTryBuyWidget extends VariantLayout {
                 <div class="header">
                     <slot name="icons"></slot>
                     <slot name="heading-xxxs"></slot>
+                    ${this.badge}
                 </div>
                 <slot name="body-xxs"></slot>
                 <div class="price">
@@ -50,6 +51,7 @@ export class AHTryBuyWidget extends VariantLayout {
                 </div>
             </div>
             <slot name="image"></slot>
+            <slot name="badge"></slot>
             <slot></slot>
         `;
     }
@@ -132,6 +134,7 @@ export class AHTryBuyWidget extends VariantLayout {
             flex-wrap: wrap;
             gap: 8px;
             flex-direction: row;
+            align-self: flex-end;
         }
     `;
 }
