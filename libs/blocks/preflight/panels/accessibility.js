@@ -39,7 +39,7 @@ function dropdownOptions(props) {
   `;
 }
 
-async function checkAlt() {
+export async function checkAlt() {
   if (altResult.value.checked) return;
   // If images are not scoped, tracking pixel/images are picked up.
   const images = document.querySelectorAll(':is(header, main, footer) img:not(.accessibility-control)');
