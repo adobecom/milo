@@ -173,6 +173,14 @@ const getMessageEventListener = () => {
   };
 };
 
+const getSignInCtaStyle = () => {
+  const isPrimary = (
+    getMetadata('signin-cta-style') === 'primary'
+    || getConfig()?.unav?.profile?.signInCtaStyle === 'primary'
+  );
+  return isPrimary ? 'primary' : 'secondary';
+};
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -193,10 +201,8 @@ export const CONFIG = {
       profile: {
         name: 'profile',
         attributes: {
-          isSignUpRequired: false,
-          messageEventListener: getMessageEventListener(),
-          componentLoaderConfig: {
-            config: {
+          accountMenuContext: {
+            sharedContextConfig: {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
@@ -208,10 +214,15 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
                 },
               },
+              complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
             },
+            messageEventListener: getMessageEventListener(),
           },
-          complexConfig: getConfig().unav?.profile?.complexConfig || null,
+          // UNav 1.5: Support for primary/secondary signIn CTA style
+          // Setting signInCtaStyle = 'primary' makes signIn CTA primary and signUp secondary
+          signInCtaStyle: getSignInCtaStyle(),
+          isSignUpRequired: false,
           callbacks: {
             onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
@@ -860,7 +871,11 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.4';
+    let unavVersion = new URLSearchParams(window.location.search).get('unavVersion');
+    // If versions follow a predictable format (digit.digit), validate using a regex
+    if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
+      unavVersion = '1.5';
+    }
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
@@ -1303,8 +1318,8 @@ class Gnav {
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
 
-    if (!this.isLocalNav() && hasPromo) {
-      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+    if (!this.isLocalNav()) {
+      if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       return;
     }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;

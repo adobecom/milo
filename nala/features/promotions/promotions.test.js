@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './promotions.spec.js';
 import PromoPage from './promotions.page.js';
-
-const miloLibs = process.env.MILO_LIBS || '';
+import { constructTestUrl } from '../../libs/commerce.js';
 
 let PROMO;
 test.beforeEach(async ({ page, baseURL }) => {
@@ -18,7 +17,7 @@ test.beforeEach(async ({ page, baseURL }) => {
 test.describe('Promotions feature test suite', () => {
   // @Promo-insert - Validate promo insert text after marquee and before text component
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[0].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[0].path);
     const { data } = features[0];
     console.info('[Test Page]: ', testPage);
 
@@ -48,7 +47,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-replace - Validate promo replaces marquee and text component
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[1].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[1].path);
     const { data } = features[1];
     console.info('[Test Page]: ', testPage);
 
@@ -75,7 +74,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-remove - Validate promo removes text component
   test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[2].path);
     const { data } = features[2];
     console.info('[Test Page]: ', testPage);
 
@@ -97,7 +96,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-two-manifests - Validate 2 active manifests on the page
   test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[3].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[3].path);
     const { data } = features[3];
     console.info('[Test Page]: ', testPage);
 
@@ -134,7 +133,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-replace-fragment - Validate fragment marquee replace
   test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[4].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[4].path);
     const { data } = features[4];
     console.info('[Test Page]: ', testPage);
 
@@ -155,9 +154,9 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-future - Validate active promo scheduled in the future
   test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[5].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[5].path);
     const { data } = features[5];
-    const previewPage = `${baseURL}${features[5].path}${'?mep='}${data.mepPath}&${miloLibs}`;
+    const previewPage = constructTestUrl(baseURL, features[5].path, `?mep=${data.mepPath}`);
     console.info('[Test Page]: ', testPage);
 
     await test.step('Go to the test page', async () => {
@@ -204,7 +203,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-with-personalization - Validate promo together with personalization and target OFF
   test(`${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[6].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[6].path);
     const { data } = features[6];
     console.info('[Test Page]: ', testPage);
 
@@ -234,7 +233,7 @@ test.describe('Promotions feature test suite', () => {
   test(`${features[7].name},${features[7].tags}`, async ({ page, baseURL, browserName }) => {
     test.skip(browserName === 'chromium' || browserName === 'webkit', 'Skipping test for Chromium and webkit browsers');
 
-    const testPage = `${baseURL}${features[7].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[7].path);
     const { data } = features[7];
     console.info('[Test Page]: ', testPage);
 
@@ -262,7 +261,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-preview - Validate preview functionality
   test(`${features[8].name},${features[8].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[8].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[8].path);
     const { data } = features[8];
     let previewPage;
     console.info('[Test Page]: ', testPage);
@@ -373,7 +372,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-page-filter-insert - Validate promo page filter with insert action
   test(`${features[9].name},${features[9].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[9].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[9].path);
     const { data } = features[9];
     console.info('[Test Page]: ', testPage);
 
@@ -403,7 +402,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-page-filter-replace - Validate promo page filter with replace action
   test(`${features[10].name},${features[10].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[10].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[10].path);
     const { data } = features[10];
     console.info('[Test Page]: ', testPage);
 
@@ -432,7 +431,7 @@ test.describe('Promotions feature test suite', () => {
   // @Promo-page-filter-geo - Validate promo page filter in default, de and fr locales
   test(`${features[11].name},${features[11].tags}`, async ({ page, baseURL, browserName }) => {
     test.skip(browserName === 'webkit', 'Skipping test for webkit browser');
-    let testPage = `${baseURL}${features[11].path}${miloLibs}`;
+    let testPage = constructTestUrl(baseURL, features[11].path);
     const { data } = features[11];
     console.info('[Test Page]: ', testPage);
 
@@ -460,7 +459,7 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Go to the test page in DE locale', async () => {
-      testPage = `${baseURL}${data.CO_DE}${features[11].path}${miloLibs}`;
+      testPage = constructTestUrl(baseURL, `${data.CO_DE}${features[11].path}`);
       console.info('[Test Page][DE]: ', testPage);
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');
@@ -476,7 +475,7 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Go to the test page in FR locale', async () => {
-      testPage = `${baseURL}${data.CO_FR}${features[11].path}${miloLibs}`;
+      testPage = constructTestUrl(baseURL, `${data.CO_FR}${features[11].path}`);
       console.info('[Test Page][FR]: ', testPage);
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');
@@ -494,7 +493,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-remove-fragment - Validate fragment marquee remove
   test(`${features[12].name},${features[12].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[12].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[12].path);
     console.info('[Test Page]: ', testPage);
 
     await test.step('Go to the test page', async () => {
@@ -509,7 +508,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-fragment-insert - Validate promo insert text after and before fragment
   test(`${features[13].name},${features[13].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[13].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[13].path);
     const { data } = features[13];
     console.info('[Test Page]: ', testPage);
 
@@ -536,7 +535,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-mas-replace-card-in-collection - Validate promo replace card in collection
   test(`${features[14].name},${features[14].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[14].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[14].path);
     const { data } = features[14];
     console.info('[Test Page]: ', testPage);
 
@@ -562,7 +561,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-mas-replace-collection-with-collection - Validate promo replace collection with collection
   test(`${features[15].name},${features[15].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[15].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[15].path);
     const { data } = features[15];
     console.info('[Test Page]: ', testPage);
 
@@ -582,7 +581,7 @@ test.describe('Promotions feature test suite', () => {
 
   // @Promo-mas-replace-collection-with-fragment - Validate promo replace collection with fragment
   test(`${features[16].name},${features[16].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[16].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[16].path);
     const { data } = features[16];
     console.info('[Test Page]: ', testPage);
 
