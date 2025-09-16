@@ -531,6 +531,7 @@ function loadAssetIntoSkeleton(
   assetUrn,
   assetData = {}
 ) {
+  const { id, assetType, viewBtnLabel } = assetData;
   return new Promise((resolve) => {
     debug('Loading image:', imageUrl);
 
@@ -540,7 +541,7 @@ function loadAssetIntoSkeleton(
     });
 
     // Add asset type to container for styling
-    if (assetData.assetType === 'video') {
+    if (assetType === 'video') {
       assetContainer.classList.add('firefly-gallery-video-item');
       skeletonItem.classList.add('video-item');
     }
@@ -551,23 +552,21 @@ function loadAssetIntoSkeleton(
 
     // Create and append clickable overlay if prompt exists
     if (promptText) {
-      const fireflyUrl = createFireflyURL(assetUrn);
-      const overlayPromptText =
-        assetData.assetType === 'video' ? '' : promptText;
-      const { viewBtnLabel } = assetData;
+      const fireflyUrl = createFireflyURL(assetUrn, assetType);
+      const overlayPromptText = assetType === 'video' ? '' : promptText;
       const overlay = createOverlayElement(
         overlayPromptText,
         userInfo,
         fireflyUrl,
         viewBtnLabel
       );
-      if (assetData.assetType === 'video') {
+      if (assetType === 'video') {
         overlay.classList.add('firefly-gallery-video-overlay');
       }
 
       // Add video element inside the overlay for video assets
-      if (assetData.assetType === 'video' && assetData.id) {
-        const videoUrl = constructVideoUrl(assetData.id);
+      if (assetType === 'video' && id) {
+        const videoUrl = constructVideoUrl(id);
         const video = createTag('video', {
           src: videoUrl,
           class: 'firefly-gallery-video',
@@ -643,7 +642,7 @@ function loadAssetIntoSkeleton(
     }
 
     // Image successfully loaded
-    debug(`${assetData.assetType || 'Image'} loaded successfully:`, imageUrl);
+    debug(`${assetType || 'Image'} loaded successfully:`, imageUrl);
     resolve();
   });
 }
