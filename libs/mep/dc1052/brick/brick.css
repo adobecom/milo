@@ -434,6 +434,9 @@
   }
   .brick .bottom-media {
     z-index: 1;
+    border-bottom-right-radius: var(--spacing-xs);
+    border-bottom-left-radius: var(--spacing-xs);
+    overflow: hidden;
   }
 }
 
