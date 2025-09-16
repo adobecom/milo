@@ -64,11 +64,11 @@ export default class AdobeHomePage {
       badge: {
         'background-color': 'rgb(253, 233, 255)',
         'border-radius': '7px',
-        'padding': '4px 9px 5px 9px',
+        padding: '4px 9px 5px 9px',
         'font-size': '12px',
-        'position': 'absolute',
-        'top': '12px',
-        'right': '12px',
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
       },
     };
   }
