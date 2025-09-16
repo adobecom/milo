@@ -75,6 +75,10 @@ export const CSS = `
         font-weight: 400;
     }
 
+    merch-card[variant="ah-try-buy-widget"] [slot="price"] .price:not(.price-strikethrough) .price-tax-inclusivity {
+        font-weight: 400;
+    }
+
     merch-card[variant="ah-try-buy-widget"] [slot="price"] a {
         color: var(--consonant-merch-card-body-xxs-color);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
