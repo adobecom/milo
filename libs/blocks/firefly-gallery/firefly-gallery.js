@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
-const DEBUG = false;
+const DEBUG = true;
 
 // API configuration
 const FIREFLY_API_URL =
@@ -55,11 +55,6 @@ function debug(message, data) {
   }
 }
 
-/**
- * Logs errors with consistent formatting
- * @param {string} message - Error message
- * @param {Error} error - Error object
- */
 function logError(message, error) {
   console.error(`[FireflyGallery Error] ${message}`, error);
 }
@@ -203,7 +198,7 @@ function updateItemTypeClass(item, itemType) {
   item.className = newClasses.join(' ');
 }
 
-async function fetchFireflyAssets(categoryId) {
+async function fetchFireflyAssets(categoryId, viewBtnLabel) {
   try {
     debug('Fetching Firefly assets...');
     const response = await fetch(
@@ -224,6 +219,7 @@ async function fetchFireflyAssets(categoryId) {
     const assets = data._embedded.assets || [];
     assets.forEach((asset) => {
       asset.assetType = categoryId === 'VideoGeneration' ? 'video' : 'image';
+      asset.viewBtnLabel = viewBtnLabel;
     });
     return assets;
   } catch (error) {
@@ -280,9 +276,11 @@ function createGalleryStructure() {
     class: 'firefly-gallery-container',
   });
   const galleryContent = createTag('div', { class: 'firefly-gallery-content' });
-  const galleryOverlay = createTag('div', { class: 'firefly-gallery-fade' });
+  const galleryFadeOverlay = createTag('div', {
+    class: 'firefly-gallery-fade',
+  });
 
-  galleryContent.appendChild(galleryOverlay);
+  galleryContent.appendChild(galleryFadeOverlay);
 
   galleryContainer.appendChild(galleryContent);
 
@@ -442,7 +440,12 @@ function createImageElement(imageUrl, altText) {
  * @param {string} fireflyUrl - URL to open when clicked
  * @return {HTMLElement} - The created clickable overlay element
  */
-function createOverlayElement(promptText, userInfo = {}, fireflyUrl) {
+function createOverlayElement(
+  promptText,
+  userInfo = {},
+  fireflyUrl,
+  viewBtnLabel
+) {
   const overlay = createTag('a', {
     class: 'firefly-gallery-overlay',
     href: fireflyUrl,
@@ -502,7 +505,7 @@ function createOverlayElement(promptText, userInfo = {}, fireflyUrl) {
     {
       class: 'firefly-gallery-view-button',
     },
-    'View'
+    viewBtnLabel
   );
   overlay.appendChild(viewButton);
 
@@ -519,7 +522,7 @@ function createOverlayElement(promptText, userInfo = {}, fireflyUrl) {
  * @param {string} assetUrn - Asset URN for generating Firefly URL
  * @return {Promise} - Resolves when image is loaded
  */
-function loadImageIntoSkeleton(
+function loadAssetIntoSkeleton(
   skeletonItem,
   imageUrl,
   altText,
@@ -551,10 +554,12 @@ function loadImageIntoSkeleton(
       const fireflyUrl = createFireflyURL(assetUrn);
       const overlayPromptText =
         assetData.assetType === 'video' ? '' : promptText;
+      const { viewBtnLabel } = assetData;
       const overlay = createOverlayElement(
         overlayPromptText,
         userInfo,
-        fireflyUrl
+        fireflyUrl,
+        viewBtnLabel
       );
       if (assetData.assetType === 'video') {
         overlay.classList.add('firefly-gallery-video-overlay');
@@ -717,13 +722,14 @@ function processItem(item, asset, index, locale, assets) {
 
   // Prepare asset data for video handling
   const assetData = {
-    assetType: asset.assetType || 'image',
     id: asset.id,
+    assetType: asset.assetType || 'image',
+    viewBtnLabel: asset.viewBtnLabel,
   };
   debug(
     `Loading ${assetData.assetType} ${index + 1}/${assets.length}: ${imageUrl}`
   );
-  loadImageIntoSkeleton(
+  loadAssetIntoSkeleton(
     item,
     imageUrl,
     altText,
@@ -734,11 +740,8 @@ function processItem(item, asset, index, locale, assets) {
   );
 }
 
-function loadFireflyImages(skeletonItems) {
+function loadFireflyImages(skeletonItems, assets = []) {
   try {
-    // We'll now take assets as an argument since they're fetched earlier
-    const assets = arguments[1] || [];
-
     if (!assets || !assets.length) {
       debug('No assets provided for loading');
       return;
@@ -892,8 +895,9 @@ export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
 
   // Extract category_id - should be text2Image / VideoGeneration
-  const categoryId =
-    el.innerText.replaceAll('\n', '').replaceAll(' ', '') || 'text2Image';
+  const categoryId = el.querySelector('div:first-child > div').innerText;
+  const viewBtnLabel =
+    el.querySelector('div:last-child > div').innerText || 'View';
 
   // Clear existing content
   el.textContent = '';
@@ -913,7 +917,7 @@ export default async function init(el) {
   // Allow the skeleton UI to render and be scrollable
   // before waiting for image data
   // Load Firefly images
-  fetchFireflyAssets(categoryId)
+  fetchFireflyAssets(categoryId, viewBtnLabel)
     .then((assets) => {
       if (assets && assets.length) {
         // Pass assets to the function to enable progressive loading
