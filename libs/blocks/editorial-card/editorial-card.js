@@ -89,10 +89,27 @@ function handleClickableCard(el) {
   }
 }
 
+function handleOpenClasses(el, hasOpenClass) {
+  const openClasses = ['no-border', 'l-rounded-corners-image', 'static-links-copy'];
+  if (hasOpenClass) el.classList.add(...openClasses);
+
+  if (!el.closest('.carousel.ups-desktop')) return;
+
+  const isCarouselDesktop = window.matchMedia('(min-width: 900px)');
+  const toggleOpenClasses = () => {
+    if (isCarouselDesktop.matches) el.classList.add(...openClasses);
+    else el.classList.remove(...openClasses);
+  };
+
+  toggleOpenClasses();
+  isCarouselDesktop.addEventListener('change', toggleOpenClasses);
+}
+
 const init = async (el) => {
   el.classList.add('con-block');
   const hasOpenClass = el.className.includes('open');
-  if (hasOpenClass) el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
+  handleOpenClasses(el, hasOpenClass);
+
   if (el.className.includes('rounded-corners')) loadStyle(`${base}/styles/rounded-corners.css`);
   if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');

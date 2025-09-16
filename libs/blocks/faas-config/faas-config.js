@@ -9,6 +9,7 @@ import {
 } from '../../deps/htm-preact.js';
 import { faasHostUrl, defaultState, initFaas, loadFaasFiles } from '../faas/utils.js';
 import { loadStyle, parseEncodedConfig, utf8ToB64 } from '../../utils/utils.js';
+import { debounce } from '../../utils/action.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import MultiField from '../../ui/controls/MultiField.js';
 import { Input as FormInput } from '../../ui/controls/formControls.js';
@@ -91,6 +92,7 @@ const reducer = (state, action) => {
     case 'SELECT_CHANGE':
     case 'INPUT_CHANGE':
     case 'MULTI_SELECT_CHANGE':
+    case 'MULTI_CHECKBOX':
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
       return deepCopy(defaultState);
@@ -229,6 +231,50 @@ const Select = ({ label, options, prop, onChange, sort }) => {
       </div>
     `;
 };
+
+const MultiSelectCheckbox = ({ label, options, prop, onChange, sort }) => {
+  const context = useContext(ConfiguratorContext);
+  const debouncedDispatch = debounce((selectedOptions) => {
+    context.dispatch({
+      type: 'MULTI_CHECKBOX',
+      prop,
+      value: selectedOptions,
+    });
+  }, 2000);
+  function isSelected(ele) {
+    return context.state[prop]?.includes(ele) ? 'selected' : '';
+  }
+  const onChecked = (e) => {
+    const selectedOptions = context.state[prop] || [];
+    if (e.target.checked) {
+      selectedOptions.push(e.target.value);
+    } else {
+      const index = selectedOptions.indexOf(e.target.value);
+      if (index !== -1) {
+        selectedOptions.splice(index, 1);
+      }
+    }
+    debouncedDispatch(selectedOptions);
+    if (typeof onChange === 'function') {
+      onChange();
+    }
+  };
+  const optionsArray = sort ? sortObjects(options) : Object.entries(options);
+  return html`
+      <div class="field">
+      <label for=${prop}>${label}</label>
+      <div class="multi-field">
+        ${optionsArray.map(([v, l]) => {
+    if (isSelected(v)) {
+      return html`<label for="${v}"><input type="checkbox" id="${v}" name="${v}" aria-label="${l}" checked onChange=${onChecked} value="${v}"/>${l} (${v})</label>`;
+    }
+    return html`<label for="${v}"><input type="checkbox" id="${v}" name="${v}" aria-label="${l}" onChange=${onChecked} value="${v}"/>${l} (${v})</label>`;
+  })}
+      </div>
+      </div>
+    `;
+};
+
 const Input = ({ label, type = 'text', prop, placeholder }) => {
   const context = useContext(ConfiguratorContext);
   const onInputChange = (e) => {
@@ -255,6 +301,7 @@ const RequiredPanel = () => {
   const [field149, setField149] = useState('');
   const [field172, setField172] = useState('');
   const [field103, setField103] = useState('');
+  const [field69, setField69] = useState('');
   const [fieldMultiCampStyle, setFieldMultiCampStyle] = useState('');
   const [fieldpjs36, setFieldpjs36] = useState('');
 
@@ -347,6 +394,15 @@ const RequiredPanel = () => {
           prop="${d.question.id}"
           placeholder="Comma separated list e.g. Microsoft, SAP" />`);
         }
+
+        if (d.question.id === '69') {
+          setField69(html`
+          <${MultiSelectCheckbox}
+            label="${d.question.name}"
+            prop="qjs${d.question.id}"
+            options=${buildOptionsFromApi(d.question.collection.collectionValues)}
+            sort="true" />`);
+        }
         // Last Asset
         if (d.question.id === '172') {
           setField172(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
@@ -394,6 +450,7 @@ const RequiredPanel = () => {
     ${field92}
     ${field93}
     ${field94}
+    ${field69}
     ${field149}
     ${field172}
     <${Input} label="Destination URL" prop="d" />
