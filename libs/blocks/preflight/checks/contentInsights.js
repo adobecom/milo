@@ -53,11 +53,15 @@ export default async function executeCheck() {
   window.contentInsights.accessibility = await checkAlt();
   
   await openAllModals(document);
-  const { assetsWithMismatch: imagesWithMismatch, assetsWithMatch: imagesWithMatch } = (await checkImageDimensions(window.location.href, document))?.details;
+  const {
+    assetsWithMismatch: imagesWithMismatch,
+    assetsWithMatch: imagesWithMatch,
+  } = (await checkImageDimensions(window.location.href, document))?.details ?? {};
+  
   window.contentInsights.assets = {
-     imagesWithMismatch,
-     imagesWithMatch,
-  }
+    imagesWithMismatch,
+    imagesWithMatch,
+  };
   
   window.dispatchEvent(new CustomEvent('content-insights-complete', { detail: window.contentInsights }));
 }
