@@ -6,7 +6,7 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
 }
 
 merch-card[variant="ccd-slice"] [slot='body-s'] {
-  display: inherit;
+  display: flex;
 }
   
 merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
