@@ -427,4 +427,22 @@
   .brick:has(.icon-stack-area) {
     min-height: unset;
   }
+
+  /* DC1052 specific mobile only */
+  .brick .bottom-media picture img {
+    display: block;
+  }
+  .brick .bottom-media {
+    z-index: 1;
+  }
 }
+
+ /* DC1052 specific non mobile only */
+@media screen and (min-width: 600px) {
+  .brick .bottom-media {
+    display: none;
+  }
+}
+
+
+
