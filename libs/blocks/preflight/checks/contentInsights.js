@@ -18,7 +18,7 @@ const [ PERFORMANANCE_CHK, GENERAL_CHK, SEO_CHK, ACCESSIBILITY_CHK, ASSETS_CHK ]
 export default async function executeCheck(options) {
   const { excludes = [] } = options || {};
   window.contentInsights = {};
-  if (skipChecks.includes(PERFORMANANCE_CHK)) {
+  if (!skipChecks.includes(PERFORMANANCE_CHK)) {
     const perfChecks = [
         checkLcpEl(window.location.href, document),
         checkSingleBlock(document),
@@ -37,11 +37,11 @@ export default async function executeCheck(options) {
     }, {});
   }
   
-  if (skipChecks.includes(GENERAL_CHK)) {
+  if (!skipChecks.includes(GENERAL_CHK)) {
     window.contentInsights.general = runGeneralChecks();
   }
 
-  if (skipChecks.includes(SEO_CHK)) {
+  if (!skipChecks.includes(SEO_CHK)) {
     const seoChecks = [
         checkH1s(document),
         checkTitle(document),
@@ -56,10 +56,13 @@ export default async function executeCheck(options) {
         acc[key] = results[idx];
         return acc;
     }, {});
+  }
+
+  if (!skipChecks.includes(ACCESSIBILITY_CHK)) {
     window.contentInsights.accessibility = await checkAlt();
   }
-  
-  if (skipChecks.includes(ASSETS_CHK)) {
+
+  if (!skipChecks.includes(ASSETS_CHK)) {
     await openAllModals(document);
     const {
       assetsWithMismatch: imagesWithMismatch = [],
