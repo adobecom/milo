@@ -188,7 +188,7 @@ export const formSuccess = (formEl, formData) => {
   return false;
 };
 
-const handleIframeTimeout = (el) => {
+export const handleIframeTimeout = (el) => {
   const searchParams = new URLSearchParams(window.location.search);
   const config = getConfig();
   const iframe = document.querySelector('iframe[src*="/index.php/form/XDFrame"]');
@@ -239,6 +239,7 @@ const handleIframeTimeout = (el) => {
     el.appendChild(errorOverlay);
   };
 
+  /* c8 ignore next 4 */
   if (searchParams.get('marketoOverlay') === 'error') {
     decorateOverlay();
     return;
@@ -361,6 +362,7 @@ export default function init(el) {
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
 
+  /* c8 ignore next 4 */
   if (!formID || !baseURL || !munchkinID) {
     el.style.display = 'none';
     return;
