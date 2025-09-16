@@ -15,8 +15,8 @@ import { checkH1s, checkTitle, checkCanon, checkDescription, checkBody, checkLor
 
 const [ PERFORMANANCE_CHK, GENERAL_CHK, SEO_CHK, ACCESSIBILITY_CHK, ASSETS_CHK ] = ['performanance', 'general', 'seo', 'accessibility', 'assets'];
 
-export default async function executeCheck(options = {}) {
-  const { excludes = [] } = options;
+export default async function executeCheck(options) {
+  const { excludes = [] } = options || {};
   window.contentInsights = {};
   if (skipChecks.includes(PERFORMANANCE_CHK)) {
     const perfChecks = [
