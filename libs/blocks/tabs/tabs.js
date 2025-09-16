@@ -382,6 +382,13 @@ const init = (block) => {
     tabListContainer.dataset.pretext = config.pretext;
   }
 
+  // For segmented-control variant, wrap tabList in tabs-wrapper container
+  if (block.classList.contains('segmented-control')) {
+    const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
+    tabList.insertAdjacentElement('beforebegin', tabsWrapper);
+    tabsWrapper.append(tabList);
+  }
+
   // Tab Paddles
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);

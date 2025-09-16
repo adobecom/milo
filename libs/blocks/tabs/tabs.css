@@ -500,9 +500,12 @@
 }
 
 /* Segmented Control Variant */
-.tabs.segmented-control {
+.tabs.segmented-control .tabs-wrapper {
   display: flex;
   width: 100%;
+}
+
+.tabs.segmented-control.center .tabs-wrapper{
   justify-content: center;
 }
 
@@ -518,6 +521,7 @@
 
 .tabs.segmented-control .tabList .tab-list-container {
   min-width: 300px;
+  width: auto;
 }
 
 .tabs.segmented-control .tabList button {
