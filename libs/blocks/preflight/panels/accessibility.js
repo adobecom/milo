@@ -108,8 +108,8 @@ export async function checkAlt() {
   altResult.value = { ...result, checked: true };
   
   return {
-    decorativeImages,
-    altTextImages
+    decorativeImages.value,
+    altTextImages.value
   }
 }
 
