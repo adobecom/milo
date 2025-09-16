@@ -313,4 +313,125 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
       console.log('Error in API validation test:', e.message);
     }
   });
+
+  test(`Test: ${features[4].name},${features[4].tags}`, async () => {
+    const testData = features[4];
+    console.log(`Running test for ${testData.name} with ID ${testData.data.id} - Badge validation`);
+
+    const page = workerSetup.getPage('US');
+    ah = new AdobeHomePage(page);
+    webUtil = new WebUtil(page);
+
+    await workerSetup.verifyPageURL('US', DOCS_GALLERY_PATH.ADOBE_HOME.US, expect);
+
+    await test.step('Validate widget content with badge', async () => {
+      const widget = await ah.getWidget(testData.data.id, testData.data.size);
+
+      // Verify widget exists
+      await expect(widget).toBeVisible();
+
+      // Verify badge exists
+      const badge = await ah.getWidgetBadge(testData.data.id, testData.data.size);
+      await expect(badge).toBeVisible();
+    });
+
+    await test.step('Verify badge text and styling', async () => {
+      // Get badge text directly from page evaluate to handle shadow DOM
+      const badgeInfo = await page.evaluate(({ id, size, expectedText }) => {
+        const fragment = document.querySelector(`aem-fragment[fragment="${id}"]`);
+        if (!fragment) return { error: 'Fragment not found' };
+
+        let merchCard = null;
+        let parent = fragment.parentElement;
+        while (parent) {
+          if (parent.tagName.toLowerCase() === 'merch-card'
+              && parent.getAttribute('variant') === 'ah-try-buy-widget'
+              && parent.getAttribute('size') === size) {
+            merchCard = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+
+        if (!merchCard) return { error: 'Card not found' };
+
+        // Find the badge element
+        const badgeEl = merchCard.querySelector('[slot="badge"] merch-badge');
+        if (!badgeEl) return { error: 'Badge element not found' };
+
+        // Try to get text from shadow DOM if it exists
+        let badgeText = '';
+        if (badgeEl.shadowRoot) {
+          const textEl = badgeEl.shadowRoot.querySelector('.badge');
+          badgeText = textEl ? textEl.textContent.trim() : '';
+        } else {
+          badgeText = badgeEl.textContent.trim();
+        }
+
+        return {
+          text: badgeText,
+          backgroundColor: badgeEl.getAttribute('background-color'),
+          hasText: badgeText === expectedText,
+        };
+      }, { id: testData.data.id, size: testData.data.size, expectedText: testData.data.badge.text });
+
+      console.log('Badge info:', badgeInfo);
+
+      if (badgeInfo.error) {
+        throw new Error(badgeInfo.error);
+      }
+
+      // Verify badge text
+      expect(badgeInfo.text).toBe(testData.data.badge.text);
+
+      // Verify badge CSS properties
+      const badgeStyle = await page.evaluate(({ id, size }) => {
+        const fragment = document.querySelector(`aem-fragment[fragment="${id}"]`);
+        if (!fragment) return null;
+
+        let merchCard = null;
+        let parent = fragment.parentElement;
+        while (parent) {
+          if (parent.tagName.toLowerCase() === 'merch-card'
+              && parent.getAttribute('variant') === 'ah-try-buy-widget'
+              && parent.getAttribute('size') === size) {
+            merchCard = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+
+        if (!merchCard) return null;
+
+        const badgeEl = merchCard.querySelector('[slot="badge"] merch-badge');
+        if (!badgeEl) return null;
+
+        // Get computed style of the badge slot container
+        const slotEl = merchCard.querySelector('[slot="badge"]');
+        const slotStyle = window.getComputedStyle(slotEl);
+
+        // Get badge element attributes
+        return {
+          backgroundColor: badgeEl.getAttribute('background-color'),
+          position: slotStyle.position,
+          top: slotStyle.top,
+          right: slotStyle.right,
+        };
+      }, { id: testData.data.id, size: testData.data.size });
+
+      if (badgeStyle) {
+        expect(badgeStyle.backgroundColor).toBe(testData.data.badge.color);
+        expect(badgeStyle.position).toBe('absolute');
+        expect(badgeStyle.top).toBe('12px');
+        expect(badgeStyle.right).toBe('12px');
+      } else {
+        console.log('Could not get badge style');
+      }
+    });
+
+    await test.step('Verify widget CSS with badge', async () => {
+      const widget = await ah.getWidget(testData.data.id, testData.data.size);
+      await verifyWidgetCSS(widget, testData);
+    });
+  });
 });
