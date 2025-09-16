@@ -1850,7 +1850,7 @@ export function loadLana(options = {}) {
 
 export const reloadPage = () => window.location.reload();
 
-window.addEventListener("content-insights-begin", async () => {
+window.addEventListener("content-insights-begin", async (options) => {
   const {default: executeCheck} = await import('../blocks/preflight/checks/contentInsights.js');
-  await executeCheck()
+  await executeCheck(options);
 });
