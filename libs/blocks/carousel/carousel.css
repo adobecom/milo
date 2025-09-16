@@ -600,9 +600,18 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.dark.disable-buttons .carousel-button.disabled:active,
   .dark .carousel.disable-buttons .carousel-button.disabled:hover,
   .dark .carousel.disable-buttons .carousel-button.disabled:active,
+  .carousel.disable-buttons .carousel-button.disabled:hover,
+  .carousel.disable-buttons .carousel-button.disabled:active,
   .carousel.dark.disable-buttons .carousel-button.disabled,
-  .dark .carousel.disable-buttons .carousel-button.disabled {
+  .dark .carousel.disable-buttons .carousel-button.disabled,
+  .carousel.disable-buttons .carousel-button.disabled {
     background-color: var(--carousel-nav-background-dark);
+  }
+
+  .dark .carousel.disable-buttons .carousel-button.disabled path,
+  .carousel.dark.disable-buttons .carousel-button.disabled path,
+  .carousel.disable-buttons .carousel-button.disabled path {
+    fill: var(--carousel-nav-button-background-active)
   }
 
 
