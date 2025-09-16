@@ -180,12 +180,6 @@ const init = async (el) => {
       decorateDefaultLinkAnalytics(showMoreButton);
     }
   }
-  // added parent container for narrow content
-  if (!el.classList.contains('content-narrow')) return;
-  const parentContainer = createTag('div', { class: 'editorial-narrow-container' });
-  el.closest('.section').appendChild(parentContainer);
-  parentContainer.appendChild(el);
-  if (!section.querySelector('.editorial-card.first')) el.classList.add('first');
 };
 
 export default init;
