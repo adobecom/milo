@@ -64,6 +64,10 @@ function decorateForeground(el, foreground) {
     iconArea.classList.add('icon-area');
     if (iconArea.querySelectorAll('img').length > 1) iconArea.classList.add('icon-gap-s');
   }
+  const mobileBottomMedia = foreground.querySelector('p:not([class]) > picture');
+  if (!mobileBottomMedia) return;
+  const mediaContainer = createTag('div', { class: 'media-container bottom-media' }, mobileBottomMedia);
+  foreground.closest('.brick').appendChild(mediaContainer);
 }
 
 function decorateFillButtons(actionArea) {
