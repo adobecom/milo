@@ -233,26 +233,31 @@ export class Plans extends VariantLayout {
 
     async adjustLegal() {
         if (this.legalAdjusted) return;
-        this.legalAdjusted = true;
-        await this.card.updateComplete;
-        await customElements.whenDefined('inline-price');
-        const prices = [];
-        const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
-        if (headingPrice) prices.push(headingPrice);
-        const legalPromises = prices.map(async (price) => {
-          const legal = price.cloneNode(true);
-          await price.onceSettled();
-          if (!price?.options) return;
-          if (price.options.displayPerUnit)
-              price.dataset.displayPerUnit = 'false';
-          if (price.options.displayTax) price.dataset.displayTax = 'false';
-          if (price.options.displayPlanType)
-              price.dataset.displayPlanType = 'false';
-          legal.setAttribute('data-template', 'legal');
-          price.parentNode.insertBefore(legal, price.nextSibling);
-          await legal.onceSettled();
-        });
-        await Promise.all(legalPromises);
+        try {
+            this.legalAdjusted = true;
+            await this.card.updateComplete;
+            await customElements.whenDefined('inline-price');
+            const prices = [];
+            const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
+            if (headingPrice) prices.push(headingPrice);
+            const legalPromises = prices.map(async (price) => {
+              const legal = price.cloneNode(true);
+              await price.onceSettled();
+              if (!price?.options) return;
+              if (price.options.displayPerUnit)
+                  price.dataset.displayPerUnit = 'false';
+              if (price.options.displayTax) price.dataset.displayTax = 'false';
+              if (price.options.displayPlanType)
+                  price.dataset.displayPlanType = 'false';
+              legal.setAttribute('data-template', 'legal');
+              price.parentNode.insertBefore(legal, price.nextSibling);
+              await legal.onceSettled();
+            });
+            await Promise.all(legalPromises);
+        }
+        catch {
+            /* Proceed with adjusting edu lists */
+        }
     }
 
     async adjustAddon() {
