@@ -422,7 +422,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
       if (badgeStyle) {
         expect(badgeStyle.backgroundColor).toBe(testData.data.badge.color);
         expect(badgeStyle.position).toBe('absolute');
-        expect(badgeStyle.top).toBe('12px');
+        expect(badgeStyle.top).toBe('18px');
         expect(badgeStyle.right).toBe('12px');
       } else {
         console.log('Could not get badge style');

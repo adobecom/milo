@@ -38,7 +38,6 @@ export class AHTryBuyWidget extends VariantLayout {
                 <div class="header">
                     <slot name="icons"></slot>
                     <slot name="heading-xxxs"></slot>
-                    ${this.badge}
                 </div>
                 <slot name="body-xxs"></slot>
                 <div class="price">
