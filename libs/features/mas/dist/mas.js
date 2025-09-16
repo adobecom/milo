@@ -4084,6 +4084,7 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
 
 merch-card[variant="ccd-slice"] [slot='body-s'] {
   display: flex;
+  flex-flow: column;
 }
   
 merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
