@@ -12,7 +12,7 @@
   --columns: 2;
   --gap: 8px;
   --item-margin: 8px;
-  --padding: var(--spacing-m) 0;
+  /* --padding: var(--spacing-m) 0; */
 
   /* Typography scale */
   --prompt-font-size: calc(var(--type-body-xs-size) * 0.8);
@@ -33,7 +33,7 @@
 }
 
 .firefly-gallery-block {
-  padding: var(--padding);
+  /* padding: var(--padding); */
   position: relative;
 }
 
