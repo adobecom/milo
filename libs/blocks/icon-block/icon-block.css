@@ -384,10 +384,6 @@
     margin-inline: unset;
   }
 
-  .icon-block.container-mobile .icon-area img {
-    height: var(--icon-size-s);
-  }
-
   .icon-block.container-mobile.full-width .foreground .icon-area,
   .icon-block.container-mobile .foreground .icon-area {
     margin-bottom: var(--spacing-xs);
