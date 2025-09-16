@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { features } from './masadobehome.spec.js';
 import WebUtil from '../../../libs/webutil.js';
 import AdobeHomePage from './masadobehome.page.js';
-import { createWorkerPageSetup, ADOBE_HOME_BASE_PATH } from '../../../libs/commerce.js';
+import { createWorkerPageSetup, DOCS_GALLERY_PATH } from '../../../libs/commerce.js';
 
 let ah;
 let webUtil;
@@ -11,7 +11,7 @@ test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run
 
 const workerSetup = createWorkerPageSetup({
   pages: [
-    { name: 'US', url: ADOBE_HOME_BASE_PATH.US },
+    { name: 'US', url: DOCS_GALLERY_PATH.ADOBE_HOME.US },
   ],
 });
 
@@ -58,7 +58,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     ah = new AdobeHomePage(page);
     webUtil = new WebUtil(page);
 
-    await workerSetup.verifyPageURL('US', ADOBE_HOME_BASE_PATH.US, expect);
+    await workerSetup.verifyPageURL('US', DOCS_GALLERY_PATH.ADOBE_HOME.US, expect);
 
     await test.step('Debug DOM structure', async () => {
       const domInfo = await page.evaluate(({ id }) => {
@@ -193,7 +193,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     ah = new AdobeHomePage(page);
     webUtil = new WebUtil(page);
 
-    await workerSetup.verifyPageURL('US', ADOBE_HOME_BASE_PATH.US, expect);
+    await workerSetup.verifyPageURL('US', DOCS_GALLERY_PATH.ADOBE_HOME.US, expect);
 
     await test.step('Verify dark theme styles', async () => {
       const widget = await ah.getWidget(testData.data.id, testData.data.size);
@@ -250,7 +250,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     ah = new AdobeHomePage(page);
     webUtil = new WebUtil(page);
 
-    await workerSetup.verifyPageURL('US', ADOBE_HOME_BASE_PATH.US, expect);
+    await workerSetup.verifyPageURL('US', DOCS_GALLERY_PATH.ADOBE_HOME.US, expect);
 
     await test.step('Verify single size layout', async () => {
       const widget = await ah.getWidget(testData.data.id, testData.data.size);
@@ -266,7 +266,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     ah = new AdobeHomePage(page);
     webUtil = new WebUtil(page);
 
-    await workerSetup.verifyPageURL('US', ADOBE_HOME_BASE_PATH.US, expect);
+    await workerSetup.verifyPageURL('US', DOCS_GALLERY_PATH.ADOBE_HOME.US, expect);
 
     try {
       const clicked = await page.evaluate(({ id, size }) => {
