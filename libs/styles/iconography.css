@@ -23,18 +23,18 @@ dealing w/ groups of media and associated text
   --type-lockup-xxs-size: 11px;
   --type-lockup-xxs-ls: -0.01em;
 
-  --type-lockup-xxl-gap: 20px;
-  --type-lockup-xl-gap: 17px;
-  --type-lockup-l-gap: 15px;
-  --type-lockup-m-gap: 10px;
-  --type-lockup-s-gap: 8px;
-  --type-lockup-xs-gap: 6px;
-  --type-lockup-xxs-gap: 4px;
-
   /* avatar sizes */
   --avatar-size-xxl: 64px;
   --avatar-size-xl: 56px;
   --avatar-size-l: 40px;
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --avatar-size-xxl: 80px;
+    --avatar-size-xl: 64px;
+    --avatar-size-l: 56px;
+  }
 }
 
 /* Lockup */
@@ -59,43 +59,43 @@ dealing w/ groups of media and associated text
 .xxs-lockup .lockup-area {
   font-size: var(--type-lockup-xxs-size);
   letter-spacing:var(--type-lockup-xxs-ls);
-  gap: var(--type-lockup-xxs-gap);
+  gap: 4px;
 }
 
 .xs-lockup .lockup-area {
   font-size: var(--type-lockup-xs-size);
   letter-spacing:var(--type-lockup-xs-ls);
-  gap: var(--type-lockup-xs-gap);
+  gap: 6px;
 }
 
 .s-lockup .lockup-area {
   font-size: var(--type-lockup-s-size);
   letter-spacing:var(--type-lockup-s-ls);
-  gap: var(--type-lockup-s-gap);
+  gap: 8px;
 }
 
 .m-lockup .lockup-area {
   font-size: var(--type-lockup-m-size);
   letter-spacing:var(--type-lockup-m-ls);
-  gap: var(--type-lockup-m-gap);
+  gap: 10px;
 }
 
 .l-lockup .lockup-area {
   font-size: var(--type-lockup-l-size);
   letter-spacing:var(--type-lockup-l-ls);
-  gap: var(--type-lockup-l-gap);
+  gap: 15px;
 }
 
 .xl-lockup .lockup-area {
   font-size: var(--type-lockup-xl-size);
   letter-spacing:var(--type-lockup-xl-ls);
-  gap: var(--type-lockup-xl-gap);
+  gap: 17px;
 }
 
 .xxl-lockup .lockup-area {
   font-size: var(--type-lockup-xxl-size);
   letter-spacing:var(--type-lockup-xxl-ls);
-  gap: var(--type-lockup-xxl-gap);
+  gap: 20px;
 }
 
 .center:not(.tabs, .section) .lockup-area { justify-content: center; }
@@ -107,42 +107,6 @@ dealing w/ groups of media and associated text
 .l-lockup .lockup-area img { height: var(--icon-size-l); }
 .xl-lockup .lockup-area img { height: var(--icon-size-xl); }
 .xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
-
-/* Mweb specific changes for lockup */
-.mweb-enabled {
-  --type-lockup-xxs-size: 16px; 
-  --type-lockup-xxs-ls: 0;
-}
-
-/* tablet down */
-@media screen and (max-width: 1199px) { 
-  /* Mweb specific changes for lockup */
-  .mweb-enabled {  
-    /* Mweb specific lockup sizes */
-    --type-lockup-s-size: 16px; 
-    --type-lockup-s-ls: 0;
-    --type-lockup-m-size: 22px; 
-    --type-lockup-l-size: 27px; 
-    --type-lockup-l-ls: -0.02em;
-    --type-lockup-xl-size: 38px; 
-    --type-lockup-xxl-size: 44px; 
-
-    --type-lockup-xs-gap: 4px;
-    --type-lockup-s-gap: 6px;
-    --type-lockup-m-gap: 8px;
-    --type-lockup-l-gap: 10px;
-    --type-lockup-xl-gap: 15px;
-    --type-lockup-xxl-gap: 17px;
-  }
-}
-
-@media (min-width: 1200px) {
-  :root {
-    --avatar-size-xxl: 80px;
-    --avatar-size-xl: 64px;
-    --avatar-size-l: 56px;
-  }
-}
 
 .avatar-area {
   line-height: 0;

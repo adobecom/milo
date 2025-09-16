@@ -166,18 +166,6 @@
   --body-font-family: adobe-clean-thai, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
-@media screen and (max-width: 1199px) { 
-  /* Mweb specific changes for lockup */
-  .mweb-enabled {
-    --icon-size-xs: 16px;
-    --icon-size-s: 24px;
-    --icon-size-m: 32px;
-    --icon-size-l: 40px;
-    --icon-size-xl: 56px;
-    --icon-size-xxl: 64px;
-  }
-}
-
 @media (min-width: 1200px) {
   :root {
     --spacing-xl: 56px;
