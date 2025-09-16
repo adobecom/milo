@@ -53,14 +53,8 @@ export default {
       messageWidth: '100%',
     },
     privacyNotice: {
-      title: 'Privacy Notice',
-      text: 'By using this automated chatbot, you consent that any personal information you provide in the chat may be collected, used, analyzed, disclosed, and retained by Adobe and its service providers, in accordance with the Adobe {Privacy Policy}. Please do not enter any personal information or sensitive information (e.g., financial or health data).',
-      links: [
-        {
-          text: 'Privacy Policy',
-          url: 'https://www.adobe.com/privacy/policy.html',
-        },
-      ],
+      title: 'Welcome!',
+      text: 'Thank you for trying out this initial release. The experience is still evolving and will continue to improve over time.',
     },
     productCard: { actionButtonSize: 'S' },
   },
