@@ -33,7 +33,7 @@ export default {
     'feedback.thumbsDown.aria': 'Thumbs down',
   },
   disclaimer: {
-    text: 'AI responses may be inaccurate. Check answers and sources. {Terms}',
+    text: 'AI responses may be inaccurate, and any offers provided are non-binding. Check answers and sources. {Terms}',
     links: [
       {
         text: 'Terms',
