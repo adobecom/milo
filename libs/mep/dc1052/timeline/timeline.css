@@ -1,0 +1,252 @@
+.timeline {
+  box-sizing: border-box;
+  padding: 0 var(--grid-margins-width) var(--spacing-xl) var(--grid-margins-width);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.dialog-modal .timeline {
+  padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+}
+
+.timeline .row {
+  display: grid;
+}
+
+.timeline.segment-timeline-3-9 .row,
+.timeline.segment-timeline-4-8 .row,
+.timeline.segment-timeline-5-7 .row  {
+  grid-template-columns: 1fr 58.3%;
+}
+
+.timeline.segment-timeline-6-6 .row {
+  grid-template-columns: 50% 50%;
+} 
+
+.timeline.segment-timeline-7-5 .row,
+.timeline.segment-timeline-8-4 .row,
+.timeline.segment-timeline-9-3 .row { 
+  grid-template-columns: 1fr 41.7%;
+}
+
+.timeline h1,
+.timeline h2,
+.timeline h3,
+.timeline h4,
+.timeline h5,
+.timeline h6,
+.timeline p {
+  color: var(--text-color);
+  margin: 0;
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+}
+
+.timeline .row:nth-child(2)>div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.timeline .row:nth-of-type(1)>.right>div+div {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.timeline .row:nth-of-type(1)>.left>div>* {
+  max-width: 100px;
+}
+
+.dark .timeline .row:nth-child(3)>div *,
+.timeline.dark .row:nth-child(3)>div * {
+  color: var(--color-black);
+}
+
+.timeline .row:nth-of-type(1)>.right>div+div>* {
+  max-width: 100px;
+}
+
+.timeline .row:nth-of-type(1)>.right,
+.timeline .row:nth-of-type(2)>.right {
+  display: grid;
+  justify-content: space-between;
+}
+
+.timeline .row:nth-of-type(1)>.right {
+  grid-template-columns: 1.5fr 1fr;
+  grid-gap: 8px;
+}
+
+[dir="rtl"] .timeline .row:nth-of-type(1)>.right {
+  grid-template-columns: 1fr 1fr;
+}
+
+.timeline.segment-timeline-3-9 .left-center,
+.timeline.segment-timeline-4-8 .left-center,
+.timeline.segment-timeline-5-7 .left-center,
+.timeline.segment-timeline-6-6 .left-center {
+  display: none;
+}
+@media screen and (max-width: 599.99px) {
+  .timeline.segment-timeline-7-5 .row:nth-of-type(1)>.right,
+  .timeline.segment-timeline-8-4 .row:nth-of-type(1)>.right,
+  .timeline.segment-timeline-9-3 .row:nth-of-type(1)>.right {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline.segment-timeline-7-5 .row:nth-of-type(1)>.left,
+  .timeline.segment-timeline-8-4 .row:nth-of-type(1)>.left,
+  .timeline.segment-timeline-9-3 .row:nth-of-type(1)>.left {
+    grid-template-columns: 1fr 1.5fr; 
+    display: grid;
+    justify-content: space-between;
+    grid-gap: 8px; 
+  }
+
+  .timeline.segment-timeline-7-5 .right-center,
+  .timeline.segment-timeline-8-4 .right-center,
+  .timeline.segment-timeline-9-3 .right-center {
+    display: none;
+  }
+
+  .timeline.segment-timeline-7-5 .left-center,
+  .timeline.segment-timeline-8-4 .left-center,
+  .timeline.segment-timeline-9-3 .left-center {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  [dir="rtl"] .timeline.segment-timeline-7-5 .left-center,
+  [dir="rtl"] .timeline.segment-timeline-8-4 .left-center,
+  [dir="rtl"] .timeline.segment-timeline-9-3 .left-center {
+    text-align: left;
+  }
+
+  .timeline .row:nth-of-type(1)>.left .left-center>* {
+    padding-right: 0;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .timeline.segment-timeline-7-5 .left-center,
+  .timeline.segment-timeline-8-4 .left-center,
+  .timeline.segment-timeline-9-3 .left-center {
+    display: none;
+  }
+}
+
+.timeline .row:nth-of-type(2)>.right {
+  grid-template-columns: 2px 2px;
+}
+
+.timeline .row:nth-of-type(1)>.right>div:nth-of-type(1) {
+  max-width: 135px;
+  /* padding-right: var(--spacing-xxs); */
+}
+
+.timeline .bar {
+  height: 20px;
+  width: 2px;
+  border-radius: 1px;
+  margin: var(--spacing-xxs) 0;
+}
+
+.timeline .row:nth-of-type(3) p {
+  text-align: center;
+  font-weight: 700;
+  padding: 4px var(--spacing-xxs);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.timeline .row:nth-of-type(3) .left p {
+  margin-right: 1px;
+}
+
+.timeline .row:nth-of-type(3) .right p {
+  margin-left: 3px;
+}
+
+.dark .timeline .row:nth-child(1)>div>div>*,
+.timeline.dark .row:nth-child(1)>div>div>* {
+  color: var(--color-white);
+}
+
+[dir="rtl"] .timeline .row:nth-of-type(1)>.left>div>* {
+  /* padding: 0 0 0 var(--spacing-m); */
+  padding: 0;
+  text-align: right;
+}
+
+[dir="rtl"] .timeline.timeline.segment-timeline-7-5 .row:nth-of-type(1)>.left>.left-center>*,
+[dir="rtl"] .timeline.timeline.segment-timeline-8-4 .row:nth-of-type(1)>.left>.left-center>*,
+[dir="rtl"] .timeline.timeline.segment-timeline-9-3 .row:nth-of-type(1)>.left>.left-center>* {
+  padding: 0;
+  text-align: left;
+}
+
+[dir="rtl"] .timeline .row:nth-of-type(1)>.right>div+div {
+  padding: 0 0 var(--spacing-xxs) 0;
+  text-align: left;
+}
+
+[dir="rtl"] .timeline .row:nth-of-type(3) .left p {
+  margin: 0 0 0 1px;
+}
+
+[dir="rtl"] .timeline .row:nth-of-type(3) .right p {
+  margin: 0 3px 0 0;
+}
+
+@media screen and (min-width: 600px) {
+  .dialog-modal .timeline {
+    padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  }
+}
+@media screen and (min-width: 1200px) {
+  .timeline.segment-timeline-3-9 .row {
+    grid-template-columns: 1fr 75%
+  }
+
+  .timeline.segment-timeline-4-8 .row {
+    grid-template-columns: 1fr 66.69%;
+  }
+
+  .timeline.segment-timeline-5-7 .row {
+    grid-template-columns: 1fr 58.3%;
+  }
+
+  .timeline.segment-timeline-6-6 .row {
+    grid-template-columns: 1fr 50%;
+  }
+
+  .timeline.segment-timeline-7-5 .row {
+    grid-template-columns: 1fr 41.7%;
+  }
+
+  .timeline.segment-timeline-8-4 .row {
+    grid-template-columns: 1fr 33.3%;
+  }
+
+  .timeline.segment-timeline-9-3 .row {
+    grid-template-columns: 1fr 25%;
+  }
+}
+
+@media screen and (min-width:1120px) {
+  .timeline {
+    padding-left: calc((100vw - 1000px) / 2);
+    padding-right: calc((100vw - 1000px) / 2);
+  }
+
+  .dialog-modal .timeline {
+    padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  }
+}
