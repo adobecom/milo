@@ -353,10 +353,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.media-hidden-mobile .foreground .asset,
   .hero-marquee.media-hidden-mobile .foreground-media { display: none; }
 
-  body.mweb-enabled .hero-marquee .m-lockup .lockup-area img {
-    height: 24px;
-  }
-
   .hero-marquee .row-supplemental.center {
     text-align: center;
   }
@@ -406,10 +402,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.media-hidden-tablet .foreground .asset,
   .hero-marquee.media-hidden-tablet .foreground-media,
   .hero-marquee.media-hidden-tablet-tablet .foreground-media { display: none; }
-
-    body.mweb-enabled .hero-marquee .m-lockup .lockup-area img {
-      height: 24px;
-    }
 }
 
 /* Tablet UP */
@@ -478,6 +470,17 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 
 .hero-marquee .body-bold {
   font-weight: 700;
+}
+
+/* tablet down */
+@media screen and (max-width: 1199px) {
+  /* Mweb specific changes for lockup */
+  .mweb-enabled .hero-marquee .s-lockup .lockup-area {
+    font-size: var(--type-lockup-xs-size);
+    letter-spacing:var(--type-lockup-xs-ls);
+    gap: 6px;
+  }
+  .mweb-enabled .hero-marquee .s-lockup .lockup-area img { height: var(--icon-size-xs); }
 }
 
 /* desktop up */
