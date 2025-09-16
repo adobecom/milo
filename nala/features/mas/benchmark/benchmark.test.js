@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './benchmark.spec.js';
 import BenchmarkPage from './benchmark.page.js';
-
-const miloLibs = process.env.MILO_LIBS || '';
+import { constructTestUrl } from '../../../libs/commerce.js';
 
 test.beforeEach(async ({ page, browserName }) => {
   test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
@@ -15,7 +14,7 @@ test.beforeEach(async ({ page, browserName }) => {
 
 test.describe('Benchmark feature test suite', () => {
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[0].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[0].path);
     console.info('[Test Page]: ', testPage);
 
     await test.step('step-1: Go to Merch Card Benchmark feature test page', async () => {
