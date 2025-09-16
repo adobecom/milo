@@ -477,7 +477,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   /* Mweb specific changes for lockup */
   .mweb-enabled .hero-marquee .s-lockup .lockup-area {
     font-size: var(--type-lockup-xs-size);
-    letter-spacing:var(--type-lockup-xs-ls);
+    letter-spacing: var(--type-lockup-xs-ls);
     gap: 6px;
   }
   .mweb-enabled .hero-marquee .s-lockup .lockup-area img { height: var(--icon-size-xs); }
