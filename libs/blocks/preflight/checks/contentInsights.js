@@ -54,8 +54,8 @@ export default async function executeCheck() {
   
   await openAllModals(document);
   const {
-    assetsWithMismatch: imagesWithMismatch,
-    assetsWithMatch: imagesWithMatch,
+    assetsWithMismatch: imagesWithMismatch = [],
+    assetsWithMatch: imagesWithMatch = [],
   } = (await checkImageDimensions(window.location.href, document))?.details ?? {};
   
   window.contentInsights.assets = {
