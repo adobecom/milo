@@ -401,7 +401,7 @@
   /* Mweb specific changes for lockup and icon-area */
   .mweb-enabled .text-block.s-lockup .lockup-area {
     font-size: var(--type-lockup-xs-size);
-    letter-spacing:var(--type-lockup-xs-ls);
+    letter-spacing: var(--type-lockup-xs-ls);
     gap: 6px;
   }
   .mweb-enabled .text-block.s-lockup .lockup-area img { height: var(--icon-size-xs); }
