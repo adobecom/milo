@@ -14,7 +14,7 @@ import {
 } from 'https://studio-preflight-import--milo--adobecom.aem.live/libs/blocks/preflight/checks/performance.js';
 import { checkH1s, checkTitle, checkCanon, checkDescription, checkBody, checkLorem } from 'https://studio-preflight-import--milo--adobecom.aem.live/libs/blocks/preflight/checks/seo.js';
 
-export function executeCheck() {
+export default async function executeCheck() {
   window.contentInsights = {};
   console.log('---------2------------');
   const perfChecks = [
