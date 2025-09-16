@@ -27,6 +27,16 @@ function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA}|bc#${step}`;
 }
 
+function updateModalHeight() {
+  const modal = document.getElementById('brand-concierge-modal');
+  if (!modal) return;
+  const isMobile = window.innerWidth < 768;
+  const marginTop = isMobile ? 22 : 32;
+  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const modalHeight = Math.min(viewportHeight - marginTop, window.innerHeight - marginTop);
+  modal.style.height = `${modalHeight}px`;
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('span', { class: 'bc-modal-title' }, 'AI Assistant');
@@ -41,12 +51,30 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   el.querySelector('.bc-input-field input').value = '';
+  updateModalHeight();
+
   // eslint-disable-next-line no-underscore-dangle
   window._satellite?.track('bootstrapConversationalExperience', {
     selector: `#${mountId}`,
     src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
     stylingConfigurations: chatUIConfig,
   });
+
+  const handleViewportResize = () => updateModalHeight();
+  const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
+  window.visualViewport?.addEventListener('resize', handleViewportResize);
+  window.addEventListener('resize', handleViewportResize);
+  window.addEventListener('orientationchange', handleOrientationChange);
+  const cleanup = () => {
+    window.visualViewport?.removeEventListener('resize', handleViewportResize);
+    window.removeEventListener('resize', handleViewportResize);
+    window.removeEventListener('orientationchange', handleOrientationChange);
+  };
+  const handleBCModalClose = () => {
+    cleanup();
+    window.removeEventListener('milo:modal:closed', handleBCModalClose);
+  };
+  window.addEventListener('milo:modal:closed', handleBCModalClose);
 }
 
 function decorateBackground(el, background) {
@@ -254,6 +282,7 @@ export default async function init(el) {
     }
     decorateLegal(el, legal);
   }
+
   if (isSticky) {
     const [input, legal] = rows;
     decorateLegal(el, legal);
