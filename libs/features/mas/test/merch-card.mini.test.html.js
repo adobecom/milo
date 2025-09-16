@@ -4,7 +4,7 @@ import { mockFetch } from './mocks/fetch.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
-import { getTemplateContent, oneEvent } from './utils.js';
+import { getTemplateContent } from './utils.js';
 import '../src/mas.js';
 import { getPriceLiterals } from '../src/literals.js';
 import Sinon from 'sinon';
@@ -185,15 +185,39 @@ runTests(async () => {
                 });
             });
             it('should log a warning if multiple promotion codes are found', async () => {
-                const [card] = getTemplateContent('template-multiple-promo-codes');
+                const [card] = getTemplateContent(
+                    'template-multiple-promo-codes',
+                );
                 const logSpy = Sinon.spy(console, 'warn');
                 container.append(card);
                 await card.checkReady();
                 const promoCode = card.promotionCode;
                 expect(promoCode).to.equal('PROMO_ABC');
                 expect(logSpy.calledOnce).to.be.true;
-                expect(logSpy.args[0][0]).to.include('Multiple different promotion codes found: PROMO_ABC, PROMO_XYZ');
+                expect(logSpy.args[0][0]).to.include(
+                    'Multiple different promotion codes found: PROMO_ABC, PROMO_XYZ',
+                );
                 logSpy.restore();
+            });
+            it('should render US standard with no CTA', async () => {
+                const [card] = getTemplateContent('template-mini-photo-no-cta');
+                container.append(card);
+                await card.checkReady();
+                compareGetters(card, {
+                    title: 'CCD Apps: Photography no CTA',
+                    regularPrice: 'US$59.99/mo',
+                    promoPrice: undefined,
+                    annualPrice: undefined,
+                    taxText: undefined,
+                    seeTermsInfo: undefined,
+                    renewalText: undefined,
+                    promoDurationText: undefined,
+                    ctas: 0,
+                    planTypeText: 'Annual, paid monthly.',
+                    recurrenceText: '/mo',
+                    primaryCta: undefined,
+                    secondaryCta: undefined,
+                });
             });
         });
 

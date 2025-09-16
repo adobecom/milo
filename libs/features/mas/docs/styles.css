@@ -95,11 +95,6 @@ tr:nth-child(even) {
     margin: 0;
 }
 
-.price-unit-type::before,
-.price-tax-inclusivity::before {
-    content: ' ';
-}
-
 .example {
     margin: 20px 0;
     background-color: var(--spectrum-global-color-gray-300);

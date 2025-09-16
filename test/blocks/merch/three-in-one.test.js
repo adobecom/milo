@@ -19,7 +19,7 @@ const {
 
 const { default: initMerch } = await import('../../../libs/blocks/merch/merch.js');
 
-setConfig({ locale: { contentRoot: '/test/blocks/merch/mocks' } });
+setConfig({ codeRoot: '/libs', locale: { contentRoot: '/test/blocks/merch/mocks' } });
 
 describe('Three-in-One Modal', () => {
   describe('error handling', () => {

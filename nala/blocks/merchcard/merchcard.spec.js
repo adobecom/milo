@@ -17,7 +17,7 @@ module.exports = {
         footerOutlineButtonText: 'Learn More',
         footerBlueButtonText: 'Save now',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '1',
@@ -34,7 +34,7 @@ module.exports = {
         footerOutlineButtonText: 'Learn More',
         footerBlueButtonText: 'Save now',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '2',
@@ -47,7 +47,7 @@ module.exports = {
         description2: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.',
         footerBlueButtonText: 'Save now',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '3',
@@ -64,7 +64,7 @@ module.exports = {
         footerOutlineButtonText: 'Learn More',
         footerBlueButtonText: 'Save now',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '4',
@@ -78,7 +78,7 @@ module.exports = {
         link1Text: 'See plan & pricing details',
         footerBlueButtonText: 'Buy now',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '5',
@@ -93,7 +93,7 @@ module.exports = {
         link1Text: 'See plan & pricing details',
         footerBlueButtonText: 'Buy now',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '6',
@@ -111,7 +111,7 @@ module.exports = {
         footerBlueButton2Text: 'Buy now',
         footerOutlineButtonText: 'Free trial',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '7',
@@ -129,7 +129,7 @@ module.exports = {
         footerBlueButton1Text: /Buy now/i,
         footerOutlineButtonText: 'Free trial',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '8',
@@ -145,7 +145,7 @@ module.exports = {
         footerBlueButton1Text: 'Buy now',
         footerOutlineButtonText: 'free trial',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '9',
@@ -164,7 +164,7 @@ module.exports = {
         footerBlueButton1Text: 'Buy now',
         footerOutlineButtonText: 'free trial',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
     {
       tcid: '10',
@@ -188,7 +188,7 @@ module.exports = {
         footerBlueButton1Text: 'Buy now',
         footerOutlineButtonText: 'free trial',
       },
-      tags: '@merch-card @smoke @regression @milo',
+      tags: '@merch-card @commerce @smoke @regression @milo',
     },
   ],
 };

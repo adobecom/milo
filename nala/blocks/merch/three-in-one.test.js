@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './three-in-one.spec.js';
 import ThreeInOne from './three-in-one.page.js';
-
-const miloLibs = process.env.MILO_LIBS || '';
+import { constructTestUrl } from '../../libs/commerce.js';
 
 async function openModal(cta) {
   await expect(cta).not.toHaveClass(/loading-entitlements|placeholder-pending|placeholder-failed/);
@@ -19,12 +18,13 @@ test.describe('ThreeInOne Block test suite', () => {
 
   test(`${features[0].name}, ${features[0].tags}`, async ({ page, baseURL }) => {
     const threeInOne = new ThreeInOne(page);
-    console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
+    const testUrl = constructTestUrl(baseURL, features[0].path, features[0].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
 
     await test.step('Navigate to page with ThreeInOne CTAs', async () => {
-      await page.goto(`${baseURL}${features[0].path}${features[0].browserParams}&${miloLibs}`);
+      await page.goto(testUrl);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}${features[0].browserParams}&${miloLibs}`);
+      await expect(page).toHaveURL(testUrl);
     });
 
     await test.step('Validate if each CTA is visible and has proper href', async () => {
@@ -51,11 +51,12 @@ test.describe('ThreeInOne Block test suite', () => {
 
   test(`${features[1].name}, ${features[1].tags}`, async ({ page, baseURL }) => {
     const threeInOne = new ThreeInOne(page);
-    console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
+    const testUrl = constructTestUrl(baseURL, features[1].path, features[1].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
 
     for (const { sectionId, attributes, iframeSrc } of features[1].useCases) {
       await test.step(`Validate ${sectionId} CTA is visible and has proper attributes`, async () => {
-        await page.goto(`${baseURL}${features[1].path}${features[0].browserParams}&${miloLibs}`);
+        await page.goto(testUrl);
         await page.waitForLoadState('domcontentloaded');
         const cta = threeInOne.getFallbackCta(sectionId);
         for (const [key, value] of Object.entries(attributes)) {
@@ -72,11 +73,12 @@ test.describe('ThreeInOne Block test suite', () => {
 
   test(`${features[2].name}, ${features[2].tags}`, async ({ page, baseURL }) => {
     const threeInOne = new ThreeInOne(page);
-    console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
+    const testUrl = constructTestUrl(baseURL, features[2].path, features[2].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
 
     await test.step('Navigate to page with ThreeInOne CTAs', async () => {
       const { sectionId, iframeSrc, attributes } = features[2];
-      await page.goto(`${baseURL}${features[2].path}${features[2].browserParams}&${miloLibs}`);
+      await page.goto(testUrl);
       await page.waitForLoadState('domcontentloaded');
       const cta = threeInOne.getFallbackCta(sectionId);
       for (const [key, value] of Object.entries(attributes)) {
@@ -91,11 +93,12 @@ test.describe('ThreeInOne Block test suite', () => {
 
   test(`${features[3].name}, ${features[3].tags}`, async ({ page, baseURL }) => {
     const threeInOne = new ThreeInOne(page);
-    console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
+    const testUrl = constructTestUrl(baseURL, features[3].path, features[3].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
 
     await test.step('Navigate to page with ThreeInOne CTAs', async () => {
       const { sectionId, iframeSrc, attributes } = features[3];
-      await page.goto(`${baseURL}${features[3].path}${features[3].browserParams}&${miloLibs}`);
+      await page.goto(testUrl);
       await page.waitForLoadState('domcontentloaded');
       const cta = threeInOne.getFallbackCta(sectionId);
       for (const [key, value] of Object.entries(attributes)) {
@@ -110,12 +113,13 @@ test.describe('ThreeInOne Block test suite', () => {
 
   test(`${features[4].name}, ${features[4].tags}`, async ({ page, baseURL }) => {
     const threeInOne = new ThreeInOne(page);
-    console.info(`[Test Page]: ${baseURL}${features[4].path}${miloLibs}`);
+    const testUrl = constructTestUrl(baseURL, features[4].path, features[4].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
 
     await test.step('Navigate to page with ThreeInOne CTAs', async () => {
-      await page.goto(`${baseURL}${features[4].path}${features[4].browserParams}&${miloLibs}`);
+      await page.goto(testUrl);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[4].path}${features[4].browserParams}&${miloLibs}`);
+      await expect(page).toHaveURL(testUrl);
     });
 
     await test.step('Validate ThreeInOne modal without DC AddOn', async () => {
@@ -127,7 +131,6 @@ test.describe('ThreeInOne Block test suite', () => {
       await cta.waitFor({ state: 'visible' });
       await openModal(cta);
       const modal = threeInOne.getModal();
-      await page.waitForSelector('.dialog-modal');
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrcNoAddOn);
@@ -148,11 +151,29 @@ test.describe('ThreeInOne Block test suite', () => {
       await cta.waitFor({ state: 'visible' });
       await openModal(cta);
       const modal = threeInOne.getModal();
-      await page.waitForSelector('.dialog-modal');
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrcWithAddOn);
       await threeInOne.closeModal();
+    });
+  });
+
+  test(`${features[5].name}, ${features[5].tags}`, async ({ page, baseURL }) => {
+    const threeInOne = new ThreeInOne(page);
+    const testUrl = constructTestUrl(baseURL, features[5].path, features[5].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
+
+    await test.step('Validate fallback step CTA is visible and has proper attributes', async () => {
+      const { sectionId, attributes } = features[5];
+      await page.goto(testUrl);
+      await page.waitForLoadState('domcontentloaded');
+      const cta = threeInOne.getFallbackCta(sectionId);
+      for (const [key, value] of Object.entries(attributes)) {
+        await expect(cta).toHaveAttribute(key, value);
+      }
+      await cta.click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${attributes.href}`);
     });
   });
 });

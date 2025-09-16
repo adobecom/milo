@@ -61,7 +61,7 @@ export class AHTryBuyWidget extends VariantLayout {
             --merch-card-ah-try-buy-widget-text-color: rgba(19, 19, 19);
             --merch-card-ah-try-buy-widget-price-line-height: 17px;
             --merch-card-ah-try-buy-widget-outline: transparent;
-            --merch-card-custom-border-width: 1px;
+            --consonant-merch-card-border-width: 1px;
             height: 100%;
             min-width: var(--merch-card-ah-try-buy-widget-min-width);
             background-color: var(
@@ -70,7 +70,7 @@ export class AHTryBuyWidget extends VariantLayout {
             );
             color: var(--consonant-merch-card-heading-xxxs-color);
             border-radius: 10px;
-            border: 1px solid var(--merch-card-custom-border-color, transparent);
+            border: 1px solid var(--consonant-merch-card-border-color, transparent);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -133,5 +133,3 @@ export class AHTryBuyWidget extends VariantLayout {
         }
     `;
 }
-
-customElements.define('ah-try-buy-widget', AHTryBuyWidget);

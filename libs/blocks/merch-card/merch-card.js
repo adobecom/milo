@@ -2,8 +2,14 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import '../../deps/lit-all.min.js';
-import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_QUANTITY_SELECT, MAS_MERCH_OFFER_SELECT } from '../merch/merch.js';
+import {
+  initService,
+  loadLitDependency,
+  loadMasComponent,
+  MAS_MERCH_CARD,
+  MAS_MERCH_QUANTITY_SELECT,
+  MAS_MERCH_OFFER_SELECT,
+} from '../merch/merch.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -600,6 +606,9 @@ export default async function init(el) {
   const isMultiOfferCard = MULTI_OFFER_CARDS.includes(cardType);
   const hasOfferSelection = el.querySelector('ul');
   const hasQuantitySelect = el.querySelector('.merch-offers');
+
+  // Load lit first as it's needed by MAS components
+  await loadLitDependency();
 
   const componentPromises = [loadMasComponent(MAS_MERCH_CARD)];
 

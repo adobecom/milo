@@ -318,7 +318,8 @@ const getPublishable = async ({ urls, process, user }) => {
     }
     publishable = await urls.reduce(async (init, url) => {
       const result = await init;
-      const detail = { webPath: new URL(url).pathname, live, profile };
+      const urlObj = new URL(url);
+      const detail = { webPath: urlObj.pathname, live, profile, origin: urlObj.origin };
       const { canPublish, message } = await userCanPublishPage(detail);
       if (canPublish) result.authorized.push(url);
       else result.unauthorized.push({ href: url, message });

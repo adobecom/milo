@@ -14,6 +14,7 @@ import {
     SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
     SpecialOffer,
 } from './special-offer.js';
+import { SimplifiedPricingExpress, SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING } from './simplified-pricing-express.js';
 import { Mini, MINI_AEM_FRAGMENT_MAPPING } from './mini.js';
 
 // Registry for dynamic variants
@@ -60,6 +61,12 @@ registerVariant(
     SpecialOffer,
     SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
     SpecialOffer.variantStyle,
+);
+registerVariant(
+    'simplified-pricing-express',
+    SimplifiedPricingExpress,
+    SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING,
+    SimplifiedPricingExpress.variantStyle,
 );
 registerVariant(
     'mini',
