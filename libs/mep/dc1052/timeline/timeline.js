@@ -209,7 +209,8 @@ function setMobileColors(mobileContainer, colors) {
 }
 
 function setBG(el, color, isDc1052 = false) {
-  if (isDc1052) {
+  if (!el) return;
+  if (isDc1052 ) {
     el.style.setProperty('--dot-color', color);
     el.classList.add('timeline-dot');
   } else {
