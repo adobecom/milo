@@ -1,5 +1,8 @@
 const { test } = require('@playwright/test');
 
+const MILO_LIBS = process.env.MILO_LIBS || '';
+const MAS_LIBS = process.env.MAS_LIBS || '';
+
 const PRICE_PATTERN = {
   US: {
     mo: /US\$\d+\.\d\d\/mo/,
@@ -23,6 +26,7 @@ const DOCS_GALLERY_PATH = {
   PLANS: '/libs/features/mas/docs/plans.html',
   CHECKOUT_LINK: '/libs/features/mas/docs/checkout-link.html',
   MERCH_CARD: '/libs/features/mas/docs/merch-card.html',
+  EXPRESS: '/libs/features/mas/docs/express.html',
 };
 
 async function setupMasConsoleListener(consoleErrors) {
@@ -105,6 +109,89 @@ function attachMasRequestErrorsToFailure(testInfo, masRequestErrors) {
     return requestErrorAttachment;
   }
   return '';
+}
+
+/**
+ * Helper function to construct URLs with proper query parameter handling
+ * @param {string} baseUrl - The base URL (may already contain query parameters)
+ * @param {string} browserParams - Browser parameters to append (may start with ? or &)
+ * @returns {string} - Properly constructed URL
+ */
+function addUrlQueryParams(baseUrl, browserParams) {
+  if (!browserParams) return baseUrl;
+  const hasQueryParams = baseUrl.includes('?');
+  const separator = hasQueryParams ? '&' : '?';
+  const cleanParams = browserParams.replace(/^[?&]/, '');
+  return `${baseUrl}${separator}${cleanParams}`;
+}
+
+/**
+ * Helper function to validate commerce URLs with flexible query parameter checking
+ * @param {string} url - The URL to validate
+ * @param {Object} options - Validation options
+ * @param {string} options.country - Expected country code (default: 'US')
+ * @param {string} options.language - Expected language code (default: 'en')
+ * @param {Array<string>} options.requiredParams - Additional required parameters
+ * @returns {boolean} - Whether the URL matches commerce link pattern
+ *
+ * @example
+ * // Basic usage (US/English - default)
+ * validateCommerceUrl(url)
+ * validateCommerceUrl(url, { country: 'US', language: 'en' })
+ *
+ * @example
+ * // Different countries/languages
+ * validateCommerceUrl(url, { country: 'FR', language: 'fr' })
+ *
+ * @example
+ * // With additional required parameters
+ * validateCommerceUrl(url, { requiredParams: ['apc'] })
+ * validateCommerceUrl(url, { country: 'FR', language: 'fr', requiredParams: ['apc', 'promo'] })
+ */
+function validateCommerceUrl(url, options = {}) {
+  const { country = 'US', language = 'en', requiredParams = [] } = options;
+
+  try {
+    const urlObj = new URL(url);
+
+    if (urlObj.hostname !== 'commerce.adobe.com') return false;
+    if (!urlObj.pathname.startsWith('/store/email')) return false;
+
+    const params = new URLSearchParams(urlObj.search);
+
+    const itemId = params.get('items[0][id]');
+    if (!itemId || !/^[A-F0-9]{32}$/.test(itemId)) return false;
+
+    if (params.get('cli') !== 'adobe_com') return false;
+    if (params.get('ctx') !== 'fp') return false;
+    if (params.get('co') !== country) return false;
+    if (params.get('lang') !== language) return false;
+
+    // Check any additional required parameters
+    for (const param of requiredParams) {
+      if (!params.has(param)) return false;
+    }
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Helper function to construct test URLs with proper query parameter handling
+ * Includes MILO_LIBS and MAS_LIBS environment variables
+ * @param {string} baseURL - The base URL from Playwright test context
+ * @param {string} path - The path to append to the base URL
+ * @param {string} browserParams - Browser parameters to append (optional, may start with ? or &)
+ * @returns {string} - Properly constructed URL with all parameters
+ */
+function constructTestUrl(baseURL, path, browserParams = '') {
+  let fullUrl = `${baseURL}${path}`;
+  fullUrl = addUrlQueryParams(fullUrl, browserParams);
+  fullUrl = addUrlQueryParams(fullUrl, MILO_LIBS);
+  fullUrl = addUrlQueryParams(fullUrl, MAS_LIBS);
+  return fullUrl;
 }
 
 async function setupMasRequestLogger(masRequestErrors) {
@@ -201,8 +288,6 @@ function createWorkerPageSetup(config = {}) {
   let consoleErrors = [];
   let masRequestErrors = [];
 
-  const miloLibs = process.env.MILO_LIBS || '';
-
   /**
    * Sets up worker-scoped pages and listeners
    * @param {Object} params - Playwright test parameters
@@ -222,7 +307,10 @@ function createWorkerPageSetup(config = {}) {
 
     const pagePromises = pages.map(async (pageConfig) => {
       const { name, url } = pageConfig;
-      const fullUrl = `${baseURL}${url}${miloLibs}`;
+
+      let fullUrl = `${baseURL}${url}`;
+      fullUrl = addUrlQueryParams(fullUrl, MILO_LIBS);
+      fullUrl = addUrlQueryParams(fullUrl, MAS_LIBS);
 
       console.info(`[Worker Setup]: Creating page for ${name}:`, fullUrl);
 
@@ -332,7 +420,9 @@ function createWorkerPageSetup(config = {}) {
    */
   async function verifyPageURL(pageName, expectedPath, expect) {
     const page = getPage(pageName);
-    const regex = new RegExp(expectedPath.replace('?', '\\?'));
+    // Create regex that matches the expected path with optional miloLibs and masLibs parameters
+    const escapedPath = expectedPath.replace('?', '\\?');
+    const regex = new RegExp(`${escapedPath}.*`);
     await expect(page).toHaveURL(regex);
   }
 
@@ -361,6 +451,9 @@ module.exports = {
   setupMasRequestLogger,
   attachMasRequestErrorsToFailure,
   createWorkerPageSetup,
+  addUrlQueryParams,
+  validateCommerceUrl,
+  constructTestUrl,
   PRICE_PATTERN,
   DOCS_GALLERY_PATH,
   PLANS_NALA_PATH,

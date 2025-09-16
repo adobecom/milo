@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { features } from './masdocs.spec.js';
-
-const miloLibs = process.env.MILO_LIBS || '';
+import { constructTestUrl } from '../../../libs/commerce.js';
 
 test.describe('MAS Docs feature test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
@@ -16,7 +15,7 @@ test.describe('MAS Docs feature test suite', () => {
 
   // @MAS-DOCS-checkout-link
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[0].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[0].path);
     console.info('[Test Page]: ', testPage);
 
     await test.step('step-1: Go to MAS Checkout Link Docs page', async () => {
@@ -40,7 +39,7 @@ test.describe('MAS Docs feature test suite', () => {
 
   // @MAS-DOCS-merch-card
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[1].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[1].path);
     console.info('[Test Page]: ', testPage);
 
     await test.step('step-1: Go to MAS Merch Card Docs page', async () => {
