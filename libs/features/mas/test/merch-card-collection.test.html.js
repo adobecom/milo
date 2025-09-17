@@ -9,6 +9,7 @@ import { pushState } from '../src/deeplink.js';
 import {
     appendMiloStyles,
     delay,
+    toggleDesktop,
     toggleLargeDesktop,
     toggleMobile,
 } from './utils.js';
@@ -273,6 +274,25 @@ runTests(async () => {
         expect(collectionElement.querySelector('merch-card > aem-fragment[fragment="e58f8f75-b882-409a-9ff8-8826b36a8368"]')).to.not.exist;
         expect(collectionElement.querySelector('merch-card > aem-fragment[fragment="e58f8f75-b882-409a-9ff8-8826b36a8368"]')).to.not.exist;
         aemFragment.cache.clear();
+    });
+
+    describe('merch-card-collection plans features', () => {
+        it('handles wide card minification on small desktop & full width on large desktop', async () => {
+            await toggleDesktop();
+            [merchCards, render] = prepareTemplate('plansWideReflow', false);
+            render();
+            await merchCards.checkReady();
+            const sidenav = document.querySelector('merch-sidenav');
+            merchCards.attachSidenav(sidenav, false);
+            await delay(100);
+            const secondCard = merchCards.querySelector('merch-card:nth-child(2)');
+            expect(secondCard.hasAttribute('size')).to.be.false;
+            expect(secondCard.getAttribute('data-size')).to.equal('wide');
+            await toggleLargeDesktop();
+            await delay(100);
+            expect(secondCard.hasAttribute('size')).to.be.true;
+            expect(secondCard.hasAttribute('data-size')).to.be.false;
+        });
     });
   })
 });
