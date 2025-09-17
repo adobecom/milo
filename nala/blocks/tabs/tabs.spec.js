@@ -12,7 +12,7 @@ module.exports = {
         tab2Text: 'Here is tab 2 content and it is active tab',
         tab3Text: 'Here is tab 3 content',
       },
-      tags: '@tabs @smoke @regression @milo @t1',
+      tags: '@tabs @commerce @smoke @regression @milo @t1',
     },
     {
       tcid: '1',
@@ -25,19 +25,19 @@ module.exports = {
         tab2Text: 'Here is tab 2 content and it is active tab',
         tab3Text: 'Here is tab 3 content',
       },
-      tags: '@tabs @smoke @t1 @regression @milo',
+      tags: '@tabs @commerce @smoke @t1 @regression @milo',
     },
     {
       tcid: '2',
       name: 'Tabs scrolling',
       path: '/drafts/nala/blocks/tabs/tabs-scrolling',
-      tags: '@tabs @tabs-scrolling @smoke @regression @milo @bacom',
+      tags: '@tabs @tabs-scrolling @commerce @smoke @regression @milo @bacom',
     },
     {
       tcid: '3',
       name: 'Tabs linked to pages',
       path: '/drafts/nala/blocks/tabs/linked-tabs/tabs-page-1',
-      tags: '@tabs @tabs-linked @smoke @regression @milo',
+      tags: '@tabs @tabs-linked @commerce @smoke @regression @milo',
     },
     {
       tcid: '4',
@@ -47,7 +47,7 @@ module.exports = {
         activeTab: 2,
         deeplinkValue: 'edu',
       },
-      tags: '@tabs @tabs-deeplink @smoke @regression @milo',
+      tags: '@tabs @tabs-deeplink @commerce @smoke @regression @milo',
     },
   ],
 };

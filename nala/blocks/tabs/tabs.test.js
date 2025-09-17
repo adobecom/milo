@@ -2,10 +2,10 @@ import { expect, test } from '@playwright/test';
 import { features } from './tabs.spec.js';
 import TabBlock from './tabs.page.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
+import { constructTestUrl } from '../../libs/commerce.js';
 
 let tab;
 
-const miloLibs = process.env.MILO_LIBS || '';
 const INTERVALS = Array(5).fill(1000);
 
 test.describe('Milo Tab block feature test suite', () => {
@@ -15,13 +15,13 @@ test.describe('Milo Tab block feature test suite', () => {
 
   // Test 0 : Tabs (xl-spacing)
   test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[0].path)}`);
     const { data } = features[0];
 
     await test.step('step-1: Go to Tabs block feature test page', async () => {
-      await page.goto(`${baseURL}${features[0].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[0].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[0].path));
     });
 
     await test.step('step-2: Verify tabs content/specs', async () => {
@@ -51,13 +51,13 @@ test.describe('Milo Tab block feature test suite', () => {
 
   // Test 1 : Tabs (Quiet, Dark, Center)
   test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[1].path)}`);
     const { data } = features[1];
 
     await test.step('step-1: Go to Tabs block feature test page', async () => {
-      await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[1].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[1].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[1].path));
     });
 
     await test.step('step-2: Verify tabs content/specs', async () => {
@@ -87,8 +87,8 @@ test.describe('Milo Tab block feature test suite', () => {
 
   // Test 2 : Tabs (Tabs scrolling)
   test(`[Test Id - ${features[0].tcid}] ${features[2].tags}`, async ({ page, baseURL, isMobile }) => {
-    console.log(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
-    await page.goto(`${baseURL}${features[2].path}${miloLibs}`);
+    console.log(`[Test Page]: ${constructTestUrl(baseURL, features[2].path)}`);
+    await page.goto(constructTestUrl(baseURL, features[2].path));
     await page.waitForLoadState('networkidle');
 
     await test.step('checking the setup', async () => {
@@ -151,8 +151,8 @@ test.describe('Milo Tab block feature test suite', () => {
   test(`[Test Id - ${features[3].tcid}] ${features[3].tags}`, async ({ page, baseURL, browserName }) => {
     test.skip(browserName === 'webkit', 'Skipping test on WebKit');
 
-    console.log(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
-    await page.goto(`${baseURL}${features[3].path}${miloLibs}`);
+    console.log(`[Test Page]: ${constructTestUrl(baseURL, features[3].path)}`);
+    await page.goto(constructTestUrl(baseURL, features[3].path));
     await page.waitForLoadState('networkidle');
 
     await test.step('checking the setup', async () => {
@@ -180,13 +180,13 @@ test.describe('Milo Tab block feature test suite', () => {
 
   // Test 4 : Tabs with custom deeplink
   test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
-    console.info(`[Test Page]: ${baseURL}${features[4].path}${miloLibs}`);
+    console.info(`[Test Page]: ${constructTestUrl(baseURL, features[4].path)}`);
     const { data } = features[4];
 
     await test.step('step-1: Go to Tabs Deeplink test page', async () => {
-      await page.goto(`${baseURL}${features[4].path}${miloLibs}`);
+      await page.goto(constructTestUrl(baseURL, features[4].path));
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[4].path}${miloLibs}`);
+      await expect(page).toHaveURL(constructTestUrl(baseURL, features[4].path));
       // verify default tab contents
       await expect(await tab.tab2).toHaveAttribute('aria-selected', 'true');
       await expect(await tab.tab2Panel).toBeVisible();

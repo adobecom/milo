@@ -407,6 +407,15 @@
   }
 }
 
+/* Mweb specific changes for icon-area */
+.mweb-enabled .icon-block.l-icon .icon-area img{ height: var(--icon-size-l); }
+
+/* tablet down */
+@media screen and (max-width: 1199px){
+  /* Mweb specific changes for icon-area */
+  .mweb-enabled .icon-block.l-icon .icon-area img { height: var(--icon-size-m); }
+}
+
 @media screen and (min-width: 1200px) {
   .icon-block.full-width .foreground,
   .icon-block.bio .foreground {

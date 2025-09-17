@@ -1,4 +1,4 @@
-const { CCD_BASE_PATH } = require('../../../../libs/commerce.js');
+const { DOCS_GALLERY_PATH } = require('../../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'CCD Mini Cards',
@@ -6,7 +6,7 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-CCD-mini-card',
-      path: CCD_BASE_PATH.MINI_US,
+      path: DOCS_GALLERY_PATH.CCD_MINI.US,
       data: {
         fragment: '03a36f0f-3e5d-4881-ae6b-273c517c9d38',
         title: 'CCD Apps: Photography',
@@ -33,12 +33,12 @@ module.exports = {
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '2',
       name: '@MAS-CCD-mini-card-promo',
-      path: CCD_BASE_PATH.MINI_US,
+      path: DOCS_GALLERY_PATH.CCD_MINI.US,
       data: {
         fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
         title: 'CCD Apps: Premiere Pro plan',
@@ -65,12 +65,12 @@ module.exports = {
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '3',
       name: '@MAS-CCD-mini-card-fr',
-      path: CCD_BASE_PATH.MINI_FR,
+      path: DOCS_GALLERY_PATH.CCD_MINI.FR,
       data: {
         fragment: '03a36f0f-3e5d-4881-ae6b-273c517c9d38',
         title: 'CCD Apps: Photography',
@@ -97,12 +97,12 @@ module.exports = {
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '4',
       name: '@MAS-CCD-mini-card-fr_promo',
-      path: CCD_BASE_PATH.MINI_FR,
+      path: DOCS_GALLERY_PATH.CCD_MINI.FR,
       data: {
         fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
         title: 'CCD Apps: Photography Promo',
@@ -130,7 +130,7 @@ module.exports = {
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
   ],
 };
