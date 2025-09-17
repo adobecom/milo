@@ -1,6 +1,5 @@
 import { createTag } from '../../../utils/utils.js';
 
-// Mobile detection utility
 function isMobile() {
   return window.innerWidth <= 1000;
 }
@@ -72,7 +71,6 @@ function addBottomRow(periodText, dcVarientText) {
   return periodRow;
 }
 
-// Mobile-specific timeline generation for dc1052 variant
 function createMobileTimeline(timelineData) {
   const mobileContainer = createTag('div', { class: 'mobile-timeline-container' });
   timelineData.forEach((item, index) => {
@@ -119,22 +117,21 @@ function extractTimelineData(rows, periodText, subtext) {
 function setEqualHeadingWidths(mobileContainer, retryCount = 0) {
   const headingElements = mobileContainer.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (headingElements.length === 0) return;
-  // Temporarily set to max-content to measure natural sizes
   headingElements.forEach((heading) => {
     heading.style.width = 'max-content';
   });
-  // Force reflow
+
+  // Force reflow to ensure styles are applied
   if (mobileContainer.offsetHeight) {
     // Heights measured, continue
   }
-  // Measure all heading widths
+
   let maxWidth = 0;
   headingElements.forEach((heading) => {
     const { width } = heading.getBoundingClientRect();
     maxWidth = Math.max(maxWidth, width);
   });
 
-  // Subtract right padding to avoid doubling padding effect
   if (maxWidth > 0 && headingElements.length > 0) {
     const computedStyle = getComputedStyle(headingElements[0]);
     const rightPadding = parseFloat(computedStyle.paddingRight);
@@ -153,6 +150,7 @@ function setMobileColors(mobileContainer, colors) {
   const timelineItems = mobileContainer.querySelectorAll('.timeline-item');
   const leftColor = colors?.[0];
   const rightColor = colors?.[1];
+  if (!leftColor && !rightColor) return;
 
   let firstBar = leftColor;
   let secondBar = leftColor;
@@ -170,19 +168,18 @@ function setMobileColors(mobileContainer, colors) {
     });
   }
 
-  // Process rightColor for thirdBar (same as desktop)
   if (isGradient(rightColor)) {
     rightColor.split(' ').forEach((color) => {
       if (isColor(color)) {
-        thirdBar = color; // This overwrites each time, so gets the last color found
+        thirdBar = color;
       }
     });
   }
 
   const colorMap = {
-    0: firstBar, // Day 1 - matches desktop barEls[0]
-    1: secondBar, // Day 8 - matches desktop barEls[1]
-    2: thirdBar, // Day 21 - matches desktop barEls[2]
+    0: firstBar,
+    1: secondBar,
+    2: thirdBar,
   };
 
   // Apply dot colors to heading elements (for ::before pseudo-elements)
@@ -193,15 +190,13 @@ function setMobileColors(mobileContainer, colors) {
   timelineItems.forEach((item) => {
     if (item.classList.contains('solid-line')) {
       const leftGradient = isGradient(leftColor)
-        ? leftColor.replace('to right', 'to bottom') // Convert horizontal to vertical
+        ? leftColor.replace('to right', 'to bottom')
         : `linear-gradient(to bottom, ${leftColor}, ${leftColor})`;
       item.style.borderImage = `${leftGradient} 0 0 0 2`;
     } else if (item.classList.contains('dashed-line')) {
-      // Second line (Day 8 to Day 21) - dashed border via ::after pseudo-element with mask
       const rightGradient = isGradient(rightColor)
-        ? rightColor.replace('to right', 'to bottom') // Convert horizontal to vertical
+        ? rightColor.replace('to right', 'to bottom')
         : `linear-gradient(to bottom, ${rightColor}, ${rightColor})`;
-      // Set border-image for ::after pseudo-element to inherit
       item.style.borderImage = `${rightGradient} 0 0 0 2`;
       item.classList.add('dashed-border');
     }
@@ -274,7 +269,6 @@ function setColors(colors, fragment, el, isDc1052) {
       }
       if (isGradient(rightColor)) {
         rightColor.split(' ').forEach((color) => {
-          // *** this changes code that isn't scoped, so test before fully merging:
           if (isColor(color)) {
             thirdBar = color;
             setBG(isDc1052 ? barRowBars[2] : barEls[2], thirdBar, isDc1052);
@@ -283,7 +277,6 @@ function setColors(colors, fragment, el, isDc1052) {
       } else {
         setBG(isDc1052 ? barRowBars[2] : barEls[2], rightColor, isDc1052);
       }
-      // Only apply background colors to period elements in non-dc1052 variants
       if (!isDc1052) {
         setBG(periodEls[0], updateForRTL(leftColor, el), false);
         setBG(periodEls[1], updateForRTL(rightColor, el), false);
@@ -310,7 +303,8 @@ export default function init(el) {
   const hasSegment = hasSegmentClass(el);
   const isDc1052 = el.classList.contains('dc1052');
   const subtext = [];
-  const textContent = []; // Store the text content separately
+  const textContent = [];
+  const cleanup = [];
 
   rows.forEach((row) => {
     const color = row.firstElementChild?.textContent?.trim();
@@ -338,35 +332,23 @@ export default function init(el) {
     }
   });
 
-  // Store rows data for potential re-use
   const rowsData = Array.from(rows).map((row) => row.cloneNode(true));
-
-  // Clean up original rows that were processed (now that we have clones)
   rows.forEach((row) => row.parentElement.remove());
-
   function renderTimeline() {
-    // Clear existing content
     el.innerHTML = '';
-
-    // Check if mobile and dc1052 - use mobile-specific layout
     if (isDc1052 && isMobile()) {
       const timelineData = extractTimelineData(rowsData, periodText, subtext, textContent);
       const mobileTimeline = createMobileTimeline(timelineData);
       setMobileColors(mobileTimeline, colors);
       el.append(mobileTimeline);
-      // Set equal heading widths (after DOM insertion for measurement)
-      // Use double requestAnimationFrame to ensure DOM is fully rendered
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (mobileTimeline.isConnected) {
-            setEqualHeadingWidths(mobileTimeline);
-          }
-        });
+        if (mobileTimeline.isConnected) {
+          setEqualHeadingWidths(mobileTimeline);
+        }
       });
       return;
     }
 
-    // Desktop layout (original logic)
     const fragment = document.createDocumentFragment();
     const [textRow, left, right] = createRow();
 
@@ -385,8 +367,6 @@ export default function init(el) {
     [textRow, addBarRow(), addBottomRow(periodText, subtext)]
       .forEach((row) => fragment.append(row));
     updateColWidths(colWidths, fragment, hasSegment);
-
-    // Apply dynamic colors and styling for dc1052 variant
     setColors(colors, fragment, el, isDc1052);
     el.append(fragment);
   }
@@ -396,37 +376,50 @@ export default function init(el) {
   if (isDc1052) {
     let resizeTimeout;
     let isResizing = false;
-    let prevIsMobile = isMobile(); // Track previous mobile state
+    let cachedIsMobile = isMobile();
+    let lastWidth = window.innerWidth;
 
     const handleResize = () => {
-      const currentIsMobile = isMobile();
-      const crossingBreakpoint = prevIsMobile !== currentIsMobile;
+      const currentWidth = window.innerWidth;
+      if (Math.abs(currentWidth - lastWidth) < 10) return;
+      const currentIsMobile = currentWidth <= 1000;
+      const crossingBreakpoint = cachedIsMobile !== currentIsMobile;
 
       // Immediately hide timeline when crossing breakpoint to prevent broken layout flash
       if (crossingBreakpoint && !isResizing) {
-        el.style.transition = 'none'; // Remove transition for immediate hiding
+        el.style.transition = 'none';
         el.style.opacity = '0';
         isResizing = true;
       }
-
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         renderTimeline();
-
-        // Only show timeline again if we hid it (when crossing breakpoint)
         if (crossingBreakpoint) {
-          // Use requestAnimationFrame to ensure DOM is updated before showing
           requestAnimationFrame(() => {
             el.style.transition = 'opacity 0.2s ease';
             el.style.opacity = '1';
           });
         }
-
-        // Update previous state and reset for all resize events
-        prevIsMobile = isMobile(); // Re-check current state after render
+        cachedIsMobile = currentIsMobile;
+        lastWidth = currentWidth;
         isResizing = false;
-      }, crossingBreakpoint ? 100 : 300); // Faster re-render when crossing breakpoint
+      }, crossingBreakpoint ? 100 : 300);
     };
-    window.addEventListener('resize', handleResize);
+
+    let resizeObserver;
+    if (window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(() => handleResize());
+      resizeObserver.observe(document.documentElement);
+      cleanup.push(() => resizeObserver.disconnect());
+    } else {
+      window.addEventListener('resize', handleResize, { passive: true });
+      cleanup.push(() => window.removeEventListener('resize', handleResize));
+    }
+
+    cleanup.push(() => clearTimeout(resizeTimeout));
   }
+
+  el.timelineCleanup = () => {
+    cleanup.forEach((fn) => fn());
+  };
 }
