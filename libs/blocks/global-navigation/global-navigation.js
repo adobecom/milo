@@ -1318,13 +1318,14 @@ class Gnav {
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
 
-    if (!this.isLocalNav() && hasPromo) {
+    const isLocalNav = this.isLocalNav();
+    if (!isLocalNav && hasPromo) {
       popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
     }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
-    if (this.isLocalNav()) {
+    if (isLocalNav) {
       popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
     }
     const { isPresent, isSticky, height } = getBranchBannerInfo();
@@ -1333,7 +1334,7 @@ class Gnav {
       if (isSticky) {
         popup.style.height = `calc(100dvh - ${height}px + 2px)`;
       } else {
-        popup.style.top = `calc(0px - var(--feds-height-nav) + ${!this.isLocalNav() ? 0 : Math.max(delta, 0)}px - 2px)`;
+        popup.style.top = `calc(0px - var(--feds-height-nav) + ${!isLocalNav ? 0 : Math.max(delta, 0)}px - 2px)`;
         popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
       }
     }
