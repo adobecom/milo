@@ -763,7 +763,7 @@ function appendExtraOptions(url, extraOptions) {
 
 export function applyPromo(url) {
   const { mep } = getConfig();
-  const promoModal = mep.inBlock?.merch?.fragments?.[url.pathname];
+  const promoModal = mep?.inBlock?.merch?.fragments?.[url.pathname];
   try {
     const promoUrl = new URL(promoModal?.content);
     return promoUrl;
