@@ -125,7 +125,7 @@ export default {
     '--concierge-message-padding': '0 0 8px 0',
     '--container-padding-mobile': '16px',
     '--disclaimer-color': '#4B4B4B',
-    '--disclaimer-font-size': '12px',
+    '--disclaimer-font-size': '11px',
     '--disclaimer-font-weight': '400',
     '--disclaimer-margin-bottom': '12px',
     '--disclaimer-margin-top': '6px',

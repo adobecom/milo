@@ -247,8 +247,8 @@
 
 .bc-legal {
   color: #4B4B4B;
-  font-size: var(--type-body-xxs-size);
-  line-height: var(--type-body-xxs-lh);
+  font-size: 11px;
+  line-height: 1.5;
   margin: 0;
   text-align: center;
 }
@@ -264,6 +264,12 @@
 }
 
 /* Temporary override to chat styling */
+#brand-concierge-mount .input-section {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+
 #brand-concierge-mount .chat-input {
   line-height: 1.5 !important;
   padding: 14px 0 !important;
