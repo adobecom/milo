@@ -33,7 +33,7 @@ export default {
     'feedback.thumbsDown.aria': 'Thumbs down',
   },
   disclaimer: {
-    text: 'AI responses may be inaccurate. Check answers and sources. {Terms}',
+    text: 'AI responses may be inaccurate, and any offers provided are non-binding. Check answers and sources. {Terms}',
     links: [
       {
         text: 'Terms',
@@ -186,13 +186,16 @@ export default {
     '--prompt-suggestion-button-gap': '8px',
     '--prompt-suggestion-button-padding': '8px 16px 8px 8px',
     '--prompt-suggestion-button-text-color': '#292929',
-    '--prompt-suggestion-container-bottom-margin': '12px',
     '--prompt-suggestions-align-items': 'stretch',
     '--prompt-suggestions-button-width': 'auto',
     '--prompt-suggestions-button-width-max': '100%',
+    '--prompt-suggestions-container-bottom-margin': '12px',
     '--prompt-suggestions-container-gap': '8px',
     '--prompt-suggestions-flex-direction': 'row',
     '--prompt-suggestions-flex-wrap': 'wrap',
+    '--scroll-button-bottom-margin': '122px',
+    '--scroll-button-border-color': '#C6C6C6',
+    '--scroll-button-size': '40px',
     '--submit-button-fill-color': '#FFFFFF',
     '--submit-button-fill-color-disabled': '#C6C6C6',
     '--user-message-padding': '8px 16px',
