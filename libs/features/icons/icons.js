@@ -158,7 +158,7 @@ export const fetchIcons = (config) => {
 export function fetchIconList(url) {
   return fetch(url)
     .then((resp) => resp.json())
-    .then((json) => json.content.data)
+    .then((json) => json.data || json.content.data)
     .catch(() => {
       lanaLog({ message: 'Failed to fetch iconList', tags: 'icons', errorType: 'error' });
       return [];

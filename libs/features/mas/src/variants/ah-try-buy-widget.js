@@ -3,37 +3,37 @@ import { VariantLayout } from './variant-layout.js';
 import { CSS } from './ah-try-buy-widget.css.js';
 
 export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
-    mnemonics: { size: 's' },
-    title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40, withSuffix: true },
-    description: {
-        tag: 'div',
-        slot: 'body-xxs',
-        maxCount: 200,
-        withSuffix: false,
-    },
-    prices: { tag: 'p', slot: 'price' },
-    ctas: { slot: 'cta', size: 'S' },
-    backgroundImage: { tag: 'div', slot: 'image' },
-    backgroundColor: { attribute: 'background-color' },
-    borderColor: { attribute: 'border-color', specialValues: {} },
-    allowedColors: {
-        gray: '--spectrum-gray-100',
-    },
-    size: ['single', 'double', 'triple'],
+  mnemonics: { size: 's' },
+  title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40, withSuffix: true },
+  badge: { tag: 'div', slot: 'badge', default: 'fuchsia' },
+  allowedBadgeColors: ['fuchsia'],
+  description: {
+    tag: 'div',
+    slot: 'body-xxs',
+    maxCount: 200,
+    withSuffix: false,
+  },
+  prices: { tag: 'p', slot: 'price' },
+  ctas: { slot: 'cta', size: 'S' },
+  backgroundImage: { tag: 'div', slot: 'image' },
+  backgroundColor: { attribute: 'background-color' },
+  borderColor: { attribute: 'border-color', specialValues: {} },
+  allowedColors: { gray: '--spectrum-gray-100' },
+  size: ['single', 'double', 'triple'],
 };
 
 export class AHTryBuyWidget extends VariantLayout {
-    getGlobalCSS() {
-        return CSS;
-    }
+  getGlobalCSS() {
+    return CSS;
+  }
 
-    /* c8 ignore next 3 */
-    get aemFragmentMapping() {
-        return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
-    }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
+  }
 
-    renderLayout() {
-        return html`
+  renderLayout() {
+    return html`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -49,11 +49,12 @@ export class AHTryBuyWidget extends VariantLayout {
                 </div>
             </div>
             <slot name="image"></slot>
+            <slot name="badge"></slot>
             <slot></slot>
         `;
-    }
+  }
 
-    static variantStyle = css`
+  static variantStyle = css`
         :host([variant='ah-try-buy-widget']) {
             --merch-card-ah-try-buy-widget-min-width: 156px;
             --merch-card-ah-try-buy-widget-content-min-width: 132px;
