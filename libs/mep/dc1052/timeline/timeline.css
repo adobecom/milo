@@ -265,19 +265,19 @@
 
 
 .timeline.dc1052 .bar.timeline-dot {
-  background: none !important; /* Remove default bar styling */
+  background: none !important; 
   width: 16px !important;
   height: 16px !important;
   border-radius: 50%;
   background-color: var(--dot-color, #D15DD5) !important;
   border: none;
-  margin: 0 0 var(--spacing-xs) 0; /* Remove negative margin */
+  margin: 0 0 var(--spacing-xs) 0;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  transform: translateY(-9px); /* Use transform instead of negative margin */
-  flex-shrink: 0; /* Prevent compression */
+  transform: translateY(-9px); 
+  flex-shrink: 0; 
 }
 .timeline.dc1052 .right .bar.timeline-dot:nth-of-type(2) {
   margin-left: -14px;
@@ -329,14 +329,12 @@
 }
 
 @media screen and (max-width: 999.9px) {
-  /* Mobile: Clean timeline container - simple flexbox */
   .timeline.dc1052 .mobile-timeline-container {
     display: flex;
     flex-direction: column;
     gap: 0;
   }
 
-  /* Mobile: Individual timeline items */
   .timeline.dc1052 .timeline-item {
     display: flex;
     position: relative;
@@ -346,7 +344,6 @@
     margin-left: 7px;
   }
 
-  /* Mobile: Solid line via pseudo-element - extends from first dot down */
   .timeline.dc1052 .timeline-item.solid-line::after {
     content: '';
     position: absolute;
@@ -359,7 +356,6 @@
     z-index: 0;
   }
 
-  /* Mobile: Dashed line via pseudo-element with mask - starts from second dot */
   .timeline.dc1052 .timeline-item.dashed-border::after {
     content: '';
     position: absolute;
@@ -369,7 +365,6 @@
     width: 2px;
     border-left: 2px solid transparent;
     border-image: inherit;
-    /* Exact spec: 4px dash, 6px gap */
     -webkit-mask: repeating-linear-gradient(to bottom, black 0, black 4px, transparent 4px, transparent 10px);
     mask: repeating-linear-gradient(to bottom, black 0, black 4px, transparent 4px, transparent 10px);
     z-index: 0;
@@ -468,6 +463,9 @@
 .timeline.dc1052 .row:nth-of-type(3) .right p {
   text-align: left;
 }
+.timeline.dc1052 .row:nth-of-type(3) .right p {
+  margin-left: 0px;
+}
 
 .timeline.dc1052 .row:first-of-type {
   padding-bottom: 0;
@@ -478,7 +476,6 @@
     padding: var(--spacing-m) 0;
     max-width: 1000px;
   }
-  /* either add margin right or left for the space in between  */
   .timeline.dc1052 .row:nth-of-type(2) {
     height: 24px;
   }
@@ -504,12 +501,15 @@
   .timeline.dc1052 .row:nth-of-type(3) p {
     padding: 0 var(--spacing-xs);
   }
-  /* .timeline.dc1052 .row:nth-of-type(3) p:first-of-type { */
-    /* padding-bottom: var(--) */
-  /* } */
-
 
   .timeline.dc1052 .row:nth-of-type(3) p:not(:nth-of-type(1)) {
     font-weight: 400;
   }
+}
+
+@media screen and (min-width: 1000px) and (max-width: 1199.9px) {
+  .timeline.dc1052 {
+    max-width: var(--grid-container-width);
+  }
+
 }
