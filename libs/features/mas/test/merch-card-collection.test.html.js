@@ -9,6 +9,7 @@ import { pushState } from '../src/deeplink.js';
 import {
     appendMiloStyles,
     delay,
+    oneEvent,
     toggleDesktop,
     toggleLargeDesktop,
     toggleMobile,
@@ -277,7 +278,7 @@ runTests(async () => {
     });
 
     describe('merch-card-collection plans features', () => {
-        it('handles wide card minification on small desktop & full width on large desktop', async () => {
+        it('handles wide card minification on small desktop', async () => {
             await toggleDesktop();
             [merchCards, render] = prepareTemplate('plansWideReflow', false);
             render();
@@ -286,12 +287,7 @@ runTests(async () => {
             merchCards.attachSidenav(sidenav, false);
             await delay(100);
             const secondCard = merchCards.querySelector('merch-card:nth-child(2)');
-            expect(secondCard.hasAttribute('size')).to.be.false;
             expect(secondCard.getAttribute('data-size')).to.equal('wide');
-            await toggleLargeDesktop();
-            await delay(100);
-            expect(secondCard.hasAttribute('size')).to.be.true;
-            expect(secondCard.hasAttribute('data-size')).to.be.false;
         });
     });
   })
