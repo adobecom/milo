@@ -88,6 +88,14 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: 'www.adobe.com/will/not/be/localized.html',
     LOCALE: '',
   },
+  {
+    PRODUCT_FAMILY: 'ILLUSTRATOR+abc',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/illustrator',
+    FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1',
+    BUY_NOW_PATH: 'https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1',
+    LOCALE: '',
+  },
   ],
 };
 
@@ -229,7 +237,7 @@ describe('Merch Block', () => {
       });
     });
 
-    it.only('should use geo locale for lang-first sites', async () => {
+    it('should use geo locale for lang-first sites', async () => {
       sessionStorage.setItem('akamai', 'ES');
       const geoDetectionMeta = document.createElement('meta');
       geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
@@ -615,7 +623,7 @@ describe('Merch Block', () => {
       await initService(true);
       const cta1 = await merch(document.querySelector('.merch.cta.download'));
       await cta1.onceSettled();
-      const [{ DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
+      const { DOWNLOAD_URL } = CHECKOUT_LINK_CONFIGS.data[1];
       expect(cta1.textContent).to.equal('Download');
       expect(cta1.href).to.equal(DOWNLOAD_URL);
 
@@ -640,7 +648,7 @@ describe('Merch Block', () => {
       await initService(true);
       const cta = await merch(document.querySelector('.merch.cta.download.fr'));
       await cta.onceSettled();
-      const [,, { DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
+      const { DOWNLOAD_URL } = CHECKOUT_LINK_CONFIGS.data[3];
       expect(cta.textContent).to.equal(newConfig.placeholders.download);
       expect(cta.href).to.equal(DOWNLOAD_URL);
     });
@@ -803,6 +811,20 @@ describe('Merch Block', () => {
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
       checkoutLinkConfig = await getCheckoutLinkConfig('', '', 'testPaCode');
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+    });
+
+    it('getCheckoutLinkConfig: finds using paCode and svar', async () => {
+      const options = { extraOptions: '{"svar": "abc", "other": "xyz"}' };
+      const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
+      expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1');
+      expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1');
+    });
+
+    it('getCheckoutLinkConfig: finds using paCode and no svar', async () => {
+      const options = { extraOptions: '{"other": "xyz"}' };
+      const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
+      expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1');
+      expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
     });
 
     it('getCheckoutLinkConfig: finds using productCode', async () => {

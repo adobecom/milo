@@ -133,10 +133,17 @@ export const handleTimeoutError = async () => {
 
 export function createContent(iframeUrl) {
   const content = createTag('div', { class: 'milo-iframe' });
+  // Detect Mobile Safari - it doesn't properly support loading="lazy" on iframes
+  const isMobileSafari = /iPhone|iPad|iPod/.test(navigator.userAgent)
+    && /WebKit/.test(navigator.userAgent)
+    && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(navigator.userAgent);
+
+  const loadingAttr = isMobileSafari ? '' : ' loading="lazy"';
+
   content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr" style="display: flex; justify-content: center; align-items: center; height: 100%;">
   <sp-progress-circle label="progress circle" indeterminate="" size="l" dir="ltr" role="progressbar" aria-label="progress circle"></sp-progress-circle>
   </sp-theme>
-  <iframe src="${iframeUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
+  <iframe src="${iframeUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true"${loadingAttr} class="loading" style="height: 100%;"></iframe>`;
   return content;
 }
 
