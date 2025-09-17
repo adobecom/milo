@@ -50,7 +50,7 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  el.querySelector('.bc-input-field input').value = '';
+  el.querySelector('.bc-input-field textarea').value = '';
   updateModalHeight();
 
   // eslint-disable-next-line no-underscore-dangle
@@ -112,7 +112,7 @@ function decorateCards(el, cards) {
     cardSection.append(cardButton);
 
     cardButton.addEventListener('click', () => {
-      const input = el.querySelector('.bc-input-field input');
+      const input = el.querySelector('.bc-input-field textarea');
 
       input.value = cardText.textContent.trim();
       openChatModal(input.value, el);
@@ -133,9 +133,9 @@ function decorateInput(el, input) {
   }, `${getAiChatIcon('bc-label-mask', 'bc-label-fill')}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, chatLabelText);
   fieldLabel.append(fieldLabelToolTip);
-  const fieldInput = createTag('input', {
+  const fieldInput = createTag('textarea', {
     id: 'bc-input-field',
-    type: 'text',
+    rows: 1,
     placeholder: input.textContent.trim(),
   });
   const fieldButton = createTag('button', {
@@ -149,12 +149,14 @@ function decorateInput(el, input) {
   el.append(fieldSection);
   el.removeChild(input);
 
-  fieldInput.addEventListener('input', () => {
+  fieldInput.addEventListener('textarea', () => {
     if (fieldInput.value && fieldInput.value.trim() !== '') {
       fieldButton.disabled = false;
     } else {
       fieldButton.disabled = true;
     }
+    fieldInput.style.height = 'auto';
+    fieldInput.style.height = `${fieldInput.scrollHeight}px`;
   });
 
   if (el.classList.contains('sticky')) {
@@ -217,7 +219,7 @@ function decorateLegal(el, legal) {
     stickyLegalContent.closeButton = closeButton;
     closeButton.addEventListener('click', () => {
       legalSection.classList.add('legal-closed');
-      el.querySelector('.bc-input-field input').focus();
+      el.querySelector('.bc-input-field textarea').focus();
     });
   }
   if (hTag && legalCopy) {
@@ -288,4 +290,26 @@ export default async function init(el) {
     decorateLegal(el, legal);
     decorateInput(el, input);
   }
+
+  // Watch for data-block-status attribute changes on .section ancestor
+  const section = el.closest('.section');
+  if (!section) { return; }
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type !== 'attributes'
+        || mutation.attributeName !== 'data-status'
+        || section.getAttribute('data-status') === 'decorated') { return; }
+      const fieldInput = el.querySelector('.bc-input-field textarea');
+      if (fieldInput) {
+        fieldInput.style.height = 'auto';
+        fieldInput.style.height = `${fieldInput.scrollHeight}px`;
+        observer.disconnect();
+      }
+    });
+  });
+
+  observer.observe(section, {
+    attributes: true,
+    attributeFilter: ['data-status'],
+  });
 }
