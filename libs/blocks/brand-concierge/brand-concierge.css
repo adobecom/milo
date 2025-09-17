@@ -291,6 +291,10 @@
   color: transparent !important;
 }
 
+#brand-concierge-mount .disclaimer-message {
+  line-height: 1.5 !important;
+}
+
 /* Sticky */
 @keyframes sticky-in {
   from {
@@ -605,6 +609,10 @@
     #brand-concierge-modal.dialog-modal {
       height: calc(100vh - 32px);
     }
+  }
+
+  #brand-concierge-mount .scroll-to-bottom {
+    bottom: 122px !important;
   }
 }
 
