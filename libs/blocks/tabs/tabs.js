@@ -88,8 +88,11 @@ function changeTabs(e, config) {
     return;
   }
   const parent = target.parentNode;
-  const content = parent.parentNode.parentNode.lastElementChild;
   const tabsBlock = target.closest('.tabs');
+  const hasSegmentedControl = tabsBlock.classList.contains('segmented-control');
+  const content = hasSegmentedControl
+    ? parent.parentNode.parentNode.parentNode.lastElementChild
+    : parent.parentNode.parentNode.lastElementChild;
   const blockId = tabsBlock.id;
   const isRadio = target.getAttribute('role') === 'radio';
   const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
@@ -186,7 +189,7 @@ function initTabs(elm, config, rootElem) {
     });
   });
   tabs.forEach((tab) => {
-    tab.addEventListener('click', changeTabs);
+    tab.addEventListener('click', (e) => changeTabs(e, config));
     tab.addEventListener('focus', () => {
       scrollTabIntoView(tab);
     });
