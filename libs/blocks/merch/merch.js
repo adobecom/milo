@@ -711,7 +711,7 @@ export async function getUpgradeAction(
       CC_SINGLE_APPS_ALL,
       CC_ALL_APPS,
     );
-    el?.closest('merch-card').querySelector('merch-addon')?.remove();
+    el?.closest('merch-card')?.querySelector('merch-addon')?.remove();
     return upgradeAction;
   }
   return undefined;
