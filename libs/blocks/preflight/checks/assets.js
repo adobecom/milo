@@ -79,6 +79,27 @@ function getAssetDimensions(asset, type) {
   return { naturalWidth, naturalHeight };
 }
 
+function isNotConstrainedByContainer(asset) {
+  const picture = asset.closest?.('picture');
+  if (!picture) return false;
+  const childWidth = picture.offsetWidth;
+  const childHeight = picture.offsetHeight;
+  let parent = picture.parentElement;
+  let depth = 0;
+  while (parent && depth < 5) {
+    const parentWidth = parent.offsetWidth;
+    const parentHeight = parent.offsetHeight;
+    if (parentWidth === childWidth && parentHeight === childHeight) return false;
+    if (parentWidth > 0 && parentHeight > 0
+      && parentWidth !== childWidth && parentHeight !== childHeight) {
+      return true;
+    }
+    parent = parent.parentElement;
+    depth += 1;
+  }
+  return false;
+}
+
 function getAssetData(asset) {
   // Get the asset type
   const type = (asset.tagName === 'VIDEO' && 'video') || (asset.tagName === 'IFRAME' && 'mpc') || 'image';
@@ -103,7 +124,9 @@ function getAssetData(asset) {
   const roundedFactor = Math.ceil(actualFactor * 20) / 20;
 
   // Check if the asset meets the ideal factor
-  const hasMismatch = roundedFactor < idealFactor;
+  let hasMismatch = roundedFactor < idealFactor;
+
+  if (hasMismatch && type === 'image' && isNotConstrainedByContainer(asset)) hasMismatch = false;
 
   // Define the recommended dimensions
   const recommendedDimensions = isFullWidthAsset
