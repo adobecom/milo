@@ -209,6 +209,7 @@
   line-height: 1.5;
   outline: none;
   width: 100%;
+  padding: 14px 0;
 }
 
 .bc-input-field-container input::placeholder {
@@ -263,6 +264,12 @@
 }
 
 /* Temporary override to chat styling */
+#brand-concierge-mount .chat-input {
+  line-height: 1.5 !important;
+  padding: 14px 0 !important;
+  margin: 0 !important;
+}
+
 #brand-concierge-mount .container-mobile .chat-input {
   font-size: 16px !important;
 }
@@ -328,6 +335,10 @@
   height: var(--bc-sticky-input-height);
   margin: 0;
   padding: 0;
+}
+
+.sticky .bc-input-field-container input {
+  padding: 8px 0;
 }
 
 .sticky .bc-input-field-label {
