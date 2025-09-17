@@ -176,7 +176,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { posi
 
   // Otherwise, this might be a collection of elements;
   // decorate all links in the collection and return it
-  elem.querySelectorAll(linkSelector).forEach(async (link) => {
+  elem.querySelectorAll(linkSelector).forEach((link) => {
     link.replaceWith(decorateLink(link));
   });
 
