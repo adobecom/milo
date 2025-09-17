@@ -263,6 +263,11 @@
   gap: 8px;
 }
 
+/* Temporary override to chat styling */
+#brand-concierge-mount .container-mobile .chat-input {
+  font-size: 16px !important;
+}
+
 /* Sticky */
 @keyframes sticky-in {
   from {
@@ -417,6 +422,7 @@
   margin-top: 22px;
   border-radius: 24px 24px 0 0;
   font-size: 16px;
+  top: unset;
 }
 
 /* Fallback for browsers that don't support dvh */
