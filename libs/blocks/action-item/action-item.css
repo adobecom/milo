@@ -1,9 +1,9 @@
 .action-item {
   display: flex;
+}
 
-  > div {
-    width: -webkit-fill-available;
-  }
+.action-item .static {
+  width: -webkit-fill-available;
 }
 
 .action-item img {
