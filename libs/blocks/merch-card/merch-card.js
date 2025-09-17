@@ -598,6 +598,31 @@ const addStartingAt = async (styles, merchCard) => {
   }
 };
 
+const getUrlPath = (link) => {
+  if (!link || link.startsWith('/')) return link;
+
+  try {
+    return (new URL(link)).pathname;
+  } catch {
+    return link;
+  }
+};
+
+const updateIconAlt = (merchCard) => {
+  const icons = merchCard.querySelectorAll('merch-icon');
+  if (icons.length !== 1) return;
+
+  const heading = merchCard.querySelector('.card-heading');
+  const headingLink = heading?.querySelector('a')?.getAttribute('href');
+  if (!headingLink) return;
+
+  const icon = icons[0];
+  const iconLink = icon.getAttribute('href');
+  if (getUrlPath(iconLink) === getUrlPath(headingLink) && icon.alt) {
+    icon.setAttribute('alt', heading.textContent);
+  }
+};
+
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
 
@@ -784,6 +809,7 @@ export default async function init(el) {
 
   if (merchCard.variant !== TWP) {
     parseContent(el, merchCard);
+    updateIconAlt(merchCard);
 
     const footer = createTag('div', { slot: 'footer' });
     if (ctas) {
