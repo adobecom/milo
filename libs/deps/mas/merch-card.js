@@ -2803,7 +2803,8 @@ merch-card[variant="mini"] span.renewal-text {
 
     /* ah colors */
     --ah-gray-500: #717171;
-    
+    --fuchsia: #FDE9FF;
+
     /* plans colors */
     --spectrum-yellow-300-plans: #F5C700;
     --spectrum-green-900-plans: #05834E;
