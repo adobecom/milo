@@ -2837,7 +2837,8 @@ merch-card[variant="mini"] span.renewal-text {
 
     /* ah colors */
     --ah-gray-500: #717171;
-    
+    --fuchsia: #FDE9FF;
+
     /* plans colors */
     --spectrum-yellow-300-plans: #F5C700;
     --spectrum-green-900-plans: #05834E;
@@ -4105,6 +4106,11 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
   border-radius: 50%;
 }
 
+merch-card[variant="ccd-slice"] [slot='body-s'] {
+  display: flex;
+  flex-flow: column;
+}
+  
 merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   font-size: var(--consonant-merch-card-body-xxs-font-size);
   font-style: normal;
@@ -4240,6 +4246,20 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         word-break: break-word;
     }
 
+    merch-card[variant="ah-try-buy-widget"] [slot="badge"] {
+        position: absolute;
+        top: 18px;
+        right: 12px;
+    }
+
+    merch-card[variant="ah-try-buy-widget"] [slot="badge"] merch-badge {
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: normal;
+        padding: 4px 9px 5px 9px;
+    }
+
     merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] a {
         color: var(--consonant-merch-card-body-xxs-color);
     }
@@ -4285,11 +4305,14 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     }
 
     merch-card[variant="ah-try-buy-widget"] [slot="price"] .price:not(.price-strikethrough) .price-recurrence {
-        display: inline-block;
         width: 21px;
         text-align: end;
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         color: var(--consonant-merch-card-body-xxs-color);
+        font-weight: 400;
+    }
+
+    merch-card[variant="ah-try-buy-widget"] [slot="price"] .price:not(.price-strikethrough) .price-tax-inclusivity {
         font-weight: 400;
     }
 
@@ -4316,6 +4339,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         display: flex;
         padding-top: 24px;
         flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     merch-card[variant="ah-try-buy-widget"] [slot="image"] {
@@ -4354,7 +4378,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     .spectrum--darkest merch-card[variant="ah-try-buy-widget"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
-`;var ca={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{}},allowedColors:{gray:"--spectrum-gray-100"},size:["single","double","triple"]},cr=class extends L{getGlobalCSS(){return Il}get aemFragmentMapping(){return ca}renderLayout(){return g`
+`;var ca={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},badge:{tag:"div",slot:"badge",default:"fuchsia"},allowedBadgeColors:["fuchsia"],description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{}},allowedColors:{gray:"--spectrum-gray-100"},size:["single","double","triple"]},cr=class extends L{getGlobalCSS(){return Il}get aemFragmentMapping(){return ca}renderLayout(){return g`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -4369,6 +4393,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
                 </div>
             </div>
             <slot name="image"></slot>
+            <slot name="badge"></slot>
             <slot></slot>
         `}};f(cr,"variantStyle",y`
         :host([variant='ah-try-buy-widget']) {
@@ -4448,6 +4473,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             flex-wrap: wrap;
             gap: 8px;
             flex-direction: row;
+            align-self: flex-end;
         }
     `);$();var Hl=`
     merch-card[variant="ah-promoted-plans"] [slot="body-xxs"] {
