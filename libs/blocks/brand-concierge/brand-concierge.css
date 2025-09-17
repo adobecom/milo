@@ -15,7 +15,7 @@
 
   background: var(--brand-concierge-bg);
   box-sizing: border-box;
-  padding: 40px 20px 10px;
+  padding: 40px 20px 12px;
 }
 
 .bc-header {
@@ -251,6 +251,10 @@
   line-height: 1.5;
   margin: 0;
   text-align: center;
+}
+
+.bc-legal p {
+  margin: 0;
 }
 
 .bc-legal a {
@@ -531,10 +535,6 @@
 
 /* Tablet up */
 @media screen and (min-width: 768px) {
-  .brand-concierge {
-    padding: 80px 40px 10px;
-  }
-
   .bc-prompt-cards {
     flex-wrap: nowrap;
     gap: 16px;
