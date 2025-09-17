@@ -399,17 +399,6 @@
     border-radius: 16px;
   }
 
-  .section:has(.icon-block.container-mobile + .action-scroller) .action-scroller .scroller {
-    --mask-width: var(--grid-margins-width);
-    padding-inline: var(--grid-margins-width);
-    gap: var(--spacing-xs);
-  }
-
-  .section:has(.icon-block.container-mobile + .action-scroller) .action-item .main-image {
-    max-width: 60px;
-    margin-inline: auto;
-  }
-
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
