@@ -317,7 +317,7 @@ export default function init(el) {
         getColWidth(period, colWidths, hasSegment);
       }
       if (text) {
-        textContent.push(text.trim()); // Store the text content
+        textContent.push(text.trim());
         p.textContent = text.trim();
         if (isDc1052) {
           subtext.push(p.cloneNode(true));
