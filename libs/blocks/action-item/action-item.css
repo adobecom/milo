@@ -1,5 +1,9 @@
 .action-item {
   display: flex;
+
+  > div {
+    width: fit-content;
+  }
 }
 
 .action-item img {
