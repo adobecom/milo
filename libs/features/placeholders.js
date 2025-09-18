@@ -4,18 +4,15 @@ const fetchedPlaceholders = {};
 window.mph = {};
 
 export const getPlaceholderRoot = (config) => {
-  const placeholderConstentRoot = getMetadata('placeholders-content-root');
-  if (!placeholderConstentRoot) return config.locale?.contentRoot;
+  const placeholderContentRoot = getMetadata('placeholders-content-root') || config.placeholderPath?.contentRoot;
+  if (!placeholderContentRoot) return config.locale?.contentRoot;
 
   let origin = 'https://www.adobe.com';
-  const placeholderOrigin = getMetadata('placeholders-origin');
-  if (config.env.name !== 'prod' && placeholderOrigin) {
-    const originParts = window.location.origin.split('--');
-    if (originParts.length === 3) {
-      origin = `${originParts[0]}--${placeholderOrigin}--${originParts[2]}`;
-    }
+  const placeholderRepo = getMetadata('placeholders-repo') || config.placeholderPath?.repo;
+  if (config.env.name !== 'prod' && placeholderRepo) {
+    origin = `https://main--${placeholderRepo}--adobecom.aem.page`;
   }
-  return `${origin}${config.locale?.prefix || ''}/${placeholderConstentRoot}`;
+  return `${origin}${config.locale?.prefix || ''}${placeholderContentRoot}`;
 };
 
 const getPlaceholdersPath = (config, sheet) => {
