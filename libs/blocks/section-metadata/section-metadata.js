@@ -1,6 +1,5 @@
 import { handleFocalpoint } from '../../utils/decorate.js';
 import { createTag, getFedsPlaceholderConfig } from '../../utils/utils.js';
-import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
 
 const replacePlaceholder = async (key) => {
   const { replaceKey } = await import('../../features/placeholders.js');
@@ -109,6 +108,7 @@ async function handleCollapseSection(section) {
   if (window.innerWidth > 600) {
     section.style.background = 'none';
   }
+  const { decorateDefaultLinkAnalytics } = await import('../../martech/attributes.js');
   decorateDefaultLinkAnalytics(showMoreButton);
 }
 
