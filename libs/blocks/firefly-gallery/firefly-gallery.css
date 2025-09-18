@@ -1,17 +1,8 @@
-/* Define breakpoints and common values as CSS variables */
-/* Define breakpoints */
-:root {
-  --breakpoint-mobile: 600px;
-  --breakpoint-tablet: 900px;
-  --breakpoint-desktop: 1200px;
-}
-
-/* Default values for all breakpoints that get overridden by media queries as needed */
 :root {
   /* Mobile values (default for screens <= 600px) */
   --columns: 2;
-  --gap: 8px;
-  --item-margin: 8px;
+  --gap: var(--spacing-xxs);
+  --item-margin: var(--spacing-xxs);
   /* --padding: var(--spacing-m) 0; */
 
   /* Typography scale */
@@ -30,6 +21,39 @@
   /* Animation durations */
   --transition-speed-fast: 0.3s;
   --transition-speed-medium: 0.5s;
+
+  /* Define skeleton dimensions using custom properties for easier maintenance */
+  --skeleton-height-default: 200px;
+  --skeleton-height-short: calc(
+    var(--skeleton-height-default) * 0.7
+  ); /* 70% of default */
+  --skeleton-height-square: var(--skeleton-height-default);
+  --skeleton-height-portrait: calc(
+    var(--skeleton-height-default) * 1.3
+  ); /* 130% of default */
+  --skeleton-height-tall: calc(
+    var(--skeleton-height-default) * 1.7
+  ); /* 170% of default */
+
+  /* Aspect ratio percentages */
+  --aspect-ratio-short: 70%;
+  --aspect-ratio-square: 100%;
+  --aspect-ratio-portrait: 130%;
+  --aspect-ratio-tall: 170%;
+
+  /* Skeleton animation */
+  --skeleton-bg-color: var(--color-gray-100);
+  --skeleton-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* Background pattern for skeleton items */
+  --skeleton-gradient: linear-gradient(
+    110deg,
+    var(--color-gray-100) 0%,
+    var(--color-gray-100) 40%,
+    var(--color-gray-200) 42%,
+    var(--color-gray-200) 58%,
+    var(--color-gray-100) 60%
+  );
 }
 
 .firefly-gallery-block {
@@ -104,21 +128,6 @@
   contain: layout size; /* Improve performance by isolating layout */
 }
 
-/* Define skeleton dimensions using custom properties for easier maintenance */
-:root {
-  --skeleton-height-default: 200px;
-  --skeleton-height-short: calc(
-    var(--skeleton-height-default) * 0.7
-  ); /* 70% of default */
-  --skeleton-height-square: var(--skeleton-height-default);
-  --skeleton-height-portrait: calc(
-    var(--skeleton-height-default) * 1.3
-  ); /* 130% of default */
-  --skeleton-height-tall: calc(
-    var(--skeleton-height-default) * 1.7
-  ); /* 170% of default */
-}
-
 /* Fixed minimum heights for skeleton items during loading */
 .skeleton-item {
   min-height: var(--skeleton-height-default);
@@ -139,15 +148,6 @@
 
 .skeleton-item.firefly-gallery-item-tall {
   min-height: var(--skeleton-height-tall);
-}
-
-/* Item size variations - using dynamically calculated aspect ratio */
-:root {
-  /* Aspect ratio percentages */
-  --aspect-ratio-short: 70%;
-  --aspect-ratio-square: 100%;
-  --aspect-ratio-portrait: 130%;
-  --aspect-ratio-tall: 170%;
 }
 
 /* For all items, use the custom --aspect-ratio property if available */
@@ -179,12 +179,6 @@
   ); /* 1.7:1 aspect ratio - tall portrait */
 }
 
-/* Skeleton animation */
-:root {
-  --skeleton-bg-color: var(--color-gray-100);
-  --skeleton-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
 .skeleton-wrapper {
   position: absolute;
   top: 0;
@@ -210,18 +204,6 @@
   right: 0;
   bottom: 0;
   z-index: 2;
-}
-
-/* Background pattern for skeleton items */
-:root {
-  --skeleton-gradient: linear-gradient(
-    110deg,
-    var(--color-gray-100) 0%,
-    var(--color-gray-100) 40%,
-    var(--color-gray-200) 42%,
-    var(--color-gray-200) 58%,
-    var(--color-gray-100) 60%
-  );
 }
 
 .skeleton-wrapper::before {
@@ -536,8 +518,8 @@
 /* Tablet styles (601px - 900px) */
 @media screen and (min-width: 601px) {
   :root {
-    --gap: 12px; /* Between --spacing-xxs (8px) and --spacing-xs (16px) - keep custom */
-    --item-margin: 12px; /* Between --spacing-xxs (8px) and --spacing-xs (16px) - keep custom */
+    --gap: var(--spacing-xxs);
+    --item-margin: var(--spacing-xxs);
     --padding: var(--spacing-m) 0;
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.85);
     --prompt-line-height: 1.2;
@@ -559,8 +541,8 @@
 /* Desktop styles (901px+) */
 @media screen and (min-width: 901px) {
   :root {
-    --gap: var(--spacing-xs); /* 16px */
-    --item-margin: var(--spacing-xs); /* 16px */
+    --gap: var(--spacing-xxs);
+    --item-margin: var(--spacing-xxs); /* 8px */
     --padding: var(--spacing-l) 0;
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.9);
     --prompt-max-width: 90%;
