@@ -582,7 +582,7 @@ const addStartingAt = async (styles, merchCard) => {
     await replaceKey('starting-at', getConfig()).then((key) => {
       const startingAt = createTag('div', { class: 'starting-at' }, key);
       const headingMPrice = merchCard.querySelector('[slot="heading-m-price"]');
-      const price = headingMPrice?.querySelector('span[is="inline-price"]');
+      const price = headingMPrice?.querySelector('span[is="inline-price"]:not([data-template="strikethrough"])');
       if (price) {
         price.parentNode.prepend(startingAt);
       }

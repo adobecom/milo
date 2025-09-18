@@ -71,6 +71,7 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] [slot="price-commitment"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     padding: 0 var(--consonant-merch-spacing-s);
+    font-style: italic;
   }
 
   merch-card[variant="mini-compare-chart"] [slot="price-commitment"] a {
@@ -477,6 +478,10 @@ merch-card[variant="mini-compare-chart"].bullet-list [slot="price-commitment"] {
   .four-merch-cards.mini-compare-chart {
       grid-template-columns: repeat(4, var(--consonant-merch-card-mini-compare-chart-width));
   }
+}
+
+merch-card[variant="mini-compare-chart"].bullet-list div[slot="footer-rows"]  {
+  height: 100%;
 }
 
 merch-card .footer-row-cell:nth-child(1) {

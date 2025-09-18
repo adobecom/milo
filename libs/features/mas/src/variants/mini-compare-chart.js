@@ -312,5 +312,7 @@ async adjustAddon() {
             --consonant-merch-card-mini-compare-chart-addon-height
         );
     }
+    :host([variant='mini-compare-chart'].bullet-list) [slot="footer-rows"] {
+    min-height: var(--consonant-merch-card-mini-compare-chart-footer-rows-height);
   `;
 };
