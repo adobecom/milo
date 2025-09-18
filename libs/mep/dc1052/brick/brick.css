@@ -432,11 +432,16 @@
   .brick .bottom-media picture img {
     display: block;
   }
+  
   .brick .bottom-media {
     z-index: 1;
     border-bottom-right-radius: var(--spacing-xs);
     border-bottom-left-radius: var(--spacing-xs);
     overflow: hidden;
+  }
+
+  .brick.mini-headline-spacing .foreground p[class*="body-"] {
+    margin-top: 12px !important;
   }
 }
 
