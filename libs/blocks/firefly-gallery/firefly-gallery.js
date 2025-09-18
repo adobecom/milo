@@ -59,12 +59,6 @@ function logError(message, error) {
   console.error(`[FireflyGallery Error] ${message}`, error);
 }
 
-/**
- * Safely attempts to parse JSON with error handling
- * @param {string} jsonString - The JSON string to parse
- * @param {*} defaultValue - Default value to return if parsing fails
- * @return {*} - Parsed object or default value
- */
 function safeJsonParse(jsonString, defaultValue = {}) {
   try {
     return JSON.parse(jsonString);
@@ -74,13 +68,6 @@ function safeJsonParse(jsonString, defaultValue = {}) {
   }
 }
 
-/**
- * Gets a localized string from an object based on locale
- * @param {Object} localizations - Object with locale keys
- * @param {string} currentLocale - Current locale code
- * @param {string} defaultValue - Default value if no match found
- * @return {string} - Localized string or default
- */
 function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
   if (!localizations) return defaultValue;
 
@@ -112,11 +99,6 @@ function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
   return defaultValue;
 }
 
-/**
- * Gets screen size category based on viewport width
- * Using exact breakpoints to match CSS media queries
- * @return {string} - 'mobile', 'tablet', or 'desktop'
- */
 function getScreenSizeCategory() {
   const viewportWidth = window.innerWidth;
 
@@ -129,11 +111,6 @@ function getScreenSizeCategory() {
   }
 }
 
-/**
- * Extracts the aspect ratio from a Firefly asset
- * @param {Object} asset - The Firefly asset object
- * @return {number} - The aspect ratio (width/height), defaults to 1 if not found
- */
 function extractAspectRatio(asset) {
   let aspectRatio = 1; // Default to square
 
@@ -166,11 +143,6 @@ function constructVideoUrl(assetId) {
   return `https://cdn.cp.adobe.io/content/2/dcx/${assetId}/content/manifest/version/0/component/path/output/resource`;
 }
 
-/**
- * Determines the item type based on aspect ratio
- * @param {number} aspectRatio - The aspect ratio (width/height)
- * @return {string} - Item type: 'tall', 'portrait', 'square', or 'short'
- */
 function getItemTypeFromAspectRatio(aspectRatio) {
   if (aspectRatio < ITEM_TYPE_THRESHOLDS.tall) {
     return 'tall'; // Portrait (very tall)
@@ -183,11 +155,6 @@ function getItemTypeFromAspectRatio(aspectRatio) {
   }
 }
 
-/**
- * Updates item class based on determined item type
- * @param {HTMLElement} item - The item element to update
- * @param {string} itemType - The determined item type
- */
 function updateItemTypeClass(item, itemType) {
   const existingClasses = item.className.split(' ');
   const newClasses = existingClasses
@@ -233,11 +200,6 @@ const replaceRenditionUrl = (url, format, dimension, size) =>
     .replace(/{dimension}/g, dimension)
     .replace(/{size}/g, size);
 
-/**
- * Creates Firefly gallery URL for opening asset in new tab
- * @param {string} urn - Asset URN identifier
- * @return {string} - Complete Firefly URL
- */
 function createFireflyURL(urn, assetType = 'image') {
   const assetTypeParam =
     assetType === 'video' ? 'VideoGeneration' : 'ImageGeneration';
@@ -418,12 +380,6 @@ function createSkeletonLayout(container) {
   return { masonryGrid, skeletonItems };
 }
 
-/**
- * Creates and returns image element with proper attributes
- * @param {string} imageUrl - URL of the image to load
- * @param {string} altText - Alt text for the image
- * @return {HTMLElement} - The created image element
- */
 function createImageElement(imageUrl, altText) {
   return createTag('img', {
     src: imageUrl,
@@ -433,13 +389,6 @@ function createImageElement(imageUrl, altText) {
   });
 }
 
-/**
- * Creates clickable overlay with prompt and user info
- * @param {string} promptText - The prompt text to display
- * @param {Object} userInfo - User information (name, avatarUrl)
- * @param {string} fireflyUrl - URL to open when clicked
- * @return {HTMLElement} - The created clickable overlay element
- */
 function createOverlayElement(
   promptText,
   userInfo = {},
@@ -512,16 +461,6 @@ function createOverlayElement(
   return overlay;
 }
 
-/**
- * Loads an image into a skeleton item with proper overlay and transitions
- * @param {HTMLElement} skeletonItem - The skeleton item to load the image into
- * @param {string} imageUrl - URL of the image to load
- * @param {string} altText - Alt text for the image
- * @param {string} promptText - Prompt text to show in overlay
- * @param {Object} userInfo - User information (name, avatarUrl)
- * @param {string} assetUrn - Asset URN for generating Firefly URL
- * @return {Promise} - Resolves when image is loaded
- */
 function loadAssetIntoSkeleton(
   skeletonItem,
   imageUrl,
@@ -647,13 +586,6 @@ function loadAssetIntoSkeleton(
   });
 }
 
-/**
- * Process a single item when it's visible
- * @param {HTMLElement} item - The item element to process
- * @param {Object} asset - The asset data
- * @param {number} index - The index of this item
- * @param {string} locale - The current locale
- */
 function processItem(item, asset, index, locale, assets) {
   // Extract aspect ratio from the asset
   const aspectRatio = extractAspectRatio(asset);
@@ -801,11 +733,6 @@ function loadFireflyImages(skeletonItems, assets = []) {
   }
 }
 
-/**
- * Extract item type from element's class names
- * @param {HTMLElement} item - The item element
- * @return {string} - The item type or 'square' as fallback
- */
 function getItemTypeFromClass(item) {
   const itemClasses = item.className.split(' ');
   const sizeClassRegex = /firefly-gallery-item-(\S+)/;
@@ -813,11 +740,6 @@ function getItemTypeFromClass(item) {
   return sizeClassMatch ? sizeClassMatch.match(sizeClassRegex)[1] : 'square';
 }
 
-/**
- * Handles window resize events to optimize the gallery layout
- * @param {Array} assets - The array of image assets
- * @param {Array} skeletonItems - The skeleton item elements
- */
 function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
   const handleResize = debounce(() => {
     // Column count now handled by CSS media queries automatically
@@ -856,12 +778,6 @@ function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
   window.addEventListener('resize', handleResize);
 }
 
-/**
- * Sets tabindex=-1 for overlay elements that are hidden by the firefly-gallery-fade overlay
- * to prevent keyboard focus on elements that aren't fully visible.
- *
- * @param {HTMLElement} galleryContent - The gallery content element with class 'firefly-gallery-content'
- */
 function setTabindexForHiddenOverlays(galleryContent) {
   if (!galleryContent) return;
 
