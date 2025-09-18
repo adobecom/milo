@@ -17,6 +17,7 @@
   --l-rounded-corners: 16px;
   --full-rounded-corners: 50%;
   --indicator-multiplier: 0;
+  --grid-container-view: 83.4vw;
 
   position: relative;
   margin-bottom: 1.8rem;
@@ -592,10 +593,6 @@ html[dir="rtl"] .carousel .move-indicators {
     transform: translateX(calc((0.3rem) * -1));
   }
 
-  .carousel.disable-buttons .carousel-slide.hide-left-hint {
-    visibility: hidden !important;
-  }
-
   .carousel.dark.disable-buttons .carousel-button.disabled:hover,
   .carousel.dark.disable-buttons .carousel-button.disabled:active,
   .dark .carousel.disable-buttons .carousel-button.disabled:hover,
@@ -611,7 +608,7 @@ html[dir="rtl"] .carousel .move-indicators {
   .dark .carousel.disable-buttons .carousel-button.disabled path,
   .carousel.dark.disable-buttons .carousel-button.disabled path,
   .carousel.disable-buttons .carousel-button.disabled path {
-    fill: var(--carousel-nav-button-background-active)
+    fill: var(--carousel-nav-button-background-active);
   }
 
 
