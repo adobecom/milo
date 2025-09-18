@@ -480,10 +480,6 @@ merch-card[variant="mini-compare-chart"].bullet-list [slot="price-commitment"] {
   }
 }
 
-merch-card[variant="mini-compare-chart"]:not(.bullet-list) [slot="footer-rows"] {
-  min-height: var(--consonant-merch-card-mini-compare-chart-footer-rows-height);
-}
-
 merch-card[variant="mini-compare-chart"].bullet-list div[slot="footer-rows"]  {
   height: 100%;
 }

@@ -47,8 +47,10 @@ export class MiniCompareChart extends VariantLayout {
         'promo-text',
         'callout-content',
         'addon',
-        'footer-rows',
     ];
+    if (this.card.classList.contains('bullet-list')) {
+        slots.push('footer-rows');
+    }
 
     slots.forEach((slot) =>
         this.updateCardElementMinHeight(
@@ -310,8 +312,8 @@ async adjustAddon() {
             --consonant-merch-card-mini-compare-chart-addon-height
         );
     }
-    :host([variant='mini-compare-chart'] [slot="footer-rows"] {
-        min-height: var(--consonant-merch-card-mini-compare-chart-footer-rows-height);
+    :host([variant='mini-compare-chart']:not(.bullet-list)) slot[name='footer-rows'] {
+        justify-content: flex-start;
     }
   `;
 };
