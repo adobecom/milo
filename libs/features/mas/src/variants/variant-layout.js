@@ -141,6 +141,12 @@ export class VariantLayout {
         //nothing to do by default
     }
 
+    syncHeights() {
+        // Base implementation - variants can override this
+        // Called when all cards in collection are ready
+        // Variants that need height synchronization should override this method
+    }
+
     /* c8 ignore next 3 */
     renderLayout() {
         //nothing to do by default

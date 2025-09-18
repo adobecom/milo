@@ -2,20 +2,21 @@ import { VariantLayout } from './variant-layout';
 import { createTag } from '../utils.js';
 import { html, css } from 'lit';
 import { CSS } from './product.css.js';
-import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
+import { SELECTOR_MAS_INLINE_PRICE, EVENT_MERCH_CARD_COLLECTION_READY } from '../constants.js';
 import { isMobile } from '../media.js';
 
 export class Product extends VariantLayout {
     constructor(card) {
         super(card);
         this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+        this.handleCollectionReady = this.handleCollectionReady.bind(this);
     }
 
     getGlobalCSS() {
         return CSS;
     }
 
-    adjustProductBodySlots() {
+    syncHeights() {
         if (this.card.getBoundingClientRect().width === 0) return;
 
         const slots = [
@@ -54,21 +55,37 @@ export class Product extends VariantLayout {
             ${this.secureLabelFooter}`;
     }
 
+    handleCollectionReady() {
+        if (!isMobile()) {
+            requestAnimationFrame(() => {
+                this.syncHeights();
+            });
+        }
+    }
+
     connectedCallbackHook() {
         window.addEventListener('resize', this.postCardUpdateHook);
+        const collection = this.card.closest('merch-card-collection');
+        if (collection) {
+            collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
+        }
     }
 
     disconnectedCallbackHook() {
         window.removeEventListener('resize', this.postCardUpdateHook);
+        const collection = this.card.closest('merch-card-collection');
+        if (collection) {
+            collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
+        }
     }
 
     postCardUpdateHook() {
         if (!this.card.isConnected) return;
         this.adjustAddon();
         if (!isMobile()) {
-            this.adjustProductBodySlots();
+            this.syncHeights();
         }
-        this.adjustTitleWidth(); 
+        this.adjustTitleWidth();
     }
 
     get headingXSSlot() {

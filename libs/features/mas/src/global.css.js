@@ -124,6 +124,7 @@ styles.innerHTML = `
     --spectrum-gray-700: #494949;
     --spectrum-gray-800: #2C2C2C;
     --spectrum-gray-900: #1C1C1C;
+    --spectrum-indigo-300: #D3D5FF;
     --spectrum-indigo-900: #5258E4;
   
     /* merch card generic */
@@ -242,6 +243,45 @@ merch-card.has-divider hr {
 
 merch-card.has-divider div[slot='body-lower'] hr {
     margin: 0;
+}
+
+/* HR-based dividers from Studio */
+merch-card .divider-wrapper {
+    display: block;
+    margin: 8px 0;
+}
+
+merch-card .divider-hr {
+    border: none;
+    margin: 0;
+    background-color: var(--consonant-merch-card-border-color, #e9e9e9);
+}
+
+merch-card .divider-hr.divider-size-s {
+    height: 1px;
+}
+
+merch-card .divider-hr.divider-size-m {
+    height: 2px;
+}
+
+merch-card .divider-hr.divider-size-l {
+    height: 4px;
+}
+
+merch-card .divider-hr.divider-vertical {
+    width: 1px;
+    height: 24px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+merch-card .divider-hr.divider-vertical.divider-size-m {
+    width: 2px;
+}
+
+merch-card .divider-hr.divider-vertical.divider-size-l {
+    width: 4px;
 }
 
 merch-card p, merch-card h3, merch-card h4 {

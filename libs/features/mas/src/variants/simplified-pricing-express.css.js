@@ -179,8 +179,8 @@ merch-card[variant="simplified-pricing-express"] sr-only {
   border: 0;
 }
 
-/* mas-tooltip inline styles for simplified-pricing-express */
-merch-card[variant="simplified-pricing-express"] mas-tooltip {
+/* mas-mnemonic inline styles for simplified-pricing-express */
+merch-card[variant="simplified-pricing-express"] mas-mnemonic {
     display: inline-block;
     align-items: center;
     vertical-align: baseline;

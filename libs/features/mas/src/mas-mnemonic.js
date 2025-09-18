@@ -8,10 +8,10 @@ function hasSpectrumTooltip() {
 }
 
 /**
- * MasTooltip - A web component that handles tooltips within MAS
+ * MasMnemonic - A web component that handles mnemonics (icons with optional tooltips) within MAS
  * Automatically detects if Spectrum Web Components are available and renders appropriately
  */
-export default class MasTooltip extends LitElement {
+export default class MasMnemonic extends LitElement {
     static properties = {
         content: { type: String },
         placement: { type: String },
@@ -21,6 +21,9 @@ export default class MasTooltip extends LitElement {
         size: { type: String },
         tooltipText: { type: String, attribute: 'tooltip-text' },
         tooltipPlacement: { type: String, attribute: 'tooltip-placement' },
+        // Support studio's mnemonic attribute names
+        mnemonicText: { type: String, attribute: 'mnemonic-text' },
+        mnemonicPlacement: { type: String, attribute: 'mnemonic-placement' },
     };
 
     static styles = css`
@@ -78,7 +81,7 @@ export default class MasTooltip extends LitElement {
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            margin-bottom: 19px;
+            margin-bottom: 16px;
         }
         
         .css-tooltip.top[data-tooltip]::after {
@@ -143,11 +146,11 @@ export default class MasTooltip extends LitElement {
     }
 
     get effectiveContent() {
-        return this.tooltipText || this.content || '';
+        return this.tooltipText || this.mnemonicText || this.content || '';
     }
 
     get effectivePlacement() {
-        return this.tooltipPlacement || this.placement || 'top';
+        return this.tooltipPlacement || this.mnemonicPlacement || this.placement || 'top';
     }
 
     renderIcon() {
@@ -197,4 +200,4 @@ export default class MasTooltip extends LitElement {
     }
 }
 
-customElements.define('mas-tooltip', MasTooltip);
+customElements.define('mas-mnemonic', MasMnemonic);
