@@ -13,7 +13,6 @@ import {
     EVENT_AEM_LOAD,
     SORT_ORDER
 } from './constants.js';
-import { styles } from './merch-card-collection.css.js';
 import { getService, getSlotText } from './utils.js';
 import { getFragmentMapping } from './variants/variants.js';
 import { normalizeVariant } from './hydrate.js';
@@ -517,7 +516,18 @@ export class MerchCardCollection extends LitElement {
         this.sidenav?.showModal(e);
     }
 
-    static styles = [styles];
+    static styles = css`
+        #footer {
+            grid-column: 1 / -1;
+            justify-self: stretch;
+            color: var(--merch-color-grey-80);
+            order: 1000;
+        }
+
+        sp-theme {
+            display: contents;
+        }
+    `;
 }
 
 MerchCardCollection.SortOrder = SORT_ORDER;

@@ -7,6 +7,7 @@ import {
     SELECTOR_MAS_INLINE_PRICE,
     TEMPLATE_PRICE_LEGAL,
 } from '../constants.js';
+import { getOuterHeight } from '../utils.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
     cardName: { attribute: 'name' },
@@ -161,12 +162,57 @@ export class Plans extends VariantLayout {
         }
     }
 
-    postCardUpdateHook() {
+    async adjustEduLists() {
+        if (this.card.variant !== 'plans-education') return;
+        const existingSpacer = this.card.querySelector('.spacer');
+        if (existingSpacer) return;
+
+        const body = this.card.querySelector('[slot="body-xs"]');
+        if (!body) return;
+        const list = body.querySelector('ul');
+        if (!list) return;
+
+        /* Add spacer */
+        const listHeader = list.previousElementSibling;
+        const spacer = document.createElement('div');
+        spacer.classList.add('spacer');
+        body.insertBefore(spacer, listHeader);
+        
+        const intersectionObs = new IntersectionObserver(([entry]) => {
+            if (entry.boundingClientRect.height === 0) return;
+            let offset = 0;
+            const heading = this.card.querySelector('[slot="heading-s"]');
+            if (heading) offset += getOuterHeight(heading);
+            const subtitle = this.card.querySelector('[slot="subtitle"]');
+            if (subtitle) offset += getOuterHeight(subtitle);
+            const price = this.card.querySelector('[slot="heading-m"]');
+            /* If price is slotted, also add 8 pixels for the gap */
+            if (price) offset += 8 + getOuterHeight(price);
+            for (const child of body.childNodes) {
+                if (child.classList.contains('spacer')) break;
+                offset += getOuterHeight(child);
+            }
+
+            const maxOffset = this.card.parentElement.style.getPropertyValue('--merch-card-plans-edu-list-max-offset');
+            if (offset > (parseFloat(maxOffset) || 0)) {
+                this.card.parentElement.style.setProperty('--merch-card-plans-edu-list-max-offset', `${offset}px`);
+            }
+            this.card.style.setProperty('--merch-card-plans-edu-list-offset', `${offset}px`);
+            intersectionObs.disconnect();
+        });
+        
+        intersectionObs.observe(this.card);
+    }
+
+    async postCardUpdateHook() {
         this.adaptForMedia();
         this.adjustTitleWidth();
-        this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
+        if (!this.legalAdjusted) {
+            await this.adjustLegal();
+            await this.adjustEduLists();
+        }
     }
 
     get headingM() {
@@ -187,26 +233,32 @@ export class Plans extends VariantLayout {
     }
 
     async adjustLegal() {
-        await this.card.updateComplete;
-        await customElements.whenDefined('inline-price');
         if (this.legalAdjusted) return;
-        this.legalAdjusted = true;
-        const prices = [];
-        const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
-        if (headingPrice) prices.push(headingPrice);
-        const legalPromises = prices.map(async (price) => {
-          const legal = price.cloneNode(true);
-          await price.onceSettled();
-          if (!price?.options) return;
-          if (price.options.displayPerUnit)
-              price.dataset.displayPerUnit = 'false';
-          if (price.options.displayTax) price.dataset.displayTax = 'false';
-          if (price.options.displayPlanType)
-              price.dataset.displayPlanType = 'false';
-          legal.setAttribute('data-template', 'legal');
-          price.parentNode.insertBefore(legal, price.nextSibling);
-        });
-        await Promise.all(legalPromises);
+        try {
+            this.legalAdjusted = true;
+            await this.card.updateComplete;
+            await customElements.whenDefined('inline-price');
+            const prices = [];
+            const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
+            if (headingPrice) prices.push(headingPrice);
+            const legalPromises = prices.map(async (price) => {
+              const legal = price.cloneNode(true);
+              await price.onceSettled();
+              if (!price?.options) return;
+              if (price.options.displayPerUnit)
+                  price.dataset.displayPerUnit = 'false';
+              if (price.options.displayTax) price.dataset.displayTax = 'false';
+              if (price.options.displayPlanType)
+                  price.dataset.displayPlanType = 'false';
+              legal.setAttribute('data-template', 'legal');
+              price.parentNode.insertBefore(legal, price.nextSibling);
+              await legal.onceSettled();
+            });
+            await Promise.all(legalPromises);
+        }
+        catch {
+            /* Proceed with adjusting edu lists */
+        }
     }
 
     async adjustAddon() {
