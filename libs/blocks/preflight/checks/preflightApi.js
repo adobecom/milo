@@ -24,6 +24,9 @@ import {
   checkLinks,
   runChecks as runChecksSeo,
 } from './seo.js';
+import { SEVERITY } from './constants.js';
+
+let checks = null;
 
 let checksSuite = null;
 
@@ -77,29 +80,48 @@ export const getChecksSuite = () => {
   });
 };
 
-const runChecks = async (url, area) => {
+const runChecks = async (url, area, injectVisualMetadata = false) => {
   const isASO = (await getChecksSuite()) === 'ASO';
-  const assets = await Promise.all(runChecksAssets(url, area));
+  const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
   const performance = await Promise.all(runChecksPerformance(url, area));
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   return { assets, performance, seo };
 };
 
-const processResults = (results) => {
+export async function getPreflightResults(options) {
+  const {
+    url,
+    area,
+    useCache = true,
+    injectVisualMetadata = false,
+  } = options || {};
+
+  if (useCache && !injectVisualMetadata) {
+    // Cache calls for without visual metadata
+    if (!checks) checks = runChecks(url, area, injectVisualMetadata);
+    const cachedChecks = await checks;
+    const allResults = [
+      ...(cachedChecks.assets || []),
+      ...(cachedChecks.performance || []),
+      ...(cachedChecks.seo || []),
+    ];
+    return {
+      isViewportTooSmall: isViewportTooSmall(),
+      runChecks: cachedChecks,
+      hasFailures: allResults.some((result) => result.status === 'fail' && result.severity === SEVERITY.CRITICAL),
+    };
+  }
+
+  const res = await runChecks(url, area, injectVisualMetadata);
   const allResults = [
-    ...(results.assets || []),
-    ...(results.performance || []),
-    ...(results.seo || []),
+    ...(res.assets || []),
+    ...(res.performance || []),
+    ...(res.seo || []),
   ];
 
   return {
     isViewportTooSmall: isViewportTooSmall(),
-    runChecks: results,
-    hasFailures: allResults.some((result) => result.status === 'fail'),
+    runChecks: res,
+    hasFailures: allResults.some((result) => result.status === 'fail' && result.severity === SEVERITY.CRITICAL),
   };
-};
-
-export async function getPreflightResults(url, area) {
-  const results = await runChecks(url, area);
-  return processResults(results);
 }
