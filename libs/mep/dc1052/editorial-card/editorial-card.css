@@ -353,8 +353,7 @@
 
   /* Block specific */
   .section:has(.editorial-card ~ .show-more-button),
-  .section.show-all:has(.editorial-card), 
-  .section.editorial-narrow {
+  .section.show-all:has(.editorial-card) {
     margin-inline: var(--spacing-xs);
     padding: var(--spacing-xs);
     margin-bottom: 24px;
@@ -398,5 +397,15 @@
   .section .show-more-icon {
     display: inline-flex;
     align-items: center;
+  }
+}
+
+@media screen and (max-width: 599px) {
+  .section.editorial-narrow {
+    margin-inline: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    margin-bottom: 66px;
+    border-radius: 16px;
+    /* gap: 0 !important; */
   }
 }
