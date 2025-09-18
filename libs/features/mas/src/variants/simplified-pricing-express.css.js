@@ -179,7 +179,8 @@ merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-te
 /* Ensure non-first paragraph prices have normal font weight */
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-integer,
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-decimals {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-decimals,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-recurrence {
   font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
   font-weight: var(--merch-card-simplified-pricing-express-price-p-font-weight);
   line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
