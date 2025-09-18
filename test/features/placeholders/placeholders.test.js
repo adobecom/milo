@@ -116,7 +116,7 @@ describe('Placeholders', () => {
       const testConfig = {
         locale: { prefix: '/bg' },
         env: { name: 'prod' },
-        placeholderPath: { contentRoot: '/custom/placeholders' }
+        placeholderPath: { contentRoot: '/custom/placeholders' },
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/bg/custom/placeholders');
@@ -126,10 +126,10 @@ describe('Placeholders', () => {
       const testConfig = {
         locale: { prefix: '/bg' },
         env: { name: 'stage' },
-        placeholderPath: { 
+        placeholderPath: {
           contentRoot: '/custom/placeholders',
-          repo: 'custom-repo'
-        }
+          repo: 'custom-repo',
+        },
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://main--custom-repo--adobecom.aem.page/bg/custom/placeholders');
@@ -144,7 +144,7 @@ describe('Placeholders', () => {
       const testConfig = {
         locale: { prefix: '/bg' },
         env: { name: 'prod' },
-        placeholderPath: { contentRoot: '/config-content-root' }
+        placeholderPath: { contentRoot: '/config-content-root' },
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/bg/metadata-content-root');
@@ -159,7 +159,7 @@ describe('Placeholders', () => {
       const testConfig = {
         locale: { prefix: '/bg' },
         env: { name: 'prod' },
-        placeholderPath: { repo: 'some-repo' } // contentRoot not provided
+        placeholderPath: { repo: 'some-repo' }, // contentRoot not provided
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/bg/metadata-content-root');
@@ -212,10 +212,10 @@ describe('Placeholders', () => {
       const testConfig = {
         locale: { prefix: '/bg' },
         env: { name: 'stage' },
-        placeholderPath: { 
+        placeholderPath: {
           contentRoot: '/custom/placeholders',
-          repo: 'config-repo'
-        }
+          repo: 'config-repo',
+        },
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://main--metadata-repo--adobecom.aem.page/bg/cc-shared');
