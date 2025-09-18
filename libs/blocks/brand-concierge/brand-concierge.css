@@ -1,8 +1,9 @@
 .brand-concierge {
+  --bc-header-color: #131313;
   --bc-card-radius: 12px;
   --bc-input-radius: 12px;
   --bc-sticky-input-radius: 22px;
-  --bc-input-height: 54px;
+  --bc-input-height: 52px;
   --bc-sticky-input-height: 44px;
   --bc-input-border: linear-gradient(98.11deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%);
   --bc-button-dimensions: 32px;
@@ -18,6 +19,7 @@
 }
 
 .bc-header {
+  color: var(--bc-header-color);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -101,9 +103,14 @@
   display: flex;
   height: var(--bc-input-height);
   margin-bottom: 40px;
-  padding: 0 12px;
+  padding: 0 12px 0 20px;
   position: relative;
+  gap: 12px;
   z-index: 9;
+}
+
+[dir="rtl"] .bc-input-field-container {
+  padding: 0 20px 0 12px;
 }
 
 .bc-input-field::before {
@@ -139,13 +146,12 @@
   border-radius: 4px;
   display: flex;
   align-items: center;
-  margin-right: 8px;
   user-select: none;
-}
-
-[dir="rtl"] .bc-input-field-label {
-  margin-left: 8px;
-  margin-right: 0;
+  align-self: start;
+  margin-top: 10px;
+  height: 32px;
+  width: 32px;
+  justify-content: center;
 }
 
 .bc-input-field-label:focus-visible {
@@ -160,7 +166,7 @@
   box-shadow: 0 0 10px 0 rgba(0 0 0 / 25%);
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
-  left: 26px;
+  left: 36px;
   padding: 5px 10px;
   position: absolute;
   top: -24px;
@@ -182,7 +188,7 @@
 
 [dir="rtl"] .bc-input-tooltip {
   left: unset;
-  right: -34px;
+  right: -22px;
 }
 
 .sticky .bc-input-tooltip {
@@ -200,8 +206,8 @@
   border: none;
   flex: 1;
   font-family: inherit;
-  font-size: var(--type-body-m-size);
-  line-height: var(--bc-input-height);
+  font-size: var(--type-body-s-size);
+  line-height: 1.5;
   outline: none;
   width: 100%;
 }
@@ -257,6 +263,11 @@
   gap: 8px;
 }
 
+/* Temporary override to chat styling */
+#brand-concierge-mount .container-mobile .chat-input {
+  font-size: 16px !important;
+}
+
 /* Sticky */
 @keyframes sticky-in {
   from {
@@ -303,13 +314,18 @@
   padding: 0;
 }
 
+.sticky .bc-input-field-label {
+  align-self: center;
+  margin: 0;
+}
+
 .sticky .bc-input-field-label,
 .sticky input,
 .sticky .input-field-button {
   display: none;
 }
 
-.bc-input-field-container:has(input:focus-visible){
+.bc-input-field-container:has(input:focus-visible) {
   outline: 2px solid var(--bc-keyboard-focus-color);
 }
 
@@ -399,13 +415,21 @@
 }
 
 #brand-concierge-modal.dialog-modal {
-  height: calc(100vh - 22px);
+  height: calc(100dvh - 22px);
   width: 100vw;
   max-width: unset;
   max-height: unset;
   margin-top: 22px;
   border-radius: 24px 24px 0 0;
   font-size: 16px;
+  top: unset;
+}
+
+/* Fallback for browsers that don't support dvh */
+@supports not (height: 100dvh) {
+  #brand-concierge-modal.dialog-modal {
+    height: calc(100vh - 22px);
+  }
 }
 
 #brand-concierge-modal  .dialog-close {
@@ -544,9 +568,16 @@
   }
 
   #brand-concierge-modal.dialog-modal {
-    height: calc(100vh - 32px);
+    height: calc(100dvh - 32px);
     margin-top: 32px;
     border-radius: 12px 12px 0 0;
+  }
+
+  /* Fallback for browsers that don't support dvh */
+  @supports not (height: 100dvh) {
+    #brand-concierge-modal.dialog-modal {
+      height: calc(100vh - 32px);
+    }
   }
 }
 

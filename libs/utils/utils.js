@@ -186,7 +186,8 @@ export function getEnv(conf) {
     || host.includes(`${SLD}.live`)
     || host.includes('stage.adobe')
     || host.includes('corp.adobe')
-    || host.includes('graybox.adobe')) {
+    || host.includes('graybox.adobe')
+    || host.includes('aem.reviews')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
   return { ...ENVS.prod, consumer: conf.prod };

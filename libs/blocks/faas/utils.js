@@ -346,6 +346,10 @@ export const makeFaasConfig = (targetState) => {
     Object.assign(config.q, { 103: { c: targetState.q103 } });
   }
 
+  if (targetState.qjs69) {
+    Object.assign(config.q, { 69: { c: { ...targetState.qjs69 } } });
+  }
+
   return config;
 };
 
