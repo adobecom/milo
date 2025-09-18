@@ -193,7 +193,7 @@ export default {
     '--prompt-suggestions-container-gap': '8px',
     '--prompt-suggestions-flex-direction': 'row',
     '--prompt-suggestions-flex-wrap': 'wrap',
-    '--scroll-button-bottom-margin': '132px',
+    '--scroll-button-bottom-margin': '127px',
     '--scroll-button-border-color': '#C6C6C6',
     '--scroll-button-size': '40px',
     '--submit-button-fill-color': '#FFFFFF',
