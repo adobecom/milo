@@ -29,7 +29,7 @@
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
   --m-rounded-corners-tabs: 8px;
-  --spectrum-gray-100: #F8F8F8
+  --spectrum-gray-100: #F8F8F8;
 }
 
 :root .dark {
@@ -505,12 +505,11 @@
   width: 100%;
 }
 
-.tabs.segmented-control.center .tabs-wrapper{
+.tabs.segmented-control.center .tabs-wrapper {
   justify-content: center;
 }
 
 .tabs.segmented-control .tabList {
-  background: none;
   box-shadow: none;
   padding: 1px;
   background: var(--spectrum-gray-100);
@@ -598,7 +597,7 @@
   }
 
   .tabs.segmented-control .tabList button {
-    padding: 10px 17px;
+    padding: 10px 16px;
   }
 }
 

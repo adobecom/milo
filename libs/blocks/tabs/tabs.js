@@ -78,6 +78,15 @@ const saveActiveTabInStorage = (targetId, config) => {
   sessionStorage.setItem(storageName, activeTabIndex);
 };
 
+function getContentElement(parent, traversalDepth) {
+  let element = parent;
+  for (let i = 0; i < traversalDepth; i++) {
+    element = element.parentNode;
+    if (!element) return null;
+  }
+  return element.lastElementChild;
+}
+
 function changeTabs(e, config) {
   const { target } = e;
   const targetId = target.getAttribute('id');
@@ -90,9 +99,7 @@ function changeTabs(e, config) {
   const parent = target.parentNode;
   const tabsBlock = target.closest('.tabs');
   const hasSegmentedControl = tabsBlock.classList.contains('segmented-control');
-  const content = hasSegmentedControl
-    ? parent.parentNode.parentNode.parentNode.lastElementChild
-    : parent.parentNode.parentNode.lastElementChild;
+  const content = hasSegmentedControl ? getContentElement(parent, 3) : getContentElement(parent, 2);
   const blockId = tabsBlock.id;
   const isRadio = target.getAttribute('role') === 'radio';
   const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
