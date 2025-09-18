@@ -42,7 +42,10 @@ export default {
     ],
   },
   behavior: {
-    multimodalCarousel: { cardClickAction: 'openLink' },
+    multimodalCarousel: {
+      cardClickAction: 'openLink',
+      hideCarousel: true,
+    },
     input: {
       enableVoiceInput: false,
       disableMultiline: true,
