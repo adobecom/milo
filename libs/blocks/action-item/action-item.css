@@ -2,6 +2,10 @@
   display: flex;
 }
 
+.action-item .static {
+  width: -webkit-fill-available;
+}
+
 .action-item img {
   display: block;
   max-height: 240px;
