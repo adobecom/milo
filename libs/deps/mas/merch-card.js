@@ -2221,18 +2221,18 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] p a {
   text-decoration: underline;
 }
 
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-integer,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-decimals {
   font-size: 28px;
   font-weight: 700;
   line-height: 36.4px;
   text-decoration-thickness: 2px;
 }
 
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals {
   text-decoration: line-through;
 }
 
