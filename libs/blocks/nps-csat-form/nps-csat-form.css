@@ -3,19 +3,24 @@
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 32px;
-  max-width: 540px;
+  max-width: 576px;
+  height: 404px;
   width: 100%;
   margin: 0 auto;
 }
 
 .nps-csat-form #nps {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .nps-close {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -20px;
+  right: -20px;
   background: none;
   border: none;
   font-size: 24px;
