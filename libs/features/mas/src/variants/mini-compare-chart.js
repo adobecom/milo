@@ -3,19 +3,42 @@ import { createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
 import { DESKTOP_UP, TABLET_DOWN, MOBILE_LANDSCAPE, isMobile } from '../media.js';
-import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
+import { SELECTOR_MAS_INLINE_PRICE, EVENT_MERCH_CARD_COLLECTION_READY } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
 export class MiniCompareChart extends VariantLayout {
   constructor(card) {
     super(card);
+    this.handleCollectionReady = this.handleCollectionReady.bind(this);
   }
-  
+
   getRowMinHeightPropertyName = (index) =>
     `--consonant-merch-card-footer-row-${index}-min-height`;
 
   getGlobalCSS() {
     return CSS;
+  }
+
+  handleCollectionReady() {
+    if (!isMobile()) {
+      requestAnimationFrame(() => {
+        this.syncHeights();
+      });
+    }
+  }
+
+  connectedCallbackHook() {
+    const collection = this.card.closest('merch-card-collection');
+    if (collection) {
+      collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
+    }
+  }
+
+  disconnectedCallbackHook() {
+    const collection = this.card.closest('merch-card-collection');
+    if (collection) {
+      collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
+    }
   }
 
   // For addon tiitle is it ok if we hardocde it in card settings?
@@ -33,14 +56,14 @@ export class MiniCompareChart extends VariantLayout {
     return html`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
   }
 
-  adjustMiniCompareBodySlots() {
+  syncHeights() {
     if (this.card.getBoundingClientRect().width <= 2) return;
-  
+
     this.updateCardElementMinHeight(
         this.card.shadowRoot.querySelector('.top-section'),
         'top-section',
     );
-  
+
     let slots = [
         'heading-m',
         'body-m',
@@ -66,7 +89,7 @@ export class MiniCompareChart extends VariantLayout {
         this.card.shadowRoot.querySelector('footer'),
         'footer',
     );
-  
+
     const badge = this.card.shadowRoot.querySelector(
         '.mini-compare-chart-badge',
     );
@@ -76,6 +99,9 @@ export class MiniCompareChart extends VariantLayout {
             '32px',
         );
     }
+
+    // Also adjust footer rows
+    this.adjustMiniCompareFooterRows();
   }
   adjustMiniCompareFooterRows() {
     if (this.card.getBoundingClientRect().width === 0) return;
@@ -199,9 +225,8 @@ async adjustAddon() {
   async postCardUpdateHook() {
     await Promise.all(this.card.prices.map((price) => price.onceSettled()));
     await this.adjustAddon();
-    if (!isMobile()) {   
-      this.adjustMiniCompareBodySlots();
-      this.adjustMiniCompareFooterRows();
+    if (!isMobile()) {
+      this.syncHeights();
     } else {
       this.removeEmptyRows();
     }

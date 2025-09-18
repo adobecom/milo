@@ -119,11 +119,6 @@ export class MerchCardCollection extends LitElement {
         this.hydrating = false;
         this.hydrationReady = null;
         this.literalsHandlerAttached = false;
-        // Card readiness tracking
-        this.cardsReady = new Set();
-        this.totalCards = 0;
-        this.allCardsReadyPromise = null;
-        this.resolveAllCardsReady = null;
     }
 
     render() {
@@ -224,76 +219,36 @@ export class MerchCardCollection extends LitElement {
       });
     }
 
-    initializeCardReadinessTracking() {
-        // Get all merch cards
+    dispatchCollectionReady() {
+        // Wait for all cards to be ready then dispatch event
         const cards = this.querySelectorAll('merch-card');
-        this.totalCards = cards.length;
-        this.cardsReady.clear();
-        
-        if (this.totalCards === 0) return;
-        
-        // Create promise for when all cards are ready
-        this.allCardsReadyPromise = new Promise((resolve) => {
-            this.resolveAllCardsReady = resolve;
-        });
-        
-        // Listen for card ready events
+        if (cards.length === 0) return;
+
+        let readyCount = 0;
+        const checkAllReady = () => {
+            readyCount++;
+            if (readyCount === cards.length) {
+                // All cards are ready, dispatch collection ready event
+                this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_READY, {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        totalCards: cards.length,
+                        variant: this.variant
+                    }
+                }));
+            }
+        };
+
         cards.forEach((card) => {
-            // Check if card is already ready
             if (card.classList.contains('ready')) {
-                this.markCardReady(card);
-            }
-            
-            // Listen for the ready event
-            card.addEventListener(EVENT_MAS_READY, () => {
-                this.markCardReady(card);
-            }, { once: true });
-        });
-    }
-
-    markCardReady(card) {
-        this.cardsReady.add(card);
-        
-        // Check if all cards are ready
-        if (this.cardsReady.size === this.totalCards) {
-            this.onAllCardsReady();
-        }
-    }
-
-    onAllCardsReady() {
-        // Dispatch collection ready event
-        this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_READY, {
-            bubbles: true,
-            composed: true,
-            detail: {
-                totalCards: this.totalCards,
-                variant: this.variant
-            }
-        }));
-        
-        // Trigger height synchronization for all variant cards
-        this.triggerHeightSync();
-        
-        // Resolve the promise
-        if (this.resolveAllCardsReady) {
-            this.resolveAllCardsReady();
-        }
-    }
-
-    triggerHeightSync() {
-        // Get all cards and trigger their height sync if they have the method
-        const cards = this.querySelectorAll('merch-card');
-        cards.forEach((card) => {
-            // Check variant and call appropriate adjustment method
-            if (card.variant === 'full-pricing-express' && card.variantLayout?.adjustFullPricingExpressSlots) {
-                card.variantLayout.adjustFullPricingExpressSlots();
-            } else if (card.variant === 'product' && card.variantLayout?.adjustProductBodySlots) {
-                card.variantLayout.adjustProductBodySlots();
-            } else if (card.variant === 'mini-compare-chart' && card.variantLayout?.adjustMiniCompareBodySlots) {
-                card.variantLayout.adjustMiniCompareBodySlots();
+                checkAllReady();
+            } else {
+                card.addEventListener(EVENT_MAS_READY, checkAllReady, { once: true });
             }
         });
     }
+
 
     connectedCallback() {
         super.connectedCallback();
@@ -503,9 +458,9 @@ export class MerchCardCollection extends LitElement {
             this.hydrating = false;
             aemFragment.remove();
             resolveHydration(true);
-            
-            // Initialize card readiness tracking after all cards are added
-            this.initializeCardReadinessTracking();
+
+            // Dispatch collection ready event when all cards are ready
+            this.dispatchCollectionReady();
         });
         await this.hydrationReady;
     }

@@ -53,8 +53,8 @@ runTests(async () => {
                 const cta = shadowRoot.querySelector('.cta');
                 expect(cta).to.exist;
                 
-                const description2 = shadowRoot.querySelector('.description2');
-                expect(description2).to.exist;
+                const shortDescription = shadowRoot.querySelector('.shortDescription');
+                expect(shortDescription).to.exist;
             });
         });
 
@@ -311,12 +311,12 @@ runTests(async () => {
                 await card.updateComplete;
                 
                 const shadowRoot = card.shadowRoot;
-                const description2 = shadowRoot.querySelector('.description2');
-                
-                // On desktop, description2 should be flex container
+                const shortDescription = shadowRoot.querySelector('.shortDescription');
+
+                // On desktop, shortDescription should be flex container
                 const mediaQuery = window.matchMedia('(min-width: 768px)');
                 if (mediaQuery.matches) {
-                    const computedStyle = window.getComputedStyle(description2);
+                    const computedStyle = window.getComputedStyle(shortDescription);
                     expect(computedStyle.display).to.equal('flex');
                     expect(computedStyle.flexDirection).to.equal('column');
                 }

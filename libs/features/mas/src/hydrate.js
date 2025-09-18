@@ -357,13 +357,13 @@ export function processDescription(fields, merchCard, mapping) {
     if (fields.promoText) {
         fields.promoText = processMnemonicElements(fields.promoText);
     }
-    if (fields.description2) {
-        fields.description2 = processMnemonicElements(fields.description2);
+    if (fields.shortDescription) {
+        fields.shortDescription = processMnemonicElements(fields.shortDescription);
     }
     
     appendSlot('promoText', fields, merchCard, mapping);
     appendSlot('description', fields, merchCard, mapping);
-    appendSlot('description2', fields, merchCard, mapping);
+    appendSlot('shortDescription', fields, merchCard, mapping);
     processDescriptionLinks(merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);

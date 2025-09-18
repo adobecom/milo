@@ -115,48 +115,49 @@ merch-card[variant="full-pricing-express"] [slot="body-s"] {
     margin-bottom: var(--merch-card-full-pricing-express-section-gap);
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] {
     font-size: 16px;
     line-height: 20.8px;
     color: var(--spectrum-gray-900);
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] ul {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] ul {
     margin: 0;
     padding-left: 20px;
     list-style: disc;
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] li {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] li {
     margin-bottom: 8px;
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] li:last-child {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] li:last-child {
     margin-bottom: 0;
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] p {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] p {
     padding: 8px;
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] p a {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] p a {
     color: var(--spectrum-indigo-900);
     font-weight: 700;
 }
 
-/* divider-wrapper styling for description2 */
-merch-card[variant="full-pricing-express"] [slot="description2"] .divider-wrapper {
+/* divider-wrapper styling for shortDescription */
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper {
     display: block;
     margin: var(--merch-card-full-pricing-express-section-gap) 0;
 }
 
 /* First divider wrapper - different margins */
-merch-card[variant="full-pricing-express"] [slot="description2"] .divider-wrapper:first-of-type {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper:first-of-type {
     margin: 16px 0 24px 0;
 }
 
-/* sp-divider visual styling */
-merch-card[variant="full-pricing-express"] [slot="description2"] .divider-wrapper sp-divider {
+/* sp-divider and hr visual styling */
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper sp-divider,
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper hr {
     display: block;
     width: 100%;
     height: 1px;
@@ -165,12 +166,21 @@ merch-card[variant="full-pricing-express"] [slot="description2"] .divider-wrappe
     margin: 0;
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] .button-container {
+/* Override for HR with specific sizes */
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper hr.divider-size-m {
+    height: 2px;
+}
+
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper hr.divider-size-l {
+    height: 4px;
+}
+
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] .button-container {
     margin: 0;
     padding: 0;
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] p:last-child a {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] p:last-child a {
     text-decoration: none;
     text-align: center;
     display: flex;
@@ -183,7 +193,7 @@ merch-card[variant="full-pricing-express"] [slot="description2"] p:last-child a 
     margin: 0;
 }
 
-merch-card[variant="full-pricing-express"] [slot="description2"] p:last-child a:hover {
+merch-card[variant="full-pricing-express"] [slot="shortDescription"] p:last-child a:hover {
     background-color: initial;
     border: none;
 }
@@ -352,31 +362,31 @@ merch-card[variant="full-pricing-express"] merch-badge {
     line-height: 20.8px;
 }
 
-/* Mobile-specific selective display of description2 */
+/* Mobile-specific selective display of shortDescription */
 @media (max-width: 767px) {
-    /* Show description2 container */
-    merch-card[variant="full-pricing-express"] [slot="description2"] {
+    /* Show shortDescription container */
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] {
         display: block;
     }
-    
+
     /* Hide all direct children by default */
-    merch-card[variant="full-pricing-express"] [slot="description2"] > * {
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > * {
         display: none;
     }
-    
+
     /* Hide the first divider wrapper specifically */
-    merch-card[variant="full-pricing-express"] [slot="description2"] > .divider-wrapper:first-of-type {
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > .divider-wrapper:first-of-type {
         display: none !important;
     }
-    
+
     /* Show only the last divider wrapper (2nd one) */
-    merch-card[variant="full-pricing-express"] [slot="description2"] > .divider-wrapper:last-of-type {
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > .divider-wrapper:last-of-type {
         display: block;
         margin: 16px 0;
     }
-    
+
     /* Show only the button container (last p tag) */
-    merch-card[variant="full-pricing-express"] [slot="description2"] > p:last-child {
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > p:last-child {
         display: block;
     }
     
@@ -433,23 +443,23 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
 
 /* Responsive rules for desktop/tablet */
 @media (min-width: 768px) {
-    /* Make description2 a flex container with synchronized min-height */
-    merch-card[variant="full-pricing-express"] [slot="description2"] {
+    /* Make shortDescription a flex container with synchronized min-height */
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] {
         display: flex;
         flex-direction: column;
-        min-height: var(--consonant-merch-card-full-pricing-express-description2-height);
+        min-height: var(--consonant-merch-card-full-pricing-express-shortDescription-height);
         height: 100%;
     }
-    
+
     /* Ensure the second divider wrapper stays at bottom with proper spacing */
-    merch-card[variant="full-pricing-express"] [slot="description2"] > .divider-wrapper:last-of-type {
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > .divider-wrapper:last-of-type {
         margin-top: auto;
         margin-bottom: 16px;
     }
-    
+
     /* Ensure the button container stays at the bottom */
-    merch-card[variant="full-pricing-express"] [slot="description2"] > p.button-container,
-    merch-card[variant="full-pricing-express"] [slot="description2"] > p:last-child {
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > p.button-container,
+    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > p:last-child {
         margin-top: 0;
         margin-bottom: 0;
     }

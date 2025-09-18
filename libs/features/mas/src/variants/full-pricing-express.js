@@ -29,9 +29,9 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         maxCount: 2000,
         withSuffix: false,
     },
-    description2: {
+    shortDescription: {
         tag: 'div',
-        slot: 'description2',
+        slot: 'shortDescription',
         maxCount: 3000,
         withSuffix: false,
     },
@@ -118,15 +118,27 @@ export class FullPricingExpress extends VariantLayout {
         }
     }
 
-    adjustFullPricingExpressSlots() {
+    syncHeights() {
         if (this.card.getBoundingClientRect().width === 0) {
             return;
+        }
+
+        // Sync main description (body-s) slot
+        const descriptionSlot = this.card.querySelector('[slot="body-s"]');
+        if (descriptionSlot) {
+            descriptionSlot.offsetHeight;
+
+            const styles = window.getComputedStyle(descriptionSlot);
+            const marginTop = parseFloat(styles.marginTop) || 0;
+            const marginBottom = parseFloat(styles.marginBottom) || 0;
+            const height = descriptionSlot.offsetHeight + marginTop + marginBottom;
+            this.updateCardElementMinHeightValue(height, 'description');
         }
 
         const priceSlot = this.card.querySelector('[slot="price"]');
         if (priceSlot) {
             priceSlot.offsetHeight;
-            
+
             const styles = window.getComputedStyle(priceSlot);
             const marginTop = parseFloat(styles.marginTop) || 0;
             const marginBottom = parseFloat(styles.marginBottom) || 0;
@@ -137,7 +149,7 @@ export class FullPricingExpress extends VariantLayout {
         const ctaSlot = this.card.querySelector('[slot="cta"]');
         if (ctaSlot) {
             ctaSlot.offsetHeight;
-            
+
             const styles = window.getComputedStyle(ctaSlot);
             const marginTop = parseFloat(styles.marginTop) || 0;
             const marginBottom = parseFloat(styles.marginBottom) || 0;
@@ -145,26 +157,27 @@ export class FullPricingExpress extends VariantLayout {
             this.updateCardElementMinHeightValue(height, 'cta');
         }
 
-        const description2Slot = this.card.querySelector('[slot="description2"]');
-        if (description2Slot) {
-            description2Slot.offsetHeight;
-            
-            const styles = window.getComputedStyle(description2Slot);
+        const shortDescriptionSlot = this.card.querySelector('[slot="shortDescription"]');
+        if (shortDescriptionSlot) {
+            shortDescriptionSlot.offsetHeight;
+
+            const styles = window.getComputedStyle(shortDescriptionSlot);
             const marginTop = parseFloat(styles.marginTop) || 0;
             const marginBottom = parseFloat(styles.marginBottom) || 0;
-            const height = description2Slot.offsetHeight + marginTop + marginBottom;
-            this.updateCardElementMinHeightValue(height, 'description2');
+            const height = shortDescriptionSlot.offsetHeight + marginTop + marginBottom;
+            this.updateCardElementMinHeightValue(height, 'shortDescription');
         }
     }
 
     forceRemeasure() {
         const container = this.getContainer();
         if (container) {
+            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-description-height`);
             container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-price-height`);
             container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-cta-height`);
-            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-description2-height`);
-            
-            this.adjustFullPricingExpressSlots();
+            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-shortDescription-height`);
+
+            this.syncHeights();
         }
     }
 
@@ -179,7 +192,7 @@ export class FullPricingExpress extends VariantLayout {
         
         if (!isMobile()) {
             requestAnimationFrame(() => {
-                this.adjustFullPricingExpressSlots();
+                this.syncHeights();
             });
         }
     }
@@ -194,7 +207,7 @@ export class FullPricingExpress extends VariantLayout {
                 }
                 requestAnimationFrame(() => {
                     setTimeout(() => {
-                        this.adjustFullPricingExpressSlots();
+                        this.syncHeights();
                     }, 200);
                 });
             }
@@ -237,8 +250,8 @@ export class FullPricingExpress extends VariantLayout {
                 <div class="cta">
                     <slot name="cta"></slot>
                 </div>
-                <div class="description2">
-                    <slot name="description2"></slot>
+                <div class="shortDescription">
+                    <slot name="shortDescription"></slot>
                 </div>
             </div>
             <slot></slot>
@@ -504,6 +517,10 @@ export class FullPricingExpress extends VariantLayout {
             }
 
             /* Apply synchronized heights to shadow DOM containers */
+            :host([variant='full-pricing-express']) .description {
+                min-height: var(--consonant-merch-card-full-pricing-express-description-height);
+            }
+
             :host([variant='full-pricing-express']) .price-container {
                 min-height: var(--consonant-merch-card-full-pricing-express-price-height);
                 display: flex;
@@ -517,10 +534,10 @@ export class FullPricingExpress extends VariantLayout {
                 justify-content: flex-start;
             }
 
-            /* Make description2 grow to fill remaining space */
-            :host([variant='full-pricing-express']) .description2 {
+            /* Make shortDescription grow to fill remaining space */
+            :host([variant='full-pricing-express']) .shortDescription {
                 flex: 1;
-                min-height: var(--consonant-merch-card-full-pricing-express-description2-height);
+                min-height: var(--consonant-merch-card-full-pricing-express-shortDescription-height);
                 display: flex;
                 flex-direction: column;
             }
