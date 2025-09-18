@@ -144,6 +144,14 @@ function setEqualHeight(slides, slideContainer) {
   slideContainer.style.height = `${maxHeight}px`;
 }
 
+function removeEqualHeight(slides, slideContainer) {
+  slides.forEach((slide) => {
+    slide.style.height = '';
+    slide.style.transition = '';
+  });
+  slideContainer.style.height = '';
+}
+
 function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   const curtain = createTag('div', { class: 'carousel-curtain' });
 
@@ -495,6 +503,15 @@ function readySlides(slides, slideContainer, isUpsDesktop) {
   }
 }
 
+function updateDisableButtonsHeights(carouselElements) {
+  const { slides, slideContainer } = carouselElements;
+  if (window.innerWidth < 900) {
+    setEqualHeight(slides, slideContainer);
+  } else {
+    removeEqualHeight(slides, slideContainer);
+  }
+}
+
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
@@ -608,18 +625,22 @@ export default function init(el) {
 
   slides[0].classList.add('active');
 
-  function handleEqualHeight() {
-    setEqualHeight(slides, slideContainer);
-    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
-  }
-
-  if (el.classList.contains('disable-buttons') && window.innerWidth < 900) {
-    updateButtonStates(carouselElements);
-    parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
-  }
   handleChangingSlides(carouselElements);
   setAriaHiddenAndTabIndex(carouselElements, slides[0]);
   window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
+
+  function handleDeferredHeights() {
+    updateDisableButtonsHeights(carouselElements);
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleDeferredHeights, true);
+    window.addEventListener('resize', () => {
+      updateDisableButtonsHeights(carouselElements);
+    });
+  }
+
+  if (el.classList.contains('disable-buttons')) {
+    updateButtonStates(carouselElements);
+    parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredHeights, true);
+  }
 
   function handleLateLoadingNavigation() {
     [...el.querySelectorAll('.is-delayed')].forEach((item) => item.classList.remove('is-delayed'));
