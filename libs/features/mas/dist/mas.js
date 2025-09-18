@@ -2796,53 +2796,53 @@ merch-card[variant="full-pricing-express"] [slot="trial-badge"]:empty {
 merch-card[variant="full-pricing-express"] [slot="body-s"] {
     font-size: 16px;
     line-height: 20.8px;
-    color: var(--spectrum-gray-700);
-    margin-bottom: var(--merch-card-full-pricing-express-section-gap);
+    color: var(--spectrum-gray-900);
 }
 
 merch-card[variant="full-pricing-express"] [slot="shortDescription"] {
     font-size: 16px;
     line-height: 20.8px;
-    color: var(--spectrum-gray-900);
+    color: var(--spectrum-gray-700);
+    margin-bottom: var(--merch-card-full-pricing-express-section-gap);
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] ul {
+merch-card[variant="full-pricing-express"] [slot="body-s"] ul {
     margin: 0;
     padding-left: 20px;
     list-style: disc;
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] li {
+merch-card[variant="full-pricing-express"] [slot="body-s"] li {
     margin-bottom: 8px;
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] li:last-child {
+merch-card[variant="full-pricing-express"] [slot="body-s"] li:last-child {
     margin-bottom: 0;
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] p {
+merch-card[variant="full-pricing-express"] [slot="body-s"] p {
     padding: 8px;
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] p a {
+merch-card[variant="full-pricing-express"] [slot="body-s"] p a {
     color: var(--spectrum-indigo-900);
     font-weight: 700;
 }
 
-/* divider-wrapper styling for shortDescription */
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper {
+/* divider-wrapper styling for body-s */
+merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper {
     display: block;
     margin: var(--merch-card-full-pricing-express-section-gap) 0;
 }
 
 /* First divider wrapper - different margins */
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper:first-of-type {
+merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper:first-of-type {
     margin: 16px 0 24px 0;
 }
 
 /* sp-divider and hr visual styling */
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper sp-divider,
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper hr {
+merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper sp-divider,
+merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper hr {
     display: block;
     width: 100%;
     height: 1px;
@@ -2852,20 +2852,20 @@ merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wr
 }
 
 /* Override for HR with specific sizes */
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper hr.divider-size-m {
+merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper hr.divider-size-m {
     height: 2px;
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] .divider-wrapper hr.divider-size-l {
+merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper hr.divider-size-l {
     height: 4px;
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] .button-container {
+merch-card[variant="full-pricing-express"] [slot="body-s"] .button-container {
     margin: 0;
     padding: 0;
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] p:last-child a {
+merch-card[variant="full-pricing-express"] [slot="body-s"] p:last-child a {
     text-decoration: none;
     text-align: center;
     display: flex;
@@ -2878,7 +2878,7 @@ merch-card[variant="full-pricing-express"] [slot="shortDescription"] p:last-chil
     margin: 0;
 }
 
-merch-card[variant="full-pricing-express"] [slot="shortDescription"] p:last-child a:hover {
+merch-card[variant="full-pricing-express"] [slot="body-s"] p:last-child a:hover {
     background-color: initial;
     border: none;
 }
@@ -3047,31 +3047,31 @@ merch-card[variant="full-pricing-express"] merch-badge {
     line-height: 20.8px;
 }
 
-/* Mobile-specific selective display of shortDescription */
+/* Mobile-specific selective display of body-s */
 @media (max-width: 767px) {
-    /* Show shortDescription container */
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] {
+    /* Show body-s container */
+    merch-card[variant="full-pricing-express"] [slot="body-s"] {
         display: block;
     }
 
     /* Hide all direct children by default */
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > * {
+    merch-card[variant="full-pricing-express"] [slot="body-s"] > * {
         display: none;
     }
 
     /* Hide the first divider wrapper specifically */
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > .divider-wrapper:first-of-type {
+    merch-card[variant="full-pricing-express"] [slot="body-s"] > .divider-wrapper:first-of-type {
         display: none !important;
     }
 
     /* Show only the last divider wrapper (2nd one) */
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > .divider-wrapper:last-of-type {
+    merch-card[variant="full-pricing-express"] [slot="body-s"] > .divider-wrapper:last-of-type {
         display: block;
         margin: 16px 0;
     }
 
     /* Show only the button container (last p tag) */
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > p:last-child {
+    merch-card[variant="full-pricing-express"] [slot="body-s"] > p:last-child {
         display: block;
     }
     
@@ -3128,23 +3128,23 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
 
 /* Responsive rules for desktop/tablet */
 @media (min-width: 768px) {
-    /* Make shortDescription a flex container with synchronized min-height */
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] {
+    /* Make body-s a flex container with synchronized min-height */
+    merch-card[variant="full-pricing-express"] [slot="body-s"] {
         display: flex;
         flex-direction: column;
-        min-height: var(--consonant-merch-card-full-pricing-express-shortDescription-height);
+        min-height: var(--consonant-merch-card-full-pricing-express-description-height);
         height: 100%;
     }
 
     /* Ensure the second divider wrapper stays at bottom with proper spacing */
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > .divider-wrapper:last-of-type {
+    merch-card[variant="full-pricing-express"] [slot="body-s"] > .divider-wrapper:last-of-type {
         margin-top: auto;
         margin-bottom: 16px;
     }
 
     /* Ensure the button container stays at the bottom */
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > p.button-container,
-    merch-card[variant="full-pricing-express"] [slot="shortDescription"] > p:last-child {
+    merch-card[variant="full-pricing-express"] [slot="body-s"] > p.button-container,
+    merch-card[variant="full-pricing-express"] [slot="body-s"] > p:last-child {
         margin-top: 0;
         margin-bottom: 0;
     }
@@ -3158,8 +3158,8 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
                     <slot name="heading-xs"></slot>
                     <slot name="icons"></slot>
                 </div>
-                <div class="description">
-                    <slot name="body-s"></slot>
+                <div class="shortDescription">
+                    <slot name="shortDescription"></slot>
                 </div>
                 <div class="price-container">
                     <slot name="trial-badge"></slot>
@@ -3168,8 +3168,8 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
                 <div class="cta">
                     <slot name="cta"></slot>
                 </div>
-                <div class="shortDescription">
-                    <slot name="shortDescription"></slot>
+                <div class="description">
+                    <slot name="body-s"></slot>
                 </div>
             </div>
             <slot></slot>

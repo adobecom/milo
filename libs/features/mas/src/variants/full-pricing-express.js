@@ -240,8 +240,8 @@ export class FullPricingExpress extends VariantLayout {
                     <slot name="heading-xs"></slot>
                     <slot name="icons"></slot>
                 </div>
-                <div class="description">
-                    <slot name="body-s"></slot>
+                <div class="shortDescription">
+                    <slot name="shortDescription"></slot>
                 </div>
                 <div class="price-container">
                     <slot name="trial-badge"></slot>
@@ -250,8 +250,8 @@ export class FullPricingExpress extends VariantLayout {
                 <div class="cta">
                     <slot name="cta"></slot>
                 </div>
-                <div class="shortDescription">
-                    <slot name="shortDescription"></slot>
+                <div class="description">
+                    <slot name="body-s"></slot>
                 </div>
             </div>
             <slot></slot>
