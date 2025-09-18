@@ -395,7 +395,7 @@
     border-radius: 16px;
   }
 
-  .section:has(.icon-block.container-mobile + .action-scroller) picture.section-background img{
+  .section:has(.icon-block.container-mobile + .action-scroller) picture.section-background img {
     border-radius: 16px;
   }
 
