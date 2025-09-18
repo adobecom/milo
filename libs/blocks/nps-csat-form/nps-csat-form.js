@@ -232,23 +232,29 @@ export default async (block) => {
       console.warn('Invalid scale specified; defaulting to a 5 pt scale. The value of scale has to be either \'5\' or \'7\'');
     }
     switch (scale) {
-      case '7': return [
-        'Extremely Dissatisfied',
-        'Moderately Dissatisfied',
-        'Slightly Dissatisfied',
-        'Neutral',
-        'Slightly Satisfied',
-        'Moderately Satisfied',
-        'Extremely Satisfied',
-      ];
+      case '7': {
+        block.classList.add('seven-point');
+        return [
+          'Extremely Dissatisfied',
+          'Moderately Dissatisfied',
+          'Slightly Dissatisfied',
+          'Neutral',
+          'Slightly Satisfied',
+          'Moderately Satisfied',
+          'Extremely Satisfied',
+        ];
+      }
       case '5':
-      default: return [
-        'Very Dissatisfied',
-        'Dissatisfied',
-        'Neutral',
-        'Satisfied',
-        'Very Satisfied',
-      ];
+      default: {
+        block.classList.add('five-point');
+        return [
+          'Very Dissatisfied',
+          'Dissatisfied',
+          'Neutral',
+          'Satisfied',
+          'Very Satisfied',
+        ];
+      }
     }
   })();
   const data = {

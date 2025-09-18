@@ -3,10 +3,17 @@
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 32px;
-  max-width: 576px;
   height: 404px;
   width: 100%;
   margin: 0 auto;
+}
+
+.nps-csat-form.five-point {
+  max-width: 416px;
+}
+
+.nps-csat-form.seven-point {
+  max-width: 576px;
 }
 
 .nps-csat-form #nps {
