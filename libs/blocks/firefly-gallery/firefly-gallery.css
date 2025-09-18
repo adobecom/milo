@@ -323,7 +323,7 @@
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 2;
-  padding: var(--spacing-xxs);
+  /* padding: var(--spacing-xxs); */
   border-radius: 8px; /* Match the item border radius */
   transform: translateY(5px); /* Start slightly below */
   cursor: pointer;
@@ -338,8 +338,8 @@
   border-radius: 16px; /* Pill shape */
   align-self: flex-end;
   margin-top: auto;
-  margin-bottom: var(--spacing-xs);
-  margin-right: var(--spacing-xs);
+  margin-bottom: var(--spacing-xxs);
+  margin-right: var(--spacing-xxs);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -365,6 +365,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  margin-left: var(--spacing-xxs);
+  margin-top: var(--spacing-xxs);
 }
 
 /* User info styles */

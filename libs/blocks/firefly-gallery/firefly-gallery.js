@@ -194,6 +194,7 @@ async function fetchFireflyAssets(categoryId, viewBtnLabel) {
     return [];
   }
 }
+
 const replaceRenditionUrl = (url, format, dimension, size) =>
   url
     .replace(/{format}/g, format)
@@ -292,7 +293,7 @@ function createSkeletonLayout(container) {
   const skeletonItems = [];
 
   // Number of items to create (will be replaced with actual images)
-  const numItems = 30;
+  const numItems = 25;
 
   // Define placeholder aspect ratios - we'll replace these with real ones
   // Optimized for 5-column desktop layout: 30 items = 6 items per column
@@ -746,12 +747,7 @@ function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
     // We only need to update image URLs
 
     // Only update if we have both assets and skeleton items
-    if (
-      assets &&
-      assets.length > 0 &&
-      skeletonItems &&
-      skeletonItems.length > 0
-    ) {
+    if (assets?.length > 0 && skeletonItems?.length > 0) {
       // Update image URLs based on current viewport - but only for loaded images
       // This prevents loading images that haven't been scrolled to yet
       skeletonItems.forEach((item, index) => {
@@ -798,7 +794,7 @@ function setTabindexForHiddenOverlays(galleryContent) {
   overlayElements.forEach((overlay) => {
     const overlayRect = overlay.getBoundingClientRect();
     const overlayTop = overlayRect.top - contentRect.top;
-    const overlayBottom = overlayRect.bottom - contentRect.top;
+    // const overlayBottom = overlayRect.bottom - contentRect.top;
 
     if (overlayTop >= fadeStartsAt) {
       overlay.setAttribute('tabindex', '-1');
