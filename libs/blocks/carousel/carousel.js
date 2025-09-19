@@ -653,7 +653,7 @@ export default function init(el) {
 
   if (el.classList.contains('disable-buttons')) {
     updateButtonStates(carouselElements);
-    setTimeout(handleDeferredHeights, 100);
+    setTimeout(handleDeferredHeights, 1000);
   }
 
   function handleLateLoadingNavigation() {
