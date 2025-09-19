@@ -280,6 +280,7 @@ graph LR
 ## 🆘 Need Help?
 
 - Review existing variants for examples
+- Check the main [MAS_VARIANT_DEVELOPMENT_GUIDE.md](./MAS_VARIANT_DEVELOPMENT_GUIDE.md)
 - Look at test files in `/test/` directory
 - Ask in project Slack channel #merch-at-scale
 
