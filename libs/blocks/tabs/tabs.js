@@ -80,7 +80,7 @@ const saveActiveTabInStorage = (targetId, config) => {
 
 function getContentElement(parent, traversalDepth) {
   let element = parent;
-  for (let i = 0; i < traversalDepth; i++) {
+  for (let i = 0; i < traversalDepth; i += 1) {
     element = element.parentNode;
     if (!element) return null;
   }
