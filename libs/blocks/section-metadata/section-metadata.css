@@ -270,14 +270,14 @@ main > .section[class*='-up'] > .content {
     display: block;
   }
 
-  .section:has(.show-more-button),
+  .section:has(> .show-more-button),
   .section.show-all {
     margin-inline: 30px;
     padding: var(--spacing-xs);
     border-radius: 8px;
   }
 
-  .section:has(.show-more-button) > *:nth-child(n+4):not(.show-more-button):not(.section-metadata) {
+  .section:has(> .show-more-button) > *:nth-child(n+4):not(.show-more-button):not(.section-metadata) {
     display: none;
   }
 
