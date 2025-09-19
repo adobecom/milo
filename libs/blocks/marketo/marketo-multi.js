@@ -110,6 +110,7 @@ function onRender(formEl, totalSteps) {
 
 const readyForm = async (form, totalSteps) => {
   const formEl = form.getFormElem().get(0);
+  formEl.dataset.step = 1;
   form.onValidate(() => formValidate(formEl));
 
   const nextButton = createTag('button', { type: 'button', id: 'mktoButton_next', class: 'mktoButton mktoUpdatedBTN mktoVisible' }, 'Next');
@@ -132,10 +133,7 @@ const readyForm = async (form, totalSteps) => {
 
 export default async (el) => {
   if (!el.classList.contains('multi-step')) return;
-  const formEl = el.querySelector('form');
   const totalSteps = el.classList.contains('multi-3') ? 3 : 2;
-  formEl.dataset.step = 1;
-
   const { MktoForms2 } = window;
   await MktoForms2.whenReady((form) => readyForm(form, totalSteps));
 };
