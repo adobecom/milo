@@ -96,13 +96,13 @@ function extractAspectRatio(asset) {
 
   // Method 1: Extract from rendition max dimensions
   if (
-    asset._links?.rendition?.max_width
-    && asset._links?.rendition?.max_height
+    // eslint-disable-next-line no-underscore-dangle
+    asset._links?.rendition?.max_width && asset._links?.rendition?.max_height
   ) {
+    // eslint-disable-next-line no-underscore-dangle
     aspectRatio = asset._links.rendition.max_width / asset._links.rendition.max_height;
-  }
-  // Method 2: Extract from firefly#inputModel if available
-  else if (asset.custom?.input?.['firefly#inputModel']) {
+  } else if (asset.custom?.input?.['firefly#inputModel']) {
+    // Method 2: Extract from firefly#inputModel if available
     try {
       const inputModel = safeJsonParse(
         asset.custom.input['firefly#inputModel'],
@@ -110,7 +110,7 @@ function extractAspectRatio(asset) {
       if (inputModel.aspectRatio) {
         aspectRatio = parseFloat(inputModel.aspectRatio);
       }
-    } catch (e) {}
+    } catch (e) { /* eslint-disable-line no-empty */ }
   }
 
   return aspectRatio;
@@ -155,7 +155,11 @@ async function fetchFireflyAssets(categoryId, viewBtnLabel) {
     }
 
     const data = await response.json();
-    const assets = data._embedded.assets || [];
+    // Shuffle assets
+    // eslint-disable-next-line no-underscore-dangle
+    const assets = [...(data._embedded.assets || [])].sort(
+      () => Math.random() - 0.5,
+    );
     assets.forEach((asset) => {
       asset.assetType = categoryId === 'VideoGeneration' ? 'video' : 'image';
       asset.viewBtnLabel = viewBtnLabel;
@@ -186,11 +190,9 @@ function getImageRendition(asset, itemType = 'square') {
   const sizeObj = RENDITION_SIZES[itemType] || RENDITION_SIZES.square;
   const width = sizeObj[screenSize] || sizeObj.default;
 
-  // Extract actual aspect ratio from the asset
-  const aspectRatio = extractAspectRatio(asset);
-
   // Create rendition URL with appropriate size
   const renditionUrl = replaceRenditionUrl(
+    // eslint-disable-next-line no-underscore-dangle
     asset._links.rendition.href,
     'jpg',
     'width',
@@ -260,42 +262,36 @@ function createSkeletonLayout(container) {
   // Pattern ensures balanced distribution across all responsive breakpoints
   const placeholderTypes = [
     // Column flow pattern optimized for 5 columns (6 items per column)
-    // row 1
+    // column 1
     'short',
     'square',
     'portrait',
     'tall',
     'short',
-    // row 2
+    // column 2
     'portrait',
     'short',
     'tall',
     'square',
     'portrait',
-    // row 3
+    // column 3
     'square',
     'tall',
     'short',
     'portrait',
     'tall',
-    // row 4
+    // column 4
     'tall',
     'portrait',
     'square',
     'short',
     'square',
-    // row 5
+    // column 5
     'short',
     'square',
     'portrait',
     'tall',
     'portrait',
-    // row 6
-    'portrait',
-    'tall',
-    'short',
-    'square',
-    'tall',
   ];
 
   // Initial aspect ratios for placeholder types - these will be replaced with actual ratios
@@ -307,7 +303,7 @@ function createSkeletonLayout(container) {
   };
 
   // Create skeleton items with appropriate initial dimensions
-  for (let i = 0; i < numItems; i++) {
+  for (let i = 0; i < numItems; i += 1) {
     // Get the placeholder type from our predefined sequence
     const placeholderType = placeholderTypes[i];
 
@@ -421,9 +417,9 @@ function loadAssetIntoSkeleton(
   imageUrl,
   altText,
   promptText,
-  userInfo = {},
   assetUrn,
   assetData = {},
+  userInfo = {},
 ) {
   const { id, assetType, viewBtnLabel } = assetData;
   return new Promise((resolve) => {
@@ -471,7 +467,7 @@ function loadAssetIntoSkeleton(
         const playVideo = () => {
           video.style.opacity = '1';
           video.muted = true;
-          video.play().catch((err) => {});
+          video.play().catch(() => {});
         };
 
         const pauseVideo = () => {
@@ -536,13 +532,6 @@ function processItem(item, asset, index, locale) {
   // Update the item's class to match the aspect ratio
   updateItemTypeClass(item, itemType);
 
-  // Get the original height ratio from the skeleton item
-  const originalHeightRatio = parseFloat(item.dataset.heightRatio) || 1;
-
-  // Calculate a transition ratio that gradually moves from the placeholder to the real one
-  // to minimize layout shifts
-  const transitionRatio = (originalHeightRatio + aspectRatio) / 2;
-
   // Set the exact aspect ratio as a custom property for precise sizing
   item.style.setProperty('--aspect-ratio', aspectRatio);
 
@@ -565,6 +554,7 @@ function processItem(item, asset, index, locale) {
 
   // Get user info
   const userInfo = {};
+  // eslint-disable-next-line no-underscore-dangle
   if (asset?._embedded?.owner) {
     // eslint-disable-next-line no-underscore-dangle
     const { owner } = asset._embedded;
@@ -574,6 +564,7 @@ function processItem(item, asset, index, locale) {
       || 'Unknown Artist';
 
     // Get the user avatar image - find the one closest to 24px
+    // eslint-disable-next-line no-underscore-dangle
     if (owner._links?.images && owner._links.images.length > 0) {
       // We want an image that's at least 24px but not too much larger
       // First sort by size to find closest match to our target 24px size
@@ -599,9 +590,9 @@ function processItem(item, asset, index, locale) {
     imageUrl,
     altText,
     promptText,
-    userInfo,
     asset.urn,
     assetData,
+    userInfo,
   );
 }
 
@@ -614,22 +605,19 @@ function loadFireflyImages(skeletonItems, assets = []) {
     // Get current locale or fallback to default
     const locale = getConfig().locale?.ietf || 'en-US';
 
-    // Shuffle the assets array before assigning to placeholders
-    const shuffledAssets = [...assets].sort(() => Math.random() - 0.5);
-
     // Set up intersection observer to load images only when they're visible
     const observer = new IntersectionObserver(
-      (entries, observer) => {
+      (entries, obs) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const item = entry.target;
             const index = parseInt(item.dataset.index, 10);
 
-            observer.unobserve(item);
+            obs.unobserve(item);
 
             // Load the image if we have an asset for it
-            if (index >= 0 && index < shuffledAssets.length) {
-              processItem(item, shuffledAssets[index], index, locale);
+            if (index >= 0 && index < assets.length) {
+              processItem(item, assets[index], index, locale);
             }
           }
         });
@@ -652,16 +640,12 @@ function loadFireflyImages(skeletonItems, assets = []) {
     // Also process the first few items immediately for a faster initial view
     const immediateLoadCount = Math.min(4, skeletonItems.length);
     for (let i = 0; i < immediateLoadCount; i += 1) {
-      if (i < shuffledAssets.length) {
-        processItem(skeletonItems[i], shuffledAssets[i], i, locale);
+      if (i < assets.length) {
+        processItem(skeletonItems[i], assets[i], i, locale);
         observer.unobserve(skeletonItems[i]); // Stop observing items we've already processed
       }
     }
-
-    return observer; // Return the observer in case we need to disconnect it later
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) { /* eslint-disable-line no-empty */ }
 }
 
 function getItemTypeFromClass(item) {
@@ -671,7 +655,7 @@ function getItemTypeFromClass(item) {
   return sizeClassMatch ? sizeClassMatch.match(sizeClassRegex)[1] : 'square';
 }
 
-function handleResizeForGallery(assets, skeletonItems, masonryGrid) {
+function handleResizeForGallery(assets, skeletonItems) {
   const handleResize = debounce(() => {
     // Column count now handled by CSS media queries automatically
     // We only need to update image URLs
@@ -764,7 +748,7 @@ export default async function init(el) {
         loadFireflyImages(skeletonItems, assets);
 
         // Set up resize handler for responsive image sizes
-        handleResizeForGallery(assets, skeletonItems, masonryGrid);
+        handleResizeForGallery(assets, skeletonItems);
 
         // Remove loading class after initial items are loaded
         masonryGrid.classList.remove('loading');
