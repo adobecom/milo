@@ -34,8 +34,8 @@ export default class HowTo {
         display: 'grid',
       },
       'heading-l': {
-        'font-size': '36px',
-        'line-height': '45px',
+        'font-size': '28px',
+        'line-height': '35px',
       },
       'how-to-large': {
         padding: '80px 24px',
