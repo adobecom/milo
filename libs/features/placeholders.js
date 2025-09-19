@@ -3,8 +3,21 @@ import { customFetch, getConfig, getMetadata } from '../utils/utils.js';
 const fetchedPlaceholders = {};
 window.mph = {};
 
+export const getPlaceholderRoot = (config) => {
+  const placeholderContentRoot = getMetadata('placeholders-content-root') || config.placeholderPath?.contentRoot;
+  if (!placeholderContentRoot) return config.locale?.contentRoot;
+
+  let origin = 'https://www.adobe.com';
+  const placeholderRepo = getMetadata('placeholders-repo') || config.placeholderPath?.repo;
+  if (config.env.name !== 'prod' && placeholderRepo) {
+    origin = `https://main--${placeholderRepo}--adobecom.aem.page`;
+  }
+  return `${origin}${config.locale?.prefix || ''}${placeholderContentRoot}`;
+};
+
 const getPlaceholdersPath = (config, sheet) => {
-  const path = `${config.locale.contentRoot}/placeholders.json`;
+  const placeholderRoot = getPlaceholderRoot(config);
+  const path = `${placeholderRoot}/placeholders.json`;
   const query = sheet !== 'default' && typeof sheet === 'string' && sheet.length ? `?sheet=${sheet}` : '';
   return `${path}${query}`;
 };
