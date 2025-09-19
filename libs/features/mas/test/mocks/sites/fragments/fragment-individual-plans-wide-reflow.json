@@ -1,0 +1,876 @@
+{
+    "path": "/content/dam/mas/sandbox/en_US/plans-two-wide-reflow",
+    "name": "",
+    "title": "plans-two-wide-reflow",
+    "id": "bc4ab04f-222c-4034-9b69-0ddd83651d5e",
+    "description": "",
+    "model": {
+        "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+    },
+    "fields": {
+        "label": "Plans Two Wide Reflow",
+        "cards": [],
+        "collections": ["00063495-e817-4988-b861-8813a4923137"]
+    },
+    "references": {
+        "00063495-e817-4988-b861-8813a4923137": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/plans-two-wide-reflow-all",
+                "name": "",
+                "title": "plans-two-wide-reflow-all",
+                "id": "00063495-e817-4988-b861-8813a4923137",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+                },
+                "fields": {
+                    "label": "All",
+                    "cards": [
+                        "6f47521a-2bee-4953-aff1-55bf830bdeb8",
+                        "0fea0932-c802-49e4-8589-f8bcf6bfe98c",
+                        "d597873d-5e7d-4dbd-9442-be9cbdf1212e",
+                        "ec482607-bcf8-4d3e-b285-0033268b99d3",
+                        "4b0f529b-9246-4daa-a940-8f28d43a268b"
+                    ],
+                    "collections": []
+                }
+            }
+        },
+        "6f47521a-2bee-4953-aff1-55bf830bdeb8": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/angelo/ccd-slice-wide-cc-all-app81",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "6f47521a-2bee-4953-aff1-55bf830bdeb8",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "variant": "plans",
+                    "osi": "uNuSxc0Vg8l3Gm0W21Ge_TKAKfXKI_fnRHdwJu74l_I",
+                    "size": "wide",
+                    "mnemonicIcon": [
+                        "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg"
+                    ],
+                    "mnemonicAlt": [""],
+                    "mnemonicLink": [""],
+                    "badge": {
+                        "mimeType": "text/html"
+                    },
+                    "trialBadge": {
+                        "mimeType": "text/html"
+                    },
+                    "backgroundImage": "https://main--milo--adobecom.hlx.page/drafts/axel/media_144906e76fce812811940ce88ceded4f8d12098b5.png?width=2000&format=webply&optimize=medium",
+                    "cardTitle": "Super Wide Stock Checkbox Placement Test",
+                    "subtitle": "blahasdasd",
+                    "prices": {
+                        "value": "<span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\"></span>",
+                        "mimeType": "text/html"
+                    },
+                    "shortDescription": {
+                        "mimeType": "text/html"
+                    },
+                    "description": {
+                        "value": "<p><span class=\"heading-xxs\">Some extra heading</span></p><p>And this is some content, lorem ipsum, and then some more etc.</p><p><span class=\"promo-text\">Some promo text.</span></p>",
+                        "mimeType": "text/html"
+                    },
+                    "description2": {},
+                    "callout": {
+                        "value": "<p>AI Assistant blabla</p>",
+                        "mimeType": "text/html"
+                    },
+                    "addon": "<p>Add a 30-day free trial of Adobe Stock.*</p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"RoV3wydweldSG5HWZUaytO-du3WA8S32alL4GzK6Ssw\"></span></p>",
+                    "ctas": {
+                        "value": "<a class=\"accent primary-outline\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a>",
+                        "mimeType": "text/html"
+                    },
+                    "tags": [
+                        "mas:product_family",
+                        "mas:commitment/access_pass",
+                        "mas:offer_type/base",
+                        "mas:plan_type/abm",
+                        "mas:customer_segment/individual",
+                        "mas:product_code/asig",
+                        "mas:market_segments/com"
+                    ]
+                },
+                "settings": {
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "mas:product_family": {
+            "type": "tag",
+            "value": {
+                "path": "/content/cq:tags/mas/product_family",
+                "name": "product_family",
+                "title": "Product family",
+                "id": "mas:product_family",
+                "i18n": [],
+                "titlePath": "Merch at Scale : Product family",
+                "description": null
+            }
+        },
+        "mas:offer_type/base": {
+            "type": "tag",
+            "value": {
+                "path": "/content/cq:tags/mas/offer_type/base",
+                "name": "base",
+                "title": "Base",
+                "id": "mas:offer_type/base",
+                "i18n": [],
+                "titlePath": "Merch at Scale : Offer type / Base",
+                "description": null
+            }
+        },
+        "mas:plan_type/abm": {
+            "type": "tag",
+            "value": {
+                "path": "/content/cq:tags/mas/plan_type/abm",
+                "name": "abm",
+                "title": "ABM",
+                "id": "mas:plan_type/abm",
+                "i18n": [],
+                "titlePath": "Merch at Scale : Plan type / ABM",
+                "description": ""
+            }
+        },
+        "mas:customer_segment/individual": {
+            "type": "tag",
+            "value": {
+                "path": "/content/cq:tags/mas/customer_segment/individual",
+                "name": "individual",
+                "title": "Individual",
+                "id": "mas:customer_segment/individual",
+                "i18n": [],
+                "titlePath": "Merch at Scale : Customer segment / Individual",
+                "description": null
+            }
+        },
+        "0fea0932-c802-49e4-8589-f8bcf6bfe98c": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/angelo/ccd-slice-wide-cc-all-app3111",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "0fea0932-c802-49e4-8589-f8bcf6bfe98c",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "variant": "plans",
+                    "osi": "Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ",
+                    "size": "wide",
+                    "mnemonicIcon": [
+                        "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg"
+                    ],
+                    "mnemonicAlt": [""],
+                    "mnemonicLink": [""],
+                    "badge": {
+                        "mimeType": "text/html"
+                    },
+                    "trialBadge": {
+                        "mimeType": "text/html"
+                    },
+                    "backgroundImage": "https://main--milo--adobecom.hlx.page/drafts/axel/media_144906e76fce812811940ce88ceded4f8d12098b5.png?width=2000&format=webply&optimize=medium",
+                    "cardTitle": "Heading XS",
+                    "subtitle": "blahasdasd",
+                    "prices": {
+                        "value": "<span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\"></span>",
+                        "mimeType": "text/html"
+                    },
+                    "shortDescription": {
+                        "mimeType": "text/html"
+                    },
+                    "description": {
+                        "value": "<p>Body XS/Regular Get 20+ apps for all kinds of creative work, from editing photos and videos to designing logos and more.</p>\n<p><a class=\"primary-link\" href=\"https://example.com\" target=\"_self\">Learn more</a></p>",
+                        "mimeType": "text/html"
+                    },
+                    "description2": {},
+                    "callout": {
+                        "value": "<p>This is some checkout text</p>",
+                        "mimeType": "text/html"
+                    },
+                    "addon": "<p>Add a 30-day free trial of Adobe Stock.*</p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"RoV3wydweldSG5HWZUaytO-du3WA8S32alL4GzK6Ssw\"></span></p>",
+                    "ctas": {
+                        "value": "<p><a class=\"accent\" target=\"_self\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\" data-analytics-id=\"buy-now\">Select</a></p>",
+                        "mimeType": "text/html"
+                    },
+                    "tags": [
+                        "mas:plan_type/abm",
+                        "mas:commitment/access_pass",
+                        "mas:product_family",
+                        "mas:offer_type/base"
+                    ]
+                },
+                "settings": {
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "d597873d-5e7d-4dbd-9442-be9cbdf1212e": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/mariia/ccd-slice-wide-cc-all-app21311",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "d597873d-5e7d-4dbd-9442-be9cbdf1212e",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "variant": "plans",
+                    "mnemonicIcon": [
+                        "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg"
+                    ],
+                    "mnemonicAlt": [],
+                    "mnemonicLink": [],
+                    "badge": {
+                        "mimeType": "text/html"
+                    },
+                    "trialBadge": {
+                        "mimeType": "text/html"
+                    },
+                    "cardTitle": "Test Mnemonics in Collection",
+                    "subtitle": "blah",
+                    "prices": {
+                        "value": "<span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\"></span>",
+                        "mimeType": "text/html"
+                    },
+                    "shortDescription": {
+                        "mimeType": "text/html"
+                    },
+                    "description": {
+                        "value": "<p>Checking how cards with/without mnemonics allign in a collection.</p>",
+                        "mimeType": "text/html"
+                    },
+                    "description2": {},
+                    "callout": {
+                        "value": "<p>This was added just because.</p>",
+                        "mimeType": "text/html"
+                    },
+                    "quantitySelect": "<merch-quantity-select title=\"\" min=\"1\" max=\"10\" step=\"1\"></merch-quantity-select>",
+                    "ctas": {
+                        "value": "<a class=\"accent\" data-wcs-osi=\"PpnQ-UmW9NBwZwXlFw79zw2JybhvwIUwMTDYiIlu5qI\" data-template=\"checkoutUrl\" target=\"_self\" data-analytics-id=\"buy-now\">Checking</a>",
+                        "mimeType": "text/html"
+                    },
+                    "tags": [
+                        "mas:customer_segment/individual",
+                        "mas:market_segments/edu"
+                    ]
+                },
+                "settings": {
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "ec482607-bcf8-4d3e-b285-0033268b99d3": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/angelo/ccd-slice-wide-cc-all-app311111",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "ec482607-bcf8-4d3e-b285-0033268b99d3",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "variant": "plans",
+                    "osi": "Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ",
+                    "size": "wide",
+                    "mnemonicIcon": [],
+                    "mnemonicAlt": [],
+                    "mnemonicLink": [],
+                    "badge": {
+                        "value": "Badge",
+                        "mimeType": "text/html"
+                    },
+                    "trialBadge": {},
+                    "backgroundImage": "https://main--milo--adobecom.hlx.page/drafts/axel/media_144906e76fce812811940ce88ceded4f8d12098b5.png?width=2000&format=webply&optimize=medium",
+                    "cardTitle": "Heading XS",
+                    "subtitle": "blahasdasd",
+                    "prices": {
+                        "value": "<span is=\"inline-price\" data-template=\"strikethrough\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\"></span> <span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\"></span>",
+                        "mimeType": "text/html"
+                    },
+                    "shortDescription": {
+                        "mimeType": "text/html"
+                    },
+                    "promoText": "Save over 30% with an annual plan.",
+                    "description": {
+                        "value": "<p>Body XS/Regular Get 20+ Creative Cloud apps, including Photoshop, Acrobat Pro, and more. Pay US$19.99/mo the first year and US$29.99/mo after that.</p><p><a class=\"primary-link\" href=\"https://example.com\" target=\"_self\">Body XS/Regular.</a> | <a class=\"primary-link\" href=\"https://www.example.com\" target=\"_self\">See what's included.</a> | <a class=\"primary-link\" href=\"https://www.example.com\" target=\"_self\">Learn more</a></p>",
+                        "mimeType": "text/html"
+                    },
+                    "description2": {},
+                    "callout": {
+                        "mimeType": "text/html"
+                    },
+                    "ctas": {
+                        "value": "<p><a class=\"accent\" target=\"_self\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\" data-analytics-id=\"buy-now\">Select</a></p>",
+                        "mimeType": "text/html"
+                    },
+                    "tags": [
+                        "mas:offer_type/base",
+                        "mas:product_family",
+                        "mas:commitment/access_pass",
+                        "mas:plan_type/abm"
+                    ]
+                },
+                "settings": {
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "4b0f529b-9246-4daa-a940-8f28d43a268b": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/angelo/ccd-slice-wide-cc-all-app811",
+                "name": "",
+                "title": "Some New Title",
+                "id": "4b0f529b-9246-4daa-a940-8f28d43a268b",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "variant": "plans",
+                    "osi": "uNuSxc0Vg8l3Gm0W21Ge_TKAKfXKI_fnRHdwJu74l_I",
+                    "size": "wide",
+                    "mnemonicIcon": [
+                        "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg"
+                    ],
+                    "mnemonicAlt": [""],
+                    "mnemonicLink": [""],
+                    "badge": {
+                        "mimeType": "text/html"
+                    },
+                    "trialBadge": {
+                        "mimeType": "text/html"
+                    },
+                    "backgroundImage": "https://main--milo--adobecom.hlx.page/drafts/axel/media_144906e76fce812811940ce88ceded4f8d12098b5.png?width=2000&format=webply&optimize=medium",
+                    "cardTitle": "Super Wide Stock Checkbox Placement Test 2",
+                    "subtitle": "blahasdasd",
+                    "prices": {
+                        "value": "<span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\"></span>",
+                        "mimeType": "text/html"
+                    },
+                    "shortDescription": {
+                        "mimeType": "text/html"
+                    },
+                    "description": {
+                        "value": "<p><span class=\"heading-xxs\">Some extra heading</span></p><p>And this is some content, lorem ipsum, and then some more etc.</p><p><span class=\"promo-text\">Some promo text.</span></p>",
+                        "mimeType": "text/html"
+                    },
+                    "description2": {},
+                    "callout": {
+                        "value": "<p>AI Assistant blabla</p>",
+                        "mimeType": "text/html"
+                    },
+                    "addon": "<p>Add a 30-day free trial of Adobe Stock.*</p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"RoV3wydweldSG5HWZUaytO-du3WA8S32alL4GzK6Ssw\"></span></p>",
+                    "ctas": {
+                        "value": "<a class=\"accent primary-outline\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a>",
+                        "mimeType": "text/html"
+                    },
+                    "tags": [
+                        "mas:product_family",
+                        "mas:commitment/access_pass",
+                        "mas:offer_type/base",
+                        "mas:plan_type/abm",
+                        "mas:customer_segment/individual",
+                        "mas:product_code/asig",
+                        "mas:market_segments/com"
+                    ]
+                },
+                "settings": {
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        }
+    },
+    "referencesTree": [
+        {
+            "fieldName": "collections",
+            "identifier": "00063495-e817-4988-b861-8813a4923137",
+            "referencesTree": [
+                {
+                    "fieldName": "cards",
+                    "identifier": "6f47521a-2bee-4953-aff1-55bf830bdeb8",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:customer_segment/individual",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "0fea0932-c802-49e4-8589-f8bcf6bfe98c",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "d597873d-5e7d-4dbd-9442-be9cbdf1212e",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:customer_segment/individual",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "ec482607-bcf8-4d3e-b285-0033268b99d3",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "4b0f529b-9246-4daa-a940-8f28d43a268b",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:customer_segment/individual",
+                            "referencesTree": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "modelReferences": {
+        "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24": {
+            "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24",
+            "path": "/conf/mas/settings/dam/cfm/models/collection",
+            "title": "Collection",
+            "fields": {
+                "label": {
+                    "type": "text"
+                },
+                "navigationLabel": {
+                    "type": "text"
+                },
+                "queryLabel": {
+                    "type": "text"
+                },
+                "icon": {
+                    "type": "text"
+                },
+                "iconLight": {
+                    "type": "text"
+                },
+                "cards": {
+                    "type": "content-fragment"
+                },
+                "collections": {
+                    "type": "content-fragment"
+                },
+                "originalId": {
+                    "type": "text"
+                },
+                "defaultchild": {
+                    "type": "text"
+                },
+                "locReady": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ": {
+            "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ",
+            "path": "/conf/mas/settings/dam/cfm/models/card",
+            "title": "Card",
+            "fields": {
+                "variant": {
+                    "type": "text"
+                },
+                "osi": {
+                    "type": "text"
+                },
+                "size": {
+                    "type": "text"
+                },
+                "mnemonicIcon": {
+                    "type": "text"
+                },
+                "mnemonicAlt": {
+                    "type": "text"
+                },
+                "mnemonicLink": {
+                    "type": "text"
+                },
+                "badge": {
+                    "type": "long-text"
+                },
+                "trialBadge": {
+                    "type": "long-text"
+                },
+                "backgroundColor": {
+                    "type": "text"
+                },
+                "borderColor": {
+                    "type": "text"
+                },
+                "backgroundImage": {
+                    "type": "text"
+                },
+                "backgroundImageAltText": {
+                    "type": "text"
+                },
+                "cardTitle": {
+                    "type": "text"
+                },
+                "cardName": {
+                    "type": "text"
+                },
+                "cardTitleLink": {
+                    "type": "text"
+                },
+                "subtitle": {
+                    "type": "text"
+                },
+                "prices": {
+                    "type": "long-text"
+                },
+                "shortDescription": {
+                    "type": "long-text"
+                },
+                "promoText": {
+                    "type": "text"
+                },
+                "promoCode": {
+                    "type": "text"
+                },
+                "description": {
+                    "type": "long-text"
+                },
+                "description2": {
+                    "type": "long-text"
+                },
+                "callout": {
+                    "type": "long-text"
+                },
+                "showSecureLabel": {
+                    "type": "boolean"
+                },
+                "showPlanType": {
+                    "type": "boolean"
+                },
+                "quantitySelect": {
+                    "type": "text"
+                },
+                "addon": {
+                    "type": "text"
+                },
+                "addonConfirmation": {
+                    "type": "text"
+                },
+                "ctas": {
+                    "type": "long-text"
+                },
+                "parent": {
+                    "type": "content-fragment"
+                },
+                "product": {
+                    "type": "content-reference"
+                },
+                "whatsIncluded": {
+                    "type": "text"
+                },
+                "tags": {
+                    "type": "tag"
+                },
+                "perUnitLabel": {
+                    "type": "text"
+                },
+                "originalId": {
+                    "type": "text"
+                },
+                "locReady": {
+                    "type": "boolean"
+                }
+            }
+        }
+    },
+    "priceLiterals": {
+        "recurrenceLabel": "{recurrenceTerm, select, MONTH {/MONTH!} YEAR {/YEAR!} other {}}",
+        "planTypeLabel": "{planType, select, ABM {Annual, billed monthly} M2M {Monthly} PUF {Annual, prepaid} other {}}"
+    },
+    "placeholders": {
+        "searchText": "coll-search-text",
+        "filtersText": "coll-filters-text",
+        "sortText": "coll-sort-text",
+        "popularityText": "coll-popularity-text",
+        "alphabeticallyText": "coll-alphabetically-text",
+        "noResultsText": "coll-no-results-text",
+        "plansSidenavTitle": "coll-plans-sidenav-title",
+        "resultText": "coll-result-text",
+        "resultsText": "coll-results-text",
+        "resultMobileText": "coll-result-mobile-text",
+        "resultsMobileText": "coll-results-mobile-text",
+        "searchResultText": "coll-search-result-text",
+        "searchResultsText": "coll-search-results-text",
+        "searchResultMobileText": "coll-search-result-mobile-text",
+        "searchResultsMobileText": "coll-search-results-mobile-text",
+        "noSearchResultsText": "coll-no-search-results-text",
+        "showMoreText": "coll-show-more-text"
+    },
+    "wcs": {
+        "prod": {
+            "Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ-us-mult": [
+                {
+                    "offerSelectorIds": [
+                        "Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
+                    ],
+                    "offerId": "01A09572A72A7D7F848721DE4D3C73FA",
+                    "startDate": "2017-10-18T15:00:00.000Z",
+                    "priceDetails": {
+                        "price": 89.99,
+                        "priceWithoutTax": 89.99,
+                        "annualized": {
+                            "annualizedPrice": 1079.88,
+                            "annualizedPriceWithoutTax": 1079.88
+                        },
+                        "usePrecision": true,
+                        "formatString": "'US$'#,##0.00",
+                        "taxDisplay": "TAX_EXCLUSIVE",
+                        "taxTerm": "TAX"
+                    },
+                    "analytics": "{\"offerId\":\"01A09572A72A7D7F848721DE4D3C73FA\",\"label\":\"creative_cloud_all_apps_with_2tb_cloud_services_individual\",\"price\":\"89.99\",\"amountWithoutTax\":\"89.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+                    "productArrangementCode": "creative_cloud_all_apps_with_2tb_cloud_services_individual",
+                    "productArrangement": {
+                        "productFamily": "CC_ALL_APPS",
+                        "productCode": "CCES"
+                    },
+                    "buyingProgram": "RETAIL",
+                    "commitment": "YEAR",
+                    "term": "MONTHLY",
+                    "customerSegment": "INDIVIDUAL",
+                    "marketSegments": ["COM"],
+                    "salesChannel": "DIRECT",
+                    "offerType": "BASE",
+                    "pricePoint": "INDIV_CCES_COM_2TB",
+                    "language": "MULT",
+                    "merchant": "ADOBE"
+                }
+            ],
+            "FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU-us-mult": [
+                {
+                    "offerSelectorIds": [
+                        "FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU"
+                    ],
+                    "offerId": "BDCC4F683FCA989922B6BABAC22E5B30",
+                    "startDate": "2018-12-03T07:59:59.000Z",
+                    "endDate": "2029-10-05T07:59:59.000Z",
+                    "priceDetails": {
+                        "price": 359.88,
+                        "priceWithoutTax": 0,
+                        "priceWithoutDiscountAndTax": 359.88,
+                        "usePrecision": true,
+                        "formatString": "'US$'#,##0.00",
+                        "taxDisplay": "TAX_EXCLUSIVE",
+                        "taxTerm": "TAX"
+                    },
+                    "analytics": "{\"offerId\":\"BDCC4F683FCA989922B6BABAC22E5B30\",\"label\":\"stks_direct_individual\",\"price\":\"359.88\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"ANNUAL\",\"currencyCode\":\"USD\"}",
+                    "productArrangementCode": "stks_direct_individual",
+                    "productArrangement": {
+                        "productFamily": "STOCK_ASSETS",
+                        "productCode": "STKS"
+                    },
+                    "buyingProgram": "RETAIL",
+                    "commitment": "YEAR",
+                    "term": "ANNUAL",
+                    "customerSegment": "INDIVIDUAL",
+                    "marketSegments": ["COM"],
+                    "salesChannel": "DIRECT",
+                    "offerType": "TRIAL",
+                    "pricePoint": "TRIAL_STOCK_30_DAY_TRIAL",
+                    "language": "MULT",
+                    "merchant": "ADOBE"
+                }
+            ],
+            "JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE-us-mult": [
+                {
+                    "offerSelectorIds": [
+                        "JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE"
+                    ],
+                    "offerId": "8DCE13BFD6A345F0408135DFC569C48E",
+                    "startDate": "2018-12-03T07:59:59.000Z",
+                    "endDate": "2029-10-05T07:59:59.000Z",
+                    "priceDetails": {
+                        "price": 29.99,
+                        "priceWithoutTax": 0,
+                        "priceWithoutDiscountAndTax": 29.99,
+                        "annualized": {
+                            "annualizedPrice": 359.88,
+                            "annualizedPriceWithoutTax": 0,
+                            "annualizedPriceWithoutDiscountAndTax": 359.88
+                        },
+                        "usePrecision": true,
+                        "formatString": "'US$'#,##0.00",
+                        "taxDisplay": "TAX_EXCLUSIVE",
+                        "taxTerm": "TAX"
+                    },
+                    "analytics": "{\"offerId\":\"8DCE13BFD6A345F0408135DFC569C48E\",\"label\":\"stks_direct_individual\",\"price\":\"29.99\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+                    "productArrangementCode": "stks_direct_individual",
+                    "productArrangement": {
+                        "productFamily": "STOCK_ASSETS",
+                        "productCode": "STKS"
+                    },
+                    "buyingProgram": "RETAIL",
+                    "commitment": "YEAR",
+                    "term": "MONTHLY",
+                    "customerSegment": "INDIVIDUAL",
+                    "marketSegments": ["COM"],
+                    "salesChannel": "DIRECT",
+                    "offerType": "TRIAL",
+                    "pricePoint": "TRIAL_STOCK_30_DAY_TRIAL",
+                    "language": "MULT",
+                    "merchant": "ADOBE"
+                }
+            ],
+            "RoV3wydweldSG5HWZUaytO-du3WA8S32alL4GzK6Ssw-us-mult": [
+                {
+                    "offerSelectorIds": [
+                        "RoV3wydweldSG5HWZUaytO-du3WA8S32alL4GzK6Ssw"
+                    ],
+                    "offerId": "55DFFCFBA3A555D01E117D901C82F5B4",
+                    "startDate": "2018-12-03T07:59:59.000Z",
+                    "endDate": "2029-10-05T07:59:59.000Z",
+                    "priceDetails": {
+                        "price": 49.99,
+                        "priceWithoutTax": 0,
+                        "priceWithoutDiscountAndTax": 49.99,
+                        "usePrecision": true,
+                        "formatString": "'US$'#,##0.00",
+                        "taxDisplay": "TAX_EXCLUSIVE",
+                        "taxTerm": "TAX"
+                    },
+                    "analytics": "{\"offerId\":\"55DFFCFBA3A555D01E117D901C82F5B4\",\"label\":\"stks_direct_individual\",\"price\":\"49.99\",\"amountWithoutTax\":\"0.0\",\"commitmentType\":\"MONTH\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+                    "productArrangementCode": "stks_direct_individual",
+                    "productArrangement": {
+                        "productFamily": "STOCK_ASSETS",
+                        "productCode": "STKS"
+                    },
+                    "buyingProgram": "RETAIL",
+                    "commitment": "MONTH",
+                    "term": "MONTHLY",
+                    "customerSegment": "INDIVIDUAL",
+                    "marketSegments": ["COM"],
+                    "salesChannel": "DIRECT",
+                    "offerType": "TRIAL",
+                    "pricePoint": "TRIAL_STOCK_30_DAY_TRIAL",
+                    "language": "MULT",
+                    "merchant": "ADOBE"
+                }
+            ],
+            "PpnQ-UmW9NBwZwXlFw79zw2JybhvwIUwMTDYiIlu5qI-us-mult": [
+                {
+                    "offerSelectorIds": [
+                        "PpnQ-UmW9NBwZwXlFw79zw2JybhvwIUwMTDYiIlu5qI"
+                    ],
+                    "offerId": "257E1D82082387D152029F93C1030624",
+                    "startDate": "2015-12-04T17:38:19.000Z",
+                    "endDate": "2100-04-13T21:20:00.000Z",
+                    "priceDetails": {
+                        "price": 104.99,
+                        "priceWithoutTax": 104.99,
+                        "usePrecision": true,
+                        "formatString": "'US$'#,##0.00",
+                        "taxDisplay": "TAX_EXCLUSIVE",
+                        "taxTerm": "TAX"
+                    },
+                    "analytics": "{\"offerId\":\"257E1D82082387D152029F93C1030624\",\"label\":\"ccsn_direct_individual\",\"price\":\"104.99\",\"amountWithoutTax\":\"104.99\",\"commitmentType\":\"MONTH\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+                    "productArrangementCode": "ccsn_direct_individual",
+                    "productArrangement": {
+                        "productFamily": "CC_ALL_APPS",
+                        "productCode": "CCSN"
+                    },
+                    "buyingProgram": "RETAIL",
+                    "commitment": "MONTH",
+                    "term": "MONTHLY",
+                    "customerSegment": "INDIVIDUAL",
+                    "marketSegments": ["COM"],
+                    "salesChannel": "DIRECT",
+                    "offerType": "BASE",
+                    "pricePoint": "REGULAR",
+                    "language": "MULT",
+                    "merchant": "ADOBE"
+                }
+            ]
+        }
+    }
+}

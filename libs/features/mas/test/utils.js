@@ -20,6 +20,12 @@ export const keyDown = async (key) => {
     });
 };
 
+export async function toggleDesktop() {
+    try {
+        await setViewport({ width: 1200, height: 1400 });
+    } catch {}
+}
+
 export async function toggleLargeDesktop() {
     try {
         await setViewport({ width: 1600, height: 1400 });
