@@ -72,6 +72,7 @@
   overflow: hidden;
   position: relative;
   width: 100%;
+  scroll-behavior: smooth;
 }
 
 /* Masonry grid layout using CSS columns for true masonry effect */

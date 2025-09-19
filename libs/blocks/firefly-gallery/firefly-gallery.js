@@ -207,43 +207,13 @@ function createGalleryStructure() {
   const galleryContent = createTag('div', { class: 'firefly-gallery-content' });
   const galleryFadeOverlay = createTag('div', { class: 'firefly-gallery-fade' });
 
-  galleryContent.appendChild(galleryFadeOverlay);
-
   galleryContainer.appendChild(galleryContent);
+  galleryContainer.appendChild(galleryFadeOverlay);
 
   return {
     container: galleryContainer,
     content: galleryContent,
   };
-}
-
-function preventScrollOnTab(contentElement) {
-  let savedScrollTop = 0;
-  let isTabbing = false;
-
-  contentElement.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
-      // Save position only when starting a tab sequence
-      if (!isTabbing) {
-        savedScrollTop = contentElement.scrollTop;
-      }
-      isTabbing = true;
-    }
-  });
-
-  // Use only a single focusin handler to restore scroll position
-  contentElement.addEventListener('focusin', () => {
-    if (isTabbing) {
-      // Use requestAnimationFrame for smoother visual updates
-      requestAnimationFrame(() => {
-        contentElement.scrollTop = savedScrollTop;
-        // Reset tabbing flag after a short delay
-        setTimeout(() => {
-          isTabbing = false;
-        }, 100);
-      });
-    }
-  });
 }
 
 // Column count is now handled entirely by CSS media queries
@@ -263,35 +233,15 @@ function createSkeletonLayout(container) {
   const placeholderTypes = [
     // Column flow pattern optimized for 5 columns (6 items per column)
     // column 1
-    'short',
-    'square',
-    'portrait',
-    'tall',
-    'short',
+    'short', 'square', 'portrait', 'tall', 'short',
     // column 2
-    'portrait',
-    'short',
-    'tall',
-    'square',
-    'portrait',
+    'portrait', 'short', 'tall', 'square', 'portrait',
     // column 3
-    'square',
-    'tall',
-    'short',
-    'portrait',
-    'tall',
+    'square', 'tall', 'short', 'portrait', 'tall',
     // column 4
-    'tall',
-    'portrait',
-    'square',
-    'short',
-    'square',
+    'tall', 'portrait', 'square', 'short', 'square',
     // column 5
-    'short',
-    'square',
-    'portrait',
-    'tall',
-    'portrait',
+    'short', 'square', 'portrait', 'tall', 'portrait',
   ];
 
   // Initial aspect ratios for placeholder types - these will be replaced with actual ratios
@@ -688,34 +638,6 @@ function handleResizeForGallery(assets, skeletonItems) {
   window.addEventListener('resize', handleResize);
 }
 
-function setTabindexForHiddenOverlays(galleryContent) {
-  if (!galleryContent) return;
-
-  const fadeOverlay = galleryContent.querySelector('.firefly-gallery-fade');
-  if (!fadeOverlay) return;
-
-  // Get overlay elements that can be focused (with tabindex="0")
-  const overlayElements = galleryContent.querySelectorAll(
-    '.firefly-gallery-overlay',
-  );
-
-  // Get fade dimensions
-  const contentRect = galleryContent.getBoundingClientRect();
-  const fadeHeight = parseInt(window.getComputedStyle(fadeOverlay).height, 10);
-  const fadeStartsAt = contentRect.height - fadeHeight;
-
-  // Check each overlay and set tabindex accordingly
-  overlayElements.forEach((overlay) => {
-    const overlayRect = overlay.getBoundingClientRect();
-    const overlayTop = overlayRect.top - contentRect.top;
-    // const overlayBottom = overlayRect.bottom - contentRect.top;
-
-    if (overlayTop >= fadeStartsAt) {
-      overlay.setAttribute('tabindex', '-1');
-    }
-  });
-}
-
 export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
 
@@ -731,9 +653,6 @@ export default async function init(el) {
 
   // Create and append skeleton layout
   const { skeletonItems, masonryGrid } = createSkeletonLayout(content);
-
-  // Add this line to prevent scrolling when tabbing
-  preventScrollOnTab(content);
 
   // Replace block content with our gallery structure
   el.appendChild(container);
@@ -752,12 +671,6 @@ export default async function init(el) {
 
         // Remove loading class after initial items are loaded
         masonryGrid.classList.remove('loading');
-        setTimeout(() => {
-          const galleryContent = document.querySelector(
-            '.firefly-gallery-content',
-          );
-          if (galleryContent) setTabindexForHiddenOverlays(galleryContent);
-        }, 100);
       } else {
         // Remove loading state if no assets found
         masonryGrid.classList.remove('loading');
