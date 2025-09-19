@@ -2,8 +2,8 @@ import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP, TABLET_DOWN } f
 export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 302px;
+    --consonant-merch-card-plans-students-width: 302px;
     --consonant-merch-card-plans-icon-size: 40px;
-    --consonant-merch-card-plans-students-width: 568px;
 }
 
 merch-card[variant^="plans"] {
@@ -12,12 +12,12 @@ merch-card[variant^="plans"] {
     width: var(--consonant-merch-card-plans-width);
 }
 
-merch-card[variant^="plans"][size="wide"], merch-card[variant^="plans"][size="super-wide"] {
-    width: auto;
+merch-card[variant="plans-students"] {
+    width: var(--consonant-merch-card-plans-students-width);
 }
 
-merch-card[variant="plans-students"] {
-    width: 100%;
+merch-card[variant^="plans"][size="wide"], merch-card[variant^="plans"][size="super-wide"] {
+    width: auto;
 }
 
 merch-card[variant^="plans"] [slot="icons"] {
@@ -211,23 +211,6 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
     display: none;
 }
 
-/* Mobile */
-@media screen and ${MOBILE_LANDSCAPE} {
-    merch-whats-included merch-mnemonic-list,
-    merch-whats-included [slot="heading"] {
-        width: 100%;
-    }
-    merch-card[variant="plans-students"] {
-        min-width: var(--consonant-merch-card-plans-width);
-        max-width: var(--consonant-merch-card-plans-students-width);
-        width: 100%;
-    }
-
-    merch-card[variant="plans-education"] .spacer {
-        height: 0px;
-    }
-}
-
 merch-card[variant^="plans"]:not([size]) {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
@@ -264,10 +247,8 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     margin: 0;
 }
 
-.columns.merch-card > .row {
-    grid-template-columns: repeat(auto-fit, var(--consonant-merch-card-plans-width));
-    justify-content: center;
-    align-items: center;
+.plans-edu #whats-included {
+    margin: 0 0 16px;
 }
 
 .columns.checkmark-list ul {
@@ -280,6 +261,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 }
 
 /* Tabs containers */
+
 #tabs-plan {
     --tabs-active-text-color: #131313;
     --tabs-border-color: #444444;
@@ -292,33 +274,100 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     border-left-color: #EAEAEA;
 }
 
+.plans-team {
+    display: grid;
+    grid-template-columns: min-content;
+    justify-content: center;
+}
+
+.plans-team:has([data-manifest-id="plans.json"]) .row-1 {
+    grid-template-columns: repeat(2, calc(var(--consonant-merch-card-plans-width) * 2 + 32px));
+    justify-content: center;
+}
+
+.plans-team .text .foreground,
+.plans-edu .text .foreground {
+    max-width: unset;
+    margin: 0;
+}
+
+.plans-edu .columns .row {
+    grid-template-columns: repeat(auto-fit, var(--consonant-merch-card-plans-students-width));
+    justify-content: center;
+    align-items: center;
+}
+
+.plans-edu .columns .row-1 {
+    grid-template-columns: var(--consonant-merch-card-plans-students-width);
+    margin-block: var(--spacing-xs);
+}
+
+.plans-edu .columns .row-2 {
+    margin-bottom: 40px;
+}
+
+.plans-edu .columns .row-3 {
+    margin-bottom: 48px;
+}
+
+.plans-individual .content,
+.plans-team .content,
+.plans-edu-inst .content {
+    padding-bottom: 48px;
+}
+
+/* Mobile */
+@media screen and ${MOBILE_LANDSCAPE} {
+    merch-whats-included merch-mnemonic-list,
+    merch-whats-included [slot="heading"] {
+        width: 100%;
+    }
+
+    merch-card[variant="plans-education"] .spacer {
+        height: 0px;
+    }
+}
+
 /* Tablet */
 @media screen and ${TABLET_UP} {
+    :root {
+        --consonant-merch-card-plans-students-width: 486px;
+    }
+
     .four-merch-cards.plans .foreground {
         max-width: unset;
     }
-  
-    .columns.merch-card > .row {
-        grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width) * 2 + var(--consonant-merch-spacing-m)));
+}
+
+@media screen and ${TABLET_DOWN} {
+    .plans-team:has([data-manifest-id="plans.json"]) .row-1 {
+        grid-template-columns: min-content
+    }
+
+    .plans-edu-inst {
+        display: grid;
+        grid-template-columns: min-content;
+        justify-content: center;
+    }
+
+    .plans-edu-inst .text .foreground {
+        max-width: unset;
+        margin: 0;
     }
 }
 
 /* desktop */
 @media screen and ${DESKTOP_UP} {
     :root {
-            --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-plans-width: 276px;
     }
 
     merch-sidenav.plans {
-            --merch-sidenav-collection-gap: 30px;
+        --merch-sidenav-collection-gap: 30px;
     }
 
     .columns .four-merch-cards.plans {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
-    }
-
-    merch-card[variant="plans-students"] {
-        width: var(--consonant-merch-card-plans-students-width);
     }
 
     merch-card-collection-header.plans {
@@ -333,7 +382,19 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
         transform: translateX(-50vw);
         justify-content: start;
         padding-inline: 30px;
+    }
+
+    .plans-individual .content {
         padding-top: 24px;
+    }
+
+    .plans-edu .columns .row-1 {
+        grid-template-columns: calc(var(--consonant-merch-card-plans-students-width) * 2 + var(--spacing-m));
+    }
+
+    .plans-edu-inst .text .foreground {
+        max-width: 1200px;
+        margin: auto;
     }
 }
 
