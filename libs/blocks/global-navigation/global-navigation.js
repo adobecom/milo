@@ -436,11 +436,6 @@ export const closeGnavOptions = () => {
   enableMobileScroll();
   setMenuState();
 };
-
-const convertToPascalCase = (str) => str
-  ?.split('-')
-  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-  .join(' ');
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
@@ -861,7 +856,6 @@ class Gnav {
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity')
       .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
-    const experienceName = getExperienceName();
 
     const getDevice = () => {
       const agent = navigator.userAgent;
@@ -898,7 +892,6 @@ class Gnav {
 
       return children;
     };
-
 
     const getConfiguration = () => ({
       target: this.blocks.universalNav,

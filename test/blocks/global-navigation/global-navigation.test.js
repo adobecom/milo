@@ -9,7 +9,6 @@ import {
   mockRes,
   viewports,
   unavLocalesTestData,
-  analyticsTestData,
   unavVersion,
   addMetaDataV2,
 } from './test-utilities.js';
@@ -457,7 +456,6 @@ describe('global navigation', () => {
         messageEventListener(profileSwitch);
         expect(profileSwitch.detail.executeDefaultAction.called).to.be.true;
       });
-
 
       it('should send/not send visitor guid to unav when window.alloy is available/unavailable', async () => {
         await createFullGlobalNavigation({ unavContent: 'on' });
