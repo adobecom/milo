@@ -309,6 +309,20 @@
   line-height: 1.5 !important;
 }
 
+#brand-concierge-mount .container-desktop .bc-response-footer,
+#brand-concierge-mount .container-mobile .bc-response-footer {
+  margin-top: 16px !important;
+}
+
+#brand-concierge-mount .citations-sources-panel:not(.active) {
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+#brand-concierge-mount .bc-response-footer-actions .bc-feedback-buttons {
+  margin-top: 4px !important;
+}
+
 /* Sticky */
 @keyframes sticky-in {
   from {
