@@ -43,7 +43,7 @@
                 await mockFetch(withWcs);
                 await import('../src/mas.js');
 
-                describe('merch-card web component', () => {
+                describe('merch-card ah-try-buy-widget', () => {
                     it('should exist in the HTML document', async () => {
                         expect(
                             document.querySelector(
@@ -51,108 +51,268 @@
                             ),
                         ).to.exist;
                     });
+
+                    describe('badge functionality', () => {
+                        it('should render badge element when present', async () => {
+                            const cardWithBadge = document.querySelector('#card-with-badge');
+                            expect(cardWithBadge).to.exist;
+                            const badge = cardWithBadge.querySelector('[slot="badge"] merch-badge');
+                            expect(badge).to.exist;
+                        });
+
+                        it('should not render badge when not present', async () => {
+                            const cardWithoutBadge = document.querySelector('#card-without-badge');
+                            expect(cardWithoutBadge).to.exist;
+                            const badge = cardWithoutBadge.querySelector('[slot="badge"]');
+                            expect(badge).to.not.exist;
+                        });
+
+                        it('should display badge text content', async () => {
+                            const cardWithBadge = document.querySelector('#card-with-badge');
+                            const badge = cardWithBadge.querySelector('[slot="badge"] merch-badge');
+                            expect(badge).to.exist;
+                            const badgeText = badge.shadowRoot.querySelector('.badge').textContent.trim();
+                            expect(badgeText).to.equal('Best value');
+                        });
+
+                        it('should apply correct badge background color', async () => {
+                            const cardWithBadge = document.querySelector('#card-with-badge');
+                            const badge = cardWithBadge.querySelector('[slot="badge"] merch-badge');
+                            expect(badge.getAttribute('background-color')).to.equal('fuchsia');
+                            // The computed style will show the actual color value, not the variable name
+                            // We'll verify the custom property is set instead
+                            expect(badge.style.getPropertyValue('--merch-badge-background-color')).to.equal('var(--fuchsia)');
+                        });
+
+                        it('should apply correct badge border color', async () => {
+                            const cardWithBadge = document.querySelector('#card-with-badge');
+                            const badge = cardWithBadge.querySelector('[slot="badge"] merch-badge');
+                            expect(badge.getAttribute('border-color')).to.equal('default');
+                            // Check that the border property is set on the style
+                            expect(badge.style.getPropertyValue('--merch-badge-border')).to.equal('1px solid var(--default)');
+                        });
+
+                        it('should apply ah-try-buy-widget variant to badge', async () => {
+                            const cardWithBadge = document.querySelector('#card-with-badge');
+                            const badge = cardWithBadge.querySelector('[slot="badge"] merch-badge');
+                            expect(badge.getAttribute('variant')).to.equal('ah-try-buy-widget');
+                        });
+
+                        it('should position badge correctly', async () => {
+                            const cardWithBadge = document.querySelector('#card-with-badge');
+                            const badgeSlot = cardWithBadge.querySelector('[slot="badge"]');
+                            expect(badgeSlot).to.exist;
+                            // Badge should be in the shadowRoot slot
+                            const shadowRoot = cardWithBadge.shadowRoot;
+                            const slotElement = shadowRoot.querySelector('slot[name="badge"]');
+                            expect(slotElement).to.exist;
+                        });
+
+                        it('should apply correct badge styles from CSS', async () => {
+                            const cardWithBadge = document.querySelector('#card-with-badge');
+                            const badge = cardWithBadge.querySelector('[slot="badge"] merch-badge');
+
+                            // Check that the style properties are set
+                            expect(badge.style.getPropertyValue('--merch-badge-padding')).to.equal('2px 10px 3px 10px');
+                            expect(badge.style.getPropertyValue('--merch-badge-border-radius')).to.equal('4px 0 0 4px');
+                            expect(badge.style.getPropertyValue('--merch-badge-font-size')).to.equal('var(--consonant-merch-card-body-xs-font-size)');
+                        });
+
+                        it('should work with different card sizes', async () => {
+                            const singleCard = document.querySelector('#card-single-with-badge');
+                            const doubleCard = document.querySelector('#card-double-with-badge');
+
+                            expect(singleCard.getAttribute('size')).to.equal('single');
+                            expect(doubleCard.getAttribute('size')).to.equal('double');
+
+                            // Badge should work with both sizes
+                            const singleBadge = singleCard.querySelector('[slot="badge"] merch-badge');
+                            const doubleBadge = doubleCard.querySelector('[slot="badge"] merch-badge');
+
+                            expect(singleBadge).to.exist;
+                            expect(doubleBadge).to.exist;
+                        });
+
+                        it('should handle dark theme correctly', async () => {
+                            // Add dark theme class to test dark mode
+                            document.documentElement.classList.add('spectrum--dark');
+
+                            const cardWithBadge = document.querySelector('#card-with-badge');
+                            expect(cardWithBadge).to.exist;
+
+                            const badge = cardWithBadge.querySelector('[slot="badge"] merch-badge');
+                            expect(badge).to.exist;
+
+                            // Remove dark theme class after test
+                            document.documentElement.classList.remove('spectrum--dark');
+                        });
+                    });
                 });
             });
         </script>
         <main>
+            <!-- Card with badge -->
             <merch-card
-                size="gray"
+                id="card-with-badge"
+                size="double"
                 class=""
                 tabindex="0"
                 variant="ah-try-buy-widget"
+                background-color="gray"
             >
-                <sp-status-light
-                    size="s"
-                    variant="info"
-                    dir="ltr"
-                ></sp-status-light>
                 <merch-icon
                     slot="icons"
                     src="./img/pixel.png"
                     alt=""
                     href=""
                     size="s"
-                    >undefined</merch-icon
-                >
+                ></merch-icon>
+                <div slot="badge">
+                    <merch-badge
+                        background-color="fuchsia"
+                        border-color="default"
+                        variant="ah-try-buy-widget"
+                    >Best value</merch-badge>
+                </div>
+                <h3 slot="heading-xxxs">Photoshop</h3>
+                <p slot="body-xxs">
+                    <strong>Ideate and create</strong> assets faster, and place 3D objects into your designs.
+                </p>
+                <div slot="price">
+                    <strong>
+                        <span
+                            is="inline-price"
+                            data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+                        ></span>
+                    </strong>
+                    <a href="#">See terms</a>
+                </div>
+                <div slot="image">
+                    <img
+                        loading="lazy"
+                        src="./img/pixel.png"
+                        role="none"
+                    />
+                </div>
+                <div slot="cta">
+                    <sp-button size="s" variant="secondary">Free trial</sp-button>
+                    <sp-button size="s" variant="accent">Buy</sp-button>
+                </div>
+            </merch-card>
+
+            <!-- Card without badge -->
+            <merch-card
+                id="card-without-badge"
+                tabindex="0"
+                variant="ah-try-buy-widget"
+            >
+                <merch-icon
+                    slot="icons"
+                    src="./img/pixel.png"
+                    alt=""
+                    href=""
+                    size="s"
+                ></merch-icon>
                 <h3 slot="heading-xxxs">Creative Cloud All Apps</h3>
                 <p slot="body-xxs">
                     Get 20+ creative apps including Photoshop and Illustrator.
                 </p>
                 <div slot="price">
-                    <strong
-                        ><span
+                    <strong>
+                        <span
                             is="inline-price"
                             data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
-                        ></span
-                    ></strong>
+                        ></span>
+                    </strong>
                     <p><em>Annual, paid monthly</em></p>
                     <a href="#">See terms</a>
                 </div>
                 <div slot="cta">
-                    <sp-button size="s" variant="secondary"
-                        >Free trial</sp-button
-                    >
+                    <sp-button size="s" variant="secondary">Free trial</sp-button>
                     <sp-button size="s" variant="accent">Buy</sp-button>
                 </div>
             </merch-card>
-            <merch-card tabindex="0" variant="ah-try-buy-widget">
-                <sp-status-light
-                    size="s"
-                    variant="info"
-                    dir="ltr"
-                ></sp-status-light>
+
+            <!-- Single size card with badge -->
+            <merch-card
+                id="card-single-with-badge"
+                size="single"
+                tabindex="0"
+                variant="ah-try-buy-widget"
+                background-color="gray"
+            >
                 <merch-icon
                     slot="icons"
                     src="./img/pixel.png"
                     alt=""
                     href=""
                     size="s"
-                    >undefined</merch-icon
-                >
-                <h3 slot="heading-xxxs">Photoshop</h3>
+                ></merch-icon>
+                <div slot="badge">
+                    <merch-badge
+                        background-color="fuchsia"
+                        border-color="default"
+                        variant="ah-try-buy-widget"
+                    >Limited offer</merch-badge>
+                </div>
+                <h3 slot="heading-xxxs">Illustrator</h3>
                 <p slot="body-xxs">
-                    Create beautiful graphics, photos and art anywhere.
+                    Create beautiful vector art and illustrations.
                 </p>
                 <div slot="price">
-                    <strong
-                        ><span
+                    <strong>
+                        <span
                             is="inline-price"
                             data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
-                        ></span
-                    ></strong>
+                        ></span>
+                    </strong>
                     <a href="#">See terms</a>
+                </div>
+                <div slot="image">
+                    <img
+                        loading="lazy"
+                        src="./img/pixel.png"
+                        role="none"
+                    />
                 </div>
                 <div slot="cta">
                     <sp-button size="s" variant="secondary">Try</sp-button>
                     <sp-button size="s" variant="primary">Buy</sp-button>
                 </div>
             </merch-card>
-            <merch-card class="" tabindex="0" variant="ah-try-buy-widget">
-                <sp-status-light
-                    size="s"
-                    variant="info"
-                    dir="ltr"
-                ></sp-status-light>
+
+            <!-- Double size card with badge -->
+            <merch-card
+                id="card-double-with-badge"
+                size="double"
+                tabindex="0"
+                variant="ah-try-buy-widget"
+            >
                 <merch-icon
                     slot="icons"
                     src="./img/pixel.png"
                     alt=""
                     href=""
                     size="s"
-                    >undefined</merch-icon
-                >
-                <h3 slot="heading-xxxs">Acrobat</h3>
+                ></merch-icon>
+                <div slot="badge">
+                    <merch-badge
+                        background-color="fuchsia"
+                        border-color="default"
+                        variant="ah-try-buy-widget"
+                    >Popular</merch-badge>
+                </div>
+                <h3 slot="heading-xxxs">Acrobat Pro</h3>
                 <p slot="body-xxs">
-                    View, share, or comment on PDFs for free. Subscribe for
-                    premium tools like editing text and images.
+                    The complete PDF solution for working anywhere.
                 </p>
                 <div slot="price">
-                    <strong
-                        ><span
+                    <strong>
+                        <span
                             is="inline-price"
                             data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
-                        ></span
-                    ></strong>
+                        ></span>
+                    </strong>
                     <a href="#">See terms</a>
                 </div>
                 <div slot="cta">
