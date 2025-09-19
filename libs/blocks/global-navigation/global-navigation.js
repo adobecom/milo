@@ -899,62 +899,6 @@ class Gnav {
       return children;
     };
 
-    const onAnalyticsEvent = (data) => {
-      if (!data) return;
-      if (!data.event) data.event = { type: data.type, subtype: data.subtype };
-      if (!data.source) data.source = { name: data.workflow?.toLowerCase().trim() };
-
-      const getInteraction = () => {
-        const {
-          event: { type, subtype } = {},
-          source: { name } = {},
-          content: { name: contentName } = {},
-        } = data;
-
-        switch (`${name}|${type}|${subtype}${contentName ? `|${contentName}` : ''}`) {
-          case 'profile|click|sign-in':
-            return `Sign In|gnav|${experienceName}|unav`;
-          case 'profile|render|component':
-            return `Account|gnav|${experienceName}|unav`;
-          case 'profile|click|account':
-            return `View Account|gnav|${experienceName}|unav`;
-          case 'profile|click|sign-out':
-            return `Sign Out|gnav|${experienceName}|unav`;
-          case 'app-switcher|render|component':
-            return 'AppLauncher.appIconToggle';
-          case `app-switcher|click|app|${contentName}`:
-            return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
-          case 'app-switcher|click|footer|adobe-home':
-            return 'AppLauncher.adobe.com';
-          case 'app-switcher|click|footer|all-apps':
-            return 'AppLauncher.allapps';
-          case 'app-switcher|click|footer|adobe-dot-com':
-            return 'AppLauncher.adobe.com';
-          case 'app-switcher|click|footer|see-all-apps':
-            return 'AppLauncher.allapps';
-          case 'unc|click|icon':
-            return 'Open Notifications panel';
-          case 'unc|click|link':
-            return 'Open Notification';
-          case 'unc|click|markRead':
-            return 'Mark Notification as read';
-          case 'unc|click|dismiss':
-            return 'Dismiss Notifications';
-          case 'unc|click|markUnread':
-            return 'Mark Notification as unread';
-          default:
-            return null;
-        }
-      };
-      const interaction = getInteraction();
-
-      if (!interaction) return;
-      // eslint-disable-next-line no-underscore-dangle
-      window._satellite?.track('event', {
-        xdm: {},
-        data: { web: { webInteraction: { name: interaction } } },
-      });
-    };
 
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
@@ -972,7 +916,6 @@ class Gnav {
           os_version: navigator.platform,
         },
         event: { visitor_guid: visitorGuid },
-        onAnalyticsEvent,
       },
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
