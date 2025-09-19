@@ -72,17 +72,37 @@ merch-card[variant="plans-education"] [slot="body-xs"] p:has(span[is="inline-pri
     margin-bottom: 16px;
 }
 
+merch-card[variant^="plans"] span.text-l {
+    display: block;
+    font-size: 18px;
+    line-height: 23px;
+}
+
 merch-card[variant="plans-education"] span.promo-text {
     margin-bottom: 8px;
 }
 
-merch-card[variant="plans-education"] p:has(a[href^='tel:']):has(+ p) {
+merch-card[variant="plans-education"] p:has(a[href^='tel:']):has(+ p, + div) {
     margin-bottom: 16px;
 }
 
 merch-card[variant^="plans"] [slot="promo-text"],
 merch-card[variant="plans-education"] span.promo-text {
     line-height: var(--consonant-merch-card-body-xs-line-height);
+}
+
+merch-card[variant="plans-education"] [slot="body-xs"] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+merch-card[variant="plans-education"] .spacer {
+    height: calc(var(--merch-card-plans-edu-list-max-offset) - var(--merch-card-plans-edu-list-offset));
+}
+
+merch-card[variant="plans-education"] ul + p {
+    margin-top: 16px;
 }
 
 merch-card-collection.plans merch-card {
@@ -301,6 +321,10 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
+    }
+
+    merch-card[variant="plans-education"] .spacer {
+        height: 0px;
     }
 }
 
