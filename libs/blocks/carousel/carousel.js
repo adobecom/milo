@@ -649,12 +649,11 @@ export default function init(el) {
 
   function handleDeferredHeights() {
     updateDisableButtonsHeights(carouselElements);
-    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleDeferredHeights, true);
   }
 
   if (el.classList.contains('disable-buttons')) {
     updateButtonStates(carouselElements);
-    parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredHeights, true);
+    setTimeout(handleDeferredHeights, 100);
   }
 
   function handleLateLoadingNavigation() {
