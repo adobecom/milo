@@ -226,6 +226,36 @@ main > .section[class*='-up'] > .content {
   max-width: unset;
 }
 
+/* show-more-button */
+.section .show-more-button {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0;
+  gap: 10px;
+  border-radius: 8px;
+}
+
+.section .show-more-button button {
+  background-color: inherit;
+  border: none;
+  color: #070707;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: var(--type-body-m-size);
+  font-weight: 700;
+  line-height: 22px;
+  padding: var(--spacing-xxs) var(--spacing-s);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.section .show-more-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
 /* mobile only */
 @media (max-width: 600px) {
   .section.two-up.reverse-mobile > div:nth-child(1) {
@@ -237,6 +267,21 @@ main > .section[class*='-up'] > .content {
   }
 
   .section[class*='grid-width-'] {
+    display: block;
+  }
+
+  .section:has(> .show-more-button),
+  .section.show-all {
+    margin-inline: 30px;
+    padding: var(--spacing-xs);
+    border-radius: 8px;
+  }
+
+  .section:has(> .show-more-button) > *:nth-child(n+4):not(.show-more-button):not(.section-metadata) {
+    display: none;
+  }
+
+  .section.show-all > *:nth-child(n+4):not(.show-more-button):not(.section-metadata) {
     display: block;
   }
 }
@@ -257,12 +302,20 @@ main > .section[class*='-up'] > .content {
   .section.masonry-layout .grid-full-width {
     grid-column: 1 / -1;
   }
+
+  .section .show-more-button {
+    display: none;
+  }
 }
 
 @media screen and (min-width: 720px) {
   .section.grid-width-6 {
     padding-left: calc((100vw - 600px) / 2);
     padding-right: calc((100vw - 600px) / 2);
+  }
+
+  .section .show-more-button {
+    display: none;
   }
 }
 
