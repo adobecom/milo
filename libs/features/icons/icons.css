@@ -107,6 +107,13 @@
   display: block;
 }
 
+@supports (-webkit-backdrop-filter: blur(1px)) and (not (backdrop-filter: blur(1px))) {
+  .milo-tooltip:focus::before {
+    outline: 4px solid -webkit-focus-ring-color;
+    outline-offset: 1px;
+  }
+}
+
 .milo-tooltip.hide-tooltip::before,
 .milo-tooltip.hide-tooltip::after {
   display: none;
