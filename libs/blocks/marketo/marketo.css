@@ -544,11 +544,14 @@
   width: 100%;
 }
 
+.marketo:has(.marketo-overlay) {
+  position: relative;
+}
+
 .marketo .marketo-overlay {
   position: absolute;
   inset: 0;
   background: var(--marketo-form-overlay-background);
-  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;

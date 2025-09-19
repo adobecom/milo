@@ -53,6 +53,7 @@ describe('marketo', () => {
 
     setPreferences(formData);
 
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('pending');
     expect(window.mcz_marketoForm_pref).to.have.property('first');
     expect(window.mcz_marketoForm_pref.first).to.have.property('key');
     expect(window.mcz_marketoForm_pref.first.key).to.equal('value1');
@@ -224,6 +225,7 @@ describe('Marketo Iframe Timeout Handler', () => {
 
     expect(overlay).to.exist;
     expect(errorMsg.textContent).to.equal('marketo load error');
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('error');
   });
 
   it('removes overlay when iframe is ready', async () => {
@@ -239,6 +241,7 @@ describe('Marketo Iframe Timeout Handler', () => {
     await tick(200);
 
     expect(marketoBlock.querySelector('.marketo-overlay')).to.not.exist;
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('ready');
   });
 
   it('retry with success', async () => {
@@ -247,6 +250,7 @@ describe('Marketo Iframe Timeout Handler', () => {
 
     const overlay = marketoBlock.querySelector('.marketo-overlay');
     expect(overlay).to.exist;
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('error');
     overlay.querySelector('button').click();
 
     window.dispatchEvent(new MessageEvent('message', {
@@ -256,5 +260,6 @@ describe('Marketo Iframe Timeout Handler', () => {
 
     await tick(500);
     expect(marketoBlock.querySelector('.marketo-overlay')).to.not.exist;
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('ready');
   });
 });

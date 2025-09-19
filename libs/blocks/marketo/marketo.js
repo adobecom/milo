@@ -80,13 +80,14 @@ export const decorateURL = (destination, baseURL = window.location) => {
     return destinationUrl.href;
   } catch (e) {
     /* c8 ignore next 4 */
-    window.lana?.log(`Error with Marketo destination URL: ${destination} ${e.message}`, { tags: 'error,marketo' });
+    window.lana?.log(`Error with Marketo destination URL: ${destination} ${e.message}`, { tags: 'marketo', severity: 'e' });
   }
 
   return null;
 };
 
 const setPreference = (key = '', value = '') => {
+  window.mcz_marketoForm_pref = window.mcz_marketoForm_pref || {};
   if (!value || !key.includes('.')) return;
   const keyParts = key.split('.');
   const lastKey = keyParts.pop();
@@ -98,7 +99,7 @@ const setPreference = (key = '', value = '') => {
 };
 
 export const setPreferences = (formData) => {
-  window.mcz_marketoForm_pref = window.mcz_marketoForm_pref || {};
+  setPreference('form.status', 'pending');
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
@@ -114,7 +115,7 @@ const showSuccessSection = (formData) => {
 
   const showClass = formData[SUCCESS_SECTION]?.toLowerCase().replaceAll(' ', '-');
   if (!showClass) {
-    window.lana?.log('Error showing Marketo success section', { tags: 'warn,marketo' });
+    window.lana?.log('Error showing Marketo success section', { tags: 'marketo', severity: 'w' });
     return;
   }
 
@@ -127,7 +128,7 @@ const showSuccessSection = (formData) => {
       show(successSections);
       /* c8 ignore next 3 */
       if (!document.querySelector(`.section.${showClass}`)) {
-        window.lana?.log(`Error showing Marketo success section ${showClass}`, { tags: 'warn,marketo' });
+        window.lana?.log(`Error showing Marketo success section ${showClass}`, { tags: 'marketo', severity: 'w' });
       }
     },
     false,
@@ -141,7 +142,7 @@ const hideSuccessSection = (formData) => {
 
   const hideClass = formData[SUCCESS_HIDE_SECTION]?.toLowerCase().replaceAll(' ', '-');
   if (!hideClass) {
-    window.lana?.log('Error hiding Marketo success section', { tags: 'warn,marketo' });
+    window.lana?.log('Error hiding Marketo success section', { tags: 'marketo', severity: 'w' });
     return;
   }
 
@@ -154,7 +155,7 @@ const hideSuccessSection = (formData) => {
       hide(hideSections);
       /* c8 ignore next 3 */
       if (!document.querySelector(`.section.${hideClass}`)) {
-        window.lana?.log(`Error hiding Marketo success section ${hideClass}`, { tags: 'warn,marketo' });
+        window.lana?.log(`Error hiding Marketo success section ${hideClass}`, { tags: 'marketo', severity: 'w' });
       }
     },
     false,
@@ -196,34 +197,41 @@ export const handleIframeTimeout = (el) => {
   let iframeTimeout = null;
 
   const handleIframeReady = (event) => {
-    if (event.origin === 'https://engage.adobe.com') {
-      const message = JSON.parse(event.data);
-      if (message.mktoReady) {
-        if (iframeTimeout) clearTimeout(iframeTimeout);
-        const errorOverlay = el.querySelector('.marketo-overlay');
-        if (errorOverlay) {
-          errorOverlay.remove();
-          if (formEl) formEl.inert = false;
-        }
-        window.removeEventListener('message', handleIframeReady);
-      }
-    }
+    if (event.origin !== 'https://engage.adobe.com') return;
+    const message = JSON.parse(event.data);
+    if (!message.mktoReady) return;
+    setPreference('form.status', 'ready');
+    if (iframeTimeout) clearTimeout(iframeTimeout);
+    const errorOverlay = el.querySelector('.marketo-overlay');
+    if (formEl) formEl.inert = false;
+    if (errorOverlay) errorOverlay.remove();
+    window.removeEventListener('message', handleIframeReady);
   };
 
   const decorateOverlay = async () => {
     const cookieSize = document.cookie.length > 4096 ? '> 4k' : '< 4k';
-    window.lana?.log(`Marketo iframe timeout - Cookie Size ${cookieSize}`, { tags: 'error,marketo' });
-
+    window.lana?.log(`Marketo iframe timeout - Cookie Size ${cookieSize}`, { tags: 'marketo', severity: 'e' });
+    setPreference('form.status', 'error');
     if (el.querySelector('.marketo-overlay')) return;
     if (!config.marketo?.showError && searchParams.get('marketoOverlay') !== 'error') return;
 
     const marketoErrorText = await replaceKey('marketo-load-error', config);
+    const marketoTryAgainText = await replaceKey('marketo-try-again', config);
     if (formEl) formEl.inert = true;
 
-    const errorMessage = createTag('p', { class: 'error' }, marketoErrorText);
-    const retryButton = createTag('button', { class: 'retry-button' }, 'Try Again');
+    const errorMessage = createTag('p', { class: 'error', id: 'marketo-error-message' }, marketoErrorText);
+    const retryButton = createTag('button', { class: 'retry-button' }, marketoTryAgainText);
     const formError = createTag('div', { class: 'error-container' }, [errorMessage, retryButton]);
-    const errorOverlay = createTag('div', { class: 'marketo-overlay' }, formError);
+    const errorOverlay = createTag(
+      'div',
+      {
+        class: 'marketo-overlay',
+        role: 'alertdialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'marketo-error-message',
+      },
+      formError,
+    );
 
     retryButton.addEventListener('click', () => {
       const iframeSrc = iframe.src;
@@ -235,7 +243,6 @@ export const handleIframeTimeout = (el) => {
       iframeTimeout = setTimeout(decorateOverlay, config.marketo?.iframeTimeout ?? IFRAME_TIMEOUT);
     });
 
-    el.style.position = 'relative';
     el.appendChild(errorOverlay);
   };
 
@@ -294,7 +301,7 @@ export const loadMarketo = (el, formData) => {
     .catch(() => {
       /* c8 ignore next 2 */
       el.style.display = 'none';
-      window.lana?.log(`Error loading Marketo form for ${munchkinID}_${formID}`, { tags: 'error,marketo' });
+      window.lana?.log(`Error loading Marketo form for ${munchkinID}_${formID}`, { tags: 'marketo', severity: 'e' });
     });
 };
 
