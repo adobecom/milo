@@ -1,12 +1,9 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
-const DEBUG = true;
 
 // API configuration
-const FIREFLY_API_URL =
-  'https://community-hubs.adobe.io/api/v2/ff_community/assets';
-const API_PARAMS =
-  '?size=32&sort=updated_desc&include_pending_assets=false&cursor=';
+const FIREFLY_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/assets';
+const API_PARAMS = '?size=32&sort=updated_desc&include_pending_assets=false&cursor=';
 const API_KEY = 'alfred-community-hubs';
 
 // Item type thresholds for categorization
@@ -45,25 +42,10 @@ const RENDITION_SIZES = {
   },
 };
 
-function debug(message, data) {
-  if (!DEBUG) return;
-
-  if (data !== undefined) {
-    console.log(`[FireflyGallery] ${message}`, data);
-  } else {
-    console.log(`[FireflyGallery] ${message}`);
-  }
-}
-
-function logError(message, error) {
-  console.error(`[FireflyGallery Error] ${message}`, error);
-}
-
 function safeJsonParse(jsonString, defaultValue = {}) {
   try {
     return JSON.parse(jsonString);
   } catch (e) {
-    logError('Failed to parse JSON', e);
     return defaultValue;
   }
 }
@@ -78,9 +60,7 @@ function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
 
   // Try language match (e.g., 'en-US' -> 'en')
   const language = currentLocale.split('-')[0];
-  const languageMatch = Object.keys(localizations).find((key) =>
-    key.startsWith(language)
-  );
+  const languageMatch = Object.keys(localizations).find((key) => key.startsWith(language));
   if (languageMatch) {
     return localizations[languageMatch];
   }
@@ -104,11 +84,11 @@ function getScreenSizeCategory() {
 
   if (viewportWidth < 601) {
     return 'mobile';
-  } else if (viewportWidth < 901) {
-    return 'tablet';
-  } else {
-    return 'desktop';
   }
+  if (viewportWidth < 901) {
+    return 'tablet';
+  }
+  return 'desktop';
 }
 
 function extractAspectRatio(asset) {
@@ -116,24 +96,21 @@ function extractAspectRatio(asset) {
 
   // Method 1: Extract from rendition max dimensions
   if (
-    asset._links?.rendition?.max_width &&
-    asset._links?.rendition?.max_height
+    asset._links?.rendition?.max_width
+    && asset._links?.rendition?.max_height
   ) {
-    aspectRatio =
-      asset._links.rendition.max_width / asset._links.rendition.max_height;
+    aspectRatio = asset._links.rendition.max_width / asset._links.rendition.max_height;
   }
   // Method 2: Extract from firefly#inputModel if available
   else if (asset.custom?.input?.['firefly#inputModel']) {
     try {
       const inputModel = safeJsonParse(
-        asset.custom.input['firefly#inputModel']
+        asset.custom.input['firefly#inputModel'],
       );
       if (inputModel.aspectRatio) {
         aspectRatio = parseFloat(inputModel.aspectRatio);
       }
-    } catch (e) {
-      logError('Could not parse aspect ratio from inputModel', e);
-    }
+    } catch (e) {}
   }
 
   return aspectRatio;
@@ -146,20 +123,21 @@ function constructVideoUrl(assetId) {
 function getItemTypeFromAspectRatio(aspectRatio) {
   if (aspectRatio < ITEM_TYPE_THRESHOLDS.tall) {
     return 'tall'; // Portrait (very tall)
-  } else if (aspectRatio < ITEM_TYPE_THRESHOLDS.portrait) {
-    return 'portrait'; // Portrait (moderately tall)
-  } else if (aspectRatio < ITEM_TYPE_THRESHOLDS.square) {
-    return 'square'; // Approximately square
-  } else {
-    return 'short'; // Landscape
   }
+  if (aspectRatio < ITEM_TYPE_THRESHOLDS.portrait) {
+    return 'portrait'; // Portrait (moderately tall)
+  }
+  if (aspectRatio < ITEM_TYPE_THRESHOLDS.square) {
+    return 'square'; // Approximately square
+  }
+  return 'short'; // Landscape
 }
 
 function updateItemTypeClass(item, itemType) {
   const existingClasses = item.className.split(' ');
   const newClasses = existingClasses
     .filter(
-      (cls) => !cls.match(/firefly-gallery-item-(short|square|portrait|tall)/)
+      (cls) => !cls.match(/firefly-gallery-item-(short|square|portrait|tall)/),
     )
     .concat([`firefly-gallery-item-${itemType}`]);
   item.className = newClasses.join(' ');
@@ -167,14 +145,9 @@ function updateItemTypeClass(item, itemType) {
 
 async function fetchFireflyAssets(categoryId, viewBtnLabel) {
   try {
-    debug('Fetching Firefly assets...');
     const response = await fetch(
       `${FIREFLY_API_URL}${API_PARAMS}&category_id=${categoryId}`,
-      {
-        headers: {
-          'x-api-key': API_KEY,
-        },
-      }
+      { headers: { 'x-api-key': API_KEY } },
     );
 
     if (!response.ok) {
@@ -182,7 +155,6 @@ async function fetchFireflyAssets(categoryId, viewBtnLabel) {
     }
 
     const data = await response.json();
-    debug('Firefly API response:', data);
     const assets = data._embedded.assets || [];
     assets.forEach((asset) => {
       asset.assetType = categoryId === 'VideoGeneration' ? 'video' : 'image';
@@ -190,20 +162,17 @@ async function fetchFireflyAssets(categoryId, viewBtnLabel) {
     });
     return assets;
   } catch (error) {
-    logError('Error fetching Firefly images:', error);
     return [];
   }
 }
 
-const replaceRenditionUrl = (url, format, dimension, size) =>
-  url
-    .replace(/{format}/g, format)
-    .replace(/{dimension}/g, dimension)
-    .replace(/{size}/g, size);
+const replaceRenditionUrl = (url, format, dimension, size) => url
+  .replace(/{format}/g, format)
+  .replace(/{dimension}/g, dimension)
+  .replace(/{size}/g, size);
 
 function createFireflyURL(urn, assetType = 'image') {
-  const assetTypeParam =
-    assetType === 'video' ? 'VideoGeneration' : 'ImageGeneration';
+  const assetTypeParam = assetType === 'video' ? 'VideoGeneration' : 'ImageGeneration';
   return `https://firefly.adobe.com/open?assetOrigin=community&assetType=${assetTypeParam}&id=${urn}`;
 }
 
@@ -220,28 +189,21 @@ function getImageRendition(asset, itemType = 'square') {
   // Extract actual aspect ratio from the asset
   const aspectRatio = extractAspectRatio(asset);
 
-  // Calculate height based on width and aspect ratio to maintain proper proportions
-  const height = Math.round(width / aspectRatio);
-
   // Create rendition URL with appropriate size
   const renditionUrl = replaceRenditionUrl(
     asset._links.rendition.href,
     'jpg',
     'width',
-    width
+    width,
   );
 
   return renditionUrl;
 }
 
 function createGalleryStructure() {
-  const galleryContainer = createTag('div', {
-    class: 'firefly-gallery-container',
-  });
+  const galleryContainer = createTag('div', { class: 'firefly-gallery-container' });
   const galleryContent = createTag('div', { class: 'firefly-gallery-content' });
-  const galleryFadeOverlay = createTag('div', {
-    class: 'firefly-gallery-fade',
-  });
+  const galleryFadeOverlay = createTag('div', { class: 'firefly-gallery-fade' });
 
   galleryContent.appendChild(galleryFadeOverlay);
 
@@ -286,9 +248,7 @@ function preventScrollOnTab(contentElement) {
 
 function createSkeletonLayout(container) {
   // Create the masonry grid container
-  const masonryGrid = createTag('div', {
-    class: 'firefly-gallery-masonry-grid loading',
-  });
+  const masonryGrid = createTag('div', { class: 'firefly-gallery-masonry-grid loading' });
 
   const skeletonItems = [];
 
@@ -392,29 +352,25 @@ function createImageElement(imageUrl, altText) {
 
 function createOverlayElement(
   promptText,
-  userInfo = {},
   fireflyUrl,
-  viewBtnLabel
+  viewBtnLabel,
+  userInfo = {},
 ) {
   const overlay = createTag('a', {
     class: 'firefly-gallery-overlay',
     href: fireflyUrl,
     target: '_blank',
     rel: 'noopener',
-    'aria-label': `Open in Firefly`,
+    'aria-label': 'Open in Firefly',
     tabindex: '0',
   });
 
   // Create info container for user avatar, name, and prompt
-  const infoContainer = createTag('div', {
-    class: 'firefly-gallery-info-container',
-  });
+  const infoContainer = createTag('div', { class: 'firefly-gallery-info-container' });
 
   // Add user info if available
   if (userInfo.name || userInfo.avatarUrl) {
-    const userInfoContainer = createTag('div', {
-      class: 'firefly-gallery-user-info',
-    });
+    const userInfoContainer = createTag('div', { class: 'firefly-gallery-user-info' });
 
     if (userInfo.avatarUrl) {
       const avatar = createTag('img', {
@@ -429,7 +385,7 @@ function createOverlayElement(
       const username = createTag(
         'span',
         { class: 'firefly-gallery-username' },
-        userInfo.name
+        userInfo.name,
       );
       userInfoContainer.appendChild(username);
     }
@@ -442,7 +398,7 @@ function createOverlayElement(
     const promptElement = createTag(
       'div',
       { class: 'firefly-gallery-prompt' },
-      promptText
+      promptText,
     );
     infoContainer.appendChild(promptElement);
   }
@@ -452,10 +408,8 @@ function createOverlayElement(
   // Add View button
   const viewButton = createTag(
     'div',
-    {
-      class: 'firefly-gallery-view-button',
-    },
-    viewBtnLabel
+    { class: 'firefly-gallery-view-button' },
+    viewBtnLabel,
   );
   overlay.appendChild(viewButton);
 
@@ -469,16 +423,12 @@ function loadAssetIntoSkeleton(
   promptText,
   userInfo = {},
   assetUrn,
-  assetData = {}
+  assetData = {},
 ) {
   const { id, assetType, viewBtnLabel } = assetData;
   return new Promise((resolve) => {
-    debug('Loading image:', imageUrl);
-
     // Create image container
-    const assetContainer = createTag('div', {
-      class: 'firefly-gallery-image',
-    });
+    const assetContainer = createTag('div', { class: 'firefly-gallery-image' });
 
     // Add asset type to container for styling
     if (assetType === 'video') {
@@ -496,9 +446,9 @@ function loadAssetIntoSkeleton(
       const overlayPromptText = assetType === 'video' ? '' : promptText;
       const overlay = createOverlayElement(
         overlayPromptText,
-        userInfo,
         fireflyUrl,
-        viewBtnLabel
+        viewBtnLabel,
+        userInfo,
       );
       if (assetType === 'video') {
         overlay.classList.add('firefly-gallery-video-overlay');
@@ -516,22 +466,12 @@ function loadAssetIntoSkeleton(
           playsinline: true,
         });
 
-        video.addEventListener('loadeddata', () => {
-          debug('Video loaded:', videoUrl);
-        });
-
-        video.addEventListener('error', (e) => {
-          logError('Video loading error:', e);
-        });
-
         assetContainer.appendChild(video);
 
         const playVideo = () => {
           video.style.opacity = '1';
           video.muted = true;
-          video.play().catch((err) => {
-            logError('Video play failed:', err);
-          });
+          video.play().catch((err) => {});
         };
 
         const pauseVideo = () => {
@@ -582,21 +522,16 @@ function loadAssetIntoSkeleton(
     }
 
     // Image successfully loaded
-    debug(`${assetType || 'Image'} loaded successfully:`, imageUrl);
     resolve();
   });
 }
 
-function processItem(item, asset, index, locale, assets) {
+function processItem(item, asset, index, locale) {
   // Extract aspect ratio from the asset
   const aspectRatio = extractAspectRatio(asset);
 
   // Determine item type based on aspect ratio
   const itemType = getItemTypeFromAspectRatio(aspectRatio);
-
-  debug(
-    `Asset ${index} aspect ratio: ${aspectRatio}, assigned type: ${itemType}`
-  );
 
   // Update the item's class to match the aspect ratio
   updateItemTypeClass(item, itemType);
@@ -621,7 +556,7 @@ function processItem(item, asset, index, locale, assets) {
     promptText = getLocalizedValue(
       asset.custom.input['firefly#prompts'],
       locale,
-      asset.title || 'Firefly generated image'
+      asset.title || 'Firefly generated image',
     );
   } else {
     // Use title as fallback
@@ -631,17 +566,18 @@ function processItem(item, asset, index, locale, assets) {
   // Get user info
   const userInfo = {};
   if (asset?._embedded?.owner) {
-    const owner = asset._embedded.owner;
-    userInfo.name =
-      owner.display_name ||
-      `${owner.first_name} ${owner.last_name}`.trim() ||
-      owner.user_name ||
-      'Unknown Artist';
+    // eslint-disable-next-line no-underscore-dangle
+    const { owner } = asset._embedded;
+    userInfo.name = owner.display_name
+      || `${owner.first_name} ${owner.last_name}`.trim()
+      || owner.user_name
+      || 'Unknown Artist';
 
     // Get the user avatar image - find the one closest to 24px
     if (owner._links?.images && owner._links.images.length > 0) {
       // We want an image that's at least 24px but not too much larger
       // First sort by size to find closest match to our target 24px size
+      // eslint-disable-next-line no-underscore-dangle
       const sortedImages = [...owner._links.images].sort((a, b) => {
         const aDiff = Math.abs(a.width - 24);
         const bDiff = Math.abs(b.width - 24);
@@ -658,9 +594,6 @@ function processItem(item, asset, index, locale, assets) {
     assetType: asset.assetType || 'image',
     viewBtnLabel: asset.viewBtnLabel,
   };
-  debug(
-    `Loading ${assetData.assetType} ${index + 1}/${assets.length}: ${imageUrl}`
-  );
   loadAssetIntoSkeleton(
     item,
     imageUrl,
@@ -668,23 +601,21 @@ function processItem(item, asset, index, locale, assets) {
     promptText,
     userInfo,
     asset.urn,
-    assetData
+    assetData,
   );
 }
 
 function loadFireflyImages(skeletonItems, assets = []) {
   try {
     if (!assets || !assets.length) {
-      debug('No assets provided for loading');
       return;
     }
 
-    debug(
-      `Loading ${assets.length} Firefly images into ${skeletonItems.length} placeholders`
-    );
-
     // Get current locale or fallback to default
     const locale = getConfig().locale?.ietf || 'en-US';
+
+    // Shuffle the assets array before assigning to placeholders
+    const shuffledAssets = [...assets].sort(() => Math.random() - 0.5);
 
     // Set up intersection observer to load images only when they're visible
     const observer = new IntersectionObserver(
@@ -694,12 +625,11 @@ function loadFireflyImages(skeletonItems, assets = []) {
             const item = entry.target;
             const index = parseInt(item.dataset.index, 10);
 
-            // Stop observing this item
             observer.unobserve(item);
 
             // Load the image if we have an asset for it
-            if (index >= 0 && index < assets.length) {
-              processItem(item, assets[index], index, locale, assets);
+            if (index >= 0 && index < shuffledAssets.length) {
+              processItem(item, shuffledAssets[index], index, locale);
             }
           }
         });
@@ -707,7 +637,7 @@ function loadFireflyImages(skeletonItems, assets = []) {
       {
         rootMargin: '200px 0px', // Start loading when within 200px of viewport
         threshold: 0.01, // Trigger when at least 1% is visible
-      }
+      },
     );
 
     // Set up each skeleton item for observation and loading
@@ -721,16 +651,16 @@ function loadFireflyImages(skeletonItems, assets = []) {
 
     // Also process the first few items immediately for a faster initial view
     const immediateLoadCount = Math.min(4, skeletonItems.length);
-    for (let i = 0; i < immediateLoadCount; i++) {
-      if (i < assets.length) {
-        processItem(skeletonItems[i], assets[i], i, locale, assets);
+    for (let i = 0; i < immediateLoadCount; i += 1) {
+      if (i < shuffledAssets.length) {
+        processItem(skeletonItems[i], shuffledAssets[i], i, locale);
         observer.unobserve(skeletonItems[i]); // Stop observing items we've already processed
       }
     }
 
     return observer; // Return the observer in case we need to disconnect it later
   } catch (error) {
-    logError('Error loading Firefly images:', error);
+    console.log(error);
   }
 }
 
@@ -782,7 +712,7 @@ function setTabindexForHiddenOverlays(galleryContent) {
 
   // Get overlay elements that can be focused (with tabindex="0")
   const overlayElements = galleryContent.querySelectorAll(
-    '.firefly-gallery-overlay'
+    '.firefly-gallery-overlay',
   );
 
   // Get fade dimensions
@@ -807,8 +737,7 @@ export default async function init(el) {
 
   // Extract category_id - should be text2Image / VideoGeneration
   const categoryId = el.querySelector('div:first-child > div').innerText;
-  const viewBtnLabel =
-    el.querySelector('div:last-child > div').innerText || 'View';
+  const viewBtnLabel = el.querySelector('div:last-child > div').innerText || 'View';
 
   // Clear existing content
   el.textContent = '';
@@ -832,7 +761,7 @@ export default async function init(el) {
     .then((assets) => {
       if (assets && assets.length) {
         // Pass assets to the function to enable progressive loading
-        const observer = loadFireflyImages(skeletonItems, assets);
+        loadFireflyImages(skeletonItems, assets);
 
         // Set up resize handler for responsive image sizes
         handleResizeForGallery(assets, skeletonItems, masonryGrid);
@@ -841,7 +770,7 @@ export default async function init(el) {
         masonryGrid.classList.remove('loading');
         setTimeout(() => {
           const galleryContent = document.querySelector(
-            '.firefly-gallery-content'
+            '.firefly-gallery-content',
           );
           if (galleryContent) setTabindexForHiddenOverlays(galleryContent);
         }, 100);
@@ -850,8 +779,7 @@ export default async function init(el) {
         masonryGrid.classList.remove('loading');
       }
     })
-    .catch((error) => {
-      logError('Error fetching Firefly images:', error);
+    .catch(() => {
       masonryGrid.classList.remove('loading');
     });
 }
