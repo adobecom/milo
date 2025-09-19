@@ -544,6 +544,10 @@
   width: 100%;
 }
 
+.marketo:has(.marketo-overlay) {
+  position: relative;
+}
+
 .marketo .marketo-overlay {
   position: absolute;
   inset: 0;
