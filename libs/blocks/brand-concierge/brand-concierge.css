@@ -506,6 +506,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  border-bottom: 1px solid rgb(0 0 0 / 9%);
 }
 
 .bc-modal-title {
