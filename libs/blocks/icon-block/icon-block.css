@@ -389,13 +389,13 @@
     margin-bottom: var(--spacing-xs);
   }
 
-  .section:has(.icon-block.container-mobile + .action-scroller) {
+  .section:has(> .icon-block.container-mobile + .action-scroller) {
     width: var(--grid-container-width);
     margin: auto;
     border-radius: 16px;
   }
 
-  .section:has(.icon-block.container-mobile + .action-scroller) picture.section-background img {
+  .section:has(> .icon-block.container-mobile + .action-scroller) picture.section-background img {
     border-radius: 16px;
   }
 
