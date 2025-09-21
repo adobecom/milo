@@ -65,5 +65,24 @@ module.exports = {
       },
       tags: '@adobehome @ah-try-buy-widget @single @commerce @smoke @regression @milo',
     },
+    {
+      tcid: '4',
+      name: '@MAS-AH-Try-Buy-Widget-double-badge',
+      path: DOCS_GALLERY_PATH.ADOBE_HOME.US,
+      data: {
+        id: 'd35f1e6c-7a63-4377-99ea-20407cc26cd4',
+        title: 'Photoshop',
+        description: 'Ideate and create assets faster, and place 3D objects into your designs.',
+        price: 'US$22.99/mo',
+        cta: 'Buy',
+        size: 'double',
+        offerid: 'A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M',
+        badge: {
+          text: 'Best value',
+          color: 'fuchsia',
+        },
+      },
+      tags: '@adobehome @ah-try-buy-widget @double @badge @commerce @smoke @regression @milo',
+    },
   ],
 };
