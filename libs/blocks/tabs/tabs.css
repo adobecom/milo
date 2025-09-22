@@ -29,7 +29,6 @@
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
   --m-rounded-corners-tabs: 8px;
-  --spectrum-gray-100: #F8F8F8;
 }
 
 :root .dark {
@@ -149,10 +148,14 @@
 }
 
 /* center tabs */
-.tabs.center:not(.segmented-control) > .tabList::after,
-.tabs.center:not(.segmented-control) > .tabList::before {
+.tabs.center > .tabList::after,
+.tabs.center > .tabList::before {
   content: "";
   margin: auto;
+}
+
+.tabs.center.segmented-control > .tabList:is(::after, ::before) {
+  content: none;
 }
 
 .tabs.center:not(.same-width) .tabList .tab-list-container {
@@ -512,9 +515,9 @@
 .tabs.segmented-control .tabList {
   box-shadow: none;
   padding: 1px;
-  background: var(--spectrum-gray-100);
+  background: var(--color-gray-100);
   border-radius: var(--m-rounded-corners-tabs);
-  border: 1px solid var(--spectrum-gray-100);
+  border: 1px solid var(--color-gray-100);
   min-height: 40px;
 }
 

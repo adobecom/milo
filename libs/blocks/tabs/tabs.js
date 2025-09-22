@@ -197,9 +197,9 @@ function initTabs(elm, config, rootElem) {
   });
   tabs.forEach((tab) => {
     tab.addEventListener('click', (e) => changeTabs(e, config));
-    tab.addEventListener('focus', () => {
-      scrollTabIntoView(tab);
-    });
+    if (elm?.classList.contains('segmented-control')) {
+      tab.addEventListener('focus', () => scrollTabIntoView(tab));
+    }
   });
   if (config) configTabs(config, rootElem);
 }
@@ -350,14 +350,9 @@ const init = (block) => {
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
-    let btnClass;
-    if (pillVariant) {
-      btnClass = handlePillSize(pillVariant);
-    } else if (block.classList.contains('segmented-control')) {
-      btnClass = 'heading-xxs';
-    } else {
-      btnClass = 'heading-xs';
-    }
+    const btnClass = (pillVariant && handlePillSize(pillVariant))
+    || (block.classList.contains('segmented-control') && 'heading-xxs')
+    || 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
