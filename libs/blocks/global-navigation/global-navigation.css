@@ -311,7 +311,7 @@ header.global-navigation {
   white-space: nowrap;
 }
 
-.global-navigation:not(.feds--dark) .feds-localnav.has-promo .feds-cta--secondary {
+.global-navigation:not(.feds--dark) .feds-promo .feds-cta--secondary {
   background-color: rgb(255, 255, 255);
   border-color: rgb(75, 75, 75);
   color: rgb(75, 75, 75);
