@@ -11,39 +11,24 @@
   --column-gap: var(--spacing-xxs);
   --video-overlay-gradient: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0) 30%,
-    rgba(0, 0, 0, 0) 70%,
-    rgba(0, 0, 0, 0.7) 100%
+    rgb(0 0 0 / 70%) 0%,
+    rgb(0 0 0 / 0%) 30%,
+    rgb(0 0 0 / 0%) 70%,
+    rgb(0 0 0 / 70%) 100%
   );
 
   /* Animation durations */
   --transition-speed-fast: 0.3s;
   --transition-speed-medium: 0.5s;
 
+  /* Skeleton */
   --skeleton-height-default: 200px;
-  --skeleton-height-short: calc(
-    var(--skeleton-height-default) * 0.7
-  ); /* 70% of default */
+  --skeleton-height-short: calc(var(--skeleton-height-default) * 0.7);
   --skeleton-height-square: var(--skeleton-height-default);
-  --skeleton-height-portrait: calc(
-    var(--skeleton-height-default) * 1.3
-  ); /* 130% of default */
-  --skeleton-height-tall: calc(
-    var(--skeleton-height-default) * 1.7
-  ); /* 170% of default */
-
-  /* Aspect ratio percentages */
-  --aspect-ratio-short: 70%;
-  --aspect-ratio-square: 100%;
-  --aspect-ratio-portrait: 130%;
-  --aspect-ratio-tall: 170%;
-
-  /* Skeleton animation */
+  --skeleton-height-portrait: calc(var(--skeleton-height-default) * 1.3);
+  --skeleton-height-tall: calc(var(--skeleton-height-default) * 1.7);
   --skeleton-bg-color: var(--color-gray-100);
-  --skeleton-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-  /* Background pattern for skeleton items */
+  --skeleton-shadow: 0 2px 8px rgb(0 0 0 / 8%);
   --skeleton-gradient: linear-gradient(
     110deg,
     var(--color-gray-100) 0%,
@@ -52,6 +37,12 @@
     var(--color-gray-200) 58%,
     var(--color-gray-100) 60%
   );
+
+  /* Aspect ratio percentages */
+  --aspect-ratio-short: 70%;
+  --aspect-ratio-square: 100%;
+  --aspect-ratio-portrait: 130%;
+  --aspect-ratio-tall: 170%;
 }
 
 .absolute-fill {
@@ -147,9 +138,7 @@
 .firefly-gallery-item::before {
   content: '';
   display: block;
-  padding-top: calc(
-    1 / var(--aspect-ratio, 1) * 100%
-  ); /* Dynamic aspect ratio calculation */
+  padding-top: calc(1 / var(--aspect-ratio, 1) * 100%); /* Dynamic aspect ratio calculation */
   transition: padding-top var(--transition-speed-medium) ease; /* Smooth transition when aspect ratio changes */
 }
 
@@ -198,9 +187,8 @@
   z-index: 1;
 }
 
-/* Keyframes removed to eliminate white overlay animation */
-
 /* Loading state */
+
 /* Don't set a minimum height on the grid container, allow items to define the height */
 .firefly-gallery-masonry-grid.loading {
   /* no min-height here - let it be determined by its contents */
