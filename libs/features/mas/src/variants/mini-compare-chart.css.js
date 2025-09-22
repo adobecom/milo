@@ -170,6 +170,7 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
+    font-weight: 400;
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description p {
