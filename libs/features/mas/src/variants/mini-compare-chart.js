@@ -2,7 +2,7 @@ import { html, css, unsafeCSS } from 'lit';
 import { createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
-import { DESKTOP_UP, TABLET_DOWN, MOBILE_LANDSCAPE, isMobile } from '../media.js';
+import { DESKTOP_UP, TABLET_DOWN, isMobile } from '../media.js';
 import { SELECTOR_MAS_INLINE_PRICE, EVENT_MERCH_CARD_COLLECTION_READY } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
@@ -93,7 +93,7 @@ export class MiniCompareChart extends VariantLayout {
     const badge = this.card.shadowRoot.querySelector(
         '.mini-compare-chart-badge',
     );
-    if (badge && badge.textContent !== '') {
+    if (badge?.textContent !== '') {
         this.getContainer().style.setProperty(
             '--consonant-merch-card-mini-compare-chart-top-section-mobile-height',
             '32px',
@@ -103,6 +103,7 @@ export class MiniCompareChart extends VariantLayout {
     // Also adjust footer rows
     this.adjustMiniCompareFooterRows();
   }
+
   adjustMiniCompareFooterRows() {
     if (this.card.getBoundingClientRect().width === 0) return;
     const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
@@ -205,18 +206,22 @@ async adjustAddon() {
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains('bullet-list') 
+        ${this.card.classList.contains('bullet-list')
         ?
           html`<slot name="heading-m-price"></slot>
           <slot name="price-commitment"></slot>
-          <slot name="body-m"></slot>`
+          <slot name="body-xxs"></slot>
+          <slot name="promo-text"></slot>
+          <slot name="body-m"></slot>
+          <slot name="offers"></slot>`
         :
           html`<slot name="body-m"></slot>
-          <slot name="heading-m-price"></slot>`}
-        <slot name="body-xxs"></slot>
-        <slot name="price-commitment"></slot>
-        <slot name="offers"></slot>
-        <slot name="promo-text"></slot>
+          <slot name="heading-m-price"></slot>
+          <slot name="body-xxs"></slot>
+          <slot name="price-commitment"></slot>
+          <slot name="offers"></slot>
+          <slot name="promo-text"></slot>
+          `}
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
@@ -235,6 +240,15 @@ async adjustAddon() {
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
+
+    :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+        padding: 2px 10px 3px 10px;
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+        border-radius: 7.11px 0 0 7.11px;
+        font-weight: 700;
+    }
+
     :host([variant='mini-compare-chart']) footer {
         min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
         padding: var(--consonant-merch-spacing-s);
@@ -261,19 +275,9 @@ async adjustAddon() {
     :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
       align-self: flex-start;
       flex: none;
-      color: var(--merch-color-grey-700);
-    }
-
-    @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)} {
-      :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
-        padding: 2px 10px;
-        font-size: var(--consonant-merch-card-body-xs-font-size);
-        line-height: var(--consonant-merch-card-body-xs-line-height);
-      }
-
-      :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
-        font-size: var(--consonant-merch-card-body-xs-font-size);
-      }
+      font-size: var(--consonant-merch-card-body-xxs-font-size);
+      font-weight: 400;
+      color: #505050;
     }
 
     @media screen and ${unsafeCSS(TABLET_DOWN)} {
@@ -337,7 +341,7 @@ async adjustAddon() {
             --consonant-merch-card-mini-compare-chart-addon-height
         );
     }
-    :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
+    :host([variant='mini-compare-chart']:not(.bullet-list)) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
   `;
