@@ -134,6 +134,12 @@
   filter: brightness(0) saturate(100%);
 }
 
+.section:has(.icon-block.container-mobile + .action-scroller) .action-scroller .scroller {
+  --mask-width: 0;
+  padding-inline: var(--grid-margins-width);
+  gap: var(--spacing-xs);
+}
+
 @media screen and (min-width: 1200px) {
   .action-scroller {
     width: var(--grid-container-width);
