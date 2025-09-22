@@ -39,9 +39,9 @@ export const PERSONALIZATION_TAGS = {
   ios: () => /iPad|iPhone|iPod/.test(getUA()) || safariIpad,
   windows: () => getUA().includes('Windows'),
   mac: () => getUA().includes('Macintosh') && !safariIpad,
-  'mobile-device': () => safariIpad
+  'mobile-device': () => safariIpad || isGalaxyTab || isChromeIOS || isEdgeIOS || isFirefoxIOS
     || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
-      .test(getUA()) || isGalaxyTab || isChromeIOS || isEdgeIOS || isFirefoxIOS,
+      .test(getUA()),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
