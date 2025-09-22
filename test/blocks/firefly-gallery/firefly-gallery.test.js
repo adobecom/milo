@@ -24,7 +24,6 @@ const ogDocument = document.body.innerHTML;
 const { default: init } = await import('../../../libs/blocks/firefly-gallery/firefly-gallery.js');
 
 // Mock fetch for API requests
-const originalFetch = window.fetch;
 let fetchStub;
 
 // Mock IntersectionObserver
@@ -259,6 +258,7 @@ describe('Firefly Gallery', () => {
 
       // Modify the mock response to include video assets
       const videoAsset = {
+        // eslint-disable-next-line no-underscore-dangle
         ...mockFireflyAssets._embedded.assets[0],
         assetType: 'video',
       };
