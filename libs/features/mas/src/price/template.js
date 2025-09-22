@@ -103,6 +103,32 @@ export const renderSpan = (
     );
 };
 
+function encodeLinks(literal) {
+  literal = literal.replaceAll('</a>', '&lt;/a&gt;');
+
+  const regex = /<a [^>]+(>|$)/g;
+  const matches = literal.match(regex);
+  matches?.forEach((match) => {
+    const encodedMatch = match.replace('<a ', '&lt;a ').replace('>', '&gt;');
+    literal = literal.replaceAll(match, encodedMatch);
+  });
+
+  return literal;
+}
+
+function decodeLinks(literal) {
+  literal = literal.replaceAll('&lt;/a&gt;', '</a>');
+
+  const regex = /&lt;a (?!&gt;)(.*?)(&gt;|$)/g;
+  const matches = literal.match(regex);
+  matches?.forEach((match) => {
+    const encodedMatch = match.replace('&lt;a ', '<a ').replace('&gt;', '>');
+    literal = literal.replaceAll(match, encodedMatch);
+  });
+
+  return literal;
+}
+
 export function formatLiteral(literals, locale, key, parameters) {
     const literal = literals[key];
     if (literal == undefined) {
@@ -110,10 +136,11 @@ export function formatLiteral(literals, locale, key, parameters) {
         return '';
     }
     try {
-        return new IntlMessageFormat(
-            literal.replace(htmlPattern, ''),
+        const formattedLiteral = new IntlMessageFormat(
+            encodeLinks(literal).replace(htmlPattern, ''),
             locale,
         ).format(parameters);
+        return decodeLinks(formattedLiteral);
     } catch {
         /* c8 ignore next 2 */
         log.error('Failed to format literal:', literal);
