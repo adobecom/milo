@@ -21,10 +21,6 @@ import {
   setAriaAtributes,
 } from '../utilities.js';
 
-const [merch] = await Promise.all([
-  import('../../../merch/merch.js'),
-]);
-
 function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
 
@@ -145,23 +141,13 @@ const decorateLinkGroup = (elem, index) => {
   return linkGroup;
 };
 
-const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = { position: 0 } } = {}) => {
-  const decorateLink = async (link) => {
+const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { position: 0 } } = {}) => {
+  const decorateLink = (link) => {
     // Increase analytics index every time a link is decorated
     itemIndex.position += 1;
 
     // Decorate link group
     if (link.matches('.link-group')) {
-      const anchorElement = link.querySelector('a');
-      if (anchorElement.classList.contains('merch')) {
-        const clonedElement = anchorElement.cloneNode(true);
-        const merchElement = await merch.default(clonedElement);
-        const decoratedElement = decorateLinkGroup(link, itemIndex.position);
-        merchElement.classList.value = decoratedElement.classList.value;
-        merchElement.innerHTML = decoratedElement.innerHTML;
-        merchElement.setAttribute('daa-ll', decoratedElement.getAttribute('daa-ll'));
-        return merchElement;
-      }
       return decorateLinkGroup(link, itemIndex.position);
     }
 
@@ -170,21 +156,11 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
       const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
       // Remove its 'em' or 'strong' wrapper
       link.parentElement.replaceWith(link);
-      const clonedLink = link.cloneNode(true);
-      const processedLink = link.classList.contains('merch') ? await merch.default(clonedLink) : link;
-      const decoratedLink = decorateCta({ elem: processedLink, type, index: itemIndex.position });
-      return decoratedLink;
+
+      return decorateCta({ elem: link, type, index: itemIndex.position });
     }
 
     // Simple links get analytics attributes and appropriate class name
-    if (link.classList.contains('merch')) {
-      const clonedLink = link.cloneNode(true);
-      const merchLink = await merch.default(clonedLink);
-      merchLink.setAttribute('daa-ll', getAnalyticsValue(link.textContent, itemIndex.position));
-      merchLink.classList.value = className;
-      return merchLink;
-    }
-
     link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, itemIndex.position));
     link.classList.add(className);
 
@@ -195,13 +171,13 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
 
   // If the element is a link, decorate it and return it directly
   if (elem.matches(linkSelector)) {
-    return toFragment`<li>${await decorateLink(elem)}</li>`;
+    return toFragment`<li>${decorateLink(elem)}</li>`;
   }
 
   // Otherwise, this might be a collection of elements;
   // decorate all links in the collection and return it
-  elem.querySelectorAll(linkSelector).forEach(async (link) => {
-    link.replaceWith(await decorateLink(link));
+  elem.querySelectorAll(linkSelector).forEach((link) => {
+    link.replaceWith(decorateLink(link));
   });
 
   return elem;
@@ -219,7 +195,7 @@ const decorateGnavImage = (elem) => {
 };
 
 // Current limitation: we can only add one link
-const decoratePromo = async (elem, index) => {
+const decoratePromo = (elem, index) => {
   const isDarkTheme = elem.matches('.dark');
   const isImageOnly = elem.matches('.image-only');
   const promoHeader = elem.querySelector('p > strong');
@@ -238,7 +214,7 @@ const decoratePromo = async (elem, index) => {
     promoHeader.parentElement.replaceWith(headingElem);
   }
 
-  await decorateElements({ elem, className: 'feds-promo-link', index });
+  decorateElements({ elem, className: 'feds-promo-link', index });
 
   const decorateImage = () => {
     const linkElem = elem.querySelector('a');
@@ -349,7 +325,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
         // Since the promo is alone on a column, reset the analytics index
         itemIndex.position = 0;
 
-        const promoElem = await decoratePromo(columnElem, itemIndex);
+        const promoElem = decoratePromo(columnElem, itemIndex);
 
         itemDestination.append(promoElem);
       } else if (columnElem.matches('.gnav-image')) {
@@ -359,7 +335,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
 
         itemDestination.append(imageElem);
       } else {
-        let decoratedElem = await decorateElements({ elem: columnElem, itemIndex });
+        let decoratedElem = decorateElements({ elem: columnElem, itemIndex });
         columnElem.remove();
 
         // If an items template has been previously created,
@@ -391,11 +367,11 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
   }
 };
 
-const decorateCrossCloudMenu = async (content) => {
+const decorateCrossCloudMenu = (content) => {
   const crossCloudMenuEl = content.querySelector('.cross-cloud-menu');
   if (!crossCloudMenuEl) return;
 
-  await decorateElements({ elem: crossCloudMenuEl });
+  decorateElements({ elem: crossCloudMenuEl });
   crossCloudMenuEl.className = 'feds-crossCloudMenu-wrapper';
   crossCloudMenuEl.querySelector('div').className = 'feds-crossCloudMenu';
   crossCloudMenuEl.querySelectorAll('ul li').forEach((el, index) => {
@@ -418,20 +394,9 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const initialHeadingElem = itemTopParent.querySelector('h2');
     itemTopParent.removeChild(initialHeadingElem);
 
-    const merchLinks = itemTopParent.querySelectorAll('.merch');
-    if (merchLinks.length) {
-      merchLinks.forEach(async (link) => {
-        const linkContent = link.innerHTML;
-        const merchBlock = await merch.default(link);
-        merchBlock.classList.remove('con-button');
-        merchBlock.innerHTML = linkContent;
-        if (merchBlock) link.replaceWith(merchBlock);
-      });
-    }
-
     menuTemplate = toFragment`<div class="feds-popup">
-    ${itemTopParent}
-    </div>`;
+        ${itemTopParent}
+      </div>`;
 
     await decorateColumns({ content: menuTemplate });
   }
@@ -442,7 +407,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     if (!(pathElement instanceof HTMLElement)) return;
 
     const content = await fetchAndProcessPlainHtml({ url: pathElement.href });
-    
+
     if (!content) return;
     const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
@@ -452,7 +417,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
       </div>`;
     addMepHighlightAndTargetId(menuTemplate, content);
 
-    await decorateCrossCloudMenu(menuTemplate);
+    decorateCrossCloudMenu(menuTemplate);
 
     await decorateColumns({ content: menuContent });
 
