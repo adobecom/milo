@@ -88,6 +88,7 @@ function decorateSlideIndicators(slides, jumpTo) {
     // Set inital active state
     if (i === 0) {
       li.classList.add('active');
+      li.setAttribute('aria-current', 'location');
       if (jumpTo) li.setAttribute('tabindex', 0);
     }
     indicatorDots.push(li);
@@ -299,7 +300,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   activeSlide.classList.remove('active');
   activeSlideIndicator.classList.remove('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
-
+  activeSlideIndicator.removeAttribute('aria-current');
   /*
    * If indicator dot buttons are clicked update:
    * reference slide, active indicator dot, and active slide
@@ -362,6 +363,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   activeSlideIndicator.classList.add('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
+  activeSlideIndicator.setAttribute('aria-current', 'location');
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
 
   // Loop over all slide siblings to update their order
