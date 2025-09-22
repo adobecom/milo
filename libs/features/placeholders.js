@@ -12,7 +12,10 @@ export const getPlaceholderRoot = (config) => {
   if (typeof placeholderOverride === 'string') {
     [placeholderRepo, placeholderContentRoot] = placeholderOverride.split(',');
   } else {
-    [placeholderRepo, placeholderContentRoot] = [placeholderOverride.repo, placeholderOverride.contentRoot];
+    [placeholderRepo, placeholderContentRoot] = [
+      placeholderOverride.repo,
+      placeholderOverride.contentRoot,
+    ];
   }
   if (config.env.name !== 'prod' && placeholderRepo) {
     origin = `https://main--${placeholderRepo.trim()}--adobecom.aem.page`;

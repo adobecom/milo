@@ -96,17 +96,13 @@ describe('Placeholders', () => {
   describe('getPlaceholderRoot', () => {
     afterEach(() => {
       // Remove any meta tags added during tests
-      const existingMeta = document.querySelector('meta[name="placeholders-content-root"]');
+      const existingMeta = document.querySelector('meta[name="placeholders-override"]');
       if (existingMeta) {
         document.head.removeChild(existingMeta);
       }
-      const existingRepoMeta = document.querySelector('meta[name="placeholders-repo"]');
-      if (existingRepoMeta) {
-        document.head.removeChild(existingRepoMeta);
-      }
     });
 
-    it('Returns config.locale.contentRoot when no placeholders-content-root metadata or config.placeholderPath', () => {
+    it('Returns config.locale.contentRoot when no placeholders-override metadata or config.placeholderPath', () => {
       const testConfig = { locale: { contentRoot: '/test/content/root' } };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('/test/content/root');
@@ -135,10 +131,10 @@ describe('Placeholders', () => {
       expect(result).to.equal('https://main--custom-repo--adobecom.aem.page/bg/custom/placeholders');
     });
 
-    it('Prioritizes metadata over config.placeholderPath', () => {
+    it('Prioritizes placeholders-override metadata over config.placeholderPath (string format)', () => {
       const meta = document.createElement('meta');
-      meta.name = 'placeholders-content-root';
-      meta.content = '/metadata-content-root';
+      meta.name = 'placeholders-override';
+      meta.content = 'custom-repo,/metadata-content-root';
       document.head.appendChild(meta);
 
       const testConfig = {
@@ -150,25 +146,24 @@ describe('Placeholders', () => {
       expect(result).to.equal('https://www.adobe.com/bg/metadata-content-root');
     });
 
-    it('Falls back to metadata when config.placeholderPath.contentRoot is not provided', () => {
+    it('Uses placeholders-override metadata when config.placeholderPath is not provided (string format)', () => {
       const meta = document.createElement('meta');
-      meta.name = 'placeholders-content-root';
-      meta.content = '/metadata-content-root';
+      meta.name = 'placeholders-override';
+      meta.content = 'custom-repo,/metadata-content-root';
       document.head.appendChild(meta);
 
       const testConfig = {
         locale: { prefix: '/bg' },
         env: { name: 'prod' },
-        placeholderPath: { repo: 'some-repo' }, // contentRoot not provided
       };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/bg/metadata-content-root');
     });
 
-    it('Returns default Adobe origin with placeholders-content-root when no placeholder-origin metadata', () => {
+    it('Returns default Adobe origin with placeholders-override (string format) in production', () => {
       const meta = document.createElement('meta');
-      meta.name = 'placeholders-content-root';
-      meta.content = '/cc-shared';
+      meta.name = 'placeholders-override';
+      meta.content = 'custom-repo,/cc-shared';
       document.head.appendChild(meta);
 
       const testConfig = {
@@ -179,16 +174,11 @@ describe('Placeholders', () => {
       expect(result).to.equal('https://www.adobe.com/bg/cc-shared');
     });
 
-    it('Uses placeholders-repo metadata in non-production environment', () => {
-      const contentRootMeta = document.createElement('meta');
-      contentRootMeta.name = 'placeholders-content-root';
-      contentRootMeta.content = '/cc-shared';
-      document.head.appendChild(contentRootMeta);
-
-      const repoMeta = document.createElement('meta');
-      repoMeta.name = 'placeholders-repo';
-      repoMeta.content = 'cc';
-      document.head.appendChild(repoMeta);
+    it('Uses placeholders-override metadata in non-production environment (string format)', () => {
+      const meta = document.createElement('meta');
+      meta.name = 'placeholders-override';
+      meta.content = 'cc,/cc-shared';
+      document.head.appendChild(meta);
 
       const testConfig = {
         locale: { prefix: '/bg' },
@@ -198,16 +188,11 @@ describe('Placeholders', () => {
       expect(result).to.equal('https://main--cc--adobecom.aem.page/bg/cc-shared');
     });
 
-    it('Prioritizes placeholders-repo metadata over config.placeholderPath.repo', () => {
-      const contentRootMeta = document.createElement('meta');
-      contentRootMeta.name = 'placeholders-content-root';
-      contentRootMeta.content = '/cc-shared';
-      document.head.appendChild(contentRootMeta);
-
-      const repoMeta = document.createElement('meta');
-      repoMeta.name = 'placeholders-repo';
-      repoMeta.content = 'metadata-repo';
-      document.head.appendChild(repoMeta);
+    it('Prioritizes placeholders-override metadata over config.placeholderPath (string format)', () => {
+      const meta = document.createElement('meta');
+      meta.name = 'placeholders-override';
+      meta.content = 'metadata-repo,/cc-shared';
+      document.head.appendChild(meta);
 
       const testConfig = {
         locale: { prefix: '/bg' },
@@ -221,10 +206,10 @@ describe('Placeholders', () => {
       expect(result).to.equal('https://main--metadata-repo--adobecom.aem.page/bg/cc-shared');
     });
 
-    it('Handles config without locale prefix', () => {
+    it('Handles config without locale prefix (string format)', () => {
       const meta = document.createElement('meta');
-      meta.name = 'placeholders-content-root';
-      meta.content = '/cc-shared';
+      meta.name = 'placeholders-override';
+      meta.content = 'custom-repo,/cc-shared';
       document.head.appendChild(meta);
 
       const testConfig = {
@@ -235,15 +220,82 @@ describe('Placeholders', () => {
       expect(result).to.equal('https://www.adobe.com/cc-shared');
     });
 
-    it('Handles config without locale object', () => {
+    it('Handles config without locale object (string format)', () => {
       const meta = document.createElement('meta');
-      meta.name = 'placeholders-content-root';
-      meta.content = '/cc-shared';
+      meta.name = 'placeholders-override';
+      meta.content = 'custom-repo,/cc-shared';
       document.head.appendChild(meta);
 
       const testConfig = { env: { name: 'prod' } };
       const result = getPlaceholderRoot(testConfig);
       expect(result).to.equal('https://www.adobe.com/cc-shared');
+    });
+
+    it('Handles placeholders-override with object format in production', () => {
+      const testConfig = {
+        locale: { prefix: '/bg' },
+        env: { name: 'prod' },
+        placeholderPath: {
+          repo: 'custom-repo',
+          contentRoot: '/cc-shared',
+        },
+      };
+      const result = getPlaceholderRoot(testConfig);
+      expect(result).to.equal('https://www.adobe.com/bg/cc-shared');
+    });
+
+    it('Handles placeholders-override with object format in non-production', () => {
+      const testConfig = {
+        locale: { prefix: '/bg' },
+        env: { name: 'stage' },
+        placeholderPath: {
+          repo: 'custom-repo',
+          contentRoot: '/cc-shared',
+        },
+      };
+      const result = getPlaceholderRoot(testConfig);
+      expect(result).to.equal('https://main--custom-repo--adobecom.aem.page/bg/cc-shared');
+    });
+
+    it('Trims whitespace from repo and contentRoot values (string format)', () => {
+      const meta = document.createElement('meta');
+      meta.name = 'placeholders-override';
+      meta.content = '  custom-repo  ,  /cc-shared  ';
+      document.head.appendChild(meta);
+
+      const testConfig = {
+        locale: { prefix: '/bg' },
+        env: { name: 'stage' },
+      };
+      const result = getPlaceholderRoot(testConfig);
+      expect(result).to.equal('https://main--custom-repo--adobecom.aem.page/bg/cc-shared');
+    });
+
+    it('Trims whitespace from repo and contentRoot values (object format)', () => {
+      const testConfig = {
+        locale: { prefix: '/bg' },
+        env: { name: 'stage' },
+        placeholderPath: {
+          repo: '  custom-repo  ',
+          contentRoot: '  /cc-shared  ',
+        },
+      };
+      const result = getPlaceholderRoot(testConfig);
+      expect(result).to.equal('https://main--custom-repo--adobecom.aem.page/bg/cc-shared');
+    });
+
+    it('Handles empty string placeholders-override', () => {
+      const meta = document.createElement('meta');
+      meta.name = 'placeholders-override';
+      meta.content = '';
+      document.head.appendChild(meta);
+
+      const testConfig = {
+        locale: { contentRoot: '/test/content/root' },
+        env: { name: 'prod' },
+      };
+      const result = getPlaceholderRoot(testConfig);
+      expect(result).to.equal('/test/content/root');
     });
   });
 });
