@@ -98,27 +98,32 @@ function decorateSlideIndicators(slides, jumpTo) {
 function updateButtonStates(carouselElements) {
   const { slides, nextPreviousBtns, currentActiveIndex } = carouselElements;
   const activeSlideIndex = currentActiveIndex;
-  if (window.innerWidth < 900) {
-    nextPreviousBtns[0].disabled = activeSlideIndex === 0;
-    nextPreviousBtns[0].classList.toggle('disabled', activeSlideIndex === 0);
-    nextPreviousBtns[1].disabled = activeSlideIndex === slides.length - 1;
-    nextPreviousBtns[1].classList.toggle('disabled', activeSlideIndex === slides.length - 1);
-  } else {
-    nextPreviousBtns[0].disabled = false;
-    nextPreviousBtns[0].classList.remove('disabled');
-    nextPreviousBtns[1].disabled = false;
-    nextPreviousBtns[1].classList.remove('disabled');
-  }
+
+  const totalSlides = slides.length;
+  const isFirst = currentActiveIndex === 0;
+  const isLast = currentActiveIndex === totalSlides - 1;
+  const isMobile = window.innerWidth < 900;
+
+  // Handle next/previous button states in one loop
+  nextPreviousBtns?.forEach((btn, index) => {
+    if (isMobile) {
+      const disable = (index === 0 && isFirst) || (index === 1 && isLast);
+      btn.disabled = disable;
+      btn.classList.toggle('disabled', disable);
+    } else {
+      btn.disabled = false;
+      btn.classList.remove('disabled');
+    }
+  });
 
   const lastSlide = slides[slides.length - 1];
   const firstSlide = slides[0];
-  if (activeSlideIndex === 0) {
-    if (lastSlide) lastSlide.classList.add('hide-left-hint');
-  } else if (activeSlideIndex === slides.length - 1) {
-    if (firstSlide) firstSlide.classList.add('hide-left-hint');
+  if (isMobile) {
+    lastSlide?.classList.toggle('hide-left-hint', activeSlideIndex === 0);
+    firstSlide?.classList.toggle('hide-left-hint', activeSlideIndex === totalSlides - 1);
   } else {
-    if (lastSlide) lastSlide.classList.remove('hide-left-hint');
-    if (firstSlide) firstSlide.classList.remove('hide-left-hint');
+    firstSlide?.classList.remove('hide-left-hint');
+    lastSlide?.classList.remove('hide-left-hint');
   }
 }
 
@@ -490,10 +495,11 @@ function convertMpcMp4(slides) {
   });
 }
 
-function readySlides(slides, slideContainer, isUpsDesktop) {
+function readySlides(slides, slideContainer, isUpsDesktop, carouselElements) {
   slideContainer.classList.add('is-ready');
 
   const setOrder = () => {
+    carouselElements.currentActiveIndex = 0;
     slides.forEach((slide, idx) => {
       const isLastSlide = slides.length - 1 === idx;
       slide.style.order = isLastSlide ? 1 : idx + 2;
@@ -583,7 +589,7 @@ export default function init(el) {
   */
   if (el.classList.contains('hinting-center-mobile')) {
     const isUpsDesktop = el.classList.contains('ups-desktop');
-    readySlides(slides, slideContainer, isUpsDesktop);
+    readySlides(slides, slideContainer, isUpsDesktop, carouselElements);
   }
 
   el.textContent = '';
