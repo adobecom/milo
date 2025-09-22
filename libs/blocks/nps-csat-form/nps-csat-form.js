@@ -151,9 +151,10 @@ const buildForm = ({
   cancelText,
   submitText,
   errorText,
+  displayCross,
 }) => `
   <form id="nps" method="get" action="/an/endpoint" novalidate>
-    <button type="button" class="nps-close" aria-label="Close">&times;</button>
+    ${displayCross ? '<button type="button" class="nps-close" aria-label="Close">&times;</button>' : ''}
     <h2>${title}</h2>
     <fieldset class="nps-radio-group">
       <legend>${radioGroupLabel} *</legend>
@@ -223,6 +224,7 @@ export default async (block) => {
     cancelText,
     submitText,
     errorText,
+    displayCross,
   ] = [...block.children].map((c) => c
     .firstElementChild
     ?.nextElementSibling
@@ -267,6 +269,7 @@ export default async (block) => {
     cancelText,
     submitText,
     errorText,
+    displayCross: displayCross?.toLowerCase() === 'true',
   };
 
   const formFragment = document
