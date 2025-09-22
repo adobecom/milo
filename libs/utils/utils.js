@@ -1170,7 +1170,7 @@ export async function decoratePlaceholders(area, config) {
   if (!nodes.length) return;
   area.dataset.hasPlaceholders = 'true';
   const { decoratePlaceholderArea, getPlaceholderRoot } = await import('../features/placeholders.js');
-  const phPaths = await getPlaceholderPaths(config, getPlaceholderRoot(config));
+  const phPaths = getPlaceholderPaths(config, getPlaceholderRoot(config));
   placeholderRequest ||= Promise.all(
     phPaths.map((path) => customFetch({ resource: path, withCacheRules: true })),
   ).catch(() => ({}));

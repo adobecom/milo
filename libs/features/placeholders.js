@@ -4,15 +4,20 @@ const fetchedPlaceholders = {};
 window.mph = {};
 
 export const getPlaceholderRoot = (config) => {
-  const placeholderContentRoot = getMetadata('placeholders-content-root') || config.placeholderPath?.contentRoot;
-  if (!placeholderContentRoot) return config.locale?.contentRoot;
+  const placeholderOverride = getMetadata('placeholders-override') || config.placeholderPath;
+  if (!placeholderOverride) return config.locale?.contentRoot;
 
   let origin = 'https://www.adobe.com';
-  const placeholderRepo = getMetadata('placeholders-repo') || config.placeholderPath?.repo;
-  if (config.env.name !== 'prod' && placeholderRepo) {
-    origin = `https://main--${placeholderRepo}--adobecom.aem.page`;
+  let [placeholderRepo, placeholderContentRoot] = [];
+  if (typeof placeholderOverride === 'string') {
+    [placeholderRepo, placeholderContentRoot] = placeholderOverride.split(',');
+  } else {
+    [placeholderRepo, placeholderContentRoot] = [placeholderOverride.repo, placeholderOverride.contentRoot];
   }
-  return `${origin}${config.locale?.prefix || ''}${placeholderContentRoot}`;
+  if (config.env.name !== 'prod' && placeholderRepo) {
+    origin = `https://main--${placeholderRepo.trim()}--adobecom.aem.page`;
+  }
+  return `${origin}${config.locale?.prefix || ''}${placeholderContentRoot.trim()}`;
 };
 
 const getPlaceholdersPath = (config, sheet) => {
