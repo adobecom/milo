@@ -516,7 +516,7 @@ class Gnav {
 
     document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
-    document.querySelector('.feds-promo-aside-wrapper') && isSmallScreen.addEventListener('change', this.updateGnavTop)
+    document.querySelector('.feds-promo-aside-wrapper') && isSmallScreen.addEventListener('change', this.updateGnavTop);
   }, 'Error in global navigation init', 'gnav', 'e');
 
   revealGnav = async () => {
