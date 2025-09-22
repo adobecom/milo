@@ -94,6 +94,8 @@ function handleOpenClasses(el, hasOpenClass) {
   if (hasOpenClass) el.classList.add(...openClasses);
 
   if (!el.closest('.carousel.ups-desktop')) return;
+  openClasses.shift();
+  openClasses.push('no-bg');
 
   const isCarouselDesktop = window.matchMedia('(min-width: 900px)');
   const toggleOpenClasses = () => {
