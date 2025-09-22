@@ -48,7 +48,7 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
             'gradient-firefly-spectrum': 'linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)',
         },
     },
-    disabledAttributes: ['trialBadgeColor', 'trialBadgeBorderColor'],
+    disabledAttributes: ['badgeColor', 'trialBadgeColor', 'trialBadgeBorderColor'],
     supportsDefaultChild: true,
 };
 

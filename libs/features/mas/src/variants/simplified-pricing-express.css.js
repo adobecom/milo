@@ -153,6 +153,7 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] p a {
   color: var(--spectrum-indigo-900);
   font-weight: 500;
   text-decoration: underline;
+  white-space: nowrap;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-integer,
