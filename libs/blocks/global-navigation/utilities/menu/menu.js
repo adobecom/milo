@@ -21,9 +21,7 @@ import {
   setAriaAtributes,
 } from '../utilities.js';
 
-const [merch] = await Promise.all([
-  import('../../../merch/merch.js'),
-]);
+const merch = await import('../../../merch/merch.js');
 
 function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
