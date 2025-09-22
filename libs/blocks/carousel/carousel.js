@@ -104,7 +104,6 @@ function updateButtonStates(carouselElements) {
   const isLast = currentActiveIndex === totalSlides - 1;
   const isMobile = window.innerWidth < 900;
 
-  // Handle next/previous button states in one loop
   nextPreviousBtns?.forEach((btn, index) => {
     if (isMobile) {
       const disable = (index === 0 && isFirst) || (index === 1 && isLast);
