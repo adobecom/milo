@@ -9,7 +9,9 @@
   --carousel-nav-button-background-active: #b1b1b1;
   --carousel-nav-button-background-focus: #147af3;
   --carousel-focus-color: #109cde;
-  --carousel-indicator-background-color: #cacaca;
+  --carousel-indicator-background-color: #b1b1b1;
+  --carousel-active-indicator-background-color: #ffffff;
+  --carousel-dark-indicator-background-color: #848484;
   --carousel-expand-background-color: rgb(255 255 255 / 75%);
   --carousel-expand-border-color: rgb(116 116 116 / 30%);
   --s-rounded-corners: 4px;
@@ -56,14 +58,12 @@
   order: 3;
   width: max-content;
   min-width: 114px;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* The no-buttons variant is temporarily disabled because slide indicators are currently hidden by default, which makes the no-buttons carousel unusable. */
-/* When the slide indicator color issue is resolved and they are enabled again, this should be re-enabled as well. */
-/* .carousel.no-buttons .carousel-button-container {
+.carousel.no-buttons .carousel-button-container {
   min-width: auto;
-} */
+}
 
 .carousel .carousel-button-container button {
   position: relative;
@@ -99,9 +99,9 @@
   order: 3;
 }
 
-/* .carousel.no-buttons .carousel-button {
+.carousel.no-buttons .carousel-button {
   display: none;
-} */
+}
 
 .carousel .carousel-previous:hover,
 .carousel .carousel-next:hover {
@@ -115,7 +115,6 @@
 
 .carousel .carousel-previous:focus,
 .carousel .carousel-next:focus {
-  border-color: var(--color-white);
   outline: 2px solid var(--carousel-nav-button-background-focus);
 }
 
@@ -213,7 +212,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 }
 
 .carousel .carousel-controls {
-  display: none;
+  display: flex;
   position: relative;
   max-width: 88px;
   overflow: hidden;
@@ -221,9 +220,9 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   justify-content: inherit;
 }
 
-/* .carousel.no-buttons .carousel-controls {
+.carousel.no-buttons .carousel-controls {
   padding: 0 var(--spacing-xxs);
-} */
+}
 
 .carousel .carousel-indicators {
   list-style: none;
@@ -265,15 +264,19 @@ html[dir="rtl"] .carousel .move-indicators {
   transition: height 1s cubic-bezier(0.23, 1, 0.32, 1), background 1.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+.dark .carousel .carousel-indicator::after {
+  background-color: var(--carousel-dark-indicator-background-color);
+}
+
 .carousel .carousel-indicator.active::after {
   content: '';
-  background-color: var(--carousel-nav-background);
+  background-color: var(--carousel-active-indicator-background-color);
   height: inherit;
   width: inherit;
 }
 
 .dark .carousel .carousel-indicator.active::after {
-  background-color: var(--color-white);
+  background-color: var(--carousel-nav-background);
 }
 
 /* Lightbox */
@@ -334,17 +337,6 @@ html[dir="rtl"] .carousel .move-indicators {
   padding: 3px 2px 0 4px;
   width: 44px;
   height: 44px;
-}
-
-.dark .carousel .carousel-previous:hover,
-.dark .carousel .carousel-next:hover,
-.dark .carousel .carousel-previous:active,
-.dark .carousel .carousel-next:active,
-.carousel.dark .carousel-previous:hover,
-.carousel.dark .carousel-next:hover,
-.carousel.dark .carousel-previous:active,
-.carousel.dark .carousel-next:active {
-  background-color: #000;
 }
 
 .carousel .carousel-expand,
