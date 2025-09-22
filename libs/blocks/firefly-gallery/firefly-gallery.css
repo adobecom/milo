@@ -8,7 +8,8 @@
   --border-radius-standard: 8px;
   --border-radius-round: 50%;
   --column-count: 2;
-  --column-gap: var(--spacing-xxs);
+  --column-gap: var(--spacing-xs);
+  --row-gap: calc(12px - 8px);
   --video-overlay-gradient: linear-gradient(
     to bottom,
     rgb(0 0 0 / 70%) 0%,
@@ -104,7 +105,7 @@
   transition: transform var(--transition-speed-fast) ease,
     box-shadow var(--transition-speed-fast) ease;
   width: 100%;
-  margin-bottom: var(--spacing-xxs); /* Space between items in the column */
+  margin-bottom: var(--row-gap);
   padding: 0;
   display: inline-block; /* Important for column layout */
   break-inside: avoid; /* Prevent items from breaking across columns */
@@ -446,15 +447,12 @@
 /* Tablet styles (601px - 900px) */
 @media screen and (min-width: 601px) {
   :root {
-    --gap: var(--spacing-xxs);
-    --item-margin: var(--spacing-xxs);
-    --padding: var(--spacing-m) 0;
+    --column-count: 3;
+    --row-gap: calc(14px - 8px);
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.85);
     --prompt-line-height: 1.2;
     --prompt-max-width: 85%;
     --username-max-width: auto;
-    --column-count: 3;
-    --column-gap: 12px;
   }
 
   .firefly-gallery-user-info {
@@ -465,12 +463,9 @@
 /* Desktop styles (901px+) */
 @media screen and (min-width: 901px) {
   :root {
-    --gap: var(--spacing-xxs);
-    --item-margin: var(--spacing-xxs);
-    --padding: var(--spacing-l) 0;
+    --column-count: 5;
+    --row-gap: calc(var(--spacing-xs) - 8px);
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.9);
     --prompt-max-width: 90%;
-    --column-count: 5;
-     --column-gap: var(--spacing-xs);
   }
 }

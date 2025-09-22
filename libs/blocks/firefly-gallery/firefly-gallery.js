@@ -15,30 +15,10 @@ const ITEM_TYPE_THRESHOLDS = {
 
 // Define different rendition sizes for different item types and screen sizes
 const RENDITION_SIZES = {
-  short: {
-    default: 350,
-    desktop: 350,
-    tablet: 300,
-    mobile: 250,
-  },
-  square: {
-    default: 400,
-    desktop: 400,
-    tablet: 350,
-    mobile: 280,
-  },
-  portrait: {
-    default: 450,
-    desktop: 450,
-    tablet: 400,
-    mobile: 300,
-  },
-  tall: {
-    default: 500,
-    desktop: 500,
-    tablet: 450,
-    mobile: 350,
-  },
+  short: { default: 350, desktop: 350, tablet: 300, mobile: 250 },
+  square: { default: 400, desktop: 400, tablet: 350, mobile: 280 },
+  portrait: { default: 450, desktop: 450, tablet: 400, mobile: 300 },
+  tall: { default: 500, desktop: 500, tablet: 450, mobile: 350 },
 };
 
 export function safeJsonParse(jsonString, defaultValue = {}) {
