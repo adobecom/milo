@@ -634,7 +634,7 @@ export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
 
   // Extract category_id - should be text2Image / VideoGeneration
-  const categoryId = el.querySelector('div:first-child > div').innerText;
+  const [categoryId, cgenId] = el.querySelector('div:first-child > div').innerText.split('|').map((i) => i.trim());
   const viewBtnLabel = el.querySelector('div:last-child > div').innerText || 'View';
 
   // Clear existing content
