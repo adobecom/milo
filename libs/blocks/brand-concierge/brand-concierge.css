@@ -15,7 +15,7 @@
 
   background: var(--brand-concierge-bg);
   box-sizing: border-box;
-  padding: 40px 20px 10px;
+  padding: 40px 20px 12px;
 }
 
 .bc-header {
@@ -103,7 +103,7 @@
   display: flex;
   height: var(--bc-input-height);
   margin-bottom: 40px;
-  padding: 0 12px 0 20px;
+  padding: 0 12px;
   position: relative;
   gap: 12px;
   z-index: 9;
@@ -143,14 +143,13 @@
 }
 
 .bc-input-field-label {
-  border-radius: 4px;
   display: flex;
   align-items: center;
   user-select: none;
   align-self: start;
-  margin-top: 10px;
-  height: 32px;
-  width: 32px;
+  margin-top: 13px;
+  height: 26px;
+  width: 26px;
   justify-content: center;
 }
 
@@ -166,7 +165,7 @@
   box-shadow: 0 0 10px 0 rgba(0 0 0 / 25%);
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
-  left: 36px;
+  left: 25px;
   padding: 5px 10px;
   position: absolute;
   top: -24px;
@@ -210,6 +209,7 @@
   line-height: 1.5;
   outline: none;
   width: 100%;
+  padding: 14px 0;
 }
 
 .bc-input-field-container input::placeholder {
@@ -247,10 +247,14 @@
 
 .bc-legal {
   color: #4B4B4B;
-  font-size: var(--type-body-xxs-size);
-  line-height: var(--type-body-xxs-lh);
+  font-size: 11px;
+  line-height: 1.5;
   margin: 0;
   text-align: center;
+}
+
+.bc-legal p {
+  margin: 0;
 }
 
 .bc-legal a {
@@ -261,6 +265,62 @@
   align-items: center;
   display: flex;
   gap: 8px;
+}
+
+/* Temporary override to chat styling */
+#brand-concierge-mount .input-section {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#brand-concierge-mount .chat-input {
+  line-height: 1.5 !important;
+  padding: 14px 0 !important;
+  margin: 0 !important;
+}
+
+#brand-concierge-mount .container-mobile .chat-input {
+  font-size: 16px !important;
+}
+
+#brand-concierge-mount .container-mobile .chat-history {
+  padding-left: 28px !important;
+  padding-right: 28px !important;
+}
+
+#brand-concierge-mount .ai-chat-label {
+  margin-right: 12px !important;
+}
+
+#brand-concierge-mount .input-container:has(.ai-chat-label) {
+  padding: 0 12px !important;
+}
+
+#brand-concierge-mount .ai-chat-label svg {
+  background: linear-gradient(98.11deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%);
+  mask: url('data:image/svg+xml;base64,PHN2ZyB0aXRsZT0iQXNrIiB3aWR0aD0iMjYiIGhlaWdodD0iMjYiIHZpZXdCb3g9IjAgMCAyNiAyNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNOC4xMjQ4IDI0LjY5NzVDNy45OTUzMSAyNC42OTc1IDcuODY1ODIgMjQuNjcyMSA3Ljc0MjY3IDI0LjYyQzcuMzgzMzkgMjQuNDY2NCA3LjE0OTggMjQuMTEzNSA3LjE0OTggMjMuNzIyNVYxOS40OTc1SDYuMTc0OEMzLjQ4NzIxIDE5LjQ5NzUgMS4yOTk4IDE3LjMxMDEgMS4yOTk4IDE0LjYyMjVWNy40NzI0N0MxLjI5OTggNC43ODQ4OCAzLjQ4NzIxIDIuNTk3NDcgNi4xNzQ4IDIuNTk3NDdIMTEuMzEzOUMxMS44NTIxIDIuNTk3NDcgMTIuMjg4OSAzLjAzNDIgMTIuMjg4OSAzLjU3MjQ3QzEyLjI4ODkgNC4xMTA3NSAxMS44NTIxIDQuNTQ3NDcgMTEuMzEzOSA0LjU0NzQ3SDYuMTc0OEM0LjU2MjUxIDQuNTQ3NDcgMy4yNDk4IDUuODYwMTcgMy4yNDk4IDcuNDcyNDdWMTQuNjIyNUMzLjI0OTggMTYuMjM0OCA0LjU2MjUxIDE3LjU0NzUgNi4xNzQ4IDE3LjU0NzVIOC4xMjQ4QzguNjYzMDggMTcuNTQ3NSA5LjA5OTggMTcuOTg0MiA5LjA5OTggMTguNTIyNVYyMS40Mjk3TDEyLjg0ODcgMTcuODIwNEMxMy4wMzAzIDE3LjY0NTIgMTMuMjcyOCAxNy41NDc1IDEzLjUyNTQgMTcuNTQ3NUgxOS44MjQ4QzIxLjQzNzEgMTcuNTQ3NSAyMi43NDk4IDE2LjIzNDggMjIuNzQ5OCAxNC42MjI1VjEyLjk2OTZDMjIuNzQ5OCAxMi40MzEzIDIzLjE4NjUgMTEuOTk0NSAyMy43MjQ4IDExLjk5NDVDMjQuMjYzMSAxMS45OTQ1IDI0LjY5OTggMTIuNDMxMyAyNC42OTk4IDEyLjk2OTZWMTQuNjIyNUMyNC42OTk4IDE3LjMxMDEgMjIuNTEyNCAxOS40OTc1IDE5LjgyNDggMTkuNDk3NUgxMy45MTg5TDguODAxNDcgMjQuNDI0NUM4LjYxNjExIDI0LjYwMzUgOC4zNzIzNiAyNC42OTc1IDguMTI0OCAyNC42OTc1WiIgZmlsbD0iY3VycmVudENvbG9yIi8+PHBhdGggZD0iTTE3LjI2MTcgMTEuODA3OUMxNy4wMTY3IDExLjgwNzkgMTYuNzcwNCAxMS43NDQ0IDE2LjU0ODIgMTEuNjE2MkMxNi4wMDc0IDExLjMwNTIgMTUuNzMzMiAxMC42ODY5IDE1Ljg2MzkgMTAuMDc3NUwxNi40NjE5IDcuMzE1MDVMMTQuNTYzOSA1LjIyMTU5QzE0LjE0NSA0Ljc1OTQ4IDE0LjA3MjYgNC4wODc5IDE0LjM4MzcgMy41NDgzNUMxNC42OTYgMy4wMDg4IDE1LjMyMDYgMi43MzQ1OCAxNS45MjIzIDIuODY0MDdMMTguNjg0OCAzLjQ2MjAyTDIwLjc3ODMgMS41NjQwN0MyMS4yNDA0IDEuMTQ2MzkgMjEuOTE1OCAxLjA3NTMgMjIuNDUxNSAxLjM4MzhDMjIuOTkyNCAxLjY5NDg0IDIzLjI2NjYgMi4zMTMwOSAyMy4xMzU4IDIuOTIyNDdMMjIuNTM3OSA1LjY4NDk3TDI0LjQzNTggNy43Nzg0MkMyNC44NTQ4IDguMjQwNTMgMjQuOTI3MSA4LjkxMjExIDI0LjYxNjEgOS40NTE2NkMyNC4zMDM4IDkuOTkyNDkgMjMuNjg0MyAxMC4yNjkyIDIzLjA3NzQgMTAuMTM1OUwyMC4zMTQ5IDkuNTM4TDE4LjIyMTUgMTEuNDM1OUMxNy45NTExIDExLjY4MSAxNy42MDgzIDExLjgwNzkgMTcuMjYxNyAxMS44MDc5Wk0xNy4wOTc5IDUuMTEzNjdMMTguMDg1NiA2LjIwMjkzQzE4LjM5MjkgNi41MzgwOCAxOC41MjExIDcuMDEwMzQgMTguNDI0NiA3LjQ2MjNMMTguMTEzNiA4LjkwMTk2TDE5LjIwMjggNy45MTQyNkMxOS41MzkyIDcuNjA3MDMgMjAuMDE2NiA3LjQ4MDA4IDIwLjQ2MjIgNy41NzUzTDIxLjkwMTggNy44ODYzM0wyMC45MTQxIDYuNzk3MDhDMjAuNjA2OSA2LjQ2MTkyIDIwLjQ3ODcgNS45ODk2NiAyMC41NzUyIDUuNTM3N0wyMC44ODYyIDQuMDk4MDZMMTkuNzk3IDUuMDg1NzZDMjkuNDYxOCA1LjM5NDI1IDE4Ljk4NyA1LjUyMzc0IDE4LjUzNzYgNS40MjQ3MkwxNy4wOTc5IDUuMTEzNjdaIiBmaWxsPSJjdXJyZW50Q29sb3IiLz48cGF0aCBkPSJNMTAuMzEyNSAxNC45NTUxQzEwLjE0NDkgMTQuOTU1MSA5Ljk3NzM0IDE0LjkxMiA5LjgyNDk5IDE0LjgyNDNDOS40NTgwOSAxNC42MTIzIDkuMjcwMiAxNC4xODgzIDkuMzU5MDcgMTMuNzc0NEw5LjU5MDEyIDEyLjcwOEw4Ljg1NzYgMTEuOTAwNkM4LjU3MzIyIDExLjU4NyA4LjUyMzcgMTEuMTI0OSA4LjczNTcyIDEwLjc1OEM4Ljk0Nzc0IDEwLjM5MTEgOS4zNzQyOSAxMC4yMTA5IDkuNzg1NjMgMTAuMjkyMUwxMC44NTIgMTAuNTIzMkwxMS42NTk0IDkuNzkwNjRMMTEuOTc0MyA5LjUwNjI3IDEyLjQzMzkgOS40NTY3NSAxMi44MDIgOS42Njg3N0MxMy4xNjg5IDkuODgwNzggMTMuMzU2OCAxMC4zMDQ4IDEzLjI2NzkgMTAuNzE4N0wxMy4wMzY5IDExLjc4NTFMMTMuNzY5NCAxMi41OTI1QzE0LjA1MzggMTIuOTA2MSAxNC4xMDMzIDEzLjM2ODIgMTMuODkxMyAxMy43MzUxQzEzLjY3OTMgMTQuMTAyIDEzLjI1MTUgMTQuMjg2MSAxMi44NDE0IDE0LjIwMUwxMS43NzUgMTMuOTY5OUwxMC45Njc2IDE0LjcwMjVDMTAuNzgzNSAxNC44Njg4IDEwLjU0ODYgMTQuOTU1MSAxMC4zMTI1IDE0Ljk1NTFaIiBmaWxsPSJjdXJyZW50Q29sb3IiLz48L3N2Zz4=') no-repeat center;
+  mask-size: contain;
+  width: 26px !important;
+  height: 26px !important;
+  color: transparent !important;
+}
+
+#brand-concierge-mount .disclaimer-message {
+  line-height: 1.5 !important;
+}
+
+#brand-concierge-mount .container-desktop .bc-response-footer,
+#brand-concierge-mount .container-mobile .bc-response-footer {
+  margin-top: 16px !important;
+}
+
+#brand-concierge-mount .citations-sources-panel:not(.active) {
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+#brand-concierge-mount .bc-response-footer-actions .bc-feedback-buttons {
+  margin-top: 4px !important;
 }
 
 /* Sticky */
@@ -307,6 +367,10 @@
   height: var(--bc-sticky-input-height);
   margin: 0;
   padding: 0;
+}
+
+.sticky .bc-input-field-container input {
+  padding: 8px 0;
 }
 
 .sticky .bc-input-field-label {
@@ -417,6 +481,7 @@
   margin-top: 22px;
   border-radius: 24px 24px 0 0;
   font-size: 16px;
+  top: unset;
 }
 
 /* Fallback for browsers that don't support dvh */
@@ -484,10 +549,6 @@
 
 /* Tablet up */
 @media screen and (min-width: 768px) {
-  .brand-concierge {
-    padding: 80px 40px 10px;
-  }
-
   .bc-prompt-cards {
     flex-wrap: nowrap;
     gap: 16px;
@@ -572,6 +633,10 @@
     #brand-concierge-modal.dialog-modal {
       height: calc(100vh - 32px);
     }
+  }
+
+  #brand-concierge-mount .scroll-to-bottom {
+    bottom: 110px !important;
   }
 }
 

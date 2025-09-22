@@ -9,6 +9,20 @@ export const CSS = `
         word-break: break-word;
     }
 
+    merch-card[variant="ah-try-buy-widget"] [slot="badge"] {
+        position: absolute;
+        top: 18px;
+        right: 12px;
+    }
+
+    merch-card[variant="ah-try-buy-widget"] [slot="badge"] merch-badge {
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: normal;
+        padding: 4px 9px 5px 9px;
+    }
+
     merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] a {
         color: var(--consonant-merch-card-body-xxs-color);
     }
@@ -54,11 +68,14 @@ export const CSS = `
     }
 
     merch-card[variant="ah-try-buy-widget"] [slot="price"] .price:not(.price-strikethrough) .price-recurrence {
-        display: inline-block;
         width: 21px;
         text-align: end;
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         color: var(--consonant-merch-card-body-xxs-color);
+        font-weight: 400;
+    }
+
+    merch-card[variant="ah-try-buy-widget"] [slot="price"] .price:not(.price-strikethrough) .price-tax-inclusivity {
         font-weight: 400;
     }
 
@@ -85,6 +102,7 @@ export const CSS = `
         display: flex;
         padding-top: 24px;
         flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     merch-card[variant="ah-try-buy-widget"] [slot="image"] {

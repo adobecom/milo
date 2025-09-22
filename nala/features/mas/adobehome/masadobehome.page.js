@@ -13,6 +13,7 @@ export default class AdobeHomePage {
     this.price = page.locator('[slot="price"]');
     this.cta = page.locator('[slot="cta"] sp-button');
     this.image = page.locator('div[slot="image"] img');
+    this.badge = page.locator('[slot="badge"] merch-badge');
 
     // CSS properties for validation
     this.widgetCssProp = {
@@ -60,6 +61,15 @@ export default class AdobeHomePage {
           color: 'var(--merch-card-price-color)',
         },
       },
+      badge: {
+        'background-color': 'rgb(253, 233, 255)',
+        'border-radius': '7px',
+        padding: '4px 9px 5px 9px',
+        'font-size': '12px',
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
+      },
     };
   }
 
@@ -89,6 +99,7 @@ export default class AdobeHomePage {
       description: '[slot="body-xxs"]',
       price: '[slot="price"]',
       cta: '[slot="cta"] sp-button',
+      badge: '[slot="badge"] merch-badge',
     };
 
     const selector = fields[fieldName];
@@ -97,6 +108,12 @@ export default class AdobeHomePage {
     }
 
     return widget.locator(selector);
+  }
+
+  // Get badge from a widget
+  async getWidgetBadge(id, size) {
+    const widget = await this.getWidget(id, size);
+    return widget.locator('[slot="badge"] merch-badge');
   }
 
   // Get widget attribute
