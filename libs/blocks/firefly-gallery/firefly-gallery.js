@@ -41,7 +41,7 @@ const RENDITION_SIZES = {
   },
 };
 
-function safeJsonParse(jsonString, defaultValue = {}) {
+export function safeJsonParse(jsonString, defaultValue = {}) {
   try {
     return JSON.parse(jsonString);
   } catch (e) {
@@ -49,7 +49,7 @@ function safeJsonParse(jsonString, defaultValue = {}) {
   }
 }
 
-function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
+export function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
   if (!localizations) return defaultValue;
 
   if (localizations[currentLocale]) {
@@ -77,7 +77,7 @@ function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
   return defaultValue;
 }
 
-function getScreenSizeCategory() {
+export function getScreenSizeCategory() {
   const viewportWidth = window.innerWidth;
 
   if (viewportWidth < 601) {
@@ -89,7 +89,7 @@ function getScreenSizeCategory() {
   return 'desktop';
 }
 
-function extractAspectRatio(asset) {
+export function extractAspectRatio(asset) {
   let aspectRatio = 1; // Default to square
 
   // Method 1: Extract from rendition max dimensions
@@ -118,7 +118,7 @@ function constructVideoUrl(assetId) {
   return `https://cdn.cp.adobe.io/content/2/dcx/${assetId}/content/manifest/version/0/component/path/output/resource`;
 }
 
-function getItemTypeFromAspectRatio(aspectRatio) {
+export function getItemTypeFromAspectRatio(aspectRatio) {
   if (aspectRatio < ITEM_TYPE_THRESHOLDS.tall) {
     return 'tall';
   }
@@ -173,12 +173,12 @@ const replaceRenditionUrl = (url, format, dimension, size) => url
   .replace(/{dimension}/g, dimension)
   .replace(/{size}/g, size);
 
-function createFireflyURL(urn, assetType = 'image') {
+export function createFireflyURL(urn, assetType = 'image') {
   const assetTypeParam = assetType === 'video' ? 'VideoGeneration' : 'ImageGeneration';
   return `https://firefly.adobe.com/open?assetOrigin=community&assetType=${assetTypeParam}&id=${urn}`;
 }
 
-function getImageRendition(asset, itemType = 'square') {
+export function getImageRendition(asset, itemType = 'square') {
   if (!asset) return '';
 
   // Determine screen size category
@@ -200,7 +200,7 @@ function getImageRendition(asset, itemType = 'square') {
   return renditionUrl;
 }
 
-function createGalleryStructure() {
+export function createGalleryStructure() {
   const galleryContainer = createTag('div', { class: 'firefly-gallery-container' });
   const galleryContent = createTag('div', { class: 'firefly-gallery-content' });
   const galleryFadeOverlay = createTag('div', { class: 'firefly-gallery-fade' });
