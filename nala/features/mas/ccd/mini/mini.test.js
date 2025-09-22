@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './mini.spec.js';
 import MiniCard from './mini.page.js';
-import { createWorkerPageSetup, CCD_BASE_PATH } from '../../../../libs/commerce.js';
+import { createWorkerPageSetup, DOCS_GALLERY_PATH } from '../../../../libs/commerce.js';
 
 let miniCard;
 
@@ -9,8 +9,8 @@ test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run
 
 const workerSetup = createWorkerPageSetup({
   pages: [
-    { name: 'US', url: CCD_BASE_PATH.MINI_US },
-    { name: 'FR', url: CCD_BASE_PATH.MINI_FR },
+    { name: 'US', url: DOCS_GALLERY_PATH.CCD_MINI.US },
+    { name: 'FR', url: DOCS_GALLERY_PATH.CCD_MINI.FR },
   ],
 });
 
@@ -32,7 +32,7 @@ test.describe('CCD Mini Cards Feature', () => {
       const { data } = feature;
 
       // Determine which worker page to use based on the feature path
-      const isUSPath = feature.path === CCD_BASE_PATH.MINI_US;
+      const isUSPath = feature.path === DOCS_GALLERY_PATH.CCD_MINI.US;
       const pageName = isUSPath ? 'US' : 'FR';
       const page = workerSetup.getPage(pageName);
 

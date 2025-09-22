@@ -196,8 +196,8 @@ function getDefaultLangstoreCountry(language) {
   return country || 'US';
 }
 
-export function getMiloLocaleSettings(locale) {
-  const localePrefix = locale?.prefix || 'US_en';
+export function getMiloLocaleSettings(miloLocale) {
+  const localePrefix = miloLocale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
   let [country = 'US', language = 'en'] = (GeoMap[geo] ?? geo).split('_', 2);
 
@@ -218,6 +218,33 @@ export function getMiloLocaleSettings(locale) {
     country,
     locale: `${language}_${country}`,
   };
+}
+
+export async function getGeoLocaleSettings(miloLocale) {
+  const settings = getMiloLocaleSettings(miloLocale);
+  let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
+    || sessionStorage.getItem('akamai');
+  if (!country) {
+    try {
+      const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+      country = await getAkamaiCode(true);
+    } catch (error) {
+      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
+    }
+  }
+  if (country) {
+    country = country.toUpperCase();
+    settings.country = country;
+  }
+  return settings;
+}
+
+export async function getLocaleSettings(miloLocale) {
+  const geoDetection = getMetadata('mas-geo-detection');
+  if (!geoDetection || !['on', 'true'].includes(geoDetection)) {
+    return Promise.resolve(getMiloLocaleSettings(miloLocale));
+  }
+  return getGeoLocaleSettings(miloLocale);
 }
 
 /* Optional checkout link params that are appended to checkout urls as is */
@@ -302,6 +329,7 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
 let upgradeOffer = null;
+let litPromise;
 
 /**
  * Given a url, calculates the hostname of MAS platform.
@@ -411,6 +439,23 @@ const failedExternalLoads = new Set();
 const loadingPromises = new Map();
 
 /**
+ * Loads lit dependency dynamically when needed
+ * @returns {Promise} Promise that resolves when lit is loaded
+ */
+export async function loadLitDependency() {
+  if (litPromise) return litPromise;
+
+  if (window.customElements?.get('lit-element')) {
+    return Promise.resolve();
+  }
+
+  const { base } = getConfig();
+  litPromise = import(`${base}/deps/lit-all.min.js`);
+
+  return litPromise;
+}
+
+/**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
@@ -506,11 +551,40 @@ export async function fetchCheckoutLinkConfigs(base = '', env = '') {
   return fetchCheckoutLinkConfigs.promise;
 }
 
+function getSvar(extraOptions) {
+  if (!extraOptions) return undefined;
+
+  const extraOptionsObj = JSON.parse(extraOptions);
+  return extraOptionsObj.svar;
+}
+
+function addToConfigsForMatchingProduct(config, productCode, svar, targetConfigs) {
+  const match = config[NAME_PRODUCT_FAMILY] === productCode || (svar && config[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
+  const alreadyThere = targetConfigs.some((item) => item[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
+  if (match && !alreadyThere) {
+    targetConfigs.push(config);
+  }
+}
+
+function addToConfigs(config, svar, configs, paCode, productCode, productFamily) {
+  addToConfigsForMatchingProduct(config, paCode, svar, configs.paCodeConfigs);
+  addToConfigsForMatchingProduct(config, productCode, svar, configs.productCodeConfigs);
+  addToConfigsForMatchingProduct(config, productFamily, svar, configs.productFamilyConfigs);
+}
+
 export async function getCheckoutLinkConfig(
   productFamily,
   productCode,
   paCode,
+  options,
 ) {
+  const extraOptions = options?.extraOptions;
+  const svar = getSvar(extraOptions);
+  if (svar) {
+    const extraOptionsObj = JSON.parse(extraOptions);
+    delete extraOptionsObj.svar;
+    options.extraOptions = JSON.stringify(extraOptionsObj);
+  }
   let { base } = getConfig();
   const { env } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
@@ -521,16 +595,17 @@ export async function getCheckoutLinkConfig(
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
+  // place items with extra options first
+  checkoutLinkConfigs.data.sort((itema, itemb) => {
+    const apf = itema[NAME_PRODUCT_FAMILY];
+    const bpf = itemb[NAME_PRODUCT_FAMILY];
+    return apf.includes('+') && !bpf.includes('+') ? -1 : 1;
+  });
+
   const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } = checkoutLinkConfigs
     .data.reduce(
       (acc, config) => {
-        if (config[NAME_PRODUCT_FAMILY] === paCode) {
-          acc.paCodeConfigs.push(config);
-        } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
-          acc.productCodeConfigs.push(config);
-        } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
-          acc.productFamilyConfigs.push(config);
-        }
+        addToConfigs(config, svar, acc, paCode, productCode, productFamily);
         return acc;
       },
       { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] },
@@ -583,6 +658,7 @@ export async function getDownloadAction(
     offerFamily,
     productCode,
     productArrangementCode,
+    options,
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
@@ -891,6 +967,7 @@ export async function getModalAction(offers, options, el) {
     offerFamily,
     productCode,
     productArrangementCode,
+    options,
   );
   if (!checkoutLinkConfig) return undefined;
   const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
@@ -975,30 +1052,25 @@ export async function initService(force = false, attributes = {}) {
         }
       }
 
-      const { language, locale, country } = getMiloLocaleSettings(miloLocale);
+      const { language, locale, country } = await getLocaleSettings(miloLocale);
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
           locale,
           language,
+          country,
           ...attributes,
           ...commerce,
         });
         if (miloEnv?.name !== 'prod') {
           service.setAttribute('allow-override', '');
         }
-        const ffDefaults = getMetadata('mas-ff-defaults');
-        if (!ffDefaults) {
-          // On milo, if ff is not enabled explicitly, disable it by default
-          service.dataset.masFfDefaults = 'off';
-        }
         // Register checkout action if method exists (for backward compatibility)
         if (typeof service.registerCheckoutAction === 'function') {
           service.registerCheckoutAction(getCheckoutAction);
         }
         document.head.append(service);
-        await service.readyPromise;
 
         // Polyfill for older commerce service versions that don't have prefillWcsCache
         if (typeof service.prefillWcsCache !== 'function') {

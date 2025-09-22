@@ -45,7 +45,7 @@ describe('getSettings', () => {
         url.searchParams.set('checkoutWorkflowStep', checkoutWorkflowStep);
         url.searchParams.set('promotionCode', promotionCode);
         url.searchParams.set('displayOldPrice', 'false');
-        url.searchParams.set('displayPerUnit', 'true');
+        url.searchParams.set('displayPerUnit', 'false');
         url.searchParams.set('displayRecurrence', 'false');
         url.searchParams.set('displayTax', 'true');
         url.searchParams.set('displayPlanType', 'true');
@@ -65,7 +65,7 @@ describe('getSettings', () => {
             checkoutWorkflowStep,
             promotionCode,
             displayOldPrice: false,
-            displayPerUnit: true,
+            displayPerUnit: false,
             displayRecurrence: false,
             displayTax: true,
             displayPlanType: true,

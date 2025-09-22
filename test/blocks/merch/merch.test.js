@@ -21,6 +21,7 @@ import merch, {
   getMasBase,
   getOptions,
   appendDexterParameters,
+  getLocaleSettings,
   getMiloLocaleSettings,
   setCtaHash,
   openModal,
@@ -85,6 +86,14 @@ const CHECKOUT_LINK_CONFIGS = {
     DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/audition',
     FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/audition.html?mid=ft&web=1',
     BUY_NOW_PATH: 'www.adobe.com/will/not/be/localized.html',
+    LOCALE: '',
+  },
+  {
+    PRODUCT_FAMILY: 'ILLUSTRATOR+abc',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/illustrator',
+    FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1',
+    BUY_NOW_PATH: 'https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1',
     LOCALE: '',
   },
   ],
@@ -226,6 +235,38 @@ describe('Merch Block', () => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
       });
+    });
+
+    it('should use geo locale for lang-first sites', async () => {
+      sessionStorage.setItem('akamai', 'ES');
+      const geoDetectionMeta = document.createElement('meta');
+      geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
+      geoDetectionMeta.setAttribute('content', 'on');
+      document.head.append(geoDetectionMeta);
+      const data = [
+        { prefix: '/ar', expectedLocale: 'es_AR', expectedCountry: 'ES' },
+        { prefix: '/africa', expectedLocale: 'en_MU', expectedCountry: 'ES' },
+        { prefix: '', expectedLocale: 'en_US', expectedCountry: 'ES' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_AE', expectedCountry: 'ES' },
+        { prefix: '/langstore/en', expectedLocale: 'en_US', expectedCountry: 'ES' },
+        { prefix: '/langstore/es', expectedLocale: 'es_ES', expectedCountry: 'ES' },
+        { prefix: '/langstore/de', expectedLocale: 'de_DE', expectedCountry: 'ES' },
+        { prefix: '/langstore/id', expectedLocale: 'id_ID', expectedCountry: 'ES' },
+        { prefix: '/langstore/hi', expectedLocale: 'hi_IN', expectedCountry: 'ES' },
+        { prefix: '/langstore/ar', expectedLocale: 'ar_DZ', expectedCountry: 'ES' },
+        { prefix: '/langstore/nb', expectedLocale: 'nb_NO', expectedCountry: 'ES' },
+        { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_TW', expectedCountry: 'ES' },
+        { prefix: '/langstore/el', expectedLocale: 'el_GR', expectedCountry: 'ES' },
+        { prefix: '/langstore/uk', expectedLocale: 'uk_UA', expectedCountry: 'ES' },
+        { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES', expectedCountry: 'ES' },
+      ];
+      for (const { prefix, expectedLocale, expectedCountry } of data) {
+        const settings = await getLocaleSettings({ prefix });
+        expect(settings?.locale).to.equal(expectedLocale);
+        expect(settings?.country).to.equal(expectedCountry);
+      }
+      sessionStorage.removeItem('akamai');
+      geoDetectionMeta.remove();
     });
   });
 
@@ -582,7 +623,7 @@ describe('Merch Block', () => {
       await initService(true);
       const cta1 = await merch(document.querySelector('.merch.cta.download'));
       await cta1.onceSettled();
-      const [{ DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
+      const { DOWNLOAD_URL } = CHECKOUT_LINK_CONFIGS.data[1];
       expect(cta1.textContent).to.equal('Download');
       expect(cta1.href).to.equal(DOWNLOAD_URL);
 
@@ -607,7 +648,7 @@ describe('Merch Block', () => {
       await initService(true);
       const cta = await merch(document.querySelector('.merch.cta.download.fr'));
       await cta.onceSettled();
-      const [,, { DOWNLOAD_URL }] = CHECKOUT_LINK_CONFIGS.data;
+      const { DOWNLOAD_URL } = CHECKOUT_LINK_CONFIGS.data[3];
       expect(cta.textContent).to.equal(newConfig.placeholders.download);
       expect(cta.href).to.equal(DOWNLOAD_URL);
     });
@@ -770,6 +811,20 @@ describe('Merch Block', () => {
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
       checkoutLinkConfig = await getCheckoutLinkConfig('', '', 'testPaCode');
       expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+    });
+
+    it('getCheckoutLinkConfig: finds using paCode and svar', async () => {
+      const options = { extraOptions: '{"svar": "abc", "other": "xyz"}' };
+      const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
+      expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1');
+      expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1');
+    });
+
+    it('getCheckoutLinkConfig: finds using paCode and no svar', async () => {
+      const options = { extraOptions: '{"other": "xyz"}' };
+      const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
+      expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1');
+      expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
     });
 
     it('getCheckoutLinkConfig: finds using productCode', async () => {
