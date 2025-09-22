@@ -25,6 +25,12 @@
   border-color: var(--color-gray-700);
 }
 
+.light .editorial-card,
+.editorial-card.light {
+  color: var(--text-color);
+  border-color: var(--color-gray-300);
+}
+
 .editorial-card.no-bg { background: none;}
 .editorial-card.no-border { border: none;}
 
