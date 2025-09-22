@@ -291,7 +291,7 @@ function createOverlayElement(
     tabindex: '0',
   });
 
-  // Create info container for user avatar, name, and prompt
+  const contentWrapper = createTag('div', { class: 'firefly-gallery-content-wrapper' });
   const infoContainer = createTag('div', { class: 'firefly-gallery-info-container' });
 
   // Add user info if available
@@ -328,7 +328,7 @@ function createOverlayElement(
     infoContainer.appendChild(promptElement);
   }
 
-  overlay.appendChild(infoContainer);
+  contentWrapper.appendChild(infoContainer);
 
   // Add View button
   const viewButton = createTag(
@@ -336,7 +336,8 @@ function createOverlayElement(
     { class: 'firefly-gallery-view-button' },
     viewBtnLabel,
   );
-  overlay.appendChild(viewButton);
+  contentWrapper.appendChild(viewButton);
+  overlay.appendChild(contentWrapper);
 
   return overlay;
 }

@@ -2,7 +2,6 @@
 :root {
   --prompt-font-size: calc(var(--type-body-xs-size) * 0.8);
   --prompt-line-height: 1.2;
-  --prompt-max-width: 80%;
   --username-max-width: 80px;
   --avatar-size: 24px;
   --border-radius-standard: 8px;
@@ -265,15 +264,20 @@
   will-change: transform; /* Optimize for animation performance */
 }
 
+.firefly-gallery-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 12px;
+}
+
 .firefly-gallery-view-button {
   background: var(--color-white);
   color: #292929;
   padding: 1px 12px;
   border-radius: 16px; /* Pill shape */
   align-self: flex-end;
-  margin-top: auto;
-  margin-bottom: var(--spacing-xxs);
-  margin-right: var(--spacing-xxs);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -289,7 +293,6 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
-  max-width: var(--prompt-max-width);
   line-height: var(--prompt-line-height);
   max-height: calc(var(--prompt-line-height) * 2em);
   margin: var(--spacing-xxs) 0;
@@ -297,11 +300,7 @@
 
 /* Info container for user and prompt */
 .firefly-gallery-info-container {
-  display: flex;
-  flex-direction: column;
   width: 100%;
-  margin-left: var(--spacing-xxs);
-  margin-top: var(--spacing-xxs);
 }
 
 /* User info styles */
@@ -451,7 +450,6 @@
     --row-gap: calc(14px - 8px);
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.85);
     --prompt-line-height: 1.2;
-    --prompt-max-width: 85%;
     --username-max-width: auto;
   }
 
@@ -466,6 +464,5 @@
     --column-count: 5;
     --row-gap: calc(var(--spacing-xs) - 8px);
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.9);
-    --prompt-max-width: 90%;
   }
 }
