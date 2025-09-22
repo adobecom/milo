@@ -1,7 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 
-// API configuration
 const FIREFLY_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/assets';
 const API_PARAMS = '?size=32&sort=updated_desc&include_pending_assets=false&cursor=';
 const API_KEY = 'alfred-community-hubs';
@@ -53,7 +52,6 @@ function safeJsonParse(jsonString, defaultValue = {}) {
 function getLocalizedValue(localizations, currentLocale, defaultValue = '') {
   if (!localizations) return defaultValue;
 
-  // Try exact match
   if (localizations[currentLocale]) {
     return localizations[currentLocale];
   }
@@ -122,15 +120,15 @@ function constructVideoUrl(assetId) {
 
 function getItemTypeFromAspectRatio(aspectRatio) {
   if (aspectRatio < ITEM_TYPE_THRESHOLDS.tall) {
-    return 'tall'; // Portrait (very tall)
+    return 'tall';
   }
   if (aspectRatio < ITEM_TYPE_THRESHOLDS.portrait) {
-    return 'portrait'; // Portrait (moderately tall)
+    return 'portrait';
   }
   if (aspectRatio < ITEM_TYPE_THRESHOLDS.square) {
-    return 'square'; // Approximately square
+    return 'square';
   }
-  return 'short'; // Landscape
+  return 'short';
 }
 
 function updateItemTypeClass(item, itemType) {
@@ -216,10 +214,7 @@ function createGalleryStructure() {
   };
 }
 
-// Column count is now handled entirely by CSS media queries
-
 function createSkeletonLayout(container) {
-  // Create the masonry grid container
   const masonryGrid = createTag('div', { class: 'firefly-gallery-masonry-grid loading' });
 
   const skeletonItems = [];
@@ -271,10 +266,10 @@ function createSkeletonLayout(container) {
     skeletonItem.dataset.heightRatio = aspectRatio;
 
     // Add a wrapper for the skeleton animation
-    const skeletonWrapper = createTag('div', { class: 'skeleton-wrapper' });
+    const skeletonWrapper = createTag('div', { class: 'skeleton-wrapper absolute-fill' });
 
     // Add loading animation elements
-    const skeletonAnimation = createTag('div', { class: 'skeleton-animation' });
+    const skeletonAnimation = createTag('div', { class: 'skeleton-animation absolute-fill' });
 
     skeletonWrapper.appendChild(skeletonAnimation);
     skeletonItem.appendChild(skeletonWrapper);
@@ -283,7 +278,6 @@ function createSkeletonLayout(container) {
     skeletonItems.push(skeletonItem);
   }
   container.insertBefore(masonryGrid, container.firstChild);
-  // container.appendChild(masonryGrid);
   return { masonryGrid, skeletonItems };
 }
 
@@ -292,7 +286,7 @@ function createImageElement(imageUrl, altText) {
     src: imageUrl,
     alt: altText,
     loading: 'lazy',
-    class: 'firefly-gallery-img',
+    class: 'firefly-gallery-img absolute-fill',
   });
 }
 
@@ -335,7 +329,6 @@ function createOverlayElement(
       );
       userInfoContainer.appendChild(username);
     }
-
     infoContainer.appendChild(userInfoContainer);
   }
 
@@ -405,7 +398,7 @@ function loadAssetIntoSkeleton(
         const videoUrl = constructVideoUrl(id);
         const video = createTag('video', {
           src: videoUrl,
-          class: 'firefly-gallery-video',
+          class: 'firefly-gallery-video absolute-fill',
           muted: true,
           loop: true,
           preload: 'none',
@@ -491,7 +484,6 @@ function processItem(item, asset, index, locale) {
   // Get localized prompt text
   let promptText = '';
   if (asset?.custom?.input?.['firefly#prompts']) {
-    // Use the getLocalizedValue utility
     promptText = getLocalizedValue(
       asset.custom.input['firefly#prompts'],
       locale,

@@ -1,28 +1,26 @@
+/* Responsive styling with mobile-first approach */
 :root {
-  /* Mobile values (default for screens <= 600px) */
-  --columns: 2;
-  --gap: var(--spacing-xxs);
-  --item-margin: var(--spacing-xxs);
-  /* --padding: var(--spacing-m) 0; */
-
-  /* Typography scale */
   --prompt-font-size: calc(var(--type-body-xs-size) * 0.8);
   --prompt-line-height: 1.2;
   --prompt-max-width: 80%;
   --username-max-width: 80px;
-
-  /* Avatar dimensions */
   --avatar-size: 24px;
-
-  /* Border radius values */
   --border-radius-standard: 8px;
   --border-radius-round: 50%;
+  --column-count: 2;
+  --column-gap: var(--spacing-xxs);
+  --video-overlay-gradient: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 70%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
 
   /* Animation durations */
   --transition-speed-fast: 0.3s;
   --transition-speed-medium: 0.5s;
 
-  /* Define skeleton dimensions using custom properties for easier maintenance */
   --skeleton-height-default: 200px;
   --skeleton-height-short: calc(
     var(--skeleton-height-default) * 0.7
@@ -56,8 +54,17 @@
   );
 }
 
+.absolute-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .firefly-gallery-block {
-  /* padding: var(--padding); */
   position: relative;
 }
 
@@ -77,9 +84,8 @@
 
 /* Masonry grid layout using CSS columns for true masonry effect */
 .firefly-gallery-masonry-grid {
-  /* Set base column count for mobile */
-  column-count: 2;
-  column-gap: var(--gap);
+  column-count: var(--column-count);
+  column-gap: var(--column-gap);
   margin-bottom: var(--spacing-l);
   width: 100%;
 }
@@ -98,20 +104,6 @@
   width: 100%;
 }
 
-/* Tablet styles */
-@media screen and (min-width: 601px) {
-  .firefly-gallery-masonry-grid {
-    column-count: 3;
-  }
-}
-
-/* Desktop styles - 5 columns for any screen ≥ 901px */
-@media screen and (min-width: 901px) {
-  .firefly-gallery-masonry-grid {
-    column-count: 5;
-  }
-}
-
 /* Skeleton item base styles */
 .firefly-gallery-item {
   background-color: var(--color-gray-50);
@@ -121,7 +113,7 @@
   transition: transform var(--transition-speed-fast) ease,
     box-shadow var(--transition-speed-fast) ease;
   width: 100%;
-  margin-bottom: var(--item-margin); /* Space between items in the column */
+  margin-bottom: var(--spacing-xxs); /* Space between items in the column */
   padding: 0;
   display: inline-block; /* Important for column layout */
   break-inside: avoid; /* Prevent items from breaking across columns */
@@ -181,13 +173,6 @@
 }
 
 .skeleton-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
   overflow: hidden;
   background-color: var(--skeleton-bg-color);
   display: block;
@@ -197,13 +182,6 @@
 
 /* Enhanced skeleton animation */
 .skeleton-animation {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   z-index: 2;
 }
 
@@ -244,13 +222,19 @@
   z-index: 2;
 }
 
+.firefly-gallery-image {
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .firefly-gallery-item.loaded .skeleton-wrapper {
   opacity: 0;
   pointer-events: none; /* Prevent interaction with the hidden skeleton */
-}
-
-.firefly-gallery-image {
-  opacity: 1; /* Show image immediately */
 }
 
 .firefly-gallery-item.loaded .firefly-gallery-image {
@@ -262,31 +246,9 @@
   transition: transform 0.5s ease, box-shadow 0.5s ease;
 }
 
-/* Image container styles */
-.firefly-gallery-image {
-  width: 100%;
-  height: 100%;
-  /* position: absolute; */
-  /* top: 0; */
-  /* left: 0; */
-  /* bottom: 0; */
-  /* right: 0; */
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .firefly-gallery-img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
   transition: transform var(--transition-speed-fast) ease;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 
 /* Overlay and prompt styles */
@@ -306,7 +268,6 @@
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 2;
-  /* padding: var(--spacing-xxs); */
   border-radius: 8px; /* Match the item border radius */
   transform: translateY(5px); /* Start slightly below */
   cursor: pointer;
@@ -333,7 +294,7 @@
   font-size: var(--prompt-font-size);
   text-align: left;
   overflow: hidden;
-  display: -webkit-box;
+  display: --webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
@@ -383,26 +344,21 @@
   max-width: var(--username-max-width);
 }
 
+.firefly-gallery-overlay:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 4px #378ef0; /* Inner border */
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* Hover effects for loaded images */
-.firefly-gallery-item:hover {
+.firefly-gallery-item:hover, .firefly-gallery-item:focus-within {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
 }
 
 .firefly-gallery-item:hover .firefly-gallery-overlay {
   opacity: 1;
   transform: translateY(0); /* Reset position on hover */
-}
-
-/* Focus styles to prevent visual shifting during keyboard navigation */
-.firefly-gallery-overlay:focus {
-  outline: none;
-  box-shadow: inset 0 0 0 2px #378ef0; /* Creates an inner border effect */
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.firefly-gallery-item:focus-within {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Match hover shadow on parent */
 }
 
 /* Video-specific styles */
@@ -420,38 +376,22 @@
 }
 
 .firefly-gallery-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   object-fit: cover;
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 1;
 }
 
+.firefly-gallery-video-overlay:focus {
+  background: var(--video-overlay-gradient);
+}
+
 .firefly-gallery-item.video-item:hover .firefly-gallery-video-overlay {
   opacity: 1;
   transform: translateY(0);
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0) 30%,
-    rgba(0, 0, 0, 0) 70%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
+  background: var(--video-overlay-gradient);
 }
 
-.firefly-gallery-video-overlay:focus {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0) 30%,
-    rgba(0, 0, 0, 0) 70%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
-}
 
 .firefly-gallery-item.video-item:hover .firefly-gallery-video {
   opacity: 1;
@@ -495,7 +435,6 @@
 }
 
 /* Error state */
-/* TODO Add through JS */
 .firefly-gallery-item.error {
   background-color: var(--color-gray-200);
 }
@@ -514,8 +453,6 @@
   left: 0;
 }
 
-/* Responsive styling with mobile-first approach */
-
 /* Tablet styles (601px - 900px) */
 @media screen and (min-width: 601px) {
   :root {
@@ -526,14 +463,10 @@
     --prompt-line-height: 1.2;
     --prompt-max-width: 85%;
     --username-max-width: auto;
+    --column-count: 3;
+    --column-gap: 12px;
   }
 
-  /* Update column gap to match columns */
-  .firefly-gallery-masonry-grid {
-    column-gap: 12px;
-  }
-
-  /* Only override specific properties that change at this breakpoint */
   .firefly-gallery-user-info {
     gap: calc(var(--spacing-xxs) / 2);
   }
@@ -543,14 +476,11 @@
 @media screen and (min-width: 901px) {
   :root {
     --gap: var(--spacing-xxs);
-    --item-margin: var(--spacing-xxs); /* 8px */
+    --item-margin: var(--spacing-xxs);
     --padding: var(--spacing-l) 0;
     --prompt-font-size: calc(var(--type-body-xs-size) * 0.9);
     --prompt-max-width: 90%;
-  }
-
-  /* Update column gap to match columns */
-  .firefly-gallery-masonry-grid {
-    column-gap: var(--spacing-xs);
+    --column-count: 5;
+     --column-gap: var(--spacing-xs);
   }
 }
