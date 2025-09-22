@@ -195,6 +195,9 @@ describe('Firefly Gallery', () => {
 
       expect(createFireflyURL('urn:asset:456', 'video'))
         .to.equal('https://firefly.adobe.com/open?assetOrigin=community&assetType=VideoGeneration&id=urn:asset:456');
+
+      expect(createFireflyURL('urn:asset:789', 'image', 'TESTCGENID'))
+        .to.equal('https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=urn:asset:789&promoid=TESTCGENID&mv=other');
     });
 
     it('getImageRendition should return correct URL with appropriate size', () => {
@@ -227,7 +230,7 @@ describe('Firefly Gallery', () => {
       // Create a test element with the expected structure
       const galleryEl = document.createElement('div');
       galleryEl.innerHTML = `
-        <div><div>ImageGeneration</div></div>
+        <div><div>ImageGeneration | TESTCGENID</div></div>
         <div><div>Open in Firefly</div></div>
       `;
       document.body.appendChild(galleryEl);
@@ -251,7 +254,7 @@ describe('Firefly Gallery', () => {
       // Create a test element with VideoGeneration
       const galleryEl = document.createElement('div');
       galleryEl.innerHTML = `
-        <div><div>VideoGeneration</div></div>
+        <div><div>VideoGeneration | TESTVIDCGENID</div></div>
         <div><div>View Video</div></div>
       `;
       document.body.appendChild(galleryEl);
@@ -286,7 +289,7 @@ describe('Firefly Gallery', () => {
       // Create a test element
       const galleryEl = document.createElement('div');
       galleryEl.innerHTML = `
-        <div><div>ImageGeneration</div></div>
+        <div><div>ImageGeneration | TESTERRCGENID</div></div>
         <div><div>View</div></div>
       `;
       document.body.appendChild(galleryEl);
@@ -308,7 +311,7 @@ describe('Firefly Gallery', () => {
       // Create a test element
       const galleryEl = document.createElement('div');
       galleryEl.innerHTML = `
-        <div><div>ImageGeneration</div></div>
+        <div><div>ImageGeneration | TESTRESIZE</div></div>
         <div><div>View</div></div>
       `;
       document.body.appendChild(galleryEl);

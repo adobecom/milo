@@ -141,7 +141,7 @@ function updateItemTypeClass(item, itemType) {
   item.className = newClasses.join(' ');
 }
 
-async function fetchFireflyAssets(categoryId, viewBtnLabel) {
+async function fetchFireflyAssets(categoryId, viewBtnLabel, cgenId) {
   try {
     const response = await fetch(
       `${FIREFLY_API_URL}${API_PARAMS}&category_id=${categoryId}`,
@@ -161,6 +161,7 @@ async function fetchFireflyAssets(categoryId, viewBtnLabel) {
     assets.forEach((asset) => {
       asset.assetType = categoryId === 'VideoGeneration' ? 'video' : 'image';
       asset.viewBtnLabel = viewBtnLabel;
+      asset.cgenId = cgenId;
     });
     return assets;
   } catch (error) {
@@ -173,9 +174,14 @@ const replaceRenditionUrl = (url, format, dimension, size) => url
   .replace(/{dimension}/g, dimension)
   .replace(/{size}/g, size);
 
-export function createFireflyURL(urn, assetType = 'image') {
+export function createFireflyURL(urn, assetType = 'image', cgenId = '') {
   const assetTypeParam = assetType === 'video' ? 'VideoGeneration' : 'ImageGeneration';
-  return `https://firefly.adobe.com/open?assetOrigin=community&assetType=${assetTypeParam}&id=${urn}`;
+  let url = `https://firefly.adobe.com/open?assetOrigin=community&assetType=${assetTypeParam}&id=${urn}`;
+
+  if (cgenId) {
+    url += `&promoid=${cgenId}&mv=other`;
+  }
+  return url;
 }
 
 export function getImageRendition(asset, itemType = 'square') {
@@ -226,7 +232,7 @@ function createSkeletonLayout(container) {
   // Optimized for 5-column desktop layout: 30 items = 6 items per column
   // Pattern ensures balanced distribution across all responsive breakpoints
   const placeholderTypes = [
-    // Column flow pattern optimized for 5 columns (6 items per column)
+    // Column flow pattern optimized for 5 columns (5 items per column)
     // column 1
     'short', 'square', 'portrait', 'tall', 'short',
     // column 2
@@ -364,7 +370,7 @@ function loadAssetIntoSkeleton(
   assetData = {},
   userInfo = {},
 ) {
-  const { id, assetType, viewBtnLabel } = assetData;
+  const { id, assetType, viewBtnLabel, cgenId } = assetData;
   return new Promise((resolve) => {
     // Create image container
     const assetContainer = createTag('div', { class: 'firefly-gallery-image' });
@@ -381,7 +387,7 @@ function loadAssetIntoSkeleton(
 
     // Create and append clickable overlay if prompt exists
     if (promptText) {
-      const fireflyUrl = createFireflyURL(assetUrn, assetType);
+      const fireflyUrl = createFireflyURL(assetUrn, assetType, cgenId);
       const overlayPromptText = assetType === 'video' ? '' : promptText;
       const overlay = createOverlayElement(
         overlayPromptText,
@@ -526,6 +532,7 @@ function processItem(item, asset, index, locale) {
     id: asset.id,
     assetType: asset.assetType || 'image',
     viewBtnLabel: asset.viewBtnLabel,
+    cgenId: asset.cgenId,
   };
   loadAssetIntoSkeleton(
     item,
@@ -652,7 +659,7 @@ export default async function init(el) {
   // Allow the skeleton UI to render and be scrollable
   // before waiting for image data
   // Load Firefly images
-  fetchFireflyAssets(categoryId, viewBtnLabel)
+  fetchFireflyAssets(categoryId, viewBtnLabel, cgenId)
     .then((assets) => {
       if (assets && assets.length) {
         // Pass assets to the function to enable progressive loading
