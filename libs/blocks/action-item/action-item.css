@@ -3,7 +3,7 @@
 }
 
 .action-item .static {
-  width: -webkit-fill-available;
+  width: 100%;
 }
 
 .action-item img {
