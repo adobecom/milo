@@ -246,7 +246,7 @@ function compareResults(result, link) {
   return true;
 }
 
-export async function validLinkFilter(area = document) {
+export function validLinkFilter(area = document) {
   return [...area.querySelectorAll('a')]
   .filter((link) => {
     if (
