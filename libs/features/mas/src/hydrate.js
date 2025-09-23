@@ -350,7 +350,6 @@ function processDescriptionLinks(merchCard, aemFragmentMapping) {
 }
 
 export function processDescription(fields, merchCard, mapping) {
-    // Process tooltips in description field
     if (fields.description) {
         fields.description = processMnemonicElements(fields.description);
     }
