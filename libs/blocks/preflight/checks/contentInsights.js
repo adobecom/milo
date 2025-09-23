@@ -24,36 +24,35 @@ import {
   validLinkFilter
 } from './seo.js';
 
-window.preflightExecutors.general = {
-  runGeneralChecks
-}
-
-window.preflightExecutors.assets = {
-  openAllModals,
-  checkImageDimensions
-}
-
-window.preflightExecutors.accessibility = {
-  checkAlt
-}
-
-window.preflightExecutors.performance = {
-  checkLcpEl, 
-  checkSingleBlock, 
-  checkImageSize, 
-  checkVideoPoster, 
-  checkFragments, 
-  checkForPersonalization, 
-  checkPlaceholders, 
-  checkIcons 
-}
-
-window.preflightExecutors.seo = {
-  checkH1s,
-  checkTitle,
-  checkCanon,
-  checkDescription,
-  checkBody,
-  checkLorem,
-  validLinkFilter
-}
+window.preflightExecutors = {
+  general: {
+    runGeneralChecks
+  },
+  assets: {
+    openAllModals,
+    checkImageDimensions
+  }, 
+  accessibility: {
+    checkAlt
+  },
+  performance: {
+    checkLcpEl, 
+    checkSingleBlock, 
+    checkImageSize, 
+    checkVideoPoster, 
+    checkFragments, 
+    checkForPersonalization, 
+    checkPlaceholders, 
+    checkIcons 
+  },
+  seo: {
+    checkH1s,
+    checkTitle,
+    checkCanon,
+    checkDescription,
+    checkBody,
+    checkLorem,
+    validLinkFilter
+  }
+};
+window.dispatchEvent(new CustomEvent('content-insights-begin'));
