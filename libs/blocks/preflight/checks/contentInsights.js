@@ -1,5 +1,8 @@
 import { runGeneralChecks } from '../panels/general.js';
-import { openAllModals, checkImageDimensions } from './assets.js';
+import {
+  openAllModals,
+  checkImageDimensions
+} from './assets.js';
 import { checkAlt } from '../accessibility/audit-image-alt-text.js';
 import { 
     checkLcpEl, 
@@ -11,7 +14,15 @@ import {
     checkPlaceholders, 
     checkIcons 
 } from './performance.js';
-import { checkH1s, checkTitle, checkCanon, checkDescription, checkBody, checkLorem } from './seo.js';
+import { 
+  checkH1s,
+  checkTitle,
+  checkCanon,
+  checkDescription,
+  checkBody,
+  checkLorem,
+  validLinkFilter
+} from './seo.js';
 
 window.preflightExecutors.general = {
   runGeneralChecks
@@ -43,5 +54,6 @@ window.preflightExecutors.seo = {
   checkCanon,
   checkDescription,
   checkBody,
-  checkLorem
+  checkLorem,
+  validLinkFilter
 }
