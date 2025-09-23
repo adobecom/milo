@@ -291,6 +291,14 @@ function createOverlayElement(
     tabindex: '0',
   });
 
+  // Handle touch events specifically for iOS Safari
+  overlay.addEventListener('touchstart', () => {
+    // Remove focus from any other elements first
+    if (document.activeElement && document.activeElement !== overlay) {
+      document.activeElement.blur();
+    }
+  });
+
   const contentWrapper = createTag('div', { class: 'firefly-gallery-content-wrapper' });
   const infoContainer = createTag('div', { class: 'firefly-gallery-info-container' });
 
