@@ -4,10 +4,8 @@ import { MatchMediaController } from '@spectrum-web-components/reactive-controll
 import { deeplink, pushState } from './deeplink.js';
 import {
     EVENT_MAS_ERROR,
-    EVENT_MAS_READY,
     EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED,
     EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED,
-    EVENT_MERCH_CARD_COLLECTION_READY,
     EVENT_MERCH_SIDENAV_SELECT,
     EVENT_MERCH_CARD_COLLECTION_SORT,
     EVENT_MERCH_CARD_COLLECTION_SHOWMORE,
@@ -219,36 +217,6 @@ export class MerchCardCollection extends LitElement {
       });
     }
 
-    dispatchCollectionReady() {
-        // Wait for all cards to be ready then dispatch event
-        const cards = this.querySelectorAll('merch-card');
-        if (cards.length === 0) return;
-
-        let readyCount = 0;
-        const checkAllReady = () => {
-            readyCount++;
-            if (readyCount === cards.length) {
-                // All cards are ready, dispatch collection ready event
-                this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_READY, {
-                    bubbles: true,
-                    composed: true,
-                    detail: {
-                        totalCards: cards.length,
-                        variant: this.variant
-                    }
-                }));
-            }
-        };
-
-        cards.forEach((card) => {
-            if (card.classList.contains('ready')) {
-                checkAllReady();
-            } else {
-                card.addEventListener(EVENT_MAS_READY, checkAllReady, { once: true });
-            }
-        });
-    }
-
 
     connectedCallback() {
         super.connectedCallback();
@@ -458,9 +426,6 @@ export class MerchCardCollection extends LitElement {
             this.hydrating = false;
             aemFragment.remove();
             resolveHydration(true);
-
-            // Dispatch collection ready event when all cards are ready
-            this.dispatchCollectionReady();
         });
         await this.hydrationReady;
     }

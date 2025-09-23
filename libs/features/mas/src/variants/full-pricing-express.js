@@ -2,7 +2,6 @@ import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './full-pricing-express.css.js';
 import { isMobile } from '../media.js';
-import { EVENT_MERCH_CARD_COLLECTION_READY } from '../constants.js';
 
 export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -66,6 +65,8 @@ export class FullPricingExpress extends VariantLayout {
     constructor(card) {
         super(card);
         this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+        this.intersectionObserver = null;
+        this.visibilityObserver = null;
     }
 
     getGlobalCSS() {
@@ -199,34 +200,94 @@ export class FullPricingExpress extends VariantLayout {
 
     connectedCallbackHook() {
         window.addEventListener('resize', this.postCardUpdateHook);
-        
-        this.handleCollectionReady = async () => {
-            if (!isMobile()) {
-                if (this.card.prices?.length) {
-                    await Promise.all(this.card.prices.map((price) => price.onceSettled?.()));
-                }
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        this.syncHeights();
-                    }, 200);
+
+        // Delay to ensure tab structure is ready
+        setTimeout(() => {
+            this.setupVisibilityDetection();
+        }, 100);
+    }
+
+    setupVisibilityDetection() {
+        // Find the closest tab panel parent
+        const tabPanel = this.card.closest('.tabpanel, [role="tabpanel"]');
+
+        if (tabPanel) {
+            // Watch for hidden attribute changes on the tab panel
+            this.visibilityObserver = new MutationObserver((mutations) => {
+                mutations.forEach(async (mutation) => {
+                    if (mutation.type === 'attributes' &&
+                        mutation.attributeName === 'hidden' &&
+                        !tabPanel.hasAttribute('hidden')) {
+                        // Tab panel just became visible
+                        if (!isMobile()) {
+                            // Force ALL cards in this container to remeasure
+                            const container = this.getContainer();
+                            if (container) {
+                                // Clear all height variables first
+                                container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-description-height`);
+                                container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-price-height`);
+                                container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-cta-height`);
+                                container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-shortDescription-height`);
+
+                                // Find ALL full-pricing-express cards in this tab panel
+                                const allCards = tabPanel.querySelectorAll('merch-card[variant="full-pricing-express"]');
+
+                                // Wait for all prices to settle
+                                for (const card of allCards) {
+                                    if (card.prices?.length) {
+                                        await Promise.all(card.prices.map((price) => price.onceSettled?.()));
+                                    }
+                                }
+
+                                // Force all cards to sync heights
+                                requestAnimationFrame(() => {
+                                    allCards.forEach(card => {
+                                        if (card.variantLayout?.syncHeights) {
+                                            card.variantLayout.syncHeights();
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    }
                 });
-            }
-        };
-        
-        const collection = this.card.closest('merch-card-collection');
-        if (collection) {
-            collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
+            });
+
+            this.visibilityObserver.observe(tabPanel, {
+                attributes: true,
+                attributeFilter: ['hidden']
+            });
+        } else {
+            // Not in a tab, use IntersectionObserver as fallback for scroll scenarios
+            this.intersectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(async (entry) => {
+                    if (entry.isIntersecting && entry.target.clientHeight > 0) {
+                        if (!isMobile()) {
+                            if (this.card.prices?.length) {
+                                await Promise.all(this.card.prices.map((price) => price.onceSettled?.()));
+                            }
+                            requestAnimationFrame(() => {
+                                this.forceRemeasure();
+                            });
+                        }
+                    }
+                });
+            });
+            this.intersectionObserver.observe(this.card);
         }
     }
 
     disconnectedCallbackHook() {
         window.removeEventListener('resize', this.postCardUpdateHook);
-        
-        if (this.handleCollectionReady) {
-            const collection = this.card.closest('merch-card-collection');
-            if (collection) {
-                collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
-            }
+
+        if (this.visibilityObserver) {
+            this.visibilityObserver.disconnect();
+            this.visibilityObserver = null;
+        }
+
+        if (this.intersectionObserver) {
+            this.intersectionObserver.disconnect();
+            this.intersectionObserver = null;
         }
     }
 
