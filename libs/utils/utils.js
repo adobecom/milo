@@ -1612,6 +1612,10 @@ export async function loadDeferred(area, blocks, config) {
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
   }
+
+  // Load content insights on demand
+  import('../features/content-insights/content-insights.js')
+    .then(({ default: initContentInsights }) => initContentInsights());
 }
 
 function initSidekick() {
