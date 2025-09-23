@@ -23,13 +23,13 @@ const applyBackground = (colors, section) => {
     return;
   }
   if (colors.length >= 3) {
-    const [mobile, tablet, desktop] = colors;
+    const [mobileColor, tabletColor, desktopColor] = colors;
     if (width <= MOBILE_MAX) {
-      section.style.background = mobile;
+      section.style.background = mobileColor;
     } else if (width <= TABLET_MAX) {
-      section.style.background = tablet;
+      section.style.background = tabletColor;
     } else {
-      section.style.background = desktop;
+      section.style.background = desktopColor;
     }
   }
 };
