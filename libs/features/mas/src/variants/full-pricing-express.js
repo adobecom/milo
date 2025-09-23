@@ -170,87 +170,72 @@ export class FullPricingExpress extends VariantLayout {
         }
     }
 
-    forceRemeasure() {
+    clearHeightVariables() {
         const container = this.getContainer();
-        if (container) {
-            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-description-height`);
-            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-price-height`);
-            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-cta-height`);
-            container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-shortDescription-height`);
+        if (!container) return;
 
-            this.syncHeights();
+        const prefix = `--consonant-merch-card-${this.card.variant}`;
+        ['description', 'price', 'cta', 'shortDescription'].forEach(name => {
+            container.style.removeProperty(`${prefix}-${name}-height`);
+        });
+    }
+
+    async waitForPrices() {
+        if (this.card.prices?.length) {
+            await Promise.all(this.card.prices.map(price => price.onceSettled?.()));
         }
+    }
+
+    async syncAllCardsInContainer(cards) {
+        // Wait for all prices to settle
+        await Promise.all(
+            Array.from(cards).flatMap(card =>
+                card.prices?.map(price => price.onceSettled?.()) || []
+            )
+        );
+
+        // Sync all cards
+        requestAnimationFrame(() => {
+            cards.forEach(card => card.variantLayout?.syncHeights?.());
+        });
+    }
+
+    forceRemeasure() {
+        this.clearHeightVariables();
+        this.syncHeights();
     }
 
     async postCardUpdateHook() {
         if (!this.card.isConnected) return;
-        
+
         await this.card.updateComplete;
-        
-        if (this.card.prices?.length) {
-            await Promise.all(this.card.prices.map((price) => price.onceSettled?.()));
-        }
-        
+        await this.waitForPrices();
+
         if (!isMobile()) {
-            requestAnimationFrame(() => {
-                this.syncHeights();
-            });
+            requestAnimationFrame(() => this.syncHeights());
         }
     }
 
     connectedCallbackHook() {
         window.addEventListener('resize', this.postCardUpdateHook);
-
-        // Delay to ensure tab structure is ready
-        setTimeout(() => {
-            this.setupVisibilityDetection();
-        }, 100);
+        setTimeout(() => this.setupVisibilityDetection(), 100);
     }
 
     setupVisibilityDetection() {
-        // Find the closest tab panel parent
         const tabPanel = this.card.closest('.tabpanel, [role="tabpanel"]');
 
         if (tabPanel) {
-            // Watch for hidden attribute changes on the tab panel
-            this.visibilityObserver = new MutationObserver((mutations) => {
-                mutations.forEach(async (mutation) => {
-                    if (mutation.type === 'attributes' &&
-                        mutation.attributeName === 'hidden' &&
-                        !tabPanel.hasAttribute('hidden')) {
-                        // Tab panel just became visible
-                        if (!isMobile()) {
-                            // Force ALL cards in this container to remeasure
-                            const container = this.getContainer();
-                            if (container) {
-                                // Clear all height variables first
-                                container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-description-height`);
-                                container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-price-height`);
-                                container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-cta-height`);
-                                container.style.removeProperty(`--consonant-merch-card-${this.card.variant}-shortDescription-height`);
+            // Tab scenario - watch for visibility changes
+            this.visibilityObserver = new MutationObserver(async (mutations) => {
+                const becameVisible = mutations.some(m =>
+                    m.attributeName === 'hidden' && !tabPanel.hasAttribute('hidden')
+                );
 
-                                // Find ALL full-pricing-express cards in this tab panel
-                                const allCards = tabPanel.querySelectorAll('merch-card[variant="full-pricing-express"]');
-
-                                // Wait for all prices to settle
-                                for (const card of allCards) {
-                                    if (card.prices?.length) {
-                                        await Promise.all(card.prices.map((price) => price.onceSettled?.()));
-                                    }
-                                }
-
-                                // Force all cards to sync heights
-                                requestAnimationFrame(() => {
-                                    allCards.forEach(card => {
-                                        if (card.variantLayout?.syncHeights) {
-                                            card.variantLayout.syncHeights();
-                                        }
-                                    });
-                                });
-                            }
-                        }
-                    }
-                });
+                if (becameVisible && !isMobile()) {
+                    this.clearHeightVariables();
+                    const cards = tabPanel.querySelectorAll('merch-card[variant="full-pricing-express"]');
+                    await this.syncAllCardsInContainer(cards);
+                }
             });
 
             this.visibilityObserver.observe(tabPanel, {
@@ -258,20 +243,13 @@ export class FullPricingExpress extends VariantLayout {
                 attributeFilter: ['hidden']
             });
         } else {
-            // Not in a tab, use IntersectionObserver as fallback for scroll scenarios
-            this.intersectionObserver = new IntersectionObserver((entries) => {
-                entries.forEach(async (entry) => {
-                    if (entry.isIntersecting && entry.target.clientHeight > 0) {
-                        if (!isMobile()) {
-                            if (this.card.prices?.length) {
-                                await Promise.all(this.card.prices.map((price) => price.onceSettled?.()));
-                            }
-                            requestAnimationFrame(() => {
-                                this.forceRemeasure();
-                            });
-                        }
-                    }
-                });
+            // Non-tab scenario - use intersection observer
+            this.intersectionObserver = new IntersectionObserver(async (entries) => {
+                const visible = entries.find(e => e.isIntersecting && e.target.clientHeight > 0);
+                if (visible && !isMobile()) {
+                    await this.waitForPrices();
+                    requestAnimationFrame(() => this.forceRemeasure());
+                }
             });
             this.intersectionObserver.observe(this.card);
         }
