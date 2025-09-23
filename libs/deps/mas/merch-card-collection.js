@@ -1736,7 +1736,6 @@ merch-card-collection.simplified-pricing-express {
     justify-items: center;
     align-items: stretch;
     gap: 16px;
-    padding: var(--spacing-m);
     /* Default to 1 column on mobile */
     grid-template-columns: 1fr;
 }
@@ -1800,8 +1799,8 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] {
   margin-bottom: var(--merch-card-simplified-pricing-express-padding);
 }
 
-merch-card[variant="simplified-pricing-express"] [slot="price"] > p span[is="inline-price"]:first-child {
-  margin-right: 8px;
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"]:first-child {
+  margin-inline-end: 8px;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {
@@ -1811,6 +1810,11 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child 
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] {
+  font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
+  line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] {
   font-size: var(--merch-card-simplified-pricing-express-price-font-size);
   line-height: var(--merch-card-simplified-pricing-express-price-line-height);
 }
@@ -1830,11 +1834,17 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] p:empty {
   min-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
 }
 
-merch-card[variant="simplified-pricing-express"] [slot="price"] .price-currency-symbol {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child .price-currency-symbol {
   font-size: var(--merch-card-simplified-pricing-express-price-font-size);
   font-weight: var(--merch-card-simplified-pricing-express-price-font-weight);
   line-height: var(--merch-card-simplified-pricing-express-price-line-height);
   width: 100%;
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] .price-currency-symbol {
+  font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-p-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence {
@@ -1860,20 +1870,21 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] p a {
   color: var(--spectrum-indigo-900);
   font-weight: 500;
   text-decoration: underline;
+  white-space: nowrap;
 }
 
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-integer,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-decimals {
   font-size: 28px;
   font-weight: 700;
   line-height: 36.4px;
   text-decoration-thickness: 2px;
 }
 
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals {
   text-decoration: line-through;
 }
 
@@ -1881,6 +1892,16 @@ merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-te
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'],
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol {
   color: var(--spectrum-indigo-900);
+}
+
+/* Ensure non-first paragraph prices have normal font weight */
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-decimals,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-recurrence {
+  font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-p-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
 }
 
 /* Hide screen reader only text */
@@ -1896,12 +1917,12 @@ merch-card[variant="simplified-pricing-express"] sr-only {
   border: 0;
 }
 
-/* mas-tooltip inline styles for simplified-pricing-express */
-merch-card[variant="simplified-pricing-express"] mas-tooltip {
+/* mas-mnemonic inline styles for simplified-pricing-express */
+merch-card[variant="simplified-pricing-express"] mas-mnemonic {
     display: inline-block;
     align-items: center;
     vertical-align: baseline;
-    margin-right: 8px;
+    margin-inline-end: 8px;
     overflow: visible;
     padding-top: 16px;
 }
@@ -2012,7 +2033,7 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Bu
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.spectrum-Button--accent .spectrum-Button-label {
     color: var(--spectrum-white, #ffffff);
 }
-`;var Gt=()=>window.matchMedia(Q).matches,jr={title:{tag:"h3",slot:"heading-xs",maxCount:250,withSuffix:!0},badge:{tag:"div",slot:"badge",default:"spectrum-blue-400"},allowedBadgeColors:["spectrum-blue-400","spectrum-gray-300","spectrum-yellow-300","gradient-purple-blue","gradient-firefly-spectrum"],description:{tag:"div",slot:"body-xs",maxCount:2e3,withSuffix:!1},prices:{tag:"div",slot:"price"},ctas:{slot:"cta",size:"XL"},borderColor:{attribute:"border-color",specialValues:{gray:"var(--spectrum-gray-300)",blue:"var(--spectrum-blue-400)","gradient-purple-blue":"linear-gradient(96deg, #B539C8 0%, #7155FA 66%, #3B63FB 100%)","gradient-firefly-spectrum":"linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)"}},disabledAttributes:["trialBadgeColor","trialBadgeBorderColor"],supportsDefaultChild:!0},ze=class extends I{getGlobalCSS(){return rn}get aemFragmentMapping(){return jr}get headingSelector(){return'[slot="heading-xs"]'}connectedCallbackHook(){!this.card||this.card.failed||(this.setupAccordion(),requestAnimationFrame(()=>{this.card?.hasAttribute("data-default-card")&&Gt()&&this.card.setAttribute("data-expanded","true")}))}setupAccordion(){let t=this.card;if(!t)return;let r=()=>{if(Gt()){let n=t.hasAttribute("data-default-card");t.setAttribute("data-expanded",n?"true":"false")}else t.removeAttribute("data-expanded")};r();let i=window.matchMedia(Q);this.mediaQueryListener=()=>{r()},i.addEventListener("change",this.mediaQueryListener),this.attributeObserver=new MutationObserver(n=>{n.forEach(a=>{a.type==="attributes"&&a.attributeName==="data-default-card"&&this.card.hasAttribute("data-default-card")&&Gt()&&this.card.setAttribute("data-expanded","true")})}),this.attributeObserver.observe(this.card,{attributes:!0,attributeOldValue:!0})}disconnectedCallbackHook(){this.mediaQueryListener&&window.matchMedia(Q).removeEventListener("change",this.mediaQueryListener),this.attributeObserver&&this.attributeObserver.disconnect()}handleChevronClick(t){t.preventDefault(),t.stopPropagation();let r=this.card;if(!r||!Gt())return;let a=r.getAttribute("data-expanded")==="true"?"false":"true";r.setAttribute("data-expanded",a)}renderLayout(){return Vo`
+`;var Gt=()=>window.matchMedia(Q).matches,jr={title:{tag:"h3",slot:"heading-xs",maxCount:250,withSuffix:!0},badge:{tag:"div",slot:"badge",default:"spectrum-blue-400"},allowedBadgeColors:["spectrum-blue-400","spectrum-gray-300","spectrum-yellow-300","gradient-purple-blue","gradient-firefly-spectrum"],description:{tag:"div",slot:"body-xs",maxCount:2e3,withSuffix:!1},prices:{tag:"div",slot:"price"},ctas:{slot:"cta",size:"XL"},borderColor:{attribute:"border-color",specialValues:{gray:"var(--spectrum-gray-300)",blue:"var(--spectrum-blue-400)","gradient-purple-blue":"linear-gradient(96deg, #B539C8 0%, #7155FA 66%, #3B63FB 100%)","gradient-firefly-spectrum":"linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)"}},disabledAttributes:["badgeColor","badgeBorderColor","trialBadgeColor","trialBadgeBorderColor"],supportsDefaultChild:!0},ze=class extends I{getGlobalCSS(){return rn}get aemFragmentMapping(){return jr}get headingSelector(){return'[slot="heading-xs"]'}connectedCallbackHook(){!this.card||this.card.failed||(this.setupAccordion(),requestAnimationFrame(()=>{this.card?.hasAttribute("data-default-card")&&Gt()&&this.card.setAttribute("data-expanded","true")}))}setupAccordion(){let t=this.card;if(!t)return;let r=()=>{if(Gt()){let n=t.hasAttribute("data-default-card");t.setAttribute("data-expanded",n?"true":"false")}else t.removeAttribute("data-expanded")};r();let i=window.matchMedia(Q);this.mediaQueryListener=()=>{r()},i.addEventListener("change",this.mediaQueryListener),this.attributeObserver=new MutationObserver(n=>{n.forEach(a=>{a.type==="attributes"&&a.attributeName==="data-default-card"&&this.card.hasAttribute("data-default-card")&&Gt()&&this.card.setAttribute("data-expanded","true")})}),this.attributeObserver.observe(this.card,{attributes:!0,attributeOldValue:!0})}disconnectedCallbackHook(){this.mediaQueryListener&&window.matchMedia(Q).removeEventListener("change",this.mediaQueryListener),this.attributeObserver&&this.attributeObserver.disconnect()}handleChevronClick(t){t.preventDefault(),t.stopPropagation();let r=this.card;if(!r||!Gt())return;let a=r.getAttribute("data-expanded")==="true"?"false":"true";r.setAttribute("data-expanded",a)}renderLayout(){return Vo`
             <div class="badge-wrapper">
                 <slot name="badge"></slot>
             </div>
