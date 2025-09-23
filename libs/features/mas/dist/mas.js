@@ -1016,7 +1016,7 @@ merch-card[variant="mini-compare-chart"].bullet-list {
   border-radius: var(--consonant-merch-spacing-xxs);
 }
 
-merch-card[variant="mini-compare-chart"].bullet-list:not(:has(.mini-compare-chart-badge)) {
+merch-card[variant="mini-compare-chart"].bullet-list:not(.badge-card):not(.mini-compare-chart-badge) {
   border-color: var(--consonant-merch-card-mini-compare-border-color);
 }
 
