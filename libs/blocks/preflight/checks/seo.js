@@ -247,7 +247,7 @@ function compareResults(result, link) {
 }
 
 export function validLinkFilter(area = document) {
-  const { spidy, preflight } = await getServiceConfig(window.location.origin, envName);
+  const { preflight } = await getServiceConfig(window.location.origin, envName);
   const knownBadUrls = preflight?.ignoreDomains
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
     : KNOWN_BAD_URLS;
