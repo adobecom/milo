@@ -34,7 +34,10 @@ async function fetchFromRainfocus(eventId) {
     headers: { Authorization: `Bearer ${accessToken}` },
     credentials: 'same-origin',
   });
-  if (!response.ok) return {};
+  if (!response.ok) {
+    window.lana?.log(`Unable to fetch from Rainfocus: ${response.statusText}`);
+    return {};
+  }
   return response.json();
 }
 export default async function init(eventId) {
