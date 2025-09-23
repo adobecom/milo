@@ -285,6 +285,44 @@ describe('Firefly Gallery', () => {
       expect(url).to.include('VideoGeneration');
     });
 
+    it('should handle touch events and manage focus correctly', async () => {
+      // Create a test element
+      const galleryEl = document.createElement('div');
+      galleryEl.innerHTML = `
+    <div><div>VideoGeneration | TESTCGENID</div></div>
+    <div><div>View</div></div>
+  `;
+      document.body.appendChild(galleryEl);
+
+      // Initialize the gallery
+      await init(galleryEl);
+
+      // Let async operations complete
+      await sleep(10);
+
+      // Find two gallery overlays to test focus management between them
+      const overlays = galleryEl.querySelectorAll('.firefly-gallery-overlay');
+      if (overlays.length >= 2) {
+        const firstOverlay = overlays[0];
+        const secondOverlay = overlays[1];
+
+        // Set focus on first overlay
+        firstOverlay.focus();
+        expect(document.activeElement).to.equal(firstOverlay);
+
+        // Simulate touchstart on second overlay
+        const touchEvent = new TouchEvent('touchstart', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        });
+        secondOverlay.dispatchEvent(touchEvent);
+
+        // First overlay should lose focus
+        expect(document.activeElement).to.not.equal(firstOverlay);
+      }
+    });
+
     it('should handle API errors gracefully', async () => {
       // Create a test element
       const galleryEl = document.createElement('div');
