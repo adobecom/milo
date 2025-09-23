@@ -4,13 +4,14 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 32px;
   height: 404px;
+  max-width: 576px;
   width: 100%;
   margin: 0 auto;
 }
 
-.nps-csat-form.five-point {
+/* .nps-csat-form.five-point {
   max-width: 416px;
-}
+} */
 
 .nps-csat-form.seven-point {
   max-width: 576px;
@@ -145,7 +146,8 @@
 }
 
 .error-message {
-  display: none;
+  display:flex;
+  visibility: hidden;
   align-items: center;
   gap: 8px;
   color: #d73502;
@@ -160,7 +162,7 @@
 
 /* Alternative fallback for browsers that don't support :has() */
 .nps-csat-form.submit-clicked .nps-radio-group.show-error .error-message {
-  display: flex;
+  visibility: visible;
 }
 
 .error-icon {
@@ -270,6 +272,7 @@
 
 .nps-submit {
   background: #2c2c2c;
+  border: none;
   color: white;
 }
 
