@@ -137,9 +137,7 @@ test.describe('Milo Action-Item block test suite', () => {
   });
 
   // Test 5 : Action-Item (Float Button)
-  test(`5: @Action-item (float-button), ${features[5].tags}`, async ({ page, baseURL, browserName }) => {
-    test.skip(browserName === 'webkit', 'Skipping float-button test on WebKit');
-
+  test(`5: @Action-item (float-button), ${features[5].tags}`, async ({ page, baseURL }) => {
     const testPage = `${baseURL}${features[5].path}${miloLibs}`;
     console.info(`[Test Page]: ${testPage}`);
     const { data } = features[5];
@@ -157,13 +155,29 @@ test.describe('Milo Action-Item block test suite', () => {
       await expect(await actionItem.floatOutlineButton).toContainText(data.floatButtonText);
     });
 
-    await test.step('step-4: Verify the accessibility test on the Action-Item (Float Button) block', async () => {
+    await test.step('step-3: Verify the accessibility test on the Action-Item (Float Button) block', async () => {
       await runAccessibilityTest({ page, testScope: actionItem.actionItemFloat });
     });
-    await test.step('step-3: Click the float button', async () => {
+
+    await test.step('step-4: Click the float button', async () => {
+      const pagesBefore = page.context().pages();
+
       await actionItem.floatButton.click();
-      await page.waitForLoadState('networkidle');
-      expect(page.url()).not.toBe(testPage);
+
+      await page.waitForTimeout(1000);
+
+      const pagesAfter = page.context().pages();
+      let targetPage;
+
+      if (pagesAfter.length > pagesBefore.length) {
+        targetPage = pagesAfter[pagesAfter.length - 1];
+        await targetPage.waitForLoadState('domcontentloaded', { timeout: 30000 });
+      } else {
+        targetPage = page;
+        await targetPage.waitForLoadState('domcontentloaded', { timeout: 30000 });
+      }
+
+      expect(targetPage.url()).not.toBe(testPage);
     });
   });
 
