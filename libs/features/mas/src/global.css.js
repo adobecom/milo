@@ -1,4 +1,4 @@
-import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP } from "./media.js";
+import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP } from './media.js';
 
 const styles = document.createElement('style');
 
@@ -41,6 +41,9 @@ styles.innerHTML = `
     --consonant-merch-card-heading-m-line-height: 30px;
     --consonant-merch-card-heading-l-font-size: 28px;
     --consonant-merch-card-heading-l-line-height: 36.4px;
+    --consonant-merch-card-heading-xl-font-size: 32px;
+    --consonant-merch-card-heading-xl-line-height: 40px;
+
 
     /* detail */
     --consonant-merch-card-detail-xs-line-height: 12px;
@@ -105,7 +108,8 @@ styles.innerHTML = `
 
     /* ah colors */
     --ah-gray-500: #717171;
-    
+    --fuchsia: #FDE9FF;
+
     /* plans colors */
     --spectrum-yellow-300-plans: #F5C700;
     --spectrum-green-900-plans: #05834E;
@@ -249,6 +253,23 @@ merch-card p, merch-card h3, merch-card h4 {
 
 merch-card span[is='inline-price'] {
     display: inline-block;
+}
+
+.annual-price-new-line > span[is="inline-price"] {
+  line-height: var(--consonant-merch-card-body-m-line-height);
+}
+
+.annual-price-new-line > span[is="inline-price"] > .price-annual-prefix {
+  font-size: 0;
+  line-height: 0;
+}
+
+.annual-price-new-line > span[is="inline-price"] .price-alternative {
+  display: block;
+}
+
+.annual-price-new-line > span[is="inline-price"] > .price-annual::before {
+  content: '(';
 }
 
 merch-card [slot^='heading-'],

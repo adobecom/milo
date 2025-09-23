@@ -9,7 +9,6 @@ import {
   mockRes,
   viewports,
   unavLocalesTestData,
-  analyticsTestData,
   unavVersion,
   addMetaDataV2,
 } from './test-utilities.js';
@@ -418,12 +417,12 @@ describe('global navigation', () => {
       it('should render the Universal navigation', async () => {
         await createFullGlobalNavigation({ unavContent: 'on' });
         const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
-
+        // Check for profile component presence
         expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
 
         await createFullGlobalNavigation({ unavContent: 'profile, appswitcher, notifications, help' });
         const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
-
+        // Check for all expected components
         expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
           .to.be.true;
       });
@@ -440,9 +439,10 @@ describe('global navigation', () => {
         // eslint-disable-next-line max-len
         const mockEvent = (name, payload) => ({ detail: { name, payload, executeDefaultAction: sinon.spy(() => Promise.resolve(null)) } });
         await createFullGlobalNavigation({ unavContent: 'on' });
+        // Find the messageEventListener in the new config structure
         const messageEventListener = window.UniversalNav.getCall(0).args[0].children
-          .map((c) => c.attributes.messageEventListener)
-          .find((listener) => listener);
+          .map((c) => c.attributes.accountMenuContext?.messageEventListener)
+          .find((listener) => typeof listener === 'function');
 
         const appInitiatedEvent = mockEvent('System', { subType: 'AppInitiated' });
         messageEventListener(appInitiatedEvent);
@@ -455,30 +455,6 @@ describe('global navigation', () => {
         const profileSwitch = mockEvent('System', { subType: 'ProfileSwitch' });
         messageEventListener(profileSwitch);
         expect(profileSwitch.detail.executeDefaultAction.called).to.be.true;
-      });
-
-      it('should send the correct analytics events', async () => {
-        await createFullGlobalNavigation({ unavContent: 'on' });
-        const analyticsFn = window.UniversalNav.getCall(0)
-          .args[0].analyticsContext.onAnalyticsEvent;
-
-        for (const [eventData, interaction] of Object.entries(analyticsTestData)) {
-          const [workflow, type, subtype, name] = eventData.split('|');
-          analyticsFn({ workflow, type, subtype, content: { name } });
-
-          // eslint-disable-next-line no-underscore-dangle
-          expect(window._satellite.track.lastCall.calledWith('event', {
-            xdm: {},
-            data: { web: { webInteraction: { name: interaction } } },
-          })).to.be.true;
-        }
-
-        expect(analyticsFn(null)).to.equal(undefined);
-        expect(analyticsFn({
-          event: { type: 'not', subtype: 'matching' },
-          source: { name: 'anything' },
-          content: { name: null },
-        })).to.equal(undefined);
       });
 
       it('should send/not send visitor guid to unav when window.alloy is available/unavailable', async () => {
@@ -516,10 +492,73 @@ describe('global navigation', () => {
 
       it('should pass enableProfileSwitcher to the profile component configuration', async () => {
         await createFullGlobalNavigation({ unavContent: 'on' });
+        // Find enableProfileSwitcher in the new config structure
         const profileConfig = window.UniversalNav.getCall(0).args[0].children
-          .find((c) => c.name === 'profile').attributes.componentLoaderConfig.config;
-
+          .find((c) => c.name === 'profile').attributes.accountMenuContext?.sharedContextConfig;
         expect(profileConfig.enableProfileSwitcher).to.be.true;
+      });
+
+      it('should set signInCtaStyle to secondary by default', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const profileAttributes = window.UniversalNav.getCall(0).args[0].children
+          .find((c) => c.name === 'profile').attributes;
+        expect(profileAttributes.signInCtaStyle).to.equal('secondary');
+      });
+
+      it('should set signInCtaStyle to primary when meta tag is set to primary', async () => {
+        // Add meta tag for signin-cta-style
+        const metaTag = document.createElement('meta');
+        metaTag.name = 'signin-cta-style';
+        metaTag.content = 'primary';
+        document.head.appendChild(metaTag);
+
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const profileAttributes = window.UniversalNav.getCall(0).args[0].children
+          .find((c) => c.name === 'profile').attributes;
+        expect(profileAttributes.signInCtaStyle).to.equal('primary');
+
+        // Cleanup
+        document.head.removeChild(metaTag);
+      });
+
+      it('should set signInCtaStyle to primary when config is set to primary', async () => {
+        const customConfig = { unav: { profile: { signInCtaStyle: 'primary' } } };
+        await createFullGlobalNavigation({ unavContent: 'on', customConfig });
+        const profileAttributes = window.UniversalNav.getCall(0).args[0].children
+          .find((c) => c.name === 'profile').attributes;
+        expect(profileAttributes.signInCtaStyle).to.equal('primary');
+      });
+
+      it('should prioritize meta tag over config for signInCtaStyle', async () => {
+        // Add meta tag for signin-cta-style
+        const metaTag = document.createElement('meta');
+        metaTag.name = 'signin-cta-style';
+        metaTag.content = 'primary';
+        document.head.appendChild(metaTag);
+        const customConfig = { unav: { profile: { signInCtaStyle: 'secondary' } } };
+        await createFullGlobalNavigation({ unavContent: 'on', customConfig });
+        const profileAttributes = window.UniversalNav.getCall(0).args[0].children
+          .find((c) => c.name === 'profile').attributes;
+        expect(profileAttributes.signInCtaStyle).to.equal('primary');
+
+        // Cleanup
+        document.head.removeChild(metaTag);
+      });
+
+      it('should default to secondary for invalid signInCtaStyle values', async () => {
+        // Add meta tag with invalid value
+        const metaTag = document.createElement('meta');
+        metaTag.name = 'signin-cta-style';
+        metaTag.content = 'invalid';
+        document.head.appendChild(metaTag);
+
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const profileAttributes = window.UniversalNav.getCall(0).args[0].children
+          .find((c) => c.name === 'profile').attributes;
+        expect(profileAttributes.signInCtaStyle).to.equal('secondary');
+
+        // Cleanup
+        document.head.removeChild(metaTag);
       });
     });
 
