@@ -246,6 +246,26 @@ function compareResults(result, link) {
   return true;
 }
 
+export async function validLinkFilter(area = document) {
+  return [...area.querySelectorAll('a')]
+  .filter((link) => {
+    if (
+      link.href // Has an href tag
+      && !link.href.includes('tel:')  // Is not a phone number
+      && !link.href.includes('mailto:')  // Is not an email address
+      && !link.href.startsWith('#') // Is not a local link
+      && !link.href.startsWith('https://#') // Is not a local link
+      && !link.href.includes('local') // Is not a local link
+      && !link.href.includes('bookmark://') // Ignore bookmarks
+      && !link.closest('.preflight') // Is not inside preflight
+      && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
+    ) {
+      return true;
+    }
+    return false;
+  });
+}
+
 export async function checkLinks({ area, urlHash, envName }) {
   if (urlHash && linksCache.has(urlHash)) {
     const cachedResult = linksCache.get(urlHash);
