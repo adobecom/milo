@@ -1,4 +1,4 @@
-import { isSignedOut, getConfig, getMepEnablement } from '../../../utils/utils.js';
+import { isSignedOut, getConfig, getMepEnablement, loadIms } from '../../../utils/utils.js';
 
 export function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
   return new Promise((resolve) => {
@@ -19,8 +19,9 @@ function getCookie(key) {
 }
 async function getUserId() {
   if (isSignedOut() && getMepEnablement('signedin') !== true) return false;
-  const isImsReady = await imsReady({ interval: 100, maxAttempts: 25 });
-  if (!isImsReady) return false;
+  await loadIms();
+  // const isImsReady = await imsReady({ interval: 100, maxAttempts: 25 });
+  // if (!isImsReady) return false;
   const { userId } = await window.adobeIMS.getProfile();
   return userId;
 }
