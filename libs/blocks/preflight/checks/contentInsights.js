@@ -77,3 +77,9 @@ export default async function executeCheck(options) {
   
   window.dispatchEvent(new CustomEvent('content-insights-complete', { detail: window.contentInsights }));
 }
+
+window.addEventListener('content-insights-begin', async (evtd) => {
+  await executeCheck(evtd?.detail);
+});
+
+window.dispatchEvent(new CustomEvent('content-insights-ready'));

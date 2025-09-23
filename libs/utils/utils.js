@@ -1636,10 +1636,7 @@ function initContentInsights() {
   const contentInsightsParam = urlParams.get('content-insights');
   
   if (contentInsightsParam === 'on') {
-    window.addEventListener('content-insights-begin', async (evtd) => {
-      const { default: executeCheck } = await import('../blocks/preflight/checks/contentInsights.js');
-      await executeCheck(evtd?.detail);
-    });
+    import('../blocks/preflight/checks/contentInsights.js');
   }
 }
 
