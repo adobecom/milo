@@ -247,11 +247,6 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     margin: 0;
 }
 
-.plans-edu #whats-included {
-    margin: 0 0 16px;
-    font-size: 20px;
-}
-
 .columns.checkmark-list ul {
     margin: 0;
     padding-left: 20px;
@@ -287,6 +282,15 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     justify-content: center;
 }
 
+.plans-team .col-2 h3 {
+    font-size: 20px;
+    margin-bottom: 16px;
+}
+
+.plans-team .col-2 p {
+    margin: 0 0 16px;
+}
+
 .plans-team .text .foreground,
 .plans-edu .text .foreground {
     max-width: unset;
@@ -310,6 +314,11 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 
 .plans-edu .columns .row-3 {
     margin-bottom: 48px;
+}
+
+.plans-edu .col-2 h3 {
+    margin: 0 0 16px;
+    font-size: 20px;
 }
 
 .plans-individual .content,
