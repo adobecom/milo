@@ -285,3 +285,46 @@
   cursor: not-allowed;
 }
 
+@media (prefers-color-scheme: dark) {
+  .nps-csat-form {
+    background: #222;
+    color: #F2F2F2;
+  }
+  .nps-csat-form legend {
+    color: #AFAFAF;
+  }
+  .nps-csat-form .radio-item label {
+    color: #DBDBDB;
+  }
+  .radio-options input[type="radio"] {
+    border-color: #DBDBDB
+  }
+  .nps-feedback-area textarea {
+    background-color: #111;
+    border-color: #393939;
+  }
+  .nps-feedback-area textarea::placeholder {
+    color: #DBDBDB;
+  }
+  .nps-checkbox-area label {
+    color: #DBDBDB;
+  }
+  .nps-checkbox-area input[type="checkbox"] {
+    border-color: #DBDBDB
+  }
+  .nps-checkbox-area input[type="checkbox"]:checked {
+    background-color: white;
+    border-color: white;
+  }
+  .nps-checkbox-area input[type="checkbox"]::after {
+    color: black;
+  }
+  .nps-cancel {
+    color: #DBDBDB;
+    border-color: #393939;
+  }
+  .nps-submit {
+    color: #111;
+    background-color: #DBDBDB;
+  }
+}
