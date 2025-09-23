@@ -247,6 +247,9 @@ function compareResults(result, link) {
 }
 
 export function validLinkFilter(area = document) {
+  const knownBadUrls = preflight?.ignoreDomains
+    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
+    : KNOWN_BAD_URLS;
   return [...area.querySelectorAll('a')]
   .filter((link) => {
     if (
