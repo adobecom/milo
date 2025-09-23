@@ -249,19 +249,22 @@
 
 /* Aspect Ratio */
 .editorial-card.media-square .media-area img,
-.editorial-card.media-square .media-area video {
+.editorial-card.media-square .media-area video,
+.editorial-card.media-square .media-area .milo-video {
   aspect-ratio: var(--aspect-ratio-square);
   max-height: unset;
 }
 
 .editorial-card.media-wide .media-area img,
-.editorial-card.media-wide .media-area video {
+.editorial-card.media-wide .media-area video,
+.editorial-card.media-wide .media-area .milo-video {
   aspect-ratio: var(--aspect-ratio-wide);
   max-height: unset;
 }
 
 .editorial-card.media-standard .media-area img,
-.editorial-card.media-standard .media-area video {
+.editorial-card.media-standard .media-area video,
+.editorial-card.media-standard .media-area .milo-video {
   aspect-ratio: var(--aspect-ratio-standard);
   max-height: unset;
 }
