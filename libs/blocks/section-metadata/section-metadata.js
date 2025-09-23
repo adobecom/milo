@@ -133,9 +133,6 @@ async function handleCollapseSection(section) {
   if (blocks.length <= 3 || existingShowMoreButton) return;
   const showMoreButton = await createShowMoreButton(section);
   section.append(showMoreButton);
-  if (window.innerWidth > 600) {
-    section.style.background = 'none';
-  }
   const { decorateDefaultLinkAnalytics } = await import('../../martech/attributes.js');
   decorateDefaultLinkAnalytics(showMoreButton);
 }
