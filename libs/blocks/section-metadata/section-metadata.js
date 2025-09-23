@@ -7,6 +7,33 @@ const replacePlaceholder = async (key) => {
 };
 const ADD_MORE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" fill="none"><path fill="#292929" d="M12 24.24c-6.617 0-12-5.383-12-12s5.383-12 12-12 12 5.383 12 12-5.383 12-12 12Zm0-21.943c-5.483 0-9.943 4.46-9.943 9.943s4.46 9.943 9.943 9.943 9.943-4.46 9.943-9.943S17.483 2.297 12 2.297Z"/><path fill="#292929" d="M16.55 11.188h-3.5v-3.5a1.05 1.05 0 0 0-2.1 0v3.5h-3.5a1.05 1.05 0 0 0 0 2.1h3.5v3.5a1.05 1.05 0 0 0 2.1 0v-3.5h3.5a1.05 1.05 0 0 0 0-2.1Z"/></svg>';
 
+const MOBILE_MAX = 600;
+const TABLET_MAX = 1024;
+
+const applyBackground = (colors, section) => {
+  const width = window.innerWidth;
+  if (colors.length === 1) {
+    const [color] = colors;
+    section.style.background = color;
+    return;
+  }
+  if (colors.length === 2) {
+    const [mobileTabletColor, desktopColor] = colors;
+    section.style.background = width <= TABLET_MAX ? mobileTabletColor : desktopColor;
+    return;
+  }
+  if (colors.length >= 3) {
+    const [mobile, tablet, desktop] = colors;
+    if (width <= MOBILE_MAX) {
+      section.style.background = mobile;
+    } else if (width <= TABLET_MAX) {
+      section.style.background = tablet;
+    } else {
+      section.style.background = desktop;
+    }
+  }
+};
+
 export function handleBackground(div, section) {
   const pic = div.background.content?.querySelector('picture');
   if (pic) {
@@ -15,9 +42,10 @@ export function handleBackground(div, section) {
     handleFocalpoint(pic, div.background.content);
     section.insertAdjacentElement('afterbegin', pic);
   } else {
-    const color = div.background.content?.textContent;
+    const color = div.background.content?.textContent?.trim();
     if (color) {
-      section.style.background = color;
+      const colors = color.split(',').map((c) => c.trim());
+      applyBackground(colors, section);
     }
   }
 }
