@@ -1715,9 +1715,13 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     justify-content: center;
 }
 
+.plans-team .col-2 {
+    align-content: center;
+}
+
 .plans-team .col-2 h3 {
     font-size: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 0 0 16px;
 }
 
 .plans-team .col-2 p {
