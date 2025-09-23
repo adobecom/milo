@@ -225,8 +225,12 @@ export async function getGeoLocaleSettings(miloLocale) {
   let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
     || sessionStorage.getItem('akamai');
   if (!country) {
-    const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
-    country = await getAkamaiCode(true);
+    try {
+      const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+      country = await getAkamaiCode(true);
+    } catch (error) {
+      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
+    }
   }
   if (country) {
     country = country.toUpperCase();
@@ -325,6 +329,7 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
 let upgradeOffer = null;
+let litPromise;
 
 /**
  * Given a url, calculates the hostname of MAS platform.
@@ -434,6 +439,23 @@ const failedExternalLoads = new Set();
 const loadingPromises = new Map();
 
 /**
+ * Loads lit dependency dynamically when needed
+ * @returns {Promise} Promise that resolves when lit is loaded
+ */
+export async function loadLitDependency() {
+  if (litPromise) return litPromise;
+
+  if (window.customElements?.get('lit-element')) {
+    return Promise.resolve();
+  }
+
+  const { base } = getConfig();
+  litPromise = import(`${base}/deps/lit-all.min.js`);
+
+  return litPromise;
+}
+
+/**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
@@ -529,11 +551,40 @@ export async function fetchCheckoutLinkConfigs(base = '', env = '') {
   return fetchCheckoutLinkConfigs.promise;
 }
 
+function getSvar(extraOptions) {
+  if (!extraOptions) return undefined;
+
+  const extraOptionsObj = JSON.parse(extraOptions);
+  return extraOptionsObj.svar;
+}
+
+function addToConfigsForMatchingProduct(config, productCode, svar, targetConfigs) {
+  const match = config[NAME_PRODUCT_FAMILY] === productCode || (svar && config[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
+  const alreadyThere = targetConfigs.some((item) => item[NAME_PRODUCT_FAMILY] === `${productCode}+${svar}`);
+  if (match && !alreadyThere) {
+    targetConfigs.push(config);
+  }
+}
+
+function addToConfigs(config, svar, configs, paCode, productCode, productFamily) {
+  addToConfigsForMatchingProduct(config, paCode, svar, configs.paCodeConfigs);
+  addToConfigsForMatchingProduct(config, productCode, svar, configs.productCodeConfigs);
+  addToConfigsForMatchingProduct(config, productFamily, svar, configs.productFamilyConfigs);
+}
+
 export async function getCheckoutLinkConfig(
   productFamily,
   productCode,
   paCode,
+  options,
 ) {
+  const extraOptions = options?.extraOptions;
+  const svar = getSvar(extraOptions);
+  if (svar) {
+    const extraOptionsObj = JSON.parse(extraOptions);
+    delete extraOptionsObj.svar;
+    options.extraOptions = JSON.stringify(extraOptionsObj);
+  }
   let { base } = getConfig();
   const { env } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
@@ -544,16 +595,17 @@ export async function getCheckoutLinkConfig(
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
+  // place items with extra options first
+  checkoutLinkConfigs.data.sort((itema, itemb) => {
+    const apf = itema[NAME_PRODUCT_FAMILY];
+    const bpf = itemb[NAME_PRODUCT_FAMILY];
+    return apf.includes('+') && !bpf.includes('+') ? -1 : 1;
+  });
+
   const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } = checkoutLinkConfigs
     .data.reduce(
       (acc, config) => {
-        if (config[NAME_PRODUCT_FAMILY] === paCode) {
-          acc.paCodeConfigs.push(config);
-        } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
-          acc.productCodeConfigs.push(config);
-        } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
-          acc.productFamilyConfigs.push(config);
-        }
+        addToConfigs(config, svar, acc, paCode, productCode, productFamily);
         return acc;
       },
       { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] },
@@ -606,6 +658,7 @@ export async function getDownloadAction(
     offerFamily,
     productCode,
     productArrangementCode,
+    options,
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
@@ -914,6 +967,7 @@ export async function getModalAction(offers, options, el) {
     offerFamily,
     productCode,
     productArrangementCode,
+    options,
   );
   if (!checkoutLinkConfig) return undefined;
   const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
@@ -1017,7 +1071,6 @@ export async function initService(force = false, attributes = {}) {
           service.registerCheckoutAction(getCheckoutAction);
         }
         document.head.append(service);
-        await service.readyPromise;
 
         // Polyfill for older commerce service versions that don't have prefillWcsCache
         if (typeof service.prefillWcsCache !== 'function') {

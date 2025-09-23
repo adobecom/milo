@@ -152,3 +152,17 @@
   bottom: 0;
   transform: translate(-50%, -50%);
 }
+
+@media screen and (max-width: 600px) {
+  .section:has(.icon-block.container-mobile + .action-scroller) .action-item .main-image {
+    max-width: 60px;
+    margin-inline: auto;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .section:has(.icon-block.container-mobile + .action-scroller) .action-item .main-image {
+    max-width: 80px;
+    margin-inline: auto;
+  }
+}

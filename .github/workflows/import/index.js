@@ -54,11 +54,14 @@ async function importMedia(pageUrl, text, importedMedia) {
 
   const linkedMedia = [...results, ...matches].reduce((acc, a) => {
     let href = a.getAttribute('href') || a.getAttribute('alt');
+
+    // Normalize all links to aem
+    href = href.replace('.hlx.', '.aem.');
+
     // Don't add any off origin content.
     const isSameDomain = prefixes.some((prefix) => href.startsWith(prefix));
     if (!isSameDomain) return acc;
 
-    href = href.replace('.hlx.', '.aem.');
 
     [href] = href.match(/^[^?#| ]+/);
 
@@ -166,11 +169,7 @@ function safeguardMetadataImages(dom) {
 const map = {}
 const projectExclude = {
   'da-express-milo': [
-    'default/metadata.json',
-    'floating-cta-metadata.json',
-    'metadata-optimization.json',
-    'redirects.json',
-    'ax-promotions.json',
+    '.json',
   ],
 };
 

@@ -1,24 +1,32 @@
+const { test } = require('@playwright/test');
+
+const MILO_LIBS = process.env.MILO_LIBS || '';
+const MAS_LIBS = process.env.MAS_LIBS || '';
+
 const PRICE_PATTERN = {
-  US_mo: /US\$\d+\.\d\d\/mo/,
-  US_yr: /US\$\d+\.\d\d\/yr/,
-  FR_mo: /\d+,\d\d\s€\/mois/,
+  US: {
+    mo: /US\$\d+\.\d\d\/mo/,
+    yr: /US\$\d+\.\d\d\/yr/,
+  },
+  FR: { mo: /\d+,\d\d\s€\/mois/ },
 };
 
-const CCD_BASE_PATH = {
-  US: '/libs/features/mas/docs/ccd.html',
-  FR: '/libs/features/mas/docs/ccd.html?locale=fr_FR',
-  MINI_US: '/libs/features/mas/docs/ccd-mini.html',
-  MINI_FR: '/libs/features/mas/docs/ccd-mini.html?country=FR&language=fr',
-};
+const PLANS_NALA_PATH = { US: '/drafts/nala/features/commerce/plans2' };
 
-const ADOBE_HOME_BASE_PATH = { US: '/libs/features/mas/docs/adobe-home.html' };
-
-const PLANS_BASE_PATH = { US: '/drafts/nala/features/commerce/plans' };
-
-const DOCS_BASE_PATH = {
-  merch_card: '/libs/features/mas/docs/merch-card.html',
-  checkout_link: '/libs/features/mas/docs/checkout-link.html',
-  plans: '/libs/features/mas/docs/plans.html',
+const DOCS_GALLERY_PATH = {
+  CCD: {
+    US: '/libs/features/mas/docs/ccd.html',
+    FR: '/libs/features/mas/docs/ccd.html?locale=fr_FR',
+  },
+  CCD_MINI: {
+    US: '/libs/features/mas/docs/ccd-mini.html',
+    FR: '/libs/features/mas/docs/ccd-mini.html?country=FR&language=fr',
+  },
+  ADOBE_HOME: { US: '/libs/features/mas/docs/adobe-home.html' },
+  PLANS: '/libs/features/mas/docs/plans.html',
+  CHECKOUT_LINK: '/libs/features/mas/docs/checkout-link.html',
+  MERCH_CARD: '/libs/features/mas/docs/merch-card.html',
+  EXPRESS: '/libs/features/mas/docs/express.html',
 };
 
 async function setupMasConsoleListener(consoleErrors) {
@@ -103,6 +111,89 @@ function attachMasRequestErrorsToFailure(testInfo, masRequestErrors) {
   return '';
 }
 
+/**
+ * Helper function to construct URLs with proper query parameter handling
+ * @param {string} baseUrl - The base URL (may already contain query parameters)
+ * @param {string} browserParams - Browser parameters to append (may start with ? or &)
+ * @returns {string} - Properly constructed URL
+ */
+function addUrlQueryParams(baseUrl, browserParams) {
+  if (!browserParams) return baseUrl;
+  const hasQueryParams = baseUrl.includes('?');
+  const separator = hasQueryParams ? '&' : '?';
+  const cleanParams = browserParams.replace(/^[?&]/, '');
+  return `${baseUrl}${separator}${cleanParams}`;
+}
+
+/**
+ * Helper function to validate commerce URLs with flexible query parameter checking
+ * @param {string} url - The URL to validate
+ * @param {Object} options - Validation options
+ * @param {string} options.country - Expected country code (default: 'US')
+ * @param {string} options.language - Expected language code (default: 'en')
+ * @param {Array<string>} options.requiredParams - Additional required parameters
+ * @returns {boolean} - Whether the URL matches commerce link pattern
+ *
+ * @example
+ * // Basic usage (US/English - default)
+ * validateCommerceUrl(url)
+ * validateCommerceUrl(url, { country: 'US', language: 'en' })
+ *
+ * @example
+ * // Different countries/languages
+ * validateCommerceUrl(url, { country: 'FR', language: 'fr' })
+ *
+ * @example
+ * // With additional required parameters
+ * validateCommerceUrl(url, { requiredParams: ['apc'] })
+ * validateCommerceUrl(url, { country: 'FR', language: 'fr', requiredParams: ['apc', 'promo'] })
+ */
+function validateCommerceUrl(url, options = {}) {
+  const { country = 'US', language = 'en', requiredParams = [] } = options;
+
+  try {
+    const urlObj = new URL(url);
+
+    if (urlObj.hostname !== 'commerce.adobe.com') return false;
+    if (!urlObj.pathname.startsWith('/store/email')) return false;
+
+    const params = new URLSearchParams(urlObj.search);
+
+    const itemId = params.get('items[0][id]');
+    if (!itemId || !/^[A-F0-9]{32}$/.test(itemId)) return false;
+
+    if (params.get('cli') !== 'adobe_com') return false;
+    if (params.get('ctx') !== 'fp') return false;
+    if (params.get('co') !== country) return false;
+    if (params.get('lang') !== language) return false;
+
+    // Check any additional required parameters
+    for (const param of requiredParams) {
+      if (!params.has(param)) return false;
+    }
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Helper function to construct test URLs with proper query parameter handling
+ * Includes MILO_LIBS and MAS_LIBS environment variables
+ * @param {string} baseURL - The base URL from Playwright test context
+ * @param {string} path - The path to append to the base URL
+ * @param {string} browserParams - Browser parameters to append (optional, may start with ? or &)
+ * @returns {string} - Properly constructed URL with all parameters
+ */
+function constructTestUrl(baseURL, path, browserParams = '') {
+  let fullUrl = `${baseURL}${path}`;
+  fullUrl = addUrlQueryParams(fullUrl, browserParams);
+  fullUrl = addUrlQueryParams(fullUrl, MILO_LIBS);
+  fullUrl = addUrlQueryParams(fullUrl, MAS_LIBS);
+  return fullUrl;
+}
+
 async function setupMasRequestLogger(masRequestErrors) {
   const seenRequests = new Set();
 
@@ -181,6 +272,7 @@ async function setupMasRequestLogger(masRequestErrors) {
  * @param {Array} config.pages - Array of page configurations [{ name: 'US', url: '/path' }, ...]
  * @param {Object} config.extraHTTPHeaders - HTTP headers to set on the context
  * @param {number} config.loadTimeout - Timeout after networkidle (default: 5000ms)
+ * @param {number} config.setupTimeout - Timeout for beforeAll hook setup (default: 60000ms)
  * @returns {Object} - Setup object with pages, setup/cleanup methods, and error arrays
  */
 function createWorkerPageSetup(config = {}) {
@@ -188,14 +280,13 @@ function createWorkerPageSetup(config = {}) {
     pages = [],
     extraHTTPHeaders = { 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' },
     loadTimeout = 5000,
+    setupTimeout = 60000, // Default 60 second timeout for worker setup
   } = config;
 
   let workerContext;
   const workerPages = {};
   let consoleErrors = [];
   let masRequestErrors = [];
-
-  const miloLibs = process.env.MILO_LIBS || '';
 
   /**
    * Sets up worker-scoped pages and listeners
@@ -206,6 +297,9 @@ function createWorkerPageSetup(config = {}) {
   async function setupWorkerPages({ browser, baseURL }) {
     console.info('[Worker Setup]: Initializing worker-scoped pages...');
 
+    // Set timeout for the current test (beforeAll hook)
+    test.setTimeout(setupTimeout);
+
     workerContext = await browser.newContext({ extraHTTPHeaders });
 
     consoleErrors = [];
@@ -213,7 +307,10 @@ function createWorkerPageSetup(config = {}) {
 
     const pagePromises = pages.map(async (pageConfig) => {
       const { name, url } = pageConfig;
-      const fullUrl = `${baseURL}${url}${miloLibs}`;
+
+      let fullUrl = `${baseURL}${url}`;
+      fullUrl = addUrlQueryParams(fullUrl, MILO_LIBS);
+      fullUrl = addUrlQueryParams(fullUrl, MAS_LIBS);
 
       console.info(`[Worker Setup]: Creating page for ${name}:`, fullUrl);
 
@@ -323,7 +420,9 @@ function createWorkerPageSetup(config = {}) {
    */
   async function verifyPageURL(pageName, expectedPath, expect) {
     const page = getPage(pageName);
-    const regex = new RegExp(expectedPath.replace('?', '\\?'));
+    // Create regex that matches the expected path with optional miloLibs and masLibs parameters
+    const escapedPath = expectedPath.replace('?', '\\?');
+    const regex = new RegExp(`${escapedPath}.*`);
     await expect(page).toHaveURL(regex);
   }
 
@@ -352,9 +451,10 @@ module.exports = {
   setupMasRequestLogger,
   attachMasRequestErrorsToFailure,
   createWorkerPageSetup,
+  addUrlQueryParams,
+  validateCommerceUrl,
+  constructTestUrl,
   PRICE_PATTERN,
-  CCD_BASE_PATH,
-  ADOBE_HOME_BASE_PATH,
-  PLANS_BASE_PATH,
-  DOCS_BASE_PATH,
+  DOCS_GALLERY_PATH,
+  PLANS_NALA_PATH,
 };
