@@ -1612,10 +1612,6 @@ export async function loadDeferred(area, blocks, config) {
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
   }
-
-  // Load content insights on demand
-  import('../features/content-insights/content-insights.js')
-    .then(({ default: initContentInsights }) => initContentInsights());
 }
 
 function initSidekick() {
@@ -1631,6 +1627,18 @@ function initSidekick() {
   } else {
     document.addEventListener('sidekick-ready', () => {
       initPlugins();
+    });
+  }
+}
+
+function initContentInsights() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const contentInsightsParam = urlParams.get('content-insights');
+  
+  if (contentInsightsParam === 'on') {
+    window.addEventListener('content-insights-begin', async (evtd) => {
+      const { default: executeCheck } = await import('../blocks/preflight/checks/contentInsights.js');
+      await executeCheck(evtd?.detail);
     });
   }
 }
@@ -1690,6 +1698,7 @@ async function documentPostSectionLoading(config) {
     config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
   }
   initSidekick();
+  initContentInsights();
 
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
