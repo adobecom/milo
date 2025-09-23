@@ -1,4 +1,5 @@
 import { isSignedOut, getConfig, getMepEnablement, loadIms } from '../../../utils/utils.js';
+import { getCookie } from '../../../martech/helpers.js';
 
 export function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
   return new Promise((resolve) => {
@@ -10,12 +11,6 @@ export function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
     }
     checkIms();
   });
-}
-function getCookie(key) {
-  const cookie = document.cookie.split(';')
-    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
-    .find(([k]) => k === key);
-  return cookie ? cookie[1] : null;
 }
 async function getUserId() {
   if (isSignedOut() && getMepEnablement('signedin') !== true) return false;
