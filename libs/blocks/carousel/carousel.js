@@ -220,16 +220,22 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
-function updateAriaLive(ariaLive, slide) {
+function updateAriaLive(ariaLive, slide, carouselElements) {
   let text = '';
   slide.querySelectorAll(':scope > :not(.section-metadata').forEach((el, index) => {
     text += `${index ? ' ' : ''}${el.textContent.trim()}`;
   });
+
+  const { slides } = carouselElements;
+  const currentSlideIndex = slides.findIndex((s) => s === slide);
+  const slideInfo = `slide ${currentSlideIndex + 1} of ${slides.length}`;
+
   if (text) {
-    ariaLive.textContent = text;
+    ariaLive.textContent = `${text} ${slideInfo}`;
   } else {
     const el = slide.querySelector('img[alt], video[title], iframe[title]');
-    ariaLive.textContent = el?.getAttribute('alt') || el?.getAttribute('title') || '';
+    const altText = el?.getAttribute('alt') || el?.getAttribute('title') || '';
+    ariaLive.textContent = altText ? `${altText} ${slideInfo}` : slideInfo;
   }
 }
 
@@ -312,7 +318,7 @@ function moveSlides(event, carouselElements) {
   referenceSlide.classList.add('reference-slide');
   referenceSlide.style.order = '1';
 
-  updateAriaLive(ariaLive, activeSlide);
+  updateAriaLive(ariaLive, activeSlide, carouselElements);
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
