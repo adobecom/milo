@@ -44,7 +44,7 @@ export function handleBackground(div, section) {
   } else {
     const color = div.background.content?.textContent?.trim();
     if (color) {
-      const colors = color.split(',').map((c) => c.trim());
+      const colors = color.split('|').map((c) => c.trim());
       applyBackground(colors, section);
     }
   }
