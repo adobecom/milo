@@ -50,9 +50,30 @@ export function sendAnalytics(event) {
 }
 
 function focusTriggerElement(modalId) {
-  const triggerElement = document.querySelector(`[data-modal-hash="#${modalId}"][data-is-modal-trigger="true"]`);
-  triggerElement?.focus();
-  triggerElement?.removeAttribute('data-is-modal-trigger');
+  const triggerElement = document.querySelector(
+    `[data-modal-hash="#${modalId}"][data-is-modal-trigger="true"]`,
+  );
+  if (triggerElement) {
+    triggerElement.focus();
+    triggerElement.removeAttribute('data-is-modal-trigger');
+    return;
+  }
+
+  // Fallback focus options for deep links
+  if (isDeepLink) {
+    const fallbackSelectors = [
+      `[data-modal-hash="#${modalId}"]`,
+      `a[data-modal-id="${modalId}"].con-button`,
+    ];
+
+    for (const selector of fallbackSelectors) {
+      const element = document.querySelector(selector);
+      if (element) {
+        element.focus();
+        break;
+      }
+    }
+  }
 }
 
 export function closeModal(modal) {
@@ -162,10 +183,10 @@ function addIframeKeydownListener(iframe, dialog) {
 }
 
 export async function getModal(details, custom) {
-  document.activeElement.dataset.isModalTrigger = 'true';
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
   isDeepLink = deepLink;
+  if (!isDeepLink) document.activeElement.dataset.isModalTrigger = 'true';
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
