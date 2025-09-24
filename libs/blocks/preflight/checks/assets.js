@@ -83,17 +83,12 @@ function isNotConstrainedByContainer(asset) {
   const picture = asset.closest?.('picture');
   if (!picture) return false;
   const childWidth = picture.offsetWidth;
-  const childHeight = picture.offsetHeight;
   let parent = picture.parentElement;
   let depth = 0;
   while (parent && depth < 5) {
     const parentWidth = parent.offsetWidth;
-    const parentHeight = parent.offsetHeight;
-    if (parentWidth === childWidth && parentHeight === childHeight) return false;
-    if (parentWidth > 0 && parentHeight > 0
-      && parentWidth !== childWidth && parentHeight !== childHeight) {
-      return true;
-    }
+    if (parentWidth === childWidth) return false;
+    if (parentWidth > 0 && parentWidth !== childWidth) return true;
     parent = parent.parentElement;
     depth += 1;
   }
