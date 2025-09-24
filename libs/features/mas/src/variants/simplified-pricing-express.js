@@ -1,7 +1,7 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './simplified-pricing-express.css.js';
-import { TABLET_DOWN } from '../media.js';
+import { TABLET_DOWN, isMobile } from '../media.js';
 
 // Helper function to check if viewport is tablet or below
 const isTabletOrBelow = () => window.matchMedia(TABLET_DOWN).matches;
@@ -53,6 +53,14 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
 };
 
 export class SimplifiedPricingExpress extends VariantLayout {
+    constructor(card) {
+        super(card);
+        this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+        this.intersectionObserver = null;
+        this.visibilityObserver = null;
+        this.containerElement = null;
+    }
+
     getGlobalCSS() {
         return CSS;
     }
@@ -65,18 +73,181 @@ export class SimplifiedPricingExpress extends VariantLayout {
         return '[slot="heading-xs"]';
     }
 
+    getContainer() {
+        let container = this.card.closest('merch-card-collection');
+        if (!container) {
+            let parent = this.card.parentElement;
+            while (parent && parent !== document.body) {
+                const cards = parent.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
+                if (cards.length > 1) {
+                    const firstCardParent = cards[0].parentElement;
+                    const allSameParent = Array.from(cards).every(card =>
+                        card.parentElement === firstCardParent ||
+                        card.closest('merch-card-collection') === parent
+                    );
+                    if (allSameParent) {
+                        container = parent;
+                        break;
+                    }
+                }
+                parent = parent.parentElement;
+            }
+        }
+
+        if (!container) {
+            container = this.card.parentElement;
+        }
+
+        return container;
+    }
+
+    updateCardElementMinHeightValue(height, name) {
+        if (!height) return;
+        const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+        const container = this.getContainer();
+        const maxMinHeight =
+            parseInt(
+                container.style.getPropertyValue(
+                    elMinHeightPropertyName,
+                ),
+            ) || 0;
+
+        if (height > maxMinHeight) {
+            container.style.setProperty(
+                elMinHeightPropertyName,
+                `${height}px`,
+            );
+        }
+    }
+
+    syncHeights() {
+        if (this.card.getBoundingClientRect().width === 0) {
+            return;
+        }
+
+        const descriptionSlot = this.card.querySelector('[slot="body-xs"]');
+        if (descriptionSlot) {
+            descriptionSlot.offsetHeight;
+
+            const height = descriptionSlot.offsetHeight;
+            this.updateCardElementMinHeightValue(height, 'description');
+        }
+
+        const priceSlot = this.card.querySelector('[slot="price"]');
+        if (priceSlot) {
+            priceSlot.offsetHeight;
+
+            const height = priceSlot.offsetHeight;
+            this.updateCardElementMinHeightValue(height, 'price');
+        }
+    }
+
+    clearHeightVariables() {
+        const container = this.getContainer();
+        if (!container) return;
+
+        const prefix = `--consonant-merch-card-${this.card.variant}`;
+        ['description', 'price'].forEach(name => {
+            container.style.removeProperty(`${prefix}-${name}-height`);
+        });
+    }
+
+    async waitForPrices() {
+        if (this.card.prices?.length) {
+            await Promise.all(this.card.prices.map(price => price.onceSettled?.()));
+        }
+    }
+
+    async syncAllCardsInContainer(container) {
+        const cards = container.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
+
+        if (!cards.length) return;
+
+        const prefix = `--consonant-merch-card-${this.card.variant}`;
+        ['description', 'price'].forEach(name => {
+            container.style.removeProperty(`${prefix}-${name}-height`);
+        });
+
+        await Promise.all(
+            Array.from(cards).flatMap(card =>
+                card.prices?.map(price => price.onceSettled?.()) || []
+            )
+        );
+
+        requestAnimationFrame(() => {
+            cards.forEach(card => card.variantLayout?.syncHeights?.());
+        });
+    }
+
+    async forceRemeasure() {
+        const container = this.getContainer();
+        if (container) {
+            await this.syncAllCardsInContainer(container);
+        }
+    }
+
+    async postCardUpdateHook() {
+        if (!this.card.isConnected) return;
+
+        await this.card.updateComplete;
+        await this.waitForPrices();
+
+        if (window.matchMedia('(min-width: 1200px)').matches) {
+            requestAnimationFrame(() => this.syncHeights());
+        }
+    }
+
     connectedCallbackHook() {
         if (!this.card || this.card.failed) {
             return;
         }
-        
+
         this.setupAccordion();
-        
+
         requestAnimationFrame(() => {
             if (this.card?.hasAttribute('data-default-card') && isTabletOrBelow()) {
                 this.card.setAttribute('data-expanded', 'true');
             }
         });
+
+        window.addEventListener('resize', this.postCardUpdateHook);
+
+        setTimeout(() => this.setupVisibilityDetection(), 100);
+    }
+
+    setupVisibilityDetection() {
+        const tabPanel = this.card.closest('.tabpanel, [role="tabpanel"]');
+
+        if (tabPanel) {
+            this.visibilityObserver = new MutationObserver(async (mutations) => {
+                const becameVisible = mutations.some(m =>
+                    m.attributeName === 'hidden' && !tabPanel.hasAttribute('hidden')
+                );
+
+                if (becameVisible && window.matchMedia('(min-width: 1200px)').matches) {
+                    const container = this.getContainer();
+                    if (container) {
+                        await this.syncAllCardsInContainer(container);
+                    }
+                }
+            });
+
+            this.visibilityObserver.observe(tabPanel, {
+                attributes: true,
+                attributeFilter: ['hidden']
+            });
+        } else {
+            this.intersectionObserver = new IntersectionObserver(async (entries) => {
+                const visible = entries.find(e => e.isIntersecting && e.target.clientHeight > 0);
+                if (visible && window.matchMedia('(min-width: 1200px)').matches) {
+                    const container = this.getContainer();
+                    if (container) {
+                        await this.syncAllCardsInContainer(container);
+                    }
+                }
+            });
+            this.intersectionObserver.observe(this.card);
+        }
     }
 
     setupAccordion() {
@@ -107,28 +278,40 @@ export class SimplifiedPricingExpress extends VariantLayout {
         // Watch for default card attribute changes
         this.attributeObserver = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && 
-                    mutation.attributeName === 'data-default-card' && 
-                    this.card.hasAttribute('data-default-card') && 
+                if (mutation.type === 'attributes' &&
+                    mutation.attributeName === 'data-default-card' &&
+                    this.card.hasAttribute('data-default-card') &&
                     isTabletOrBelow()) {
                     this.card.setAttribute('data-expanded', 'true');
                 }
             });
         });
-        
-        this.attributeObserver.observe(this.card, { 
+
+        this.attributeObserver.observe(this.card, {
             attributes: true,
             attributeOldValue: true
         });
     }
 
     disconnectedCallbackHook() {
+        window.removeEventListener('resize', this.postCardUpdateHook);
+
         if (this.mediaQueryListener) {
             const mediaQuery = window.matchMedia(TABLET_DOWN);
             mediaQuery.removeEventListener('change', this.mediaQueryListener);
         }
         if (this.attributeObserver) {
             this.attributeObserver.disconnect();
+        }
+
+        if (this.visibilityObserver) {
+            this.visibilityObserver.disconnect();
+            this.visibilityObserver = null;
+        }
+
+        if (this.intersectionObserver) {
+            this.intersectionObserver.disconnect();
+            this.intersectionObserver = null;
         }
     }
 
@@ -378,6 +561,25 @@ export class SimplifiedPricingExpress extends VariantLayout {
                 display: flex;
                 flex-direction: column;
                 height: auto;
+            }
+
+            /* Make card-content fill parent and use flexbox */
+            :host([variant='simplified-pricing-express']) .card-content {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            /* Apply synchronized heights to containers */
+            :host([variant='simplified-pricing-express']) .description {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+            }
+
+            :host([variant='simplified-pricing-express']) .price {
+                display: flex;
+                flex-direction: column;
             }
 
             :host([variant='simplified-pricing-express']) .cta {
