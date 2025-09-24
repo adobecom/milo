@@ -25,6 +25,13 @@
 
 .text-block div > *:last-child { margin-bottom: 0; }
 
+.text-block.unstyled-list :is(ul, ol) {
+  list-style: none;
+  padding-inline-start: 0;
+}
+
+.text-block.unstyled-list :is(ul, ol)[class^="body-"] > li:not(:first-child) { margin: inherit; }
+
 .grid .text-block div > *:last-child { margin-bottom: var(--spacing-s); }
 
 .text-block .foreground > div *:first-child { margin-top: 0; }
@@ -308,6 +315,47 @@
   height: 100%;
 }
 
+/* Mweb specific */
+@media screen and (max-width: 599px) {
+  .text.text-block.left-mobile {
+    text-align: start;
+  }
+
+  .text.text-block.center-mobile {
+    text-align: center;
+  }
+
+  .text.text-block.left-mobile .action-area,
+  .text.text-block.center-mobile .action-area {
+    gap: var(--spacing-xxs);
+  }
+
+  .text.text-block.left-mobile .action-area,
+  .text.text-block.left-mobile .icon-area {
+    justify-content: start;
+  }
+
+  .text.text-block.center-mobile .action-area,
+  .text.text-block.center-mobile .icon-area {
+    justify-content: center;
+  }
+
+  .text.text-block.left-mobile .icon-area,
+  .text.text-block.center-mobile .icon-area {
+    margin-block-end: var(--spacing-xxs);
+  }
+
+  .text.text-block.left-mobile [class^="heading"],
+  .text.text-block.center-mobile [class^="heading"] {
+    margin: 0 0 12px;
+  }
+
+  .text.text-block.left-mobile [class^="body-"]:not(.action-area),
+  .text.text-block.center-mobile [class^="body-"]:not(.action-area) {
+    margin: 12px 0 var(--spacing-xs) 0;
+  }
+}
+
 /* Tablet up */
 @media screen and (min-width: 600px) {
   .inset.text-block .foreground::before {
@@ -335,17 +383,30 @@
   .text-block.center .foreground > .tablet-up {
     justify-content: center;
   }
-  
+
   .text-block.right .foreground > .tablet-up {
     justify-content: end;
   }
-  
+
   .text-block .foreground > .mobile-up,
   .text-block .foreground > .desktop-up,
   .text-block.icon-inline .foreground > .mobile-up,
   .text-block.icon-inline .foreground > .desktop-up {
     display: none;
   }
+}
+
+/* tablet down */
+@media screen and (max-width: 1199px){
+  /* Mweb specific changes for lockup and icon-area */
+  .mweb-enabled .text-block.s-lockup .lockup-area {
+    font-size: var(--type-lockup-xs-size);
+    letter-spacing: var(--type-lockup-xs-ls);
+    gap: 6px;
+  }
+  .mweb-enabled .text-block.s-lockup .lockup-area img { height: var(--icon-size-xs); }
+
+  .mweb-enabled .text-block.l-icon .icon-area { height: var(--icon-size-m); }
 }
 
 /* Desktop up */
@@ -363,11 +424,11 @@
   .text-block.center .foreground > .desktop-up {
     justify-content: center;
   }
-  
+
   .text-block.right .foreground > .desktop-up {
     justify-content: end;
   }
-  
+
   .text-block .foreground > .mobile-up,
   .text-block .foreground > .tablet-up,
   .text-block.icon-inline .foreground > .mobile-up,

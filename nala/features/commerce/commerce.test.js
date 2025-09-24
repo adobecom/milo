@@ -4,9 +4,7 @@ import { features } from './commerce.spec.js';
 import CommercePage from './commerce.page.js';
 import FedsLogin from '../feds/login/login.page.js';
 import FedsHeader from '../feds/header/header.page.js';
-import { PRICE_PATTERN } from '../../libs/commerce.js';
-
-const miloLibs = process.env.MILO_LIBS || '';
+import { PRICE_PATTERN, constructTestUrl } from '../../libs/commerce.js';
 
 let COMM;
 test.beforeEach(async ({ page, baseURL, browserName }) => {
@@ -27,7 +25,7 @@ test.beforeEach(async ({ page, baseURL, browserName }) => {
 test.describe('Commerce feature test suite', () => {
   // @Commerce-Price-Term - Validate price with term display
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[0].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[0].path);
     console.info('[Test Page]: ', testPage);
 
     await test.step('Go to the test page', async () => {
@@ -37,7 +35,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate regular price display', async () => {
       await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.price.innerText()).toMatch(PRICE_PATTERN.US_yr);
+      expect(await COMM.price.innerText()).toMatch(PRICE_PATTERN.US.yr);
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).toBe('');
       expect(await COMM.price.locator('.price-tax-inclusivity').innerText()).toBe('');
@@ -45,7 +43,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate optical price display', async () => {
       await COMM.priceOptical.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.priceOptical.innerText()).toMatch(PRICE_PATTERN.US_mo);
+      expect(await COMM.priceOptical.innerText()).toMatch(PRICE_PATTERN.US.mo);
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).toBe('');
       expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).toBe('');
@@ -53,7 +51,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate strikethrough price display', async () => {
       await COMM.priceStrikethrough.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.priceStrikethrough.innerText()).toMatch(PRICE_PATTERN.US_yr);
+      expect(await COMM.priceStrikethrough.innerText()).toMatch(PRICE_PATTERN.US.yr);
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).toBe('');
@@ -66,7 +64,7 @@ test.describe('Commerce feature test suite', () => {
 
   // @Commerce-Price-Unit-Term - Validate price with term and unit display
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[1].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[1].path);
     console.info('[Test Page]: ', testPage);
 
     await test.step('Go to the test page', async () => {
@@ -105,7 +103,7 @@ test.describe('Commerce feature test suite', () => {
 
   // @Commerce-Price-Taxlabel-Unit-Term - Validate price with term, unit and tax label display
   test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[2].path);
     console.info('[Test Page]: ', testPage);
 
     await test.step('Go to the test page', async () => {
@@ -144,7 +142,7 @@ test.describe('Commerce feature test suite', () => {
 
   // @Commerce-Promo - Validate price and CTAs have promo code applied
   test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[3].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[3].path);
     const { data } = features[3];
 
     console.info('[Test Page]: ', testPage);
@@ -190,7 +188,7 @@ test.describe('Commerce feature test suite', () => {
   test(`${features[4].name}, ${features[4].tags}`, async ({ page, baseURL }) => {
     test.skip(); // Skipping due to missing login
 
-    const testPage = `${baseURL}${features[4].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[4].path);
     console.info('[Test Page]: ', testPage);
 
     const { data } = features[4];
@@ -231,7 +229,7 @@ test.describe('Commerce feature test suite', () => {
   test(`${features[5].name}, ${features[5].tags}`, async ({ page, baseURL }) => {
     test.skip(); // Skipping due to missing login
 
-    const testPage = `${baseURL}${features[5].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[5].path);
     console.info('[Test Page]: ', testPage);
     const { data } = features[5];
     const Login = new FedsLogin(page);
@@ -270,7 +268,7 @@ test.describe('Commerce feature test suite', () => {
 
   // @Commerce-KitchenSink-Smoke - Validate commerce CTA and checkout placeholders
   test(`${features[6].name}, ${features[6].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[6].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[6].path);
     const webUtil = new WebUtil(page);
 
     console.info('[Test Page]: ', testPage);
@@ -306,7 +304,7 @@ test.describe('Commerce feature test suite', () => {
 
   // @Commerce-DE - Validate commerce CTA and checkout placeholders in DE locale
   test(`${features[7].name}, ${features[7].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[7].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[7].path);
     const { data } = features[7];
 
     console.info('[Test Page]: ', testPage);
@@ -377,7 +375,7 @@ test.describe('Commerce feature test suite', () => {
 
   // @Commerce-Old-Promo - Validate promo price WITHOUT old price
   test(`${features[8].name},${features[8].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[8].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[8].path);
     const { data } = features[8];
 
     console.info('[Test Page]: ', testPage);
@@ -400,7 +398,7 @@ test.describe('Commerce feature test suite', () => {
 
   // @Commerce-GB - Validate commerce CTA and checkout placeholders in UK locale
   test(`${features[9].name}, ${features[9].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[9].path}${miloLibs}`;
+    const testPage = constructTestUrl(baseURL, features[9].path);
     const { data } = features[9];
 
     console.info('[Test Page]: ', testPage);

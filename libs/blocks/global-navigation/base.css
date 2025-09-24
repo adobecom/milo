@@ -83,6 +83,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .fe
   column-gap: 15px;
 }
 
+html[lang="ja-jp"] a.feds-navLink wbr {
+  display: none;
+}
+
 .feds-navLink--blue {
   color: var(--feds-color-blue-link);
 }

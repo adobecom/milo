@@ -1,10 +1,32 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable import/no-extraneous-dependencies */
 
 const { devices } = require('@playwright/test');
 
-const USER_AGENT_DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.18 Safari/537.36 NALA-Acom';
-const USER_AGENT_MOBILE_CHROME = 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36 NALA-Acom';
-const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1 NALA-Acom';
+const USER_AGENT_DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.6900.0 Safari/537.36 NALA-Acom';
+const USER_AGENT_MOBILE_CHROME = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.6900.0 Mobile Safari/537.36 NALA-Acom';
+const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1 NALA-Acom';
+
+const isCI = !!process.env.CI;
+const isLocal = !isCI;
+
+// MAS tests
+const masFeatures = [
+  'features/mas/**/*.test.js',
+  'features/commerce/**/*.test.js',
+  'features/promotions/**/*.test.js',
+  'features/osttools/**/*.test.js',
+];
+
+// Milo tests (non-MAS)
+const miloIgnore = isCI
+  ? [
+    'features/mas/**',
+    'features/commerce/**',
+    'features/promotions/**',
+    'features/osttools/**',
+  ]
+  : []; // In local runs → allow @mas annotations to work
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -34,7 +56,7 @@ const config = {
   workers: process.env.CI ? 7 : 3,
   /* Reporter to use. */
   reporter: process.env.CI
-    ? [['github'], ['list'], ['./nala/utils/base-reporter.js']]
+    ? [['github'], ['list'], ['blob'], ['./nala/utils/base-reporter.js']]
     : [
       ['html', { outputFolder: 'test-html-results' }],
       ['list'],
@@ -56,6 +78,7 @@ const config = {
   projects: [
     {
       name: 'milo-live-chromium',
+      testIgnore: miloIgnore,
       use: {
         ...devices['Desktop Chrome'],
         userAgent: USER_AGENT_DESKTOP,
@@ -64,6 +87,7 @@ const config = {
 
     {
       name: 'milo-live-firefox',
+      testIgnore: miloIgnore,
       use: {
         ...devices['Desktop Firefox'],
         userAgent: USER_AGENT_DESKTOP,
@@ -71,10 +95,28 @@ const config = {
     },
     {
       name: 'milo-live-webkit',
+      testIgnore: miloIgnore,
       use: {
         ...devices['Desktop Safari'],
         userAgent: USER_AGENT_DESKTOP,
+        workers: 5,
       },
+    },
+    /* MAS test */
+    {
+      name: 'mas-chromium',
+      testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
+      use: { ...devices['Desktop Chrome'], userAgent: USER_AGENT_DESKTOP },
+    },
+    {
+      name: 'mas-firefox',
+      testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
+      use: { ...devices['Desktop Firefox'], userAgent: USER_AGENT_DESKTOP },
+    },
+    {
+      name: 'mas-webkit',
+      testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
+      use: { ...devices['Desktop Safari'], userAgent: USER_AGENT_DESKTOP },
     },
     /* Test Against Mobile View ports */
     {

@@ -57,12 +57,12 @@ const mapSubscriptionCodes = (allOffers) => {
   } = emptyEntitlements();
 
   allOffers.forEach(({ fulfilled_items, offer = {} }) => {
-    const cloud = offer.product_arrangement?.cloud;
+    const cloud = offer.product_arrangement_v2?.cloud;
     clouds[CREATIVE_CLOUD] = clouds[CREATIVE_CLOUD] || cloud === 'CREATIVE';
     clouds[DOCUMENT_CLOUD] = clouds[DOCUMENT_CLOUD] || cloud === 'DOCUMENT';
     clouds[EXPERIENCE_CLOUD] = clouds[EXPERIENCE_CLOUD] || cloud === 'EXPERIENCE';
 
-    const family = offer.product_arrangement?.family;
+    const family = offer.product_arrangement_v2?.family;
     if (family) {
       offer_families[family.toLowerCase()] = true;
     }

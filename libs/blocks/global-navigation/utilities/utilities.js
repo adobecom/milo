@@ -12,7 +12,7 @@ import {
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
-import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
+import { PERSONALIZATION_TAGS, FLAGS, handleCommands } from '../../../features/personalization/personalization.js';
 
 loadLana();
 
@@ -22,6 +22,7 @@ const FEDERAL_PATH_KEY = 'federal';
 const DEFAULT_LOCALNAV_HEIGHT = 40;
 const LANA_CLIENT_ID = 'feds-milo';
 const FEDS_PROMO_HEIGHT = 72;
+export const KEYBOARD_DELAY = 8000;
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
@@ -71,6 +72,15 @@ export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
     tags,
     errorType,
   });
+};
+
+let keyboardNav;
+export const setupKeyboardNav = async (newMobileWithLnav, isFooter) => {
+  keyboardNav = keyboardNav || new Promise((resolve) => {
+    import('./keyboard/index.js')
+      .then(({ default: Navigation }) => resolve(new Navigation(newMobileWithLnav, isFooter)));
+  });
+  return keyboardNav;
 };
 
 const usedMeasurementNames = new Set();
@@ -476,14 +486,20 @@ export async function fetchAndProcessPlainHtml({
     });
     return null;
   }
-  const text = await res.text();
+  const text = await (plainHTMLPromise ? res.clone().text() : res.text());
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
-  const commands = mepGnav?.commands;
+  let commands = mepGnav?.commands || [];
+
+  const gnavMepCommands = config?.mep?.commands?.filter(
+    (command) => command?.modifiers?.find((modifier) => modifier === FLAGS?.includeGnav),
+  ) || [];
+
+  commands = commands.concat(gnavMepCommands);
+
   if (commands?.length) {
     /* c8 ignore next 3 */
-    const { handleCommands } = await import('../../../features/personalization/personalization.js');
     handleCommands(commands, body, true, true);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];

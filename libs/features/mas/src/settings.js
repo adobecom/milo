@@ -60,14 +60,10 @@ function getSettings(config = {}, service) {
       CheckoutWorkflowStep,
       Defaults.checkoutWorkflowStep,
   );
-    const displayOldPrice = toBoolean(
-        getParameter('displayOldPrice', commerce),
-        ffDefaults ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
-    );
-    const displayPerUnit = toBoolean(
-        getParameter('displayPerUnit', commerce),
-        ffDefaults ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
-    );
+    const displayOldPrice = Defaults.displayOldPrice;
+
+    const displayPerUnit = Defaults.displayPerUnit;
+
     const displayRecurrence = toBoolean(
         getParameter('displayRecurrence', commerce),
         Defaults.displayRecurrence,

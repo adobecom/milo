@@ -6,13 +6,33 @@ export const STATUS = {
 };
 
 export const SEO_TITLES = {
-  H1Count: 'H1 count',
-  TitleSize: 'Title size',
-  Canonical: 'Canonical',
-  MetaDescription: 'Meta description',
-  BodySize: 'Body size',
-  Lorem: 'Lorem Ipsum',
-  Links: 'Links',
+  h1Count: 'H1 count',
+  title: 'Title size',
+  canonical: 'Canonical',
+  description: 'Meta description',
+  bodySize: 'Body size',
+  loremIpsum: 'Lorem Ipsum',
+  links: 'Links',
+};
+
+export const SEO_IDS = {
+  title: 'title',
+  description: 'description',
+  h1Count: 'h1-count',
+  canonical: 'canonical',
+  bodySize: 'body-size',
+  loremIpsum: 'lorem-ipsum',
+  links: 'links',
+};
+
+export const SEO_DESCRIPTIONS = {
+  title: 'Title size is appropriate.',
+  description: 'Meta description is present and within the recommended character limit.',
+  h1Count: 'Found exactly one H1 heading.',
+  canonical: 'Canonical reference is valid.',
+  bodySize: 'Body content has a good length.',
+  loremIpsum: 'No Lorem ipsum is used on the page.',
+  links: 'Links are valid.',
 };
 
 export const PERFORMANCE_TITLES = {
@@ -28,3 +48,7 @@ export const PERFORMANCE_TITLES = {
 };
 
 export const ASSETS_TITLES = { AssetDimensions: 'Asset Dimensions' };
+
+export const ASO_TIMEOUT_MS = 60_000;
+export const ASO_POLL_INTERVAL_MS = 2_000;
+export const ASO_MAX_RETRIES = Math.ceil(ASO_TIMEOUT_MS / ASO_POLL_INTERVAL_MS);

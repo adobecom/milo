@@ -24,6 +24,18 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   initJarvisChat(config, loadScript, loadStyle, getMetadata);
 };
 
+export const loadBlockNotifications = async (getConfig, loadStyle) => {
+  const { env, miloLibs, codeRoot } = getConfig();
+
+  if (env.name === 'local' || window.location.host.includes('.page')) {
+    const base = miloLibs || codeRoot;
+    loadStyle(`${base}/styles/block-notifications.css`);
+
+    const { default: blockNotifications } = await import('../utils/block-notifications.js');
+    blockNotifications(base);
+  }
+};
+
 export const loadPrivacy = async (getConfig, loadScript) => {
   const { privacyId, env } = getConfig();
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
@@ -32,6 +44,7 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     'hlx.live': '01958a9e-818e-7213-8d4a-8b3b7a4ec33e-test',
     'aem.page': '01954847-62a4-7afc-bdc7-f110c4e35b5d-test',
     'aem.live': '01954848-3f9e-7267-ac5d-d4076841aeb1-test',
+    'aem.reviews': '019928fc-0bcd-7c53-9cde-ea06b4fc7294-test',
   };
 
   const otDomainId = ids?.[Object.keys(ids)
@@ -108,6 +121,7 @@ const loadDelayed = ([
     loadAriaAutomation();
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
+    loadBlockNotifications(getConfig, loadStyle);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;

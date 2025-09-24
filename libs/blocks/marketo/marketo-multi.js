@@ -3,15 +3,19 @@ import { debounce } from '../../utils/action.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const VALIDATION_STEP = {
-  name: '2',
-  phone: '2',
-  mktoFormsJobTitle: '2',
-  mktoFormsFunctionalArea: '2',
-  company: '3',
-  state: '3',
-  postcode: '3',
-  mktoFormsPrimaryProductInterest: '3',
-  mktoFormsCompanyType: '3',
+  2: [
+    'name',
+    'phone',
+    'mktoFormsJobTitle',
+    'mktoFormsFunctionalArea',
+  ],
+  3: [
+    'company',
+    'state',
+    'postcode',
+    'mktoFormsPrimaryProductInterest',
+    'mktoFormsCompanyType',
+  ],
 };
 
 export function updateTabIndex(formEl, stepToAdd, stepToRemove) {
@@ -78,9 +82,18 @@ export const formValidate = async (formEl) => {
 };
 
 function setValidationSteps(formEl, totalSteps, currentStep) {
+  const formData = window.mcz_marketoForm_pref || {};
+  const validationMap = formData.form?.fldStepPref || VALIDATION_STEP;
+  Object.keys(validationMap).forEach((step) => {
+    validationMap[step] = validationMap[step].join(',').split(',');
+  });
+  formData.form ??= {};
+  formData.form.fldStepPref = validationMap;
+
   formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
     const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
-    const step = VALIDATION_STEP[rowAttr] ? Math.min(VALIDATION_STEP[rowAttr], totalSteps) : 1;
+    const mapStep = Object.keys(validationMap).find((stepNum) => validationMap[stepNum].some((field) => field?.toLowerCase() === rowAttr?.toLowerCase())) || '1';
+    const step = Math.min(parseInt(mapStep, 10), totalSteps);
     row.dataset.validate = rowAttr?.startsWith('adobe-privacy') ? totalSteps : step;
     const fields = row.querySelectorAll('input, select, textarea');
     if (fields.length) fields.forEach((f) => { f.tabIndex = step === currentStep ? 0 : -1; });

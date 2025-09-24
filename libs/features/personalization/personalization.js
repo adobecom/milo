@@ -11,6 +11,13 @@ import {
   getFederatedUrl,
   isSignedOut,
 } from '../../utils/utils.js';
+import {
+  getConsentState,
+  parseOptanonConsent,
+  getAllCookies,
+  KNDCTR_CONSENT_COOKIE,
+  OPT_ON_AND_CONSENT_COOKIE,
+} from '../../martech/helpers.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -51,11 +58,17 @@ const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
 const MARTECH_RETURNED_EVENT = 'martechReturned';
 const PAGE_URL = new URL(window.location.href);
-const FLAGS = {
+export const FLAGS = {
   all: 'all',
   includeFragments: 'include-fragments',
+  includeGnav: 'include-gnav',
 };
 let isPostLCP = false;
+const SELECTOR_TYPES = {
+  fragment: 'fragment',
+  twpButtons: 'twp-buttons',
+  other: 'other',
+};
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -152,8 +165,9 @@ function addIds(el, manifestId, targetManifestId) {
 
 function getSelectorType(selector) {
   const sel = selector.toLowerCase().trim();
-  if (sel.startsWith('/') || sel.startsWith('http')) return 'fragment';
-  return 'other';
+  if (sel.startsWith('/') || sel.startsWith('http')) return SELECTOR_TYPES.fragment;
+  if (sel === 'twp buttons') return SELECTOR_TYPES.twpButtons;
+  return SELECTOR_TYPES.other;
 }
 
 export function replacePlaceholders(value, ph) {
@@ -208,7 +222,7 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
     addIds(el, manifestId, targetManifestId);
     return el;
   }
-  if (getSelectorType(content) !== 'fragment') {
+  if (getSelectorType(content) !== SELECTOR_TYPES.fragment) {
     const newContent = replacePlaceholders(content);
 
     if (action === 'replace') {
@@ -228,9 +242,23 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
   return createTag('div', undefined, frag);
 };
 
+export const handleTwpButtons = (el, selector) => {
+  if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
+    const secondaryButton = el.closest('p')?.querySelector('em') || el.closest('div')?.querySelector('em');
+    if (secondaryButton) {
+      const wrapper = secondaryButton.parentElement;
+      const html = wrapper.innerHTML;
+      let result = html.replace(/<em/g, '<strong');
+      result = result.replace(/<\/em/g, '</strong');
+      wrapper.innerHTML = result;
+    }
+  }
+};
+
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: (el, { content }) => {
+  [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
+    handleTwpButtons(el, selector);
   },
   [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
@@ -418,7 +446,7 @@ function registerInBlockActions(command) {
       }
       return;
     }
-    if (getSelectorType(blockSelector) === 'fragment') {
+    if (getSelectorType(blockSelector) === SELECTOR_TYPES.fragment) {
       if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
       if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
       config.mep.inBlock[blockName].fragments ??= {};
@@ -499,6 +527,12 @@ function getModifiers(selector) {
       flag.split(/_|#_/).forEach((mod) => modifiers.push(mod.toLowerCase().trim()));
     });
   }
+  if (getSelectorType(sel) === SELECTOR_TYPES.twpButtons) {
+    modifiers.push(FLAGS.includeFragments);
+    modifiers.push(FLAGS.all);
+    modifiers.push(FLAGS.includeGnav);
+  }
+
   return { sel, modifiers };
 }
 export function modifyNonFragmentSelector(selector, action) {
@@ -521,6 +555,10 @@ export function modifyNonFragmentSelector(selector, action) {
     modifiedSelector = modifiedSelector.replace(string, '').trim();
   }
 
+  if (action === COMMANDS_KEYS.remove && getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
+    modifiedSelector = 'a:not([data-remove="false"])';
+  }
+
   return {
     modifiedSelector,
     modifiers,
@@ -533,7 +571,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   const selector = sel.trim();
   if (!selector) return {};
 
-  if (getSelectorType(selector) === 'fragment') {
+  if (getSelectorType(selector) === SELECTOR_TYPES.fragment) {
     try {
       const fragments = root.querySelectorAll(
         `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
@@ -553,6 +591,14 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   let els;
   try {
     els = root.querySelectorAll(modifiedSelector);
+    if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
+      const regex = /free.trial|essai gratuit|kostenlos testen|testversion|無料で始める|détails de la version d’essai gratuite|details zur kostenlosen testversion/g;
+      els = [...els]
+        .filter((el) => el.outerHTML.toLowerCase().match(regex))
+        .map((el) => (['strong', 'em'].includes(el.parentElement.tagName.toLowerCase())
+          ? el.parentElement
+          : el));
+    }
   } catch (e) {
     /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
@@ -615,7 +661,9 @@ export function handleCommands(
   addSectionAnchors(rootEl);
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
-    cmd.content = forceInline && getSelectorType(content) === 'fragment' ? addHash(content, INLINE_HASH) : content;
+    cmd.content = forceInline && getSelectorType(content) === SELECTOR_TYPES.fragment
+      ? addHash(content, INLINE_HASH)
+      : content;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd);
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
@@ -639,7 +687,9 @@ export function handleCommands(
         COMMANDS[action](el, cmd);
         return;
       }
-      const insertAnchor = getSelectorType(selector) === 'fragment' ? el.parentElement : el;
+      const insertAnchor = getSelectorType(selector) === SELECTOR_TYPES.fragment
+        ? el.parentElement
+        : el;
       insertAnchor?.insertAdjacentElement(
         CREATE_CMDS[action],
         createContent(insertAnchor, cmd),
@@ -689,7 +739,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       targetManifestId,
     };
 
-    if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
+    if (action in COMMANDS && variantInfo.selectorType === SELECTOR_TYPES.fragment) {
       variants[vn].fragments.push({
         selector: normalizePath(variantInfo.selector.split(' #_')[0]),
         val: normalizePath(line[vn]),
@@ -953,8 +1003,9 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    const { lob } = config.mep.promises;
+    const { lob, event } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
+    if (name === 'registered' && event) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -1007,7 +1058,33 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(info = {}, variantOverride = false) {
+
+export function getMepConsentConfig() {
+  const cookies = getAllCookies();
+  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
+  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
+  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
+
+  if (!optOnConsentCookie || consentState === 'pre') {
+    return {
+      performance: true,
+      advertising: isSignedOut() && consentState !== 'pre',
+    };
+  }
+  return parseOptanonConsent(optOnConsentCookie).configuration;
+}
+
+export function canServeManifest(action, sources) {
+  const isCoreServices = action === 'core services' || (!action && sources?.includes('promo'));
+  if (isCoreServices) return true;
+
+  const consent = getMepConsentConfig();
+  const { performance, advertising } = consent;
+  const isPerformance = ['non-marketing', 'data science', 'analytics'].includes(action);
+  return isPerformance ? performance : advertising;
+}
+
+async function getManifestConfig(info, variantOverride) {
   const {
     name,
     manifestData,
@@ -1066,11 +1143,13 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
       executionOrder[key] = index > -1 ? index : 1;
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+    manifestConfig.mktgAction = infoObj['manifest-marketing-action']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
+  if (!canServeManifest(manifestConfig.mktgAction, source)) return null;
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1221,6 +1300,7 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
+
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],
@@ -1489,7 +1569,6 @@ export async function init(enablements = {}) {
     });
     if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
-
   if (enablePersV2 && target === true) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
       { config, targetInteractionPromise, calculatedTimeout },

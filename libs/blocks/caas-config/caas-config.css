@@ -85,6 +85,10 @@ dd.content .sort-options > .field {
   cursor: pointer;
 }
 
+.blade-card-options > div {
+    margin: 0 10px !important;
+}
+
 /* sticky panel */
 .config-panel {
   border-top: 8px solid black;

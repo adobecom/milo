@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Merch Card Simplified Pricing Express Web Component demo page</title>
+    <script>
+        window.process = {
+            env: {},
+        };
+    </script>
+    <style>
+        main {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+        main>div {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 378px));
+            gap: 32px;
+            padding: 20px;
+            justify-content: center;
+        }
+
+        .dark {
+            background-color: #1e1e1e;
+        }
+
+        #sidenav {
+            display: none;
+        }
+
+        @media screen and (min-width: 1440px) {
+            #sidenav {
+                flex: 1;
+                justify-content: stretch;
+                padding-top: 8px;
+                display: flex;
+                position: fixed;
+                bottom: 0px;
+                left: 0px;
+                gap: 20px;
+                flex-direction: column;
+                width: 220px;
+            }
+        }
+    </style>
+    <mas-commerce-service env="stage"></mas-commerce-service>
+</head>
+
+<body>
+    <main>
+        <h1>Simplified Pricing Express Cards</h1>
+        
+        <div id="basic-cards">
+            <h2 style="grid-column: 1 / -1;">Basic Cards</h2>
+            <merch-card variant="simplified-pricing-express" 
+                badge-background-color="#FFD700" 
+                badge-color="#000000" 
+                badge-text="LIMITED TIME">
+                <h2 slot="heading-xs">Express - Create standout content</h2>
+                <p slot="body-xs">Make amazing social content, flyers, and more. Stand out with Adobe Express.</p>
+                <a slot="cta" href="https://www.adobe.com/express/">Start for free</a>
+            </merch-card>
+
+            <merch-card variant="simplified-pricing-express"
+                badge-background-color="#00C853"
+                badge-color="#000000"
+                badge-text="BEST VALUE">
+                <h2 slot="heading-xs">Express Premium</h2>
+                <p slot="body-xs">Unlock premium templates, fonts, and features. Create without limits.</p>
+                <span is="inline-price" slot="price" data-display-per-unit="false" data-display-old-price="false" 
+                    data-display-recurrence="true" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">US$9.99/mo</span>
+                <a slot="cta" href="https://www.adobe.com/express/pricing">Get Premium</a>
+            </merch-card>
+
+            <merch-card variant="simplified-pricing-express"
+                badge-background-color="#1976D2"
+                badge-color="#FFFFFF"
+                badge-text="EXCLUSIVE">
+                <h2 slot="heading-xs">Express for teams</h2>
+                <p slot="body-xs">Collaborate on content creation with advanced sharing and brand controls.</p>
+                <span is="inline-price" slot="price" data-display-per-unit="false" data-display-old-price="false" 
+                    data-display-recurrence="true" data-wcs-osi="B1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574N">US$14.99/mo</span>
+                <a slot="cta" href="https://www.adobe.com/express/learn/guide">Learn more</a>
+                <a slot="cta" href="https://www.adobe.com/express/business">Buy now</a>
+            </merch-card>
+        </div>
+
+        <div id="custom-border-cards">
+            <h2 style="grid-column: 1 / -1;">Custom Border Color Cards</h2>
+            <merch-card variant="simplified-pricing-express"
+                border-color="#E91E63"
+                badge-text="NEW">
+                <h2 slot="heading-xs">Express with AI</h2>
+                <p slot="body-xs">Create content faster with AI-powered tools and generative features.</p>
+                <span is="inline-price" slot="price" data-display-per-unit="false" data-display-old-price="true" 
+                    data-display-recurrence="true" data-wcs-osi="C1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574O">US$19.99/mo</span>
+                <a slot="cta" href="https://www.adobe.com/express/ai">Try AI features</a>
+            </merch-card>
+
+            <merch-card variant="simplified-pricing-express"
+                border-color="#9C27B0"
+                badge-background-color="#9C27B0"
+                badge-color="#FFFFFF"
+                badge-text="STUDENT">
+                <h2 slot="heading-xs">Express for Students</h2>
+                <p slot="body-xs">Get creative with exclusive student pricing. Verified students save 60%.</p>
+                <span is="inline-price" slot="price" data-display-per-unit="false" data-display-old-price="true" 
+                    data-display-recurrence="true" data-wcs-osi="D1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574P">US$3.99/mo</span>
+                <a slot="cta" href="https://www.adobe.com/express/students">Get student discount</a>
+            </merch-card>
+
+            <merch-card variant="simplified-pricing-express"
+                border-color="#FF5722">
+                <h2 slot="heading-xs">Express Free</h2>
+                <p slot="body-xs">Get started with thousands of free templates and basic editing tools.</p>
+                <a slot="cta" href="https://www.adobe.com/express/">Start creating</a>
+            </merch-card>
+        </div>
+
+        <div class="dark" id="dark-theme-cards">
+            <h2 style="grid-column: 1 / -1; color: white;">Dark Theme Cards</h2>
+            <merch-card variant="simplified-pricing-express"
+                badge-background-color="#FFC107"
+                badge-color="#000000"
+                badge-text="POPULAR">
+                <h2 slot="heading-xs">Express All Apps</h2>
+                <p slot="body-xs">Get Express plus Creative Cloud apps. Everything you need to create.</p>
+                <span is="inline-price" slot="price" data-display-per-unit="false" data-display-old-price="false" 
+                    data-display-recurrence="true" data-wcs-osi="E1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574Q">US$54.99/mo</span>
+                <a slot="cta" href="https://www.adobe.com/creativecloud">View all apps</a>
+                <a slot="cta" href="https://www.adobe.com/creativecloud/buy">Buy now</a>
+            </merch-card>
+        </div>
+
+        <div id="tooltip-cards">
+            <h2 style="grid-column: 1 / -1;">Cards with Tooltips</h2>
+            
+            <!-- Card with price tooltip -->
+            <merch-card variant="simplified-pricing-express" id="card-with-price-tooltip">
+                <h2 slot="heading-xs">Express Premium with Pricing Info</h2>
+                <p slot="body-xs">Premium features with detailed pricing information</p>
+                <div slot="price">
+                    <span is="inline-price" data-display-per-unit="false" data-display-old-price="false" 
+                        data-display-recurrence="true" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">US$9.99/mo</span>
+                    <mas-mnemonic content="Price after first year at regular rate" placement="top">*</mas-mnemonic>
+                </div>
+                <a slot="cta" href="https://www.adobe.com/express/">Buy now</a>
+            </merch-card>
+
+            <!-- Card with description tooltip using icon -->
+            <merch-card variant="simplified-pricing-express" id="card-with-description-tooltip">
+                <h2 slot="heading-xs">Express with Feature Details</h2>
+                <div slot="body-xs">
+                    Get 20+ creative apps and services
+                    <mas-mnemonic content="Including Photoshop, Illustrator, Premiere Pro, After Effects, and more" placement="right">
+                        <merch-icon src="/libs/features/mas/test/img/info-icon.svg" size="xs"></merch-icon>
+                    </mas-mnemonic>
+                </div>
+                <span is="inline-price" slot="price" data-display-per-unit="false" data-display-old-price="false" 
+                    data-display-recurrence="true" data-wcs-osi="B1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574N">US$14.99/mo</span>
+                <a slot="cta" href="https://www.adobe.com/express/learn">Learn more</a>
+            </merch-card>
+
+            <!-- Card with multiple tooltips -->
+            <merch-card variant="simplified-pricing-express" id="card-with-multiple-tooltips">
+                <h2 slot="heading-xs">Express Complete Package</h2>
+                <div slot="body-xs">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>100GB cloud storage <mas-mnemonic content="Sync across all your devices" placement="top">ⓘ</mas-mnemonic></li>
+                        <li>Premium templates <mas-mnemonic content="Access to 1000+ exclusive designs" placement="top">ⓘ</mas-mnemonic></li>
+                        <li>Advanced features <mas-mnemonic content="Remove background, resize, and more" placement="top">ⓘ</mas-mnemonic></li>
+                    </ul>
+                </div>
+                <a slot="cta" href="https://www.adobe.com/express/">Get started</a>
+            </merch-card>
+
+            <!-- Card with icon-based tooltip (no slot content) -->
+            <merch-card variant="simplified-pricing-express" id="card-with-icon-tooltip">
+                <h2 slot="heading-xs">
+                    Express for Business
+                    <mas-mnemonic src="/libs/features/mas/test/img/info-icon.svg" 
+                        size="s" 
+                        tooltip-text="Perfect for teams and enterprises" 
+                        tooltip-placement="bottom"></mas-mnemonic>
+                </h2>
+                <p slot="body-xs">Collaborate with advanced sharing and brand management tools</p>
+                <span is="inline-price" slot="price" data-display-per-unit="false" data-display-old-price="true" 
+                    data-display-recurrence="true" data-wcs-osi="C1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574O">US$34.99/mo</span>
+                <a slot="cta" href="https://www.adobe.com/express/business">Contact sales</a>
+            </merch-card>
+
+            <!-- Card testing different tooltip placements -->
+            <merch-card variant="simplified-pricing-express" id="card-with-varied-placements">
+                <h2 slot="heading-xs">Tooltip Placement Test</h2>
+                <div slot="body-xs">
+                    Top <mas-mnemonic content="Top placement" placement="top">↑</mas-mnemonic> |
+                    Bottom <mas-mnemonic content="Bottom placement" placement="bottom">↓</mas-mnemonic> |
+                    Left <mas-mnemonic content="Left placement" placement="left">←</mas-mnemonic> |
+                    Right <mas-mnemonic content="Right placement" placement="right">→</mas-mnemonic>
+                </div>
+                <a slot="cta" href="#">Test tooltips</a>
+            </merch-card>
+        </div>
+    </main>
+    <script type="module" src="./merch-card.simplified-pricing-express.test.html.js"></script>
+</body>
+
+</html>

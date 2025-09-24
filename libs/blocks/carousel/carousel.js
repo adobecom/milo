@@ -95,6 +95,37 @@ function decorateSlideIndicators(slides, jumpTo) {
   return indicatorDots;
 }
 
+function updateButtonStates(carouselElements) {
+  const { slides, nextPreviousBtns, currentActiveIndex } = carouselElements;
+  const activeSlideIndex = currentActiveIndex;
+
+  const totalSlides = slides.length;
+  const isFirst = currentActiveIndex === 0;
+  const isLast = currentActiveIndex === totalSlides - 1;
+  const isMobile = window.innerWidth < 900;
+
+  nextPreviousBtns?.forEach((btn, index) => {
+    if (isMobile) {
+      const disable = (index === 0 && isFirst) || (index === 1 && isLast);
+      btn.disabled = disable;
+      btn.classList.toggle('disabled', disable);
+    } else {
+      btn.disabled = false;
+      btn.classList.remove('disabled');
+    }
+  });
+
+  const lastSlide = slides[slides.length - 1];
+  const firstSlide = slides[0];
+  if (isMobile) {
+    lastSlide?.classList.toggle('hide-left-hint', activeSlideIndex === 0);
+    firstSlide?.classList.toggle('hide-left-hint', activeSlideIndex === totalSlides - 1);
+  } else {
+    firstSlide?.classList.remove('hide-left-hint');
+    lastSlide?.classList.remove('hide-left-hint');
+  }
+}
+
 function handleNext(nextElement, elements) {
   if (nextElement.nextElementSibling) {
     return nextElement.nextElementSibling;
@@ -107,6 +138,29 @@ function handlePrevious(previousElment, elements) {
     return previousElment.previousElementSibling;
   }
   return elements[elements.length - 1];
+}
+
+function setEqualHeight(slides, slideContainer, currentActiveIndex = 0) {
+  const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+  const activeSlide = slides[currentActiveIndex];
+  slides.forEach((slide) => {
+    if (slide === activeSlide) {
+      slide.style.height = `${maxHeight}px`;
+      slide.style.transition = 'height 0.2s ease-out';
+    } else {
+      slide.style.height = `${maxHeight - 40}px`;
+      slide.style.transition = 'height 0.2s ease-out';
+    }
+  });
+  slideContainer.style.height = `${maxHeight}px`;
+}
+
+function removeEqualHeight(slides, slideContainer) {
+  slides.forEach((slide) => {
+    slide.style.height = '';
+    slide.style.transition = '';
+  });
+  slideContainer.style.height = '';
 }
 
 function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
@@ -263,6 +317,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlideIndicator = slideIndicators[jumpToIndex];
     activeSlide = slides[jumpToIndex];
     jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer);
+    carouselElements.currentActiveIndex = jumpToIndex;
   }
 
   // Next arrow button, swipe, keyboard navigation
@@ -274,6 +329,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
     slideContainer?.classList.remove('is-reversing');
+    carouselElements.currentActiveIndex = (carouselElements.currentActiveIndex + 1) % slides.length;
   }
 
   // Previous arrow button, swipe, keyboard navigation
@@ -285,6 +341,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
     slideContainer.classList.add('is-reversing');
+    carouselElements.currentActiveIndex = (carouselElements.currentActiveIndex - 1 + slides.length)
+      % slides.length;
   }
 
   // Update reference slide attributes
@@ -296,6 +354,12 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
+
+  // Update heights dynamically for disable-button
+  if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
+    setEqualHeight(slides, slideContainer, carouselElements.currentActiveIndex);
+  }
+
   activeSlideIndicator.classList.add('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
@@ -304,6 +368,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   for (let i = 2; i <= slides.length; i += 1) {
     referenceSlide = handleNext(referenceSlide, slides);
     referenceSlide.style.order = i;
+  }
+
+  if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
+    updateButtonStates(carouselElements);
   }
 
   /*
@@ -338,17 +406,25 @@ export function getSwipeDirection(swipe, swipeDistance) {
   * Mobile swipe/touch direction detection
   */
 function mobileSwipeDetect(carouselElements) {
-  const { el } = carouselElements;
+  const { el, slides } = carouselElements;
   const swipe = { xMin: 50 };
   /* c8 ignore start */
   el.addEventListener('touchstart', (event) => {
     const touch = event.touches[0];
     swipe.xStart = touch.screenX;
+    swipe.yStart = touch.screenY;
   });
 
   el.addEventListener('touchmove', (event) => {
     const touch = event.touches[0];
     swipe.xEnd = touch.screenX;
+    swipe.yEnd = touch.screenY;
+    const xDistance = Math.abs(swipe.xEnd - swipe.xStart);
+    const yDistance = Math.abs(swipe.yEnd - swipe.yStart);
+    // If horizontal movement is greater than vertical, prevent default to stop vertical scrolling
+    if (xDistance > yDistance && xDistance > 10) {
+      event.preventDefault();
+    }
   });
 
   el.addEventListener('touchend', (event) => {
@@ -356,6 +432,15 @@ function mobileSwipeDetect(carouselElements) {
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     carouselElements.direction = getSwipeDirection(swipe, swipeDistance);
 
+    // stop swipe for disabled-buttons variant.
+    const activeSlideIndex = carouselElements.currentActiveIndex;
+    if (carouselElements.el.classList.contains('disable-buttons')
+          && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
+          || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left'))) {
+      swipe.xStart = 0;
+      swipe.xEnd = 0;
+      return;
+    }
     // reset end swipe values
     swipe.xStart = 0;
     swipe.xEnd = 0;
@@ -409,17 +494,38 @@ function convertMpcMp4(slides) {
   });
 }
 
-function readySlides(slides, slideContainer) {
+function readySlides(slides, slideContainer, isUpsDesktop, carouselElements) {
   slideContainer.classList.add('is-ready');
-  slides.forEach((slide, idx) => {
-    // Set last slide to be first in order and make reference.
-    if (slides.length - 1 === idx) {
-      slide.style.order = 1;
-      slide.classList.add('reference-slide');
-    } else {
-      slide.style.order = idx + 2;
-    }
-  });
+
+  const setOrder = () => {
+    carouselElements.currentActiveIndex = 0;
+    slides.forEach((slide, idx) => {
+      const isLastSlide = slides.length - 1 === idx;
+      slide.style.order = isLastSlide ? 1 : idx + 2;
+      slide.classList.toggle('reference-slide', isLastSlide);
+    });
+  };
+
+  const isDesktop = window.matchMedia('(min-width: 900px)');
+  const setUpsOrder = () => {
+    if (!isDesktop.matches) setOrder();
+    else slides.forEach((slide) => { slide.style.order = ''; });
+  };
+
+  if (!isUpsDesktop) setOrder();
+  else {
+    setUpsOrder();
+    isDesktop.addEventListener('change', setUpsOrder);
+  }
+}
+
+function updateDisableButtonsHeights(carouselElements) {
+  const { slides, slideContainer, currentActiveIndex } = carouselElements;
+  if (window.innerWidth < 900) {
+    setEqualHeight(slides, slideContainer, currentActiveIndex);
+  } else {
+    removeEqualHeight(slides, slideContainer);
+  }
 }
 
 export default function init(el) {
@@ -466,6 +572,7 @@ export default function init(el) {
     direction: undefined,
     jumpTo,
     ariaLive,
+    currentActiveIndex: 0,
   };
 
   if (el.classList.contains('lightbox')) {
@@ -480,7 +587,8 @@ export default function init(el) {
    * before moveSlides is called for centering to work.
   */
   if (el.classList.contains('hinting-center-mobile')) {
-    readySlides(slides, slideContainer);
+    const isUpsDesktop = el.classList.contains('ups-desktop');
+    readySlides(slides, slideContainer, isUpsDesktop, carouselElements);
   }
 
   el.textContent = '';
@@ -533,9 +641,25 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
+
   handleChangingSlides(carouselElements);
   setAriaHiddenAndTabIndex(carouselElements, slides[0]);
-  window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
+  window.addEventListener('resize', () => {
+    setAriaHiddenAndTabIndex(carouselElements);
+    if (el.classList.contains('disable-buttons')) {
+      updateDisableButtonsHeights(carouselElements);
+      updateButtonStates(carouselElements);
+    }
+  });
+
+  function handleDeferredHeights() {
+    updateDisableButtonsHeights(carouselElements);
+  }
+
+  if (el.classList.contains('disable-buttons')) {
+    updateButtonStates(carouselElements);
+    setTimeout(handleDeferredHeights, 1000);
+  }
 
   function handleLateLoadingNavigation() {
     [...el.querySelectorAll('.is-delayed')].forEach((item) => item.classList.remove('is-delayed'));

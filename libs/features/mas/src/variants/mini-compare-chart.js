@@ -2,7 +2,7 @@ import { html, css, unsafeCSS } from 'lit';
 import { createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
-import { DESKTOP_UP, TABLET_DOWN, MOBILE_LANDSCAPE, isMobile } from '../media.js';
+import { DESKTOP_UP, TABLET_DOWN, isMobile } from '../media.js';
 import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
@@ -18,10 +18,6 @@ export class MiniCompareChart extends VariantLayout {
     return CSS;
   }
 
-  // For addon tiitle is it ok if we hardocde it in card settings?
-  // For addon is it ok if we hardcode it as placeholder key?
-  // How to add the price?
-
   getMiniCompareFooter = () => {
     const secureLabel = this.card.secureLabel
         ? html`<slot name="secure-transaction-label">
@@ -35,7 +31,7 @@ export class MiniCompareChart extends VariantLayout {
 
   adjustMiniCompareBodySlots() {
     if (this.card.getBoundingClientRect().width <= 2) return;
-  
+
     this.updateCardElementMinHeight(
         this.card.shadowRoot.querySelector('.top-section'),
         'top-section',
@@ -50,7 +46,6 @@ export class MiniCompareChart extends VariantLayout {
         'offers',
         'promo-text',
         'callout-content',
-        'addon',
     ];
     if (this.card.classList.contains('bullet-list')) {
         slots.push('footer-rows');
@@ -70,13 +65,14 @@ export class MiniCompareChart extends VariantLayout {
     const badge = this.card.shadowRoot.querySelector(
         '.mini-compare-chart-badge',
     );
-    if (badge && badge.textContent !== '') {
+    if (badge?.textContent !== '') {
         this.getContainer().style.setProperty(
             '--consonant-merch-card-mini-compare-chart-top-section-mobile-height',
             '32px',
         );
     }
   }
+
   adjustMiniCompareFooterRows() {
     if (this.card.getBoundingClientRect().width === 0) return;
     const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
@@ -121,95 +117,123 @@ export class MiniCompareChart extends VariantLayout {
         `[slot="heading-m-price"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
     );
     return price;
-}
+  }
 
-get headingMPriceSlot() {
-    return this.card.shadowRoot
-        .querySelector('slot[name="heading-m-price"]')
-        ?.assignedElements()[0];
-}
+  get headingMPriceSlot() {
+      return this.card.shadowRoot
+          .querySelector('slot[name="heading-m-price"]')
+          ?.assignedElements()[0];
+  }
 
-toggleAddon(merchAddon) {
-    const mainPrice = this.mainPrice;
-    const headingMPriceSlot = this.headingMPriceSlot;
-        if (!mainPrice && headingMPriceSlot) {
-            const planType = merchAddon?.getAttribute('plan-type');
-            let visibleSpan = null;
-            if (merchAddon && planType) {
-                const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
-                visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
-            }
-            this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(p => p.remove());
-            if (merchAddon.checked) {
-                if (visibleSpan) {
-                    const replacementP = createTag(
-                        'p',
-                        { class: 'addon-heading-m-price-addon', slot: 'heading-m-price' },
-                        visibleSpan.innerHTML
-                    );
-                    this.card.appendChild(replacementP);
-                }
-            } else {
-                const freeP = createTag(
-                    'p',
-                    { class: 'card-heading', id: 'free', slot: 'heading-m-price' },
-                    'Free'
-                );
-                this.card.appendChild(freeP);
-            }
-     }
-}
+  toggleAddon(merchAddon) {
+      const mainPrice = this.mainPrice;
+      const headingMPriceSlot = this.headingMPriceSlot;
+          if (!mainPrice && headingMPriceSlot) {
+              const planType = merchAddon?.getAttribute('plan-type');
+              let visibleSpan = null;
+              if (merchAddon && planType) {
+                  const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+                  visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+              }
+              this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(p => p.remove());
+              if (merchAddon.checked) {
+                  if (visibleSpan) {
+                      const replacementP = createTag(
+                          'p',
+                          { class: 'addon-heading-m-price-addon', slot: 'heading-m-price' },
+                          visibleSpan.innerHTML
+                      );
+                      this.card.appendChild(replacementP);
+                  }
+              } else {
+                  const freeP = createTag(
+                      'p',
+                      { class: 'card-heading', id: 'free', slot: 'heading-m-price' },
+                      'Free'
+                  );
+                  this.card.appendChild(freeP);
+              }
+      }
+  }
 
-async adjustAddon() {
-    await this.card.updateComplete;
-    const addon = this.card.addon;
-    if (!addon) return;
-    const price = this.mainPrice;
-    let planType = this.card.planType;
-    if (price) {
-        await price.onceSettled();
-        planType = price.value?.[0]?.planType;
-    }
-    if (!planType) return;
-    addon.planType = planType;
-}
+  async adjustAddon() {
+      await this.card.updateComplete;
+      const addon = this.card.addon;
+      if (!addon) return;
+      const price = this.mainPrice;
+      let planType = this.card.planType;
+      if (price) {
+          await price.onceSettled();
+          planType = price.value?.[0]?.planType;
+      }
+      if (!planType) return;
+      addon.planType = planType;
+      const addonWithPlanType = this.card.querySelector('merch-addon[plan-type]')
+      addonWithPlanType?.updateComplete.then(() => {
+        this.updateCardElementMinHeight(
+          this.card.shadowRoot.querySelector(`slot[name="addon"]`),
+          'addon',
+        );
+      })
+  }
 
   renderLayout() {
     return html` <div class="top-section${this.badge ? ' badge' : ''}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains('bullet-list') 
+        ${this.card.classList.contains('bullet-list')
         ?
           html`<slot name="heading-m-price"></slot>
           <slot name="price-commitment"></slot>
-          <slot name="body-m"></slot>`
+          <slot name="body-xxs"></slot>
+          <slot name="promo-text"></slot>
+          <slot name="body-m"></slot>
+          <slot name="offers"></slot>`
         :
           html`<slot name="body-m"></slot>
-          <slot name="heading-m-price"></slot>`}
-        <slot name="body-xxs"></slot>
-        <slot name="price-commitment"></slot>
-        <slot name="offers"></slot>
-        <slot name="promo-text"></slot>
+          <slot name="heading-m-price"></slot>
+          <slot name="body-xxs"></slot>
+          <slot name="price-commitment"></slot>
+          <slot name="offers"></slot>
+          <slot name="promo-text"></slot>
+          `}
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
         <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
   }
+
   async postCardUpdateHook() {
     await Promise.all(this.card.prices.map((price) => price.onceSettled()));
     await this.adjustAddon();
-    if (!isMobile()) {   
+    if (isMobile()) {
+      this.removeEmptyRows();
+    } else {
       this.adjustMiniCompareBodySlots();
       this.adjustMiniCompareFooterRows();
-    } else {
-      this.removeEmptyRows();
     }
   }
+
   static variantStyle = css`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
+
+    :host([variant='mini-compare-chart'].bullet-list) > slot[name='heading-m-price'] {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+        padding: 2px 10px 3px 10px;
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+        border-radius: 7.11px 0 0 7.11px;
+        font-weight: 700;
+    }
+
     :host([variant='mini-compare-chart']) footer {
         min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
         padding: var(--consonant-merch-spacing-s);
@@ -236,19 +260,9 @@ async adjustAddon() {
     :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
       align-self: flex-start;
       flex: none;
-      color: var(--merch-color-grey-700);
-    }
-
-    @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)} {
-      :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
-        padding: 2px 10px;
-        font-size: var(--consonant-merch-card-body-xs-font-size);
-        line-height: var(--consonant-merch-card-body-xs-line-height);
-      }
-
-      :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
-        font-size: var(--consonant-merch-card-body-xs-font-size);
-      }
+      font-size: var(--consonant-merch-card-body-xxs-font-size);
+      font-weight: 400;
+      color: #505050;
     }
 
     @media screen and ${unsafeCSS(TABLET_DOWN)} {
@@ -312,7 +326,7 @@ async adjustAddon() {
             --consonant-merch-card-mini-compare-chart-addon-height
         );
     }
-    :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
+    :host([variant='mini-compare-chart']:not(.bullet-list)) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
   `;

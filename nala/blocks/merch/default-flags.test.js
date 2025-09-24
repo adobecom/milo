@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './default-flags.spec.js';
 import DefaultFlags from './default-flags.page.js';
-
-const miloLibs = process.env.MILO_LIBS || '';
+import { constructTestUrl } from '../../libs/commerce.js';
 
 test.describe('DefaultFlags Block test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
@@ -15,12 +14,13 @@ test.describe('DefaultFlags Block test suite', () => {
 
   test(`${features[0].name}, ${features[0].tags}`, async ({ page, baseURL }) => {
     const defaultFlags = new DefaultFlags(page);
-    console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
+    const testUrl = constructTestUrl(baseURL, features[0].path, features[0].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
 
     await test.step('Navigate to page with DefaultFlags prices', async () => {
-      await page.goto(`${baseURL}${features[0].path}${features[0].browserParams}&${miloLibs}`);
+      await page.goto(testUrl);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}${features[0].browserParams}&${miloLibs}`);
+      await expect(page).toHaveURL(testUrl);
     });
 
     await test.step('Validate if each price is visible and has proper text for EN', async () => {
@@ -36,12 +36,13 @@ test.describe('DefaultFlags Block test suite', () => {
 
   test(`${features[1].name}, ${features[1].tags}`, async ({ page, baseURL }) => {
     const defaultFlags = new DefaultFlags(page);
-    console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
+    const testUrl = constructTestUrl(baseURL, features[1].path, features[1].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
 
     await test.step('Navigate to page with DefaultFlags prices', async () => {
-      await page.goto(`${baseURL}${features[1].path}${features[1].browserParams}&${miloLibs}`);
+      await page.goto(testUrl);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[1].path}${features[1].browserParams}&${miloLibs}`);
+      await expect(page).toHaveURL(testUrl);
     });
 
     await test.step('Validate if each price is visible and has proper text for FR', async () => {
@@ -57,12 +58,13 @@ test.describe('DefaultFlags Block test suite', () => {
 
   test(`${features[2].name}, ${features[2].tags}`, async ({ page, baseURL }) => {
     const defaultFlags = new DefaultFlags(page);
-    console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
+    const testUrl = constructTestUrl(baseURL, features[2].path, features[2].browserParams);
+    console.info(`[Test Page]: ${testUrl}`);
 
     await test.step('Navigate to page with DefaultFlags prices', async () => {
-      await page.goto(`${baseURL}${features[2].path}${features[2].browserParams}&${miloLibs}`);
+      await page.goto(testUrl);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[2].path}${features[2].browserParams}&${miloLibs}`);
+      await expect(page).toHaveURL(testUrl);
     });
 
     await test.step('Validate if each price is visible and has proper text for NG', async () => {
