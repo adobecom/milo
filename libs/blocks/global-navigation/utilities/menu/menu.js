@@ -21,7 +21,12 @@ import {
   setAriaAtributes,
 } from '../utilities.js';
 
-const merch = await import('../../../merch/merch.js');
+let merch;
+try {
+  merch = await import('../../../merch/merch.js');
+} catch (e) {
+  merch = { default: async (elem) => elem };
+}
 
 function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
@@ -418,13 +423,15 @@ const decorateMenu = (config) => logErrorFor(async () => {
 
     const merchLinks = itemTopParent.querySelectorAll('.merch');
     if (merchLinks.length) {
-      merchLinks.forEach(async (link) => {
+      for (const link of merchLinks) {
         const linkContent = link.innerHTML;
         const merchBlock = await merch.default(link);
-        merchBlock.classList.remove('con-button');
-        merchBlock.innerHTML = linkContent;
-        if (merchBlock) link.replaceWith(merchBlock);
-      });
+        if (merchBlock) {
+          merchBlock.classList.remove('con-button');
+          merchBlock.innerHTML = linkContent;
+          link.replaceWith(merchBlock);
+        }
+      }
     }
 
     menuTemplate = toFragment`<div class="feds-popup">

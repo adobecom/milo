@@ -322,8 +322,8 @@ header.global-navigation {
 }
 
 .feds-promo--dark .feds-cta--secondary {
-  border: .125rem solid #393939;
-  color: #DBDBDB;
+  border: .125rem solid var(--feds-borderColor-link-dark);
+  color: var(--feds-color-link-dark);
 }
 
 .feds-promo--dark .feds-cta--secondary:hover {
