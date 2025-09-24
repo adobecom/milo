@@ -25,8 +25,15 @@
   border-color: var(--color-gray-700);
 }
 
-.editorial-card.no-bg { background: none;}
-.editorial-card.no-border { border: none;}
+.light .editorial-card,
+.editorial-card.light {
+  color: var(--text-color);
+  border-color: var(--color-gray-300);
+}
+
+.editorial-card.no-bg { background: none !important; }
+.editorial-card.no-bg .background { display: none; }
+.editorial-card.no-border { border: none; }
 
 .editorial-card.click {
   cursor: pointer;
