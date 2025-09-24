@@ -90,15 +90,15 @@ function handleClickableCard(el) {
 }
 
 function handleOpenClasses(el, hasOpenClass) {
-  const openClasses = ['no-border', 'l-rounded-corners-image', 'static-links-copy'];
-  if (hasOpenClass) el.classList.add(...openClasses);
+  const baseOpenClasses = ['l-rounded-corners-image', 'static-links-copy'];
+  if (hasOpenClass) el.classList.add(...baseOpenClasses, 'no-border');
 
   if (!el.closest('.carousel.ups-desktop')) return;
 
   const isCarouselDesktop = window.matchMedia('(min-width: 900px)');
   const toggleOpenClasses = () => {
-    if (isCarouselDesktop.matches) el.classList.add(...openClasses);
-    else el.classList.remove(...openClasses);
+    if (isCarouselDesktop.matches) el.classList.add(...baseOpenClasses, 'no-bg');
+    else el.classList.remove(...baseOpenClasses, 'no-bg');
   };
 
   toggleOpenClasses();
