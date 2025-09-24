@@ -37,6 +37,13 @@ function updateModalHeight() {
   modal.style.height = `${modalHeight}px`;
 }
 
+function updateInputHeight(el) {
+  const fieldInput = el.querySelector('.bc-input-field textarea');
+  if (!fieldInput) return;
+  fieldInput.style.height = 'auto';
+  fieldInput.style.height = `${fieldInput.scrollHeight}px`;
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
@@ -51,6 +58,7 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   el.querySelector('.bc-input-field textarea').value = '';
+  updateInputHeight(el);
   updateModalHeight();
 
   // eslint-disable-next-line no-underscore-dangle
@@ -155,8 +163,7 @@ function decorateInput(el, input) {
     } else {
       fieldButton.disabled = true;
     }
-    fieldInput.style.height = 'auto';
-    fieldInput.style.height = `${fieldInput.scrollHeight}px`;
+    updateInputHeight(el);
   });
 
   if (el.classList.contains('sticky')) {
@@ -291,7 +298,7 @@ export default async function init(el) {
     decorateInput(el, input);
   }
 
-  // Watch for data-block-status attribute changes on .section ancestor
+  // Make sure input height is updated when placeholder text is visible
   const section = el.closest('.section');
   if (!section) { return; }
   const observer = new MutationObserver((mutations) => {
@@ -301,8 +308,7 @@ export default async function init(el) {
         || section.getAttribute('data-status') === 'decorated') { return; }
       const fieldInput = el.querySelector('.bc-input-field textarea');
       if (fieldInput) {
-        fieldInput.style.height = 'auto';
-        fieldInput.style.height = `${fieldInput.scrollHeight}px`;
+        updateInputHeight(el);
         observer.disconnect();
       }
     });

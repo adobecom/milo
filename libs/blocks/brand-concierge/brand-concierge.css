@@ -214,7 +214,7 @@
   word-wrap: break-word;
   white-space: pre-wrap;
   min-height: var(--bc-input-height);
-  max-height: 416px;
+  max-height: 412px;
   overflow-y: auto;
   padding: 14px 0;
   box-sizing: border-box;
@@ -237,7 +237,7 @@
   transition: background 0.3s ease;
   width: var(--bc-button-dimensions);
   align-self: end;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .input-field-button:hover {
@@ -605,6 +605,10 @@
     max-width: calc(670px - 4px);
   }
 
+  .bc-input-field-container textarea {
+    max-height: 244px;
+  }
+
   .bc-legal {
     margin: 0 auto;
     max-width: calc(670px - 4px);
@@ -670,7 +674,7 @@
     max-width: 678px;
   }
 
-  .bc-input-field{
+  .bc-input-field {
     max-width: calc(768px - 4px);
   }
 
