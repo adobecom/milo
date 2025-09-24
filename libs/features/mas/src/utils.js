@@ -118,3 +118,23 @@ export function getOuterHeight(element) {
     const style = window.getComputedStyle(element);
     return element.offsetHeight + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
 }
+
+/**
+ * Creates an IntersectionObserver for card visibility detection
+ * @param {Function} callback - Async callback function to execute when card is visible
+ * @param {Object} options - IntersectionObserver options
+ * @returns {IntersectionObserver}
+ */
+export function createCardVisibilityObserver(callback, options = {}) {
+    const defaultOptions = {
+        threshold: 0.01,
+        ...options
+    };
+
+    return new IntersectionObserver(async (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && entry.target.clientHeight > 0) {
+            await callback(entry);
+        }
+    }, defaultOptions);
+}

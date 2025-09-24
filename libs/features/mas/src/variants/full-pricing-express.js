@@ -2,6 +2,7 @@ import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './full-pricing-express.css.js';
 import { isMobile } from '../media.js';
+import { createCardVisibilityObserver } from '../utils.js';
 
 export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -30,7 +31,7 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     },
     shortDescription: {
         tag: 'div',
-        slot: 'shortDescription',
+        slot: 'short-description',
         maxCount: 3000,
         withSuffix: false,
     },
@@ -64,9 +65,6 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
 export class FullPricingExpress extends VariantLayout {
     constructor(card) {
         super(card);
-        this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
-        this.intersectionObserver = null;
-        this.visibilityObserver = null;
     }
 
     getGlobalCSS() {
@@ -81,191 +79,107 @@ export class FullPricingExpress extends VariantLayout {
         return '[slot="heading-xs"]';
     }
 
-    updateCardElementMinHeight(el, name) {
-        if (!el) return;
-        const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
-        const height = Math.max(0, el.offsetHeight || 0);
-        const maxMinHeight =
-            parseInt(
-                this.getContainer().style.getPropertyValue(
-                    elMinHeightPropertyName,
-                ),
-            ) || 0;
-
-        if (height > maxMinHeight) {
-            this.getContainer().style.setProperty(
-                elMinHeightPropertyName,
-                `${height}px`,
-            );
-        }
-    }
-
-    updateCardElementMinHeightValue(height, name) {
-        if (!height) return;
-        const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
-        const container = this.getContainer();
-        const maxMinHeight =
-            parseInt(
-                container.style.getPropertyValue(
-                    elMinHeightPropertyName,
-                ),
-            ) || 0;
-
-        if (height > maxMinHeight) {
-            container.style.setProperty(
-                elMinHeightPropertyName,
-                `${height}px`,
-            );
-        }
-    }
 
     syncHeights() {
-        if (this.card.getBoundingClientRect().width === 0) {
-            return;
+        if (this.card.getBoundingClientRect().width <= 2) return;
+
+        const shortDescriptionSlot = this.card.querySelector('[slot="short-description"]');
+        if (shortDescriptionSlot) {
+            this.updateCardElementMinHeight(shortDescriptionSlot, 'short-description');
         }
 
-        // Sync main description (body-s) slot
-        const descriptionSlot = this.card.querySelector('[slot="body-s"]');
-        if (descriptionSlot) {
-            descriptionSlot.offsetHeight;
-
-            const styles = window.getComputedStyle(descriptionSlot);
-            const marginTop = parseFloat(styles.marginTop) || 0;
-            const marginBottom = parseFloat(styles.marginBottom) || 0;
-            const height = descriptionSlot.offsetHeight + marginTop + marginBottom;
-            this.updateCardElementMinHeightValue(height, 'description');
-        }
 
         const priceSlot = this.card.querySelector('[slot="price"]');
         if (priceSlot) {
-            priceSlot.offsetHeight;
-
-            const styles = window.getComputedStyle(priceSlot);
-            const marginTop = parseFloat(styles.marginTop) || 0;
-            const marginBottom = parseFloat(styles.marginBottom) || 0;
-            const height = priceSlot.offsetHeight + marginTop + marginBottom;
-            this.updateCardElementMinHeightValue(height, 'price');
+            this.updateCardElementMinHeight(priceSlot, 'price');
         }
 
         const ctaSlot = this.card.querySelector('[slot="cta"]');
         if (ctaSlot) {
-            ctaSlot.offsetHeight;
-
-            const styles = window.getComputedStyle(ctaSlot);
-            const marginTop = parseFloat(styles.marginTop) || 0;
-            const marginBottom = parseFloat(styles.marginBottom) || 0;
-            const height = ctaSlot.offsetHeight + marginTop + marginBottom;
-            this.updateCardElementMinHeightValue(height, 'cta');
-        }
-
-        const shortDescriptionSlot = this.card.querySelector('[slot="shortDescription"]');
-        if (shortDescriptionSlot) {
-            shortDescriptionSlot.offsetHeight;
-
-            const styles = window.getComputedStyle(shortDescriptionSlot);
-            const marginTop = parseFloat(styles.marginTop) || 0;
-            const marginBottom = parseFloat(styles.marginBottom) || 0;
-            const height = shortDescriptionSlot.offsetHeight + marginTop + marginBottom;
-            this.updateCardElementMinHeightValue(height, 'shortDescription');
+            this.updateCardElementMinHeight(ctaSlot, 'cta');
         }
     }
 
-    clearHeightVariables() {
+    async syncAllCardsInContainer() {
         const container = this.getContainer();
         if (!container) return;
 
+        const cards = container.querySelectorAll('merch-card[variant="full-pricing-express"]');
+        if (!cards.length) return;
+
         const prefix = `--consonant-merch-card-${this.card.variant}`;
-        ['description', 'price', 'cta', 'shortDescription'].forEach(name => {
+        ['price', 'cta', 'short-description'].forEach(name => {
             container.style.removeProperty(`${prefix}-${name}-height`);
         });
-    }
 
-    async waitForPrices() {
-        if (this.card.prices?.length) {
-            await Promise.all(this.card.prices.map(price => price.onceSettled?.()));
-        }
-    }
-
-    async syncAllCardsInContainer(cards) {
-        // Wait for all prices to settle
         await Promise.all(
             Array.from(cards).flatMap(card =>
                 card.prices?.map(price => price.onceSettled?.()) || []
             )
         );
 
-        // Sync all cards
+        // Re-sync all cards
         requestAnimationFrame(() => {
             cards.forEach(card => card.variantLayout?.syncHeights?.());
         });
-    }
-
-    forceRemeasure() {
-        this.clearHeightVariables();
-        this.syncHeights();
     }
 
     async postCardUpdateHook() {
         if (!this.card.isConnected) return;
 
         await this.card.updateComplete;
-        await this.waitForPrices();
+        await Promise.all(this.card.prices.map((price) => price.onceSettled()));
 
         if (!isMobile()) {
-            requestAnimationFrame(() => this.syncHeights());
+            const container = this.getContainer();
+            if (!container) return;
+
+            const prefix = `--consonant-merch-card-${this.card.variant}`;
+            const hasExistingVars = container.style.getPropertyValue(`${prefix}-price-height`) ||
+                                   container.style.getPropertyValue(`${prefix}-cta-height`) ||
+                                   container.style.getPropertyValue(`${prefix}-short-description-height`);
+
+            if (!hasExistingVars) {
+                await this.syncAllCardsInContainer();
+            } else {
+                this.syncHeights();
+            }
         }
     }
 
     connectedCallbackHook() {
-        window.addEventListener('resize', this.postCardUpdateHook);
+        if (!this.card || this.card.failed) {
+            return;
+        }
+
+        this.boundPostCardUpdateHook = this.postCardUpdateHook.bind(this);
+
+        window.addEventListener('resize', this.boundPostCardUpdateHook);
+
         setTimeout(() => this.setupVisibilityDetection(), 100);
     }
 
     setupVisibilityDetection() {
-        const tabPanel = this.card.closest('.tabpanel, [role="tabpanel"]');
-
-        if (tabPanel) {
-            // Tab scenario - watch for visibility changes
-            this.visibilityObserver = new MutationObserver(async (mutations) => {
-                const becameVisible = mutations.some(m =>
-                    m.attributeName === 'hidden' && !tabPanel.hasAttribute('hidden')
-                );
-
-                if (becameVisible && !isMobile()) {
-                    this.clearHeightVariables();
-                    const cards = tabPanel.querySelectorAll('merch-card[variant="full-pricing-express"]');
-                    await this.syncAllCardsInContainer(cards);
+        this.visibilityObserver = createCardVisibilityObserver(async (entry) => {
+            if (!isMobile()) {
+                const container = this.getContainer();
+                if (container) {
+                    await this.syncAllCardsInContainer();
                 }
-            });
+            }
+        });
 
-            this.visibilityObserver.observe(tabPanel, {
-                attributes: true,
-                attributeFilter: ['hidden']
-            });
-        } else {
-            // Non-tab scenario - use intersection observer
-            this.intersectionObserver = new IntersectionObserver(async (entries) => {
-                const visible = entries.find(e => e.isIntersecting && e.target.clientHeight > 0);
-                if (visible && !isMobile()) {
-                    await this.waitForPrices();
-                    requestAnimationFrame(() => this.forceRemeasure());
-                }
-            });
-            this.intersectionObserver.observe(this.card);
-        }
+        this.visibilityObserver.observe(this.card);
     }
 
     disconnectedCallbackHook() {
-        window.removeEventListener('resize', this.postCardUpdateHook);
+        if (this.boundPostCardUpdateHook) {
+            window.removeEventListener('resize', this.boundPostCardUpdateHook);
+        }
 
         if (this.visibilityObserver) {
             this.visibilityObserver.disconnect();
             this.visibilityObserver = null;
-        }
-
-        if (this.intersectionObserver) {
-            this.intersectionObserver.disconnect();
-            this.intersectionObserver = null;
         }
     }
 
@@ -279,8 +193,8 @@ export class FullPricingExpress extends VariantLayout {
                     <slot name="heading-xs"></slot>
                     <slot name="icons"></slot>
                 </div>
-                <div class="shortDescription">
-                    <slot name="shortDescription"></slot>
+                <div class="short-description">
+                    <slot name="short-description"></slot>
                 </div>
                 <div class="price-container">
                     <slot name="trial-badge"></slot>
@@ -497,7 +411,6 @@ export class FullPricingExpress extends VariantLayout {
 
         /* Price container with background */
         :host([variant='full-pricing-express']) .price-container {
-          min-height: 96px;
             background: var(--merch-card-full-pricing-express-price-bg);
             padding: 24px 16px;
             border-radius: var(--merch-card-full-pricing-express-price-radius);
@@ -507,7 +420,6 @@ export class FullPricingExpress extends VariantLayout {
             position: relative;
             overflow: visible;
             margin-bottom: var(--merch-card-full-pricing-express-section-gap);
-            display: flex;
             justify-content: center;
             align-items: flex-start;
         }
@@ -555,30 +467,32 @@ export class FullPricingExpress extends VariantLayout {
                 height: 100%;
             }
 
-            /* Apply synchronized heights to shadow DOM containers */
+            /* Description flows naturally without synchronized height */
             :host([variant='full-pricing-express']) .description {
-                min-height: var(--consonant-merch-card-full-pricing-express-description-height);
+                display: flex;
+                flex-direction: column;
+                flex: 1; /* Take remaining space in card */
             }
 
             :host([variant='full-pricing-express']) .price-container {
-                min-height: var(--consonant-merch-card-full-pricing-express-price-height);
+                height: var(--consonant-merch-card-full-pricing-express-price-height);
                 display: flex;
                 flex-direction: column;
             }
 
             :host([variant='full-pricing-express']) .cta {
-                min-height: var(--consonant-merch-card-full-pricing-express-cta-height);
+                height: var(--consonant-merch-card-full-pricing-express-cta-height);
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-start;
             }
 
-            /* Make shortDescription grow to fill remaining space */
-            :host([variant='full-pricing-express']) .shortDescription {
-                flex: 1;
-                min-height: var(--consonant-merch-card-full-pricing-express-shortDescription-height);
+            /* Short-description container styling */
+            :host([variant='full-pricing-express']) .short-description {
+                height: var(--consonant-merch-card-full-pricing-express-short-description-height);
                 display: flex;
                 flex-direction: column;
+                margin-bottom: 24px;
             }
         }
     `;

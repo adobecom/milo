@@ -217,7 +217,6 @@ export class MerchCardCollection extends LitElement {
       });
     }
 
-
     connectedCallback() {
         super.connectedCallback();
         this.#service = getService();

@@ -244,20 +244,15 @@ merch-card.has-divider hr {
     border: none;
 }
 
-merch-card.has-divider div[slot='body-lower'] hr {
-    margin: 0;
-}
-
-/* HR-based dividers from Studio */
-merch-card .divider-wrapper {
-    display: block;
-    margin: 8px 0;
-}
-
-merch-card .divider-hr {
+merch-card hr {
     border: none;
     margin: 0;
-    background-color: var(--consonant-merch-card-border-color, #e9e9e9);
+    background-color: var(--spectrum-gray-300);
+    height: 1px;
+}
+
+merch-card.has-divider div[slot='body-lower'] hr {
+    margin: 0;
 }
 
 merch-card p, merch-card h3, merch-card h4 {

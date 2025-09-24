@@ -11,7 +11,7 @@ export class VariantLayout {
     getContainer() {
         this.#container =
             this.#container ??
-            this.card.closest('[class*="-merch-cards"]') ??
+            this.card.closest('merch-card-collection, [class*="-merch-cards"]') ??
             this.card.parentElement;
         return this.#container;
     }

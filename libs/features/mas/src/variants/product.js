@@ -9,14 +9,13 @@ export class Product extends VariantLayout {
     constructor(card) {
         super(card);
         this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
-        this.handleCollectionReady = this.handleCollectionReady.bind(this);
     }
 
     getGlobalCSS() {
         return CSS;
     }
 
-    syncHeights() {
+    adjustProductBodySlots() {
         if (this.card.getBoundingClientRect().width === 0) return;
 
         const slots = [
@@ -55,14 +54,6 @@ export class Product extends VariantLayout {
             ${this.secureLabelFooter}`;
     }
 
-    handleCollectionReady() {
-        if (!isMobile()) {
-            requestAnimationFrame(() => {
-                this.syncHeights();
-            });
-        }
-    }
-
     connectedCallbackHook() {
         window.addEventListener('resize', this.postCardUpdateHook);
     }
@@ -75,9 +66,9 @@ export class Product extends VariantLayout {
         if (!this.card.isConnected) return;
         this.adjustAddon();
         if (!isMobile()) {
-            this.syncHeights();
+            this.adjustProductBodySlots();
         }
-        this.adjustTitleWidth();
+        this.adjustTitleWidth(); 
     }
 
     get headingXSSlot() {
@@ -175,3 +166,4 @@ export class Product extends VariantLayout {
         }
     `;
 }
+

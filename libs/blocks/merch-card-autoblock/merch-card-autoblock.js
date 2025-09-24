@@ -15,6 +15,14 @@ import {
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
 
+const intersectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting && entry.target.clientHeight > 0) {
+      entry.target.requestUpdate();
+    }
+  });
+});
+
 function getTimeoutPromise() {
   return new Promise((resolve) => {
     setTimeout(() => resolve('timeout'), CARD_AUTOBLOCK_TIMEOUT);
@@ -65,6 +73,7 @@ export async function createCard(el, options) {
   } else {
     el.replaceWith(merchCard);
   }
+  intersectionObserver.observe(merchCard);
   await checkReady(merchCard);
   await postProcessAutoblock(merchCard, true);
 }
