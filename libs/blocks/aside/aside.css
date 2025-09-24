@@ -1332,16 +1332,17 @@
     padding-top: 0;
   }
 
-  .aside.container-mobile.media-top-mobile .foreground.container .image {
+  .aside.container-mobile.media-top-mobile .foreground.container [class="image"] {
     padding-bottom: var(--spacing-xs);
   }
 
-  .aside.container-mobile.rounded-corners .foreground.container .image {
+  .aside.container-mobile.rounded-corners .foreground.container [class="image"] {
     padding: 0 var(--spacing-xs) var(--spacing-xs);
-    width: auto;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .aside.container-mobile.media-top-mobile.rounded-corners .foreground.container .image {
+  .aside.container-mobile.media-top-mobile.rounded-corners .foreground.container [class="image"] {
     padding-top: var(--spacing-xs);
   }
 }
