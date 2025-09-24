@@ -214,7 +214,7 @@
   word-wrap: break-word;
   white-space: pre-wrap;
   min-height: var(--bc-input-height);
-  max-height: 300px;
+  max-height: 35vh;
   overflow-y: auto;
   padding: 14px 0;
   box-sizing: border-box;

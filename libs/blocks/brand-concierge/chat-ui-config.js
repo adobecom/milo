@@ -162,7 +162,7 @@ export default {
     '--input-height': '52px',
     '--input-height-mobile': '52px',
     '--input-max-height': '244px',
-    '--input-max-height-mobile': '300px',
+    '--input-max-height-mobile': '35vh',
     '--input-outline-color': 'linear-gradient(98.11deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%)',
     '--input-outline-width': '2px',
     '--input-section-padding': '32px',
