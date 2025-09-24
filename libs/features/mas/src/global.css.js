@@ -260,33 +260,6 @@ merch-card .divider-hr {
     background-color: var(--consonant-merch-card-border-color, #e9e9e9);
 }
 
-merch-card .divider-hr.divider-size-s {
-    height: 1px;
-}
-
-merch-card .divider-hr.divider-size-m {
-    height: 2px;
-}
-
-merch-card .divider-hr.divider-size-l {
-    height: 4px;
-}
-
-merch-card .divider-hr.divider-vertical {
-    width: 1px;
-    height: 24px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-merch-card .divider-hr.divider-vertical.divider-size-m {
-    width: 2px;
-}
-
-merch-card .divider-hr.divider-vertical.divider-size-l {
-    width: 4px;
-}
-
 merch-card p, merch-card h3, merch-card h4 {
     margin: 0;
 }

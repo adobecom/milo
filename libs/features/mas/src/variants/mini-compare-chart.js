@@ -41,10 +41,6 @@ export class MiniCompareChart extends VariantLayout {
     }
   }
 
-  // For addon tiitle is it ok if we hardocde it in card settings?
-  // For addon is it ok if we hardcode it as placeholder key?
-  // How to add the price?
-
   getMiniCompareFooter = () => {
     const secureLabel = this.card.secureLabel
         ? html`<slot name="secure-transaction-label">
