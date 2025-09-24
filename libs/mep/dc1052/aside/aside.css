@@ -1328,7 +1328,15 @@
     margin-bottom: 0;
   }
 
-  .aside.container-mobile.media-top-mobile .foreground.container {
+  .mweb-enabled .aside.container-mobile.media-top-mobile .foreground.container .text {
+    margin-bottom: var(--spacing-m);
+  }
+
+  .mweb-enabled .aside.container-mobile.media-top-mobile .foreground.container {
+    padding-top: var(--spacing-m);
+  }
+
+  body:not(.mweb-enabled) .aside.container-mobile.media-top-mobile .foreground.container {
     padding-top: 0;
   }
 
