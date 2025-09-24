@@ -1224,7 +1224,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 
 .plans-team .col-2 h3 {
     font-size: 20px;
-    margin-bottom: 0 0 16px;
+    margin: 0 0 16px;
 }
 
 .plans-team .col-2 p {
