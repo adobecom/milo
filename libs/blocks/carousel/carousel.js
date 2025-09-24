@@ -26,6 +26,8 @@ const KEY_CODES = {
 };
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
+const VARIATIONS = { hovering: 'hovering' };
+
 function decorateNextPreviousBtns() {
   const previousBtn = createTag(
     'button',
@@ -69,7 +71,22 @@ function decorateLightboxButtons() {
   return [expandBtn, closeBtn];
 }
 
-function decorateSlideIndicators(slides, jumpTo) {
+function isVariation(el, variation) {
+  return el.classList.contains(variation);
+}
+
+function processCandidateKeys(keys, el) {
+  if (isVariation(el, VARIATIONS.hovering)) {
+    return keys.concat(keys.map((key) => key.cloneNode(true)));
+  }
+  return keys;
+}
+
+function setInitialActiveIndex(el) {
+  return isVariation(el, VARIATIONS.hovering) ? 2 : 0;
+}
+
+function decorateSlideIndicators(slides, jumpTo, activeSlideIndex) {
   const indicatorDots = [];
 
   for (let i = 0; i < slides.length; i += 1) {
@@ -84,9 +101,8 @@ function decorateSlideIndicators(slides, jumpTo) {
       li.setAttribute('aria-selected', false);
       li.setAttribute('aria-labelledby', `Viewing Slide ${i + 1}`);
     }
-
     // Set inital active state
-    if (i === 0) {
+    if (i === activeSlideIndex) {
       li.classList.add('active');
       if (jumpTo) li.setAttribute('tabindex', 0);
     }
@@ -436,7 +452,7 @@ function readySlides(slides, slideContainer, isUpsDesktop) {
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
-
+  const activeSlideIndex = setInitialActiveIndex(el);
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
   const carouselName = keyDivs[0].textContent;
   const parentArea = el.closest('.fragment') || document;
@@ -455,7 +471,7 @@ export default function init(el) {
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
   const nextPreviousContainer = createTag('div', { class: 'carousel-button-container' });
-  const slideIndicators = decorateSlideIndicators(slides, jumpTo);
+  const slideIndicators = decorateSlideIndicators(slides, jumpTo, activeSlideIndex);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
   convertMpcMp4(slides);
@@ -544,9 +560,9 @@ export default function init(el) {
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
-  slides[0].classList.add('active');
+  slides[activeSlideIndex].classList.add('active');
   handleChangingSlides(carouselElements);
-  setAriaHiddenAndTabIndex(carouselElements, slides[0]);
+  setAriaHiddenAndTabIndex(carouselElements, slides[activeSlideIndex]);
   window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
 
   function handleLateLoadingNavigation() {
