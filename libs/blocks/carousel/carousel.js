@@ -226,17 +226,30 @@ function updateAriaLive(ariaLive, slide, carouselElements) {
     text += `${index ? ' ' : ''}${el.textContent.trim()}`;
   });
 
-  const { slides } = carouselElements;
-  const currentSlideIndex = slides.findIndex((s) => s === slide);
-  const slideInfo = `slide ${currentSlideIndex + 1} of ${slides.length}`;
+  const { slides, el: block } = carouselElements;
 
-  if (text) {
-    ariaLive.textContent = `${text} ${slideInfo}`;
-  } else {
+  if (![...block.classList].find((cls) => cls.startsWith('show-'))) {
+    const currentSlideIndex = slides.findIndex((s) => s === slide);
+    const slideInfo = `slide ${currentSlideIndex + 1} of ${slides.length}`;
+
+    if (text) {
+      ariaLive.textContent = `${text}, ${slideInfo}`;
+      return;
+    }
+
     const el = slide.querySelector('img[alt], video[title], iframe[title]');
     const altText = el?.getAttribute('alt') || el?.getAttribute('title') || '';
-    ariaLive.textContent = altText ? `${altText} ${slideInfo}` : slideInfo;
+    ariaLive.textContent = altText ? `${altText}, ${slideInfo}` : slideInfo;
+    return;
   }
+
+  if (text) {
+    ariaLive.textContent = text;
+    return;
+  }
+
+  const el = slide.querySelector('img[alt], video[title], iframe[title]');
+  ariaLive.textContent = el?.getAttribute('alt') || el?.getAttribute('title') || '';
 }
 
 function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
