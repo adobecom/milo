@@ -2,7 +2,7 @@ import { VariantLayout } from './variant-layout';
 import { createTag } from '../utils.js';
 import { html, css } from 'lit';
 import { CSS } from './product.css.js';
-import { SELECTOR_MAS_INLINE_PRICE, EVENT_MERCH_CARD_COLLECTION_READY } from '../constants.js';
+import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
 import { isMobile } from '../media.js';
 
 export class Product extends VariantLayout {
@@ -65,18 +65,10 @@ export class Product extends VariantLayout {
 
     connectedCallbackHook() {
         window.addEventListener('resize', this.postCardUpdateHook);
-        const collection = this.card.closest('merch-card-collection');
-        if (collection) {
-            collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
-        }
     }
 
     disconnectedCallbackHook() {
         window.removeEventListener('resize', this.postCardUpdateHook);
-        const collection = this.card.closest('merch-card-collection');
-        if (collection) {
-            collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_READY, this.handleCollectionReady);
-        }
     }
 
     postCardUpdateHook() {

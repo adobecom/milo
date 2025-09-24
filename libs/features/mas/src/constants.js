@@ -90,9 +90,6 @@ export const EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED = 'merch-card-collecti
 export const EVENT_MERCH_CARD_COLLECTION_SHOWMORE =
     'merch-card-collection:showmore';
 
-export const EVENT_MERCH_CARD_COLLECTION_READY = 
-    'merch-card-collection:ready';
-
 export const EVENT_MERCH_SIDENAV_SELECT = 'merch-sidenav:select';
 
 export const EVENT_AEM_LOAD = 'aem:load';
