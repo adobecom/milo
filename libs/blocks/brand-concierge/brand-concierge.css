@@ -658,10 +658,6 @@
       height: calc(100vh - 32px);
     }
   }
-
-  #brand-concierge-mount .scroll-to-bottom {
-    bottom: 110px !important;
-  }
 }
 
 /* desktop up */
