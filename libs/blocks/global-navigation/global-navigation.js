@@ -772,7 +772,10 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-    const tasks = [ this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile, this.setUpProductCTA];
+    const tasks = [
+      this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile,
+      this.setUpProductCTA,
+    ];
 
     try {
       for await (const task of tasks) {
@@ -794,7 +797,11 @@ class Gnav {
     if (!placeholder) return;
 
     const productCta = this.decorateProductEntryCTA();
-    productCta ? placeholder.replaceWith(productCta) : placeholder.remove();
+    if (productCta) {
+      placeholder.replaceWith(productCta);
+    } else {
+      placeholder.remove();
+    }
   };
 
   decorateProfile = async () => {
