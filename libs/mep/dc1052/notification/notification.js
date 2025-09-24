@@ -355,7 +355,7 @@ async function addTooltip(el) {
   if (!toolTipIcons.length) return;
 
   const config = getConfig();
-  const { default: loadIcons } = await import('../../features/icons/icons.js');
+  const { default: loadIcons } = await import('../../../features/icons/icons.js');
   loadStyle(`${base}/features/icons/icons.css`);
   loadIcons(toolTipIcons, config);
 }
