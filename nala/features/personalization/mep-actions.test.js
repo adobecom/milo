@@ -85,8 +85,10 @@ test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, 
   });
   await test.step('step-2: Verify useBlockCode', async () => {
     console.info(`[Test Page]: ${pznURL}`);
-    await page.goto(pznURL, { timeout: 60000, waitUntil: 'load' });
-    await expect(page.getByText('Marquee code was replaced MEP and the content was overwritten.')).toHaveCount(1);
-    await expect(page.getByText('Marquee code was replaced MEP and the content was overwritten.')).toHaveCSS('color', 'rgb(128, 0, 128)'); // purple
+    await page.goto(pznURL, { timeout: 60000, waitUntil: 'domcontentloaded' });
+
+    const marqueeText = page.getByText('Marquee code was replaced MEP and the content was overwritten.');
+    await expect(marqueeText).toHaveCount(1);
+    await expect(marqueeText).toHaveCSS('color', 'rgb(128, 0, 128)'); // purple
   });
 });

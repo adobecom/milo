@@ -171,13 +171,11 @@ test.describe('Milo Action-Item block test suite', () => {
 
       if (pagesAfter.length > pagesBefore.length) {
         targetPage = pagesAfter[pagesAfter.length - 1];
-        await targetPage.waitForLoadState('domcontentloaded', { timeout: 30000 });
       } else {
         targetPage = page;
-        await targetPage.waitForLoadState('domcontentloaded', { timeout: 30000 });
       }
-
-      expect(targetPage.url()).not.toBe(testPage);
+      await targetPage.waitForLoadState('domcontentloaded', { timeout: 30000 });
+      await expect(targetPage).not.toHaveURL(testPage);
     });
   });
 
