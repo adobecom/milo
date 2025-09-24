@@ -133,7 +133,7 @@ export default {
     '--chat-interface-max-width': '832px',
     '--color-button-secondary-hover-text': '#FFFFFF',
     '--color-button-submit': '#292929',
-    '--color-button-submit-hover': '#292929',
+    '--color-button-submit-hover': '#131313',
     '--color-primary': '#007bff',
     '--color-text': '#131313',
     '--concierge-message-padding': '0 0 16px 0',
