@@ -328,6 +328,10 @@
   transform: none !important;
 }
 
+#brand-concierge-mount .submit-button:hover:not(:disabled) {
+  transform: none !important;
+}
+
 /* Sticky */
 @keyframes sticky-in {
   from {
