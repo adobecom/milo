@@ -552,7 +552,7 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
-        ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
+        ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
@@ -772,8 +772,7 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-
-    const tasks = [this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile];
+    const tasks = [ this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile, this.setUpProductCTA];
 
     try {
       for await (const task of tasks) {
@@ -788,6 +787,14 @@ class Gnav {
         message: `GNAV: issues within imsReady - ${this.useUniversalNav ? 'decorateUniversalNav' : 'decorateProfile'}`,
       });
     }
+  };
+
+  setUpProductCTA = async () => {
+    const placeholder = this.elements.topnav.querySelector('.feds-product-entry-cta-placeholder');
+    if (!placeholder) return;
+
+    const productCta = this.decorateProductEntryCTA();
+    productCta ? placeholder.replaceWith(productCta) : placeholder.remove();
   };
 
   decorateProfile = async () => {
