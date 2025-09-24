@@ -149,7 +149,7 @@ function decorateInput(el, input) {
   el.append(fieldSection);
   el.removeChild(input);
 
-  fieldInput.addEventListener('textarea', () => {
+  fieldInput.addEventListener('input', () => {
     if (fieldInput.value && fieldInput.value.trim() !== '') {
       fieldButton.disabled = false;
     } else {
