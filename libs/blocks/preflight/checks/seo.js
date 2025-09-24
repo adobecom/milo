@@ -267,7 +267,7 @@ export async function validLinkFilter(area = document) {
       return true;
     }
     return false;
-  });
+  }).map((link) => link.href);
 }
 
 export async function checkLinks({ area, urlHash, envName }) {
