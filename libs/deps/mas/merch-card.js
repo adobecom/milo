@@ -1795,9 +1795,9 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     }
 }
 
-media screen and ${_} {
+@media screen and ${_} {
     .plans-team .row-1 {
-        grid-template-columns: min-content
+        grid-template-columns: min-content;
     }
 
     .plans-edu-inst {
