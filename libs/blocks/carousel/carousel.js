@@ -26,12 +26,27 @@ const KEY_CODES = {
 };
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
-function decorateNextPreviousBtns() {
+function getPreviousAriaLabel(currentIndex, totalSlides) {
+  return currentIndex === 0 && totalSlides > 0
+    ? `Previous slide, slide ${currentIndex + 1} of ${totalSlides}`
+    : 'Previous slide';
+}
+
+function updatePreviousAriaLabel(carouselElements) {
+  const { slides, nextPreviousBtns, currentActiveIndex } = carouselElements;
+  if (!nextPreviousBtns?.[0]) return;
+
+  nextPreviousBtns[0].setAttribute('aria-label', getPreviousAriaLabel(currentActiveIndex, slides.length));
+}
+
+function decorateNextPreviousBtns(slides, currentIndex = 0) {
+  const totalSlides = slides ? slides.length : 0;
+
   const previousBtn = createTag(
     'button',
     {
       class: 'carousel-button carousel-previous is-delayed',
-      'aria-label': 'Previous slide',
+      'aria-label': getPreviousAriaLabel(currentIndex, totalSlides),
       'data-toggle': 'previous',
     },
     ARROW_PREVIOUS_IMG,
@@ -352,6 +367,8 @@ function moveSlides(event, carouselElements) {
     referenceSlide.style.order = i;
   }
 
+  updatePreviousAriaLabel(carouselElements);
+
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
   }
@@ -517,7 +534,7 @@ export default function init(el) {
   }, []);
 
   const fragment = new DocumentFragment();
-  const nextPreviousBtns = decorateNextPreviousBtns();
+  const nextPreviousBtns = decorateNextPreviousBtns(slides);
   const nextPreviousContainer = createTag('div', { class: 'carousel-button-container' });
   const slideIndicators = decorateSlideIndicators(slides);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
