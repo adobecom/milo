@@ -294,7 +294,8 @@ export default function General() {
 
   return html`
     <div class=preflight-general-content>
-      <div class=preflight-columns>
+    <p class="preflight-structure-title">Structure</p>
+       <div class=preflight-structure-columns>
         <div class=preflight-column>
           <${StructureItem} ...${navResult.value} />
           <${StructureItem} ...${footerResult.value} />

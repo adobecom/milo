@@ -90,7 +90,7 @@ function checkRegionSelector(area) {
     };
   }
 
-  const regionAnchor = footerEl?.querySelector('.region-selector a');
+  const regionAnchor = footerEl?.querySelector('.region-selector a') || footerEl?.querySelector('.feds-regionPicker-wrapper a');
 
   const isModalConfigured = !!regionAnchor?.dataset?.modalPath || (regionAnchor?.hash && regionAnchor.hash !== '' && regionAnchor.hash !== '#_dnt');
   const isDropdownConfigured = regionAnchor?.closest('.region-selector')?.querySelector('.fragment, [data-path]');
