@@ -40,10 +40,44 @@
   padding: 8px;
 }
 
-.comparison-table .sub-header-item-container:last-of-type {
-  border: none;
+.comparison-table .sub-header-item-container .description {
+  font-style: italic;
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  line-height: 125%;
+  min-height: 15px;
 }
 
-.comparison-table .sub-header-item-container p, h1, h2, h3, h4, h5, h6 {
+.comparison-table .sub-header-item-container .btn-container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.comparison-table .sub-header-item-container .btn-container .action-area {
+  display: flex;
+  width: 50%;
+}
+
+.comparison-table .sub-header-item-container .btn-container .action-area .con-button {
+  display: flex;
+  justify-content: center;
+}
+
+.comparison-table .sub-header-item-container .btn-container .action-area strong,
+.comparison-table .sub-header-item-container .btn-container .action-area a {
+  width: 100%;
+  display: flex;
+}
+
+.comparison-table .sub-header-item-container:last-of-type {
+  border: none;
+  padding: 0;
+}
+
+.comparison-table .sub-header-item-container *:is(p, h1, h2, h3, h4, h5, h6) {
   margin: 0;
 }
