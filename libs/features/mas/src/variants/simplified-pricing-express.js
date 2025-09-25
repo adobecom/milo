@@ -192,7 +192,15 @@ export class SimplifiedPricingExpress extends VariantLayout {
         this.boundPostCardUpdateHook = this.postCardUpdateHook.bind(this);
         window.addEventListener('resize', this.boundPostCardUpdateHook);
 
-        setTimeout(() => this.setupVisibilityDetection(), 100);
+        setTimeout(async () => {
+            this.setupVisibilityDetection();
+            if (!!isDesktop()) {
+                const container = this.getContainer();
+                if (container) {
+                    await this.syncAllCardsInContainer(container);
+                }
+            }
+        }, 100);
     }
 
     setupVisibilityDetection() {
@@ -223,17 +231,14 @@ export class SimplifiedPricingExpress extends VariantLayout {
             }
         };
 
-        // Set initial state
         updateExpandedState();
 
-        // Watch for viewport changes
         const mediaQuery = window.matchMedia(TABLET_DOWN);
         this.mediaQueryListener = () => {
             updateExpandedState();
         };
         mediaQuery.addEventListener('change', this.mediaQueryListener);
 
-        // Watch for default card attribute changes
         this.attributeObserver = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'attributes' &&
@@ -264,7 +269,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
             this.attributeObserver.disconnect();
         }
 
-        // Clean up visibility observer
         if (this.visibilityObserver) {
             this.visibilityObserver.disconnect();
             this.visibilityObserver = null;

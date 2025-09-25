@@ -118,7 +118,6 @@ export class FullPricingExpress extends VariantLayout {
             )
         );
 
-        // Re-sync all cards
         requestAnimationFrame(() => {
             cards.forEach(card => card.variantLayout?.syncHeights?.());
         });
@@ -156,7 +155,15 @@ export class FullPricingExpress extends VariantLayout {
 
         window.addEventListener('resize', this.boundPostCardUpdateHook);
 
-        setTimeout(() => this.setupVisibilityDetection(), 100);
+        setTimeout(async () => {
+            this.setupVisibilityDetection();
+            if (!isMobile()) {
+                const container = this.getContainer();
+                if (container) {
+                    await this.syncAllCardsInContainer();
+                }
+            }
+        }, 100);
     }
 
     setupVisibilityDetection() {
