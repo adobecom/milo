@@ -30,8 +30,7 @@ export default class FullPricingExpressCard {
     this.priceNote = this.priceContainer.locator('p').nth(1);
     this.priceAdditionalNote = this.priceContainer.locator('p').nth(2);
 
-    // Features are in the body-s slot for full-pricing-express
-    this.description2 = this.card.locator('[slot="body-s"]');  // Point to body-s for compatibility
+    this.description2 = this.card.locator('[slot="body-s"]');
     this.topFeaturesLabel = this.description.locator('p').first();
     this.firstDividerWrapper = this.description.locator('hr').first();
     this.firstDivider = this.firstDividerWrapper;
