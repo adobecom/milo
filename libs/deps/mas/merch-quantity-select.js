@@ -47,6 +47,7 @@ import{html as c,LitElement as A,nothing as m}from"../lit-all.min.js";import{css
         padding-inline-start: 12px;
         box-sizing: border-box;
         -moz-appearance: textfield;
+        z-index: 1;
     }
 
     .text-field-input::-webkit-inner-spin-button,
