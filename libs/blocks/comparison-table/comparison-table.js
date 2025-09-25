@@ -1,25 +1,43 @@
 import { createTag } from '../../utils/utils.js';
+import { decorateButtons } from '../../utils/decorate.js';
+
+function createSubHeaderContainer(childrenArray, startIndex, endIndex) {
+  const container = createTag('div', { class: 'sub-header-item-container' });
+
+  for (let i = startIndex; i < endIndex; i += 1) {
+    if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
+      container.appendChild(childrenArray[i]);
+    }
+  }
+
+  return container;
+}
 
 function decorateHeader(headerContent) {
   headerContent.classList.add('header-content');
-  console.log('headerContent', headerContent);
+  const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
 
-  Array.from(headerContent.children).forEach((headerItem) => {
-    if (!headerItem.innerHTML) headerItem.remove();
+  const existingChildren = Array.from(headerContent.children);
+  existingChildren.forEach((child) => headerContentWrapper.appendChild(child));
+  headerContent.appendChild(headerContentWrapper);
+
+  Array.from(headerContentWrapper.children).forEach((headerItem) => {
+    if (!headerItem.innerHTML) {
+      headerItem.remove();
+      return;
+    }
+
     headerItem.classList.add('header-item');
-
     let lastContainedIndex = -1;
     const childrenArray = Array.from(headerItem.children);
 
     childrenArray.forEach((headerItemChild, index) => {
       if (headerItemChild.textContent.trim() === '-') {
-        const subHeaderItemContainer = createTag('div', { class: 'sub-header-item-container' });
-
-        for (let i = lastContainedIndex + 1; i < index; i += 1) {
-          if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
-            subHeaderItemContainer.appendChild(childrenArray[i]);
-          }
-        }
+        const subHeaderItemContainer = createSubHeaderContainer(
+          childrenArray,
+          lastContainedIndex + 1,
+          index,
+        );
 
         headerItem.insertBefore(subHeaderItemContainer, headerItemChild);
         headerItemChild.remove();
@@ -28,13 +46,11 @@ function decorateHeader(headerContent) {
     });
 
     if (lastContainedIndex < childrenArray.length - 1) {
-      const finalSubHeaderItemContainer = createTag('div', { class: 'sub-header-item-container' });
-
-      for (let i = lastContainedIndex + 1; i < childrenArray.length; i += 1) {
-        if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
-          finalSubHeaderItemContainer.appendChild(childrenArray[i]);
-        }
-      }
+      const finalSubHeaderItemContainer = createSubHeaderContainer(
+        childrenArray,
+        lastContainedIndex + 1,
+        childrenArray.length,
+      );
 
       if (finalSubHeaderItemContainer.children.length > 0) {
         headerItem.appendChild(finalSubHeaderItemContainer);
