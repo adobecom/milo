@@ -23,7 +23,7 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
       await page.waitForLoadState('networkidle');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${miloLibs}`);
 
-      await page.waitForSelector('merch-card-collection', { timeout: 30000 });
+      await page.waitForSelector('merch-card-collection.full-pricing-express', { timeout: 30000 });
       await page.waitForSelector('merch-card[variant="full-pricing-express"]', { timeout: 30000 });
       await page.waitForTimeout(3000);
     });
@@ -86,7 +86,7 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
       await page.waitForLoadState('networkidle');
       await expect(page).toHaveURL(`${baseURL}${features[1].path}${miloLibs}`);
 
-      await page.waitForSelector('merch-card-collection', { timeout: 30000 });
+      await page.waitForSelector('merch-card-collection.full-pricing-express', { timeout: 30000 });
       await page.waitForSelector('merch-card[variant="full-pricing-express"]', { timeout: 30000 });
       await page.waitForTimeout(3000);
     });
@@ -160,7 +160,7 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
       await page.waitForLoadState('networkidle');
       await expect(page).toHaveURL(`${baseURL}${features[2].path}${miloLibs}`);
 
-      await page.waitForSelector('merch-card-collection', { timeout: 30000 });
+      await page.waitForSelector('merch-card-collection.full-pricing-express', { timeout: 30000 });
       await page.waitForSelector('merch-card[variant="full-pricing-express"]', { timeout: 30000 });
       await page.waitForTimeout(3000);
     });
@@ -223,7 +223,7 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
   });
 
   test('3: @MAS-Full-Pricing-Express-Collection alignment test, @full-pricing-express @collection @smoke @regression @milo', async ({ page, baseURL }) => {
-    const testPath = '/libs/features/mas/docs/full-pricing-express.html';
+    const testPath = '/libs/features/mas/docs/express.html';
     console.info(`[Test Page]: ${baseURL}${testPath}${miloLibs}`);
 
     await test.step('step-1: Go to Full Pricing Express page', async () => {
