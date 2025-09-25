@@ -53,7 +53,7 @@ runTests(async () => {
                 const cta = shadowRoot.querySelector('.cta');
                 expect(cta).to.exist;
                 
-                const shortDescription = shadowRoot.querySelector('.shortDescription');
+                const shortDescription = shadowRoot.querySelector('.short-description');
                 expect(shortDescription).to.exist;
             });
         });
@@ -116,7 +116,7 @@ runTests(async () => {
             });
         });
 
-        describe('Description2 Slot with Dividers', () => {
+        describe('Short Description Slot with Dividers', () => {
             it('should have description2 slot with content', async () => {
                 const card = document.querySelector('merch-card[variant="full-pricing-express"]');
                 const description2 = card.querySelector('[slot="description2"]');
@@ -141,7 +141,7 @@ runTests(async () => {
                 const card = document.querySelector('merch-card[variant="full-pricing-express"]');
                 const description2 = card.querySelector('[slot="description2"]');
                 const dividerWrappers = description2.querySelectorAll('.divider-wrapper');
-                
+
                 dividerWrappers.forEach(wrapper => {
                     const divider = wrapper.querySelector('sp-divider');
                     expect(divider).to.exist;
@@ -154,7 +154,7 @@ runTests(async () => {
                 const card = document.querySelector('merch-card[variant="full-pricing-express"]');
                 const description2 = card.querySelector('[slot="description2"]');
                 const paragraphs = description2.querySelectorAll('p');
-                
+
                 // Check for feature content
                 const featureTexts = ['Templates:', 'Assets:', 'Fonts:', 'Editing tools:', 'Storage:', 'Devices:'];
                 featureTexts.forEach(text => {
@@ -168,7 +168,7 @@ runTests(async () => {
                 const description2 = card.querySelector('[slot="description2"]');
                 const buttonContainer = description2.querySelector('.button-container');
                 expect(buttonContainer).to.exist;
-                
+
                 const compareLink = buttonContainer.querySelector('a');
                 expect(compareLink).to.exist;
                 expect(compareLink.textContent).to.equal('Compare all features');
@@ -298,22 +298,26 @@ runTests(async () => {
                 // These variables should be set after cards are rendered
                 const priceHeight = computedStyle.getPropertyValue('--consonant-merch-card-full-pricing-express-price-height');
                 const ctaHeight = computedStyle.getPropertyValue('--consonant-merch-card-full-pricing-express-cta-height');
-                const description2Height = computedStyle.getPropertyValue('--consonant-merch-card-full-pricing-express-description2-height');
-                
+                const shortDescriptionHeight = computedStyle.getPropertyValue('--consonant-merch-card-full-pricing-express-short-description-height');
+
                 // Variables should exist (may be empty initially)
                 expect(priceHeight !== undefined).to.be.true;
                 expect(ctaHeight !== undefined).to.be.true;
-                expect(description2Height !== undefined).to.be.true;
+                expect(shortDescriptionHeight !== undefined).to.be.true;
+
+                // Description height should NOT be set (we removed this)
+                const descriptionHeight = computedStyle.getPropertyValue('--consonant-merch-card-full-pricing-express-description-height');
+                expect(descriptionHeight).to.equal('');
             });
 
-            it('should apply flexbox to description2 for bottom alignment', async () => {
+            it('should apply flexbox to short-description for alignment', async () => {
                 const card = document.querySelector('merch-card[variant="full-pricing-express"]');
                 await card.updateComplete;
-                
-                const shadowRoot = card.shadowRoot;
-                const shortDescription = shadowRoot.querySelector('.shortDescription');
 
-                // On desktop, shortDescription should be flex container
+                const shadowRoot = card.shadowRoot;
+                const shortDescription = shadowRoot.querySelector('.short-description');
+
+                // On desktop, short-description should be flex container
                 const mediaQuery = window.matchMedia('(min-width: 768px)');
                 if (mediaQuery.matches) {
                     const computedStyle = window.getComputedStyle(shortDescription);
@@ -327,7 +331,7 @@ runTests(async () => {
             it('should have mobile-specific CSS rules', async () => {
                 const card = document.querySelector('merch-card[variant="full-pricing-express"]');
                 const description2 = card.querySelector('[slot="description2"]');
-                
+
                 // Create a mock for mobile viewport
                 const originalMatchMedia = window.matchMedia;
                 window.matchMedia = (query) => ({
@@ -336,14 +340,14 @@ runTests(async () => {
                     addEventListener: () => {},
                     removeEventListener: () => {},
                 });
-                
+
                 // The CSS rules hide elements on mobile, but we can verify the structure exists
                 const dividerWrappers = description2.querySelectorAll('.divider-wrapper');
                 expect(dividerWrappers.length).to.equal(2);
-                
+
                 const buttonContainer = description2.querySelector('.button-container');
                 expect(buttonContainer).to.exist;
-                
+
                 // Restore original matchMedia
                 window.matchMedia = originalMatchMedia;
             });
@@ -361,7 +365,7 @@ runTests(async () => {
                 const card = document.querySelector('merch-card[variant="full-pricing-express"]');
                 const compareLink = card.querySelector('[slot="description2"] a');
                 expect(compareLink.hasAttribute('daa-ll')).to.be.true;
-                
+
                 const ctaLink = card.querySelector('[slot="cta"] a');
                 expect(ctaLink.hasAttribute('daa-ll')).to.be.true;
             });
