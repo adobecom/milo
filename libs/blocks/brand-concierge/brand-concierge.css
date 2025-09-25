@@ -9,7 +9,7 @@
   --bc-button-dimensions: 32px;
   --bc-button-radius: 8px;
   --bc-button-color: #292929;
-  --bc-button-hover-color: #555;
+  --bc-button-hover-color: #131313;
   --bc-keyboard-focus-color: #5574F7;
   --bc-sticky-delay: 3s;
 
@@ -321,6 +321,15 @@
 
 #brand-concierge-mount .bc-response-footer-actions .bc-feedback-buttons {
   margin-top: 4px !important;
+}
+
+#brand-concierge-mount .feedback-button:hover:not(:disabled) {
+  color: #131313 !important;
+  transform: none !important;
+}
+
+#brand-concierge-mount .submit-button:hover:not(:disabled) {
+  transform: none !important;
 }
 
 /* Sticky */
