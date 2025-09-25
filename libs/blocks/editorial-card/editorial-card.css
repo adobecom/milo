@@ -248,30 +248,22 @@
 }
 
 /* Aspect Ratio */
-.editorial-card.media-square .media-area img,
-.editorial-card.media-square .media-area video,
-.editorial-card.media-square .media-area .milo-video {
+.editorial-card.media-square .media-area :is(img, video, .milo-video) {
   aspect-ratio: var(--aspect-ratio-square);
   max-height: unset;
 }
 
-.editorial-card.media-wide .media-area img,
-.editorial-card.media-wide .media-area video,
-.editorial-card.media-wide .media-area .milo-video {
+.editorial-card.media-wide .media-area :is(img, video, .milo-video) {
   aspect-ratio: var(--aspect-ratio-wide);
   max-height: unset;
 }
 
-.editorial-card.media-standard .media-area img,
-.editorial-card.media-standard .media-area video,
-.editorial-card.media-standard .media-area .milo-video {
+.editorial-card.media-standard .media-area :is(img, video, .milo-video) {
   aspect-ratio: var(--aspect-ratio-standard);
   max-height: unset;
 }
 
-.editorial-card.media-tall .media-area img,
-.editorial-card.media-tall .media-area video,
-.editorial-card.media-tall .media-area .milo-video {
+.editorial-card.media-tall .media-area :is(img, video, .milo-video) {
   aspect-ratio: var(--aspect-ratio-tall);
   max-height: unset;
 }
