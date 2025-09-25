@@ -1,0 +1,12 @@
+.comparison-table .header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+}
+
+.comparison-table .header-item {
+  width: 100%;
+}
