@@ -1,4 +1,3 @@
-import { debounce } from '../../utils/action.js';
 import { handleFocalpoint } from '../../utils/decorate.js';
 import { createTag, getFedsPlaceholderConfig } from '../../utils/utils.js';
 
@@ -20,8 +19,8 @@ const applyBackground = (colors, section) => {
     return;
   }
   if (colors.length === 2) {
-    const [mobileTabletColor, desktopColor] = colors;
-    section.style.background = mediaQueries.tablet.matches ? mobileTabletColor : desktopColor;
+    const [mobileColor, tabletDesktopColor] = colors;
+    section.style.background = mediaQueries.mobile.matches ? mobileColor : tabletDesktopColor;
     return;
   }
   if (colors.length >= 3) {
@@ -48,9 +47,8 @@ export function handleBackground(div, section) {
     if (color) {
       const colors = color.split('|').map((c) => c.trim());
       applyBackground(colors, section);
-      const debouncedApplyBackground = debounce(() => applyBackground(colors, section), 100);
       Object.keys(mediaQueries).forEach((key) => {
-        mediaQueries[key].addEventListener('change', debouncedApplyBackground);
+        mediaQueries[key].addEventListener('change', () => applyBackground(colors, section), 100);
       });
     }
   }
