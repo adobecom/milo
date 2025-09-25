@@ -6,7 +6,7 @@ module.exports = {
     {
       tcid: '0',
       name: '@MAS-Full-Pricing-Express-Free',
-      path: '/libs/features/mas/docs/full-pricing-express.html',
+      path: '/libs/features/mas/docs/express.html',
       data: {
         id: '53fcf015-5c28-4214-bd2b-d4c22f1774b8',
         title: 'Free Plan',
@@ -35,7 +35,7 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-Full-Pricing-Express-Premium',
-      path: '/libs/features/mas/docs/full-pricing-express.html',
+      path: '/libs/features/mas/docs/express.html',
       data: {
         id: '025dfceb-c035-45b7-8ea1-8feed25c8009',
         title: 'Premium Plan',
@@ -67,7 +67,7 @@ module.exports = {
     {
       tcid: '2',
       name: '@MAS-Full-Pricing-Express-Pro',
-      path: '/libs/features/mas/docs/full-pricing-express.html',
+      path: '/libs/features/mas/docs/express.html',
       data: {
         id: '9406f1ae-7bee-48c3-9892-49af6816033e',
         title: 'Pro Plan',
