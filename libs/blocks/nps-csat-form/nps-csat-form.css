@@ -21,12 +21,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   height: 100%;
 }
 
 .nps-csat-form h2 {
-  margin: 0;
+  margin: 0 0 16px 0;
 }
 
 .nps-close {
@@ -63,7 +62,6 @@
   font-size: 20px;
   font-weight: 600;
   color: #2c2c2c;
-  margin-bottom: 16px;
   padding: 0;
 }
 
@@ -71,7 +69,6 @@
   display: block;
   font-size: 14px;
   color: #666;
-  margin-bottom: 16px;
   font-weight: 400;
 }
 
@@ -79,7 +76,6 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 8px;
   gap: 8px;
 }
 
@@ -156,7 +152,7 @@
   gap: 8px;
   color: #d73502;
   font-size: 14px;
-  margin-top: 8px;
+  margin-bottom: 16px;
 }
 
 /* Show error only after form submission attempt when no radio button is selected */
@@ -177,7 +173,6 @@
   font-size: 14px;
   font-weight: 400;
   color: #2c2c2c;
-  margin-bottom: 8px;
 }
 
 .nps-feedback-area textarea {
@@ -185,7 +180,7 @@
   height: 83px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  padding: 12px;
+  padding: 6px 12px 8px 12px;
   font-size: 14px;
   font-family: inherit;
   max-height: 83px;
@@ -248,10 +243,11 @@
   transform: translate(-50%, -50%) scale(1);
 }
 
-.nps-submit-area {
+.nps-csat-form fieldset.nps-submit-area {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  margin-top: auto;
 }
 
 .nps-cancel,
@@ -259,6 +255,7 @@
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 14px;
+  font-family: var(--body-font-family);
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s ease;
