@@ -70,33 +70,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
         return '[slot="heading-xs"]';
     }
 
-    getContainer() {
-        let container = this.card.closest('merch-card-collection');
-        if (!container) {
-            let parent = this.card.parentElement;
-            while (parent && parent !== document.body) {
-                const cards = parent.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
-                if (cards.length > 1) {
-                    const firstCardParent = cards[0].parentElement;
-                    const allSameParent = Array.from(cards).every(card =>
-                        card.parentElement === firstCardParent ||
-                        card.closest('merch-card-collection') === parent
-                    );
-                    if (allSameParent) {
-                        container = parent;
-                        break;
-                    }
-                }
-                parent = parent.parentElement;
-            }
-        }
-
-        if (!container) {
-            container = this.card.parentElement;
-        }
-
-        return container;
-    }
 
     updateCardElementMinHeightValue(height, name) {
         if (!height) return;
