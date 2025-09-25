@@ -290,64 +290,62 @@
   cursor: not-allowed;
 }
 
-@media (prefers-color-scheme: dark) {
-  .nps-csat-form {
-    background: #222;
-    color: #F2F2F2;
-  }
-  .nps-csat-form legend {
-    color: #AFAFAF;
-  }
-  .nps-csat-form .radio-item label {
-    color: #DBDBDB;
-  }
-  .radio-options input[type="radio"] {
-    border-color: #DBDBDB;
-  }
-  .radio-options input[type="radio"]:checked {
-    border-color: #DBDBDB;
-  }
-  .radio-options input[type="radio"]:after {
-    background: #DBDBDB;
-  }
-  .nps-feedback-area textarea {
-    background-color: #111;
-    border-color: #393939;
-  }
-  .nps-feedback-area textarea::placeholder {
-    color: #DBDBDB;
-  }
-  .nps-checkbox-area label {
-    color: #DBDBDB;
-  }
-  .nps-checkbox-area input[type="checkbox"] {
-    border-color: #DBDBDB
-  }
-  .nps-checkbox-area input[type="checkbox"]:checked {
-    background-color: white;
-    border-color: white;
-  }
-  .nps-checkbox-area input[type="checkbox"]::after {
-    color: black;
-  }
-  .nps-cancel {
-    color: #DBDBDB;
-    border-color: #393939;
-  }
-  .nps-cancel:hover {
-    border-color: #DBDBDB;
-    border-color: #393939;
-    background: transparent;
-  }
-  .nps-submit {
-    color: #111;
-    background-color: #DBDBDB;
-  }
-  .nps-submit:hover {
-    color: #111;
-    background-color: #DBDBDB;
-  }
-  .error-message {
-    color: #FC432E;
-  }
+.nps-csat-form.dark {
+  background: #222;
+  color: #F2F2F2;
+}
+.nps-csat-form.dark legend {
+  color: #AFAFAF;
+}
+.nps-csat-form.dark .radio-item label {
+  color: #DBDBDB;
+}
+.nps-csat-form.dark .radio-options input[type="radio"] {
+  border-color: #DBDBDB;
+}
+.nps-csat-form.dark .radio-options input[type="radio"]:checked {
+  border-color: #DBDBDB;
+}
+.nps-csat-form.dark .radio-options input[type="radio"]:after {
+  background: #DBDBDB;
+}
+.nps-csat-form.dark .nps-feedback-area textarea {
+  background-color: #111;
+  border-color: #393939;
+}
+.nps-csat-form.dark .nps-feedback-area textarea::placeholder {
+  color: #DBDBDB;
+}
+.nps-csat-form.dark .nps-checkbox-area label {
+  color: #DBDBDB;
+}
+.nps-csat-form.dark .nps-checkbox-area input[type="checkbox"] {
+  border-color: #DBDBDB
+}
+.nps-csat-form.dark.nps-checkbox-area input[type="checkbox"]:checked {
+  background-color: white;
+  border-color: white;
+}
+.nps-csat-form.dark.nps-checkbox-area input[type="checkbox"]::after {
+  color: black;
+}
+.nps-csat-form.dark .nps-cancel {
+  color: #DBDBDB;
+  border-color: #393939;
+}
+.nps-csat-form.dark .nps-cancel:hover {
+  border-color: #DBDBDB;
+  border-color: #393939;
+  background: transparent;
+}
+.nps-csat-form.dark .nps-submit {
+  color: #111;
+  background-color: #DBDBDB;
+}
+.nps-csat-form.dark .nps-submit:hover {
+  color: #111;
+  background-color: #DBDBDB;
+}
+.nps-csat-form.dark .error-message {
+  color: #FC432E;
 }

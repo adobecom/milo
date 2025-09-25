@@ -214,6 +214,7 @@ const createIdForLabel = (label) => label
 
 export default async (block) => {
   // parsing the block
+  if (!block) return;
   const [
     title,
     question,
@@ -229,6 +230,10 @@ export default async (block) => {
     .firstElementChild
     ?.nextElementSibling
     ?.textContent).map((x) => !!x ? x : null); // eslint-disable-line
+  const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.get('source_color_theme') === 'dark') {
+    block.classList.add('dark');
+  }
   const radioGroupList = (() => {
     if (scale !== '5' && scale !== '7') {
       console.warn('Invalid scale specified; defaulting to a 5 pt scale. The value of scale has to be either \'5\' or \'7\'');
@@ -281,11 +286,6 @@ export default async (block) => {
   // The form will still be interactable in case
   // Acknowledgement fails
   sendMessage(READY);
-  sendMessage({
-    type: 'TMP_DEBUG_MSG_DELETE_LATER',
-    data: Object.fromEntries(new URLSearchParams(window.location.search.slice(1))),
-  });
-  console.log(Object.fromEntries(new URLSearchParams(window.location.search.slice(1))));
 
   // Add form validation handler - only show errors after submit attempt
   const form = block.querySelector('#nps');
