@@ -1,6 +1,5 @@
 .nps-csat-form {
-  background: white;
-  border-radius: 8px;
+  background: var(--uxp-host-background-color);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 32px;
   height: 404px;
