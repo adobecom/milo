@@ -66,6 +66,9 @@ export const createLinkMarkup = (
       if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
         params.set('workflowStep', workflowStep);
       }
+      if (options.modal) params.set('modal', options.modal);
+      if (options.entitlement) params.set('entitlement', options.entitlement);
+      if (options.upgrade) params.set('upgrade', options.upgrade);
     } else {
       const {
         displayRecurrence,
@@ -258,6 +261,7 @@ export async function loadOstEnv() {
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
     resolvePriceTaxFlags,
+    modalsAndEntitlements: true,
   };
 }
 
