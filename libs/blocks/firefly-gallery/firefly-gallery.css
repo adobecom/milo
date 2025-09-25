@@ -418,8 +418,7 @@
   left: 0;
 }
 
-/* Tablet styles (601px - 900px) */
-@media screen and (min-width: 601px) {
+@media screen and (min-width: 600px) {
   :root {
     --column-count: 3;
     --row-gap: calc(14px - 8px);
@@ -433,8 +432,7 @@
   }
 }
 
-/* Desktop styles (901px+) */
-@media screen and (min-width: 901px) {
+@media screen and (min-width: 900px) {
   :root {
     --column-count: 5;
     --row-gap: calc(var(--spacing-xs) - 8px);

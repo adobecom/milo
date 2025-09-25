@@ -60,10 +60,10 @@ export function getLocalizedValue(localizations, currentLocale, defaultValue = '
 export function getScreenSizeCategory() {
   const viewportWidth = window.innerWidth;
 
-  if (viewportWidth < 601) {
+  if (viewportWidth < 600) {
     return 'mobile';
   }
-  if (viewportWidth < 901) {
+  if (viewportWidth < 900) {
     return 'tablet';
   }
   return 'desktop';
