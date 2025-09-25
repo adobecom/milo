@@ -2,6 +2,10 @@
   display: flex;
 }
 
+.action-item .static {
+  width: 100%;
+}
+
 .action-item img {
   display: block;
   max-height: 240px;
