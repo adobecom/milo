@@ -106,10 +106,10 @@
   width: 100%;
   margin-bottom: var(--row-gap);
   padding: 0;
-  display: inline-block; /* Important for column layout */
-  break-inside: avoid; /* Prevent items from breaking across columns */
-  will-change: transform; /* Optimize for animation performance */
-  contain: layout size; /* Improve performance by isolating layout */
+  display: inline-block;
+  break-inside: avoid;
+  will-change: transform;
+  contain: layout size;
 }
 
 /* Fixed minimum heights for skeleton items during loading */
@@ -187,23 +187,18 @@
   z-index: 1;
 }
 
-/* Loading state */
 
-/* Don't set a minimum height on the grid container, allow items to define the height */
 .firefly-gallery-masonry-grid.loading {
-  /* no min-height here - let it be determined by its contents */
-  column-fill: balance; /* Try to balance content across columns */
+  column-fill: balance;
   min-height: auto;
 }
 
 .firefly-gallery-masonry-grid.loading .skeleton-item {
-  height: auto; /* Allow height based on min-height and content */
-  transform: translateZ(0); /* Force GPU acceleration for smoother animations */
+  height: auto;
+  transform: translateZ(0);
 }
 
 /* Removed skeleton-pulse animation to eliminate white overlay effect */
-
-/* Loaded state transitions - enhanced for smoother effect */
 .firefly-gallery-item .skeleton-wrapper {
   opacity: 1;
   transition: opacity 0s;
@@ -222,7 +217,7 @@
 
 .firefly-gallery-item.loaded .skeleton-wrapper {
   opacity: 0;
-  pointer-events: none; /* Prevent interaction with the hidden skeleton */
+  pointer-events: none;
 }
 
 .firefly-gallery-item.loaded .firefly-gallery-image {
@@ -240,7 +235,6 @@
   transition: transform var(--transition-speed-fast) ease;
 }
 
-/* Overlay and prompt styles */
 .firefly-gallery-content:focus-within {
   scroll-behavior: auto;
 }
@@ -257,11 +251,11 @@
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 2;
-  border-radius: 8px; /* Match the item border radius */
-  transform: translateY(5px); /* Start slightly below */
+  border-radius: 8px;
+  transform: translateY(5px);
   cursor: pointer;
-  text-decoration: none; /* Remove link underline */
-  will-change: transform; /* Optimize for animation performance */
+  text-decoration: none;
+  will-change: transform;
 }
 
 .firefly-gallery-content-wrapper {
@@ -276,7 +270,7 @@
   background: var(--color-white);
   color: #292929;
   padding: 1px 12px;
-  border-radius: 16px; /* Pill shape */
+  border-radius: 16px;
   align-self: flex-end;
   font-size: 12px;
   font-weight: 700;
@@ -298,12 +292,10 @@
   margin: var(--spacing-xxs) 0;
 }
 
-/* Info container for user and prompt */
 .firefly-gallery-info-container {
   width: 100%;
 }
 
-/* User info styles */
 .firefly-gallery-user-info {
   display: flex;
   align-items: center;
@@ -341,28 +333,13 @@
   transform: translateY(0);
 }
 
-/* Hover effects for loaded images */
 .firefly-gallery-item:hover, .firefly-gallery-item:focus-within {
-  box-shadow: 0 8px 16px rgb(0 0 0 / 10%); /* Add shadow for depth */
+  box-shadow: 0 8px 16px rgb(0 0 0 / 10%);
 }
 
 .firefly-gallery-item:hover .firefly-gallery-overlay {
   opacity: 1;
-  transform: translateY(0); /* Reset position on hover */
-}
-
-/* Video-specific styles */
-.firefly-gallery-item.video-item .firefly-gallery-image::before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 16px;
-  height: 16px;
-  z-index: 1;
-  background-image: url("data:image/svg+xml,%0A%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg filter='url(%23filter0_d_2130_42049)'%3E%3Cpath d='M8.10166 1.05157L17.859 6.36527C19.3136 7.15745 19.3137 9.27194 17.859 10.0641L8.10166 15.3778C6.72273 16.1288 5.05 15.1173 5.05 13.5285V2.901C5.05 1.3121 6.72273 0.300614 8.10166 1.05157Z' fill='white' fill-opacity='0.98' stroke='white' stroke-width='0.1'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_2130_42049' x='1' y='0.748535' width='22' height='22.9321' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='4'/%3E%3CfeGaussianBlur stdDeviation='2'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0'/%3E%3CfeBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow_2130_42049'/%3E%3CfeBlend mode='normal' in='SourceGraphic' in2='effect1_dropShadow_2130_42049' result='shape'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E%0A");
-  background-repeat: no-repeat;
-  background-size: 16px;
+  transform: translateY(0);
 }
 
 .firefly-gallery-video {
@@ -400,27 +377,25 @@
 
 .firefly-gallery-play-icon {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
-  background: rgb(0 0 0 / 50%);
+  top: 12px;
+  left: 12px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3;
-  transition: opacity 0.3s ease;
 }
 
-.firefly-gallery-play-icon svg {
-  width: 30px;
-  height: 30px;
+.firefly-gallery-play-icon img {
+  width: 10px;
+  height: 10px;
 }
 
-/* Ensure overlay changes for videos */
-.firefly-gallery-overlay:hover .firefly-gallery-play-icon {
+.firefly-gallery-item:hover .firefly-gallery-play-icon,
+.firefly-gallery-item:focus-within .firefly-gallery-play-icon {
   opacity: 0;
 }
 

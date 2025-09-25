@@ -13,7 +13,6 @@ const ITEM_TYPE_THRESHOLDS = {
   // anything >= 1.2 = short (landscape)
 };
 
-// Define different rendition sizes for different item types and screen sizes
 const RENDITION_SIZES = {
   short: { default: 350, desktop: 350, tablet: 300, mobile: 250 },
   square: { default: 400, desktop: 400, tablet: 350, mobile: 280 },
@@ -167,14 +166,11 @@ export function createFireflyURL(urn, assetType = 'image', cgenId = '') {
 export function getImageRendition(asset, itemType = 'square') {
   if (!asset) return '';
 
-  // Determine screen size category
   const screenSize = getScreenSizeCategory();
 
-  // Get appropriate size based on item type and screen size
   const sizeObj = RENDITION_SIZES[itemType] || RENDITION_SIZES.square;
   const width = sizeObj[screenSize] || sizeObj.default;
 
-  // Create rendition URL with appropriate size
   const renditionUrl = replaceRenditionUrl(
     // eslint-disable-next-line no-underscore-dangle
     asset._links.rendition.href,
@@ -204,13 +200,8 @@ function createSkeletonLayout(container) {
   const masonryGrid = createTag('div', { class: 'firefly-gallery-masonry-grid loading' });
 
   const skeletonItems = [];
-
-  // Number of items to create (will be replaced with actual images)
   const numItems = 25;
 
-  // Define placeholder aspect ratios - we'll replace these with real ones
-  // Optimized for 5-column desktop layout: 30 items = 6 items per column
-  // Pattern ensures balanced distribution across all responsive breakpoints
   const placeholderTypes = [
     // Column flow pattern optimized for 5 columns (5 items per column)
     // column 1
@@ -225,36 +216,26 @@ function createSkeletonLayout(container) {
     'short', 'square', 'portrait', 'tall', 'portrait',
   ];
 
-  // Initial aspect ratios for placeholder types - these will be replaced with actual ratios
   const initialAspectRatios = {
-    short: 1.43, // landscape orientation (width/height = 1.43)
-    square: 1.0, // square (width/height = 1)
-    portrait: 0.77, // portrait orientation (width/height = 0.77)
-    tall: 0.59, // tall portrait (width/height = 0.59)
+    short: 1.43,
+    square: 1.0,
+    portrait: 0.77,
+    tall: 0.59,
   };
 
-  // Create skeleton items with appropriate initial dimensions
   for (let i = 0; i < numItems; i += 1) {
-    // Get the placeholder type from our predefined sequence
     const placeholderType = placeholderTypes[i];
 
-    // Create the skeleton item with appropriate classes
     const itemClass = `firefly-gallery-item firefly-gallery-item-${placeholderType} skeleton-item`;
     const skeletonItem = createTag('div', { class: itemClass });
 
-    // Set the aspect ratio as a CSS custom property
-    // This ensures proper rendering even before API data is received
     const aspectRatio = initialAspectRatios[placeholderType];
     skeletonItem.style.setProperty('--aspect-ratio', aspectRatio);
 
-    // Add a height attribute proportional to the width and aspect ratio
-    // This ensures the skeleton maintains its height during load and doesn't jump
     skeletonItem.dataset.heightRatio = aspectRatio;
 
-    // Add a wrapper for the skeleton animation
     const skeletonWrapper = createTag('div', { class: 'skeleton-wrapper absolute-fill' });
 
-    // Add loading animation elements
     const skeletonAnimation = createTag('div', { class: 'skeleton-animation absolute-fill' });
 
     skeletonWrapper.appendChild(skeletonAnimation);
@@ -274,6 +255,13 @@ function createImageElement(imageUrl, altText) {
     loading: 'lazy',
     class: 'firefly-gallery-img absolute-fill',
   });
+}
+
+function createPlayIconElement() {
+  const wrapper = createTag('div', { class: 'firefly-gallery-play-icon' });
+  const play = createTag('img', { src: 'https://www.adobe.com/community/static/assets/play.be3b33cc9e09d6c38224.svg', alt: 'play-icon' });
+  wrapper.appendChild(play);
+  return wrapper;
 }
 
 function createOverlayElement(
@@ -302,7 +290,6 @@ function createOverlayElement(
   const contentWrapper = createTag('div', { class: 'firefly-gallery-content-wrapper' });
   const infoContainer = createTag('div', { class: 'firefly-gallery-info-container' });
 
-  // Add user info if available
   if (userInfo.name || userInfo.avatarUrl) {
     const userInfoContainer = createTag('div', { class: 'firefly-gallery-user-info' });
 
@@ -326,7 +313,6 @@ function createOverlayElement(
     infoContainer.appendChild(userInfoContainer);
   }
 
-  // Add prompt text
   if (promptText) {
     const promptElement = createTag(
       'div',
@@ -338,7 +324,6 @@ function createOverlayElement(
 
   contentWrapper.appendChild(infoContainer);
 
-  // Add View button
   const viewButton = createTag(
     'div',
     { class: 'firefly-gallery-view-button' },
@@ -361,16 +346,12 @@ function loadAssetIntoSkeleton(
 ) {
   const { id, assetType, viewBtnLabel, cgenId } = assetData;
   return new Promise((resolve) => {
-    // Create image container
     const assetContainer = createTag('div', { class: 'firefly-gallery-image' });
-
-    // Add asset type to container for styling
     if (assetType === 'video') {
-      assetContainer.classList.add('firefly-gallery-video-item');
       skeletonItem.classList.add('video-item');
+      const playIcon = createPlayIconElement();
+      assetContainer.appendChild(playIcon);
     }
-
-    // Create and append image
     const img = createImageElement(imageUrl, altText);
     assetContainer.appendChild(img);
 
@@ -413,17 +394,14 @@ function loadAssetIntoSkeleton(
           video.style.opacity = '0';
         };
 
-        // Add hover event listeners for video playback
         let hoverTimeout;
         skeletonItem.addEventListener('mouseenter', () => {
-          // Clear any existing timeout
           clearTimeout(hoverTimeout);
-          // Start video after a short delay (prevents flickering on quick mouse movements)
+          // Trigger video after a short delay to prevent flickering on quick mouse movement
           hoverTimeout = setTimeout(playVideo, 150);
         });
 
         skeletonItem.addEventListener('mouseleave', () => {
-          // Stop video when hover ends
           clearTimeout(hoverTimeout);
           pauseVideo();
         });
@@ -441,11 +419,8 @@ function loadAssetIntoSkeleton(
       assetContainer.appendChild(overlay);
     }
 
-    // Add loaded class to trigger transition
     skeletonItem.classList.add('loaded');
 
-    // Replace skeleton wrapper with actual image after animation
-    // but maintain the aspect ratio structure
     const skeletonWrapper = skeletonItem.querySelector('.skeleton-wrapper');
     if (skeletonWrapper) {
       skeletonItem.replaceChild(assetContainer, skeletonWrapper);
@@ -461,22 +436,17 @@ function loadAssetIntoSkeleton(
 }
 
 function processItem(item, asset, index, locale) {
-  // Extract aspect ratio from the asset
   const aspectRatio = extractAspectRatio(asset);
 
-  // Determine item type based on aspect ratio
   const itemType = getItemTypeFromAspectRatio(aspectRatio);
 
-  // Update the item's class to match the aspect ratio
   updateItemTypeClass(item, itemType);
 
-  // Set the exact aspect ratio as a custom property for precise sizing
   item.style.setProperty('--aspect-ratio', aspectRatio);
 
   const imageUrl = getImageRendition(asset, itemType);
   const altText = asset.title || 'Firefly generated image';
 
-  // Get localized prompt text
   let promptText = '';
   if (asset?.custom?.input?.['firefly#prompts']) {
     promptText = getLocalizedValue(
@@ -489,7 +459,6 @@ function processItem(item, asset, index, locale) {
     promptText = asset.title || 'Firefly generated image';
   }
 
-  // Get user info
   const userInfo = {};
   // eslint-disable-next-line no-underscore-dangle
   if (asset?._embedded?.owner) {
@@ -500,19 +469,16 @@ function processItem(item, asset, index, locale) {
       || owner.user_name
       || 'Unknown Artist';
 
-    // Get the user avatar image - find the one closest to 24px
     // eslint-disable-next-line no-underscore-dangle
     if (owner._links?.images && owner._links.images.length > 0) {
-      // We want an image that's at least 24px but not too much larger
-      // First sort by size to find closest match to our target 24px size
       // eslint-disable-next-line no-underscore-dangle
       const sortedImages = [...owner._links.images].sort((a, b) => {
         const aDiff = Math.abs(a.width - 24);
         const bDiff = Math.abs(b.width - 24);
-        return aDiff - bDiff; // Sort by closest to 24px
+        return aDiff - bDiff;
       });
 
-      userInfo.avatarUrl = sortedImages[0].href; // Use the closest to 24px
+      userInfo.avatarUrl = sortedImages[0].href;
     }
   }
 
@@ -540,10 +506,9 @@ function loadFireflyImages(skeletonItems, assets = []) {
       return;
     }
 
-    // Get current locale or fallback to default
     const locale = getConfig().locale?.ietf || 'en-US';
 
-    // Set up intersection observer to load images only when they're visible
+    // Load images only when they're visible
     const observer = new IntersectionObserver(
       (entries, obs) => {
         entries.forEach((entry) => {
@@ -561,17 +526,13 @@ function loadFireflyImages(skeletonItems, assets = []) {
         });
       },
       {
-        rootMargin: '200px 0px', // Start loading when within 200px of viewport
-        threshold: 0.01, // Trigger when at least 1% is visible
+        rootMargin: '200px 0px',
+        threshold: 0.01,
       },
     );
 
-    // Set up each skeleton item for observation and loading
     skeletonItems.forEach((item, index) => {
-      // Store the index as data attribute for the observer callback
       item.dataset.index = index;
-
-      // Start observing this item
       observer.observe(item);
     });
 
@@ -580,7 +541,7 @@ function loadFireflyImages(skeletonItems, assets = []) {
     for (let i = 0; i < immediateLoadCount; i += 1) {
       if (i < assets.length) {
         processItem(skeletonItems[i], assets[i], i, locale);
-        observer.unobserve(skeletonItems[i]); // Stop observing items we've already processed
+        observer.unobserve(skeletonItems[i]); // Stop observing items already processed
       }
     }
   } catch (error) { /* eslint-disable-line no-empty */ }
@@ -595,26 +556,13 @@ function getItemTypeFromClass(item) {
 
 function handleResizeForGallery(assets, skeletonItems) {
   const handleResize = debounce(() => {
-    // Column count now handled by CSS media queries automatically
-    // We only need to update image URLs
-
-    // Only update if we have both assets and skeleton items
     if (assets?.length > 0 && skeletonItems?.length > 0) {
-      // Update image URLs based on current viewport - but only for loaded images
-      // This prevents loading images that haven't been scrolled to yet
       skeletonItems.forEach((item, index) => {
         if (index >= assets.length) return;
-
-        // Only update images that are already loaded (have been scrolled to)
-        // This is determined by presence of the image element
-        const imgElement = item.querySelector('img');
+        const imgElement = item.querySelector('.firefly-gallery-img');
         if (imgElement) {
-          // Get item type from class
           const itemType = getItemTypeFromClass(item);
-
-          // Update src with new rendition size
           const newSrc = getImageRendition(assets[index], itemType);
-          // Only update if URL changed (prevents unnecessary reloads)
           if (newSrc !== imgElement.src) {
             imgElement.src = newSrc;
           }
@@ -628,7 +576,6 @@ function handleResizeForGallery(assets, skeletonItems) {
 
 export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
-
   // Extract category_id - should be text2Image / VideoGeneration
   const [categoryId, cgenId] = el.querySelector('div:first-child > div').innerText.split('|').map((i) => i.trim());
   const viewBtnLabel = el.querySelector('div:last-child > div').innerText || 'View';
@@ -645,22 +592,14 @@ export default async function init(el) {
   // Replace block content with our gallery structure
   el.appendChild(container);
 
-  // Allow the skeleton UI to render and be scrollable
-  // before waiting for image data
-  // Load Firefly images
+  // Allow UI to be scrollable before waiting for image data
   fetchFireflyAssets(categoryId, viewBtnLabel, cgenId)
     .then((assets) => {
       if (assets && assets.length) {
-        // Pass assets to the function to enable progressive loading
         loadFireflyImages(skeletonItems, assets);
-
-        // Set up resize handler for responsive image sizes
         handleResizeForGallery(assets, skeletonItems);
-
-        // Remove loading class after initial items are loaded
         masonryGrid.classList.remove('loading');
       } else {
-        // Remove loading state if no assets found
         masonryGrid.classList.remove('loading');
       }
     })
