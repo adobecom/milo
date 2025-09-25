@@ -150,44 +150,10 @@ export class FullPricingExpress extends VariantLayout {
         if (!this.card || this.card.failed) {
             return;
         }
-
-        this.boundPostCardUpdateHook = this.postCardUpdateHook.bind(this);
-
-        window.addEventListener('resize', this.boundPostCardUpdateHook);
-
-        setTimeout(async () => {
-            this.setupVisibilityDetection();
-            if (!isMobile()) {
-                const container = this.getContainer();
-                if (container) {
-                    await this.syncAllCardsInContainer();
-                }
-            }
-        }, 100);
     }
 
-    setupVisibilityDetection() {
-        this.visibilityObserver = createCardVisibilityObserver(async (entry) => {
-            if (!isMobile()) {
-                const container = this.getContainer();
-                if (container) {
-                    await this.syncAllCardsInContainer();
-                }
-            }
-        });
-
-        this.visibilityObserver.observe(this.card);
-    }
 
     disconnectedCallbackHook() {
-        if (this.boundPostCardUpdateHook) {
-            window.removeEventListener('resize', this.boundPostCardUpdateHook);
-        }
-
-        if (this.visibilityObserver) {
-            this.visibilityObserver.disconnect();
-            this.visibilityObserver = null;
-        }
     }
 
     renderLayout() {

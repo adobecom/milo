@@ -57,6 +57,14 @@ function registerPriceOptionsProvider(masCommerceService) {
     masCommerceService.providers.price(priceOptionsProvider);
 }
 
+const intersectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.target.clientHeight === 0) return;
+    intersectionObserver.unobserve(entry.target);
+    entry.target.requestUpdate();
+  });
+});
+
 let idCounter = 0;
 
 export class MerchCard extends LitElement {
@@ -533,6 +541,9 @@ export class MerchCard extends LitElement {
       if (!this.isConnected) return;
         if (this.#hydrationPromise) {
           await this.#hydrationPromise;
+          if (this.variantLayout === 'full-pricing-express' || this.variantLayout === 'simplified-pricing-express') {
+            intersectionObserver.observe(this);
+          }
           this.#hydrationPromise = undefined;
         }
         if (this.variantLayoutPromise) {
