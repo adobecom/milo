@@ -1345,4 +1345,8 @@
   .aside.container-mobile.media-top-mobile.rounded-corners .foreground.container [class="image"] {
     padding-top: var(--spacing-xs);
   }
+
+  .aside.container-mobile.rounded-corners .foreground.container .image .milo-video iframe {
+    border-radius:16px;
+  }
 }
