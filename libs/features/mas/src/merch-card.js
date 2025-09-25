@@ -42,6 +42,8 @@ const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
+const VARIANTS_WITH_HEIGHT_SYNC = ['full-pricing-express', 'simplified-pricing-express'];
+
 function priceOptionsProvider(element, options) {
     const card = element.closest(MERCH_CARD);
     if (!card) return options;
@@ -541,7 +543,7 @@ export class MerchCard extends LitElement {
       if (!this.isConnected) return;
         if (this.#hydrationPromise) {
           await this.#hydrationPromise;
-          if (this.variantLayout === 'full-pricing-express' || this.variantLayout === 'simplified-pricing-express') {
+          if (VARIANTS_WITH_HEIGHT_SYNC.includes(this.variantLayout)) {
             intersectionObserver.observe(this);
           }
           this.#hydrationPromise = undefined;
