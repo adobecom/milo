@@ -1,29 +1,47 @@
+import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import sinon, { stub } from 'sinon';
-import { delay } from '../../helpers/waitfor.js';
 import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL, FORM_PARAM } from '../../../libs/blocks/marketo/marketo.js';
+import init, { setPreferences, decorateURL, FORM_PARAM, handleIframeTimeout } from '../../../libs/blocks/marketo/marketo.js';
 
-const innerHTML = await readFile({ path: './mocks/body.html' });
-window.lana = { log: stub() };
+const ogFetch = window.fetch;
+const blockHTML = await readFile({ path: './mocks/block.html' });
+const onePage = await readFile({ path: './mocks/one-page-experience.html' });
+const config = {
+  codeRoot: '/test/blocks/marketo/mocks',
+  marketo: {
+    iframeTimeout: 3000,
+    showError: true,
+  },
+};
 
 describe('marketo', () => {
+  let clock;
+
   beforeEach(() => {
-    document.body.innerHTML = innerHTML;
+    clock = sinon.useFakeTimers();
+    window.lana = { log: sinon.spy() };
+    document.body.innerHTML = blockHTML;
   });
 
   afterEach(() => {
+    clock.restore();
+    sinon.restore();
     window.mcz_marketoForm_pref = undefined;
   });
 
+  const tick = async (ms) => {
+    clock.tick(ms);
+    await clock.nextAsync();
+  };
+
   it('hides form if no data url', async () => {
-    document.body.innerHTML = innerHTML;
+    document.body.innerHTML = blockHTML;
     const el = document.querySelector('.marketo');
     el.querySelector('a').remove();
 
     init(el);
-    await delay(10);
+    await tick(10);
     expect(el.style.display).to.equal('none');
   });
 
@@ -35,6 +53,7 @@ describe('marketo', () => {
 
     setPreferences(formData);
 
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('pending');
     expect(window.mcz_marketoForm_pref).to.have.property('first');
     expect(window.mcz_marketoForm_pref.first).to.have.property('key');
     expect(window.mcz_marketoForm_pref.first.key).to.equal('value1');
@@ -107,8 +126,6 @@ describe('marketo decorateURL', () => {
   });
 });
 
-const onePage = await readFile({ path: './mocks/one-page-experience.html' });
-
 describe('Marketo ungated one page experience', () => {
   let url;
   let clock;
@@ -169,5 +186,80 @@ describe('Marketo ungated one page experience', () => {
     clock.runAll();
     expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');
     expect(window.lana.log.args[1][0]).to.equal('Error hiding Marketo success section');
+  });
+});
+
+describe('Marketo Iframe Timeout Handler', () => {
+  let clock;
+  let marketoBlock;
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+    window.fetch = sinon.stub();
+    setConfig(config);
+    document.body.innerHTML = blockHTML;
+    marketoBlock = document.querySelector('.marketo');
+    if (!marketoBlock.parentNode) document.body.appendChild(marketoBlock);
+    const iframe = document.createElement('iframe');
+    iframe.src = '/index.php/form/XDFrame';
+    marketoBlock.appendChild(iframe);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+    clock.restore();
+    window.fetch = ogFetch;
+  });
+
+  const tick = async (ms) => {
+    clock.tick(ms);
+    await clock.nextAsync();
+  };
+
+  it('shows overlay on timeout', async () => {
+    handleIframeTimeout(marketoBlock);
+    await tick(5000);
+
+    const overlay = marketoBlock.querySelector('.marketo-overlay');
+    const errorMsg = marketoBlock.querySelector('.error');
+
+    expect(overlay).to.exist;
+    expect(errorMsg.textContent).to.equal('marketo load error');
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('error');
+  });
+
+  it('removes overlay when iframe is ready', async () => {
+    handleIframeTimeout(marketoBlock);
+    await tick(5000);
+
+    expect(marketoBlock.querySelector('.marketo-overlay')).to.exist;
+
+    window.dispatchEvent(new MessageEvent('message', {
+      origin: 'https://engage.adobe.com',
+      data: JSON.stringify({ mktoReady: true }),
+    }));
+    await tick(200);
+
+    expect(marketoBlock.querySelector('.marketo-overlay')).to.not.exist;
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('ready');
+  });
+
+  it('retry with success', async () => {
+    handleIframeTimeout(marketoBlock);
+    await tick(5000);
+
+    const overlay = marketoBlock.querySelector('.marketo-overlay');
+    expect(overlay).to.exist;
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('error');
+    overlay.querySelector('button').click();
+
+    window.dispatchEvent(new MessageEvent('message', {
+      origin: 'https://engage.adobe.com',
+      data: JSON.stringify({ mktoReady: true }),
+    }));
+
+    await tick(500);
+    expect(marketoBlock.querySelector('.marketo-overlay')).to.not.exist;
+    expect(window.mcz_marketoForm_pref.form.status).to.equal('ready');
   });
 });

@@ -1,5 +1,7 @@
-import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
-import { decorateBlockBg, decorateBlockText, decorateBlockHrs, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
+import { createTag, loadStyle, getConfig } from '../../../utils/utils.js';
+import { getMetadata } from '../../../blocks/section-metadata/section-metadata.js';
+import { decorateDefaultLinkAnalytics } from '../../../martech/attributes.js';
+import { decorateBlockBg, decorateBlockText, decorateBlockHrs, decorateTextOverrides, applyHoverPlay } from '../../../utils/decorate.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -89,27 +91,28 @@ function handleClickableCard(el) {
   }
 }
 
-function handleOpenClasses(el, hasOpenClass) {
-  const baseOpenClasses = ['l-rounded-corners-image', 'static-links-copy'];
-  if (hasOpenClass) el.classList.add(...baseOpenClasses, 'no-border');
+/* #mweb Hide show more button functionality */
+function getShowMoreButtonContent() {
+  return 'See more features <span class="show-more-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none"><path d="M12 24.24C5.38258 24.24 0 18.8574 0 12.24C0 5.62257 5.38258 0.23999 12 0.23999C18.6174 0.23999 24 5.62257 24 12.24C24 18.8574 18.6174 24.24 12 24.24ZM12 2.29713C6.51696 2.29713 2.05714 6.75695 2.05714 12.24C2.05714 17.723 6.51696 22.1828 12 22.1828C17.483 22.1828 21.9429 17.723 21.9429 12.24C21.9429 6.75695 17.483 2.29713 12 2.29713Z" fill="#292929"/><path d="M16.5504 11.1884H13.0504V7.68843C13.0504 7.10874 12.5801 6.63843 12.0004 6.63843C11.4207 6.63843 10.9504 7.10874 10.9504 7.68843V11.1884H7.45039C6.87071 11.1884 6.40039 11.6587 6.40039 12.2384C6.40039 12.8181 6.87071 13.2884 7.45039 13.2884H10.9504V16.7884C10.9504 17.3681 11.4207 17.8384 12.0004 17.8384C12.5801 17.8384 13.0504 17.3681 13.0504 16.7884V13.2884H16.5504C17.1301 13.2884 17.6004 12.8181 17.6004 12.2384C17.6004 11.6587 17.1301 11.1884 16.5504 11.1884Z" fill="#292929"/></svg></span>';
+}
 
-  if (!el.closest('.carousel.ups-desktop')) return;
+function handleShowMoreButton(section) {
+  const showMoreBtn = section.querySelector('.show-more-button button');
+  if (!showMoreBtn) return;
 
-  const isCarouselDesktop = window.matchMedia('(min-width: 900px)');
-  const toggleOpenClasses = () => {
-    if (isCarouselDesktop.matches) el.classList.add(...baseOpenClasses, 'no-bg');
-    else el.classList.remove(...baseOpenClasses, 'no-bg');
-  };
+  showMoreBtn.innerHTML = getShowMoreButtonContent();
+  showMoreBtn.setAttribute('aria-label', 'See more');
 
-  toggleOpenClasses();
-  isCarouselDesktop.addEventListener('change', toggleOpenClasses);
+  showMoreBtn.addEventListener('click', () => {
+    section.classList.add('show-all');
+    section.querySelector('.show-more-button').remove(); // Remove the entire show-more-button div
+  });
 }
 
 const init = async (el) => {
   el.classList.add('con-block');
   const hasOpenClass = el.className.includes('open');
-  handleOpenClasses(el, hasOpenClass);
-
+  if (hasOpenClass) el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
   if (el.className.includes('rounded-corners')) loadStyle(`${base}/styles/rounded-corners.css`);
   if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
@@ -159,6 +162,24 @@ const init = async (el) => {
   extendDeviceContent(el);
   decorateTextOverrides(el);
   handleClickableCard(el);
+
+  // ##mweb Add show more button for mobile view if needed
+  const section = el.closest('.section');
+  if (section) {
+    const elem = section.querySelector('.section-metadata');
+    const metadata = getMetadata(elem);
+    const hideShowButton = metadata['hide-show-button']?.text === 'on';
+    const cards = section.querySelectorAll('.editorial-card');
+    const existingShowMoreButton = section.querySelector('.show-more-button');
+    if (hideShowButton && cards.length > 3 && !existingShowMoreButton) {
+      const showMoreButton = createTag('div', { class: 'show-more-button' });
+      const button = createTag('button', {}, '');
+      showMoreButton.append(button);
+      section.append(showMoreButton);
+      handleShowMoreButton(section);
+      decorateDefaultLinkAnalytics(showMoreButton);
+    }
+  }
 };
 
 export default init;

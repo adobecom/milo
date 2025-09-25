@@ -1,4 +1,4 @@
-import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP, TABLET_DOWN } from '../media.js';
+import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 302px;
@@ -222,7 +222,6 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
         max-width: var(--consonant-merch-card-plans-students-width);
         width: 100%;
     }
-
     merch-card[variant="plans-education"] .spacer {
         height: 0px;
     }
@@ -280,6 +279,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 }
 
 /* Tabs containers */
+
 #tabs-plan {
     --tabs-active-text-color: #131313;
     --tabs-border-color: #444444;
@@ -297,7 +297,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     .four-merch-cards.plans .foreground {
         max-width: unset;
     }
-  
+
     .columns.merch-card > .row {
         grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width) * 2 + var(--consonant-merch-spacing-m)));
     }
@@ -306,11 +306,11 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 /* desktop */
 @media screen and ${DESKTOP_UP} {
     :root {
-            --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-plans-width: 276px;
     }
 
     merch-sidenav.plans {
-            --merch-sidenav-collection-gap: 30px;
+        --merch-sidenav-collection-gap: 30px;
     }
 
     .columns .four-merch-cards.plans {

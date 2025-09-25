@@ -48,23 +48,23 @@ export default class MerchIcon extends LitElement {
             }
             
             if (content) {
-                const masTooltip = document.createElement('mas-tooltip');
-                masTooltip.setAttribute('content', content);
-                masTooltip.setAttribute('placement', placement);
+                const masMnemonic = document.createElement('mas-mnemonic');
+                masMnemonic.setAttribute('content', content);
+                masMnemonic.setAttribute('placement', placement);
                 
                 const img = this.querySelector('img');
                 const link = this.querySelector('a');
                 
                 if (link && link.contains(img)) {
-                    masTooltip.appendChild(link);
+                    masMnemonic.appendChild(link);
                 } else if (img) {
-                    masTooltip.appendChild(img);
+                    masMnemonic.appendChild(img);
                 }
                 
                 this.innerHTML = '';
-                this.appendChild(masTooltip);
+                this.appendChild(masMnemonic);
                 
-                import('./mas-tooltip.js');
+                import('./mas-mnemonic.js');
             }
             
             element.remove();
