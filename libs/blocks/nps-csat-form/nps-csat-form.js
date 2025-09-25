@@ -231,7 +231,7 @@ export default async (block) => {
     ?.nextElementSibling
     ?.textContent).map((x) => !!x ? x : null); // eslint-disable-line
   const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.get('source_color_theme').toLowerCase() === 'dark') {
+  if (searchParams.get('source_color_theme')?.toLowerCase() === 'dark') {
     block.classList.add('dark');
   }
   const radioGroupList = (() => {
