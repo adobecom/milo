@@ -350,16 +350,19 @@ function processDescriptionLinks(merchCard, aemFragmentMapping) {
 }
 
 export function processDescription(fields, merchCard, mapping) {
-    // Process tooltips in description field
     if (fields.description) {
         fields.description = processMnemonicElements(fields.description);
     }
     if (fields.promoText) {
         fields.promoText = processMnemonicElements(fields.promoText);
     }
+    if (fields.shortDescription) {
+        fields.shortDescription = processMnemonicElements(fields.shortDescription);
+    }
     
     appendSlot('promoText', fields, merchCard, mapping);
     appendSlot('description', fields, merchCard, mapping);
+    appendSlot('shortDescription', fields, merchCard, mapping);
     processDescriptionLinks(merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);

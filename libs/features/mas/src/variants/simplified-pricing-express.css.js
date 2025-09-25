@@ -36,6 +36,37 @@ merch-card-collection.simplified-pricing-express p {
         max-width: calc(3 * var(--merch-card-simplified-pricing-express-width) + 32px);
         margin: 0 auto;
     }
+
+    /* Apply synchronized heights to slots using CSS variables */
+    merch-card[variant="simplified-pricing-express"] [slot="body-xs"] {
+        min-height: var(--consonant-merch-card-simplified-pricing-express-description-height);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Push paragraph with mnemonics to the bottom using :has() */
+    merch-card[variant="simplified-pricing-express"] [slot="body-xs"] p:has(mas-mnemonic) {
+        margin-top: auto;
+        padding-top: 16px;
+    }
+
+    /* Fallback for browsers without :has() support - target last paragraph */
+    @supports not selector(:has(*)) {
+        merch-card[variant="simplified-pricing-express"] [slot="body-xs"] p:last-child {
+            margin-top: auto;
+            padding-top: 16px;
+        }
+    }
+
+    /* Additional fallback - if second paragraph exists, assume it has mnemonics */
+    merch-card[variant="simplified-pricing-express"] [slot="body-xs"] p:nth-child(2) {
+        margin-top: auto;
+        padding-top: 16px;
+    }
+
+    merch-card[variant="simplified-pricing-express"] [slot="price"] {
+        min-height: var(--consonant-merch-card-simplified-pricing-express-price-height);
+    }
 }
 
 merch-card[variant="simplified-pricing-express"] p {
@@ -55,6 +86,7 @@ merch-card[variant="simplified-pricing-express"] [slot="body-xs"] {
     line-height: var(--merch-card-simplified-pricing-express-body-xs-line-height, 18.2px);
     color: var(--spectrum-gray-700);
     margin-bottom: 32px;
+    justify-content: space-between;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] {
