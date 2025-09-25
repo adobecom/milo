@@ -1,7 +1,7 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './simplified-pricing-express.css.js';
-import { isDesktop } from '../media.js';
+import { isDesktop, TABLET_DOWN } from '../media.js';
 import { createCardVisibilityObserver } from '../utils.js';
 
 export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
