@@ -308,6 +308,7 @@
 .nps-csat-form.dark .nps-feedback-area textarea {
   background-color: #111;
   border-color: #393939;
+  color: #DBDBDB;
 }
 .nps-csat-form.dark .nps-feedback-area textarea::placeholder {
   color: #DBDBDB;
