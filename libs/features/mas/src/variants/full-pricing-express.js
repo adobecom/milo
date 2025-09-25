@@ -485,6 +485,7 @@ export class FullPricingExpress extends VariantLayout {
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-start;
+                margin-bottom: 24px;
             }
 
             /* Short-description container styling */

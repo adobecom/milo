@@ -332,7 +332,6 @@ merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template
 /* CTA button styling */
 merch-card[variant="full-pricing-express"] [slot="cta"] {
     width: 100%;
-    margin-bottom: var(--merch-card-full-pricing-express-section-gap);
     display: flex;
     flex-direction: column;
     gap: 12px;
