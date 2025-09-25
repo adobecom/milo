@@ -38,26 +38,21 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
       if (data.badge) {
         await expect(card.badge).toContainText(data.badge);
       }
+      await expect(card.shortDescriptionText).toContainText(data.shortDescription);
       await expect(card.descriptionText).toContainText(data.description);
-      // Check price contains the essential text, ignoring whitespace
       const priceText = await card.price.textContent();
       expect(priceText.replace(/\s+/g, '')).toContain(data.price.replace(/\s+/g, ''));
       await expect(card.priceNote).toContainText(data.priceNote);
       await expect(card.ctaButton).toContainText(data.cta);
     });
 
-    await test.step('step-3: Verify features section (description2)', async () => {
+    await test.step('step-3: Verify features section', async () => {
       const card = new FullPricingExpressCard(page, data.id);
 
-      await expect(card.topFeaturesLabel).toContainText(data.features.topFeatures);
+      const bodyText = await card.description.textContent();
+      expect(bodyText).toContain('Top features:');
+      expect(bodyText).toContain(data.features.includesText);
 
-      // Check that divider wrappers exist in the DOM
-      const dividerWrappers = await card.description2.locator('.divider-wrapper').count();
-      expect(dividerWrappers).toBe(2);
-
-      await expect(card.includesText).toContainText(data.features.includesText);
-
-      // Verify some key features are present
       const featuresList = await card.getFeaturesList();
       expect(featuresList.length).toBeGreaterThan(0);
 
@@ -66,9 +61,8 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
         expect(found).toBeTruthy();
       }
 
-      // Verify the second divider wrapper exists and contains compare link
-      await expect(card.secondDividerWrapper).toHaveCount(1);
-      await expect(card.compareLink).toContainText(data.compareLink);
+      const compareLinks = await card.description.locator('a:has-text("Compare all features")').count();
+      expect(compareLinks).toBeGreaterThan(0);
     });
 
     await test.step('step-4: Verify accessibility', async () => {
@@ -99,7 +93,6 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
 
       await expect(card.title).toContainText(data.title);
 
-      // Check for mnemonic icon if present
       if (data.hasMnemonic) {
         expect(await card.hasMnemonicIcon()).toBeTruthy();
       }
@@ -107,8 +100,8 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
       if (data.badge) {
         await expect(card.badge).toContainText(data.badge);
       }
+      await expect(card.shortDescriptionText).toContainText(data.shortDescription);
       await expect(card.descriptionText).toContainText(data.description);
-      // Check price contains the essential text, ignoring whitespace
       const priceText = await card.price.textContent();
       expect(priceText.replace(/\s+/g, '')).toContain(data.price.replace(/\s+/g, ''));
       await expect(card.priceNote).toContainText(data.priceNote);
@@ -120,29 +113,25 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
     await test.step('step-3: Verify features section with expanded content', async () => {
       const card = new FullPricingExpressCard(page, data.id);
 
-      await expect(card.topFeaturesLabel).toContainText(data.features.topFeatures);
-
-      // Check viewport to determine divider visibility expectations
-      // const viewportWidth = page.viewportSize().width;
-
-      await expect(card.includesText).toContainText(data.features.includesText);
+      const bodyText = await card.description.textContent();
+      expect(bodyText).toContain('Top features:');
+      expect(bodyText).toContain(data.features.includesText);
 
       const featuresList = await card.getFeaturesList();
-      expect(featuresList.length).toBeGreaterThan(5); // Premium has more features
+      expect(featuresList.length).toBeGreaterThan(5);
 
-      await expect(card.compareLink).toContainText(data.compareLink);
+      const compareLinks = await card.description.locator('a:has-text("Compare all features")').count();
+      expect(compareLinks).toBeGreaterThan(0);
     });
 
     await test.step('step-4: Verify card structure', async () => {
       const card = new FullPricingExpressCard(page, data.id);
 
-      // Verify the card has proper variant attribute
       const variant = await card.variant();
       expect(variant).toBe('full-pricing-express');
 
-      // Verify description2 has expected structure
-      const description2Count = await card.description2.count();
-      expect(description2Count).toBe(1);
+      const descriptionCount = await card.description.count();
+      expect(descriptionCount).toBe(1);
     });
 
     await test.step('step-5: Verify accessibility', async () => {
@@ -175,8 +164,8 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
       if (data.badge) {
         await expect(card.badge).toContainText(data.badge);
       }
+      await expect(card.shortDescriptionText).toContainText(data.shortDescription);
       await expect(card.descriptionText).toContainText(data.description);
-      // Check price contains the essential text, ignoring whitespace
       const priceText = await card.price.textContent();
       expect(priceText.replace(/\s+/g, '')).toContain(data.price.replace(/\s+/g, ''));
       await expect(card.priceNote).toContainText(data.priceNote);
@@ -189,17 +178,14 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
     await test.step('step-3: Verify mobile view behavior', async () => {
       const card = new FullPricingExpressCard(page, data.id);
 
-      // Switch to mobile viewport
       await page.setViewportSize({ width: 375, height: 812 });
       await page.waitForTimeout(500);
 
       const mobileCheck = await card.checkMobileView();
       expect(mobileCheck.isMobile).toBeTruthy();
 
-      // On mobile, only last divider and button should be visible in description2
       expect(mobileCheck.buttonVisible).toBeTruthy();
 
-      // Switch back to desktop
       await page.setViewportSize({ width: 1920, height: 1080 });
       await page.waitForTimeout(500);
     });
@@ -207,13 +193,8 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
     await test.step('step-4: Verify divider structure', async () => {
       const card = new FullPricingExpressCard(page, data.id);
 
-      // Check that divider wrappers exist in the DOM
-      const dividerWrappers = await card.description2.locator('.divider-wrapper').count();
-      expect(dividerWrappers).toBe(2);
-
-      // Check divider wrappers exist
-      await expect(card.firstDividerWrapper).toHaveCount(1);
-      await expect(card.secondDividerWrapper).toHaveCount(1);
+      const hrElements = await card.description.locator('hr').count();
+      expect(hrElements).toBe(2);
     });
 
     await test.step('step-5: Verify accessibility', async () => {
@@ -247,7 +228,6 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
       const cardCount = await cards.count();
       expect(cardCount).toBeGreaterThan(0);
 
-      // Check that all cards have the same variant
       for (let i = 0; i < cardCount; i++) {
         const card = cards.nth(i);
         const variant = await card.getAttribute('variant');
@@ -258,7 +238,6 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
     await test.step('step-4: Verify CSS variables are set for alignment', async () => {
       const collection = page.locator('merch-card-collection.full-pricing-express');
 
-      // Wait for alignment to be calculated
       await page.waitForTimeout(500);
 
       const styles = await collection.evaluate((el) => {
@@ -270,7 +249,6 @@ test.describe('MAS Full Pricing Express Cards test suite', () => {
         };
       });
 
-      // Check that variables exist (they may be empty or have values)
       expect(styles).toBeDefined();
     });
   });

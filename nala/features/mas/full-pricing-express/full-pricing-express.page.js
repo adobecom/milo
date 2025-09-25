@@ -14,7 +14,11 @@ export default class FullPricingExpressCard {
     this.title = this.card.locator('[slot="heading-xs"]');
     this.titleMnemonic = this.title.locator('mas-mnemonic');
 
-    // Body/Description
+    // Short Description (main description)
+    this.shortDescription = this.card.locator('[slot="short-description"]');
+    this.shortDescriptionText = this.shortDescription.locator('p').first();
+
+    // Body/Description (Top features section)
     this.description = this.card.locator('[slot="body-s"]');
     this.descriptionText = this.description.locator('p').first();
 
@@ -26,22 +30,22 @@ export default class FullPricingExpressCard {
     this.priceNote = this.priceContainer.locator('p').nth(1);
     this.priceAdditionalNote = this.priceContainer.locator('p').nth(2);
 
-    // Description2 slot (features section)
-    this.description2 = this.card.locator('[slot="description2"]');
-    this.topFeaturesLabel = this.description2.locator('p').first();
-    this.firstDividerWrapper = this.description2.locator('.divider-wrapper').first();
-    this.firstDivider = this.firstDividerWrapper.locator('sp-divider');
-    // After the first divider-wrapper, the includes text is the next p element
-    this.includesText = this.description2.locator('p:has-text("Includes")');
-    this.featureParagraphs = this.description2.locator('p');
-    this.secondDividerWrapper = this.description2.locator('.divider-wrapper').last();
-    this.secondDivider = this.secondDividerWrapper.locator('sp-divider');
-    this.buttonContainer = this.description2.locator('.button-container');
-    this.compareLink = this.buttonContainer.locator('a');
+    // Features are in the body-s slot for full-pricing-express
+    this.description2 = this.card.locator('[slot="body-s"]');  // Point to body-s for compatibility
+    this.topFeaturesLabel = this.description.locator('p').first();
+    this.firstDividerWrapper = this.description.locator('hr').first();
+    this.firstDivider = this.firstDividerWrapper;
+    // After the first divider, the includes text is the next p element
+    this.includesText = this.description.locator('p:has-text("Includes")');
+    this.featureParagraphs = this.description.locator('p');
+    this.secondDividerWrapper = this.description.locator('hr').last();
+    this.secondDivider = this.secondDividerWrapper;
+    this.buttonContainer = this.description;
+    this.compareLink = this.description.locator('a:has-text("Compare all features")');
 
     // CTA elements
     this.ctaContainer = this.card.locator('[slot="cta"]');
-    this.ctaButton = this.ctaContainer.locator('a[is="checkout-link"]');
+    this.ctaButton = this.ctaContainer.locator('button[is="checkout-button"]');
 
     // Card attributes
     this.gradientBorder = async () => this.card.getAttribute('gradient-border');
@@ -86,8 +90,8 @@ export default class FullPricingExpressCard {
     const viewportWidth = this.page.viewportSize().width;
 
     if (viewportWidth < 768) {
-      // On mobile, check that only last divider and button are visible
-      const dividers = await this.description2.locator('.divider-wrapper').all();
+      // On mobile, check dividers and button visibility in body-s
+      const dividers = await this.description.locator('hr').all();
       const visibleDividers = [];
 
       for (const divider of dividers) {

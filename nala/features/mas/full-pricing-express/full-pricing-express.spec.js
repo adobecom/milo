@@ -9,9 +9,10 @@ module.exports = {
       path: '/libs/features/mas/docs/express.html',
       data: {
         id: '53fcf015-5c28-4214-bd2b-d4c22f1774b8',
-        title: 'Free Plan',
+        title: 'Adobe Express Free',
         badge: '', // No badge for free card
-        description: 'For individuals who want basic content creation tools, limited generative AI credits and assets.',
+        shortDescription: 'For students who want basic content creation tools, limited generative AI credits and assets.',
+        description: 'Top features:',
         price: 'US$9.99/mo',
         priceNote: 'Free to use. No credit card required.',
         cta: 'Get free plan',
@@ -38,10 +39,11 @@ module.exports = {
       path: '/libs/features/mas/docs/express.html',
       data: {
         id: '025dfceb-c035-45b7-8ea1-8feed25c8009',
-        title: 'Premium Plan',
+        title: 'Adobe Express Premium',
         badge: '', // No badge for premium card
         hasMnemonic: true,
-        description: 'For individuals who want millions of premium templates and assets, more generative AI credits, and time saving features.',
+        shortDescription: 'For individuals who want millions of premium templates and assets, more generative AI credits, and time saving features.',
+        description: 'Top features:',
         price: 'US$9.99/mo',
         priceNote: 'No annual commitment, billed monthly.',
         cta: 'Start 30-day free trial',
@@ -70,9 +72,10 @@ module.exports = {
       path: '/libs/features/mas/docs/express.html',
       data: {
         id: '9406f1ae-7bee-48c3-9892-49af6816033e',
-        title: 'Pro Plan',
-        badge: 'Best Value',
-        description: 'For individuals who want Premium plus 4,000 credits for creative AI and advanced image editing.',
+        title: 'Adobe Firefly Pro',
+        badge: 'Best value',
+        shortDescription: 'For individuals who want Adobe Express Premium plus 4,000 credits for creative AI and Adobe Photoshop on web and mobile for advanced image editing.',
+        description: 'Top features:',
         price: 'US$9.99',
         priceNote: 'No annual commitment, billed monthly.',
         cta: 'Start 7-day free trial',
