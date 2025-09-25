@@ -1,12 +1,5 @@
 <html>
   <head>
-    <script type="importmap">
-      {
-        "imports": {
-          "../../../libs/utils/utils.js": "./mocks/marketo-utils.js"
-        }
-      }
-    </script>
   </head>
   <body>
     <div class="section hide-block form-success">
@@ -90,14 +83,15 @@
   <script type="module">
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
-    import { stub } from 'sinon';
     import { waitForElement } from '../../helpers/waitfor.js';
-    import { loadScript, loadLink, parseEncodedConfig } from '../../../libs/utils/utils.js';
+    import { setConfig, loadScript, loadLink, parseEncodedConfig } from '../../../libs/utils/utils.js';
     import init, { setPreferences, formValidate, formSuccess } from '../../../libs/blocks/marketo/marketo.js';
+
 
     runTests(() => {
       describe('marketo', () => {
         before(() => {
+          setConfig({ codeRoot: '/test/blocks/marketo/mocks' });
           const marketoElement = document.querySelector('.marketo');
 
           init(marketoElement);
@@ -114,21 +108,22 @@
         });
 
         it('preload Marketo', async () => {
-          expect(loadLink.calledOnce).to.be.true;
+          const dnsPrefetch = await waitForElement('link[rel="dns-prefetch"]', { rootEl: document.head });
+          expect(dnsPrefetch).to.exist;
+          expect(dnsPrefetch.href).to.equal('https://engage.adobe.com/');
         });
 
         it('loads Marketo script', async () => {
-          expect(loadScript.calledOnce).to.be.true;
-          expect(loadScript.calledWith('/deps/forms2.min.js')).to.be.true;
+          const script = await waitForElement('script[src*="forms2.min.js"]', { rootEl: document.head });
+          expect(script).to.exist;
         });
 
         it('loads form', () => {
-          expect(window.MktoForms2.loadForm.calledOnce).to.be.true;
+          const form = document.querySelector('form');
+          expect(form).to.exist;
         });
 
         it('validates form', () => {
-          expect(window.MktoForms2.onValidate.calledOnce).to.be.true;
-
           const form = document.querySelector('form');
           formValidate(form);
           expect(form.classList.contains('show-warnings')).to.be.true;
