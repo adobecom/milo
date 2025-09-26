@@ -1,5 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
+import { postProcessAutoblock, handleCustomAnalyticsEvent, enableMasDefaults } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import {
@@ -226,6 +226,7 @@ export async function createCollection(el, options) {
 }
 
 export default async function init(el) {
+  enableMasDefaults();
   let options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
   if (!options.fragment) return;
   enableModalOpeningOnPageLoad();

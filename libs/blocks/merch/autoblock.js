@@ -102,3 +102,9 @@ export async function postProcessAutoblock(autoblockEl, isCard = false) {
   });
   return Promise.allSettled(processPromises);
 }
+
+export function enableMasDefaults() {
+  if (!document.head.querySelector('meta[name="mas-ff-defaults"]')) {
+    document.head.append(createTag('meta', { name: 'mas-ff-defaults', content: 'on' }));
+  }
+}

@@ -1,7 +1,7 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
-import { postProcessAutoblock } from '../merch/autoblock.js';
+import { postProcessAutoblock, enableMasDefaults } from '../merch/autoblock.js';
 import {
   initService,
   getOptions,
@@ -70,6 +70,7 @@ export async function createCard(el, options) {
 }
 
 export default async function init(el) {
+  enableMasDefaults();
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return;
