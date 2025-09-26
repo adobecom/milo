@@ -84,7 +84,20 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       });
       tableChild.classList.add('table-column-header');
     }
-    if (index > 0) tableChild.classList.add('table-row');
+    if (index > 0) {
+      const children = Array.from(tableChild.children);
+      if (children.length > 0) {
+        children[0].classList.add('table-row-header');
+      }
+      if (children.length > 1) {
+        const container = createTag('div', { class: 'table-cell-container' });
+        tableChild.appendChild(container);
+        children.slice(1).forEach((child) => {
+          container.appendChild(child);
+        });
+      }
+      tableChild.classList.add('table-row');
+    }
   });
   el.appendChild(tableContainer).append(...tableChildren);
 }
