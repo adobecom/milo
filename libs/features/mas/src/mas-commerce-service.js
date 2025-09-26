@@ -89,7 +89,7 @@ export class MasCommerceService extends HTMLElement {
     get featureFlags() {
         if (!this.#featureFlags) {
             this.#featureFlags = {
-                [FF_DEFAULTS]: this.#getFeatureFlag(FF_DEFAULTS),
+                [FF_DEFAULTS]: this.#getFeatureFlag(FF_DEFAULTS) || !!document.querySelector('merch-card,merch-card-collection')
             };
         }
         return this.#featureFlags;

@@ -1,4 +1,4 @@
-import { decorateLinks, loadBlock, localizeLink, createTag } from '../../utils/utils.js';
+import { decorateLinks, loadBlock, localizeLink } from '../../utils/utils.js';
 import { addAriaLabelToCta } from './merch.js';
 
 export function localizePreviewLinks(el) {
@@ -105,6 +105,6 @@ export async function postProcessAutoblock(autoblockEl, isCard = false) {
 
 export function enableMasDefaults() {
   if (!document.head.querySelector('meta[name="mas-ff-defaults"]')) {
-    document.head.append(createTag('meta', { name: 'mas-ff-defaults', content: 'on' }));
+    // document.head.append(createTag('meta', { name: 'mas-ff-defaults', content: 'on' }));
   }
 }
