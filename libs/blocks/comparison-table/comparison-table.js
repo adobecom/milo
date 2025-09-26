@@ -76,8 +76,46 @@ function decorateHeader(headerContent) {
   });
 }
 
+function addTableClassesAndAppend(el, tableContainer, tableChildren) {
+  tableChildren.forEach((tableChild, index) => {
+    if (index === 0) {
+      Array.from(tableChild.children).forEach((child) => {
+        if (!child.textContent.trim()) child.remove();
+      });
+      tableChild.classList.add('table-column-header');
+    }
+    if (index > 0) tableChild.classList.add('table-row');
+  });
+  el.appendChild(tableContainer).append(...tableChildren);
+}
+
+function decorateTables(el, children) {
+  let currentTableContainer = createTag('div', { class: 'table' });
+  let currentTableChildren = [];
+
+  children.forEach((child) => {
+    if (child.textContent.trim() === '+++' && currentTableChildren.length > 0) {
+      addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
+      currentTableContainer = createTag('div', { class: 'table' });
+      currentTableChildren = [];
+    }
+
+    if (child.textContent.trim() === '+++') {
+      child.remove();
+      return;
+    }
+
+    currentTableChildren.push(child);
+  });
+
+  if (currentTableChildren.length > 0) {
+    addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
+  }
+}
+
 export default function init(el) {
   const children = Array.from(el.children);
 
   decorateHeader(children[0]);
+  decorateTables(el, children.slice(1));
 }

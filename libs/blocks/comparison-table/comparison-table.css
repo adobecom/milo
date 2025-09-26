@@ -2,14 +2,44 @@
   --comparison-border-radius: 8px;
   --comparison-border-color: #e1e1e1;
   --comparison-column-even-background-color: #f8f8f8;
+  --comparison-max-width: 1200px;
 }
 
 .comparison-table {
   margin: 24px 0;
 }
 
+.comparison-table .table {
+  max-width: var(--comparison-max-width);
+  margin: 0 auto;
+  border-radius: 8px;
+  border: 1px solid var(--comparison-border-color);
+  margin-top: 24px;
+}
+
+.comparison-table .table .table-column-header {
+  font-weight: 700;
+  line-height: 125%;
+  font-size: 18px;
+  text-align: center;
+  background-color: var(--comparison-column-even-background-color);
+  display: flex;
+  justify-content: center;
+  border-radius: 8px 8px 0 0;
+  padding: 21px;
+}
+
+.comparison-table .table .table-row {
+  display: flex;
+}
+
+
+.comparison-table .table .table-column-header *:is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+}
+
 .comparison-table .header-content {
-  max-width: 1200px;
+  max-width: var(--comparison-max-width);
   margin: 0 auto;
 }
 
