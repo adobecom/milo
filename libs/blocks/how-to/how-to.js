@@ -46,7 +46,11 @@ const setJsonLd = (heading, description, mainImage, stepsLd) => {
   document.getElementsByTagName('head')[0].appendChild(jsonLdScript);
 };
 
-const getImage = (el) => el.querySelector('.image-link') || el.querySelector('picture') || el.querySelector('a[href$=".svg"');
+const getImage = (el) => {
+  const modalImgLink = el.querySelector('.modal-img-link');
+  if (modalImgLink) return modalImgLink;
+  return el.querySelector('.image-link') || el.querySelector('picture') || el.querySelector('a[href$=".svg"');
+};
 const getVideo = (el) => el.querySelector('.video-container, .pause-play-wrapper, video, .milo-video');
 
 const getHowToInfo = (el) => {
