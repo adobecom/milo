@@ -1,4 +1,4 @@
-import { decorateLinks, loadBlock, localizeLink } from '../../utils/utils.js';
+import { decorateLinks, loadBlock, localizeLink, createTag } from '../../utils/utils.js';
 import { addAriaLabelToCta } from './merch.js';
 
 export function localizePreviewLinks(el) {
