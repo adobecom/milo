@@ -1,12 +1,9 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import '../../deps/mas/merch-card.js';
-import '../../deps/mas/merch-quantity-select.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
   initService,
   getOptions,
   overrideOptions,
-  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -14,6 +11,8 @@ import {
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
+loadMasComponent(MAS_MERCH_CARD);
+loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -23,7 +22,6 @@ function getTimeoutPromise() {
 
 async function loadDependencies() {
   /** Load lit first as it's needed by MAS components */
-  await loadLitDependency();
 
   /** Load service */
   const servicePromise = initService();
