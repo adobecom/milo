@@ -88,9 +88,16 @@ export class MasCommerceService extends HTMLElement {
 
     get featureFlags() {
         if (!this.#featureFlags) {
+            console.log('++++++++');
+            const hasMasLink = !!document.querySelector('a[href^="https://mas.adobe.com/studio.html#content-type=merch-card"]');
+            const hasCard = !!document.querySelector('merch-card,merch-card-collection');
+            console.log(this.#getFeatureFlag(FF_DEFAULTS));
+            console.log(document.querySelector('merch-card,merch-card-collection'));
+            console.log(document.querySelector('a[href^="https://mas.adobe.com/studio.html#content-type=merch-card"]'));
             this.#featureFlags = {
-                [FF_DEFAULTS]: this.#getFeatureFlag(FF_DEFAULTS) || !!document.querySelector('merch-card,merch-card-collection')
+                [FF_DEFAULTS]: this.#getFeatureFlag(FF_DEFAULTS) || hasCard || hasMasLink
             };
+            console.log(this.#featureFlags);
         }
         return this.#featureFlags;
     }
