@@ -22,7 +22,7 @@ test.describe('MAS Express Cards test suite', () => {
     await workerSetup.cleanupWorkerPages();
   });
 
-  test.afterEach(async (context, testInfo) => {
+  test.afterEach(async (_, testInfo) => {
     workerSetup.attachWorkerErrorsToFailure(testInfo);
   });
 
