@@ -2,7 +2,6 @@ import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './simplified-pricing-express.css.js';
 import { isDesktop, TABLET_DOWN } from '../media.js';
-import { createCardVisibilityObserver } from '../utils.js';
 
 export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -53,9 +52,6 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
 export class SimplifiedPricingExpress extends VariantLayout {
     constructor(card) {
         super(card);
-        this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
-        this.visibilityObserver = null;
-        this.containerElement = null;
     }
 
     getGlobalCSS() {
@@ -97,29 +93,15 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
         const descriptionSlot = this.card.querySelector('[slot="body-xs"]');
         if (descriptionSlot) {
-            descriptionSlot.offsetHeight;
-
             const height = descriptionSlot.offsetHeight;
             this.updateCardElementMinHeightValue(height, 'description');
         }
 
         const priceSlot = this.card.querySelector('[slot="price"]');
         if (priceSlot) {
-            priceSlot.offsetHeight;
-
             const height = priceSlot.offsetHeight;
             this.updateCardElementMinHeightValue(height, 'price');
         }
-    }
-
-    clearHeightVariables() {
-        const container = this.getContainer();
-        if (!container) return;
-
-        const prefix = `--consonant-merch-card-${this.card.variant}`;
-        ['description', 'price'].forEach(name => {
-            container.style.removeProperty(`${prefix}-${name}-height`);
-        });
     }
 
     async waitForPrices() {
@@ -149,20 +131,13 @@ export class SimplifiedPricingExpress extends VariantLayout {
         });
     }
 
-    async forceRemeasure() {
-        const container = this.getContainer();
-        if (container) {
-            await this.syncAllCardsInContainer(container);
-        }
-    }
-
     async postCardUpdateHook() {
         if (!this.card.isConnected) return;
 
         await this.card.updateComplete;
         await this.waitForPrices();
 
-        if (!!isDesktop()) {
+        if (isDesktop()) {
             const container = this.getContainer();
             if (!container) return;
 
@@ -214,30 +189,12 @@ export class SimplifiedPricingExpress extends VariantLayout {
         };
         mediaQuery.addEventListener('change', this.mediaQueryListener);
 
-        this.attributeObserver = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' &&
-                    mutation.attributeName === 'data-default-card' &&
-                    this.card.hasAttribute('data-default-card') &&
-                    !isDesktop()) {
-                    this.card.setAttribute('data-expanded', 'true');
-                }
-            });
-        });
-
-        this.attributeObserver.observe(this.card, {
-            attributes: true,
-            attributeOldValue: true
-        });
     }
 
     disconnectedCallbackHook() {
         if (this.mediaQueryListener) {
             const mediaQuery = window.matchMedia(TABLET_DOWN);
             mediaQuery.removeEventListener('change', this.mediaQueryListener);
-        }
-        if (this.attributeObserver) {
-            this.attributeObserver.disconnect();
         }
     }
 

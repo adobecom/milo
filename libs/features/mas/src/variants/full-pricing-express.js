@@ -2,7 +2,6 @@ import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './full-pricing-express.css.js';
 import { isMobile } from '../media.js';
-import { createCardVisibilityObserver } from '../utils.js';
 
 export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -63,10 +62,6 @@ export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
 };
 
 export class FullPricingExpress extends VariantLayout {
-    constructor(card) {
-        super(card);
-    }
-
     getGlobalCSS() {
         return CSS;
     }
@@ -144,16 +139,6 @@ export class FullPricingExpress extends VariantLayout {
                 this.syncHeights();
             }
         }
-    }
-
-    connectedCallbackHook() {
-        if (!this.card || this.card.failed) {
-            return;
-        }
-    }
-
-
-    disconnectedCallbackHook() {
     }
 
     renderLayout() {
