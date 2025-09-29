@@ -1,5 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { STATUS } from '../checks/constants.js';
+import { STATUS, STRUCTURE_TITLES } from '../checks/constants.js';
 import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 
@@ -15,11 +15,11 @@ const EXCLUDED_PATHS = ['/tools/caas'];
 
 const content = signal({});
 
-const navResult = signal({ icon: 'purple', title: 'Navigation', description: 'Checking...' });
-const footerResult = signal({ icon: 'purple', title: 'Footer', description: 'Checking...' });
-const regionSelectorResult = signal({ icon: 'purple', title: 'Region selector', description: 'Checking...' });
-const georoutingResult = signal({ icon: 'purple', title: 'Georouting', description: 'Checking...' });
-const breadcrumbsResult = signal({ icon: 'purple', title: 'Breadcrumbs', description: 'Checking...' });
+const navResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.navigation, description: 'Checking...' });
+const footerResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.footer, description: 'Checking...' });
+const regionSelectorResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.regionSelector, description: 'Checking...' });
+const georoutingResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.georouting, description: 'Checking...' });
+const breadcrumbsResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.breadcrumbs, description: 'Checking...' });
 
 async function getStructureResults() {
   const signals = [
