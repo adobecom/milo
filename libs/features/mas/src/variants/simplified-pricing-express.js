@@ -67,25 +67,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
     }
 
 
-    updateCardElementMinHeightValue(height, name) {
-        if (!height) return;
-        const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
-        const container = this.getContainer();
-        const maxMinHeight =
-            parseInt(
-                container.style.getPropertyValue(
-                    elMinHeightPropertyName,
-                ),
-            ) || 0;
-
-        if (height > maxMinHeight) {
-            container.style.setProperty(
-                elMinHeightPropertyName,
-                `${height}px`,
-            );
-        }
-    }
-
     syncHeights() {
         if (this.card.getBoundingClientRect().width === 0) {
             return;
@@ -93,14 +74,12 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
         const descriptionSlot = this.card.querySelector('[slot="body-xs"]');
         if (descriptionSlot) {
-            const height = descriptionSlot.offsetHeight;
-            this.updateCardElementMinHeightValue(height, 'description');
+            this.updateCardElementMinHeight(descriptionSlot, 'description');
         }
 
         const priceSlot = this.card.querySelector('[slot="price"]');
         if (priceSlot) {
-            const height = priceSlot.offsetHeight;
-            this.updateCardElementMinHeightValue(height, 'price');
+            this.updateCardElementMinHeight(priceSlot, 'price');
         }
     }
 
