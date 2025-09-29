@@ -22,7 +22,7 @@ test.describe('MAS Express Cards test suite', () => {
     await workerSetup.cleanupWorkerPages();
   });
 
-  test.afterEach(async (_, testInfo) => {
+  test.afterEach(async ({}, testInfo) => { // eslint-disable-line no-empty-pattern
     workerSetup.attachWorkerErrorsToFailure(testInfo);
   });
 
@@ -363,7 +363,7 @@ test.describe('MAS Express Cards test suite', () => {
     const fullPricingPage = workerSetup.getPage('FULL_PRICING_EXPRESS');
 
     await test.step('step-1: Verify simplified-pricing-express collection alignment', async () => {
-      const collection = simplifiedPage.locator('merch-card-collection');
+      const collection = simplifiedPage.locator('merch-card-collection.simplified-pricing-express');
       await expect(collection).toBeVisible();
 
       const cards = simplifiedPage.locator('merch-card[variant="simplified-pricing-express"]');
