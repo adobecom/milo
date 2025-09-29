@@ -277,6 +277,10 @@
   white-space: nowrap;
 }
 
+.firefly-gallery-view-button:hover {
+  background: #e9e9e9;
+}
+
 .firefly-gallery-prompt {
   color: white;
   font-size: var(--prompt-font-size);
@@ -326,7 +330,7 @@
   max-width: var(--username-max-width);
 }
 
-.firefly-gallery-overlay:focus {
+.firefly-gallery-overlay:focus {  
   outline: none;
   box-shadow: inset 0 0 0 4px #378ef0; /* Inner border */
   opacity: 1;
