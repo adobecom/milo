@@ -1,7 +1,7 @@
 /* Responsive styling with mobile-first approach */
 :root {
-  --prompt-font-size: calc(var(--type-body-xs-size) * 0.8);
-  --prompt-line-height: 1.2;
+  --prompt-font-size: var(--type-body-xs-size);
+  --prompt-line-height: 1.5;
   --username-max-width: 80px;
   --avatar-size: 24px;
   --border-radius-standard: 8px;
@@ -422,8 +422,6 @@
   :root {
     --column-count: 3;
     --row-gap: calc(14px - 8px);
-    --prompt-font-size: calc(var(--type-body-xs-size) * 0.85);
-    --prompt-line-height: 1.2;
     --username-max-width: auto;
   }
 
@@ -436,6 +434,5 @@
   :root {
     --column-count: 5;
     --row-gap: calc(var(--spacing-xs) - 8px);
-    --prompt-font-size: calc(var(--type-body-xs-size) * 0.9);
   }
 }
