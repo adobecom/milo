@@ -101,8 +101,8 @@ const initMessageClient = () => {
           state = STATE_BASE;
           clearTimeout(timeout);
         }
-        sendMessage(ACK);
         cancelActions();
+        sendMessage(ACK);
         break;
       case Acknowledged: {
         if (state === STATE_EXPECT_ACK) {
