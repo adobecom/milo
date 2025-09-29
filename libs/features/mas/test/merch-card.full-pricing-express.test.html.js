@@ -318,7 +318,7 @@ runTests(async () => {
                 const shortDescription = shadowRoot.querySelector('.short-description');
 
                 // On desktop, short-description should be flex container
-                const mediaQuery = window.matchMedia('(min-width: 768px)');
+                const mediaQuery = window.matchMedia('(min-width: 1025px)');
                 if (mediaQuery.matches) {
                     const computedStyle = window.getComputedStyle(shortDescription);
                     expect(computedStyle.display).to.equal('flex');
@@ -335,7 +335,7 @@ runTests(async () => {
                 // Create a mock for mobile viewport
                 const originalMatchMedia = window.matchMedia;
                 window.matchMedia = (query) => ({
-                    matches: query.includes('max-width: 767px'),
+                    matches: query.includes('max-width: 1024px'),
                     media: query,
                     addEventListener: () => {},
                     removeEventListener: () => {},

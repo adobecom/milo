@@ -1,7 +1,6 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './full-pricing-express.css.js';
-import { isMobile } from '../media.js';
 
 export const FULL_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -74,7 +73,6 @@ export class FullPricingExpress extends VariantLayout {
         return '[slot="heading-xs"]';
     }
 
-
     syncHeights() {
         if (this.card.getBoundingClientRect().width <= 2) return;
 
@@ -82,7 +80,6 @@ export class FullPricingExpress extends VariantLayout {
         if (shortDescriptionSlot) {
             this.updateCardElementMinHeight(shortDescriptionSlot, 'short-description');
         }
-
 
         const priceSlot = this.card.querySelector('[slot="price"]');
         if (priceSlot) {
@@ -95,48 +92,28 @@ export class FullPricingExpress extends VariantLayout {
         }
     }
 
-    async syncAllCardsInContainer() {
-        const container = this.getContainer();
-        if (!container) return;
-
-        const cards = container.querySelectorAll('merch-card[variant="full-pricing-express"]');
-        if (!cards.length) return;
-
-        const prefix = `--consonant-merch-card-${this.card.variant}`;
-        ['price', 'cta', 'short-description'].forEach(name => {
-            container.style.removeProperty(`${prefix}-${name}-height`);
-        });
-
-        await Promise.all(
-            Array.from(cards).flatMap(card =>
-                card.prices?.map(price => price.onceSettled?.()) || []
-            )
-        );
-
-        requestAnimationFrame(() => {
-            cards.forEach(card => card.variantLayout?.syncHeights?.());
-        });
-    }
-
     async postCardUpdateHook() {
         if (!this.card.isConnected) return;
 
         await this.card.updateComplete;
         await Promise.all(this.card.prices.map((price) => price.onceSettled()));
 
-        if (!isMobile()) {
+        if (window.matchMedia('(min-width: 1025px)').matches) {
             const container = this.getContainer();
             if (!container) return;
 
             const prefix = `--consonant-merch-card-${this.card.variant}`;
-            const hasExistingVars = container.style.getPropertyValue(`${prefix}-price-height`) ||
-                                   container.style.getPropertyValue(`${prefix}-cta-height`) ||
-                                   container.style.getPropertyValue(`${prefix}-short-description-height`);
+            const hasExistingVars = container.style.getPropertyValue(`${prefix}-price-height`);
 
             if (!hasExistingVars) {
-                await this.syncAllCardsInContainer();
+                requestAnimationFrame(() => {
+                    const cards = container.querySelectorAll(`merch-card[variant="${this.card.variant}"]`);
+                    cards.forEach(card => card.variantLayout?.syncHeights?.());
+                });
             } else {
-                this.syncHeights();
+                requestAnimationFrame(() => {
+                    this.syncHeights();
+                });
             }
         }
     }
@@ -352,19 +329,9 @@ export class FullPricingExpress extends VariantLayout {
         }
 
         /* Description sections */
-        :host([variant='full-pricing-express']) .description,
-        :host([variant='full-pricing-express']) .description2 {
+        :host([variant='full-pricing-express']) .description {
             display: flex;
             flex-direction: column;
-        }
-
-        /* Features section (description2) */
-        :host([variant='full-pricing-express']) .features-label {
-            font-size: 14px;
-            font-weight: 700;
-            line-height: 18.2px;
-            margin: 0 0 8px 0;
-            color: var(--spectrum-gray-800);
         }
 
         /* Price container with background */
@@ -390,28 +357,27 @@ export class FullPricingExpress extends VariantLayout {
         }
 
         /* Mobile styles */
-        @media (max-width: 767px) {
+        @media (max-width: 1024px) {
             :host([variant='full-pricing-express']) {
                 width: var(--merch-card-full-pricing-express-mobile-width);
                 max-width: var(--merch-card-full-pricing-express-mobile-width);
             }
-            
+
             :host([variant='full-pricing-express']) .card-content {
                 padding: var(--merch-card-full-pricing-express-padding-mobile);
             }
-            
+
             :host([variant='full-pricing-express'][gradient-border='true']) .card-content {
                 padding: calc(var(--merch-card-full-pricing-express-padding-mobile) + 2px);
             }
-            
-            /* Show description2 container on mobile (content controlled by light DOM) */
-            :host([variant='full-pricing-express']) .description2 {
-                display: block;
+
+            :host([variant='full-pricing-express']) .short-description {
+                padding: 24px 0;
             }
         }
 
-        /* Tablet and Desktop - fixed heights for alignment */
-        @media (min-width: 768px) {
+        /* Desktop - fixed heights for alignment */
+        @media (min-width: 1025px) {
             :host([variant='full-pricing-express']) {
                 display: flex;
                 flex-direction: column;

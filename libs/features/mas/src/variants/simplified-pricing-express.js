@@ -50,10 +50,6 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
 };
 
 export class SimplifiedPricingExpress extends VariantLayout {
-    constructor(card) {
-        super(card);
-    }
-
     getGlobalCSS() {
         return CSS;
     }
@@ -65,7 +61,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
     get headingSelector() {
         return '[slot="heading-xs"]';
     }
-
 
     syncHeights() {
         if (this.card.getBoundingClientRect().width === 0) {
@@ -83,51 +78,30 @@ export class SimplifiedPricingExpress extends VariantLayout {
         }
     }
 
-    async waitForPrices() {
-        if (this.card.prices?.length) {
-            await Promise.all(this.card.prices.map(price => price.onceSettled?.()));
-        }
-    }
-
-    async syncAllCardsInContainer(container) {
-        const cards = container.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
-
-        if (!cards.length) return;
-
-        const prefix = `--consonant-merch-card-${this.card.variant}`;
-        ['description', 'price'].forEach(name => {
-            container.style.removeProperty(`${prefix}-${name}-height`);
-        });
-
-        await Promise.all(
-            Array.from(cards).flatMap(card =>
-                card.prices?.map(price => price.onceSettled?.()) || []
-            )
-        );
-
-        requestAnimationFrame(() => {
-            cards.forEach(card => card.variantLayout?.syncHeights?.());
-        });
-    }
-
     async postCardUpdateHook() {
         if (!this.card.isConnected) return;
 
         await this.card.updateComplete;
-        await this.waitForPrices();
+        if (this.card.prices?.length) {
+            await Promise.all(this.card.prices.map(price => price.onceSettled?.()));
+        }
 
         if (isDesktop()) {
             const container = this.getContainer();
             if (!container) return;
 
             const prefix = `--consonant-merch-card-${this.card.variant}`;
-            const hasExistingVars = container.style.getPropertyValue(`${prefix}-description-height`) ||
-                                   container.style.getPropertyValue(`${prefix}-price-height`);
+            const hasExistingVars = container.style.getPropertyValue(`${prefix}-description-height`);
 
             if (!hasExistingVars) {
-                await this.syncAllCardsInContainer(container);
+                requestAnimationFrame(() => {
+                    const cards = container.querySelectorAll(`merch-card[variant="${this.card.variant}"]`);
+                    cards.forEach(card => card.variantLayout?.syncHeights?.());
+                });
             } else {
-                this.syncHeights();
+                requestAnimationFrame(() => {
+                    this.syncHeights();
+                });
             }
         }
     }
@@ -138,7 +112,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
         }
 
         this.setupAccordion();
-
         if (this.card?.hasAttribute('data-default-card') && !isDesktop()) {
             this.card.setAttribute('data-expanded', 'true');
         }
@@ -167,7 +140,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
             updateExpandedState();
         };
         mediaQuery.addEventListener('change', this.mediaQueryListener);
-
     }
 
     disconnectedCallbackHook() {
@@ -225,13 +197,9 @@ export class SimplifiedPricingExpress extends VariantLayout {
     static variantStyle = css`
         :host([variant='simplified-pricing-express']) {
             --merch-card-simplified-pricing-express-width: 365px;
-            --merch-card-simplified-pricing-express-tablet-width: 532px;
             --merch-card-simplified-pricing-express-padding: 24px;
             --merch-card-simplified-pricing-express-padding-mobile: 16px;
-            --merch-card-simplified-pricing-express-min-height: 341px;
             --merch-card-simplified-pricing-express-price-font-size: 28px;
-            --merch-card-simplified-pricing-express-price-p-font-size: 12px;
-            --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
             --merch-card-simplified-pricing-express-price-font-weight: 700;
             --merch-card-simplified-pricing-express-price-line-height: 36.4px;
             --merch-card-simplified-pricing-express-price-currency-font-size: 22px;
@@ -280,11 +248,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
             align-items: center;
             justify-content: center;
         }
-        
-        :host([variant='simplified-pricing-express']) .badge-wrapper:empty {
-            display: none;
-        }
-        
+
         :host([variant='simplified-pricing-express']:not(:has([slot="badge"]:not(:empty)))) .badge-wrapper {
             display: none;
         }

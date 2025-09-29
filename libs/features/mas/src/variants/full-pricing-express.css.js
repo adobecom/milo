@@ -1,4 +1,4 @@
-import { TABLET_UP, DESKTOP_UP } from '../media.js';
+import { DESKTOP_UP } from '../media.js';
 
 export const CSS = `
 :root {
@@ -23,7 +23,7 @@ merch-card-collection.full-pricing-express {
 }
 
 /* Tablet - 2 columns */
-@media screen and ${TABLET_UP} and (max-width: 1199px) {
+@media screen and (min-width: 1025px) and (max-width: 1199px) {
     merch-card-collection.full-pricing-express {
         grid-template-columns: repeat(2, 1fr);
         max-width: calc(2 * var(--merch-card-full-pricing-express-width) + 16px);
@@ -375,7 +375,7 @@ merch-card[variant="full-pricing-express"] merch-badge {
 }
 
 /* Mobile-specific selective display of body-s */
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
     /* Show body-s container */
     merch-card[variant="full-pricing-express"] [slot="body-s"] {
         display: block;
@@ -454,7 +454,7 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
 }
 
 /* Responsive rules for desktop/tablet */
-@media (min-width: 768px) {
+@media (min-width: 1025px) {
     merch-card[variant="full-pricing-express"] [slot="body-s"] {
         display: flex;
         flex-direction: column;
