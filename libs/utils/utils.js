@@ -1408,13 +1408,14 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob'];
+  const mepAddons = ['lob', 'event-id-stage-test'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
     if (enablement === false) return;
-    promises[addon] = (async () => {
-      const { default: init } = await import(`../features/mep/addons/${addon}.js`);
+    const addonName = addon.split('-')[0];
+    promises[addonName] = (async () => {
+      const { default: init } = await import(`../features/mep/addons/${addonName}.js`);
       return init(enablement);
     })();
   });

@@ -147,31 +147,31 @@ runTests(async () => {
 
         describe('Basic tooltip rendering', () => {
 
-            it('should render mas-tooltip in price slot', async () => {
+            it('should render mas-mnemonic in price slot', async () => {
                 const card = document.querySelector('#card-with-price-tooltip');
                 await delay(100);
                 
                 const priceSlot = card.querySelector('[slot="price"]');
                 expect(priceSlot).to.exist;
                 
-                const masTooltip = priceSlot.querySelector('mas-tooltip');
-                expect(masTooltip).to.exist;
-                expect(masTooltip.getAttribute('content')).to.equal('Price after first year at regular rate');
-                expect(masTooltip.getAttribute('placement')).to.equal('top');
-                expect(masTooltip.textContent).to.equal('*');
+                const masMnemonic = priceSlot.querySelector('mas-mnemonic');
+                expect(masMnemonic).to.exist;
+                expect(masMnemonic.getAttribute('content')).to.equal('Price after first year at regular rate');
+                expect(masMnemonic.getAttribute('placement')).to.equal('top');
+                expect(masMnemonic.textContent).to.equal('*');
             });
 
-            it('should render mas-tooltip with icon in description', async () => {
+            it('should render mas-mnemonic with icon in description', async () => {
                 const card = document.querySelector('#card-with-description-tooltip');
                 await delay(100);
                 
                 const bodySlot = card.querySelector('[slot="body-xs"]');
-                const masTooltip = bodySlot.querySelector('mas-tooltip');
-                expect(masTooltip).to.exist;
-                expect(masTooltip.getAttribute('content')).to.equal('Including Photoshop, Illustrator, Premiere Pro, After Effects, and more');
-                expect(masTooltip.getAttribute('placement')).to.equal('right');
+                const masMnemonic = bodySlot.querySelector('mas-mnemonic');
+                expect(masMnemonic).to.exist;
+                expect(masMnemonic.getAttribute('content')).to.equal('Including Photoshop, Illustrator, Premiere Pro, After Effects, and more');
+                expect(masMnemonic.getAttribute('placement')).to.equal('right');
                 
-                const merchIcon = masTooltip.querySelector('merch-icon');
+                const merchIcon = masMnemonic.querySelector('merch-icon');
                 expect(merchIcon).to.exist;
                 expect(merchIcon.getAttribute('size')).to.equal('xs');
             });
@@ -181,7 +181,7 @@ runTests(async () => {
                 await delay(100);
                 
                 const bodySlot = card.querySelector('[slot="body-xs"]');
-                const tooltips = bodySlot.querySelectorAll('mas-tooltip');
+                const tooltips = bodySlot.querySelectorAll('mas-mnemonic');
                 
                 expect(tooltips.length).to.equal(3);
                 expect(tooltips[0].getAttribute('content')).to.equal('Sync across all your devices');
@@ -199,16 +199,16 @@ runTests(async () => {
                 await delay(100);
                 
                 const headingSlot = card.querySelector('[slot="heading-xs"]');
-                const masTooltip = headingSlot.querySelector('mas-tooltip');
+                const masMnemonic = headingSlot.querySelector('mas-mnemonic');
                 
-                expect(masTooltip).to.exist;
-                expect(masTooltip.getAttribute('src')).to.include('info-icon.svg');
-                expect(masTooltip.getAttribute('size')).to.equal('s');
-                expect(masTooltip.getAttribute('tooltip-text')).to.equal('Perfect for teams and enterprises');
-                expect(masTooltip.getAttribute('tooltip-placement')).to.equal('bottom');
+                expect(masMnemonic).to.exist;
+                expect(masMnemonic.getAttribute('src')).to.include('info-icon.svg');
+                expect(masMnemonic.getAttribute('size')).to.equal('s');
+                expect(masMnemonic.getAttribute('tooltip-text')).to.equal('Perfect for teams and enterprises');
+                expect(masMnemonic.getAttribute('tooltip-placement')).to.equal('bottom');
                 
                 // Icon-based tooltips should not have slot content
-                expect(masTooltip.textContent.trim()).to.equal('');
+                expect(masMnemonic.textContent.trim()).to.equal('');
             });
 
             it('should support different tooltip placements', async () => {
@@ -216,7 +216,7 @@ runTests(async () => {
                 await delay(100);
                 
                 const bodySlot = card.querySelector('[slot="body-xs"]');
-                const tooltips = bodySlot.querySelectorAll('mas-tooltip');
+                const tooltips = bodySlot.querySelectorAll('mas-mnemonic');
                 
                 expect(tooltips.length).to.equal(4);
                 
@@ -232,7 +232,7 @@ runTests(async () => {
 
         it('should preserve tooltips during card updates', async () => {
             const card = document.querySelector('#card-with-price-tooltip');
-            const initialTooltip = card.querySelector('mas-tooltip');
+            const initialTooltip = card.querySelector('mas-mnemonic');
             expect(initialTooltip).to.exist;
             
             // Simulate a card update
@@ -241,7 +241,7 @@ runTests(async () => {
             await delay(100);
             
             // Tooltip should still exist after update
-            const tooltipAfterUpdate = card.querySelector('mas-tooltip');
+            const tooltipAfterUpdate = card.querySelector('mas-mnemonic');
             expect(tooltipAfterUpdate).to.exist;
             expect(tooltipAfterUpdate.getAttribute('content')).to.equal('Price after first year at regular rate');
         });

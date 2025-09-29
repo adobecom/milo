@@ -78,7 +78,7 @@ export default class MasTooltip extends LitElement {
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            margin-bottom: 19px;
+            margin-bottom: 16px;
         }
         
         .css-tooltip.top[data-tooltip]::after {
