@@ -300,12 +300,12 @@ export default async function init(el) {
 
   // Make sure input height is updated when placeholder text is visible
   const section = el.closest('.section');
-  if (!section) { return; }
+  if (!section) return;
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.type !== 'attributes'
         || mutation.attributeName !== 'data-status'
-        || section.getAttribute('data-status') === 'decorated') { return; }
+        || section.getAttribute('data-status') === 'decorated') return;
       const fieldInput = el.querySelector('.bc-input-field textarea');
       if (fieldInput) {
         updateInputHeight(el);

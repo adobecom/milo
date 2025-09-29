@@ -211,8 +211,6 @@
   width: 100%;
   resize: none;
   overflow-wrap: break-word;
-  word-wrap: break-word;
-  white-space: pre-wrap;
   min-height: var(--bc-input-height);
   max-height: 35vh;
   overflow-y: auto;
