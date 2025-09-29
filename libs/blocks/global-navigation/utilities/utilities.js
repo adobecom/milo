@@ -121,6 +121,7 @@ export const logErrorFor = async (fn, message, tags, errorType) => {
     await fn();
   } catch (e) {
     lanaLog({ message, e, tags, errorType });
+    throw new Error(e);
   }
 };
 
@@ -484,7 +485,7 @@ export async function fetchAndProcessPlainHtml({
       tags: 'utilities',
       errorType: 'i',
     });
-    return null;
+    throw new Error("Fail to fetch");
   }
   const text = await (plainHTMLPromise ? res.clone().text() : res.text());
   const { body } = new DOMParser().parseFromString(text, 'text/html');
