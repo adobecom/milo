@@ -157,9 +157,8 @@ export class FullPricingExpress extends VariantLayout {
             
             /* Price container specific */
             --merch-card-full-pricing-express-price-bg: #F8F8F8;
-            --merch-card-full-pricing-express-price-padding: 16px;
             --merch-card-full-pricing-express-price-radius: 8px;
-            
+
             /* Typography - matching simplified-pricing-express */
             --merch-card-full-pricing-express-trial-badge-font-size: 12px;
             --merch-card-full-pricing-express-trial-badge-font-weight: 700;
@@ -167,8 +166,6 @@ export class FullPricingExpress extends VariantLayout {
             --merch-card-full-pricing-express-price-font-size: 28px;
             --merch-card-full-pricing-express-price-line-height: 36.4px;
             --merch-card-full-pricing-express-price-font-weight: 700;
-            --merch-card-full-pricing-express-body-xs-font-size: 14px;
-            --merch-card-full-pricing-express-body-xs-line-height: 21px;
             --merch-card-full-pricing-express-cta-font-size: 18px;
             --merch-card-full-pricing-express-cta-font-weight: 700;
             --merch-card-full-pricing-express-cta-line-height: 23.4px;
@@ -258,7 +255,6 @@ export class FullPricingExpress extends VariantLayout {
         }
 
         :host([variant='full-pricing-express'][gradient-border='true']) .card-content {
-            position: relative;
             border: none;
             padding: calc(var(--merch-card-full-pricing-express-padding) + 2px);
             border-radius: 8px;
@@ -378,45 +374,25 @@ export class FullPricingExpress extends VariantLayout {
 
         /* Desktop - fixed heights for alignment */
         @media (min-width: 1025px) {
-            :host([variant='full-pricing-express']) {
-                display: flex;
-                flex-direction: column;
-                height: auto;
-            }
-
-            /* Make card-content fill parent and use flexbox */
             :host([variant='full-pricing-express']) .card-content {
-                display: flex;
-                flex-direction: column;
                 height: 100%;
             }
 
-            /* Description flows naturally without synchronized height */
             :host([variant='full-pricing-express']) .description {
-                display: flex;
-                flex-direction: column;
-                flex: 1; /* Take remaining space in card */
+                flex: 1;
             }
 
             :host([variant='full-pricing-express']) .price-container {
                 height: var(--consonant-merch-card-full-pricing-express-price-height);
-                display: flex;
-                flex-direction: column;
             }
 
             :host([variant='full-pricing-express']) .cta {
                 height: var(--consonant-merch-card-full-pricing-express-cta-height);
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
                 margin-bottom: 24px;
             }
 
-            /* Short-description container styling */
             :host([variant='full-pricing-express']) .short-description {
                 height: var(--consonant-merch-card-full-pricing-express-short-description-height);
-                display: flex;
-                flex-direction: column;
                 margin-bottom: 24px;
             }
         }

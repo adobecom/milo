@@ -300,7 +300,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
         }
 
         :host([variant='simplified-pricing-express'][gradient-border='true']) .card-content {
-            position: relative;
             border: none;
             padding: calc(var(--merch-card-simplified-pricing-express-padding) + 2px);
             border-radius: 8px;
@@ -369,27 +368,12 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
         /* Desktop only - Fixed heights for alignment */
         @media (min-width: 1200px) {
-            :host([variant='simplified-pricing-express']) {
-                display: flex;
-                flex-direction: column;
-                height: auto;
-            }
-
             :host([variant='simplified-pricing-express']) .card-content {
-                display: flex;
-                flex-direction: column;
                 height: 100%;
             }
 
             :host([variant='simplified-pricing-express']) .description {
-                display: flex;
-                flex-direction: column;
                 flex: 1;
-            }
-
-            :host([variant='simplified-pricing-express']) .price {
-                display: flex;
-                flex-direction: column;
             }
 
             :host([variant='simplified-pricing-express']) .cta {
@@ -469,4 +453,3 @@ export class SimplifiedPricingExpress extends VariantLayout {
         }
     `;
 }
-
