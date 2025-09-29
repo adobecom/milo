@@ -379,6 +379,7 @@ function loadAssetIntoSkeleton(
           loop: true,
           preload: 'none',
           playsinline: true,
+          tabindex: '-1',
         });
 
         assetContainer.appendChild(video);
