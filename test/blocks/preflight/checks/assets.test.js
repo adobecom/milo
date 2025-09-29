@@ -118,7 +118,7 @@ describe('Preflight Asset Checks', () => {
         if (selector === '.hero, .marquee, .hero-marquee') return mockHeroElement;
         return mockPicture;
       };
-      
+
       mockImage.getAttribute.withArgs('width').returns('2000');
       mockImage.getAttribute.withArgs('height').returns('1000');
       mockImage.getAttribute.withArgs('src').returns('test.jpg');
