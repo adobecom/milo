@@ -218,7 +218,7 @@ export default async (block) => {
   const [
     title,
     question,
-    scale,
+    radioLabels,
     explanationString,
     textboxPlaceholder,
     contactMeString,
@@ -235,31 +235,48 @@ export default async (block) => {
     block.classList.add('dark');
   }
   const radioGroupList = (() => {
+    const [scale, optionList] = radioLabels?.split('::').map((x) => x.trim()) ?? [];
     if (scale !== '5' && scale !== '7') {
       console.warn('Invalid scale specified; defaulting to a 5 pt scale. The value of scale has to be either \'5\' or \'7\'');
     }
     switch (scale) {
       case '7': {
         block.classList.add('seven-point');
+        const [
+          minusThree,
+          minusTwo,
+          minusOne,
+          zero,
+          one,
+          two,
+          three,
+        ] = optionList?.split(',').map((x) => x.trim()) ?? [];
         return [
-          'Extremely Dissatisfied',
-          'Moderately Dissatisfied',
-          'Slightly Dissatisfied',
-          'Neutral',
-          'Slightly Satisfied',
-          'Moderately Satisfied',
-          'Extremely Satisfied',
+          minusThree ?? 'Extremely dissatisfied',
+          minusTwo   ?? 'Moderately dissatisfied',
+          minusOne   ?? 'Slightly dissatisfied',
+          zero       ?? 'Neutral',
+          one        ?? 'Slightly satisfied',
+          two        ?? 'Moderately satisfied',
+          three      ?? 'Extremely satisfied',
         ];
       }
       case '5':
       default: {
+        const [
+          minusTwo,
+          minusOne,
+          zero,
+          one,
+          two,
+        ] = optionList?.split(',').map((x) => x.trim()) ?? [];
         block.classList.add('five-point');
         return [
-          'Very Dissatisfied',
-          'Dissatisfied',
-          'Neutral',
-          'Satisfied',
-          'Very Satisfied',
+          minusTwo ?? 'Very dissatisfied',
+          minusOne ?? 'Dissatisfied',
+          zero     ?? 'Neutral',
+          one      ?? 'Satisfied',
+          two      ?? 'Very satisfied',
         ];
       }
     }
