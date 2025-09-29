@@ -20,7 +20,7 @@ export const asoCache = {
 
 const lanaLog = (message) => {
   window.lana.log(message, {
-    sampleRate: 1,
+    sampleRate: 100,
     tags: 'preflight',
     errorType: 'e',
   });
@@ -248,6 +248,7 @@ async function getJobResults(jobId, step) {
 export default async function getChecks(step) {
   const jobId = await getJobId(step);
   if (!jobId) return null;
+  if (step === 'IDENTIFY') asoCache.identifyJobId = jobId;
   const checks = await getJobResults(jobId, step);
   if (!checks) return null;
   return checks;
@@ -265,8 +266,9 @@ export async function fetchPreflightChecks() {
     new Promise((_, reject) => {
       setTimeout(() => {
         const identifyTimeoutSeconds = ASO_TIMEOUT_MS / 1000;
-        lanaLog(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds`);
-        reject(new Error(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds`));
+        const jobId = asoCache.identifyJobId || 'unknown';
+        lanaLog(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds | jobId: ${jobId}`);
+        reject(new Error(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds | jobId: ${jobId}`));
       }, ASO_TIMEOUT_MS);
     }),
   ]);
