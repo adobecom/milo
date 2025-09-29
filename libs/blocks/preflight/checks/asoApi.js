@@ -266,9 +266,8 @@ export async function fetchPreflightChecks() {
     new Promise((_, reject) => {
       setTimeout(() => {
         const identifyTimeoutSeconds = ASO_TIMEOUT_MS / 1000;
-        const jobId = asoCache.identifyJobId || 'unknown';
-        lanaLog(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds | jobId: ${jobId}`);
-        reject(new Error(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds | jobId: ${jobId}`));
+        lanaLog(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds | jobId: ${asoCache.identifyJobId || 'unknown'}`);
+        reject(new Error(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds`));
       }, ASO_TIMEOUT_MS);
     }),
   ]);
