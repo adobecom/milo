@@ -80,6 +80,7 @@
   background: hotpink;
   opacity: .4;
   z-index: 1;
+  pointer-events: none;
 }
 
 [data-block-notification] .notification-label {
