@@ -106,11 +106,11 @@ export async function checkAlt() {
   });
   result.description = 'All images from the page are listed below. Please ensure each image has appropriate alt text. Decorative images are highlighted in yellow on the page';
   altResult.value = { ...result, checked: true };
-  
+  // eslint-disable-next-line consistent-return
   return {
-    "decorativeImages": decorativeImages.value,
-    "altTextImages": altTextImages.value
-  }
+    decorativeImages: decorativeImages.value,
+    altTextImages: altTextImages.value
+  };
 }
 
 function AccessibilityItem({ title, description }) {
