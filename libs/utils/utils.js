@@ -786,9 +786,6 @@ export function decorateSVG(a) {
 
       if (parentHeading) {
         const invisibleTextHolder = createTag('span', { class: 'hidden' }, altText);
-        parentHeading.setAttribute('aria-label', altText);
-        parentHeading.id = altText.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-
         parentHeading.appendChild(invisibleTextHolder);
       }
     }
