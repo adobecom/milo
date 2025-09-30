@@ -921,11 +921,24 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   modal.classList.add(offerTypeClass);
 }
 
-export function setCtaHash(el, checkoutLinkConfig, offerType) {
+export function setCtaHash(el, checkoutLinkConfig, offerType, offers) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
-  const hash = checkoutLinkConfig[
+  let hash = checkoutLinkConfig[
     `${offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH}`
   ];
+
+  if (offers?.length && document.querySelector(`[data-modal-id="${hash}"]:not([data-wcs-osi="${el.dataset.wcsOsi}"])`)) {
+    let suffix;
+    if (offers[0].marketSegments[0] === 'EDU') {
+      suffix = '_edu';
+    } else if (offers[0].customerSegment === 'TEAM') {
+      suffix = '_team';
+    } else {
+      suffix = '_ind';
+    }
+    hash = `${hash}${suffix}`;
+  }
+
   if (hash) {
     el.setAttribute('data-modal-id', hash);
   }
@@ -971,7 +984,7 @@ export async function getModalAction(offers, options, el) {
   );
   if (!checkoutLinkConfig) return undefined;
   const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
-  const hash = setCtaHash(el, checkoutLinkConfig, offerType);
+  const hash = setCtaHash(el, checkoutLinkConfig, offerType, offers);
   let url = checkoutLinkConfig[columnName];
   if (!url && !el?.isOpen3in1Modal) return undefined;
   url = isInternalModal(url) || isProdModal(url)
