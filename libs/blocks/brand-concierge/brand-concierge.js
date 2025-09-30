@@ -110,19 +110,14 @@ async function openChatModal(initialMessage, el) {
   const modalCurtain = document.querySelector('.modal-curtain');
 
   const handleTouchStart = (e) => {
-    // Don't handle touch events if the target is the close button
-    if (e.target.closest('.dialog-close')) {
-      return;
-    }
+    // Only drag to close if touch starts in the modal header
+    if (!e.target.closest('.bc-modal-header')) return;
 
     startY = e.touches[0].clientY;
     startTop = parseInt(modal.style.top, 10) || 0;
     startTime = Date.now();
     isDragging = true;
     velocity = 0;
-
-    // Prevent default to avoid scrolling
-    e.preventDefault();
   };
 
   const handleTouchMove = (e) => {
@@ -146,10 +141,10 @@ async function openChatModal(initialMessage, el) {
       const opacity = Math.max(1 - swipeProgress, 0.1);
 
       if (modalCurtain) modalCurtain.style.opacity = opacity;
-    }
 
-    // Prevent default to avoid scrolling
-    e.preventDefault();
+      // Only prevent default when we're actually dragging the modal
+      e.preventDefault();
+    }
   };
 
   const handleTouchEnd = () => {
