@@ -145,125 +145,97 @@ function setVisitCount(key, count) {
   localStorage.setItem(key, count.toString());
 }
 
-function matchConditions({ domains = [], paths = [], params = [], rules = {} }, host, path, href) {
+function matchConditions(config) {
+  const { conditions = {}, rules = {}, context = {} } = config;
+  const { domains = [], paths = [], params = [] } = conditions;
   const {
-    main = 'and',
+    main: mainRule = 'and',
     domains: domainRule = 'or',
     paths: pathRule = 'or',
     params: paramRule = 'or',
   } = rules;
+  const { host = '', path = '', href = '' } = context;
 
-  function domainEquals(hostVal, domainVal) {
-    return hostVal === domainVal;
-  }
+  // Helper function to evaluate boolean array based on rule
+  const evaluate = (arr, rule) => (rule === 'and' ? arr.every(Boolean) : arr.some(Boolean));
 
-  function matchArray(items, rule, value, testFn) {
-    if (items.length === 0) return null;
-    const results = items.map((item) => testFn(item, value));
-    return rule === 'and' ? results.every(Boolean) : results.some(Boolean);
-  }
+  // Individual matcher functions
+  const matchDomains = () => {
+    if (domains.length === 0) return null;
+    return evaluate(domains.map((d) => host === d), domainRule);
+  };
 
-  const domainMatches = matchArray(
-    domains,
-    domainRule,
-    host,
-    (domain, hostVal) => domainEquals(hostVal, domain),
-  );
-  const pathMatches = matchArray(paths, pathRule, path, (regex, pathVal) => regex.test(pathVal));
-  const paramMatches = matchArray(params, paramRule, href, (regex, hrefVal) => regex.test(hrefVal));
+  const matchPaths = () => {
+    if (paths.length === 0) return null;
+    return evaluate(paths.map((r) => r.test(path)), pathRule);
+  };
 
-  const conditions = [domainMatches, pathMatches, paramMatches].filter((v) => v !== null);
-  if (conditions.length === 0) return true;
-  return main === 'and' ? conditions.every(Boolean) : conditions.some(Boolean);
+  const matchParams = () => {
+    if (params.length === 0) return null;
+    return evaluate(params.map((r) => r.test(href)), paramRule);
+  };
+
+  const results = [matchDomains(), matchPaths(), matchParams()].filter((v) => v !== null);
+  if (results.length === 0) return true;
+  return evaluate(results, mainRule);
 }
 
 function getEngagedSecondVisits() {
-  const { hostname: host, pathname: path, href } = window.location;
+  const context = {
+    host: window.location.hostname,
+    path: window.location.pathname,
+    href: window.location.href,
+  };
 
   const configs = [
-    {
-      domains: ['www.adobe.com', 'www.stage.adobe.com'],
-      paths: [/^\/acrobat(\/|\.html|$)/],
-      rules: { main: 'and', domains: 'or', paths: 'or' },
-      id: 'ev_118',
-      privacy: false,
-    },
-    {
-      domains: ['www.stage.adobe.com', 'www.adobe.com', 'firefly.adobe.com', 'photoshop.adobe.com'],
-      rules: { main: 'and', domains: 'or' },
-      id: 'ev_95',
-      privacy: true,
-    },
-    {
-      domains: ['business.adobe.com', 'business.stage.adobe.com', 'www.marketo.com', 'engage.marketo.com'],
-      rules: { main: 'and', domains: 'or' },
-      id: 'ev_31',
-      privacy: true,
-    },
-    {
-      domains: ['www.adobe.com', 'acrobat.adobe.com'],
-      paths: [/\/acrobat\/campaign\/acrobats-got-it\.html/, /\/acrobat/],
-      params: [/ttid=(all-in-one|reliable|versatile|combine-organize-e-sign|webforms-edit-e-sign)/],
-      id: 'ev_141_142',
-      firstVisit: true,
-      rules: { main: 'and', domains: 'or', paths: 'or', params: 'or' },
-      privacy: false,
-    },
+    { conditions: { domains: ['www.adobe.com', 'www.stage.adobe.com'], paths: [/^\/acrobat(\/|\.html|$)/] }, rules: { main: 'and', domains: 'or', paths: 'or' }, id: 'ev_118', privacy: false },
+    { conditions: { domains: ['www.stage.adobe.com', 'www.adobe.com', 'firefly.adobe.com', 'photoshop.adobe.com'] }, rules: { main: 'and', domains: 'or' }, id: 'ev_95', privacy: true },
+    { conditions: { domains: ['business.adobe.com', 'business.stage.adobe.com', 'www.marketo.com', 'engage.marketo.com'] }, rules: { main: 'and', domains: 'or' }, id: 'ev_31', privacy: true },
+    { conditions: { domains: ['www.adobe.com', 'acrobat.adobe.com'], paths: [/\/acrobat\/campaign\/acrobats-got-it\.html/, /\/acrobat/], params: [/ttid=(all-in-one|reliable|versatile|combine-organize-e-sign|webforms-edit-e-sign)/] }, rules: { main: 'and', domains: 'or', paths: 'or', params: 'or' }, id: 'ev_141_142', firstVisit: true, privacy: false },
   ];
 
-  const consentCookieValue = getCookie('OPT_ON_AND_CONSENT_COOKIE');
+  const consent = getCookie('OPT_ON_AND_CONSENT_COOKIE');
+  if (consent && consent.includes('C0002:0')) return null;
 
-  if (consentCookieValue?.includes('C0002:0')) {
-    return null;
-  }
-
-  const secondVisits = {};
+  const visitData = {};
 
   configs.forEach((config) => {
     const {
-      domains = [],
-      paths = [],
-      params = [],
-      privacy,
+      id,
+      conditions = {},
+      rules = {},
+      privacy = false,
       firstVisit = false,
       secondVisit = true,
       update = true,
-      rules = {},
-      id,
     } = config;
 
-    const matched = matchConditions({ domains, paths, params, rules }, host, path, href);
+    if (!matchConditions({ conditions, rules, context })) return;
 
-    if (!matched) {
-      return;
+    const currentCount = getVisitCount(id);
+    let nextCount = currentCount;
+
+    // Handle first visit
+    if (firstVisit && currentCount < 1) {
+      nextCount = 1;
+      setVisitCount(id, nextCount);
+      visitData[id] = [{ visit: nextCount, privacy }];
     }
 
-    const attempt = getVisitCount(id);
-    let nextVisit = attempt;
-
-    if (firstVisit && attempt < 1) {
-      nextVisit = 1;
-      setVisitCount(id, nextVisit);
-      secondVisits[id] = secondVisits[id] || [];
-      secondVisits[id].push({ visit: nextVisit, privacy });
-    }
-
+    // Handle second visit
     if (secondVisit) {
-      if (update && attempt <= 2) {
-        nextVisit = attempt + 1;
-        setVisitCount(id, nextVisit);
-      } else {
-        nextVisit = attempt;
+      if (update && currentCount <= 2) {
+        nextCount = currentCount + 1;
+        setVisitCount(id, nextCount);
       }
-
-      if (nextVisit === 2) {
-        secondVisits[id] = secondVisits[id] || [];
-        secondVisits[id].push({ visit: nextVisit, privacy });
+      if (nextCount === 2) {
+        if (!visitData[id]) visitData[id] = [];
+        visitData[id].push({ visit: nextCount, privacy });
       }
     }
   });
 
-  return secondVisits;
+  return visitData;
 }
 
 export function getPageNameForAnalytics() {
