@@ -165,6 +165,9 @@ export function processCardName(fields, merchCard) {
 }
 
 export function processTitle(fields, merchCard, titleConfig) {
+    if (fields.cardTitle) {
+        fields.cardTitle = processMnemonicElements(fields.cardTitle);
+    }
     appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
 }
 
