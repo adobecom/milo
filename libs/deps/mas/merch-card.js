@@ -2971,6 +2971,7 @@ merch-card[variant="full-pricing-express"] [slot="body-s"] p:last-child a {
     background: transparent;
     border: none;
     margin: 0;
+    font-size: 16px;
 }
 
 merch-card[variant="full-pricing-express"] [slot="body-s"] p:last-child a:hover {
