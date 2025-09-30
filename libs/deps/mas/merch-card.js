@@ -3247,7 +3247,12 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
     /* Ensure the second divider wrapper stays at bottom with proper spacing */
     merch-card[variant="full-pricing-express"] [slot="body-s"] > hr:last-of-type {
         margin-top: auto;
-        margin-bottom: 24px 0;
+        padding-top: 24px;
+        margin-bottom: 24px;
+        border: none;
+        border-bottom: 1px solid #E9E9E9;
+        height: 0;
+        background: transparent;
     }
 
     /* Ensure the button container stays at the bottom */
