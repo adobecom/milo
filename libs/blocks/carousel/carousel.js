@@ -75,13 +75,6 @@ function isVariation(el, variation) {
   return el.classList.contains(variation);
 }
 
-function processCandidateKeys(keys, el) {
-  if (isVariation(el, VARIATIONS.hovering)) {
-    return keys.concat(keys.map((key) => key.cloneNode(true)));
-  }
-  return keys;
-}
-
 function setInitialActiveIndex(el) {
   return isVariation(el, VARIATIONS.hovering) ? 2 : 0;
 }
@@ -106,6 +99,8 @@ function decorateSlideIndicators(slides, jumpTo, activeSlideIndex) {
       li.classList.add('active');
       if (jumpTo) li.setAttribute('tabindex', 0);
     }
+    if (i === activeSlideIndex - 1) li.classList.add('previous-slide');
+    if (i === activeSlideIndex + 1) li.classList.add('next-slide');
     indicatorDots.push(li);
   }
   return indicatorDots;
@@ -231,6 +226,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
     slides,
+    menuItems,
+    menuItemsContainer,
     nextPreviousBtns,
     slideIndicators,
     controlsContainer,
@@ -243,6 +240,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
+  let activeMenuItem = menuItemsContainer.querySelector('.active');
   let activeSlideIndicator = controlsContainer.querySelector('.active');
   const activeSlideIndex = activeSlideIndicator.dataset.index;
 
@@ -259,7 +257,13 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
+  activeMenuItem.classList.remove('active');
   activeSlideIndicator.classList.remove('active');
+  [...activeSlide.parentElement.children].forEach((item) => {
+    item.classList.remove('previous-slide');
+    item.classList.remove('next-slide');
+  });
+
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
 
   /*
@@ -278,6 +282,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide.style.order = '1';
     activeSlideIndicator = slideIndicators[jumpToIndex];
     activeSlide = slides[jumpToIndex];
+    activeMenuItem = menuItemsContainer.querySelector(`[data-index='${jumpToIndex}']`);
+    activeMenuItem.classList.add('active');
     jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer);
   }
 
@@ -288,6 +294,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     nextPreviousBtns[1].focus();
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
+    activeMenuItem = handleNext(activeMenuItem, menuItems);
     activeSlide = handleNext(activeSlide, slides);
     slideContainer?.classList.remove('is-reversing');
   }
@@ -300,6 +307,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
+    activeMenuItem = handlePrevious(activeMenuItem, menuItems);
     slideContainer.classList.add('is-reversing');
   }
 
@@ -311,6 +319,20 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
+  activeMenuItem.classList.add('active');
+
+  // add classes to nearby siblings
+  if (activeSlide.previousElementSibling) {
+    activeSlide.previousElementSibling.classList.add('previous-slide');
+  } else {
+    activeSlide.parentElement.lastElementChild.classList.add('previous-slide');
+  }
+  if (activeSlide.nextElementSibling) {
+    activeSlide.nextElementSibling.classList.add('next-slide');
+  } else {
+    activeSlide.parentElement.firstElementChild.classList.add('next-slide');
+  }
+
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
   activeSlideIndicator.classList.add('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
@@ -409,6 +431,12 @@ function handleChangingSlides(carouselElements) {
     });
   }
 
+  el.addEventListener('carousel:jumpTo', (event) => {
+    const { index } = event.detail;
+    const jumpToIndex = Number(index);
+    moveSlides(event, carouselElements, jumpToIndex);
+  });
+
   // Swipe Events
   mobileSwipeDetect(carouselElements);
 }
@@ -449,6 +477,26 @@ function readySlides(slides, slideContainer, isUpsDesktop) {
   }
 }
 
+const buildMenuItems = (slides, el) => {
+  const menuItems = slides.map((slide, index) => {
+    const title = slide.querySelector('h2')?.textContent || `Slide ${index + 1}`;
+    const item = createTag('h2', { class: 'carousel-menu-item' }, title);
+    item.dataset.index = index;
+    item.addEventListener('click', (event) => {
+      const customEvent = new CustomEvent('carousel:jumpTo', {
+        detail: { index: event.target.dataset.index },
+      });
+      el.dispatchEvent(customEvent);
+    });
+    item.setAttribute('data-index', index);
+    return item;
+  });
+  return {
+    menuItemsContainer: createTag('div', { class: 'carousel-menu' }, menuItems),
+    menuItems,
+  };
+};
+
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
@@ -482,9 +530,13 @@ export default function init(el) {
     'aria-live': 'polite',
   });
   slideWrapper.appendChild(ariaLive);
+  const { menuItemsContainer, menuItems } = buildMenuItems(slides, el);
+
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const carouselElements = {
     el,
+    menuItemsContainer,
+    menuItems,
     nextPreviousBtns,
     slideContainer,
     slides,
@@ -512,6 +564,7 @@ export default function init(el) {
   }
 
   el.textContent = '';
+  el.append(menuItemsContainer);
   el.append(slideWrapper);
 
   const dotsUl = createTag('ul', { class: 'carousel-indicators' });
@@ -560,7 +613,10 @@ export default function init(el) {
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
+  slides[activeSlideIndex - 1]?.classList.add('previous-slide');
   slides[activeSlideIndex].classList.add('active');
+  menuItems[activeSlideIndex].classList.add('active');
+  slides[activeSlideIndex + 1]?.classList.add('next-slide');
   handleChangingSlides(carouselElements);
   setAriaHiddenAndTabIndex(carouselElements, slides[activeSlideIndex]);
   window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
