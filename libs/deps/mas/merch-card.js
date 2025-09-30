@@ -2955,37 +2955,6 @@ merch-card[variant="full-pricing-express"] [slot="body-s"] p a {
     font-weight: 700;
 }
 
-/* divider-wrapper styling for body-s */
-merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper {
-    display: block;
-    margin: var(--merch-card-full-pricing-express-section-gap) 0;
-}
-
-/* First divider wrapper - different margins */
-merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper:first-of-type {
-    margin: 16px 0 24px 0;
-}
-
-/* sp-divider and hr visual styling */
-merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper sp-divider,
-merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper hr {
-    display: block;
-    width: 100%;
-    height: 1px;
-    background-color: #E9E9E9;
-    border: none;
-    margin: 0;
-}
-
-/* Override for HR with specific sizes */
-merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper hr.divider-size-m {
-    height: 2px;
-}
-
-merch-card[variant="full-pricing-express"] [slot="body-s"] .divider-wrapper hr.divider-size-l {
-    height: 4px;
-}
-
 merch-card[variant="full-pricing-express"] [slot="body-s"] .button-container {
     margin: 0;
     padding: 0;
@@ -3063,6 +3032,14 @@ merch-card[variant="full-pricing-express"] [slot="price"] p {
     color: var(--spectrum-gray-700);
 }
 
+merch-card[variant="full-pricing-express"] [slot="price"] > p span[is="inline-price"]:only-child {
+    color: var(--spectrum-gray-700);
+}
+
+merch-card[variant="full-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template="strikethrough"] + span[is="inline-price"] {
+    color: var(--spectrum-indigo-900);
+}
+
 /* Target inline prices in paragraphs that are not the first paragraph */
 merch-card[variant="full-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] {
     font-size: 12px;
@@ -3087,7 +3064,7 @@ merch-card[variant="full-pricing-express"] [slot="price"] strong {
 }
 merch-card[variant="full-pricing-express"] [slot="price"] p a {
     color: var(--spectrum-indigo-900);
-    font-weight: 500;
+    font-weight: 700;
     text-decoration: none;
 }
 
@@ -3101,7 +3078,7 @@ merch-card[variant="full-pricing-express"] span.placeholder-resolved[data-templa
 }
 
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price {
-    color: var(--spectrum-indigo-900);
+    color: var(--spectrum-gray-700);
 }
 
 merch-card[variant="full-pricing-express"] [slot="price"] p .heading-xs,
@@ -3169,6 +3146,7 @@ merch-card[variant="full-pricing-express"] merch-badge {
     white-space: nowrap;
     color: var(--spectrum-white);
     font-size: 16px;
+    font-weight: bold;
     line-height: 20.8px;
 }
 
@@ -3184,15 +3162,10 @@ merch-card[variant="full-pricing-express"] merch-badge {
         display: none;
     }
 
-    /* Hide the first divider wrapper specifically */
-    merch-card[variant="full-pricing-express"] [slot="body-s"] > .divider-wrapper:first-of-type {
-        display: none !important;
-    }
-
-    /* Show only the last divider wrapper (2nd one) */
-    merch-card[variant="full-pricing-express"] [slot="body-s"] > .divider-wrapper:last-of-type {
+    /* Show only the last hr (2nd one) */
+    merch-card[variant="full-pricing-express"] [slot="body-s"] > hr:last-of-type {
         display: block;
-        margin: 16px 0;
+        margin: 24px 0;
     }
 
     /* Show only the button container (last p tag) */
@@ -3206,7 +3179,14 @@ merch-card[variant="full-pricing-express"] merch-badge {
     }
     
     /* Price font size on mobile */
-    merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"] {
+    merch-card[variant="full-pricing-express"] [slot="price"] .price-currency-symbol,
+    merch-card[variant="full-pricing-express"] [slot="price"] .price-integer,
+    merch-card[variant="full-pricing-express"] [slot="price"] .price-decimals-delimiter,
+    merch-card[variant="full-pricing-express"] [slot="price"] .price-decimals,
+    merch-card[variant="full-pricing-express"] [slot="price"] .price-recurrence,
+    merch-card[variant="full-pricing-express"] [slot="price"] .price-strikethrough,
+    merch-card[variant="full-pricing-express"] [slot="price"] .price-unit-type,
+    merch-card[variant="full-pricing-express"] [slot="price"] .price-tax-inclusivity {
         font-size: 22px;
     }
     
@@ -3267,7 +3247,7 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
     /* Ensure the second divider wrapper stays at bottom with proper spacing */
     merch-card[variant="full-pricing-express"] [slot="body-s"] > hr:last-of-type {
         margin-top: auto;
-        margin-bottom: 16px;
+        margin-bottom: 24px 0;
     }
 
     /* Ensure the button container stays at the bottom */
