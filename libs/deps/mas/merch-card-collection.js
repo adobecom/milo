@@ -2743,7 +2743,7 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
     merch-card[variant="full-pricing-express"] [slot="body-s"] > hr:last-of-type {
         margin-top: auto;
         padding-top: 24px;
-        margin-bottom: 24px;
+        margin-bottom: 16px;
         border: none;
         border-bottom: 1px solid #E9E9E9;
         height: 0;
