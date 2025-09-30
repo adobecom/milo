@@ -3351,12 +3351,6 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
             align-items: center;
             justify-content: center;
         }
-        
-        /* Hide badge wrapper when empty */
-        :host([variant='full-pricing-express']) .badge-wrapper:empty,
-        :host([variant='full-pricing-express']:not(:has([slot="badge"]:not(:empty)))) .badge-wrapper {
-            display: none;
-        }
 
         /* Card content styling */
         :host([variant='full-pricing-express']) .card-content {
@@ -3433,12 +3427,6 @@ merch-card[variant="full-pricing-express"] mas-tooltip {
         :host([variant='full-pricing-express'][border-color='gradient-firefly-spectrum']) .badge-wrapper,
         :host([variant='full-pricing-express'][border-color='gradient-firefly-spectrum']) .card-content {
             background: var(--gradient-firefly-spectrum);
-        }
-        
-        /* When gradient and badge exist, keep rounded corners for smooth transition */
-        :host([variant='full-pricing-express'][gradient-border='true']:has([slot="badge"]:not(:empty))) .card-content {
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
         }
         
         :host([variant='full-pricing-express'][gradient-border='true']:has([slot="badge"]:not(:empty))) .card-content::before {
