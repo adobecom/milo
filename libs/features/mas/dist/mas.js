@@ -2828,6 +2828,7 @@ merch-card-collection.full-pricing-express {
     grid-template-columns: 1fr;
     max-width: var(--merch-card-full-pricing-express-mobile-width);
     margin: 0 auto;
+    padding: 0 16px;
 }
 
 /* Tablet - 2 columns */
@@ -3185,7 +3186,6 @@ merch-card[variant="full-pricing-express"] merch-badge {
     }
     
     merch-card[variant="full-pricing-express"] {
-        width: 365px;
         max-width: 365px;
     }
     
