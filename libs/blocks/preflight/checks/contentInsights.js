@@ -14,7 +14,7 @@ import {
   checkPlaceholders,
   checkIcons,
 } from './performance.js';
-import { 
+import {
   checkH1s,
   checkTitle,
   checkCanon,
