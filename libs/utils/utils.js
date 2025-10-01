@@ -1634,7 +1634,6 @@ function initSidekick() {
 function initContentInsights() {
   const urlParams = new URLSearchParams(window.location.search);
   const contentInsightsParam = urlParams.get('content-insights');
-  
   if (contentInsightsParam === 'on') {
     import('../blocks/preflight/checks/contentInsights.js');
   }
