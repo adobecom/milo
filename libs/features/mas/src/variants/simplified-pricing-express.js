@@ -1,10 +1,7 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './simplified-pricing-express.css.js';
-import { TABLET_DOWN } from '../media.js';
-
-// Helper function to check if viewport is tablet or below
-const isTabletOrBelow = () => window.matchMedia(TABLET_DOWN).matches;
+import { isDesktop, TABLET_DOWN } from '../media.js';
 
 export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -65,19 +62,61 @@ export class SimplifiedPricingExpress extends VariantLayout {
         return '[slot="heading-xs"]';
     }
 
+    syncHeights() {
+        if (this.card.getBoundingClientRect().width === 0) {
+            return;
+        }
+
+        const descriptionSlot = this.card.querySelector('[slot="body-xs"]');
+        if (descriptionSlot) {
+            this.updateCardElementMinHeight(descriptionSlot, 'description');
+        }
+
+        const priceSlot = this.card.querySelector('[slot="price"]');
+        if (priceSlot) {
+            this.updateCardElementMinHeight(priceSlot, 'price');
+        }
+    }
+
+    async postCardUpdateHook() {
+        if (!this.card.isConnected) return;
+
+        await this.card.updateComplete;
+        if (this.card.prices?.length) {
+            await Promise.all(this.card.prices.map(price => price.onceSettled?.()));
+        }
+
+        if (isDesktop()) {
+            const container = this.getContainer();
+            if (!container) return;
+
+            const prefix = `--consonant-merch-card-${this.card.variant}`;
+            const hasExistingVars = container.style.getPropertyValue(`${prefix}-description-height`);
+
+            if (!hasExistingVars) {
+                requestAnimationFrame(() => {
+                    const cards = container.querySelectorAll(`merch-card[variant="${this.card.variant}"]`);
+                    cards.forEach(card => card.variantLayout?.syncHeights?.());
+                });
+            } else {
+                requestAnimationFrame(() => {
+                    this.syncHeights();
+                });
+            }
+        }
+    }
+
     connectedCallbackHook() {
         if (!this.card || this.card.failed) {
             return;
         }
-        
+
         this.setupAccordion();
-        
-        requestAnimationFrame(() => {
-            if (this.card?.hasAttribute('data-default-card') && isTabletOrBelow()) {
-                this.card.setAttribute('data-expanded', 'true');
-            }
-        });
+        if (this.card?.hasAttribute('data-default-card') && !isDesktop()) {
+            this.card.setAttribute('data-expanded', 'true');
+        }
     }
+
 
     setupAccordion() {
         const merchCard = this.card;
@@ -86,7 +125,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
         }
 
         const updateExpandedState = () => {
-            if (isTabletOrBelow()) {
+            if (!isDesktop()) {
                 const isDefaultCard = merchCard.hasAttribute('data-default-card');
                 merchCard.setAttribute('data-expanded', isDefaultCard ? 'true' : 'false');
             } else {
@@ -94,41 +133,19 @@ export class SimplifiedPricingExpress extends VariantLayout {
             }
         };
 
-        // Set initial state
         updateExpandedState();
 
-        // Watch for viewport changes
         const mediaQuery = window.matchMedia(TABLET_DOWN);
         this.mediaQueryListener = () => {
             updateExpandedState();
         };
         mediaQuery.addEventListener('change', this.mediaQueryListener);
-
-        // Watch for default card attribute changes
-        this.attributeObserver = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && 
-                    mutation.attributeName === 'data-default-card' && 
-                    this.card.hasAttribute('data-default-card') && 
-                    isTabletOrBelow()) {
-                    this.card.setAttribute('data-expanded', 'true');
-                }
-            });
-        });
-        
-        this.attributeObserver.observe(this.card, { 
-            attributes: true,
-            attributeOldValue: true
-        });
     }
 
     disconnectedCallbackHook() {
         if (this.mediaQueryListener) {
             const mediaQuery = window.matchMedia(TABLET_DOWN);
             mediaQuery.removeEventListener('change', this.mediaQueryListener);
-        }
-        if (this.attributeObserver) {
-            this.attributeObserver.disconnect();
         }
     }
 
@@ -137,7 +154,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
         e.stopPropagation();
         
         const merchCard = this.card;
-        if (!merchCard || !isTabletOrBelow()) {
+        if (!merchCard || !!isDesktop()) {
             return;
         }
         
@@ -179,15 +196,10 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='simplified-pricing-express']) {
-            /* CSS Variables */
             --merch-card-simplified-pricing-express-width: 365px;
-            --merch-card-simplified-pricing-express-tablet-width: 532px;
             --merch-card-simplified-pricing-express-padding: 24px;
             --merch-card-simplified-pricing-express-padding-mobile: 16px;
-            --merch-card-simplified-pricing-express-min-height: 341px;
             --merch-card-simplified-pricing-express-price-font-size: 28px;
-            --merch-card-simplified-pricing-express-price-p-font-size: 12px;
-            --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
             --merch-card-simplified-pricing-express-price-font-weight: 700;
             --merch-card-simplified-pricing-express-price-line-height: 36.4px;
             --merch-card-simplified-pricing-express-price-currency-font-size: 22px;
@@ -222,7 +234,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
             position: relative;
         }
 
-        /* Badge wrapper styling */
         :host([variant='simplified-pricing-express']) .badge-wrapper {
             padding: 4px 12px;
             border-radius: 8px 8px 0 0;
@@ -237,18 +248,11 @@ export class SimplifiedPricingExpress extends VariantLayout {
             align-items: center;
             justify-content: center;
         }
-        
-        /* Hide badge wrapper when empty */
-        :host([variant='simplified-pricing-express']) .badge-wrapper:empty {
-            display: none;
-        }
-        
-        /* Also hide when badge slot is empty */
+
         :host([variant='simplified-pricing-express']:not(:has([slot="badge"]:not(:empty)))) .badge-wrapper {
             display: none;
         }
 
-        /* Card content styling */
         :host([variant='simplified-pricing-express']) .card-content {
             border-radius: 8px;
             padding: var(--merch-card-simplified-pricing-express-padding);
@@ -259,7 +263,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
             position: relative;
         }
         
-        /* Ensure content appears above pseudo-element background */
         :host([variant='simplified-pricing-express']) .card-content > * {
             position: relative;
         }
@@ -269,28 +272,23 @@ export class SimplifiedPricingExpress extends VariantLayout {
             border: 1px solid var(--consonant-merch-card-border-color, var(--spectrum-gray-100));
         }
         
-        /* Collapsed state for non-gradient cards */
         :host([variant='simplified-pricing-express']:not([gradient-border='true'])[data-expanded='false']) .card-content {
             overflow: hidden;
         }
         
-        /* When badge exists, adjust card content border radius */
         :host([variant='simplified-pricing-express']:has([slot="badge"]:not(:empty))) .card-content {
             border-top-left-radius: 0;
             border-top-right-radius: 0;
         }
         
-        /* When badge exists with regular border, ensure top border */
         :host([variant='simplified-pricing-express']:not([gradient-border='true']):has([slot="badge"]:not(:empty))) .card-content {
             border-top: 1px solid var(--consonant-merch-card-border-color, var(--spectrum-gray-100));
         }
         
-        /* When badge has content, ensure seamless connection */
         :host([variant='simplified-pricing-express']:has([slot="badge"]:not(:empty))) .badge-wrapper {
             margin-bottom: -2px;
         }
 
-        /* Common gradient border styles */
         :host([variant='simplified-pricing-express'][gradient-border='true']) .badge-wrapper {
             border: none;
             margin-bottom: -6px;
@@ -302,7 +300,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
         }
 
         :host([variant='simplified-pricing-express'][gradient-border='true']) .card-content {
-            position: relative;
             border: none;
             padding: calc(var(--merch-card-simplified-pricing-express-padding) + 2px);
             border-radius: 8px;
@@ -321,7 +318,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
             pointer-events: none;
         }
         
-        /* Gradient-specific backgrounds */
         :host([variant='simplified-pricing-express'][border-color='gradient-purple-blue']) .badge-wrapper,
         :host([variant='simplified-pricing-express'][border-color='gradient-purple-blue']) .card-content {
             background: var(--gradient-purple-blue);
@@ -332,7 +328,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
             background: var(--gradient-firefly-spectrum);
         }
         
-        /* When gradient and badge exist, keep rounded corners for smooth transition */
         :host([variant='simplified-pricing-express'][gradient-border='true']:has([slot="badge"]:not(:empty))) .card-content {
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
@@ -351,7 +346,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
             gap: 8px;
         }
 
-        /* Font specifications for heading and body */
         :host([variant='simplified-pricing-express']) [slot="heading-xs"] {
             font-size: 18px;
             font-weight: 700;
@@ -374,10 +368,12 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
         /* Desktop only - Fixed heights for alignment */
         @media (min-width: 1200px) {
-            :host([variant='simplified-pricing-express']) {
-                display: flex;
-                flex-direction: column;
-                height: auto;
+            :host([variant='simplified-pricing-express']) .card-content {
+                height: 100%;
+            }
+
+            :host([variant='simplified-pricing-express']) .description {
+                flex: 1;
             }
 
             :host([variant='simplified-pricing-express']) .cta {
@@ -457,4 +453,3 @@ export class SimplifiedPricingExpress extends VariantLayout {
         }
     `;
 }
-

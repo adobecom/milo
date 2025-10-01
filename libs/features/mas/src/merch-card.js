@@ -42,6 +42,8 @@ const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
+const VARIANTS_WITH_HEIGHT_SYNC = ['full-pricing-express', 'simplified-pricing-express'];
+
 function priceOptionsProvider(element, options) {
     const card = element.closest(MERCH_CARD);
     if (!card) return options;
@@ -56,6 +58,14 @@ function registerPriceOptionsProvider(masCommerceService) {
     if (masCommerceService.providers.has(priceOptionsProvider)) return;
     masCommerceService.providers.price(priceOptionsProvider);
 }
+
+const intersectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.target.clientHeight === 0) return;
+    intersectionObserver.unobserve(entry.target);
+    entry.target.requestUpdate();
+  });
+});
 
 let idCounter = 0;
 
@@ -246,7 +256,7 @@ export class MerchCard extends LitElement {
 
     get computedBorderStyle() {
         if (
-            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans', 'simplified-pricing-express'].includes(
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans', 'simplified-pricing-express', 'full-pricing-express'].includes(
                 this.variant,
             )
         ) {
@@ -533,6 +543,9 @@ export class MerchCard extends LitElement {
       if (!this.isConnected) return;
         if (this.#hydrationPromise) {
           await this.#hydrationPromise;
+          if (VARIANTS_WITH_HEIGHT_SYNC.includes(this.variantLayout)) {
+            intersectionObserver.observe(this);
+          }
           this.#hydrationPromise = undefined;
         }
         if (this.variantLayoutPromise) {

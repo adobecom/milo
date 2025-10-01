@@ -127,6 +127,7 @@ styles.innerHTML = `
     --spectrum-gray-700: #494949;
     --spectrum-gray-800: #2C2C2C;
     --spectrum-gray-900: #1C1C1C;
+    --spectrum-indigo-300: #D3D5FF;
     --spectrum-indigo-900: #5258E4;
   
     /* merch card generic */
@@ -241,6 +242,13 @@ merch-card.has-divider hr {
     margin: var(--consonant-merch-spacing-xs) 0;
     height: 1px;
     border: none;
+}
+
+merch-card hr {
+    border: none;
+    margin: 0;
+    background-color: var(--spectrum-gray-300);
+    height: 1px;
 }
 
 merch-card.has-divider div[slot='body-lower'] hr {
