@@ -530,8 +530,7 @@ function isLocalizedPath(path, locales) {
   const anyTypeOfLocaleOrLanguagePath = langConfig?.localeToLanguageMap
     && (langConfig.localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
       || (langConfig.localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
-  const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-    || path.endsWith(`/${loc}`)));
+  const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)));
   return langstorePath
     || isMerchLink
     || previewPath
