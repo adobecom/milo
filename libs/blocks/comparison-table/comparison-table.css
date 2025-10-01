@@ -57,6 +57,7 @@
 .comparison-table .table .table-cell-container > div p:first-child{
   border: 1px solid var(--comparison-border-color);
   border-radius: 4px;
+  padding: 12px;
 }
 
 .comparison-table *:is(p, h1, h2, h3, h4, h5, h6) {
