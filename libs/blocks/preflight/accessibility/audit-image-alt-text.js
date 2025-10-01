@@ -109,7 +109,7 @@ export async function checkAlt() {
   // eslint-disable-next-line consistent-return
   return {
     decorativeImages: decorativeImages.value,
-    altTextImages: altTextImages.value
+    altTextImages: altTextImages.value,
   };
 }
 

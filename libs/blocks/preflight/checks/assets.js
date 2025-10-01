@@ -200,7 +200,7 @@ export function isViewportTooSmall() {
 }
 
 export async function openAllModals(area = document) {
-  const links = await area.querySelectorAll('main a[data-modal-hash]');
+  const links = area.querySelectorAll('main a[data-modal-hash]');
   // eslint-disable-next-line no-unused-vars
   for (const [index, link] of links.entries()) {
     try {
