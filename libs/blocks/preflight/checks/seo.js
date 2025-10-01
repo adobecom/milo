@@ -252,22 +252,22 @@ export async function validLinkFilter(area = document) {
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
     : KNOWN_BAD_URLS;
   return [...area.querySelectorAll('a')]
-  .filter((link) => {
-    if (
-      link.href // Has an href tag
-      && !link.href.includes('tel:')  // Is not a phone number
-      && !link.href.includes('mailto:')  // Is not an email address
-      && !link.href.startsWith('#') // Is not a local link
-      && !link.href.startsWith('https://#') // Is not a local link
-      && !link.href.includes('local') // Is not a local link
-      && !link.href.includes('bookmark://') // Ignore bookmarks
-      && !link.closest('.preflight') // Is not inside preflight
-      && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
-    ) {
-      return true;
-    }
-    return false;
-  }).map((link) => link.href);
+    .filter((link) => {
+      if (
+        link.href // Has an href tag
+        && !link.href.includes('tel:') // Is not a phone number
+        && !link.href.includes('mailto:') // Is not an email address
+        && !link.href.startsWith('#') // Is not a local link
+        && !link.href.startsWith('https://#') // Is not a local link
+        && !link.href.includes('local') // Is not a local link
+        && !link.href.includes('bookmark://') // Ignore bookmarks
+        && !link.closest('.preflight') // Is not inside preflight
+        && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
+      ) {
+        return true;
+      }
+      return false;
+    }).map((link) => link.href);
 }
 
 export async function checkLinks({ area, urlHash, envName }) {
