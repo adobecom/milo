@@ -134,12 +134,40 @@
   right: 0;
 }
 
-.email-collection .foreground form input {
+.email-collection .foreground form :is(input, select) {
+  box-sizing: border-box;
   margin-bottom: 12px;
   border: 2px #DADADA solid;
   border-radius: 8px;
   height: 32px;
   padding: 0 12px;
+}
+
+.email-collection .foreground form .select-wrapper {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.email-collection .foreground form .select-wrapper select {
+  margin-bottom: 0;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.email-collection .foreground form .select-wrapper::after {
+  content: '';
+  background: url('/img/ui/chevron-down.svg') no-repeat center;
+  background-color: #E9E9E9;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 6px;
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
 }
 
 .email-collection .foreground form .split-row,
@@ -290,8 +318,12 @@
   overflow: hidden;
 }
 
-.email-collection .foreground form input.invalid {
+.email-collection .foreground form :is(input, select).invalid {
   border-color: var(--form-error-color);
+  margin-bottom: 0;
+}
+
+.email-collection .foreground form .select-wrapper:has(select.invalid) {
   margin-bottom: 0;
 }
 
@@ -316,9 +348,12 @@
   position: relative;
 }
 
-.email-collection .foreground .text form input.invalid {
+.email-collection .foreground .text form :is(input, select).invalid {
   background-image: url('/img/ui/attention.svg');
   background-size: 18px;
   background-repeat: no-repeat;
   background-position: calc(100% - 12px);
+}
+.email-collection .foreground .text form select.invalid {
+  background-position: calc(100% - 30px);
 }

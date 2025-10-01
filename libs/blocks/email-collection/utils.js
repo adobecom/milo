@@ -17,8 +17,8 @@ export function localizeFederatedUrl(url) {
 }
 
 const FEDERAL_ROOT = '/federal/email-collection';
-const FORM_CONFIG_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json`);
 const CONSENT_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/consents/cs4.plain.html`);
+const PLACEHOLDER_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=placeholders`);
 
 export const FORM_FIELDS = {
   email: {
@@ -45,6 +45,7 @@ export const FORM_FIELDS = {
   },
   country: {
     tag: 'input',
+    url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=countries`),
     attributes: {
       type: 'text',
       readonly: '',
@@ -65,6 +66,11 @@ export const FORM_FIELDS = {
       required: true,
       autocomplete: 'organization-title',
     },
+  },
+  state: {
+    tag: 'select',
+    url: getFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=states&limit=2000`),
+    attributes: { required: true },
   },
 };
 
@@ -134,11 +140,11 @@ export const [createAriaLive, updateAriaLive] = (() => {
       let ariaTextContent = '';
       if (typeof content === 'string') {
         ariaLive.textContent = content;
-        return;
+      } else {
+        content.querySelectorAll('.text:not(.hidden) > *:not(.icon-area, form, .button-container, .hidden)')
+          .forEach((child) => { ariaTextContent += ` ${child.textContent}`; });
+        ariaLive.textContent = ariaTextContent;
       }
-      content.querySelectorAll('.text:not(.hidden) > *:not(.icon-area, form, .button-container, .hidden)')
-        .forEach((child) => { ariaTextContent += ` ${child.textContent}`; });
-      ariaLive.textContent = ariaTextContent;
     },
   ];
 })();
@@ -147,33 +153,49 @@ function formatMetadataKey(key) {
   return key?.toLowerCase().trim().replaceAll(/\s+/g, '-');
 }
 
-const fetchFormConfig = (() => {
-  const defaultConfig = {
-    placeholders: {
-      required: 'This field is required.',
-      email: 'Enter a valid emaili.',
-    },
-    countries: {},
-  };
-  const config = {};
-  return async () => {
-    if (Object.keys(config).length) return config;
-    try {
-      const configReq = await fetch(FORM_CONFIG_URL);
-      if (!configReq.ok) return defaultConfig;
-      const configRes = await configReq.json();
-      const { ':names': names } = configRes;
-      names.forEach((name) => {
-        const { data } = configRes[name];
-        config[name] = Object.fromEntries(data.map(({ key, value }) => [key, value]));
-      });
-      return config;
-    } catch (e) {
-      window.lana?.log(e);
-      return defaultConfig;
-    }
-  };
-})();
+function formatStateData(data) {
+  const formattedData = {};
+  data.forEach((state) => {
+    const { countryCode, key, value } = state;
+    if (!countryCode) return;
+    formattedData[countryCode] = formattedData[countryCode] ?? [];
+    formattedData[countryCode].push({ key, value });
+  });
+  return formattedData;
+}
+
+function defaultFormatData(data) {
+  return data.reduce((acc, { key, value }) => {
+    acc[key] = value;
+    return acc;
+  }, {});
+}
+
+async function fetchSheet(sheetData) {
+  const formatData = { state: formatStateData };
+  const { id, url } = sheetData;
+  try {
+    const sheetReq = await fetch(url);
+    if (!sheetReq.ok) return { [id]: {} };
+    const { data } = await sheetReq.json();
+
+    if (formatData[id]) return { [id]: formatData[id](data) };
+    return { [id]: defaultFormatData(data) };
+  } catch (e) {
+    window.lana?.log(e);
+    return { [id]: {} };
+  }
+}
+
+async function fetchFormConfig(sheets) {
+  const sheetPromises = [{ url: PLACEHOLDER_URL, id: 'placeholders' }, ...sheets]
+    .map((sheet) => (fetchSheet(sheet)));
+
+  const resolved = await Promise.all(sheetPromises);
+  let config = {};
+  resolved.forEach((result) => { config = { ...config, ...result }; });
+  return config;
+}
 
 export async function fetchConsentString() {
   try {
@@ -183,6 +205,7 @@ export async function fetchConsentString() {
     const string = await stringReq.text();
     const doc = new DOMParser().parseFromString(string, 'text/html');
     const [consentDiv, consentId] = doc.querySelectorAll('body > div');
+
     return {
       consentDiv,
       consentId: consentId?.textContent.trim(),
@@ -200,12 +223,13 @@ export const [getFormData, setFormData] = (() => {
       formData = {
         fields: {},
         metadata: {},
-        config: fetchFormConfig(),
         consent: fetchConsentString(),
       };
+      const fetchConfigParams = [];
       const { fields, metadata } = formData;
       const metadataEl = el.parentElement?.querySelector('.section-metadata');
       if (!metadataEl) return 'Section metadata is missing';
+
       [...metadataEl.children].forEach((child) => {
         const key = formatMetadataKey(child.firstElementChild?.textContent);
         if (!FORM_FIELDS[key] && !FORM_METADATA[key]) return;
@@ -213,12 +237,16 @@ export const [getFormData, setFormData] = (() => {
         const metadataObject = FORM_METADATA[key] ? metadata : fields;
         const newKey = FORM_METADATA[key] ?? key;
         metadataObject[newKey] = value;
+
+        if (FORM_FIELDS[key]?.url) fetchConfigParams.push({ id: key, url: FORM_FIELDS[key].url });
       });
 
       if (!fields.email
         || !metadata.campaignId
         || !metadata.mpsSname
         || !metadata.subscriptionName) return 'Section metadata is missing email/campaing-id/mps-sname/subscription-name field';
+
+      formData.config = fetchFormConfig(fetchConfigParams);
 
       return null;
     },

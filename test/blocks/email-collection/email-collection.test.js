@@ -56,7 +56,6 @@ describe('Email collection', () => {
         subscriptionName: '1234',
       },
       config: {
-        countries: { US: 'United States', GB: 'United Kingdom' },
         placeholders: {
           required: 'This field is required.',
           email: 'Enter a valid email.',
@@ -118,6 +117,7 @@ describe('Email collection', () => {
       },
       country: {
         label: 'Country',
+        url: 'https://main--federal--adobecom.aem.page/federal/email-collection/form-config.json?sheet=countries',
         attributes: {
           type: 'text',
           readonly: '',

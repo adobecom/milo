@@ -20,7 +20,7 @@ const miloConfig = getConfig();
 const FORM_ID = 'email-collection-form';
 
 function showHideSubscribedMessage(el, subscribed, email) {
-  el.querySelector('.button-container:not(.show-form)')?.classList.toggle('hidden', subscribed);
+  el.querySelector('.button-container')?.classList.toggle('hidden', subscribed);
   el.querySelector('p:has(.show-form)')?.classList.toggle('hidden', !subscribed);
   const emailEl = el.querySelector('.subscribed-email');
   if (emailEl) emailEl.textContent = email;
@@ -33,23 +33,21 @@ export const [showHideMessage, setMessageEls] = (() => {
     ({ errorMsg, subscribed = false, email, hideMessage = false }) => {
       const { foreground, success, error, form } = elsObject;
       [form, success, error].forEach((el) => el.classList.add('hidden'));
-      let replace = success;
-      if (errorMsg) {
-        window.lana?.log(errorMsg);
-        replace = error;
-      }
+
+      const replace = errorMsg ? error : success;
+      if (errorMsg) window.lana?.log(errorMsg);
+
       foreground.classList.toggle('message', !hideMessage);
       form.classList.toggle('hidden', !hideMessage);
       replace.classList.toggle('hidden', hideMessage);
 
       showHideSubscribedMessage(replace, subscribed, email);
-
-      if (hideMessage) {
-        const emailEl = form.querySelector('#email');
-        if (emailEl) emailEl.value = '';
-        emailEl?.focus();
-      }
       updateAriaLive(replace);
+
+      if (!hideMessage) return;
+      const emailEl = form.querySelector('#email');
+      if (emailEl) emailEl.value = '';
+      emailEl?.focus();
     },
     (children) => {
       const foreground = children[0];
@@ -66,6 +64,7 @@ export const [showHideMessage, setMessageEls] = (() => {
 
 async function insertProgress(el, size = 'm') {
   if (!el) return;
+
   const { base } = miloConfig;
   await Promise.all([
     import('../../deps/lit-all.min.js'),
@@ -102,11 +101,28 @@ async function insertProgress(el, size = 'm') {
   el.replaceChildren(theme);
 }
 
+function decorateSelect(data, id, placeholder) {
+  const selectWrapper = createTag('div', { class: 'select-wrapper' });
+  const select = createTag('select', { id, name: id });
+  const optionPlaceholder = createTag('option', { value: '' }, placeholder?.trim());
+  select.appendChild(optionPlaceholder);
+
+  data.forEach(({ key, value }) => {
+    const option = createTag('option', { value: key }, value);
+    select.appendChild(option);
+  });
+
+  selectWrapper.appendChild(select);
+  return selectWrapper;
+}
+
 async function decorateInput(key, value) {
   const profile = await getIMSProfile();
   let inputValue = profile[key];
   const { tag, attributes } = FORM_FIELDS[key];
   const [labelText, placeholder] = value.split('|');
+  let input;
+
   const label = createTag(
     'label',
     { for: key, class: 'body-xs' },
@@ -114,12 +130,18 @@ async function decorateInput(key, value) {
   );
 
   if (key === 'country') {
-    const { countries } = await getFormData('config');
-    inputValue = countries[inputValue];
+    const { country: countries } = await getFormData('config');
+    inputValue = countries?.[inputValue];
     if (!inputValue) return null;
+  } else if (key === 'state') {
+    const { state: states } = await getFormData('config');
+    const fields = getFormData('fields');
+    const { country } = profile;
+    if (!fields.country || !states?.[country]) return null;
+    input = decorateSelect(states?.[country], key, placeholder);
   }
 
-  const input = createTag(
+  input = input ?? createTag(
     tag,
     {
       name: key,
@@ -128,16 +150,21 @@ async function decorateInput(key, value) {
       ...(inputValue && { value: inputValue }),
     },
   );
+
   Object.entries(attributes).forEach(([attrKey, attrValue]) => {
-    input?.setAttribute(attrKey, attrValue);
+    const tempInput = input.querySelector('select') ?? input;
+    tempInput?.setAttribute(attrKey, attrValue);
   });
+
   label.classList.toggle('required', !!attributes.required);
   const container = createTag('div', { class: 'input-container' });
   container.append(label, input);
+
   if (input.getAttribute('readonly') === null) {
     const error = createTag('div', { id: `error-${key}`, class: 'body-xs hidden' });
     container.append(error);
   }
+
   return container;
 }
 
@@ -147,7 +174,7 @@ async function submitForm(form) {
     subscribed: false,
     email: '',
   };
-  const { email, occupation, organization } = Object.fromEntries(new FormData(form));
+  const { email, occupation, organization, state } = Object.fromEntries(new FormData(form));
   const button = form.querySelector('button[type="submit"]');
   const buttonContent = button.textContent;
   updateAriaLive('Form loading');
@@ -158,7 +185,6 @@ async function submitForm(form) {
     const { imsClientId } = miloConfig;
     const { mpsSname, campaignId } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
-    messageParams.email = email;
 
     const date = new Date();
     const mpsData = {
@@ -184,13 +210,17 @@ async function submitForm(form) {
         occupation,
         organization,
         email,
+        state,
       }),
     });
+
     if (!submitFormReq.ok) {
       const submitFormRes = await submitFormReq.json();
       messageParams.errorMsg = `Form submit request failed: ${JSON.stringify(submitFormRes)}`;
     }
-    if (submitFormReq.status === 204) messageParams.subscribed = true;
+
+    messageParams.email = email;
+    messageParams.subscribed = submitFormReq.status === 204;
   } catch (e) {
     messageParams.errorMsg = e;
   }
@@ -242,7 +272,7 @@ function showInputError(form, input, placeholders) {
 }
 
 async function validateForm(form) {
-  const inputs = form.querySelectorAll('input:not([readonly])');
+  const inputs = form.querySelectorAll('input:not([readonly]), select');
   let isInvalidForm = false;
   let focusInvalid;
   const { placeholders } = await getFormData('config');
@@ -262,7 +292,7 @@ async function validateForm(form) {
       input.setAttribute('autocomplete', autocompleteValue);
     }, { once: true });
 
-    if (!focusInvalid) focusInvalid = input;
+    focusInvalid = focusInvalid ?? input;
   });
 
   focusInvalid?.blur();
@@ -294,7 +324,7 @@ async function decorateForm(el, foreground) {
     // eslint-disable-next-line no-continue
     if (!FORM_FIELDS[key]) continue;
     const input = await decorateInput(key, value);
-    inputs.push(input);
+    if (input) inputs.push(input);
   }
 
   if (shouldSplitFirstRow) {
@@ -367,12 +397,11 @@ function decorateSubscribedMessage(text) {
     showForm.textContent,
   );
   const email = createTag('p', { class: 'subscribed-email hidden body-m' });
+
   ['click', 'keydown'].forEach((eventType) => {
     span.addEventListener(eventType, (e) => {
       const { key, code } = e;
-      if (eventType === 'keydown'
-        && key !== 'Enter'
-        && code !== 'Space') return;
+      if (eventType === 'keydown' && key !== 'Enter' && code !== 'Space') return;
       e.preventDefault();
       showHideMessage({ hideMessage: true });
     });
@@ -402,6 +431,7 @@ function decorateText(elChildren) {
         textEl.classList.add('body-m');
       }
     });
+
     if (!isForeground) {
       text.classList.add('hidden');
       text.parentElement.remove();
@@ -425,6 +455,7 @@ async function checkIsSubscribed() {
       },
       body: JSON.stringify({ email, mpsSname }),
     });
+
     if (!submitFormReq.ok) return null;
     const { subscribed } = await submitFormReq.json();
     if (subscribed) showHideMessage({ subscribed, email });
@@ -441,6 +472,7 @@ async function decorate(el, blockChildren) {
     await ims.signIn();
     return false;
   }
+
   blockChildren[0].classList.add('foreground');
   blockChildren[1].classList.add('hidden');
   blockChildren[2].classList.add('hidden');
@@ -464,14 +496,17 @@ export default async function init(el) {
   el.classList.add('hidden');
   const blockChildren = [...el.children];
   await insertProgress(el, 'l');
+
   el.classList.remove('hidden');
   const dialog = el.closest('.dialog-modal');
   dialog?.setAttribute('aria-label', 'Form loading');
   createAriaLive(el);
+
   const configErrMessage = setFormData(el);
   if (configErrMessage) throw new Error(configErrMessage);
   const correctMessageEls = setMessageEls(blockChildren);
   if (!correctMessageEls) throw new Error('Missing success/error message');
+
   decorate(el, blockChildren).then((isDecorated) => {
     if (!isDecorated) return;
     el.replaceChildren(...blockChildren);
