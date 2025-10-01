@@ -738,7 +738,6 @@ html[dir="rtl"] .carousel .move-indicators {
     display: flex;
     justify-content: center;
     gap: var(--spacing-m);
-    margin-bottom: 1rem;
     flex-wrap: wrap;
   }
   .carousel.hovering .carousel-slide p.body-m {
@@ -758,6 +757,7 @@ html[dir="rtl"] .carousel .move-indicators {
     text-align: center;
     cursor: pointer;
     transition: all .25s ease;
+    align-self: baseline;
   }
 
   .carousel.hovering .carousel-menu-item.active,

@@ -479,7 +479,8 @@ function readySlides(slides, slideContainer, isUpsDesktop) {
 
 const buildMenuItems = (slides, el) => {
   const menuItems = slides.map((slide, index) => {
-    const title = slide.querySelector('h2')?.textContent || `Slide ${index + 1}`;
+    const title = slide.querySelector('h2')?.textContent;
+    if (!title) return null;
     const item = createTag('h2', { class: 'carousel-menu-item' }, title);
     item.dataset.index = index;
     item.addEventListener('click', (event) => {
@@ -490,7 +491,7 @@ const buildMenuItems = (slides, el) => {
     });
     item.setAttribute('data-index', index);
     return item;
-  });
+  }).filter((item) => item);
   return {
     menuItemsContainer: createTag('div', { class: 'carousel-menu' }, menuItems),
     menuItems,
