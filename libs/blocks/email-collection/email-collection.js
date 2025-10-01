@@ -138,7 +138,7 @@ async function decorateInput(key, value) {
     const fields = getFormData('fields');
     const { country } = profile;
     if (!fields.country || !states?.[country]) return null;
-    input = decorateSelect(states?.[country], key, placeholder);
+    input = decorateSelect(states[country], key, placeholder ?? labelText);
   }
 
   input = input ?? createTag(
