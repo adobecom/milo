@@ -2,7 +2,6 @@ import { getMepEnablement } from '../utils/utils.js';
 
 /* eslint-disable no-underscore-dangle */
 const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
-const AMCV_COOKIE_ENCODED = 'AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg';
 const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
@@ -116,7 +115,7 @@ export const getVisitorStatus = ({
 };
 
 function getOrGenerateUserId() {
-  const amcvCookieValue = getCookie(AMCV_COOKIE) || getCookie(AMCV_COOKIE_ENCODED);
+  const amcvCookieValue = getCookie(AMCV_COOKIE) || getCookie(encodeURIComponent(AMCV_COOKIE));
 
   if (!amcvCookieValue || (amcvCookieValue.indexOf('MCMID|') === -1)) {
     const fpidValue = generateUUIDv4();
@@ -615,7 +614,7 @@ function updateMartechCookies(cookieData) {
 }
 
 function updateAMCVCookie(ECID) {
-  const cookieValue = getCookie(AMCV_COOKIE) || getCookie(AMCV_COOKIE_ENCODED);
+  const cookieValue = getCookie(AMCV_COOKIE) || getCookie(encodeURIComponent(AMCV_COOKIE));
 
   if (!cookieValue) {
     setCookie(encodeURIComponent(AMCV_COOKIE), `MCMID|${ECID}`);
