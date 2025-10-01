@@ -1277,6 +1277,7 @@ class Gnav {
     const isLocalNav = this.isLocalNav();
     if (!isLocalNav && hasPromo) {
       popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+      if (isSmallScreen) return;
     }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';

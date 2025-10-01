@@ -118,3 +118,4 @@ export function getOuterHeight(element) {
     const style = window.getComputedStyle(element);
     return element.offsetHeight + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
 }
+

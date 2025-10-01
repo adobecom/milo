@@ -33,6 +33,102 @@
           "pricePoint": "INTRO_PRICE_19_99",
           "language": "MULT",
           "merchant": "ADOBE"
+      },
+      {
+          "offerSelectorIds": [
+              "A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+          ],
+          "offerId": "EXPRESS_PREMIUM_9_99",
+          "startDate": "2023-03-13T09:11:00.000Z",
+          "endDate": "2099-08-24T08:00:00.000Z",
+          "priceDetails": {
+              "price": 9.99,
+              "priceWithoutTax": 9.99,
+              "usePrecision": true,
+              "formatString": "'US$'#,##0.00",
+              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxTerm": "TAX"
+          },
+          "analytics": "{\"offerId\":\"EXPRESS_PREMIUM_9_99\",\"label\":\"express_premium\",\"price\":\"9.99\",\"amountWithoutTax\":\"9.99\",\"commitmentType\":\"MONTH\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+          "productArrangementCode": "express_premium",
+          "productArrangement": {
+              "productFamily": "EXPRESS",
+              "productCode": "EXP"
+          },
+          "buyingProgram": "RETAIL",
+          "commitment": "MONTH",
+          "term": "MONTHLY",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": [],
+          "salesChannel": "DIRECT",
+          "offerType": "BASE",
+          "pricePoint": "STANDARD_PRICE_9_99",
+          "language": "MULT",
+          "merchant": "ADOBE"
+      },
+      {
+          "offerSelectorIds": [
+              "B1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574N"
+          ],
+          "offerId": "EXPRESS_TEAMS_14_99",
+          "startDate": "2023-03-13T09:11:00.000Z",
+          "endDate": "2099-08-24T08:00:00.000Z",
+          "priceDetails": {
+              "price": 14.99,
+              "priceWithoutTax": 14.99,
+              "usePrecision": true,
+              "formatString": "'US$'#,##0.00",
+              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxTerm": "TAX"
+          },
+          "analytics": "{\"offerId\":\"EXPRESS_TEAMS_14_99\",\"label\":\"express_teams\",\"price\":\"14.99\",\"amountWithoutTax\":\"14.99\",\"commitmentType\":\"MONTH\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+          "productArrangementCode": "express_teams",
+          "productArrangement": {
+              "productFamily": "EXPRESS",
+              "productCode": "EXP"
+          },
+          "buyingProgram": "RETAIL",
+          "commitment": "MONTH",
+          "term": "MONTHLY",
+          "customerSegment": "TEAM",
+          "marketSegments": [],
+          "salesChannel": "DIRECT",
+          "offerType": "BASE",
+          "pricePoint": "TEAM_PRICE_14_99",
+          "language": "MULT",
+          "merchant": "ADOBE"
+      },
+      {
+          "offerSelectorIds": [
+              "C1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574O"
+          ],
+          "offerId": "EXPRESS_AI_19_99",
+          "startDate": "2023-03-13T09:11:00.000Z",
+          "endDate": "2099-08-24T08:00:00.000Z",
+          "priceDetails": {
+              "price": 19.99,
+              "priceWithoutTax": 19.99,
+              "usePrecision": true,
+              "formatString": "'US$'#,##0.00",
+              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxTerm": "TAX"
+          },
+          "analytics": "{\"offerId\":\"EXPRESS_AI_19_99\",\"label\":\"express_ai\",\"price\":\"19.99\",\"amountWithoutTax\":\"19.99\",\"commitmentType\":\"MONTH\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+          "productArrangementCode": "express_ai",
+          "productArrangement": {
+              "productFamily": "EXPRESS",
+              "productCode": "EXP"
+          },
+          "buyingProgram": "RETAIL",
+          "commitment": "MONTH",
+          "term": "MONTHLY",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": [],
+          "salesChannel": "DIRECT",
+          "offerType": "BASE",
+          "pricePoint": "AI_PRICE_19_99",
+          "language": "MULT",
+          "merchant": "ADOBE"
       }
   ]
 }
