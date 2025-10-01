@@ -17,6 +17,7 @@
   --l-rounded-corners: 16px;
   --full-rounded-corners: 50%;
   --indicator-multiplier: 0;
+  --grid-container-view: 83.4vw;
 
   position: relative;
   margin-bottom: 1.8rem;
@@ -159,7 +160,8 @@ html[dir="rtl"] .carousel .carousel-previous {
   will-change: transform;
 }
 
-.carousel.container.align-height .carousel-slides {
+.carousel.container.align-height .carousel-slides,
+.carousel.container.disable-buttons .carousel-slides {
   align-items: stretch;
 }
 
@@ -531,7 +533,7 @@ html[dir="rtl"] .carousel .move-indicators {
   opacity: .3;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 899px) {
   .carousel.container.hinting-mobile,
   .carousel.container.hinting-center-mobile {
     width: 100%;
@@ -589,6 +591,75 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.hinting-center-mobile .carousel-slides.is-ready,
   .carousel.hinting-center-mobile .carousel-slides.is-ready.is-reversing {
     transform: translateX(calc((0.3rem) * -1));
+  }
+
+  .carousel.dark.disable-buttons .carousel-button.disabled:hover,
+  .carousel.dark.disable-buttons .carousel-button.disabled:active,
+  .dark .carousel.disable-buttons .carousel-button.disabled:hover,
+  .dark .carousel.disable-buttons .carousel-button.disabled:active,
+  .carousel.disable-buttons .carousel-button.disabled:hover,
+  .carousel.disable-buttons .carousel-button.disabled:active,
+  .carousel.dark.disable-buttons .carousel-button.disabled,
+  .dark .carousel.disable-buttons .carousel-button.disabled,
+  .carousel.disable-buttons .carousel-button.disabled {
+    background-color: var(--carousel-nav-background-dark);
+  }
+
+  .dark .carousel.disable-buttons .carousel-button.disabled path,
+  .carousel.dark.disable-buttons .carousel-button.disabled path,
+  .carousel.disable-buttons .carousel-button.disabled path {
+    fill: var(--carousel-nav-button-background-active);
+  }
+
+
+  .carousel.disable-buttons .carousel-slides {
+    align-items: center;
+  }
+
+    .carousel.disable-buttons.hinting-mobile .carousel-slides {
+    left: calc(-83.4vw - (100vw - 83.4vw) / 2);
+    transform: translateX(calc((-83.4vw - (100vw - 83.4vw) / 2) * -1));
+    align-items: center;
+  }
+
+  .carousel.disable-buttons.hinting-mobile .carousel-wrapper {
+    margin-left: calc((100vw - 83.4vw) / 2);
+  }
+
+  .carousel.disable-buttons.hinting-mobile .carousel-slide {
+    min-width: 83.4vw;
+  }
+
+  .carousel.disable-buttons.hinting-mobile .carousel-slides.is-ready,
+  .carousel.disable-buttons.hinting-mobile .carousel-slides.is-ready.is-reversing   {
+    transform: translateX(calc((8.3vw - 16px)));
+  }
+
+  .carousel.disable-buttons.hinting-mobile .carousel-slides.is-reversing {
+    transform: translateX(calc(-83.4vw - (100vw - 83.4vw) / 2));
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides {
+    left: -83.4vw;
+    transform: translateX(83.4vw);
+    align-items: center;
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slide {
+    min-width: 83.4vw;
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-reversing {
+    transform: translateX(-83.4vw);
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-ready,
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-ready.is-reversing {
+    transform: translateX(calc((8.3vw - 16px)));
+  }
+
+  .carousel.disable-buttons .carousel-slide.hide-left-hint {
+    visibility: hidden !important;
   }
 }
 
@@ -754,6 +825,25 @@ html[dir="rtl"] .carousel .move-indicators {
     --offset: calc(round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
 
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-slides.is-ready {
+    flex-wrap: wrap;
+    align-items: stretch;
+    transform: none;
+    left: initial;
+    transform-style: initial;
+    scroll-snap-type: none;
+    will-change: unset;
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-slide {
+    flex-grow: unset;
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-button-container,
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card).lightbox .carousel-expand {
+    display: none;
   }
 }
 

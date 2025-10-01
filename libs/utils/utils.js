@@ -186,7 +186,8 @@ export function getEnv(conf) {
     || host.includes(`${SLD}.live`)
     || host.includes('stage.adobe')
     || host.includes('corp.adobe')
-    || host.includes('graybox.adobe')) {
+    || host.includes('graybox.adobe')
+    || host.includes('aem.reviews')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
   return { ...ENVS.prod, consumer: conf.prod };
@@ -1407,13 +1408,14 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob'];
+  const mepAddons = ['lob', 'event-id-stage-test'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
     if (enablement === false) return;
-    promises[addon] = (async () => {
-      const { default: init } = await import(`../features/mep/addons/${addon}.js`);
+    const addonName = addon.split('-')[0];
+    promises[addonName] = (async () => {
+      const { default: init } = await import(`../features/mep/addons/${addonName}.js`);
       return init(enablement);
     })();
   });

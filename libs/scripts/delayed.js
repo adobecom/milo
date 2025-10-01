@@ -44,6 +44,7 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     'hlx.live': '01958a9e-818e-7213-8d4a-8b3b7a4ec33e-test',
     'aem.page': '01954847-62a4-7afc-bdc7-f110c4e35b5d-test',
     'aem.live': '01954848-3f9e-7267-ac5d-d4076841aeb1-test',
+    'aem.reviews': '019928fc-0bcd-7c53-9cde-ea06b4fc7294-test',
   };
 
   const otDomainId = ids?.[Object.keys(ids)

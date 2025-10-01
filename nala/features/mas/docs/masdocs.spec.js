@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 
-const { DOCS_BASE_PATH } = require('../../../libs/commerce.js');
+const { DOCS_GALLERY_PATH } = require('../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'Merch CCD Card Feature',
@@ -9,7 +9,7 @@ module.exports = {
     {
       tcid: '0',
       name: '@MAS-DOCS-checkout-link',
-      path: DOCS_BASE_PATH.checkout_link,
+      path: DOCS_GALLERY_PATH.CHECKOUT_LINK,
       browserParams: '?theme=dark',
       tags: '@mas-docs @checkout-link @commerce @smoke @regression @milo',
     },
@@ -17,7 +17,7 @@ module.exports = {
     {
       tcid: '0',
       name: '@MAS-DOCS-merch-card',
-      path: DOCS_BASE_PATH.merch_card,
+      path: DOCS_GALLERY_PATH.MERCH_CARD,
       tags: '@mas-docs @merch-card @commerce @smoke @regression @milo',
     },
   ],
