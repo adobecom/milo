@@ -10,7 +10,6 @@
   --carousel-nav-button-background-focus: #147af3;
   --carousel-focus-color: #109cde;
   --carousel-indicator-background-color: #b1b1b1;
-  --carousel-active-indicator-background-color: #ffffff;
   --carousel-dark-indicator-background-color: #848484;
   --carousel-expand-background-color: rgb(255 255 255 / 75%);
   --carousel-expand-border-color: rgb(116 116 116 / 30%);
@@ -270,7 +269,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
 .carousel .carousel-indicator.active::after {
   content: '';
-  background-color: var(--carousel-active-indicator-background-color);
+  background-color: var(--color-white);
   height: inherit;
   width: inherit;
 }

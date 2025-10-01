@@ -243,28 +243,17 @@ function updateAriaLive(ariaLive, slide, carouselElements) {
 
   const { slides, el: block } = carouselElements;
 
+  let slideInfo = '';
   if (![...block.classList].find((cls) => cls.startsWith('show-'))) {
-    const currentSlideIndex = slides.findIndex((s) => s === slide);
-    const slideInfo = `slide ${currentSlideIndex + 1} of ${slides.length}`;
+    slideInfo = `Slide ${+slide.dataset.index + 1} of ${slides.length}`;
+  }
 
-    if (text) {
-      ariaLive.textContent = `${text}, ${slideInfo}`;
-      return;
-    }
-
+  if (!text) {
     const el = slide.querySelector('img[alt], video[title], iframe[title]');
-    const altText = el?.getAttribute('alt') || el?.getAttribute('title') || '';
-    ariaLive.textContent = altText ? `${altText}, ${slideInfo}` : slideInfo;
-    return;
+    text = el?.getAttribute('alt') || el?.getAttribute('title') || '';
   }
 
-  if (text) {
-    ariaLive.textContent = text;
-    return;
-  }
-
-  const el = slide.querySelector('img[alt], video[title], iframe[title]');
-  ariaLive.textContent = el?.getAttribute('alt') || el?.getAttribute('title') || '';
+  ariaLive.textContent = [text, slideInfo].filter(Boolean).join(', ');
 }
 
 function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
