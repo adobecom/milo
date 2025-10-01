@@ -1,13 +1,29 @@
 import { STATUS, STRUCTURE_IDS, STRUCTURE_TITLES } from './constants.js';
 import { getMetadata, isLocalNav } from '../../../utils/utils.js';
 
-function checkNav(area) {
-  const headerMeta = getMetadata('header', area);
-  const headerEl = area.querySelector('header');
+function getElementStatus({ area, metaKey, selector }) {
+  const metaValue = getMetadata(metaKey, area);
+  const element = area.querySelector(selector);
 
-  const enabled = headerMeta !== 'off';
+  const enabled = metaValue !== 'off';
   const loaded = enabled
-    && (headerEl?.classList.contains('ready') || headerEl?.dataset.blockStatus === 'loaded');
+    && (element?.classList.contains('ready') || element?.dataset.blockStatus === 'loaded');
+
+  return { element, enabled, loaded };
+}
+
+function getStructureResult(key, status, description, details) {
+  return {
+    id: STRUCTURE_IDS[key],
+    title: STRUCTURE_TITLES[key],
+    status,
+    description,
+    details: details || {},
+  };
+}
+
+function checkNav(area) {
+  const { element: headerEl, enabled, loaded } = getElementStatus({ area, metaKey: 'header', selector: 'header' });
   const type = isLocalNav() ? 'localnav' : 'globalnav';
   let status;
   let description;
@@ -26,26 +42,11 @@ function checkNav(area) {
     description = 'Navigation enabled but not loaded yet.';
   }
 
-  return {
-    id: STRUCTURE_IDS.navigation,
-    title: STRUCTURE_TITLES.navigation,
-    status,
-    description,
-    details: {
-      enabled,
-      loaded,
-      type,
-    },
-  };
+  return getStructureResult('navigation', status, description, { enabled, loaded, type });
 }
 
 function checkFooter(area) {
-  const footerMeta = getMetadata('footer', area);
-  const footerEl = area.querySelector('footer');
-
-  const enabled = footerMeta !== 'off';
-  const loaded = enabled
-    && (footerEl?.classList.contains('ready') || footerEl?.dataset.blockStatus === 'loaded');
+  const { element: footerEl, enabled, loaded } = getElementStatus({ area, metaKey: 'footer', selector: 'footer' });
 
   let status;
   let description;
@@ -64,83 +65,36 @@ function checkFooter(area) {
     description = 'Footer enabled but not loaded yet.';
   }
 
-  return {
-    id: STRUCTURE_IDS.footer,
-    title: STRUCTURE_TITLES.footer,
-    status,
-    description,
-    details: {
-      enabled,
-      loaded,
-    },
-  };
+  return getStructureResult('footer', status, description, { enabled, loaded });
 }
 
 function checkRegionSelector(area) {
-  const footerMeta = getMetadata('footer', area);
-  const footerEl = area.querySelector('footer');
-
-  if (footerMeta === 'off') {
-    return {
-      id: STRUCTURE_IDS.regionSelector,
-      title: STRUCTURE_TITLES.regionSelector,
-      status: STATUS.EMPTY,
-      description: 'Region selector is off.',
-      details: { enabled: false },
-    };
-  }
-
-  const regionAnchor = footerEl?.querySelector('.region-selector a') || footerEl?.querySelector('.feds-regionPicker-wrapper a');
-
-  const isModalConfigured = !!regionAnchor?.dataset?.modalPath || (regionAnchor?.hash && regionAnchor.hash !== '' && regionAnchor.hash !== '#_dnt');
-  const isDropdownConfigured = regionAnchor?.closest('.region-selector')?.querySelector('.fragment, [data-path]');
-
-  const loaded = !!(isModalConfigured || isDropdownConfigured);
+  const { element: footerEl, enabled, loaded } = getElementStatus({ area, metaKey: 'footer', selector: 'footer' });
 
   if (!footerEl) {
-    return {
-      id: STRUCTURE_IDS.regionSelector,
-      title: STRUCTURE_TITLES.regionSelector,
-      status: STATUS.FAIL,
-      description: 'Footer element not found.',
-      details: { loaded },
-    };
+    return getStructureResult(
+      'regionSelector',
+      enabled ? STATUS.FAIL : STATUS.EMPTY,
+      enabled ? 'Footer element not found.' : 'Region selector is off.',
+      { loaded, enabled },
+    );
   }
 
-  if (loaded) {
-    return {
-      id: STRUCTURE_IDS.regionSelector,
-      title: STRUCTURE_TITLES.regionSelector,
-      status: STATUS.PASS,
-      description: 'Region selector is loaded.',
-      details: { loaded: true },
-    };
-  }
+  const regionAnchor = footerEl.querySelector('.region-selector a') || footerEl.querySelector('.feds-regionPicker-wrapper a');
+  const isModalConfigured = !!regionAnchor?.dataset?.modalPath || (regionAnchor?.hash && regionAnchor.hash !== '' && regionAnchor.hash !== '#_dnt');
+  const isDropdownConfigured = regionAnchor?.closest('.region-selector')?.querySelector('.fragment, [data-path]');
+  const regSelectorLoaded = !!(isModalConfigured || isDropdownConfigured);
 
-  return {
-    id: STRUCTURE_IDS.regionSelector,
-    title: STRUCTURE_TITLES.regionSelector,
-    status: STATUS.FAIL,
-    description: 'Region selector is not loaded.',
-    details: { loaded: false },
-  };
+  return getStructureResult(
+    'regionSelector',
+    regSelectorLoaded ? STATUS.PASS : STATUS.FAIL,
+    regSelectorLoaded ? 'Region selector is loaded.' : 'Region selector is not loaded.',
+    { loaded: regSelectorLoaded },
+  );
 }
 
 function checkGeorouting(area) {
-  if (getMetadata('georouting', area) === 'on') {
-    return {
-      id: STRUCTURE_IDS.georouting,
-      title: STRUCTURE_TITLES.georouting,
-      status: STATUS.EMPTY,
-      description: 'Georouting is on via metadata.',
-    };
-  }
-  return {
-    id: STRUCTURE_IDS.georouting,
-    title: STRUCTURE_TITLES.georouting,
-    status: STATUS.EMPTY,
-    description: 'Georouting is off via metadata.',
-  };
+  return getStructureResult('georouting', STATUS.EMPTY, `Georouting is ${getMetadata('georouting', area) || 'off'} via metadata.`);
 }
 
 function checkBreadcrumbs(area) {
@@ -148,21 +102,7 @@ function checkBreadcrumbs(area) {
   const hasBreadcrumbsClass = !!area.querySelector('header.has-breadcrumbs');
   const navBreadcrumbs = !!area.querySelector('.feds-breadcrumbs nav.feds-breadcrumbs');
   const anyBreadcrumbs = hasBreadcrumbsClass || navBreadcrumbs || meta === 'on';
-
-  if (anyBreadcrumbs) {
-    return {
-      id: STRUCTURE_IDS.breadcrumbs,
-      title: STRUCTURE_TITLES.breadcrumbs,
-      status: STATUS.EMPTY,
-      description: 'Breadcrumbs are enabled.',
-    };
-  }
-  return {
-    id: STRUCTURE_IDS.breadcrumbs,
-    title: STRUCTURE_TITLES.breadcrumbs,
-    status: STATUS.EMPTY,
-    description: 'Breadcrumbs are off.',
-  };
+  return getStructureResult('breadcrumbs', STATUS.EMPTY, `Breadcrumbs are ${anyBreadcrumbs ? 'enabled' : 'off'}.`);
 }
 
 export function runChecks({ area = document }) {
