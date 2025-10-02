@@ -207,8 +207,8 @@ function checkSlideForVideo(activeSlide) {
   /* c8 ignore end */
 }
 
-// Sets a muliplyer variable, used by CSS, to move the indicator dots.
-function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
+// Sets a multiplier variable, used by CSS, to move the indicator dots.
+function setIndicatorMultiplier(carouselElements, activeSlideIndicator, event) {
   const { slides, direction } = carouselElements;
   const maxViewableIndicators = 6;
   if (slides.length <= maxViewableIndicators) return;
@@ -216,22 +216,22 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   const { currentTarget, key } = event;
   const eventDirection = currentTarget.dataset.toggle || direction;
   const keyNavDirection = key === KEY_CODES.ARROW_RIGHT || undefined;
-  const multiplyerOffset = (eventDirection === 'next' || eventDirection === 'left')
+  const multiplierOffset = (eventDirection === 'next' || eventDirection === 'left')
     || keyNavDirection ? 4 : 3;
   const activeSlideIndex = Number(activeSlideIndicator.dataset.index);
-  if (activeSlideIndex > multiplyerOffset && activeSlideIndex <= slides.length) {
+  if (activeSlideIndex > multiplierOffset && activeSlideIndex <= slides.length) {
     /*
-      * Stop adding to the multiplyer if it equals the difference
+      * Stop adding to the multiplier if it equals the difference
       * between the slides length and maxViewableIndicators
     */
-    const multiplyer = activeSlideIndex - multiplyerOffset >= slides.length - maxViewableIndicators
+    const multiplier = activeSlideIndex - multiplierOffset >= slides.length - maxViewableIndicators
       ? slides.length - maxViewableIndicators
-      : activeSlideIndex - multiplyerOffset;
+      : activeSlideIndex - multiplierOffset;
     activeSlideIndicator.parentElement.classList.add('move-indicators');
-    activeSlideIndicator.parentElement.style = `--indicator-multiplyer: ${multiplyer}`;
+    activeSlideIndicator.parentElement.style = `--indicator-multiplier: ${multiplier}`;
   } else {
-    const multiplyer = 0;
-    activeSlideIndicator.parentElement.style = `--indicator-multiplyer: ${multiplyer}`;
+    const multiplier = 0;
+    activeSlideIndicator.parentElement.style = `--indicator-multiplier: ${multiplier}`;
   }
 }
 
@@ -348,7 +348,7 @@ function moveSlides(event, carouselElements) {
 
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('aria-current', 'location');
-  setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
+  setIndicatorMultiplier(carouselElements, activeSlideIndicator, event);
 
   // Loop over all slide siblings to update their order
   for (let i = 2; i <= slides.length; i += 1) {
