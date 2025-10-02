@@ -663,7 +663,7 @@ describe('Utils', () => {
       originalConfig = utils.getConfig();
       originalImport = window.import;
       importPaths = [];
-      
+
       // Mock dynamic import to capture paths and prevent network requests
       window.import = (path) => {
         importPaths.push(path);
@@ -675,7 +675,7 @@ describe('Utils', () => {
       utils.setConfig(originalConfig);
       window.import = originalImport;
       // Clean up any test blocks
-      document.querySelectorAll('[data-test-block]').forEach(el => el.remove());
+      document.querySelectorAll('[data-test-block]').forEach((el) => el.remove());
     });
 
     describe('loadBlock with externalLibs', () => {
@@ -685,8 +685,8 @@ describe('Utils', () => {
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
-            blocks: ['custom-block', 'external-widget']
-          }
+            blocks: ['custom-block', 'external-widget'],
+          },
         };
         utils.setConfig(testConfig);
 
@@ -707,13 +707,13 @@ describe('Utils', () => {
           externalLibs: [
             {
               base: 'https://lib1.example.com',
-              blocks: ['widget-a', 'widget-b']
+              blocks: ['widget-a', 'widget-b'],
             },
             {
               base: 'https://lib2.example.com',
-              blocks: ['custom-block', 'special-component']
-            }
-          ]
+              blocks: ['custom-block', 'special-component'],
+            },
+          ],
         };
         utils.setConfig(testConfig);
 
@@ -734,13 +734,13 @@ describe('Utils', () => {
           externalLibs: [
             {
               base: 'https://first.example.com',
-              blocks: ['shared-block']
+              blocks: ['shared-block'],
             },
             {
               base: 'https://second.example.com',
-              blocks: ['shared-block']
-            }
-          ]
+              blocks: ['shared-block'],
+            },
+          ],
         };
         utils.setConfig(testConfig);
 
@@ -761,8 +761,8 @@ describe('Utils', () => {
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
-            blocks: ['external-only-block']
-          }
+            blocks: ['external-only-block'],
+          },
         };
         utils.setConfig(testConfig);
 
@@ -783,8 +783,8 @@ describe('Utils', () => {
           miloLibs: 'https://milo.adobe.com/libs',
           externalLibs: {
             base: 'https://external.example.com',
-            blocks: ['marquee'] // marquee is in MILO_BLOCKS
-          }
+            blocks: ['marquee'], // marquee is in MILO_BLOCKS
+          },
         };
         utils.setConfig(testConfig);
 
@@ -805,8 +805,8 @@ describe('Utils', () => {
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
-            blocks: ['custom-block']
-          }
+            blocks: ['custom-block'],
+          },
         };
         utils.setConfig(testConfig);
 
@@ -825,7 +825,7 @@ describe('Utils', () => {
         const testConfig = {
           ...originalConfig,
           codeRoot: '/libs',
-          externalLibs: null
+          externalLibs: null,
         };
         utils.setConfig(testConfig);
 
@@ -843,7 +843,7 @@ describe('Utils', () => {
         const testConfig = {
           ...originalConfig,
           codeRoot: '/libs',
-          externalLibs: {}
+          externalLibs: {},
         };
         utils.setConfig(testConfig);
 
@@ -862,9 +862,9 @@ describe('Utils', () => {
           ...originalConfig,
           codeRoot: '/libs',
           externalLibs: {
-            base: 'https://external.example.com'
+            base: 'https://external.example.com',
             // missing blocks array
-          }
+          },
         };
         utils.setConfig(testConfig);
 
@@ -884,8 +884,8 @@ describe('Utils', () => {
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
-            blocks: 'not-an-array'
-          }
+            blocks: 'not-an-array',
+          },
         };
         utils.setConfig(testConfig);
 
@@ -904,9 +904,9 @@ describe('Utils', () => {
           ...originalConfig,
           codeRoot: '/libs',
           externalLibs: {
-            blocks: ['test-block']
+            blocks: ['test-block'],
             // missing base
-          }
+          },
         };
         utils.setConfig(testConfig);
 
@@ -927,18 +927,18 @@ describe('Utils', () => {
           externalLibs: [
             {
               // invalid - missing base
-              blocks: ['invalid-block']
+              blocks: ['invalid-block'],
             },
             {
               base: 'https://valid.example.com',
-              blocks: ['valid-block']
+              blocks: ['valid-block'],
             },
             {
               base: 'https://another.example.com',
               // invalid - blocks is not an array
-              blocks: 'not-array'
-            }
-          ]
+              blocks: 'not-array',
+            },
+          ],
         };
         utils.setConfig(testConfig);
 
@@ -970,13 +970,9 @@ describe('Utils', () => {
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
-            blocks: ['test-block']
+            blocks: ['test-block'],
           },
-          mep: {
-            blocks: {
-              'test-block': 'https://mep.example.com/custom-path'
-            }
-          }
+          mep: { blocks: { 'test-block': 'https://mep.example.com/custom-path' } },
         };
         utils.setConfig(testConfig);
 
@@ -997,8 +993,8 @@ describe('Utils', () => {
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
-            blocks: []
-          }
+            blocks: [],
+          },
         };
         utils.setConfig(testConfig);
 
@@ -1018,8 +1014,8 @@ describe('Utils', () => {
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
-            blocks: ['valid-block', null, undefined, 123, {}]
-          }
+            blocks: ['valid-block', null, undefined, 123, {}],
+          },
         };
         utils.setConfig(testConfig);
 
@@ -1040,13 +1036,13 @@ describe('Utils', () => {
         window.lana = {
           log: (message, options) => {
             logMessages.push({ message, options });
-          }
+          },
         };
 
         const testConfig = {
           ...originalConfig,
           codeRoot: '/libs',
-          externalLibs: 'completely-invalid-config' // This should cause an error
+          externalLibs: 'completely-invalid-config', // This should cause an error
         };
         utils.setConfig(testConfig);
 
@@ -1061,9 +1057,7 @@ describe('Utils', () => {
         expect(importPaths).to.include('/libs/blocks/test-block/test-block.js');
 
         // Should have logged an error message via LANA
-        const errorLogged = logMessages.some(log => 
-          log.message.includes('Invalid externalLibs configuration')
-        );
+        const errorLogged = logMessages.some((log) => log.message.includes('Invalid externalLibs configuration'));
         expect(errorLogged).to.be.true;
 
         // Restore window.lana
@@ -1083,8 +1077,8 @@ describe('Utils', () => {
             { blocks: ['missing-base'] }, // missing base
             { base: 'https://missing-blocks.example.com' }, // missing blocks
             { base: 123, blocks: ['invalid-base-type'] }, // invalid base type
-            { base: 'https://invalid-blocks.example.com', blocks: 'not-an-array' } // invalid blocks type
-          ]
+            { base: 'https://invalid-blocks.example.com', blocks: 'not-an-array' }, // invalid blocks type
+          ],
         };
         utils.setConfig(testConfig);
 
