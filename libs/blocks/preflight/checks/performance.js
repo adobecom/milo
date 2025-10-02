@@ -3,7 +3,7 @@ import { getMetadata } from '../../../utils/utils.js';
 
 const lcpCache = new Map();
 
-function defaultObserveLcp(area) {
+export function defaultObserveLcp(area) {
   if (area !== document) {
     return Promise.resolve(null);
   }
