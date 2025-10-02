@@ -28,6 +28,8 @@
   --feds-color-link: #292929;
   --feds-color-blue-link: #274dea;
   --feds-color-link--hover: #1d3ecf;
+  --feds-color-link-dark: #DBDBDB;
+  --feds-borderColor-link-dark: #393939;
   --feds-color-navLink-description: #505050;
   --feds-color-link-breadcrumbs: #707070;
   /* Footer */
@@ -81,6 +83,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .fe
 
 .feds-navLink:not(.feds-navLink--hoverCaret) {
   column-gap: 15px;
+}
+
+html[lang="ja-jp"] a.feds-navLink wbr {
+  display: none;
 }
 
 .feds-navLink--blue {

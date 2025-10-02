@@ -53,33 +53,7 @@ export const viewports = {
   wide: { width: 1600, height: 1024 },
 };
 
-export const analyticsTestData = {
-  'app-switcher|click|app|acrobat': 'AppLauncher.appClick.Acrobat',
-  'app-switcher|click|app|acrobat-sign': 'AppLauncher.appClick.Acrobat Sign',
-  'app-switcher|click|app|adobe-express': 'AppLauncher.appClick.Adobe Express',
-  'app-switcher|click|app|adobe-firefly': 'AppLauncher.appClick.Adobe Firefly',
-  'app-switcher|click|app|experience-cloud': 'AppLauncher.appClick.Experience Cloud',
-  'app-switcher|click|app|fonts': 'AppLauncher.appClick.Fonts',
-  'app-switcher|click|app|lightroom': 'AppLauncher.appClick.Lightroom',
-  'app-switcher|click|app|photoshop': 'AppLauncher.appClick.Photoshop',
-  'app-switcher|click|app|stock': 'AppLauncher.appClick.Stock',
-  'app-switcher|click|footer|adobe-dot-com': 'AppLauncher.adobe.com',
-  'app-switcher|click|footer|adobe-home': 'AppLauncher.adobe.com',
-  'app-switcher|click|footer|all-apps': 'AppLauncher.allapps',
-  'app-switcher|click|footer|see-all-apps': 'AppLauncher.allapps',
-  'app-switcher|render|component': 'AppLauncher.appIconToggle',
-  'profile|click|account': 'View Account|gnav|milo|unav',
-  'profile|click|sign-in': 'Sign In|gnav|milo|unav',
-  'profile|click|sign-out': 'Sign Out|gnav|milo|unav',
-  'profile|render|component': 'Account|gnav|milo|unav',
-  'unc|click|dismiss': 'Dismiss Notifications',
-  'unc|click|icon': 'Open Notifications panel',
-  'unc|click|link': 'Open Notification',
-  'unc|click|markRead': 'Mark Notification as read',
-  'unc|click|markUnread': 'Mark Notification as unread',
-};
-
-export const unavVersion = '1.4';
+export const unavVersion = '1.5';
 
 export const addMetaDataV2 = (value) => {
   const metaTag = document.createElement('meta');
@@ -180,6 +154,15 @@ export const createFullGlobalNavigation = async ({
   setConfig({ ...config, ...customConfig });
   await setViewport(viewports[viewport]);
   window.lana = { log: stub() };
+
+  // Mock URLSearchParams to return the correct unavVersion
+  const originalURLSearchParams = window.URLSearchParams;
+  window.URLSearchParams = class extends originalURLSearchParams {
+    get(key) {
+      if (key === 'unavVersion') return unavVersion;
+      return super.get(key);
+    }
+  };
   window.fetch = stub().callsFake((url) => {
     if (url.includes('profile')) { return mockRes({ payload: defaultProfile }); }
     if (url.includes('placeholders')) { return mockRes({ payload: placeholders || defaultPlaceholders }); }
@@ -265,6 +248,9 @@ export const createFullGlobalNavigation = async ({
   }
   await Promise.all(waitForElements);
   await imsPromise;
+
+  // Restore original URLSearchParams
+  window.URLSearchParams = originalURLSearchParams;
 
   window.fetch = ogFetch;
   window.adobeIMS = undefined;
