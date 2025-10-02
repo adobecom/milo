@@ -160,9 +160,9 @@ function configTabs(config, rootElem, elm) {
   const tabParam = params.get('tab');
   if (tabParam) {
     const dashIndex = tabParam.lastIndexOf('-');
-    const [tabsId, tabIndex] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
+    const [tabsId, tabIdx] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
     if (tabsId === config.id) {
-      const tabBtn = rootElem.querySelector(`#tab-${config.id}-${tabIndex}`);
+      const tabBtn = rootElem.querySelector(`#tab-${config.id}-${tabIdx}`);
       if (tabBtn) {
         elm.setAttribute('daa-lh', 'deeplinked|tabs');
         tabBtn.click();
