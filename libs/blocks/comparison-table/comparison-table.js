@@ -77,39 +77,43 @@ function decorateHeader(headerContent) {
 }
 
 function addTableClassesAndAppend(el, tableContainer, tableChildren) {
+  const tableElement = createTag('div', { class: 'table', role: 'table' });
+
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
       Array.from(tableChild.children).forEach((child) => {
         if (!child.textContent.trim()) child.remove();
       });
       tableChild.classList.add('table-column-header');
+
+      const firstChild = tableChild.children[0];
+      const buttonElement = createTag('button');
+      buttonElement.innerHTML = firstChild.innerHTML;
+      tableChild.replaceChild(buttonElement, firstChild);
+      tableContainer.appendChild(tableChild);
     }
     if (index > 0) {
       const children = Array.from(tableChild.children);
-      if (children.length > 0) {
-        children[0].classList.add('table-row-header');
-      }
-      if (children.length > 1) {
-        const container = createTag('div', { class: 'table-cell-container' });
-        tableChild.appendChild(container);
-        children.slice(1).forEach((child) => {
-          container.appendChild(child);
-        });
-      }
+      children.forEach((child, childIndex) => {
+        child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
+      });
       tableChild.classList.add('table-row');
+      tableElement.appendChild(tableChild);
     }
   });
-  el.appendChild(tableContainer).append(...tableChildren);
+
+  tableContainer.appendChild(tableElement);
+  el.appendChild(tableContainer);
 }
 
 function decorateTables(el, children) {
-  let currentTableContainer = createTag('div', { class: 'table' });
+  let currentTableContainer = createTag('div', { class: 'table-container' });
   let currentTableChildren = [];
 
   children.forEach((child) => {
     if (child.textContent.trim() === '+++' && currentTableChildren.length > 0) {
       addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
-      currentTableContainer = createTag('div', { class: 'table' });
+      currentTableContainer = createTag('div', { class: 'table-container' });
       currentTableChildren = [];
     }
 

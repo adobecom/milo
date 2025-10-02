@@ -9,7 +9,7 @@
   margin: 24px 0;
 }
 
-.comparison-table .table {
+.comparison-table .table-container {
   max-width: var(--comparison-max-width);
   margin: 0 auto;
   border-radius: 8px;
@@ -17,23 +17,27 @@
   margin-top: 24px;
 }
 
-.comparison-table .table .table-column-header {
-  font-weight: 700;
+.comparison-table .table-container .table-column-header {
+  border-radius: 8px 8px 0 0;
+}
+
+.comparison-table .table-container .table-column-header button {
+  width: 100%;
+  min-height: 72px;
+  border: none;
   line-height: 125%;
   font-size: 18px;
   text-align: center;
   background-color: var(--comparison-column-even-background-color);
-  display: flex;
-  justify-content: center;
-  border-radius: 8px 8px 0 0;
-  padding: 21px;
 }
 
-.comparison-table .table .table-row {
+.comparison-table .table-container .table-row {
   padding: 0 12px;
+  display: flex;
+  flex-wrap: wrap;  
 }
 
-.comparison-table .table .table-row-header {
+.comparison-table .table-container .table-row-header {
   text-align: center;
   font-size: 14px;
   font-style: normal;
@@ -41,23 +45,33 @@
   line-height: 130%;
   padding: 0 24px 0 12px;
   padding: 24px 0 12px 0;
+  width: 100%;
 }
 
-.comparison-table .table .table-cell-container {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 2fr));
+.comparison-table .table-container .table-cell {
+  width: calc(25% - 12px);
+  padding: 0 6px;
 }
 
-.comparison-table .table .table-cell-container > div p {
+.comparison-table .table-container .table-row .table-cell:nth-child(2){
+  padding-inline-start: 0;
+}
+
+.comparison-table .table-container .table-row .table-cell:last-child {
+  padding-inline-end: 0;
+}
+
+.comparison-table .table-container .table-cell {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
-.comparison-table .table .table-cell-container > div p:first-child{
+.comparison-table .table-container .table-cell *:first-child {
   border: 1px solid var(--comparison-border-color);
   border-radius: 4px;
-  padding: 12px;
+  width: 100%;
+  text-align: center;
 }
 
 .comparison-table *:is(p, h1, h2, h3, h4, h5, h6) {
