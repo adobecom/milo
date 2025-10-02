@@ -89,6 +89,9 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       const firstChild = tableChild.children[0];
       const buttonElement = createTag('button');
       buttonElement.innerHTML = firstChild.innerHTML;
+      buttonElement.addEventListener('click', () => {
+        tableElement.classList.toggle('hide');
+      });
       tableChild.replaceChild(buttonElement, firstChild);
       tableContainer.appendChild(tableChild);
     }
@@ -97,7 +100,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       children.forEach((child, childIndex) => {
         child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
         child.setAttribute('role', childIndex === 0 ? 'columnheader' : 'cell');
-        if (childIndex !== 0 && child.children.length === 0) {
+        if (childIndex !== 0 && child.children.length === 0 && child.textContent.trim()) {
           const pTag = createTag('p', {}, child.textContent);
           child.innerHTML = '';
           child.appendChild(pTag);

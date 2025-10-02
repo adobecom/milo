@@ -9,16 +9,24 @@
   margin: 24px 0;
 }
 
+.comparison-table .table {
+  max-height: 10000px;
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.comparison-table .table.hide {
+  max-height: 0;
+}
+
 .comparison-table .table-container {
   max-width: var(--comparison-max-width);
   margin: 0 auto;
   border-radius: 8px;
   border: 1px solid var(--comparison-border-color);
   margin-top: 24px;
-}
-
-.comparison-table .table-container .table-column-header {
-  border-radius: 8px 8px 0 0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .comparison-table .table-container .table-column-header button {
@@ -29,6 +37,10 @@
   font-size: 18px;
   text-align: center;
   background-color: var(--comparison-column-even-background-color);
+}
+
+.comparison-table .table-container .table-column-header button:hover {
+  cursor: pointer;
 }
 
 .comparison-table .table-container .table-row {
@@ -80,8 +92,11 @@
   padding: 12px;
 }
 
-.comparison-table .table-container .table-cell p:last-child {
+.comparison-table .table-container .table-cell p:nth-child(2) {
   margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 150%;
 }
 
 .comparison-table *:is(p, h1, h2, h3, h4, h5, h6) {
