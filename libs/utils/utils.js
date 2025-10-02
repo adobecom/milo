@@ -728,7 +728,7 @@ function getBlockData(block) {
         if (!lib || typeof lib !== 'object') return false;
         if (!Array.isArray(lib.blocks)) return false;
         if (!lib.base || typeof lib.base !== 'string') return false;
-        
+
         return lib.blocks.includes(name);
       });
       if (match?.base) base = match.base;
