@@ -1,6 +1,7 @@
 .brand-concierge {
   --bc-header-color: #131313;
   --bc-card-radius: 12px;
+  --bc-card-text-color: #292929;
   --bc-input-radius: 12px;
   --bc-sticky-input-radius: 22px;
   --bc-input-height: 52px;
@@ -72,7 +73,7 @@
 
 .prompt-card-text {
   align-items: center;
-  color: var(--bc-button-color);
+  color: var(--bc-card-text-color);
   display: flex;
   font-size: var(--type-body-s-size);
   gap: 8px;
@@ -82,17 +83,18 @@
   text-align: left;
 }
 
-.prompt-card-text svg {
+.prompt-card-text .card-icon {
   width: 16px;
   height: 16px;
 }
 
 .prompt-card-text p {
-  color: var(--bc-button-color);
+  color: var(--bc-card-text-color);
   margin: 0;
 }
 
 .bc-input-field {
+  margin-bottom: 40px;
   position: relative;
 }
 
@@ -102,7 +104,6 @@
   border-radius: calc(var(--bc-input-radius) - 2px);
   display: flex;
   min-height: var(--bc-input-height);
-  margin-bottom: 40px;
   padding: 0 12px;
   position: relative;
   gap: 12px;
@@ -342,6 +343,40 @@
 
 #brand-concierge-mount .privacy-notice-title {
   display: none !important;
+}
+
+/* Hero */
+.brand-concierge.hero {
+  padding: 40px 24px 12px;
+}
+
+.hero .bc-header-title {
+  font-size: var(--type-heading-xxl-size);
+  line-height: var(--type-heading-xxl-lh);
+}
+
+.hero .bc-input-field {
+  max-width: calc(100% - 4px);
+  margin-bottom: 24px;
+}
+
+.hero .bc-prompt-cards {
+  padding: 0;
+  margin-bottom: 40px;
+}
+
+.hero .prompt-card-button {
+  box-shadow: 0 0 6px 0 rgba(0 0 0 / 25%);
+}
+
+.hero .card-icon {
+  align-self: flex-start;
+  background: linear-gradient(98deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%);
+  mask: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNy45MzQ0NiAxMC41OTkyQzcuNzU5NDYgMTAuNTk5MiA3LjU4Mjg5IDEwLjU1MzkgNy40MjM1MiAxMC40NjE3QzcuMDM4MzYgMTAuMjM5IDYuODQzODMgOS43OTc2MyA2LjkzODM2IDkuMzYzMjVMNy41MjAzOSA2LjY2NDA0TDUuNjY1NyA0LjYxNzk0QzUuMzY3MjYgNC4yODgyNSA1LjMxNTcgMy44MDg1NiA1LjUzODM2IDMuNDIzNDFDNS43NjEwMSAzLjAzNzQ4IDYuMjA2MzMgMi44NDI5NCA2LjYzNjggMi45MzgyNUw5LjMzNjAxIDMuNTIwMjhMMTEuMzgyMSAxLjY2NTZDMTEuNzEyNiAxLjM2NTYgMTIuMTkyMyAxLjMxNjM4IDEyLjU3NjYgMS41MzgyNUMxMi45NjE4IDEuNzYwOTEgMTMuMTU2MyAyLjIwMjMyIDEzLjA2MTggMi42MzY2OUwxMi40Nzk4IDUuMzM1OTFMMTQuMzM0NSA3LjM4MkMxNC42MzI5IDcuNzEwOTEgMTQuNjgzNyA4LjE5MDYgMTQuNDYxOCA4LjU3NTc2QzE0LjIzOTEgOC45NjAxMyAxMy43OTkzIDkuMTU2MjMgMTMuMzY0MSA5LjA2MjQ4TDEwLjY2NDkgOC40Nzg4OUw4LjYxODA2IDEwLjMzNDRDOC40MjUwOSAxMC41MDk0IDguMTgwNTQgMTAuNTk5MiA3LjkzNDQ2IDEwLjU5OTJaTTguNzEzMzYgNi44MjY1NEw4LjIyOTc3IDkuMDY2MzhMOS45Mjc0MiA3LjUyNzMyQzEwLjE2OTYgNy4zMDc3OSAxMC41MDQgNy4yMTcxNiAxMC44MjUxIDcuMjg1OTFMMTMuMDY2NSA3Ljc3MDI4TDExLjUyNzQgNi4wNzI2M0MxMS4zMDcxIDUuODI4ODggMTEuMjE3MyA1LjQ5MjE2IDExLjI4NzYgNS4xNzE4NEwxMS43NzA0IDIuOTMzNTZMMTAuMDcyNyA0LjQ3MjYzQzkuODI4OTkgNC42OTI5NCA5LjQ5MzA2IDQuNzgyIDkuMTcxOTYgNC43MTI0N0w2LjkzMzY4IDQuMjI5NjVMOC40NzI3NCA1LjkyNzMxQzguNjkzMDUgNi4xNzAyOCA4Ljc4MjkgNi41MDYyMyA4LjcxMzM2IDYuODI2NTRaIiBmaWxsPSIjMjkyOTI5Ii8+PHBhdGggZD0iTTIuNjc2NDUgMTQuNjAxN0MyLjU3MzMzIDE0LjYwMTcgMi40NzAyMSAxNC41NzUxIDIuMzc2NDUgMTQuNTIxMkMyLjE1MDY3IDE0LjM5MDcgMi4wMzUwNSAxNC4xMjk4IDIuMDg5NzMgMTMuODc1MUwyLjMzNTA1IDEyLjc0MDdMMS41NTUzNiAxMS44ODEzQzEuMzgwMzYgMTEuNjg4NCAxLjM0OTg5IDExLjQwNCAxLjQ4MDM2IDExLjE3ODJDMS42MTA4MyAxMC45NTI0IDEuODczMzMgMTAuODM5OSAyLjEyNjQ1IDEwLjg5MTVMMy4yNjA4MyAxMS4xMzY4TDQuMTIwMjEgMTAuMzU3MUM0LjMxMzk2IDEwLjE4MTMgNC41OTY3NyAxMC4xNTE2IDQuODIzMzMgMTAuMjgyMUM1LjA0OTEyIDEwLjQxMjYgNS4xNjQ3NCAxMC42NzM1IDUuMTEwMDUgMTAuOTI4Mkw0Ljg2NDc0IDEyLjA2MjZMNS42NDQ0MyAxMi45MjJDNS44MTk0MyAxMy4xMTQ5IDUuODQ5OSAxMy4zOTkzIDUuNzE5NDMgMTMuNjI1MUM1LjU4ODk2IDEzLjg1MDkgNS4zMjU2OCAxMy45NjE4IDUuMDczMzMgMTMuOTExOEwzLjkzODk2IDEzLjY2NjVMMy4wNzk1OCAxNC40NDYyQzIuOTY2MyAxNC41NDg1IDIuODIxNzcgMTQuNjAxNyAyLjY3NjQ1IDE0LjYwMTdaIiBmaWxsPSIjMjkyOTI5Ii8+PC9zdmc+') no-repeat center;
+  mask-size: contain;
+  width: 16px;
+  height: 16px;
+  color: transparent;
 }
 
 /* Sticky */
@@ -621,6 +656,29 @@
     width: 100%;
   }
 
+  /* Hero */
+  .brand-concierge.hero {
+    display: block;
+    padding: 80px 48px 12px;
+  }
+
+  .hero .bc-input-field {
+    margin-bottom: 32px;
+    max-width: calc(768px - 4px);
+  }
+
+  .hero .bc-prompt-cards {
+    flex-wrap: wrap;
+    max-width: 932px;
+    margin-bottom: 80px;
+  }
+  
+  .hero .prompt-card-button {
+    display: initial;
+    width: unset;
+  }
+
+  /* Sticky */
   .sticky .bc-legal.legal-shown:not(.legal-closed) {
     opacity: 1;
   }
