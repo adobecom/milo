@@ -496,11 +496,11 @@
 
 @keyframes slide-up {
   from {
-    top: 100vh;
+    bottom: -100vh;
   }
 
   to {
-    top: 0;
+    bottom: 0;
   }
 }
 
@@ -517,6 +517,7 @@
   border-radius: 24px 24px 0 0;
   font-size: 16px;
   top: unset;
+  bottom: 0;
   animation: var(--bc-animation-up-time) ease-out slide-up;
 }
 

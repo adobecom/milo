@@ -45,11 +45,11 @@ function updateInputHeight(el) {
 }
 
 function animateModalClosed(modal) {
-  modal.style.transition = 'top 200ms ease-out';
-  modal.style.top = '100vh';
+  modal.style.transition = 'bottom 300ms ease-out';
+  modal.style.bottom = '-100vh';
   const modalCurtain = modal.nextElementSibling;
   if (modalCurtain?.classList.contains('modal-curtain')) {
-    modalCurtain.style.transition = 'opacity 200ms ease-out';
+    modalCurtain.style.transition = 'opacity 300ms ease-out';
     modalCurtain.style.opacity = '0';
   }
 }
