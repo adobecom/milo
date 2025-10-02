@@ -528,11 +528,11 @@
   font-size: 16px;
   top: unset;
   bottom: 0;
-  animation: var(--bc-animation-up-time) ease-out slide-up;
+  animation: var(--bc-animation-up-time) ease-in-out slide-up;
 }
 
 #brand-concierge-modal ~ .modal-curtain {
-  animation: var(--bc-animation-up-time) ease-out fade-in;
+  animation: var(--bc-animation-up-time) ease-in-out fade-in;
   opacity: 1;
 }
 
