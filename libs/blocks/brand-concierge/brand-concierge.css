@@ -491,7 +491,7 @@
 }
 
 :root {
-  --bc-animation-up-time: 300ms;
+  --bc-animation-up-time: 400ms;
 }
 
 @keyframes slide-up {
