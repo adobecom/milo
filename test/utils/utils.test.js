@@ -682,6 +682,7 @@ describe('Utils', () => {
       it('should attempt to load block from external library (single object config)', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
@@ -703,6 +704,7 @@ describe('Utils', () => {
       it('should attempt to load block from external library (array config)', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: [
             {
@@ -730,6 +732,7 @@ describe('Utils', () => {
       it('should use first matching external library when multiple matches exist', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: [
             {
@@ -758,6 +761,7 @@ describe('Utils', () => {
       it('should fall back to codeRoot when block not found in external libraries', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
@@ -779,6 +783,7 @@ describe('Utils', () => {
       it('should prioritize miloLibs over externalLibs for MILO_BLOCKS', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           miloLibs: 'https://milo.adobe.com/libs',
           externalLibs: {
@@ -802,6 +807,7 @@ describe('Utils', () => {
       it('should prioritize externalLibs over codeRoot for non-MILO blocks', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
@@ -824,6 +830,7 @@ describe('Utils', () => {
       it('should handle invalid externalLibs gracefully (null/undefined)', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: null,
         };
@@ -842,6 +849,7 @@ describe('Utils', () => {
       it('should handle invalid externalLibs gracefully (empty object)', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {},
         };
@@ -860,6 +868,7 @@ describe('Utils', () => {
       it('should handle invalid externalLibs gracefully (missing blocks array)', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
@@ -881,6 +890,7 @@ describe('Utils', () => {
       it('should handle invalid externalLibs gracefully (blocks is not an array)', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
@@ -902,6 +912,7 @@ describe('Utils', () => {
       it('should handle invalid externalLibs gracefully (missing base)', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             blocks: ['test-block'],
@@ -923,6 +934,7 @@ describe('Utils', () => {
       it('should handle mixed valid and invalid external library configurations', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: [
             {
@@ -967,6 +979,7 @@ describe('Utils', () => {
       it('should respect MEP block overrides even with externalLibs', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
@@ -990,6 +1003,7 @@ describe('Utils', () => {
       it('should handle externalLibs with empty blocks array', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
@@ -1011,6 +1025,7 @@ describe('Utils', () => {
       it('should handle externalLibs with non-string block names gracefully', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: {
             base: 'https://external.example.com',
@@ -1041,6 +1056,7 @@ describe('Utils', () => {
 
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: 'completely-invalid-config', // This should cause an error
         };
@@ -1067,6 +1083,7 @@ describe('Utils', () => {
       it('should handle malformed externalLibs objects gracefully', async () => {
         const testConfig = {
           ...originalConfig,
+          origin: 'http://localhost:2000',
           codeRoot: '/libs',
           externalLibs: [
             'invalid-string-entry',
