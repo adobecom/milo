@@ -504,6 +504,16 @@
   }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 #brand-concierge-modal {
   --modal-header-height: 57px;
 }
@@ -519,6 +529,11 @@
   top: unset;
   bottom: 0;
   animation: var(--bc-animation-up-time) ease-out slide-up;
+}
+
+#brand-concierge-modal ~ .modal-curtain {
+  animation: var(--bc-animation-up-time) ease-out fade-in;
+  opacity: 1;
 }
 
 /* Fallback for browsers that don't support dvh */
