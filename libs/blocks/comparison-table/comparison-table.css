@@ -55,10 +55,12 @@
 
 .comparison-table .table-container .table-row .table-cell:nth-child(2){
   padding-inline-start: 0;
+  width: calc(25% - 6px);
 }
 
 .comparison-table .table-container .table-row .table-cell:last-child {
   padding-inline-end: 0;
+  width: calc(25% - 6px);
 }
 
 .comparison-table .table-container .table-cell {
@@ -67,11 +69,19 @@
   align-items: center;
 }
 
-.comparison-table .table-container .table-cell *:first-child {
+.comparison-table .table-container .table-cell p {
+  text-align: center;
+}
+
+.comparison-table .table-container .table-cell p:first-child {
   border: 1px solid var(--comparison-border-color);
   border-radius: 4px;
-  width: 100%;
-  text-align: center;
+  width: calc(100% - 24px);
+  padding: 12px;
+}
+
+.comparison-table .table-container .table-cell p:last-child {
+  margin-top: 4px;
 }
 
 .comparison-table *:is(p, h1, h2, h3, h4, h5, h6) {

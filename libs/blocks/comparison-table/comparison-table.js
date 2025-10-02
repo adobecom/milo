@@ -96,8 +96,15 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       const children = Array.from(tableChild.children);
       children.forEach((child, childIndex) => {
         child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
+        child.setAttribute('role', childIndex === 0 ? 'columnheader' : 'cell');
+        if (childIndex !== 0 && child.children.length === 0) {
+          const pTag = createTag('p', {}, child.textContent);
+          child.innerHTML = '';
+          child.appendChild(pTag);
+        }
       });
       tableChild.classList.add('table-row');
+      tableChild.setAttribute('role', 'row');
       tableElement.appendChild(tableChild);
     }
   });
