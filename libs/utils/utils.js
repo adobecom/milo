@@ -722,9 +722,19 @@ function getBlockData(block) {
 
   let base = codeRoot;
   if (externalLibs) {
-    const list = Array.isArray(externalLibs) ? externalLibs : [externalLibs];
-    const match = list.find((lib) => Array.isArray(lib.blocks) && lib.blocks.includes(name));
-    if (match?.base) base = match.base;
+    try {
+      const list = Array.isArray(externalLibs) ? externalLibs : [externalLibs];
+      const match = list.find((lib) => {
+        if (!lib || typeof lib !== 'object') return false;
+        if (!Array.isArray(lib.blocks)) return false;
+        if (!lib.base || typeof lib.base !== 'string') return false;
+        
+        return lib.blocks.includes(name);
+      });
+      if (match?.base) base = match.base;
+    } catch (error) {
+      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`);
+    }
   }
 
   if (miloLibs && MILO_BLOCKS.includes(name)) base = miloLibs;

@@ -1032,6 +1032,83 @@ describe('Utils', () => {
 
         expect(importPaths).to.include('https://external.example.com/blocks/valid-block/valid-block.js');
       });
+
+      it('should log errors for invalid configurations but continue working', async () => {
+        // Mock window.lana to capture error messages
+        const originalLana = window.lana;
+        const logMessages = [];
+        window.lana = {
+          log: (message, options) => {
+            logMessages.push({ message, options });
+          }
+        };
+
+        const testConfig = {
+          ...originalConfig,
+          codeRoot: '/libs',
+          externalLibs: 'completely-invalid-config' // This should cause an error
+        };
+        utils.setConfig(testConfig);
+
+        const mockBlock = document.createElement('div');
+        mockBlock.classList.add('test-block');
+        mockBlock.setAttribute('data-test-block', 'true');
+        document.body.appendChild(mockBlock);
+
+        await utils.loadBlock(mockBlock);
+
+        // Should fall back to codeRoot despite the error
+        expect(importPaths).to.include('/libs/blocks/test-block/test-block.js');
+
+        // Should have logged an error message via LANA
+        const errorLogged = logMessages.some(log => 
+          log.message.includes('Invalid externalLibs configuration')
+        );
+        expect(errorLogged).to.be.true;
+
+        // Restore window.lana
+        window.lana = originalLana;
+      });
+
+      it('should handle malformed externalLibs objects gracefully', async () => {
+        const testConfig = {
+          ...originalConfig,
+          codeRoot: '/libs',
+          externalLibs: [
+            'invalid-string-entry',
+            null,
+            undefined,
+            123,
+            { base: 'https://valid.example.com', blocks: ['valid-block'] },
+            { blocks: ['missing-base'] }, // missing base
+            { base: 'https://missing-blocks.example.com' }, // missing blocks
+            { base: 123, blocks: ['invalid-base-type'] }, // invalid base type
+            { base: 'https://invalid-blocks.example.com', blocks: 'not-an-array' } // invalid blocks type
+          ]
+        };
+        utils.setConfig(testConfig);
+
+        // Test that the valid configuration still works
+        const validBlock = document.createElement('div');
+        validBlock.classList.add('valid-block');
+        validBlock.setAttribute('data-test-block', 'true');
+        document.body.appendChild(validBlock);
+
+        await utils.loadBlock(validBlock);
+        expect(importPaths).to.include('https://valid.example.com/blocks/valid-block/valid-block.js');
+
+        // Reset import paths
+        importPaths = [];
+
+        // Test that invalid configurations fall back to codeRoot
+        const invalidBlock = document.createElement('div');
+        invalidBlock.classList.add('missing-base');
+        invalidBlock.setAttribute('data-test-block', 'true');
+        document.body.appendChild(invalidBlock);
+
+        await utils.loadBlock(invalidBlock);
+        expect(importPaths).to.include('/libs/blocks/missing-base/missing-base.js');
+      });
     });
   });
 
