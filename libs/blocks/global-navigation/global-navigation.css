@@ -287,15 +287,15 @@ header.global-navigation {
 }
 
 .feds-cta--primary {
-  background-color: rgb(59, 99, 251);
-  border-color: rgb(59, 99, 251);
+  background-color: var(--feds-cta-primary-bg);
+  border-color: var(--feds-cta-primary-bg);
   color: rgb(255, 255, 255);
 }
 
 .feds-cta--primary:hover,
 .feds-cta--primary:focus {
-  background-color: rgb(39, 77, 234);
-  border-color: rgb(39, 77, 234);
+  background-color: var(--feds-cta-primary-bg--hover);
+  border-color: var(--feds-cta-primary-bg--hover);
   color: rgb(255, 255, 255);
 }
 
