@@ -4,6 +4,7 @@ const { DOCS_GALLERY_PATH, PRICE_PATTERN } = require('../../../libs/commerce.js'
 module.exports = {
   FeatureName: 'MAS Express Cards',
   features: [
+    // Simplified Pricing Express Cards
     {
       tcid: '0',
       name: '@MAS-Express-Card-Free',
@@ -18,7 +19,7 @@ module.exports = {
         cta: 'Get Adobe Express Free',
         variant: 'simplified-pricing-express',
       },
-      tags: '@express @express-card @free @commerce @smoke @regression @milo',
+      tags: '@express @express-card @free @simplified @commerce @smoke @regression @milo',
     },
     {
       tcid: '1',
@@ -35,7 +36,7 @@ module.exports = {
         variant: 'simplified-pricing-express',
         gradientBorder: false,
       },
-      tags: '@express @express-card @premium @commerce @smoke @regression @milo',
+      tags: '@express @express-card @premium @simplified @commerce @smoke @regression @milo',
     },
     {
       tcid: '2',
@@ -44,7 +45,7 @@ module.exports = {
       data: {
         id: 'aaa728dc-2b44-495c-b9f0-bb82044db18a',
         title: 'Firefly Pro',
-        badge: 'Best value', // Updated based on actual content
+        badge: 'Best value',
         description: 'Get Adobe Express Premium plus 4,000 credits for creative AI and Adobe Photoshop on web and mobile for advanced image editing.',
         price: PRICE_PATTERN.US.mo,
         priceNote: 'No annual commitment, billed monthly.',
@@ -53,7 +54,105 @@ module.exports = {
         variant: 'simplified-pricing-express',
         gradientBorder: true,
       },
-      tags: '@express @express-card @firefly-pro @commerce @smoke @regression @milo',
+      tags: '@express @express-card @firefly-pro @simplified @commerce @smoke @regression @milo',
+    },
+
+    // Full Pricing Express Cards
+    {
+      tcid: '3',
+      name: '@MAS-Full-Pricing-Express-Free',
+      path: '/libs/features/mas/docs/express.html',
+      data: {
+        id: '53fcf015-5c28-4214-bd2b-d4c22f1774b8',
+        title: 'Adobe Express Free',
+        badge: '',
+        shortDescription: 'For students who want basic content creation tools, limited generative AI credits and assets.',
+        description: 'Top features:',
+        price: 'US$9.99/mo',
+        priceNote: 'Free to use. No credit card required.',
+        cta: 'Get free plan',
+        variant: 'full-pricing-express',
+        features: {
+          topFeatures: 'Top features:',
+          includesText: 'Includes basic editing tools and limited assets',
+          featureList: [
+            'Templates: Access to 100,000+ static and video templates',
+            'Assets: 1M+ royalty-free photos, videos, music tracks, and design elements',
+            'Fonts: Access to 1,000+ custom fonts',
+            'Editing tools: Standard photo, video, and document editing tools',
+            'Storage: 5GB',
+            'Devices: Works on desktop browsers and mobile phones',
+          ],
+        },
+        compareLink: 'Compare all features',
+      },
+      tags: '@full-pricing-express @express-card @free @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '4',
+      name: '@MAS-Full-Pricing-Express-Premium',
+      path: '/libs/features/mas/docs/express.html',
+      data: {
+        id: '025dfceb-c035-45b7-8ea1-8feed25c8009',
+        title: 'Adobe Express Premium',
+        badge: '',
+        hasMnemonic: true,
+        shortDescription: 'For individuals who want millions of premium templates and assets, more generative AI credits, and time saving features.',
+        description: 'Top features:',
+        price: 'US$9.99/mo',
+        priceNote: 'No annual commitment, billed monthly.',
+        cta: 'Start 30-day free trial',
+        variant: 'full-pricing-express',
+        gradientBorder: false,
+        features: {
+          topFeatures: 'Top features:',
+          includesText: 'Includes all Premium plan features, and more',
+          featureList: [
+            'Generative AI: 250 generative credits per month per user',
+            'Templates: Access to all premium static and video templates',
+            'Assets: 200M+ royalty-free photos, videos, music tracks, and design elements',
+            'Fonts: Access to 25,000+ custom fonts',
+            'Storage: 100GB',
+            'One-click Resize: Automatically resize assets for multiple channels',
+            'Brand management: Brand kits to maintain consistency across your content',
+          ],
+        },
+        compareLink: 'Compare all features',
+      },
+      tags: '@full-pricing-express @express-card @premium @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '5',
+      name: '@MAS-Full-Pricing-Express-Pro',
+      path: '/libs/features/mas/docs/express.html',
+      data: {
+        id: '9406f1ae-7bee-48c3-9892-49af6816033e',
+        title: 'Adobe Firefly Pro',
+        badge: 'Best value',
+        shortDescription: 'For individuals who want Adobe Express Premium plus 4,000 credits for creative AI and Adobe Photoshop on web and mobile for advanced image editing.',
+        description: 'Top features:',
+        price: 'US$9.99',
+        priceNote: 'No annual commitment, billed monthly.',
+        cta: 'Start 7-day free trial',
+        variant: 'full-pricing-express',
+        gradientBorder: true,
+        borderColor: 'gradient-firefly-spectrum',
+        features: {
+          topFeatures: 'Top features:',
+          includesText: 'Includes all Premium plan features, and more (except the 250 credits)',
+          featureList: [
+            'Generative AI for video and audio: 4,000 monthly generative credits',
+            'Generative AI for images: Unlimited access to standard image features',
+            'Text to Video: Generate up to 40 five-second videos',
+            'Third-party models: Access partner generative AI models',
+            'Translation: Translate up to 13 minutes of video and audio',
+            'Sound effects: Generate up to 400 sound effects',
+            'Advanced editing on web and mobile (full access): Powerful image editing',
+          ],
+        },
+        compareLink: 'Compare all features',
+      },
+      tags: '@full-pricing-express @express-card @pro @commerce @smoke @regression @milo',
     },
   ],
 };

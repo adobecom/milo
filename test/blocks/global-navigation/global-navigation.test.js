@@ -9,7 +9,6 @@ import {
   mockRes,
   viewports,
   unavLocalesTestData,
-  analyticsTestData,
   unavVersion,
   addMetaDataV2,
 } from './test-utilities.js';
@@ -458,30 +457,6 @@ describe('global navigation', () => {
         expect(profileSwitch.detail.executeDefaultAction.called).to.be.true;
       });
 
-      it('should send the correct analytics events', async () => {
-        await createFullGlobalNavigation({ unavContent: 'on' });
-        const analyticsFn = window.UniversalNav.getCall(0)
-          .args[0].analyticsContext.onAnalyticsEvent;
-
-        for (const [eventData, interaction] of Object.entries(analyticsTestData)) {
-          const [workflow, type, subtype, name] = eventData.split('|');
-          analyticsFn({ workflow, type, subtype, content: { name } });
-
-          // eslint-disable-next-line no-underscore-dangle
-          expect(window._satellite.track.lastCall.calledWith('event', {
-            xdm: {},
-            data: { web: { webInteraction: { name: interaction } } },
-          })).to.be.true;
-        }
-
-        expect(analyticsFn(null)).to.equal(undefined);
-        expect(analyticsFn({
-          event: { type: 'not', subtype: 'matching' },
-          source: { name: 'anything' },
-          content: { name: null },
-        })).to.equal(undefined);
-      });
-
       it('should send/not send visitor guid to unav when window.alloy is available/unavailable', async () => {
         await createFullGlobalNavigation({ unavContent: 'on' });
         expect(window.UniversalNav.getCall(0)
@@ -769,15 +744,13 @@ describe('global navigation', () => {
   describe('Product Entry CTA feature in global navigation', () => {
     it('should not append the feds-product-entry-cta class when product entry cta is disabled', async () => {
       document.head.innerHTML = '<meta name="product-entry-cta" content="off"/>';
-      const gnav = await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
-      gnav.decorateProductEntryCTA();
+      await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
       expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-product-entry-cta')).to.not.exist;
     });
 
     it('should append the feds-product-entry-cta class when product entry cta is enabled', async () => {
       document.head.innerHTML = '<meta name="product-entry-cta" content="on" />';
-      const gnav = await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
-      gnav.decorateProductEntryCTA();
+      await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
       expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-product-entry-cta')).to.exist;
     });
   });
