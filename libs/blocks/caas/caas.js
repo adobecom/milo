@@ -48,6 +48,11 @@ const loadCaas = async (a) => {
   a.insertAdjacentElement('afterend', block);
   a.remove();
 
+  const langFirst = getMetadata('langfirst');
+  if (langFirst) {
+    state.langFirst = true;
+  }
+
   const floodGateColor = getMetadata('floodgatecolor') || '';
   if (floodGateColor === fgHeaderValue) {
     state.fetchCardsFromFloodgateTree = true;
