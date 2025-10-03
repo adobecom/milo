@@ -124,7 +124,11 @@ function checkRegionSelector(area) {
 }
 
 function checkGeorouting(area) {
-  return getStructureResult('georouting', STATUS.EMPTY, `Georouting is ${getMetadata('georouting', area) || 'off'} via metadata.`);
+  const meta = getMetadata('georouting', area)?.toLowerCase();
+  const param = new URL(window.location.href).searchParams.get('georouting')?.toLowerCase();
+  const isOff = meta === 'off' || param === 'off';
+
+  return getStructureResult('georouting', STATUS.EMPTY, `Georouting is ${isOff ? 'off' : 'on'}.`);
 }
 
 function checkBreadcrumbs(area) {
