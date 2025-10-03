@@ -28,6 +28,7 @@ function removeAttributes(elem) {
   });
 }
 
+// eslint-disable-next-line import/prefer-default-export
 export function sanitizeHtml(html) {
   const htmlEl = stringToHTML(html);
   removeScripts(htmlEl);
