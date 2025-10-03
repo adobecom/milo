@@ -170,18 +170,6 @@ header.global-navigation.feds--dark,
   background-color: var(--feds-background-nav--desktop);
 }
 
-/* CTA Buttons */
-.feds--dark .feds-cta--primary {
-  background-color: var(--feds-cta-primary-bg);
-  border-color: var(--feds-cta-primary-bg);
-}
-
-.feds--dark .feds-cta--primary:hover,
-.feds--dark .feds-cta--primary:focus {
-  background-color: var(--feds-cta-primary-bg--hover);
-  border-color: var(--feds-cta-primary-bg--hover);
-}
-
 /* Desktop styles */
 @media (min-width: 900px) {
   /* Popup */
