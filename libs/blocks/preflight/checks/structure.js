@@ -134,9 +134,36 @@ function checkGeorouting(area) {
 function checkBreadcrumbs(area) {
   const meta = (getMetadata('breadcrumbs', area) || '').toLowerCase();
   const hasBreadcrumbsClass = !!area.querySelector('header.has-breadcrumbs');
-  const navBreadcrumbs = !!area.querySelector('.feds-breadcrumbs nav.feds-breadcrumbs');
-  const anyBreadcrumbs = hasBreadcrumbsClass || navBreadcrumbs || meta === 'on';
-  return getStructureResult('breadcrumbs', STATUS.EMPTY, `Breadcrumbs are ${anyBreadcrumbs ? 'enabled' : 'off'}.`);
+  const breadcrumbsEl = area.querySelector('.feds-breadcrumbs');
+
+  const enabled = meta !== 'off' && hasBreadcrumbsClass;
+  const loaded = !!breadcrumbsEl;
+  const childItemCount = breadcrumbsEl?.querySelectorAll('li').length;
+  const textLength = breadcrumbsEl?.textContent.trim().length;
+
+  let status;
+  let description;
+
+  if (!enabled) {
+    status = STATUS.EMPTY;
+    description = 'Breadcrumbs are off.';
+  } else if (!loaded) {
+    status = STATUS.FAIL;
+    description = 'Breadcrumbs enabled but not rendered.';
+  } else if (childItemCount === 0 || textLength === 0) {
+    status = STATUS.FAIL;
+    description = 'Breadcrumbs rendered but appear empty or incomplete.';
+  } else {
+    status = STATUS.PASS;
+    description = 'Breadcrumbs rendered.';
+  }
+
+  return getStructureResult('breadcrumbs', status, description, {
+    enabled,
+    loaded,
+    childItemCount,
+    textLength,
+  });
 }
 
 export function runChecks({ area = document }) {
