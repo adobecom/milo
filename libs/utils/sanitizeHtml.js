@@ -30,8 +30,8 @@ function removeAttributes(elem) {
 
 // eslint-disable-next-line import/prefer-default-export
 export function sanitizeHtml(html) {
-  const htmlEl = stringToHTML(html);
-  removeScripts(htmlEl);
-  [htmlEl, ...htmlEl.querySelectorAll('*')].forEach(removeAttributes);
-  return htmlEl.firstChild;
+  const htmlElem = stringToHTML(html);
+  removeScripts(htmlElem);
+  [htmlElem, ...htmlElem.querySelectorAll('*')].forEach(removeAttributes);
+  return htmlElem.firstChild;
 }
