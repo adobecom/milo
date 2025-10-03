@@ -28,21 +28,36 @@ function checkNav(area) {
   let status;
   let description;
 
+  const childElementCount = headerEl?.querySelectorAll('*').length || 0;
+  const textLength = headerEl?.textContent.trim().length || 0;
+  const unresolvedFragments = headerEl?.querySelectorAll('a[href*="/fragments/"]').length
+    || 0;
+
   if (!enabled) {
     status = STATUS.EMPTY;
     description = 'Navigation is off via metadata.';
   } else if (!headerEl) {
     status = STATUS.FAIL;
     description = 'Header element not found.';
-  } else if (loaded) {
-    status = STATUS.PASS;
-    description = `Navigation loaded (${type}).`;
-  } else {
+  } else if (!loaded) {
     status = STATUS.LIMBO;
     description = 'Navigation enabled but not loaded yet.';
+  } else if (childElementCount === 0 || textLength === 0 || unresolvedFragments > 0) {
+    status = STATUS.FAIL;
+    description = `Navigation loaded (${type}) but appears empty or incomplete.`;
+  } else {
+    status = STATUS.PASS;
+    description = `Navigation loaded (${type}).`;
   }
 
-  return getStructureResult('navigation', status, description, { enabled, loaded, type });
+  return getStructureResult('navigation', status, description, {
+    enabled,
+    loaded,
+    type,
+    childElementCount,
+    textLength,
+    unresolvedFragments,
+  });
 }
 
 function checkFooter(area) {
@@ -51,21 +66,36 @@ function checkFooter(area) {
   let status;
   let description;
 
+  const childElementCount = footerEl ? footerEl.querySelectorAll('*').length : 0;
+  const textLength = footerEl ? (footerEl.textContent || '').trim().length : 0;
+  const unresolvedFragments = footerEl
+    ? footerEl.querySelectorAll('a[href*="/fragments/"]').length
+    : 0;
+
   if (!enabled) {
     status = STATUS.EMPTY;
     description = 'Footer is off via metadata.';
   } else if (!footerEl) {
     status = STATUS.FAIL;
     description = 'Footer element not found.';
-  } else if (loaded) {
-    status = STATUS.PASS;
-    description = 'Footer loaded.';
-  } else {
+  } else if (!loaded) {
     status = STATUS.LIMBO;
     description = 'Footer enabled but not loaded yet.';
+  } else if (childElementCount === 0 || textLength === 0 || unresolvedFragments > 0) {
+    status = STATUS.FAIL;
+    description = 'Footer loaded but appears empty or incomplete.';
+  } else {
+    status = STATUS.PASS;
+    description = 'Footer loaded.';
   }
 
-  return getStructureResult('footer', status, description, { enabled, loaded });
+  return getStructureResult('footer', status, description, {
+    enabled,
+    loaded,
+    childElementCount,
+    textLength,
+    unresolvedFragments,
+  });
 }
 
 function checkRegionSelector(area) {
