@@ -166,3 +166,4 @@ export class Product extends VariantLayout {
         }
     `;
 }
+
