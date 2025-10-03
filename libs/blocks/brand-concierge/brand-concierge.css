@@ -14,9 +14,16 @@
   --bc-keyboard-focus-color: #5574F7;
   --bc-sticky-delay: 3s;
 
-  background: var(--brand-concierge-bg);
   box-sizing: border-box;
   padding: 40px 20px 12px;
+}
+
+.brand-concierge.has-bg-color {
+  background: var(--brand-concierge-bg);
+}
+
+.brand-concierge.has-bg-image {
+  background: var(--brand-concierge-bg) lightgray 50% / cover no-repeat;
 }
 
 .bc-header {
@@ -348,6 +355,10 @@
 /* Hero */
 .brand-concierge.hero {
   padding: 40px 24px 12px;
+}
+
+.brand-concierge.hero.has-bg-image {
+  background: linear-gradient(180deg, rgba(255 255 255 / 0%) 0%, #FFF 55.14%), var(--brand-concierge-bg) lightgray 50% / cover no-repeat;
 }
 
 .hero .bc-header-title {

@@ -88,7 +88,14 @@ async function openChatModal(initialMessage, el) {
 function decorateBackground(el, background) {
   const bgValue = background.textContent.trim();
   if (bgValue) {
+    el.classList.add('has-bg-color');
     el.style.setProperty('--brand-concierge-bg', bgValue);
+  } else {
+    const bgImage = background.querySelector('img');
+    if (bgImage) {
+      el.classList.add('has-bg-image');
+      el.style.setProperty('--brand-concierge-bg', `url(${bgImage.src})`);
+    }
   }
   el.removeChild(background);
 }
