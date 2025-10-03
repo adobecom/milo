@@ -87,14 +87,17 @@ async function openChatModal(initialMessage, el) {
 
 function decorateBackground(el, background) {
   const bgValue = background.textContent.trim();
+  console.log(background);
   if (bgValue) {
     el.classList.add('has-bg-color');
     el.style.setProperty('--brand-concierge-bg', bgValue);
   } else {
     const bgImage = background.querySelector('img');
     if (bgImage) {
+      // remove querystring
+      const rawImage = bgImage.src.slice(0, bgImage.src.indexOf('?'));
       el.classList.add('has-bg-image');
-      el.style.setProperty('--brand-concierge-bg', `url(${bgImage.src})`);
+      el.style.setProperty('--brand-concierge-bg', `url(${rawImage})`);
     }
   }
   el.removeChild(background);
