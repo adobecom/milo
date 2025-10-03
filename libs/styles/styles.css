@@ -194,6 +194,22 @@
   }
 }
 
+#redirect-logs:not(:empty) {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 99999;
+  background: rgb(0 0 64 / 90%);
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 8px;
+  pointer-events: none;
+  font-family: monospace;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
 /*** Consonant Typography ***/
 
 .heading-xxxl,

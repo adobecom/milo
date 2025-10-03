@@ -322,6 +322,130 @@ export const [setConfig, updateConfig, getConfig] = (() => {
   ];
 })();
 
+export function createTag(tag, attributes, html, options = {}) {
+  const el = document.createElement(tag);
+  if (html) {
+    if (html.nodeType === Node.ELEMENT_NODE
+      || html instanceof SVGElement
+      || html instanceof DocumentFragment) {
+      el.append(html);
+    } else if (Array.isArray(html)) {
+      el.append(...html);
+    } else {
+      el.insertAdjacentHTML('beforeend', html);
+    }
+  }
+  if (attributes) {
+    Object.entries(attributes).forEach(([key, val]) => {
+      el.setAttribute(key, val);
+    });
+  }
+  options.parent?.append(el);
+  return el;
+}
+
+function visibleLog(message) {
+  const style = 'background-color: darkblue; color: white; font-weight: bold; font-size: 40px;';
+  console.log(`%c${message}`, style);
+
+  // Create or get the log element
+  const redirectLogsId = 'redirect-logs';
+  let logEl = document.querySelector(`#${redirectLogsId}`);
+  if (!logEl) {
+    logEl = createTag('div', { id: redirectLogsId });
+    document.body.appendChild(logEl);
+  }
+  // Append the message, separated by a new line if not empty
+  if (logEl.textContent) {
+    logEl.textContent += `\n${message}`;
+  } else {
+    logEl.textContent = message;
+  }
+}
+
+const [addRedirectEntry, addLoadAreaEntry] = (() => {
+  const redirectDataKey = 'redirectData';
+  const loadAreaDataKey = 'loadAreaData';
+
+  if (!localStorage.getItem(redirectDataKey)) {
+    localStorage.setItem(redirectDataKey, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(loadAreaDataKey)) {
+    localStorage.setItem(loadAreaDataKey, JSON.stringify([]));
+  }
+
+  return [
+    (data) => {
+      const arr = JSON.parse(localStorage.getItem(redirectDataKey));
+      arr.push(data);
+
+      if (arr.length >= 4 && arr[arr.length - 2] === 'redirected') {
+        const before = arr[arr.length - 4];
+        const after = arr[arr.length - 3];
+        if (typeof before === 'number' && typeof after === 'number') {
+          visibleLog(`Redirect logic took ${after - before}ms`);
+        }
+        const trimmedArr = arr.slice(-4);
+        localStorage.setItem(redirectDataKey, JSON.stringify(trimmedArr));
+      } else {
+        localStorage.setItem(redirectDataKey, JSON.stringify(arr));
+      }
+    },
+    (data) => {
+      const arr = JSON.parse(localStorage.getItem(loadAreaDataKey));
+      arr.push(data);
+
+      if (arr.length >= 3 && arr[arr.length - 2] === 'redirected') {
+        const before = arr[arr.length - 3];
+        const after = arr[arr.length - 1];
+        if (typeof before === 'number' && typeof after === 'number') {
+          visibleLog(`loadArea delta due to redirect is ${after - before}ms`);
+        }
+        const trimmedArr = arr.slice(-3);
+        localStorage.setItem(loadAreaDataKey, JSON.stringify(trimmedArr));
+      } else {
+        localStorage.setItem(loadAreaDataKey, JSON.stringify(arr));
+      }
+    },
+  ];
+})();
+
+async function checkResourceExists(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    console.log(`Additional request for '${url}' successful:`, response.ok);
+    return response.ok;
+  } catch (error) {
+    console.log(`Additional request for '${url}' successful:`, false);
+    return false;
+  }
+}
+
+async function localeRedirect() {
+  addRedirectEntry(Date.now());
+
+  const [browserLanguage] = navigator.language.split('-');
+  if (!browserLanguage) return;
+  const { locales, locale } = getConfig();
+  const [pageLanguage] = locale.ietf.split('-');
+
+  if (browserLanguage !== pageLanguage) {
+    const url = new URL(window.location.href);
+    const locPrefix = browserLanguage === 'en'
+      ? ''
+      : `/${Object.keys(locales).find((loc) => loc.split('_')[0] === browserLanguage)}`;
+    url.pathname = url.pathname.replace(locale.prefix, `${locPrefix}`);
+    const exists = await checkResourceExists(url.href);
+    if (exists) {
+      addRedirectEntry(Date.now());
+      addRedirectEntry('redirected');
+      addLoadAreaEntry('redirected');
+      window.location.assign(url.href);
+      // console.log('redirecting to:', url.href);
+    }
+  }
+}
+
 let federatedContentRoot;
 export const getFederatedContentRoot = () => {
   if (federatedContentRoot) return federatedContentRoot;
@@ -473,28 +597,6 @@ export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
 
 export function isInTextNode(node) {
   return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
-}
-
-export function createTag(tag, attributes, html, options = {}) {
-  const el = document.createElement(tag);
-  if (html) {
-    if (html.nodeType === Node.ELEMENT_NODE
-      || html instanceof SVGElement
-      || html instanceof DocumentFragment) {
-      el.append(html);
-    } else if (Array.isArray(html)) {
-      el.append(...html);
-    } else {
-      el.insertAdjacentHTML('beforeend', html);
-    }
-  }
-  if (attributes) {
-    Object.entries(attributes).forEach(([key, val]) => {
-      el.setAttribute(key, val);
-    });
-  }
-  options.parent?.append(el);
-  return el;
 }
 
 function getExtension(path) {
@@ -1757,7 +1859,14 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   return section.blocks;
 }
 
+let loadAreaCalled = false;
 export async function loadArea(area = document) {
+  if (!loadAreaCalled) {
+    addLoadAreaEntry(Date.now());
+    localeRedirect();
+    loadAreaCalled = true;
+  }
+
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
