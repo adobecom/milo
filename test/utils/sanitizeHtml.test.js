@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import sanitizeHtml from '../../libs/utils/sanitizeHtml.js';
+import { sanitizeHtml } from '../../libs/utils/sanitizeHtml.js';
 
 describe('sanitizeHtml Util', () => {
   it('could sanitize HTML', async () => {

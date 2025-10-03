@@ -28,11 +28,9 @@ function removeAttributes(elem) {
   });
 }
 
-function sanitizeHtml(html) {
+export function sanitizeHtml(html) {
   const htmlEl = stringToHTML(html);
   removeScripts(htmlEl);
   [htmlEl, ...htmlEl.querySelectorAll('*')].forEach(removeAttributes);
   return htmlEl.firstChild;
 }
-
-export default sanitizeHtml;
