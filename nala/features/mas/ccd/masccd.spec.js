@@ -157,11 +157,11 @@ module.exports = {
       name: '@MAS-CCD-slice-percentage',
       path: DOCS_GALLERY_PATH.CCD.US,
       data: {
-        id: '0ef2a804-e788-4959-abb8-b4d96a18b0ef',
+        id: 'ffdb8a91-aebb-482f-aae3-1bc34cecd085',
         description: 'Save over 40% when you upgrade to Creative Cloud All apps',
         percentage: '40%',
         cta: 'Buy now',
-        osi: 'PpnQ-UmW9NBwZwXlFw79zw2JybhvwIUwMTDYiIlu5qI',
+        osi: 'r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8',
         background: 'media-1508e7aec70760ac0ac13d9152f8030c1b67f70bf.png',
         // iconLink: '',
         cardDaaLH: 'ccsn',

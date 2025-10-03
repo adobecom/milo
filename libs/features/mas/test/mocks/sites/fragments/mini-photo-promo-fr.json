@@ -8,15 +8,15 @@
     "fields": {
         "variant": "mini",
         "osi": "mini-photo-promo",
-        "promoCode": "L_PROMO_10F",
+        "promoCode": "CCI2AAFRQ22440CD",
         "mnemonicIcon": [],
         "mnemonicAlt": [],
         "mnemonicLink": [],
-        "cardTitle": "CCD Apps: Photography Promo",
+        "cardTitle": "CCD Apps: Creative Cloud Pro - Individual Promo",
         "badge": { "mimeType": "text/html" },
         "trialBadge": { "mimeType": "text/html" },
         "prices": {
-            "value": "<span is=\"inline-price\" data-display-per-unit=\"false\" data-display-old-price=\"true\" data-promotion-code=\"L_PROMO_10F\" data-template=\"price\" data-wcs-osi=\"mini-photo-promo-fr\"></span>",
+            "value": "<span is=\"inline-price\" data-display-per-unit=\"false\" data-display-old-price=\"true\" data-promotion-code=\"CCI2AAFRQ22440CD\" data-template=\"price\" data-wcs-osi=\"mini-photo-promo-fr\"></span>",
             "mimeType": "text/html"
         },
         "shortDescription": { "mimeType": "text/html" },
@@ -26,7 +26,7 @@
         },
         "callout": { "mimeType": "text/html" },
         "ctas": {
-            "value": "<a class=\"accent\" data-checkout-workflow-step=\"segmentation\" data-promotion-code=\"L_PROMO_10F\" data-wcs-osi=\"mini-photo-promo-fr\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a><a class=\"primary-outline\" data-checkout-workflow-step=\"segmentation\" data-promotion-code=\"L_PROMO_10F\" data-wcs-osi=\"mini-photo-promo-fr\" data-template=\"checkoutUrl\" target=\"_self\" data-analytics-id=\"free-trial\">Free trial</a>",
+            "value": "<a class=\"accent\" data-checkout-workflow-step=\"segmentation\" data-promotion-code=\"CCI2AAFRQ22440CD\" data-wcs-osi=\"mini-photo-promo-fr\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a><a class=\"primary-outline\" data-checkout-workflow-step=\"segmentation\" data-promotion-code=\"CCI2AAFRQ22440CD\" data-wcs-osi=\"mini-photo-promo-fr\" data-template=\"checkoutUrl\" target=\"_self\" data-analytics-id=\"free-trial\">Free trial</a>",
             "mimeType": "text/html"
         },
         "tags": []
