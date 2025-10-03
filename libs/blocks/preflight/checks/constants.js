@@ -35,6 +35,22 @@ export const SEO_DESCRIPTIONS = {
   links: 'Links are valid.',
 };
 
+export const STRUCTURE_TITLES = {
+  navigation: 'Navigation',
+  footer: 'Footer',
+  regionSelector: 'Region selector',
+  georouting: 'Georouting',
+  breadcrumbs: 'Breadcrumbs',
+};
+
+export const STRUCTURE_IDS = {
+  navigation: 'navigation',
+  footer: 'footer',
+  regionSelector: 'region-selector',
+  georouting: 'georouting',
+  breadcrumbs: 'breadcrumbs',
+};
+
 export const PERFORMANCE_TITLES = {
   Performance: 'Performance',
   LcpEl: 'LCP',
