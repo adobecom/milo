@@ -10,6 +10,7 @@ const chatLabelText = 'Ask';
 const mountId = 'brand-concierge-mount';
 const stickyLegalContent = {};
 // ^^ used to dynamically add content to legal for accessibility using aria-live
+const animationMs = 500;
 
 function getAiChatIcon(maskId, fillId) {
   return `<svg title="${chatLabelText}" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -45,11 +46,11 @@ function updateInputHeight(el) {
 }
 
 function animateModalClosed(modal) {
-  modal.style.transition = 'bottom 400ms ease-in-out';
+  modal.style.transition = `bottom ${animationMs}ms ease-in-out`;
   modal.style.bottom = '-100vh';
   const modalCurtain = modal.nextElementSibling;
   if (modalCurtain?.classList.contains('modal-curtain')) {
-    modalCurtain.style.transition = 'opacity 400ms ease-in-out';
+    modalCurtain.style.transition = `opacity ${animationMs}ms ease-in-out`;
     modalCurtain.style.opacity = '0';
   }
 }
@@ -67,7 +68,7 @@ async function openChatModal(initialMessage, el) {
     closeCallback: async (dialog) => {
       animateModalClosed(dialog);
       await new Promise((resolve) => {
-        setTimeout(() => resolve(), 200);
+        setTimeout(() => resolve(), animationMs);
       });
     },
   });
