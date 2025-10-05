@@ -133,18 +133,30 @@ describe('Firefly Gallery', () => {
       expect(getLocalizedValue(null, 'en-US', 'default')).to.equal('default');
     });
 
-    it('getScreenSizeCategory should return correct category based on window width', () => {
-      const originalInnerWidth = window.innerWidth;
-      window.innerWidth = 500;
-      expect(getScreenSizeCategory()).to.equal('mobile');
+    it('getScreenSizeCategory should return correct category based on media queries', () => {
+      const originalMatchMedia = window.matchMedia;
 
-      window.innerWidth = 700;
-      expect(getScreenSizeCategory()).to.equal('tablet');
+      try {
+        window.matchMedia = (query) => ({
+          matches: query === '(max-width: 599px)',
+          media: query,
+        });
+        expect(getScreenSizeCategory()).to.equal('mobile');
 
-      window.innerWidth = 1000;
-      expect(getScreenSizeCategory()).to.equal('desktop');
+        window.matchMedia = (query) => ({
+          matches: query === '(min-width: 600px) and (max-width: 899px)',
+          media: query,
+        });
+        expect(getScreenSizeCategory()).to.equal('tablet');
 
-      window.innerWidth = originalInnerWidth;
+        window.matchMedia = (query) => ({
+          matches: query === '(min-width: 900px)',
+          media: query,
+        });
+        expect(getScreenSizeCategory()).to.equal('desktop');
+      } finally {
+        window.matchMedia = originalMatchMedia;
+      }
     });
 
     it('extractAspectRatio should correctly extract aspect ratio from asset', () => {

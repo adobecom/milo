@@ -6,11 +6,6 @@ const API_PARAMS = '?size=32&sort=updated_desc&include_pending_assets=false&curs
 const API_KEY = 'milo-ff-gallery-unity';
 const ICON_PLAY = '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.59755 34.6503C10.6262 35.2535 11.7861 35.5552 12.9471 35.5552C14.0637 35.5552 15.1824 35.2753 16.1839 34.7132L32.1258 25.7798C34.2742 24.5775 35.5557 22.4155 35.5557 20.0002C35.5557 17.5843 34.2742 15.4228 32.1258 14.2206L16.1839 5.28719C14.1429 4.14137 11.6168 4.16523 9.59753 5.35012C7.76268 6.42434 6.66675 8.27981 6.66675 10.3094V29.6909C6.66675 31.72 7.76268 33.576 9.59755 34.6503Z" fill="black" fill-opacity="0.84" style="fill:black;fill-opacity:0.84;"/></svg>';
 const LANA_OPTIONS = { tags: 'firefly-gallery', errorType: 'i' };
-const MEDIA_QUERIES = {
-  mobile: window.matchMedia('(max-width: 599px)'),
-  tablet: window.matchMedia('(min-width: 600px) and (max-width: 899px)'),
-  desktop: window.matchMedia('(min-width: 900px)'),
-};
 
 // Item type thresholds for categorization
 const ITEM_TYPE_THRESHOLDS = {
@@ -64,6 +59,11 @@ export function getLocalizedValue(localizations, currentLocale, defaultValue = '
 }
 
 export function getScreenSizeCategory() {
+  const MEDIA_QUERIES = {
+    mobile: window.matchMedia('(max-width: 599px)'),
+    tablet: window.matchMedia('(min-width: 600px) and (max-width: 899px)'),
+    desktop: window.matchMedia('(min-width: 900px)'),
+  };
   if (MEDIA_QUERIES.mobile.matches) {
     return 'mobile';
   }
