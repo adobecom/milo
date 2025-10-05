@@ -295,7 +295,7 @@ function buildOverlayElement(
     if (document.activeElement && document.activeElement !== overlay) {
       document.activeElement.blur();
     }
-  });
+  }, { passive: true });
 
   const contentWrapper = createTag('div', { class: 'firefly-gallery-content-wrapper' });
   const infoContainer = createTag('div', { class: 'firefly-gallery-info-container' });
