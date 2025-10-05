@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, createIntersectionObserver } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 
 const FIREFLY_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/assets';
@@ -6,6 +6,11 @@ const API_PARAMS = '?size=32&sort=updated_desc&include_pending_assets=false&curs
 const API_KEY = 'milo-ff-gallery-unity';
 const ICON_PLAY = '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.59755 34.6503C10.6262 35.2535 11.7861 35.5552 12.9471 35.5552C14.0637 35.5552 15.1824 35.2753 16.1839 34.7132L32.1258 25.7798C34.2742 24.5775 35.5557 22.4155 35.5557 20.0002C35.5557 17.5843 34.2742 15.4228 32.1258 14.2206L16.1839 5.28719C14.1429 4.14137 11.6168 4.16523 9.59753 5.35012C7.76268 6.42434 6.66675 8.27981 6.66675 10.3094V29.6909C6.66675 31.72 7.76268 33.576 9.59755 34.6503Z" fill="black" fill-opacity="0.84" style="fill:black;fill-opacity:0.84;"/></svg>';
 const LANA_OPTIONS = { tags: 'firefly-gallery', errorType: 'i' };
+const MEDIA_QUERIES = {
+  mobile: window.matchMedia('(max-width: 599px)'),
+  tablet: window.matchMedia('(min-width: 600px) and (max-width: 899px)'),
+  desktop: window.matchMedia('(min-width: 900px)'),
+};
 
 // Item type thresholds for categorization
 const ITEM_TYPE_THRESHOLDS = {
@@ -59,12 +64,10 @@ export function getLocalizedValue(localizations, currentLocale, defaultValue = '
 }
 
 export function getScreenSizeCategory() {
-  const viewportWidth = window.innerWidth;
-
-  if (viewportWidth < 600) {
+  if (MEDIA_QUERIES.mobile.matches) {
     return 'mobile';
   }
-  if (viewportWidth < 900) {
+  if (MEDIA_QUERIES.tablet.matches) {
     return 'tablet';
   }
   return 'desktop';
@@ -132,6 +135,7 @@ async function fetchFireflyAssets(categoryId, viewBtnLabel, cgenId) {
     );
 
     if (!response.ok) {
+      window.lana?.log(`Firefly API request failed with status ${response.status} for category ${categoryId}`, LANA_OPTIONS);
       throw new Error(`API request failed with status ${response.status}`);
     }
 
@@ -161,10 +165,7 @@ const replaceRenditionUrl = (url, format, dimension, size) => url
 export function createFireflyURL(urn, assetType = 'image', cgenId = '') {
   const assetTypeParam = assetType === 'video' ? 'VideoGeneration' : 'ImageGeneration';
   let url = `https://firefly.adobe.com/open?assetOrigin=community&assetType=${assetTypeParam}&id=${urn}`;
-
-  if (cgenId) {
-    url += `&promoid=${cgenId}&mv=other`;
-  }
+  url += cgenId ? `&promoid=${cgenId}&mv=other` : '';
   return url;
 }
 
@@ -192,7 +193,7 @@ export function getImageRendition(asset, itemType = 'square') {
   }
 }
 
-export function createGalleryStructure() {
+export function buildAndGetGalleryElements() {
   const galleryContainer = createTag('div', { class: 'firefly-gallery-container' });
   const galleryContent = createTag('div', { class: 'firefly-gallery-content' });
   const galleryFadeOverlay = createTag('div', { class: 'firefly-gallery-fade' });
@@ -273,7 +274,7 @@ function createPlayIconElement() {
   return wrapper;
 }
 
-function createOverlayElement(
+function buildOverlayElement(
   promptText,
   fireflyUrl,
   viewBtnLabel,
@@ -344,7 +345,7 @@ function createOverlayElement(
   return overlay;
 }
 
-function loadAssetIntoSkeleton(
+function buildAndLoadAssetIntoSkeleton(
   skeletonItem,
   imageUrl,
   altText,
@@ -368,7 +369,7 @@ function loadAssetIntoSkeleton(
     if (promptText) {
       const fireflyUrl = createFireflyURL(assetUrn, assetType, cgenId);
       const overlayPromptText = assetType === 'video' ? '' : promptText;
-      const overlay = createOverlayElement(
+      const overlay = buildOverlayElement(
         overlayPromptText,
         fireflyUrl,
         viewBtnLabel,
@@ -447,7 +448,7 @@ function loadAssetIntoSkeleton(
   });
 }
 
-function processItem(item, asset, index, locale) {
+function buildAndProcessAssetItem(item, asset, locale) {
   const aspectRatio = extractAspectRatio(asset);
 
   const itemType = getItemTypeFromAspectRatio(aspectRatio);
@@ -501,7 +502,7 @@ function processItem(item, asset, index, locale) {
     viewBtnLabel: asset.viewBtnLabel,
     cgenId: asset.cgenId,
   };
-  loadAssetIntoSkeleton(
+  buildAndLoadAssetIntoSkeleton(
     item,
     imageUrl,
     altText,
@@ -520,42 +521,26 @@ function loadFireflyImages(skeletonItems, assets = []) {
 
     const locale = getConfig().locale?.ietf || 'en-US';
 
-    // Load images only when they're visible
-    const observer = new IntersectionObserver(
-      (entries, obs) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const item = entry.target;
-            const index = parseInt(item.dataset.index, 10);
-
-            obs.unobserve(item);
-
-            // Load the image if we have an asset for it
-            if (index >= 0 && index < assets.length) {
-              processItem(item, assets[index], index, locale);
-            }
-          }
-        });
-      },
-      {
-        rootMargin: '200px 0px',
-        threshold: 0.01,
-      },
-    );
-
     skeletonItems.forEach((item, index) => {
       item.dataset.index = index;
-      observer.observe(item);
     });
 
-    // Also process the first few items immediately for a faster initial view
-    const immediateLoadCount = Math.min(4, skeletonItems.length);
-    for (let i = 0; i < immediateLoadCount; i += 1) {
-      if (i < assets.length) {
-        processItem(skeletonItems[i], assets[i], i, locale);
-        observer.unobserve(skeletonItems[i]); // Stop observing items already processed
-      }
-    }
+    skeletonItems.forEach((item) => {
+      createIntersectionObserver({
+        el: item,
+        callback: (element) => {
+          const index = parseInt(element.dataset.index, 10);
+          if (index >= 0 && index < assets.length) {
+            buildAndProcessAssetItem(element, assets[index], locale);
+          }
+        },
+        once: true,
+        options: {
+          rootMargin: '200px 0px',
+          threshold: 0.01,
+        },
+      });
+    });
   } catch (err) {
     window.lana?.log(`Error loading Firefly gallery images: ${err}`, LANA_OPTIONS);
   }
@@ -599,7 +584,7 @@ export default async function init(el) {
     el.textContent = '';
 
     // Create gallery structure
-    const { container, content } = createGalleryStructure();
+    const { container, content } = buildAndGetGalleryElements();
 
     // Create and append skeleton layout
     const { skeletonItems, masonryGrid } = createSkeletonLayout(content);
