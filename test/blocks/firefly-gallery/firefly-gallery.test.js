@@ -10,7 +10,7 @@ import {
   extractAspectRatio,
   getItemTypeFromAspectRatio,
   getImageRendition,
-  createGalleryStructure,
+  buildAndGetGalleryElements,
   createFireflyURL,
 } from '../../../libs/blocks/firefly-gallery/firefly-gallery.js';
 
@@ -196,8 +196,8 @@ describe('Firefly Gallery', () => {
   });
 
   describe('Gallery Structure', () => {
-    it('createGalleryStructure should return correct DOM structure', () => {
-      const { container, content } = createGalleryStructure();
+    it('buildAndGetGalleryElements should return correct DOM structure', () => {
+      const { container, content } = buildAndGetGalleryElements();
 
       expect(container.classList.contains('firefly-gallery-container')).to.be.true;
       expect(content.classList.contains('firefly-gallery-content')).to.be.true;
