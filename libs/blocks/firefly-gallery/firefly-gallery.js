@@ -5,6 +5,7 @@ const FIREFLY_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/ass
 const API_PARAMS = '?size=32&sort=updated_desc&include_pending_assets=false&cursor=';
 const API_KEY = 'milo-ff-gallery-unity';
 const ICON_PLAY = '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.59755 34.6503C10.6262 35.2535 11.7861 35.5552 12.9471 35.5552C14.0637 35.5552 15.1824 35.2753 16.1839 34.7132L32.1258 25.7798C34.2742 24.5775 35.5557 22.4155 35.5557 20.0002C35.5557 17.5843 34.2742 15.4228 32.1258 14.2206L16.1839 5.28719C14.1429 4.14137 11.6168 4.16523 9.59753 5.35012C7.76268 6.42434 6.66675 8.27981 6.66675 10.3094V29.6909C6.66675 31.72 7.76268 33.576 9.59755 34.6503Z" fill="black" fill-opacity="0.84" style="fill:black;fill-opacity:0.84;"/></svg>';
+const LANA_OPTIONS = { tags: 'firefly-gallery', errorType: 'i' };
 
 // Item type thresholds for categorization
 const ITEM_TYPE_THRESHOLDS = {
@@ -88,7 +89,9 @@ export function extractAspectRatio(asset) {
       if (inputModel.aspectRatio) {
         aspectRatio = parseFloat(inputModel.aspectRatio);
       }
-    } catch (e) { /* eslint-disable-line no-empty */ }
+    } catch (err) {
+      window.lana?.log(`Error parsing Firefly response: ${err}`, LANA_OPTIONS);
+    }
   }
 
   return aspectRatio;
@@ -144,7 +147,8 @@ async function fetchFireflyAssets(categoryId, viewBtnLabel, cgenId) {
       asset.cgenId = cgenId;
     });
     return assets;
-  } catch (error) {
+  } catch (err) {
+    window.lana?.log(`Failed to fetch Firefly assets: ${err}`, LANA_OPTIONS);
     return [];
   }
 }
@@ -167,20 +171,25 @@ export function createFireflyURL(urn, assetType = 'image', cgenId = '') {
 export function getImageRendition(asset, itemType = 'square') {
   if (!asset) return '';
 
-  const screenSize = getScreenSizeCategory();
+  try {
+    const screenSize = getScreenSizeCategory();
 
-  const sizeObj = RENDITION_SIZES[itemType] || RENDITION_SIZES.square;
-  const width = sizeObj[screenSize] || sizeObj.default;
+    const sizeObj = RENDITION_SIZES[itemType] || RENDITION_SIZES.square;
+    const width = sizeObj[screenSize] || sizeObj.default;
 
-  const renditionUrl = replaceRenditionUrl(
+    const renditionUrl = replaceRenditionUrl(
     // eslint-disable-next-line no-underscore-dangle
-    asset._links.rendition.href,
-    'jpg',
-    'width',
-    width,
-  );
+      asset._links.rendition.href,
+      'jpg',
+      'width',
+      width,
+    );
 
-  return renditionUrl;
+    return renditionUrl;
+  } catch (err) {
+    window.lana?.log(`Error generating image rendition URL: ${err}`, LANA_OPTIONS);
+    return '';
+  }
 }
 
 export function createGalleryStructure() {
@@ -387,7 +396,9 @@ function loadAssetIntoSkeleton(
         const playVideo = () => {
           video.style.opacity = '1';
           video.muted = true;
-          video.play().catch(() => {});
+          video.play().catch((err) => {
+            window.lana?.log(`Error playing Firefly video: ${err}`, LANA_OPTIONS);
+          });
         };
 
         const pauseVideo = () => {
@@ -545,7 +556,9 @@ function loadFireflyImages(skeletonItems, assets = []) {
         observer.unobserve(skeletonItems[i]); // Stop observing items already processed
       }
     }
-  } catch (error) { /* eslint-disable-line no-empty */ }
+  } catch (err) {
+    window.lana?.log(`Error loading Firefly gallery images: ${err}`, LANA_OPTIONS);
+  }
 }
 
 function getItemTypeFromClass(item) {
@@ -576,35 +589,39 @@ function handleResizeForGallery(assets, skeletonItems) {
 }
 
 export default async function init(el) {
-  el.classList.add('firefly-gallery-block', 'con-block');
-  // Extract category_id - should be text2Image / VideoGeneration
-  const [categoryId, cgenId] = el.querySelector('div:first-child > div').innerText.split('|').map((i) => i.trim());
-  const viewBtnLabel = el.querySelector('div:last-child > div').innerText || 'View';
+  try {
+    el.classList.add('firefly-gallery-block', 'con-block');
+    // Extract category_id - should be text2Image / VideoGeneration
+    const [categoryId, cgenId] = el.querySelector('div:first-child > div').innerText.split('|').map((i) => i.trim());
+    const viewBtnLabel = el.querySelector('div:last-child > div').innerText || 'View';
 
-  // Clear existing content
-  el.textContent = '';
+    // Clear existing content
+    el.textContent = '';
 
-  // Create gallery structure
-  const { container, content } = createGalleryStructure();
+    // Create gallery structure
+    const { container, content } = createGalleryStructure();
 
-  // Create and append skeleton layout
-  const { skeletonItems, masonryGrid } = createSkeletonLayout(content);
+    // Create and append skeleton layout
+    const { skeletonItems, masonryGrid } = createSkeletonLayout(content);
 
-  // Replace block content with our gallery structure
-  el.appendChild(container);
+    // Replace block content with our gallery structure
+    el.appendChild(container);
 
-  // Allow UI to be scrollable before waiting for image data
-  fetchFireflyAssets(categoryId, viewBtnLabel, cgenId)
-    .then((assets) => {
-      if (assets && assets.length) {
-        loadFireflyImages(skeletonItems, assets);
-        handleResizeForGallery(assets, skeletonItems);
+    // Allow UI to be scrollable before waiting for image data
+    fetchFireflyAssets(categoryId, viewBtnLabel, cgenId)
+      .then((assets) => {
+        if (assets && assets.length) {
+          loadFireflyImages(skeletonItems, assets);
+          handleResizeForGallery(assets, skeletonItems);
+          masonryGrid.classList.remove('loading');
+        } else {
+          masonryGrid.classList.remove('loading');
+        }
+      })
+      .catch(() => {
         masonryGrid.classList.remove('loading');
-      } else {
-        masonryGrid.classList.remove('loading');
-      }
-    })
-    .catch(() => {
-      masonryGrid.classList.remove('loading');
-    });
+      });
+  } catch (err) {
+    window.lana?.log(`Critical error initializing Firefly gallery: ${err}`, LANA_OPTIONS);
+  }
 }
