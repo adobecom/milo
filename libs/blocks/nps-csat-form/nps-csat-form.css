@@ -1,22 +1,12 @@
 .nps-csat-form {
   background: white;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
   padding: 32px;
   height: 404px;
   max-width: 576px;
   width: 100%;
   margin: 0 auto;
 }
-
-/* .nps-csat-form.five-point {
-  max-width: 416px;
-} */
-
-/* .nps-csat-form.seven-point {
-  max-width: 576px;
-  color: #FC432E;
-} */
 
 .nps-csat-form #nps {
   position: relative;
