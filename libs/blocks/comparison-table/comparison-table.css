@@ -53,11 +53,11 @@
 }
 
 .comparison-table .table-container .table-row {
-  padding: 0 12px;
+  padding: 0 24px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
 }
 
 .comparison-table .table-container .table-row-header {
@@ -68,20 +68,12 @@
   line-height: 130%;
   width: calc(20% - 40px);
   padding: 24px 0;
-  padding-inline-end: 32px;
+  padding-inline-end: 27px;
 }
 
 .comparison-table .table-container .table-cell {
   width: calc(20% - 12px);
   padding: 24px 0;
-}
-
-.comparison-table .table-container .table-row .table-cell:nth-child(2){
-  width: calc(20% - 16px);
-}
-
-.comparison-table .table-container .table-row .table-cell:last-child {
-  width: calc(20% - 16px);
 }
 
 .comparison-table .table-container .table-row .table-cell:nth-child(odd) p:first-child{
