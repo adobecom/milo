@@ -24,10 +24,11 @@ function equalHeight(el) {
           pTags[0].style.minHeight = 'auto';
           firstPTags.push(pTags[0]);
         }
-        if (pTags[1]) {
-          pTags[1].style.minHeight = 'auto';
-          secondPTags.push(pTags[1]);
-        }
+
+        if (!pTags[1]) return;
+
+        pTags[1].style.minHeight = 'auto';
+        secondPTags.push(pTags[1]);
       });
 
       if (firstPTags.length > 0) {
@@ -37,12 +38,12 @@ function equalHeight(el) {
         });
       }
 
-      if (secondPTags.length > 0) {
-        const maxSecondHeight = calculateMaxHeight(secondPTags);
-        secondPTags.forEach((p) => {
-          p.style.minHeight = `${maxSecondHeight}px`;
-        });
-      }
+      if (secondPTags.length === 0) return;
+
+      const maxSecondHeight = calculateMaxHeight(secondPTags);
+      secondPTags.forEach((p) => {
+        p.style.minHeight = `${maxSecondHeight}px`;
+      });
     });
   };
 
