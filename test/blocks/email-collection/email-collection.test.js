@@ -51,7 +51,6 @@ describe('Email collection', () => {
     const formDataObject = {
       fields: { email: 'Email address' },
       metadata: {
-        campaignId: '1111',
         mpsSname: '1111',
         subscriptionName: '1234',
       },
