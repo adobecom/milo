@@ -130,17 +130,18 @@ function decodeLinks(literal) {
 }
 
 export function formatLiteral(literals, locale, key, parameters) {
-    const literal = literals[key];
+    let literal = literals[key];
     if (literal == undefined) {
         /* c8 ignore next 2 */
         return '';
     }
+    const hasHtml = literal.includes('<');
+    const hasLinks = literal.includes('<a ');
     try {
-        const formattedLiteral = new IntlMessageFormat(
-            encodeLinks(literal).replace(htmlPattern, ''),
-            locale,
-        ).format(parameters);
-        return decodeLinks(formattedLiteral);
+        literal = hasLinks ? encodeLinks(literal) : literal;
+        literal = hasHtml ? literal.replace(htmlPattern, '') : literal;
+        const formattedLiteral = new IntlMessageFormat(literal, locale).format(parameters);
+        return hasLinks ? decodeLinks(formattedLiteral) : formattedLiteral;
     } catch {
         /* c8 ignore next 2 */
         log.error('Failed to format literal:', literal);
