@@ -90,6 +90,10 @@
   text-align: center;
   min-height: 18px;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-word;
 }
 
 .comparison-table .table-container .table-cell p:first-child {

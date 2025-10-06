@@ -1,6 +1,49 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
+function equalHeight(el) {
+  const performEqualHeight = () => {
+    const tableRows = el.querySelectorAll('.table-row');
+
+    tableRows.forEach((row) => {
+      const tableCells = row.querySelectorAll('.table-cell');
+      if (tableCells.length === 0) return;
+
+      const firstPTags = [];
+      const secondPTags = [];
+
+      tableCells.forEach((cell) => {
+        const pTags = cell.querySelectorAll('p');
+        if (pTags[0]) {
+          firstPTags.push(pTags[0]);
+        }
+        if (pTags[1]) {
+          secondPTags.push(pTags[1]);
+        }
+      });
+
+      if (firstPTags.length > 0) {
+        const maxFirstHeight = Math.max(...firstPTags.map((p) => p.offsetHeight
+          - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value
+          - p.computedStyleMap().get('border-top-width').value - p.computedStyleMap().get('border-bottom-width').value));
+        firstPTags.forEach((p) => {
+          p.style.minHeight = `${maxFirstHeight}px`;
+        });
+      }
+
+      if (secondPTags.length > 0) {
+        const maxSecondHeight = Math.max(...secondPTags.map((p) => p.offsetHeight - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value));
+        secondPTags.forEach((p) => {
+          p.style.minHeight = `${maxSecondHeight}px`;
+        });
+      }
+    });
+  };
+
+  setTimeout(performEqualHeight, 0);
+  window.addEventListener('resize', performEqualHeight);
+}
+
 function createSubHeaderContainer(childrenArray, startIndex, endIndex, isLast = false) {
   const container = createTag('div', { class: 'sub-header-item-container' });
 
@@ -149,4 +192,5 @@ export default function init(el) {
 
   decorateHeader(children[0]);
   decorateTables(el, children.slice(1));
+  equalHeight(el);
 }
