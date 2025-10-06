@@ -302,10 +302,6 @@ export default async (block) => {
   const sendMessage = initMessageClient();
   // The form will still be interactable in case
   // Acknowledgement fails
-  sendMessage({
-    type: 'TMP_DEBUG_MSG_DELETE_LATER',
-    data: Object.fromEntries(searchParams),
-  });
   sendMessage(READY);
 
   // Add form validation handler - only show errors after submit attempt
