@@ -15,9 +15,11 @@ function equalHeight(el) {
       tableCells.forEach((cell) => {
         const pTags = cell.querySelectorAll('p');
         if (pTags[0]) {
+          pTags[0].style.minHeight = 'auto';
           firstPTags.push(pTags[0]);
         }
         if (pTags[1]) {
+          pTags[1].style.minHeight = 'auto';
           secondPTags.push(pTags[1]);
         }
       });
