@@ -94,7 +94,7 @@ function decorateBackground(el, background) {
   } else {
     const bgImage = background.querySelector('img');
     if (bgImage) {
-      // remove querystring
+      // remove query string to prevent blurry images.
       const rawImage = bgImage.src.slice(0, bgImage.src.indexOf('?'));
       el.classList.add('has-bg-image');
       el.style.setProperty('--brand-concierge-bg', `url(${rawImage})`);
