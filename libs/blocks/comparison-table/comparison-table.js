@@ -101,11 +101,15 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
       child.setAttribute('role', childIndex === 0 ? 'columnheader' : 'cell');
 
+      const hasEmptyPTag = childIndex !== 0 && child.children.length <= 1;
+      if (hasEmptyPTag) child.appendChild(createTag('p'));
       if (childIndex === 0 || child.children.length > 1 || !child.textContent.trim()) return;
 
+      const existingEmptyP = hasEmptyPTag ? child.querySelector('p:empty') : null;
       const pTag = createTag('p', {}, child.textContent);
       child.innerHTML = '';
       child.appendChild(pTag);
+      if (existingEmptyP) child.appendChild(existingEmptyP);
     });
     tableChild.classList.add('table-row');
     tableChild.setAttribute('role', 'row');

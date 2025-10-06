@@ -46,7 +46,8 @@
 .comparison-table .table-container .table-row {
   padding: 0 12px;
   display: flex;
-  flex-wrap: wrap;  
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .comparison-table .table-container .table-row-header {
@@ -87,6 +88,8 @@
 
 .comparison-table .table-container .table-cell p {
   text-align: center;
+  min-height: 18px;
+  width: 100%;
 }
 
 .comparison-table .table-container .table-cell p:first-child {
