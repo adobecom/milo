@@ -21,9 +21,6 @@ function getTimeoutPromise() {
 }
 
 async function loadDependencies() {
-  /** Load lit first as it's needed by MAS components */
-
-  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {
@@ -32,7 +29,6 @@ async function loadDependencies() {
   const service = await servicePromise;
   log = service.Log.module('merch-card');
 
-  /** Load required MAS components */
   await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
@@ -56,7 +52,6 @@ export async function checkReady(masElement) {
 export async function createCard(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
-  // If the element is wrapped in a <p> tag, replace the parent instead to simplify the DOM
   const parent = el.parentElement;
   if (parent && parent.tagName === 'P' && parent.children.length === 1) {
     parent.replaceWith(merchCard);
