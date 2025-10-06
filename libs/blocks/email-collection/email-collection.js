@@ -183,7 +183,7 @@ async function submitForm(form) {
 
   try {
     const { imsClientId } = miloConfig;
-    const { mpsSname, campaignId } = getFormData('metadata');
+    const { mpsSname } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
 
     const date = new Date();
@@ -206,7 +206,6 @@ async function submitForm(form) {
       body: JSON.stringify({
         ...mpsData,
         ...aepData,
-        campaignId,
         occupation,
         organization,
         email,

@@ -6,9 +6,7 @@ const API_ENDPOINTS = {
   prod: 'https://www.adobe.com/milo-email-collection-api',
 };
 const FORM_METADATA = {
-  'campaign-id': 'campaignId',
   'mps-sname': 'mpsSname',
-  'consent-id': 'consentId',
   'subscription-name': 'subscriptionName',
 };
 
@@ -242,9 +240,8 @@ export const [getFormData, setFormData] = (() => {
       });
 
       if (!fields.email
-        || !metadata.campaignId
         || !metadata.mpsSname
-        || !metadata.subscriptionName) return 'Section metadata is missing email/campaing-id/mps-sname/subscription-name field';
+        || !metadata.subscriptionName) return 'Section metadata is missing email/mps-sname/subscription-name field';
 
       formData.config = fetchFormConfig(fetchConfigParams);
 
