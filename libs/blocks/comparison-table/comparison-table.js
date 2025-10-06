@@ -1,13 +1,16 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
-function calculateMaxHeight(elements) {
-  return Math.max(...elements.map((p) => p.offsetHeight
-    - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value
-    - p.computedStyleMap().get('border-top-width').value - p.computedStyleMap().get('border-bottom-width').value));
-}
-
 function equalHeight(el) {
+  const calculateMaxHeight = (elements) => Math.max(...elements.map((p) => p.offsetHeight
+      - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value
+      - p.computedStyleMap().get('border-top-width').value - p.computedStyleMap().get('border-bottom-width').value));
+
+  const setupHeightHandler = (handler) => {
+    setTimeout(handler, 0);
+    window.addEventListener('resize', handler);
+  };
+
   const performEqualHeight = () => {
     const tableRows = el.querySelectorAll('.table-row');
 
@@ -47,8 +50,60 @@ function equalHeight(el) {
     });
   };
 
-  setTimeout(performEqualHeight, 0);
-  window.addEventListener('resize', performEqualHeight);
+  const performHeaderEqualHeight = () => {
+    const headerContentWrapper = el.querySelector('.header-content-wrapper');
+    if (!headerContentWrapper) return;
+
+    const headerItems = headerContentWrapper.querySelectorAll('.header-item');
+    if (headerItems.length === 0) return;
+
+    const firstContainers = [];
+    const secondContainers = [];
+    const thirdContainers = [];
+
+    headerItems.forEach((headerItem) => {
+      const subHeaderContainers = headerItem.querySelectorAll('.sub-header-item-container');
+
+      if (subHeaderContainers[0]) {
+        subHeaderContainers[0].style.minHeight = 'auto';
+        firstContainers.push(subHeaderContainers[0]);
+      }
+
+      if (subHeaderContainers[1]) {
+        subHeaderContainers[1].style.minHeight = 'auto';
+        secondContainers.push(subHeaderContainers[1]);
+      }
+
+      if (!subHeaderContainers[2]) return;
+
+      subHeaderContainers[2].style.minHeight = 'auto';
+      thirdContainers.push(subHeaderContainers[2]);
+    });
+
+    if (firstContainers.length > 0) {
+      const maxFirstHeight = calculateMaxHeight(firstContainers);
+      firstContainers.forEach((container) => {
+        container.style.minHeight = `${maxFirstHeight}px`;
+      });
+    }
+
+    if (secondContainers.length > 0) {
+      const maxSecondHeight = calculateMaxHeight(secondContainers);
+      secondContainers.forEach((container) => {
+        container.style.minHeight = `${maxSecondHeight}px`;
+      });
+    }
+
+    if (thirdContainers.length === 0) return;
+
+    const maxThirdHeight = calculateMaxHeight(thirdContainers);
+    thirdContainers.forEach((container) => {
+      container.style.minHeight = `${maxThirdHeight}px`;
+    });
+  };
+
+  setupHeightHandler(performHeaderEqualHeight);
+  setupHeightHandler(performEqualHeight);
 }
 
 function createSubHeaderContainer(childrenArray, startIndex, endIndex, isLast = false) {
