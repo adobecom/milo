@@ -31,7 +31,7 @@
         <script type="module">
             import { init } from './common.js';
             // Initialize commerce service and mas.js (which includes merch-card-collection)
-            // mas-tooltip will be loaded dynamically when needed
+            // mas-mnemonic will be loaded dynamically when needed
             init();
         </script>
         <script
@@ -111,11 +111,11 @@
                         >
                     </div>
                     <div class="express-container">
-                        <h2 id="express-card" tabindex="-1">
-                            Express Card
+                        <h2 id="express-card-simplified" tabindex="-1">
+                            Express Card (Simplified Pricing)
                             <a
                                 class="header-anchor"
-                                href="#express-card"
+                                href="#express-card-simplified"
                                 title="Permalink to this heading"
                                 >#</a
                             >
@@ -125,6 +125,22 @@
                             <merch-card variant="simplified-pricing-express" data-default-card="true"><aem-fragment fragment="67c78f03-7d88-44c9-9a06-05443ec9265d"></aem-fragment></merch-card>
                             <merch-card variant="simplified-pricing-express"><aem-fragment fragment="b28957b9-2341-40f9-9004-24446f68e5e5"></aem-fragment></merch-card>
                             <merch-card variant="simplified-pricing-express"><aem-fragment fragment="aaa728dc-2b44-495c-b9f0-bb82044db18a"></aem-fragment></merch-card>
+                          </merch-card-collection>
+
+                        <h2 id="express-card-full" tabindex="-1">
+                            Express Card (Full Pricing)
+                            <a
+                                class="header-anchor"
+                                href="#express-card-full"
+                                title="Permalink to this heading"
+                                >#</a
+                            >
+                        </h2>
+
+                          <merch-card-collection filter="all" class="merch-card-collection full-pricing-express" filtered="all" page="1">
+                            <merch-card variant="full-pricing-express"><aem-fragment fragment="53fcf015-5c28-4214-bd2b-d4c22f1774b8"></aem-fragment></merch-card>
+                            <merch-card variant="full-pricing-express"><aem-fragment fragment="025dfceb-c035-45b7-8ea1-8feed25c8009"></aem-fragment></merch-card>
+                            <merch-card variant="full-pricing-express" gradient-border="true" border-color="gradient-firefly-spectrum"><aem-fragment fragment="9406f1ae-7bee-48c3-9892-49af6816033e"></aem-fragment></merch-card>
                           </merch-card-collection>
                     </div>
                 </div>

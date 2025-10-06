@@ -9,7 +9,7 @@
   --bc-button-dimensions: 32px;
   --bc-button-radius: 8px;
   --bc-button-color: #292929;
-  --bc-button-hover-color: #555;
+  --bc-button-hover-color: #131313;
   --bc-keyboard-focus-color: #5574F7;
   --bc-sticky-delay: 3s;
 
@@ -101,7 +101,7 @@
   background: #fff;
   border-radius: calc(var(--bc-input-radius) - 2px);
   display: flex;
-  height: var(--bc-input-height);
+  min-height: var(--bc-input-height);
   margin-bottom: 40px;
   padding: 0 12px;
   position: relative;
@@ -200,7 +200,7 @@
   display: block;
 }
 
-.bc-input-field-container input {
+.bc-input-field-container textarea {
   background: transparent;
   border: none;
   flex: 1;
@@ -209,10 +209,16 @@
   line-height: 1.5;
   outline: none;
   width: 100%;
+  resize: none;
+  overflow-wrap: break-word;
+  min-height: var(--bc-input-height);
+  max-height: 35vh;
+  overflow-y: auto;
   padding: 14px 0;
+  box-sizing: border-box;
 }
 
-.bc-input-field-container input::placeholder {
+.bc-input-field-container textarea::placeholder {
   color: #757575;
 }
 
@@ -228,6 +234,8 @@
   height: var(--bc-button-dimensions);
   transition: background 0.3s ease;
   width: var(--bc-button-dimensions);
+  align-self: end;
+  margin-bottom: 10px;
 }
 
 .input-field-button:hover {
@@ -309,6 +317,33 @@
   line-height: 1.5 !important;
 }
 
+#brand-concierge-mount .container-desktop .bc-response-footer,
+#brand-concierge-mount .container-mobile .bc-response-footer {
+  margin-top: 16px !important;
+}
+
+#brand-concierge-mount .citations-sources-panel:not(.active) {
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+#brand-concierge-mount .bc-response-footer-actions .bc-feedback-buttons {
+  margin-top: 4px !important;
+}
+
+#brand-concierge-mount .feedback-button:hover:not(:disabled) {
+  color: #131313 !important;
+  transform: none !important;
+}
+
+#brand-concierge-mount .submit-button:hover:not(:disabled) {
+  transform: none !important;
+}
+
+#brand-concierge-mount .privacy-notice-title {
+  display: none !important;
+}
+
 /* Sticky */
 @keyframes sticky-in {
   from {
@@ -370,11 +405,11 @@
   display: none;
 }
 
-.bc-input-field-container:has(input:focus-visible) {
+.bc-input-field-container:has(textarea:focus-visible) {
   outline: 2px solid var(--bc-keyboard-focus-color);
 }
 
-.sticky .bc-input-field:has(input:focus-visible)::after {
+.sticky .bc-input-field:has(textarea:focus-visible)::after {
   opacity: 0.5;
 }
 
@@ -456,7 +491,7 @@
 }
 
 #brand-concierge-modal {
-  --modal-header-height: 56px;
+  --modal-header-height: 57px;
 }
 
 #brand-concierge-modal.dialog-modal {
@@ -500,12 +535,13 @@
 }
 
 .bc-modal-header {
-  height: 56px;
+  height: var(--modal-header-height);
   padding: 12px 16px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 8px;
+  border-bottom: 1px solid rgb(0 0 0 / 9%);
 }
 
 .bc-modal-title {
@@ -571,6 +607,10 @@
     max-width: calc(670px - 4px);
   }
 
+  .bc-input-field-container textarea {
+    max-height: 244px;
+  }
+
   .bc-legal {
     margin: 0 auto;
     max-width: calc(670px - 4px);
@@ -620,10 +660,6 @@
       height: calc(100vh - 32px);
     }
   }
-
-  #brand-concierge-mount .scroll-to-bottom {
-    bottom: 110px !important;
-  }
 }
 
 /* desktop up */
@@ -636,7 +672,7 @@
     max-width: 678px;
   }
 
-  .bc-input-field{
+  .bc-input-field {
     max-width: calc(768px - 4px);
   }
 

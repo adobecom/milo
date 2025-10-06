@@ -19,7 +19,6 @@ merch-card-collection.simplified-pricing-express {
     justify-items: center;
     align-items: stretch;
     gap: 16px;
-    padding: var(--spacing-m);
     /* Default to 1 column on mobile */
     grid-template-columns: 1fr;
 }
@@ -36,6 +35,37 @@ merch-card-collection.simplified-pricing-express p {
         grid-template-columns: repeat(3, 1fr);
         max-width: calc(3 * var(--merch-card-simplified-pricing-express-width) + 32px);
         margin: 0 auto;
+    }
+
+    /* Apply synchronized heights to slots using CSS variables */
+    merch-card[variant="simplified-pricing-express"] [slot="body-xs"] {
+        min-height: var(--consonant-merch-card-simplified-pricing-express-description-height);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Push paragraph with mnemonics to the bottom using :has() */
+    merch-card[variant="simplified-pricing-express"] [slot="body-xs"] p:has(mas-mnemonic) {
+        margin-top: auto;
+        padding-top: 16px;
+    }
+
+    /* Fallback for browsers without :has() support - target last paragraph */
+    @supports not selector(:has(*)) {
+        merch-card[variant="simplified-pricing-express"] [slot="body-xs"] p:last-child {
+            margin-top: auto;
+            padding-top: 16px;
+        }
+    }
+
+    /* Additional fallback - if second paragraph exists, assume it has mnemonics */
+    merch-card[variant="simplified-pricing-express"] [slot="body-xs"] p:nth-child(2) {
+        margin-top: auto;
+        padding-top: 16px;
+    }
+
+    merch-card[variant="simplified-pricing-express"] [slot="price"] {
+        min-height: var(--consonant-merch-card-simplified-pricing-express-price-height);
     }
 }
 
@@ -56,6 +86,7 @@ merch-card[variant="simplified-pricing-express"] [slot="body-xs"] {
     line-height: var(--merch-card-simplified-pricing-express-body-xs-line-height, 18.2px);
     color: var(--spectrum-gray-700);
     margin-bottom: 32px;
+    justify-content: space-between;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] {
@@ -83,8 +114,8 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] {
   margin-bottom: var(--merch-card-simplified-pricing-express-padding);
 }
 
-merch-card[variant="simplified-pricing-express"] [slot="price"] > p span[is="inline-price"]:first-child {
-  margin-right: 8px;
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"]:first-child {
+  margin-inline-end: 8px;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {
@@ -94,6 +125,11 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child 
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] {
+  font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
+  line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] {
   font-size: var(--merch-card-simplified-pricing-express-price-font-size);
   line-height: var(--merch-card-simplified-pricing-express-price-line-height);
 }
@@ -113,11 +149,17 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] p:empty {
   min-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
 }
 
-merch-card[variant="simplified-pricing-express"] [slot="price"] .price-currency-symbol {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child .price-currency-symbol {
   font-size: var(--merch-card-simplified-pricing-express-price-font-size);
   font-weight: var(--merch-card-simplified-pricing-express-price-font-weight);
   line-height: var(--merch-card-simplified-pricing-express-price-line-height);
   width: 100%;
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] .price-currency-symbol {
+  font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-p-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence {
@@ -143,20 +185,21 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] p a {
   color: var(--spectrum-indigo-900);
   font-weight: 500;
   text-decoration: underline;
+  white-space: nowrap;
 }
 
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-integer,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"] .price-decimals {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"] .price-decimals {
   font-size: 28px;
   font-weight: 700;
   line-height: 36.4px;
   text-decoration-thickness: 2px;
 }
 
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals {
   text-decoration: line-through;
 }
 
@@ -164,6 +207,16 @@ merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-te
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'],
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol {
   color: var(--spectrum-indigo-900);
+}
+
+/* Ensure non-first paragraph prices have normal font weight */
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-decimals,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-recurrence {
+  font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-p-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
 }
 
 /* Hide screen reader only text */
@@ -179,12 +232,12 @@ merch-card[variant="simplified-pricing-express"] sr-only {
   border: 0;
 }
 
-/* mas-tooltip inline styles for simplified-pricing-express */
-merch-card[variant="simplified-pricing-express"] mas-tooltip {
+/* mas-mnemonic inline styles for simplified-pricing-express */
+merch-card[variant="simplified-pricing-express"] mas-mnemonic {
     display: inline-block;
     align-items: center;
     vertical-align: baseline;
-    margin-right: 8px;
+    margin-inline-end: 8px;
     overflow: visible;
     padding-top: 16px;
 }
