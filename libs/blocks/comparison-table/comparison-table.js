@@ -1,6 +1,12 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
+function calculateMaxHeight(elements) {
+  return Math.max(...elements.map((p) => p.offsetHeight
+    - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value
+    - p.computedStyleMap().get('border-top-width').value - p.computedStyleMap().get('border-bottom-width').value));
+}
+
 function equalHeight(el) {
   const performEqualHeight = () => {
     const tableRows = el.querySelectorAll('.table-row');
@@ -25,16 +31,14 @@ function equalHeight(el) {
       });
 
       if (firstPTags.length > 0) {
-        const maxFirstHeight = Math.max(...firstPTags.map((p) => p.offsetHeight
-          - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value
-          - p.computedStyleMap().get('border-top-width').value - p.computedStyleMap().get('border-bottom-width').value));
+        const maxFirstHeight = calculateMaxHeight(firstPTags);
         firstPTags.forEach((p) => {
           p.style.minHeight = `${maxFirstHeight}px`;
         });
       }
 
       if (secondPTags.length > 0) {
-        const maxSecondHeight = Math.max(...secondPTags.map((p) => p.offsetHeight - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value));
+        const maxSecondHeight = calculateMaxHeight(secondPTags);
         secondPTags.forEach((p) => {
           p.style.minHeight = `${maxSecondHeight}px`;
         });
