@@ -22,3 +22,7 @@ const Media = {
 }
 
 export default Media;
+
+export function isDesktop() {
+  return Media.isDesktop;
+}
