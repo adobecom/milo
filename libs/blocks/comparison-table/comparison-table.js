@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
 function equalHeight(el) {
@@ -193,7 +193,8 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
 
       const firstChild = tableChild.children[0];
       const buttonElement = createTag('button');
-      buttonElement.innerHTML = firstChild.innerHTML;
+      const { miloLibs, codeRoot } = getConfig();
+      buttonElement.innerHTML = `${firstChild.innerHTML}<img src="${miloLibs || codeRoot}/blocks/comparison-table/img/black-bg-minus.svg" alt="Toggle" width="28" height="28">`;
       buttonElement.addEventListener('click', () => {
         tableElement.classList.toggle('hide');
       });

@@ -37,6 +37,15 @@
   font-size: 18px;
   text-align: center;
   background-color: var(--comparison-column-background-color);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comparison-table .table-container .table-column-header button img {
+  position: absolute;
+  right: 12px;
 }
 
 .comparison-table .table-container .table-column-header button:hover {
