@@ -1,7 +1,7 @@
 :root {
   --comparison-border-radius: 8px;
   --comparison-border-color: #e1e1e1;
-  --comparison-column-even-background-color: #f8f8f8;
+  --comparison-column-background-color: #f8f8f8;
   --comparison-max-width: 1200px;
 }
 
@@ -36,7 +36,7 @@
   line-height: 125%;
   font-size: 18px;
   text-align: center;
-  background-color: var(--comparison-column-even-background-color);
+  background-color: var(--comparison-column-background-color);
 }
 
 .comparison-table .table-container .table-column-header button:hover {
@@ -55,24 +55,28 @@
   font-style: normal;
   font-weight: 700;
   line-height: 130%;
-  padding: 0 24px 0 12px;
-  padding: 24px 0 12px 0;
-  width: 100%;
+  width: calc(20% - 24px);
+  padding: 24px 0;
+  padding-inline-end: 24px;
 }
 
 .comparison-table .table-container .table-cell {
-  width: calc(25% - 12px);
-  padding: 0 6px;
+  width: calc(20% - 12px);
+  padding: 24px 6px;
 }
 
 .comparison-table .table-container .table-row .table-cell:nth-child(2){
   padding-inline-start: 0;
-  width: calc(25% - 6px);
+  width: calc(20% - 6px);
 }
 
 .comparison-table .table-container .table-row .table-cell:last-child {
   padding-inline-end: 0;
-  width: calc(25% - 6px);
+  width: calc(20% - 6px);
+}
+
+.comparison-table .table-container .table-row .table-cell:nth-child(odd) p:first-child{
+  background-color: var(--comparison-column-background-color);
 }
 
 .comparison-table .table-container .table-cell {
@@ -123,7 +127,7 @@
 }
 
 .comparison-table .header-item:nth-child(even) .sub-header-item-container:not(:last-of-type) {
-  background-color: var(--comparison-column-even-background-color);
+  background-color: var(--comparison-column-background-color);
 }
 
 .comparison-table .sub-header-item-container {

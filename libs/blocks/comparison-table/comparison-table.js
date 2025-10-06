@@ -33,8 +33,7 @@ function decorateHeader(headerContent) {
   headerContent.classList.add('header-content');
   const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
 
-  const existingChildren = Array.from(headerContent.children);
-  existingChildren.forEach((child) => headerContentWrapper.appendChild(child));
+  Array.from(headerContent.children).forEach((child) => headerContentWrapper.appendChild(child));
   headerContent.appendChild(headerContentWrapper);
 
   Array.from(headerContentWrapper.children).forEach((headerItem) => {
@@ -48,32 +47,31 @@ function decorateHeader(headerContent) {
     const childrenArray = Array.from(headerItem.children);
 
     childrenArray.forEach((headerItemChild, index) => {
-      if (headerItemChild.textContent.trim() === '-') {
-        const subHeaderItemContainer = createSubHeaderContainer(
-          childrenArray,
-          lastContainedIndex + 1,
-          index,
-        );
+      if (headerItemChild.textContent.trim() !== '-') return;
 
-        headerItem.insertBefore(subHeaderItemContainer, headerItemChild);
-        headerItemChild.remove();
-        lastContainedIndex = index;
-      }
-    });
-
-    if (lastContainedIndex < childrenArray.length - 1) {
-      const finalSubHeaderItemContainer = createSubHeaderContainer(
+      headerItem.insertBefore(createSubHeaderContainer(
         childrenArray,
         lastContainedIndex + 1,
-        childrenArray.length,
-        true,
-      );
+        index,
+      ), headerItemChild);
+      headerItemChild.remove();
+      lastContainedIndex = index;
+    });
 
-      if (finalSubHeaderItemContainer.children.length > 0) {
-        headerItem.appendChild(finalSubHeaderItemContainer);
-      }
-    }
+    const finalSubHeaderItemContainer = createSubHeaderContainer(
+      childrenArray,
+      lastContainedIndex + 1,
+      childrenArray.length,
+      true,
+    );
+
+    if (lastContainedIndex >= childrenArray.length - 1
+      || finalSubHeaderItemContainer.children.length <= 0) return;
+
+    headerItem.appendChild(finalSubHeaderItemContainer);
   });
+
+  headerContentWrapper.prepend(createTag('div', { class: 'header-item' }));
 }
 
 function addTableClassesAndAppend(el, tableContainer, tableChildren) {
@@ -82,7 +80,9 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
       Array.from(tableChild.children).forEach((child) => {
-        if (!child.textContent.trim()) child.remove();
+        if (child.textContent.trim()) return;
+
+        child.remove();
       });
       tableChild.classList.add('table-column-header');
 
@@ -94,22 +94,22 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       });
       tableChild.replaceChild(buttonElement, firstChild);
       tableContainer.appendChild(tableChild);
+      return;
     }
-    if (index > 0) {
-      const children = Array.from(tableChild.children);
-      children.forEach((child, childIndex) => {
-        child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
-        child.setAttribute('role', childIndex === 0 ? 'columnheader' : 'cell');
-        if (childIndex !== 0 && child.children.length === 0 && child.textContent.trim()) {
-          const pTag = createTag('p', {}, child.textContent);
-          child.innerHTML = '';
-          child.appendChild(pTag);
-        }
-      });
-      tableChild.classList.add('table-row');
-      tableChild.setAttribute('role', 'row');
-      tableElement.appendChild(tableChild);
-    }
+
+    Array.from(tableChild.children).forEach((child, childIndex) => {
+      child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
+      child.setAttribute('role', childIndex === 0 ? 'columnheader' : 'cell');
+
+      if (childIndex === 0 || child.children.length > 1 || !child.textContent.trim()) return;
+
+      const pTag = createTag('p', {}, child.textContent);
+      child.innerHTML = '';
+      child.appendChild(pTag);
+    });
+    tableChild.classList.add('table-row');
+    tableChild.setAttribute('role', 'row');
+    tableElement.appendChild(tableChild);
   });
 
   tableContainer.appendChild(tableElement);
@@ -135,9 +135,9 @@ function decorateTables(el, children) {
     currentTableChildren.push(child);
   });
 
-  if (currentTableChildren.length > 0) {
-    addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
-  }
+  if (currentTableChildren.length === 0) return;
+
+  addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
 }
 
 export default function init(el) {
