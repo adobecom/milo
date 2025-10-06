@@ -289,7 +289,7 @@ export class MerchCardCollection extends LitElement {
         this.initializeHeader();
         this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));
 
-        const onSidenavAttached = this.#merchCardElement.getCollectionOptions(this.variant)?.onSidenavAttached;
+        const onSidenavAttached = this.#merchCardElement?.getCollectionOptions(this.variant)?.onSidenavAttached;
         onSidenavAttached && onSidenavAttached(this);
     }
 
@@ -618,7 +618,7 @@ const RESULT_TEXT_SLOT_NAMES = {
       }
   
       getVisibility(type) {
-          const visibility = this.#merchCardElement.getCollectionOptions(this.collection?.variant)?.headerVisibility;
+          const visibility = this.#merchCardElement?.getCollectionOptions(this.collection?.variant)?.headerVisibility;
           const typeVisibility = this.parseVisibilityOptions(visibility, type);
           if (typeVisibility !== null) return typeVisibility;
           return this.parseVisibilityOptions(defaultVisibility, type);
@@ -742,7 +742,7 @@ const RESULT_TEXT_SLOT_NAMES = {
   
       get customArea() {
           if (!this.#visibility.custom) return nothing;
-          const customHeaderAreaGetter = this.#merchCardElement.getCollectionOptions(this.collection?.variant)?.customHeaderArea;
+          const customHeaderAreaGetter = this.#merchCardElement?.getCollectionOptions(this.collection?.variant)?.customHeaderArea;
           if (!customHeaderAreaGetter) return nothing;
           const customHeaderArea = customHeaderAreaGetter(this.collection);
           if (!customHeaderArea || customHeaderArea === nothing) return nothing;
