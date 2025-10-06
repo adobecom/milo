@@ -48,6 +48,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 16px;
 }
 
 .comparison-table .table-container .table-row-header {
@@ -56,24 +57,22 @@
   font-style: normal;
   font-weight: 700;
   line-height: 130%;
-  width: calc(20% - 24px);
+  width: calc(20% - 40px);
   padding: 24px 0;
-  padding-inline-end: 24px;
+  padding-inline-end: 32px;
 }
 
 .comparison-table .table-container .table-cell {
   width: calc(20% - 12px);
-  padding: 24px 6px;
+  padding: 24px 0;
 }
 
 .comparison-table .table-container .table-row .table-cell:nth-child(2){
-  padding-inline-start: 0;
-  width: calc(20% - 6px);
+  width: calc(20% - 16px);
 }
 
 .comparison-table .table-container .table-row .table-cell:last-child {
-  padding-inline-end: 0;
-  width: calc(20% - 6px);
+  width: calc(20% - 16px);
 }
 
 .comparison-table .table-container .table-row .table-cell:nth-child(odd) p:first-child{
@@ -122,7 +121,8 @@
 .comparison-table .header-content-wrapper {
   display: flex;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 24px;
+  gap: 16px;
 }
 
 .comparison-table .header-item {
@@ -130,7 +130,6 @@
   display: flex;
   flex-direction: column;  
   gap: 4px;
-  padding: 0 6px;
 }
 
 .comparison-table .header-item:nth-child(even) .sub-header-item-container:not(:last-of-type) {
