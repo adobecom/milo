@@ -153,15 +153,15 @@ const buildForm = ({
   errorText,
   displayCross,
 }) => `
-  <form id="nps" method="get" action="/an/endpoint" novalidate>
+  <form id="nps" novalidate>
     ${displayCross ? '<button type="button" class="nps-close" aria-label="Close">&times;</button>' : ''}
     <h2>${title}</h2>
-    <fieldset class="nps-radio-group">
+    <fieldset class="nps-radio-group" role="radiogroup" aria-label="${radioGroupLabel}" aria-required="true" aria-describedby="feedback-error">
       <legend>${radioGroupLabel} *</legend>
       <div class="radio-options">
         ${radioGroup.map(radio).join('')}
       </div>
-      <div class="error-message" id="feedback-error">
+      <div class="error-message" id="feedback-error" aria-live="polite" aria-hidden="true">
         <span class="error-icon">⚠</span>
         <span class="error-text">${errorText}</span>
       </div>
@@ -172,6 +172,7 @@ const buildForm = ({
         id="explanation-input"
         name="explanation"
         placeholder="${textboxPlaceholder}"
+        aria-label="${feedbackLabel}"
         rows="4"
       ></textarea>
     </fieldset>
@@ -211,6 +212,59 @@ const radio = (label) => {
 const createIdForLabel = (label) => label
   .toLowerCase()
   .replaceAll(/\s/g, '-');
+
+// ############################################
+// Keyboard Accessibility
+// ############################################
+
+const initKeyboardAccessibility = (form, sendMessage) => {
+  const radioButtons = Array.from(form.querySelectorAll('input[type="radio"][name="feedback"]'));
+  const checkbox = form.querySelector('#contact-me');
+
+  radioButtons.forEach((button, index) => {
+    button.addEventListener('keydown', (e) => {
+      let targetIndex = -1;
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowUp':
+          targetIndex = (index + 1) % radioButtons.length;
+          break;
+        case 'ArrowLeft':
+        case 'ArrowDown':
+          targetIndex = (index - 1 + radioButtons.length) % radioButtons.length;
+          break;
+        default:
+          return;
+      }
+
+      if (targetIndex !== -1) {
+        e.preventDefault();
+        const targetRadio = radioButtons[targetIndex];
+        targetRadio.focus();
+      }
+    });
+  });
+
+  if (checkbox) {
+    checkbox.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+        // Trigger change event for any listeners
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+  }
+
+  form.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      e.preventDefault();
+      cancelActions();
+      sendMessage(CANCEL);
+    }
+  });
+};
 
 export default async (block) => {
   // parsing the block
@@ -300,13 +354,16 @@ export default async (block) => {
   block.replaceChildren(formFragment);
 
   const sendMessage = initMessageClient();
+
+  const form = block.querySelector('#nps');
+  initKeyboardAccessibility(form, sendMessage);
+
   // The form will still be interactable in case
   // Acknowledgement fails
   sendMessage(READY);
 
-  // Add form validation handler - only show errors after submit attempt
-  const form = block.querySelector('#nps');
   const radioGroup = block.querySelector('.nps-radio-group');
+  const errorMessage = radioGroup.querySelector('#feedback-error');
 
   let submitted = false;
   form.addEventListener('submit', (e) => {
@@ -315,16 +372,20 @@ export default async (block) => {
     block.classList.add('submit-clicked');
 
     const radioButtons = form.querySelectorAll('input[type="radio"]');
-    const isRadioSelected = Array.from(radioButtons).some((r) => r.checked);
+    const selectedRadio = Array.from(radioButtons).findIndex((r) => r.checked);
 
-    if (!isRadioSelected) {
+    if (selectedRadio === -1) {
       radioGroup.classList.add('show-error');
+      radioGroup.setAttribute('aria-invalid', 'true');
+      errorMessage?.setAttribute('aria-hidden', 'false');
       return;
     }
 
+    radioGroup.removeAttribute('aria-invalid');
+    errorMessage?.setAttribute('aria-hidden', 'true');
     submitted = true;
     const formData = new FormData(form);
-    const feedback = formData.get('feedback');
+    const feedback = selectedRadio + 1;
     const explanation = formData.get('explanation');
     const contactMe = formData.get('contact-me') === 'on';
     const d = {
@@ -346,12 +407,13 @@ export default async (block) => {
     cancelActions();
     sendMessage(CANCEL);
   }, { once: true });
-  // Remove error when radio button is selected (after submission attempt)
   const radioButtons = form.querySelectorAll('input[type="radio"]');
   radioButtons.forEach((r) => {
     r.addEventListener('change', () => {
       if (block.classList.contains('submit-clicked')) {
         radioGroup.classList.remove('show-error');
+        radioGroup.removeAttribute('aria-invalid');
+        errorMessage?.setAttribute('aria-hidden', 'true');
       }
     });
   });
