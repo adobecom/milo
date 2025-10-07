@@ -38,7 +38,7 @@ function updateModalHeight() {
 }
 
 function updateInputHeight(el) {
-  const fieldInput = el.querySelector('.bc-input-field textarea');
+  const fieldInput = el.querySelector('.bc-input-field .textarea-dupe');
   if (!fieldInput) return;
   fieldInput.style.height = 'auto';
   fieldInput.style.height = `${fieldInput.scrollHeight}px`;
@@ -57,7 +57,7 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  el.querySelector('.bc-input-field textarea').value = '';
+  el.querySelector('.bc-input-field .textarea-dupe').value = '';
   updateInputHeight(el);
   updateModalHeight();
 
@@ -120,7 +120,7 @@ function decorateCards(el, cards) {
     cardSection.append(cardButton);
 
     cardButton.addEventListener('click', () => {
-      const input = el.querySelector('.bc-input-field textarea');
+      const input = el.querySelector('.bc-input-field .textarea-dupe');
 
       input.value = cardText.textContent.trim();
       openChatModal(input.value, el);
@@ -141,9 +141,12 @@ function decorateInput(el, input) {
   }, `${getAiChatIcon('bc-label-mask', 'bc-label-fill')}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, chatLabelText);
   fieldLabel.append(fieldLabelToolTip);
-  const fieldInput = createTag('textarea', {
+  const fieldInput = createTag('div', {
     id: 'bc-input-field',
-    rows: 1,
+    class: 'textarea-dupe',
+    contenteditable: true,
+    role: 'textbox',
+    'aria-multiline': true,
     placeholder: input.textContent.trim(),
   });
   const fieldButton = createTag('button', {
@@ -226,7 +229,7 @@ function decorateLegal(el, legal) {
     stickyLegalContent.closeButton = closeButton;
     closeButton.addEventListener('click', () => {
       legalSection.classList.add('legal-closed');
-      el.querySelector('.bc-input-field textarea').focus();
+      el.querySelector('.bc-input-field .textarea-dupe').focus();
     });
   }
   if (hTag && legalCopy) {
@@ -306,7 +309,7 @@ export default async function init(el) {
       if (mutation.type !== 'attributes'
         || mutation.attributeName !== 'data-status'
         || section.getAttribute('data-status') === 'decorated') return;
-      const fieldInput = el.querySelector('.bc-input-field textarea');
+      const fieldInput = el.querySelector('.bc-input-field .textarea-dupe');
       if (fieldInput) {
         updateInputHeight(el);
         observer.disconnect();

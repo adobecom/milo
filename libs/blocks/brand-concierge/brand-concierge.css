@@ -200,7 +200,7 @@
   display: block;
 }
 
-.bc-input-field-container textarea {
+.bc-input-field-container .textarea-dupe {
   background: transparent;
   border: none;
   flex: 1;
@@ -218,7 +218,7 @@
   box-sizing: border-box;
 }
 
-.bc-input-field-container textarea::placeholder {
+.bc-input-field-container .textarea-dupe::placeholder {
   color: #757575;
 }
 
@@ -405,11 +405,11 @@
   display: none;
 }
 
-.bc-input-field-container:has(textarea:focus-visible) {
+.bc-input-field-container:has(.textarea-dupe:focus-visible) {
   outline: 2px solid var(--bc-keyboard-focus-color);
 }
 
-.sticky .bc-input-field:has(textarea:focus-visible)::after {
+.sticky .bc-input-field:has(.textarea-dupe:focus-visible)::after {
   opacity: 0.5;
 }
 
@@ -607,7 +607,7 @@
     max-width: calc(670px - 4px);
   }
 
-  .bc-input-field-container textarea {
+  .bc-input-field-container .textarea-dupe {
     max-height: 244px;
   }
 
