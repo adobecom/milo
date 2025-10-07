@@ -72,18 +72,17 @@ function focusTriggerElement(modalId) {
   }
 
   // Fallback focus options for deep links
-  if (isDeepLink) {
-    const fallbackSelectors = [
-      `[data-modal-hash="#${modalId}"]`,
-      `a[data-modal-id="${modalId}"].con-button`,
-    ];
+  if (!isDeepLink) return;
+  const fallbackSelectors = [
+    `[data-modal-hash="#${modalId}"]`,
+    `a[data-modal-id="${modalId}"].con-button`,
+  ];
 
-    for (const selector of fallbackSelectors) {
-      const element = document.querySelector(selector);
-      if (element) {
-        element.focus();
-        break;
-      }
+  for (const selector of fallbackSelectors) {
+    const element = document.querySelector(selector);
+    if (element) {
+      element.focus();
+      break;
     }
   }
 }
@@ -193,7 +192,7 @@ function addIframeKeydownListener(iframe, dialog) {
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
-  isDeepLink = deepLink;
+  if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
   if (!isDeepLink) document.activeElement.dataset.isModalTrigger = 'true';
 
   dialogLoadingSet.add(id);
