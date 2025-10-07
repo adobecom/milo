@@ -7,6 +7,34 @@ const replacePlaceholder = async (key) => {
 };
 const ADD_MORE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" fill="none"><path fill="#292929" d="M12 24.24c-6.617 0-12-5.383-12-12s5.383-12 12-12 12 5.383 12 12-5.383 12-12 12Zm0-21.943c-5.483 0-9.943 4.46-9.943 9.943s4.46 9.943 9.943 9.943 9.943-4.46 9.943-9.943S17.483 2.297 12 2.297Z"/><path fill="#292929" d="M16.55 11.188h-3.5v-3.5a1.05 1.05 0 0 0-2.1 0v3.5h-3.5a1.05 1.05 0 0 0 0 2.1h3.5v3.5a1.05 1.05 0 0 0 2.1 0v-3.5h3.5a1.05 1.05 0 0 0 0-2.1Z"/></svg>';
 
+const mediaQueries = {
+  mobile: window.matchMedia('(max-width: 599px)'),
+  tablet: window.matchMedia('(min-width: 600px) and (max-width: 1199px)'),
+};
+
+const applyBackground = (colors, section) => {
+  if (colors.length === 1) {
+    const [color] = colors;
+    section.style.background = color;
+    return;
+  }
+  if (colors.length === 2) {
+    const [mobileColor, tabletDesktopColor] = colors;
+    section.style.background = mediaQueries.mobile.matches ? mobileColor : tabletDesktopColor;
+    return;
+  }
+  if (colors.length >= 3) {
+    const [mobileColor, tabletColor, desktopColor] = colors;
+    if (mediaQueries.mobile.matches) {
+      section.style.background = mobileColor;
+    } else if (mediaQueries.tablet.matches) {
+      section.style.background = tabletColor;
+    } else {
+      section.style.background = desktopColor;
+    }
+  }
+};
+
 export function handleBackground(div, section) {
   const pic = div.background.content?.querySelector('picture');
   if (pic) {
@@ -15,9 +43,13 @@ export function handleBackground(div, section) {
     handleFocalpoint(pic, div.background.content);
     section.insertAdjacentElement('afterbegin', pic);
   } else {
-    const color = div.background.content?.textContent;
+    const color = div.background.content?.textContent?.trim();
     if (color) {
-      section.style.background = color;
+      const colors = color.split('|').map((c) => c.trim());
+      applyBackground(colors, section);
+      Object.keys(mediaQueries).forEach((key) => {
+        mediaQueries[key].addEventListener('change', () => applyBackground(colors, section), 100);
+      });
     }
   }
 }
@@ -105,9 +137,6 @@ async function handleCollapseSection(section) {
   if (blocks.length <= 3 || existingShowMoreButton) return;
   const showMoreButton = await createShowMoreButton(section);
   section.append(showMoreButton);
-  if (window.innerWidth > 600) {
-    section.style.background = 'none';
-  }
   const { decorateDefaultLinkAnalytics } = await import('../../martech/attributes.js');
   decorateDefaultLinkAnalytics(showMoreButton);
 }
