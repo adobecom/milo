@@ -1439,12 +1439,11 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepgeolocation = getMepEnablement('mepgeolocation'); // Make these uniform?
-  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease'); // Make these uniform?
-  const mepGeoRestriction = getMepEnablement('mep-geo-restriction'); // Make these uniform?
+  const mepgeolocation = getMepEnablement('mepgeolocation'); 
+  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
 
   if (!(pzn || pznroc || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
 
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
