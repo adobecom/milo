@@ -26,72 +26,69 @@ runTests(async () => {
             expect(document.querySelector('merch-card')).to.exist;
         });
 
-        it('should display an action menu on hover for catalog variant', async () => {
+        it('should display action menu icon on hover for catalog variant', async () => {
             const catalogCard = document.querySelector(
                 'merch-card[variant="catalog"]',
             );
-            catalogCard.dispatchEvent(
-                new MouseEvent('mouseover', { bubbles: true }),
-            );
-            await delay(100);
             const shadowRoot = catalogCard.shadowRoot;
             const actionMenu = shadowRoot.querySelector('.action-menu');
             const actionMenuContent = shadowRoot.querySelector(
                 '.action-menu-content',
             );
-            expect(actionMenu.classList.contains('invisible')).to.be.true;
+
+            expect(actionMenuContent.classList.contains('hidden')).to.be.true;
+
+            catalogCard.dispatchEvent(
+                new MouseEvent('mouseenter', { bubbles: true }),
+            );
+            await delay(100);
+
+            expect(actionMenu.classList.contains('hidden')).to.be.false;
+            expect(actionMenu.classList.contains('always-visible')).to.be.true;
             expect(actionMenuContent.classList.contains('hidden')).to.be.true;
             expect(actionMenu).to.exist;
             expect(actionMenuContent).to.exist;
         });
 
-        it('action menu and card focus for catalog variant', async () => {
+        it('action menu keyboard navigation for catalog variant', async () => {
             const catalogCard = document.querySelector(
                 'merch-card[variant="catalog"]',
             );
-            const mouseleaveEvent = new MouseEvent('mouseleave', {
-                bubbles: true,
-            });
-            const focusoutEvent = new Event('focusout');
-            catalogCard.dispatchEvent(mouseleaveEvent);
-            await delay(100);
             const shadowRoot = catalogCard.shadowRoot;
             const actionMenu = shadowRoot.querySelector('.action-menu');
             const actionMenuContent = shadowRoot.querySelector(
                 '.action-menu-content',
             );
+            const slottedContent = catalogCard.querySelector('[slot="action-menu-content"]');
+
+            catalogCard.dispatchEvent(
+                new FocusEvent('focusin', { bubbles: true }),
+            );
+            await delay(100);
+            expect(actionMenu.classList.contains('hidden')).to.be.false;
+            expect(actionMenu.classList.contains('always-visible')).to.be.true;
+
             actionMenu.click();
             await delay(100);
-            catalogCard.focus();
-            await delay(100);
-            expect(actionMenu.classList.contains('invisible')).to.be.true;
             expect(actionMenuContent.classList.contains('hidden')).to.be.false;
-            expect(actionMenu).to.exist;
-            expect(actionMenuContent).to.exist;
-            actionMenuContent.dispatchEvent(focusoutEvent);
-            await sendKeys({
-                press: 'Enter',
-            });
+            expect(actionMenu.getAttribute('aria-expanded')).to.equal('true');
+
+            expect(slottedContent.getAttribute('tabindex')).to.equal('0');
+
+            catalogCard.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+            );
             await delay(100);
             expect(actionMenuContent.classList.contains('hidden')).to.be.true;
-            Array.from(
-                document.querySelector('merch-card').querySelectorAll('a'),
-            )
-                .at(-1)
-                .focus();
-            await delay(100);
-            await sendKeys({
-                press: 'Tab',
-            });
-            expect(actionMenu.classList.contains('invisible')).to.be.true;
+            expect(actionMenu.getAttribute('aria-expanded')).to.equal('false');
         });
 
-        it('should display some content when action is clicked for catalog variant', async () => {
+        it('should toggle menu content when action icon is clicked', async () => {
             const catalogCard = document.querySelector(
                 'merch-card[variant="catalog"]',
             );
             catalogCard.dispatchEvent(
-                new MouseEvent('mouseover', { bubbles: true }),
+                new MouseEvent('mouseenter', { bubbles: true }),
             );
             await delay(100);
             const actionMenu =
@@ -99,9 +96,139 @@ runTests(async () => {
             const actionMenuContent = catalogCard.shadowRoot.querySelector(
                 '.action-menu-content',
             );
+
             await actionMenu.click();
             await delay(100);
             expect(actionMenuContent.classList.contains('hidden')).to.be.false;
+
+            await actionMenu.click();
+            await delay(100);
+            expect(actionMenuContent.classList.contains('hidden')).to.be.true;
+        });
+
+        it('should hide icon on mouse leave when menu is closed (desktop only)', async () => {
+            const catalogCard = document.querySelector(
+                'merch-card[variant="catalog"]',
+            );
+            const shadowRoot = catalogCard.shadowRoot;
+            const actionMenu = shadowRoot.querySelector('.action-menu');
+
+            const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+            if (isMobile) {
+                expect(actionMenu.classList.contains('always-visible')).to.be.true;
+                return;
+            }
+
+            catalogCard.dispatchEvent(
+                new MouseEvent('mouseenter', { bubbles: true }),
+            );
+            await delay(100);
+            expect(actionMenu.classList.contains('hidden')).to.be.false;
+
+            catalogCard.dispatchEvent(
+                new MouseEvent('mouseleave', { bubbles: true }),
+            );
+            await delay(100);
+            expect(actionMenu.classList.contains('hidden')).to.be.true;
+            expect(actionMenu.classList.contains('always-visible')).to.be.false;
+        });
+
+        it('should close menu when focus leaves slotted content', async () => {
+            const catalogCard = document.querySelector(
+                'merch-card[variant="catalog"]',
+            );
+            const shadowRoot = catalogCard.shadowRoot;
+            const actionMenu = shadowRoot.querySelector('.action-menu');
+            const actionMenuContent = shadowRoot.querySelector(
+                '.action-menu-content',
+            );
+            const slottedContent = catalogCard.querySelector('[slot="action-menu-content"]');
+
+            catalogCard.dispatchEvent(
+                new MouseEvent('mouseenter', { bubbles: true }),
+            );
+            await delay(100);
+            actionMenu.click();
+            await delay(100);
+            expect(actionMenuContent.classList.contains('hidden')).to.be.false;
+
+            slottedContent.focus();
+            await delay(100);
+            slottedContent.dispatchEvent(
+                new FocusEvent('focusout', {
+                    bubbles: true,
+                    relatedTarget: document.body
+                }),
+            );
+            await delay(100);
+
+            expect(actionMenuContent.classList.contains('hidden')).to.be.true;
+        });
+
+        it('should keep menu open when tabbing from button to content', async () => {
+            const catalogCard = document.querySelector(
+                'merch-card[variant="catalog"]',
+            );
+            const shadowRoot = catalogCard.shadowRoot;
+            const actionMenu = shadowRoot.querySelector('.action-menu');
+            const actionMenuContent = shadowRoot.querySelector(
+                '.action-menu-content',
+            );
+            const slottedContent = catalogCard.querySelector('[slot="action-menu-content"]');
+
+            catalogCard.dispatchEvent(
+                new MouseEvent('mouseenter', { bubbles: true }),
+            );
+            await delay(100);
+            actionMenu.click();
+            await delay(100);
+            expect(actionMenuContent.classList.contains('hidden')).to.be.false;
+
+            actionMenu.dispatchEvent(
+                new FocusEvent('blur', {
+                    bubbles: true,
+                    relatedTarget: slottedContent
+                }),
+            );
+            await delay(100);
+
+            expect(actionMenuContent.classList.contains('hidden')).to.be.false;
+        });
+
+        it('should close menu when shift-tabbing backwards from button', async () => {
+            const catalogCard = document.querySelectorAll(
+                'merch-card[variant="catalog"]',
+            )[1]; // Use second card for fresh state
+            const shadowRoot = catalogCard.shadowRoot;
+            const actionMenu = shadowRoot.querySelector('.action-menu');
+            const actionMenuContent = shadowRoot.querySelector(
+                '.action-menu-content',
+            );
+
+            actionMenuContent.classList.add('hidden');
+            actionMenu.classList.add('hidden');
+            await delay(50);
+
+            catalogCard.dispatchEvent(
+                new MouseEvent('mouseenter', { bubbles: true }),
+            );
+            await delay(100);
+
+            actionMenu.focus();
+            await delay(50);
+            actionMenu.click();
+            await delay(100);
+            expect(actionMenuContent.classList.contains('hidden')).to.be.false;
+
+            actionMenu.dispatchEvent(
+                new FocusEvent('blur', {
+                    bubbles: true,
+                    relatedTarget: document.body
+                }),
+            );
+            await delay(100);
+
+            expect(actionMenuContent.classList.contains('hidden')).to.be.true;
         });
     });
 });
