@@ -1076,7 +1076,7 @@ export function getMepConsentConfig() {
 }
 
 const getGeoRestriction = (geoRestriction) => {
-  if(!geoRestriction) return true;
+  if (!geoRestriction) return true;
   const urlParams = new URLSearchParams(window.location.search);
   const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
   const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
@@ -1102,8 +1102,8 @@ export function getManifestConsent(mktgAction, manifestPath, variantNames) {
   if (!advertising || !performance) {
     const config = getConfig();
     config.mep.variantOverride ??= {};
-    if (!config.mep?.variantOverride?.[manifestPath]) {
-      config.mep.variantOverride[manifestPath] = variantNames[0];
+    if (!config.mep.variantOverride?.[manifestPath]) {
+      [config.mep.variantOverride[manifestPath]] = variantNames;
     }
   }
 
@@ -1179,11 +1179,14 @@ async function getManifestConfig(info, variantOverride) {
 
   let finalDisabled = disabled;
   manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
-  if (!getGeoRestriction(manifestConfig.geoRestriction) || !getManifestConsent(manifestConfig.mktgAction, manifestPath, manifestConfig.variantNames)) {
+  const isGeoAllowed = getGeoRestriction(manifestConfig.geoRestriction);
+  const { mktgAction, variantNames } = manifestConfig;
+  const isConsentAllowed = getManifestConsent(mktgAction, manifestPath, variantNames);
+  if (!isGeoAllowed || !isConsentAllowed) {
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
   }
-  
+
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
     manifestConfig.manifestPath,
@@ -1412,10 +1415,9 @@ export const combineMepSources = async (
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
-  if(mepMarketingDecrease) {
-     persManifests.push({ manifestPath: mepMarketingDecrease, source: ['mktg-decrease'] });
+  if (mepMarketingDecrease) {
+    persManifests.push({ manifestPath: mepMarketingDecrease, source: ['mktg-decrease'] });
   }
-  
 
   if (mepParam && mepParam !== 'off') {
     const persManifestPaths = persManifests.map((manifest) => {
@@ -1601,8 +1603,14 @@ export async function init(enablements = {}) {
       targetInteractionPromise,
       promises,
     };
-    
-    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam, mepMarketingDecrease));
+
+    manifests = manifests.concat(await combineMepSources(
+      pzn,
+      pznroc,
+      promo,
+      mepParam,
+      mepMarketingDecrease,
+    ));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
