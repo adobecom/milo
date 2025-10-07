@@ -100,17 +100,12 @@ const cancelActions = (() => {
       contactMe: false,
     };
     const form = document.querySelector('#nps');
+    let surveyType = '5pt';
     if (form) {
       const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
-      const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
-      const dataObj = buildDataObject(d, surveyType, CancelSurvey);
-      window._satellite?.track?.('event', { // eslint-disable-line
-        xdm: {},
-        data: dataObj,
-      });
-      return;
+      surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
     }
-    const dataObj = buildDataObject(d, '5pt', CancelSurvey);
+    const dataObj = buildDataObject(d, surveyType, CancelSurvey);
     window._satellite?.track?.('event', { // eslint-disable-line
       xdm: {},
       data: dataObj,
