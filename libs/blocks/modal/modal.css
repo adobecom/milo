@@ -9,6 +9,11 @@
   --tall-video-padding: var(--spacing-xl);
 }
 
+.branch-banner-is-active {
+  --modal-z-index: 100000;
+  --modal-z-index-curtain: 99999;
+}
+
 .dialog-modal {
   background: #fff;
   border-radius: 6px;
