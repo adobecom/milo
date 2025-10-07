@@ -144,7 +144,7 @@ function decorateInput(el, input) {
   const fieldInput = createTag('div', {
     id: 'bc-input-field',
     class: 'textarea-dupe',
-    contenteditable: true,
+    contenteditable: 'plaintext-only',
     role: 'textbox',
     'aria-multiline': true,
     placeholder: input.textContent.trim(),
