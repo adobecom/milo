@@ -139,7 +139,8 @@ function decorateInput(el, input) {
     contenteditable: 'plaintext-only',
     role: 'textbox',
     'aria-multiline': true,
-    placeholder: input.textContent.trim(),
+    'aria-labelledby': 'bc-label-tooltip',
+    'aria-placeholder': input.textContent.trim(),
   });
   const fieldButton = createTag('button', {
     class: 'input-field-button no-track',
@@ -157,7 +158,7 @@ function decorateInput(el, input) {
       fieldButton.disabled = false;
     } else {
       fieldButton.disabled = true;
-      fieldInput.innerHTML = '';
+      fieldInput.firstChild?.remove();
     }
   });
 

@@ -219,7 +219,7 @@
 }
 
 .bc-input-field-container .textarea-dupe:empty::before {
-  content: attr(placeholder);
+  content: attr(aria-placeholder) / "";
   pointer-events: none;
   display: block;
   color: #757575;
