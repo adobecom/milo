@@ -146,7 +146,7 @@ function setVisitCount(key, count) {
 }
 
 function matchConditions(config) {
-  const { conditions = {}, rules = {}, context = {} } = config;
+  const { conditions = {}, rules = {}, context = window.location } = config;
   const { domains = [], paths = [], params = [] } = conditions;
   const {
     main: mainRule = 'and',
@@ -154,26 +154,23 @@ function matchConditions(config) {
     paths: pathRule = 'or',
     params: paramRule = 'or',
   } = rules;
-  const { host = '', path = '', href = '' } = context;
 
-  // Helper function to evaluate boolean array based on rule
+  const { hostname, pathname, href } = context;
+
   const evaluate = (arr, rule) => (rule === 'and' ? arr.every(Boolean) : arr.some(Boolean));
 
-  // Individual matcher functions
   const matchDomains = () => {
     if (domains.length === 0) return null;
-    return evaluate(domains.map((d) => host === d), domainRule);
+    return evaluate(domains.map((d) => hostname === d), domainRule);
   };
 
-  const matchPaths = () => {
-    if (paths.length === 0) return null;
-    return evaluate(paths.map((r) => r.test(path)), pathRule);
+  const matchGeneric = (arr, value, rule) => {
+    if (arr.length === 0) return null;
+    return evaluate(arr.map((r) => r.test(value)), rule);
   };
 
-  const matchParams = () => {
-    if (params.length === 0) return null;
-    return evaluate(params.map((r) => r.test(href)), paramRule);
-  };
+  const matchPaths = () => matchGeneric(paths, pathname, pathRule);
+  const matchParams = () => matchGeneric(params, href, paramRule);
 
   const results = [matchDomains(), matchPaths(), matchParams()].filter((v) => v !== null);
   if (results.length === 0) return true;
@@ -181,12 +178,6 @@ function matchConditions(config) {
 }
 
 function getEngagedSecondVisits() {
-  const context = {
-    host: window.location.hostname,
-    path: window.location.pathname,
-    href: window.location.href,
-  };
-
   const configs = [
     { conditions: { domains: ['www.adobe.com', 'www.stage.adobe.com'], paths: [/^\/acrobat(\/|\.html|$)/] }, rules: { main: 'and', domains: 'or', paths: 'or' }, id: 'ev_118', privacy: false },
     { conditions: { domains: ['www.stage.adobe.com', 'www.adobe.com', 'firefly.adobe.com', 'photoshop.adobe.com'] }, rules: { main: 'and', domains: 'or' }, id: 'ev_95', privacy: true },
@@ -210,7 +201,7 @@ function getEngagedSecondVisits() {
       update = true,
     } = config;
 
-    if (!matchConditions({ conditions, rules, context })) return;
+    if (!matchConditions({ conditions, rules })) return;
 
     const currentCount = getVisitCount(id);
     let nextCount = currentCount;
