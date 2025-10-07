@@ -9,6 +9,8 @@
 //   contactMeString: string;
 // }
 
+import { loadMartech } from "../../utils/utils";
+
 const SURVEY_VERSION = '0.0.1';
 
 // ############################################
@@ -247,6 +249,7 @@ const UNEXPECTED_TYPE_ERROR   = ERROR('unexpectedType');
 const UNRECOGNIZED_TYPE_ERROR = ERROR('unrecognizedType');
 const TIMEOUT_ERROR           = ERROR('timeoutErr');
 const MALFORMED_JSON_ERROR    = ERROR('malformedJSON');
+const MARTECH_LOAD_FAILED     = ERROR('martechLoadFailed');
 export const SUBMIT = (data) => ({
   type: Submit,
   data,
@@ -435,6 +438,17 @@ export default async (block) => {
   block.replaceChildren(formFragment);
 
   const sendMessage = initMessageClient();
+
+  try {
+    await loadMartech();
+  } catch {
+    sendMessage(
+      MARTECH_LOAD_FAILED(
+        null,
+        'Data Ingestion will fail; Failed to load martech and/or launch',
+      ),
+    );
+  }
 
   const form = block.querySelector('#nps');
   initKeyboardAccessibility(form, sendMessage);
