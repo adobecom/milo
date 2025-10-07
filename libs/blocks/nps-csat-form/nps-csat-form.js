@@ -94,15 +94,15 @@ const cancelActions = (() => {
   return () => {
     if (cancelActionsDone) return;
     cancelActionsDone = true;
-    const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
-    const selectedRadio = radioButtons.findIndex((r) => r.checked) + 1;
-    const form = document.querySelector('#nps');
     const d = {
       score: 0,
       feedback: null,
       contactMe: false,
     };
+    const form = document.querySelector('#nps');
     if (form) {
+      const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
+      const selectedRadio = radioButtons.findIndex((r) => r.checked) + 1;
       const formData = new FormData(form);
       const score = selectedRadio + 1;
       const feedback = formData.get('explanation');
@@ -110,10 +110,16 @@ const cancelActions = (() => {
       d.score = score;
       d.feedback = feedback;
       d.contactMe = contactMe;
-    }
-    const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
-    const dataObj = buildDataObject(d, surveyType, CancelSurvey);
+      const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
+      const dataObj = buildDataObject(d, surveyType, CancelSurvey);
 
+      window._satellite?.track?.('event', { // eslint-disable-line
+        xdm: {},
+        data: dataObj,
+      });
+      return;
+    }
+    const dataObj = buildDataObject(d, '5pt', CancelSurvey);
     window._satellite?.track?.('event', { // eslint-disable-line
       xdm: {},
       data: dataObj,
