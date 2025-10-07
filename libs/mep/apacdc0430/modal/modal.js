@@ -314,6 +314,8 @@ export function getHashParams(hashStr) {
       const [key, val] = part.split('=');
       if (key === 'delay') {
         params.delay = parseInt(val, 10) * 1000;
+      } else if (key === 'mobile') {
+        params.mobile = val === 'true';
       }
     }
     return params;
@@ -321,9 +323,9 @@ export function getHashParams(hashStr) {
 }
 
 export function delayedModal(el) {
-  const { hash, delay } = getHashParams(el?.dataset.modalHash);
-  // const isDesktop = window.matchMedia('(min-width: 1200px)').matches;
-  if (delay === undefined || !hash) return false;
+  const { hash, delay, mobile } = getHashParams(el?.dataset.modalHash);
+  const isDesktop = window.matchMedia('(min-width: 1200px)').matches;
+  if (delay === undefined || !hash || (!mobile && !isDesktop)) return false;
   delayedModalId = hash.replace('#', '');
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
