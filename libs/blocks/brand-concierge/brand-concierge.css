@@ -107,7 +107,7 @@
   position: relative;
 }
 
-.field-first .bc-input-field {
+.input-first .bc-input-field {
   margin-bottom: 24px;
 }
 
@@ -639,7 +639,7 @@
     padding: 0;
   }
 
-  .field-first .bc-prompt-cards {
+  .input-first .bc-prompt-cards {
     margin-bottom: 56px;
   }
 
@@ -670,7 +670,7 @@
     max-width: calc(670px - 4px);
   }
 
-  .field-first .bc-input-field {
+  .input-first .bc-input-field {
     margin-bottom: calc(32px + 2px);
   }
 
@@ -774,7 +774,7 @@
     max-width: 768px;
   }
 
-  .field-first .bc-prompt-cards {
+  .input-first .bc-prompt-cards {
     margin-bottom: 80px;
   }
 

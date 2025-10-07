@@ -271,7 +271,7 @@ export default async function init(el) {
 
   const rows = el.querySelectorAll(':scope > div');
   let isDefault = false;
-  let fieldFirst = false;
+  let inputFirst = false;
   let isSticky = false;
   let isHero = false;
 
@@ -286,15 +286,15 @@ export default async function init(el) {
     el.classList.add('sticky');
     isSticky = true;
   }
-  if (el.classList.contains('field-first')) {
-    fieldFirst = true;
+  if (el.classList.contains('input-first')) {
+    inputFirst = true;
   }
 
   if (isDefault) {
     const [background, header, cards, input, legal] = rows;
     decorateBackground(el, background);
     decorateHeader(el, header);
-    if (fieldFirst) {
+    if (inputFirst) {
       decorateInput(el, input);
       decorateCards(el, cards);
     } else {
