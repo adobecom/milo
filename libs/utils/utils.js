@@ -1439,7 +1439,9 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepgeolocation = getMepEnablement('mepgeolocation');
+  const mepgeolocation = getMepEnablement('mepgeolocation'); // Make these uniform?
+  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease'); // Make these uniform?
+  const mepGeoRestriction = getMepEnablement('mep-geo-restriction'); // Make these uniform?
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
@@ -1502,6 +1504,7 @@ async function checkForPageMods() {
     calculatedTimeout,
     enablePersV2,
     promises,
+    mepMarketingDecrease,
   });
 }
 
