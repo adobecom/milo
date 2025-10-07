@@ -269,6 +269,12 @@ describe('Catalog Card', () => {
     });
     expect(merchCard.classList.contains('intro-pricing')).to.be.true;
   });
+
+  it('Update merch icon alt text', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
+    const merchCard = await init(document.querySelector('.merch-card.catalog.icon-alt'));
+    expect(merchCard.querySelector('merch-icon').getAttribute('alt')).to.equal('Use this heading text for icon alt text');
+  });
 });
 
 describe('UAR Card', () => {

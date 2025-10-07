@@ -707,6 +707,8 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
+  const langFirst = state.langFirst ? `&langFirst=${state.langFirst}` : '';
+
   const config = {
     collection: {
       mode: state.theme,
@@ -735,7 +737,8 @@ export const getConfig = async (originalState, strs = {}) => {
       }${localesQueryParam
       }${debug
       }${flatFile
-      }${grayboxExperienceParam}`,
+      }${grayboxExperienceParam
+      }${langFirst}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       showCardBadges: state.showCardBadges,

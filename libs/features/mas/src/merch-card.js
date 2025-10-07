@@ -40,6 +40,8 @@ const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
+const VARIANTS_WITH_HEIGHT_SYNC = ['full-pricing-express', 'simplified-pricing-express'];
+
 function priceOptionsProvider(element, options) {
   const card = element.closest(MERCH_CARD);
   if (!card) return options;
@@ -54,6 +56,14 @@ function registerPriceOptionsProvider(masCommerceService) {
   if (masCommerceService.providers.has(priceOptionsProvider)) return;
   masCommerceService.providers.price(priceOptionsProvider);
 }
+
+const intersectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.target.clientHeight === 0) return;
+    intersectionObserver.unobserve(entry.target);
+    entry.target.requestUpdate();
+  });
+});
 
 let idCounter = 0;
 
@@ -251,7 +261,7 @@ export class MerchCard extends LitElement {
 
     get computedBorderStyle() {
         if (
-            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans', 'simplified-pricing-express'].includes(
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans', 'simplified-pricing-express', 'full-pricing-express'].includes(
                 this.variant,
             )
         ) {
@@ -542,35 +552,47 @@ export class MerchCard extends LitElement {
     );
   }
 
-  async checkReady() {
-    if (!this.isConnected) return;
-    if (this.#hydrationPromise) {
-      await this.#hydrationPromise;
-      this.#hydrationPromise = undefined;
-    }
-    if (this.variantLayoutPromise) {
-      await this.variantLayoutPromise;
-      this.variantLayoutPromise = undefined;
-    }
-    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT));
-    if (this.aemFragment) {
-      const result = await Promise.race([
-        this.aemFragment.updateComplete,
-        timeoutPromise,
-      ]);
-      if (result === false || result === 'timeout') {
-        const errorMessage = result === 'timeout'
-          ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`
-          : 'AEM fragment cannot be loaded';
-        this.#fail(errorMessage, {}, false);
-        return;
-      }
-    }
-    const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
-    const successPromise = Promise.all(
-      masElements.map((element) => element.onceSettled().catch(() => element)),
-    ).then((elements) => elements.every((el) => el.classList.contains('placeholder-resolved')));
-    const result = await Promise.race([successPromise, timeoutPromise]);
+    async checkReady() {
+      if (!this.isConnected) return;
+        if (this.#hydrationPromise) {
+          await this.#hydrationPromise;
+          if (VARIANTS_WITH_HEIGHT_SYNC.includes(this.variantLayout)) {
+            intersectionObserver.observe(this);
+          }
+          this.#hydrationPromise = undefined;
+        }
+        if (this.variantLayoutPromise) {
+          await this.variantLayoutPromise;
+          this.variantLayoutPromise = undefined;
+        }
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
+        );
+        if (this.aemFragment) {
+            const result = await Promise.race([
+                this.aemFragment.updateComplete,
+                timeoutPromise,
+            ]);
+            if (result === false || result === 'timeout') {
+                const errorMessage =
+                    result === 'timeout'
+                        ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`
+                        : 'AEM fragment cannot be loaded';
+                this.#fail(errorMessage, {}, false);
+                return;
+            }
+        }
+        const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
+        const successPromise = Promise.all(
+            masElements.map((element) =>
+                element.onceSettled().catch(() => element),
+            ),
+        ).then((elements) =>
+            elements.every((el) =>
+                el.classList.contains('placeholder-resolved'),
+            ),
+        );
+        const result = await Promise.race([successPromise, timeoutPromise]);
 
     if (result === true) {
       this.measure = performance.measure(

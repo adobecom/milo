@@ -6,9 +6,8 @@ export default function processAlloyLink(a) {
     // eslint-disable-next-line no-underscore-dangle
     if (window._satellite && profile && businessSegment && value) {
       const payload = {
-        documentUnloading: false,
         data: {
-          eventType: 'web.webinteraction.linkClicks',
+          eventType: 'decisioning.propositionDisplay',
           web: {
             webInteraction: {
               linkClicks: { value: 1 },
@@ -17,6 +16,20 @@ export default function processAlloyLink(a) {
             },
           },
           __adobe: { target: { [`${profile}.${businessSegment}`]: value } },
+        },
+        xdm: {
+          _experience: {
+            decisioning: {
+              propositions: [
+                {
+                  scope: 'profile-update-request',
+                  scopeDetails: { decisionProvider: 'TGT' },
+                },
+              ],
+              propositionEventType: { display: 1 },
+            },
+          },
+          eventType: 'decisioning.propositionDisplay',
         },
       };
       // eslint-disable-next-line no-underscore-dangle

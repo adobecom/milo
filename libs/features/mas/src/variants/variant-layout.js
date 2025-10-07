@@ -10,12 +10,13 @@ export class VariantLayout {
 
   #container;
 
-  getContainer() {
-    this.#container = this.#container
-            ?? this.card.closest('[class*="-merch-cards"]')
-            ?? this.card.parentElement;
-    return this.#container;
-  }
+    getContainer() {
+        this.#container =
+            this.#container ??
+            this.card.closest('merch-card-collection, [class*="-merch-cards"]') ??
+            this.card.parentElement;
+        return this.#container;
+    }
 
   static async ensureVariantStyle(variant, cssContent) {
     if (VariantLayout.variantStyleSheets.has(variant)) {
@@ -170,9 +171,15 @@ export class VariantLayout {
     // nothing to do by default
   }
 
-  disconnectedCallbackHook() {
-    // nothing to do by default
-  }
+    disconnectedCallbackHook() {
+        //nothing to do by default
+    }
+
+    syncHeights() {
+        // Base implementation - variants can override this
+        // Called when all cards in collection are ready
+        // Variants that need height synchronization should override this method
+    }
 
   /* c8 ignore next 3 */
   renderLayout() {

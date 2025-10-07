@@ -161,6 +161,11 @@ function configTabs(config, rootElem) {
     const tabBtn = rootElem.querySelector(`[data-deeplink="${deeplinkParam}"]`);
     if (tabBtn) {
       tabBtn.click();
+      if (config.remember === 'on') {
+        const deeplinkUrl = new URL(window.location.href);
+        deeplinkUrl.searchParams.delete(config.id);
+        window.history.replaceState({}, null, deeplinkUrl);
+      }
       return;
     }
   }
