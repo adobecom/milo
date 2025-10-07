@@ -1816,6 +1816,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 @media screen and ${u} {
     :root {
         --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-plans-students-width: 484px;
     }
 
     merch-sidenav.plans {
