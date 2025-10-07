@@ -9,7 +9,7 @@
 //   contactMeString: string;
 // }
 
-import { loadMartech } from "../../utils/utils";
+import { loadMartech } from '../../utils/utils.js';
 
 const SURVEY_VERSION = '0.0.1';
 
