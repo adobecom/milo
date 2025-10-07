@@ -218,7 +218,10 @@
   box-sizing: border-box;
 }
 
-.bc-input-field-container .textarea-dupe::placeholder {
+.bc-input-field-container .textarea-dupe:empty::before {
+  content: attr(placeholder);
+  pointer-events: none;
+  display: block;
   color: #757575;
 }
 
