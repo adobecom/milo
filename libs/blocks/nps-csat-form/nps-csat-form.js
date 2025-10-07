@@ -1,5 +1,6 @@
 /* eslint no-use-before-define:0 */
 /* eslint no-multi-spaces:0 */
+/* eslint object-curly-newline: 0 */
 // type Form = {
 //   title: string;
 //   radioGroupLabel: string;
@@ -7,6 +8,218 @@
 //   feedBackLabel: string;
 //   contactMeString: string;
 // }
+
+const SURVEY_VERSION = '0.0.1';
+
+// ############################################
+// HTML
+// ############################################
+
+const buildForm = ({
+  title,
+  radioGroupLabel,
+  radioGroup,
+  feedbackLabel,
+  textboxPlaceholder,
+  contactMeString,
+  cancelText,
+  submitText,
+  errorText,
+  displayCross,
+}) => `
+  <form id="nps" novalidate>
+    ${displayCross ? '<button type="button" class="nps-close" aria-label="Close">&times;</button>' : ''}
+    <h2>${title}</h2>
+    <fieldset class="nps-radio-group" role="radiogroup" aria-label="${radioGroupLabel}" aria-required="true" aria-describedby="feedback-error">
+      <legend>${radioGroupLabel} *</legend>
+      <div class="radio-options">
+        ${radioGroup.map(radio).join('')}
+      </div>
+      <div class="error-message" id="feedback-error" aria-live="polite" aria-hidden="true">
+        <span class="error-icon">⚠</span>
+        <span class="error-text">${errorText}</span>
+      </div>
+    </fieldset>
+    <fieldset class="nps-feedback-area">
+      <legend>${feedbackLabel}</legend>
+      <textarea
+        id="explanation-input"
+        name="explanation"
+        placeholder="${textboxPlaceholder}"
+        aria-label="${feedbackLabel}"
+        rows="4"
+      ></textarea>
+    </fieldset>
+    <fieldset class="nps-checkbox-area">
+      <label for="contact-me">
+        <input
+          type="checkbox"
+          id="contact-me"
+          name="contact-me"
+        />
+        ${contactMeString}
+      </label>
+    </fieldset>
+    <fieldset class="nps-submit-area">
+      <button type="button" class="nps-cancel">${cancelText}</button>
+      <button type="submit" class="nps-submit">${submitText}</button>
+    </fieldset>
+  </form>
+  `;
+
+const radio = (label) => {
+  const id = createIdForLabel(label);
+  return `
+  <div class="radio-item">
+    <label for="${id}"><span>${label}</span></label>
+    <input
+      type="radio"
+      id="${id}"
+      name="feedback"
+      value="${id}"
+      required
+    />
+  </div>
+  `;
+};
+
+const createIdForLabel = (label) => label
+  .toLowerCase()
+  .replaceAll(/\s/g, '-');
+
+const cancelActions = (() => {
+  let cancelActionsDone = false;
+  return () => {
+    if (cancelActionsDone) return;
+    cancelActionsDone = true;
+    const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
+    const selectedRadio = radioButtons.findIndex((r) => r.checked) + 1;
+    const form = document.querySelector('#nps');
+    const d = {
+      score: 0,
+      feedback: null,
+      contactMe: false,
+    };
+    if (form) {
+      const formData = new FormData(form);
+      const score = selectedRadio + 1;
+      const feedback = formData.get('explanation');
+      const contactMe = formData.get('contact-me') === 'on';
+      d.score = score;
+      d.feedback = feedback;
+      d.contactMe = contactMe;
+    }
+    const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
+    const dataObj = buildDataObject(d, surveyType, CancelSurvey);
+
+    window._satellite?.track?.('event', { // eslint-disable-line
+      xdm: {},
+      data: dataObj,
+    });
+  };
+})();
+
+// ############################################
+// Keyboard Accessibility
+// ############################################
+
+const initKeyboardAccessibility = (form, sendMessage) => {
+  const radioButtons = Array.from(form.querySelectorAll('input[type="radio"][name="feedback"]'));
+  const checkbox = form.querySelector('#contact-me');
+
+  radioButtons.forEach((button, index) => {
+    button.addEventListener('keydown', (e) => {
+      let targetIndex = -1;
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowUp':
+          targetIndex = (index + 1) % radioButtons.length;
+          break;
+        case 'ArrowLeft':
+        case 'ArrowDown':
+          targetIndex = (index - 1 + radioButtons.length) % radioButtons.length;
+          break;
+        default:
+          return;
+      }
+
+      if (targetIndex !== -1) {
+        e.preventDefault();
+        const targetRadio = radioButtons[targetIndex];
+        targetRadio.focus();
+      }
+    });
+  });
+
+  if (checkbox) {
+    checkbox.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+        // Trigger change event for any listeners
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+  }
+
+  form.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      e.preventDefault();
+      cancelActions();
+      sendMessage(CANCEL);
+    }
+  });
+};
+
+// ############################################
+// Marshalling Data
+// ############################################
+
+const SubmitSurvey = 'submitSurvey';
+const CancelSurvey = 'cancelSurvey';
+
+const buildDataObject = (formData, surveyType, eventType) => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const data = {
+    web: {
+      webInteraction: {
+        name: eventType,
+      },
+    },
+    _adobe_corpnew: {
+      digitalData: {
+        primaryEvent: {
+          eventInfo: {
+            eventName: eventType,
+          },
+        },
+      },
+    },
+    evolved_survey: {
+      sourceUserGuid: searchParams.get('source_user_guid'),
+      sourceName: searchParams.get('source_name'),
+      sourceVersion: searchParams.get('source_version'),
+      sourceLocale: searchParams.get('source_locale'),
+      sourcePlatform: searchParams.get('source_platform'),
+      userAgent: searchParams.get('user_agent'),
+      sourceBuild: searchParams.get('source_build'),
+      sourceAppCode: searchParams.get('source_app_code'),
+      sourceOsVersion: searchParams.get('source_os_version'),
+      sourceDevice: searchParams.get('source_device'),
+      sourceColorTheme: searchParams.get('source_color_theme'),
+      surveyName: window.location.pathname,
+      surveyType,
+      surveyVersion: SURVEY_VERSION,
+      surveyScore: formData.score,
+      collectionSurface: null,
+      surveyFeedback: formData.feedback,
+      adobeCanContact: formData.contactMe,
+      doNotShow: false,
+    },
+  };
+  return data;
+};
 
 // ############################################
 // Messages
@@ -129,142 +342,9 @@ const initMessageClient = () => {
   return sendMessage;
 };
 
-const cancelActions = (() => {
-  let cancelActionsDone = false;
-  return () => {
-    if (cancelActionsDone) return;
-    cancelActionsDone = true;
-  };
-})();
-
 // ############################################
-// HTML
+// Main
 // ############################################
-
-const buildForm = ({
-  title,
-  radioGroupLabel,
-  radioGroup,
-  feedbackLabel,
-  textboxPlaceholder,
-  contactMeString,
-  cancelText,
-  submitText,
-  errorText,
-  displayCross,
-}) => `
-  <form id="nps" novalidate>
-    ${displayCross ? '<button type="button" class="nps-close" aria-label="Close">&times;</button>' : ''}
-    <h2>${title}</h2>
-    <fieldset class="nps-radio-group" role="radiogroup" aria-label="${radioGroupLabel}" aria-required="true" aria-describedby="feedback-error">
-      <legend>${radioGroupLabel} *</legend>
-      <div class="radio-options">
-        ${radioGroup.map(radio).join('')}
-      </div>
-      <div class="error-message" id="feedback-error" aria-live="polite" aria-hidden="true">
-        <span class="error-icon">⚠</span>
-        <span class="error-text">${errorText}</span>
-      </div>
-    </fieldset>
-    <fieldset class="nps-feedback-area">
-      <legend>${feedbackLabel}</legend>
-      <textarea
-        id="explanation-input"
-        name="explanation"
-        placeholder="${textboxPlaceholder}"
-        aria-label="${feedbackLabel}"
-        rows="4"
-      ></textarea>
-    </fieldset>
-    <fieldset class="nps-checkbox-area">
-      <label for="contact-me">
-        <input
-          type="checkbox"
-          id="contact-me"
-          name="contact-me"
-        />
-        ${contactMeString}
-      </label>
-    </fieldset>
-    <fieldset class="nps-submit-area">
-      <button type="button" class="nps-cancel">${cancelText}</button>
-      <button type="submit" class="nps-submit">${submitText}</button>
-    </fieldset>
-  </form>
-  `;
-
-const radio = (label) => {
-  const id = createIdForLabel(label);
-  return `
-  <div class="radio-item">
-    <label for="${id}"><span>${label}</span></label>
-    <input
-      type="radio"
-      id="${id}"
-      name="feedback"
-      value="${id}"
-      required
-    />
-  </div>
-  `;
-};
-
-const createIdForLabel = (label) => label
-  .toLowerCase()
-  .replaceAll(/\s/g, '-');
-
-// ############################################
-// Keyboard Accessibility
-// ############################################
-
-const initKeyboardAccessibility = (form, sendMessage) => {
-  const radioButtons = Array.from(form.querySelectorAll('input[type="radio"][name="feedback"]'));
-  const checkbox = form.querySelector('#contact-me');
-
-  radioButtons.forEach((button, index) => {
-    button.addEventListener('keydown', (e) => {
-      let targetIndex = -1;
-
-      switch (e.key) {
-        case 'ArrowRight':
-        case 'ArrowUp':
-          targetIndex = (index + 1) % radioButtons.length;
-          break;
-        case 'ArrowLeft':
-        case 'ArrowDown':
-          targetIndex = (index - 1 + radioButtons.length) % radioButtons.length;
-          break;
-        default:
-          return;
-      }
-
-      if (targetIndex !== -1) {
-        e.preventDefault();
-        const targetRadio = radioButtons[targetIndex];
-        targetRadio.focus();
-      }
-    });
-  });
-
-  if (checkbox) {
-    checkbox.addEventListener('keydown', (e) => {
-      if (e.key === ' ' || e.key === 'Spacebar') {
-        e.preventDefault();
-        checkbox.checked = !checkbox.checked;
-        // Trigger change event for any listeners
-        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
-  }
-
-  form.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' || e.key === 'Esc') {
-      e.preventDefault();
-      cancelActions();
-      sendMessage(CANCEL);
-    }
-  });
-};
 
 export default async (block) => {
   // parsing the block
@@ -285,6 +365,7 @@ export default async (block) => {
     ?.nextElementSibling
     ?.textContent).map((x) => !!x ? x : null); // eslint-disable-line
   const searchParams = new URLSearchParams(window.location.search);
+
   if (searchParams.get('source_color_theme')?.toLowerCase() === 'dark') {
     block.classList.add('dark');
   }
@@ -371,8 +452,8 @@ export default async (block) => {
     if (submitted) return;
     block.classList.add('submit-clicked');
 
-    const radioButtons = form.querySelectorAll('input[type="radio"]');
-    const selectedRadio = Array.from(radioButtons).findIndex((r) => r.checked);
+    const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
+    const selectedRadio = radioButtons.findIndex((r) => r.checked);
 
     if (selectedRadio === -1) {
       radioGroup.classList.add('show-error');
@@ -385,16 +466,21 @@ export default async (block) => {
     errorMessage?.setAttribute('aria-hidden', 'true');
     submitted = true;
     const formData = new FormData(form);
-    const feedback = selectedRadio + 1;
-    const explanation = formData.get('explanation');
+    const score = selectedRadio + 1;
+    const feedback = formData.get('explanation');
     const contactMe = formData.get('contact-me') === 'on';
     const d = {
+      score,
       feedback,
-      explanation,
       contactMe,
     };
+    const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
+    const dataObj = buildDataObject(d, surveyType, SubmitSurvey);
+    window._satellite?.track?.('event', { // eslint-disable-line
+      xdm: {},
+      data: dataObj,
+    });
     sendMessage(SUBMIT(d));
-    console.log(d);
   });
 
   const cancelButton = form.querySelector('button.nps-cancel');
