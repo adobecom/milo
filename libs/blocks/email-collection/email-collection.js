@@ -5,7 +5,6 @@ import { closeModal } from '../modal/modal.js';
 import {
   getIMS,
   getIMSProfile,
-  getIMSAccessToken,
   getApiEndpoint,
   createAriaLive,
   updateAriaLive,
@@ -13,6 +12,7 @@ import {
   setFormData,
   getAEPData,
   disableForm,
+  runtimePost,
   FORM_FIELDS,
 } from './utils.js';
 
@@ -187,41 +187,32 @@ async function submitForm(form) {
     const { consentId } = await getFormData('consent');
 
     const date = new Date();
-    const mpsData = {
+    const { guid, ecid } = await getAEPData();
+    const bodyData = {
+      ecid,
+      guid,
+      occupation,
+      organization,
+      email,
+      state,
       consentId,
       mpsSname,
       appClientId: imsClientId,
       eventDts: date.toISOString(),
       timezoneOffset: -date.getTimezoneOffset(),
     };
-    const aepData = await getAEPData();
-    if (!aepData) return;
-    const token = await getIMSAccessToken();
-    const submitFormReq = await fetch(getApiEndpoint(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        ...mpsData,
-        ...aepData,
-        occupation,
-        organization,
-        email,
-        state,
-      }),
-    });
+    const { status, error } = await runtimePost(
+      getApiEndpoint(),
+      bodyData,
+      ['occupation', 'organization', 'state'],
+    );
 
-    if (!submitFormReq.ok) {
-      const submitFormRes = await submitFormReq.json();
-      messageParams.errorMsg = `Form submit request failed: ${JSON.stringify(submitFormRes)}`;
-    }
+    if (error) messageParams.errorMsg = error;
 
     messageParams.email = email;
-    messageParams.subscribed = submitFormReq.status === 204;
+    messageParams.subscribed = status === 204;
   } catch (e) {
-    messageParams.errorMsg = e;
+    messageParams.errorMsg = e.message;
   }
 
   showHideMessage(messageParams);
@@ -236,12 +227,12 @@ function setMaxHeightToForm(formContainer, restore) {
   }
   const { height } = window.getComputedStyle(formContainer);
   const mq = window.matchMedia('(min-width: 700px)');
-  if (height) {
+  if (!height) return;
+
+  formContainer.style.maxHeight = mq.matches ? height : '';
+  mq.addEventListener('change', () => {
     formContainer.style.maxHeight = mq.matches ? height : '';
-    mq.addEventListener('change', () => {
-      formContainer.style.maxHeight = mq.matches ? height : '';
-    });
-  }
+  });
 }
 
 function validateInput(input) {
@@ -338,7 +329,7 @@ async function decorateForm(el, foreground) {
   const consentString = await decorateConsentString();
 
   if (!consentString || !submitButton) {
-    showHideMessage({ errorMsg: 'Form is missing consent stirng/submit button' });
+    showHideMessage({ errorMsg: 'Form is missing consent string/submit button' });
     return;
   }
 
@@ -433,38 +424,25 @@ function decorateText(elChildren) {
       }
     });
 
-    if (!isForeground) {
-      text.classList.add('hidden');
-      text.parentElement.remove();
-      foreground.appendChild(text);
-      if (childIndex === 1) decorateSubscribedMessage(text);
-    }
+    if (isForeground) return;
+
+    text.classList.add('hidden');
+    text.parentElement.remove();
+    foreground.appendChild(text);
+    if (childIndex === 1) decorateSubscribedMessage(text);
   });
 }
 
 async function checkIsSubscribed() {
   const { mpsSname } = getFormData('metadata');
-  const token = await getIMSAccessToken();
   const { email } = await getIMSProfile();
 
-  try {
-    const submitFormReq = await fetch(getApiEndpoint('is-subscribed'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ email, mpsSname }),
-    });
+  const { data, error } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname });
+  const { subscribed } = data;
 
-    if (!submitFormReq.ok) return null;
-    const { subscribed } = await submitFormReq.json();
-    if (subscribed) showHideMessage({ subscribed, email });
-    return subscribed;
-  } catch (e) {
-    window.lana?.log(e);
-    return null;
-  }
+  if (subscribed) showHideMessage({ subscribed, email });
+  else if (error) showHideMessage({ errorMsg: error });
+  return subscribed;
 }
 
 async function decorate(el, blockChildren) {

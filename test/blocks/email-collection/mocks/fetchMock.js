@@ -13,11 +13,11 @@ export function mockFetch({ subscribed = false }) {
       case COUNTRIES_URL:
         return new Response('{"total":229,"offset":0,"limit":229,"data":[{"key":"US","value":"United States"},{"key":"GB","value":"United Kingdom"}],"columns":["key","value"],":type":"sheet"}', { ok: true });
       case IS_SUBSCRIBED_URL:
-        return new Response(`{"subscribed": ${subscribed}}`, { ok: true });
+        return new Response(`{"subscribed": ${subscribed}}`, { ok: true, headers: { 'content-length': 10 } });
       case CONSENT_URL:
         return new Response('<div><p>Consent string</p></div><div><p>consent-id</p></div>', { ok: true });
       default:
-        return new Response('', { ok: true });
+        return new Response(null, { ok: true });
     }
   };
 }

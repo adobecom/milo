@@ -31,9 +31,12 @@ function setIms(signedIn = true) {
       first_name: 'Test first name',
       last_name: 'Test last name',
       email: 'test@test.com',
+      userId: 'Test',
     }),
   };
 }
+
+window.alloy = async () => ({ identity: { ECID: 'test' } });
 
 describe('Email collection', () => {
   beforeEach(async () => {

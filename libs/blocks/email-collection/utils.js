@@ -1,6 +1,5 @@
-import { createTag, getConfig, getFederatedUrl, localizeLink } from '../../utils/utils.js';
+import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '../../utils/utils.js';
 
-const ECID_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 const API_ENDPOINTS = {
   stage: 'https://www.stage.adobe.com/milo-email-collection-api',
   prod: 'https://www.adobe.com/milo-email-collection-api',
@@ -73,20 +72,16 @@ export const FORM_FIELDS = {
 };
 
 export async function getIMS() {
-  if (window.adobeIMS) return window.adobeIMS;
-  return new Promise((resolve) => {
-    const imsInterval = setInterval(() => {
-      if (!window.adobeIMS) return;
-      clearInterval(imsInterval);
-      resolve(window.adobeIMS);
-    }, 100);
-  });
+  if (window.adobeIMS) return window.adobeIMS; // TODO: Remove this line
+
+  await loadIms();
+  return window.adobeIMS;
 }
 
 export async function getIMSAccessToken() {
   try {
     const ims = await getIMS();
-    const { token } = ims.getAccessToken() ?? {};
+    const { token } = ims?.getAccessToken() ?? {};
     return token;
   } catch (e) {
     return null;
@@ -138,11 +133,11 @@ export const [createAriaLive, updateAriaLive] = (() => {
       let ariaTextContent = '';
       if (typeof content === 'string') {
         ariaLive.textContent = content;
-      } else {
-        content.querySelectorAll('.text:not(.hidden) > *:not(.icon-area, form, .button-container, .hidden)')
-          .forEach((child) => { ariaTextContent += ` ${child.textContent}`; });
-        ariaLive.textContent = ariaTextContent;
+        return;
       }
+      content.querySelectorAll('.text:not(.hidden) > *:not(.icon-area, form, .button-container, .hidden)')
+        .forEach((child) => { ariaTextContent += ` ${child.textContent}`; });
+      ariaLive.textContent = ariaTextContent;
     },
   ];
 })();
@@ -250,12 +245,6 @@ export const [getFormData, setFormData] = (() => {
   ];
 })();
 
-async function getMartech() {
-  // eslint-disable-next-line
-  const satellite = await window.__satelliteLoadedPromise;
-  return { satellite };
-}
-
 export function disableForm(form, disable = true) {
   form.querySelectorAll('input, button').forEach((el) => {
     el.toggleAttribute('disabled', disable);
@@ -263,9 +252,36 @@ export function disableForm(form, disable = true) {
 }
 
 export async function getAEPData() {
-  const { satellite } = await getMartech();
-  const ecid = decodeURIComponent(satellite?.cookie.get(ECID_COOKIE))?.split('|')[1];
+  const ecid = window.alloy ? await window.alloy('getIdentity')
+    .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
   const { userId: guid } = await getIMSProfile();
 
   return { guid, ecid };
+}
+
+export async function runtimePost(url, data, notRequiredData = []) {
+  const hasMissingData = Object.entries(data)
+    .find(([key, value]) => (value === undefined && !notRequiredData.includes(key)));
+  if (hasMissingData) return { error: 'Request body is missing required data' };
+
+  const token = await getIMSAccessToken();
+  try {
+    const req = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    const { ok, status, headers } = req;
+    const res = headers.get('content-length') > 0 ? await req.json() : {};
+    return {
+      status,
+      data: res,
+      ...(!ok && { error: JSON.stringify(res) }),
+    };
+  } catch (e) {
+    return { error: e.message };
+  }
 }

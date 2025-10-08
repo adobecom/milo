@@ -117,7 +117,6 @@
 }
 
 .email-collection .foreground .text form label {
-  width: 100%;
   color: #505050;
   position: relative;
   min-height: 32px;
@@ -264,7 +263,6 @@
   .email-collection:not(.large-image) .foreground:not(.message) .text {
     padding-right: 56px;
   }
-
 }
 
 @media (min-width: 1200px) {
@@ -328,6 +326,7 @@
   display: flex;
   align-items: center;
 }
+
 .email-collection .foreground .text form label.required.invalid::after {
   background: unset;
   background-color: var(--form-error-color);
@@ -345,6 +344,7 @@
   background-repeat: no-repeat;
   background-position: calc(100% - 12px);
 }
+
 .email-collection .foreground .text form select.invalid {
   background-position: calc(100% - 30px);
 }
