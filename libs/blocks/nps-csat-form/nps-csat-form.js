@@ -9,7 +9,7 @@
 //   contactMeString: string;
 // }
 
-import { loadMartech } from '../../utils/utils.js';
+import { getConfig, loadMartech } from '../../utils/utils.js';
 
 const SURVEY_VERSION = '0.0.1';
 
@@ -344,6 +344,13 @@ const initMessageClient = () => {
 export default async (block) => {
   // parsing the block
   if (!block) return;
+
+  // We must not show the consent banner on the nps csat form
+  const config = getConfig();
+  if (config) {
+    config.holdPrivacyBanner = true;
+  }
+
   const [
     title,
     question,
