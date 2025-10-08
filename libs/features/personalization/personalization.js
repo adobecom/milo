@@ -983,6 +983,7 @@ async function getPersonalizationVariant(
   }
 
   const variantInfo = buildVariantInfo(variantNames);
+
   const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
@@ -1397,22 +1398,19 @@ export const combineMepSources = async (
 ) => {
   let persManifests = [];
 
-  if (persEnabled) {
-    persManifests = parseManifestUrlAndAddSource(persEnabled, 'pzn');
-  }
-
-  if (rocPersEnabled) {
-    const rocPersManifest = parseManifestUrlAndAddSource(rocPersEnabled, 'pzn-roc');
-    persManifests = persManifests.concat(rocPersManifest);
-  }
+  const sources = {
+    pzn: persEnabled,
+    'pzn-roc': rocPersEnabled,
+    'mktg-decrease': mepMarketingDecrease,
+  };
+  Object.entries(sources).forEach(([source, value]) => {
+    if (!value) return;
+    persManifests = persManifests.concat(parseManifestUrlAndAddSource(value, source));
+  });
 
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('./promo-utils.js');
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
-  }
-
-  if (mepMarketingDecrease) {
-    persManifests.push({ manifestPath: mepMarketingDecrease, source: ['mktg-decrease'] });
   }
 
   if (mepParam && mepParam !== 'off') {
