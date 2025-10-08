@@ -26,4 +26,3 @@ export function createTag(tag, attributes, html) {
 }
 
 export const getConfig = () => ({});
-
