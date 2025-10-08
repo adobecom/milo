@@ -24,9 +24,11 @@ const KEY_CODES = {
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
 };
+
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
-const VARIATIONS = { hovering: 'hovering' };
+const DEFAULT_INITIAL_ACTIVE_INDEX = 0;
+let INDEX_OFFSET = 0;
 
 function decorateNextPreviousBtns() {
   const previousBtn = createTag(
@@ -71,12 +73,9 @@ function decorateLightboxButtons() {
   return [expandBtn, closeBtn];
 }
 
-function isVariation(el, variation) {
-  return el.classList.contains(variation);
-}
-
-function setInitialActiveIndex(el) {
-  return isVariation(el, VARIATIONS.hovering) ? 2 : 0;
+function setIndexOffeset(el) {
+  const offsetClass = [...el.classList].find((cls) => cls.startsWith('offset-'));
+  INDEX_OFFSET = offsetClass ? Number(offsetClass.split('-')[1]) : 0;
 }
 
 function decorateSlideIndicators(slides, jumpTo, activeSlideIndex) {
@@ -270,14 +269,12 @@ function moveSlides(event, carouselElements, jumpToIndex) {
    * If indicator dot buttons are clicked update:
    * reference slide, active indicator dot, and active slide
   */
+
   if (jumpToIndex >= 0) {
-    if (jumpToIndex === 0) {
-      referenceSlide = slides[slides.length - 1];
-    } else if (jumpToIndex === slides.length - 1) {
-      referenceSlide = slides[slides.length - 2];
-    } else {
-      referenceSlide = slides[jumpToIndex - 1];
-    }
+    const index = jumpToIndex + INDEX_OFFSET > 4
+      ? jumpToIndex + INDEX_OFFSET - 5
+      : jumpToIndex + INDEX_OFFSET;
+    referenceSlide = slides[index > 4 ? index - 5 : index];
     referenceSlide.classList.add('reference-slide');
     referenceSlide.style.order = '1';
     activeSlideIndicator = slideIndicators[jumpToIndex];
@@ -485,7 +482,7 @@ const buildMenuItems = (slides, el) => {
     item.dataset.index = index;
     item.addEventListener('click', (event) => {
       const customEvent = new CustomEvent('carousel:jumpTo', {
-        detail: { index: event.target.dataset.index },
+        detail: { index: event.target.dataset.index * 1 },
       });
       el.dispatchEvent(customEvent);
     });
@@ -499,9 +496,10 @@ const buildMenuItems = (slides, el) => {
 };
 
 export default function init(el) {
+  setIndexOffeset(el);
+  const activeSlideIndex = DEFAULT_INITIAL_ACTIVE_INDEX + INDEX_OFFSET;
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
-  const activeSlideIndex = setInitialActiveIndex(el);
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
   const carouselName = keyDivs[0].textContent;
   const parentArea = el.closest('.fragment') || document;
@@ -512,6 +510,12 @@ export default function init(el) {
       slide.classList.add('carousel-slide');
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
+      slide.addEventListener('click', (event) => {
+        const customEvent = new CustomEvent('carousel:jumpTo', {
+          detail: { index: event.target.closest('.carousel-slide').dataset.index * 1 },
+        });
+        el.dispatchEvent(customEvent);
+      });
     }
     return rdx;
   }, []);

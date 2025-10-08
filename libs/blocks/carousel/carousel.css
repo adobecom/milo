@@ -148,6 +148,7 @@ html[dir="rtl"] .carousel .carousel-previous {
   transform: rotate(180deg);
 }
 
+
 .carousel-slides {
   display: flex;
   align-items: start;
@@ -718,6 +719,15 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.hovering .text-block,
   .carousel.hovering .foreground {
     position: initial;
+  }
+  .carousel.hovering .carousel-slide picture{
+    transition: all .3s ease;
+    border-radius: 1.05rem;
+  }
+  .carousel.hovering .carousel-slide:hover picture{
+    filter: brightness(1.05);
+    box-shadow: 0px 0px 12px #555;
+    cursor: pointer;
   }
   .carousel.hovering .carousel-slides {
     height: 680px;
