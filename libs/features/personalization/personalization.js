@@ -1073,10 +1073,19 @@ export function getMepConsentConfig() {
   return parseOptanonConsent(optOnConsentCookie).configuration;
 }
 
-const getGeoRestriction = (geoRestriction) => {
+const overrideVariant = (manifestPath, variantName) => {
+  const config = getConfig();
+  if (!config.mep.variantOverride) config.mep.variantOverride = {};
+  config.mep.variantOverride[manifestPath] = variantName;
+};
+
+const getGeoRestriction = (manifestConfig) => {
+  const { geoRestriction, manifestPath } = manifestConfig;
   if (!geoRestriction) return true;
   const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  return geoArray.includes(getConfig().mep.akamaiCode);
+  const isAllowed = geoArray.includes(getConfig().mep.akamaiCode);
+  if (!isAllowed) overrideVariant(manifestPath, 'Default');
+  return isAllowed;
 };
 
 export function getManifestMarketingAction(mktgAction, source) {
@@ -1086,24 +1095,16 @@ export function getManifestMarketingAction(mktgAction, source) {
   return 'marketing increase';
 }
 
-export function getManifestConsent(manifestConfig, isGeoAllowed) {
-  const config = getConfig();
-  config.mep.consentState = getMepConsentConfig();
-
-  if (!isGeoAllowed) return false;
+export function canServeManifest(manifestConfig) {
+  if (!getGeoRestriction(manifestConfig)) return false;
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
   if (mktgAction === 'core services') return true;
 
-  const { performance, advertising } = config.mep.consentState;
+  const { performance, advertising } = getConfig().mep.consentState;
   if (mktgAction === 'non-marketing') return performance;
   if (mktgAction === 'marketing increase') return advertising;
 
-  if (!advertising || !performance) {
-    if (!config.mep.variantOverride) config.mep.variantOverride = {};
-    if (!config.mep.variantOverride?.[manifestPath]) {
-      [config.mep.variantOverride[manifestPath]] = variantNames;
-    }
-  }
+  if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
 }
 
@@ -1177,9 +1178,8 @@ async function getManifestConfig(info, variantOverride) {
   let finalDisabled = disabled;
   manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
   manifestConfig.manifestPath = normalizePath(manifestPath);
-  const isGeoAllowed = getGeoRestriction(manifestConfig.geoRestriction);
-  const isConsentAllowed = getManifestConsent(manifestConfig, isGeoAllowed);
-  if (!isConsentAllowed) {
+  const isAllowed = canServeManifest(manifestConfig);
+  if (!isAllowed) {
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
   }
@@ -1599,6 +1599,7 @@ export async function init(enablements = {}) {
       targetInteractionPromise,
       promises,
       akamaiCode,
+      consentState: getMepConsentConfig(),
     };
 
     manifests = manifests.concat(await combineMepSources(
