@@ -190,14 +190,12 @@
   font-family: inherit;
 }
 
-.email-collection p:has(.show-form),
-.email-collection .show-form,
-.email-collection .subscribed-email {
-  display: none;
-}
-
 .email-collection .subscribed-email {
   margin: 24px 0;
+}
+
+.email-collection .subscribed-email:last-child {
+  margin-bottom: 0px;
 }
 
 .email-collection .show-form {
@@ -209,16 +207,9 @@
   .email-collection {
     width: 80vw;
   }
-
 }
 
 @media (min-width: 700px) {
-  .email-collection p:has(.show-form),
-  .email-collection .subscribed-email,
-  .email-collection .show-form {
-    display: revert;
-  }
-
   .email-collection .foreground,
   .email-collection .foreground.message {
     padding: 56px;

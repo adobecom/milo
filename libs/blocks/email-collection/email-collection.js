@@ -385,6 +385,9 @@ function transformCtaToBtn(el) {
 
 function decorateSubscribedMessage(text) {
   const showForm = text.querySelector('a[href$="#show-form"]');
+  const email = createTag('p', { class: 'subscribed-email hidden body-m' });
+  text.appendChild(email);
+
   if (!showForm) return;
   const span = createTag(
     'span',
@@ -395,7 +398,6 @@ function decorateSubscribedMessage(text) {
     },
     showForm.textContent,
   );
-  const email = createTag('p', { class: 'subscribed-email hidden body-m' });
 
   ['click', 'keydown'].forEach((eventType) => {
     span.addEventListener(eventType, (e) => {
@@ -407,9 +409,9 @@ function decorateSubscribedMessage(text) {
   });
 
   const parent = showForm.parentElement ?? span;
-  showForm.replaceWith(span);
   parent.classList.replace('body-m', 'body-xs');
-  parent.before(email);
+  showForm.replaceWith(span);
+  text.appendChild(parent);
 }
 
 function decorateText(elChildren) {
