@@ -37,6 +37,12 @@ function updateModalHeight() {
   modal.style.height = `${modalHeight}px`;
 }
 
+function getUpdatedChatUIConfig(placeholder) {
+  if (!placeholder) return chatUIConfig;
+  chatUIConfig.text['input.placeholder'] = placeholder;
+  return chatUIConfig;
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
@@ -50,14 +56,15 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  el.querySelector('.bc-input-field .textarea-dupe').value = '';
+  const textarea = el.querySelector('.bc-input-field .textarea-dupe');
+  textarea.textContent = '';
   updateModalHeight();
 
   // eslint-disable-next-line no-underscore-dangle
   window._satellite?.track('bootstrapConversationalExperience', {
     selector: `#${mountId}`,
     src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
-    stylingConfigurations: chatUIConfig,
+    stylingConfigurations: getUpdatedChatUIConfig(textarea.getAttribute('aria-placeholder')),
   });
 
   const handleViewportResize = () => updateModalHeight();
@@ -114,8 +121,8 @@ function decorateCards(el, cards) {
     cardButton.addEventListener('click', () => {
       const input = el.querySelector('.bc-input-field .textarea-dupe');
 
-      input.value = cardText.textContent.trim();
-      openChatModal(input.value, el);
+      input.textContent = cardText.textContent.trim();
+      openChatModal(input.textContent, el);
     });
   });
 
@@ -201,14 +208,14 @@ function decorateInput(el, input) {
 
   fieldInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') {
-      if (!fieldInput.value || fieldInput.value.trim() === '') return;
+      if (!fieldInput.textContent || fieldInput.textContent.trim() === '') return;
       fieldButton.click();
     }
   });
 
   fieldButton.addEventListener('click', () => {
-    if (!fieldInput.value || fieldInput.value.trim() === '') return;
-    openChatModal(fieldInput.value, el);
+    if (!fieldInput.textContent || fieldInput.textContent.trim() === '') return;
+    openChatModal(fieldInput.textContent, el);
   });
 }
 
