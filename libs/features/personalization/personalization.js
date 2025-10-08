@@ -946,10 +946,10 @@ function normCountry(country) {
   return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
 }
 async function setMepCountry(config) {
+  config.mep = config.mep || {};
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-  config.mep = config.mep || {};
   if (country) {
     config.mep.countryChoice = normCountry(country);
   }
@@ -1075,16 +1075,14 @@ export function getMepConsentConfig() {
 
 const getGeoRestriction = (geoRestriction) => {
   if (!geoRestriction) return true;
-  const urlParams = new URLSearchParams(window.location.search);
-  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
   const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
-  return geoArray.includes(akamaiCode);
+  return geoArray.includes(getConfig().mep.akamaiCode);
 };
 
 export function getManifestMarketingAction(mktgAction, source) {
   const allowedServices = ['core services', 'non-marketing', 'marketing decrease', 'marketing increase'];
   if (allowedServices.includes(mktgAction)) return mktgAction;
-  if (!mktgAction && source?.includes('promo')) return 'core services';
+  if (source?.includes('promo')) return 'core services';
   return 'marketing increase';
 }
 
@@ -1094,7 +1092,6 @@ export function getManifestConsent(manifestConfig, isGeoAllowed) {
   if (mktgAction === 'core services') return true;
 
   const { performance, advertising } = getMepConsentConfig();
-
   if (mktgAction === 'non-marketing') return performance;
   if (mktgAction === 'marketing increase') return advertising;
 
@@ -1105,7 +1102,6 @@ export function getManifestConsent(manifestConfig, isGeoAllowed) {
       [config.mep.variantOverride[manifestPath]] = variantNames;
     }
   }
-
   return true;
 }
 
@@ -1577,7 +1573,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP, promises, mepMarketingDecrease
+    postLCP, promises, mepMarketingDecrease, akamaiCode,
   } = enablements;
   const config = getConfig();
 
@@ -1600,6 +1596,7 @@ export async function init(enablements = {}) {
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
+      akamaiCode,
     };
 
     manifests = manifests.concat(await combineMepSources(

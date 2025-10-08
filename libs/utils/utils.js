@@ -1448,13 +1448,11 @@ async function checkForPageMods() {
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  if (mepgeolocation) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-    if (!akamaiCode) {
-      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
-      countryIPPromise = getAkamaiCode(true);
-    }
+  const akamaiCode = getMepEnablement('akamaiLocale')?.toLowerCase()
+    || sessionStorage.getItem('akamai');
+  if (mepgeolocation && !akamaiCode) {
+    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    countryIPPromise = getAkamaiCode(true);
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1504,6 +1502,7 @@ async function checkForPageMods() {
     enablePersV2,
     promises,
     mepMarketingDecrease,
+    akamaiCode,
   });
 }
 
