@@ -120,7 +120,8 @@ function parseMepConfig() {
   const { experiments, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
-      name, event, manifest, variantNames, selectedVariantName, disabled, analyticsTitle, source,
+      name, event, manifest, variantNames, selectedVariantName,
+      disabled, analyticsTitle, source, geoRestriction,
     } = experiment;
     let pathname = manifest;
     try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -135,6 +136,7 @@ function parseMepConfig() {
       eventEnd: event?.end,
       pathname,
       analyticsTitle,
+      geoRestriction,
     };
   });
   const { page, url } = parsePageAndUrl(config, window.location, prefix);
@@ -183,6 +185,7 @@ function getManifestListDomAndParameter(mepConfig) {
       eventStart,
       eventEnd,
       disabled,
+      geoRestriction,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
@@ -217,14 +220,16 @@ function getManifestListDomAndParameter(mepConfig) {
               <div class="mep-active">Active</div>
               <div>Source</div>
               ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
-              ${eventStart && eventEnd ? '<div>Scheduled</div>' : ''}
+              ${geoRestriction ? '<div>Geo Restriction</div>' : ''}
+              ${(eventStart && eventEnd) || disabled ? '<div>Active?</div>' : ''}
             
             </div>
             <div class="mep-column">
               ${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}
               <div>${source}</div>
               ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
-              ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
+              ${geoRestriction ? `<div>${geoRestriction}</div>` : ''}
+              ${(eventStart && eventEnd) || disabled ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
             </div>
           </div>
           ${eventStart && eventEnd ? `<div class="mep-columns">
