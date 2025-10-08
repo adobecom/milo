@@ -1102,7 +1102,7 @@ export function getManifestConsent(manifestConfig) {
   // If consent not given for advertising or performance, override to first experience
   if (!advertising || !performance) {
     const config = getConfig();
-    config.mep.variantOverride ??= {};
+    if (!config.mep.variantOverride) config.mep.variantOverride = {};
     if (!config.mep.variantOverride?.[manifestPath]) {
       [config.mep.variantOverride[manifestPath]] = variantNames;
     }
