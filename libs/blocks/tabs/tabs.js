@@ -153,6 +153,11 @@ function configTabs(config, rootElem, elm) {
     if (tabBtn) {
       elm.setAttribute('daa-lh', 'deeplinked|tabs');
       tabBtn.click();
+      if (config.remember === 'on') {
+        const deeplinkUrl = new URL(window.location.href);
+        deeplinkUrl.searchParams.delete(config.id);
+        window.history.replaceState({}, null, deeplinkUrl);
+      }
       return;
     }
   }
