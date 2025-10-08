@@ -983,8 +983,6 @@ async function getPersonalizationVariant(
   }
 
   const variantInfo = buildVariantInfo(variantNames);
-  // inside getPersonalizationVariant around line 985 after the override but before rest of logic, 
-  // override to first variant if marketing action is marketing decrease but have not consented to 2 or 4
   const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
@@ -1081,7 +1079,7 @@ const getGeoRestriction = (geoRestriction) => {
   const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
   const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
   return geoArray.includes(akamaiCode);
-}
+};
 
 export function getManifestMarketingAction(mktgAction, source) {
   const allowedServices = ['core services', 'non-marketing', 'marketing decrease', 'marketing increase'];
@@ -1099,7 +1097,6 @@ export function getManifestConsent(manifestConfig) {
   if (mktgAction === 'non-marketing') return performance;
   if (mktgAction === 'marketing increase') return advertising;
 
-  // If consent not given for advertising or performance, override to first experience
   if (!advertising || !performance) {
     const config = getConfig();
     if (!config.mep.variantOverride) config.mep.variantOverride = {};
