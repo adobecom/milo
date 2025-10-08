@@ -36,12 +36,16 @@ function setIms(signedIn = true) {
   };
 }
 
-window.alloy = async () => ({ identity: { ECID: 'test' } });
+function setAlloy(martechOn = true) {
+  if (!martechOn) window.alloy = null;
+  else window.alloy = async () => ({ identity: { ECID: 'test' } });
+}
 
 describe('Email collection', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     setIms();
+    setAlloy();
     mockFetch({});
   });
 
@@ -266,5 +270,48 @@ describe('Email collection', () => {
     expect(text[0].classList.contains('hidden')).to.be.false;
     expect(text[1].classList.contains('hidden')).to.be.true;
     expect(text[2].classList.contains('hidden')).to.be.true;
+  });
+
+  it('Should submit form and show error message if martech is disabled', async () => {
+    setAlloy(false);
+    const block = document.querySelector('#waitlist');
+    await init(block);
+    await sleep();
+    const submitButton = block.querySelector('form button[type="submit"]');
+    const occupation = block.querySelector('form input#occupation');
+    occupation.value = 'Test';
+    const organization = block.querySelector('form input#organization');
+    organization.value = 'Test';
+    submitButton.click();
+    await sleep(10);
+    const foregroundText = block.querySelectorAll('.foreground > .text');
+    expect(foregroundText[0].classList.contains('hidden')).to.be.true;
+    expect(foregroundText[1].classList.contains('hidden')).to.be.true;
+    expect(foregroundText[2].classList.contains('hidden')).to.be.false;
+  });
+
+  it('Should submit form and show subscribed message if user is subscribed', async () => {
+    mockFetch({ subscribed: true });
+    const block = document.querySelector('#waitlist');
+    await init(block);
+    await sleep();
+    const submitButton = block.querySelector('form button[type="submit"]');
+    const occupation = block.querySelector('form input#occupation');
+    occupation.value = 'Test';
+    const organization = block.querySelector('form input#organization');
+    organization.value = 'Test';
+    submitButton.click();
+    await sleep(10);
+    const text = block.querySelectorAll('.foreground > .text');
+    expect(text[0].classList.contains('hidden')).to.be.true;
+    expect(text[1].classList.contains('hidden')).to.be.false;
+    expect(text[2].classList.contains('hidden')).to.be.true;
+
+    const subscribedEmail = block.querySelector('.subscribed-email');
+    const showForm = block.querySelector('.show-form');
+    const { email } = window.adobeIMS.getProfile();
+    expect(subscribedEmail).to.exist;
+    expect(subscribedEmail.textContent).to.be.equal(email);
+    expect(showForm).to.exist;
   });
 });

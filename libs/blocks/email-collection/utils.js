@@ -72,7 +72,7 @@ export const FORM_FIELDS = {
 };
 
 export async function getIMS() {
-  if (window.adobeIMS) return window.adobeIMS; // TODO: Remove this line
+  if (window.adobeIMS) return window.adobeIMS;
 
   await loadIms();
   return window.adobeIMS;
