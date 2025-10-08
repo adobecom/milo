@@ -45,18 +45,20 @@ describe('tabs', () => {
     expect(lsActiveTab).to.equal(1);
   });
 
-  it('focus on tabList button, ArrowRight key to next tab and Enter key to select aria', async () => {
-    const unSelectedBtn1 = allTabs[1].querySelector('div[role="tablist"] button[aria-selected="false"]');
-    const unSelectedBtn2 = allTabs[2].querySelector('div[role="tablist"] button[aria-selected="false"]');
-    unSelectedBtn1.focus();
-    await sendKeys({ down: 'ArrowRight' });
-    await sendKeys({ press: 'Enter' });
-    expect(unSelectedBtn1.ariaSelected).to.equal('true');
+  it('focus on tabList button, ArrowRight key to next tab and Enter key to select tab', async () => {
+    const tabs1 = allTabs[1].querySelectorAll('div[role="tablist"] button');
+    const firstTab = tabs1[0];
+    const secondTab = tabs1[1];
 
-    unSelectedBtn2.focus();
-    await sendKeys({ down: 'ArrowLeft' });
-    await sendKeys({ press: 'Space' });
-    expect(unSelectedBtn2.ariaSelected).to.equal('false');
+    firstTab.focus();
+    await sendKeys({ down: 'ArrowRight' });
+    await delay(50);
+    expect(document.activeElement).to.equal(secondTab);
+
+    await sendKeys({ press: 'Enter' });
+    await delay(50);
+    expect(secondTab.ariaSelected).to.equal('true');
+    expect(firstTab.ariaSelected).to.equal('false');
   });
 
   it('disables paddles when tabList is not scrollable', async () => {
@@ -219,6 +221,79 @@ describe('tabs', () => {
       const tabs = document.querySelector('#tabs-demo');
       expect(tabs.querySelector('button[id="tab-demo-1"]')?.dataset.deeplink).to.equal('custom-deeplink-1');
       expect(tabs.querySelector('button[id="tab-demo-2"]')?.dataset.deeplink).to.equal('custom-deeplink-2');
+    });
+  });
+
+  describe('Tabindex management for accessibility', () => {
+    it('initializes with only active tab having tabindex="0"', () => {
+      const tabs = allTabs[0].querySelectorAll('div[role="tablist"] button');
+      const activeTab = allTabs[0].querySelector('div[role="tablist"] button[aria-selected="true"]');
+      expect(activeTab.getAttribute('tabindex')).to.equal('0');
+      tabs.forEach((tab) => {
+        if (tab !== activeTab) {
+          expect(tab.getAttribute('tabindex')).to.equal('-1');
+        }
+      });
+    });
+
+    it('updates tabindex when clicking on a tab', () => {
+      const tabs = allTabs[0].querySelectorAll('div[role="tablist"] button');
+      const firstTab = tabs[0];
+      const secondTab = tabs[1];
+      firstTab.click();
+      expect(firstTab.getAttribute('tabindex')).to.equal('0');
+      expect(secondTab.getAttribute('tabindex')).to.equal('-1');
+      secondTab.click();
+      expect(firstTab.getAttribute('tabindex')).to.equal('-1');
+      expect(secondTab.getAttribute('tabindex')).to.equal('0');
+    });
+
+    it('manages tabindex correctly during arrow key navigation', async () => {
+      const tabListIndex = 3;
+      const tabs = allTabs[tabListIndex].querySelectorAll('div[role="tablist"] button');
+      const firstTab = tabs[0];
+      const secondTab = tabs[1];
+      const thirdTab = tabs[2];
+
+      secondTab.click();
+      await delay(50);
+      expect(firstTab.getAttribute('tabindex')).to.equal('-1');
+      expect(secondTab.getAttribute('tabindex')).to.equal('0');
+      expect(thirdTab.getAttribute('tabindex')).to.equal('-1');
+
+      secondTab.focus();
+      await sendKeys({ down: 'ArrowRight' });
+      await delay(50);
+
+      expect(firstTab.getAttribute('tabindex')).to.equal('-1');
+      expect(secondTab.getAttribute('tabindex')).to.equal('-1');
+      expect(thirdTab.getAttribute('tabindex')).to.equal('0');
+    });
+
+    it('resets tabindex to active tab when non-active tab loses focus', async () => {
+      const tabListIndex = 4;
+      const tabs = allTabs[tabListIndex].querySelectorAll('div[role="tablist"] button');
+      const firstTab = tabs[0];
+      const secondTab = tabs[1];
+
+      firstTab.click();
+      await delay(50);
+      expect(firstTab.getAttribute('tabindex')).to.equal('0');
+
+      firstTab.focus();
+      await sendKeys({ down: 'ArrowRight' });
+      await delay(50);
+
+      expect(secondTab.getAttribute('tabindex')).to.equal('0');
+
+      document.body.setAttribute('tabindex', '0');
+      document.body.focus();
+      await delay(100);
+
+      expect(firstTab.getAttribute('tabindex')).to.equal('0');
+      expect(secondTab.getAttribute('tabindex')).to.equal('-1');
+
+      document.body.removeAttribute('tabindex');
     });
   });
 });
