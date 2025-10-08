@@ -23,6 +23,7 @@ const config = {
     experiments: [],
     targetEnabled: true,
     prefix: '',
+    consentState: { performance: true, advertising: true },
   },
   stageDomainsMap: {
     'www.stage.adobe.com': {

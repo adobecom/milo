@@ -8,11 +8,14 @@ import {
 import { getConfig } from '../../../libs/utils/utils.js';
 
 describe('overrideVariant', () => {
+  beforeEach(() => {
+    getConfig().mep = {};
+  });
   it('should override the variant', () => {
     overrideVariant('/test/test.json', 'test');
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('test');
   });
-  it('should not override the variant if it already exists', () => {
+  it('should not override the manifest variant if it already exists', () => {
     overrideVariant('/test/test.json', 'test');
     overrideVariant('/test/test.json', 'test2');
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('test');
@@ -22,6 +25,7 @@ describe('overrideVariant', () => {
 describe('getGeoRestriction', () => {
   before(() => {
     sessionStorage.setItem('akamai', 'us');
+    getConfig().mep = {};
   });
   it('should return true if the geo restriction is null', () => {
     expect(getGeoRestriction({ geoRestriction: null, manifestPath: '/test/test.json' })).to.be.true;

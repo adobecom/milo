@@ -1077,7 +1077,9 @@ export function getMepConsentConfig() {
 export const overrideVariant = (manifestPath, variantName) => {
   const config = getConfig();
   if (!config.mep.variantOverride) config.mep.variantOverride = {};
-  config.mep.variantOverride[manifestPath] = variantName;
+  if (!config.mep.variantOverride[manifestPath]) {
+    config.mep.variantOverride[manifestPath] = variantName;
+  }
 };
 
 export const getGeoRestriction = (manifestConfig) => {
