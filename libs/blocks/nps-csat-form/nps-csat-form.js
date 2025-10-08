@@ -140,7 +140,7 @@ const initKeyboardAccessibility = (form, sendMessage) => {
       const targetRadio = radioButtons[targetIndex];
       targetRadio.focus();
     });
-    button.addEventListener('focus', (e) => {
+    button.addEventListener('focus', () => {
       button.checked = true;
     });
   });
