@@ -1087,16 +1087,18 @@ export function getManifestMarketingAction(mktgAction, source) {
 }
 
 export function getManifestConsent(manifestConfig, isGeoAllowed) {
+  const config = getConfig();
+  config.mep.consentState = getMepConsentConfig();
+
   if (!isGeoAllowed) return false;
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
   if (mktgAction === 'core services') return true;
 
-  const { performance, advertising } = getMepConsentConfig();
+  const { performance, advertising } = config.mep.consentState;
   if (mktgAction === 'non-marketing') return performance;
   if (mktgAction === 'marketing increase') return advertising;
 
   if (!advertising || !performance) {
-    const config = getConfig();
     if (!config.mep.variantOverride) config.mep.variantOverride = {};
     if (!config.mep.variantOverride?.[manifestPath]) {
       [config.mep.variantOverride[manifestPath]] = variantNames;
