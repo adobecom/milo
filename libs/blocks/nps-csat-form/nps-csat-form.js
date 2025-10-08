@@ -119,28 +119,29 @@ const initKeyboardAccessibility = (form, sendMessage) => {
   const radioButtons = Array.from(form.querySelectorAll('input[type="radio"][name="feedback"]'));
   const checkbox = form.querySelector('#contact-me');
 
+  const getTargetIndex = (key, index) => {
+    switch (key) {
+      case 'ArrowRight':
+      case 'ArrowUp':
+        return (index + 1) % radioButtons.length;
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        return (index - 1 + radioButtons.length) % radioButtons.length;
+      default:
+        return -1;
+    }
+  };
+
   radioButtons.forEach((button, index) => {
     button.addEventListener('keydown', (e) => {
-      let targetIndex = -1;
-
-      switch (e.key) {
-        case 'ArrowRight':
-        case 'ArrowUp':
-          targetIndex = (index + 1) % radioButtons.length;
-          break;
-        case 'ArrowLeft':
-        case 'ArrowDown':
-          targetIndex = (index - 1 + radioButtons.length) % radioButtons.length;
-          break;
-        default:
-          return;
-      }
-
-      if (targetIndex !== -1) {
-        e.preventDefault();
-        const targetRadio = radioButtons[targetIndex];
-        targetRadio.focus();
-      }
+      const targetIndex = getTargetIndex(e.key, index);
+      if (targetIndex === -1) return;
+      e.preventDefault();
+      const targetRadio = radioButtons[targetIndex];
+      targetRadio.focus();
+    });
+    button.addEventListener('focus', (e) => {
+      button.checked = true;
     });
   });
 
