@@ -57,7 +57,9 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   const textarea = el.querySelector('.bc-input-field .textarea-dupe');
+  const submitButton = el.querySelector('.input-field-button');
   textarea.textContent = '';
+  submitButton.disabled = true;
   updateModalHeight();
 
   // eslint-disable-next-line no-underscore-dangle
