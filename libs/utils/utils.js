@@ -1448,8 +1448,7 @@ async function checkForPageMods() {
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  const akamaiCode = getMepEnablement('akamaiLocale')?.toLowerCase()
-    || sessionStorage.getItem('akamai');
+  const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
   if (mepgeolocation && !akamaiCode) {
     const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
     countryIPPromise = getAkamaiCode(true);
