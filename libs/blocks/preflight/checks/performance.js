@@ -150,8 +150,7 @@ export async function checkFragments(url, area, observeLcp) {
       description: 'No LCP element found.',
     };
   }
-  const fragmentClasses = ['.fragment'];
-  const fragmentElements = fragmentClasses.flatMap((c) => Array.from(area.querySelectorAll(c)));
+  const fragmentElements = Array.from(area.querySelectorAll('.fragment'));
   if (fragmentElements.length === 0) {
     return {
       checkId: PERFORMANCE_IDS.fragments,
