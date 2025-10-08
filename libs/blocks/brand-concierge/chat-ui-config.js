@@ -6,7 +6,7 @@ export default {
     namespace: 'brand-concierge',
   },
   text: {
-    'welcome.heading': 'Explore what you can do with Adobe apps.',
+    'welcome.heading': 'Explore what you can do with Adobe apps. ',
     'welcome.subheading': 'Choose an option or tell us what interests you and we\'ll point you in the right direction.',
     'input.placeholder': 'Tell us what you\'d like to do or create',
     'input.messageInput.aria': 'Message input',
