@@ -946,10 +946,10 @@ function normCountry(country) {
   return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
 }
 async function setMepCountry(config) {
-  config.mep = config.mep || {};
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  config.mep = config.mep || {};
   if (country) {
     config.mep.countryChoice = normCountry(country);
   }
