@@ -1073,13 +1073,13 @@ export function getMepConsentConfig() {
   return parseOptanonConsent(optOnConsentCookie).configuration;
 }
 
-const overrideVariant = (manifestPath, variantName) => {
+export const overrideVariant = (manifestPath, variantName) => {
   const config = getConfig();
   if (!config.mep.variantOverride) config.mep.variantOverride = {};
   config.mep.variantOverride[manifestPath] = variantName;
 };
 
-const getGeoRestriction = (manifestConfig) => {
+export const getGeoRestriction = (manifestConfig) => {
   const { geoRestriction, manifestPath } = manifestConfig;
   if (!geoRestriction) return true;
   const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
