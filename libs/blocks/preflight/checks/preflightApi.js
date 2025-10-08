@@ -120,9 +120,7 @@ export async function getPreflightResults(options = {}) {
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
 
-  if (useCache) {
-    globalPreflightCache.set(cacheKey, result);
-  }
+  if (useCache) globalPreflightCache.set(cacheKey, result);
 
   return result;
 }

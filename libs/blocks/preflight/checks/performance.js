@@ -175,67 +175,62 @@ export async function checkFragments(url, area, observeLcp) {
 
 export async function checkPlaceholders(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
-  if (!lcp?.element) {
-    return {
-      checkId: PERFORMANCE_IDS.placeholders,
-      severity: PERFORMANCE_SEVERITIES.placeholders,
-      title: PERFORMANCE_TITLES.Performance,
-      status: STATUS.FAIL,
-      description: 'No LCP element found.',
-    };
-  }
   const placeholderElements = Array.from(area.querySelectorAll('[data-placeholder-content]'));
-  if (placeholderElements.length === 0) {
-    return {
-      checkId: PERFORMANCE_IDS.placeholders,
-      severity: PERFORMANCE_SEVERITIES.placeholders,
-      title: PERFORMANCE_TITLES.Placeholders,
-      status: STATUS.PASS,
-      description: 'No placeholders on the page.',
-    };
+
+  let status;
+  let description;
+
+  if (!lcp?.element) {
+    status = STATUS.FAIL;
+    description = 'No LCP element found.';
+  } else if (placeholderElements.length === 0) {
+    status = STATUS.PASS;
+    description = 'No placeholders on the page.';
+  } else {
+    const lcpInPlaceholder = placeholderElements.some((p) => p.contains(lcp.element));
+    status = lcpInPlaceholder ? STATUS.FAIL : STATUS.PASS;
+    description = lcpInPlaceholder
+      ? 'LCP element contains placeholders. This can cause performance issues.'
+      : 'No placeholders in the LCP element.';
   }
-  const lcpInPlaceholder = placeholderElements.some((p) => p.contains(lcp.element));
+
   return {
     checkId: PERFORMANCE_IDS.placeholders,
     severity: PERFORMANCE_SEVERITIES.placeholders,
-    title: PERFORMANCE_TITLES.Placeholders,
-    status: lcpInPlaceholder ? STATUS.FAIL : STATUS.PASS,
-    description: lcpInPlaceholder
-      ? 'LCP element contains placeholders. This can cause performance issues.'
-      : 'No placeholders in the LCP element.',
+    title: placeholderElements.length === 0
+      ? PERFORMANCE_TITLES.Placeholders : PERFORMANCE_TITLES.Placeholders,
+    status,
+    description,
   };
 }
 
 export async function checkIcons(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
-  if (!lcp?.element) {
-    return {
-      checkId: PERFORMANCE_IDS.icons,
-      severity: PERFORMANCE_SEVERITIES.icons,
-      title: PERFORMANCE_TITLES.Icons,
-      status: STATUS.FAIL,
-      description: 'No LCP element found.',
-    };
-  }
   const iconElements = Array.from(area.querySelectorAll('.icon'));
-  if (iconElements.length === 0) {
-    return {
-      checkId: PERFORMANCE_IDS.icons,
-      severity: PERFORMANCE_SEVERITIES.icons,
-      title: PERFORMANCE_TITLES.Icons,
-      status: STATUS.PASS,
-      description: 'No icons on the page.',
-    };
+
+  let status;
+  let description;
+
+  if (!lcp?.element) {
+    status = STATUS.FAIL;
+    description = 'No LCP element found.';
+  } else if (iconElements.length === 0) {
+    status = STATUS.PASS;
+    description = 'No icons on the page.';
+  } else {
+    const lcpContainsIcons = iconElements.some((i) => lcp.element.contains(i));
+    status = lcpContainsIcons ? STATUS.FAIL : STATUS.PASS;
+    description = lcpContainsIcons
+      ? 'LCP element contains icons. This can cause performance issues.'
+      : 'No icons in the LCP element.';
   }
-  const lcpContainsIcons = iconElements.some((i) => lcp.element.contains(i));
+
   return {
     checkId: PERFORMANCE_IDS.icons,
     severity: PERFORMANCE_SEVERITIES.icons,
     title: PERFORMANCE_TITLES.Icons,
-    status: lcpContainsIcons ? STATUS.FAIL : STATUS.PASS,
-    description: lcpContainsIcons
-      ? 'LCP element contains icons. This can cause performance issues.'
-      : 'No icons in the LCP element.',
+    status,
+    description,
   };
 }
 

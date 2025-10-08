@@ -6,9 +6,8 @@ let sidekickObserver;
 let linkCheckListener;
 const sidekick = document.querySelector('aem-sidekick');
 function openPreflightPanel() {
-  if (sidekick) {
-    sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
-  }
+  if (!sidekick) return;
+  sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
 }
 
 async function createPreflightNotification() {
@@ -41,10 +40,9 @@ async function createPreflightNotification() {
   closeBtn.addEventListener('click', () => {
     overlay.remove();
     wasDismissed = true;
-    if (linkCheckListener) {
-      window.removeEventListener('preflightLinksComplete', linkCheckListener);
-      linkCheckListener = null;
-    }
+    if (!linkCheckListener) return;
+    window.removeEventListener('preflightLinksComplete', linkCheckListener);
+    linkCheckListener = null;
   });
 
   document.body.appendChild(overlay);
@@ -66,12 +64,9 @@ function setupLinkCheckListener() {
         await createPreflightNotification();
       }
     }
-
-    window.removeEventListener('preflightLinksComplete', linkCheckListener);
-    linkCheckListener = null;
   };
 
-  window.addEventListener('preflightLinksComplete', linkCheckListener);
+  window.addEventListener('preflightLinksComplete', linkCheckListener, { once: true });
 }
 
 function createObserver() {

@@ -147,15 +147,11 @@ function getAssetData(asset) {
 
 function isAboveFold(asset) {
   const main = asset.closest('main');
+  const sections = main?.querySelectorAll(':scope > div.section');
 
-  const firstSection = main?.querySelector(':scope > div.section:first-of-type');
-  const secondSection = main?.querySelector(':scope > div.section:nth-of-type(2)');
-  const hasSection = !!firstSection;
-
-  return !hasSection
-    || firstSection?.contains(asset)
-    || secondSection?.contains(asset)
-    || !!asset.closest('.hero, .marquee, .hero-marquee');
+  return !sections.length
+    || sections[0]?.contains(asset)
+    || sections[1]?.contains(asset);
 }
 
 export function isViewportTooSmall() {
@@ -208,7 +204,7 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
     assetData.asset = asset;
 
     if (assetData.hasMismatch) {
-      assetData.failure = isAssetAboveFold ? 'critical' : 'warning';
+      assetData.failure = isAssetAboveFold ? SEVERITY.CRITICAL : SEVERITY.WARNING;
     } else {
       assetData.failure = null;
     }

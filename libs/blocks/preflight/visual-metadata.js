@@ -26,14 +26,13 @@ export function addAssetMetadata(asset, assetData) {
   const sizeEl = createTag('div', { class: `asset-meta-entry preflight-decoration ${sizeStatus} ${isAboveFoldCritical ? 'above-fold-critical' : ''}` }, sizeMessage);
   container.appendChild(sizeEl);
 
-  if (assetData.type === 'mpc') {
-    const title = asset.title || '';
-    const titleStatus = title.length ? 'is-valid' : 'is-invalid';
-    const titleMessage = title.length ? `Title: ${title}` : 'Title: no title';
+  if (assetData.type !== 'mpc') return;
+  const title = asset.title || '';
+  const titleStatus = title.length ? 'is-valid' : 'is-invalid';
+  const titleMessage = title.length ? `Title: ${title}` : 'Title: no title';
 
-    const titleEl = createTag('div', { class: `asset-meta-entry preflight-decoration ${titleStatus}` }, titleMessage);
-    container.appendChild(titleEl);
-  }
+  const titleEl = createTag('div', { class: `asset-meta-entry preflight-decoration ${titleStatus}` }, titleMessage);
+  container.appendChild(titleEl);
 }
 
 export function displayPreflightVisuals(processedAssets) {
@@ -42,9 +41,8 @@ export function displayPreflightVisuals(processedAssets) {
   document.body.classList.add('preflight-assets-analysis');
 
   processedAssets.forEach((assetData) => {
-    if (assetData.asset) {
-      addAssetMetadata(assetData.asset, assetData);
-    }
+    if (!assetData.asset) return;
+    addAssetMetadata(assetData.asset, assetData);
   });
 }
 
@@ -69,7 +67,6 @@ export function addAccessibilityMetadata(element, message, status = '') {
     'is-invalid': 'is-invalid',
   };
 
-  const statusClass = statusMap[status] || '';
-  const metadataEl = createTag('div', { class: `asset-meta-entry ${statusClass}` }, message);
+  const metadataEl = createTag('div', { class: `asset-meta-entry ${statusMap[status] || ''}` }, message);
   container.appendChild(metadataEl);
 }
