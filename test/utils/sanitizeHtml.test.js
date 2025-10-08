@@ -11,4 +11,9 @@ describe('sanitizeHtml Util', () => {
     expect(html.innerHTML.includes('nested text')).to.be.true;
     expect(html.innerHTML.includes('nested link')).to.be.true;
   });
+
+  it('could sanitize empty string', async () => {
+    const html = sanitizeHtml('');
+    expect(html).to.be.null;
+  });
 });

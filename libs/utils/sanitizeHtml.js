@@ -1,7 +1,13 @@
 function stringToHTML(str) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(str, 'text/html');
-  return doc.body || document.createElement('body');
+  const emptyBody = document.createElement('body');
+  if (!str?.trim()) return emptyBody;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(str, 'text/html');
+    return doc.body || emptyBody;
+  } catch (err) {
+    return emptyBody;
+  }
 }
 
 function removeScripts(html) {
@@ -20,8 +26,7 @@ function isPossiblyDangerous(name, value) {
 }
 
 function removeAttributes(elem) {
-  [...elem.attributes].forEach((attr) => {
-    const { name, value } = attr;
+  [...elem.attributes].forEach(({ name, value }) => {
     if (isPossiblyDangerous(name, value)) {
       elem.removeAttribute(name);
     }
