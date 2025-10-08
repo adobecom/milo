@@ -315,7 +315,7 @@ export function getHashParams(hashStr) {
       if (key === 'delay') {
         params.delay = parseInt(val, 10) * 1000;
       } else if (key === 'mobile') {
-        params.mobile = val === 'true';
+        params.mobile = val === 'allowed';
       }
     }
     return params;
