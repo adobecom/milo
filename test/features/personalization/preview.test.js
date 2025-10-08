@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import experiments from './mocks/preview.js';
+import { getConfig } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/postPersonalization.html' });
 const { default: decoratePreviewMode, parsePageAndUrl } = await import('../../../libs/features/personalization/preview.js');
@@ -65,6 +66,9 @@ const config = {
 setConfig(config);
 
 describe('preview feature', () => {
+  beforeEach(() => {
+    setConfig(config);
+  });
   it('builds with 0 manifests', async () => {
     await decoratePreviewMode();
     const event = new Event(MILO_EVENTS.DEFERRED);
