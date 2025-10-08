@@ -1598,7 +1598,7 @@ export async function init(enablements = {}) {
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
-      akamaiCode,
+      akamaiCode: akamaiCode?.toLowerCase(),
       consentState: getMepConsentConfig(),
     };
 
