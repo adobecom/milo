@@ -8,7 +8,7 @@ const MOBILE_WIDTH = 375;
 const HEIGHT = 1500;
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, getRedirectionUrl, assignLinkedTabs } = await import('../../../libs/blocks/tabs/tabs.js');
+const { default: init, getRedirectionUrl, assignLinkedTabs, configTabs } = await import('../../../libs/blocks/tabs/tabs.js');
 loadStyle('../../../libs/blocks/tabs/tabs.css');
 
 describe('tabs', () => {
@@ -220,5 +220,60 @@ describe('tabs', () => {
       expect(tabs.querySelector('button[id="tab-demo-1"]')?.dataset.deeplink).to.equal('custom-deeplink-1');
       expect(tabs.querySelector('button[id="tab-demo-2"]')?.dataset.deeplink).to.equal('custom-deeplink-2');
     });
+  });
+});
+
+describe('Tabs preselected with query parameter or session storage state', () => {
+  it('tab deeplinked', () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, null, `${window.location.pathname}?demo3=demo3_2`);
+
+    const config = {
+      'active-tab': '1',
+      id: 'demo3',
+      remember: 'on',
+      'tab-id': 'demo3',
+    };
+    const tabsDemo3 = document.querySelector('#demo3 .tabs.pill');
+    const btn = document.createElement('button');
+    btn.setAttribute('data-deeplink', 'demo3_2');
+    tabsDemo3.append(btn);
+    configTabs(config, document, tabsDemo3);
+    expect(tabsDemo3.getAttribute('daa-lh')).to.equal('deeplinked|tabs');
+
+    btn.remove();
+    window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
+  });
+
+  it('tab memorized', () => {
+    sessionStorage.setItem('//demo3-tab-state', '1');
+    const config = {
+      'active-tab': '1',
+      id: 'demo3',
+      remember: 'on',
+      'tab-id': 'demo3',
+    };
+    const tabsDemo3 = document.querySelector('#demo3 .tabs.pill');
+    const tab = document.createElement('div');
+    tab.setAttribute('id', 'tab-demo3-1');
+    tabsDemo3.append(tab);
+    configTabs(config, document, tabsDemo3);
+    expect(tabsDemo3.getAttribute('daa-lh')).to.equal('memorized|tabs');
+    tab.remove();
+  });
+
+  it('tab preselected', () => {
+    const config = {
+      'active-tab': '1',
+      id: 'demo3',
+      'tab-id': 'demo3',
+    };
+    const tabsDemo3 = document.querySelector('#demo3 .tabs.pill');
+    const tab = document.createElement('div');
+    tab.setAttribute('id', 'tab-demo3-1');
+    tabsDemo3.append(tab);
+    configTabs(config, document, tabsDemo3);
+    expect(tabsDemo3.getAttribute('daa-lh')).to.equal('preselected|tabs');
+    tab.remove();
   });
 });

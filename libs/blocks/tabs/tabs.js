@@ -144,7 +144,7 @@ function getUniqueId(el, rootElem) {
   return [...tabs].indexOf(el) + 1;
 }
 
-function configTabs(config, rootElem, elm) {
+export function configTabs(config, rootElem, elm) {
   const params = new URLSearchParams(window.location.search);
   // Deeplink with a custom id parameter, e.g. ?plans=edu
   const deeplinkParam = params.get(config.id);
