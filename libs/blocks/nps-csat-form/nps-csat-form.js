@@ -99,12 +99,10 @@ const cancelActions = (() => {
       feedback: null,
       contactMe: false,
     };
-    const form = document.querySelector('#nps');
-    let surveyType = '5pt';
-    if (form) {
-      const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
-      surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
-    }
+    const radioButtons = Array.from(
+      document.querySelectorAll('#nps input[type="radio"]')
+    );
+    const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
     const dataObj = buildDataObject(d, surveyType, CancelSurvey);
     window._satellite?.track?.('event', { // eslint-disable-line
       xdm: {},
@@ -151,8 +149,6 @@ const initKeyboardAccessibility = (form, sendMessage) => {
       if (e.key === ' ' || e.key === 'Spacebar') {
         e.preventDefault();
         checkbox.checked = !checkbox.checked;
-        // Trigger change event for any listeners
-        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
   }
