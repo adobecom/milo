@@ -346,8 +346,7 @@ export async function checkLinks({ area, urlHash, envName }) {
     linksCache.set(urlHash, result);
   }
 
-  const hasFailures = status === STATUS.FAIL;
-  window.dispatchEvent(new CustomEvent('preflightLinksComplete', { detail: { hasFailures } }));
+  window.dispatchEvent(new CustomEvent('preflightLinksComplete', { detail: { hasFailures: status === STATUS.FAIL } }));
 
   return result;
 }
