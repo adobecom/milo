@@ -100,7 +100,7 @@ const cancelActions = (() => {
       contactMe: false,
     };
     const radioButtons = Array.from(
-      document.querySelectorAll('#nps input[type="radio"]')
+      document.querySelectorAll('#nps input[type="radio"]'),
     );
     const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
     const dataObj = buildDataObject(d, surveyType, CancelSurvey);
