@@ -1088,7 +1088,8 @@ export function getManifestMarketingAction(mktgAction, source) {
   return 'marketing increase';
 }
 
-export function getManifestConsent(manifestConfig) {
+export function getManifestConsent(manifestConfig, isGeoAllowed) {
+  if (!isGeoAllowed) return false;
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
   if (mktgAction === 'core services') return true;
 
@@ -1179,8 +1180,8 @@ async function getManifestConfig(info, variantOverride) {
   manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
   manifestConfig.manifestPath = normalizePath(manifestPath);
   const isGeoAllowed = getGeoRestriction(manifestConfig.geoRestriction);
-  const isConsentAllowed = getManifestConsent(manifestConfig);
-  if (!isGeoAllowed || !isConsentAllowed) {
+  const isConsentAllowed = getManifestConsent(manifestConfig, isGeoAllowed);
+  if (!isConsentAllowed) {
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
   }
