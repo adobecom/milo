@@ -813,4 +813,8 @@
   .sticky .bc-legal {
     max-width: calc(600px - 4px);
   }
+
+  #brand-concierge-modal.dialog-modal {
+    max-width: 80vw;
+  }
 }
