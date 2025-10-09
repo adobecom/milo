@@ -1,0 +1,442 @@
+/* Responsive styling with mobile-first approach */
+:root {
+  --prompt-font-size: var(--type-body-xs-size);
+  --prompt-line-height: 1.5;
+  --username-max-width: 80px;
+  --avatar-size: 24px;
+  --border-radius-standard: 8px;
+  --border-radius-round: 50%;
+  --column-count: 2;
+  --column-gap: var(--spacing-xs);
+  --row-gap: calc(12px - 8px);
+  --video-overlay-gradient: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 70%) 0%,
+    rgb(0 0 0 / 0%) 30%,
+    rgb(0 0 0 / 0%) 70%,
+    rgb(0 0 0 / 70%) 100%
+  );
+
+  /* Animation durations */
+  --transition-speed-fast: 0.3s;
+  --transition-speed-medium: 0.5s;
+
+  /* Skeleton */
+  --skeleton-height-default: 200px;
+  --skeleton-height-short: calc(var(--skeleton-height-default) * 0.7);
+  --skeleton-height-square: var(--skeleton-height-default);
+  --skeleton-height-portrait: calc(var(--skeleton-height-default) * 1.3);
+  --skeleton-height-tall: calc(var(--skeleton-height-default) * 1.7);
+  --skeleton-bg-color: var(--color-gray-100);
+  --skeleton-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+  --skeleton-gradient: linear-gradient(
+    110deg,
+    var(--color-gray-100) 0%,
+    var(--color-gray-100) 40%,
+    var(--color-gray-200) 42%,
+    var(--color-gray-200) 58%,
+    var(--color-gray-100) 60%
+  );
+
+  /* Aspect ratio percentages */
+  --aspect-ratio-short: 70%;
+  --aspect-ratio-square: 100%;
+  --aspect-ratio-portrait: 130%;
+  --aspect-ratio-tall: 170%;
+}
+
+.absolute-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.firefly-gallery-block {
+  position: relative;
+}
+
+.firefly-gallery-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.firefly-gallery-content {
+  height: 720px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  scroll-behavior: smooth;
+}
+
+/* Masonry grid layout using CSS columns for true masonry effect */
+.firefly-gallery-masonry-grid {
+  column-count: var(--column-count);
+  column-gap: var(--column-gap);
+  margin-bottom: var(--spacing-l);
+  width: 100%;
+}
+
+.firefly-gallery-fade {
+  background: linear-gradient(
+    0deg,
+    rgb(255 255 255 / 100%) 10%,
+    rgb(255 255 255 / 0%) 100%
+  );
+  height: 200px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
+  width: 100%;
+}
+
+/* Skeleton item base styles */
+.firefly-gallery-item {
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-standard);
+  overflow: clip;
+  position: relative;
+  transition: transform var(--transition-speed-fast) ease,
+    box-shadow var(--transition-speed-fast) ease;
+  width: 100%;
+  margin-bottom: var(--row-gap);
+  padding: 0;
+  display: inline-block;
+  break-inside: avoid;
+  will-change: transform;
+  contain: layout size;
+}
+
+/* Fixed minimum heights for skeleton items during loading */
+.skeleton-item {
+  min-height: var(--skeleton-height-default);
+}
+
+/* Different heights for different skeleton types during loading */
+.skeleton-item.firefly-gallery-item-short {
+  min-height: var(--skeleton-height-short);
+}
+
+.skeleton-item.firefly-gallery-item-square {
+  min-height: var(--skeleton-height-square);
+}
+
+.skeleton-item.firefly-gallery-item-portrait {
+  min-height: var(--skeleton-height-portrait);
+}
+
+.skeleton-item.firefly-gallery-item-tall {
+  min-height: var(--skeleton-height-tall);
+}
+
+/* For all items, use the custom --aspect-ratio property if available */
+.firefly-gallery-item::before {
+  content: '';
+  display: block;
+  padding-top: calc(1 / var(--aspect-ratio, 1) * 100%); /* Dynamic aspect ratio calculation */
+  transition: padding-top var(--transition-speed-medium) ease; /* Smooth transition when aspect ratio changes */
+}
+
+/* Fallback styles for cases where custom property isn't set */
+.firefly-gallery-item-short::before {
+  padding-top: var(--aspect-ratio-short); /* 0.7:1 aspect ratio - landscape */
+}
+
+.firefly-gallery-item-square::before {
+  padding-top: var(--aspect-ratio-square); /* 1:1 aspect ratio - square */
+}
+
+.firefly-gallery-item-portrait::before {
+  padding-top: var(--aspect-ratio-portrait); /* 1.3:1 aspect ratio - portrait */
+}
+
+.firefly-gallery-item-tall::before {
+  padding-top: var(
+    --aspect-ratio-tall
+  ); /* 1.7:1 aspect ratio - tall portrait */
+}
+
+.skeleton-wrapper {
+  overflow: hidden;
+  background-color: var(--skeleton-bg-color);
+  display: block;
+  border-radius: var(--border-radius-standard);
+  box-shadow: var(--skeleton-shadow);
+}
+
+/* Enhanced skeleton animation */
+.skeleton-animation {
+  z-index: 2;
+}
+
+.skeleton-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--skeleton-gradient);
+  background-size: 200% 100%;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+
+.firefly-gallery-masonry-grid.loading {
+  column-fill: balance;
+  min-height: auto;
+}
+
+.firefly-gallery-masonry-grid.loading .skeleton-item {
+  height: auto;
+  transform: translateZ(0);
+}
+
+/* Removed skeleton-pulse animation to eliminate white overlay effect */
+.firefly-gallery-item .skeleton-wrapper {
+  opacity: 1;
+  transition: opacity 0s;
+  z-index: 2;
+}
+
+.firefly-gallery-image {
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.firefly-gallery-item.loaded .skeleton-wrapper {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.firefly-gallery-item.loaded .firefly-gallery-image {
+  opacity: 1;
+}
+
+.firefly-gallery-item.loaded {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
+.firefly-gallery-img {
+  color: transparent; /* Workaround for FF showing alt text when image is loading */
+  object-fit: cover;
+  transition: transform var(--transition-speed-fast) ease;
+}
+
+.firefly-gallery-content:focus-within {
+  scroll-behavior: auto;
+}
+
+.firefly-gallery-overlay {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(0 0 0 / 65%);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 2;
+  border-radius: 8px;
+  transform: translateY(5px);
+  cursor: pointer;
+  text-decoration: none;
+  will-change: transform;
+}
+
+.firefly-gallery-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 12px;
+}
+
+.firefly-gallery-view-button {
+  background: var(--color-white);
+  color: #292929;
+  padding: 1px 12px;
+  border-radius: 16px;
+  align-self: flex-end;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.firefly-gallery-view-button:hover {
+  background: #e9e9e9;
+}
+
+.firefly-gallery-prompt {
+  color: white;
+  font-size: var(--prompt-font-size);
+  text-align: left;
+  overflow: hidden;
+  /* stylelint-disable-next-line value-no-vendor-prefix */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  line-height: var(--prompt-line-height);
+  max-height: calc(var(--prompt-line-height) * 2em);
+  margin: var(--spacing-xxs) 0;
+}
+
+.firefly-gallery-info-container {
+  width: 100%;
+}
+
+.firefly-gallery-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  max-width: calc(100% - var(--spacing-m));
+  align-self: flex-start;
+}
+
+.firefly-gallery-user-avatar {
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  min-width: var(--avatar-size);
+  max-width: var(--avatar-size);
+  border-radius: var(--border-radius-round);
+  object-fit: cover;
+  border: 1px solid rgb(255 255 255 / 50%);
+  flex-shrink: 0;
+}
+
+.firefly-gallery-username {
+  color: white;
+  font-size: var(--prompt-font-size);
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 50%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: var(--username-max-width);
+}
+
+.firefly-gallery-overlay:focus {  
+  outline: none;
+  box-shadow: inset 0 0 0 4px #378ef0; /* Inner border */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.firefly-gallery-item:hover, .firefly-gallery-item:focus-within {
+  box-shadow: 0 8px 16px rgb(0 0 0 / 10%);
+}
+
+.firefly-gallery-item:hover .firefly-gallery-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.firefly-gallery-video {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.firefly-gallery-video-overlay:focus {
+  background: var(--video-overlay-gradient);
+}
+
+.firefly-gallery-item.video-item:hover .firefly-gallery-video-overlay {
+  opacity: 1;
+  transform: translateY(0);
+  background: var(--video-overlay-gradient);
+}
+
+
+.firefly-gallery-item.video-item:hover .firefly-gallery-video {
+  opacity: 1;
+}
+
+.firefly-gallery-item.video-item:hover .firefly-gallery-user-avatar,
+.firefly-gallery-item.video-item:hover .firefly-gallery-username,
+.firefly-gallery-item.video-item:hover .firefly-gallery-view-button {
+  z-index: 3; /* Above both video and overlay */
+  position: relative;
+}
+
+.firefly-gallery-item.video-item:hover .firefly-gallery-username {
+  text-shadow: 0 1px 4px rgb(0 0 0 / 80%);
+}
+
+.firefly-gallery-play-icon {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.firefly-gallery-play-icon svg {
+  width: 10px;
+  height: 10px;
+}
+
+.firefly-gallery-item:hover .firefly-gallery-play-icon,
+.firefly-gallery-item:focus-within .firefly-gallery-play-icon {
+  opacity: 0;
+}
+
+/* Error state */
+.firefly-gallery-item.error {
+  background-color: var(--color-gray-200);
+}
+
+.firefly-gallery-item.error::before {
+  content: 'Unable to load image';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--color-gray-700);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@media screen and (min-width: 600px) {
+  :root {
+    --column-count: 3;
+    --row-gap: calc(14px - 8px);
+    --username-max-width: auto;
+  }
+
+  .firefly-gallery-user-info {
+    gap: calc(var(--spacing-xxs) / 2);
+  }
+}
+
+@media screen and (min-width: 900px) {
+  :root {
+    --column-count: 5;
+    --row-gap: calc(var(--spacing-xs) - 8px);
+  }
+}
