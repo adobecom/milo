@@ -58,7 +58,7 @@ module.exports = {
         textMarquee: 'Promo test page',
         textDefault: 'Default text',
         textFuture: 'Future promo text insert',
-        status1: 'Manifest Active?', // new format
+        status1: 'Scheduled', // new format
         status2: 'inactive', // new format
         manifestFile: 'promo-insert-future.json',
       },
