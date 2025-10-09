@@ -400,7 +400,8 @@
 }
 
 #brand-concierge-mount .message-blocker {
-  top: 28px !important;
+  height: calc(90px - 24px) !important;
+  bottom: -1px !important;
 }
 
 /* Hero */
