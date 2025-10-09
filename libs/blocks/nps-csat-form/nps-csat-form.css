@@ -118,7 +118,7 @@
   transform: translate(-50%, -50%);
   width: 8px;
   height: 8px;
-  background: black;
+  background: #292929;
   border-radius: 50%;
   opacity: 0;
   transition: opacity 0.2s ease;
