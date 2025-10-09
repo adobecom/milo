@@ -52,9 +52,9 @@ describe('Brand Concierge', () => {
     expect(legal.textContent).to.contain('Terms');
   });
 
-  it('renders input before cards when field-first is set', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/field-first.html' });
-    const block = document.querySelector('.brand-concierge.field-first');
+  it('renders input before cards when input-first is set', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/input-first.html' });
+    const block = document.querySelector('.brand-concierge.input-first');
     await init(block);
 
     const children = [...block.children];
