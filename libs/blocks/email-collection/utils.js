@@ -1,6 +1,7 @@
 import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '../../utils/utils.js';
 
 const API_ENDPOINTS = {
+  local: 'https://www.stage.adobe.com/milo-email-collection-api',
   stage: 'https://www.stage.adobe.com/milo-email-collection-api',
   prod: 'https://www.adobe.com/milo-email-collection-api',
 };
@@ -113,7 +114,7 @@ export async function getIMSProfile() {
 
 export function getApiEndpoint(action = 'submit') {
   const { env } = getConfig();
-  const endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.stage;
+  const endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
   return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
 }
 
