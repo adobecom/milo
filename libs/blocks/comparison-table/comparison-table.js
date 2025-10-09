@@ -250,10 +250,53 @@ function decorateTables(el, children) {
   addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
 }
 
+function setupStickyHeader(el) {
+  const headerContent = el.querySelector('.header-content');
+  if (!headerContent) return;
+
+  let headerOriginalOffset = headerContent.offsetTop;
+  let isSticky = false;
+
+  const getHeaderHeight = () => {
+    const header = document.querySelector('header');
+    return header ? header.offsetHeight : 0;
+  };
+
+  const handleScroll = () => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (scrollTop > headerOriginalOffset && !isSticky) {
+      const headerHeight = getHeaderHeight();
+      headerContent.style.top = `${headerHeight}px`;
+      headerContent.classList.add('sticky');
+      isSticky = true;
+    }
+
+    if (scrollTop <= headerOriginalOffset && isSticky) {
+      headerContent.classList.remove('sticky');
+      headerContent.style.top = '';
+      isSticky = false;
+    }
+  };
+
+  const handleResize = () => {
+    if (!isSticky) {
+      headerOriginalOffset = headerContent.offsetTop;
+    } else {
+      const headerHeight = getHeaderHeight();
+      headerContent.style.top = `${headerHeight}px`;
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  window.addEventListener('resize', handleResize);
+}
+
 export default function init(el) {
   const children = Array.from(el.children);
 
   decorateHeader(children[0]);
   decorateTables(el, children.slice(1));
   equalHeight(el);
+  setupStickyHeader(el);
 }

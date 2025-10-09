@@ -117,6 +117,16 @@
 .comparison-table .header-content {
   max-width: var(--comparison-max-width);
   margin: 0 auto;
+  transition: position 0.3s ease-in-out;
+}
+
+.comparison-table .header-content.sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 100%;
+  background-color: var(--comparison-column-background-color);
 }
 
 .comparison-table .header-content-wrapper {
