@@ -7,7 +7,7 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { default: init, getUpdatedChatUIConfig, updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
 const { default: chatUIConfig } = await import('../../../libs/blocks/brand-concierge/chat-ui-config.js');
 
 describe('Brand Concierge', () => {
@@ -167,6 +167,46 @@ describe('Brand Concierge', () => {
       window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001', 'C0003']) };
       window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
       expect(block.classList.contains('hide-block')).to.be.true;
+    });
+  });
+
+  describe('getUpdatedChatUIConfig', () => {
+    const originalChatUIConfig = JSON.parse(JSON.stringify(chatUIConfig));
+    it('returns original chatUIConfig when no placeholder is provided', () => {
+      const result = getUpdatedChatUIConfig();
+      expect(result).to.deep.equal(originalChatUIConfig);
+      expect(result.text['input.placeholder']).to.equal('Tell us what you\'d like to do or create');
+    });
+
+    it('updates the input placeholder', () => {
+      const customPlaceholder = 'Custom placeholder text';
+      const result = getUpdatedChatUIConfig(customPlaceholder);
+
+      expect(result.text['input.placeholder']).to.equal(customPlaceholder);
+    });
+  });
+
+  describe('updateReplicatedValue', () => {
+    let textareaWrapper;
+    let textarea;
+
+    beforeEach(() => {
+      textareaWrapper = document.createElement('div');
+      textarea = document.createElement('textarea');
+    });
+
+    it('sets replicatedValue to textarea placeholder when value is empty', () => {
+      textarea.value = '';
+      textarea.placeholder = 'Enter your message here';
+      updateReplicatedValue(textareaWrapper, textarea);
+      expect(textareaWrapper.dataset.replicatedValue).to.equal('Enter your message here');
+    });
+
+    it('prioritizes value over placeholder when both exist', () => {
+      textarea.value = 'Actual input';
+      textarea.placeholder = 'Placeholder text';
+      updateReplicatedValue(textareaWrapper, textarea);
+      expect(textareaWrapper.dataset.replicatedValue).to.equal('Actual input');
     });
   });
 });

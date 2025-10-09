@@ -30,11 +30,15 @@ function updateModalHeight() {
   modal.style.height = `${modalHeight}px`;
 }
 
-function updateInputHeight(el) {
-  const fieldInput = el.querySelector('.bc-input-field textarea');
-  if (!fieldInput) return;
-  fieldInput.style.height = 'auto';
-  fieldInput.style.height = `${fieldInput.scrollHeight}px`;
+export function updateReplicatedValue(textareaWrapper, textarea) {
+  if (!textareaWrapper || !textarea) return;
+  textareaWrapper.dataset.replicatedValue = textarea.value || textarea.placeholder;
+}
+
+export function getUpdatedChatUIConfig(placeholder) {
+  if (!placeholder) return chatUIConfig;
+  chatUIConfig.text['input.placeholder'] = placeholder;
+  return chatUIConfig;
 }
 
 async function openChatModal(initialMessage, el) {
@@ -50,15 +54,19 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  el.querySelector('.bc-input-field textarea').value = '';
-  updateInputHeight(el);
   updateModalHeight();
+  const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
+  const textarea = el.querySelector('.bc-input-field textarea');
+  const submitButton = el.querySelector('.input-field-button');
+  textarea.value = '';
+  submitButton.disabled = true;
+  updateReplicatedValue(textareaWrapper, textarea);
 
   // eslint-disable-next-line no-underscore-dangle
   window._satellite?.track('bootstrapConversationalExperience', {
     selector: `#${mountId}`,
     src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
-    stylingConfigurations: chatUIConfig,
+    stylingConfigurations: getUpdatedChatUIConfig(textarea.placeholder),
   });
 
   const handleViewportResize = () => updateModalHeight();
@@ -160,10 +168,12 @@ function decorateInput(el, input) {
     'aria-label': 'Send Message',
     'daa-ll': getAnalyticsLabel('1'),
   }, submitIcon);
-  const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, fieldLabelToolTip, fieldInput, fieldButton]);
+  const textareaWrapper = createTag('div', { class: 'bc-textarea-grow-wrap' }, fieldInput);
+  const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, fieldLabelToolTip, textareaWrapper, fieldButton]);
   fieldSection.append(fieldContainer);
   el.append(fieldSection);
   el.removeChild(input);
+  updateReplicatedValue(textareaWrapper, fieldInput);
 
   fieldInput.addEventListener('input', () => {
     if (fieldInput.value && fieldInput.value.trim() !== '') {
@@ -171,7 +181,7 @@ function decorateInput(el, input) {
     } else {
       fieldButton.disabled = true;
     }
-    updateInputHeight(el);
+    updateReplicatedValue(textareaWrapper, fieldInput);
   });
 
   if (el.classList.contains('sticky')) {
@@ -318,25 +328,4 @@ export default async function init(el) {
     decorateLegal(el, legal);
     decorateInput(el, input);
   }
-
-  // Make sure input height is updated when placeholder text is visible
-  const section = el.closest('.section');
-  if (!section) return;
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type !== 'attributes'
-        || mutation.attributeName !== 'data-status'
-        || section.getAttribute('data-status') === 'decorated') return;
-      const fieldInput = el.querySelector('.bc-input-field textarea');
-      if (fieldInput) {
-        updateInputHeight(el);
-        observer.disconnect();
-      }
-    });
-  });
-
-  observer.observe(section, {
-    attributes: true,
-    attributeFilter: ['data-status'],
-  });
 }
