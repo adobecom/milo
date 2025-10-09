@@ -187,6 +187,7 @@ async function submitForm(form) {
     const { imsClientId } = miloConfig;
     const { mpsSname } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
+    const { country } = await getIMSProfile();
 
     const date = new Date();
     const { guid, ecid } = await getAEPData();
@@ -196,6 +197,7 @@ async function submitForm(form) {
       occupation,
       organization,
       email,
+      countryCode: country,
       state,
       consentId,
       mpsSname,
@@ -203,6 +205,7 @@ async function submitForm(form) {
       eventDts: date.toISOString(),
       timezoneOffset: -date.getTimezoneOffset(),
     };
+
     const { status, error } = await runtimePost(
       getApiEndpoint(),
       bodyData,
