@@ -269,14 +269,14 @@ function setupStickyHeader(el) {
   const handleScroll = () => {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    if (scrollTop > headerOriginalOffset && !isSticky) {
+    if (scrollTop >= headerOriginalOffset && !isSticky) {
       const headerHeight = getHeaderHeight();
       headerContent.style.top = `${headerHeight}px`;
       headerContent.classList.add('sticky');
       isSticky = true;
     }
 
-    if (scrollTop <= headerOriginalOffset && isSticky) {
+    if (scrollTop === 0 && isSticky) {
       headerContent.classList.remove('sticky');
       headerContent.style.top = '';
       isSticky = false;
