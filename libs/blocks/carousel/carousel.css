@@ -19,6 +19,9 @@
   --full-rounded-corners: 50%;
   --indicator-multiplier: 0;
 
+  --spacing-m: .25rem;
+
+
   position: relative;
   margin-bottom: 1.8rem;
   display: flex;
@@ -436,6 +439,11 @@ html[dir="rtl"] .carousel .move-indicators {
   margin-top: auto;
 }
 
+.carousel.container {
+  max-width: 1920px;
+  width: 100vw;
+}
+
 .carousel.container .carousel-slide .container {
   width: unset;
 }
@@ -722,7 +730,7 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel.hovering .carousel-slide picture{
     transition: all .3s ease;
-    border-radius: 1.05rem;
+    border-radius: 1.25rem;
   }
   .carousel.hovering .carousel-slide:hover picture{
     filter: brightness(1.05);
@@ -742,12 +750,13 @@ html[dir="rtl"] .carousel .move-indicators {
     opacity: 1;
     transition: opacity .3s ease;
     transition-delay: .5s;
+    text-align: center;
   }
 
   .carousel.hovering .carousel-menu {
     display: flex;
     justify-content: center;
-    gap: var(--spacing-m);
+    gap: var(--spacing-xs);
     flex-wrap: wrap;
   }
   .carousel.hovering .carousel-slide p.body-m {
@@ -785,13 +794,13 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel[class*='show-'].hovering .carousel-slide.next-slide,
   .carousel[class*='show-'].hovering .carousel-slide.previous-slide {
-    flex-basis: calc(((100% + 25%) / var(--slides)) - round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
+    flex-basis: calc(((100% + 20%) / var(--slides)) - round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
   }
   .carousel[class*='show-'].hovering .carousel-slide.active {
-    flex-basis: calc(((100% + 50%) / var(--slides)) - round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
+    flex-basis: calc(((100% + 40%) / var(--slides)) - round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
   }
-  .carousel.show-5.hovering .carousel-slides {
-    left: -30%;
+  .carousel.show-5.hovering .carousel-slides{
+    left: -8%;
   }
   .carousel.hovering .aria-live-container {
     display: none;

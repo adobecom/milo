@@ -146,11 +146,10 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
 }
 
 function jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer) {
-  if (activeSlideIndex < jumpToIndex) {
-    slideContainer.classList.remove('is-reversing');
-  } else {
-    slideContainer.classList.add('is-reversing');
-  }
+  slideContainer.classList.add('is-reversing');
+  if (Math.abs(activeSlideIndex - jumpToIndex) > 1) {
+    if (activeSlideIndex > jumpToIndex) slideContainer.classList.remove('is-reversing');
+  } else if (activeSlideIndex < jumpToIndex) slideContainer.classList.remove('is-reversing');
 }
 
 function checkSlideForVideo(activeSlide) {
@@ -175,6 +174,7 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   const multiplyerOffset = (eventDirection === 'next' || eventDirection === 'left')
     || keyNavDirection ? 4 : 3;
   const activeSlideIndex = Number(activeSlideIndicator.dataset.index);
+
   if (activeSlideIndex > multiplyerOffset && activeSlideIndex <= slides.length) {
     /*
       * Stop adding to the multiplyer if it equals the difference
@@ -241,7 +241,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   let activeSlide = slideContainer.querySelector('.active');
   let activeMenuItem = menuItemsContainer.querySelector('.active');
   let activeSlideIndicator = controlsContainer.querySelector('.active');
-  const activeSlideIndex = activeSlideIndicator.dataset.index;
+  const activeSlideIndex = activeSlideIndicator.dataset.index * 1;
+
+  if (activeSlideIndex === jumpToIndex) return;
 
   checkSlideForVideo(activeSlide);
 
@@ -271,17 +273,21 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   */
 
   if (jumpToIndex >= 0) {
-    const index = jumpToIndex + INDEX_OFFSET > 4
-      ? jumpToIndex + INDEX_OFFSET - 5
+    const index = jumpToIndex + INDEX_OFFSET > slides.length - 1
+      ? jumpToIndex + INDEX_OFFSET - slides.length
       : jumpToIndex + INDEX_OFFSET;
-    referenceSlide = slides[index > 4 ? index - 5 : index];
+    referenceSlide = slides[index > slides.length - 1 ? index - slides.length : index];
     referenceSlide.classList.add('reference-slide');
-    referenceSlide.style.order = '1';
+    // referenceSlide.style.order = '1';
     activeSlideIndicator = slideIndicators[jumpToIndex];
     activeSlide = slides[jumpToIndex];
     activeMenuItem = menuItemsContainer.querySelector(`[data-index='${jumpToIndex}']`);
     activeMenuItem.classList.add('active');
-    jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer);
+    jumpToDirection(
+      slides[activeSlideIndex].style.order * 1,
+      slides[jumpToIndex].style.order * 1,
+      slideContainer,
+    );
   }
 
   // Next arrow button, swipe, keyboard navigation
@@ -308,9 +314,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideContainer.classList.add('is-reversing');
   }
 
+  const isReversing = slideContainer.classList.contains('is-reversing');
+
   // Update reference slide attributes
   referenceSlide.classList.add('reference-slide');
-  referenceSlide.style.order = '1';
+  referenceSlide.style.order = slides.length + 1;
 
   updateAriaLive(ariaLive, activeSlide);
 
@@ -336,7 +344,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
 
   // Loop over all slide siblings to update their order
-  for (let i = 2; i <= slides.length; i += 1) {
+  const from = isReversing ? 1 : 2;
+  for (let i = from; i <= slides.length; i += 1) {
     referenceSlide = handleNext(referenceSlide, slides);
     referenceSlide.style.order = i;
   }
@@ -519,7 +528,7 @@ export default function init(el) {
     }
     return rdx;
   }, []);
-
+  // TODO: REFEDRENCE SLIDE POSTITION CHANGE =BASED ON DIRECTION (left ot right)
   const jumpTo = el.classList.contains('jump-to');
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
@@ -537,7 +546,7 @@ export default function init(el) {
   slideWrapper.appendChild(ariaLive);
   const { menuItemsContainer, menuItems } = buildMenuItems(slides, el);
 
-  const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
+  const slideContainer = createTag('div', { class: 'carousel-slides is-ready' }, fragment);
   const carouselElements = {
     el,
     menuItemsContainer,
