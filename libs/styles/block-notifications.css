@@ -65,9 +65,21 @@
 }
 
 [data-block-notification] {
-  border: 6px solid hotpink;
+  border: 4px solid hotpink;
   box-sizing:border-box;
   position: relative;
+}
+
+[data-block-notification]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: hotpink;
+  opacity: .4;
+  z-index: 1;
 }
 
 [data-block-notification] .notification-label {

@@ -719,27 +719,8 @@ export async function loadTemplate() {
 
 function getBlockData(block) {
   const name = block.classList[0];
-  const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
-
-  let base = codeRoot;
-  if (externalLibs) {
-    try {
-      const list = Array.isArray(externalLibs) ? externalLibs : [externalLibs];
-      const match = list.find((lib) => {
-        if (!lib || typeof lib !== 'object') return false;
-        if (!Array.isArray(lib.blocks)) return false;
-        if (!lib.base || typeof lib.base !== 'string') return false;
-
-        return lib.blocks.includes(name);
-      });
-      if (match?.base) base = match.base;
-    } catch (error) {
-      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`);
-    }
-  }
-
-  if (miloLibs && MILO_BLOCKS.includes(name)) base = miloLibs;
-
+  const { miloLibs, codeRoot, mep } = getConfig();
+  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
   const blockPath = `${path}/${name}`;

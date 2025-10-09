@@ -688,7 +688,6 @@ export async function getUpgradeAction(
   options,
   imsSignedInPromise,
   [{ productArrangement: { productFamily: offerFamily } = {} }],
-  el,
 ) {
   if (!options.upgrade) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -711,7 +710,6 @@ export async function getUpgradeAction(
       CC_SINGLE_APPS_ALL,
       CC_ALL_APPS,
     );
-    el?.closest('merch-card')?.querySelector('merch-addon')?.remove();
     return upgradeAction;
   }
   return undefined;
@@ -995,7 +993,7 @@ export async function getCheckoutAction(
     await imsSignedInPromise;
     const [downloadAction, upgradeAction, modalAction] = await Promise.all([
       getDownloadAction(options, imsSignedInPromise, offers),
-      getUpgradeAction(options, imsSignedInPromise, offers, el),
+      getUpgradeAction(options, imsSignedInPromise, offers),
       getModalAction(offers, options, el),
     ]);
     return downloadAction || upgradeAction || modalAction;
