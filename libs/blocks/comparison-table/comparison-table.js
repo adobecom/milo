@@ -254,8 +254,13 @@ function setupStickyHeader(el) {
   const headerContent = el.querySelector('.header-content');
   if (!headerContent) return;
 
-  let headerOriginalOffset = headerContent.offsetTop;
+  let headerOriginalOffset = 0;
   let isSticky = false;
+
+  const calculateHeaderOffset = () => {
+    const rect = headerContent.getBoundingClientRect();
+    headerOriginalOffset = rect.top;
+  };
 
   const getHeaderHeight = () => {
     const header = document.querySelector('header');
@@ -280,14 +285,11 @@ function setupStickyHeader(el) {
   };
 
   const handleResize = () => {
-    if (!isSticky) {
-      headerOriginalOffset = headerContent.offsetTop;
-    } else {
-      const headerHeight = getHeaderHeight();
-      headerContent.style.top = `${headerHeight}px`;
-    }
+    const headerHeight = getHeaderHeight();
+    headerContent.style.top = `${headerHeight}px`;
   };
 
+  setTimeout(calculateHeaderOffset, 0);
   window.addEventListener('scroll', handleScroll);
   window.addEventListener('resize', handleResize);
 }
