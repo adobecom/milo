@@ -159,6 +159,19 @@
   padding: 8px;
 }
 
+.comparison-table .header-content.sticky .sub-header-item-container {
+  border: none;
+}
+
+.comparison-table .header-content.sticky .sub-header-item-container:nth-of-type(2),
+.comparison-table .header-content.sticky .sub-header-item-container:last-child .description { 
+  display: none;
+}
+
+.comparison-table .header-content.sticky .sub-header-item-container:last-child {
+  min-height: unset !important;
+}
+
 .comparison-table .sub-header-item-container .description {
   font-style: italic;
   text-align: center;
