@@ -71,4 +71,33 @@ window.preflightExecutors = {
     validLinkFilter,
   },
 };
+
+export const x = window.preflightExecutors = {
+  general: { runGeneralChecks },
+  assets: {
+    openAllModals,
+    checkImageDimensions,
+  },
+  accessibility: { checkAlt },
+  performance: {
+    checkLcpEl,
+    checkSingleBlock,
+    checkImageSize,
+    checkVideoPoster,
+    checkFragments,
+    checkForPersonalization,
+    checkPlaceholders,
+    checkIcons,
+  },
+  seo: {
+    checkH1s,
+    checkTitle,
+    checkCanon,
+    checkDescription,
+    checkBody,
+    checkLorem,
+    validLinkFilter,
+  },
+};
+
 window.dispatchEvent(new CustomEvent('content-insights-begin'));
