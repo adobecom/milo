@@ -258,8 +258,7 @@ function setupStickyHeader(el) {
   let isSticky = false;
 
   const calculateHeaderOffset = () => {
-    const rect = headerContent.getBoundingClientRect();
-    headerOriginalOffset = rect.top;
+    headerOriginalOffset = headerContent.getBoundingClientRect().top;
   };
 
   const getHeaderHeight = () => {

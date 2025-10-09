@@ -115,25 +115,23 @@
 }
 
 .comparison-table .header-content {
-  max-width: var(--comparison-max-width);
-  margin: 0 auto;
-  transition: position 0.3s ease-in-out;
+  position: sticky;
+  top: 0;
+  transition: all 0.3s ease-in-out;
 }
 
 .comparison-table .header-content.sticky {
-  position: fixed;
-  top: 0;
-  left: 0;
   z-index: 1000;
-  width: 100%;
   background-color: var(--comparison-column-background-color);
+  width: 100%;
 }
 
 .comparison-table .header-content-wrapper {
   display: flex;
   justify-content: space-between;
-  padding: 0 24px;
   gap: 16px;
+  max-width: var(--comparison-max-width);
+  margin: 0 auto;
 }
 
 .comparison-table .header-item {
@@ -141,6 +139,14 @@
   display: flex;
   flex-direction: column;  
   gap: 4px;
+}
+
+.comparison-table .header-item:last-child {
+  padding-inline-end: 24px;
+}
+
+.comparison-table .header-item:first-child {
+  padding-inline-start: 24px;
 }
 
 .comparison-table .header-item:nth-child(even) .sub-header-item-container:not(:last-of-type) {
