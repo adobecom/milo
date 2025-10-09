@@ -97,7 +97,7 @@ export const normalizePath = (p, localize = true) => {
 
   if (isDamContent(path) || !path?.includes('/')) return path;
 
-  if (path.includes('/federal/')) return getFederatedUrl(path);
+  const isFederal = path.includes('/federal/');
 
   const config = getConfig();
   if (!path.startsWith(config.codeRoot) && !path.startsWith('http') && !path.startsWith('/')) {
@@ -125,8 +125,10 @@ export const normalizePath = (p, localize = true) => {
         path = `${config.locale.prefix}${pathname}`;
       }
     }
+    path = isFederal ? getFederatedUrl(path) : path;
     return `${path}${hash.replace(mepHash, '')}`;
   } catch (e) {
+    path = isFederal ? getFederatedUrl(path) : path;
     return path;
   }
 };
@@ -1003,8 +1005,9 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    const { lob } = config.mep.promises;
+    const { lob, event } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
+    if (name === 'registered' && event) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 

@@ -10,7 +10,7 @@
   box-sizing: border-box;
   overflow-y: scroll;
   scrollbar-width: none;
-  min-height: calc(100vh - calc(var(--feds-height-nav, 63px) + 67px) );
+  width: 100%;
 }
 
 .login-container {
@@ -25,7 +25,7 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 12px;
-  padding: 0 24px;
+  padding: 24px;
 }
 
 .susi-product-title {
@@ -85,6 +85,7 @@
   background-color: white;
   box-sizing: border-box;
   justify-items: center;
+  border-radius: 16px 16px 0 0;
 }
 
 susi-sentry-light {
@@ -96,12 +97,22 @@ susi-sentry-light {
   scrollbar-width: none;
 }
 
-@media (min-width: 900px) {
+.section.two-up:has(.susi-light-login) {
+  display: flex;
+  flex-direction: column;
+}
 
+@media (min-width: 900px) {
   .susi-light-login {
     height: calc(100vh - calc(var(--feds-height-nav, 63px) + 67px) );
     min-height: 730px;
     padding: 20px 0;
+  }
+
+
+  .section.two-up:has(.susi-light-login) {
+    display: grid;
+    flex-direction: unset;
   }
   
   .login-container {
@@ -119,4 +130,27 @@ susi-sentry-light {
     justify-items: unset;
     border-radius: 16px 16px 0 0;
   }
+
+
+  .emailonly .susi-light-wrapper,
+  .socialonly .susi-light-wrapper {
+    min-height: 100%;
+  }
+
+  .emailonly susi-sentry-light,
+  .socialonly susi-sentry-light {
+    height: 295px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .login-product {
+    padding: 0 24px;
+  }
+
+}
+
+.dialog-modal .susi-light-login {
+  height: auto;
+  min-height: auto;
 }

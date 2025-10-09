@@ -337,8 +337,8 @@ const getPresetsData = async () => {
     presetsData = presets;
     presets.forEach((preset) => {
       const option = document.createElement('option');
-      option.value = preset.repo;
-      option.text = `${preset.name} (${preset.repo})`;
+      option.value = preset.id;
+      option.text = `${preset.name} (${preset.id})`;
       parent.insertBefore(option, separator);
     });
   });

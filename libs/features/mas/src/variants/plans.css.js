@@ -72,17 +72,37 @@ merch-card[variant="plans-education"] [slot="body-xs"] p:has(span[is="inline-pri
     margin-bottom: 16px;
 }
 
+merch-card[variant^="plans"] span.text-l {
+    display: block;
+    font-size: 18px;
+    line-height: 23px;
+}
+
 merch-card[variant="plans-education"] span.promo-text {
     margin-bottom: 8px;
 }
 
-merch-card[variant="plans-education"] p:has(a[href^='tel:']):has(+ p) {
+merch-card[variant="plans-education"] p:has(a[href^='tel:']):has(+ p, + div) {
     margin-bottom: 16px;
 }
 
 merch-card[variant^="plans"] [slot="promo-text"],
 merch-card[variant="plans-education"] span.promo-text {
     line-height: var(--consonant-merch-card-body-xs-line-height);
+}
+
+merch-card[variant="plans-education"] [slot="body-xs"] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+merch-card[variant="plans-education"] .spacer {
+    height: calc(var(--merch-card-plans-edu-list-max-offset) - var(--merch-card-plans-edu-list-offset));
+}
+
+merch-card[variant="plans-education"] ul + p {
+    margin-top: 16px;
 }
 
 merch-card-collection.plans merch-card {
@@ -202,6 +222,9 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
         max-width: var(--consonant-merch-card-plans-students-width);
         width: 100%;
     }
+    merch-card[variant="plans-education"] .spacer {
+        height: 0px;
+    }
 }
 
 merch-card[variant^="plans"]:not([size]) {
@@ -256,6 +279,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 }
 
 /* Tabs containers */
+
 #tabs-plan {
     --tabs-active-text-color: #131313;
     --tabs-border-color: #444444;
@@ -273,7 +297,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     .four-merch-cards.plans .foreground {
         max-width: unset;
     }
-  
+
     .columns.merch-card > .row {
         grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width) * 2 + var(--consonant-merch-spacing-m)));
     }
@@ -282,11 +306,11 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 /* desktop */
 @media screen and ${DESKTOP_UP} {
     :root {
-            --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-plans-width: 276px;
     }
 
     merch-sidenav.plans {
-            --merch-sidenav-collection-gap: 30px;
+        --merch-sidenav-collection-gap: 30px;
     }
 
     .columns .four-merch-cards.plans {

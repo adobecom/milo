@@ -2,9 +2,7 @@ import { expect, test } from '@playwright/test';
 import { features } from './masccd.spec.js';
 import MerchCCD from './masccd.page.js';
 import WebUtil from '../../../libs/webutil.js';
-import { createWorkerPageSetup, DOCS_GALLERY_PATH } from '../../../libs/commerce.js';
-
-const COMMERCE_LINK_REGEX = (country = 'US', language = 'en') => new RegExp(`https://commerce.adobe.com/store/email\\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&cli=adobe_com&ctx=fp&co=${country}&lang=${language})`, 'i');
+import { createWorkerPageSetup, addUrlQueryParams, validateCommerceUrl, DOCS_GALLERY_PATH } from '../../../libs/commerce.js';
 
 let CCD;
 let webUtil;
@@ -14,9 +12,9 @@ test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run
 const workerSetup = createWorkerPageSetup({
   pages: [
     { name: 'US_LIGHT', url: DOCS_GALLERY_PATH.CCD.US },
-    { name: 'US_DARK', url: `${DOCS_GALLERY_PATH.CCD.US}?theme=darkest` },
+    { name: 'US_DARK', url: addUrlQueryParams(DOCS_GALLERY_PATH.CCD.US, '?theme=darkest') },
     { name: 'FR_LIGHT', url: DOCS_GALLERY_PATH.CCD.FR },
-    { name: 'FR_DARK', url: `${DOCS_GALLERY_PATH.CCD.FR}&theme=darkest` },
+    { name: 'FR_DARK', url: addUrlQueryParams(DOCS_GALLERY_PATH.CCD.FR, '&theme=darkest') },
   ],
 });
 
@@ -65,7 +63,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('data-wcs-osi', data.osi);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -131,7 +130,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('data-wcs-osi', data.osi);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', data.ctaAnalyticsId);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('daa-ll', data.ctaDaaLL);
     });
@@ -196,7 +196,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -255,7 +256,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
@@ -319,7 +321,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
@@ -382,7 +385,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
@@ -443,7 +447,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
@@ -507,7 +512,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
@@ -568,7 +574,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('data-wcs-osi', data.osi);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
-      const COMMERCE_URL_WITH_PROMO_REGEX = /https:\/\/commerce\.adobe\.com\/store\/email\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&apc=testpromo&cli=adobe_com&ctx=fp&co=US&lang=en)/i;
+      const COMMERCE_URL_WITH_PROMO_REGEX = /https:\/\/commerce\.adobe\.com\/store\/email\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&apc=AAA12M50US&cli=adobe_com&ctx=fp&co=US&lang=en)/i;
       await expect((await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_URL_WITH_PROMO_REGEX);
       await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', data.ctaAnalyticsId);
       await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('daa-ll', data.ctadDaaLL);
@@ -629,7 +635,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
-      await expect(((await CCD.getCardCTALink(data.id, 'slice'))).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -692,7 +699,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -753,7 +761,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -810,7 +819,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -866,7 +876,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -990,7 +1001,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('data-wcs-osi', data.osi);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -1051,7 +1063,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -1114,7 +1127,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -1176,7 +1190,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref)).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -1256,7 +1271,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('data-wcs-osi', data.osi);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX('FR', 'fr'));
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref, { country: 'FR', language: 'fr' })).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
     });
   });
@@ -1311,7 +1327,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
-      await expect(((await CCD.getCardCTALink(data.id, 'slice'))).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX('FR', 'fr'));
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref, { country: 'FR', language: 'fr' })).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -1376,7 +1393,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX('FR', 'fr'));
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'slice-wide')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref, { country: 'FR', language: 'fr' })).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
@@ -1438,7 +1456,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
-      await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX('FR', 'fr'));
+      const ctaHref = await (await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href);
+      expect(validateCommerceUrl(ctaHref, { country: 'FR', language: 'fr' })).toBe(true);
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });

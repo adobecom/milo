@@ -670,6 +670,7 @@ export async function getUpgradeAction(
   options,
   imsSignedInPromise,
   [{ productArrangement: { productFamily: offerFamily } = {} }],
+  el,
 ) {
   if (!options.upgrade) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -692,6 +693,7 @@ export async function getUpgradeAction(
       CC_SINGLE_APPS_ALL,
       CC_ALL_APPS,
     );
+    el?.closest('merch-card')?.querySelector('merch-addon')?.remove();
     return upgradeAction;
   }
   return undefined;
@@ -975,7 +977,7 @@ export async function getCheckoutAction(
     await imsSignedInPromise;
     const [downloadAction, upgradeAction, modalAction] = await Promise.all([
       getDownloadAction(options, imsSignedInPromise, offers),
-      getUpgradeAction(options, imsSignedInPromise, offers),
+      getUpgradeAction(options, imsSignedInPromise, offers, el),
       getModalAction(offers, options, el),
     ]);
     return downloadAction || upgradeAction || modalAction;
@@ -1201,6 +1203,7 @@ export async function getPriceContext(el, params) {
   const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
+  const quantity = params.get('quantity');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -1214,6 +1217,7 @@ export async function getPriceContext(el, params) {
     forceTaxExclusive,
     alternativePrice,
     template,
+    quantity,
   };
 }
 
