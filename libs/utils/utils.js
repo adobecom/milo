@@ -783,11 +783,7 @@ export function decorateSVG(a) {
 
     if (altText) {
       const parentHeading = a.parentElement.closest('h1, h2, h3, h4, h5, h6');
-
-      if (parentHeading) {
-        const invisibleTextHolder = createTag('span', { class: 'hidden' }, altText);
-        parentHeading.appendChild(invisibleTextHolder);
-      }
+      parentHeading?.appendChild(createTag('span', { class: 'hidden' }, altText));
     }
 
     if (authoredUrl.pathname === hrefUrl.pathname) {
