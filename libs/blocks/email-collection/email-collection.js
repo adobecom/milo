@@ -133,7 +133,9 @@ async function decorateInput(key, value) {
     const { country: countries } = await getFormData('config');
     inputValue = countries?.[inputValue];
     if (!inputValue) return null;
-  } else if (key === 'state') {
+  }
+
+  if (key === 'state') {
     const { state: states } = await getFormData('config');
     const fields = getFormData('fields');
     const { country } = profile;
