@@ -44,7 +44,7 @@ export async function openAllModals(area = document) {
   await new Promise((resolve) => setTimeout(resolve, 5000));
 }
 
- export const exportFunctions = {
+window.preflightExecutors = {
   general: { runGeneralChecks },
   assets: {
     openAllModals,
@@ -71,7 +71,5 @@ export async function openAllModals(area = document) {
     validLinkFilter,
   },
 };
-
-window.preflightExecutors = exportFunctions;
 
 window.dispatchEvent(new CustomEvent('content-insights-begin'));
