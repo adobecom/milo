@@ -499,6 +499,13 @@ export default async (block) => {
     cancelActions();
     sendMessage(CANCEL);
   }, { once: true });
+  cancelButton?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      cancelActions();
+      sendMessage(CANCEL);
+    }
+  }, { once: true });
   closeButton?.addEventListener('click', () => {
     cancelActions();
     sendMessage(CANCEL);
