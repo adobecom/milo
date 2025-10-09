@@ -366,7 +366,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const targetEnabled = targetMapping[config.mep?.targetEnabled];
   const mepTarget = isMmm ? page.target : targetEnabled;
   const targetOnText = setTargetOnText(mepTarget, page);
-  const { akamaiCode, consentState } = getConfig().mep;
+  const { akamaiCode, consentState } = config.mep;
 
   mepPageInfo.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Page Info</h6>
