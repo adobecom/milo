@@ -127,7 +127,7 @@ module.exports = {
       path: '/libs/features/mas/docs/express.html',
       data: {
         id: '9406f1ae-7bee-48c3-9892-49af6816033e',
-        title: 'Express Free',
+        title: 'Adobe Firefly Pro',
         badge: 'Best value',
         shortDescription: 'For individuals who want Adobe Express Premium plus 4,000 credits for creative AI and Adobe Photoshop on web and mobile for advanced image editing.',
         description: 'Top features:',
