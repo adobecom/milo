@@ -44,7 +44,7 @@ export async function openAllModals(area = document) {
   await new Promise((resolve) => setTimeout(resolve, 5000));
 }
 
-window.preflightExecutors = {
+ export const exportFunctions = {
   general: { runGeneralChecks },
   assets: {
     openAllModals,
@@ -72,32 +72,6 @@ window.preflightExecutors = {
   },
 };
 
-export const x = window.preflightExecutors = {
-  general: { runGeneralChecks },
-  assets: {
-    openAllModals,
-    checkImageDimensions,
-  },
-  accessibility: { checkAlt },
-  performance: {
-    checkLcpEl,
-    checkSingleBlock,
-    checkImageSize,
-    checkVideoPoster,
-    checkFragments,
-    checkForPersonalization,
-    checkPlaceholders,
-    checkIcons,
-  },
-  seo: {
-    checkH1s,
-    checkTitle,
-    checkCanon,
-    checkDescription,
-    checkBody,
-    checkLorem,
-    validLinkFilter,
-  },
-};
+window.preflightExecutors = exportFunctions;
 
 window.dispatchEvent(new CustomEvent('content-insights-begin'));
