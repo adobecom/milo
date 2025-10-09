@@ -193,7 +193,7 @@ test.describe('MAS Plans Page test suite', () => {
         const targetUrl = addUrlQueryParams(PLANS_NALA_PATH.US, tabData.urlParam);
         await page.goto(targetUrl);
         await page.waitForLoadState('domcontentloaded');
-        const expectedUrl = addUrlQueryParams(PLANS_NALA_PATH.US);
+        const expectedUrl = addUrlQueryParams(PLANS_NALA_PATH.US, tabData.urlParam);
         await workerSetup.verifyPageURL('US', expectedUrl, expect);
 
         const tab = masPlans.getTabs(tabData.tabId);

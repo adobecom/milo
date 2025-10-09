@@ -41,10 +41,6 @@
   --feds-color-profile--emphasis--dark: #f2f2f2;
   --feds-border-profile--dark: 1px solid var(--feds-borderColor);
 
-  /* CTA Buttons */
-  --feds-cta-primary-bg: #4069fd;
-  --feds-cta-primary-bg--hover: #345bf8;
-
   /* mobile gnav redesign */
   --feds-borderColor-link-v2: #323232;
   --feds-borderColor-localnav-v2: #323232;
