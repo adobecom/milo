@@ -253,11 +253,16 @@ export function disableForm(form, disable = true) {
 }
 
 export async function getAEPData() {
-  const ecid = window.alloy ? await window.alloy('getIdentity')
-    .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
-  const { userId: guid } = await getIMSProfile();
-
-  return { guid, ecid };
+  const ECID_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
+  try {
+    // eslint-disable-next-line
+    const satellite = await window.__satelliteLoadedPromise;
+    const ecid = decodeURIComponent(satellite?.cookie.get(ECID_COOKIE))?.split('|')[1];
+    const { userId: guid } = await getIMSProfile();
+    return { guid, ecid };
+  } catch (e) {
+    return {};
+  }
 }
 
 export async function runtimePost(url, data, notRequiredData = []) {
@@ -275,8 +280,8 @@ export async function runtimePost(url, data, notRequiredData = []) {
       },
       body: JSON.stringify(data),
     });
-    const { ok, status, headers } = req;
-    const res = headers.get('content-length') > 0 ? await req.json() : {};
+    const { ok, status } = req;
+    const res = await req.json();
     return {
       status,
       data: res,
