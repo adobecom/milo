@@ -267,7 +267,8 @@ html[dir="rtl"] .carousel .move-indicators {
   transition: height 1s cubic-bezier(0.23, 1, 0.32, 1), background 1.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.dark .carousel .carousel-indicator::after {
+.dark .carousel .carousel-indicator::after,
+.carousel.dark .carousel-indicator::after {
   background-color: var(--carousel-dark-indicator-background-color);
 }
 
@@ -278,7 +279,8 @@ html[dir="rtl"] .carousel .move-indicators {
   width: inherit;
 }
 
-.dark .carousel .carousel-indicator.active::after {
+.dark .carousel .carousel-indicator.active::after,
+.carousel.dark .carousel-indicator.active::after {
   background-color: var(--carousel-nav-background);
 }
 
