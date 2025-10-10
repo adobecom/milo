@@ -29,7 +29,7 @@ describe('event', () => {
     document.head.innerHTML = '';
     setMetadata('signedIn', 'on');
     setCookie('OptanonConsent', 'C0002:1');
-    window.adobeIMS = { getAccessToken: () => ({ token: '1234567890' }), };
+    window.adobeIMS = { getAccessToken: () => ({ token: '1234567890' }) };
   });
   it('should return true when sending true into init', async () => {
     const event = await init(true);
