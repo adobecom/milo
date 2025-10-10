@@ -104,6 +104,8 @@ export class MerchCardCollection extends LitElement {
     #service;
     #log;
 
+    #merchCardElement;
+
     constructor() {
         super();
         // set defaults
@@ -117,6 +119,7 @@ export class MerchCardCollection extends LitElement {
         this.hydrating = false;
         this.hydrationReady = null;
         this.literalsHandlerAttached = false;
+        this.onUnmount = [];
     }
 
     render() {
@@ -223,6 +226,7 @@ export class MerchCardCollection extends LitElement {
         if (this.#service) {
             this.#log = this.#service.Log.module(MERCH_CARD_COLLECTION);
         }
+        this.#merchCardElement = customElements.get('merch-card');
         this.buildOverrideMap();
         this.init();
     }
@@ -242,6 +246,7 @@ export class MerchCardCollection extends LitElement {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.stopDeeplink?.();
+        for (const callback of this.onUnmount) callback();
     }
 
     initializeHeader() {
@@ -283,6 +288,9 @@ export class MerchCardCollection extends LitElement {
             this.sidenav.setAttribute('autoclose', '');
         this.initializeHeader();
         this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));
+
+        const onSidenavAttached = this.#merchCardElement?.getCollectionOptions(this.variant)?.onSidenavAttached;
+        onSidenavAttached && onSidenavAttached(this);
     }
 
     #fail(error, details = {}, dispatch = true) {
@@ -610,7 +618,7 @@ const RESULT_TEXT_SLOT_NAMES = {
       }
   
       getVisibility(type) {
-          const visibility = this.#merchCardElement.getCollectionOptions(this.collection?.variant)?.headerVisibility;
+          const visibility = this.#merchCardElement?.getCollectionOptions(this.collection?.variant)?.headerVisibility;
           const typeVisibility = this.parseVisibilityOptions(visibility, type);
           if (typeVisibility !== null) return typeVisibility;
           return this.parseVisibilityOptions(defaultVisibility, type);
@@ -734,7 +742,7 @@ const RESULT_TEXT_SLOT_NAMES = {
   
       get customArea() {
           if (!this.#visibility.custom) return nothing;
-          const customHeaderAreaGetter = this.#merchCardElement.getCollectionOptions(this.collection?.variant)?.customHeaderArea;
+          const customHeaderAreaGetter = this.#merchCardElement?.getCollectionOptions(this.collection?.variant)?.customHeaderArea;
           if (!customHeaderAreaGetter) return nothing;
           const customHeaderArea = customHeaderAreaGetter(this.collection);
           if (!customHeaderArea || customHeaderArea === nothing) return nothing;
