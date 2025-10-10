@@ -36,16 +36,17 @@ function setIms(signedIn = true) {
   };
 }
 
-function setAlloy(martechOn = true) {
-  if (!martechOn) window.alloy = null;
-  else window.alloy = async () => ({ identity: { ECID: 'test' } });
+function setSatellite(martechOff = false) {
+  // eslint-disable-next-line
+  window.__satelliteLoadedPromise = {
+    cookie: { get: () => (martechOff ? undefined : 'test|test') } };
 }
 
 describe('Email collection', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    setSatellite();
     setIms();
-    setAlloy();
     mockFetch({});
   });
 
@@ -273,7 +274,7 @@ describe('Email collection', () => {
   });
 
   it('Should submit form and show error message if martech is disabled', async () => {
-    setAlloy(false);
+    setSatellite(true);
     const block = document.querySelector('#waitlist');
     await init(block);
     await sleep();

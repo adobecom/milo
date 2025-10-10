@@ -18,7 +18,7 @@ export function mockFetch({ subscribed = false }) {
       case CONSENT_URL:
         return new Response('<div><p>Consent string</p></div><div><p>consent-id</p></div>', { ok: true });
       case FORM_SUBMIT_URL:
-        return new Response(null, { ok: true, status: subscribed ? 204 : 201 });
+        return new Response(subscribed ? '{"subscribed": "true"}' : '{"message": "Email subscribed successfully"}', { ok: true, status: subscribed ? 200 : 201 });
       default:
         return new Response(null, { ok: true });
     }
