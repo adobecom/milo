@@ -192,7 +192,7 @@ const buildDataObject = (formData, surveyType, eventType) => {
         sourceVersion: searchParams.get('source_version'),
         sourceLocale: searchParams.get('source_locale'),
         sourcePlatform: searchParams.get('source_platform'),
-        userAgent: searchParams.get('user_agent'),
+        userAgent: searchParams.get('source_user_agent'),
         sourceBuild: searchParams.get('source_build'),
         sourceAppCode: searchParams.get('source_app_code'),
         sourceOsVersion: searchParams.get('source_os_version'),
