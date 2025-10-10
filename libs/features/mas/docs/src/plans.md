@@ -5,8 +5,8 @@
   <h2 id="crd-mrch-plan-ind">Regular Plans Individual Cards <a class="header-anchor" href="#crd-mrch-plan-ind" title="Permalink to this heading">#</a></h2>
   <div class="four-merch-cards plans">
       <div class="plans-item">
-        <merch-card><aem-fragment fragment="a15b77f7-fb32-4608-8b5c-a1b98675ad85"></aem-fragment></merch-card>
-        <a class="plans-link" target="_blank" href="https://main--mas--adobecom.aem.live/studio.html?#path=nala&query=a15b77f7-fb32-4608-8b5c-a1b98675ad85"> Open in Studio</a>
+        <merch-card><aem-fragment fragment="5a5ca143-a417-4087-b466-5b72ac68a830"></aem-fragment></merch-card>
+        <a class="plans-link" target="_blank" href="https://main--mas--adobecom.aem.live/studio.html?#path=nala&query=5a5ca143-a417-4087-b466-5b72ac68a830"> Open in Studio</a>
       </div>
       <div class="plans-item">
         <merch-card><aem-fragment fragment="1736f2c9-0931-401b-b3c0-fe87ff72ad38"></aem-fragment></merch-card>
