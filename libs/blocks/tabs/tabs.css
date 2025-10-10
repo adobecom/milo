@@ -582,6 +582,12 @@
     gap: var(--spacing-s);
   }
 
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    .tabs.radio .tabList.tabList .tab-list-container {
+      padding-block: 5px;
+    }
+  }
+
   .tabs.radio .tab-list-container::before {
     margin-block-end: 0;
     margin-inline-end: -8px;
