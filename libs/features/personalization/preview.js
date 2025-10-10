@@ -219,11 +219,11 @@ function getManifestListDomAndParameter(mepConfig) {
           ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
           <div class="mep-columns">
             <div class="mep-column">
-              <div class="mep-active">Active Experience</div>
+              <div class="mep-active">Experience</div>
               <div>Source</div>
-              <div>Marketing action</div>
-              ${geoRestriction ? '<div>Geo Restriction</div>' : ''}
-              ${(eventStart && eventEnd) || disabled ? '<div>Manifest Active?</div>' : ''}
+              <div>Mktg action</div>
+              ${geoRestriction ? '<div>Geos</div>' : ''}
+              ${(eventStart && eventEnd) || disabled ? '<div>Active?</div>' : ''}
               ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
             </div>
             <div class="mep-column">
