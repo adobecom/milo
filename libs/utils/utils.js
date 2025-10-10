@@ -27,6 +27,7 @@ const MILO_BLOCKS = [
   'chart',
   'columns',
   'editorial-card',
+  'email-collection',
   'faas',
   'featured-article',
   'figure',
