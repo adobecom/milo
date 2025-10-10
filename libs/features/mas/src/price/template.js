@@ -12,7 +12,6 @@ import {
     formatRegularPrice,
     formatAnnualPrice,
     makeSpacesAroundNonBreaking,
-    isPromotionActive,
 } from './utilities.js';
 
 export const defaultLiterals = {
@@ -195,7 +194,6 @@ const createPriceTemplate =
             literals: priceLiterals = {},
             quantity = 1,
             space = false, // add a space between price literals
-            isPromoApplied = false,
         } = {},
         {
             commitment,
@@ -232,13 +230,10 @@ const createPriceTemplate =
 
         const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
 
-        let displayPrice =
+        const displayPrice =
             displayStrikethrough && priceWithoutDiscount
                 ? priceWithoutDiscount
                 : price;
-        if (promotion &&!isPromoApplied && priceWithoutDiscount) {
-            displayPrice = priceWithoutDiscount;
-        }
 
         let method = displayOptical ? formatOpticalPrice : formatRegularPrice;
         if (displayAnnual) {
@@ -389,24 +384,19 @@ const createPriceTemplate =
  * or outdated promotion), or concatenation of new & old prices, old being stroke through.
  */
 const createPromoPriceTemplate = () => (context, value, attributes) => {
-    const isPromoApplied = isPromotionActive(
-      value.promotion, 
-      value.promotion?.displaySummary?.instant, 
-      Array.isArray(context.quantity) ? context.quantity[0] : context.quantity);
     const displayOldPrice =
         context.displayOldPrice === undefined ||
         toBoolean(context.displayOldPrice);
     const shouldDisplayOldPrice =
         displayOldPrice &&
         value.priceWithoutDiscount &&
-        value.priceWithoutDiscount != value.price &&
-        (!value.promotion || isPromoApplied);
+        value.priceWithoutDiscount != value.price;
     return `${shouldDisplayOldPrice
         ? createPriceTemplate({
           displayStrikethrough: true,
-        })({ isPromoApplied, ...context }, value, attributes) + '&nbsp;'
+        })(context, value, attributes) + '&nbsp;'
         : ''
-    }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })({ isPromoApplied, ...context }, value, attributes)}`;
+    }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}`;
 };
 
 const createPromoPriceWithAnnualTemplate =
@@ -425,32 +415,11 @@ const createPromoPriceWithAnnualTemplate =
             instant = undefined;
             /* ignore the error */
         }
-        const isPromoApplied = isPromotionActive(value.promotion, instant, Array.isArray(context.quantity) ? context.quantity[0] : context.quantity);
         const ctxStAnnual = {
-          ...context,
-          displayTax: false,
-          displayPerUnit: false,
-          isPromoApplied,
+            ...context,
+            displayTax: false,
+            displayPerUnit: false,
         };
-        if (!isPromoApplied) {
-          return (
-            createPriceTemplate()(
-              context,
-              { ...value, price: value.priceWithoutDiscount },
-              attributes
-            ) +
-            renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(') +
-            createPriceTemplate({
-              displayAnnual: true,
-              instant,
-            })(
-              ctxStAnnual,
-              { ...value, price: value.priceWithoutDiscount },
-              attributes
-            ) +
-            renderSpan(cssClassNames.containerAnnualSuffix, ')')
-          );
-        }
         const displayOldPrice =
             context.displayOldPrice === undefined ||
             toBoolean(context.displayOldPrice);
@@ -464,7 +433,7 @@ const createPromoPriceWithAnnualTemplate =
                       displayStrikethrough: true,
                   })(ctxStAnnual, value, attributes) + '&nbsp;'
                 : ''
-        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })({ isPromoApplied, ...context }, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
             {
                 displayAnnual: true,
                 instant,

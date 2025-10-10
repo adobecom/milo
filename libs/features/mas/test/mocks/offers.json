@@ -273,19 +273,7 @@
             "offerType": "BASE",
             "pricePoint": "REGULAR",
             "language": "MULT",
-            "merchant": "ADOBE",
-            "promotion": {
-              "id": "bc765b5a-d887-4b3b-9847-430f4c31a3af",
-              "promotionCode": "NACCTPPROQ3FY25",
-              "start": "2025-07-07T07:00:00.000Z",
-              "end": "9025-09-23T06:59:00.000Z",
-              "displaySummary": {
-                  "outcomeType": "PERCENTAGE_DISCOUNT",
-                  "duration": "P12M",
-                  "amount": 45,
-                  "minProductQuantity": 1
-              }
-            }
+            "merchant": "ADOBE"
         }
     ],
     "m2m-promo-mult": [
@@ -1245,30 +1233,30 @@
     ],
     "mini-photo-promo-mult": [
         {
-            "offerSelectorIds": ["r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"],
-            "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
-            "startDate": "2023-02-02T07:00:00.000Z",
-            "endDate": "2025-12-12T07:59:00.000Z",
+            "offerSelectorIds": ["KpJ8-_gE7U3aOkxdHzSXsGJ1SV9fuL_TJuCqn_hvYSk"],
+            "offerId": "DDDCDEBA96799A274FA982669CA74623",
+            "startDate": "2021-10-26T07:00:00.000Z",
+            "endDate": "2039-10-27T07:59:00.000Z",
             "priceDetails": {
-                "price": 35.99,
+                "price": 49.99,
                 "priceWithoutDiscount": 59.99,
-                "priceWithoutTax": 35.99,
+                "priceWithoutTax": 49.99,
                 "priceWithoutDiscountAndTax": 59.99,
                 "annualized": {
-                    "annualizedPrice": 719.88,
-                    "annualizedPriceWithoutTax": 719.88,
-                    "annualizedPriceWithoutDiscount": 431.88,
-                    "annualizedPriceWithoutDiscountAndTax": 431.88
+                    "annualizedPrice": 699.88,
+                    "annualizedPriceWithoutTax": 599.88,
+                    "annualizedPriceWithoutDiscount": 719.88,
+                    "annualizedPriceWithoutDiscountAndTax": 719.88
                 },
                 "usePrecision": true,
                 "formatString": "'US$'#,##0.00",
                 "taxDisplay": "TAX_EXCLUSIVE",
                 "taxTerm": "TAX"
             },
-            "productArrangementCode": "ccsn_direct_individual",
+            "productArrangementCode": "PA-130",
             "productArrangement": {
-                "productFamily": "CC_ALL_APPS",
-                "productCode": "CCSN"
+                "productFamily": "NIMBUS_LIGHTROOM_PHOTOSHOP",
+                "productCode": "PLES"
             },
             "buyingProgram": "RETAIL",
             "commitment": "YEAR",
@@ -1282,12 +1270,12 @@
             "merchant": "ADOBE",
             "promotion": {
                 "id": "55555555-e40c-432a-b0cc-2c769488c930",
-                "promotionCode": "CCI2AAUSQ22440CD",
-                "start": "2024-02-23T04:36:11.000Z",
-                "end": "2025-12-06T04:31:00.000Z",
+                "promotionCode": "L_PROMO_10F",
+                "start": "2025-05-23T04:36:11.000Z",
+                "end": "2025-08-31T04:31:00.000Z",
                 "displaySummary": {
                     "outcomeType": "FIXED_DISCOUNT",
-                    "duration": "P12M",
+                    "duration": "P2M",
                     "currency": "USD",
                     "amount": 10.0,
                     "minProductQuantity": 1
@@ -1297,10 +1285,10 @@
     ],
     "mini-photo-promo-ca-mult": [
         {
-            "offerSelectorIds": ["r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"],
-            "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
-            "startDate": "2024-02-03T07:00:00.000Z",
-            "endDate": "2025-12-06T07:59:00.000Z",
+            "offerSelectorIds": ["KpJ8-_gE7U3aOkxdHzSXsGJ1SV9fuL_TJuCqn_hvYSk"],
+            "offerId": "DDDCDEBA96799A274FA982669CA74623",
+            "startDate": "2021-10-26T07:00:00.000Z",
+            "endDate": "2039-10-27T07:59:00.000Z",
             "priceDetails": {
                 "price": 68.99,
                 "priceWithoutDiscount": 78.99,
@@ -1317,11 +1305,11 @@
                 "taxDisplay": "TAX_INCLUSIVE_DETAILS",
                 "taxTerm": "TAX"
             },
-            "analytics": "{\"offerId\":\"632B3ADD940A7FBB7864AA5AD19B8D28\",\"label\":\"ccsn_direct_individual\",\"price\":\"68.99\",\"amountWithoutTax\":\"68.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"CAD\"}",
-            "productArrangementCode": "ccsn_direct_individual",
+            "analytics": "{\"offerId\":\"DDDCDEBA96799A274FA982669CA74623\",\"label\":\"PA-130\",\"price\":\"68.99\",\"amountWithoutTax\":\"68.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"CAD\"}",
+            "productArrangementCode": "PA-130",
             "productArrangement": {
-                "productFamily": "CC_ALL_APPS",
-                "productCode": "CCSN"
+                "productFamily": "NIMBUS_LIGHTROOM_PHOTOSHOP",
+                "productCode": "PLES"
             },
             "buyingProgram": "RETAIL",
             "commitment": "YEAR",
@@ -1335,12 +1323,12 @@
             "merchant": "ADOBE",
             "promotion": {
                 "id": "55555555-e40c-432a-b0cc-2c769488c930",
-                "promotionCode": "CCI2AACAQ22440CD",
-                "start": "2024-02-23T04:36:11.000Z",
-                "end": "2025-12-06T04:31:00.000Z",
+                "promotionCode": "L_PROMO_10F",
+                "start": "2025-05-23T04:36:11.000Z",
+                "end": "2025-08-31T04:31:00.000Z",
                 "displaySummary": {
                     "outcomeType": "FIXED_DISCOUNT",
-                    "duration": "P12M",
+                    "duration": "P2M",
                     "currency": "CAD",
                     "amount": 10.0,
                     "minProductQuantity": 1
@@ -1382,8 +1370,8 @@
     ],
     "mini-photo-promo-fr-mult": [
         {
-            "offerSelectorIds": ["r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"],
-            "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
+            "offerSelectorIds": ["KpJ8-_gE7U3aOkxdHzSXsGJ1SV9fuL_TJuCqn_hvYSk"],
+            "offerId": "DDDCDEBA96799A274FA982669CA74623",
             "priceDetails": {
                 "price": 59.99,
                 "priceWithoutDiscount": 71.99,
@@ -1400,10 +1388,10 @@
                 "taxDisplay": "TAX_INCLUSIVE_DETAILS",
                 "taxTerm": "VAT"
             },
-            "productArrangementCode": "ccsn_direct_individual",
+            "productArrangementCode": "PA-130",
             "productArrangement": {
-                "productFamily": "CC_ALL_APPS",
-                "productCode": "CCSN"
+                "productFamily": "NIMBUS_LIGHTROOM_PHOTOSHOP",
+                "productCode": "PLES"
             },
             "buyingProgram": "RETAIL",
             "commitment": "YEAR",
@@ -1417,12 +1405,12 @@
             "merchant": "ADOBE",
             "promotion": {
                 "id": "55555555-e40c-432a-b0cc-2c769488c930",
-                "promotionCode": "CCI2AAFRQ22440CD",
-                "start": "2024-02-23T04:36:11.000Z",
-                "end": "2025-12-06T04:31:00.000Z",
+                "promotionCode": "L_PROMO_10F",
+                "start": "2025-05-23T04:36:11.000Z",
+                "end": "2025-08-31T04:31:00.000Z",
                 "displaySummary": {
                     "outcomeType": "FIXED_DISCOUNT",
-                    "duration": "P12M",
+                    "duration": "P2M",
                     "currency": "EUR",
                     "amount": 10.0,
                     "minProductQuantity": 1
@@ -1462,8 +1450,8 @@
     ],
     "mini-photo-promo-au-mult": [
         {
-            "offerSelectorIds": ["r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"],
-            "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
+            "offerSelectorIds": ["KpJ8-_gE7U3aOkxdHzSXsGJ1SV9fuL_TJuCqn_hvYSk"],
+            "offerId": "DDDCDEBA96799A274FA982669CA74623",
             "priceDetails": {
                 "price": 47.99,
                 "priceWithoutDiscount": 95.99,
@@ -1480,10 +1468,10 @@
                 "taxDisplay": "TAX_INCLUSIVE_DETAILS",
                 "taxTerm": "GST"
             },
-            "productArrangementCode": "ccsn_direct_individual",
+            "productArrangementCode": "PA-130",
             "productArrangement": {
-                "productFamily": "CC_ALL_APPS",
-                "productCode": "CCSN"
+                "productFamily": "NIMBUS_LIGHTROOM_PHOTOSHOP",
+                "productCode": "PLES"
             },
             "buyingProgram": "RETAIL",
             "commitment": "YEAR",
@@ -1497,12 +1485,12 @@
             "merchant": "ADOBE",
             "promotion": {
                 "id": "55555555-950f-4cbb-b9a7-3bed484843c6",
-                "promotionCode": "CCI2AAAUQ22440CD",
-                "start": "2024-02-23T17:47:03.000Z",
-                "end": "2025-12-06T13:45:00.000Z",
+                "promotionCode": "ILYASCCIP3M50",
+                "start": "2025-05-19T17:47:03.000Z",
+                "end": "2030-01-21T13:45:00.000Z",
                 "displaySummary": {
                     "outcomeType": "PERCENTAGE_DISCOUNT",
-                    "duration": "P12M",
+                    "duration": "P3M",
                     "amount": 50.0,
                     "minProductQuantity": 1
                 }
