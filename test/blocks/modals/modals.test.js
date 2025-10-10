@@ -331,6 +331,28 @@ describe('Modals', () => {
     expect(modalIframe).to.exist;
     expect(modalIframe.getAttribute('title')).to.equal('Modal: Auto Title from CTA');
   });
+
+  it('executes closeCallback for custom modal', async () => {
+    const closeCallbackSpy = sinon.spy();
+    const customContent = createTag('div', {}, 'Test Modal Content');
+
+    const custom = {
+      id: 'closeCallback-test',
+      content: customContent,
+      closeCallback: closeCallbackSpy,
+    };
+
+    const modal = await getModal(null, custom);
+    expect(modal).to.exist;
+    expect(closeCallbackSpy.called).to.be.false;
+
+    const closeButton = modal.querySelector('.dialog-close');
+    closeButton.click();
+
+    await waitForRemoval('#closeCallback-test');
+    expect(closeCallbackSpy.calledOnce).to.be.true;
+    expect(closeCallbackSpy.calledWith(modal)).to.be.true;
+  });
 });
 
 describe('sendAnalytics', () => {
