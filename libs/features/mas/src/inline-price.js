@@ -177,7 +177,6 @@ export class InlinePrice extends HTMLSpanElement {
             'data-force-tax-exclusive',
             'data-template',
             'data-wcs-osi',
-            'data-quantity',
         ];
     }
 
