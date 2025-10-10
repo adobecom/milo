@@ -1652,6 +1652,14 @@ function initSidekick() {
   }
 }
 
+function initContentInsights() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const contentInsightsParam = urlParams.get('content-insights');
+  if (contentInsightsParam === 'on') {
+    import('../blocks/preflight/checks/contentInsights.js');
+  }
+}
+
 function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."], [content*="/federal/"]');
@@ -1707,6 +1715,7 @@ async function documentPostSectionLoading(config) {
     config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
   }
   initSidekick();
+  initContentInsights();
 
   const { default: delayed } = await import('../scripts/delayed.js');
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
