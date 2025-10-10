@@ -1086,6 +1086,10 @@
     flex: 1 0 calc(var(--grid-column-width) * 6);
   }
 
+  .two-up.grid-width-12 .aside:not(.notification) .foreground.container .text {
+    flex: 1 0 100%;
+  }
+
   .aside:not(.notification) .foreground.container .image {
     flex: 1 0 calc(var(--grid-column-width) * 5);
   }
