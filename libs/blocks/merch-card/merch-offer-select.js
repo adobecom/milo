@@ -1,6 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import { loadLitDependency, loadMasComponent, MAS_MERCH_OFFER_SELECT } from '../merch/merch.js';
+import { loadMasComponent, MAS_MERCH_OFFER_SELECT } from '../merch/merch.js';
 
 const TWP = 'twp';
 const MINI_COMPARE_CHART = 'mini-compare-chart';
@@ -55,8 +55,6 @@ const isHorizontal = (offerSelection) => [...offerSelection.querySelectorAll('me
 
 export const initOfferSelection = async (merchCard, offerSelection, quantitySelector) => {
   if (!customElements.get('merch-offer-select')) {
-    // Load lit first as it's needed by the merch-offer-select component
-    await loadLitDependency();
     await loadMasComponent(MAS_MERCH_OFFER_SELECT);
   }
 
