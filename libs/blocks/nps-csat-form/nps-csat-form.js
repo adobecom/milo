@@ -63,8 +63,8 @@ const buildForm = ({
       </label>
     </fieldset>
     <fieldset class="nps-submit-area">
-      <button type="button" class="nps-cancel">${cancelText}</button>
-      <button type="submit" class="nps-submit">${submitText}</button>
+      <button type="button" aria-label="Cancel" class="nps-cancel">${cancelText}</button>
+      <button type="submit" aria-label="Submit" class="nps-submit">${submitText}</button>
     </fieldset>
   </form>
   `;
