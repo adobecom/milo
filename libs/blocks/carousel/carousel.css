@@ -638,7 +638,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
 @media (min-width: 900px) and (max-width: 1199px) {
   .carousel.hovering .carousel-menu {
-    gap: 0 !important;
+    gap: 2px !important;
   }
   .carousel.hovering .carousel-menu-item {
       font-size: 18px !important;
@@ -811,22 +811,6 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.hovering .carousel-slide p.body-m {
     max-height: 1.5rem;
   }
-  
-  .carousel.hovering .carousel-menu-item {
-    color: var(--color-gray-600);
-    font-size: 24px;
-    padding: .5rem 1rem;
-    border-radius: 8px;
-    line-height: 1;
-    justify-self: center;
-    margin-bottom: 2rem;
-    max-width: 200px;
-    font-weight: 900;
-    text-align: center;
-    cursor: pointer;
-    transition: all .25s ease;
-    align-self: baseline;
-  }
 
   .carousel.hovering .carousel-menu-item.active,
   .carousel.hovering .carousel-menu-item:hover {
@@ -920,9 +904,25 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
-  .carousel.hovering .carousel-button-container {
-    background: rgba(36, 36, 36, 0.05)
-  }
+.carousel.hovering .carousel-button-container {
+  background: rgba(36, 36, 36, 0.05)
+}
+
+.carousel.hovering .carousel-menu-item {
+  color: var(--color-gray-600);
+  font-size: 24px;
+  padding: .5rem 1rem;
+  border-radius: 8px;
+  line-height: 1;
+  justify-self: center;
+  margin-bottom: 2rem;
+  max-width: 200px;
+  font-weight: 900;
+  text-align: center;
+  cursor: pointer;
+  transition: all .25s ease;
+  align-self: baseline;
+}
 
 .carousel .aria-live-container {
   position: absolute;
