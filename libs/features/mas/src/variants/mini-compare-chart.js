@@ -3,32 +3,12 @@ import { createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
 import { DESKTOP_UP, TABLET_DOWN, isMobile } from '../media.js';
-import { SELECTOR_MAS_INLINE_PRICE, EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from '../constants.js';
+import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
 export class MiniCompareChart extends VariantLayout {
   constructor(card) {
     super(card);
-    this.updatePriceQuantity = this.updatePriceQuantity.bind(this);
-  }
-
-  connectedCallbackHook() {
-    this.card.addEventListener(
-      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-      this.updatePriceQuantity,
-  );
-}
-
-  disconnectedCallbackHook() {
-      this.card.removeEventListener(
-        EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-        this.updatePriceQuantity,
-    );
-  }
-
-  updatePriceQuantity({ detail }) {
-    if (!this.mainPrice || !detail?.option) return;
-    this.mainPrice.dataset.quantity = detail.option;
   }
   
   getRowMinHeightPropertyName = (index) =>

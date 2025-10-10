@@ -1203,7 +1203,6 @@ export async function getPriceContext(el, params) {
   const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
-  const quantity = params.get('quantity');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -1217,7 +1216,6 @@ export async function getPriceContext(el, params) {
     forceTaxExclusive,
     alternativePrice,
     template,
-    quantity,
   };
 }
 
