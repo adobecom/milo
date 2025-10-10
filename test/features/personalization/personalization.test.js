@@ -107,6 +107,7 @@ describe('Functional Test', () => {
       targetEnabled: false,
       experiments: [],
       promises: {},
+      consentState: { performance: true, advertising: true },
     };
     const promoMepSettings = [
       {

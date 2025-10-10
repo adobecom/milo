@@ -120,7 +120,8 @@ function parseMepConfig() {
   const { experiments, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
-      name, event, manifest, variantNames, selectedVariantName, disabled, analyticsTitle, source,
+      name, event, manifest, variantNames, selectedVariantName,
+      disabled, analyticsTitle, source, geoRestriction, mktgAction,
     } = experiment;
     let pathname = manifest;
     try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -135,6 +136,8 @@ function parseMepConfig() {
       eventEnd: event?.end,
       pathname,
       analyticsTitle,
+      geoRestriction,
+      mktgAction,
     };
   });
   const { page, url } = parsePageAndUrl(config, window.location, prefix);
@@ -183,6 +186,8 @@ function getManifestListDomAndParameter(mepConfig) {
       eventStart,
       eventEnd,
       disabled,
+      geoRestriction,
+      mktgAction,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
@@ -214,17 +219,20 @@ function getManifestListDomAndParameter(mepConfig) {
           ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
           <div class="mep-columns">
             <div class="mep-column">
-              <div class="mep-active">Active</div>
+              <div class="mep-active">Experience</div>
               <div>Source</div>
+              <div>Mktg action</div>
+              ${geoRestriction ? '<div>Geos</div>' : ''}
+              ${(eventStart && eventEnd) || disabled ? '<div>Active?</div>' : ''}
               ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
-              ${eventStart && eventEnd ? '<div>Scheduled</div>' : ''}
-            
             </div>
             <div class="mep-column">
               ${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}
               <div>${source}</div>
+              <div>${mktgAction}</div>
+              ${geoRestriction ? `<div>${geoRestriction?.toUpperCase()}</div>` : ''}
+              ${(eventStart && eventEnd) || disabled ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
               ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
-              ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
             </div>
           </div>
           ${eventStart && eventEnd ? `<div class="mep-columns">
@@ -358,6 +366,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const targetEnabled = targetMapping[config.mep?.targetEnabled];
   const mepTarget = isMmm ? page.target : targetEnabled;
   const targetOnText = setTargetOnText(mepTarget, page);
+  const { akamaiCode, consentState } = config.mep;
 
   mepPageInfo.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Page Info</h6>
@@ -375,6 +384,19 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div>${page.geo || 'Nothing (US)'}</div>
         <div>${page.locale?.toLowerCase()}</div>
         ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
+      </div>
+    </div>
+    <h6 class="mep-manifest-page-info-title">User Info</h6>
+    <div class="mep-columns">
+      <div class="mep-column">
+        <div>Country</div>
+        <div>Functional consent</div>
+        <div>Advertising consent</div>
+      </div>
+      <div class="mep-column">
+        <div>${akamaiCode}</div>
+        <div>${consentState.performance ? 'on' : 'off'}</div>
+        <div>${consentState.advertising ? 'on' : 'off'}</div>
       </div>
     </div>
     `;
