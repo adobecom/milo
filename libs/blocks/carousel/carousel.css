@@ -600,6 +600,53 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.hinting-center-mobile .carousel-slides.is-ready.is-reversing {
     transform: translateX(calc((0.3rem) * -1));
   }
+
+  .carousel-menu {
+    display: none;
+  }
+
+  .carousel.hovering .carousel-slide p.body-m:not(.action-area),
+  .carousel.hovering .carousel-slide h2,
+  .carousel.hovering .carousel-slide div.cta-container {
+    background-color: #1F2332;
+    z-index: 1;
+    padding: 22px 20px 0;
+    color: white;
+    margin: 0;
+    position: relative;
+  }
+  .carousel.hovering .carousel-slide div.cta-container a {
+    background-color: white;
+    color: black; 
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
+  }
+  .carousel.hovering .carousel-slide div.cta-container {
+    padding-bottom: 22px;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+  }
+
+  .carousel.hovering .carousel-slide p.body-m:not(.action-area) {
+    padding-top: .5rem;
+  }
+
+  .carousel.hovering .carousel-slide p.image {
+    margin-bottom: -4%;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .carousel.hovering .carousel-menu {
+    gap: 0 !important;
+  }
+  .carousel.hovering .carousel-menu-item {
+      font-size: 18px !important;
+      max-width: 150px !important;
+  }
+  .carousel.hovering .carousel-slide p.body-m {
+    font-size: 14px;
+  }
 }
 
 @media (min-width: 900px) {
@@ -734,11 +781,12 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel.hovering .carousel-slide:hover picture{
     filter: brightness(1.05);
-    box-shadow: 0px 0px 12px #555;
+    box-shadow: 0px 0px 8px #555;
     cursor: pointer;
   }
   .carousel.hovering .carousel-slides {
-    height: 680px;
+    height: 37vw;
+    max-height: 636px;
     position: relative;
   }
   .carousel.hovering .carousel-slide:not(.active) .cta-container,
@@ -751,6 +799,7 @@ html[dir="rtl"] .carousel .move-indicators {
     transition: opacity .3s ease;
     transition-delay: .5s;
     text-align: center;
+    line-height: 1.25rem;
   }
 
   .carousel.hovering .carousel-menu {
@@ -804,9 +853,6 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel.hovering .aria-live-container {
     display: none;
-  }
-  .carousel.hovering .carousel-button-container {
-    background: rgba(36, 36, 36, 0.05)
   }
 
   /* Hovering Variant - end */
@@ -873,6 +919,10 @@ html[dir="rtl"] .carousel .move-indicators {
     display: none;
   }
 }
+
+  .carousel.hovering .carousel-button-container {
+    background: rgba(36, 36, 36, 0.05)
+  }
 
 .carousel .aria-live-container {
   position: absolute;

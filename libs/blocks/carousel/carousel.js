@@ -545,7 +545,7 @@ export default function init(el) {
   });
   slideWrapper.appendChild(ariaLive);
   const { menuItemsContainer, menuItems } = buildMenuItems(slides, el);
-
+  
   const slideContainer = createTag('div', { class: 'carousel-slides is-ready' }, fragment);
   const carouselElements = {
     el,
