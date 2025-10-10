@@ -206,7 +206,7 @@ async function submitForm(form) {
       timezoneOffset: -date.getTimezoneOffset(),
     };
 
-    const { status, error } = await runtimePost(
+    const { error, data } = await runtimePost(
       getApiEndpoint(),
       bodyData,
       ['occupation', 'organization', 'state'],
@@ -215,7 +215,8 @@ async function submitForm(form) {
     if (error) messageParams.errorMsg = error;
 
     messageParams.email = email;
-    messageParams.subscribed = status === 204;
+    const { subscribed } = data;
+    messageParams.subscribed = subscribed;
   } catch (e) {
     messageParams.errorMsg = e.message;
   }
