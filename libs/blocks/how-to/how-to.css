@@ -16,6 +16,9 @@
     "list"
     "media";
   --grid-desktop-default:
+    "heading heading"
+    "list list";
+  --grid-desktop-mini-image:
     "heading mini-image"
     "list list";
   --grid-desktop-two-col:
@@ -77,11 +80,6 @@
   display: grid;
  }
 
- .how-to-heading .heading-l {
-  font-size: var(--type-heading-xl-size);
-  line-height: var(--type-heading-xl-lh);
- }
-
  .how-to-heading p {
   margin: 0;
  }
@@ -104,7 +102,7 @@
 
  .how-to-media.mini-image img {
   height: 100%;
-  object-position: center;
+  max-width: 100%;
  }
 
  .how-to-media.large {
@@ -123,6 +121,31 @@
  }
 
  @media screen and (min-width: 768px) {
+  .how-to .foreground {
+    grid-template-rows: 1fr;
+    grid-template-areas: var(--grid-desktop-default);
+  }
+
+  .how-to .foreground.mini-image {
+    grid-template-areas: var(--grid-desktop-mini-image);
+    grid-template-columns: 1fr auto;
+  }
+
+  .how-to .foreground.how-to-media-large{
+    grid-template-areas: var(--grid-desktop-two-col);
+    grid-template-columns: 1fr max(300px);
+  }
+
+  .how-to-media.mini-image {
+    grid-area: mini-image;
+    order: unset;
+    height: 0;
+    align-self: center;
+    justify-self: center;
+    min-height: 100%;
+    max-width: 300px;
+  }
+
   .how-to.media-first-tablet .foreground {
     grid-template-areas: var(--grid-media-first);
   }
@@ -133,11 +156,6 @@
  }
 
  @media screen and (min-width: 960px) {
-  .how-to .foreground {
-    grid-template-rows: 1fr;
-    grid-template-areas: var(--grid-desktop-default);
-  }
-
   .how-to ol {
     min-width: 380px;
   }
@@ -154,6 +172,7 @@
     align-self: center;
     justify-self: center;
     min-height: 100%;
+    max-width: 300px;
   }
 
   .how-to.large-image .how-to-media.large {
