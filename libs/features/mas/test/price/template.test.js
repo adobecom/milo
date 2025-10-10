@@ -37,16 +37,6 @@ const valueDiscountAbm = {
     priceWithoutDiscount: 100,
     commitment: 'YEAR',
     term: 'MONTHLY',
-    promotion: {
-        start: '2024-11-15T04:02:37.000Z',
-        end: '2030-03-01T07:59:00.000Z',
-        displaySummary: {
-          outcomeType: 'PERCENTAGE_DISCOUNT',
-          duration: 'P12M',
-          amount: 25,
-          minProductQuantity: 1,
-        },
-    },
 };
 
 const valueNotApplicableDiscount = {
@@ -145,7 +135,7 @@ describe('function "createPromoPriceWithAnnualTemplate"', function () {
         const template = createPromoPriceWithAnnualTemplate();
         renderAndComparePrice(
             'createPromoPriceWithAnnualTemplate1',
-            template({ ...context, quantity: 1 }, valueDiscountAbm, {}),
+            template(context, valueDiscountAbm, {}),
         );
     });
 });
@@ -162,16 +152,13 @@ describe('Promotion price display with annual template', () => {
         priceWithoutDiscount: 30.99,
         commitment: 'YEAR',
         term: 'MONTHLY',
-        quantity: 1,
         promotion: {
             start: '2024-11-15T04:02:37.000Z',
             end: '2030-03-01T07:59:00.000Z',
-            displaySummary: {
-                outcomeType: 'PERCENTAGE_DISCOUNT',
-                duration: 'P6M',
-                amount: 25,
-                minProductQuantity: 1,
-            },
+            outcomeType: 'PERCENTAGE_DISCOUNT',
+            duration: 'P6M',
+            amount: 25,
+            minProductQuantity: 1,
         },
     };
 
