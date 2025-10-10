@@ -115,11 +115,13 @@ function changeTabs(e, config) {
     .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
     .forEach((t) => {
       t.setAttribute(attributeName, false);
+      t.setAttribute('tabindex', -1);
       if (Object.keys(tabColor).length) {
         t.removeAttribute('style', 'backgroundColor');
       }
     });
   target.setAttribute(attributeName, true);
+  target.setAttribute('tabindex', 0);
   if (tabColor[targetId]) {
     target.style.backgroundColor = tabColor[targetId];
   }
@@ -180,23 +182,29 @@ function configTabs(config, rootElem) {
 function initTabs(elm, config, rootElem) {
   const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
   const tabLists = elm.querySelectorAll('[role="tablist"], [role="radiogroup"]');
-  let tabFocus = 0;
 
   tabLists.forEach((tabList) => {
+    const tabListTabs = tabList.querySelectorAll('[role="tab"], [role="radio"]');
     tabList.addEventListener('keydown', (e) => {
       const isRtl = document.dir === 'rtl';
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const currentFocus = Array.from(tabListTabs).findIndex(
+          (tab) => tab === document.activeElement,
+        );
+        let tabFocus = currentFocus >= 0 ? currentFocus : 0;
+
         if (e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight')) {
           tabFocus += 1;
           /* c8 ignore next */
-          if (tabFocus >= tabs.length) tabFocus = 0;
+          if (tabFocus >= tabListTabs.length) tabFocus = 0;
         } else if (e.key === (isRtl ? 'ArrowRight' : 'ArrowLeft')) {
           tabFocus -= 1;
           /* c8 ignore next */
-          if (tabFocus < 0) tabFocus = tabs.length - 1;
+          if (tabFocus < 0) tabFocus = tabListTabs.length - 1;
         }
-        tabs[tabFocus].setAttribute('tabindex', 0);
-        tabs[tabFocus].focus();
+        tabListTabs.forEach((t) => t.setAttribute('tabindex', -1));
+        tabListTabs[tabFocus].setAttribute('tabindex', 0);
+        tabListTabs[tabFocus].focus();
       }
     });
   });
@@ -205,6 +213,19 @@ function initTabs(elm, config, rootElem) {
     if (elm?.classList.contains('segmented-control')) {
       tab.addEventListener('focus', () => scrollTabIntoView(tab));
     }
+    tab.addEventListener('blur', () => {
+      setTimeout(() => {
+        const isRadio = tab.getAttribute('role') === 'radio';
+        const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
+        const activeTab = elm.querySelector(`[${attributeName}="true"]`);
+        const focusedElement = document.activeElement;
+        const focusStillInTabList = Array.from(tabs).includes(focusedElement);
+        if (activeTab && !focusStillInTabList) {
+          tabs.forEach((t) => t.setAttribute('tabindex', -1));
+          activeTab.setAttribute('tabindex', 0);
+        }
+      }, 0);
+    });
   });
   if (config) configTabs(config, rootElem);
 }
@@ -365,7 +386,7 @@ const init = (block) => {
         role: isRadio ? 'radio' : 'tab',
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
-        tabindex: '0',
+        tabindex: (i === 0) ? '0' : '-1',
         [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
