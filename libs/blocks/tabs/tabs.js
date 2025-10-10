@@ -144,22 +144,14 @@ function getUniqueId(el, rootElem) {
   return [...tabs].indexOf(el) + 1;
 }
 
-function configTabs(config, rootElem) {
-  if (config['active-tab']) {
-    const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
-    const sel = rootElem.querySelector(id);
-    if (sel) {
-      sel.addEventListener('click', (e) => e.stopPropagation(), { once: true });
-      sel.click();
-    }
-  }
-
+export function configTabs(config, rootElem, elm) {
   const params = new URLSearchParams(window.location.search);
   // Deeplink with a custom id parameter, e.g. ?plans=edu
   const deeplinkParam = params.get(config.id);
   if (deeplinkParam) {
     const tabBtn = rootElem.querySelector(`[data-deeplink="${deeplinkParam}"]`);
     if (tabBtn) {
+      elm.setAttribute('daa-lh', 'deeplinked|tabs');
       tabBtn.click();
       if (config.remember === 'on') {
         const deeplinkUrl = new URL(window.location.href);
@@ -171,10 +163,32 @@ function configTabs(config, rootElem) {
   }
   // Deeplink with tab parameter, e.g. ?tab=plans-2
   const tabParam = params.get('tab');
-  if (!tabParam) return;
-  const dashIndex = tabParam.lastIndexOf('-');
-  const [tabsId, tabIndex] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
-  if (tabsId === config.id) rootElem.querySelector(`#tab-${config.id}-${tabIndex}`)?.click();
+  if (tabParam) {
+    const dashIndex = tabParam.lastIndexOf('-');
+    const [tabsId, tabIdx] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
+    if (tabsId === config.id) {
+      const tabBtn = rootElem.querySelector(`#tab-${config.id}-${tabIdx}`);
+      if (tabBtn) {
+        elm.setAttribute('daa-lh', 'deeplinked|tabs');
+        tabBtn.click();
+        return;
+      }
+    }
+  }
+
+  if (config['active-tab']) {
+    const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
+    const sel = rootElem.querySelector(id);
+    if (sel) {
+      if (config.remember === 'on') {
+        elm.setAttribute('daa-lh', 'memorized|tabs');
+      } else {
+        elm.setAttribute('daa-lh', 'preselected|tabs');
+      }
+      sel.addEventListener('click', (e) => e.stopPropagation(), { once: true });
+      sel.click();
+    }
+  }
 }
 
 function initTabs(elm, config, rootElem) {
@@ -206,7 +220,10 @@ function initTabs(elm, config, rootElem) {
       tab.addEventListener('focus', () => scrollTabIntoView(tab));
     }
   });
-  if (config) configTabs(config, rootElem);
+  if (config) {
+    configTabs(config, rootElem, elm);
+    elm.removeAttribute('daa-lh');
+  }
 }
 
 function previousTab(current, i, arr) {
