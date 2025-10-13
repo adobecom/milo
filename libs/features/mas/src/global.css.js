@@ -276,10 +276,6 @@ merch-card span[is='inline-price'] {
   display: block;
 }
 
-.annual-price-new-line > span[is="inline-price"] > .price-annual::before {
-  content: '(';
-}
-
 merch-card [slot^='heading-'],
 merch-card span[class^='heading-'] {
     color: var(--consonant-merch-card-heading-color);
