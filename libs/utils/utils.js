@@ -65,6 +65,7 @@ const MILO_BLOCKS = [
   'modal',
   'modal-metadata',
   'notification',
+  'nps-csat-form',
   'pdf-viewer',
   'quote',
   'read-more',
@@ -1426,7 +1427,7 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob', 'event-id-stage-test'];
+  const mepAddons = ['lob', 'event-id'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
