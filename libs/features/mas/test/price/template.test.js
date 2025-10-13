@@ -90,6 +90,77 @@ describe('function "createPriceTemplate"', () => {
             expect(() => template(context, value)).to.not.throw();
         });
     });
+
+    describe('displayPrice logic', () => {
+        const promoValue = {
+            formatString: '#0',
+            price: 80,
+            priceWithoutDiscount: 100,
+            promotion: {
+                start: '2024-11-15T04:02:37.000Z',
+                end: '2030-03-01T07:59:00.000Z',
+                displaySummary: {
+                    outcomeType: 'PERCENTAGE_DISCOUNT',
+                    duration: 'P12M',
+                    amount: 25,
+                    minProductQuantity: 1,
+                },
+            },
+        };
+
+        it('uses priceWithoutDiscount when promotion exists but not applied (not alternative)', function () {
+            // isPromoApplied will be false when instant is before promotion start
+            const template = createPriceTemplate();
+            const promoContext = {
+                ...context,
+                isPromoApplied: false,
+            };
+            renderAndComparePrice(
+                'createPriceTemplatePromoNotApplied',
+                template(promoContext, promoValue, {}),
+            );
+        });
+
+        it('uses price when promotion exists but not applied and isAlternativePrice is true', function () {
+            const template = createPriceTemplate({ isAlternativePrice: true });
+            const promoContext = {
+                ...context,
+                isPromoApplied: false,
+            };
+            renderAndComparePrice(
+                'createPriceTemplatePromoNotAppliedAlternative',
+                template(promoContext, promoValue, {}),
+            );
+        });
+
+        it('uses priceWithoutDiscount when displayStrikethrough is true', function () {
+            const template = createPriceTemplate({ displayStrikethrough: true });
+            renderAndComparePrice(
+                'createPriceTemplateStrikethrough',
+                template(context, valueDiscount, {}),
+            );
+        });
+
+        it('uses price in default case', function () {
+            const template = createPriceTemplate();
+            renderAndComparePrice(
+                'createPriceTemplateDefault',
+                template(context, value, {}),
+            );
+        });
+
+        it('uses price when promotion is applied', function () {
+            const template = createPriceTemplate();
+            const promoContext = {
+                ...context,
+                isPromoApplied: true,
+            };
+            renderAndComparePrice(
+                'createPriceTemplatePromoApplied',
+                template(promoContext, promoValue, {}),
+            );
+        });
+    });
 });
 
 describe('function "createPromoPriceTemplate"', () => {
@@ -165,12 +236,16 @@ describe('Promotion price display with annual template', () => {
         promotion: {
             start: '2024-11-15T04:02:37.000Z',
             end: '2030-03-01T07:59:00.000Z',
+            outcomeType: 'PERCENTAGE_DISCOUNT',
+            duration: 'P6M',
+            amount: 25,
+            minProductQuantity: 1,
             displaySummary: {
-                outcomeType: 'PERCENTAGE_DISCOUNT',
-                duration: 'P6M',
-                amount: 25,
-                minProductQuantity: 1,
-            },
+              outcomeType: 'PERCENTAGE_DISCOUNT',
+              duration: 'P6M',
+              amount: 25,
+              minProductQuantity: 1,
+          },
         },
     };
 

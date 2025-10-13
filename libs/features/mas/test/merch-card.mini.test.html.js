@@ -282,12 +282,12 @@ runTests(async () => {
                     primaryCta: {
                         text: 'Buy now',
                         analyticsId: 'buy-now',
-                          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=CCI2AACAQ22440CD&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
+                          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=CCI2AACAQ22440CD&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
                         analyticsId: 'free-trial',
-                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=CCI2AACAQ22440CD&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
+                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=CCI2AACAQ22440CD&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
             });
@@ -354,12 +354,12 @@ runTests(async () => {
                     primaryCta: {
                         text: 'Buy now',
                         analyticsId: 'buy-now',
-                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=CCI2AAAUQ22440CD&cli=adobe_com&ctx=fp&co=AU&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
+                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=CCI2AAAUQ22440CD&cli=adobe_com&ctx=fp&co=AU&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
                         analyticsId: 'free-trial',
-                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=CCI2AAAUQ22440CD&cli=adobe_com&ctx=fp&co=AU&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
+                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=CCI2AAAUQ22440CD&cli=adobe_com&ctx=fp&co=AU&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
             });

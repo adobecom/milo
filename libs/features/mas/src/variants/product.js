@@ -60,7 +60,7 @@ export class Product extends VariantLayout {
         this.card.addEventListener(
           EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
           this.updatePriceQuantity,
-      );
+        );
     }
 
     disconnectedCallbackHook() {
@@ -68,7 +68,7 @@ export class Product extends VariantLayout {
         this.card.removeEventListener(
           EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
           this.updatePriceQuantity,
-      );
+        );
     }
 
     postCardUpdateHook() {
