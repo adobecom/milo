@@ -3,6 +3,7 @@ import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js'
 import { debounce } from '../../utils/action.js';
 
 const { miloLibs, codeRoot } = getConfig();
+const isMobile = window.innerWidth < 900;
 const base = miloLibs || codeRoot;
 
 const ARROW_NEXT_IMG = `<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21">
@@ -16,6 +17,11 @@ const ARROW_PREVIOUS_IMG = `<svg xmlns="http://www.w3.org/2000/svg" width="21" h
 </svg>`;
 const LIGHTBOX_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/expand.svg" height="14" width="20">`;
 const CLOSE_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/close.svg" height="20" width="20">`;
+const EXPAND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19" fill="none">
+  <title>Expand slide</title>
+  <circle cx="9.9375" cy="9.5" r="9.5" fill="black"/>
+  <path d="M13.301 8.28592H11.1505V5.78397C11.1505 5.03653 10.6289 4.42969 9.98641 4.42969C9.34397 4.42969 8.82237 5.03653 8.82237 5.78397V8.28592H6.67186C6.02942 8.28592 5.50781 8.89277 5.50781 9.64021C5.50781 10.3876 6.02942 10.9945 6.67186 10.9945H8.82237V13.4964C8.82237 14.2439 9.34397 14.8507 9.98641 14.8507C10.6289 14.8507 11.1505 14.2439 11.1505 13.4964V10.9945H13.301C13.9434 10.9945 14.465 10.3876 14.465 9.64021C14.465 8.89277 13.9434 8.28592 13.301 8.28592Z" fill="white"/>
+</svg>`;
 
 const KEY_CODES = {
   SPACE: 'Space',
@@ -221,7 +227,14 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
   });
 }
 
+function toggleActiveSlide(event, carouselElements, jumpToIndex) {
+  const { slides } = carouselElements;
+  slides.forEach((slide) => slide.classList.remove('active'));
+  slides[jumpToIndex].classList.add('active');
+}
+
 function moveSlides(event, carouselElements, jumpToIndex) {
+  if (isMobile) return toggleActiveSlide(event, carouselElements, jumpToIndex);
   const {
     slideContainer,
     slides,
@@ -273,9 +286,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   */
 
   if (jumpToIndex >= 0) {
-    const index = jumpToIndex + INDEX_OFFSET > slides.length - 1
-      ? jumpToIndex + INDEX_OFFSET - slides.length
-      : jumpToIndex + INDEX_OFFSET;
+    const adjustedJumpToIndex = isMobile ? jumpToIndex + INDEX_OFFSET : jumpToIndex;
+    const index = adjustedJumpToIndex > slides.length - 1
+      ? adjustedJumpToIndex - slides.length
+      : adjustedJumpToIndex;
     referenceSlide = slides[index > slides.length - 1 ? index - slides.length : index];
     referenceSlide.classList.add('reference-slide');
     // referenceSlide.style.order = '1';
@@ -485,14 +499,15 @@ function readySlides(slides, slideContainer, isUpsDesktop) {
 
 const buildMenuItems = (slides, el) => {
   const menuItems = slides.map((slide, index) => {
-    const title = slide.querySelector('h2')?.textContent;
+    const title = slide.querySelector('h2');
     if (!title) return null;
-    const item = createTag('h2', { class: 'carousel-menu-item' }, title);
+    const item = createTag('h2', { class: 'carousel-menu-item' }, title.textContent);
+    const headerWrapper = createTag('h2', { class: 'slide-header-control' }, `${title.textContent}${EXPAND_ICON}`);
+    title.parentElement.insertBefore(headerWrapper, title);
+    title.remove();
     item.dataset.index = index;
     item.addEventListener('click', (event) => {
-      const customEvent = new CustomEvent('carousel:jumpTo', {
-        detail: { index: event.target.dataset.index * 1 },
-      });
+      const customEvent = new CustomEvent('carousel:jumpTo', { detail: { index: event.target.dataset.index * 1 } });
       el.dispatchEvent(customEvent);
     });
     item.setAttribute('data-index', index);
@@ -506,14 +521,14 @@ const buildMenuItems = (slides, el) => {
 
 export default function init(el) {
   setIndexOffeset(el);
-  const activeSlideIndex = DEFAULT_INITIAL_ACTIVE_INDEX + INDEX_OFFSET;
+  const activeSlideIndex = DEFAULT_INITIAL_ACTIVE_INDEX + (isMobile ? 0 : INDEX_OFFSET);
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
   const carouselName = keyDivs[0].textContent;
   const parentArea = el.closest('.fragment') || document;
   const candidateKeys = parentArea.querySelectorAll('div.section-metadata > div > div:first-child');
-  const slides = [...candidateKeys].reduce((rdx, key) => {
+  let slides = [...candidateKeys].reduce((rdx, key) => {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
@@ -528,6 +543,18 @@ export default function init(el) {
     }
     return rdx;
   }, []);
+  if (isMobile && el.classList.contains('hovering') && INDEX_OFFSET > 0) {
+    const offsetAdjustedSlides = [];
+    for (let i = INDEX_OFFSET; i < slides.length; i += 1) {
+      slides[i].setAttribute('data-index', i - INDEX_OFFSET);
+      offsetAdjustedSlides.push(slides[i]);
+    }
+    for (let i = 0; i < INDEX_OFFSET; i += 1) {
+      offsetAdjustedSlides.push(slides[i]);
+      slides[i].setAttribute('data-index', INDEX_OFFSET + i + 1);
+    }
+    slides = offsetAdjustedSlides;
+  }
   // TODO: REFEDRENCE SLIDE POSTITION CHANGE =BASED ON DIRECTION (left ot right)
   const jumpTo = el.classList.contains('jump-to');
   const fragment = new DocumentFragment();
@@ -545,7 +572,7 @@ export default function init(el) {
   });
   slideWrapper.appendChild(ariaLive);
   const { menuItemsContainer, menuItems } = buildMenuItems(slides, el);
-  
+
   const slideContainer = createTag('div', { class: 'carousel-slides is-ready' }, fragment);
   const carouselElements = {
     el,
