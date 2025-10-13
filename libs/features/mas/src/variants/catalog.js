@@ -41,7 +41,13 @@ export class Catalog extends VariantLayout {
     setMenuVisibility(open) {
         this.actionMenuContentSlot?.classList.toggle('hidden', !open);
         this.setAriaExpanded(this.actionMenu, open.toString());
-        if (open) this.dispatchActionMenuToggle();
+        if (open) {
+            this.dispatchActionMenuToggle();
+            setTimeout(() => {
+                const firstLink = this.slottedContent?.querySelector('a');
+                if (firstLink) firstLink.focus();
+            }, 0);
+        }
     }
 
     isMenuOpen() {
@@ -64,8 +70,7 @@ export class Catalog extends VariantLayout {
                         tabindex="0"
                         aria-expanded="false"
                         role="button"
-                        aria-label="${this.card.actionMenuLabel} - ${this.card.title}"
-                    ></div>
+                    >${this.card.actionMenuLabel} - ${this.card.title}</div>
                 </div>
                 <slot
                     name="action-menu-content"
@@ -135,7 +140,7 @@ export class Catalog extends VariantLayout {
     }
 
     hideActionMenuOnBlur = (e) => {
-      if (e.relatedTarget === this.slottedContent) return;
+      if (this.slottedContent?.contains(e.relatedTarget)) return;
 
       if (this.isMenuOpen()) {
         this.setMenuVisibility(false);
@@ -147,8 +152,10 @@ export class Catalog extends VariantLayout {
     };
 
     handleCardFocusOut = (e) => {
-      if (e.target === this.slottedContent && !this.slottedContent.contains(e.relatedTarget)) {
-        this.setMenuVisibility(false);
+      if (this.slottedContent && (e.target === this.slottedContent || this.slottedContent.contains(e.target))) {
+        if (!this.slottedContent.contains(e.relatedTarget)) {
+          this.setMenuVisibility(false);
+        }
       }
 
       if (!this.card.contains(e.relatedTarget) && !this.isMenuOpen()) {

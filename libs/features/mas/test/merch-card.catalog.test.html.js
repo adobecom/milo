@@ -143,18 +143,21 @@ runTests(async () => {
                 '.action-menu-content',
             );
             const slottedContent = catalogCard.querySelector('[slot="action-menu-content"]');
+            const link = slottedContent?.querySelector('a');
 
             catalogCard.dispatchEvent(
                 new MouseEvent('mouseenter', { bubbles: true }),
             );
             await delay(100);
             actionMenu.click();
-            await delay(100);
+            await delay(200); // Increased delay to allow auto-focus
             expect(actionMenuContent.classList.contains('hidden')).to.be.false;
 
-            slottedContent.focus();
-            await delay(100);
-            slottedContent.dispatchEvent(
+            if (link) {
+                expect(document.activeElement).to.equal(link);
+            }
+
+            link?.dispatchEvent(
                 new FocusEvent('focusout', {
                     bubbles: true,
                     relatedTarget: document.body
@@ -175,19 +178,20 @@ runTests(async () => {
                 '.action-menu-content',
             );
             const slottedContent = catalogCard.querySelector('[slot="action-menu-content"]');
+            const link = slottedContent?.querySelector('a');
 
             catalogCard.dispatchEvent(
                 new MouseEvent('mouseenter', { bubbles: true }),
             );
             await delay(100);
             actionMenu.click();
-            await delay(100);
+            await delay(200);
             expect(actionMenuContent.classList.contains('hidden')).to.be.false;
 
             actionMenu.dispatchEvent(
                 new FocusEvent('blur', {
                     bubbles: true,
-                    relatedTarget: slottedContent
+                    relatedTarget: link
                 }),
             );
             await delay(100);
