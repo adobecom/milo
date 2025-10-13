@@ -246,6 +246,10 @@
     padding: 56px 0px;
   }
 
+  .email-collection:not(.large-image) .foreground.message .text {
+    padding: unset;
+  }
+
   .email-collection.large-image .foreground .text > * {
     margin-right: 56px;
   }
@@ -267,10 +271,6 @@
 @media (min-width: 1200px) {
   .email-collection {
     width: 900px;
-  }
-
-  .email-collection .foreground.message .text {
-    padding: unset;
   }
 
   .email-collection .foreground form .split-row {
