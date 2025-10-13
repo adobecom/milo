@@ -1,5 +1,6 @@
 .email-collection {
   --form-error-color: #D7373F;
+  --form-padding: 56px;
 }
 
 .email-collection.hidden {
@@ -210,11 +211,15 @@
 @media (min-width: 700px) {
   .email-collection .foreground,
   .email-collection .foreground.message {
-    padding: 56px;
+    padding: var(--form-padding);
     display: flex;
     flex-direction: row;
     gap: 40px;
     height: inherit;
+  }
+
+  .email-collection .foreground .text {
+    max-height: calc(var(--modal-max-height) - 2 * var(--form-padding));
   }
 
   .email-collection .foreground .image {
@@ -243,7 +248,7 @@
   }
 
   .email-collection.large-image .foreground .text {
-    padding: 56px 0px;
+    padding: var(--form-padding) 0px;
   }
 
   .email-collection:not(.large-image) .foreground.message .text {
@@ -251,7 +256,7 @@
   }
 
   .email-collection.large-image .foreground .text > * {
-    margin-right: 56px;
+    margin-right: var(--form-padding);
   }
 
   .email-collection .foreground:not(.message) {
@@ -264,7 +269,7 @@
   }
 
   .email-collection:not(.large-image) .foreground:not(.message) .text {
-    padding-right: 56px;
+    padding-right: var(--form-padding);
   }
 }
 
