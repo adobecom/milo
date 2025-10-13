@@ -4677,6 +4677,7 @@ merch-card [slot='callout-content'] .icon-button::before {
         padding-inline-start: 12px;
         box-sizing: border-box;
         -moz-appearance: textfield;
+        z-index: 1;
     }
 
     .text-field-input::-webkit-inner-spin-button,
