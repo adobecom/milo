@@ -1,22 +1,11 @@
 import { isSignedOut, getConfig, getMepEnablement, loadIms } from '../../../utils/utils.js';
 import { getCookie } from '../../../martech/helpers.js';
 
-// export function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
-//   return new Promise((resolve) => {
-//     let count = 0;
-//     function checkIms() {
-//       if (window.adobeIMS?.initialized || count > maxAttempts) resolve();
-//       setTimeout(checkIms, interval);
-//       count += 1;
-//     }
-//     checkIms();
-//   });
-// }
 async function getUserId() {
-  if (isSignedOut() && getMepEnablement('signedin') !== true) return false;
+  if (isSignedOut() && !getMepEnablement('signedIn')) return false;
+  if (getMepEnablement('userId') !== 'undefined') return getMepEnablement('userId');
+  /* c8 ignore next 3 */
   await loadIms();
-  // const isImsReady = await imsReady({ interval: 100, maxAttempts: 25 });
-  // if (!isImsReady) return false;
   const { userId } = await window.adobeIMS.getProfile();
   return userId;
 }

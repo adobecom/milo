@@ -32,6 +32,7 @@
   gap: 4px;
   text-align: center;
   margin-bottom: 32px;
+  padding: 0 24px;
 }
 
 .bc-header-title {
@@ -717,6 +718,10 @@
     padding: 56px 24px 12px;
   }
 
+  .bc-header {
+    padding: 0 48px;
+  }
+
   .bc-prompt-cards {
     flex-wrap: nowrap;
     gap: 16px;
@@ -858,6 +863,10 @@
     padding: 80px 48px 12px;
   }
 
+  .bc-header {
+    padding: 0 24px;
+  }
+
   .bc-prompt-cards {
     max-width: 768px;
   }
@@ -882,5 +891,9 @@
   .sticky .bc-input-field,
   .sticky .bc-legal {
     max-width: calc(600px - 4px);
+  }
+
+  #brand-concierge-modal.dialog-modal {
+    max-width: 80vw;
   }
 }
