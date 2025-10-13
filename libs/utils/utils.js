@@ -65,6 +65,7 @@ const MILO_BLOCKS = [
   'modal',
   'modal-metadata',
   'notification',
+  'nps-csat-form',
   'pdf-viewer',
   'quote',
   'read-more',
