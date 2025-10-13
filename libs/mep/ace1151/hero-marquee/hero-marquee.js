@@ -374,7 +374,8 @@ export default async function init(el) {
     let section2SettledTime = 0; // Track when section 2 was settled to prevent momentum
     let section2PreSettled = false; // Track if section 2 was auto-settled (not by user)
     let justRevealed = false; // Prevent immediate slide-up after content reveal
-    let lastWheelTime = 0; // Track when last wheel event occurred
+    let wheelStoppedTime = 0; // Track when wheel events stopped (for trackpad momentum)
+    let wheelStopTimer = null; // Timer to detect end of wheel gesture
 
     setTimeout(() => {
       isReady = true;
@@ -386,6 +387,8 @@ export default async function init(el) {
       )) {
         contentTransitionComplete = true;
         heroElement.removeEventListener('transitionend', handleTransitionEnd);
+        // Initialize wheelStoppedTime when transition completes
+        wheelStoppedTime = Date.now();
         setTimeout(() => {
           justRevealed = false;
         }, 300);
@@ -406,9 +409,6 @@ export default async function init(el) {
       if (currentState === 0) {
         currentState = 1;
         justRevealed = true;
-        if (e.type === 'wheel') {
-          lastWheelTime = Date.now();
-        }
         heroElement.classList.add('content-revealed');
         getOpacityElements().forEach((invisibleEl) => invisibleEl.setAttribute('aria-hidden', 'false'));
         heroElement.addEventListener('transitionend', handleTransitionEnd);
@@ -422,36 +422,93 @@ export default async function init(el) {
       }
 
       if (currentState === 1 && e.type === 'wheel' && !contentTransitionComplete) {
-        lastWheelTime = Date.now(); // Tracked to prevent momentum triggering slide-up
+        // Detect when wheel events stop (momentum ends) - important for trackpad
+        if (wheelStopTimer) clearTimeout(wheelStopTimer);
+        wheelStopTimer = setTimeout(() => {
+          wheelStoppedTime = Date.now();
+        }, 200); // 200ms of no wheel events = stopped (increased for trackpad)
         return;
       }
 
       // STATE 1: Content revealed - handle slide-up on wheel down
       if (currentState === 1 && e.type === 'wheel' && e.deltaY > 0 && contentTransitionComplete && !justRevealed) {
-        const timeSinceLastWheel = Date.now() - lastWheelTime;
-        const minWheelGap = 300;
-        if (timeSinceLastWheel < minWheelGap) {
-          e.preventDefault();
-          e.stopPropagation();
-          return;
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Require 800ms of NO wheel activity before allowing slide-up (handles trackpad momentum)
+        // If wheelStoppedTime hasn't been set yet (0), allow first gesture to proceed
+        if (wheelStoppedTime > 0) {
+          const timeSinceWheelStopped = Date.now() - wheelStoppedTime;
+          if (timeSinceWheelStopped < 800) {
+            return; // Block if still within momentum window
+          }
         }
+        
         currentState = 2;
         heroElement.classList.add('section-hidden');
+        
+        // Block ALL scroll events during transition (capture phase for highest priority)
+        let lastBlockTime = Date.now();
+        let lastDelta = 0;
+        let consecutiveLowVelocity = 0;
+        const blockScroll = (evt) => {
+          evt.preventDefault();
+          evt.stopPropagation();
+          evt.stopImmediatePropagation();
+          
+          // Track velocity to distinguish momentum from new user input
+          const currentDelta = Math.abs(evt.deltaY || 0);
+          if (currentDelta < 5) {
+            consecutiveLowVelocity++;
+          } else if (currentDelta > lastDelta * 2) {
+            // Large jump in velocity = new user gesture, stop blocking
+            consecutiveLowVelocity = 999; // Force unlock
+          } else {
+            consecutiveLowVelocity = 0;
+          }
+          
+          lastDelta = currentDelta;
+          lastBlockTime = Date.now(); // Track when we last saw a wheel event
+        };
+        document.addEventListener('wheel', blockScroll, { passive: false, capture: true });
+        document.addEventListener('touchmove', blockScroll, { passive: false, capture: true });
+        
         const { innerWidth } = window;
         const { clientWidth } = document.documentElement;
         const scrollbarWidth = innerWidth - clientWidth;
         document.body.style.overflow = 'hidden';
         document.body.style.paddingRight = `${scrollbarWidth}px`; // Compensate for missing scrollbar
         window.scrollTo(0, 0);
-        setTimeout(() => {
-          document.body.style.overflow = '';
-          document.body.style.paddingRight = '';
-          window.scrollTo(0, 0);
-          scrollingEnabled = true;
-          section2Settled = true;
-          section2SettledTime = Date.now();
-          section2PreSettled = true;
-        }, 300); // Ensures animation completes
+        
+        // Check repeatedly if momentum has stopped
+        let listenersRemoved = false;
+        const checkMomentumStopped = () => {
+          const timeSinceLastBlock = Date.now() - lastBlockTime;
+          // Unlock if: no events for 300ms OR many consecutive low-velocity events (user trying to scroll)
+          if (timeSinceLastBlock < 300 && consecutiveLowVelocity < 10) {
+            // Still getting momentum events, check again
+            setTimeout(checkMomentumStopped, 100);
+          } else {
+            // Momentum stopped OR user is intentionally trying to scroll
+            if (!listenersRemoved) {
+              document.removeEventListener('wheel', blockScroll, { capture: true });
+              document.removeEventListener('touchmove', blockScroll, { capture: true });
+              listenersRemoved = true;
+              console.log('✅ Scroll blocking removed, scrolling enabled');
+            }
+            
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            window.scrollTo(0, 0);
+            scrollingEnabled = true;
+            section2Settled = true;
+            section2SettledTime = Date.now();
+            section2PreSettled = true;
+          }
+        };
+        
+        // Start checking after animation completes (600ms for CSS transition)
+        setTimeout(checkMomentumStopped, 600);
         return;
       }
 
