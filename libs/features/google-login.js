@@ -50,6 +50,7 @@ export default async function initGoogleLogin(loadIms, getMetadata, loadScript, 
     callback: (data) => onToken(getMetadata, data, getConfig),
     prompt_parent_id: PLACEHOLDER,
     cancel_on_tap_outside: false,
+    auto_select: getMetadata("google-yolo")?.toLowerCase() === "on",
   });
   window.google?.accounts?.id?.prompt();
 }
