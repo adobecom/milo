@@ -120,6 +120,7 @@ export default function init(el) {
   el.classList.add('con-block');
   const isSeo = el.classList.contains('seo');
   const isLargeMedia = el.classList.contains('large-image') || el.classList.contains('large-media');
+  const mediaClass = `${isLargeMedia ? 'how-to-media-large' : 'mini-image'}`;
 
   const { desc, heading, mainImage, mainVideo } = getHowToInfo(el);
   const { steps, images } = getHowToSteps(el);
@@ -128,8 +129,7 @@ export default function init(el) {
   if (steps) orderedList.append(...steps);
 
   if (mainImage) {
-    const imageClass = `how-to-media${isLargeMedia ? ' how-to-media-large' : ' mini-image'}`;
-    el.append(createTag('div', { class: imageClass }, mainImage));
+    el.append(createTag('div', { class: `how-to-media ${mediaClass}` }, mainImage));
   }
 
   if (mainVideo) {
@@ -144,7 +144,8 @@ export default function init(el) {
   decorateTextOverrides(el);
   const rows = el.querySelectorAll(':scope > div');
   const foreground = createTag('div', { class: 'foreground' });
-  if (mainImage || mainVideo) foreground.classList.add('has-image');
+  if (mainImage || mainVideo) foreground.classList.add(mediaClass);
+
   rows.forEach((row) => { foreground.appendChild(row); });
   foreground.appendChild(orderedList);
   el.appendChild(foreground);

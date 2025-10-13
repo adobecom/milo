@@ -23,6 +23,7 @@ const config = {
     experiments: [],
     targetEnabled: true,
     prefix: '',
+    consentState: { performance: true, advertising: true },
   },
   stageDomainsMap: {
     'www.stage.adobe.com': {
@@ -64,6 +65,9 @@ const config = {
 setConfig(config);
 
 describe('preview feature', () => {
+  beforeEach(() => {
+    setConfig(config);
+  });
   it('builds with 0 manifests', async () => {
     await decoratePreviewMode();
     const event = new Event(MILO_EVENTS.DEFERRED);
