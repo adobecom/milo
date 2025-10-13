@@ -365,14 +365,9 @@ export default async function init(el) {
 
     getOpacityElements().forEach((invisibleEl) => invisibleEl.setAttribute('aria-hidden', 'true'));
 
-    let currentState = 0; // 0: initial, 1: content revealed, 2: section hidden
-    let lastScrollY = window.scrollY;
-    let scrollingEnabled = false;
+    let currentState = 0; // 0: initial, 1: content revealed, 2: slide-up complete
     let isReady = false; // Prevent premature triggering
     let contentTransitionComplete = false; // Track opacity transition completion
-    let section2Settled = false; // Track if section 2 has been settled/viewed
-    let section2SettledTime = 0; // Track when section 2 was settled to prevent momentum
-    let section2PreSettled = false; // Track if section 2 was auto-settled (not by user)
     let justRevealed = false; // Prevent immediate slide-up after content reveal
     let wheelStoppedTime = 0; // Track when wheel events stopped (for trackpad momentum)
     let wheelStopTimer = null; // Timer to detect end of wheel gesture
@@ -399,8 +394,8 @@ export default async function init(el) {
       if (!isReady) {
         return;
       }
-      // Prevent scroll events when needed
-      if ((e.type === 'wheel' || e.type === 'touchmove') && ((!scrollingEnabled && currentState < 2) || (currentState === 2 && !scrollingEnabled))) {
+      // Prevent scroll events during initial states
+      if ((e.type === 'wheel' || e.type === 'touchmove') && currentState < 2) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -412,21 +407,18 @@ export default async function init(el) {
         heroElement.classList.add('content-revealed');
         getOpacityElements().forEach((invisibleEl) => invisibleEl.setAttribute('aria-hidden', 'false'));
         heroElement.addEventListener('transitionend', handleTransitionEnd);
-        // eslint-disable-next-line chai-friendly/no-unused-expressions
-        // window.getComputedStyle(heroElement).opacity; // Force layout recalculation
         if (e.type === 'wheel') {
           e.preventDefault();
           e.stopPropagation();
         }
         return;
       }
-
       if (currentState === 1 && e.type === 'wheel' && !contentTransitionComplete) {
         // Detect when wheel events stop (momentum ends) - important for trackpad
         if (wheelStopTimer) clearTimeout(wheelStopTimer);
         wheelStopTimer = setTimeout(() => {
           wheelStoppedTime = Date.now();
-        }, 200); // 200ms of no wheel events = stopped (increased for trackpad)
+        }, 200);
         return;
       }
 
@@ -434,148 +426,57 @@ export default async function init(el) {
       if (currentState === 1 && e.type === 'wheel' && e.deltaY > 0 && contentTransitionComplete && !justRevealed) {
         e.preventDefault();
         e.stopPropagation();
-        
-        // Require 800ms of NO wheel activity before allowing slide-up (handles trackpad momentum)
-        // If wheelStoppedTime hasn't been set yet (0), allow first gesture to proceed
+        // handle trackpad momentum
         if (wheelStoppedTime > 0) {
           const timeSinceWheelStopped = Date.now() - wheelStoppedTime;
           if (timeSinceWheelStopped < 800) {
-            return; // Block if still within momentum window
+            return;
           }
         }
-        
+
         currentState = 2;
         heroElement.classList.add('section-hidden');
-        
-        // Block ALL scroll events during transition (capture phase for highest priority)
-        let lastBlockTime = Date.now();
-        let lastDelta = 0;
-        let consecutiveLowVelocity = 0;
+
         const blockScroll = (evt) => {
           evt.preventDefault();
           evt.stopPropagation();
           evt.stopImmediatePropagation();
-          
-          // Track velocity to distinguish momentum from new user input
-          const currentDelta = Math.abs(evt.deltaY || 0);
-          if (currentDelta < 5) {
-            consecutiveLowVelocity++;
-          } else if (currentDelta > lastDelta * 2) {
-            // Large jump in velocity = new user gesture, stop blocking
-            consecutiveLowVelocity = 999; // Force unlock
-          } else {
-            consecutiveLowVelocity = 0;
-          }
-          
-          lastDelta = currentDelta;
-          lastBlockTime = Date.now(); // Track when we last saw a wheel event
         };
         document.addEventListener('wheel', blockScroll, { passive: false, capture: true });
         document.addEventListener('touchmove', blockScroll, { passive: false, capture: true });
-        
+
         const { innerWidth } = window;
         const { clientWidth } = document.documentElement;
         const scrollbarWidth = innerWidth - clientWidth;
         document.body.style.overflow = 'hidden';
-        document.body.style.paddingRight = `${scrollbarWidth}px`; // Compensate for missing scrollbar
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
         window.scrollTo(0, 0);
-        
-        // Check repeatedly if momentum has stopped
-        let listenersRemoved = false;
-        const checkMomentumStopped = () => {
-          const timeSinceLastBlock = Date.now() - lastBlockTime;
-          // Unlock if: no events for 300ms OR many consecutive low-velocity events (user trying to scroll)
-          if (timeSinceLastBlock < 300 && consecutiveLowVelocity < 10) {
-            // Still getting momentum events, check again
-            setTimeout(checkMomentumStopped, 100);
-          } else {
-            // Momentum stopped OR user is intentionally trying to scroll
-            if (!listenersRemoved) {
-              document.removeEventListener('wheel', blockScroll, { capture: true });
-              document.removeEventListener('touchmove', blockScroll, { capture: true });
-              listenersRemoved = true;
-              console.log('✅ Scroll blocking removed, scrolling enabled');
-            }
-            
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-            window.scrollTo(0, 0);
-            scrollingEnabled = true;
-            section2Settled = true;
-            section2SettledTime = Date.now();
-            section2PreSettled = true;
-          }
-        };
-        
-        // Start checking after animation completes (600ms for CSS transition)
-        setTimeout(checkMomentumStopped, 600);
-        return;
-      }
 
-      // STATE 2: Section hidden - handle scroll-back
-      if (currentState === 2 && e.type === 'wheel' && e.deltaY < 0) {
-        const nextSectionRect = nextSection.getBoundingClientRect();
-        const navHeight = document.querySelector('header')?.offsetHeight || 64;
-        const timeSinceSettled = Date.now() - section2SettledTime;
-        const minWaitTime = section2PreSettled ? 600 : 800;
-
-        if (nextSectionRect.top >= (navHeight - 10)
-          && section2Settled && timeSinceSettled > minWaitTime) {
-          // Triggering hero return after sufficient delay
-          currentState = 1;
-          contentTransitionComplete = true;
-          section2Settled = false;
-          section2SettledTime = 0;
-          section2PreSettled = false;
+        // After animation completes, transition to normal scroll flow
+        setTimeout(() => {
+          document.removeEventListener('wheel', blockScroll, { capture: true });
+          document.removeEventListener('touchmove', blockScroll, { capture: true });
+          document.removeEventListener('wheel', handleUnifiedInteraction);
+          document.removeEventListener('click', handleUnifiedInteraction);
+          document.removeEventListener('touchstart', handleUnifiedInteraction);
+          document.removeEventListener('touchmove', handleUnifiedInteraction);
+          heroElement.classList.remove('fullscreen-scroll');
           heroElement.classList.remove('section-hidden');
-          getOpacityElements().forEach((invisibleEl) => invisibleEl.setAttribute('aria-hidden', 'false'));
-          scrollingEnabled = false;
-          window.scrollTo(0, 0);
-          e.preventDefault();
-          e.stopPropagation();
-        } else if (nextSectionRect.top >= (navHeight - 10)
-          && section2Settled && timeSinceSettled <= minWaitTime) {
-          // Scroll detected but too soon, ignoring momentum
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }
-    };
-
-    // Throttled scroll handler for state 2 return detection
-    let scrollTimeout;
-    const handleScroll = () => {
-      if (scrollTimeout) return; // Throttle to max 60fps
-      scrollTimeout = setTimeout(() => {
-        scrollTimeout = null;
-        if (currentState !== 2) return;
-        const currentScrollY = window.scrollY;
-        const scrollDirection = currentScrollY > lastScrollY ? 'down' : 'up';
-        if (scrollDirection === 'up') {
-          const nextSectionRect = nextSection.getBoundingClientRect();
-          const navHeight = document.querySelector('header')?.offsetHeight || 64;
-          const timeSinceSettled = Date.now() - section2SettledTime;
-          const minWaitTime = section2PreSettled ? 600 : 800;
-          if (nextSectionRect.top >= (navHeight - 5) && !section2Settled) {
-            section2Settled = true;
-            section2SettledTime = Date.now();
-            window.scrollTo(0, 0);
-          } else if (nextSectionRect.top >= (navHeight - 5)
-            && section2Settled && timeSinceSettled > minWaitTime) {
-            currentState = 1;
-            contentTransitionComplete = true;
-            section2Settled = false;
-            section2SettledTime = 0;
-            section2PreSettled = false;
-            heroElement.classList.remove('section-hidden');
-            getOpacityElements().forEach((invisibleEl) => invisibleEl.setAttribute('aria-hidden', 'false'));
-            scrollingEnabled = false;
-            window.scrollTo(0, 0);
+          if (section) {
+            section.style.position = '';
+            section.style.zIndex = '';
+            section.style.top = '';
+            section.style.left = '';
+            section.style.right = '';
           }
-        }
+          // Force layout recalculation to get accurate height
+          const heroHeight = section.offsetHeight;
 
-        lastScrollY = currentScrollY;
-      }, 16); // ~60fps throttling
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+          window.scrollTo(0, heroHeight);
+        }, 600);
+      }
     };
 
     document.addEventListener('wheel', handleUnifiedInteraction, { passive: false });
@@ -583,7 +484,6 @@ export default async function init(el) {
     document.addEventListener('touchstart', handleUnifiedInteraction, { passive: true });
     document.addEventListener('touchmove', handleUnifiedInteraction, { passive: false });
     document.addEventListener('keydown', handleUnifiedInteraction, true);
-    window.addEventListener('scroll', handleScroll, { passive: true });
   };
 
   if (el.classList.contains('fullscreen-scroll')) {

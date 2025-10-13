@@ -602,15 +602,13 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   .hero-marquee.fullscreen-scroll .main-copy h1 + p,
-  .hero-marquee.fullscreen-scroll .row-supplemental .ex-unity-wrap,
-  .hero-marquee.fullscreen-scroll .row-supplemental .ex-unity-wrap ~ * {
+  .hero-marquee.fullscreen-scroll .row-supplemental {
     opacity: 0;
     transition: none; /* No transition initially */
   }
 
   .hero-marquee.fullscreen-scroll.content-revealed .main-copy h1 + p,
-  .hero-marquee.fullscreen-scroll.content-revealed .row-supplemental .ex-unity-wrap,
-  .hero-marquee.fullscreen-scroll.content-revealed .row-supplemental .ex-unity-wrap ~ * {
+  .hero-marquee.fullscreen-scroll.content-revealed .row-supplemental {
     opacity: 1;
     transition: opacity 0.8s ease-in-out; /* Transition only when revealing */
   }
@@ -620,15 +618,13 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     opacity: 0;
   }
 
-  /* Ensure the section containing hero-marquee can slide with proper z-index */
+  /* Ensure the section containing hero-marquee has proper z-index during fullscreen */
   .section:has(.hero-marquee.fullscreen-scroll) {
-    transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
     position: relative;
-    z-index: 8; /* Higher than section 2 */
-    contain: layout; /* Isolate layout changes to reduce CLS impact */
+    z-index: 8;
   }
 
-  /* When hero is hidden, use position absolute to remove from flow */
+  /* When hero is hidden, position absolute to layer above section 2 */
   .section:has(.hero-marquee.fullscreen-scroll.section-hidden) {
     position: absolute;
     top: 0;
@@ -636,15 +632,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     right: 0;
     z-index: 8;
     height: 100vh;
-    pointer-events: none; /* Don't interfere with content below */
-  }
-
-  /* Reset section 2 to normal flow */
-  .section:has(.hero-marquee.fullscreen-scroll) + .section {
-    position: relative;
-    z-index: 1;
-    margin-top: 0;
-    will-change: transform; /* Optimize for transform changes */
+    pointer-events: none;
   }
 
   /* Fullscreen scroll variant adjustments */
@@ -659,11 +647,5 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     height: 100%;
     align-content: center; /* Center the grid content vertically */
     justify-items: center; /* Center grid items horizontally */
-  }
-
-  /* CLS-friendly scroll lock */
-  .scroll-locked {
-    overflow: hidden !important;
-    scrollbar-gutter: stable; /* Reserves scrollbar space to prevent layout shift */
   }
 }
