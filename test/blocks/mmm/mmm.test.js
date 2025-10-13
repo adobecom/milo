@@ -2,6 +2,13 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { DEBOUNCE_TIME, getLocalStorageFilter } from '../../../libs/blocks/mmm/mmm.js';
+import { getConfig } from '../../../libs/utils/utils.js';
+
+const config = getConfig();
+config.mep = {
+  akamaiCode: 'us',
+  consentState: { performance: true, advertising: true },
+};
 
 const delay = (ms = 0) => new Promise((resolve) => {
   setTimeout(() => resolve(), ms);
@@ -47,6 +54,7 @@ describe('MMM', () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const module = await import('../../../libs/blocks/mmm/mmm.js');
     await module.default(document.querySelector('.mmm'));
+    localStorage.clear();
   });
 
   it('Renders with mmm class', async () => {
@@ -117,12 +125,14 @@ describe('MMM', () => {
     const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
     const manifestColumnOne = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(1)');
-    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Active');
+    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Experience');
     expect(manifestColumnOne.querySelector('div:nth-child(2)').textContent).to.include('Source');
-    expect(manifestColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Last seen');
+    expect(manifestColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Mktg action');
+    expect(manifestColumnOne.querySelector('div:nth-child(4)').textContent).to.include('Last seen');
     const manifestColumnTwo = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(2)');
     expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('default (control)');
     expect(manifestColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('target');
+    expect(manifestColumnTwo.querySelector('div:nth-child(3)').textContent).to.include('undefined');
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
     expect(editButton).to.exist;
     expect(editButton.href).to.equal('https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json');
@@ -131,70 +141,70 @@ describe('MMM', () => {
   });
 
   it('Test preview button', async () => {
-  //   const firstMmmButton = document.body.querySelector('dt button');
-  //   await loadJsonAndSetResponse('./mocks/get-page.json');
-  //   firstMmmButton.click();
-  //   const firstMmmDd = document.body.querySelector('dd');
-  //   const mmmPopup = firstMmmDd.querySelector('.mep-popup');
-  //   const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
-  //   expect(previewButton).to.exist;
-  //   expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
-  //   const option = mmmPopup.querySelector('option[name="https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
-  //   expect(option).to.exist;
-  //   option.click();
-  //   expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
-  //   const addHighlight = mmmPopup.querySelector('#mepHighlightCheckbox-4');
-  //   expect(addHighlight).to.exist;
-  //   addHighlight.click();
-  //   expect(previewButton.href).to.include('mepHighlight=true');
-  //   const addButtonOff = document.querySelector('#mepPreviewButtonCheckbox-4');
-  //   expect(addButtonOff).to.exist;
-  //   addButtonOff.click();
-  //   expect(previewButton.href).to.include('mepButton=off');
-  //   const newManifest = mmmPopup.querySelector('.new-manifest');
-  //   expect(newManifest).to.exist;
-  //   newManifest.value = '/added-manifest.json';
-  //   const event = new Event('change');
-  //   newManifest.dispatchEvent(event);
-  //   expect(previewButton.href).to.include('%2Fadded-manifest.json');
+    const firstMmmButton = document.body.querySelector('dt button');
+    await loadJsonAndSetResponse('./mocks/get-page.json');
+    firstMmmButton.click();
+    const firstMmmDd = document.body.querySelector('dd');
+    const mmmPopup = firstMmmDd.querySelector('.mep-popup');
+    const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
+    expect(previewButton).to.exist;
+    expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
+    const option = mmmPopup.querySelector('option[name="https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
+    expect(option).to.exist;
+    option.click();
+    expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
+    const addHighlight = mmmPopup.querySelector('#mepHighlightCheckbox-4');
+    expect(addHighlight).to.exist;
+    addHighlight.click();
+    expect(previewButton.href).to.include('mepHighlight=true');
+    const addButtonOff = document.querySelector('#mepPreviewButtonCheckbox-4');
+    expect(addButtonOff).to.exist;
+    addButtonOff.click();
+    expect(previewButton.href).to.include('mepButton=off');
+    const newManifest = mmmPopup.querySelector('.new-manifest');
+    expect(newManifest).to.exist;
+    newManifest.value = '/added-manifest.json';
+    const event = new Event('change');
+    newManifest.dispatchEvent(event);
+    expect(previewButton.href).to.include('%2Fadded-manifest.json');
   });
 
   it('Test filters', async () => {
-    // let filterData = getLocalStorageFilter();
-    // expect(filterData).to.be.null;
+    let filterData = getLocalStorageFilter();
+    expect(filterData).to.be.null;
 
-    // const event = new Event('change');
+    const event = new Event('change');
 
-    // const geoDropdown = document.querySelector('#mmm-dropdown-geos');
-    // expect(geoDropdown).to.exist;
-    // geoDropdown.options[1].selected = true;
-    // geoDropdown.dispatchEvent(event);
+    const geoDropdown = document.querySelector('#mmm-dropdown-geos');
+    expect(geoDropdown).to.exist;
+    geoDropdown.options[1].selected = true;
+    geoDropdown.dispatchEvent(event);
 
-    // const pageDropdown = document.querySelector('#mmm-dropdown-pages');
-    // expect(pageDropdown).to.exist;
-    // pageDropdown.options[2].selected = true;
-    // pageDropdown.dispatchEvent(event);
+    const pageDropdown = document.querySelector('#mmm-dropdown-pages');
+    expect(pageDropdown).to.exist;
+    pageDropdown.options[2].selected = true;
+    pageDropdown.dispatchEvent(event);
 
-    // geoDropdown.options[0].selected = true;
-    // geoDropdown.dispatchEvent(event);
+    geoDropdown.options[0].selected = true;
+    geoDropdown.dispatchEvent(event);
 
-    // const lastSeenManifestDropdown = document.querySelector('#mmm-lastSeenManifest');
-    // lastSeenManifestDropdown.options[0].selected = true;
-    // lastSeenManifestDropdown.dispatchEvent(event);
+    const lastSeenManifestDropdown = document.querySelector('#mmm-lastSeenManifest');
+    lastSeenManifestDropdown.options[0].selected = true;
+    lastSeenManifestDropdown.dispatchEvent(event);
 
-    // const mmmSearchQuery = document.querySelector('#mmm-search-filter');
-    // expect(mmmSearchQuery).to.exist;
-    // mmmSearchQuery.value = 'pricing';
-    // mmmSearchQuery.dispatchEvent(event);
-    // await delay(DEBOUNCE_TIME + 1); // await debounce time
+    const mmmSearchQuery = document.querySelector('#mmm-search-filter');
+    expect(mmmSearchQuery).to.exist;
+    mmmSearchQuery.value = 'pricing';
+    mmmSearchQuery.dispatchEvent(event);
+    await delay(DEBOUNCE_TIME + 1); // await debounce time
 
-    // filterData = getLocalStorageFilter();
-    // expect(filterData).to.not.be.null;
-    // expect(filterData.filter).to.not.be.null;
-    // expect(filterData.geos).to.not.be.null;
-    // expect(filterData.pages).to.not.be.null;
-    // expect(filterData.pageNum).to.not.be.null;
-    // expect(filterData.subdomain).to.not.be.null;
-    // expect(filterData.lastSeenManifest).to.not.be.null;
+    filterData = getLocalStorageFilter();
+    expect(filterData).to.not.be.null;
+    expect(filterData.filter).to.not.be.null;
+    expect(filterData.geos).to.not.be.null;
+    expect(filterData.pages).to.not.be.null;
+    expect(filterData.pageNum).to.not.be.null;
+    expect(filterData.subdomain).to.not.be.null;
+    expect(filterData.lastSeenManifest).to.not.be.null;
   });
 });
