@@ -157,8 +157,7 @@
 
 .email-collection .foreground form .select-wrapper::after {
   content: '';
-  background: url('/img/ui/chevron-down.svg') no-repeat center;
-  background-color: #E9E9E9;
+  background: url('/img/ui/chevron-down.svg') no-repeat center #E9E9E9;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
