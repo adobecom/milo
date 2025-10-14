@@ -240,7 +240,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
 
     Array.from(tableChild.children).forEach((child, childIndex) => {
       child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
-      child.setAttribute('role', childIndex === 0 ? 'rownheader' : 'cell');
+      child.setAttribute('role', childIndex === 0 ? 'rowheader' : 'cell');
 
       const hasEmptyPTag = childIndex !== 0 && child.children.length <= 1;
       if (hasEmptyPTag) child.appendChild(createTag('p'));
