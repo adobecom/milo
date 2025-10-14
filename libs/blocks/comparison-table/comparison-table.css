@@ -237,6 +237,7 @@
   background-repeat: no-repeat;
   background-position: center;
   background-image: url('./img/down-arrow-filter.svg');
+  background-color: transparent;
   display: none;
   cursor: pointer;
   color: transparent;
@@ -282,5 +283,13 @@
 
   .comparison-table .mobile-filter-select {
     display: block;
+  }
+
+  .comparison-table .sub-header-item-container:first-child {
+    padding-bottom: 30px;
+  }
+
+  .comparison-table .table-container .table-column-header button {
+    padding: 0 12px;
   }
 }
