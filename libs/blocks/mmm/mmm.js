@@ -792,8 +792,8 @@ function createMetadataLookup(el) {
   textarea.dispatchEvent(new CustomEvent('input', { detail: textarea }));
 }
 
-function creastePageList(el, data) {
-  data?.result.map((page) => createButtonDetailsPair(el, page));
+function createPageList(el, data) {
+  data?.result?.map((page) => createButtonDetailsPair(el, page));
 }
 
 function addVariantClass() {
@@ -844,7 +844,7 @@ async function createView(el, search) {
     metadataLookupData = response?.data;
     createMetadataLookup(mmmEl);
   } else {
-    creastePageList(mmmEl, response);
+    createPageList(mmmEl, response);
   }
   el.replaceWith(mmmElContainer);
   if (!isMetadataLookup) {

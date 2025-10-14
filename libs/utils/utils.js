@@ -65,6 +65,7 @@ const MILO_BLOCKS = [
   'modal',
   'modal-metadata',
   'notification',
+  'nps-csat-form',
   'pdf-viewer',
   'quote',
   'read-more',
@@ -1426,7 +1427,7 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob', 'event-id-stage-test'];
+  const mepAddons = ['lob', 'event-id'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
@@ -1459,20 +1460,18 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
+  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
 
   if (!(pzn || pznroc || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
 
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  if (mepgeolocation) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-    if (!akamaiCode) {
-      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
-      countryIPPromise = getAkamaiCode(true);
-    }
+  const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  if (mepgeolocation && !akamaiCode) {
+    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    countryIPPromise = getAkamaiCode(true);
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1521,6 +1520,8 @@ async function checkForPageMods() {
     calculatedTimeout,
     enablePersV2,
     promises,
+    mepMarketingDecrease,
+    akamaiCode,
   });
 }
 

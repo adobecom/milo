@@ -42,7 +42,7 @@ const isPromotionActive = (promotion, instant, quantity = 1) => {
         } = {},
     } = promotion;
     if (!(amount && duration && outcomeType)) {
-        return false;
+      return false;
     }
     if (quantity < minProductQuantity) {
         return false;
@@ -340,7 +340,7 @@ const formatAnnualPrice = (data) => {
         } = promotion;
         switch (outcomeType) {
             case 'PERCENTAGE_DISCOUNT': {
-                if (isPromotionActive(promotion, instant, quantity)) {
+              if (isPromotionActive(promotion, instant, quantity)) {
                     const durationInMonths = parseInt(
                         duration.replace('P', '').replace('M', ''),
                     );
