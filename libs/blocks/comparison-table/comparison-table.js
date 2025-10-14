@@ -250,6 +250,35 @@ function decorateTables(el, children) {
   addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
 }
 
+function setupResponsiveHiding(el) {
+  const mediaQuery = window.matchMedia('(max-width: 768px)');
+
+  const handleResponsive = (e) => {
+    const isMobile = e ? e.matches : mediaQuery.matches;
+    const headerItems = el.querySelectorAll('.header-item');
+
+    headerItems.forEach((item, index) => {
+      if (index < headerItems.length - 2) return;
+
+      item.classList.toggle('hidden', isMobile);
+    });
+
+    const tableRows = el.querySelectorAll('.table-row');
+    tableRows.forEach((row) => {
+      const tableCells = row.querySelectorAll('.table-cell');
+
+      tableCells.forEach((cell, index) => {
+        if (index < tableCells.length - 2) return;
+
+        cell.classList.toggle('hidden', isMobile);
+      });
+    });
+  };
+
+  handleResponsive();
+  mediaQuery.addEventListener('change', handleResponsive);
+}
+
 function setupStickyHeader(el) {
   const headerContent = el.querySelector('.header-content');
   if (!headerContent) return;
@@ -300,4 +329,5 @@ export default function init(el) {
   decorateTables(el, children.slice(1));
   equalHeight(el);
   setupStickyHeader(el);
+  setupResponsiveHiding(el);
 }
