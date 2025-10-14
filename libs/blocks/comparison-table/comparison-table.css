@@ -245,6 +245,8 @@
   border: none;
   border-top: 1px solid var(--comparison-border-color);
   bottom: 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
 @media screen and (max-width: 768px) {
