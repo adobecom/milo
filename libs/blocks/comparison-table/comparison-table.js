@@ -240,14 +240,22 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
 
     Array.from(tableChild.children).forEach((child, childIndex) => {
       child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
-      child.setAttribute('role', childIndex === 0 ? 'rowheader' : 'cell');
+      if (childIndex === 0) child.setAttribute('role', 'rowheader');
 
       const hasEmptyPTag = childIndex !== 0 && child.children.length <= 1;
+      const isEmpty = childIndex === 0 || child.children.length > 1 || !child.textContent.trim();
       if (hasEmptyPTag) child.appendChild(createTag('p'));
-      if (childIndex === 0 || child.children.length > 1 || !child.textContent.trim()) return;
+
+      const firstP = child.querySelector('p:first-child');
+      const secondP = child.querySelector('p:nth-child(2)');
+      if (firstP && isEmpty) firstP.setAttribute('role', 'cell');
+      if (secondP) secondP.setAttribute('role', 'columnheader');
+
+      if (isEmpty) return;
 
       const existingEmptyP = hasEmptyPTag ? child.querySelector('p:empty') : null;
       const pTag = createTag('p', {}, child.textContent);
+      pTag.setAttribute('role', 'cell');
       child.innerHTML = '';
       child.appendChild(pTag);
       if (existingEmptyP) child.appendChild(existingEmptyP);
