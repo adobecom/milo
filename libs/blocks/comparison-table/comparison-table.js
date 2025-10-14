@@ -349,8 +349,7 @@ function setupStickyHeader(el) {
   };
 
   const handleResize = () => {
-    const headerHeight = getHeaderHeight();
-    headerContent.style.top = `${headerHeight}px`;
+    headerContent.style.top = `${getHeaderHeight()}px`;
   };
 
   setTimeout(calculateHeaderOffset, 0);
