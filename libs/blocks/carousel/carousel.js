@@ -286,7 +286,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   */
 
   if (jumpToIndex >= 0) {
-    const adjustedJumpToIndex = isMobile ? jumpToIndex + INDEX_OFFSET : jumpToIndex;
+    const adjustedJumpToIndex = jumpToIndex + INDEX_OFFSET;
     const index = adjustedJumpToIndex > slides.length - 1
       ? adjustedJumpToIndex - slides.length
       : adjustedJumpToIndex;
@@ -297,9 +297,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlide = slides[jumpToIndex];
     activeMenuItem = menuItemsContainer.querySelector(`[data-index='${jumpToIndex}']`);
     activeMenuItem.classList.add('active');
+    const from = slides[activeSlideIndex].style.order !== '' ? slides[activeSlideIndex].style.order * 1 : activeSlideIndex;
+    const to = slides[jumpToIndex].style.order !== '' ? slides[jumpToIndex].style.order * 1 : jumpToIndex;
     jumpToDirection(
-      slides[activeSlideIndex].style.order * 1,
-      slides[jumpToIndex].style.order * 1,
+      from,
+      to,
       slideContainer,
     );
   }
@@ -543,16 +545,10 @@ export default function init(el) {
     }
     return rdx;
   }, []);
-  if (isMobile && el.classList.contains('hovering') && INDEX_OFFSET > 0) {
-    const offsetAdjustedSlides = [];
-    for (let i = INDEX_OFFSET; i < slides.length; i += 1) {
-      slides[i].setAttribute('data-index', i - INDEX_OFFSET);
-      offsetAdjustedSlides.push(slides[i]);
-    }
-    for (let i = 0; i < INDEX_OFFSET; i += 1) {
-      offsetAdjustedSlides.push(slides[i]);
-      slides[i].setAttribute('data-index', INDEX_OFFSET + i + 1);
-    }
+  if (INDEX_OFFSET > 0) {
+    let offsetAdjustedSlides;
+    offsetAdjustedSlides = slides.slice(INDEX_OFFSET + 1);
+    offsetAdjustedSlides = offsetAdjustedSlides.concat(slides.slice(0, INDEX_OFFSET + 1));
     slides = offsetAdjustedSlides;
   }
   // TODO: REFEDRENCE SLIDE POSTITION CHANGE =BASED ON DIRECTION (left ot right)
