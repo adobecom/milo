@@ -14,7 +14,6 @@ function listChartData(json) {
   const data = [];
 
   if (json[':type'] !== 'multi-sheet') {
-    console.warn('List chart error: Add table sheet');
     return data;
   }
 
@@ -79,7 +78,7 @@ const getCarouselHtml = (data, hexcode) => {
     <div class="carousel-item${idx === 0 ? ' active' : ''}"
       role="group"
       aria-roledescription="slide"
-      aria-label="${idx} of ${data.length}">
+      aria-label="${idx + 1} of ${data.length}">
       ${getListHtml(list, hexcode)}
     </div>
     `
