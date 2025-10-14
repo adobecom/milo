@@ -1,12 +1,10 @@
 import { STATE_FAILED, FF_DEFAULTS } from './constants.js';
 import {
     createMasElement,
-    updateMasElement,
     MasElement,
 } from './mas-element.js';
 import { selectOffers, getService } from './utilities.js';
 import { Defaults } from './defaults.js';
-import { getParameter } from '@dexter/tacocat-core';
 
 const INDIVIDUAL = 'INDIVIDUAL_COM';
 const BUSINESS = 'TEAM_COM';
@@ -179,6 +177,7 @@ export class InlinePrice extends HTMLSpanElement {
             'data-force-tax-exclusive',
             'data-template',
             'data-wcs-osi',
+            'data-quantity',
         ];
     }
 
@@ -289,40 +288,57 @@ export class InlinePrice extends HTMLSpanElement {
         if (!service) return false;
         const priceOptions = service.collectPriceOptions(overrides, this);
         const options = {
-          ...service.settings,
-          ...priceOptions,
-      };
+            ...service.settings,
+            ...priceOptions,
+        };
         if (!options.wcsOsi.length) return false;
-        // if displayTax or forceTaxExclusive is not set, we need to resolve the values based on the geo and segment
-        if (service.featureFlags[FF_DEFAULTS] && (priceOptions.displayTax === undefined || priceOptions.forceTaxExclusive === undefined)) {
-            const [offerSelectors] = await service.resolveOfferSelectors(options);
-            const offers = selectOffers(await offerSelectors, options);
-            if (offers?.length) {
-                const { country, language } = options;
-                const offer = offers[0];
-                const [marketSegment = ''] = offer.marketSegments;
-                // set default value for displayTax and forceTaxExclusive if not set neither in OST nor in merch link
-                const flags = await resolvePriceTaxFlags(country, language, offer.customerSegment, marketSegment);
-                if (priceOptions.displayTax === undefined) {
-                    options.displayTax = flags?.displayTax || options.displayTax;
+        try {
+            const version = this.masElement.togglePending({});
+            this.innerHTML = '';
+            const [offerSelectors] =
+                await service.resolveOfferSelectors(options);
+            let offers = selectOffers(await offerSelectors, options);
+            let [offer] = offers;
+
+            if (service.featureFlags[FF_DEFAULTS]) {
+                if (priceOptions.displayPerUnit === undefined) {
+                    options.displayPerUnit =
+                        offer.customerSegment !== 'INDIVIDUAL';
                 }
-                if (priceOptions.forceTaxExclusive === undefined) {
-                    options.forceTaxExclusive = flags?.forceTaxExclusive || options.forceTaxExclusive;
+                // if displayTax or forceTaxExclusive is not set, we need to resolve the values based on the geo and segment
+                if (
+                    priceOptions.displayTax === undefined ||
+                    priceOptions.forceTaxExclusive === undefined
+                ) {
+                    const { country, language } = options;
+                    const [marketSegment = ''] = offer.marketSegments;
+                    // set default value for displayTax and forceTaxExclusive if not set neither in OST nor in merch link
+                    const flags = await resolvePriceTaxFlags(
+                        country,
+                        language,
+                        offer.customerSegment,
+                        marketSegment,
+                    );
+                    if (priceOptions.displayTax === undefined) {
+                        options.displayTax =
+                            flags?.displayTax || options.displayTax;
+                    }
+                    if (priceOptions.forceTaxExclusive === undefined) {
+                        options.forceTaxExclusive =
+                            flags?.forceTaxExclusive ||
+                            options.forceTaxExclusive;
+                    }
+                    if (options.forceTaxExclusive) {
+                        offers = selectOffers(offers, options);
+                    }
+                }
+            } else {
+                if (priceOptions.displayOldPrice === undefined) {
+                    options.displayOldPrice = true;
                 }
             }
-        }
-
-        const version = this.masElement.togglePending(options);
-        this.innerHTML = '';
-        const [promise] = service.resolveOfferSelectors(options);
-        try {
-            const offers = await promise;
-            return this.renderOffers(
-                selectOffers(offers, options),
-                version,
-            );
-        }
-        catch(error) {
+            return this.renderOffers(offers, options, version);
+        } catch (error) {
             this.innerHTML = '';
             throw error;
         }
@@ -333,38 +349,61 @@ export class InlinePrice extends HTMLSpanElement {
      * Renders price offer as HTML of this component
      * using consonant price template functions
      * @param {Offer[]} offers
+     * @param {Record<string, any>} options
      * @param {number} version
      */
-    renderOffers(offers, version = undefined) {
+    renderOffers(offers, options, version = undefined) {
         if (!this.isConnected) return;
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = getService();
         if (!service) return false;
         version ??= this.masElement.togglePending();
         if (offers.length) {
-            if (this.masElement.toggleResolved(version, offers)) {
+            if (this.masElement.toggleResolved(version, offers, options)) {
                 this.innerHTML = service.buildPriceHTML(offers, this.options);
 
                 // Adding logic for options.alternativePrice to add <sr-only>Alternatively at</sr-only>
                 const parentEl = this.closest('p, h3, div');
-                if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector('.alt-aria-label')) return true;
-                const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
-                if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
+                if (
+                    !parentEl ||
+                    !parentEl.querySelector(
+                        'span[data-template="strikethrough"]',
+                    ) ||
+                    parentEl.querySelector('.alt-aria-label')
+                )
+                    return true;
+                const inlinePrices = parentEl?.querySelectorAll(
+                    'span[is="inline-price"]',
+                );
+                if (
+                    inlinePrices.length > 1 &&
+                    inlinePrices.length ===
+                        parentEl.querySelectorAll(
+                            'span[data-template="strikethrough"]',
+                        ).length *
+                            2
+                ) {
                     inlinePrices.forEach((price) => {
-                        if (price.dataset.template !== 'strikethrough' && 
-                            price.options && 
+                        if (
+                            price.dataset.template !== 'strikethrough' &&
+                            price.options &&
                             !price.options.alternativePrice &&
                             !price.isFailed
                         ) {
                             price.options.alternativePrice = true;
-                            price.innerHTML = service.buildPriceHTML(offers, price.options);
+                            price.innerHTML = service.buildPriceHTML(
+                                offers,
+                                price.options,
+                            );
                         }
                     });
                 }
                 return true;
             }
         } else {
-            const error = new Error(`Not provided: ${this.options?.wcsOsi ?? '-'}`);
+            const error = new Error(
+                `Not provided: ${this.options?.wcsOsi ?? '-'}`,
+            );
             if (this.masElement.toggleFailed(version, error, this.options)) {
                 this.innerHTML = '';
                 return true;
@@ -372,39 +411,6 @@ export class InlinePrice extends HTMLSpanElement {
         }
         /* c8 ignore next 1 */
         return false;
-    }
-
-    updateOptions(options) {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = getService();
-        if (!service) return false;
-        const {
-            alternativePrice,
-            displayOldPrice,
-            displayPerUnit,
-            displayRecurrence,
-            displayTax,
-            forceTaxExclusive,
-            perpetual,
-            promotionCode,
-            quantity,
-            template,
-            wcsOsi,
-        } = service.collectPriceOptions(options);
-        updateMasElement(this, {
-            alternativePrice,
-            displayOldPrice,
-            displayPerUnit,
-            displayRecurrence,
-            displayTax,
-            forceTaxExclusive,
-            perpetual,
-            promotionCode,
-            quantity,
-            template,
-            wcsOsi,
-        });
-        return true;
     }
 }
 

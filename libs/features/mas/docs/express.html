@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Express Gallery</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="spectrum.css" />
+        <link rel="stylesheet" href="styles.css" />
+        <link
+            rel="stylesheet"
+            href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css"
+        />
+        <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css" />
+        <script src="/libs/deps/lit-all.min.js" type="module"></script>
+
+        <script>
+            function toggleTheme(theme) {
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('theme', theme);
+
+                window.location.href = url.toString();
+            }
+        </script>
+        <script type="module" src="./mas-sidenav.js"></script>
+        <script type="module">
+            import { init } from './common.js';
+            // Initialize commerce service and mas.js (which includes merch-card-collection)
+            // mas-mnemonic will be loaded dynamically when needed
+            init();
+        </script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/overlay.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/tooltip.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/theme.js"
+        ></script>
+    </head>
+
+    <body class="spectrum spectrum--medium spectrum--light">
+        <sp-theme scale="medium" color="light" style="display: contents">
+            <aside is="mas-sidenav"></aside>
+            <main>
+                <div class="gallery-content">
+                    <h1 id="express-gallery" tabindex="-1">
+                        Express Gallery
+                        <a
+                            class="header-anchor"
+                            href="#express-gallery"
+                            title="Permalink to this heading"
+                            >#</a
+                        >
+                    </h1>
+                    <div class="theme-selection">
+                        Switch Theme:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary theme-toggle"
+                            href="#"
+                            onclick="toggleTheme('dark'); return false;"
+                            >Dark</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary theme-toggle"
+                            href="#"
+                            onclick="toggleTheme('light'); return false;"
+                            >Light</a
+                        >
+                    </div>
+                    <div>
+                        Switch Locale:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?locale=en_US"
+                            >en_US</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?locale=fr_FR"
+                            >fr_FR</a
+                        >
+                    </div>
+                    <div>
+                        Switch country/language:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?country=US&language=en"
+                            >Country: US, language: en</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?country=FR&language=fr"
+                            >Country: FR, language: fr</a
+                        >
+                    </div>
+                    <div class="express-container">
+                        <h2 id="express-card-simplified" tabindex="-1">
+                            Express Card (Simplified Pricing)
+                            <a
+                                class="header-anchor"
+                                href="#express-card-simplified"
+                                title="Permalink to this heading"
+                                >#</a
+                            >
+                        </h2>
+
+                          <merch-card-collection filter="all" class="merch-card-collection simplified-pricing-express" filtered="all" page="1">
+                            <merch-card variant="simplified-pricing-express" data-default-card="true"><aem-fragment fragment="67c78f03-7d88-44c9-9a06-05443ec9265d"></aem-fragment></merch-card>
+                            <merch-card variant="simplified-pricing-express"><aem-fragment fragment="b28957b9-2341-40f9-9004-24446f68e5e5"></aem-fragment></merch-card>
+                            <merch-card variant="simplified-pricing-express"><aem-fragment fragment="aaa728dc-2b44-495c-b9f0-bb82044db18a"></aem-fragment></merch-card>
+                          </merch-card-collection>
+
+                        <h2 id="express-card-full" tabindex="-1">
+                            Express Card (Full Pricing)
+                            <a
+                                class="header-anchor"
+                                href="#express-card-full"
+                                title="Permalink to this heading"
+                                >#</a
+                            >
+                        </h2>
+
+                          <merch-card-collection filter="all" class="merch-card-collection full-pricing-express" filtered="all" page="1">
+                            <merch-card variant="full-pricing-express"><aem-fragment fragment="53fcf015-5c28-4214-bd2b-d4c22f1774b8"></aem-fragment></merch-card>
+                            <merch-card variant="full-pricing-express"><aem-fragment fragment="025dfceb-c035-45b7-8ea1-8feed25c8009"></aem-fragment></merch-card>
+                            <merch-card variant="full-pricing-express" gradient-border="true" border-color="gradient-firefly-spectrum"><aem-fragment fragment="9406f1ae-7bee-48c3-9892-49af6816033e"></aem-fragment></merch-card>
+                          </merch-card-collection>
+                    </div>
+                </div>
+            </main>
+        </sp-theme>
+        <script>
+            // Get theme from URL on page load
+            const theme = new URL(window.location.href).searchParams.get(
+                'theme',
+            );
+            if (theme) {
+                // Apply theme without changing URL again
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+            }
+        </script>
+    </body>
+</html>

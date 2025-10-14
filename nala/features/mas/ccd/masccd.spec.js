@@ -1,22 +1,21 @@
 /* eslint-disable max-len */
 
-const { PRICE_PATTERN, CCD_BASE_PATH } = require('../../../libs/commerce.js');
+const { PRICE_PATTERN, DOCS_GALLERY_PATH } = require('../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'Merch CCD Card Feature',
-  CCD_BASE_PATH,
   features: [
     // SUGGESTED CARDS
     {
       tcid: '0',
       name: '@MAS-CCD-suggested-eyebrow',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '0a2ac7c9-1965-488e-beca-856849305313',
         title: 'Get the Photoshop plan',
         eyebrow: 'INDIVIDUALS',
         description: 'The full version of Photoshop plus Adobe Express Premium plan.',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         osi: 'A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M',
         iconUrl: '',
@@ -27,14 +26,14 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-CCD-suggested-strikethrough',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '549f6981-f5c8-4512-b41c-313d60f375b2',
         title: 'Creative Cloud All Apps Plan',
         eyebrow: 'STUDENTS AND TEACHERS',
         description: 'Save over 65% on Photoshop and more than 20 apps for the first year. Plus get the first month on us when purchase by Sep 2',
-        price: PRICE_PATTERN.US_mo,
-        strikethroughPrice: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
+        strikethroughPrice: PRICE_PATTERN.US.mo,
         abmLabel: 'Annual, paid monthly',
         cta: 'Buy now',
         osi: 'Hnk2P6L5wYhnpZLFYTW5upuk2Y3AJXlso8VGWQ0l2TI',
@@ -53,12 +52,12 @@ module.exports = {
     {
       tcid: '2',
       name: '@MAS-CCD-suggested-noeyebrow-priceunit',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '8b198434-f32d-4a77-8be0-cd6b9f7155b1',
         title: 'Save 40% on Photoshop for teams and businesses',
         description: 'The full version of Photoshop, Adobe Express Premium plan, plus exclusive business features',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         iconUrl: '',
       },
@@ -68,13 +67,13 @@ module.exports = {
     {
       tcid: '3',
       name: '@MAS-CCD-suggested-thin',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: 'cdfae8c5-4129-43bc-a283-9ce46d07e21f',
         title: 'Creative Cloud All Apps Plan',
         eyebrow: 'INDIVIDUALS',
         description: 'The full version of Photoshop plus Adobe Express Premium plan and more than 20 apps',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_1d63dab9ee1edbf371d6f0548516c9e12b3ea3ff4.png',
         iconUrl: '',
@@ -85,13 +84,13 @@ module.exports = {
     {
       tcid: '4',
       name: '@MAS-CCD-suggested-thin-seeterms',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '33c8f437-3c39-48cc-8afd-938a13af5732',
         title: 'Save over 65% on your plan',
         eyebrow: 'STUDENTS AND TEACHERS',
         description: 'Save over 65% on Photoshop and more than 20 apps for the first year. Plus get the first month on us until Sep 2',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         linkText: 'See terms',
         linkUrl: '',
@@ -104,12 +103,12 @@ module.exports = {
     {
       tcid: '5',
       name: '@MAS-CCD-suggested-thin-noeyebrow-priceunit',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '45783ec8-ed85-4595-a445-3f018ac4ad9d',
         title: 'Creative Cloud All Apps for teams',
         description: 'The full version of Photoshop plus Adobe Express Premium plan, more than 20 apps for design, video, and exclusive business features',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_1d63dab9ee1edbf371d6f0548516c9e12b3ea3ff4.png',
         iconUrl: '',
@@ -120,13 +119,13 @@ module.exports = {
     {
       tcid: '6',
       name: '@MAS-CCD-suggested-wide-seeterms',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '6217fb6d-e793-4235-af70-6f82401fc5de',
         title: 'Save over 65% on your plan',
         eyebrow: 'STUDENTS AND TEACHERS',
         description: 'Save on Photoshop and more for the first year. Get the first month free when you purchase by Sep 2',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         linkText: 'See terms',
         linkUrl: '',
@@ -139,12 +138,12 @@ module.exports = {
     {
       tcid: '7',
       name: '@MAS-CCD-suggested-wide-noeyebrow-priceunit',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: 'd23182d8-fc92-483d-bcfe-d1fe3d3ce737',
         title: 'Creative Cloud All Apps for teams',
         description: 'The full version of Photoshop plus more than 20 apps for design, video, and exclusive business features.',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_196e39eda2ba7ce0343ec138f3e3e41e5adcb787f.png',
         iconUrl: '',
@@ -156,13 +155,13 @@ module.exports = {
     {
       tcid: '8',
       name: '@MAS-CCD-slice-percentage',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
-        id: '0ef2a804-e788-4959-abb8-b4d96a18b0ef',
+        id: 'ffdb8a91-aebb-482f-aae3-1bc34cecd085',
         description: 'Save over 40% when you upgrade to Creative Cloud All apps',
         percentage: '40%',
         cta: 'Buy now',
-        osi: 'PpnQ-UmW9NBwZwXlFw79zw2JybhvwIUwMTDYiIlu5qI',
+        osi: 'r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8',
         background: 'media-1508e7aec70760ac0ac13d9152f8030c1b67f70bf.png',
         // iconLink: '',
         cardDaaLH: 'ccsn',
@@ -175,11 +174,11 @@ module.exports = {
     {
       tcid: '9',
       name: '@MAS-CCD-slice-mnemonics',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '58c7906f-70a6-4e2b-bc29-257ff2ade513',
         description: 'Creative Cloud Photography plan. Starting at',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_10bef5ec21c22fd7fe201cb02735082df13bf4960.jpeg',
         iconLink1: 'https://www.adobe.com/products/photoshop.html',
@@ -191,13 +190,13 @@ module.exports = {
     {
       tcid: '10',
       name: '@MAS-CCD-slice-seeterms',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '51c23f28-504f-450d-9764-0e60f1e279b2',
         description: 'Save 25% on Photoshop. Starting at',
         linkText: 'See terms',
         linkUrl: '',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_1526ec63ba66eead46d7bde733ac7c4e994d829f1.png',
         // iconLink: '',
@@ -208,7 +207,7 @@ module.exports = {
     {
       tcid: '11',
       name: '@MAS-CCD-slice-percentage-seeterms',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: 'c13897c7-de77-4e45-b23b-eec9fd66cad1',
         description: 'Save 40% when you upgrade your plan',
@@ -225,7 +224,7 @@ module.exports = {
     {
       tcid: '12',
       name: '@MAS-CCD-slice-without-mnemonic',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '2a293069-1f9a-45ae-9840-2fa0303fe685',
         description: 'Save on Creative Cloud with Mastercard',
@@ -241,12 +240,12 @@ module.exports = {
     {
       tcid: '13',
       name: '@MAS-CCD-slice-badge',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '3d26df5b-0784-4967-8149-8a9e59131084',
         badge: 'Save 65%',
         description: 'Creative Cloud All Apps for teams. Starting at',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_158c1c22b1322dd28d7912d30fb27f29aa79f79b1.png',
         // iconLink: '',
@@ -258,7 +257,7 @@ module.exports = {
     {
       tcid: '14',
       name: '@MAS-CCD-slice-wide-seeterms',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: 'bdf40d06-5914-4f1f-aa10-77c5676fe671',
         description: 'Save over 30% on Creative Cloud All Apps. Register for MAX by August 31 and save US$200 on a full conference pass',
@@ -279,7 +278,7 @@ module.exports = {
     {
       tcid: '15',
       name: '@MAS-CCD-slice-wide-badge',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '31205553-b453-4c9e-a2ef-7b6aa7bfdc72',
         badge: 'Huge savings*',
@@ -297,13 +296,13 @@ module.exports = {
     {
       tcid: '16',
       name: '@MAS-CCD-slice-wide-price',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: 'f3e5f2e7-df41-4300-87b9-465b3ad11abc',
         description: 'Save 25% on Photoshop for the first six months',
         linkText: 'See terms',
         linkUrl: '',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_10bef5ec21c22fd7fe201cb02735082df13bf4960.jpeg',
         // iconLink: '',
@@ -314,14 +313,14 @@ module.exports = {
     {
       tcid: '17',
       name: '@MAS-CCD-slice-wide-strikethrough',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: 'c25b20cc-e8a3-4854-b94f-51eec7d0ec25',
         description: 'Creative cloud Photography plan.',
         linkText: 'See terms',
         linkUrl: '',
-        price: PRICE_PATTERN.US_mo,
-        strikethroughPrice: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
+        strikethroughPrice: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_10bef5ec21c22fd7fe201cb02735082df13bf4960.jpeg',
         // iconLink: '',
@@ -332,13 +331,13 @@ module.exports = {
     {
       tcid: '18',
       name: '@MAS-CCD-slice-wide-without-mnemonic',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '6b3c6c4e-e19f-4d08-914f-fcfd9f77ca14',
         description: 'Get industry-leading creative apps designed just for business. Creative Cloud All Apps for Teams. Starting at',
         linkText: 'See terms',
         linkUrl: '',
-        price: PRICE_PATTERN.US_mo,
+        price: PRICE_PATTERN.US.mo,
         cta: 'Buy now',
         background: 'media_158c1c22b1322dd28d7912d30fb27f29aa79f79b1.png',
         // iconLink: '',
@@ -349,7 +348,7 @@ module.exports = {
     {
       tcid: '19',
       name: '@MAS-CCD-slice-upt-link',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: {
         id: '018bf7f7-1e82-4b16-9dd1-039ee013e490',
         linkText: 'See terms',
@@ -369,7 +368,7 @@ module.exports = {
         title: 'Obtenez le plan Photoshop',
         eyebrow: 'INDIVIDUALS',
         description: 'La version complète de Photoshop plus le plan Adobe Express Premium.',
-        price: PRICE_PATTERN.FR_mo,
+        price: PRICE_PATTERN.FR.mo,
         cta: 'S’abonner',
         osi: 'A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M',
         iconUrl: '',
@@ -380,7 +379,7 @@ module.exports = {
     {
       tcid: '21',
       name: '@MAS-CCD-regular-footer-link',
-      path: CCD_BASE_PATH.US,
+      path: DOCS_GALLERY_PATH.CCD.US,
       data: { id: 'bdf40d06-5914-4f1f-aa10-77c5676fe671' },
       browserParams: '?theme=darkest',
       tags: '@mas-ccd @slice-card @commerce @smoke @regression @milo',
@@ -388,11 +387,11 @@ module.exports = {
     {
       tcid: '22',
       name: '@MAS-CCD-slice-FR',
-      path: CCD_BASE_PATH.FR,
+      path: DOCS_GALLERY_PATH.CCD.FR,
       data: {
         id: '58c7906f-70a6-4e2b-bc29-257ff2ade513',
         description: 'Formule Creative Cloud Photographie. À partir de',
-        price: PRICE_PATTERN.FR_mo,
+        price: PRICE_PATTERN.FR.mo,
         cta: 'S’abonner',
         background: 'media_10bef5ec21c22fd7fe201cb02735082df13bf4960.jpeg',
         iconLink1: 'https://www.adobe.com/products/photoshop.html',
@@ -404,13 +403,13 @@ module.exports = {
     {
       tcid: '23',
       name: '@MAS-CCD-slice-wide-FR',
-      path: CCD_BASE_PATH.FR,
+      path: DOCS_GALLERY_PATH.CCD.FR,
       data: {
         id: 'f3e5f2e7-df41-4300-87b9-465b3ad11abc',
         description: 'Économisez 25 % sur Photoshop pendant les six premiers mois.',
         linkText: 'See terms',
         linkUrl: '',
-        price: PRICE_PATTERN.FR_mo,
+        price: PRICE_PATTERN.FR.mo,
         cta: 'S’abonner',
         background: 'media_10bef5ec21c22fd7fe201cb02735082df13bf4960.jpeg',
         // iconLink: '',
@@ -421,12 +420,12 @@ module.exports = {
     {
       tcid: '24',
       name: '@MAS-CCD-suggested-FR',
-      path: CCD_BASE_PATH.FR,
+      path: DOCS_GALLERY_PATH.CCD.FR,
       data: {
         id: '45783ec8-ed85-4595-a445-3f018ac4ad9d',
         title: 'Creative Cloud Toutes les applications',
         description: 'La version complète de Photoshop plus le plan Adobe Express Premium, plus de 20 applications pour la conception, la vidéo et des fonctionnalités professionnelles exclusives.',
-        price: PRICE_PATTERN.FR_mo,
+        price: PRICE_PATTERN.FR.mo,
         priceUnit: 'par licence',
         cta: 'S’abonner',
         background: 'media_1d63dab9ee1edbf371d6f0548516c9e12b3ea3ff4.png',

@@ -3,15 +3,19 @@ import { debounce } from '../../utils/action.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const VALIDATION_STEP = {
-  name: '2',
-  phone: '2',
-  mktoFormsJobTitle: '2',
-  mktoFormsFunctionalArea: '2',
-  company: '3',
-  state: '3',
-  postcode: '3',
-  mktoFormsPrimaryProductInterest: '3',
-  mktoFormsCompanyType: '3',
+  2: [
+    'name',
+    'phone',
+    'mktoFormsJobTitle',
+    'mktoFormsFunctionalArea',
+  ],
+  3: [
+    'company',
+    'state',
+    'postcode',
+    'mktoFormsPrimaryProductInterest',
+    'mktoFormsCompanyType',
+  ],
 };
 
 export function updateTabIndex(formEl, stepToAdd, stepToRemove) {
@@ -78,9 +82,18 @@ export const formValidate = async (formEl) => {
 };
 
 function setValidationSteps(formEl, totalSteps, currentStep) {
+  const formData = window.mcz_marketoForm_pref || {};
+  const validationMap = formData.form?.fldStepPref || VALIDATION_STEP;
+  Object.keys(validationMap).forEach((step) => {
+    validationMap[step] = validationMap[step].join(',').split(',');
+  });
+  formData.form ??= {};
+  formData.form.fldStepPref = validationMap;
+
   formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
     const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
-    const step = VALIDATION_STEP[rowAttr] ? Math.min(VALIDATION_STEP[rowAttr], totalSteps) : 1;
+    const mapStep = Object.keys(validationMap).find((stepNum) => validationMap[stepNum].some((field) => field?.toLowerCase() === rowAttr?.toLowerCase())) || '1';
+    const step = Math.min(parseInt(mapStep, 10), totalSteps);
     row.dataset.validate = rowAttr?.startsWith('adobe-privacy') ? totalSteps : step;
     const fields = row.querySelectorAll('input, select, textarea');
     if (fields.length) fields.forEach((f) => { f.tabIndex = step === currentStep ? 0 : -1; });
@@ -97,6 +110,7 @@ function onRender(formEl, totalSteps) {
 
 const readyForm = async (form, totalSteps) => {
   const formEl = form.getFormElem().get(0);
+  formEl.dataset.step = 1;
   form.onValidate(() => formValidate(formEl));
 
   const nextButton = createTag('button', { type: 'button', id: 'mktoButton_next', class: 'mktoButton mktoUpdatedBTN mktoVisible' }, 'Next');
@@ -119,10 +133,7 @@ const readyForm = async (form, totalSteps) => {
 
 export default async (el) => {
   if (!el.classList.contains('multi-step')) return;
-  const formEl = el.querySelector('form');
   const totalSteps = el.classList.contains('multi-3') ? 3 : 2;
-  formEl.dataset.step = 1;
-
   const { MktoForms2 } = window;
   await MktoForms2.whenReady((form) => readyForm(form, totalSteps));
 };

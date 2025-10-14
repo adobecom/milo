@@ -1,9 +1,13 @@
-.figure {
-  padding: 40px 0;
+:root {
+  --figure-padding: 40px;
 }
 
-.figure.no-padding-bottom {
-  padding-bottom: 0;
+.figure {
+  padding: var(--figure-padding) 0;
+}
+
+.figure + .figure {
+  padding-top: 0;
 }
 
 .figure figure {
@@ -69,13 +73,16 @@
     margin-left: auto;
     margin-right: 32px;
   }
-
 }
 
 @media (min-width: 700px) {
   .figure figure {
     margin: 0 auto;
     max-width: 800px;
+  }
+
+  .figure.figure-list + .figure:not(.figure-list) {
+    padding-top: var(--figure-padding);
   }
 
   .figure-list {

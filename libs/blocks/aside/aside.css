@@ -44,6 +44,15 @@
   margin-bottom: var(--spacing-xs);
 }
 
+.aside.container-mobile [class^="detail-"] strong {
+  font-weight: 500;
+  text-transform: none;
+}
+
+.aside.container-mobile .supplemental-text {
+  font-weight: 700;
+}
+
 .aside .title-l {
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
@@ -1077,6 +1086,10 @@
     flex: 1 0 calc(var(--grid-column-width) * 6);
   }
 
+  .two-up.grid-width-12 .aside:not(.notification) .foreground.container .text {
+    flex: 1 0 100%;
+  }
+
   .aside:not(.notification) .foreground.container .image {
     flex: 1 0 calc(var(--grid-column-width) * 5);
   }
@@ -1278,4 +1291,61 @@
   display: inline-block;
   height: unset;
   margin-bottom: unset;
+}
+
+@media (max-width: 599px) {
+  .aside.container-mobile {
+    width: var(--grid-container-width);
+    margin: var(--spacing-s) auto;
+    border-radius: 16px;
+  }
+
+  .aside.container-mobile .foreground.container {
+    width: 100%;
+    padding-block: var(--spacing-xs) 0;
+    gap: unset;
+  }
+
+  .aside.container-mobile .foreground.container .text {
+    padding-inline: var(--spacing-xs);
+    margin-bottom: var(--spacing-s);
+  }
+
+  .aside.container-mobile .lockup-area,
+  .aside.container-mobile [class^="detail-"],
+  .aside.container-mobile [class^="heading-"]:only-of-type,
+  .aside.container-mobile [class^="heading-"]:last-of-type {
+    margin-bottom: var(--spacing-xxs);
+  }
+
+  .aside.container-mobile [class^="body-"],
+  .aside.container-mobile .foreground.container .text .action-area {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .aside.container-mobile .foreground.container .text .supplemental-text {
+    margin-top: 0;
+    margin-bottom: var(--spacing-s);
+  }
+
+  .aside.container-mobile .foreground.container .text > *:last-child {
+    margin-bottom: 0;
+  }
+
+  .aside.container-mobile.media-top-mobile .foreground.container {
+    padding-top: 0;
+  }
+
+  .aside.container-mobile.media-top-mobile .foreground.container .image {
+    padding-bottom: var(--spacing-xs);
+  }
+
+  .aside.container-mobile.rounded-corners .foreground.container .image {
+    padding: 0 var(--spacing-xs) var(--spacing-xs);
+    width: auto;
+  }
+
+  .aside.container-mobile.media-top-mobile.rounded-corners .foreground.container .image {
+    padding-top: var(--spacing-xs);
+  }
 }

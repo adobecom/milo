@@ -155,3 +155,8 @@
     max-width: 720px;
   }
 }
+
+body:has(.dialog-modal:not(.locale-modal-v2)) #locale-modal-v2,
+body:has(.dialog-modal:not(.locale-modal-v2, .curtain-off)) #locale-modal-v2 + .modal-curtain.is-open {
+  display: none;
+}

@@ -1,14 +1,8 @@
 import { getConfig } from '../../../utils/utils.js';
-
-function getCookie(key) {
-  const cookie = document.cookie.split(';')
-    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
-    .find(([k]) => k === key);
-  return cookie ? cookie[1] : null;
-}
+import { getCookie, AMCV_COOKIE } from '../../../martech/helpers.js';
 
 export async function getSpectraLOB(lastVisitedPage) {
-  const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
+  const getECID = getCookie(AMCV_COOKIE);
   if (!getECID) return false;
   const [, ECID] = getECID.split('|');
   const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '-stage';

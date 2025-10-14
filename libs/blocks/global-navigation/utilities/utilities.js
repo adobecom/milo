@@ -256,6 +256,7 @@ export function setCurtainState(state) {
 }
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isSmallScreen = window.matchMedia('(max-width: 320px)');
 export const isDesktopForContext = (context = 'viewport') => {
   const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
   if (context === 'footer' && isContainerResponsiveFooter) {
@@ -486,7 +487,7 @@ export async function fetchAndProcessPlainHtml({
     });
     return null;
   }
-  const text = await res.text();
+  const text = await (plainHTMLPromise ? res.clone().text() : res.text());
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;

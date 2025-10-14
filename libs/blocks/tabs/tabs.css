@@ -28,6 +28,7 @@
   --tabs-radio-blue: #0265dc;
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
+  --m-rounded-corners-tabs: 8px;
 }
 
 :root .dark {
@@ -153,12 +154,21 @@
   margin: auto;
 }
 
+.tabs.center.segmented-control > .tabList:is(::after, ::before) {
+  content: none;
+}
+
 .tabs.center:not(.same-width) .tabList .tab-list-container {
   width: auto;
 }
 
 .tabs .tab-content {
   border-bottom: 1px solid var(--tabs-border-color);
+}
+
+/* mweb design */
+.tabs.no-border-bottom .tab-content {
+  border-bottom: none;
 }
 
 /* contained tabs content */
@@ -492,6 +502,46 @@
   text-shadow: revert;
 }
 
+/* Segmented Control Variant */
+.tabs.segmented-control .tabs-wrapper {
+  display: flex;
+  width: 100%;
+}
+
+.tabs.segmented-control.center .tabs-wrapper {
+  justify-content: center;
+}
+
+.tabs.segmented-control .tabList {
+  box-shadow: none;
+  padding: 1px;
+  background: var(--color-gray-100);
+  border-radius: var(--m-rounded-corners-tabs);
+  border: 1px solid var(--color-gray-100);
+  min-height: 40px;
+}
+
+.tabs.segmented-control .tabList .tab-list-container {
+  min-width: 300px;
+  width: auto;
+}
+
+.tabs.segmented-control .tabList button {
+  padding: 10px;
+  border-radius: var(--m-rounded-corners-tabs);
+  border: none;
+  font-weight: 700;
+  color: var(--tabs-pill-bg-color);
+  font-size: var(--type-body-xs-size);
+  flex: 1 0 auto;
+}
+
+.tabs.segmented-control .tabList button[aria-selected="true"],
+.tabs.segmented-control .tabList button[aria-checked="true"] {
+  background: var(--tabs-pill-bg-color);
+  color: var(--color-white);
+}
+
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs .tabList,
@@ -532,6 +582,12 @@
     gap: var(--spacing-s);
   }
 
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    .tabs.radio .tabList.tabList .tab-list-container {
+      padding-block: 5px;
+    }
+  }
+
   .tabs.radio .tab-list-container::before {
     margin-block-end: 0;
     margin-inline-end: -8px;
@@ -547,6 +603,10 @@
     padding-block: var(--spacing-xs);
     padding-inline: 0;
     min-block-size: 56px;
+  }
+
+  .tabs.segmented-control .tabList button {
+    padding: 10px 16px;
   }
 }
 

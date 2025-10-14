@@ -5,6 +5,7 @@
   --marketo-form-error: #D7373F;
   --marketo-form-selected: #0265DC;
   --marketo-form-focus: #147AF3;
+  --marketo-form-overlay-background: #FAFAFAD9;
   --marketo-form-placeholder-height: calc(78px * 7 + 57px); /* 7 rows + submit */
   --marketo-form-placeholder-height-desktop: calc(78px * 4 + 57px); /* 4 rows + submit */
   --marketo-form-placeholder-height-multi: calc(78px * 2 + 57px); /* 2 rows + submit */
@@ -357,6 +358,7 @@
   margin-top: 21px;
 }
 
+.marketo .marketo-overlay .retry-button,
 .marketo .mktoForm .mktoButton {
   appearance: button;
   background: var(--color-accent);
@@ -374,16 +376,19 @@
   cursor: pointer;
 }
 
+.marketo .marketo-overlay .retry-button:hover,
 .marketo .mktoForm .mktoButton:hover {
   background: var(--color-accent-hover);
   border-color: var(--color-accent-hover);
 }
 
+.marketo .marketo-overlay .retry-button:active,
 .marketo .mktoForm .mktoButton:active {
   background: var(--color-accent-down);
   border-color: var(--color-accent-down);
 }
 
+.marketo .marketo-overlay .retry-button:focus-visible,
 .marketo .mktoForm .mktoButton:focus-visible {
   border: 2px solid var(--color-white);
   outline: 2px solid var(--color-accent-focus-ring);
@@ -537,6 +542,40 @@
 .marketo .mktoFormRowTop[class*="adobe-privacy"] {
   display: flex;
   width: 100%;
+}
+
+.marketo:has(.marketo-overlay) {
+  position: relative;
+}
+
+.marketo .marketo-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--marketo-form-overlay-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.marketo .marketo-overlay .error-container {
+  max-width: 420px;
+  width: 100%;
+  background: var(--marketo-form-background);
+  box-shadow: 0 4px 24px #00000014;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.marketo .marketo-overlay .error {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--marketo-form-text);
+  margin-bottom: 12px;
 }
 
 @media screen and (min-width: 600px) {

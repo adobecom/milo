@@ -1,12 +1,14 @@
+import { getMepEnablement } from '../utils/utils.js';
+
 /* eslint-disable no-underscore-dangle */
-const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
+export const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
 ];
 
-const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
-const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
+export const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
+export const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
 const GPV_COOKIE = 'gpv';
 
 const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2', business: '0fd7a243-507d-4035-9c75-e42e42f866a0' };
@@ -62,12 +64,16 @@ function getDeviceInfo() {
   };
 }
 
-function getCookie(key) {
-  const cookie = document.cookie.split(';')
-    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
-    .find(([k]) => k === key);
+export function getAllCookies() {
+  return document.cookie.split(';').reduce((cookies, cookieStr) => {
+    const [key, ...valParts] = cookieStr.trim().split('=');
+    cookies[decodeURIComponent(key)] = decodeURIComponent(valParts.join('='));
+    return cookies;
+  }, {});
+}
 
-  return cookie ? cookie[1] : null;
+export function getCookie(name) {
+  return getAllCookies()[name];
 }
 
 function setCookie(key, value, options = {}) {
@@ -352,30 +358,7 @@ const getMartechCookies = () => document.cookie.split(';')
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 
-function getCookiesByKeys(cookieKeys) {
-  if (!document.cookie || !cookieKeys?.length) return [];
-
-  return document.cookie
-    .split(';')
-    .map((cookie) => {
-      const [key, ...valueParts] = cookie.trim().split('=');
-      const value = valueParts.join('=');
-      return { key, value: decodeURIComponent(value) || '' };
-    })
-    .filter((cookie) => cookieKeys.includes(cookie.key));
-}
-
-function getConsentConfiguration({ consentState, optOnConsentCookie }) {
-  if (consentState === 'post' && !optOnConsentCookie) {
-    return {
-      configuration: {
-        performance: true,
-        functional: true,
-        advertising: true,
-      },
-    };
-  }
-
+export function parseOptanonConsent(optOnConsentCookie) {
   let consent = {};
 
   if (optOnConsentCookie) {
@@ -403,11 +386,38 @@ function getConsentConfiguration({ consentState, optOnConsentCookie }) {
   };
 }
 
+function getConsentConfiguration({ consentState, optOnConsentCookie }) {
+  if (consentState === 'post' && !optOnConsentCookie) {
+    return {
+      configuration: {
+        performance: true,
+        functional: true,
+        advertising: true,
+      },
+    };
+  }
+
+  return parseOptanonConsent(optOnConsentCookie);
+}
+export const getConsentState = ({ optOnConsentCookie, kndctrConsentCookie }) => {
+  const serverTimingCountry = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  const isExplicitConsentCountry = serverTimingCountry
+  && _explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
+
+  if (kndctrConsentCookie || (serverTimingCountry && !isExplicitConsentCountry)) {
+    return 'post';
+  }
+
+  if (optOnConsentCookie || isExplicitConsentCountry) {
+    return 'pre';
+  }
+
+  return 'unknown';
+};
+
 function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
-  const cookies = getCookiesByKeys([
-    GPV_COOKIE, OPT_ON_AND_CONSENT_COOKIE, KNDCTR_CONSENT_COOKIE,
-  ]);
-  const prevPageName = cookies.find(({ key }) => key === GPV_COOKIE)?.value || '';
+  const cookies = getAllCookies();
+  const prevPageName = cookies[GPV_COOKIE] || '';
   const isCollectCall = hitType === 'propositionDisplay';
   const isPageViewCall = hitType === 'pageView';
   const webPageDetails = {
@@ -419,28 +429,11 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     name: pageName,
     pageViews: { value: Number(isPageViewCall) },
   };
-  const optOnConsentCookie = cookies.find(({ key }) => key === OPT_ON_AND_CONSENT_COOKIE)?.value || '';
-  const kndctrConsentCookie = cookies.find(({ key }) => key === KNDCTR_CONSENT_COOKIE)?.value || '';
-
-  const serverTimingCountry = sessionStorage.getItem('akamai');
-
-  const getConsentState = () => {
-    const isExplicitConsentCountry = serverTimingCountry
-    && _explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
-
-    if (kndctrConsentCookie || (serverTimingCountry && !isExplicitConsentCountry)) {
-      return 'post';
-    }
-
-    if (optOnConsentCookie || isExplicitConsentCountry) {
-      return 'pre';
-    }
-
-    return 'unknown';
-  };
+  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE] || '';
+  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
 
   const eventMergeId = generateUUIDv4();
-  const consentState = getConsentState();
+  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
 
   const eventObj = {
     xdm: {
@@ -884,6 +877,7 @@ export const loadAnalyticsAndInteractionData = async (
     };
   } catch (err) {
     if (err.message !== 'No propositions found') {
+      // eslint-disable-next-line no-console
       console.log(err);
     }
     setGpvCookie(pageName);

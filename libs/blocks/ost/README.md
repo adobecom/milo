@@ -26,10 +26,10 @@ perform the following:
 
 ## Settings
 
-| Parameter                    | WCS & AOS Env    |  WCS & AOS landscape   |  Example                                               |
-| :---:   | :---: | :---: | :---: |
-| default (no parameter)       | Prod             | PUBLISHED              | https://milo.adobe.com/tools/ost                       |
-| ?wcsLandscape                | Prod             | DRAFT                  | https://milo.adobe.com/tools/ost?wcsLandscape=DRAFT    |
-| ?env=stage                   | Stage            | ALL                    | https://milo.adobe.com/tools/ost?env=stage             |
+| Parameter                    | WCS & AOS Env    |  WCS & AOS landscape   |  Example                                                     |
+| :---:                        | :---:            | :---:                  | :---:                                                        |
+| default (no parameter)       | Prod             | PUBLISHED              | https://milo.adobe.com/tools/ost                             |
+| ?commerce.landscape          | Prod             | DRAFT                  | https://milo.adobe.com/tools/ost?commerce.landscape=DRAFT    |
 
-Please note that the last parameter is not yet fully functional (env=stage). It will switch OST to use aos-stg env but will still use the prod token, so OST won't find any offer. This is to be fixed when the need to use env=stage comes.
+?wcsLandscape=[DRAFT|PUBLISHED] parameter is deprecated and will redirect to ?commerce.landscape=[DRAFT|PUBLISHED]
+?commerce.env=stage parameter is not supported and will redirect to ?commerce.landscape=DRAFT

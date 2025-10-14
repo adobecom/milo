@@ -1,4 +1,4 @@
-const { CCD_BASE_PATH } = require('../../../../libs/commerce.js');
+const { DOCS_GALLERY_PATH } = require('../../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'CCD Mini Cards',
@@ -6,7 +6,7 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-CCD-mini-card',
-      path: CCD_BASE_PATH.MINI_US,
+      path: DOCS_GALLERY_PATH.CCD_MINI.US,
       data: {
         fragment: '03a36f0f-3e5d-4881-ae6b-273c517c9d38',
         title: 'CCD Apps: Photography',
@@ -33,12 +33,12 @@ module.exports = {
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '2',
       name: '@MAS-CCD-mini-card-promo',
-      path: CCD_BASE_PATH.MINI_US,
+      path: DOCS_GALLERY_PATH.CCD_MINI.US,
       data: {
         fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
         title: 'CCD Apps: Premiere Pro plan',
@@ -65,12 +65,12 @@ module.exports = {
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '3',
       name: '@MAS-CCD-mini-card-fr',
-      path: CCD_BASE_PATH.MINI_FR,
+      path: DOCS_GALLERY_PATH.CCD_MINI.FR,
       data: {
         fragment: '03a36f0f-3e5d-4881-ae6b-273c517c9d38',
         title: 'CCD Apps: Photography',
@@ -97,40 +97,39 @@ module.exports = {
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
     {
       tcid: '4',
       name: '@MAS-CCD-mini-card-fr_promo',
-      path: CCD_BASE_PATH.MINI_FR,
+      path: DOCS_GALLERY_PATH.CCD_MINI.FR,
       data: {
-        fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
-        title: 'CCD Apps: Photography Promo',
-        regularPrice: '71,99 €/mois',
+        fragment: '77e049ee-c611-437b-bbeb-c54cf72605b1',
+        title: 'CCD Apps: Photoshop Promo',
+        regularPrice: '157,14 €/an',
         promoPrice: undefined,
-        promotionCode: 'UMRM2MUSPr501YOC',
-        planTypeText: 'Annuel, facturé mensuellement',
-        recurrenceText: '/mois',
-        renewalText:
-          "Renouvellement automatique jusqu'à annulation. Renouvellement à 71,99 €/mois TVA comprise après 12 mois.",
-        promoDurationText: 'Première année seulement, se termine le 3 mars.',
+        promotionCode: 'PCEMAP50CCDC2',
+        planTypeText: "Annuel, facturé à l'avance",
+        recurrenceText: '/an',
+        renewalText: "Renouvellement automatique jusqu'à annulation. Renouvellement à 314,35 €/an TVA comprise après 12 mois.",
+        promoDurationText: 'Première année seulement, se termine le 15 décembre.',
         seeTerms: {
           text: 'Voir les conditions',
           analyticsId: 'see-terms',
-          href: 'https://www.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=BD42B3D5BE2D389B3E6E7E4F30F65DE0',
+          href: 'https://www.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=944C3B11874FCDF227A558851C2698BB&promotion_code=PCEMAP50CCDC2',
         },
         primaryCta: {
           text: 'S\'abonner',
           analyticsId: 'buy-now',
-          href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=PCEMAP50CCDC2&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=phsp_direct_individual',
         },
         secondaryCta: {
           text: 'Essai gratuit',
           analyticsId: 'free-trial',
-          href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
+          href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=phsp_direct_individual',
         },
       },
-      tags: '@mas @ccd-mini @smoke',
+      tags: '@mas @ccd-mini @commerce @smoke @regression @milo',
     },
   ],
 };

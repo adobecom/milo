@@ -78,7 +78,7 @@ export class Mini extends VariantLayout {
             min-width: 209px;
             min-height: 103px;
             background-color: var(--spectrum-background-base-color);
-            border: 1px solid var(--merch-card-custom-border-color, #dadada);
+            border: 1px solid var(--consonant-merch-card-border-color, #dadada);
         }
     `;
 }

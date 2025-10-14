@@ -15,10 +15,9 @@ export const styles = css`
         --input-width: var(--qs-input-width, 72px);
         --button-width: var(--qs-button-width, 30px);
         --font-size: var(--qs-font-size, 12px);
-        --picker-fill-icon: var(
-            --chevron-down-icon,
-            url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="10" height="6" aria-hidden="true" viewBox="0 0 10 6"><path fill="%23787878" d="M9.99 1.01A1 1 0 0 0 8.283.3L5 3.586 1.717.3A1 1 0 1 0 .3 1.717L4.293 5.7a1 1 0 0 0 1.414 0L9.7 1.717a1 1 0 0 0 .29-.707z"/></svg>')
-        );
+        --picker-down-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="18" width="18"><path d="M4 7.01a1 1 0 0 1 1.706-.706L8.993 9.59l3.29-3.285A1 1 0 0 1 13.72 7.69l-.024.025L9.7 11.707a1 1 0 0 1-1.413 0L4.293 7.716A.995.995 0 0 1 4 7.01z" fill="%23787878"/></svg>');
+        --picker-up-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="18" width="18"><path d="M14 10.99a1 1 0 0 1-1.706.706L9.005 8.41l-3.289 3.286a1 1 0 0 1-1.437-1.387l.025-.024L8.3 6.293a1 1 0 0 1 1.413 0l3.994 3.991a.995.995 0 0 1 .293.706z" fill="%23787878"/></svg>');
+        --checkmark-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><path d="M8.648 1.613a.922.922 0 0 0-1.294.156L3.794 6.3 2.632 4.906a.922.922 0 0 0-1.416 1.18l1.89 2.269c.02.023.048.032.07.052a.862.862 0 0 0 .07.083.883.883 0 0 0 .128.07.892.892 0 0 0 .095.051.917.917 0 0 0 .345.076h.001a.915.915 0 0 0 .357-.08.897.897 0 0 0 .099-.057.88.88 0 0 0 .134-.077.862.862 0 0 0 .069-.086c.02-.021.047-.03.066-.053l4.264-5.427a.921.921 0 0 0-.156-1.294z" fill="%23787878"/></svg>');
         --qs-transition: var(--transition);
 
         display: block;
@@ -44,10 +43,13 @@ export const styles = css`
         border: var(--border-width) solid var(--border-color);
         border-top-left-radius: var(--radius);
         border-bottom-left-radius: var(--radius);
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
         border-right: none;
         padding-inline-start: 12px;
         box-sizing: border-box;
         -moz-appearance: textfield;
+        z-index: 1;
     }
 
     .text-field-input::-webkit-inner-spin-button,
@@ -83,9 +85,13 @@ export const styles = css`
         display: flex;
         align-items: center;
         justify-content: center;
-        background-image: var(--picker-fill-icon);
+        background-image: var(--picker-down-icon);
         background-position: center;
         background-repeat: no-repeat;
+    }
+    
+    .picker-button-fill.closed {
+        background-image: var(--picker-up-icon);
     }
 
     .popover {
@@ -97,7 +103,7 @@ export const styles = css`
         overflow: hidden;
         z-index: 100;
         transition: var(--qs-transition);
-        opacity: 0;
+        visibility: hidden;
         box-sizing: border-box;
     }
 
@@ -112,13 +118,13 @@ export const styles = css`
     }
 
     .popover.open {
-        opacity: 1;
+        visibility: visible;
         background: #ffffff;
         border: var(--border-width) solid var(--border-color);
     }
 
     .popover.closed {
-        opacity: 0;
+        visibility: hidden;
         pointer-events: none;
         transition: none;
     }
@@ -138,5 +144,11 @@ export const styles = css`
 
     .item.highlighted {
         background-color: var(--background-color);
+    }
+    
+    .item.selected {
+        background-image: var(--checkmark-icon);
+        background-position: right 7px center;
+        background-repeat: no-repeat;
     }
 `;

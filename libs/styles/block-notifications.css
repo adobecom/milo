@@ -1,0 +1,100 @@
+.notification-controls-container {
+  position: fixed;
+  right: 50%;
+  bottom: 0%;
+  transform: translate(50%, -9px);
+  z-index: 2;
+}
+
+.notification-controls-container a {
+  cursor: pointer;
+  color: #ffffffd6;
+  font-weight: 600;
+  background: #222c;
+  backdrop-filter: blur(24px);
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 10px;
+  border-color: #393939;
+  border-style: solid;
+  border-width: 1px;
+  font-size: 14px;
+  width: 135px;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
+  z-index: 3;
+  transition: all 0.2s ease;
+}
+
+.notification-controls-container a:hover {
+  background: #fffc;
+  backdrop-filter: blur(24px);
+  color: #000;
+}
+
+[data-block-notification] .notification-label,
+.con-label {
+  padding: 5px 8px;
+  text-transform: capitalize;
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+.con-label {
+  background-color: #594CCC;
+  border-radius: 5px;
+  margin: 5px;
+  position: relative;
+  z-index: 3;
+}
+
+.hide-labels .asset-meta,
+.hide-labels .con-label {
+  display: none;
+}
+
+.block-notifications .con-label,
+.block-notifications .asset-meta {
+  display: flex;
+}
+
+[data-block-notification] {
+  border: 6px solid hotpink;
+  box-sizing:border-box;
+  position: relative;
+}
+
+[data-block-notification] .notification-label {
+  background: hotpink;
+  border-radius: 0 0 0 5px;
+  z-index: 3;
+  gap: 5px;
+  padding-top: 3px;
+}
+
+[data-block-notification] .notification-label a {
+  font-size: 16px;
+  color: #fff;
+  padding: 0;
+  margin: 1px 0 0;
+}
+
+[data-block-notification] .notification-label a:hover {
+  color: #000;
+}
+
+.block-label-container {
+  display: inline-flex;
+  flex-flow: row-reverse wrap;
+  max-width: 140px;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+

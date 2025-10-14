@@ -657,7 +657,7 @@ export const getGrayboxExperienceId = (
   pathname = window.location?.pathname || '',
 ) => {
   // Only allow trusted Adobe graybox domains
-  const isAdobeGraybox = /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname);
+  const isAdobeGraybox = /^[^.]+\.([a-z-]+-)?graybox\.adobe\.com$/.test(hostname);
   const isStageGraybox = (
     (hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live'))
     && hostname.includes('graybox')
@@ -666,7 +666,7 @@ export const getGrayboxExperienceId = (
   // Check for graybox.adobe.com format: https://[exn].[pn]-graybox.adobe.com/[path].html
   if (isAdobeGraybox) {
     const parts = hostname.split('.');
-    if (parts.length >= 3 && parts[1].includes('-graybox')) {
+    if (parts.length >= 3 && (parts[1] === 'graybox' || parts[1].includes('-graybox'))) {
       return parts[0]; // Return the experience ID (first part)
     }
   }
@@ -707,6 +707,8 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
+  const langFirst = state.langFirst ? `&langFirst=${state.langFirst}` : '';
+
   const config = {
     collection: {
       mode: state.theme,
@@ -735,7 +737,8 @@ export const getConfig = async (originalState, strs = {}) => {
       }${localesQueryParam
       }${debug
       }${flatFile
-      }${grayboxExperienceParam}`,
+      }${grayboxExperienceParam
+      }${langFirst}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       showCardBadges: state.showCardBadges,

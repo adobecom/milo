@@ -5,8 +5,6 @@ import { getConfig } from '../../utils/utils.js';
 const iconCache = new Map();
 let miloIconsPromise;
 
-let tooltipListenersPromise = false;
-
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
   if (!hasTooltip) return;
@@ -27,11 +25,9 @@ function decorateToolTip(icon, iconName) {
 
   wrapper.parentElement.replaceChild(icon, wrapper);
 
-  if (!tooltipListenersPromise) {
-    tooltipListenersPromise = import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
-      addTooltipListeners();
-    });
-  }
+  import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
+    addTooltipListeners(icon);
+  });
 }
 
 async function getSVGsfromFile(path) {
@@ -158,7 +154,7 @@ export const fetchIcons = (config) => {
 export function fetchIconList(url) {
   return fetch(url)
     .then((resp) => resp.json())
-    .then((json) => json.content.data)
+    .then((json) => json.data || json.content.data)
     .catch(() => {
       lanaLog({ message: 'Failed to fetch iconList', tags: 'icons', errorType: 'error' });
       return [];

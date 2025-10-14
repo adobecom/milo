@@ -61,7 +61,6 @@ function getParamsConfigs(configs) {
     return acc;
   }, {});
 }
-
 /* eslint import/no-relative-packages: 0 */
 export default async function loadBlock(configs, customLib) {
   const {
@@ -137,7 +136,7 @@ export default async function loadBlock(configs, customLib) {
     onFooterError: footer?.onError,
     ...paramConfigs,
   };
-  setConfig(clientConfig);
+  setConfig({ ...getConfig, ...clientConfig });
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
 
@@ -158,6 +157,7 @@ export default async function loadBlock(configs, customLib) {
             jarvis: configBlock.jarvis,
             isLocalNav: configBlock.isLocalNav,
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
+            signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
           });
           window.closeGnav = closeGnavOptions;
           configBlock.onReady?.();
