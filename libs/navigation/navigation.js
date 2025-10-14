@@ -61,7 +61,6 @@ function getParamsConfigs(configs) {
     return acc;
   }, {});
 }
-let clientConfig = {};
 /* eslint import/no-relative-packages: 0 */
 export default async function loadBlock(configs, customLib) {
   const {
