@@ -256,7 +256,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   let activeSlideIndicator = controlsContainer.querySelector('.active');
   const activeSlideIndex = activeSlideIndicator.dataset.index * 1;
 
-  if (activeSlideIndex === jumpToIndex) return;
+  if (activeSlideIndex === jumpToIndex) return null;
 
   checkSlideForVideo(activeSlide);
 
@@ -550,6 +550,7 @@ export default function init(el) {
     offsetAdjustedSlides = slides.slice(INDEX_OFFSET + 1);
     offsetAdjustedSlides = offsetAdjustedSlides.concat(slides.slice(0, INDEX_OFFSET + 1));
     slides = offsetAdjustedSlides;
+    slides.forEach((slide, index) => { slide.setAttribute('data-index', index); });
   }
   // TODO: REFEDRENCE SLIDE POSTITION CHANGE =BASED ON DIRECTION (left ot right)
   const jumpTo = el.classList.contains('jump-to');
