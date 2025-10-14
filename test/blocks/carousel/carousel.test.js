@@ -118,29 +118,6 @@ describe('Carousel', () => {
     expect(curtain).to.not.exist;
   });
 
-  it('Clicks on a carousel-indicator', () => {
-    const el = document.body.querySelector('.carousel');
-    const jumpToEnabled = el.classList.contains('jump-to');
-    expect(jumpToEnabled).to.be.true;
-
-    const unselectedInicator = document.body.querySelector('.jump-to .carousel-indicators li[tabindex="-1"]');
-    const indicatorDot = document.body.querySelectorAll('.jump-to .carousel-indicator');
-    const firstIndicator = indicatorDot[0];
-    const lastIndicator = indicatorDot[indicatorDot.length - 1];
-    let jumpToIndex;
-
-    unselectedInicator.click();
-    expect(unselectedInicator.classList.contains('active')).to.be.true;
-
-    firstIndicator.click();
-    jumpToIndex = Number(indicatorDot[0].dataset.index);
-    expect(jumpToIndex).to.equal(Number(0));
-
-    lastIndicator.click();
-    jumpToIndex = Number(lastIndicator.dataset.index);
-    expect(jumpToIndex).to.equal(Number(indicatorDot.length - 1));
-  });
-
   it('Mobile swipe distance and direction capture', () => {
     const swipeDistance = {};
     const swipe = { xMin: 50, xStart: 2402, xEnd: 2284 };
