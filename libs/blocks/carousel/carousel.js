@@ -545,7 +545,7 @@ export default function init(el) {
     }
     return rdx;
   }, []);
-  if (INDEX_OFFSET > 0) {
+  if (!isMobile && INDEX_OFFSET > 0) {
     let offsetAdjustedSlides;
     offsetAdjustedSlides = slides.slice(INDEX_OFFSET + 1);
     offsetAdjustedSlides = offsetAdjustedSlides.concat(slides.slice(0, INDEX_OFFSET + 1));
