@@ -875,7 +875,8 @@
     padding: 80px 48px 12px;
   }
 
-  .bc-header {
+  .bc-header,
+  .hero .bc-header {
     padding: 0 24px;
   }
 
