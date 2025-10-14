@@ -106,7 +106,14 @@ function equalHeight(el) {
   setupHeightHandler(performEqualHeight);
 }
 
-function createSubHeaderContainer(childrenArray, startIndex, endIndex, isLast = false) {
+function createSubHeaderContainer(
+  childrenArray,
+  startIndex,
+  endIndex,
+  isLast = false,
+  isFirst = false,
+  headerTitles = [],
+) {
   const container = createTag('div', { class: 'sub-header-item-container' });
 
   for (let i = startIndex; i < endIndex; i += 1) {
@@ -114,6 +121,21 @@ function createSubHeaderContainer(childrenArray, startIndex, endIndex, isLast = 
       container.appendChild(childrenArray[i]);
       if (isLast) decorateButtons(childrenArray[i]);
     }
+  }
+
+  if (isFirst) {
+    const select = createTag('select', {
+      class: 'mobile-filter-select',
+      name: 'column-filter',
+    });
+
+    headerTitles.forEach((title, index) => {
+      if (title) {
+        select.appendChild(createTag('option', { value: index }, title));
+      }
+    });
+
+    container.appendChild(select);
   }
 
   if (!isLast) return container;
@@ -141,6 +163,12 @@ function decorateHeader(headerContent) {
   Array.from(headerContent.children).forEach((child) => headerContentWrapper.appendChild(child));
   headerContent.appendChild(headerContentWrapper);
 
+  const headerTitles = [];
+  Array.from(headerContentWrapper.children).forEach((headerItem) => {
+    const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
+    headerTitles.push(titleElement ? titleElement.textContent.trim() : '');
+  });
+
   Array.from(headerContentWrapper.children).forEach((headerItem) => {
     if (!headerItem.innerHTML) {
       headerItem.remove();
@@ -150,6 +178,7 @@ function decorateHeader(headerContent) {
     headerItem.classList.add('header-item');
     let lastContainedIndex = -1;
     const childrenArray = Array.from(headerItem.children);
+    let containerIndex = 0;
 
     childrenArray.forEach((headerItemChild, index) => {
       if (headerItemChild.textContent.trim() !== '-') return;
@@ -158,9 +187,13 @@ function decorateHeader(headerContent) {
         childrenArray,
         lastContainedIndex + 1,
         index,
+        false,
+        containerIndex === 0,
+        headerTitles,
       ), headerItemChild);
       headerItemChild.remove();
       lastContainedIndex = index;
+      containerIndex += 1;
     });
 
     const finalSubHeaderItemContainer = createSubHeaderContainer(
@@ -168,6 +201,8 @@ function decorateHeader(headerContent) {
       lastContainedIndex + 1,
       childrenArray.length,
       true,
+      false,
+      headerTitles,
     );
 
     if (lastContainedIndex >= childrenArray.length - 1
@@ -264,6 +299,7 @@ function setupResponsiveHiding(el) {
     });
 
     const tableRows = el.querySelectorAll('.table-row');
+
     tableRows.forEach((row) => {
       const tableCells = row.querySelectorAll('.table-cell');
 
