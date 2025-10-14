@@ -78,6 +78,15 @@ const saveActiveTabInStorage = (targetId, config) => {
   sessionStorage.setItem(storageName, activeTabIndex);
 };
 
+function getContentElement(parent, traversalDepth) {
+  let element = parent;
+  for (let i = 0; i < traversalDepth; i += 1) {
+    element = element.parentNode;
+    if (!element) return null;
+  }
+  return element.lastElementChild;
+}
+
 function changeTabs(e, config) {
   const { target } = e;
   const targetId = target.getAttribute('id');
@@ -88,8 +97,9 @@ function changeTabs(e, config) {
     return;
   }
   const parent = target.parentNode;
-  const content = parent.parentNode.parentNode.lastElementChild;
   const tabsBlock = target.closest('.tabs');
+  const hasSegmentedControl = tabsBlock.classList.contains('segmented-control');
+  const content = hasSegmentedControl ? getContentElement(parent, 3) : getContentElement(parent, 2);
   const blockId = tabsBlock.id;
   const isRadio = target.getAttribute('role') === 'radio';
   const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
@@ -187,6 +197,9 @@ function initTabs(elm, config, rootElem) {
   });
   tabs.forEach((tab) => {
     tab.addEventListener('click', (e) => changeTabs(e, config));
+    if (elm?.classList.contains('segmented-control')) {
+      tab.addEventListener('focus', () => scrollTabIntoView(tab));
+    }
   });
   if (config) configTabs(config, rootElem);
 }
@@ -337,7 +350,9 @@ const init = (block) => {
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
-    const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xs';
+    const btnClass = (pillVariant && handlePillSize(pillVariant))
+    || (block.classList.contains('segmented-control') && 'heading-xxs')
+    || 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
@@ -372,11 +387,21 @@ const init = (block) => {
     tabListContainer.dataset.pretext = config.pretext;
   }
 
+  // For segmented-control variant, wrap tabList in tabs-wrapper container
+  if (block.classList.contains('segmented-control')) {
+    const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
+    tabList.insertAdjacentElement('beforebegin', tabsWrapper);
+    tabsWrapper.append(tabList);
+  }
+
   // Tab Paddles
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
-  tabList.insertAdjacentElement('afterend', paddleRight);
-  block.prepend(paddleLeft);
+  // For segmented-control variant, do not add paddles relative to tab-list-container
+  if (!block.classList.contains('segmented-control')) {
+    tabList.insertAdjacentElement('afterend', paddleRight);
+    block.prepend(paddleLeft);
+  }
   initPaddles(tabList, paddleLeft, paddleRight, isRadio);
 
   // Tab Sections

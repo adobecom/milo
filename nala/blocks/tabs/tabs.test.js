@@ -148,9 +148,7 @@ test.describe('Milo Tab block feature test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[3].tcid}] ${features[3].tags}`, async ({ page, baseURL, browserName }) => {
-    test.skip(browserName === 'webkit', 'Skipping test on WebKit');
-
+  test(`[Test Id - ${features[3].tcid}] ${features[3].tags}`, async ({ page, baseURL }) => {
     console.log(`[Test Page]: ${constructTestUrl(baseURL, features[3].path)}`);
     await page.goto(constructTestUrl(baseURL, features[3].path));
     await page.waitForLoadState('networkidle');
@@ -209,8 +207,7 @@ test.describe('Milo Tab block feature test suite', () => {
       const newUrl = new URL(page.url());
       newUrl.searchParams.delete('plans');
       newUrl.searchParams.set('tab', 'plans-1');
-      await page.goto(newUrl.toString());
-      await page.waitForLoadState('domcontentloaded');
+      await page.goto(newUrl.toString(), { waitUntil: 'domcontentloaded', timeout: 6000 });
 
       // Verify the correct tab is selected based on tab parameter
       await expect(await tab.tab1).toHaveAttribute('aria-selected', 'true');

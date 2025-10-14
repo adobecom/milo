@@ -9,7 +9,7 @@
   --bc-button-dimensions: 32px;
   --bc-button-radius: 8px;
   --bc-button-color: #292929;
-  --bc-button-hover-color: #555;
+  --bc-button-hover-color: #131313;
   --bc-keyboard-focus-color: #5574F7;
   --bc-sticky-delay: 3s;
 
@@ -309,6 +309,29 @@
   line-height: 1.5 !important;
 }
 
+#brand-concierge-mount .container-desktop .bc-response-footer,
+#brand-concierge-mount .container-mobile .bc-response-footer {
+  margin-top: 16px !important;
+}
+
+#brand-concierge-mount .citations-sources-panel:not(.active) {
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+#brand-concierge-mount .bc-response-footer-actions .bc-feedback-buttons {
+  margin-top: 4px !important;
+}
+
+#brand-concierge-mount .feedback-button:hover:not(:disabled) {
+  color: #131313 !important;
+  transform: none !important;
+}
+
+#brand-concierge-mount .submit-button:hover:not(:disabled) {
+  transform: none !important;
+}
+
 /* Sticky */
 @keyframes sticky-in {
   from {
@@ -456,7 +479,7 @@
 }
 
 #brand-concierge-modal {
-  --modal-header-height: 56px;
+  --modal-header-height: 57px;
 }
 
 #brand-concierge-modal.dialog-modal {
@@ -500,12 +523,13 @@
 }
 
 .bc-modal-header {
-  height: 56px;
+  height: var(--modal-header-height);
   padding: 12px 16px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 8px;
+  border-bottom: 1px solid rgb(0 0 0 / 9%);
 }
 
 .bc-modal-title {
