@@ -510,6 +510,18 @@ test.describe('Commerce feature test suite', () => {
       const volumeDiscountPrice = `${await COMM.volumeDiscountWithQuantityAlternativeInteger.innerText()}.${await COMM.volumeDiscountWithQuantityAlternativeDecimals.innerText()}`;
       expect(regularPrice > volumeDiscountPrice).toBe(true);
     });
+
+    await test.step('Validate the alternative price next to the regular strikethrough price', async () => {
+      await COMM.strikethroughPrice.waitFor({ state: 'visible', timeout: 10000 });
+      expect(COMM.strikethroughPrice).toBeVisible();
+      await COMM.alternativePrice.waitFor({ state: 'visible', timeout: 10000 });
+      expect(COMM.alternativePrice).toBeVisible();
+      const strikethroughRegularPrice = Number(`${await COMM.strikethroughPriceInteger.innerText()}.${await COMM.strikethroughPriceDecimals.innerText()}`);
+      const promoPrice = Number(`${await COMM.alternativePriceInteger.innerText()}.${await COMM.alternativePriceDecimals.innerText()}`);
+      expect(promoPrice).not.toBeNull();
+      expect(strikethroughRegularPrice).not.toBeNull();
+      expect(promoPrice).toBeLessThan(strikethroughRegularPrice);
+    });
   });
 
   test(`${features[11].name}, ${features[11].tags}`, async ({ page, baseURL }) => {

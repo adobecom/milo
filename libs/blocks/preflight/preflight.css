@@ -331,6 +331,22 @@ span.preflight-time {
   z-index: 2;
 }
 
+/* GENERAL */
+.preflight-structure-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
+  padding-left: 24px;
+}
+
+.preflight-structure-columns {
+  margin: 24px 48px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+
 /* SEO */
 .preflight-columns {
   margin: 24px 48px 0;

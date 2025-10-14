@@ -1318,9 +1318,9 @@
                 "taxTerm": "TAX"
             },
             "analytics": "{\"offerId\":\"632B3ADD940A7FBB7864AA5AD19B8D28\",\"label\":\"ccsn_direct_individual\",\"price\":\"68.99\",\"amountWithoutTax\":\"68.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"CAD\"}",
-            "productArrangementCode": "ccsn_direct_individual",
+            "productArrangementCode": "PA-130",
             "productArrangement": {
-                "productFamily": "CC_ALL_APPS",
+               "productFamily": "CC_ALL_APPS",
                 "productCode": "CCSN"
             },
             "buyingProgram": "RETAIL",
@@ -1340,7 +1340,7 @@
                 "end": "2025-12-06T04:31:00.000Z",
                 "displaySummary": {
                     "outcomeType": "FIXED_DISCOUNT",
-                    "duration": "P12M",
+                    "duration": "P2M",
                     "currency": "CAD",
                     "amount": 10.0,
                     "minProductQuantity": 1
@@ -1382,8 +1382,8 @@
     ],
     "mini-photo-promo-fr-mult": [
         {
-            "offerSelectorIds": ["r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"],
-            "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
+            "offerSelectorIds": ["KpJ8-_gE7U3aOkxdHzSXsGJ1SV9fuL_TJuCqn_hvYSk"],
+            "offerId": "DDDCDEBA96799A274FA982669CA74623",
             "priceDetails": {
                 "price": 59.99,
                 "priceWithoutDiscount": 71.99,
@@ -1480,7 +1480,7 @@
                 "taxDisplay": "TAX_INCLUSIVE_DETAILS",
                 "taxTerm": "GST"
             },
-            "productArrangementCode": "ccsn_direct_individual",
+            "productArrangementCode": "PA-130",
             "productArrangement": {
                 "productFamily": "CC_ALL_APPS",
                 "productCode": "CCSN"
