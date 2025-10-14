@@ -61,7 +61,7 @@ function getParamsConfigs(configs) {
     return acc;
   }, {});
 }
-
+let clientConfig = {};
 /* eslint import/no-relative-packages: 0 */
 export default async function loadBlock(configs, customLib) {
   const {
@@ -121,7 +121,7 @@ export default async function loadBlock(configs, customLib) {
       default: return 'https://main--federal--adobecom.aem.page';
     }
   })();
-  const clientConfig = {
+  const currentConfig = {
     theme,
     prodDomains,
     clientEnv: env,
@@ -137,6 +137,7 @@ export default async function loadBlock(configs, customLib) {
     onFooterError: footer?.onError,
     ...paramConfigs,
   };
+  clientConfig = { ...clientConfig, ...currentConfig }
   setConfig(clientConfig);
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
