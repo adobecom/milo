@@ -34,15 +34,10 @@
   font-size: 18px;
   text-align: center;
   background-color: var(--comparison-column-background-color);
-  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.comparison-table .table-container .table-column-header button img {
-  position: absolute;
-  right: 12px;
+  justify-content: space-between;
+  padding: 0 24px;
 }
 
 .comparison-table .table-container .table-column-header button:hover {
