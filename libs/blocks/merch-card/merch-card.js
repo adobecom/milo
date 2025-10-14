@@ -1,5 +1,5 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
-import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle, getMetadata as getGlobalMetadata } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import {
@@ -218,12 +218,10 @@ const appendCalloutContent = (element, merchCard) => {
 };
 
 const parseContent = async (el, merchCard) => {
-  let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
   let headingXsCount = 0;
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
-    bodySlotName = 'body-m';
     const priceSmallType = el.querySelectorAll('h6');
     // Filter out any h6 elements that contain an <em> tag
     const filteredPriceSmallType = Array.from(priceSmallType).filter((h6) => !h6.querySelector('em'));
@@ -231,7 +229,7 @@ const parseContent = async (el, merchCard) => {
   }
 
   let headingSize = 3;
-  const bodySlot = createTag('div', { slot: bodySlotName });
+  const bodySlot = createTag('div', { slot: `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}` });
   const mnemonicList = el.querySelector('.mnemonic-list');
   if (mnemonicList) {
     await loadMnemonicList(mnemonicList);
@@ -245,37 +243,36 @@ const parseContent = async (el, merchCard) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
-      if (slotName) {
-        if (['H2', 'H3', 'H4', 'H5', 'H6'].includes(tagName)) {
-          if (tagName === 'H3') headingXsCount += 1;
-          element.classList.add('card-heading');
-          if (merchCard.badgeText) {
-            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
-          }
-          if (HEADING_MAP[merchCard.variant]?.[tagName]) {
-            tagName = HEADING_MAP[merchCard.variant][tagName];
-          } else {
-            if (tagName === 'H2') {
-              headingMCount += 1;
-            }
-            if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
-              slotName = 'heading-m-price';
-            }
-            tagName = `H${headingSize}`;
-            headingSize += 1;
+      if (!slotName) return;
+      if (tagName === 'H3') headingXsCount += 1;
+      element.classList.add('card-heading');
+      if (merchCard.badgeText) {
+        element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
+      }
+      if (HEADING_MAP[merchCard.variant]?.[tagName]) {
+        tagName = HEADING_MAP[merchCard.variant][tagName];
+      } else {
+        if (tagName === 'H2') {
+          headingMCount += 1;
+        }
+        if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART && element.tagName === 'H2') {
+          slotName = 'heading-m-price';
+          if (getGlobalMetadata('mas-ff-annual-price')) {
+            element.classList.add('annual-price-new-line');
           }
         }
-        element.setAttribute('slot', slotName);
-        tagName = (headingXsCount === 1 && tagName === 'H3')
-        || (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') ? 'h3' : 'p';
-        const newElement = createTag(tagName);
-        Array.from(element.attributes).forEach((attr) => {
-          newElement.setAttribute(attr.name, attr.value);
-        });
-        newElement.innerHTML = element.innerHTML;
-        merchCard.append(newElement);
+        tagName = `H${headingSize}`;
+        headingSize += 1;
       }
-      return;
+      element.setAttribute('slot', slotName);
+      tagName = (headingXsCount === 1 && tagName === 'H3')
+        || (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') ? 'h3' : 'p';
+      const newElement = createTag(tagName);
+      Array.from(element.attributes).forEach((attr) => {
+        newElement.setAttribute(attr.name, attr.value);
+      });
+      newElement.innerHTML = element.innerHTML;
+      merchCard.append(newElement);
     }
     if (tagName === 'H6') {
       appendPaymentDetails(element, merchCard);
@@ -513,23 +510,14 @@ const decorateFooterRows = async (merchCard, footerRows) => {
   if (isCheckmark) {
     const firstRow = footerRows[0];
     const firstRowContent = firstRow.querySelector('div > div:first-child').innerHTML.split(',');
-    let bgStyle = '#E8E8E8';
     let defaultChevronState = 'close';
 
     firstRowContent.forEach((item) => {
       const trimmedItem = item.trim();
-      if (trimmedItem.startsWith('#')) {
-        bgStyle = trimmedItem;
-      } else if (trimmedItem === 'open' || trimmedItem === 'close') {
+      if (trimmedItem === 'open' || trimmedItem === 'close') {
         defaultChevronState = trimmedItem;
       }
     });
-
-    if (!isMobile) {
-      const hrElem = createTag('hr', { style: `background: ${bgStyle}` });
-      footerRowsSlot.appendChild(hrElem);
-      merchCard.classList.add('has-divider');
-    }
 
     const merchCardHeading = merchCard.querySelector('h3')?.id;
     if (merchCardHeading) {
@@ -547,7 +535,9 @@ const decorateFooterRows = async (merchCard, footerRows) => {
     footerRowsSlot.appendChild(firstRowTextParagraph);
 
     footerRows.splice(0, 1);
-    footerRowsSlot.style.padding = 'var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs) var(--consonant-merch-spacing-xs)';
+    if (isMobile) {
+      footerRowsSlot.style.padding = 'var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs) var(--consonant-merch-spacing-xs)';
+    }
   }
   footerRowsSlot.appendChild(ulContainer);
 
@@ -561,7 +551,8 @@ const decorateFooterRows = async (merchCard, footerRows) => {
 
 const setMiniCompareOfferSlot = (merchCard, offers) => {
   if (merchCard.variant !== MINI_COMPARE_CHART) return;
-  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]');
+  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]')
+    || merchCard.appendChild(createTag('div', { slot: 'offers' }));
   if (offers) {
     miniCompareOffers.append(offers);
   } else {
@@ -590,11 +581,37 @@ const addStartingAt = async (styles, merchCard) => {
     const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('starting-at', getConfig()).then((key) => {
       const startingAt = createTag('div', { class: 'starting-at' }, key);
-      const price = merchCard.querySelector('span[is="inline-price"]');
+      const headingMPrice = merchCard.querySelector('[slot="heading-m-price"]');
+      const price = headingMPrice?.querySelector('span[is="inline-price"]:not([data-template="strikethrough"])');
       if (price) {
         price.parentNode.prepend(startingAt);
       }
     });
+  }
+};
+
+const getUrlPath = (link) => {
+  if (!link || link.startsWith('/')) return link;
+
+  try {
+    return (new URL(link)).pathname;
+  } catch {
+    return link;
+  }
+};
+
+const updateIconAlt = (merchCard) => {
+  const icons = merchCard.querySelectorAll('merch-icon');
+  if (icons.length !== 1) return;
+
+  const heading = merchCard.querySelector('.card-heading');
+  const headingLink = heading?.querySelector('a')?.getAttribute('href');
+  if (!headingLink) return;
+
+  const icon = icons[0];
+  const iconLink = icon.getAttribute('href');
+  if (getUrlPath(iconLink) === getUrlPath(headingLink) && icon.alt) {
+    icon.setAttribute('alt', heading.textContent);
   }
 };
 
@@ -784,6 +801,7 @@ export default async function init(el) {
 
   if (merchCard.variant !== TWP) {
     parseContent(el, merchCard);
+    updateIconAlt(merchCard);
 
     const footer = createTag('div', { slot: 'footer' });
     if (ctas) {
@@ -803,10 +821,6 @@ export default async function init(el) {
     if (MULTI_OFFER_CARDS.includes(cardType)) {
       const quantitySelect = extractQuantitySelect(el, merchCard);
       const offerSelection = el.querySelector('ul');
-      if (merchCard.variant === MINI_COMPARE_CHART) {
-        const miniCompareOffers = createTag('div', { slot: 'offers' });
-        merchCard.append(miniCompareOffers);
-      }
       if (offerSelection) {
         const { initOfferSelection } = await import('./merch-offer-select.js');
         setMiniCompareOfferSlot(merchCard, undefined);

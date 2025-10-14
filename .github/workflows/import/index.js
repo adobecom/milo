@@ -54,11 +54,14 @@ async function importMedia(pageUrl, text, importedMedia) {
 
   const linkedMedia = [...results, ...matches].reduce((acc, a) => {
     let href = a.getAttribute('href') || a.getAttribute('alt');
+
+    // Normalize all links to aem
+    href = href.replace('.hlx.', '.aem.');
+
     // Don't add any off origin content.
     const isSameDomain = prefixes.some((prefix) => href.startsWith(prefix));
     if (!isSameDomain) return acc;
 
-    href = href.replace('.hlx.', '.aem.');
 
     [href] = href.match(/^[^?#| ]+/);
 
@@ -169,6 +172,29 @@ const projectExclude = {
     '.json',
   ],
 };
+const redirectsUrls = {
+  'da-express-milo': `${importFrom}/redirects.json?limit=99999`,
+};
+
+let redirectMap = null;
+async function fetchRedirects() {
+  const path = redirectsUrls[toRepo];
+  if (!path) {
+    redirectMap = new Map();
+  } else if (!redirectMap) {
+    const resp = await fetch(path);
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch redirects ${path}. Error: ${resp.status} ${resp.statusText}`);
+    }
+    redirectMap = new Map(
+      (await resp.json())
+        .data
+        .map((entry) => [entry.Source || entry.source, entry.Destination || entry.destination])
+    );
+  }
+  return redirectMap;
+}
+
 
 async function importUrl(aemPath, importedMedia) {
   const extensionLessAemPath = aemPath.replace('.md', '');
@@ -184,6 +210,12 @@ async function importUrl(aemPath, importedMedia) {
 
   if (projectExclude[toRepo]?.some((excludedFile) => url.pathname.endsWith(excludedFile))) {
     if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log(`Stopped processing ${url.pathname} as project exclude`);
+    return;
+  }
+
+  const redirects = await fetchRedirects();
+  if (redirects.has(url.pathname)) {
+    console.log(`SKIP: ${url.pathname} is being redirected to ${redirects.get(url.pathname)}`);
     return;
   }
 
