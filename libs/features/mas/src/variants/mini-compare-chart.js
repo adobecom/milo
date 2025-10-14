@@ -2,8 +2,9 @@ import { html, css, unsafeCSS } from 'lit';
 import { createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
-import { DESKTOP_UP, TABLET_DOWN, isMobile } from '../media.js';
+import Media, { DESKTOP_UP, TABLET_DOWN } from '../media.js';
 import { SELECTOR_MAS_INLINE_PRICE, EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from '../constants.js';
+
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
 export class MiniCompareChart extends VariantLayout {
@@ -227,7 +228,7 @@ export class MiniCompareChart extends VariantLayout {
   async postCardUpdateHook() {
     await Promise.all(this.card.prices.map((price) => price.onceSettled()));
     await this.adjustAddon();
-    if (isMobile()) {
+    if (Media.isMobile) {
       this.removeEmptyRows();
     } else {
       this.adjustMiniCompareBodySlots();
