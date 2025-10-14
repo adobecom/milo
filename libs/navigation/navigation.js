@@ -121,7 +121,7 @@ export default async function loadBlock(configs, customLib) {
       default: return 'https://main--federal--adobecom.aem.page';
     }
   })();
-  const currentConfig = {
+  const clientConfig = {
     theme,
     prodDomains,
     clientEnv: env,
@@ -137,8 +137,7 @@ export default async function loadBlock(configs, customLib) {
     onFooterError: footer?.onError,
     ...paramConfigs,
   };
-  clientConfig = { ...clientConfig, ...currentConfig }
-  setConfig(clientConfig);
+  setConfig({ ...getConfig, ...clientConfig });
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
 
