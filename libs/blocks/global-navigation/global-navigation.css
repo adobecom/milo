@@ -287,15 +287,15 @@ header.global-navigation {
 }
 
 .feds-cta--primary {
-  background-color: rgb(59, 99, 251);
-  border-color: rgb(59, 99, 251);
+  background-color: var(--feds-cta-primary-bg);
+  border-color: var(--feds-cta-primary-bg);
   color: rgb(255, 255, 255);
 }
 
 .feds-cta--primary:hover,
 .feds-cta--primary:focus {
-  background-color: rgb(39, 77, 234);
-  border-color: rgb(39, 77, 234);
+  background-color: var(--feds-cta-primary-bg--hover);
+  border-color: var(--feds-cta-primary-bg--hover);
   color: rgb(255, 255, 255);
 }
 
@@ -311,14 +311,7 @@ header.global-navigation {
   white-space: nowrap;
 }
 
-.global-navigation:not(.feds--dark) .feds-promo:not(.feds-promo--dark) .feds-cta--secondary {
-  background-color: rgb(255, 255, 255);
-  border-color: rgb(75, 75, 75);
-  color: rgb(75, 75, 75);
-}
-
-.feds-cta--secondary:hover,
-.global-navigation:not(.feds--dark) .feds-promo:not(.feds-promo--dark) .feds-cta--secondary:hover {
+.feds-cta--secondary:hover {
   border-color: #C6C6C6;
   background: #E9E9E9;
   color: #292929;
@@ -329,8 +322,8 @@ header.global-navigation {
 }
 
 .feds-promo--dark .feds-cta--secondary {
-  border: .125rem solid #393939;
-  color: #DBDBDB;
+  border: .125rem solid var(--feds-borderColor-link-dark);
+  color: var(--feds-color-link-dark);
 }
 
 .feds-promo--dark .feds-cta--secondary:hover {
@@ -565,6 +558,17 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
 @media (max-width: 900px) {
   .feds-product-entry-cta {
     display: none;
+  }
+}
+
+
+@media (max-width: 320px) {
+  .feds-promo-aside-wrapper[aria-hidden="true"] {
+    display: none;
+  }
+
+  .feds-promo-aside-wrapper {
+    position: initial;
   }
 }
 

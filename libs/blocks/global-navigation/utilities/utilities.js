@@ -257,6 +257,7 @@ export function setCurtainState(state) {
 }
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isSmallScreen = window.matchMedia('(max-width: 320px)');
 export const isDesktopForContext = (context = 'viewport') => {
   const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
   if (context === 'footer' && isContainerResponsiveFooter) {
