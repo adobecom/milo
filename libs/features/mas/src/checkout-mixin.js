@@ -3,7 +3,7 @@ import {
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { selectOffers, getService } from './utilities.js';
+import { selectOffers, getService, parseExtraOptions } from './utilities.js';
 import { isPromotionActive } from './price/utilities.js';
 import { MODAL_TYPE_3_IN_1 } from '../src/constants.js';
 
@@ -137,16 +137,7 @@ export function CheckoutMixin(Base) {
             overrides.imsCountry = null;
             const options = service.collectCheckoutOptions(overrides, this);
             if (!options.wcsOsi.length) return false;
-            let extraOptions;
-            try {
-                extraOptions = JSON.parse(options.extraOptions ?? '{}');
-                /* c8 ignore next 3 */
-            } catch (e) {
-                this.masElement.log?.error(
-                    'cannot parse exta checkout options',
-                    e,
-                );
-            }
+            const extraOptions = parseExtraOptions(options.extraOptions);
             const version = this.masElement.togglePending(options);
             this.setCheckoutUrl('');
             const promises = service.resolveOfferSelectors(options);
@@ -191,9 +182,7 @@ export function CheckoutMixin(Base) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
             const service = getService();
             if (!service) return false;
-            const extraOptions = JSON.parse(
-                this.dataset.extraOptions ?? '{}',
-            );
+            const extraOptions = parseExtraOptions(this.dataset.extraOptions);
             options = { ...extraOptions, ...options, ...overrides };
             version ??= this.masElement.togglePending(options);
             if (this.checkoutActionHandler) {

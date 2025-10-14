@@ -100,3 +100,29 @@ export function getLogHeaders(response) {
     }
     return logHeaders;
 }
+
+/**
+ * Parses extra options from either JSON or query string format
+ * @param {string} value - The extra options string (JSON or query string)
+ * @returns {Object} Parsed options object
+ */
+export function parseExtraOptions(value) {
+    if (!value || typeof value !== 'string') return {};
+
+    const trimmedValue = value.trim();
+
+    if (trimmedValue.startsWith('{')) {
+        try {
+            return JSON.parse(trimmedValue);
+        } catch (e) {
+            return {};
+        }
+    }
+
+    const params = new URLSearchParams(trimmedValue);
+    const result = {};
+    params.forEach((val, key) => {
+        result[key] = val;
+    });
+    return result;
+}
