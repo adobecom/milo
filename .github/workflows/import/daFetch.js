@@ -72,6 +72,31 @@ export async function saveToDa(text, url) {
   }
 }
 
+
+export async function saveJsonToDa(org, repo, pathname, data) {
+  if (!org || !repo || !pathname || !data) {
+    throw new Error('Invalid arguments');
+  }
+
+  const daPath = `/${org}/${repo}${pathname}`;
+  const daHref = `https://da.live/edit#${daPath}`;
+
+  const body = JSON.stringify(data);
+
+  const blob = new Blob([body], { type: 'application/json' });
+  const formData = new FormData();
+  formData.append('data', blob);
+  const opts = { method: 'PUT', body: formData };
+  try {
+    const daResp = await daFetch(`${DA_ORIGIN}/source${daPath}.json`, opts);
+    return { daHref, daStatus: daResp.status, daResp, ok: daResp.ok };
+  } catch (e) {
+    console.log(`Couldn't save ${url.daUrl} `);
+    throw e;
+  }
+}
+
+
 function getBlob(url, content) {
   const body =
     url.type === 'json'
