@@ -363,13 +363,16 @@ window.addEventListener('hashchange', (e) => {
       /* do nothing */
     }
   } else {
+    if (isDeepLink) return;
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
-    if (e.oldURL?.includes('#')) {
-      const { hash } = new URL(e.oldURL);
-      if (hash.includes('=') || !document.querySelector(`${hash}:not(.dialog-modal)`)) {
-        prevHash = hash;
-      }
+    const { hash } = new URL(e.oldURL);
+    const isFromIms = hash.includes(`old_hash=${details.id}`) || hash.includes('from_ims=true');
+    isDeepLink = isFromIms;
+    if (!hash || isFromIms) return;
+
+    if (hash.includes('=') || !document.querySelector(`${hash}:not(.dialog-modal)`)) {
+      prevHash = hash;
     }
   }
 });

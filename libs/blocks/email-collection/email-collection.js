@@ -451,10 +451,21 @@ async function checkIsSubscribed() {
   return subscribed;
 }
 
+function loadModal() {
+  return new Promise((resolve) => {
+    window.addEventListener('milo:modal:loaded', () => {
+      resolve();
+    }, { once: true });
+  });
+}
+
 async function decorate(el, blockChildren) {
   const ims = await getIMS();
   if (!ims.isSignedInUser()) {
+    const dialog = el.closest('.dialog-modal');
+    if (!document.body.contains(dialog)) await loadModal();
     await ims.signIn();
+    closeModal(dialog);
     return false;
   }
 
