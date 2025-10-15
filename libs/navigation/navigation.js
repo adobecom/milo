@@ -136,7 +136,7 @@ export default async function loadBlock(configs, customLib) {
     onFooterError: footer?.onError,
     ...paramConfigs,
   };
-  setConfig({ ...getConfig, ...clientConfig });
+  setConfig({ ...getConfig(), ...clientConfig });
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
 
