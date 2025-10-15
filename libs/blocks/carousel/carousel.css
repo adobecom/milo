@@ -617,6 +617,7 @@ html[dir="rtl"] .carousel .move-indicators {
     background-color: #FAFAFA;
     margin-bottom: 0;
     padding-bottom: 2rem;
+    max-width: 600px;
   }
   .carousel.hovering .carousel-slide:not(.active) h2 {
     color: black;
