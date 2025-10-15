@@ -1,9 +1,19 @@
-import { lanaLog } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getFederatedContentRoot } from '../../utils/federated.js';
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, getMetadata, getFederatedContentRoot } from '../../utils/utils.js';
 
 const iconCache = new Map();
 let miloIconsPromise;
+const LANA_CLIENT_ID = 'feds-milo';
+
+const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
+  const { locale = {} } = getConfig();
+  const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
+    clientId: LANA_CLIENT_ID,
+    sampleRate: 1,
+    tags,
+    errorType,
+  });
+};
 
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
