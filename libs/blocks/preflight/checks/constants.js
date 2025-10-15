@@ -99,6 +99,14 @@ export const STRUCTURE_IDS = {
   breadcrumbs: 'breadcrumbs',
 };
 
+export const STRUCTURE_SEVERITIES = {
+  navigation: 'critical',
+  footer: 'critical',
+  regionSelector: 'critical',
+  georouting: 'warning',
+  breadcrumbs: 'critical',
+};
+
 export const PERFORMANCE_TITLES = {
   Performance: 'Performance',
   LcpEl: 'LCP',

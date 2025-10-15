@@ -24,6 +24,7 @@ import {
   checkLinks,
   runChecks as runChecksSeo,
 } from './seo.js';
+import { runChecks as runChecksStructure } from './structure.js';
 import { SEVERITY } from './constants.js';
 
 let checksSuite = null;
@@ -59,6 +60,7 @@ export default {
     checkLinks,
     runChecks: runChecksSeo,
   },
+  structure: { runChecks: runChecksStructure },
 };
 
 export const getChecksSuite = () => {
@@ -85,7 +87,8 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
   const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
   const performance = await Promise.all(runChecksPerformance(url, area));
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
-  return { assets, performance, seo };
+  const structure = await Promise.all(runChecksStructure({ area }));
+  return { assets, performance, seo, structure };
 };
 
 function generateCacheKey(url, injectVisualMetadata, isASO) {
@@ -112,6 +115,7 @@ export async function getPreflightResults(options = {}) {
     ...(res.assets || []),
     ...(res.performance || []),
     ...(res.seo || []),
+    ...(res.structure || []),
   ];
 
   const result = {
