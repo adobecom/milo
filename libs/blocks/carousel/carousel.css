@@ -834,6 +834,7 @@ html[dir="rtl"] .carousel .move-indicators {
     max-height: 636px;
     position: relative;
   }
+
   .carousel.hovering .carousel-slide:not(.active) .cta-container,
   .carousel.hovering .carousel-slide:not(.active) p.body-m {
     opacity: 0;
@@ -954,11 +955,12 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 .carousel.hovering .carousel-menu-item {
+  font-family: var(--body-font-family);
   color: var(--color-gray-600);
   font-size: 24px;
-  padding: .5rem 1rem;
+  padding: .5rem .75rem;
   border-radius: 8px;
-  line-height: 1;
+  line-height: 1.25;
   justify-self: center;
   margin-bottom: 2rem;
   max-width: 200px;
@@ -967,6 +969,8 @@ html[dir="rtl"] .carousel .move-indicators {
   cursor: pointer;
   transition: all .25s ease;
   align-self: baseline;
+  border: 0;
+  background-color: inherit;
 }
 
 .carousel .aria-live-container {
