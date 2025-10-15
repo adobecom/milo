@@ -200,7 +200,6 @@
 
 .comparison-table .sub-header-item-container .btn-container .action-area {
   display: flex;
-  width: calc(50% - 4px);
 }
 
 .comparison-table .sub-header-item-container .btn-container .action-area .con-button {
@@ -298,5 +297,9 @@
 
   .comparison-table .table-container .table-column-header button {
     padding: 0 12px;
+  }
+
+  .comparison-table .header-item:last-child {
+    padding-inline-end: 0;
   }
 }

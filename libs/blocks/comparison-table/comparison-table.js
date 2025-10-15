@@ -141,6 +141,8 @@ function createSubHeaderContainer(
     select.addEventListener('change', (e) => {
       document.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => { col.classList.add('hidden'); });
       document.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => { col.classList.remove('hidden'); });
+      const selectElement = document.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
+      if (selectElement) selectElement.value = +e.target.value;
     });
 
     container.appendChild(select);
