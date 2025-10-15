@@ -2,8 +2,8 @@ import { VariantLayout } from './variant-layout';
 import { createTag } from '../utils.js';
 import { html, css } from 'lit';
 import { CSS } from './product.css.js';
+import Media from '../media.js';
 import { SELECTOR_MAS_INLINE_PRICE, EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from '../constants.js';
-import { isMobile } from '../media.js';
 
 export class Product extends VariantLayout {
     constructor(card) {
@@ -74,7 +74,7 @@ export class Product extends VariantLayout {
     postCardUpdateHook() {
         if (!this.card.isConnected) return;
         this.adjustAddon();
-        if (!isMobile()) {
+        if (!Media.isMobile) {
             this.adjustProductBodySlots();
         }
         this.adjustTitleWidth(); 
