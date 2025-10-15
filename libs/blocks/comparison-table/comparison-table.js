@@ -106,6 +106,15 @@ function equalHeight(el) {
   setupHeightHandler(performEqualHeight);
 }
 
+const getFirstVisibleColumnIndex = () => {
+  const headerItems = document.querySelectorAll('.header-item[data-column-index]');
+  for (let i = 0; i < headerItems.length; i += 1) {
+    const item = headerItems[i];
+    if (!item.classList.contains('hidden')) return +item.getAttribute('data-column-index');
+  }
+  return -1;
+};
+
 function createSubHeaderContainer(
   childrenArray,
   startIndex,
@@ -139,8 +148,16 @@ function createSubHeaderContainer(
     });
 
     select.addEventListener('change', (e) => {
-      document.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => { col.classList.add('hidden'); });
-      document.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => { col.classList.remove('hidden'); });
+      const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex();
+
+      document.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => {
+        col.classList.add('hidden');
+      });
+      document.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => {
+        col.classList.remove('hidden');
+        if (isFirstVisible) col.style.order = '1';
+      });
+
       const selectElement = document.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
       if (selectElement) selectElement.value = +e.target.value;
     });
