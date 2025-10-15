@@ -195,7 +195,66 @@ export function getEnv(conf) {
   /* c8 ignore stop */
 }
 
+function hydrateLocale(locales, key) {
+  const locale = locales[key];
+
+  if (!('root' in locale)) {
+    // This is a root. Gather all regions, merging root values into each region.
+    const regions = Object.entries(locales)
+      .filter(([, value]) => value.root === key)
+      .reduce((acc, [k, value]) => {
+        // Merge: region inherits from root, region's own values take precedence
+        acc[k] = {
+          ...locale,
+          ...value,
+          root: value.root, // preserve correct root property
+          prefix: `/${k}`,
+          region: value.region || k.split('_')[0] || 'us',
+        };
+        return acc;
+      }, {});
+    return {
+      ...locale,
+      regions,
+      prefix: key ? `/${key}` : '',
+      region: locale.region || key.split('_')[0] || 'us',
+    };
+  }
+  if ('root' in locale && locales[locale.root]) {
+    // This is a region. Merge with its root, region's own values take precedence
+    return {
+      ...locales[locale.root],
+      ...locale,
+      prefix: `/${key}`,
+      region: locale.region || key.split('_')[0] || 'us',
+    };
+  }
+
+  return { ...locale };
+}
+
+export function getLingoLocale(locales, pathname = window.location.pathname) {
+  if (!locales) return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+
+  const split = pathname.split('/');
+  const specialPrefix = [LANGSTORE, PREVIEW].includes(split[1]) ? split[1] : '';
+
+  const matchedKeys = specialPrefix
+    ? [Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]))]
+    : Object.keys(locales)
+      .filter((k) => k !== '' && (pathname === `/${k}` || pathname.startsWith(`/${k}/`)))
+      .sort((a, b) => b.length - a.length);
+
+  const matchedKey = matchedKeys[0] ?? '';
+  const locale = hydrateLocale(locales, matchedKey);
+  if (specialPrefix) locale.prefix = `/${specialPrefix}${split[2] ? `/${split[2]}` : ''}`;
+  return locale;
+}
+
 export function getLocale(locales, pathname = window.location.pathname) {
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  if (urlSearchParams?.get('lingoLocale') === 'on') return getLingoLocale(locales, pathname);
+
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
   }
@@ -323,6 +382,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
     () => config,
   ];
 })();
+
+window.getConfig = getConfig;
 
 let federatedContentRoot;
 export const getFederatedContentRoot = () => {
@@ -571,6 +632,8 @@ export function localizeLink(
     return href;
   }
 }
+
+window.localizeLink = localizeLink;
 
 export function loadLink(href, {
   id, as, callback, crossorigin, rel, fetchpriority,
