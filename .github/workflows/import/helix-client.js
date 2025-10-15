@@ -104,4 +104,27 @@ async function fetchLogsForSite(siteName, baseUrl, fromParam, toParam) {
   }
 }
 
-export { fetchLogsForSite };
+
+async function triggerPreview(owner, repo, path) {
+  console.log(`previewing path: ${owner}/${repo}/main${path}`);
+  try {
+    const url = `https://admin.hlx.page/preview/${owner}/${repo}/main${path}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `token ${AEM_LIVE_ADMIN_TOKEN}`,
+      },
+    });
+    if (!response.ok) {
+      console.error(`Failed to preview path: ${owner}/${repo}/main${path}`);
+      throw new Error(`Failed to preview path: ${owner}/${repo}/main${path}: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error(`Error previewing path: ${owner}/${repo}/main${path}`, error);
+  }
+  return null;
+}
+
+
+export { fetchLogsForSite, triggerPreview };

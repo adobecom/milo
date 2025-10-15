@@ -74,7 +74,7 @@ export async function saveToDa(text, url) {
 
 
 export async function saveJsonToDa(org, repo, pathname, data) {
-  if (!org || !repo || !pathname || !data) {
+  if (!org || !repo || !pathname || !data || pathname.length < 2 ) {
     throw new Error('Invalid arguments');
   }
 
