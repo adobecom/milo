@@ -108,20 +108,11 @@ function equalHeight(el) {
 
 const getFirstVisibleColumnIndex = () => {
   const headerItems = document.querySelectorAll('.header-item[data-column-index]');
-  const visibleItems = Array.from(headerItems).filter((item) => !item.classList.contains('hidden'));
-
-  if (visibleItems.length === 0) return -1;
-
-  visibleItems.sort((a, b) => {
-    const orderA = a.style.order ? +a.style.order : Infinity;
-    const orderB = b.style.order ? +b.style.order : Infinity;
-
-    if (orderA !== orderB) return orderA - orderB;
-
-    return +a.getAttribute('data-column-index') - +b.getAttribute('data-column-index');
-  });
-
-  return +visibleItems[0].getAttribute('data-column-index');
+  for (let i = 0; i < headerItems.length; i += 1) {
+    const item = headerItems[i];
+    if (!item.classList.contains('hidden')) return +item.getAttribute('data-column-index');
+  }
+  return -1;
 };
 
 function createSubHeaderContainer(
@@ -164,15 +155,20 @@ function createSubHeaderContainer(
       });
       document.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => {
         col.classList.remove('hidden');
-        if (isFirstVisible) col.style.order = '1';
-      });
+        const parent = col.parentNode;
 
-      if (isFirstVisible) {
-        document.querySelectorAll(`[data-column-index]:not([data-column-index="${+e.target.value}"])`)
-          .forEach((col) => {
-            col.style.order = '2';
-          });
-      }
+        if (!isFirstVisible || !parent) return;
+
+        const firstHeaderItem = parent.querySelector('.header-item:first-child');
+
+        if (col.classList.contains('header-item') && firstHeaderItem && firstHeaderItem !== col) {
+          parent.insertBefore(col, firstHeaderItem.nextSibling);
+          return;
+        }
+
+        const rowHeader = parent.querySelector('.table-row-header');
+        if (rowHeader) parent.insertBefore(col, rowHeader.nextSibling);
+      });
 
       const selectElement = document.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
       if (selectElement) selectElement.value = +e.target.value;
