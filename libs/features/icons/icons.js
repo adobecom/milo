@@ -4,17 +4,6 @@ const iconCache = new Map();
 let miloIconsPromise;
 const LANA_CLIENT_ID = 'feds-milo';
 
-const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
-  const { locale = {} } = getConfig();
-  const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
-    clientId: LANA_CLIENT_ID,
-    sampleRate: 1,
-    tags,
-    errorType,
-  });
-};
-
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
   if (!hasTooltip) return;
@@ -85,12 +74,7 @@ async function fetchFederalIcon(iconName) {
     iconCache.set(iconName, svgElement);
     return svgElement;
   } catch (error) {
-    lanaLog({
-      message: `Error fetching federal SVG for ${iconName}, falling back to Milo icon`,
-      error,
-      tags: 'icons',
-      errorType: 'error',
-    });
+    window?.lana.log(`Error fetching federal SVG for ${iconName}, falling back to Milo icon: ${error}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
     return null;
   }
 }
@@ -109,11 +93,7 @@ async function fetchMiloIcon(iconName) {
     return icon;
   }
 
-  lanaLog({
-    message: `No fallback Milo icon found for ${iconName}`,
-    tags: 'icons',
-    errorType: 'error',
-  });
+  window?.lana.log(`No fallback Milo icon found for ${iconName}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
   return null;
 }
 
@@ -165,8 +145,8 @@ export function fetchIconList(url) {
   return fetch(url)
     .then((resp) => resp.json())
     .then((json) => json.data || json.content.data)
-    .catch(() => {
-      lanaLog({ message: 'Failed to fetch iconList', tags: 'icons', errorType: 'error' });
+    .catch((error) => {
+      window?.lana.log(`Failed to fetch iconList: ${error}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
       return [];
     });
 }
