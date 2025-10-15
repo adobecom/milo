@@ -61,6 +61,32 @@ function focusAfterModalClose(modal) {
   return toFocus;
 }
 
+function focusTriggerElement(modalId) {
+  const triggerElement = document.querySelector(
+    `[data-modal-hash="#${modalId}"][data-is-modal-trigger="true"]`,
+  );
+  if (triggerElement) {
+    triggerElement.focus();
+    triggerElement.removeAttribute('data-is-modal-trigger');
+    return;
+  }
+
+  // Fallback focus options for deep links
+  if (!isDeepLink) return;
+  const fallbackSelectors = [
+    `[data-modal-hash="#${modalId}"]`,
+    `a[data-modal-id="${modalId}"].con-button`,
+  ];
+
+  for (const selector of fallbackSelectors) {
+    const element = document.querySelector(selector);
+    if (element) {
+      element.focus();
+      break;
+    }
+  }
+}
+
 export async function closeModal(modal) {
   if (typeof modal.closeCallback === 'function') await modal.closeCallback(modal);
   const { id } = modal;
@@ -91,7 +117,7 @@ export async function closeModal(modal) {
       }
       mod.remove();
     }
-    document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
+    focusTriggerElement(mod.id);
   });
 
   if (!document.querySelectorAll('.modal-curtain').length) {
@@ -114,7 +140,7 @@ export async function closeModal(modal) {
     return;
   }
 
-  document.querySelector(`a[data-modal-id="${id}"].con-button`)?.focus();
+  focusTriggerElement(id);
 }
 
 function isElementInView(element) {
@@ -169,6 +195,7 @@ export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
   if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
+  if (!isDeepLink) document.activeElement.dataset.isModalTrigger = 'true';
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
