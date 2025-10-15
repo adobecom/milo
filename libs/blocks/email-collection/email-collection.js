@@ -451,9 +451,11 @@ async function checkIsSubscribed() {
   return subscribed;
 }
 
-function loadModal() {
+function waitForModal() {
   return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(), 3000);
     window.addEventListener('milo:modal:loaded', () => {
+      clearTimeout(timeout);
       resolve();
     }, { once: true });
   });
@@ -463,7 +465,7 @@ async function decorate(el, blockChildren) {
   const ims = await getIMS();
   if (!ims.isSignedInUser()) {
     const dialog = el.closest('.dialog-modal');
-    if (!document.body.contains(dialog)) await loadModal();
+    if (!document.body.contains(dialog)) await waitForModal();
     await ims.signIn();
     closeModal(dialog);
     return false;
