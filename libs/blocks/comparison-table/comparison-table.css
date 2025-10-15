@@ -210,7 +210,6 @@
 
 .comparison-table .sub-header-item-container .btn-container .action-area strong,
 .comparison-table .sub-header-item-container .btn-container .action-area a {
-  width: 100%;
   display: flex;
 }
 
@@ -229,6 +228,7 @@
 .comparison-table .sub-header-item-container *:is(p, h1, h2, h3, h4, h5, h6) {
   margin: 0;
   text-align: center;
+  word-break: break-word;
 }
 
 .comparison-table .header-item.hidden,

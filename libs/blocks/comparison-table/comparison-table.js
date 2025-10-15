@@ -113,6 +113,7 @@ function createSubHeaderContainer(
   isLast = false,
   isFirst = false,
   headerTitles = [],
+  headerItemIndex = 0,
 ) {
   const container = createTag('div', { class: 'sub-header-item-container' });
 
@@ -130,9 +131,16 @@ function createSubHeaderContainer(
     });
 
     headerTitles.forEach((title, index) => {
-      if (title) {
-        select.appendChild(createTag('option', { value: index }, title));
-      }
+      if (!title) return;
+
+      const option = createTag('option', { value: index }, title);
+      if (index === headerItemIndex) option.selected = true;
+      select.appendChild(option);
+    });
+
+    select.addEventListener('change', (e) => {
+      document.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => { col.classList.add('hidden'); });
+      document.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => { col.classList.remove('hidden'); });
     });
 
     container.appendChild(select);
@@ -169,13 +177,14 @@ function decorateHeader(headerContent) {
     headerTitles.push(titleElement ? titleElement.textContent.trim() : '');
   });
 
-  Array.from(headerContentWrapper.children).forEach((headerItem) => {
+  Array.from(headerContentWrapper.children).forEach((headerItem, headerItemIndex) => {
     if (!headerItem.innerHTML) {
       headerItem.remove();
       return;
     }
 
     headerItem.classList.add('header-item');
+    headerItem.setAttribute('data-column-index', headerItemIndex);
     let lastContainedIndex = -1;
     const childrenArray = Array.from(headerItem.children);
     let containerIndex = 0;
@@ -190,6 +199,7 @@ function decorateHeader(headerContent) {
         false,
         containerIndex === 0,
         headerTitles,
+        headerItemIndex,
       ), headerItemChild);
       headerItemChild.remove();
       lastContainedIndex = index;
@@ -203,6 +213,7 @@ function decorateHeader(headerContent) {
       true,
       false,
       headerTitles,
+      headerItemIndex,
     );
 
     if (lastContainedIndex >= childrenArray.length - 1
@@ -241,6 +252,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
     Array.from(tableChild.children).forEach((child, childIndex) => {
       child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
       if (childIndex === 0) child.setAttribute('role', 'rowheader');
+      if (childIndex > 0) child.setAttribute('data-column-index', childIndex);
 
       const hasEmptyPTag = childIndex !== 0 && child.children.length <= 1;
       const isEmpty = childIndex === 0 || child.children.length > 1 || !child.textContent.trim();
