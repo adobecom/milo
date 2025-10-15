@@ -1,3 +1,4 @@
+
 import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP } from './media.js';
 
 const styles = document.createElement('style');
@@ -272,8 +273,12 @@ merch-card span[is='inline-price'] {
   line-height: 0;
 }
 
-.annual-price-new-line > span[is="inline-price"] .price-alternative {
+.annual-price-new-line > span[is="inline-price"] .price:not(.price-annual) {
   display: block;
+}
+
+.annual-price-new-line > span[is="inline-price"] > .price-annual::before {
+  content: '(';
 }
 
 merch-card [slot^='heading-'],
