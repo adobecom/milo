@@ -164,7 +164,7 @@ async function main() {
     return acc;
   }, []);
   // Save paths per region 
-  await savePreviewPaths(previewPathsPerRoot);
+  await savePreviewPaths(JSON.stringify(previewPathsPerRoot));
 
   previewPathsPerRoot.reduce(async (acc, root) => {
     await acc;
