@@ -1,4 +1,4 @@
-import { getConfig, getMetadata, getFederatedContentRoot } from '../../utils/utils.js';
+import { getConfig, getFederatedContentRoot } from '../../utils/utils.js';
 
 const iconCache = new Map();
 let miloIconsPromise;
