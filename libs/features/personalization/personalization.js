@@ -1611,6 +1611,7 @@ export async function init(enablements = {}) {
       mepParam,
       mepMarketingDecrease,
     ));
+    manifests = manifests.filter((m) => m.manifestPath);
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
