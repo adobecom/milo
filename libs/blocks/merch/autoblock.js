@@ -26,6 +26,7 @@ export function decorateCardCtasWithA11y(card) {
       });
     } else {
       const productName = card.querySelector('h3')?.textContent || '';
+      if (productName === link.textContent) return;
       link.setAttribute('aria-label', `${link.textContent}${productName ? ' - ' : ''}${productName}`);
     }
   });
