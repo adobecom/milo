@@ -79,8 +79,8 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     });
 
     const slotIcons = merchCard.shadowRoot.querySelector('slot[name="icons"]');
-    if (!mnemonics?.length && slotIcons) {
-      slotIcons.remove();
+    if (slotIcons) {
+        slotIcons.style.display = mnemonics?.length ? null : 'none';
     }
 }
 

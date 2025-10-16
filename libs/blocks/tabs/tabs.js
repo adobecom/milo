@@ -115,11 +115,13 @@ function changeTabs(e, config) {
     .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
     .forEach((t) => {
       t.setAttribute(attributeName, false);
+      t.setAttribute('tabindex', '-1');
       if (Object.keys(tabColor).length) {
         t.removeAttribute('style', 'backgroundColor');
       }
     });
   target.setAttribute(attributeName, true);
+  target.setAttribute('tabindex', '0');
   if (tabColor[targetId]) {
     target.style.backgroundColor = tabColor[targetId];
   }
@@ -195,7 +197,8 @@ function initTabs(elm, config, rootElem) {
           /* c8 ignore next */
           if (tabFocus < 0) tabFocus = tabs.length - 1;
         }
-        tabs[tabFocus].setAttribute('tabindex', 0);
+        tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
+        tabs[tabFocus].setAttribute('tabindex', '0');
         tabs[tabFocus].focus();
       }
     });
@@ -365,7 +368,7 @@ const init = (block) => {
         role: isRadio ? 'radio' : 'tab',
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
-        tabindex: '0',
+        tabindex: (i === 0) ? '0' : '-1',
         [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
