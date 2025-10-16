@@ -127,7 +127,7 @@
 
 .email-collection .foreground .text form label.required::after {
   content: '';
-  background: url('/img/ui/asterisk.svg') no-repeat center;
+  background: url('./icons/asterisk.svg') no-repeat center;
   width: 8px;
   height: 8px;
   position: absolute;
@@ -158,7 +158,7 @@
 
 .email-collection .foreground form .select-wrapper::after {
   content: '';
-  background: url('/img/ui/chevron-down.svg') no-repeat center #E9E9E9;
+  background: url('./icons/chevron-down.svg') no-repeat center #E9E9E9;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -334,8 +334,8 @@
 .email-collection .foreground .text form label.required.invalid::after {
   background: unset;
   background-color: var(--form-error-color);
-  -webkit-mask: url('/img/ui/asterisk.svg') no-repeat center;
-  mask: url('/img/ui/asterisk.svg') no-repeat center;
+  -webkit-mask: url('./icons/asterisk.svg') no-repeat center;
+  mask: url('./icons/asterisk.svg') no-repeat center;
 }
 
 .email-collection .foreground .text form input {
@@ -343,7 +343,7 @@
 }
 
 .email-collection .foreground .text form :is(input, select).invalid {
-  background-image: url('/img/ui/attention.svg');
+  background-image: url('./icons/attention.svg');
   background-size: 18px;
   background-repeat: no-repeat;
   background-position: calc(100% - 12px);
