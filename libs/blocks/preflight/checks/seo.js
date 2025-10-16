@@ -246,6 +246,26 @@ function compareResults(result, link) {
   return true;
 }
 
+export async function validLinkFilter(area = document, envName = null) {
+  const { preflight } = await getServiceConfig(window.location.origin, envName);
+  const knownBadUrls = preflight?.ignoreDomains
+    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
+    : KNOWN_BAD_URLS;
+  return [...area.querySelectorAll('a')]
+    .filter((link) => {
+      const { hostname } = link;
+      return link.href
+        && !link.href.includes('tel:')
+        && !link.href.includes('mailto:')
+        && !link.href.startsWith('#')
+        && !link.href.startsWith('https://#')
+        && !link.href.includes('local')
+        && !link.href.includes('bookmark://')
+        && !link.closest('.preflight')
+        && !knownBadUrls.some((url) => url === hostname);
+    }).map((link) => link.href);
+}
+
 export async function checkLinks({ area, urlHash, envName }) {
   if (urlHash && linksCache.has(urlHash)) {
     const cachedResult = linksCache.get(urlHash);
@@ -255,7 +275,7 @@ export async function checkLinks({ area, urlHash, envName }) {
     };
   }
 
-  const { spidy, preflight } = await getServiceConfig(window.location.origin, envName);
+  const { spidy } = await getServiceConfig(window.location.origin, envName);
   const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
   const canSpidy = await spidyCheck(spidyUrl);
   if (!canSpidy) return connectionError();
@@ -265,25 +285,7 @@ export async function checkLinks({ area, urlHash, envName }) {
    * Filter out any local or existing preflight links.
    * Set link to use hlx.live so the service can see them without auth
    * */
-  const knownBadUrls = preflight?.ignoreDomains
-    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
-    : KNOWN_BAD_URLS;
-
-  const links = [...area.querySelectorAll('a')]
-    .filter((link) => {
-      if (
-        link.href
-        && !link.href.includes('local')
-        && !link.closest('.preflight')
-        && !knownBadUrls.some((url) => url === link.hostname)
-      ) {
-        link.liveHref = link.href;
-        if (link.href.includes('hlx.page')) link.liveHref = link.href.replace('hlx.page', 'hlx.live');
-        if (link.href.includes('aem.page')) link.liveHref = link.href.replace('aem.page', 'aem.live');
-        return true;
-      }
-      return false;
-    });
+  const links = await validLinkFilter(area, envName);
 
   const groups = makeGroups(links);
   const baseOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
