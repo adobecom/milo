@@ -447,6 +447,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     if (!(pathElement instanceof HTMLElement)) return;
 
     const content = await fetchAndProcessPlainHtml({ url: pathElement.href });
+
     if (!content) return;
     const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
