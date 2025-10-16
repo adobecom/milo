@@ -5,18 +5,24 @@ export const TABLET_UP = '(min-width: 768px)';
 export const DESKTOP_UP = '(min-width: 1200px)';
 export const LARGE_DESKTOP = '(min-width: 1600px)';
 
-export function matchMobile() {
-    return window.matchMedia(MOBILE_LANDSCAPE);
+const Media = {
+  matchMobile: window.matchMedia(MOBILE_LANDSCAPE),
+  matchDesktop: window.matchMedia(`${DESKTOP_UP} and (not ${LARGE_DESKTOP})`),
+  matchDesktopOrUp: window.matchMedia(DESKTOP_UP),
+  matchLargeDesktop: window.matchMedia(LARGE_DESKTOP),
+  get isMobile() {
+    return this.matchMobile.matches;
+  },
+  get isDesktop() {
+    return this.matchDesktop.matches;
+  },
+  get isDesktopOrUp() {
+    return this.matchDesktopOrUp.matches;
+  }
 }
 
-export function matchDesktop() {
-  return window.matchMedia(DESKTOP_UP);
-}
-
-export function isMobile() {
-  return matchMobile().matches;
-}
+export default Media;
 
 export function isDesktop() {
-  return matchDesktop().matches;
+  return Media.isDesktop;
 }

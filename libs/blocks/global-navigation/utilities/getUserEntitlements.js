@@ -105,7 +105,7 @@ const getSubscriptions = async ({ queryParams }, format) => {
   const res = await fetch(`${apiUrl}${queryParams}`, {
     method: 'GET',
     cache: 'no-cache',
-    credentials: 'same-origin',
+    credentials: 'omit',
     // TODO: refactor to not use AbortSignal.timeout() as it's not supported for Safari 14
     /* eslint-disable-next-line */
     signal: AbortSignal.timeout(API_WAIT_TIMEOUT),
