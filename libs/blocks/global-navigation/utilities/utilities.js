@@ -508,7 +508,7 @@ export async function fetchAndProcessPlainHtml({
       tags: 'utilities',
       errorType: 'i',
     });
-    throw new Error("Fail to fetch");
+    throw new Error('Fail to fetch');
   }
   const text = await (plainHTMLPromise ? res.clone().text() : res.text());
   const { body } = new DOMParser().parseFromString(text, 'text/html');
