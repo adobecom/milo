@@ -251,19 +251,27 @@ export async function validLinkFilter(area = document, envName = null) {
   const knownBadUrls = preflight?.ignoreDomains
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
     : KNOWN_BAD_URLS;
-  return [...area.querySelectorAll('a')]
+  const links = [...area.querySelectorAll('a')]
     .filter((link) => {
-      const { hostname } = link;
-      return link.href
+      if (
+        link.href
         && !link.href.includes('tel:')
         && !link.href.includes('mailto:')
         && !link.href.startsWith('#')
         && !link.href.startsWith('https://#')
-        && !link.href.includes('local')
         && !link.href.includes('bookmark://')
+        && !link.href.includes('local')
         && !link.closest('.preflight')
-        && !knownBadUrls.some((url) => url === hostname);
-    }).map((link) => link.href);
+        && !knownBadUrls.some((url) => url === link.hostname)
+      ) {
+        link.liveHref = link.href;
+        if (link.href.includes('hlx.page')) link.liveHref = link.href.replace('hlx.page', 'hlx.live');
+        if (link.href.includes('aem.page')) link.liveHref = link.href.replace('aem.page', 'aem.live');
+        return true;
+      }
+      return false;
+    });
+  return links;
 }
 
 export async function checkLinks({ area, urlHash, envName }) {
