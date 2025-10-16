@@ -246,26 +246,6 @@ function compareResults(result, link) {
   return true;
 }
 
-export async function validLinkFilter(area = document) {
-  const { preflight } = await getServiceConfig(window.location.origin);
-  const knownBadUrls = preflight?.ignoreDomains
-    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
-    : KNOWN_BAD_URLS;
-  return [...area.querySelectorAll('a')]
-    .filter((link) => {
-      const { hostname } = link;
-      return link.href
-        && !link.href.includes('tel:')
-        && !link.href.includes('mailto:')
-        && !link.href.startsWith('#')
-        && !link.href.startsWith('https://#')
-        && !link.href.includes('local')
-        && !link.href.includes('bookmark://')
-        && !link.closest('.preflight')
-        && !knownBadUrls.some((url) => url === hostname);
-    }).map((link) => link.href);
-}
-
 export async function checkLinks({ area, urlHash, envName }) {
   if (urlHash && linksCache.has(urlHash)) {
     const cachedResult = linksCache.get(urlHash);
