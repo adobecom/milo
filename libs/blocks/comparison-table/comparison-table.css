@@ -243,11 +243,11 @@
 
 @media screen and (min-width: 600px) and (max-width: 899px) {
   .comparison-table .header-content-wrapper {
-    max-width: calc(100% - 152px);
+    max-width: calc(100% - 160px);
   }
 
   .comparison-table .table-container {
-    max-width: calc(100% - 128px);
+    max-width: calc(100% - 130px);
   }
 
   .comparison-table .table-container .table-row .table-row-header {
@@ -279,7 +279,7 @@
   }
 
   .comparison-table .table-container .table-row {
-    margin: 0 12px;
+    margin: 0 24px;
     grid-template-columns: 1fr 1fr;
   }
 
