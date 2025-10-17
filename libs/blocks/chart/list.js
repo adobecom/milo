@@ -14,20 +14,22 @@ function listChartData(json) {
   const data = [];
 
   if (json[':type'] !== 'multi-sheet') {
-    console.warn('List chart error: Add table sheet');
     return data;
   }
 
   const tableKey = propertyNameCI(json, 'table');
 
   if (tableKey) {
-    json[tableKey].data?.forEach((column) => {
+    let firstHeadingLevel = null;
+    json[tableKey].data?.forEach((column, index) => {
       const sheet = propertyValueCI(column, 'sheet');
+      if (index === 0) firstHeadingLevel = propertyValueCI(column, 'heading level');
 
       data.push({
         title: propertyValueCI(column, 'title'),
         list: listToLowerCase(json[sheet]?.data ?? []),
         type: propertyValueCI(column, 'type'),
+        headingLevel: propertyValueCI(column, 'heading level') || firstHeadingLevel,
       });
     });
   } else {
@@ -62,7 +64,9 @@ const getListHtml = (chart, hexcode) => {
 
   return `
     <article class="list-wrapper">
-      <section class="title" style="${hexcode ? `background-color: ${hexcode};` : ''}">${chart.title}</section>
+      <section class="title" style="${hexcode ? `background-color: ${hexcode};` : ''}">
+        ${/^h[1-6]$/.test(chart.headingLevel) ? `<${chart.headingLevel}>${chart.title}</${chart.headingLevel}>` : chart.title}
+      </section>
       <${listType} class="${hasIcon ? 'icon-list' : ''}">${listItems}</${listType}>
     </article>
   `;
@@ -74,7 +78,7 @@ const getCarouselHtml = (data, hexcode) => {
     <div class="carousel-item${idx === 0 ? ' active' : ''}"
       role="group"
       aria-roledescription="slide"
-      aria-label="${idx} of ${data.length}">
+      aria-label="${idx + 1} of ${data.length}">
       ${getListHtml(list, hexcode)}
     </div>
     `
