@@ -322,18 +322,29 @@
 }
 
 .editorial-card .ace1151-card-overlay p {
-  display: none !important;
+  visibility: hidden !important;
   all: unset;
   font-size: 20px;
   font-weight: 400;
+}
+
+.editorial-card .ace1151-card-overlay {
+  transition: background 1s;
 }
 
 .editorial-card .ace1151-card-overlay.active {
   background: rgba(0, 0, 0, 0.6);
 }
 
+.editorial-card .ace1151-card-overlay p {
+  opacity: 0;
+  visibility: hidden !important;
+  transition: opacity 1s;
+}
+
 .editorial-card .ace1151-card-overlay.active p {
-  display: initial !important;
+  opacity: 1;
+  visibility: visible !important;
 }
 
 /* Tablet up */
