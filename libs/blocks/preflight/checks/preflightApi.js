@@ -24,8 +24,12 @@ import {
   checkLinks,
   runChecks as runChecksSeo,
 } from './seo.js';
+import { runChecks as runChecksStructure } from './structure.js';
+import { SEVERITY } from './constants.js';
 
 let checksSuite = null;
+
+const globalPreflightCache = new Map();
 
 export default {
   assets: {
@@ -56,6 +60,7 @@ export default {
     checkLinks,
     runChecks: runChecksSeo,
   },
+  structure: { runChecks: runChecksStructure },
 };
 
 export const getChecksSuite = () => {
@@ -77,29 +82,49 @@ export const getChecksSuite = () => {
   });
 };
 
-const runChecks = async (url, area) => {
+const runChecks = async (url, area, injectVisualMetadata = false) => {
   const isASO = (await getChecksSuite()) === 'ASO';
-  const assets = await Promise.all(runChecksAssets(url, area));
+  const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
   const performance = await Promise.all(runChecksPerformance(url, area));
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
-  return { assets, performance, seo };
+  const structure = await Promise.all(runChecksStructure({ area }));
+  return { assets, performance, seo, structure };
 };
 
-const processResults = (results) => {
+function generateCacheKey(url, injectVisualMetadata, isASO) {
+  return `${url}_${injectVisualMetadata}_${isASO}`;
+}
+
+export async function getPreflightResults(options = {}) {
+  const {
+    url = window.location.href,
+    area = document,
+    useCache = true,
+    injectVisualMetadata = false,
+  } = options;
+
+  const isASO = (await getChecksSuite()) === 'ASO';
+  const cacheKey = generateCacheKey(url, injectVisualMetadata, isASO);
+
+  if (useCache && globalPreflightCache.has(cacheKey)) {
+    return globalPreflightCache.get(cacheKey);
+  }
+
+  const res = await runChecks(url, area, injectVisualMetadata);
   const allResults = [
-    ...(results.assets || []),
-    ...(results.performance || []),
-    ...(results.seo || []),
+    ...(res.assets || []),
+    ...(res.performance || []),
+    ...(res.seo || []),
+    ...(res.structure || []),
   ];
 
-  return {
+  const result = {
     isViewportTooSmall: isViewportTooSmall(),
-    runChecks: results,
-    hasFailures: allResults.some((result) => result.status === 'fail'),
+    runChecks: res,
+    hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
-};
 
-export async function getPreflightResults(url, area) {
-  const results = await runChecks(url, area);
-  return processResults(results);
+  if (useCache) globalPreflightCache.set(cacheKey, result);
+
+  return result;
 }

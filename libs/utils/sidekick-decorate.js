@@ -1,4 +1,5 @@
 import userCanPublishPage from '../tools/utils/publish.js';
+import checkPreflightAndShowNotification from './preflight-notification.js';
 
 const PUBLISH_BTN = '.publish.plugin button';
 const PROFILE = '.profile-email';
@@ -121,6 +122,8 @@ async function checkAuthorization(page, btn) {
 export default async function stylePublish(sk) {
   if (stylePublishCalled) return;
   stylePublishCalled = true;
+
+  checkPreflightAndShowNotification();
 
   if (sk.nodeName === 'HELIX-SIDEKICK') {
     styleHelixPublish(sk);
