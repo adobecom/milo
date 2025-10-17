@@ -196,16 +196,16 @@ export function getEnv(conf) {
 function hydrateLocale(locales, key) {
   const locale = locales[key];
 
-  if (!('root' in locale)) {
-    // This is a root. Gather all regions, merging root values into each region.
+  if (!('base' in locale)) {
+    // This is a base region. Gather all child regions, merging base values into each.
     const regions = Object.entries(locales)
-      .filter(([, value]) => value.root === key)
+      .filter(([, value]) => value.base === key)
       .reduce((acc, [k, value]) => {
-        // Merge: region inherits from root, region's own values take precedence
+        // Merge: child region inherits from base, child region's own values take precedence
         acc[k] = {
           ...locale,
           ...value,
-          root: value.root, // preserve correct root property
+          base: value.base, // preserve correct base property
           prefix: `/${k}`,
           region: value.region || k.split('_')[0] || 'us',
         };
@@ -218,10 +218,10 @@ function hydrateLocale(locales, key) {
       region: locale.region || key.split('_')[0] || 'us',
     };
   }
-  if ('root' in locale && locales[locale.root]) {
-    // This is a region. Merge with its root, region's own values take precedence
+  if ('base' in locale && locales[locale.base]) {
+    // This is a child region. Merge with its base, child region's own values take precedence
     return {
-      ...locales[locale.root],
+      ...locales[locale.base],
       ...locale,
       prefix: `/${key}`,
       region: locale.region || key.split('_')[0] || 'us',
