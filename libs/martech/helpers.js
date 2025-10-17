@@ -67,7 +67,7 @@ function getDeviceInfo() {
 export function getAllCookies() {
   return document.cookie.split(';').reduce((cookies, cookieStr) => {
     const [key, ...valParts] = cookieStr.trim().split('=');
-    cookies[key] = decodeURIComponent(valParts.join('='));
+    cookies[decodeURIComponent(key)] = decodeURIComponent(valParts.join('='));
     return cookies;
   }, {});
 }
@@ -115,7 +115,7 @@ export const getVisitorStatus = ({
 };
 
 function getOrGenerateUserId() {
-  const amcvCookieValue = getCookie(AMCV_COOKIE) || getCookie(encodeURIComponent(AMCV_COOKIE));
+  const amcvCookieValue = getCookie(AMCV_COOKIE);
 
   if (!amcvCookieValue || (amcvCookieValue.indexOf('MCMID|') === -1)) {
     const fpidValue = generateUUIDv4();
@@ -628,7 +628,7 @@ function updateMartechCookies(cookieData) {
 }
 
 function updateAMCVCookie(ECID) {
-  const cookieValue = getCookie(AMCV_COOKIE) || getCookie(encodeURIComponent(AMCV_COOKIE));
+  const cookieValue = getCookie(AMCV_COOKIE);
 
   if (!cookieValue) {
     setCookie(encodeURIComponent(AMCV_COOKIE), `MCMID|${ECID}`);

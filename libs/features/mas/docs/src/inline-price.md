@@ -28,6 +28,7 @@ See [MAS](mas.html#terminology) to learn more.
 | `data-promotion-code`     | Flex promotion code to apply, if applicable                                                 |               | `false`  |
 | `data-force-tax-exclusive`| Whether to force tax exclusive price, if `false`, it's automatic, driven by country service | `false`       | `false`  |
 | `data-template`           | One of price, discount, optical, strikethrough, priceAnnual                                 | price         | `false`  |
+| `data-quantity`           | Quantity of the offer, used with volume promotion codes to display either regular or promotional price. | 1 | `false`  |
 
 ### data-template values
 

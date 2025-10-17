@@ -2,6 +2,13 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { DEBOUNCE_TIME, getLocalStorageFilter } from '../../../libs/blocks/mmm/mmm.js';
+import { getConfig } from '../../../libs/utils/utils.js';
+
+const config = getConfig();
+config.mep = {
+  akamaiCode: 'us',
+  consentState: { performance: true, advertising: true },
+};
 
 const delay = (ms = 0) => new Promise((resolve) => {
   setTimeout(() => resolve(), ms);
@@ -47,6 +54,7 @@ describe('MMM', () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const module = await import('../../../libs/blocks/mmm/mmm.js');
     await module.default(document.querySelector('.mmm'));
+    localStorage.clear();
   });
 
   it('Renders with mmm class', async () => {
@@ -117,12 +125,14 @@ describe('MMM', () => {
     const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
     const manifestColumnOne = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(1)');
-    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Active');
+    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Experience');
     expect(manifestColumnOne.querySelector('div:nth-child(2)').textContent).to.include('Source');
-    expect(manifestColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Last seen');
+    expect(manifestColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Mktg action');
+    expect(manifestColumnOne.querySelector('div:nth-child(4)').textContent).to.include('Last seen');
     const manifestColumnTwo = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(2)');
     expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('default (control)');
     expect(manifestColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('target');
+    expect(manifestColumnTwo.querySelector('div:nth-child(3)').textContent).to.include('undefined');
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
     expect(editButton).to.exist;
     expect(editButton.href).to.equal('https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json');

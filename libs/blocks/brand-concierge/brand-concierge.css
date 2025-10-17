@@ -32,6 +32,7 @@
   gap: 4px;
   text-align: center;
   margin-bottom: 32px;
+  padding: 0 24px;
 }
 
 .bc-header-title {
@@ -229,10 +230,15 @@
   display: block;
 }
 
-.bc-input-field-container textarea {
+.bc-textarea-grow-wrap {
+  display: grid;
+  flex: 1;
+}
+
+.bc-input-field-container textarea,
+.bc-textarea-grow-wrap::after {
   background: transparent;
   border: none;
-  flex: 1;
   font-family: inherit;
   font-size: var(--type-body-s-size);
   line-height: 1.5;
@@ -242,9 +248,19 @@
   overflow-wrap: break-word;
   min-height: var(--bc-input-height);
   max-height: 35vh;
-  overflow-y: auto;
   padding: 14px 0;
   box-sizing: border-box;
+  grid-area: 1 / 1 / 2 / 2;
+}
+
+.bc-input-field-container textarea {
+  overflow-y: auto;
+}
+
+.bc-textarea-grow-wrap::after {
+  content: attr(data-replicated-value) " ";
+  white-space: pre-wrap;
+  visibility: hidden;
 }
 
 .bc-input-field-container textarea::placeholder {
@@ -265,6 +281,7 @@
   width: var(--bc-button-dimensions);
   align-self: end;
   margin-bottom: 10px;
+  padding: 0;
 }
 
 .input-field-button:hover {
@@ -384,7 +401,8 @@
 }
 
 #brand-concierge-mount .message-blocker {
-  top: 28px !important;
+  height: calc(90px - 24px) !important;
+  bottom: -1px !important;
 }
 
 /* Hero */
@@ -413,12 +431,14 @@
 
 .hero .prompt-card-button,
 .pill-cards .prompt-card-button {
+  align-items: center;
   box-shadow: 0 0 6px 0 rgba(0 0 0 / 25%);
 }
 
 .hero .card-icon,
 .pill-cards .card-icon {
   align-self: flex-start;
+  margin-top: 4px;
 }
 
 /* Sticky */
@@ -545,6 +565,50 @@
   outline: 2px solid var(--bc-keyboard-focus-color);
 }
 
+@keyframes slide-up {
+  from {
+    bottom: -100vh;
+  }
+
+  to {
+    bottom: 0;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    bottom: 0;
+  }
+
+  to {
+    bottom: -100vh;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+:root {
+  --bc-modal-animation-time: 500ms;
+}
+
 #brand-concierge-modal {
   --modal-header-height: 57px;
 }
@@ -558,12 +622,38 @@
   border-radius: 24px 24px 0 0;
   font-size: 16px;
   top: unset;
+  bottom: 0;
+  animation: var(--bc-modal-animation-time) ease-in-out slide-up;
 }
 
 /* Fallback for browsers that don't support dvh */
 @supports not (height: 100dvh) {
   #brand-concierge-modal.dialog-modal {
     height: calc(100vh - 22px);
+  }
+}
+
+#brand-concierge-modal.dialog-modal.closing {
+  animation: var(--bc-modal-animation-time) ease-in-out slide-down;
+  bottom: -100vh;
+}
+
+#brand-concierge-modal ~ .modal-curtain {
+  animation: var(--bc-modal-animation-time) ease-in-out fade-in;
+  opacity: 1;
+}
+
+#brand-concierge-modal.closing ~ .modal-curtain {
+  animation: var(--bc-modal-animation-time) ease-in-out fade-out;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #brand-concierge-modal.dialog-modal,
+  #brand-concierge-modal.dialog-modal.closing,
+  #brand-concierge-modal ~ .modal-curtain,
+  #brand-concierge-modal.closing ~ .modal-curtain {
+    animation: none;
   }
 }
 
@@ -674,7 +764,8 @@
     margin-bottom: calc(32px + 2px);
   }
 
-  .bc-input-field-container textarea {
+  .bc-input-field-container textarea,
+  .bc-textarea-grow-wrap::after {
     max-height: 244px;
   }
 
@@ -694,6 +785,10 @@
     padding: 80px 48px 24px;
   }
 
+  .hero .bc-header {
+    padding: 0 50px;
+  }
+
   .hero .bc-input-field {
     margin-bottom: 32px;
     max-width: calc(768px - 4px);
@@ -708,12 +803,12 @@
   .pill-cards .prompt-card-button {
     flex-direction: row;
     height: 40px;
-    width: unset;
   }
 
   .hero .card-icon,
   .pill-cards .card-icon {
     align-self: center;
+    margin-top: 0;
   }
 
   .hero .prompt-card-text,
@@ -764,10 +859,28 @@
   }
 }
 
+/* tablet wide up */
+@media screen and (min-width: 900px) {
+  .hero .bc-prompt-cards,
+  .pill-cards .bc-prompt-cards {
+    max-width: 768px;
+  }
+
+  .hero .prompt-card-button,
+  .pill-cards .prompt-card-button {
+    width: unset;
+  }
+}
+
 /* desktop up */
 @media screen and (min-width: 1200px) {
   .brand-concierge {
     padding: 80px 48px 12px;
+  }
+
+  .bc-header,
+  .hero .bc-header {
+    padding: 0 24px;
   }
 
   .bc-prompt-cards {
@@ -794,5 +907,9 @@
   .sticky .bc-input-field,
   .sticky .bc-legal {
     max-width: calc(600px - 4px);
+  }
+
+  #brand-concierge-modal.dialog-modal {
+    max-width: 80vw;
   }
 }

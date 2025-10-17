@@ -232,12 +232,14 @@ const createPriceTemplate =
 
         const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
 
-        let displayPrice =
-            displayStrikethrough && priceWithoutDiscount
-                ? priceWithoutDiscount
-                : price;
-        if (promotion &&!isPromoApplied && priceWithoutDiscount) {
+        let displayPrice;
+        
+        if (promotion && !isPromoApplied && priceWithoutDiscount) {
+            displayPrice = isAlternativePrice ? price : priceWithoutDiscount;
+        } else if (displayStrikethrough && priceWithoutDiscount) {
             displayPrice = priceWithoutDiscount;
+        } else {
+            displayPrice = price;
         }
 
         let method = displayOptical ? formatOpticalPrice : formatRegularPrice;
@@ -406,7 +408,7 @@ const createPromoPriceTemplate = () => (context, value, attributes) => {
           displayStrikethrough: true,
         })({ isPromoApplied, ...context }, value, attributes) + '&nbsp;'
         : ''
-    }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })({ isPromoApplied, ...context }, value, attributes)}`;
+      }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })({ isPromoApplied, ...context }, value, attributes)}`;
 };
 
 const createPromoPriceWithAnnualTemplate =
@@ -427,10 +429,10 @@ const createPromoPriceWithAnnualTemplate =
         }
         const isPromoApplied = isPromotionActive(value.promotion, instant, Array.isArray(context.quantity) ? context.quantity[0] : context.quantity);
         const ctxStAnnual = {
-          ...context,
-          displayTax: false,
-          displayPerUnit: false,
-          isPromoApplied,
+            ...context,
+            displayTax: false,
+            displayPerUnit: false,
+            isPromoApplied,
         };
         if (!isPromoApplied) {
           return (
