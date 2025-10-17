@@ -7,7 +7,7 @@ function equalHeight(el) {
       - p.computedStyleMap().get('border-top-width').value - p.computedStyleMap().get('border-bottom-width').value));
 
   const setupHeightHandler = (handler) => {
-    setTimeout(handler, 0);
+    setTimeout(handler, 100);
     window.addEventListener('resize', handler);
   };
 
@@ -161,7 +161,7 @@ function createSubHeaderContainer(
 
         const firstHeaderItem = parent.querySelector('.header-item:first-child');
 
-        if (col.classList.contains('header-item') && firstHeaderItem && firstHeaderItem !== col) {
+        if (col.classList.contains('header-item') && firstHeaderItem !== col) {
           parent.insertBefore(col, firstHeaderItem.nextSibling);
           return;
         }
@@ -182,9 +182,7 @@ function createSubHeaderContainer(
   const actionAreaElements = container.querySelectorAll('.action-area');
   if (actionAreaElements.length > 0) {
     const btnContainer = createTag('div', { class: 'btn-container' });
-    actionAreaElements.forEach((element) => {
-      btnContainer.appendChild(element);
-    });
+    actionAreaElements.forEach((element) => btnContainer.appendChild(element));
     container.appendChild(btnContainer);
   }
 
@@ -337,7 +335,7 @@ function decorateTables(el, children) {
 }
 
 function setupResponsiveHiding(el) {
-  const mediaQuery = window.matchMedia('(max-width: 768px)');
+  const mediaQuery = window.matchMedia('(max-width: 899px)');
 
   const handleResponsive = (e) => {
     const isMobile = e ? e.matches : mediaQuery.matches;
