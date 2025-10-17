@@ -1010,9 +1010,14 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   box-sizing: content-box; /* Some DC pages use non default box-sizing  globally */
 }
 
+header .feds-menu-description {
+  display: none;
+}
+
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs .tab-wrapper {
   padding: 8px 0;
   margin-bottom: 20px;
+  cursor: pointer;
 }
 
 header.test-nav .feds-menu-description {
@@ -1201,7 +1206,6 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
-  min-height:48px;
   border: none;
   white-space: normal;
   font-weight: 700;
@@ -1209,7 +1213,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   color: var(--feds-navLink-inactive);
   font-family: var(--body-font-family);
   font-size: 20px;
-  padding: 0;
+  padding: 2px 0;
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button:hover {
