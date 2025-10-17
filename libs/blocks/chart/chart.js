@@ -3,7 +3,6 @@ import {
   throttle,
   parseValue,
   hasPropertyCI,
-  propertyNameCI,
   propertyValueCI,
   formatExcelDate,
 } from './utils.js';
@@ -39,13 +38,64 @@ const chartTypes = [
   'pie',
   'oversized-number',
 ];
+const DATE_UNIT = 'date';
+const COMMA_SEPARATOR = ',';
+const DASH_SEPARATOR = '-';
+const LEGACY_UNIT_HEADER = 'unit';
+const X_AXIS_UNIT_HEADER = 'x axis unit';
+const Y_AXIS_UNIT_HEADER = 'y axis unit';
+const SECONDARY_Y_AXIS_UNIT_HEADER = 'secondary y axis unit';
+
+export function processUnits(headers) {
+  const units = {
+    xAxis: { date: false },
+    yAxes: [{
+      prefix: '',
+      suffix: '',
+    }],
+  };
+
+  const legacyUnit = propertyValueCI(headers, LEGACY_UNIT_HEADER);
+
+  if (legacyUnit) {
+    const legacyUnits = legacyUnit.split(DASH_SEPARATOR);
+    if (legacyUnits[0] === DATE_UNIT) {
+      units.xAxis.date = true;
+      legacyUnits.shift();
+    }
+    if (legacyUnits[0]) [units.yAxes[0].suffix] = legacyUnits;
+    if (legacyUnits[1]) units.yAxes.push({ prefix: '', suffix: legacyUnits[1] });
+  } else {
+    const xAxisUnit = propertyValueCI(headers, X_AXIS_UNIT_HEADER);
+    const yAxisUnit = propertyValueCI(headers, Y_AXIS_UNIT_HEADER);
+    const secondaryYAxisUnit = propertyValueCI(headers, SECONDARY_Y_AXIS_UNIT_HEADER);
+    if (xAxisUnit === DATE_UNIT) units.xAxis.date = true;
+    if (yAxisUnit) {
+      const yUnits = yAxisUnit.split(COMMA_SEPARATOR);
+      if (yUnits[1]) {
+        units.yAxes[0].prefix = yUnits[0].trim();
+        units.yAxes[0].suffix = yUnits[1].trim();
+      } else {
+        units.yAxes[0].suffix = yUnits[0].trim();
+      }
+    }
+    if (secondaryYAxisUnit) {
+      const yUnits = secondaryYAxisUnit.split(COMMA_SEPARATOR);
+      if (yUnits[1]) {
+        units.yAxes.push({ prefix: yUnits[0], suffix: yUnits[1] });
+      } else {
+        units.yAxes.push({ prefix: '', suffix: yUnits[0] });
+      }
+    }
+  }
+  return units;
+}
 
 export function processDataset(data) {
   const dataset = {};
-  const optionalHeaders = ['unit', 'group', 'color', 'subheading'];
+  const optionalHeaders = [LEGACY_UNIT_HEADER, 'group', 'color', 'subheading', X_AXIS_UNIT_HEADER, Y_AXIS_UNIT_HEADER, SECONDARY_Y_AXIS_UNIT_HEADER];
   const headers = data?.[0];
-  const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
-  const units = headers?.[unitKey]?.split('-') || [''];
+  const units = processUnits(headers);
   const cleanHeaders = Object.keys(headers).filter((header) => (
     !optionalHeaders.includes(header.toLowerCase())
   ));
@@ -55,7 +105,7 @@ export function processDataset(data) {
   data.forEach((element) => {
     let values = [];
 
-    if (units[0] === 'date') {
+    if (units.xAxis.date) {
       values = cleanHeaders.map((column, index) => (
         index ? parseValue(element[column]) : formatExcelDate(element[column])
       ));
@@ -69,13 +119,13 @@ export function processDataset(data) {
   return { dataset, headers, units };
 }
 
-export function processMarkData(series, xUnit) {
+export function processMarkData(series, units) {
   const seriesOptions = series.reduce((options, mark) => {
     options[mark.Type] ??= { data: [] };
 
     const markData = options[mark.Type].data;
     const split = mark.Value?.split('-');
-    const value = xUnit === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[0]) : parseValue(split[0]);
+    const value = units.xAxis.date && mark.Axis === 'xAxis' ? formatExcelDate(split[0]) : parseValue(split[0]);
     const markObject = {
       ...(mark.Name ? { name: mark.Name } : {}),
       ...(mark.Axis ? { [mark.Axis]: value } : {}),
@@ -86,7 +136,7 @@ export function processMarkData(series, xUnit) {
       markData[0].push(markObject);
 
       if (split.length > 1) {
-        const endRangeValue = xUnit === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[1]) : parseValue(split[1]);
+        const endRangeValue = units.xAxis.date && mark.Axis === 'xAxis' ? formatExcelDate(split[1]) : parseValue(split[1]);
 
         markData[0].push((mark.Axis ? { [mark.Axis]: endRangeValue } : {}));
       }
@@ -151,8 +201,8 @@ export const barTooltipFormatter = ({
   value,
   encode: { x = [] },
   name,
-} = {}, unit = '') => (
-  `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip-icon"></i>`
+} = {}, { prefix = '', suffix = '' } = {}) => (
+  `${seriesName}<br />${marker} ${prefix}${value[x[0]]}${suffix} ${name}<i class="tooltip-icon"></i>`
 );
 
 export const donutTooltipFormatter = ({
@@ -161,8 +211,8 @@ export const donutTooltipFormatter = ({
   encode: { value = [] },
   name,
   percent,
-} = {}, unit = '') => (
-  `${marker} ${name}<br />${data[value[0]]}${unit}${unit !== '%' ? ` ${percent}%` : ''}<i class="tooltip-icon"></i>`
+} = {}, { prefix = '', suffix = '' } = {}) => (
+  `${marker} ${name}<br />${prefix}${data[value[0]]}${suffix}${suffix !== '%' ? ` ${percent}%` : ''}<i class="tooltip-icon"></i>`
 );
 
 export const pieTooltipFormatter = ({
@@ -170,12 +220,12 @@ export const pieTooltipFormatter = ({
   data,
   encode: { value = [] },
   name,
-} = {}, unit = '') => (
-  `${name}<br />${marker} ${data[value[0]]}${unit}<i class="tooltip-icon"></i>`
+} = {}, { prefix = '', suffix = '' } = {}) => (
+  `${name}<br />${marker} ${prefix}${data[value[0]]}${suffix}<i class="tooltip-icon"></i>`
 );
 
 export const tooltipFormatter = (params, units) => {
-  const hasUnit2 = typeof units[1] !== 'undefined';
+  const hasUnit2 = units.yAxes.length > 1;
   let tooltip = params[0].name;
   params.forEach(({
     marker,
@@ -184,14 +234,14 @@ export const tooltipFormatter = (params, units) => {
     seriesName,
     seriesIndex,
   } = {}) => {
-    const unit = hasUnit2 ? units[seriesIndex] : units[0];
-    tooltip += `<br />${marker} ${value[y[0]]}${unit} ${seriesName}`;
+    const { prefix, suffix } = hasUnit2 ? units.yAxes[seriesIndex] : units.yAxes[0];
+    tooltip += `<br />${marker} ${prefix}${value[y[0]]}${suffix} ${seriesName}`;
   });
   tooltip += '<i class="tooltip-icon"></i>';
   return tooltip;
 };
 
-export const barSeriesOptions = (chartType, hasOverride, dimensions, colors, size, yUnits) => {
+export const barSeriesOptions = (chartType, hasOverride, dimensions, colors, size, { yAxes = [{ prefix: '', suffix: '' }] }) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
@@ -200,7 +250,7 @@ export const barSeriesOptions = (chartType, hasOverride, dimensions, colors, siz
     name: value,
     label: {
       show: isBar,
-      formatter: `{@[${index + 1}]}${yUnits[0]}`,
+      formatter: `${yAxes[0].prefix}{@[${index + 1}]}${yAxes[0].suffix}`,
       position: 'right',
       textBorderColor: '#000',
       distance: 8,
@@ -216,12 +266,12 @@ export const barSeriesOptions = (chartType, hasOverride, dimensions, colors, siz
     itemStyle: { borderRadius: 3 },
     barCategoryGap: isBar ? 0 : '33.3%',
     barGap: '33.3%',
-    yAxisIndex: typeof yUnits[1] !== 'undefined' ? index : 0,
+    yAxisIndex: yAxes.length > 1 ? index : 0,
   }));
 };
 
-export const lineSeriesOptions = (series, dimensions, xUnit, yUnits) => {
-  const marks = processMarkData(series, xUnit);
+export const lineSeriesOptions = (series, dimensions, units) => {
+  const marks = processMarkData(series, units);
 
   return dimensions.map((value, index) => {
     let options = {
@@ -229,7 +279,7 @@ export const lineSeriesOptions = (series, dimensions, xUnit, yUnits) => {
       type: 'line',
       symbol: 'none',
       lineStyle: { width: 3 },
-      yAxisIndex: typeof yUnits[1] !== 'undefined' ? index : 0,
+      yAxisIndex: units.yAxes.length > 1 ? index : 0,
     };
 
     if (index === 0 && marks) {
@@ -250,23 +300,26 @@ export const areaSeriesOptions = (dimensions) => (
   }))
 );
 
-const donutTitleFormatter = (label, unit = '', title = '') => [`{a|${label?.toLocaleString()}${unit}}`, `{b|${title}}`].join('\n');
-
-export const setDonutTitle = (chart, label, unit = '', title = '') => {
-  chart.setOption({ title: { text: donutTitleFormatter(label, unit, title) } });
+const donutTitleFormatter = (label, units, title = '') => {
+  const { prefix, suffix } = units.yAxes[0];
+  return [`{a|${prefix}${label?.toLocaleString()}${suffix}}`, `{b|${title}}`].join('\n');
 };
 
-export const handleDonutSelect = (source, selected, chart, unit, title) => {
+export const setDonutTitle = (chart, label, units, title = '') => {
+  chart.setOption({ title: { text: donutTitleFormatter(label, units, title) } });
+};
+
+export const handleDonutSelect = (source, selected, chart, units, title) => {
   const selectedSum = source.reduce((total, current) => {
     if (selected[current[1]]) return total + current[0];
     return total;
   }, 0);
-  setDonutTitle(chart, selectedSum, unit, title);
+  setDonutTitle(chart, selectedSum, units, title);
 
   return selectedSum;
 };
 
-export const donutTitleOptions = (source, seriesData, unit, size) => {
+export const donutTitleOptions = (source, seriesData, units, size) => {
   // Remove header names
   const sourceData = (source && source[0].every((i) => typeof i === 'string')) ? source.slice(1) : source;
   const sum = sourceData?.reduce((total, current) => total + current[0], 0);
@@ -279,7 +332,7 @@ export const donutTitleOptions = (source, seriesData, unit, size) => {
     show: true,
     left: 'center',
     bottom: sizeSmall ? '48%' : '46%',
-    text: donutTitleFormatter(sum, unit, title),
+    text: donutTitleFormatter(sum, units, title),
     textStyle: {
       rich: {
         a: {
@@ -345,7 +398,7 @@ export const pieSeriesOptions = (size) => {
  */
 export const getChartOptions = ({
   chartType,
-  processedData: { dataset, headers, units = [''] } = {},
+  processedData: { dataset, headers, units = { xAxis: { date: false }, yAxes: [{ prefix: '', suffix: '' }] } } = {},
   series,
   size,
   colors,
@@ -359,13 +412,6 @@ export const getChartOptions = ({
   const isPie = chartType === 'pie';
   const isDonut = chartType === 'donut';
   const isDiagonalLabel = labelDeg > 0;
-  let xUnit = '';
-  let yUnits = units;
-
-  if (units[0] === 'date') {
-    [xUnit] = units;
-    yUnits = units.length > 1 ? units.slice(1) : [''];
-  }
 
   dimensions.shift();
 
@@ -401,17 +447,17 @@ export const getChartOptions = ({
             withName: `with series ${dimensions.join(', ')}. `,
           },
         },
-        data: { separator: { middle: `${yUnits}, `, end: yUnits } },
+        data: { separator: { middle: `${units.yAxes[0].suffix}, `, end: units.yAxes[0].suffix } },
       },
     },
-    title: isDonut ? donutTitleOptions(source, series, yUnits[0], size) : {},
+    title: isDonut ? donutTitleOptions(source, series, units, size) : {},
     tooltip: {
       show: true,
       formatter: ((params) => {
-        if (isBar) return barTooltipFormatter(params, yUnits[0]);
-        if (isPie) return pieTooltipFormatter(params, yUnits[0]);
-        if (isDonut) return donutTooltipFormatter(params, yUnits[0]);
-        return tooltipFormatter(params, yUnits);
+        if (isBar) return barTooltipFormatter(params, units.yAxes[0]);
+        if (isPie) return pieTooltipFormatter(params, units.yAxes[0]);
+        if (isDonut) return donutTooltipFormatter(params, units.yAxes[0]);
+        return tooltipFormatter(params, units);
       }),
       trigger: isBar || isPie || isDonut ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
@@ -433,12 +479,12 @@ export const getChartOptions = ({
       boundaryGap: isColumn,
     },
     yAxis: (() => (
-      yUnits.map((unit) => (
+      units.yAxes.map(({ prefix, suffix }) => (
         {
           type: isBar ? 'category' : 'value',
           axisLabel: {
             show: !isBar,
-            formatter: (params) => `${params}${unit}`,
+            formatter: (params) => `${prefix}${params}${suffix}`,
             padding: 0,
           },
           axisTick: { show: !isBar },
@@ -448,9 +494,9 @@ export const getChartOptions = ({
     ))(),
     series: (() => {
       if (isBar || isColumn) {
-        return barSeriesOptions(chartType, hasOverride, dimensions, colors, size, yUnits);
+        return barSeriesOptions(chartType, hasOverride, dimensions, colors, size, units);
       }
-      if (chartType === 'line') return lineSeriesOptions(series, dimensions, xUnit, yUnits);
+      if (chartType === 'line') return lineSeriesOptions(series, dimensions, units);
       if (chartType === 'area') return areaSeriesOptions(dimensions);
       if (isDonut) return donutSeriesOptions(size);
       if (isPie) return pieSeriesOptions(size);
@@ -467,9 +513,9 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
   const title = firstSeries ? propertyValueCI(firstSeries, 'title') : '';
   let mouseOutValue = sum;
 
-  chart.on('mouseover', (value) => setDonutTitle(chart, value?.data?.[0], units?.[0], title));
-  chart.on('mouseout', () => setDonutTitle(chart, mouseOutValue, units?.[0], title));
-  chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
+  chart.on('mouseover', (value) => setDonutTitle(chart, value?.data?.[0], units, title));
+  chart.on('mouseout', () => setDonutTitle(chart, mouseOutValue, units, title));
+  chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units, title); });
 };
 
 const initChart = ({
