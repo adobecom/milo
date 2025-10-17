@@ -337,6 +337,10 @@ header.global-navigation {
   white-space: nowrap;
 }
 
+.global-navigation.test-nav.dropdown-active .feds-cta--secondary {
+  color: #fff;
+}
+
 .feds-cta--secondary:hover {
   border-color: #C6C6C6;
   background: #E9E9E9;
@@ -1006,6 +1010,22 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   box-sizing: content-box; /* Some DC pages use non default box-sizing  globally */
 }
 
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs .tab-wrapper {
+  padding: 8px 0;
+  margin-bottom: 20px;
+}
+
+header.test-nav .feds-menu-description {
+  padding-top: 6px;
+}
+
+header.test-nav .tab-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 186px;
+  color: var(--feds-navLink-inactive);
+}
+
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup {
   visibility: hidden;
   width: 100%;
@@ -1155,7 +1175,6 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   min-height:48px;
   width: 111px;
   border: none;
-  padding: 8px 11px 8px 20px;
   white-space: normal;
   font-weight: 700;
   text-align: unset;
@@ -1183,15 +1202,14 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   min-height:48px;
-  width: 140px;
   border: none;
-  padding: 8px 11px 28px 20px;
   white-space: normal;
   font-weight: 700;
   text-align: unset;
   color: var(--feds-navLink-inactive);
   font-family: var(--body-font-family);
   font-size: 20px;
+  padding: 0;
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button:hover {
@@ -1200,7 +1218,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button:hove
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
   color: var(--feds-color-white-v2);
-  border-bottom: 2px solid red;
+  border-bottom: 2px solid #EB1000;
 }
 
 header.test-nav .feds-popup .feds-navLink {

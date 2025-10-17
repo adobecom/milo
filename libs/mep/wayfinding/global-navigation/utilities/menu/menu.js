@@ -55,12 +55,16 @@ function decorateCta({ elem, type = 'primaryCta', index } = {}) {
     </div>`;
 }
 
-const decorateHeadline = (elem, index, context = 'viewport', description = "Test") => {
+const decorateHeadline = (elem, index, context = 'viewport') => {
   if (!(elem instanceof HTMLElement)) return null;
+  const headlineTexts = elem.textContent.trim().split("||");
+  debugger
+  const description = toFragment`<div class="feds-menu-description">
+  ${headlineTexts.length > 1 ? headlineTexts[1] : null}
+</div>`;
 
   const headline = toFragment`<div class="feds-menu-headline">
-      ${elem.textContent.trim()}
-      <div class="feds-menu-description"></div>
+      ${headlineTexts[0]}
     </div>`;
   const headlineClickHandler = (e) => {
     if (isDesktopForContext(context)) return;
@@ -107,7 +111,7 @@ const decorateHeadline = (elem, index, context = 'viewport', description = "Test
   // Since heading is turned into a div, it can be safely removed
   elem.remove();
 
-  return headline;
+  return { sectionHeadline: headline, description };
 };
 
 const decorateLinkGroup = (elem, index) => {
@@ -285,7 +289,7 @@ const decoratePromo = async (elem, index) => {
     </div>`;
 };
 
-const decorateColumns = async ({ content, separatorTagName = 'H5', context, description } = {}) => {
+const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {}) => {
   const hasMultipleColumns = content.children.length > 1;
   // Headline index is defined in the context of a whole menu
   let headlineIndex = 0;
@@ -329,13 +333,13 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context, desc
         resetDestination();
         // If the separator splits content into columns, reset the analytics index
         if (!hasMultipleColumns) itemIndex.position = 0;
-
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
-        const sectionHeadline = decorateHeadline(columnElem, headlineIndex, context, description);
+        const { sectionHeadline, description } = decorateHeadline(columnElem, headlineIndex, context);
+
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
 
-        itemDestination.append(sectionHeadline, menuItems);
+        itemDestination.append(sectionHeadline, description, menuItems);
 
         if (column.querySelector(selectors.columnBreak)) {
           wrapper.classList.add(`${wrapperClass}--group`);
@@ -344,7 +348,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context, desc
           const wideColumn = document.createElement('div');
           wideColumn.append(...column.childNodes);
           menuItems.append(wideColumn);
-          await decorateColumns({ content: menuItems, context, description });
+          await decorateColumns({ content: menuItems, context });
         }
       } else if (columnElem.matches(selectors.gnavPromo)) {
         // When encountering a promo, add the previous section to the column
@@ -437,7 +441,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     menuTemplate = toFragment`<div class="feds-popup">
     ${itemTopParent}
     </div>`;
-    debugger
+    
     await decorateColumns({ content: menuTemplate, description: 'Hello' });
   }
 

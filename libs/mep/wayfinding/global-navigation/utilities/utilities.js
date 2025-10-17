@@ -190,7 +190,7 @@ export function getExperienceName() {
 
 export function rootPath(path) {
   const { miloLibs, codeRoot } = getConfig();
-  const url = `${miloLibs || codeRoot}/blocks/global-navigation/${path}`;
+  const url = `${miloLibs || codeRoot}/mep/wayfinding/global-navigation/${path}`;
   return url;
 }
 
@@ -567,7 +567,9 @@ export const [setUserProfile, getUserProfile] = (() => {
 
 export const closeAllTabs = (tabs, tabpanels) => {
   tabpanels.forEach((t) => t.setAttribute('hidden', 'true'));
-  tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
+  tabs.forEach((t) => {
+    t.setAttribute('aria-selected', 'false');
+  });
 };
 
 let processTrackingLabels;
@@ -647,8 +649,7 @@ export const transformTemplateToMobile = async ({
   if (document.querySelector('.feds-promo-aside-wrapper')?.clientHeight > FEDS_PROMO_HEIGHT && updatePopupPosition) {
     updatePopupPosition();
   }
-  const description = 'test';
-  
+
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : await getMainMenuPlaceholder()}
@@ -658,16 +659,17 @@ export const transformTemplateToMobile = async ({
       <h2 id="${popup.id}-title">${item.textContent.trim()}</h2>
     </div>
     <div class="tabs" role="tablist">
-      ${tabs.map(({ name, daallTab }, i) => `
-        <div>
-        <button
-        role="tab"
-        class="tab"
-        aria-selected="false"
-        aria-controls="${i}"
-        ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
-       >${name.trim() === '' ? '<div></div>' : name}</button>
-     </div>
+      ${tabs.map(({ name, daallTab, description }, i) => `
+        <div class="tab-wrapper">
+          <button
+          role="tab"
+          class="tab"
+          aria-selected="false"
+          aria-controls="${i}"
+          ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
+          >${name.trim() === '' ? '<div></div>' : name}</button>
+          ${description ? `<div class="feds-menu-description">${description}</div>` : ''}
+        </div>
       `).join('')}
     </div>
     <div class="tab-content">
@@ -730,6 +732,7 @@ export const transformTemplateToMobile = async ({
     // This is needed to prevent the page from jumping when the tab is clicked.
     tab.addEventListener('pointerdown', (event) => event.preventDefault());
     tab.addEventListener('click', tabbuttonClickCallbacks[i]);
+    tab.addEventListener('mouseover', tabbuttonClickCallbacks[i]);
   });
 
   const cleanup = () => {
@@ -755,10 +758,10 @@ export const loaderMegaMenu = () => {
     </div>
   </div>
   `;
-  const columnItems = (n, desc = true) => new Array(n).fill(0).map(() => `<a href="" class="feds-navLink">
+
+  const columnItems = (n) => new Array(n).fill(0).map(() => `<a href="" class="feds-navLink">
           <div class="feds-navLink-content">
             <div class="feds-navLink-title"></div>
-            ${desc ? '<div class="feds-navLink-description"></div>' : ''}
           </div>
         </a>`).join('');
   const columnContent = [
