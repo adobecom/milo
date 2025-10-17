@@ -99,6 +99,13 @@ async function fetchMiloIcon(iconName) {
 
 async function getIcon(iconName) {
   if (iconCache.has(iconName)) return iconCache.get(iconName);
+  
+  // Skip federal icon fetch for Express-specific icons (ax- prefix)
+  // These icons are handled by Express's own icon system
+  if (iconName.startsWith('ax-')) {
+    return fetchMiloIcon(iconName);
+  }
+  
   const federalIcon = await fetchFederalIcon(iconName);
   if (federalIcon) return federalIcon;
   return fetchMiloIcon(iconName);
