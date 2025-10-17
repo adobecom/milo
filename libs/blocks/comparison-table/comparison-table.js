@@ -366,13 +366,14 @@ function setupResponsiveHiding(el) {
 
 function setupStickyHeader(el) {
   const headerContent = el.querySelector('.header-content');
-  if (!headerContent) return;
+  const firstTableContainer = el.querySelector('.table-container');
 
-  let headerOriginalOffset = 0;
+  let tableContainerOffset = 0;
   let isSticky = false;
 
-  const calculateHeaderOffset = () => {
-    headerOriginalOffset = headerContent.getBoundingClientRect().top;
+  const calculateTableContainerOffset = () => {
+    tableContainerOffset = firstTableContainer.getBoundingClientRect().top
+     + (window.pageYOffset || document.documentElement.scrollTop);
   };
 
   const getHeaderHeight = () => {
@@ -383,7 +384,7 @@ function setupStickyHeader(el) {
   const handleScroll = () => {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    if (scrollTop >= headerOriginalOffset && !isSticky) {
+    if (scrollTop >= tableContainerOffset && !isSticky) {
       const headerHeight = getHeaderHeight();
       headerContent.style.top = `${headerHeight}px`;
       headerContent.classList.add('sticky');
@@ -401,7 +402,7 @@ function setupStickyHeader(el) {
     headerContent.style.top = `${getHeaderHeight()}px`;
   };
 
-  setTimeout(calculateHeaderOffset, 0);
+  setTimeout(calculateTableContainerOffset, 100);
   window.addEventListener('scroll', handleScroll);
   window.addEventListener('resize', handleResize);
 }

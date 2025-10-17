@@ -109,13 +109,12 @@
 }
 
 .comparison-table .header-content {
-  position: sticky;
-  top: 0;
-  transition: top 0.3s ease-in-out;
   padding: 12px 0;
 }
 
 .comparison-table .header-content.sticky {
+  position: sticky;
+  top: 0;
   z-index: 1000;
   background-color: var(--comparison-column-background-color);
   width: 100%;
