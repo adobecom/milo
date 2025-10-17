@@ -16,7 +16,7 @@ import {
 
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
-  const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
+  const url = `${miloLibs || codeRoot}/mep/wayfinding/global-navigation/`;
   const loadStylePromise = (u) => new Promise((resolve, reject) => {
     loadStyle(u, (e) => {
       if (e === 'error') return reject(u);
@@ -1319,7 +1319,7 @@ class Gnav {
         const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
         const selectTab = popup.querySelectorAll('.tab')[tabIndex];
         const daallTab = selectTab?.getAttribute('daa-ll');
-        selectTab.setAttribute('daa-ll', `${daallTab?.replace('click', 'open')}`);
+        selectTab?.setAttribute('daa-ll', `${daallTab?.replace('click', 'open')}`);
         selectTab?.click();
         selectTab.setAttribute('daa-ll', `${daallTab?.replace('open', 'click')}`);
         const title = popup.querySelector('.title h2');

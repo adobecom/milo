@@ -592,7 +592,7 @@ const parseTabsFromMenuSection = async (section, index) => {
   const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
   const content = section.querySelector('.feds-menu-items') ?? section;
   const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
-  return { name, links, daallTab, daalhTabContent, description: description.textContent };
+  return { name, links, daallTab, daalhTabContent, description: description?.textContent };
 };
 
 const promoCrossCloudTab = async (popup) => {
@@ -632,7 +632,7 @@ export const transformTemplateToMobile = async ({
 }) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   if (notMegaMenu) return () => {};
-debugger
+
   const isLoading = popup.classList.contains('loading');
   const tabs = (await Promise.all(
     [...popup.querySelectorAll('.feds-menu-section')]
@@ -648,7 +648,7 @@ debugger
     updatePopupPosition();
   }
   const description = 'test';
-  debugger
+  
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : await getMainMenuPlaceholder()}

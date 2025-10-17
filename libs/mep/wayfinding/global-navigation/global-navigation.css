@@ -14,7 +14,7 @@
 }
 
 .global-navigation.test-nav.dropdown-active .feds-navLink {
-  color: #8c8585;
+  color: var(--feds-navLink-inactive);
 }
 
 
@@ -1189,7 +1189,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   white-space: normal;
   font-weight: 700;
   text-align: unset;
-  color: #8c8585;
+  color: var(--feds-navLink-inactive);
   font-family: var(--body-font-family);
   font-size: 20px;
 }
@@ -1217,14 +1217,14 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   font-size:14px;
   line-height: 16px;
   overflow-y: scroll;
-  border-left: 1px solid #8c8585;
+  border-left: 1px solid var(--feds-navLink-inactive);
   margin-left: 280px;
   width: 340px;
 }
 
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret:after {
   border-width: 0 2px 2px 0;
-  border-color: #8c8585;
+  border-color: var(--feds-navLink-inactive);
 }
 
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret[aria-expanded="true"]:after {
@@ -1266,7 +1266,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.fe
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink {
-  color: #8c8585;
+  color: var(--feds-navLink-inactive);
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:hover {
@@ -1297,7 +1297,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .fed
   font-size: 16px;
   white-space: break-spaces;
   padding-bottom: 10px;
-  color: #8c8585;
+  color: var(--feds-navLink-inactive);
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--gray-gradient .feds-navLink-title {
