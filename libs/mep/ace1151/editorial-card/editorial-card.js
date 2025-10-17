@@ -120,7 +120,7 @@ const decorateHoverText = (el) => {
   if (!metadata) return;
   const index = Array.from(el.parentElement.children).indexOf(el);
   const key = `overlay-${index + 1}`;
-  const [header, body] = (metadata[key].text.split(',') || []).map((s) => s.trim());
+  const [header, body] = (metadata[key].text.split('\n') || []).map((s) => s.trim());
 
   const overlay = createTag('div', { class: 'ace1151-card-overlay' });
   if (header) overlay.appendChild(createTag('h1', {}, header));
