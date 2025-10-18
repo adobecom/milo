@@ -1380,7 +1380,7 @@ export async function loadIms() {
 export async function loadMartech({
   persEnabled = false,
   persManifests = [],
-  postLCP = false,
+  postLCP = true,
 } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
