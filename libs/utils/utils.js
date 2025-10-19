@@ -1816,7 +1816,7 @@ export async function loadArea(area = document) {
 
   for (const section of sections) {
     const isLastSection = section.idx === sections.length - 1;
-    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection || section.classList.contains('prerender'))) {
+    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection || section.el?.classList.contains('prerender'))) {
       lcpSectionId = section.idx;
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
