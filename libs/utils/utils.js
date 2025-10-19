@@ -1092,7 +1092,9 @@ export function isLocalNav() {
 
 async function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
-  breadcrumbs?.remove();
+  //breadcrumbs?.remove();
+  // do not remove breadcrumb for artemis
+  breadcrumbs.style.display = "none";
   const header = document.querySelector('header');
   if (!header) return;
   const headerMeta = getMetadata('header');
