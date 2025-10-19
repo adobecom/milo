@@ -1231,6 +1231,14 @@ export function filterDuplicatedLinkBlocks(blocks) {
 }
 
 function decorateSection(section, idx) {
+  if(section.classList.contains('prerender')) {
+    return {
+      blocks: [],
+      el: section,
+      idx,
+      preloadLinks: [],
+    };
+  }
   let links = decorateLinks(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -1452,6 +1460,8 @@ async function checkForPageMods() {
   let countryIPPromise = null;
   let calculatedTimeout = null;
 
+  // mep should be off artemis
+  return;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
@@ -1751,6 +1761,10 @@ async function resolveInlineFrags(section) {
 }
 
 async function processSection(section, config, isDoc, lcpSectionId) {
+  if(section.el.classList.contains('prerender')) {
+    if (isDoc) await loadPostLCP(config);
+    return [];
+  }
   await resolveInlineFrags(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
