@@ -1,8 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
-// import { setConfig, createTag } from '../../../libs/utils/utils.js';
+import { setConfig, createTag } from '../../../libs/utils/utils.js';
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 
@@ -22,7 +21,7 @@ const { default: initMerch } = await import('../../../libs/blocks/merch/merch.js
 
 setConfig({ codeRoot: '/libs', locale: { contentRoot: '/test/blocks/merch/mocks' } });
 
-describe('Three-in-One Modal test', () => {
+describe('Three-in-One Modal', () => {
   describe('error handling', () => {
     const originalModal = document.querySelector('.three-in-one');
     let modal;
@@ -185,30 +184,30 @@ describe('Three-in-One Modal test', () => {
       expect(windowOpenSpy.calledWith('https://example.com/action')).to.be.true;
     });
 
-    // it('should dispatch merch-modal:addon-and-quantity-update event on Close message with cart items', () => {
-    //   const modal = document.querySelector('.three-in-one');
-    //   modal.id = 'test-modal-id';
-    //   const link = createTag('a', { 'data-modal-id': 'test-modal-id' });
-    //   const merchCard = createTag('merch-card');
-    //   merchCard.appendChild(link);
-    //   document.body.appendChild(merchCard);
+    it('should dispatch merch-modal:addon-and-quantity-update event on Close message with cart items', () => {
+      const modal = document.querySelector('.three-in-one');
+      modal.id = 'test-modal-id';
+      const link = createTag('a', { 'data-modal-id': 'test-modal-id' });
+      const merchCard = createTag('merch-card');
+      merchCard.appendChild(link);
+      document.body.appendChild(merchCard);
 
-    //   const eventSpy = sinon.spy();
-    //   merchCard.addEventListener('merch-modal:addon-and-quantity-update', eventSpy);
+      const eventSpy = sinon.spy();
+      merchCard.addEventListener('merch-modal:addon-and-quantity-update', eventSpy);
 
-    //   const message = {
-    //     app: 'ucv3',
-    //     subType: MSG_SUBTYPE.Close,
-    //     data: { state: { cart: { items: ['item1', 'item2'] } } },
-    //   };
-    //   handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.Close,
+        data: { state: { cart: { items: ['item1', 'item2'] } } },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
 
-    //   expect(eventSpy.calledOnce).to.be.true;
-    //   expect(eventSpy.firstCall.args[0].detail).to.deep.equal({
-    //     id: 'test-modal-id',
-    //     items: ['item1', 'item2'],
-    //   });
-    // });
+      expect(eventSpy.calledOnce).to.be.true;
+      expect(eventSpy.firstCall.args[0].detail).to.deep.equal({
+        id: 'test-modal-id',
+        items: ['item1', 'item2'],
+      });
+    });
   });
 
   describe('createContent', () => {
