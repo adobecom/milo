@@ -274,13 +274,9 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
       [...tableChild.children].forEach((child, childIndex) => {
-        if (childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY) {
-          arePrimaryColumns[childIndex] = true;
-          child.remove();
-        }
-        if (child.textContent.trim()) return;
-
-        child.remove();
+        const isPrimary = childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY;
+        if (childIndex !== 0 && isPrimary) arePrimaryColumns[childIndex] = true;
+        if (!child.textContent.trim() || isPrimary) child.remove();
       });
       tableChild.classList.add('table-column-header');
 
