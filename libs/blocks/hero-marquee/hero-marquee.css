@@ -3,6 +3,7 @@
   --m-min-height: 448px; /* 560px */
   --l-min-height: 588px; /* 700px */
   --default-block-spacing: 5px;
+  --media-cover-position: center top;
 
   /* 112 = 56px default padding */
 
@@ -100,7 +101,7 @@ html[lang="ja-jp"] .hero-marquee .action-area wbr:last-of-type{
 .hero-marquee .foreground-media picture img,
 .hero-marquee .foreground-media video {
   object-fit: cover;
-  object-position: center top;
+  object-position: var(--media-cover-position);
   width: 100%;
   height: 100%;
   display: block;
