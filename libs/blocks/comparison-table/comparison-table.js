@@ -7,8 +7,28 @@ function equalHeight(el) {
       - p.computedStyleMap().get('border-top-width').value - p.computedStyleMap().get('border-bottom-width').value));
 
   const setupHeightHandler = (handler) => {
-    setTimeout(handler, 100);
-    window.addEventListener('resize', handler);
+    const resizeObserver = new ResizeObserver((entries) => {
+      let shouldRecalculate = false;
+
+      entries.forEach((entry) => {
+        if (entry.contentBoxSize || entry.borderBoxSize) shouldRecalculate = true;
+      });
+
+      if (shouldRecalculate) handler();
+    });
+
+    const observeElements = () => {
+      const elementsToObserve = [
+        ...el.querySelectorAll('.table-cell p'),
+        ...el.querySelectorAll('.sub-header-item-container'),
+      ];
+
+      elementsToObserve.forEach((element) => resizeObserver.observe(element));
+    };
+
+    observeElements();
+
+    return resizeObserver;
   };
 
   const performEqualHeight = () => {
@@ -102,8 +122,13 @@ function equalHeight(el) {
     });
   };
 
-  setupHeightHandler(performHeaderEqualHeight);
-  setupHeightHandler(performEqualHeight);
+  const headerObserver = setupHeightHandler(performHeaderEqualHeight);
+  const tableObserver = setupHeightHandler(performEqualHeight);
+
+  return () => {
+    headerObserver?.disconnect();
+    tableObserver?.disconnect();
+  };
 }
 
 const getFirstVisibleColumnIndex = () => {
@@ -432,7 +457,9 @@ export default function init(el) {
 
   decorateHeader(children[0]);
   decorateTables(el, children.slice(1));
-  equalHeight(el);
+  const cleanup = equalHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
+
+  return cleanup;
 }
