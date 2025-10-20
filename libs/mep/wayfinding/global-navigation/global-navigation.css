@@ -17,6 +17,9 @@
   color: var(--feds-navLink-inactive);
 }
 
+header .feds-menu-description {
+  display: none;
+}
 
 .global-navigation.test-nav.dropdown-active .feds-navLink[aria-expanded = "true"],
 .global-navigation.test-nav.dropdown-active .feds-navLink:hover {
@@ -1012,10 +1015,6 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
     "tabs tab-panel"
     "cta cta";
   box-sizing: content-box; /* Some DC pages use non default box-sizing  globally */
-}
-
-header .feds-menu-description {
-  display: none;
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs .tab-wrapper {
