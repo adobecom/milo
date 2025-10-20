@@ -9,10 +9,10 @@ import { mockIms, unmockIms } from './mocks/ims.js';
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
 const {
-  // MSG_SUBTYPE,
+  MSG_SUBTYPE,
   reloadIframe,
   showErrorMsg,
-  // handle3in1IFrameEvents,
+  handle3in1IFrameEvents,
   handleTimeoutError,
   createContent,
   default: openThreeInOneModal,
@@ -96,120 +96,120 @@ describe('Three-in-One Modal test', () => {
     });
   });
 
-  // describe('handle3in1IFrameEvents', () => {
-  //   afterEach(() => {
-  //     sinon.restore();
-  //   });
+  describe('handle3in1IFrameEvents', () => {
+    afterEach(() => {
+      sinon.restore();
+    });
 
-  //   it('should handle AppLoaded message', () => {
-  //     const message = {
-  //       app: 'ucv3',
-  //       subType: MSG_SUBTYPE.AppLoaded,
-  //     };
-  //     handle3in1IFrameEvents({ data: JSON.stringify(message) });
-  //     const iframe = document.querySelector('iframe');
-  //     const theme = document.querySelector('sp-theme');
-  //     const closeBtn = document.querySelector('.dialog-close');
-  //     expect(theme).to.not.exist;
-  //     expect(iframe.getAttribute('data-pageloaded')).to.equal('true');
-  //     expect(iframe.classList.contains('loading')).to.be.false;
-  //     expect(closeBtn.getAttribute('aria-hidden')).to.equal('true');
-  //     expect(closeBtn.style.opacity).to.equal('0');
-  //   });
+    it('should handle AppLoaded message', () => {
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.AppLoaded,
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      const closeBtn = document.querySelector('.dialog-close');
+      expect(theme).to.not.exist;
+      expect(iframe.getAttribute('data-pageloaded')).to.equal('true');
+      expect(iframe.classList.contains('loading')).to.be.false;
+      expect(closeBtn.getAttribute('aria-hidden')).to.equal('true');
+      expect(closeBtn.style.opacity).to.equal('0');
+    });
 
-  //   it('should handle Close message', () => {
-  //     const closeEvent = sinon.spy();
-  //     const modal = document.querySelector('.three-in-one');
-  //     modal.addEventListener('closeModal', closeEvent);
-  //     const message = {
-  //       app: 'ucv3',
-  //       subType: MSG_SUBTYPE.Close,
-  //     };
-  //     handle3in1IFrameEvents({ data: JSON.stringify(message) });
-  //     expect(closeEvent.calledOnce).to.be.true;
-  //   });
+    it('should handle Close message', () => {
+      const closeEvent = sinon.spy();
+      const modal = document.querySelector('.three-in-one');
+      modal.addEventListener('closeModal', closeEvent);
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.Close,
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(closeEvent.calledOnce).to.be.true;
+    });
 
-  //   it('should handle EXTERNAL message and open window with external URL', () => {
-  //     const windowOpenSpy = sinon.spy(window, 'open');
-  //     const message = {
-  //       app: 'ucv3',
-  //       subType: MSG_SUBTYPE.EXTERNAL,
-  //       data: {
-  //         externalUrl: 'https://example.com',
-  //         target: '_blank',
-  //       },
-  //     };
-  //     handle3in1IFrameEvents({ data: JSON.stringify(message) });
-  //     expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
-  //   });
+    it('should handle EXTERNAL message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.EXTERNAL,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
 
-  //   it('should handle SWITCH message and open window with external URL', () => {
-  //     const windowOpenSpy = sinon.spy(window, 'open');
-  //     const message = {
-  //       app: 'ucv3',
-  //       subType: MSG_SUBTYPE.SWITCH,
-  //       data: {
-  //         externalUrl: 'https://example.com',
-  //         target: '_blank',
-  //       },
-  //     };
-  //     handle3in1IFrameEvents({ data: JSON.stringify(message) });
-  //     expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
-  //   });
+    it('should handle SWITCH message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.SWITCH,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
 
-  //   it('should handle RETURN_BACK message and open window with external URL', () => {
-  //     const windowOpenSpy = sinon.spy(window, 'open');
-  //     const message = {
-  //       app: 'ucv3',
-  //       subType: MSG_SUBTYPE.RETURN_BACK,
-  //       data: {
-  //         externalUrl: 'https://example.com',
-  //         target: '_blank',
-  //       },
-  //     };
-  //     handle3in1IFrameEvents({ data: JSON.stringify(message) });
-  //     expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
-  //   });
+    it('should handle RETURN_BACK message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.RETURN_BACK,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
 
-  //   it('should handle Close message with action URL', () => {
-  //     const windowOpenSpy = sinon.spy(window, 'open');
-  //     const message = {
-  //       app: 'ucv3',
-  //       subType: MSG_SUBTYPE.Close,
-  //       data: {
-  //         actionRequired: true,
-  //         actionUrl: 'https://example.com/action',
-  //       },
-  //     };
-  //     handle3in1IFrameEvents({ data: JSON.stringify(message) });
-  //     expect(windowOpenSpy.calledWith('https://example.com/action')).to.be.true;
-  //   });
+    it('should handle Close message with action URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.Close,
+        data: {
+          actionRequired: true,
+          actionUrl: 'https://example.com/action',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com/action')).to.be.true;
+    });
 
-  //   it('should dispatch merch-modal:addon-and-quantity-update event on Close message with cart items', () => {
-  //     const modal = document.querySelector('.three-in-one');
-  //     modal.id = 'test-modal-id';
-  //     const link = createTag('a', { 'data-modal-id': 'test-modal-id' });
-  //     const merchCard = createTag('merch-card');
-  //     merchCard.appendChild(link);
-  //     document.body.appendChild(merchCard);
+    // it('should dispatch merch-modal:addon-and-quantity-update event on Close message with cart items', () => {
+    //   const modal = document.querySelector('.three-in-one');
+    //   modal.id = 'test-modal-id';
+    //   const link = createTag('a', { 'data-modal-id': 'test-modal-id' });
+    //   const merchCard = createTag('merch-card');
+    //   merchCard.appendChild(link);
+    //   document.body.appendChild(merchCard);
 
-  //     const eventSpy = sinon.spy();
-  //     merchCard.addEventListener('merch-modal:addon-and-quantity-update', eventSpy);
+    //   const eventSpy = sinon.spy();
+    //   merchCard.addEventListener('merch-modal:addon-and-quantity-update', eventSpy);
 
-  //     const message = {
-  //       app: 'ucv3',
-  //       subType: MSG_SUBTYPE.Close,
-  //       data: { state: { cart: { items: ['item1', 'item2'] } } },
-  //     };
-  //     handle3in1IFrameEvents({ data: JSON.stringify(message) });
+    //   const message = {
+    //     app: 'ucv3',
+    //     subType: MSG_SUBTYPE.Close,
+    //     data: { state: { cart: { items: ['item1', 'item2'] } } },
+    //   };
+    //   handle3in1IFrameEvents({ data: JSON.stringify(message) });
 
-  //     expect(eventSpy.calledOnce).to.be.true;
-  //     expect(eventSpy.firstCall.args[0].detail).to.deep.equal({
-  //       id: 'test-modal-id',
-  //       items: ['item1', 'item2'],
-  //     });
-  //   });
-  // });
+    //   expect(eventSpy.calledOnce).to.be.true;
+    //   expect(eventSpy.firstCall.args[0].detail).to.deep.equal({
+    //     id: 'test-modal-id',
+    //     items: ['item1', 'item2'],
+    //   });
+    // });
+  });
 
   describe('createContent', () => {
     it('should create iframe content with correct URL', async () => {
