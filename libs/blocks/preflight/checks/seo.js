@@ -255,7 +255,8 @@ export async function validLinkFilter(area = document, envName = null) {
     .filter((link) => {
       if (
         link.href
-        // Added extra checks because Spidy misidentifies these URL schemes as faulty. Can be removed once we stop using Spidy.
+        // Added extra checks because Spidy misidentifies these URL schemes as faulty.
+        // Can be removed once we stop using Spidy.
         && !link.href.includes('tel:')
         && !link.href.includes('mailto:')
         && !link.href.startsWith('#')
