@@ -9,6 +9,7 @@
   <h2 id="ccd-slice-card" tabindex="-1">CCD Slice Cards <a class="header-anchor" href="#ccd-slice-card" title="Permalink to this heading">#</a></h2>
   <div class="three-merch-cards ccd-slice">
       <merch-card><aem-fragment fragment="0ef2a804-e788-4959-abb8-b4d96a18b0ef"></aem-fragment></merch-card>
+      <merch-card><aem-fragment fragment="ffdb8a91-aebb-482f-aae3-1bc34cecd085"></aem-fragment></merch-card>
       <merch-card><aem-fragment fragment="c13897c7-de77-4e45-b23b-eec9fd66cad1"></aem-fragment></merch-card>  
       <merch-card><aem-fragment fragment="58c7906f-70a6-4e2b-bc29-257ff2ade513"></aem-fragment></merch-card>
       <merch-card><aem-fragment fragment="51c23f28-504f-450d-9764-0e60f1e279b2"></aem-fragment></merch-card>

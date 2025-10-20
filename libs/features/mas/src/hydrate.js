@@ -79,8 +79,8 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     });
 
     const slotIcons = merchCard.shadowRoot.querySelector('slot[name="icons"]');
-    if (!mnemonics?.length && slotIcons) {
-      slotIcons.remove();
+    if (slotIcons) {
+        slotIcons.style.display = mnemonics?.length ? null : 'none';
     }
 }
 
@@ -165,6 +165,9 @@ export function processCardName(fields, merchCard) {
 }
 
 export function processTitle(fields, merchCard, titleConfig) {
+    if (fields.cardTitle) {
+        fields.cardTitle = processMnemonicElements(fields.cardTitle);
+    }
     appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
 }
 
@@ -350,16 +353,19 @@ function processDescriptionLinks(merchCard, aemFragmentMapping) {
 }
 
 export function processDescription(fields, merchCard, mapping) {
-    // Process tooltips in description field
     if (fields.description) {
         fields.description = processMnemonicElements(fields.description);
     }
     if (fields.promoText) {
         fields.promoText = processMnemonicElements(fields.promoText);
     }
+    if (fields.shortDescription) {
+        fields.shortDescription = processMnemonicElements(fields.shortDescription);
+    }
     
     appendSlot('promoText', fields, merchCard, mapping);
     appendSlot('description', fields, merchCard, mapping);
+    appendSlot('shortDescription', fields, merchCard, mapping);
     processDescriptionLinks(merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
