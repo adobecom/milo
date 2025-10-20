@@ -105,8 +105,8 @@ function equalHeight(el) {
   };
 }
 
-const getFirstVisibleColumnIndex = () => {
-  const headerItems = document.querySelectorAll('.header-item[data-column-index]');
+const getFirstVisibleColumnIndex = (el) => {
+  const headerItems = el.querySelectorAll('.header-item[data-column-index]');
   for (let i = 0; i < headerItems.length; i += 1) {
     const item = headerItems[i];
     if (!item.classList.contains('hidden')) return +item.getAttribute('data-column-index');
@@ -118,6 +118,7 @@ function createSubHeaderContainer(
   childrenArray,
   startIndex,
   endIndex,
+  el,
   isLast = false,
   isFirst = false,
   headerTitles = [],
@@ -150,12 +151,12 @@ function createSubHeaderContainer(
     });
 
     select.addEventListener('change', (e) => {
-      const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex();
+      const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex(el);
 
-      document.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => {
+      el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => {
         col.classList.add('hidden');
       });
-      document.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => {
+      el.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => {
         col.classList.remove('hidden');
         const parent = col.parentNode;
 
@@ -172,10 +173,10 @@ function createSubHeaderContainer(
         if (rowHeader) parent.insertBefore(col, rowHeader.nextSibling);
       });
 
-      const selectElement = document.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
+      const selectElement = el.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
       if (selectElement) selectElement.value = +e.target.value;
 
-      const visibleSelects = Array.from(document.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select'));
+      const visibleSelects = Array.from(el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select'));
 
       visibleSelects.forEach((selectItem) => {
         const currentValue = +selectItem.value;
@@ -210,7 +211,7 @@ function createSubHeaderContainer(
   return container;
 }
 
-function decorateHeader(headerContent) {
+function decorateHeader(headerContent, el) {
   headerContent.classList.add('header-content');
   const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
 
@@ -243,6 +244,7 @@ function decorateHeader(headerContent) {
         childrenArray,
         lastContainedIndex + 1,
         index,
+        el,
         false,
         containerIndex === 0,
         headerTitles,
@@ -257,6 +259,7 @@ function decorateHeader(headerContent) {
       childrenArray,
       lastContainedIndex + 1,
       childrenArray.length,
+      el,
       true,
       false,
       headerTitles,
@@ -429,7 +432,7 @@ function setupStickyHeader(el) {
 export default function init(el) {
   const children = Array.from(el.children);
 
-  decorateHeader(children[0]);
+  decorateHeader(children[0], el);
   decorateTables(el, children.slice(1));
   equalHeight(el);
   setupStickyHeader(el);
