@@ -183,7 +183,7 @@ function createSubHeaderContainer(
 
         selectItem.innerHTML = '';
         headerTitles.forEach((title, index) => {
-          if (!title || visibleSelects.filter((s) => s !== selectItem).map((s) => +s.value).includes(index)) return;
+          if (!title || visibleSelects.some((s) => s !== selectItem && +s.value === index)) return;
 
           const option = createTag('option', { value: index }, title);
           if (index === currentValue) option.selected = true;
