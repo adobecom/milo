@@ -221,6 +221,7 @@ function decorateHeader(headerContent) {
   const headerTitles = [];
   Array.from(headerContentWrapper.children).forEach((headerItem) => {
     const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
+    titleElement?.setAttribute('role', 'paragraph');
     headerTitles.push(titleElement ? titleElement.textContent.trim() : '');
   });
 
