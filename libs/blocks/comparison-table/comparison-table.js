@@ -1,6 +1,8 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
+const COLUMN_TYPES = { PRIMARY: 'primary' };
+
 function equalHeight(el) {
   const calculateMaxHeight = (elements) => Math.max(...elements.map((p) => p.offsetHeight
       - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value
@@ -272,7 +274,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
       [...tableChild.children].forEach((child, childIndex) => {
-        if (childIndex !== 0 && child.textContent.trim() === 'primary') {
+        if (childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY) {
           arePrimaryColumns[childIndex] = true;
           child.remove();
         }
