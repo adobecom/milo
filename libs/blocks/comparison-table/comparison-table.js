@@ -267,11 +267,12 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       tableChild.classList.add('table-column-header');
 
       const firstChild = tableChild.children[0];
-      const buttonElement = createTag('button');
+      const buttonElement = createTag('button', { 'aria-expanded': true });
       const { miloLibs, codeRoot } = getConfig();
       buttonElement.innerHTML = `${firstChild.innerHTML}<img src="${miloLibs || codeRoot}/blocks/comparison-table/img/black-bg-minus.svg" alt="Toggle" width="28" height="28">`;
       buttonElement.addEventListener('click', () => {
         tableElement.classList.toggle('hide');
+        buttonElement.setAttribute('aria-expanded', buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
       });
       tableChild.replaceChild(buttonElement, firstChild);
       tableContainer.appendChild(tableChild);
