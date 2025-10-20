@@ -176,7 +176,7 @@ function createSubHeaderContainer(
       const selectElement = el.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
       if (selectElement) selectElement.value = +e.target.value;
 
-      const visibleSelects = Array.from(el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select'));
+      const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
 
       visibleSelects.forEach((selectItem) => {
         const currentValue = +selectItem.value;
@@ -215,17 +215,17 @@ function decorateHeader(headerContent, el) {
   headerContent.classList.add('header-content');
   const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
 
-  Array.from(headerContent.children).forEach((child) => headerContentWrapper.appendChild(child));
+  [...headerContent.children].forEach((child) => headerContentWrapper.appendChild(child));
   headerContent.appendChild(headerContentWrapper);
 
   const headerTitles = [];
-  Array.from(headerContentWrapper.children).forEach((headerItem) => {
+  [...headerContentWrapper.children].forEach((headerItem) => {
     const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
     titleElement?.setAttribute('role', 'paragraph');
     headerTitles.push(titleElement ? titleElement.textContent.trim() : '');
   });
 
-  Array.from(headerContentWrapper.children).forEach((headerItem, headerItemIndex) => {
+  [...headerContentWrapper.children].forEach((headerItem, headerItemIndex) => {
     if (!headerItem.innerHTML) {
       headerItem.remove();
       return;
@@ -234,7 +234,7 @@ function decorateHeader(headerContent, el) {
     headerItem.classList.add('header-item');
     headerItem.setAttribute('data-column-index', headerItemIndex);
     let lastContainedIndex = -1;
-    const childrenArray = Array.from(headerItem.children);
+    const childrenArray = [...headerItem.children];
     let containerIndex = 0;
 
     childrenArray.forEach((headerItemChild, index) => {
@@ -280,7 +280,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
 
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
-      Array.from(tableChild.children).forEach((child) => {
+      [...tableChild.children].forEach((child) => {
         if (child.textContent.trim()) return;
 
         child.remove();
@@ -300,7 +300,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       return;
     }
 
-    Array.from(tableChild.children).forEach((child, childIndex) => {
+    [...tableChild.children].forEach((child, childIndex) => {
       child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
       if (childIndex === 0) child.setAttribute('role', 'rowheader');
       if (childIndex > 0) child.setAttribute('data-column-index', childIndex);
@@ -430,7 +430,7 @@ function setupStickyHeader(el) {
 }
 
 export default function init(el) {
-  const children = Array.from(el.children);
+  const children = [...el.children];
 
   decorateHeader(children[0], el);
   decorateTables(el, children.slice(1));
