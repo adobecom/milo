@@ -38,34 +38,25 @@ function equalHeight(el) {
       const tableCells = row.querySelectorAll('.table-cell');
       if (tableCells.length === 0) return;
 
-      const firstPTags = [];
-      const secondPTags = [];
+      const pTagsByPosition = [];
 
       tableCells.forEach((cell) => {
         const pTags = cell.querySelectorAll('p');
-        if (pTags[0]) {
-          pTags[0].style.minHeight = 'auto';
-          firstPTags.push(pTags[0]);
-        }
 
-        if (!pTags[1]) return;
-
-        pTags[1].style.minHeight = 'auto';
-        secondPTags.push(pTags[1]);
+        pTags.forEach((pTag, index) => {
+          if (!pTagsByPosition[index]) pTagsByPosition[index] = [];
+          pTag.style.minHeight = 'auto';
+          pTagsByPosition[index].push(pTag);
+        });
       });
 
-      if (firstPTags.length > 0) {
-        const maxFirstHeight = calculateMaxHeight(firstPTags);
-        firstPTags.forEach((p) => {
-          p.style.minHeight = `${maxFirstHeight}px`;
+      pTagsByPosition.forEach((pTags) => {
+        if (pTags.length === 0) return;
+
+        const maxHeight = calculateMaxHeight(pTags);
+        pTags.forEach((pTag) => {
+          pTag.style.minHeight = `${maxHeight}px`;
         });
-      }
-
-      if (secondPTags.length === 0) return;
-
-      const maxSecondHeight = calculateMaxHeight(secondPTags);
-      secondPTags.forEach((p) => {
-        p.style.minHeight = `${maxSecondHeight}px`;
       });
     });
   };
@@ -221,7 +212,6 @@ function decorateHeader(headerContent, el) {
   const headerTitles = [];
   [...headerContentWrapper.children].forEach((headerItem) => {
     const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
-    titleElement?.setAttribute('role', 'paragraph');
     headerTitles.push(titleElement ? titleElement.textContent.trim() : '');
   });
 
