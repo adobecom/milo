@@ -21,7 +21,7 @@ const { default: initMerch } = await import('../../../libs/blocks/merch/merch.js
 
 setConfig({ codeRoot: '/libs', locale: { contentRoot: '/test/blocks/merch/mocks' } });
 
-describe('Three-in-One Modal', () => {
+describe('Three-in-One Modal test', () => {
   describe('error handling', () => {
     const originalModal = document.querySelector('.three-in-one');
     let modal;
