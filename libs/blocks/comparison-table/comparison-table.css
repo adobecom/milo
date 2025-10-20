@@ -92,7 +92,7 @@
   color: var(--primary-cell-path-color);
 }
 
-.comparison-table .table-container .table-row .table-cell:nth-child(odd) p:first-child{
+.comparison-table .table-container .table-row .table-cell:nth-child(odd) div {
   background-color: var(--comparison-column-background-color);
 }
 
@@ -112,11 +112,15 @@
   word-break: break-word;
 }
 
-.comparison-table .table-container .table-cell p:first-child {
+.comparison-table .table-container .table-cell div {
   border: 1px solid var(--comparison-border-color);
   border-radius: 4px;
   width: calc(100% - 24px);
   padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .comparison-table .table-container .table-cell p:nth-child(2) {

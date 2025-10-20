@@ -21,7 +21,7 @@ function equalHeight(el) {
 
     const observeElements = () => {
       const elementsToObserve = [
-        ...el.querySelectorAll('.table-cell p'),
+        ...el.querySelectorAll('.table-cell div'),
         ...el.querySelectorAll('.sub-header-item-container'),
       ];
 
@@ -40,24 +40,24 @@ function equalHeight(el) {
       const tableCells = row.querySelectorAll('.table-cell');
       if (tableCells.length === 0) return;
 
-      const pTagsByPosition = [];
+      const divsByPosition = [];
 
       tableCells.forEach((cell) => {
-        const pTags = cell.querySelectorAll('p');
+        const divs = cell.querySelectorAll('div');
 
-        pTags.forEach((pTag, index) => {
-          if (!pTagsByPosition[index]) pTagsByPosition[index] = [];
-          pTag.style.minHeight = 'auto';
-          pTagsByPosition[index].push(pTag);
+        divs.forEach((div, index) => {
+          if (!divsByPosition[index]) divsByPosition[index] = [];
+          div.style.minHeight = 'auto';
+          divsByPosition[index].push(div);
         });
       });
 
-      pTagsByPosition.forEach((pTags) => {
-        if (pTags.length === 0) return;
+      divsByPosition.forEach((divs) => {
+        if (divs.length === 0) return;
 
-        const maxHeight = calculateMaxHeight(pTags);
-        pTags.forEach((pTag) => {
-          pTag.style.minHeight = `${maxHeight}px`;
+        const maxHeight = calculateMaxHeight(divs);
+        divs.forEach((div) => {
+          div.style.minHeight = `${maxHeight}px`;
         });
       });
     });
@@ -301,24 +301,37 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       if (childIndex === 0) child.setAttribute('role', 'rowheader');
       if (childIndex > 0) child.setAttribute('data-column-index', childIndex);
       if (arePrimaryColumns[childIndex]) child.classList.add('primary-cell');
+      if (childIndex === 0) return;
 
-      const hasEmptyPTag = childIndex !== 0 && child.children.length <= 1;
-      const isEmpty = childIndex === 0 || child.children.length > 1 || !child.textContent.trim();
-      if (hasEmptyPTag) child.appendChild(createTag('p'));
+      const childElements = [...child.children];
+      const separatorIndex = childElements.findIndex((element) => element.textContent.trim() === '-');
+      const cellDiv = createTag('div', { role: 'cell' });
 
-      const firstP = child.querySelector('p:first-child');
-      const secondP = child.querySelector('p:nth-child(2)');
-      if (firstP && isEmpty && childIndex !== 0) firstP.setAttribute('role', 'cell');
-      if (secondP && childIndex !== 0) secondP.setAttribute('role', 'columnheader');
+      if (separatorIndex !== -1) {
+        const columnHeaderP = childElements[separatorIndex + 1];
 
-      if (isEmpty) return;
+        childElements.slice(0, separatorIndex).forEach((element) => cellDiv.appendChild(element));
 
-      const existingEmptyP = hasEmptyPTag ? child.querySelector('p:empty') : null;
-      const pTag = createTag('p', {}, child.textContent);
-      pTag.setAttribute('role', 'cell');
+        child.innerHTML = '';
+        child.appendChild(cellDiv);
+
+        if (columnHeaderP) {
+          columnHeaderP.setAttribute('role', 'columnheader');
+          child.appendChild(columnHeaderP);
+        }
+
+        childElements.slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
+        return;
+      }
+
+      if (child.children.length > 1 || !child.textContent.trim()) {
+        [...child.children].forEach((element) => cellDiv.appendChild(element));
+      } else {
+        cellDiv.appendChild(createTag('p', {}, child.textContent));
+      }
+
       child.innerHTML = '';
-      child.appendChild(pTag);
-      if (existingEmptyP) child.appendChild(existingEmptyP);
+      child.appendChild(cellDiv);
     });
     tableChild.classList.add('table-row');
     tableChild.setAttribute('role', 'row');
