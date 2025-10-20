@@ -802,11 +802,10 @@ export function decorateSVG(a) {
     const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
 
-    // testing LANA change
-    // if (altText) {
-    //   const parentHeading = a.parentElement.closest('h1, h2, h3, h4, h5, h6');
-    //   parentHeading?.appendChild(createTag('span', { class: 'hidden' }, altText));
-    // }
+    if (altText) {
+      const parentHeading = a.parentElement.closest('h1, h2, h3, h4, h5, h6');
+      parentHeading?.appendChild(createTag('span', { class: 'hidden' }, altText));
+    }
 
     if (authoredUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
