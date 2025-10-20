@@ -1,0 +1,22 @@
+{
+  "globalCssUrls": [
+    "https://main--milo--adobecom.aem.live/libs/styles/styles.css",
+    "https://main--milo--adobecom.aem.live/libs/blocks/text/text.css",
+    "https://main--milo--adobecom.aem.live/libs/styles/breakpoint-theme.css",
+    "https://main--milo--adobecom.aem.live/libs/blocks/section-metadata/section-metadata.css",
+    "https://main--milo--adobecom.aem.live/libs/blocks/merch/merch.css"
+  ],
+  "globalJsUrls": [
+    
+  ],
+  "globalPreloadLinks": [
+    {
+      "href": "https://www.adobe.com/libs/blocks/global-navigation/base.css",
+      "as": "style"
+    },
+    {
+      "href": "https://www.adobe.com/libs/blocks/global-navigation/global-navigation.css",
+      "as": "style"
+    }
+  ]
+}

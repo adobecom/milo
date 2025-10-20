@@ -1,0 +1,14 @@
+[
+  
+  
+  {
+    "url": "https://artemis--cc--adobecom.aem.live/br/products/special-offers?milolibs=artemis&mep=off",
+    "filename": "special-offers.html",
+    "baseImageUrl": "https://www.adobe.com/products",
+    "assets": {
+      "cssUrls": [
+        "https://artemis--milo--adobecom.aem.live/libs/blocks/marquee/marquee.css"
+      ]
+    }
+  }
+]
