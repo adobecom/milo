@@ -71,54 +71,28 @@ function equalHeight(el) {
   };
 
   const performHeaderEqualHeight = () => {
-    const headerContentWrapper = el.querySelector('.header-content-wrapper');
-    if (!headerContentWrapper) return;
+    const headerItems = el.querySelector('.header-content-wrapper')?.querySelectorAll('.header-item');
+    if (!headerItems.length) return;
 
-    const headerItems = headerContentWrapper.querySelectorAll('.header-item');
-    if (headerItems.length === 0) return;
-
-    const firstContainers = [];
-    const secondContainers = [];
-    const thirdContainers = [];
+    const containersByPosition = [];
 
     headerItems.forEach((headerItem) => {
       const subHeaderContainers = headerItem.querySelectorAll('.sub-header-item-container');
 
-      if (subHeaderContainers[0]) {
-        subHeaderContainers[0].style.minHeight = 'auto';
-        firstContainers.push(subHeaderContainers[0]);
-      }
-
-      if (subHeaderContainers[1]) {
-        subHeaderContainers[1].style.minHeight = 'auto';
-        secondContainers.push(subHeaderContainers[1]);
-      }
-
-      if (!subHeaderContainers[2]) return;
-
-      subHeaderContainers[2].style.minHeight = 'auto';
-      thirdContainers.push(subHeaderContainers[2]);
+      subHeaderContainers.forEach((container, index) => {
+        if (!containersByPosition[index]) containersByPosition[index] = [];
+        container.style.minHeight = 'auto';
+        containersByPosition[index].push(container);
+      });
     });
 
-    if (firstContainers.length > 0) {
-      const maxFirstHeight = calculateMaxHeight(firstContainers);
-      firstContainers.forEach((container) => {
-        container.style.minHeight = `${maxFirstHeight}px`;
+    containersByPosition.forEach((containers) => {
+      if (containers.length === 0) return;
+
+      const maxHeight = calculateMaxHeight(containers);
+      containers.forEach((container) => {
+        container.style.minHeight = `${maxHeight}px`;
       });
-    }
-
-    if (secondContainers.length > 0) {
-      const maxSecondHeight = calculateMaxHeight(secondContainers);
-      secondContainers.forEach((container) => {
-        container.style.minHeight = `${maxSecondHeight}px`;
-      });
-    }
-
-    if (thirdContainers.length === 0) return;
-
-    const maxThirdHeight = calculateMaxHeight(thirdContainers);
-    thirdContainers.forEach((container) => {
-      container.style.minHeight = `${maxThirdHeight}px`;
     });
   };
 
@@ -457,9 +431,7 @@ export default function init(el) {
 
   decorateHeader(children[0]);
   decorateTables(el, children.slice(1));
-  const cleanup = equalHeight(el);
+  equalHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
-
-  return cleanup;
 }
