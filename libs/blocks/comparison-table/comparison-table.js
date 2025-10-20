@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
 function equalHeight(el) {
@@ -289,11 +289,14 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
 
       const firstChild = tableChild.children[0];
       const buttonElement = createTag('button', { 'aria-expanded': true });
-      const { miloLibs, codeRoot } = getConfig();
-      buttonElement.innerHTML = `${firstChild.innerHTML}<img src="${miloLibs || codeRoot}/blocks/comparison-table/img/black-bg-minus.svg" alt="Toggle" width="28" height="28">`;
+      buttonElement.innerHTML = firstChild.innerHTML;
+      buttonElement.appendChild(createTag('img', { class: 'toggle-icon' }));
       buttonElement.addEventListener('click', () => {
         tableElement.classList.toggle('hide');
-        buttonElement.setAttribute('aria-expanded', buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+        buttonElement.setAttribute(
+          'aria-expanded',
+          buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true',
+        );
       });
       tableChild.replaceChild(buttonElement, firstChild);
       tableContainer.appendChild(tableChild);

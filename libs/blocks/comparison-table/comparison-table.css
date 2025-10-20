@@ -46,6 +46,14 @@
   cursor: pointer;
 }
 
+.comparison-table .table-container .table-column-header button .toggle-icon {
+  content: url('./img/black-bg-minus.svg');
+}
+
+.comparison-table .table-container .table-column-header button[aria-expanded="false"] .toggle-icon {
+  content: url('./img/plus-sign.svg');
+}
+
 .comparison-table .table-container .table-row {
   margin: 0 24px;
   display: grid;
