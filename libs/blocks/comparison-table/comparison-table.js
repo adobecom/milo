@@ -140,7 +140,10 @@ function createSubHeaderContainer(
     });
 
     headerTitles.forEach((title, index) => {
-      if (!title) return;
+      if (!title
+        || (headerItemIndex === 1 && index === 2)
+         || (headerItemIndex === 2 && index === 1)
+      ) return;
 
       const option = createTag('option', { value: index }, title);
       if (index === headerItemIndex) option.selected = true;
@@ -172,6 +175,21 @@ function createSubHeaderContainer(
 
       const selectElement = document.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
       if (selectElement) selectElement.value = +e.target.value;
+
+      const visibleSelects = Array.from(document.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select'));
+
+      visibleSelects.forEach((selectItem) => {
+        const currentValue = +selectItem.value;
+
+        selectItem.innerHTML = '';
+        headerTitles.forEach((title, index) => {
+          if (!title || visibleSelects.filter((s) => s !== selectItem).map((s) => +s.value).includes(index)) return;
+
+          const option = createTag('option', { value: index }, title);
+          if (index === currentValue) option.selected = true;
+          selectItem.appendChild(option);
+        });
+      });
     });
 
     container.appendChild(select);
