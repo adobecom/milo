@@ -267,10 +267,15 @@ function decorateHeader(headerContent, el) {
 
 function addTableClassesAndAppend(el, tableContainer, tableChildren) {
   const tableElement = createTag('div', { class: 'table', role: 'table' });
+  const arePrimaryColumns = [];
 
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
-      [...tableChild.children].forEach((child) => {
+      [...tableChild.children].forEach((child, childIndex) => {
+        if (childIndex !== 0 && child.textContent.trim() === 'primary') {
+          arePrimaryColumns[childIndex] = true;
+          child.remove();
+        }
         if (child.textContent.trim()) return;
 
         child.remove();
@@ -297,6 +302,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
       if (childIndex === 0) child.setAttribute('role', 'rowheader');
       if (childIndex > 0) child.setAttribute('data-column-index', childIndex);
+      if (arePrimaryColumns[childIndex]) child.classList.add('primary-cell');
 
       const hasEmptyPTag = childIndex !== 0 && child.children.length <= 1;
       const isEmpty = childIndex === 0 || child.children.length > 1 || !child.textContent.trim();
