@@ -6,10 +6,13 @@
   --carousel-nav-background: #242424;
   --carousel-nav-background-dark: #e6e6e6;
   --carousel-nav-button-background-hover: #d5d5d5;
-  --carousel-nav-button-background-active: #b1b1b1;
+  --carousel-nav-button-background-active-focus: #b1b1b1;
   --carousel-nav-button-background-focus: #147af3;
+  --carousel-nav-button-hover-background-dark: #2f2f2f;
+  --carousel-nav-button-active-background-dark: #373737;
   --carousel-focus-color: #109cde;
-  --carousel-indicator-background-color: #cacaca;
+  --carousel-indicator-background-color: #b1b1b1;
+  --carousel-dark-indicator-background-color: #848484;
   --carousel-expand-background-color: rgb(255 255 255 / 75%);
   --carousel-expand-border-color: rgb(116 116 116 / 30%);
   --s-rounded-corners: 4px;
@@ -17,6 +20,7 @@
   --l-rounded-corners: 16px;
   --full-rounded-corners: 50%;
   --indicator-multiplier: 0;
+  --grid-container-view: 83.4vw;
 
   position: relative;
   margin-bottom: 1.8rem;
@@ -55,14 +59,12 @@
   order: 3;
   width: max-content;
   min-width: 114px;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* The no-buttons variant is temporarily disabled because slide indicators are currently hidden by default, which makes the no-buttons carousel unusable. */
-/* When the slide indicator color issue is resolved and they are enabled again, this should be re-enabled as well. */
-/* .carousel.no-buttons .carousel-button-container {
+.carousel.no-buttons .carousel-button-container {
   min-width: auto;
-} */
+}
 
 .carousel .carousel-button-container button {
   position: relative;
@@ -98,9 +100,9 @@
   order: 3;
 }
 
-/* .carousel.no-buttons .carousel-button {
+.carousel.no-buttons .carousel-button {
   display: none;
-} */
+}
 
 .carousel .carousel-previous:hover,
 .carousel .carousel-next:hover {
@@ -109,13 +111,14 @@
 
 .carousel .carousel-previous:active,
 .carousel .carousel-next:active {
-  background-color: var(--carousel-nav-button-background-active);
+  background-color: var(--carousel-nav-button-background-active-focus);
 }
 
 .carousel .carousel-previous:focus,
 .carousel .carousel-next:focus {
-  border-color: var(--color-white);
   outline: 2px solid var(--carousel-nav-button-background-focus);
+  border-color: var(--color-white);
+  background-color: var(--carousel-nav-button-background-active-focus);
 }
 
 .dark .carousel .carousel-previous,
@@ -159,7 +162,8 @@ html[dir="rtl"] .carousel .carousel-previous {
   will-change: transform;
 }
 
-.carousel.container.align-height .carousel-slides {
+.carousel.container.align-height .carousel-slides,
+.carousel.container.disable-buttons .carousel-slides {
   align-items: stretch;
 }
 
@@ -211,7 +215,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 }
 
 .carousel .carousel-controls {
-  display: none;
+  display: flex;
   position: relative;
   max-width: 88px;
   overflow: hidden;
@@ -219,9 +223,9 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   justify-content: inherit;
 }
 
-/* .carousel.no-buttons .carousel-controls {
+.carousel.no-buttons .carousel-controls {
   padding: 0 var(--spacing-xxs);
-} */
+}
 
 .carousel .carousel-indicators {
   list-style: none;
@@ -263,15 +267,21 @@ html[dir="rtl"] .carousel .move-indicators {
   transition: height 1s cubic-bezier(0.23, 1, 0.32, 1), background 1.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+.dark .carousel .carousel-indicator::after,
+.carousel.dark .carousel-indicator::after {
+  background-color: var(--carousel-dark-indicator-background-color);
+}
+
 .carousel .carousel-indicator.active::after {
   content: '';
-  background-color: var(--carousel-nav-background);
+  background-color: var(--color-white);
   height: inherit;
   width: inherit;
 }
 
-.dark .carousel .carousel-indicator.active::after {
-  background-color: var(--color-white);
+.dark .carousel .carousel-indicator.active::after,
+.carousel.dark .carousel-indicator.active::after {
+  background-color: var(--carousel-nav-background);
 }
 
 /* Lightbox */
@@ -336,13 +346,20 @@ html[dir="rtl"] .carousel .move-indicators {
 
 .dark .carousel .carousel-previous:hover,
 .dark .carousel .carousel-next:hover,
+.carousel.dark .carousel-previous:hover,
+.carousel.dark .carousel-next:hover {
+  background-color: var(--carousel-nav-button-hover-background-dark);
+}
+
 .dark .carousel .carousel-previous:active,
 .dark .carousel .carousel-next:active,
-.carousel.dark .carousel-previous:hover,
-.carousel.dark .carousel-next:hover,
 .carousel.dark .carousel-previous:active,
-.carousel.dark .carousel-next:active {
-  background-color: #000;
+.carousel.dark .carousel-next:active,
+.dark .carousel .carousel-previous:focus,
+.dark .carousel .carousel-next:focus,
+.carousel.dark .carousel-previous:focus,
+.carousel.dark .carousel-next:focus {
+  background-color: var(--carousel-nav-button-active-background-dark);
 }
 
 .carousel .carousel-expand,
@@ -531,7 +548,7 @@ html[dir="rtl"] .carousel .move-indicators {
   opacity: .3;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 899px) {
   .carousel.container.hinting-mobile,
   .carousel.container.hinting-center-mobile {
     width: 100%;
@@ -589,6 +606,75 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.hinting-center-mobile .carousel-slides.is-ready,
   .carousel.hinting-center-mobile .carousel-slides.is-ready.is-reversing {
     transform: translateX(calc((0.3rem) * -1));
+  }
+
+  .carousel.dark.disable-buttons .carousel-button.disabled:hover,
+  .carousel.dark.disable-buttons .carousel-button.disabled:active,
+  .dark .carousel.disable-buttons .carousel-button.disabled:hover,
+  .dark .carousel.disable-buttons .carousel-button.disabled:active,
+  .carousel.disable-buttons .carousel-button.disabled:hover,
+  .carousel.disable-buttons .carousel-button.disabled:active,
+  .carousel.dark.disable-buttons .carousel-button.disabled,
+  .dark .carousel.disable-buttons .carousel-button.disabled,
+  .carousel.disable-buttons .carousel-button.disabled {
+    background-color: var(--carousel-nav-background-dark);
+  }
+
+  .dark .carousel.disable-buttons .carousel-button.disabled path,
+  .carousel.dark.disable-buttons .carousel-button.disabled path,
+  .carousel.disable-buttons .carousel-button.disabled path {
+    fill: var(--carousel-nav-button-background-active-focus);
+  }
+
+
+  .carousel.disable-buttons .carousel-slides {
+    align-items: center;
+  }
+
+    .carousel.disable-buttons.hinting-mobile .carousel-slides {
+    left: calc(-83.4vw - (100vw - 83.4vw) / 2);
+    transform: translateX(calc((-83.4vw - (100vw - 83.4vw) / 2) * -1));
+    align-items: center;
+  }
+
+  .carousel.disable-buttons.hinting-mobile .carousel-wrapper {
+    margin-left: calc((100vw - 83.4vw) / 2);
+  }
+
+  .carousel.disable-buttons.hinting-mobile .carousel-slide {
+    min-width: 83.4vw;
+  }
+
+  .carousel.disable-buttons.hinting-mobile .carousel-slides.is-ready,
+  .carousel.disable-buttons.hinting-mobile .carousel-slides.is-ready.is-reversing   {
+    transform: translateX(calc((8.3vw - 16px)));
+  }
+
+  .carousel.disable-buttons.hinting-mobile .carousel-slides.is-reversing {
+    transform: translateX(calc(-83.4vw - (100vw - 83.4vw) / 2));
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides {
+    left: -83.4vw;
+    transform: translateX(83.4vw);
+    align-items: center;
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slide {
+    min-width: 83.4vw;
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-reversing {
+    transform: translateX(-83.4vw);
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-ready,
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-ready.is-reversing {
+    transform: translateX(calc((8.3vw - 16px)));
+  }
+
+  .carousel.disable-buttons .carousel-slide.hide-left-hint {
+    visibility: hidden !important;
   }
 }
 
@@ -754,6 +840,25 @@ html[dir="rtl"] .carousel .move-indicators {
     --offset: calc(round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
 
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-slides.is-ready {
+    flex-wrap: wrap;
+    align-items: stretch;
+    transform: none;
+    left: initial;
+    transform-style: initial;
+    scroll-snap-type: none;
+    will-change: unset;
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-slide {
+    flex-grow: unset;
+  }
+
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-button-container,
+  .carousel[class*='show-'].ups-desktop:has(.editorial-card).lightbox .carousel-expand {
+    display: none;
   }
 }
 

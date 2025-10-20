@@ -2,6 +2,10 @@
   display: flex;
 }
 
+.action-item .static {
+  width: 100%;
+}
+
 .action-item img {
   display: block;
   max-height: 240px;
@@ -151,4 +155,18 @@
   left: 50%;
   bottom: 0;
   transform: translate(-50%, -50%);
+}
+
+@media screen and (max-width: 600px) {
+  .section:has(.icon-block.container-mobile + .action-scroller) .action-item .main-image {
+    max-width: 60px;
+    margin-inline: auto;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .section:has(.icon-block.container-mobile + .action-scroller) .action-item .main-image {
+    max-width: 80px;
+    margin-inline: auto;
+  }
 }

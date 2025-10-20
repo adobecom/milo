@@ -296,7 +296,7 @@
   width: 100%;
 }
 
-.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div:not(:has(> strong)) {
+.section[class*="-up"] .text-block:not(.legal, .link-farm, .inline) .foreground > div:not(:has(> strong)) {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -394,6 +394,19 @@
   .text-block.icon-inline .foreground > .desktop-up {
     display: none;
   }
+}
+
+/* tablet down */
+@media screen and (max-width: 1199px){
+  /* Mweb specific changes for lockup and icon-area */
+  .mweb-enabled .text-block.s-lockup .lockup-area {
+    font-size: var(--type-lockup-xs-size);
+    letter-spacing: var(--type-lockup-xs-ls);
+    gap: 6px;
+  }
+  .mweb-enabled .text-block.s-lockup .lockup-area img { height: var(--icon-size-xs); }
+
+  .mweb-enabled .text-block.l-icon .icon-area { height: var(--icon-size-m); }
 }
 
 /* Desktop up */

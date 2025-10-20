@@ -7,7 +7,7 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { default: init, getUpdatedChatUIConfig, updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
 const { default: chatUIConfig } = await import('../../../libs/blocks/brand-concierge/chat-ui-config.js');
 
 describe('Brand Concierge', () => {
@@ -38,7 +38,7 @@ describe('Brand Concierge', () => {
     // input field
     const inputField = block.querySelector('.bc-input-field');
     expect(inputField).to.exist;
-    const input = inputField.querySelector('input#bc-input-field');
+    const input = inputField.querySelector('#bc-input-field');
     expect(input).to.exist;
     expect(input.getAttribute('placeholder')).to.equal("Tell us what you'd like to do or create");
     const tooltip = inputField.querySelector('#bc-label-tooltip');
@@ -52,9 +52,9 @@ describe('Brand Concierge', () => {
     expect(legal.textContent).to.contain('Terms');
   });
 
-  it('renders input before cards when field-first is set', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/field-first.html' });
-    const block = document.querySelector('.brand-concierge.field-first');
+  it('renders input before cards when input-first is set', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/input-first.html' });
+    const block = document.querySelector('.brand-concierge.input-first');
     await init(block);
 
     const children = [...block.children];
@@ -75,7 +75,7 @@ describe('Brand Concierge', () => {
 
     await init(block);
 
-    const input = block.querySelector('.bc-input-field input');
+    const input = block.querySelector('#bc-input-field');
     const button = block.querySelector('button.input-field-button');
     expect(button.disabled).to.equal(true);
 
@@ -98,7 +98,7 @@ describe('Brand Concierge', () => {
     expect(curtain.getAttribute('daa-ll')).to.equal('Filters|testAA|bc#modal-close');
 
     // input cleared after opening
-    expect(block.querySelector('.bc-input-field input').value).to.equal('');
+    expect(block.querySelector('#bc-input-field').value).to.equal('');
 
     // Verify bootstrapConversationalExperience was called
     expect(trackStub.calledOnce).to.be.true;
@@ -167,6 +167,46 @@ describe('Brand Concierge', () => {
       window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001', 'C0003']) };
       window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
       expect(block.classList.contains('hide-block')).to.be.true;
+    });
+  });
+
+  describe('getUpdatedChatUIConfig', () => {
+    const originalChatUIConfig = JSON.parse(JSON.stringify(chatUIConfig));
+    it('returns original chatUIConfig when no placeholder is provided', () => {
+      const result = getUpdatedChatUIConfig();
+      expect(result).to.deep.equal(originalChatUIConfig);
+      expect(result.text['input.placeholder']).to.equal('Tell us what you\'d like to do or create');
+    });
+
+    it('updates the input placeholder', () => {
+      const customPlaceholder = 'Custom placeholder text';
+      const result = getUpdatedChatUIConfig(customPlaceholder);
+
+      expect(result.text['input.placeholder']).to.equal(customPlaceholder);
+    });
+  });
+
+  describe('updateReplicatedValue', () => {
+    let textareaWrapper;
+    let textarea;
+
+    beforeEach(() => {
+      textareaWrapper = document.createElement('div');
+      textarea = document.createElement('textarea');
+    });
+
+    it('sets replicatedValue to textarea placeholder when value is empty', () => {
+      textarea.value = '';
+      textarea.placeholder = 'Enter your message here';
+      updateReplicatedValue(textareaWrapper, textarea);
+      expect(textareaWrapper.dataset.replicatedValue).to.equal('Enter your message here');
+    });
+
+    it('prioritizes value over placeholder when both exist', () => {
+      textarea.value = 'Actual input';
+      textarea.placeholder = 'Placeholder text';
+      updateReplicatedValue(textareaWrapper, textarea);
+      expect(textareaWrapper.dataset.replicatedValue).to.equal('Actual input');
     });
   });
 });

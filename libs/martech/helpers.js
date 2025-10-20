@@ -1,7 +1,7 @@
 import { getMepEnablement } from '../utils/utils.js';
 
 /* eslint-disable no-underscore-dangle */
-const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
+export const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
@@ -67,7 +67,7 @@ function getDeviceInfo() {
 export function getAllCookies() {
   return document.cookie.split(';').reduce((cookies, cookieStr) => {
     const [key, ...valParts] = cookieStr.trim().split('=');
-    cookies[key] = decodeURIComponent(valParts.join('='));
+    cookies[decodeURIComponent(key)] = decodeURIComponent(valParts.join('='));
     return cookies;
   }, {});
 }
