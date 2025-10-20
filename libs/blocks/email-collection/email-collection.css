@@ -1,0 +1,354 @@
+.email-collection {
+  --form-error-color: #D7373F;
+  --form-padding: 56px;
+}
+
+.email-collection.hidden {
+  display: none;
+}
+
+.email-collection .foreground {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 40px 24px;
+  min-height: 444px;
+  box-sizing: border-box;
+}
+
+.email-collection .foreground .text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.email-collection .foreground .hidden,
+.email-collection .foreground .image {
+  display: none;
+}
+
+.email-collection .foreground .image picture {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.email-collection .foreground .image img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+.email-collection .foreground.message {
+  padding: 40px 14px;
+}
+
+.email-collection .foreground.message .text {
+  padding: 0 10px;
+}
+
+.email-collection .foreground.message .image {
+  display: flex;
+  align-items: center;
+}
+
+.email-collection .foreground.message .image img {
+  max-height: 350px;
+}
+
+.email-collection .foreground .text .consent-string {
+  margin: 12px 0 24px 0;
+}
+
+.email-collection .foreground .text .consent-string.empty {
+  margin-bottom: 0;
+}
+
+.email-collection .foreground.message .action-area {
+  margin-top: 24px;
+}
+
+.email-collection .foreground .text .consent-string a {
+  color: inherit;
+}
+
+.email-collection .foreground .text .consent-string  p {
+  margin: 0;
+}
+
+.email-collection .foreground .text .icon-area {
+  margin-top: 0;
+  margin-bottom: 12px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-heading-xs-lh);
+  font-weight: 700;
+}
+
+.email-collection.mailing-list .foreground .text .icon-area,
+.email-collection .foreground.message .text .icon-area {
+  margin-bottom: 24px;
+}
+
+.email-collection .foreground .text .heading-l {
+  margin-bottom: 16px;
+}
+
+.email-collection .foreground .text .icon-area :is(picture, img) {
+  height: 44px;
+  width: 45px;
+}
+
+.email-collection .foreground .text form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.email-collection.mailing-list .foreground .text form {
+  margin-top: 24px;
+}
+
+.email-collection .foreground .text .input-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-collection .foreground .text form label {
+  color: #505050;
+  position: relative;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.email-collection .foreground .text form label.required::after {
+  content: '';
+  background: url('./icons/asterisk.svg') no-repeat center;
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  right: 0;
+}
+
+.email-collection .foreground form :is(input, select) {
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  border: 2px #DADADA solid;
+  border-radius: 8px;
+  height: 32px;
+  padding: 0 12px;
+}
+
+.email-collection .foreground form .select-wrapper {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.email-collection .foreground form .select-wrapper select {
+  margin-bottom: 0;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.email-collection .foreground form .select-wrapper::after {
+  content: '';
+  background: url('./icons/chevron-down.svg') no-repeat center #E9E9E9;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 6px;
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.email-collection .foreground form .split-row,
+.email-collection .foreground form .split-row > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-collection .foreground .text form .button-container {
+  margin-bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.email-collection .foreground.message .text .button-container {
+  margin-top: 24px;
+}
+
+.email-collection .foreground .text .button-container button {
+  font-family: inherit;
+}
+
+.email-collection .subscribed-email {
+  margin: 24px 0;
+}
+
+.email-collection .subscribed-email:last-child {
+  margin-bottom: 0px;
+}
+
+.email-collection .show-form {
+  color: #1473E6;
+  cursor: pointer;
+}
+
+@media (min-width: 600px) {
+  .email-collection {
+    width: 80vw;
+  }
+}
+
+@media (min-width: 700px) {
+  .email-collection .foreground,
+  .email-collection .foreground.message {
+    padding: var(--form-padding);
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    height: inherit;
+  }
+
+  .email-collection .foreground .text {
+    max-height: calc(var(--modal-max-height) - 2 * var(--form-padding));
+  }
+
+  .email-collection .foreground .image {
+    flex: 1;
+    display: flex;
+    align-items: unset;
+    min-width: 0;
+  }
+
+  .email-collection .foreground.message .image img {
+    max-height: unset;
+  }
+
+  .email-collection .foreground .text,
+  .email-collection .foreground form .split-row > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .email-collection.large-image .foreground .image picture {
+    height: 100%;
+  }
+
+  .email-collection.large-image .foreground {
+    padding: 0;
+  }
+
+  .email-collection.large-image .foreground .text {
+    padding: var(--form-padding) 0px;
+  }
+
+  .email-collection:not(.large-image) .foreground.message .text {
+    padding: unset;
+  }
+
+  .email-collection.large-image .foreground .text > * {
+    margin-right: var(--form-padding);
+  }
+
+  .email-collection .foreground:not(.message) {
+    padding-right: 0;
+  }
+
+  .email-collection .foreground:not(.message) .text {
+    overflow-y: auto;
+    justify-content: unset;
+  }
+
+  .email-collection:not(.large-image) .foreground:not(.message) .text {
+    padding-right: var(--form-padding);
+  }
+}
+
+@media (min-width: 1200px) {
+  .email-collection {
+    width: 900px;
+  }
+
+  .email-collection .foreground form .split-row {
+    flex-direction: row;
+    display: flex;
+    gap: 12px;
+  }
+
+  .email-collection .foreground form .split-row div:first-child {
+    margin-bottom: 0;
+  }
+}
+
+.progress-circle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.email-collection > .progress-circle-container {
+  height: 444px;
+}
+
+.email-collection .button-container button.con-button.outline:has(sp-progress-circle) {
+  background: var(--color-black);
+}
+
+.email-aria-live {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.email-collection .foreground form :is(input, select).invalid {
+  border-color: var(--form-error-color);
+  margin-bottom: 0;
+}
+
+.email-collection .foreground form .select-wrapper:has(select.invalid) {
+  margin-bottom: 0;
+}
+
+.email-collection .foreground form label.invalid { 
+  color: var(--form-error-color);
+}
+
+.email-collection form [id^="error"]:not(.hidden) {
+  color: var(--form-error-color);
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.email-collection .foreground .text form label.required.invalid::after {
+  background: unset;
+  background-color: var(--form-error-color);
+  -webkit-mask: url('./icons/asterisk.svg') no-repeat center;
+  mask: url('./icons/asterisk.svg') no-repeat center;
+}
+
+.email-collection .foreground .text form input {
+  position: relative;
+}
+
+.email-collection .foreground .text form :is(input, select).invalid {
+  background-image: url('./icons/attention.svg');
+  background-size: 18px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px);
+}
+
+.email-collection .foreground .text form select.invalid {
+  background-position: calc(100% - 30px);
+}
