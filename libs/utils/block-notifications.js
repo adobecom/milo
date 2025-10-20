@@ -89,7 +89,10 @@ export default async function blockNotifications(base) {
     const { body } = document;
     body.classList.add('block-notifications');
 
-    decorateNotificationControls(body);
+    // Stop duplicate show/hide controls
+    if (!document.querySelector('.notification-controls-container')) {
+      decorateNotificationControls(body);
+    }
 
     blocks.forEach((foundBlock) => {
       const labelContainer = foundBlock.querySelector('.block-label-container');
