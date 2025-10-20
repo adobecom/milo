@@ -1,18 +1,19 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { setConfig, createTag } from '../../../libs/utils/utils.js';
+import { setConfig } from '../../../libs/utils/utils.js';
+// import { setConfig, createTag } from '../../../libs/utils/utils.js';
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
 const {
-  MSG_SUBTYPE,
-  // reloadIframe,
-  // showErrorMsg,
-  handle3in1IFrameEvents,
-  // handleTimeoutError,
+  // MSG_SUBTYPE,
+  reloadIframe,
+  showErrorMsg,
+  // handle3in1IFrameEvents,
+  handleTimeoutError,
   createContent,
   default: openThreeInOneModal,
 } = await import('../../../libs/blocks/merch/three-in-one.js');
