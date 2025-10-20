@@ -204,7 +204,7 @@ function createSubHeaderContainer(
   return container;
 }
 
-function decorateHeader(headerContent, el) {
+function decorateHeader(el, headerContent) {
   headerContent.classList.add('header-content');
   const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
 
@@ -429,7 +429,7 @@ function setupStickyHeader(el) {
 export default function init(el) {
   const children = [...el.children];
 
-  decorateHeader(children[0], el);
+  decorateHeader(el, children[0]);
   decorateTables(el, children.slice(1));
   equalHeight(el);
   setupStickyHeader(el);
