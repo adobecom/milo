@@ -4,8 +4,7 @@
   --comparison-column-background-color: #f8f8f8;
   --comparison-row-border-color: #e9e9e9;
   --comparison-desktop-max-width: 1200px;
-  --comparison-tablet-max-width: 640px;
-  --comparison-mobile-max-width: 300px;
+  --hover-border-color: #357BEB;
 }
 
 .comparison-table .table {
@@ -72,6 +71,16 @@
   font-weight: 700;
   line-height: 130%;
   padding: 24px 0;
+  display: flex;
+  align-items: center;
+}
+
+.comparison-table span[data-tooltip] .icon-milo:hover {
+  cursor: pointer;
+}
+
+.comparison-table span[data-tooltip] .icon-milo:hover path {
+  color: var(--hover-border-color);
 }
 
 .comparison-table .table-container .table-cell {

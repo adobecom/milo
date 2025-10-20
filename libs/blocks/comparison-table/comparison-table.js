@@ -280,7 +280,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       const firstChild = tableChild.children[0];
       const buttonElement = createTag('button', { 'aria-expanded': true });
       buttonElement.innerHTML = firstChild.innerHTML;
-      buttonElement.appendChild(createTag('img', { class: 'toggle-icon' }));
+      buttonElement.appendChild(createTag('span', { class: 'toggle-icon' }));
       buttonElement.addEventListener('click', () => {
         tableElement.classList.toggle('hide');
         buttonElement.setAttribute(
@@ -304,8 +304,8 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
 
       const firstP = child.querySelector('p:first-child');
       const secondP = child.querySelector('p:nth-child(2)');
-      if (firstP && isEmpty) firstP.setAttribute('role', 'cell');
-      if (secondP) secondP.setAttribute('role', 'columnheader');
+      if (firstP && isEmpty && childIndex !== 0) firstP.setAttribute('role', 'cell');
+      if (secondP && childIndex !== 0) secondP.setAttribute('role', 'columnheader');
 
       if (isEmpty) return;
 
