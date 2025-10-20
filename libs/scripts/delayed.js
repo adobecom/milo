@@ -36,7 +36,7 @@ export const loadBlockNotifications = async (getConfig, loadStyle) => {
   }
 };
 
-export const loadPrivacy = async (getConfig, loadScript) => {
+export const loadPrivacy = async (getConfig, loadScript, getMetadata) => {
   const { privacyId, env, holdPrivacyBanner } = getConfig();
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
@@ -54,7 +54,8 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     privacy: { otDomainId },
     documentLanguage: true,
   };
-  if (holdPrivacyBanner === true) {
+  const holdPrivacyBannerMeta = getMetadata('hold-privacy-banner');
+  if (holdPrivacyBanner === true || holdPrivacyBannerMeta === 'on') {
     window.fedsConfig.privacy.holdBanner = 'hold-banner';
   }
   // Load the privacy script
@@ -119,7 +120,7 @@ const loadDelayed = ([
   loadIms,
 ], DELAY = 3000) => new Promise((resolve) => {
   setTimeout(() => {
-    if (!window.adobePrivacy) loadPrivacy(getConfig, loadScript);
+    if (!window.adobePrivacy) loadPrivacy(getConfig, loadScript, getMetadata);
     loadAriaAutomation();
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
