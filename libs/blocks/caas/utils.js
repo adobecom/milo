@@ -765,6 +765,7 @@ export const getConfig = async (originalState, strs = {}) => {
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
+      useCenterVideoPlay: state.useCenterVideoPlay,
       partialLoadWithBackgroundFetch: {
         enabled: state.partialLoadEnabled,
         partialLoadCount: state.partialLoadCount,
@@ -915,7 +916,7 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
-
+  console.log(config);
   return config;
 };
 
@@ -1034,6 +1035,7 @@ export const defaultState = {
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
+  useCenterVideoPlay: false,
   collectionButtonStyle: 'primary',
   userInfo: [],
 };
