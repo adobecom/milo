@@ -633,8 +633,6 @@ export function localizeLink(
   }
 }
 
-window.localizeLink = localizeLink;
-
 export function loadLink(href, {
   id, as, callback, crossorigin, rel, fetchpriority,
 } = {}) {
@@ -1848,6 +1846,85 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   return section.blocks;
 }
 
+export function getSupportedRegions(config) {
+  const defaultRegions = { primary: config.locale.region, fallback: undefined };
+  if (!config.locale.regions && !config.locale.base) return defaultRegions;
+  const akamaiRegion = sessionStorage.getItem('akamai');
+  if (akamaiRegion === config.locale.region) return defaultRegions;
+  if (config.locale.regions
+    && !Object.keys(config.locale.regions).find((locale) => locale.includes(akamaiRegion))) {
+    return defaultRegions;
+  }
+  const primaryLocale = config.locale.base
+    ? config.locale.region
+    : Object.keys(config.locale.regions).find((locale) => locale.includes(akamaiRegion));
+  return { primary: primaryLocale, fallback: config.locale.base };
+}
+
+async function getQueryIndex(config) {
+  const { primary: primaryRegion, fallback: fallbackRegion } = getSupportedRegions(config);
+  console.log('primaryRegion', primaryRegion, 'fallbackRegion', fallbackRegion);
+  if (!fallbackRegion) return {};
+  const localeQueryIndex = localStorage.getItem('localeQueryIndex');
+
+  async function fetchAndUpdateIndex(url, cached) {
+    // If we have cache, check HEAD first.
+    if (cached) {
+      try {
+        const headRes = await fetch(url, { method: 'HEAD' });
+        const serverLastModified = headRes.headers.get('last-modified') || '';
+        if (serverLastModified && serverLastModified !== cached.lastModified) {
+          // data out of date, perform GET to update
+          try {
+            const getRes = await fetch(url, { method: 'GET' });
+            const data = await getRes.json();
+            const newLastModified = getRes.headers.get('last-modified') || '';
+            return { data, lastModified: newLastModified, updated: true };
+          } catch (e) {
+            // Optionally handle fetch errors during GET
+            return { ...cached, updated: false };
+          }
+        }
+      } catch (e) {
+        // Optionally handle fetch errors during HEAD
+        return { ...cached, updated: false };
+      }
+      // No update needed, return cache
+      return { ...cached, updated: false };
+    } else {
+      // No cache, do GET
+      try {
+        const res = await fetch(url, { method: 'GET' });
+        const data = await res.json();
+        const lastModified = res.headers.get('last-modified') || '';
+        return { data, lastModified, updated: true };
+      } catch (e) {
+        // Optionally handle fetch errors
+        return null;
+      }
+    }
+  }
+
+  const localeIndex = localeQueryIndex ? JSON.parse(localeQueryIndex) : {};
+  let requiresUpdate = !localeQueryIndex;
+  const urlResults = { ...localeIndex };
+
+  await Promise.all([primaryRegion, fallbackRegion].map(async (region) => {
+    if (!region) return;
+    const url = `https://www.adobe.com/${region}/cc-shared/assets/query-index.json?limit=-1`;
+    const cached = urlResults[url];
+    const result = await fetchAndUpdateIndex(url, cached);
+    if (result) {
+      urlResults[url] = { data: result.data, lastModified: result.lastModified };
+      if (result.updated) requiresUpdate = true;
+    }
+  }));
+
+  if (requiresUpdate) {
+    localStorage.setItem('localeQueryIndex', JSON.stringify(urlResults));
+  }
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
@@ -1861,6 +1938,8 @@ export async function loadArea(area = document) {
   if (!langConfig && (config.languages || hasLanguageLinks(area))) {
     await loadLanguageConfig();
   }
+
+  await getQueryIndex(config);
 
   if (isDoc) {
     decorateDocumentExtras();
