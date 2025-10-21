@@ -550,17 +550,18 @@ html[dir="rtl"] .carousel .move-indicators {
 
 .carousel-wrapper.ace1151 {
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 16px 0 0 16px;
   box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.16);
 }
 
 .carousel-slides.ace1151 {
   margin: 0;
+  gap: 0;
 }
 
 .carousel-slide.ace1151 {
   padding: 34px;
-  min-width: calc(535 - 64px);
+  min-width: 535px;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
 }
 
@@ -568,7 +569,6 @@ html[dir="rtl"] .carousel .move-indicators {
   margin-top: 47px;
   background: var(--C1-Content-Carousel-nav-background, #2424240D);
 }
-
 
 @media (max-width: 899px) {
   .carousel.container.hinting-mobile,
@@ -881,6 +881,11 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-button-container,
   .carousel[class*='show-'].ups-desktop:has(.editorial-card).lightbox .carousel-expand {
     display: none;
+  }
+
+  .carousel.ace1151 {
+    width: calc(100vw - 173px);
+    margin: 0 0 0 173px;
   }
 }
 
