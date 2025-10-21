@@ -434,7 +434,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
   html[lang="ja-jp"] .hero-marquee .action-area a:last-of-type {
     margin-left: calc(var(--spacing-s) - var(--default-block-spacing));
-  }  
+  }
 }
 
 @media screen and (min-width: 920px) {
@@ -592,3 +592,79 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 }
 
+:root:has(meta[name="theme"][content="max25"]) {
+  .hero-marquee.max25 .foreground .copy .detail-l {
+    font-size: 16px;
+    line-height: 1.5;
+    font-weight: 400;
+    color: #B9B9B9;
+    text-transform: none;
+  }
+
+  .hero-marquee.max25 .foreground .copy .heading-xxl {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1.05;
+  }
+
+  .hero-marquee.max25 .foreground .copy .body-xl {
+    font-size: 18px;
+    color: #848484;
+    line-height: 1.35;
+  }
+
+  @media (min-width: 600px) {
+    .hero-marquee.max25 .foreground .copy .detail-l {
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .hero-marquee.max25 .foreground .copy .heading-xxl {
+      font-size: 36px;
+    }
+
+    .hero-marquee.max25 .foreground .copy .body-xl {
+      font-size: 20px;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    .hero-marquee.max25 {
+      min-height: none;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .hero-marquee.max25 .foreground .copy .heading-xxl {
+      font-size: 54px;
+    }
+
+    .hero-marquee.max25 .foreground .copy .body-xl {
+      font-size: 24px;
+      line-height: 1.5;
+    }
+
+    .hero-marquee.max25 .foreground .asset {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .hero-marquee.max25 .foreground .asset::after {
+      position: absolute;
+      content: '';
+      inset: 0;
+      border: 3px solid rgba(255 255 255 / 30%);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+  }
+
+  @media (min-width: 1480px) {
+    --grid-container-width: 1440px;
+
+    .hero-marquee.max25 > .foreground.cols-2 .copy {
+      padding-inline-end: 200px;
+    }
+  }
+}
