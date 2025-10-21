@@ -508,6 +508,7 @@ const ace1151ButtonVariant = (el) => {
   const hasClass = el.classList.contains('ace1151');
   if (!hasClass) return;
   [
+    '.carousel',
     '.carousel-wrapper',
     '.carousel-slides',
     '.carousel-button-container',
