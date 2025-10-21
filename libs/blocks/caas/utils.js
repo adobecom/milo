@@ -916,6 +916,7 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
+
   return config;
 };
 
