@@ -556,12 +556,11 @@ html[dir="rtl"] .carousel .move-indicators {
 
 .carousel-slides.ace1151 {
   margin: 0;
-  gap: 0;
+  gap: 0 !important;
 }
 
 .carousel-slide.ace1151 {
-  padding: 34px;
-  min-width: 535px;
+  padding: 24px 16px;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
 }
 
@@ -886,6 +885,12 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.ace1151 {
     width: calc(100vw - 173px);
     margin: 0 0 0 173px;
+  }
+
+  .carousel-slide.ace1151 {
+    padding: 34px;
+    min-width: 535px;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.16);
   }
 }
 
