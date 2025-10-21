@@ -321,3 +321,87 @@
     gap: var(--spacing-xs);
   }
 }
+
+:root:has(meta[name="theme"][content="max25"]) {
+  .section:has(+ .section .carousel.show-2.ups-desktop) {
+    padding-top: 0;
+  }
+
+  .editorial-card .media-area {
+    position: relative;
+    border-radius: var(--m-rounded-corners);
+  }
+
+  .editorial-card .media-area::after {
+    position: absolute;
+    content: '';
+    inset: 0;
+    border: 3px solid rgba(255 255 255 / 30%);
+    border-radius: var(--m-rounded-corners);
+    pointer-events: none;
+  }
+
+  .two-up .editorial-card .media-area :is(img, video),
+  .carousel.show-2.ups-desktop .editorial-card .media-area :is(img, video),
+  .three-up .editorial-card .media-area :is(img, video) {
+    height: auto;
+    max-height: unset;
+  }
+
+  .two-up .editorial-card .media-area :is(img, video),
+  .carousel.show-2.ups-desktop .editorial-card .media-area :is(img, video) {
+    aspect-ratio: 3 / 2;
+  }
+
+  .three-up .editorial-card .media-area :is(img, video) {
+    aspect-ratio: 231 / 217;
+  }
+
+  .editorial-card .foreground,
+  .editorial-card .card-footer,
+  .editorial-card.no-bg.no-border .foreground,
+  .editorial-card.no-bg.no-border .card-footer {
+    padding: var(--spacing-xs) 0;
+  }
+
+  .section:not(.dark) .editorial-card:not(.dark) [class*="heading-"] {
+    color: var(--color-black);
+  }
+
+  .editorial-card [class*="heading-"] {
+    font-weight: 800;
+  }
+
+  .section:not(.dark) .editorial-card:not(.dark) [class*="body-"] {
+    color: #848484;
+  }
+
+  @media (min-width: 600px) {
+    .editorial-card .media-area,
+    .editorial-card .media-area::after {
+      border-radius: var(--l-rounded-corners);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .two-up .editorial-card .media-area :is(img, video),
+    .carousel.show-2.ups-desktop .editorial-card .media-area :is(img, video) {
+      aspect-ratio: 706 / 490;
+    }
+
+    .three-up .editorial-card .media-area :is(img, video) {
+      aspect-ratio: 462 / 438;
+    }
+
+    .editorial-card .foreground,
+    .editorial-card .card-footer,
+    .editorial-card.no-bg.no-border .foreground,
+    .editorial-card.no-bg.no-border .card-footer {
+      padding: var(--spacing-xs);
+    }
+  }
+
+  @media (min-width: 1480px) {
+    --grid-container-width: 1440px;
+  }
+}

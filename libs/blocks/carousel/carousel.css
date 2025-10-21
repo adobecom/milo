@@ -868,3 +868,7 @@ html[dir="rtl"] .carousel .move-indicators {
   height: 0;
   overflow: hidden;
 }
+
+:root:has(meta[name="theme"][content="max25"]) {
+  .carousel.no-controls .carousel-button-container { display: none; }
+}
