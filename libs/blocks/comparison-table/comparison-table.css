@@ -21,10 +21,10 @@
 .comparison-table .table-container {
   max-width: calc(var(--comparison-desktop-max-width) - 2px);
   margin: 0 auto;
-  border-radius: 8px;
   border: 1px solid var(--comparison-border-color);
   margin-top: 24px;
-  border-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   overflow: hidden;
 }
 
@@ -40,6 +40,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
 .comparison-table .table-container .table-column-header button:hover {

@@ -299,13 +299,16 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
     [...tableChild.children].forEach((child, childIndex) => {
       child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
       if (childIndex === 0) child.setAttribute('role', 'rowheader');
-      if (childIndex > 0) child.setAttribute('data-column-index', childIndex);
+      if (childIndex > 0) {
+        child.setAttribute('data-column-index', childIndex);
+        child.setAttribute('role', 'cell');
+      }
       if (arePrimaryColumns[childIndex]) child.classList.add('primary-cell');
       if (childIndex === 0) return;
 
       const childElements = [...child.children];
       const separatorIndex = childElements.findIndex((element) => element.textContent.trim() === '-');
-      const cellDiv = createTag('div', { role: 'cell' });
+      const cellDiv = createTag('div');
 
       if (separatorIndex !== -1) {
         const columnHeaderP = childElements[separatorIndex + 1];
@@ -315,10 +318,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
         child.innerHTML = '';
         child.appendChild(cellDiv);
 
-        if (columnHeaderP) {
-          columnHeaderP.setAttribute('role', 'columnheader');
-          child.appendChild(columnHeaderP);
-        }
+        if (columnHeaderP) child.appendChild(columnHeaderP);
 
         childElements.slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
         return;
