@@ -267,6 +267,22 @@ function decorateHeader(el, headerContent) {
   headerContentWrapper.prepend(createTag('div', { class: 'header-item' }));
 }
 
+function createAccessibilityHeaderRow(el) {
+  const columnHeaders = [...el.querySelectorAll('.header-item[data-column-index]')]
+    .map((headerItem) => headerItem.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim() ?? '');
+
+  const headerRow = createTag('div', { class: 'table-row accessibility-header-row', role: 'row' });
+
+  columnHeaders.forEach((headerText, index) => {
+    const headerCell = createTag('div', { role: 'columnheader' });
+    headerCell.setAttribute('data-column-index', index + 1);
+    headerCell.textContent = headerText;
+    headerRow.appendChild(headerCell);
+  });
+
+  return headerRow;
+}
+
 function addTableClassesAndAppend(el, tableContainer, tableChildren) {
   const tableElement = createTag('div', { class: 'table', role: 'table' });
   const arePrimaryColumns = [];
@@ -337,6 +353,9 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
     tableChild.setAttribute('role', 'row');
     tableElement.appendChild(tableChild);
   });
+
+  const accessibilityHeaderRow = createAccessibilityHeaderRow(el);
+  tableElement.insertBefore(accessibilityHeaderRow, tableElement.firstChild);
 
   tableContainer.appendChild(tableElement);
   el.appendChild(tableContainer);

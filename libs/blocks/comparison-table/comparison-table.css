@@ -250,6 +250,11 @@
   display: none;
 }
 
+.comparison-table .accessibility-header-row {
+  position: absolute;
+  left: -99999999px;
+}
+
 .comparison-table .mobile-filter-select {
   width: calc(100% - 2px);
   height: 22px;
@@ -303,6 +308,7 @@
 
   .comparison-table .table-row .table-row-header {
     grid-column: 1 / -1;
+    margin: 0 auto;
   }
 
   .comparison-table .table-container .table-row {
