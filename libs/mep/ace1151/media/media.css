@@ -555,8 +555,12 @@ div[class*="-up"] .media .foreground > .media-row {
   object-fit: cover;
 }
 
+/* ace1151- s2a changes */
 @media (min-width: 1200px) {
   .media.s2a-text-down > .container.foreground > .media-row > .text {
     align-self: flex-end;
   }
+}
+.media.s2a-text-down > .container.foreground > .media-row {
+  max-width: 100%;
 }
