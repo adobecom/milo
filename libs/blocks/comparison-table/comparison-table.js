@@ -113,6 +113,74 @@ function syncAccessibilityHeaders(el) {
   });
 }
 
+function updateVisibleSelects({ el, headerTitles }) {
+  const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
+  visibleSelects.forEach((selectItem) => {
+    const currentValue = +selectItem.value;
+    selectItem.innerHTML = '';
+    headerTitles.forEach((title, index) => {
+      if (!title || visibleSelects.some((s) => s !== selectItem && +s.value === index)) return;
+      const option = createTag('option', { value: index }, title);
+      if (index === currentValue) option.selected = true;
+      selectItem.appendChild(option);
+    });
+  });
+}
+
+function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
+  const newValue = +e.target.value;
+  const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex(el);
+
+  el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => col.classList.add('hidden'));
+  el.querySelectorAll(`[data-column-index="${newValue}"]`).forEach((col) => {
+    col.classList.remove('hidden');
+    const parent = col.parentNode;
+    if (!isFirstVisible || !parent) return;
+    const firstHeaderItem = parent.querySelector('.header-item:first-child');
+    if (col.classList.contains('header-item') && firstHeaderItem !== col) {
+      parent.insertBefore(col, firstHeaderItem.nextSibling);
+      return;
+    }
+    const rowHeader = parent.querySelector('.table-row-header');
+    if (rowHeader) parent.insertBefore(col, rowHeader.nextSibling);
+  });
+
+  const selectElement = el.querySelector(`[data-column-index="${newValue}"] .mobile-filter-select`);
+  if (selectElement) selectElement.value = newValue;
+
+  updateVisibleSelects({ el, headerTitles });
+  syncAccessibilityHeaders(el);
+}
+
+function createMobileFilterSelect({ headerTitles, headerItemIndex, el }) {
+  const select = createTag('select', { class: 'mobile-filter-select', name: 'column-filter' });
+
+  headerTitles.forEach((title, index) => {
+    const shouldSkip = !title
+      || (headerItemIndex === 1 && index === 2)
+      || (headerItemIndex === 2 && index === 1);
+    if (shouldSkip) return;
+    const option = createTag('option', { value: index }, title);
+    if (index === headerItemIndex) option.selected = true;
+    select.appendChild(option);
+  });
+
+  select.addEventListener('change', (e) => handleSelectChange(e, { headerItemIndex, el, headerTitles }));
+  return select;
+}
+
+function addLastContainerElements(container) {
+  const actionAreaElements = container.querySelectorAll('.action-area');
+  if (actionAreaElements.length > 0) {
+    const btnContainer = createTag('div', { class: 'btn-container' });
+    actionAreaElements.forEach((element) => btnContainer.appendChild(element));
+    container.appendChild(btnContainer);
+  }
+  const description = container.querySelector('p:not(:has(a))');
+  if (!description) container.prepend(createTag('p', { class: 'description' }));
+  else description.classList.add('description');
+}
+
 function createSubHeaderContainer({
   childrenArray,
   startIndex,
@@ -130,61 +198,14 @@ function createSubHeaderContainer({
       if (isLast) decorateButtons(childrenArray[i]);
     }
   }
+
   if (isFirst) {
-    const select = createTag('select', { class: 'mobile-filter-select', name: 'column-filter' });
-    headerTitles.forEach((title, index) => {
-      if (!title
-        || (headerItemIndex === 1 && index === 2) || (headerItemIndex === 2 && index === 1)) return;
-      const option = createTag('option', { value: index }, title);
-      if (index === headerItemIndex) option.selected = true;
-      select.appendChild(option);
-    });
-
-    select.addEventListener('change', (e) => {
-      const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex(el);
-      el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => col.classList.add('hidden'));
-      el.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => {
-        col.classList.remove('hidden');
-        const parent = col.parentNode;
-        if (!isFirstVisible || !parent) return;
-        const firstHeaderItem = parent.querySelector('.header-item:first-child');
-        if (col.classList.contains('header-item') && firstHeaderItem !== col) {
-          parent.insertBefore(col, firstHeaderItem.nextSibling);
-          return;
-        }
-        const rowHeader = parent.querySelector('.table-row-header');
-        if (rowHeader) parent.insertBefore(col, rowHeader.nextSibling);
-      });
-
-      const selectElement = el.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
-      if (selectElement) selectElement.value = +e.target.value;
-      const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
-      visibleSelects.forEach((selectItem) => {
-        const currentValue = +selectItem.value;
-        selectItem.innerHTML = '';
-        headerTitles.forEach((title, index) => {
-          if (!title || visibleSelects.some((s) => s !== selectItem && +s.value === index)) return;
-          const option = createTag('option', { value: index }, title);
-          if (index === currentValue) option.selected = true;
-          selectItem.appendChild(option);
-        });
-      });
-      syncAccessibilityHeaders(el);
-    });
-
+    const select = createMobileFilterSelect({ headerTitles, headerItemIndex, el });
     container.appendChild(select);
   }
-  if (!isLast) return container;
-  const actionAreaElements = container.querySelectorAll('.action-area');
-  if (actionAreaElements.length > 0) {
-    const btnContainer = createTag('div', { class: 'btn-container' });
-    actionAreaElements.forEach((element) => btnContainer.appendChild(element));
-    container.appendChild(btnContainer);
-  }
-  const description = container.querySelector('p:not(:has(a))');
-  if (!description) container.prepend(createTag('p', { class: 'description' }));
-  else description.classList.add('description');
 
+  if (!isLast) return container;
+  addLastContainerElements(container);
   return container;
 }
 
