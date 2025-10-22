@@ -280,10 +280,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
       buttonElement.appendChild(createTag('span', { class: 'toggle-icon' }));
       buttonElement.addEventListener('click', () => {
         tableElement.classList.toggle('hide');
-        buttonElement.setAttribute(
-          'aria-expanded',
-          buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true',
-        );
+        buttonElement.setAttribute('aria-expanded', buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
       });
       tableChild.replaceChild(buttonElement, firstChild);
       tableContainer.appendChild(tableChild);
