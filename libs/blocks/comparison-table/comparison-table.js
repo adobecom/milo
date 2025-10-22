@@ -107,6 +107,28 @@ const getFirstVisibleColumnIndex = (el) => {
   return -1;
 };
 
+function syncAccessibilityHeaders(el) {
+  const accessibilityHeaderRow = el.querySelector('.accessibility-header-row');
+  const visibleHeaderItems = [...el.querySelectorAll('.header-item:not(.hidden)')];
+
+  visibleHeaderItems.forEach((headerItem) => {
+    const columnIndex = headerItem.getAttribute('data-column-index');
+    const cell = accessibilityHeaderRow.querySelector(`[data-column-index="${columnIndex}"]`);
+
+    if (!cell) return;
+
+    cell.classList.remove('hidden');
+    accessibilityHeaderRow.appendChild(cell);
+  });
+
+  [...accessibilityHeaderRow.querySelectorAll('.accessibility-header-cell')].forEach((cell) => {
+    const columnIndex = cell.getAttribute('data-column-index');
+    if (!visibleHeaderItems.some((item) => item.getAttribute('data-column-index') === columnIndex)) {
+      cell.classList.add('hidden');
+    }
+  });
+}
+
 function createSubHeaderContainer(
   childrenArray,
   startIndex,
@@ -183,6 +205,8 @@ function createSubHeaderContainer(
           selectItem.appendChild(option);
         });
       });
+
+      syncAccessibilityHeaders(el);
     });
 
     container.appendChild(select);
@@ -268,15 +292,15 @@ function decorateHeader(el, headerContent) {
 }
 
 function createAccessibilityHeaderRow(el) {
-  const columnHeaders = [...el.querySelectorAll('.header-item[data-column-index]')]
-    .map((headerItem) => headerItem.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim() ?? '');
-
   const headerRow = createTag('div', { class: 'table-row accessibility-header-row', role: 'row' });
 
-  columnHeaders.forEach((headerText, index) => {
+  [...el.querySelectorAll('.header-item[data-column-index]')].forEach((headerItem) => {
+    const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
+
     const headerCell = createTag('div', { role: 'columnheader' });
-    headerCell.setAttribute('data-column-index', index + 1);
-    headerCell.textContent = headerText;
+    headerCell.setAttribute('data-column-index', headerItem.getAttribute('data-column-index'));
+    headerCell.classList.add('accessibility-header-cell');
+    headerCell.textContent = titleElement ? titleElement.textContent.trim() : '';
     headerRow.appendChild(headerCell);
   });
 
@@ -354,8 +378,7 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
     tableElement.appendChild(tableChild);
   });
 
-  const accessibilityHeaderRow = createAccessibilityHeaderRow(el);
-  tableElement.insertBefore(accessibilityHeaderRow, tableElement.firstChild);
+  tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
 
   tableContainer.appendChild(tableElement);
   el.appendChild(tableContainer);
@@ -409,6 +432,8 @@ function setupResponsiveHiding(el) {
         cell.classList.toggle('hidden', isMobile);
       });
     });
+
+    syncAccessibilityHeaders(el);
   };
 
   handleResponsive();

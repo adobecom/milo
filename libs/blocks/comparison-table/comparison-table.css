@@ -246,7 +246,8 @@
 }
 
 .comparison-table .header-item.hidden,
-.comparison-table .table-cell.hidden {
+.comparison-table .table-cell.hidden,
+.comparison-table .accessibility-header-cell.hidden {
   display: none;
 }
 
