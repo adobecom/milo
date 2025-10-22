@@ -154,7 +154,6 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
 
 function createMobileFilterSelect({ headerTitles, headerItemIndex, el }) {
   const select = createTag('select', { class: 'mobile-filter-select', name: 'column-filter' });
-
   headerTitles.forEach((title, index) => {
     const shouldSkip = !title
       || (headerItemIndex === 1 && index === 2)
@@ -164,7 +163,6 @@ function createMobileFilterSelect({ headerTitles, headerItemIndex, el }) {
     if (index === headerItemIndex) option.selected = true;
     select.appendChild(option);
   });
-
   select.addEventListener('change', (e) => handleSelectChange(e, { headerItemIndex, el, headerTitles }));
   return select;
 }
@@ -198,12 +196,10 @@ function createSubHeaderContainer({
       if (isLast) decorateButtons(childrenArray[i]);
     }
   }
-
   if (isFirst) {
     const select = createMobileFilterSelect({ headerTitles, headerItemIndex, el });
     container.appendChild(select);
   }
-
   if (!isLast) return container;
   addLastContainerElements(container);
   return container;
@@ -230,14 +226,12 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el }) {
       headerTitles,
       headerItemIndex,
     });
-
     if (isLast) {
       headerItem.appendChild(container);
     } else {
       headerItem.insertBefore(container, childrenArray[separatorIndex]);
       childrenArray[separatorIndex].remove();
     }
-
     containerIndex += 1;
     lastIndex = separatorIndex;
   });
@@ -253,7 +247,6 @@ function decorateHeader(el, headerContent) {
     const titleElement = item.querySelector('h1, h2, h3, h4, h5, h6');
     return titleElement ? titleElement.textContent.trim() : '';
   });
-
   headerItems.forEach((headerItem, headerItemIndex) => {
     if (!headerItem.innerHTML) {
       headerItem.remove();
@@ -266,7 +259,6 @@ function decorateHeader(el, headerContent) {
 
 function createAccessibilityHeaderRow(el) {
   const headerRow = createTag('div', { class: 'table-row accessibility-header-row', role: 'row' });
-
   [...el.querySelectorAll('.header-item[data-column-index]')].forEach((headerItem) => {
     const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
     const headerCell = createTag('div', { role: 'columnheader' });
@@ -275,7 +267,6 @@ function createAccessibilityHeaderRow(el) {
     headerCell.textContent = titleElement ? titleElement.textContent.trim() : '';
     headerRow.appendChild(headerCell);
   });
-
   return headerRow;
 }
 
@@ -326,7 +317,6 @@ function decorateTableCells({ tableChild, arePrimaryColumns, tableElement }) {
       childElements.slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
       return;
     }
-
     if (child.children.length > 1 || !child.textContent.trim()) {
       [...child.children].forEach((element) => cellDiv.appendChild(element));
     } else {
