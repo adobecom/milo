@@ -53,6 +53,7 @@ function showPreviousStep(formEl, totalSteps) {
 }
 
 const showNextStep = async (formEl, currentStep, totalSteps) => {
+  window.aaInteraction?.(`Marketo Step ${currentStep} of ${totalSteps}`, 'stepChange', formEl.id.split('_')[1], null);
   if (currentStep === totalSteps) return;
   const nextStep = currentStep + 1;
   const stepDetails = formEl.querySelector('.step-details');
