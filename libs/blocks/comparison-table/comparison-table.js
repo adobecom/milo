@@ -130,7 +130,6 @@ function updateVisibleSelects({ el, headerTitles }) {
 function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
   const newValue = +e.target.value;
   const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex(el);
-
   el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => col.classList.add('hidden'));
   el.querySelectorAll(`[data-column-index="${newValue}"]`).forEach((col) => {
     col.classList.remove('hidden');
@@ -369,21 +368,21 @@ function decorateTables(el, children) {
 function setupResponsiveHiding(el) {
   const mediaQuery = window.matchMedia('(max-width: 899px)');
 
+  const hideLastTwoElements = (elements, isMobile) => {
+    elements.forEach((element, index) => {
+      if (index < elements.length - 2) return;
+      element.classList.toggle('hidden', isMobile);
+    });
+  };
+
   const handleResponsive = (e) => {
     const isMobile = e ? e.matches : mediaQuery.matches;
     const headerItems = el.querySelectorAll('.header-item');
-    headerItems.forEach((item, index) => {
-      if (index < headerItems.length - 2) return;
-      item.classList.toggle('hidden', isMobile);
-    });
-
+    hideLastTwoElements(headerItems, isMobile);
     const tableRows = el.querySelectorAll('.table-row');
     tableRows.forEach((row) => {
       const tableCells = row.querySelectorAll('.table-cell');
-      tableCells.forEach((cell, index) => {
-        if (index < tableCells.length - 2) return;
-        cell.classList.toggle('hidden', isMobile);
-      });
+      hideLastTwoElements(tableCells, isMobile);
     });
     syncAccessibilityHeaders(el);
   };
