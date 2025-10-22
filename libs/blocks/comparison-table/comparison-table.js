@@ -113,7 +113,7 @@ function syncAccessibilityHeaders(el) {
   });
 }
 
-function createSubHeaderContainer(
+function createSubHeaderContainer({
   childrenArray,
   startIndex,
   endIndex,
@@ -122,7 +122,7 @@ function createSubHeaderContainer(
   isFirst = false,
   headerTitles = [],
   headerItemIndex = 0,
-) {
+}) {
   const container = createTag('div', { class: 'sub-header-item-container' });
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
@@ -199,16 +199,16 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el }) {
     if (child.textContent.trim() !== '-' && index !== childrenArray.length - 1) return;
     const separatorIndex = child.textContent.trim() === '-' ? index : childrenArray.length;
     const isLast = separatorIndex === childrenArray.length;
-    const container = createSubHeaderContainer(
+    const container = createSubHeaderContainer({
       childrenArray,
-      lastIndex + 1,
-      separatorIndex,
+      startIndex: lastIndex + 1,
+      endIndex: separatorIndex,
       el,
       isLast,
-      containerIndex === 0,
+      isFirst: containerIndex === 0,
       headerTitles,
       headerItemIndex,
-    );
+    });
 
     if (isLast) {
       headerItem.appendChild(container);
