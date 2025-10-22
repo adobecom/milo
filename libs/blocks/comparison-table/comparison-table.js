@@ -349,25 +349,27 @@ function decorateTables(el, children) {
   let currentTableContainer = createTag('div', { class: 'table-container' });
   let currentTableChildren = [];
 
+  const processCurrentTable = () => {
+    if (currentTableChildren.length === 0) return;
+    addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
+    currentTableContainer = createTag('div', { class: 'table-container' });
+    currentTableChildren = [];
+  };
+
   children.forEach((child) => {
-    if (child.textContent.trim() === '+++' && currentTableChildren.length > 0) {
-      addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
-      currentTableContainer = createTag('div', { class: 'table-container' });
-      currentTableChildren = [];
-    }
     if (child.textContent.trim() === '+++') {
+      processCurrentTable();
       child.remove();
       return;
     }
     currentTableChildren.push(child);
   });
-  if (currentTableChildren.length === 0) return;
-  addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
+
+  processCurrentTable();
 }
 
 function setupResponsiveHiding(el) {
   const mediaQuery = window.matchMedia('(max-width: 899px)');
-
   const hideLastTwoElements = (elements, isMobile) => {
     elements.forEach((element, index) => {
       if (index < elements.length - 2) return;
