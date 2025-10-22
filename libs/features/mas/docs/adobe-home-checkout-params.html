@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Checkout Parameters Use Case</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="spectrum.css" />
+        <link rel="stylesheet" href="styles.css" />
+        <link
+            rel="stylesheet"
+            href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css"
+        />
+        <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css" />
+        <script src="/libs/deps/lit-all.min.js" type="module"></script>
+
+        <script>
+            function toggleTheme(theme) {
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('theme', theme);
+
+                window.location.href = url.toString();
+            }
+        </script>
+        <!-- <script type="module" src="./mas-sidenav.js"></script> -->
+        <script type="module">
+            import { init } from './common.js';
+            init();
+        </script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
+    </head>
+
+    <body class="spectrum spectrum--medium spectrum--light">
+        <sp-theme scale="medium" color="light" style="display: contents">
+            <aside is="mas-sidenav"></aside>
+            <main>
+                <div class="gallery-content">
+                    <h1 id="ah-gallery" tabindex="-1">
+                        M@S - Checkout Parameters Use Case
+                      
+                    </h1>
+                    <div> Checkout Parameters allows adding valid UCv3 request parameters to the checkout link.
+                    <div class="adobe-home-container">
+                        <h3 class="size-header" tabindex="-1">1. Invalid Content</h3>
+                        <div>
+                            <div >
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="1708ba0e-dd96-4a21-8123-7aeebf8b2d6e"
+                                    ></aem-fragment
+                                ></merch-card>
+                            </div>
+                        </div>
+                        <div>Checkout Parameters value: <b><code>inapp%3A%2F%2Fahome%3Fworkflow=cme-1&targetURL=%7Bsegmentation%3Fcli%3D%24%7Bcli%7D&co=%24%7Bco%7D&lang=%24%7Blang%7D&pa=ccsn_direct_individual&ot=trial%7D&ctxRtUrl=%7BctxRtUrl%7D</code></b></div>
+                        <div>Result Checkout CTA is a valid UCv3 link: <b><code>https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=%24%7Bco%7D&lang=en&pa=ccsn_direct_individual&ot=TRIAL&ctxRtUrl=%7BctxRtUrl%7D&ms=COM&cs=INDIVIDUAL</code></b>.</div>
+
+                        <h3 class="size-header" tabindex="-1">2. Valid Content</h3>
+                        <div>
+                            <div >
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="0879fdd8-c782-4d78-951c-52279c1cf1cf"
+                                    ></aem-fragment
+                                ></merch-card>
+                            </div>
+                        </div>
+                        <div>Checkout Parameters value: <b><code>ctx=if&mv=other&mv2=ahome</code></b></div>
+                        <div>Result Checkout CTA is a valid UCv3 link: <b><code>https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual</code></b>.</div>
+                        <div>List of valid parameters: https://wiki.corp.adobe.com/display/businessservices/UCv3+Link+Creation+Guide</div>
+                    </div>
+                </div>
+            </main>
+        </sp-theme>
+        <script>
+            // Get theme from URL on page load
+            const theme = new URL(window.location.href).searchParams.get(
+                'theme',
+            );
+            if (theme) {
+                // Apply theme without changing URL again
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+            }
+        </script>
+    </body>
+</html>
