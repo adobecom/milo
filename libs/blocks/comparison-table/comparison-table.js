@@ -13,29 +13,23 @@ function equalHeight(el) {
     const resizeObserver = new ResizeObserver((entries) => {
       if (entries.some((entry) => entry.contentBoxSize || entry.borderBoxSize)) handler();
     });
-
     const observeElements = () => {
       const elementsToObserve = [
         ...el.querySelectorAll('.table-cell div'),
         ...el.querySelectorAll('.sub-header-item-container'),
       ];
-
       elementsToObserve.forEach((element) => resizeObserver.observe(element));
     };
-
     observeElements();
-
     return resizeObserver;
   };
 
   const performEqualHeight = () => {
     const tableRows = el.querySelectorAll('.table-row');
-
     tableRows.forEach((row) => {
       const tableCells = row.querySelectorAll('.table-cell');
       if (!tableCells.length) return;
       const divsByPosition = [];
-
       tableCells.forEach((cell) => {
         const divs = cell.querySelectorAll('div');
         divs.forEach((div, index) => {
@@ -44,7 +38,6 @@ function equalHeight(el) {
           divsByPosition[index].push(div);
         });
       });
-
       divsByPosition.forEach((divs) => {
         if (!divs.length) return;
         const maxHeight = calculateMaxHeight(divs);
@@ -59,17 +52,14 @@ function equalHeight(el) {
     const headerItems = el.querySelector('.header-content-wrapper')?.querySelectorAll('.header-item');
     if (!headerItems?.length) return;
     const containersByPosition = [];
-
     headerItems.forEach((headerItem) => {
       const subHeaderContainers = headerItem.querySelectorAll('.sub-header-item-container');
-
       subHeaderContainers.forEach((container, index) => {
         if (!containersByPosition[index]) containersByPosition[index] = [];
         container.style.minHeight = 'auto';
         containersByPosition[index].push(container);
       });
     });
-
     containersByPosition.forEach((containers) => {
       if (!containers.length) return;
       const maxHeight = calculateMaxHeight(containers);
@@ -78,7 +68,6 @@ function equalHeight(el) {
       });
     });
   };
-
   const headerObserver = setupHeightHandler(performHeaderEqualHeight);
   const tableObserver = setupHeightHandler(performEqualHeight);
 
