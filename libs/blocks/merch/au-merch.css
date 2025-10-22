@@ -41,3 +41,32 @@ merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .pric
 merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"][data-template="price"] {
   display: inline;
 }
+
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix {
+  font-size: 0;
+  line-height: 0;
+  display: block;
+}
+
+merch-card [slot='heading-m'] [is="inline-price"] .price:not(.price-annual) {
+  display: block;
+}
+
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual::before {
+  content: '(';
+}
+
+.pricing.has-pricing-after .price-annual-prefix {
+  display: block;
+  font-size: 0;
+  line-height: 0;
+  display: none;
+}
+
+.pricing.has-pricing-after .price:not(.price-annual) {
+  display: block;
+}
+
+.pricing.has-pricing-after .price-annual::before {
+  content: '(';
+}
