@@ -188,6 +188,40 @@ function createSubHeaderContainer(
   return container;
 }
 
+function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el }) {
+  headerItem.classList.add('header-item');
+  headerItem.setAttribute('data-column-index', headerItemIndex);
+  const childrenArray = [...headerItem.children];
+  let containerIndex = 0;
+  let lastIndex = -1;
+
+  childrenArray.forEach((child, index) => {
+    if (child.textContent.trim() !== '-' && index !== childrenArray.length - 1) return;
+    const separatorIndex = child.textContent.trim() === '-' ? index : childrenArray.length;
+    const isLast = separatorIndex === childrenArray.length;
+    const container = createSubHeaderContainer(
+      childrenArray,
+      lastIndex + 1,
+      separatorIndex,
+      el,
+      isLast,
+      containerIndex === 0,
+      headerTitles,
+      headerItemIndex,
+    );
+
+    if (isLast) {
+      headerItem.appendChild(container);
+    } else {
+      headerItem.insertBefore(container, childrenArray[separatorIndex]);
+      childrenArray[separatorIndex].remove();
+    }
+
+    containerIndex += 1;
+    lastIndex = separatorIndex;
+  });
+}
+
 function decorateHeader(el, headerContent) {
   headerContent.classList.add('header-content');
   const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
@@ -204,44 +238,7 @@ function decorateHeader(el, headerContent) {
       headerItem.remove();
       return;
     }
-
-    headerItem.classList.add('header-item');
-    headerItem.setAttribute('data-column-index', headerItemIndex);
-    let lastContainedIndex = -1;
-    const childrenArray = [...headerItem.children];
-    let containerIndex = 0;
-
-    childrenArray.forEach((headerItemChild, index) => {
-      if (headerItemChild.textContent.trim() !== '-') return;
-      headerItem.insertBefore(createSubHeaderContainer(
-        childrenArray,
-        lastContainedIndex + 1,
-        index,
-        el,
-        false,
-        containerIndex === 0,
-        headerTitles,
-        headerItemIndex,
-      ), headerItemChild);
-      headerItemChild.remove();
-      lastContainedIndex = index;
-      containerIndex += 1;
-    });
-    const finalSubHeaderItemContainer = createSubHeaderContainer(
-      childrenArray,
-      lastContainedIndex + 1,
-      childrenArray.length,
-      el,
-      true,
-      false,
-      headerTitles,
-      headerItemIndex,
-    );
-
-    if (lastContainedIndex >= childrenArray.length - 1
-      || finalSubHeaderItemContainer.children.length <= 0) return;
-
-    headerItem.appendChild(finalSubHeaderItemContainer);
+    decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el });
   });
   headerContentWrapper.prepend(createTag('div', { class: 'header-item' }));
 }
@@ -379,7 +376,6 @@ function setupResponsiveHiding(el) {
     });
     syncAccessibilityHeaders(el);
   };
-
   handleResponsive();
   mediaQuery.addEventListener('change', handleResponsive);
 }
