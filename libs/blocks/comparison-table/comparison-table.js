@@ -107,7 +107,6 @@ function syncAccessibilityHeaders(el) {
     cell.classList.remove('hidden');
     accessibilityHeaderRow.appendChild(cell);
   });
-
   [...accessibilityHeaderRow.querySelectorAll('.accessibility-header-cell')].forEach((cell) => {
     const columnIndex = cell.getAttribute('data-column-index');
     if (!visibleHeaderItems.some((item) => item.getAttribute('data-column-index') === columnIndex)) cell.classList.add('hidden');
@@ -131,7 +130,6 @@ function createSubHeaderContainer(
       if (isLast) decorateButtons(childrenArray[i]);
     }
   }
-
   if (isFirst) {
     const select = createTag('select', { class: 'mobile-filter-select', name: 'column-filter' });
     headerTitles.forEach((title, index) => {
@@ -161,7 +159,6 @@ function createSubHeaderContainer(
       const selectElement = el.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
       if (selectElement) selectElement.value = +e.target.value;
       const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
-
       visibleSelects.forEach((selectItem) => {
         const currentValue = +selectItem.value;
         selectItem.innerHTML = '';
@@ -172,13 +169,11 @@ function createSubHeaderContainer(
           selectItem.appendChild(option);
         });
       });
-
       syncAccessibilityHeaders(el);
     });
 
     container.appendChild(select);
   }
-
   if (!isLast) return container;
   const actionAreaElements = container.querySelectorAll('.action-area');
   if (actionAreaElements.length > 0) {
@@ -338,7 +333,6 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
   });
 
   tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
-
   tableContainer.appendChild(tableElement);
   el.appendChild(tableContainer);
 }
@@ -369,14 +363,12 @@ function setupResponsiveHiding(el) {
   const handleResponsive = (e) => {
     const isMobile = e ? e.matches : mediaQuery.matches;
     const headerItems = el.querySelectorAll('.header-item');
-
     headerItems.forEach((item, index) => {
       if (index < headerItems.length - 2) return;
       item.classList.toggle('hidden', isMobile);
     });
 
     const tableRows = el.querySelectorAll('.table-row');
-
     tableRows.forEach((row) => {
       const tableCells = row.querySelectorAll('.table-cell');
       tableCells.forEach((cell, index) => {
@@ -384,7 +376,6 @@ function setupResponsiveHiding(el) {
         cell.classList.toggle('hidden', isMobile);
       });
     });
-
     syncAccessibilityHeaders(el);
   };
 
