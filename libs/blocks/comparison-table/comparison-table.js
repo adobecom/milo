@@ -261,74 +261,78 @@ function createAccessibilityHeaderRow(el) {
   return headerRow;
 }
 
+function decorateTableToggleButton({
+  tableChild,
+  arePrimaryColumns,
+  tableElement,
+  tableContainer,
+}) {
+  [...tableChild.children].forEach((child, childIndex) => {
+    const isPrimary = childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY;
+    if (childIndex !== 0 && isPrimary) arePrimaryColumns[childIndex] = true;
+    if (!child.textContent.trim() || isPrimary) child.remove();
+  });
+  tableChild.classList.add('table-column-header');
+  const firstChild = tableChild.children[0];
+  const buttonElement = createTag('button', { 'aria-expanded': true });
+  buttonElement.innerHTML = firstChild.innerHTML;
+  buttonElement.appendChild(createTag('span', { class: 'toggle-icon' }));
+  buttonElement.addEventListener('click', () => {
+    tableElement.classList.toggle('hide');
+    buttonElement.setAttribute('aria-expanded', buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+  });
+  tableChild.replaceChild(buttonElement, firstChild);
+  tableContainer.appendChild(tableChild);
+}
+
+function decorateTableCells({ tableChild, arePrimaryColumns, tableElement }) {
+  [...tableChild.children].forEach((child, childIndex) => {
+    child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
+    if (childIndex === 0) child.setAttribute('role', 'rowheader');
+    if (childIndex > 0) {
+      child.setAttribute('data-column-index', childIndex);
+      child.setAttribute('role', 'cell');
+    }
+    if (arePrimaryColumns[childIndex]) child.classList.add('primary-cell');
+    if (childIndex === 0) return;
+    const childElements = [...child.children];
+    const separatorIndex = childElements.findIndex((element) => element.textContent.trim() === '-');
+    const cellDiv = createTag('div');
+
+    if (separatorIndex !== -1) {
+      const columnHeaderP = childElements[separatorIndex + 1];
+      childElements.slice(0, separatorIndex).forEach((element) => cellDiv.appendChild(element));
+      child.innerHTML = '';
+      child.appendChild(cellDiv);
+      if (columnHeaderP) child.appendChild(columnHeaderP);
+      childElements.slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
+      return;
+    }
+
+    if (child.children.length > 1 || !child.textContent.trim()) {
+      [...child.children].forEach((element) => cellDiv.appendChild(element));
+    } else {
+      cellDiv.appendChild(createTag('p', {}, child.textContent));
+    }
+    child.innerHTML = '';
+    child.appendChild(cellDiv);
+  });
+  tableChild.classList.add('table-row');
+  tableChild.setAttribute('role', 'row');
+  tableElement.appendChild(tableChild);
+}
+
 function addTableClassesAndAppend(el, tableContainer, tableChildren) {
   const tableElement = createTag('div', { class: 'table', role: 'table' });
   const arePrimaryColumns = [];
 
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
-      [...tableChild.children].forEach((child, childIndex) => {
-        const isPrimary = childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY;
-        if (childIndex !== 0 && isPrimary) arePrimaryColumns[childIndex] = true;
-        if (!child.textContent.trim() || isPrimary) child.remove();
-      });
-      tableChild.classList.add('table-column-header');
-
-      const firstChild = tableChild.children[0];
-      const buttonElement = createTag('button', { 'aria-expanded': true });
-      buttonElement.innerHTML = firstChild.innerHTML;
-      buttonElement.appendChild(createTag('span', { class: 'toggle-icon' }));
-      buttonElement.addEventListener('click', () => {
-        tableElement.classList.toggle('hide');
-        buttonElement.setAttribute('aria-expanded', buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
-      });
-      tableChild.replaceChild(buttonElement, firstChild);
-      tableContainer.appendChild(tableChild);
+      decorateTableToggleButton({ tableChild, arePrimaryColumns, tableElement, tableContainer });
       return;
     }
-
-    [...tableChild.children].forEach((child, childIndex) => {
-      child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
-      if (childIndex === 0) child.setAttribute('role', 'rowheader');
-      if (childIndex > 0) {
-        child.setAttribute('data-column-index', childIndex);
-        child.setAttribute('role', 'cell');
-      }
-      if (arePrimaryColumns[childIndex]) child.classList.add('primary-cell');
-      if (childIndex === 0) return;
-
-      const childElements = [...child.children];
-      const separatorIndex = childElements.findIndex((element) => element.textContent.trim() === '-');
-      const cellDiv = createTag('div');
-
-      if (separatorIndex !== -1) {
-        const columnHeaderP = childElements[separatorIndex + 1];
-
-        childElements.slice(0, separatorIndex).forEach((element) => cellDiv.appendChild(element));
-
-        child.innerHTML = '';
-        child.appendChild(cellDiv);
-
-        if (columnHeaderP) child.appendChild(columnHeaderP);
-
-        childElements.slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
-        return;
-      }
-
-      if (child.children.length > 1 || !child.textContent.trim()) {
-        [...child.children].forEach((element) => cellDiv.appendChild(element));
-      } else {
-        cellDiv.appendChild(createTag('p', {}, child.textContent));
-      }
-
-      child.innerHTML = '';
-      child.appendChild(cellDiv);
-    });
-    tableChild.classList.add('table-row');
-    tableChild.setAttribute('role', 'row');
-    tableElement.appendChild(tableChild);
+    decorateTableCells({ tableChild, arePrimaryColumns, tableElement });
   });
-
   tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
   tableContainer.appendChild(tableElement);
   el.appendChild(tableContainer);
@@ -381,10 +385,8 @@ function setupResponsiveHiding(el) {
 }
 
 async function setAriaLabelForIcons(el) {
-  const ariaLabelElements = [...el.querySelectorAll('.mobile-filter-select, .table-column-header button')];
-  if (!ariaLabelElements.length) return;
   const ariaLabels = await replaceKeyArray(['toggle-table', 'choose-table-column'], getConfig());
-  ariaLabelElements.forEach((element) => {
+  [...el.querySelectorAll('.mobile-filter-select, .table-column-header button')].forEach((element) => {
     const labelIndex = element.classList.contains('mobile-filter-select') ? 1 : 0;
     element.setAttribute('aria-label', ariaLabels[labelIndex]);
   });
