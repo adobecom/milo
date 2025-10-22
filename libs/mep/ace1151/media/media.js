@@ -7,8 +7,8 @@ import {
   decorateTextOverrides,
   applyHoverPlay,
   loadCDT,
-} from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
+} from '../../../utils/decorate.js';
+import { createTag, loadStyle, getConfig } from '../../../utils/utils.js';
 
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
