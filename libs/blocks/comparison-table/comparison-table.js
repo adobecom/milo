@@ -388,11 +388,6 @@ async function setAriaLabelForButtons(el) {
   });
 }
 
-function handleStickyHeaderCutoff(el) {
-  const heightRatio = el.querySelector('.header-content').offsetHeight / window.innerHeight;
-  el.classList.toggle('cancel-sticky', heightRatio >= 0.45);
-}
-
 function setupStickyHeader(el) {
   const headerContent = el.querySelector('.header-content');
   const firstTableContainer = el.querySelector('.table-container');
@@ -415,14 +410,12 @@ function setupStickyHeader(el) {
       headerContent.style.top = `${headerHeight}px`;
       headerContent.classList.add('sticky');
       isSticky = true;
-      handleStickyHeaderCutoff(el);
     }
 
     if (scrollTop === 0 && isSticky) {
       headerContent.classList.remove('sticky');
       headerContent.style.top = '';
       isSticky = false;
-      handleStickyHeaderCutoff(el);
     }
   };
 
