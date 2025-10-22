@@ -248,6 +248,22 @@ runTests(async () => {
             const merchCard = collectionElement.querySelector('merch-card[id="ca835d11-fe6b-40f8-96d1-50ac800c9f70"]');
             expect(merchCard.getAttribute('filters')).to.equal('all:4:wide,cloud:2:wide,subcategory:1:wide');
         });
+
+        it('should display show more CTA and load more cards upon click', async () => {
+            render();
+            await collectionElement.checkReady();
+            await delay(100);
+            expect(visibleCards().length).to.equal(27);
+            const showMoreButton =
+                collectionElement.shadowRoot.querySelector('#footer sp-button');
+            expect(showMoreButton.isConnected).to.be.true;
+            showMoreButton.click();
+            await delay(100);
+            showMoreButton.click();
+            await delay(100);
+            expect(visibleCards().length).to.equal(28);
+            expect(showMoreButton.isConnected).to.be.false;
+        });
     })
 
     describe('merch-card-collection override feature', () => {
