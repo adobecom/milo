@@ -40,6 +40,7 @@ function updateStepDetails(formEl, step, totalSteps) {
   setTimeout(() => {
     formEl.querySelector(`.mktoFormRowTop[data-validate="${step}"]:not(.mktoHidden) input`)?.focus();
   }, 100);
+  window?.aaInteraction(`Marketo Step ${step} of ${totalSteps}`, 'stepChange', formEl.id.split('_')[1], null);
 }
 
 function showPreviousStep(formEl, totalSteps) {
