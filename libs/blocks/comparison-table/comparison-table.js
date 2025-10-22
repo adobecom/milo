@@ -115,10 +115,8 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
     const rowHeader = parent.querySelector('.table-row-header');
     if (rowHeader) parent.insertBefore(col, rowHeader.nextSibling);
   });
-
   const selectElement = el.querySelector(`[data-column-index="${newValue}"] .mobile-filter-select`);
   if (selectElement) selectElement.value = newValue;
-
   updateVisibleSelects({ el, headerTitles });
   syncAccessibilityHeaders(el);
 }
@@ -382,7 +380,7 @@ function setupResponsiveHiding(el) {
   mediaQuery.addEventListener('change', handleResponsive);
 }
 
-async function setAriaLabelForIcons(el) {
+async function setAriaLabelForButtons(el) {
   const ariaLabels = await replaceKeyArray(['toggle-table', 'choose-table-column'], getConfig());
   [...el.querySelectorAll('.mobile-filter-select, .table-column-header button')].forEach((element) => {
     const labelIndex = element.classList.contains('mobile-filter-select') ? 1 : 0;
@@ -440,5 +438,5 @@ export default function init(el) {
   equalHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
-  setAriaLabelForIcons(el);
+  setAriaLabelForButtons(el);
 }
