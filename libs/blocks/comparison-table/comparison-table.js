@@ -11,13 +11,7 @@ function equalHeight(el) {
 
   const setupHeightHandler = (handler) => {
     const resizeObserver = new ResizeObserver((entries) => {
-      let shouldRecalculate = false;
-
-      entries.forEach((entry) => {
-        if (entry.contentBoxSize || entry.borderBoxSize) shouldRecalculate = true;
-      });
-
-      if (shouldRecalculate) handler();
+      if (entries.some((entry) => entry.contentBoxSize || entry.borderBoxSize)) handler();
     });
 
     const observeElements = () => {
@@ -119,9 +113,7 @@ function syncAccessibilityHeaders(el) {
 
   [...accessibilityHeaderRow.querySelectorAll('.accessibility-header-cell')].forEach((cell) => {
     const columnIndex = cell.getAttribute('data-column-index');
-    if (!visibleHeaderItems.some((item) => item.getAttribute('data-column-index') === columnIndex)) {
-      cell.classList.add('hidden');
-    }
+    if (!visibleHeaderItems.some((item) => item.getAttribute('data-column-index') === columnIndex)) cell.classList.add('hidden');
   });
 }
 
@@ -145,16 +137,10 @@ function createSubHeaderContainer(
   }
 
   if (isFirst) {
-    const select = createTag('select', {
-      class: 'mobile-filter-select',
-      name: 'column-filter',
-    });
-
+    const select = createTag('select', { class: 'mobile-filter-select', name: 'column-filter' });
     headerTitles.forEach((title, index) => {
       if (!title
-        || (headerItemIndex === 1 && index === 2)
-         || (headerItemIndex === 2 && index === 1)
-      ) return;
+        || (headerItemIndex === 1 && index === 2) || (headerItemIndex === 2 && index === 1)) return;
 
       const option = createTag('option', { value: index }, title);
       if (index === headerItemIndex) option.selected = true;
@@ -163,10 +149,7 @@ function createSubHeaderContainer(
 
     select.addEventListener('change', (e) => {
       const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex(el);
-
-      el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => {
-        col.classList.add('hidden');
-      });
+      el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => col.classList.add('hidden'));
       el.querySelectorAll(`[data-column-index="${+e.target.value}"]`).forEach((col) => {
         col.classList.remove('hidden');
         const parent = col.parentNode;
@@ -224,13 +207,13 @@ function decorateHeader(el, headerContent) {
   const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
   [...headerContent.children].forEach((child) => headerContentWrapper.appendChild(child));
   headerContent.appendChild(headerContentWrapper);
-  const headerTitles = [];
-  [...headerContentWrapper.children].forEach((headerItem) => {
-    const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
-    headerTitles.push(titleElement ? titleElement.textContent.trim() : '');
+  const headerItems = [...headerContentWrapper.children];
+  const headerTitles = headerItems.map((item) => {
+    const titleElement = item.querySelector('h1, h2, h3, h4, h5, h6');
+    return titleElement ? titleElement.textContent.trim() : '';
   });
 
-  [...headerContentWrapper.children].forEach((headerItem, headerItemIndex) => {
+  headerItems.forEach((headerItem, headerItemIndex) => {
     if (!headerItem.innerHTML) {
       headerItem.remove();
       return;
@@ -430,17 +413,9 @@ function setupResponsiveHiding(el) {
 }
 
 async function setAriaLabelForIcons(el) {
-  const config = getConfig();
-  const expendableIcons = el.querySelectorAll('.table-column-header button');
-  const selectFilters = el.querySelectorAll('.mobile-filter-select');
-  const ariaLabelElements = [...selectFilters, ...expendableIcons];
-
-  if (!ariaLabelElements.length) {
-    return;
-  }
-
-  const ariaLabels = await replaceKeyArray(['toggle-table', 'choose-table-column'], config);
-
+  const ariaLabelElements = [...el.querySelectorAll('.mobile-filter-select, .table-column-header button')];
+  if (!ariaLabelElements.length) return;
+  const ariaLabels = await replaceKeyArray(['toggle-table', 'choose-table-column'], getConfig());
   ariaLabelElements.forEach((element) => {
     const labelIndex = element.classList.contains('mobile-filter-select') ? 1 : 0;
     element.setAttribute('aria-label', ariaLabels[labelIndex]);
