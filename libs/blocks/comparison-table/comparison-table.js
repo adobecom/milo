@@ -39,13 +39,11 @@ function equalHeight(el) {
 
     tableRows.forEach((row) => {
       const tableCells = row.querySelectorAll('.table-cell');
-      if (tableCells.length === 0) return;
-
+      if (!tableCells.length) return;
       const divsByPosition = [];
 
       tableCells.forEach((cell) => {
         const divs = cell.querySelectorAll('div');
-
         divs.forEach((div, index) => {
           if (!divsByPosition[index]) divsByPosition[index] = [];
           div.style.minHeight = 'auto';
@@ -54,8 +52,7 @@ function equalHeight(el) {
       });
 
       divsByPosition.forEach((divs) => {
-        if (divs.length === 0) return;
-
+        if (!divs.length) return;
         const maxHeight = calculateMaxHeight(divs);
         divs.forEach((div) => {
           div.style.minHeight = `${maxHeight}px`;
@@ -66,8 +63,7 @@ function equalHeight(el) {
 
   const performHeaderEqualHeight = () => {
     const headerItems = el.querySelector('.header-content-wrapper')?.querySelectorAll('.header-item');
-    if (!headerItems.length) return;
-
+    if (!headerItems?.length) return;
     const containersByPosition = [];
 
     headerItems.forEach((headerItem) => {
@@ -81,8 +77,7 @@ function equalHeight(el) {
     });
 
     containersByPosition.forEach((containers) => {
-      if (containers.length === 0) return;
-
+      if (!containers.length) return;
       const maxHeight = calculateMaxHeight(containers);
       containers.forEach((container) => {
         container.style.minHeight = `${maxHeight}px`;
@@ -191,16 +186,13 @@ function createSubHeaderContainer(
 
       const selectElement = el.querySelector(`[data-column-index="${+e.target.value}"] .mobile-filter-select`);
       if (selectElement) selectElement.value = +e.target.value;
-
       const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
 
       visibleSelects.forEach((selectItem) => {
         const currentValue = +selectItem.value;
-
         selectItem.innerHTML = '';
         headerTitles.forEach((title, index) => {
           if (!title || visibleSelects.some((s) => s !== selectItem && +s.value === index)) return;
-
           const option = createTag('option', { value: index }, title);
           if (index === currentValue) option.selected = true;
           selectItem.appendChild(option);
@@ -214,14 +206,12 @@ function createSubHeaderContainer(
   }
 
   if (!isLast) return container;
-
   const actionAreaElements = container.querySelectorAll('.action-area');
   if (actionAreaElements.length > 0) {
     const btnContainer = createTag('div', { class: 'btn-container' });
     actionAreaElements.forEach((element) => btnContainer.appendChild(element));
     container.appendChild(btnContainer);
   }
-
   const description = container.querySelector('p:not(:has(a))');
   if (!description) container.prepend(createTag('p', { class: 'description' }));
   else description.classList.add('description');
@@ -232,10 +222,8 @@ function createSubHeaderContainer(
 function decorateHeader(el, headerContent) {
   headerContent.classList.add('header-content');
   const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
-
   [...headerContent.children].forEach((child) => headerContentWrapper.appendChild(child));
   headerContent.appendChild(headerContentWrapper);
-
   const headerTitles = [];
   [...headerContentWrapper.children].forEach((headerItem) => {
     const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
