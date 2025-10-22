@@ -295,25 +295,21 @@ function decorateTableToggleButton({
 
 function setupCellAttributes(child, childIndex, arePrimaryColumns) {
   child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
-
   if (childIndex === 0) {
     child.setAttribute('role', 'rowheader');
   } else {
     child.setAttribute('data-column-index', childIndex);
     child.setAttribute('role', 'cell');
   }
-
   if (arePrimaryColumns[childIndex]) child.classList.add('primary-cell');
 }
 
 function processCellWithSeparator(child, childElements, separatorIndex) {
   const cellDiv = createTag('div');
   const columnHeaderP = childElements[separatorIndex + 1];
-
   childElements.slice(0, separatorIndex).forEach((element) => cellDiv.appendChild(element));
   child.innerHTML = '';
   child.appendChild(cellDiv);
-
   if (columnHeaderP) child.appendChild(columnHeaderP);
   childElements.slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
 }
