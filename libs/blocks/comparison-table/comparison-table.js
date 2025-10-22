@@ -1,5 +1,6 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
+import { replaceKeyArray } from '../../features/placeholders.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
@@ -440,6 +441,24 @@ function setupResponsiveHiding(el) {
   mediaQuery.addEventListener('change', handleResponsive);
 }
 
+async function setAriaLabelForIcons(el) {
+  const config = getConfig();
+  const expendableIcons = el.querySelectorAll('.table-column-header button');
+  const selectFilters = el.querySelectorAll('.mobile-filter-select');
+  const ariaLabelElements = [...selectFilters, ...expendableIcons];
+
+  if (!ariaLabelElements.length) {
+    return;
+  }
+
+  const ariaLabels = await replaceKeyArray(['toggle-table', 'choose-table-column'], config);
+
+  ariaLabelElements.forEach((element) => {
+    const labelIndex = element.classList.contains('mobile-filter-select') ? 1 : 0;
+    element.setAttribute('aria-label', ariaLabels[labelIndex]);
+  });
+}
+
 function setupStickyHeader(el) {
   const headerContent = el.querySelector('.header-content');
   const firstTableContainer = el.querySelector('.table-container');
@@ -494,4 +513,5 @@ export default function init(el) {
   equalHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
+  setAriaLabelForIcons(el);
 }
