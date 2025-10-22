@@ -226,11 +226,11 @@ const main = async (params) => {
   repo = params.context.repo.repo;
   
   if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) {
-    return console.log('Stopped, within RCP period (keeping stage clean for CSOs and quick VP-approved PRs).');
+    return console.log('Stopped, within RCP period.');
   }
   
   if (!workingHours()) {
-    return console.log('Stopped, stage batches only run Monday-Thursday (blocking Fridays and weekends).');
+    return console.log('Stopped, stage batches only run Monday-Thursday.');
   }
   try {
     const stageToMainPR = await getStageToMainPR();
