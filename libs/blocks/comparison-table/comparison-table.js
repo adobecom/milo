@@ -483,11 +483,14 @@ function setupStickyHeader(el) {
   window.addEventListener('resize', handleResize);
 }
 
-export default function init(el) {
-  const children = [...el.children];
+function decorate(el) {
+  const [headerChild, ...tableChildren] = [...el.children];
+  decorateHeader(el, headerChild);
+  decorateTables(el, tableChildren);
+}
 
-  decorateHeader(el, children[0]);
-  decorateTables(el, children.slice(1));
+export default function init(el) {
+  decorate(el);
   equalHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
