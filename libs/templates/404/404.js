@@ -65,6 +65,13 @@ async function getLegacy404() {
 export default async function init() {
   const root = contentRoot || '';
   const style = getMetadata('404');
+  // Added temporarily to enable target for US locale only for CC, DC and homepage.
+  // This will be removed post the test is done.
+  const allowedContentRoots = ['/homepage', '/cc-shared', '/dc-shared'];
+  if (locale.ietf === 'en-US' && allowedContentRoots.includes(root)) {
+    const targetMeta = createTag('meta', { name: 'target', content: 'on' });
+    document.head.append(targetMeta);
+  }
   if (style === 'feds') await get404();
   if (style === 'local') await get404(`${root}/fragments/404`);
   if (!style) await getLegacy404();
