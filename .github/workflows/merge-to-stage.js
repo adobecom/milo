@@ -220,12 +220,30 @@ const workingHours = () => {
   return !isFriday && !isSaturday && !isSunday;
 };
 
+const thursdayBeforeRCP = () => {
+  // This function is used to block creating stage batches on Thursdays (4) before an RCP on monday next week
+  const now = new Date();
+  const day = now.getUTCDay();
+  
+  if (day !== 4) return false;
+  
+  const nextMonday = new Date(now);
+  nextMonday.setUTCDate(now.getUTCDate() + 4);
+  
+  const { RCPDates } = require('./helpers.js');
+  
+  return RCPDates.some(({ start }) => {
+    const rcpStart = new Date(start);
+    return rcpStart.toDateString() === nextMonday.toDateString();
+  });
+};
+
 const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
   
-  if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) {
+  if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true }) || thursdayBeforeRCP()) {
     return console.log('Stopped, within RCP period.');
   }
   
