@@ -488,6 +488,15 @@
     border-color: var(--color-white);
   }
 
+  .text-block.ff-max-merch-spacing {
+    padding-top: 46px;
+    padding-bottom: 24px;
+  }
+
+  .text-block.ff-max-merch-spacing .detail-m {
+    font-size: 16px;
+  }
+
   @media (min-width: 600px) {
     .text-block [class*="heading-xxxl"] {
       font-size: 72px;
@@ -496,6 +505,27 @@
 
     .text-block [class*="body-xl"] {
       font-size: 24px;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .text-block.ff-max-merch-spacing {
+      padding-top: 80px;
+      padding-bottom: 60px;
+    }
+
+    .text-block.ff-max-merch-spacing .detail-m {
+      font-size: 18px;
+    }
+
+    .text-block.ff-max-merch-spacing .body-m {
+      font-size: 24px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .text-block.ff-max-merch-spacing {
+      padding-top: 160px;
     }
   }
 }
