@@ -510,7 +510,7 @@
 
   @media (min-width: 900px) {
     .text-block.ff-max-merch-spacing {
-      padding-top: 80px;
+      padding-top: 160px;
       padding-bottom: 60px;
     }
 
@@ -520,12 +520,6 @@
 
     .text-block.ff-max-merch-spacing .body-m {
       font-size: 24px;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    .text-block.ff-max-merch-spacing {
-      padding-top: 160px;
     }
   }
 }
