@@ -68,7 +68,7 @@ export default async function init() {
   // Added temporarily to enable target for US locale only for CC, DC and homepage.
   // This will be removed post the test is done.
   const allowedContentRoots = ['/homepage', '/cc-shared', '/dc-shared'];
-  if (locale.ietf === 'en-US' && allowedContentRoots.includes(root)) {
+  if (locale.ietf === 'en-US' && allowedContentRoots.includes(root) && !getMetadata('target')) {
     const targetMeta = createTag('meta', { name: 'target', content: 'on' });
     document.head.append(targetMeta);
   }

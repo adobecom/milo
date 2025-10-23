@@ -108,3 +108,24 @@ describe('Target Metadata - In allowed contentRoot list', () => {
     expect(targetMeta.getAttribute('content')).to.equal('on');
   });
 });
+
+describe('Target Metadata - Already exists in head', () => {
+  before(async () => {
+    const currentConfig = getConfig();
+    currentConfig.contentRoot = '/homepage';
+    currentConfig.locale.ietf = 'en-US';
+    document.head.innerHTML = await readFile({ path: './mocks/head-feds.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    const existingMeta = document.createElement('meta');
+    existingMeta.setAttribute('name', 'target');
+    existingMeta.setAttribute('content', 'existing');
+    document.head.append(existingMeta);
+    await init();
+  });
+
+  it('Should not add duplicate target meta tag if already exists', () => {
+    const targetMetas = document.head.querySelectorAll('meta[name="target"]');
+    expect(targetMetas.length).to.equal(1);
+    expect(targetMetas[0].getAttribute('content')).to.equal('existing');
+  });
+});
