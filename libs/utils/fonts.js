@@ -16,13 +16,14 @@ function dynamicTypekit(kitId, d = document) {
  *
  * @param {Object} locale the locale details
  */
-export default function loadFonts(locale, loadStyle) {
+export default function loadFonts(locale, loadStyle, getMetadata) {
   const tkSplit = locale.tk.split('.');
   if (tkSplit[1] === 'css') {
     return new Promise((resolve) => {
       const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
       const PHONE_SIZE = window.screen.width < 600 || window.screen.height < 600;
-      const kitId = isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE ? 'vti0xwb.css' : locale.tk;
+      let kitId = isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE ? 'vti0xwb.css' : locale.tk;
+      if (getMetadata('theme') === 'max25') kitId = 'uwk3rbm.css';
       loadStyle(`https://use.typekit.net/${kitId}`, resolve);
     });
   }

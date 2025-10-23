@@ -1113,3 +1113,9 @@ a.static:active  {
 @media screen and (min-width: 1440px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
+
+/* Use your custom face as the prioritized fallback, after your preferred custom (if available) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: adobe-clean-display, 'Trebuchet MS', sans-serif !important;
+  font-weight: 900 !important;
+}
