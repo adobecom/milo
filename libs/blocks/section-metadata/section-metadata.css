@@ -413,6 +413,10 @@ main > .section[class*='-up'] > .content {
     gap: var(--spacing-s);
   }
 
+  .section.spacing-bottom-180 {
+    padding-bottom: 50px;
+  }
+
   @media (min-width: 600px) {
     --xl-rounded-corners: 32px;
   }
@@ -425,7 +429,9 @@ main > .section[class*='-up'] > .content {
     border-radius: 0 0 var(--xl-rounded-corners) var(--xl-rounded-corners);
   }
 
-  .section.spacing-bottom-180 {
-    padding-bottom: 180px;
+  @media (min-width: 600px) {
+    .section.spacing-bottom-180 {
+      padding-bottom: 180px;
+    }
   }
 }

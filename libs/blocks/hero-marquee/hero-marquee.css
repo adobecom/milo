@@ -673,6 +673,10 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   @media (min-width: 1200px) {
+    .hero-marquee.max25 {
+      padding: 160px 0;
+    }
+
     .hero-marquee.max25 .foreground .copy .heading-xxl {
       font-size: 54px;
     }
@@ -686,6 +690,10 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
       position: relative;
       border-radius: 20px;
       overflow: hidden;
+    }
+
+    .hero-marquee.max25 .foreground .asset img {
+      display: block;
     }
 
     .hero-marquee.max25 .foreground .asset::after {
