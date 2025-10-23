@@ -60,8 +60,8 @@ export default class EmailCollectionBlock {
 
   async loginToOpenForm(email, password) {
     // Check EMAIL & PASSWWORD status:
-    expect(process.env.EMAIL_COLLECTION_IMS_MAIL, 'ERROR: No environment variable found for IMS_EMAIL').toBeTruthy();
-    expect(process.env.EMAIL_COLLECTION_IMS_PASS, 'ERROR: No environment variable found for IMS_PASS.').toBeTruthy();
+    expect(process.env.EMAIL_COLLECTION_IMS_MAIL, 'ERROR: No environment variable found for EMAIL_COLLECTION_IMS_MAIL').toBeTruthy();
+    expect(process.env.EMAIL_COLLECTION_IMS_PASS, 'ERROR: No environment variable found for EMAIL_COLLECTION_IMS_PASS').toBeTruthy();
 
     // Wait for page to load & stabilize:
     await this.FedsLogin.appEmailField.waitFor({ state: 'visible', timeout: 15000 });
