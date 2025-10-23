@@ -623,7 +623,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   .hero-marquee.max-ff.unity-enabled [class^="heading-"] {
-      font-family: 'Adobe Clean Display', 'Adobe Clean';
+      font-family: 'Adobe Clean Display', 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
       font-weight: 900;
       font-size: 36px;
       line-height: 105%;
