@@ -81,7 +81,7 @@ function syncAccessibilityHeaders(el) {
   });
   [...accessibilityHeaderRow.querySelectorAll('.accessibility-header-cell')].forEach((cell) => {
     const columnIndex = cell.getAttribute('data-column-index');
-    if (!visibleHeaderItems.some((item) => item.getAttribute('data-column-index') === columnIndex)) cell.classList.add('hidden');
+    if (columnIndex !== '-1' && !visibleHeaderItems.some((item) => item.getAttribute('data-column-index') === columnIndex)) cell.classList.add('hidden');
   });
 }
 
@@ -228,6 +228,7 @@ function decorateHeader(el, headerContent) {
 
 function createAccessibilityHeaderRow(el) {
   const headerRow = createTag('div', { class: 'table-row accessibility-header-row', role: 'row' });
+  headerRow.appendChild(createTag('div', { class: 'accessibility-header-cell', role: 'columnheader', 'data-column-index': -1 }));
   [...el.querySelectorAll('.header-item[data-column-index]')].forEach((headerItem) => {
     const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
     const headerCell = createTag('div', { role: 'columnheader' });
@@ -367,13 +368,8 @@ function setupResponsiveHiding(el) {
 
   const handleResponsive = (e) => {
     const isMobile = e ? e.matches : mediaQuery.matches;
-    const headerItems = el.querySelectorAll('.header-item');
-    hideLastTwoElements(headerItems, isMobile);
-    const tableRows = el.querySelectorAll('.table-row');
-    tableRows.forEach((row) => {
-      const tableCells = row.querySelectorAll('.table-cell');
-      hideLastTwoElements(tableCells, isMobile);
-    });
+    hideLastTwoElements(el.querySelectorAll('.header-item'), isMobile);
+    el.querySelectorAll('.table-row').forEach((row) => hideLastTwoElements(row.querySelectorAll('.table-cell'), isMobile));
     syncAccessibilityHeaders(el);
   };
   handleResponsive();
