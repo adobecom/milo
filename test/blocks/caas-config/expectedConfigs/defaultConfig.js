@@ -35,6 +35,7 @@ const defaultConfig = {
     setCardBorders: false,
     showCardBadges: false,
     showFooterDivider: false,
+    useCenterVideoPlay: false,
     useOverlayLinks: false,
     banner: {
       register: { description: 'Sign Up', url: '#registration' },

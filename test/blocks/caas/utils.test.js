@@ -198,6 +198,7 @@ describe('getConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
@@ -470,6 +471,7 @@ describe('getConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
@@ -838,6 +840,7 @@ describe('getFloodgateCaasConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
