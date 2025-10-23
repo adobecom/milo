@@ -385,27 +385,21 @@ async function setAriaLabelForButtons(el) {
 }
 
 function setupStickyHeader(el) {
+  if (!el.classList.contains('sticky')) return;
   const headerContent = el.querySelector('.header-content');
   const firstTableContainer = el.querySelector('.table-container');
-  let tableContainerOffset = 0;
   let isSticky = false;
 
-  const calculateTableContainerOffset = () => {
-    tableContainerOffset = firstTableContainer.getBoundingClientRect().top
-     + (window.pageYOffset || document.documentElement.scrollTop);
-  };
-  const getHeaderHeight = () => {
-    const header = document.querySelector('header');
-    return header ? header.offsetHeight : 0;
-  };
   const handleScroll = () => {
+    const tableContainerOffset = firstTableContainer.getBoundingClientRect().top
+     + (window.pageYOffset || document.documentElement.scrollTop);
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
     if (scrollTop >= tableContainerOffset && !isSticky) {
-      const headerHeight = getHeaderHeight();
-      headerContent.style.top = `${headerHeight}px`;
+      headerContent.style.top = `${document.querySelector('header')?.offsetHeight || 0}px`;
       headerContent.classList.add('sticky');
       isSticky = true;
+      if (headerContent.offsetHeight / window.innerHeight >= 0.45) headerContent.classList.remove('sticky');
     }
 
     if (scrollTop === 0 && isSticky) {
@@ -414,13 +408,7 @@ function setupStickyHeader(el) {
       isSticky = false;
     }
   };
-
-  const handleResize = () => {
-    headerContent.style.top = `${getHeaderHeight()}px`;
-  };
-  setTimeout(calculateTableContainerOffset, 100);
   window.addEventListener('scroll', handleScroll);
-  window.addEventListener('resize', handleResize);
 }
 
 function decorate(el) {
