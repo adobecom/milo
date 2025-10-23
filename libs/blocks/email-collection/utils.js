@@ -1,11 +1,13 @@
 import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '../../utils/utils.js';
 
 const API_ENDPOINTS = {
+  nala: 'https://14257-miloemailcollection-stage.adobeioruntime.net/api/v1/web/email-collection',
   local: 'https://www.stage.adobe.com/milo-email-collection-api',
   stage: 'https://www.stage.adobe.com/milo-email-collection-api',
   prod: 'https://www.adobe.com/milo-email-collection-api',
 };
 const FORM_METADATA = {
+  'email-collection-test': 'emailCollectionTest',
   'mps-sname': 'mpsSname',
   'subscription-name': 'subscriptionName',
 };
@@ -114,7 +116,9 @@ export async function getIMSProfile() {
 
 export function getApiEndpoint(action = 'submit') {
   const { env } = getConfig();
-  const endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
+  const { emailCollectionTest } = getConfig('metadata');
+  let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
+  if (emailCollectionTest) endPoint = API_ENDPOINTS.nala;
   return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
 }
 
