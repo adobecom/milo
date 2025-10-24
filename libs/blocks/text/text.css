@@ -458,7 +458,7 @@
       padding-bottom: 60px;
     }
 
-    .text-block.ff-gallery-block .detail-m {
+    .text-block.ff-gallery-block [class*="detail-"] {
       color: #B9B9B9;
       text-align: center;
       font-size: 20px;
@@ -474,6 +474,14 @@
       font-style: normal;
       font-weight: 400;
       line-height: 130%; /* 31.2px */
+    }
+
+    .text-block.ff-gallery-block [class^="heading-"] {
+      color: #FFF;
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 98%; /* 70.56px */
+      letter-spacing: -3.24px;
     }
   }
 
@@ -544,7 +552,7 @@
       padding-bottom: 24px; 
     }
 
-    .text-block.ff-gallery-block .detail-m {
+    .text-block.ff-gallery-block [class*="detail-"] {
       color: #B9B9B9;
       font-size: 16px;
       font-weight: 400;
@@ -610,7 +618,7 @@
       padding-bottom: 24px; 
     }
 
-    .text-block.ff-gallery-block .detail-m {
+    .text-block.ff-gallery-block [class*="detail-"] {
       color: #B9B9B9;
       font-size: 16px;
       font-weight: 400;
