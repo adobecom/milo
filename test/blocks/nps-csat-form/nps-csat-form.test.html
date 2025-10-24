@@ -39,6 +39,8 @@
     const Acknowledged = 'Acknowledged';
     const Cancel = 'Cancel';
     const Submit = 'Submit';
+    const PreSubmit = 'PreSubmit';
+    const PreCancel = 'PreCancel';
     const ErrorMsg = 'Error';
 
     // Helper to create a block with test data
@@ -202,8 +204,17 @@
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
+            // Mock _satellite for analytics tracking
+            window._satellite = {
+              track: () => {}
+            };
+
             // Send Cancel message
             sendMessage(CANCEL);
+
+            // Wait for PreCancel message
+            const preCancelMessage = await receiveMessage();
+            expect(preCancelMessage.type).to.equal(PreCancel);
 
             // Wait for Ack response
             const ackMessage = await receiveMessage();
@@ -232,6 +243,15 @@
             // Submit form
             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
             form.dispatchEvent(submitEvent);
+
+            // Wait for PreSubmit message
+            const preSubmitMessage = await receiveMessage();
+            expect(preSubmitMessage.type).to.equal(PreSubmit);
+            expect(preSubmitMessage.data).to.deep.include({
+              score: 1,
+              feedback: 'Test feedback explanation',
+              contactMe: true,
+            });
 
             // Wait for Submit message
             const submitMessage = await receiveMessage();
@@ -574,6 +594,13 @@
             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
             form.dispatchEvent(submitEvent);
 
+            // Wait for PreSubmit message
+            const preSubmitMessage = await receiveMessage();
+            expect(preSubmitMessage.type).to.equal(PreSubmit);
+            expect(preSubmitMessage.data.score).to.equal(2);
+            expect(preSubmitMessage.data.feedback).to.equal('This is my detailed feedback');
+            expect(preSubmitMessage.data.contactMe).to.equal(true);
+
             // Wait for Submit message
             const submitMessage = await receiveMessage();
             expect(submitMessage.type).to.equal(Submit);
@@ -611,7 +638,8 @@
 
             const submitEvent1 = new Event('submit', { bubbles: true, cancelable: true });
             form.dispatchEvent(submitEvent1);
-            await receiveMessage();
+            await receiveMessage(); // PreSubmit
+            await receiveMessage(); // Submit
 
             // Try to submit again
             const submitEvent2 = new Event('submit', { bubbles: true, cancelable: true });
@@ -666,9 +694,17 @@
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 
-              // Click cancel button - this sends Cancel message and transitions to STATE_EXPECT_ACK
+              // Mock _satellite for analytics tracking
+              window._satellite = {
+                track: () => {}
+              };
+
+              // Click cancel button - this sends PreCancel and Cancel message and transitions to STATE_EXPECT_ACK
               const cancelButton = block.querySelector('.nps-cancel');
               cancelButton.click();
+
+              const preCancelMessage = await receiveMessage();
+              expect(preCancelMessage.type).to.equal(PreCancel);
 
               const cancelMessage = await receiveMessage();
               expect(cancelMessage.type).to.equal(Cancel);
@@ -691,8 +727,16 @@
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 
-              // Send Cancel from parent - should respond with ACK and stay in STATE_BASE
+              // Mock _satellite for analytics tracking
+              window._satellite = {
+                track: () => {}
+              };
+
+              // Send Cancel from parent - should send PreCancel and respond with ACK and stay in STATE_BASE
               sendMessage(CANCEL);
+
+              const preCancelMessage = await receiveMessage();
+              expect(preCancelMessage.type).to.equal(PreCancel);
 
               const ackMessage = await receiveMessage();
               expect(ackMessage.type).to.equal(Acknowledged);
