@@ -1113,3 +1113,10 @@ a.static:active  {
 @media screen and (min-width: 1440px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
+
+:root:has(meta[name="theme"][content="max25"]) {
+  .firefly-model-showcase h1, .hero-marquee:is(.max25, .max-ff) [class^="heading-"] {
+    font-family: adobe-clean-display, 'Trebuchet MS', sans-serif !important;
+    font-weight: 900 !important;
+  }
+}
