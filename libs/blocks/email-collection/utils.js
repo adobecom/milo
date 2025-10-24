@@ -114,14 +114,6 @@ export async function getIMSProfile() {
   }
 }
 
-export function getApiEndpoint(action = 'submit') {
-  const { env } = getConfig();
-  const { emailCollectionTest } = getConfig('metadata');
-  let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
-  if (emailCollectionTest) endPoint = API_ENDPOINTS.nala;
-  return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
-}
-
 export const [createAriaLive, updateAriaLive] = (() => {
   let ariaLive;
   return [
@@ -249,6 +241,14 @@ export const [getFormData, setFormData] = (() => {
     },
   ];
 })();
+
+export function getApiEndpoint(action = 'submit') {
+  const { env } = getConfig();
+  const { emailCollectionTest } = getFormData('metadata');
+  let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
+  if (emailCollectionTest) endPoint = API_ENDPOINTS.nala;
+  return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
+}
 
 export function disableForm(form, disable = true) {
   form.querySelectorAll('input, button').forEach((el) => {
