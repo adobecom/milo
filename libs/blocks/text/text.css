@@ -537,23 +537,8 @@
     .text-block.no-spacing-top-mobile {
       padding-top: 0;
     }
-  }
 
-  @media (min-width: 600px) {
-    .text-block [class*="heading-xxxl"] {
-      font-size: 72px;
-      letter-spacing: -3px;
-    }
-
-    .text-block [class*="body-xl"] {
-      font-size: 24px;
-    }
-
-    .text-block [class*="detail-l"] {
-      font-size: 20px;
-    }
-
-    /* for firefly gallery block */
+     /* for firefly gallery block */
     .text-block.ff-gallery-block {
       padding-top: 56px;
       padding-bottom: 24px; 
@@ -581,6 +566,21 @@
       font-weight: 900;
       line-height: 105%;
       letter-spacing: -0.96px;
+    }
+  }
+
+  @media (min-width: 600px) {
+    .text-block [class*="heading-xxxl"] {
+      font-size: 72px;
+      letter-spacing: -3px;
+    }
+
+    .text-block [class*="body-xl"] {
+      font-size: 24px;
+    }
+
+    .text-block [class*="detail-l"] {
+      font-size: 20px;
     }
   }
 
