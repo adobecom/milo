@@ -353,14 +353,12 @@ export default async function init(el) {
 
   const initFullscreenScroll = (heroElement) => {
     const section = heroElement.closest('.section');
-    const nextSection = section?.nextElementSibling;
-    if (!section || !nextSection) return;
+    if (!section) return;
     heroElement.setAttribute('aria-live', 'polite');
 
     const getOpacityElements = () => [
       ...heroElement.querySelectorAll('.main-copy h1 + p'),
-      ...heroElement.querySelectorAll('.row-supplemental .ex-unity-wrap'),
-      ...heroElement.querySelectorAll('.row-supplemental .ex-unity-wrap ~ *'),
+      ...heroElement.querySelectorAll('.row-supplemental'),
     ];
 
     getOpacityElements().forEach((invisibleEl) => invisibleEl.setAttribute('aria-hidden', 'true'));
@@ -372,13 +370,16 @@ export default async function init(el) {
     let wheelStoppedTime = 0; // Track when wheel events stopped (for trackpad momentum)
     let wheelStopTimer = null; // Timer to detect end of wheel gesture
 
+    // Lock scroll position at top
+    window.scrollTo(0, 0);
+
     setTimeout(() => {
       isReady = true;
     }, 300);
 
     const handleTransitionEnd = (e) => {
       if (e.propertyName === 'opacity' && (e.target.matches('.main-copy h1 + p')
-        || e.target.matches('.row-supplemental .ex-unity-wrap') || e.target.matches('.row-supplemental .ex-unity-wrap ~ *')
+        || e.target.matches('.row-supplemental')
       )) {
         contentTransitionComplete = true;
         heroElement.removeEventListener('transitionend', handleTransitionEnd);
@@ -391,13 +392,15 @@ export default async function init(el) {
     };
 
     const handleUnifiedInteraction = (e) => {
-      if (!isReady) {
-        return;
-      }
-      // Prevent scroll events during initial states
+      // Prevent scroll events during initial states (regardless of isReady)
       if ((e.type === 'wheel' || e.type === 'touchmove') && currentState < 2) {
         e.preventDefault();
         e.stopPropagation();
+      }
+
+      // Don't process state changes until ready
+      if (!isReady) {
+        return;
       }
 
       // STATE 0: Initial interaction - reveal content
