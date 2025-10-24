@@ -25,7 +25,7 @@ describe('Icon Support', () => {
         </svg>
       `),
     });
-    window.lana.log = sinon.spy();
+    window.lana = { log: sinon.stub() };
     icons = document.querySelectorAll('span.icon');
   });
 
@@ -74,7 +74,7 @@ describe('Icon Support', () => {
     const lanaCallArguments = window.lana.log.getCall(0).args;
     expect(lanaCallArguments[0]).to.include('Failed to fetch iconList');
     expect(lanaCallArguments[1].tags).to.equal('icons');
-    expect(lanaCallArguments[1].errorType).to.equal('error');
+    expect(lanaCallArguments[1].errorType).to.equal('i');
   });
 
   it('Handles tooltip prefix correctly', async () => {
@@ -137,7 +137,7 @@ describe('Icon Support', () => {
     const lanaCallArguments = window.lana.log.getCall(1).args;
     expect(lanaCallArguments[0]).to.include('No fallback Milo icon found for invalid');
     expect(lanaCallArguments[1].tags).to.equal('icons');
-    expect(lanaCallArguments[1].errorType).to.equal('error');
+    expect(lanaCallArguments[1].errorType).to.equal('i');
   });
 });
 
