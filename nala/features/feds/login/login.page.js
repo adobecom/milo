@@ -23,7 +23,7 @@ export default class FedsLogin {
     this.appEmailField = page.locator('input#EmailPage-EmailField');
     this.appPasswordField = page.locator('input#PasswordPage-PasswordField');
     this.appVisibilityToggle = page.locator('button.PasswordField-VisibilityToggle');
-    this.appPasswordContinue = page.locator('button[data-id^="EmailPage"]');
+    this.appPasswordContinue = page.locator('button[data-id^="EmailPage-ContinueButton"]');
     this.appLoginContinue = page.locator('button[data-id^="PasswordPage"]');
     this.personalAccountLogo = page.locator('img[alt="Personal Account"]');
     this.selectAccountForm = page.locator('div[data-id="Profile"]');
