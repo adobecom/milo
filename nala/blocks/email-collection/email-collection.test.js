@@ -58,7 +58,7 @@ test.describe('Milo Email Collection Block test suite', () => {
       const password = process.env.EMAIL_COLLECTION_IMS_PASS;
       await emailCollection.loginToOpenForm(email, password);
       await marquee.emailCollection.waitFor({ state: 'visible', timeout: 60000 });
-      await page.waitForTimeout(5000);
+      await emailCollection.emailCollectionFillForm.waitFor({ state: 'visible', timeout: 60000 });
     });
 
     await test.step('step-6: Verify email-collection form spec', async () => {
@@ -136,7 +136,7 @@ test.describe('Milo Email Collection Block test suite', () => {
       await marquee.filledButtonL.click();
       await page.waitForLoadState('networkidle');
 
-      await expect(await marquee.foregroundMessage).toBeVisible();
+      await marquee.foregroundMessage.waitFor({ state: 'visible', timeout: 60000 });
       await expect(emailCollection.foregroundHeading).toContainText(data.submitedMessage.h2Text);
       await expect(emailCollection.subscribedEmail).toContainText(process.env.EMAIL_COLLECTION_IMS_MAIL);
 
