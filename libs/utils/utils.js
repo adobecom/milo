@@ -1127,12 +1127,13 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const icons = area.querySelectorAll('span.icon');
+  let icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
-    const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
-    if (excludedIconsCount === icons.length) return;
+    const includeIcons = [...icons].filter((icon) => !iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`)));
+    if (!includeIcons.length) return;
+    icons = includeIcons;
   }
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
