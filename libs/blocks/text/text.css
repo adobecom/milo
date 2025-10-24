@@ -548,4 +548,10 @@
       padding-top: 0;
     }
   }
+
+  @media (min-width: 1200px) {
+    .text-block.xxl-spacing-top.no-spacing-top-tablet {
+      padding-top: var(--spacing-xxl);
+    }
+  }
 }
