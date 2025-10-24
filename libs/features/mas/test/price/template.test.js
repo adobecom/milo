@@ -5,6 +5,7 @@ import {
     createPromoPriceTemplate,
     createPriceWithAnnualTemplate,
     createPromoPriceWithAnnualTemplate,
+    formatLiteral,
 } from '../../src/price/template.js';
 
 const context = {
@@ -318,5 +319,17 @@ describe('Promotion price display with annual template', () => {
             'annualTemplatePromoExpired',
             template(promoContext, promoValue, {}),
         );
+    });
+
+    it('format price literals with links', () => {
+        const literals = {
+            lang: 'fr',
+            taxInclusiveLabel: '{taxTerm, select, GST {TPS comprise} VAT {TVA comprise <u>underline</u> <strong>bold</strong> <a href="https://www.adobe.com/test.html">link</a> and another <a href="https://www.adobe.com/test2.html">link2</a> and text} TAX {taxes comprises} IVA {IVA comprise} SST {SST comprise} KDV {KDV comprise} other {}}'
+        }
+        const parameters = {
+            taxTerm: 'VAT'
+        };
+        const formattedLiteral = formatLiteral(literals, 'fr-FR', 'taxInclusiveLabel', parameters);
+        expect(formattedLiteral).to.be.equal('TVA comprise underline bold <a href="https://www.adobe.com/test.html">link</a> and another <a href="https://www.adobe.com/test2.html">link2</a> and text');
     });
 });
