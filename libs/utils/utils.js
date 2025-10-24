@@ -1039,6 +1039,24 @@ export function decorateLinks(el) {
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
+    if (a.href.includes('#_roc')) {
+      a.dataset.roc = true;
+      a.href = a.href.replace('#_roc', '');
+      const swapBlock = a.closest('[class]');
+      if (swapBlock) {
+        const row = a?.parentElement?.parentElement;
+        if (row?.firstElementChild?.textContent?.toLowerCase().trim() === 'roc') {
+          row.remove();
+        }
+        const p = createTag('p', null, a);
+        const blockName = swapBlock.classList[0];
+        if (blockName === 'section-metadata') {
+          a.dataset.mepLingoSectionMetadata = true;
+        }
+        a.dataset.mepLingoBlockFragment = a.href;
+        swapBlock.insertAdjacentElement('afterend', p);
+      }
+    }
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
     if (hasDnt) a.dataset.hasDnt = true;

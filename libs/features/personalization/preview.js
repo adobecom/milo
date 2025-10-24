@@ -456,7 +456,13 @@ function addHighlightData(manifests) {
     };
 
     selectedVariant?.replacefragment?.forEach(
-      ({ val }) => updateManifestId(`[data-path*="${val}"]`),
+      ({ val }) => {
+        // Store both manifest ID and fragment path for replacefragment
+        document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
+          el.dataset.manifestId = manifestName;
+          el.dataset.fragmentPath = val;
+        });
+      },
     );
 
     selectedVariant?.useblockcode?.forEach(({ selector }) => {
@@ -472,6 +478,27 @@ function addHighlightData(manifests) {
       .forEach((el) => (el.dataset.manifestId = manifestName));
   });
 }
+
+function addLingoFragmentClickHandlers() {
+  document.body.addEventListener('click', (e) => {
+    // Check for lingo fragments
+    const lingoFragment = e.target.closest('[data-mep-lingo-fragment], [data-mep-lingo-block-swap],[data-manifest-id][data-path]');
+    if (lingoFragment) {
+      const rect = lingoFragment.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      if (clickY < 35 && clickX < 400 && clickX > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        const fragmentPath = lingoFragment.dataset.path;
+        if (fragmentPath) {
+          window.open(fragmentPath, '_blank');
+        }
+      }
+    }
+  });
+}
+
 export async function saveToMmm() {
   const data = parseMepConfig();
   const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/'];
@@ -507,4 +534,5 @@ export default async function decoratePreviewMode() {
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
+  addLingoFragmentClickHandlers();
 }

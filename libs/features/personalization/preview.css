@@ -338,9 +338,20 @@
 body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem),
 body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > *,
 body[data-mep-highlight='true'] [data-code-manifest-id],
-body[data-mep-highlight='true'] [data-removed-manifest-id] {
+body[data-mep-highlight='true'] [data-removed-manifest-id],
+body[data-mep-highlight='true'] [data-mep-lingo-fragment],
+body[data-mep-highlight='true'] [data-mep-lingo-block-swap] {
   outline: 3px #26ceef dashed !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
+  margin: 5px 2px;
+}
+
+body[data-mep-highlight='true'] [data-mep-lingo-fragment*="fallback"] {
+  outline: 3px #ffc107 dashed !important;
+}
+
+body[data-mep-highlight='true'] [data-mep-lingo-block-swap] {
+  outline: 3px #28a745 dashed !important;
 }
 
 body[data-mep-highlight='true'] [data-code-manifest-id] {
@@ -359,6 +370,37 @@ body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   content: 'content updated by: ' attr(data-manifest-id);
+}
+
+/* Add link icon and pointer only for manifest badges with fragment paths */
+body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before {
+  content: '🔗 content updated by: ' attr(data-manifest-id);
+  cursor: pointer !important;
+}
+
+/* Disable pointer events for manifest badges without fragments */
+body[data-mep-highlight='true'] [data-manifest-id]:not([data-fragment-path])::before,
+body[data-mep-highlight='true'] [data-code-manifest-id]::before,
+body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
+  pointer-events: none !important;
+}
+
+body[data-mep-highlight='true'] [data-mep-lingo-fragment]::before  {
+  content: '🔗 content updated by mep-lingo fragment swap: ' attr(data-mep-lingo-fragment);
+  cursor: pointer !important;
+}
+
+body[data-mep-highlight='true'] [data-mep-lingo-block-swap]::before  {
+  content: '🔗 content updated by mep-lingo block swap: ' attr(data-mep-lingo-block-swap);
+  cursor: pointer !important;
+}
+
+/* Common styles for all highlight badges */
+body[data-mep-highlight='true'] [data-manifest-id]::before,
+body[data-mep-highlight='true'] [data-code-manifest-id]::before,
+body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
+body[data-mep-highlight='true'] [data-mep-lingo-fragment]::before,
+body[data-mep-highlight='true'] [data-mep-lingo-block-swap]::before  {
   font-size: 14px !important;
   min-height: 20px !important;
   min-width: 60px !important;
@@ -369,12 +411,30 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   z-index: 100;
   padding: 5px 10px !important;
   margin: 2px;
-  background-color: #ddebf7 !important;
   color: #000 !important;
   opacity: 0.7 !important;
-  border: 1px solid #1ad8ff;
   border-radius: 5px;
   box-shadow: 0 3px 8px 1px #808080;
+}
+
+/* Blue theme for manifest badges and lingo fragment (default) */
+body[data-mep-highlight='true'] [data-manifest-id]::before,
+body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
+body[data-mep-highlight='true'] [data-mep-lingo-fragment]::before {
+  background-color: #ddebf7 !important;
+  border: 1px solid #1ad8ff;
+}
+
+/* Yellow theme for lingo fragment fallback only */
+body[data-mep-highlight='true'] [data-mep-lingo-fragment*="fallback"]::before {
+  background-color: #fff3cd !important;
+  border: 1px solid #ffc107;
+}
+
+/* Green theme for lingo block-swap */
+body[data-mep-highlight='true'] [data-mep-lingo-block-swap]::before {
+  background-color: #d4edda !important;
+  border: 1px solid #28a745;
 }
 
 body[data-mep-highlight='true'] [data-code-manifest-id]::before {

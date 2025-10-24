@@ -110,11 +110,78 @@ export default async function init(a) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
-  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
+
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const country = urlSearchParams.get('akamaiLocale')?.toLowerCase()
+    || sessionStorage.getItem('akamai') || window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+    ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
+
+  const prefixParts = locale.prefix.split('/').filter((part) => part);
+  const localeCode = (prefixParts[0] === 'langstore' || prefixParts[0] === 'target-preview')
+    ? prefixParts[1]
+    : prefixParts[0];
+
+  const isLingoLocale = urlSearchParams?.get('lingoLocale') === 'on';
+  const mepLingoFragSwap = !!(isLingoLocale
+    && a.dataset.roc
+    && Object.keys(locale?.regions || {})?.length
+    && locale.prefix
+    && country
+    && resourcePath
+    && localeCode
+    && locale.regions?.[`${localeCode}/${country}`]);
+
+  // *** site structure for English sites not finalized yet ***
+  // will need to update this when we have a final structure
+  let resp;
+  let rocResourcePath;
+  let lingoOutcome;
+  const isBlockSwap = !!a.dataset.mepLingoBlockFragment;
+  if (mepLingoFragSwap) {
+    rocResourcePath = resourcePath.replace(locale.prefix, `${locale.prefix}/${country}`);
+    const [rocResp, fallbackResp] = await Promise.all([
+      customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
+        .catch(() => ({})),
+      customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+        .catch(() => ({})),
+    ]);
+
+    if (rocResp?.ok) {
+      lingoOutcome = `roc: ${locale.prefix}/${country}`;
+      if (a.dataset.mepLingoBlockFragment) {
+        a?.parentElement?.previousElementSibling.remove(); // confirm that this isn't too brittle
+      }
+      if (a.dataset.mepLingoSectionMetadata) {
+        const section = a.parentElement.parentElement;
+        a.parentElement.dataset.mepLingoNewBlock = true;
+        section.style = '';
+        if (section.childElementCount > 1) {
+          [...section.children].forEach((child) => {
+            if (!child.dataset.mepLingoNewBlock) child.remove();
+          });
+        }
+      }
+    } else if (fallbackResp?.ok) {
+      lingoOutcome = `fallback: ${locale.prefix}`;
+    } else {
+      lingoOutcome = 'failed';
+    }
+
+    resp = rocResp?.ok ? rocResp : fallbackResp;
+    if (rocResp?.ok) relHref = localizeLink(rocResourcePath);
+  } else if (!mepLingoFragSwap && isBlockSwap) {
+    a.parentElement.remove();
+  } else {
+    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
+  }
 
   if (!resp?.ok) {
-    window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
+    // *** still need to decide on what we will log and/or track ***
+    const message = mepLingoFragSwap
+      ? `Could not get lingo locale fragments: ${resourcePath}.plain.html or ${rocResourcePath}.plain.html`
+      : `Could not get fragment: ${resourcePath}.plain.html`;
+    window.lana?.log(message);
     return;
   }
 
@@ -130,7 +197,10 @@ export default async function init(a) {
     return;
   }
 
-  const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
+  const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
+  if (lingoOutcome) fragmentAttrs[`${isBlockSwap ? 'data-mep-lingo-block-swap' : 'data-mep-lingo-fragment'}`] = lingoOutcome;
+
+  const fragment = createTag('div', fragmentAttrs);
   fragment.append(...sections);
 
   updateFragMap(fragment, a, relHref);
