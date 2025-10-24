@@ -868,3 +868,11 @@ html[dir="rtl"] .carousel .move-indicators {
   height: 0;
   overflow: hidden;
 }
+
+:root:has(meta[name="theme"][content="max25"]) {
+  @media (min-width: 900px) {
+    .carousel.show-2.ups-desktop.m-gap .carousel-slides {
+      gap: 44px var(--spacing-s);
+    }
+  }
+}
