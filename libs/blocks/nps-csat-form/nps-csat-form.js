@@ -221,18 +221,11 @@ const Ready        = 'Ready';
 const Acknowledged = 'Acknowledged';
 const Cancel       = 'Cancel';
 const Submit       = 'Submit';
-const PreSubmit    = 'PreSubmit';
-const PreCancel    = 'PreCancel';
 const ErrorMsg     = 'Error';
 
 export const READY  = { type: Ready };
 export const ACK    = { type: Acknowledged };
 export const CANCEL = { type: Cancel };
-export const PRE_SUBMIT = (data) => ({
-  type: PreSubmit,
-  data,
-});
-export const PRE_CANCEL = { type: PreCancel };
 export const ERROR  = (errorType) => (eventData, errorMessage) => ({
   type: ErrorMsg,
   errorType,
@@ -282,10 +275,6 @@ const initMessageClient = () => {
           break;
         case Submit:
           break;
-        case PreSubmit:
-          break;
-        case PreCancel:
-          break;
         case ErrorMsg: {
           const radioButtons = Array.from(
             document.querySelectorAll('#nps input[type="radio"]'),
@@ -333,7 +322,6 @@ const initMessageClient = () => {
           state = STATE_BASE;
           clearTimeout(timeout);
         }
-        sendMessage(PRE_CANCEL);
         cancelActions();
         sendMessage(ACK);
         break;
@@ -513,7 +501,6 @@ export default async (block) => {
       contactMe,
     };
     const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
-    sendMessage(PRE_SUBMIT(d));
     const dataObj = buildDataObject(d, surveyType, SubmitSurvey);
     window._satellite?.track?.('event', { // eslint-disable-line
       xdm: {},
@@ -525,20 +512,17 @@ export default async (block) => {
   const cancelButton = form.querySelector('button.nps-cancel');
   const closeButton = form.querySelector('button.nps-close');
   cancelButton?.addEventListener('click', () => {
-    sendMessage(PRE_CANCEL);
     cancelActions();
     sendMessage(CANCEL);
   }, { once: true });
   cancelButton?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      sendMessage(PRE_CANCEL);
       cancelActions();
       sendMessage(CANCEL);
     }
   }, { once: true });
   closeButton?.addEventListener('click', () => {
-    sendMessage(PRE_CANCEL);
     cancelActions();
     sendMessage(CANCEL);
   }, { once: true });
