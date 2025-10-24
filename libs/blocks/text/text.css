@@ -603,4 +603,35 @@
     .text-block.no-spacing-top-tablet {
       padding-top: 0;
     }
+
+       /* for firefly gallery block */
+    .text-block.ff-gallery-block {
+      padding-top: 56px;
+      padding-bottom: 24px; 
+    }
+
+    .text-block.ff-gallery-block .detail-m {
+      color: #B9B9B9;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 150%; /* 24px */
+      letter-spacing: -0.16px;
+    }
+
+    .text-block.ff-gallery-block [class^="body-"] {
+      color: #B9B9B9;
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 135%; /* 24.3px */
+      letter-spacing: -0.18px;
+    }
+
+    .text-block.ff-gallery-block [class^="heading-"] {
+      color: #FFF;
+      font-size: 36px;
+      font-weight: 900;
+      line-height: 105%; /* 37.8px */
+      letter-spacing: -1.08px;
+    }
+  }
 }
