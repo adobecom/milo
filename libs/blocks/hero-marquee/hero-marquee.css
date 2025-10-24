@@ -609,8 +609,42 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 
   .hero-marquee.max25 .foreground .copy .body-xl {
     font-size: 18px;
-    color: #848484;
+    color: #B9B9B9;
     line-height: 1.35;
+  }
+
+  @media (max-width: 599px) {
+    .hero-marquee.max25 .con-button.button-justified-mobile {
+      align-self: flex-start;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    .hero-marquee.max25 {
+      padding: 56px 0;
+      gap: 40px;
+    }
+
+    .hero-marquee.max25 .background .mobile-only,
+    .hero-marquee.max25 .background .tablet-only {
+      margin-inline: var(--grid-margins-width);
+    }
+
+    .hero-marquee.max25 .background :is(.mobile-only, .tablet-only) img {
+      display: block;
+      overflow: hidden;
+      border-radius: 20px;
+    }
+
+    .hero-marquee.max25 .background :is(.mobile-only, .tablet-only)::after {
+      position: absolute;
+      margin-inline: var(--grid-margins-width);
+      content: '';
+      inset: 0;
+      border: 3px solid rgba(255 255 255 / 30%);
+      border-radius: 20px;
+      pointer-events: none;
+    }
   }
 
   .hero-marquee.max-ff {
@@ -623,14 +657,14 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   .hero-marquee.max-ff.unity-enabled [class^="heading-"] {
-      font-family: 'Adobe Clean Display', 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-      font-weight: 900;
-      font-size: 36px;
-      line-height: 105%;
-      max-width: 300px;
-      margin: 0 auto;
-      text-align: center;
-      letter-spacing: -0.015em;
+    font-family: 'Adobe Clean Display', 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+    font-weight: 900;
+    font-size: 36px;
+    line-height: 105%;
+    max-width: 300px;
+    margin: 0 auto;
+    text-align: center;
+    letter-spacing: -0.015em;
   }
 
   .hero-marquee.max-ff .background::after {
@@ -668,7 +702,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 
   @media (max-width: 1199px) {
     .hero-marquee.max25 {
-      min-height: none;
+      min-height: unset;
     }
   }
 
@@ -713,14 +747,14 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
       min-width: unset;
       max-width: unset;
     }
-  
+
     .hero-marquee.max-ff .foreground .copy {
       gap: 40px;
     }
-  
+
     .hero-marquee.max-ff .foreground .ex-unity-wrap {
       max-width: 800px;
-      margin: 0 auto; 
+      margin: 0 auto;
     }
 
     .hero-marquee.max-ff.unity-enabled [class^="heading-"] {
