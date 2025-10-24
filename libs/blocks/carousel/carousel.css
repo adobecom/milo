@@ -872,7 +872,7 @@ html[dir="rtl"] .carousel .move-indicators {
 :root:has(meta[name="theme"][content="max25"]) {
   @media (min-width: 900px) {
     .carousel.show-2.ups-desktop.m-gap .carousel-slides {
-      gap: var(--spacing-s);
+      gap: 44px var(--spacing-s);
     }
   }
 }
