@@ -1381,14 +1381,11 @@ class Gnav {
     // All dropdown decoration is delayed
     const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
-      let desktopMegaMenuHTML = null;
-      let mobileNavCleanup = () => {};
 
       const decorateDropdown = () => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
 
-        const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading')?.innerHTML;
         (async () => {
           try {
             const menuLogic = await loadDecorateMenu();
@@ -1398,12 +1395,7 @@ class Gnav {
               template,
               type: itemType,
             });
-            // There are two calls to transformTemplateToMobile
-            // One without awaiting decorateMenu, and one after
-            // decorateMenu is complete
             const popup = template.querySelector('.feds-popup');
-            // desktopMegaMenuHTML = popup.innerHTML;
-            if (!this.newMobileNav) return;
             await transformTemplateToMobile({
               popup,
               item,
@@ -1418,41 +1410,26 @@ class Gnav {
             }
           }
         })();
-        if (this.newMobileNav) {
-          const popup = template.querySelector('.feds-popup');
-          if (!isDesktop.matches && popup) {
-            await transformTemplateToMobile({
-              popup,
-              item,
-              localnav: this.isLocalNav(),
-              toggleMenu: this.toggleMenuMobile,
-            });
-            popup.style.removeProperty('visibility');
-          } else if (isDesktop.matches) {
-            popup?.style.removeProperty('visibility');
+        isDesktop.addEventListener('change', async () => {
+          const newPopup = template.querySelector('.feds-popup');
+          if (!newPopup) return;
+          enableMobileScroll();
+          if (isDesktop.matches) {
+            this.block.classList.remove('new-nav');
+            disableAriaHidden();
+            removeA11YMobileDropdowns();
+            this.block.classList.add('test-nav');
+          } else {
+            this.block.classList.add('new-nav');
+            this.block.classList.remove('test-nav');
           }
-          isDesktop.addEventListener('change', async () => {
-            const newPopup = template.querySelector('.feds-popup');
-            if (!newPopup) return;
-            enableMobileScroll();
-            if (isDesktop.matches) {
-              this.block.classList.remove('new-nav');
-              disableAriaHidden();
-              removeA11YMobileDropdowns();
-              this.block.classList.add('test-nav');
-            } else {
-              this.block.classList.add('new-nav');
-              this.block.classList.remove('test-nav');
-            }
-          });
-        }
+        });
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
       template.addEventListener('click', decorateDropdown);
       const newMobileNavActive = this.newMobileNav && !isDesktop.matches;
       if (itemType === 'asyncDropdownTrigger' && (newMobileNavActive || isDesktop.matches)) {
         const loadingMegaMenu = loaderMegaMenu();
-        loadingMegaMenu.style.visibility = 'hidden';
         template.append(loadingMegaMenu);
         template.classList.add('feds-navItem--megaMenu');
       }
