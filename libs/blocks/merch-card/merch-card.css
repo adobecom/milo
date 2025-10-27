@@ -48,12 +48,6 @@ merch-card.special-offers del span[is="inline-price"] {
   text-decoration: none;
 }
 
-/* hide download/upgrade links except the first one */
-merch-card a[is="checkout-link"].download:not(:first-of-type),
-merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
-  display: none;
-}
-
 @media screen and (max-width: 1199px) {
   merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
     min-width: 66px; /* same as merch links */
