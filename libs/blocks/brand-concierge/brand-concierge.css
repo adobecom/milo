@@ -343,17 +343,8 @@
 }
 
 #brand-concierge-mount .ai-chat-label {
-  align-self: start;
   height: 32px !important;
   width: 32px !important;
-  margin-right: 4px !important;
-  margin-top: 10px !important;
-  padding: 0 !important;
-}
-
-#brand-concierge-mount .ai-chat-label:focus {
-  outline: 2px solid #5574F7 !important;
-  outline-offset: 2px !important;
 }
 
 #brand-concierge-mount .input-container:has(.ai-chat-label) {
@@ -402,7 +393,6 @@
 
 #brand-concierge-mount .message-blocker {
   height: calc(90px - 24px) !important;
-  bottom: -1px !important;
 }
 
 /* Hero */
@@ -431,6 +421,7 @@
 
 .hero .prompt-card-button,
 .pill-cards .prompt-card-button {
+  align-items: center;
   box-shadow: 0 0 6px 0 rgba(0 0 0 / 25%);
 }
 
