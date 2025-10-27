@@ -161,6 +161,11 @@ function createSubHeaderContainer({
   const container = createTag('div', { class: 'sub-header-item-container' });
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
+      const text = childrenArray[i].textContent.trim();
+      if (text.startsWith('|') && text.endsWith('|')) {
+        childrenArray[i].classList.add('italic');
+        childrenArray[i].textContent = text.slice(1, -1);
+      }
       container.appendChild(childrenArray[i]);
       if (isLast) decorateButtons(childrenArray[i]);
     }
