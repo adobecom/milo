@@ -51,6 +51,7 @@
 
 .comparison-table .table-container .table-column-header button .toggle-icon {
   content: url('./img/black-bg-minus.svg');
+  max-width: 24px;
 }
 
 .comparison-table .table-container .table-column-header button[aria-expanded="false"] .toggle-icon {
