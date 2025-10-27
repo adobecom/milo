@@ -8,6 +8,7 @@ class MainNavItem {
   constructor() {
     this.desktop = window.matchMedia('(min-width: 900px)');
     this.popup = new Popup({ mainNav: this });
+    this.isTestNav = !!document.querySelector('header.test-nav');
     this.mobilePopup = new MobilePopup({ mainNav: this });
     this.addEventListeners();
   }
@@ -36,6 +37,16 @@ class MainNavItem {
               else items[next].focus();
             } else items?.[0]?.focus();
             break;
+          }
+
+          if (this.isTestNav && this.desktop.matches) {
+            const activePopup = e.target.closest(selectors.activeDropdown)?.querySelector(selectors.popup);
+            if (activePopup && !e.shiftKey) {
+              e.preventDefault();
+              const activeTab = activePopup.querySelector(`.tab[aria-selected="true"]`);
+              activeTab.focus();
+              break;
+            }
           }
 
           if (e.shiftKey) {
@@ -74,6 +85,7 @@ class MainNavItem {
           break;
         }
         case 'ArrowUp': {
+          if(this.isTestNav && this.desktop.matches) break;
           if (newNav) break;
           e.preventDefault();
           e.stopPropagation();
@@ -96,6 +108,7 @@ class MainNavItem {
           break;
         }
         case 'ArrowDown': {
+          if(this.isTestNav && this.desktop.matches) break;
           if (newNav) break;
           e.stopPropagation();
           e.preventDefault();
@@ -157,7 +170,7 @@ class MainNavItem {
     const triggerElement = triggerEl || items[curr];
     if (!triggerElement || !triggerElement.hasAttribute('aria-haspopup')) return;
     if (e) e.preventDefault();
-    if (triggerElement.getAttribute('aria-expanded') === 'false') {
+    if (triggerElement.getAttribute('aria-expanded') === 'false' && !this.isTestNav) {
       trigger({ element: triggerElement });
     }
     const navItem = triggerElement.parentElement;

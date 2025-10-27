@@ -11,6 +11,7 @@ const selectors = {
   searchTrigger: '.feds-search-trigger',
   navWrapper: '.feds-nav-wrapper',
   navWrapperExpanded: '.feds-nav-wrapper--expanded',
+  activeDropdown: '.feds-dropdown--active',
   searchField: '.feds-search-input',
   signIn: '.feds-signIn',
   signInDropdown: '.feds-signIn-dropdown',

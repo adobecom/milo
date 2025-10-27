@@ -1307,6 +1307,7 @@ class Gnav {
 
     const makeTabActive = (popup) => {
       if (popup?.classList.contains('loading')) return;
+      const isTestNav = !!document.querySelector('header.test-nav');
       const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
       const tabpanels = popup.querySelectorAll('.global-navigation .tab-content [role="tabpanel"]');
       closeAllTabs(tabbuttons, tabpanels);
@@ -1325,7 +1326,9 @@ class Gnav {
         const title = popup.querySelector('.title h2');
         title?.setAttribute('tabindex', '-1'); // Make title focusable
         title?.focus();
-        addA11YMobileDropdowns(this.elements.topnav, popup.previousElementSibling);
+        if (!isTestNav && !isDesktop.matches) {
+          addA11YMobileDropdowns(this.elements.topnav, popup.previousElementSibling);
+        }
       }, 100);
     };
 
@@ -1484,7 +1487,7 @@ class Gnav {
 
           // Toggle trigger's dropdown on click
           dropdownTrigger.addEventListener('click', (e) => {
-            if (document.querySelector('.test-nav') && this.newMobileNav && isSectionMenu) {
+            if ((document.querySelector('.test-nav') || this.newMobileNav) && isSectionMenu) {
               const popup = dropdownTrigger.nextElementSibling;
               // document.body.style.top should always be set
               // at this point by calling disableMobileScroll

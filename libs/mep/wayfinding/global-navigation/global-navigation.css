@@ -1017,17 +1017,20 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   box-sizing: content-box; /* Some DC pages use non default box-sizing  globally */
 }
 
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs .tab-wrapper {
-  padding: 8px 0;
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs .tab {
+  padding: 8px 15px;
   margin-bottom: 20px;
+  margin-left: 2px;
   cursor: pointer;
 }
 
 header.test-nav .feds-menu-description {
   padding-top: 6px;
+  font-size: 12px;
+  font-weight: normal;
 }
 
-header.test-nav .tab-wrapper {
+header.test-nav .tab {
   display: flex;
   flex-direction: column;
   width: 186px;
@@ -1225,6 +1228,13 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button:hove
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
   color: var(--feds-color-white-v2);
+}
+
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button span:first-child {
+  border-bottom: 2px solid transparent;
+}
+
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] span:first-child {
   border-bottom: 2px solid #EB1000;
 }
 
@@ -1294,13 +1304,16 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.fe
   color: var(--feds-navLink-inactive);
 }
 
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:hover {
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:hover,
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:focus {
   color: #fff;
 }
 
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink .feds-navLink-content:hover .feds-navLink-title,
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink .feds-navLink-content:hover .feds-navLink-description,
-header.test-nav .feds-popup .feds-navLink-content:hover .feds-navLink {
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:hover .feds-navLink-content .feds-navLink-title,
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:focus .feds-navLink-content .feds-navLink-title,
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:hover .feds-navLink-content .feds-navLink-description,
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:focus .feds-navLink-content .feds-navLink-description,
+header.test-nav .feds-popup .feds-navLink-content:hover .feds-navLink{
   color: #fff;
 }
 
