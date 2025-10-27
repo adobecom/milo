@@ -335,7 +335,11 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
         if (!hasMultipleColumns) itemIndex.position = 0;
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
-        const { sectionHeadline, description } = decorateHeadline(columnElem, headlineIndex, context);
+        const { sectionHeadline, description } = decorateHeadline(
+          columnElem,
+          headlineIndex,
+          context,
+        );
 
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
 
@@ -441,7 +445,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     menuTemplate = toFragment`<div class="feds-popup">
     ${itemTopParent}
     </div>`;
-    
+
     await decorateColumns({ content: menuTemplate, description: 'Hello' });
   }
 
