@@ -963,36 +963,39 @@ class Gnav {
     });
   };
 
-  decorateAppPrompt = async ({ getAnchorState } = {}) => {
-    performance.mark('PEP-Start');
-    const state = getMetadata('app-prompt')?.toLowerCase();
-    const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
-    const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
-    const hasMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
+  static decorateAppPrompt = async () => {
+    // Disabled PEP for the wayfinding test
+    // performance.mark('PEP-Start');
+    // const state = getMetadata('app-prompt')?.toLowerCase();
+    // const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+    // const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    // const hasMobileUA =
+    // /Android|webOS|iPhone|iPad|iPod|BlackBerry
+    // |IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
 
-    if (state === 'off'
-      || !window.adobeIMS?.isSignedInUser()
-      || !isDesktop.matches
-      || hasMobileUA
-      || !entName?.length
-      || !promptPath?.length) return;
+    // if (state === 'off'
+    //   || !window.adobeIMS?.isSignedInUser()
+    //   || !isDesktop.matches
+    //   || hasMobileUA
+    //   || !entName?.length
+    //   || !promptPath?.length) return;
 
-    const { base } = getConfig();
-    const [
-      webappPrompt,
-    ] = await Promise.all([
-      import('../../features/webapp-prompt/webapp-prompt.js'),
-      loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
-    ]);
+    // const { base } = getConfig();
+    // const [
+    //   webappPrompt,
+    // ] = await Promise.all([
+    //   import('../../features/webapp-prompt/webapp-prompt.js'),
+    //   loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
+    // ]);
 
-    await webappPrompt.default({
-      promptPath,
-      entName,
-      parent: this.blocks.universalNav,
-      getAnchorState,
-    });
-    performance.mark('PEP-End');
-    logPerformance('PEP-Time', 'PEP-Start', 'PEP-End');
+    // await webappPrompt.default({
+    //   promptPath,
+    //   entName,
+    //   parent: this.blocks.universalNav,
+    //   getAnchorState,
+    // });
+    // performance.mark('PEP-End');
+    // logPerformance('PEP-Time', 'PEP-Start', 'PEP-End');
   };
 
   loadSearch = () => {
