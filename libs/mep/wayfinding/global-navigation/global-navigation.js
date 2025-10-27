@@ -491,6 +491,24 @@ class Gnav {
       // needed to run anyway prior to decorateTopNavWrapper
       this.decorateAside,
       this.decorateMainNav,
+      // to fix a bug on slow networks where
+      // the color wouldn't change from dark
+      // to light for the first few seconds after
+      // the gnav loads.
+      // What supposed to happen is:
+      //   1. closeAllDropdowns removes the class 'dropdown-active'
+      //   2. setActiveDropdown adds it back in (because we have to
+      //      click on the dropdownbutton to close the popup)
+      //   3. The event lsitener below removes it again.
+      //
+      // But the gnav is interactable before this last listener
+      // is attached. That's because it used to happen after all the tasks.
+      // The solution is to attach it here.
+      //
+      () => document.addEventListener(
+        'click',
+        (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper),
+      ),
       this.decorateTopNav,
       this.decorateTopnavWrapper,
       this.revealGnav,
@@ -509,7 +527,6 @@ class Gnav {
       await task();
     }
 
-    document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
     if (document.querySelector('.feds-promo-aside-wrapper')) {
       isSmallScreen.addEventListener('change', this.updateGnavTop);
