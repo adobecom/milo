@@ -126,7 +126,7 @@ const decorateHoverText = (el) => {
   if (header) overlay.appendChild(createTag('h1', {}, header));
   if (body) overlay.appendChild(createTag('p', {}, body));
 
-  const button = createTag('button', { class: 'ace1151-card-overlay-btn' });
+  const button = createTag('button', { class: 'ace1151-card-overlay-btn' }, '<span class="overlay-btn-icon">+</span>');
 
   button.addEventListener('click', () => {
     overlay.classList.toggle('active');
