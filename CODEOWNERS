@@ -119,6 +119,7 @@
 /libs/blocks/table-metadata/ @seanchoi-dev
 /libs/blocks/table-of-contents/ @Brandon32 @meganthecoder @JasonHowellSlavin
 /libs/blocks/table/ @adobecom/milo-core
+/libs/blocks/comparison-table/ @adobecom/milo-core
 /libs/blocks/tabs/ @adobecom/milo-core
 /libs/blocks/tag-selector/ @meganthecoder @JasonHowellSlavin @Brandon32
 /libs/blocks/tags/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton

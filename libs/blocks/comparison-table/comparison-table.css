@@ -196,7 +196,6 @@
 }
 
 .comparison-table .sub-header-item-container .description {
-  font-style: italic;
   text-align: center;
   padding: 8px;
   font-size: 12px;
@@ -261,15 +260,7 @@
   display: flex;
 }
 
-.comparison-table .sub-header-item-container .italic {
-  font-style: italic;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 125%;
-  display: block;
-}
-
-.comparison-table .sub-header-item-container .italic a {
+.comparison-table .sub-header-item-container .description em a {
   color: var(--color-black);
 }
 
