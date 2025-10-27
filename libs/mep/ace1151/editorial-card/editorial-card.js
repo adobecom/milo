@@ -193,7 +193,7 @@ const init = async (el) => {
   extendDeviceContent(el);
   decorateTextOverrides(el);
   handleClickableCard(el);
-  decorateHoverText(el);
+  if (el.classList.contains('overlay')) decorateHoverText(el);
 };
 
 export default init;
