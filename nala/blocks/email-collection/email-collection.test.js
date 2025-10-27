@@ -9,6 +9,14 @@ let marquee;
 let emailCollection;
 
 const miloLibs = process.env.MILO_LIBS || '';
+const branchName = process.env.branch || '';
+
+const isValidBranch = /^mwpw-\d{6}$/i.test(branchName);
+
+test.skip(
+  !isValidBranch,
+  `Skipping Email Collection tests — branch name "${branchName}" does not match format "MWPW-123456"`,
+);
 
 test.describe('Milo Email Collection Block test suite', () => {
   test.beforeEach(async ({ page }) => {
