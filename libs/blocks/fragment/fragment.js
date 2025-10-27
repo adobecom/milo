@@ -135,7 +135,9 @@ export default async function init(a) {
   // will need to update this when we have a final structure
   let resp;
   let rocResourcePath;
-  let lingoOutcome;
+  // let lingoOutcome;
+  let usedRocPath = false;
+  let usedFallbackPath = false;
   const isBlockSwap = !!a.dataset.mepLingoBlockFragment;
   if (mepLingoFragSwap) {
     rocResourcePath = resourcePath.replace(locale.prefix, `${locale.prefix}/${country}`);
@@ -147,7 +149,8 @@ export default async function init(a) {
     ]);
 
     if (rocResp?.ok) {
-      lingoOutcome = `roc: ${locale.prefix}/${country}`;
+      usedRocPath = true;
+      // lingoOutcome = `roc: ${locale.prefix}/${country}`;
       if (a.dataset.mepLingoBlockFragment) {
         a?.parentElement?.previousElementSibling.remove(); // confirm that this isn't too brittle
       }
@@ -162,10 +165,13 @@ export default async function init(a) {
         }
       }
     } else if (fallbackResp?.ok) {
-      lingoOutcome = `fallback: ${locale.prefix}`;
-    } else {
-      lingoOutcome = 'failed';
+      usedFallbackPath = true;
     }
+    // TODO: remove lingoOutcome if I don't need for logging/tracking
+      // lingoOutcome = `fallback: ${locale.prefix}`;
+    // } else {
+      // lingoOutcome = 'failed';
+    // }
 
     resp = rocResp?.ok ? rocResp : fallbackResp;
     if (rocResp?.ok) relHref = localizeLink(rocResourcePath);
@@ -198,7 +204,11 @@ export default async function init(a) {
   }
 
   const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
-  if (lingoOutcome) fragmentAttrs[`${isBlockSwap ? 'data-mep-lingo-block-swap' : 'data-mep-lingo-fragment'}`] = lingoOutcome;
+  if (usedRocPath) {
+    fragmentAttrs['data-mep-lingo-roc'] = relHref;
+  } else if (usedFallbackPath) {
+    fragmentAttrs['data-mep-lingo-fallback'] = relHref;
+  }
 
   const fragment = createTag('div', fragmentAttrs);
   fragment.append(...sections);

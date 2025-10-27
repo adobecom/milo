@@ -54,6 +54,17 @@ function updatePreviewButton(popup, pageId) {
     simulateHref.searchParams.delete('mepHighlight');
   }
 
+  const mepFragmentsCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepFragmentsCheckbox${pageId}`,
+  );
+
+  document.body.dataset.mepFragments = mepFragmentsCheckbox.checked;
+  if (mepFragmentsCheckbox.checked) {
+    simulateHref.searchParams.set('mepFragments', true);
+  } else {
+    simulateHref.searchParams.delete('mepFragments');
+  }
+
   const mepPreviewButtonCheckbox = popup.querySelector(
     `input[type="checkbox"]#mepPreviewButtonCheckbox${pageId}`,
   );
@@ -336,6 +347,11 @@ export function getMepPopup(mepConfig, isMmm = false) {
     mepHighlightChecked = 'checked="checked"';
     document.body.dataset.mepHighlight = true;
   }
+  let mepFragmentsChecked = '';
+  if (page?.fragments) {
+    mepFragmentsChecked = 'checked="checked"';
+    document.body.dataset.mepFragments = true;
+  }
   const PREVIEW_BUTTON_ID = 'preview-button';
   const pageUrl = isMmm ? page.url : new URL(window.location.href).href;
   const mepPopup = createTag('div', {
@@ -392,6 +408,11 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <input type="checkbox" name="mepHighlight${pageId}"
         id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
         <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
+      </div>
+      <div>
+        <input type="checkbox" name="mepFragments${pageId}"
+        id="mepFragmentsCheckbox${pageId}" ${mepFragmentsChecked} value="true">
+        <label for="mepFragmentsCheckbox${pageId}">Highlight fragments</label>
       </div>
       ${showManifestsCheckbox}
       <div>
@@ -452,7 +473,12 @@ function addHighlightData(manifests) {
     const manifestName = getFileName(manifest);
 
     const updateManifestId = (selector, prop = 'manifestId') => {
-      document.querySelectorAll(selector).forEach((el) => (el.dataset[prop] = manifestName));
+      document.querySelectorAll(selector).forEach((el) => {
+        el.dataset[prop] = manifestName;
+        if (prop === 'manifestId') {
+          el.dataset.manifestDisplay = `${manifestName}: html`;
+        }
+      });
     };
 
     selectedVariant?.replacefragment?.forEach(
@@ -461,6 +487,8 @@ function addHighlightData(manifests) {
         document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
           el.dataset.manifestId = manifestName;
           el.dataset.fragmentPath = val;
+          // Combined display for badge - use path if available
+          el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path || val}`;
         });
       },
     );
@@ -476,13 +504,38 @@ function addHighlightData(manifests) {
     // eslint-disable-next-line max-len
     document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`)
       .forEach((el) => (el.dataset.manifestId = manifestName));
+
+    document.querySelectorAll(`[data-manifest-id="${manifestName}"]`).forEach((el) => {
+      if (!el.dataset.manifestDisplay) {
+        if (el.dataset.path) {
+          el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path}`;
+          el.dataset.fragmentPath = el.dataset.path;
+        } else {
+          el.dataset.manifestDisplay = `${manifestName}: html`;
+        }
+      }
+    });
+  });
+}
+
+function markDefaultFragments() {
+  document.querySelectorAll('.fragment').forEach((fragment) => {
+    const hasManifest = fragment.dataset.manifestId;
+    const hasRoc = fragment.dataset.mepLingoRoc;
+    const hasFallback = fragment.dataset.mepLingoFallback;
+    if (!hasManifest && !hasRoc && !hasFallback) {
+      fragment.dataset.fragmentDefault = '';
+      if (fragment.dataset.path) {
+        fragment.dataset.fragmentDisplay = fragment.dataset.path;
+      }
+    }
   });
 }
 
 function addLingoFragmentClickHandlers() {
   document.body.addEventListener('click', (e) => {
     // Check for lingo fragments
-    const lingoFragment = e.target.closest('[data-mep-lingo-fragment], [data-mep-lingo-block-swap],[data-manifest-id][data-path]');
+    const lingoFragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
     if (lingoFragment) {
       const rect = lingoFragment.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
@@ -534,5 +587,6 @@ export default async function decoratePreviewMode() {
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
+  markDefaultFragments();
   addLingoFragmentClickHandlers();
 }

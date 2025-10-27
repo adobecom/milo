@@ -336,22 +336,35 @@
 
 /* mepHighlight */
 body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem),
-body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > *,
+body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > * {
+  outline: 3px #28a745 dashed !important;
+  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
+  margin: 5px 2px;
+}
+
 body[data-mep-highlight='true'] [data-code-manifest-id],
-body[data-mep-highlight='true'] [data-removed-manifest-id],
-body[data-mep-highlight='true'] [data-mep-lingo-fragment],
-body[data-mep-highlight='true'] [data-mep-lingo-block-swap] {
+body[data-mep-highlight='true'] [data-removed-manifest-id] {
   outline: 3px #26ceef dashed !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
 }
 
-body[data-mep-highlight='true'] [data-mep-lingo-fragment*="fallback"] {
-  outline: 3px #ffc107 dashed !important;
+body[data-mep-highlight='true'] [data-mep-lingo-roc] {
+  outline: 3px #28a745 dashed !important;
+  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
+  margin: 5px 2px;
 }
 
-body[data-mep-highlight='true'] [data-mep-lingo-block-swap] {
-  outline: 3px #28a745 dashed !important;
+body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
+  outline: 3px #ffc107 dashed !important;
+  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
+  margin: 5px 2px;
+}
+
+body[data-mep-fragments='true'] [data-fragment-default] {
+  outline: 3px #6c757d dashed !important;
+  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
+  margin: 5px 2px;
 }
 
 body[data-mep-highlight='true'] [data-code-manifest-id] {
@@ -366,15 +379,18 @@ body:not([data-mep-highlight='true']) [data-removed-manifest-id] {
   display: none !important;
 }
 
-body[data-mep-highlight='true'] [data-manifest-id]::before,
-body[data-mep-highlight='true'] [data-code-manifest-id]::before,
-body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
-  content: 'content updated by: ' attr(data-manifest-id);
+body[data-mep-highlight='true'] [data-manifest-id]::before {
+  content: attr(data-manifest-display);
 }
 
-/* Add link icon and pointer only for manifest badges with fragment paths */
+body[data-mep-highlight='true'] [data-code-manifest-id]::before,
+body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
+  content: attr(data-manifest-id);
+}
+
+/* Show link icon for fragments with paths */
 body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before {
-  content: '🔗 content updated by: ' attr(data-manifest-id);
+  content: '🔗 ' attr(data-manifest-display);
   cursor: pointer !important;
 }
 
@@ -385,22 +401,13 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   pointer-events: none !important;
 }
 
-body[data-mep-highlight='true'] [data-mep-lingo-fragment]::before  {
-  content: '🔗 content updated by mep-lingo fragment swap: ' attr(data-mep-lingo-fragment);
-  cursor: pointer !important;
-}
-
-body[data-mep-highlight='true'] [data-mep-lingo-block-swap]::before  {
-  content: '🔗 content updated by mep-lingo block swap: ' attr(data-mep-lingo-block-swap);
-  cursor: pointer !important;
-}
-
 /* Common styles for all highlight badges */
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
-body[data-mep-highlight='true'] [data-mep-lingo-fragment]::before,
-body[data-mep-highlight='true'] [data-mep-lingo-block-swap]::before  {
+body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
+body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
+body[data-mep-fragments='true'] [data-fragment-default]::before {
   font-size: 14px !important;
   min-height: 20px !important;
   min-width: 60px !important;
@@ -417,28 +424,39 @@ body[data-mep-highlight='true'] [data-mep-lingo-block-swap]::before  {
   box-shadow: 0 3px 8px 1px #808080;
 }
 
-/* Blue theme for manifest badges and lingo fragment (default) */
+/* Green theme for manifest badges */
 body[data-mep-highlight='true'] [data-manifest-id]::before,
-body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
-body[data-mep-highlight='true'] [data-mep-lingo-fragment]::before {
-  background-color: #ddebf7 !important;
-  border: 1px solid #1ad8ff;
-}
-
-/* Yellow theme for lingo fragment fallback only */
-body[data-mep-highlight='true'] [data-mep-lingo-fragment*="fallback"]::before {
-  background-color: #fff3cd !important;
-  border: 1px solid #ffc107;
-}
-
-/* Green theme for lingo block-swap */
-body[data-mep-highlight='true'] [data-mep-lingo-block-swap]::before {
+body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   background-color: #d4edda !important;
   border: 1px solid #28a745;
 }
 
+/* Green theme for lingo ROC */
+body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {
+  content: '🔗 roc: ' attr(data-mep-lingo-roc);
+  cursor: pointer !important;
+  background-color: #d4edda !important;
+  border: 1px solid #28a745;
+}
+
+/* Yellow theme for lingo fallback */
+body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
+  content: '🔗 roc: ' attr(data-mep-lingo-fallback);
+  cursor: pointer !important;
+  background-color: #fff3cd !important;
+  border: 1px solid #ffc107;
+}
+
+/* Gray theme for default fragments */
+body[data-mep-fragments='true'] [data-fragment-default]::before {
+  content: '🔗 fragment: ' attr(data-fragment-display);
+  cursor: pointer !important;
+  background-color: #e9ecef !important;
+  border: 1px solid #6c757d;
+}
+
 body[data-mep-highlight='true'] [data-code-manifest-id]::before {
-  content: 'code updated by: ' attr(data-code-manifest-id);
+  content: 'code: ' attr(data-code-manifest-id);
   background-color: #d2cbff !important;
   border: 1px solid #6626ef;
   left: unset;
@@ -446,13 +464,13 @@ body[data-mep-highlight='true'] [data-code-manifest-id]::before {
 }
 
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
-  content: 'content was removed by: ' attr(data-removed-manifest-id);
+  content: 'removed: ' attr(data-removed-manifest-id);
   background-color: #ffe0e4 !important;
   border: 1px solid #ef3726;
 }
 
 body[data-mep-highlight='true'] main[data-manifest-id]::before {
-  content: 'page replaced by: ' attr(data-manifest-id);
+  content: 'page: ' attr(data-manifest-id);
 }
 
 body[data-mep-highlight='true'] .section[class*="-merch-cards"] .fragment[data-manifest-id]::before {
