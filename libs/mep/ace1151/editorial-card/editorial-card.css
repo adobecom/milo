@@ -315,6 +315,17 @@
   border-radius: 50%;
 }
 
+.editorial-card .ace1151-card-overlay button .overlay-btn-icon {
+  display: block;
+  text-align: center;
+  color: black;
+  font-size: 24px;
+  font-weight: 900;
+  height: 100%;
+  width: 100%;
+  line-height: 1;
+}
+
 .editorial-card .ace1151-card-overlay h1 {
   all: unset;
   font-size: 28px;
