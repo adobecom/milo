@@ -261,6 +261,10 @@ function openPicker(button, locales, country, event, dir, currentPage) {
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url || '/' }, `${country} - ${l.language}`);
+    if (a.hash && !window.location.hash) {
+      a.hash = '';
+      a.setAttribute('href', a.href);
+    }
     decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
@@ -338,6 +342,19 @@ async function getDetails(currentPage, localeMatches, geoData) {
   const availableLocales = await getAvailableLocales(localeMatches);
   if (!availableLocales.length) return null;
   const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' });
+
+  if (window.location.hash) {
+    window.addEventListener('milo:modal:closed', () => {
+      const modal = document.querySelector(`.dialog-modal${window.location.hash}`);
+      if (!modal) return;
+      const links = georoutingWrapper.querySelectorAll(`a[href$="${window.location.hash}"]`);
+      links.forEach((link) => {
+        link.hash = '';
+        link.setAttribute('href', link.href);
+      });
+    }, { once: true });
+  }
+
   currentPage.url = window.location.hash ? document.location.href : '#';
   if (availableLocales.length === 1) {
     const content = buildContent(currentPage, availableLocales[0], geoData);
