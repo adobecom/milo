@@ -164,7 +164,7 @@ function createSubHeaderContainer({
       const text = childrenArray[i].textContent.trim();
       if (text.startsWith('|') && text.endsWith('|')) {
         childrenArray[i].classList.add('italic');
-        childrenArray[i].textContent = text.slice(1, -1);
+        childrenArray[i].innerHTML = childrenArray[i].innerHTML.replace(/^\|/, '').replace(/\|$/, '');
       }
       container.appendChild(childrenArray[i]);
       if (isLast) decorateButtons(childrenArray[i]);
