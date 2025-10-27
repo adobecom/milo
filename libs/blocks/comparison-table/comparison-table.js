@@ -143,7 +143,7 @@ function addLastContainerElements(container) {
     actionAreaElements.forEach((element) => btnContainer.appendChild(element));
     container.appendChild(btnContainer);
   }
-  const description = container.querySelector('p:not(:has(a))');
+  const description = container.querySelector('p:not(.action-area)');
   if (!description) container.prepend(createTag('p', { class: 'description' }));
   else description.classList.add('description');
 }
