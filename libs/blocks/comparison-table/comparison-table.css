@@ -375,4 +375,13 @@
   .comparison-table .table-container {
     max-width: calc(100% - 60px);
   }
+
+  .comparison-table .sub-header-item-container .btn-container {
+    flex-direction: column;
+  }
+
+  .comparison-table .sub-header-item-container .btn-container p,
+  .comparison-table .sub-header-item-container .btn-container p *:not(em a) {
+    width: 100%;
+  }
 }
