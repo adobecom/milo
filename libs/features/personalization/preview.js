@@ -342,13 +342,19 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
   const { manifestList } = getManifestListDomAndParameter(mepConfig);
+
+  // Check URL parameters for highlight and fragments
+  const urlParams = new URLSearchParams(window.location.search);
+  const highlightParam = urlParams.get('mepHighlight');
+  const fragmentsParam = urlParams.get('mepFragments');
+
   let mepHighlightChecked = '';
-  if (page?.highlight) {
+  if (page?.highlight || highlightParam === 'true') {
     mepHighlightChecked = 'checked="checked"';
     document.body.dataset.mepHighlight = true;
   }
   let mepFragmentsChecked = '';
-  if (page?.fragments) {
+  if (page?.fragments || fragmentsParam === 'true') {
     mepFragmentsChecked = 'checked="checked"';
     document.body.dataset.mepFragments = true;
   }
