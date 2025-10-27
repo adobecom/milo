@@ -236,7 +236,7 @@ function decorateHeader(el, headerContent) {
 
 function createAccessibilityHeaderRow(el) {
   const headerRow = createTag('div', { class: 'table-row accessibility-header-row', role: 'row' });
-  headerRow.appendChild(createTag('div', { class: 'accessibility-header-cell', role: 'columnheader', 'data-column-index': -1 }));
+  headerRow.appendChild(createTag('div', { class: 'accessibility-header-cell', role: 'cell', 'data-column-index': -1 }));
   [...el.querySelectorAll('.header-item[data-column-index]')].forEach((headerItem) => {
     const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
     const headerCell = createTag('div', { role: 'columnheader' });
