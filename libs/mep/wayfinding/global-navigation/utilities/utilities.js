@@ -734,10 +734,10 @@ export const transformTemplateToMobile = async ({
     tab.addEventListener('pointerdown', (event) => event.preventDefault());
     tab.addEventListener('click', tabbuttonClickCallbacks[i]);
     tab.addEventListener('mouseover', () => {
-      if(isDesktop.matches) tabbuttonClickCallbacks[i]();
+      if (isDesktop.matches) tabbuttonClickCallbacks[i]();
     });
     tab.addEventListener('focus', () => {
-      if(isDesktop.matches) tabbuttonClickCallbacks[i]();
+      if (isDesktop.matches) tabbuttonClickCallbacks[i]();
     });
   });
 

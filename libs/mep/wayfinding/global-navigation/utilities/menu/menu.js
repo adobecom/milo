@@ -57,7 +57,7 @@ function decorateCta({ elem, type = 'primaryCta', index } = {}) {
 
 const decorateHeadline = (elem, index, context = 'viewport') => {
   if (!(elem instanceof HTMLElement)) return null;
-  const headlineTexts = elem.textContent.trim().split("||");
+  const headlineTexts = elem.textContent.trim().split('||');
   const description = toFragment`<div class="feds-menu-description">
   ${headlineTexts.length > 1 ? headlineTexts[1] : null}
 </div>`;
@@ -334,7 +334,10 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
         if (!hasMultipleColumns) itemIndex.position = 0;
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
-        const { sectionHeadline, description } = decorateHeadline(columnElem, headlineIndex, context);
+        const {
+          sectionHeadline,
+          description,
+        } = decorateHeadline(columnElem, headlineIndex, context);
 
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
 
@@ -437,10 +440,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
       }
     }
 
-    menuTemplate = toFragment`<div class="feds-popup">
-    ${itemTopParent}
-    </div>`;
-    
+    menuTemplate = toFragment`<div class="feds-popup">${itemTopParent}</div>`;
     await decorateColumns({ content: menuTemplate, description: 'Hello' });
   }
 

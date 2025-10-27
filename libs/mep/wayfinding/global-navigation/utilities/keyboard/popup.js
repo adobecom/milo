@@ -29,7 +29,7 @@ const getTabsContent = ({ e, element } = {}) => {
   if (!element) return {};
   const tabs = Array.from(element.querySelectorAll('.tabs .tab'));
   const activeTab = element.querySelector('.tab[aria-selected="true"]');
-  const currentTabIndex = tabs.findIndex(tab => tab === activeTab);
+  const currentTabIndex = tabs.findIndex((tab) => tab === activeTab);
   const leftPanel = !e.target.closest('.tab-content');
   const tabContentLinks = Array.from(element.querySelectorAll(`.tab-content [aria-labelledby="${currentTabIndex}"] a`));
   const currentLinkIndex = tabContentLinks.indexOf(e.target);
@@ -40,7 +40,7 @@ const getTabsContent = ({ e, element } = {}) => {
     tabContentLinks,
     currentLinkIndex,
   };
-}
+};
 
 class Popup {
   constructor({ mainNav }) {
@@ -181,8 +181,7 @@ class Popup {
     };
 
     const focusLink = (index) => tabContentLinks[index]?.focus();
-    const moveIndex = (current, length, delta) =>
-      (current + delta + length) % length;
+    const moveIndex = (current, length, delta) => (current + delta + length) % length;
 
     // Handle navigation with arrow keys
     const handleArrowNavigation = (direction) => {
@@ -197,7 +196,7 @@ class Popup {
           const nextLinkIndex = moveIndex(
             currentLinkIndex,
             tabContentLinks.length,
-            delta
+            delta,
           );
           focusLink(nextLinkIndex);
         }
@@ -252,7 +251,7 @@ class Popup {
         if (this.isTestNav) return;
         this.handleKeyDown({ e, element, isFooter: false });
       }, `popup key failed ${e.code}`, 'gnav-keyboard', 'e'));
-    
+
     document.querySelector(selectors.globalNavTag)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
         if (!e.target.closest(selectors.globalNav)) return;

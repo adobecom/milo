@@ -40,10 +40,11 @@ class MainNavItem {
           }
 
           if (this.isTestNav && this.desktop.matches) {
-            const activePopup = e.target.closest(selectors.activeDropdown)?.querySelector(selectors.popup);
+            const activeDropdown = e.target.closest(selectors.activeDropdown);
+            const activePopup = activeDropdown?.querySelector(selectors.popup);
             if (activePopup && !e.shiftKey) {
               e.preventDefault();
-              const activeTab = activePopup.querySelector(`.tab[aria-selected="true"]`);
+              const activeTab = activePopup.querySelector('.tab[aria-selected="true"]');
               activeTab.focus();
               break;
             }
@@ -85,7 +86,7 @@ class MainNavItem {
           break;
         }
         case 'ArrowUp': {
-          if(this.isTestNav && this.desktop.matches) break;
+          if (this.isTestNav && this.desktop.matches) break;
           if (newNav) break;
           e.preventDefault();
           e.stopPropagation();
@@ -108,7 +109,7 @@ class MainNavItem {
           break;
         }
         case 'ArrowDown': {
-          if(this.isTestNav && this.desktop.matches) break;
+          if (this.isTestNav && this.desktop.matches) break;
           if (newNav) break;
           e.stopPropagation();
           e.preventDefault();

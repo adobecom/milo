@@ -981,7 +981,7 @@ class Gnav {
     const [
       webappPrompt,
     ] = await Promise.all([
-      import('../../features/webapp-prompt/webapp-prompt.js'),
+      import('../../../features/webapp-prompt/webapp-prompt.js'),
       loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
     ]);
 
@@ -1384,14 +1384,10 @@ class Gnav {
     // All dropdown decoration is delayed
     const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
-      let desktopMegaMenuHTML = null;
-      let mobileNavCleanup = () => {};
 
       const decorateDropdown = () => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
-
-        const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading')?.innerHTML;
         (async () => {
           try {
             const menuLogic = await loadDecorateMenu();
