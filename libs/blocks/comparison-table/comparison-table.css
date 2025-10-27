@@ -227,7 +227,7 @@
   padding: 0;
 }
 
-.comparison-table .sub-header-item-container p:not(:has(picture)) {
+.comparison-table .sub-header-item-container p:not(:has(picture, a)) {
   height: 100%;
   display: flex;
   align-items: center;
