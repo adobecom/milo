@@ -165,7 +165,9 @@ function createSubHeaderContainer({
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
-      if (isLast && childrenArray[i].querySelector('a:not(.modal)')) decorateButtons(childrenArray[i]);
+      const em = childrenArray[i].querySelector('em');
+      if (isLast
+         && !(em && em.firstChild?.nodeType === Node.TEXT_NODE)) decorateButtons(childrenArray[i]);
     }
   }
   if (isFirst) {
