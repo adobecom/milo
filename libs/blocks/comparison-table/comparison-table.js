@@ -50,13 +50,17 @@ function equalHeight(el) {
   };
 
   const performEqualHeight = () => performEqualHeightForElements('.table-row', '.table-cell', 'div');
-  const performHeaderEqualHeight = () => performEqualHeightForElements('.header-content-wrapper', '.header-item', '.sub-header-item-container');
+  const performHeaderEqualHeight = () => performEqualHeightForElements('.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)');
+  const performDescriptionEqualHeight = () => performEqualHeightForElements('.header-content-wrapper', '.header-item', '.description');
+
   const headerObserver = setupHeightHandler(performHeaderEqualHeight);
   const tableObserver = setupHeightHandler(performEqualHeight);
+  const descriptionObserver = setupHeightHandler(performDescriptionEqualHeight);
 
   return () => {
     headerObserver?.disconnect();
     tableObserver?.disconnect();
+    descriptionObserver?.disconnect();
   };
 }
 
