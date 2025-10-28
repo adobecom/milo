@@ -745,74 +745,34 @@ export const transformTemplateToMobile = async ({
 };
 
 export const loaderMegaMenu = () => {
-  // create an intermediate loading state.
-  // const loadingMegaMenu = toFragment`<div class="feds-popup loading"></div>`;
-  // WARNING: if you change things in menu.js you may want to check here
-  // and see if you need to make changes here too. In an ideal world we'd
-  // be able to re-use menu.js logic. But doing so would require a rather
-  // large refactor of menu.js.
-  const column = (content) => `
-  <div class="feds-menu-column">
-    <div class="feds-menu-section">
-      ${content}
-    </div>
-  </div>
-  `;
-
-  const columnItems = (n) => new Array(n).fill(0).map(() => `<a href="" class="feds-navLink">
-          <div class="feds-navLink-content">
-            <div class="feds-navLink-title"></div>
-          </div>
-        </a>`).join('');
-  const columnContent = [
-    `<div class="feds-menu-headline">
-      <div class="first-headline-one"></div>
-      <div class="first-headline-two"></div>
-    </div>
-    <div class="feds-menu-items">
-      ${columnItems(4)}
-      <div class="feds-cta-wrapper"></div>
-    </div>
-    `,
-    `<div class="feds-menu-headline"></div>
-     <div class="feds-menu-items">
-       ${columnItems(6)}
-     </div>
-    `,
-    `<div class="feds-menu-headline"></div>
-     <div class="feds-menu-items">
-       ${columnItems(2)}
-     </div>
-     <div style="padding-top: 29px;"></div>
-     <div class="feds-menu-headline"></div>
-     <div class="feds-menu-headline small"></div>
-     <div class="feds-menu-items">
-       ${columnItems(4, false)}
-     </div>`,
-    `<div class="feds-promo-wrapper">
-       <div class="feds-promo">
-       </div>
-     </div>`,
-  ];
+  const tab = () => ({ name: '' });
+  const tabs = [0, 1, 2, 3].map(tab);
   return toFragment`
   <div class="feds-popup loading" aria-hidden="true">
-    <div class="feds-menu-container">
-      <div class="feds-menu-content">
-        ${columnContent.map(column).join('')}
-      </div>
-    </div>
-    <div class="feds-crossCloudMenu-wrapper">
-      <div class="feds-crossCloudMenu">
-        <div>
-          <ul>
-            ${new Array(4).fill(0).map(() => `
-              <li class="feds-crossCloudMenu-item">
-                <a class="feds-navLink"></a>
-              </li>`).join('')}
-          </ul>
+    <div class="tabs" role="tablist">
+      ${tabs.map(({ name, description }, i) => `
+        <div class="tab-wrapper">
+          <button
+          role="tab"
+          class="tab"
+          aria-selected="false"
+          aria-controls="${i}"
+          >${name.trim() === '' ? '<div></div>' : name}</button>
+          ${description ? `<div class="feds-menu-description">${description}</div>` : ''}
         </div>
-      </div>
+      `).join('')}
     </div>
+    <div class="tab-content">
+    ${tabs.map((_, i) => `
+        <div
+          id="${i}"
+          role="tabpanel"
+          aria-labelledby="${i}"
+          class="feds-navLink-content"
+        >
+      <div class="feds-navLink-title"></div>
+      <div class="feds-navLink-description"></div>
+      </div>`).join('')}
   </div>
   `;
 };
