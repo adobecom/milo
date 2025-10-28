@@ -252,14 +252,18 @@ export function disableForm(form, disable = true) {
   });
 }
 
-function awaitWindowProperty(property, max = 10, interval = 300) {
+function awaitWindowProperty(property, max = 30, interval = 100) {
   if (window[property]) return window[property];
   let counter = 0;
 
   return new Promise((resolve) => {
     const intervalRef = setInterval(() => {
       if (!window[property]) {
-        if (counter === max) clearInterval(intervalRef);
+        if (counter === max) {
+          clearInterval(intervalRef);
+          resolve(null);
+          return;
+        }
         counter += 1;
         return;
       }
