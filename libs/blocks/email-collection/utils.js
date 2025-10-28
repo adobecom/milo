@@ -252,12 +252,39 @@ export function disableForm(form, disable = true) {
   });
 }
 
+function awaitWindowProperty(property, max = 10, interval = 300) {
+  if (window[property]) return window[property];
+  let counter = 0;
+
+  return new Promise((resolve) => {
+    const intervalRef = setInterval(() => {
+      if (!window[property]) {
+        if (counter === max) clearInterval(intervalRef);
+        counter += 1;
+        return;
+      }
+      clearInterval(intervalRef);
+      resolve(window[property]);
+    }, interval);
+  });
+}
+
+export async function cookiesEnabled() {
+  const privacy = await awaitWindowProperty('adobePrivacy');
+  const groups = privacy?.activeCookieGroups();
+  return groups?.includes('C0002');
+}
+
 export async function getAEPData() {
-  const ECID_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
   try {
-    // eslint-disable-next-line
-    const satellite = await window.__satelliteLoadedPromise;
-    const ecid = decodeURIComponent(satellite?.cookie.get(ECID_COOKIE))?.split('|')[1];
+    let ecid;
+    const areCookiesEnabled = await cookiesEnabled();
+    if (areCookiesEnabled) {
+      const getIdentity = await awaitWindowProperty('alloy_getIdentity');
+      const { identity } = await getIdentity;
+      ecid = identity?.ECID;
+    }
+
     const { userId: guid } = await getIMSProfile();
     return { guid, ecid };
   } catch (e) {

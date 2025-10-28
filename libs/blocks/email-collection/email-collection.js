@@ -13,6 +13,7 @@ import {
   getAEPData,
   disableForm,
   runtimePost,
+  cookiesEnabled,
   FORM_FIELDS,
 } from './utils.js';
 
@@ -479,6 +480,8 @@ async function decorate(el, blockChildren) {
   decorateText(blockChildren);
 
   const isSubscribed = await checkIsSubscribed();
+  const areCookiesEnabled = await cookiesEnabled();
+  if (!areCookiesEnabled) showHideMessage({ errorMsg: 'Please enable cookies' });
   try {
     await decorateForm(el, blockChildren[0]);
     decorateDefaultLinkAnalytics(blockChildren[0], miloConfig);
