@@ -211,30 +211,22 @@ const openStageToMainPR = async () => {
 
 const mergeLimitExceeded = () => MAX_MERGES - existingPRCount < 0;
 
-const workingHours = () => {
-  const now = new Date();
-  const day = now.getUTCDay();
-  const isFriday = day === 5;
-  const isSaturday = day === 6;
-  const isSunday = day === 0;
-  return !isFriday && !isSaturday && !isSunday;
-};
-
-const thursdayBeforeRCP = () => {
-  // This function is used to block creating stage batches on Thursdays (4) before an RCP on monday next week
+const isThursdayOrFridayBeforeRCP = () => {
   const now = new Date();
   const day = now.getUTCDay();
   
-  if (day !== 4) return false;
+  if (day !== 4 && day !== 5) return false;
   
   const nextMonday = new Date(now);
-  nextMonday.setUTCDate(now.getUTCDate() + 4);
+  const daysUntilMonday = day === 4 ? 4 : 3;
+  nextMonday.setUTCDate(now.getUTCDate() + daysUntilMonday);
   
   const { RCPDates } = require('./helpers.js');
   
-  return RCPDates.some(({ start }) => {
+  return RCPDates.some(({ start, end }) => {
     const rcpStart = new Date(start);
-    return rcpStart.toDateString() === nextMonday.toDateString();
+    const rcpEnd = new Date(end);
+    return nextMonday >= rcpStart && nextMonday <= rcpEnd;
   });
 };
 
@@ -242,14 +234,9 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
-  
-  if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true }) || thursdayBeforeRCP()) {
-    return console.log('Stopped, within RCP period.');
-  }
-  
-  if (!workingHours()) {
-    return console.log('Stopped, stage batches only run Monday-Thursday.');
-  }
+  if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
+  if (isThursdayOrFridayBeforeRCP()) return console.log('Stopped, Thursday/Friday before RCP.');
+
   try {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
