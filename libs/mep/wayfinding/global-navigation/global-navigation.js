@@ -1299,12 +1299,13 @@ class Gnav {
       popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       if (isSmallScreen) return;
     }
+    debugger
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
-    if (isLocalNav) {
-      popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
-    }
+    // if (isLocalNav) {
+    //   popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+    // }
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent) {
       const delta = yOffset - height;

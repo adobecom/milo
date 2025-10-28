@@ -21,6 +21,14 @@ header .feds-menu-description {
   display: none;
 }
 
+header .feds-content-description {
+  padding: 16px 12px;
+  translate: 0 12px;
+  opacity: 0;
+  animation: slideup 0.6s ease, fadein 0.8s ease;
+  animation-fill-mode: forwards;
+}
+
 .global-navigation.test-nav.dropdown-active .feds-navLink[aria-expanded = "true"],
 .global-navigation.test-nav.dropdown-active .feds-navLink:hover {
   color: #fff;
@@ -615,6 +623,10 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
     display: block;
   }
 
+  header .feds-content-description {
+    display: none;
+  }
+
   /* General */
   .global-navigation.has-breadcrumbs {
     padding-bottom: var(--feds-height-breadcrumbs);
@@ -729,6 +741,11 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
   .feds-navItem--section:only-of-type {
     border-left: 1px solid var(--feds-borderColor);
     border-right: 1px solid var(--feds-borderColor);
+  }
+
+  header.test-nav.dropdown-active .feds-navItem--section:only-of-type {
+    border-left: 1px solid var(--feds-test-borderColor);
+    border-right: 1px solid var(--feds-test-borderColor);
   }
 
   .feds-navItem--section > .feds-navLink {
@@ -1034,7 +1051,7 @@ header.test-nav .tab-wrapper {
   color: var(--feds-navLink-inactive);
 }
 
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup {
+header.test-nav .feds-nav > .feds-navItem > .feds-popup {
   visibility: hidden;
   width: 100%;
   height: calc(100vh - var(--feds-height-nav));
@@ -1078,6 +1095,21 @@ header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-po
 }
 
 header.test-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
+  translate: 0;
+  opacity: 1;
+  z-index: 2;
+  transition: translate 0.4s ease-out, opacity 0.2s ease, visibility 0s linear 0s;
+  visibility: visible;
+  background-color: #000;
+  align-items: start;
+  margin-top: 1px;
+}
+
+header.test-nav .feds-crossCloudMenu-wrapper {
+  display: none;
+}
+
+header.test-nav .feds-nav > .feds-navItem.feds-dropdown--active > .feds-popup {
   translate: 0;
   opacity: 1;
   z-index: 2;
@@ -1203,8 +1235,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
   padding-top: 16px;
   background-color: #000;
   overflow-y: auto;
-  width: 300px;
-  /* margin-top: 80px; */
+  width: 238px;
   margin-left: 300px;
 }
 
@@ -1242,8 +1273,8 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   font-size:14px;
   line-height: 16px;
   overflow-y: scroll;
-  border-left: 1px solid var(--feds-navLink-inactive);
-  margin-left: 280px;
+  border-left: 1px solid var(--feds-test-borderColor);
+  margin-left: 220px;
   width: 340px;
 }
 

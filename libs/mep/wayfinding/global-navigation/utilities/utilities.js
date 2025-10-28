@@ -673,7 +673,7 @@ export const transformTemplateToMobile = async ({
       `).join('')}
     </div>
     <div class="tab-content">
-    ${tabs.map(({ links, daalhTabContent }, i) => `
+    ${tabs.map(({ links, daalhTabContent, description }, i) => `
         <div
           id="${i}"
           role="tabpanel"
@@ -682,6 +682,7 @@ export const transformTemplateToMobile = async ({
           ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden
         >
+      ${description ? `<div class="feds-content-description">${description}</div>` : ''}
       ${links}
       </div>`).join('')}
     </div>
