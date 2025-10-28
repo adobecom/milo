@@ -364,7 +364,15 @@ function decorateTables(el, children) {
 
 function setupResponsiveHiding(el) {
   const mediaQuery = window.matchMedia('(max-width: 899px)');
-  const hideLastTwoElements = (elements, isMobile) => {
+  const hideElements = (elements, isMobile, header = false) => {
+    const totalColumns = header ? elements.length - 1 : elements.length;
+    if (totalColumns === 2) return;
+
+    if (totalColumns === 3) {
+      elements[elements.length - 1].classList.toggle('hidden', isMobile);
+      return;
+    }
+
     elements.forEach((element, index) => {
       if (index < elements.length - 2) return;
       element.classList.toggle('hidden', isMobile);
@@ -373,8 +381,8 @@ function setupResponsiveHiding(el) {
 
   const handleResponsive = (e) => {
     const isMobile = e ? e.matches : mediaQuery.matches;
-    hideLastTwoElements(el.querySelectorAll('.header-item'), isMobile);
-    el.querySelectorAll('.table-row').forEach((row) => hideLastTwoElements(row.querySelectorAll('.table-cell'), isMobile));
+    hideElements(el.querySelectorAll('.header-item'), isMobile, true);
+    el.querySelectorAll('.table-row').forEach((row) => hideElements(row.querySelectorAll('.table-cell'), isMobile));
     syncAccessibilityHeaders(el);
   };
   handleResponsive();
