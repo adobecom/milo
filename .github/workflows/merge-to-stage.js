@@ -211,22 +211,15 @@ const openStageToMainPR = async () => {
 
 const mergeLimitExceeded = () => MAX_MERGES - existingPRCount < 0;
 
-const isThursdayOrFridayBeforeRCP = () => {
+const isBeforeRCP = () => {
   const now = new Date();
-  const day = now.getUTCDay();
-  
-  if (day !== 4 && day !== 5) return false;
-  
-  const nextMonday = new Date(now);
-  const daysUntilMonday = day === 4 ? 4 : 3;
-  nextMonday.setUTCDate(now.getUTCDate() + daysUntilMonday);
-  
   const { RCPDates } = require('./helpers.js');
   
-  return RCPDates.some(({ start, end }) => {
+  return RCPDates.some(({ start }) => {
     const rcpStart = new Date(start);
-    const rcpEnd = new Date(end);
-    return nextMonday >= rcpStart && nextMonday <= rcpEnd;
+    const hoursUntilRCP = (rcpStart - now) / (1000 * 60 * 60);
+    const fourDaysBeforeRCP = 96;
+    return hoursUntilRCP > 0 && hoursUntilRCP <= fourDaysBeforeRCP;
   });
 };
 
@@ -235,7 +228,7 @@ const main = async (params) => {
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
   if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
-  if (isThursdayOrFridayBeforeRCP()) return console.log('Stopped, Thursday/Friday before RCP.');
+  if (isBeforeRCP()) return console.log('Stopped, within 4 days before RCP to have a clean stage branch for emergencies.');
 
   try {
     const stageToMainPR = await getStageToMainPR();
