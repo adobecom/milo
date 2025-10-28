@@ -1747,6 +1747,9 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 .feds-popup.loading .feds-cta-wrapper,
 .feds-popup.loading .feds-menu-headline:not(:has(div)),
 .feds-popup.loading .feds-crossCloudMenu-item .feds-navLink,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
@@ -1758,6 +1761,9 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs but
   animation-direction: alternate;
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
