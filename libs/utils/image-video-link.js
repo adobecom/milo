@@ -12,7 +12,9 @@ export default function init(el, a, btnFormat) {
   const playBtnFormat = btnFormat.split(':')[1];
   const btnSize = playBtnFormat.includes('-') ? `btn-${playBtnFormat.split('-')[1]}` : 'btn-large';
   const pic = el.querySelector('picture');
-  const alt = pic.querySelector('img').getAttribute('alt');
+  const img = pic.querySelector('img');
+  img.setAttribute('role', 'none');
+  const alt = img.getAttribute('alt');
   const playIcon = createTag('div', { class: 'play-icon-container' }, PLAY_ICON_SVG);
   const imgLinkContainer = createTag('span', { class: 'modal-img-link' });
   el.insertBefore(imgLinkContainer, pic);
