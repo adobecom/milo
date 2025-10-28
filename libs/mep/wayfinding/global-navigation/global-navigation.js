@@ -491,6 +491,24 @@ class Gnav {
       // needed to run anyway prior to decorateTopNavWrapper
       this.decorateAside,
       this.decorateMainNav,
+      // to fix a bug on slow networks where
+      // the color wouldn't change from dark
+      // to light for the first few seconds after
+      // the gnav loads.
+      // What supposed to happen is:
+      //   1. closeAllDropdowns removes the class 'dropdown-active'
+      //   2. setActiveDropdown adds it back in (because we have to
+      //      click on the dropdownbutton to close the popup)
+      //   3. The event lsitener below removes it again.
+      //
+      // But the gnav is interactable before this last listener
+      // is attached. That's because it used to happen after all the tasks.
+      // The solution is to attach it here.
+      //
+      () => document.addEventListener(
+        'click',
+        (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper),
+      ),
       this.decorateTopNav,
       this.decorateTopnavWrapper,
       this.revealGnav,
@@ -509,7 +527,6 @@ class Gnav {
       await task();
     }
 
-    document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
     if (document.querySelector('.feds-promo-aside-wrapper')) {
       isSmallScreen.addEventListener('change', this.updateGnavTop);
@@ -963,36 +980,39 @@ class Gnav {
     });
   };
 
-  decorateAppPrompt = async ({ getAnchorState } = {}) => {
-    performance.mark('PEP-Start');
-    const state = getMetadata('app-prompt')?.toLowerCase();
-    const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
-    const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
-    const hasMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
+  static decorateAppPrompt = async () => {
+    // Disabled PEP for the wayfinding test
+    // performance.mark('PEP-Start');
+    // const state = getMetadata('app-prompt')?.toLowerCase();
+    // const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
+    // const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    // const hasMobileUA =
+    // /Android|webOS|iPhone|iPad|iPod|BlackBerry
+    // |IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
 
-    if (state === 'off'
-      || !window.adobeIMS?.isSignedInUser()
-      || !isDesktop.matches
-      || hasMobileUA
-      || !entName?.length
-      || !promptPath?.length) return;
+    // if (state === 'off'
+    //   || !window.adobeIMS?.isSignedInUser()
+    //   || !isDesktop.matches
+    //   || hasMobileUA
+    //   || !entName?.length
+    //   || !promptPath?.length) return;
 
-    const { base } = getConfig();
-    const [
-      webappPrompt,
-    ] = await Promise.all([
-      import('../../../features/webapp-prompt/webapp-prompt.js'),
-      loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
-    ]);
+    // const { base } = getConfig();
+    // const [
+    //   webappPrompt,
+    // ] = await Promise.all([
+    //   import('../../features/webapp-prompt/webapp-prompt.js'),
+    //   loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
+    // ]);
 
-    await webappPrompt.default({
-      promptPath,
-      entName,
-      parent: this.blocks.universalNav,
-      getAnchorState,
-    });
-    performance.mark('PEP-End');
-    logPerformance('PEP-Time', 'PEP-Start', 'PEP-End');
+    // await webappPrompt.default({
+    //   promptPath,
+    //   entName,
+    //   parent: this.blocks.universalNav,
+    //   getAnchorState,
+    // });
+    // performance.mark('PEP-End');
+    // logPerformance('PEP-Time', 'PEP-Start', 'PEP-End');
   };
 
   loadSearch = () => {
@@ -1398,12 +1418,7 @@ class Gnav {
               template,
               type: itemType,
             });
-            // There are two calls to transformTemplateToMobile
-            // One without awaiting decorateMenu, and one after
-            // decorateMenu is complete
             const popup = template.querySelector('.feds-popup');
-            // desktopMegaMenuHTML = popup.innerHTML;
-            if (!this.newMobileNav) return;
             await transformTemplateToMobile({
               popup,
               item,
@@ -1418,41 +1433,26 @@ class Gnav {
             }
           }
         })();
-        if (this.newMobileNav) {
-          const popup = template.querySelector('.feds-popup');
-          if (!isDesktop.matches && popup) {
-            await transformTemplateToMobile({
-              popup,
-              item,
-              localnav: this.isLocalNav(),
-              toggleMenu: this.toggleMenuMobile,
-            });
-            popup.style.removeProperty('visibility');
-          } else if (isDesktop.matches) {
-            popup?.style.removeProperty('visibility');
+        isDesktop.addEventListener('change', async () => {
+          const newPopup = template.querySelector('.feds-popup');
+          if (!newPopup) return;
+          enableMobileScroll();
+          if (isDesktop.matches) {
+            this.block.classList.remove('new-nav');
+            disableAriaHidden();
+            removeA11YMobileDropdowns();
+            this.block.classList.add('test-nav');
+          } else {
+            this.block.classList.add('new-nav');
+            this.block.classList.remove('test-nav');
           }
-          isDesktop.addEventListener('change', async () => {
-            const newPopup = template.querySelector('.feds-popup');
-            if (!newPopup) return;
-            enableMobileScroll();
-            if (isDesktop.matches) {
-              this.block.classList.remove('new-nav');
-              disableAriaHidden();
-              removeA11YMobileDropdowns();
-              this.block.classList.add('test-nav');
-            } else {
-              this.block.classList.add('new-nav');
-              this.block.classList.remove('test-nav');
-            }
-          });
-        }
+        });
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
       template.addEventListener('click', decorateDropdown);
       const newMobileNavActive = this.newMobileNav && !isDesktop.matches;
       if (itemType === 'asyncDropdownTrigger' && (newMobileNavActive || isDesktop.matches)) {
         const loadingMegaMenu = loaderMegaMenu();
-        loadingMegaMenu.style.visibility = 'hidden';
         template.append(loadingMegaMenu);
         template.classList.add('feds-navItem--megaMenu');
       }

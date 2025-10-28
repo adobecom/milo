@@ -1763,20 +1763,26 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
   border-radius: 2px;
-  opacity: var(--feds-skeleton-opacity);
-  background: linear-gradient(270deg, var(--feds-skeleton-color-1), var(--feds-skeleton-color-2), var(--feds-skeleton-color-3));
+  opacity: var(--feds-test-nav-skeleton-opacity);
+  background: linear-gradient(270deg, var(--feds-test-nav-skeleton-color-1), var(--feds-test-nav-skeleton-color-2), var(--feds-test-nav-skeleton-color-3));
   background-size: 200% 200%;
   animation: mega-menu-skeleton 0.6s infinite alternate linear;
   animation-direction: alternate;
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
   border-radius: 2px;
-  opacity: var(--feds-skeleton-opacity);
-  background: linear-gradient(270deg, var(--feds-skeleton-color-1), var(--feds-skeleton-color-2), var(--feds-skeleton-color-3));
+  opacity: var(--feds-test-nav-skeleton-opacity);
+  background: linear-gradient(270deg, var(--feds-test-nav-skeleton-color-1), var(--feds-test-nav-skeleton-color-2), var(--feds-test-nav-skeleton-color-3));
   background-size: 200% 200%;
   animation: mega-menu-skeleton 0.6s infinite alternate linear;
   animation-direction: alternate;
@@ -1838,13 +1844,17 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs but
   margin: 0px 28px;
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
-  height: 14px;
-  width: 49px;
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
+  height: 32px;
+  width: 186px;
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-content > div:first-child {
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-content > div:first-child {
   display:block;
+}
+
+header.test-nav .feds-popup.loading.hide {
+  visibility: hidden !important;
 }
 
 @keyframes mega-menu-skeleton {
@@ -1858,7 +1868,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
 
 /* Landscape mode for mobile */
 @media (orientation: landscape) and (max-width: 900px) {
-  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
+  header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
     padding: 15px 11px 15px 20px;
     min-height: max-content;
   }
