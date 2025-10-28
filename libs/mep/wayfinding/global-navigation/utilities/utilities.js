@@ -307,6 +307,7 @@ export function setActiveDropdown(elem, type) {
     return false;
   });
   document.querySelector('.global-navigation').classList.add('dropdown-active');
+  window?.UniversalNav?.changeTheme?.('dark');
 }
 
 export const animateInSequence = (xs, gap) => {
@@ -427,6 +428,7 @@ export function closeAllDropdowns({
 
   if (isDesktop.matches) setCurtainState(false);
   document.querySelector('.global-navigation').classList.remove('dropdown-active');
+  window?.UniversalNav?.changeTheme?.(isDarkMode() ? 'dark' : 'light');
 }
 
 export const disableMobileScroll = () => {

@@ -64,12 +64,12 @@ class Popup {
     this.mainNav.focusCurr();
   };
 
-  focusMainNavNext = (isFooter) => {
+  focusMainNavNext = (isFooter, isMegaMenuSection = false) => {
     if (isFooter) return;
     const { next } = this.mainNav.getState();
     if (next >= 0) {
       this.mainNav.focusNext();
-      if (this.isTestNav && this.desktop.matches) return;
+      if (this.isTestNav && this.desktop.matches && isMegaMenuSection) return;
       this.mainNav.open();
       return;
     }
@@ -87,6 +87,8 @@ class Popup {
 
     if (tabOutOfFooter || shiftTabOutOfFooter) return;
 
+    const isMegaMenuSection = !!e.target.closest('section');
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -100,7 +102,7 @@ class Popup {
           popupItems[prev].focus();
         } else {
           if (next === -1) {
-            this.focusMainNavNext(isFooter);
+            this.focusMainNavNext(isFooter, isMegaMenuSection);
             break;
           }
           popupItems[next].focus();
@@ -248,7 +250,7 @@ class Popup {
         if (!e.target.closest(selectors.globalNav)) return;
         const element = getOpenPopup();
         if (!e.target.closest(selectors.popup) || !element || !this.desktop.matches) return;
-        if (this.isTestNav) return;
+        if (this.isTestNav && e.target.closest('section')) return;
         this.handleKeyDown({ e, element, isFooter: false });
       }, `popup key failed ${e.code}`, 'gnav-keyboard', 'e'));
 
@@ -257,7 +259,7 @@ class Popup {
         if (!e.target.closest(selectors.globalNav)) return;
         const element = getOpenPopup();
         if (!e.target.closest(selectors.popup) || !element || !this.desktop.matches) return;
-        if (!this.isTestNav) return;
+        if (!(this.isTestNav && e.target.closest('section'))) return;
         this.handleTabsAndContentA11Y(e, element);
       }, `popup(test-nav) key failed ${e.code}`, 'gnav-keyboard', 'e'));
 

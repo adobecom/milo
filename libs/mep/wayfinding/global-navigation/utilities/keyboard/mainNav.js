@@ -23,6 +23,8 @@ class MainNavItem {
 
       const newNav = !!document.querySelector('header.new-nav');
 
+      const isMegaMenuSection = !!e.target.closest('section');
+
       switch (e.code) {
         case 'Tab': {
           if (newNav) {
@@ -39,7 +41,7 @@ class MainNavItem {
             break;
           }
 
-          if (this.isTestNav && this.desktop.matches) {
+          if (this.isTestNav && this.desktop.matches && isMegaMenuSection) {
             const activeDropdown = e.target.closest(selectors.activeDropdown);
             const activePopup = activeDropdown?.querySelector(selectors.popup);
             if (activePopup && !e.shiftKey) {
@@ -86,7 +88,7 @@ class MainNavItem {
           break;
         }
         case 'ArrowUp': {
-          if (this.isTestNav && this.desktop.matches) break;
+          if (this.isTestNav && this.desktop.matches && isMegaMenuSection) break;
           if (newNav) break;
           e.preventDefault();
           e.stopPropagation();
@@ -109,7 +111,7 @@ class MainNavItem {
           break;
         }
         case 'ArrowDown': {
-          if (this.isTestNav && this.desktop.matches) break;
+          if (this.isTestNav && this.desktop.matches && isMegaMenuSection) break;
           if (newNav) break;
           e.stopPropagation();
           e.preventDefault();
@@ -171,8 +173,12 @@ class MainNavItem {
     const triggerElement = triggerEl || items[curr];
     if (!triggerElement || !triggerElement.hasAttribute('aria-haspopup')) return;
     if (e) e.preventDefault();
-    if (triggerElement.getAttribute('aria-expanded') === 'false' && !this.isTestNav) {
+    if (triggerElement.getAttribute('aria-expanded') === 'false' && !(this.isTestNav && triggerElement.closest('section'))) {
       trigger({ element: triggerElement });
+      if (this.isTestNav) {
+        document.querySelector('.global-navigation').classList.add('dropdown-active');
+        window?.UniversalNav?.changeTheme?.('dark');
+      }
     }
     const navItem = triggerElement.parentElement;
     const popupEl = navItem.querySelector(selectors.popup);
