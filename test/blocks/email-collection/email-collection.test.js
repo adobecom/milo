@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { getLocale, setConfig } from '../../../libs/utils/utils.js';
