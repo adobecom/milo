@@ -1,4 +1,5 @@
 import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '../../utils/utils.js';
+import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
   local: 'https://www.stage.adobe.com/milo-email-collection-api',
@@ -263,6 +264,24 @@ export async function getAEPData() {
   } catch (e) {
     return {};
   }
+}
+
+function waitForModal() {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(), 3000);
+    window.addEventListener('milo:modal:loaded', () => {
+      clearTimeout(timeout);
+      resolve();
+    }, { once: true });
+  });
+}
+
+export async function redirectToSignIn(dialog, redirect = true) {
+  if (!redirect) return;
+  const ims = await getIMS();
+  if (!document.body.contains(dialog)) await waitForModal();
+  await ims.signIn();
+  if (dialog) closeModal(dialog);
 }
 
 export async function runtimePost(url, data, notRequiredData = []) {
