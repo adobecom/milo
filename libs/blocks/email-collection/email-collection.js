@@ -13,6 +13,7 @@ import {
   getAEPData,
   disableForm,
   runtimePost,
+  cookiesEnabled,
   FORM_FIELDS,
 } from './utils.js';
 
@@ -205,18 +206,19 @@ async function submitForm(form) {
       eventDts: date.toISOString(),
       timezoneOffset: -date.getTimezoneOffset(),
     };
+    console.log(bodyData);
 
-    const { error, data } = await runtimePost(
-      getApiEndpoint(),
-      bodyData,
-      ['occupation', 'organization', 'state'],
-    );
+    // const { error, data } = await runtimePost(
+    //   getApiEndpoint(),
+    //   bodyData,
+    //   ['occupation', 'organization', 'state'],
+    // );
 
-    if (error) messageParams.errorMsg = error;
+    // if (error) messageParams.errorMsg = error;
 
-    messageParams.email = email;
-    const { subscribed } = data;
-    messageParams.subscribed = subscribed;
+    // messageParams.email = email;
+    // const { subscribed } = data;
+    // messageParams.subscribed = subscribed;
   } catch (e) {
     messageParams.errorMsg = e.message;
   }
@@ -466,6 +468,8 @@ async function decorate(el, blockChildren) {
   decorateText(blockChildren);
 
   const isSubscribed = await checkIsSubscribed();
+  const areCookiesEnabled = await cookiesEnabled();
+  if (!areCookiesEnabled) showHideMessage({ errorMsg: 'Please enable cookies' });
   try {
     await decorateForm(el, blockChildren[0]);
     decorateDefaultLinkAnalytics(blockChildren[0], miloConfig);
