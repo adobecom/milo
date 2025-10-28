@@ -1449,7 +1449,7 @@ class Gnav {
       template.addEventListener('click', decorateDropdown);
       const newMobileNavActive = this.newMobileNav && !isDesktop.matches;
       if (itemType === 'asyncDropdownTrigger' && (newMobileNavActive || isDesktop.matches)) {
-        const loadingMegaMenu = loaderMegaMenu();
+        const loadingMegaMenu = loaderMegaMenu(item?.textContent?.trim() ?? '');
         template.append(loadingMegaMenu);
         template.classList.add('feds-navItem--megaMenu');
       }

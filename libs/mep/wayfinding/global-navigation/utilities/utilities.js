@@ -744,11 +744,16 @@ export const transformTemplateToMobile = async ({
   return cleanup;
 };
 
-export const loaderMegaMenu = () => {
+export const loaderMegaMenu = (title) => {
   const tab = () => ({ name: '' });
   const tabs = [0, 1, 2, 3].map(tab);
   return toFragment`
   <div class="feds-popup loading" aria-hidden="true">
+    <div class="top-bar">
+    </div>
+    <div class="title">
+      <h2>${title}</h2>
+    </div>
     <div class="tabs" role="tablist">
       ${tabs.map(({ name, description }, i) => `
         <div class="tab-wrapper">
