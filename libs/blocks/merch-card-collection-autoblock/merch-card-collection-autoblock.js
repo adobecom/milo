@@ -1,4 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
@@ -152,6 +153,16 @@ function getSidenav(collection) {
   return sidenav;
 }
 
+function generateCardName(card) {
+  let name = card.querySelector('h3')?.textContent;
+  if (!name) return '';
+  name = name.toLowerCase().replace(/[^0-9a-z]/gi, ' ').trim().replaceAll(' ', '-');
+  while (name.includes('--')) {
+    name = name.replaceAll('--', '-');
+  }
+  return name;
+}
+
 function enableSidenavAnalytics(el) {
   el.sidenav?.addEventListener('merch-sidenav:select', ({ target }) => {
     if (!target || target.oldValue === target.selectedValue) return;
@@ -162,6 +173,34 @@ function enableSidenavAnalytics(el) {
       handleCustomAnalyticsEvent('cat-changed', target);
     }
     target.oldValue = target.selectedValue;
+  });
+}
+
+function enableAnalytics(el) {
+  enableSidenavAnalytics(el);
+
+  const header = el.parentElement.querySelector('merch-card-collection-header');
+  header?.addEventListener('merch-card-collection:sort', ({ detail }) => {
+    handleCustomAnalyticsEvent(`${detail?.value === 'authored' ? 'popularity' : detail?.value}--sort`, el);
+  });
+
+  el.sidenav?.search?.addEventListener('merch-search:change', debounce((e) => {
+    handleCustomAnalyticsEvent(`${e.detail.value}--search`, el.sidenav.search);
+  }, 1000));
+
+  el.addEventListener('merch-card-collection:showmore', () => {
+    handleCustomAnalyticsEvent('showmore', el);
+  });
+
+  el.addEventListener('merch-card:action-menu-toggle', ({ detail }) => {
+    handleCustomAnalyticsEvent(`menu-toggle--${detail.card}`, el);
+  });
+
+  el.addEventListener('click', ({ target }) => {
+    if (target.tagName === 'MERCH-ICON') {
+      const card = target.closest('merch-card');
+      handleCustomAnalyticsEvent(`merch-icon-click--${card?.name || generateCardName(card)}`, el);
+    }
   });
 }
 
@@ -222,7 +261,7 @@ export async function createCollection(el, options) {
   await postProcessAutoblock(collection, false);
   collection.requestUpdate();
   // card analytics is enabled in postProcessAutoblock
-  enableSidenavAnalytics(collection);
+  enableAnalytics(collection);
 }
 
 export default async function init(el) {
