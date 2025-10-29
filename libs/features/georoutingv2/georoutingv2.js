@@ -345,7 +345,7 @@ async function getDetails(currentPage, localeMatches, geoData) {
 
   if (window.location.hash) {
     window.addEventListener('milo:modal:closed', () => {
-      const modal = document.querySelector(`.dialog-modal${window.location.hash}`);
+      const modal = document.querySelector('.dialog-modal:not(#locale-modal-v2)');
       if (!modal) return;
       const links = georoutingWrapper.querySelectorAll(`a[href$="${window.location.hash}"]`);
       links.forEach((link) => {
