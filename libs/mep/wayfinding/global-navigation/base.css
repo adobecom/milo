@@ -210,6 +210,10 @@ header.global-navigation.ready {
     content: "";
   }
 
+  header.test-nav.dropdown-active .feds-navItem--active > .feds-navLink:before {
+    border-bottom: 2px solid #EB1000;
+  }
+
   .feds-navItem--active > .feds-navLink:before {
     margin: 0 12px;
   }
