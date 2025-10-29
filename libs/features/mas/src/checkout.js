@@ -7,6 +7,17 @@ import { Defaults } from './defaults.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
 import { MODAL_TYPE_3_IN_1 } from './constants.js';
 
+function is3in1Enabled() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryParam = urlParams.get('3in1');
+    if (queryParam === 'off') {
+        return false;
+    }
+    
+    const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+    return !masFF3in1 || masFF3in1.content !== 'off';
+}
+
 /**
  * generate Checkout configuration
  */
@@ -101,7 +112,7 @@ export function Checkout({ settings, providers }) {
             ...rest
         } = collectCheckoutOptions(options);
         const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
-        const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== 'off');
+        const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && is3in1Enabled();
         const context = window.frameElement || is3in1 ? 'if' : 'fp';
         // even if CTA has multiple offers, they should have same ms, cs, ot values
         const [{ 
