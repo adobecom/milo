@@ -270,13 +270,8 @@
   color: var(--color-black);
 }
 
-.comparison-table .placeholder-resolved[data-template="strikethrough"], span.price.price-strikethrough {
-  text-decoration: none;
-}
-
 .comparison-table .price.price-strikethrough {
   font-size: 12px;
-  text-decoration-line: line-through;
 }
 
 .comparison-table .header-item.hidden,
