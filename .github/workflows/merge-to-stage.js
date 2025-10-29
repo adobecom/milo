@@ -3,6 +3,7 @@ const {
   getLocalConfigs,
   isWithinRCP,
   isWithinPrePostRCP,
+  isShortRCP,
   pulls: { addLabels, addFiles, getChecks, getReviews },
   ZERO_IMPACT_PREFIX
 } = require('./helpers.js');
@@ -211,15 +212,20 @@ const openStageToMainPR = async () => {
 
 const mergeLimitExceeded = () => MAX_MERGES - existingPRCount < 0;
 
-const isBeforeRCP = () => {
+const isBeforeRCP = ({ excludeShortRCP = false } = {}) => {
   const now = new Date();
   const { RCPDates } = require('./helpers.js');
   
-  return RCPDates.some(({ start }) => {
+  return RCPDates.some(({ start, end }) => {
     const rcpStart = new Date(start);
-    const hoursUntilRCP = (rcpStart - now) / (1000 * 60 * 60);
-    const fourDaysBeforeRCP = 96;
-    return hoursUntilRCP > 0 && hoursUntilRCP <= fourDaysBeforeRCP;
+    rcpStart.setHours(0, 0, 0, 0);
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    
+    const daysUntilRCP = Math.floor((rcpStart - today) / (1000 * 60 * 60 * 24));
+    if (daysUntilRCP <= 0 || daysUntilRCP > 4) return false;
+    if (excludeShortRCP && isShortRCP(start, end)) return false;
+    return true;
   });
 };
 
@@ -228,7 +234,7 @@ const main = async (params) => {
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
   if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
-  if (isBeforeRCP()) return console.log('Stopped, within 4 days before RCP to have a clean stage branch for emergencies.');
+  if (isBeforeRCP({ excludeShortRCP: true })) return console.log('Stopped, within 4 days before RCP to have a clean stage branch for emergencies.');
 
   try {
     const stageToMainPR = await getStageToMainPR();
