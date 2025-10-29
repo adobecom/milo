@@ -5,7 +5,7 @@
 
 .global-navigation.test-nav .feds-navLink {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .global-navigation.test-nav.dropdown-active .feds-topnav-wrapper {
@@ -1574,7 +1574,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   text-align: unset;
   color: var(--feds-navLink-inactive);
   font-family: var(--body-font-family);
-  font-size: 20px;
+  font-size: 24px;
   padding: 2px 0;
 }
 
@@ -1688,7 +1688,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.fe
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-title {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 20px;
   white-space: break-spaces;
   padding-bottom: 10px;
   color: var(--feds-navLink-inactive);
@@ -1706,7 +1706,7 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .fed
   display: inline-block;
   font-weight: 400;
   white-space: break-spaces;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /*up test*/
