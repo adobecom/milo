@@ -587,6 +587,7 @@ const parseTabsFromMenuSection = async (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const description = section.querySelector('.feds-menu-description');
   const name = headline?.textContent ?? 'Shop For';
+  const cta = section.querySelector('.feds-cta');
   let daallTab = headline?.getAttribute('daa-ll');
   /* Below condition is only required if the user is loading the page in desktop mode
     and then moving to mobile mode. */
@@ -596,7 +597,9 @@ const parseTabsFromMenuSection = async (section, index) => {
   const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
   const content = section.querySelector('.feds-menu-items') ?? section;
   const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
-  return { name, links, daallTab, daalhTabContent, description: description?.textContent };
+  return {
+    name, links, daallTab, daalhTabContent, description: description?.textContent, cta,
+  };
 };
 
 const promoCrossCloudTab = async (popup) => {
@@ -644,7 +647,6 @@ export const transformTemplateToMobile = async ({
       .map(parseTabsFromMenuSection),
   )).concat(isLoading ? [] : await promoCrossCloudTab(popup));
 
-  const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
   const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
@@ -676,7 +678,7 @@ export const transformTemplateToMobile = async ({
       `).join('')}
     </div>
     <div class="tab-content">
-    ${tabs.map(({ links, daalhTabContent, description }, i) => `
+    ${tabs.map(({ links, daalhTabContent, description, cta }, i) => `
         <div
           id="${i}"
           role="tabpanel"
@@ -687,10 +689,8 @@ export const transformTemplateToMobile = async ({
         >
       ${description ? `<div class="feds-content-description">${description}</div>` : ''}
       ${links}
+      ${cta ? `<div class="sticky-cta">${cta.outerHTML}</div>` : ''}
       </div>`).join('')}
-    </div>
-    <div class="sticky-cta">
-      ${CTA}
     </div>
     <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
