@@ -7,6 +7,18 @@ import { selectOffers, getService } from './utilities.js';
 import { isPromotionActive } from './price/utilities.js';
 import { MODAL_TYPE_3_IN_1 } from '../src/constants.js';
 
+function is3in1Enabled() {
+    // Check query parameter first - it overrides meta tag
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryParam = urlParams.get('3in1');
+    if (queryParam === 'off') {
+        return false;
+    }
+    
+    const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+    return !masFF3in1 || masFF3in1.content !== 'off';
+}
+
 export const CLASS_NAME_DOWNLOAD = 'download';
 export const CLASS_NAME_UPGRADE = 'upgrade';
 const CHECKOUT_PARAM_VALUE_MAPPING = {
@@ -100,8 +112,7 @@ export function CheckoutMixin(Base) {
         }
         
         get isOpen3in1Modal() {
-          const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
-          return this.is3in1Modal && (!masFF3in1 || masFF3in1.content !== 'off');
+          return this.is3in1Modal && is3in1Enabled();
         }
 
         requestUpdate(force = false) {

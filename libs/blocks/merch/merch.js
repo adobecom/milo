@@ -807,6 +807,24 @@ async function openExternalModal(url, getModal, extraOptions, el) {
   });
 }
 
+/**
+ * Checks if 3in1 modal feature is enabled.
+ * Query parameter ?3in1=off overrides the meta tag setting.
+ * @returns {boolean} true if 3in1 is enabled, false otherwise
+ */
+export function is3in1Enabled() {
+  // Check query parameter first - it overrides meta tag
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryParam = urlParams.get('3in1');
+  if (queryParam === 'off') {
+    return false;
+  }
+  
+  // Check meta tag
+  const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+  return !masFF3in1 || masFF3in1.content !== 'off';
+}
+
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
 const closeModalWithoutEvent = (modalId) => {
@@ -1130,9 +1148,8 @@ function getHardcodedFallbackStep(wcsOsi, checkoutClientId) {
 
 export function isFallbackStepUsed({ modal, fallbackStep, wcsOsi, checkoutClientId }) {
   const is3in1Modal = ['twp', 'd2p', 'crm'].includes(modal);
-  const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
-  const is3in1Enabled = !masFF3in1 || masFF3in1.content !== 'off';
-  return is3in1Modal && !is3in1Enabled && !!(fallbackStep
+  const enabled = is3in1Enabled();
+  return is3in1Modal && !enabled && !!(fallbackStep
   ?? getHardcodedFallbackStep(wcsOsi, checkoutClientId));
 }
 
