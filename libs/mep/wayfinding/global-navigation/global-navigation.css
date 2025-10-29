@@ -1018,7 +1018,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs .tab {
-  padding: 8px 15px;
+  padding: 8px 6px;
   margin-bottom: 20px;
   margin-left: 2px;
   cursor: pointer;
@@ -1230,11 +1230,50 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria
   color: var(--feds-color-white-v2);
 }
 
+header .feds-nav > section.feds-navItem > .feds-popup .tabs button:has(svg) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+header .feds-nav > section.feds-navItem > .feds-popup .tabs button:has(svg) > span:first-child {
+  width: 60px;
+}
+
+header .feds-nav > section.feds-navItem > .feds-popup .tabs button path {
+  fill: var(--text-color);
+  stroke: var(--text-color);
+}
+
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button:has(svg) {
+  flex-direction: row;
+  align-items: center;
+}
+
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button > span:first-child {
+  width: auto;
+}
+
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button > svg {
+  margin-left: 5px;
+  margin-top: 3px;
+}
+
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button path {
+  fill: #9F9F9F;
+  stroke: #9F9F9F;
+}
+
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button:hover path {
+  fill: white;
+  stroke: white;
+}
+
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button span:first-child {
   border-bottom: 2px solid transparent;
 }
 
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] span:first-child {
+header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"][role="tab"] span:first-child {
   border-bottom: 2px solid #EB1000;
 }
 

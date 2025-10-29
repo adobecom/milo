@@ -55,6 +55,7 @@ export const icons = {
   company: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="22" viewBox="0 0 24 22" fill="none"><path d="M14.2353 21.6209L12.4925 16.7699H8.11657L11.7945 7.51237L17.3741 21.6209H24L15.1548 0.379395H8.90929L0 21.6209H14.2353Z" fill="#EB1000"/></svg>',
   search: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
   home: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" height="25" viewBox="0 0 18 18" width="25"><path fill="#6E6E6E" d="M17.666,10.125,9.375,1.834a.53151.53151,0,0,0-.75,0L.334,10.125a.53051.53051,0,0,0,0,.75l.979.9785A.5.5,0,0,0,1.6665,12H2v4.5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5v-5a.5.5,0,0,1,.5-.5h3a.5.5,0,0,1,.5.5v5a.5.5,0,0,0,.5.5h4a.5.5,0,0,0,.5-.5V12h.3335a.5.5,0,0,0,.3535-.1465l.979-.9785A.53051.53051,0,0,0,17.666,10.125Z"/></svg>',
+  redirectIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M18 15.75V4.25C18 3.00928 16.9907 2 15.75 2H4.25C3.00928 2 2 3.00928 2 4.25V7.96777C2 8.38183 2.33594 8.71777 2.75 8.71777C3.16406 8.71777 3.5 8.38183 3.5 7.96777V4.25C3.5 3.83643 3.83643 3.5 4.25 3.5H15.75C16.1636 3.5 16.5 3.83643 16.5 4.25V15.75C16.5 16.1636 16.1636 16.5 15.75 16.5H11.939C11.5249 16.5 11.189 16.8359 11.189 17.25C11.189 17.6641 11.5249 18 11.939 18H15.75C16.9907 18 18 16.9907 18 15.75Z" fill="#9F9F9F" stroke="#9F9F9F" stroke-width="0.5"/><path d="M11 9.75V13.9927C11 14.4067 10.6641 14.7427 10.25 14.7427C9.83594 14.7427 9.5 14.4067 9.5 13.9927V11.5605L3.03027 18.0303C2.88379 18.1768 2.69189 18.25 2.5 18.25C2.30811 18.25 2.11621 18.1768 1.96973 18.0303C1.67676 17.7373 1.67676 17.2627 1.96973 16.9697L8.43946 10.5H6.00733C5.59327 10.5 5.25733 10.1641 5.25733 9.75C5.25733 9.33594 5.59327 9 6.00733 9H10.25C10.6641 9 11 9.33594 11 9.75Z" fill="#9F9F9F" stroke="#9F9F9F" stroke-width="0.5"/></svg>',
 };
 
 export const darkIcons = {
@@ -586,18 +587,46 @@ const getAnalyticsValue = async (str, index) => {
 const parseTabsFromMenuSection = async (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const description = section.querySelector('.feds-menu-description');
-  const name = headline?.textContent ?? 'Shop For';
+
+  const name = headline?.textContent?.trim() ?? 'Shop For';
   let daallTab = headline?.getAttribute('daa-ll');
-  /* Below condition is only required if the user is loading the page in desktop mode
-    and then moving to mobile mode. */
+
+  // Handle desktop → mobile transition case
   if (!daallTab) {
     daallTab = await getAnalyticsValue(name, index + 1);
   }
-  const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
+
+  const daalhTabContent = section
+    .querySelector('.feds-menu-items')
+    ?.getAttribute('daa-lh');
+
   const content = section.querySelector('.feds-menu-items') ?? section;
-  const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
-  return { name, links, daallTab, daalhTabContent, description: description?.textContent };
+
+  const links = [...content.querySelectorAll(
+    'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary'
+  )]
+    .map((x) => x.outerHTML)
+    .join('');
+
+  // Detect if headline itself is a redirection (contains an anchor)
+  const headlineAnchor = headline?.querySelector('a');
+  const isHeadingAsRedirection = !!headlineAnchor;
+
+  return {
+    name,
+    links,
+    daallTab,
+    daalhTabContent,
+    description: description?.textContent?.trim() ?? '',
+    ...(isHeadingAsRedirection
+      ? {
+          isHeadingAsRedirection: true,
+          headlineHref: headlineAnchor?.getAttribute('href') ?? '',
+        }
+      : {}),
+  };
 };
+
 
 const promoCrossCloudTab = async (popup) => {
   const additionalLinks = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
@@ -638,11 +667,28 @@ export const transformTemplateToMobile = async ({
   if (notMegaMenu) return () => {};
 
   const isLoading = popup.classList.contains('loading');
-  const tabs = (await Promise.all(
+  const tabs = await (async () => {
+  // Parse all .feds-menu-section elements in parallel
+  const parsedSections = await Promise.all(
     [...popup.querySelectorAll('.feds-menu-section')]
-      .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
-      .map(parseTabsFromMenuSection),
-  )).concat(isLoading ? [] : await promoCrossCloudTab(popup));
+      .filter(
+        (section) =>
+          !section.querySelector('.feds-promo') && section.textContent
+      )
+      .map(parseTabsFromMenuSection)
+  );
+
+  // Split parsed results into normal vs heading-link tabs
+  const normalTabs = parsedSections.filter((t) => !t.isHeadingAsRedirection);
+  const headingLinkTabs = parsedSections.filter((t) => t.isHeadingAsRedirection);
+
+  // Get promoCrossCloudTab if not loading
+  const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
+
+  // Combine everything in order:
+  // [ normal tabs, promo tab(s), heading-link tabs ]
+  return [...normalTabs, ...promoTabs, ...headingLinkTabs];
+})();
 
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
@@ -661,19 +707,47 @@ export const transformTemplateToMobile = async ({
       <h2 id="${popup.id}-title">${item.textContent.trim()}</h2>
     </div>
     <div class="tabs" role="tablist">
-      ${tabs.map(({ name, daallTab, description }, i) => `
-        <div class="tab-wrapper">
-          <button
-          role="tab"
-          class="tab"
-          aria-selected="false"
-          aria-controls="${i}"
-          ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
-          >${name.trim() === '' ? '<div></div>' : `<span>${name}</span>`}
-          ${description ? `<span class="feds-menu-description">${description}</span>` : ''}
-          </button>
-        </div>
-      `).join('')}
+      ${tabs
+        .map(
+          (
+            { name, daallTab, description, isHeadingAsRedirection, headlineHref },
+            i
+          ) => {
+            const label =
+              name.trim() === ''
+                ? '<div></div>'
+                : `<span>${name}</span>`;
+
+            const desc = description
+              ? `<span class="feds-menu-description">${description}</span>`
+              : '';
+
+            // Determine role and extra data attributes
+            const role = isHeadingAsRedirection ? 'link' : 'tab';
+            const dataHrefAttr =
+              isHeadingAsRedirection && headlineHref
+                ? `data-href="${headlineHref}"`
+                : '';
+            
+            const redirectIcon = isHeadingAsRedirection
+              ? icons.redirectIcon
+              : '';
+
+            return `
+              <button
+                role="${role}"
+                class="tab"
+                aria-selected="false"
+                aria-controls="${i}"
+                ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
+                ${dataHrefAttr}
+              >
+                ${label}${desc}${redirectIcon}
+              </button>
+            `;
+          }
+        )
+        .join('')}
     </div>
     <div class="tab-content">
     ${tabs.map(({ links, daalhTabContent }, i) => `
@@ -720,7 +794,11 @@ export const transformTemplateToMobile = async ({
 
   const tabbuttons = popup.querySelectorAll('.tabs button');
   const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
-  const tabbuttonClickCallbacks = [...tabbuttons].map((tab, i) => () => {
+  const tabbuttonClickCallbacks = [...tabbuttons].map((tab, i) => (event) => {
+    if (tab.getAttribute('role') === 'link' && tab.dataset.href && event?.type === 'click') {
+      window.location.href = tab.dataset.href;
+      return;
+    }
     closeAllTabs(tabbuttons, tabpanels);
     tabpanels?.[i]?.removeAttribute('hidden');
     tab.setAttribute('aria-selected', 'true');
@@ -734,12 +812,12 @@ export const transformTemplateToMobile = async ({
     // pinterdown prevents the default action of the button, which is to scroll the window.
     // This is needed to prevent the page from jumping when the tab is clicked.
     tab.addEventListener('pointerdown', (event) => event.preventDefault());
-    tab.addEventListener('click', tabbuttonClickCallbacks[i]);
-    tab.addEventListener('mouseover', () => {
-      if (isDesktop.matches) tabbuttonClickCallbacks[i]();
+    tab.addEventListener('click', (e) => tabbuttonClickCallbacks[i](e));
+    tab.addEventListener('mouseover', (e) => {
+      if (isDesktop.matches) tabbuttonClickCallbacks[i](e);
     });
-    tab.addEventListener('focus', () => {
-      if (isDesktop.matches) tabbuttonClickCallbacks[i]();
+    tab.addEventListener('focus', (e) => {
+      if (isDesktop.matches) tabbuttonClickCallbacks[i](e);
     });
   });
 

@@ -40,7 +40,7 @@ const selectors = {
   mainMenuItems: 'header.new-nav section.feds-navItem > button',
   mainMenuLinks: 'header.new-nav .feds-navItem > a[href], header.new-nav .feds-navItem > .feds-cta-wrapper > .feds-cta',
   activePopup: 'header.new-nav section.feds-dropdown--active > .feds-popup',
-  tab: 'button[role="tab"]',
+  tab: '.tab',
   activeTabpanel: '.tab-content [role="tabpanel"]',
   activeLinks: '.tab-content [role="tabpanel"]:not([hidden="true"]) a',
   stickyCta: 'header.new-nav .feds-popup .sticky-cta a',
