@@ -82,8 +82,9 @@ export default async function init(a) {
 
   let mepFrag;
   try {
-    const path = !a.href.includes('/federal/') ? new URL(a.href).pathname
-      : a.href.replace('#_inline', '').replace(locale.prefix, '');
+    const path = !a.href.includes('/federal/')
+      ? new URL(a.href).pathname
+      : a.href.replace('#_inline', '');
     mepFrag = mep?.fragments?.[path];
   } catch (e) {
     // do nothing
