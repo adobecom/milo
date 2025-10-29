@@ -1,4 +1,4 @@
-import { getMetadata, getConfig, getFederatedUrl } from '../../../../../blocks/utils/utils.js';
+import { getMetadata, getConfig, getFederatedUrl } from '../../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
 
 const metadata = {

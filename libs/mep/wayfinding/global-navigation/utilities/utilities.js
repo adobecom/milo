@@ -307,6 +307,7 @@ export function setActiveDropdown(elem, type) {
     return false;
   });
   document.querySelector('.global-navigation').classList.add('dropdown-active');
+  window?.UniversalNav?.changeTheme?.('dark');
 }
 
 export const animateInSequence = (xs, gap) => {
@@ -427,6 +428,7 @@ export function closeAllDropdowns({
 
   if (isDesktop.matches) setCurtainState(false);
   document.querySelector('.global-navigation').classList.remove('dropdown-active');
+  window?.UniversalNav?.changeTheme?.(isDarkMode() ? 'dark' : 'light');
 }
 
 export const disableMobileScroll = () => {
@@ -667,8 +669,9 @@ export const transformTemplateToMobile = async ({
           aria-selected="false"
           aria-controls="${i}"
           ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
-          >${name.trim() === '' ? '<div></div>' : name}</button>
-          ${description ? `<div class="feds-menu-description">${description}</div>` : ''}
+          >${name.trim() === '' ? '<div></div>' : `<span>${name}</span>`}
+          ${description ? `<span class="feds-menu-description">${description}</span>` : ''}
+          </button>
         </div>
       `).join('')}
     </div>
@@ -733,7 +736,12 @@ export const transformTemplateToMobile = async ({
     // This is needed to prevent the page from jumping when the tab is clicked.
     tab.addEventListener('pointerdown', (event) => event.preventDefault());
     tab.addEventListener('click', tabbuttonClickCallbacks[i]);
-    tab.parentElement.addEventListener('mouseover', tabbuttonClickCallbacks[i]);
+    tab.addEventListener('mouseover', () => {
+      if (isDesktop.matches) tabbuttonClickCallbacks[i]();
+    });
+    tab.addEventListener('focus', () => {
+      if (isDesktop.matches) tabbuttonClickCallbacks[i]();
+    });
   });
 
   const cleanup = () => {

@@ -58,7 +58,6 @@ function decorateCta({ elem, type = 'primaryCta', index } = {}) {
 const decorateHeadline = (elem, index, context = 'viewport') => {
   if (!(elem instanceof HTMLElement)) return null;
   const headlineTexts = elem.textContent.trim().split('||');
-  // debugger
   const description = toFragment`<div class="feds-menu-description">
   ${headlineTexts.length > 1 ? headlineTexts[1] : null}
 </div>`;
@@ -442,10 +441,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
       }
     }
 
-    menuTemplate = toFragment`<div class="feds-popup">
-    ${itemTopParent}
-    </div>`;
-
+    menuTemplate = toFragment`<div class="feds-popup">${itemTopParent}</div>`;
     await decorateColumns({ content: menuTemplate, description: 'Hello' });
   }
 
