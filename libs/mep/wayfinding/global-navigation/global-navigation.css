@@ -1825,9 +1825,6 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 .feds-popup.loading .feds-cta-wrapper,
 .feds-popup.loading .feds-menu-headline:not(:has(div)),
 .feds-popup.loading .feds-crossCloudMenu-item .feds-navLink,
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
@@ -1842,15 +1839,19 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs but
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
-header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
   border-radius: 2px;
-  opacity: var(--feds-test-nav-skeleton-opacity);
-  background: linear-gradient(270deg, var(--feds-test-nav-skeleton-color-1), var(--feds-test-nav-skeleton-color-2), var(--feds-test-nav-skeleton-color-3));
+  opacity: var(--feds-skeleton-opacity);
+  background: linear-gradient(270deg, var(--feds-skeleton-color-1), var(--feds-skeleton-color-2), var(--feds-skeleton-color-3));
   background-size: 200% 200%;
   animation: mega-menu-skeleton 0.6s infinite alternate linear;
   animation-direction: alternate;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .title {
+  height: 93px;
+  display:flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .feds-popup.loading .feds-promo {
@@ -1912,6 +1913,11 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs but
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
   height: 32px;
   width: 186px;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
+  height: 14px;
+  width: 49px;
 }
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-content > div:first-child {
