@@ -68,7 +68,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { decorateArea, mep, placeholders, locale } = getConfig();
+  const { decorateArea, mep, placeholders } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
 
