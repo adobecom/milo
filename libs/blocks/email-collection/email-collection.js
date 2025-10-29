@@ -215,7 +215,7 @@ async function submitForm(form) {
     );
 
     if (error) {
-      await redirectToSignIn(dialog, status === 401);
+      if (status === 401) await redirectToSignIn(dialog);
       messageParams.errorMsg = error;
     }
 
@@ -450,7 +450,7 @@ async function checkIsSubscribed() {
   if (subscribed) showHideMessage({ subscribed, email });
 
   if (error) {
-    await redirectToSignIn(dialog, status === 401);
+    if (status === 401) await redirectToSignIn(dialog);
     showHideMessage({ errorMsg: error });
   }
 

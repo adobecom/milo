@@ -276,8 +276,7 @@ function waitForModal() {
   });
 }
 
-export async function redirectToSignIn(dialog, redirect = true) {
-  if (!redirect) return;
+export async function redirectToSignIn(dialog) {
   const ims = await getIMS();
   if (!document.body.contains(dialog)) await waitForModal();
   await ims.signIn();
