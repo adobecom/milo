@@ -379,8 +379,28 @@ function setupResponsiveHiding(el) {
     });
   };
 
+  const reorderElementsByColumnIndex = (elements) => {
+    const elementsArray = [...elements].filter((element) => element.hasAttribute('data-column-index'));
+    const parent = elementsArray[0]?.parentNode;
+    if (!parent) return;
+
+    elementsArray.sort((a, b) => +a.getAttribute('data-column-index') - +b.getAttribute('data-column-index'));
+    elementsArray.forEach((element) => {
+      element.classList.remove('hidden');
+      parent.appendChild(element);
+    });
+  };
+
   const handleResponsive = (e) => {
     const isMobile = e ? e.matches : mediaQuery.matches;
+
+    if (!isMobile) {
+      reorderElementsByColumnIndex(el.querySelectorAll('.header-item[data-column-index]'));
+      el.querySelectorAll('.table-row').forEach((row) => {
+        reorderElementsByColumnIndex(row.querySelectorAll('.table-cell'));
+      });
+    }
+
     hideElements(el.querySelectorAll('.header-item'), isMobile, true);
     el.querySelectorAll('.table-row').forEach((row) => hideElements(row.querySelectorAll('.table-cell'), isMobile));
     syncAccessibilityHeaders(el);
