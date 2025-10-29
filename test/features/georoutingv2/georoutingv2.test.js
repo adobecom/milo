@@ -636,6 +636,57 @@ describe('GeoRouting', () => {
     expect(modal).to.not.be.null;
   });
 
+  it('If deeplink modal is open, will remove hash from links after modal closes', async () => {
+    setUserCountryFromIP('DE');
+    window.location.hash = 'modal-test';
+    stubHeadRequestToReturnVal('/de', true);
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+    const geoModal = document.querySelector('.dialog-modal');
+
+    geoModal.querySelectorAll(':scope .link-wrapper a').forEach((link) => {
+      expect(link.hash).to.equal(window.location.hash);
+    });
+
+    const deepLinkModal = createTag('div', { id: 'modal-test', class: 'dialog-modal' });
+    document.body.append(deepLinkModal);
+    const closeEvent = new Event('milo:modal:closed');
+    window.dispatchEvent(closeEvent);
+    deepLinkModal.remove();
+
+    geoModal.querySelectorAll(':scope .link-wrapper a').forEach((link) => {
+      expect(link.hash).to.equal('');
+    });
+    window.location.hash = '';
+
+    setUserCountryFromIP();
+  });
+
+  it('If deeplink modal is open, remove hash from picker links after modal closes', async () => {
+    window.location.hash = 'modal-test';
+    stubHeadRequestToReturnVal('/ch_de', true);
+    stubHeadRequestToReturnVal('/ch_it', true);
+    stubHeadRequestToReturnVal('/ch_fr', true);
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+    const geoModal = document.querySelector('.dialog-modal');
+
+    const pickerLink = geoModal.querySelector(':scope .link-wrapper a');
+    pickerLink.click();
+    const picker = geoModal.querySelector('.picker');
+    picker.querySelectorAll('a').forEach((link) => {
+      expect(link.hash).to.equal(window.location.hash);
+    });
+    pickerLink.click();
+
+    window.location.hash = '';
+
+    const pickerLink2 = geoModal.querySelector(':scope .link-wrapper a');
+    pickerLink2.click();
+    const picker2 = geoModal.querySelector('.picker');
+    picker2.querySelectorAll('a').forEach((link) => {
+      expect(link.hash).to.equal('');
+    });
+  });
+
   describe('ArrowKey navigation for georouting modal', () => {
     let links = null;
 
