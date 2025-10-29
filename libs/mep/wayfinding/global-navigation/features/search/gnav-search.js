@@ -6,9 +6,9 @@ import {
   closeAllDropdowns,
   logErrorFor,
 } from '../../utilities/utilities.js';
-import { replaceKeyArray } from '../../../../features/placeholders.js';
-import { getConfig, getFedsPlaceholderConfig } from '../../../../utils/utils.js';
-import { debounce } from '../../../../utils/action.js';
+import { replaceKeyArray } from '../../../../../features/placeholders.js';
+import { getConfig, getFedsPlaceholderConfig } from '../../../../../utils/utils.js';
+import { debounce } from '../../../../../utils/action.js';
 
 const CONFIG = {
   suggestions: {

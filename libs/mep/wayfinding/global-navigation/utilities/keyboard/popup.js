@@ -25,9 +25,27 @@ const getState = ({ e, element } = {}) => {
   };
 };
 
+const getTabsContent = ({ e, element } = {}) => {
+  if (!element) return {};
+  const tabs = Array.from(element.querySelectorAll('.tabs .tab'));
+  const activeTab = element.querySelector('.tab[aria-selected="true"]');
+  const currentTabIndex = tabs.findIndex((tab) => tab === activeTab);
+  const leftPanel = !e.target.closest('.tab-content');
+  const tabContentLinks = Array.from(element.querySelectorAll(`.tab-content [aria-labelledby="${currentTabIndex}"] a`));
+  const currentLinkIndex = tabContentLinks.indexOf(e.target);
+  return {
+    tabs,
+    leftPanel,
+    currentTabIndex,
+    tabContentLinks,
+    currentLinkIndex,
+  };
+};
+
 class Popup {
   constructor({ mainNav }) {
     this.mainNav = mainNav;
+    this.isTestNav = !!document.querySelector('header.test-nav');
     this.addEventListeners();
     this.desktop = window.matchMedia('(min-width: 900px)');
   }
@@ -46,11 +64,12 @@ class Popup {
     this.mainNav.focusCurr();
   };
 
-  focusMainNavNext = (isFooter) => {
+  focusMainNavNext = (isFooter, isMegaMenuSection = false) => {
     if (isFooter) return;
     const { next } = this.mainNav.getState();
     if (next >= 0) {
       this.mainNav.focusNext();
+      if (this.isTestNav && this.desktop.matches && isMegaMenuSection) return;
       this.mainNav.open();
       return;
     }
@@ -68,6 +87,8 @@ class Popup {
 
     if (tabOutOfFooter || shiftTabOutOfFooter) return;
 
+    const isMegaMenuSection = !!e.target.closest('section');
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -81,7 +102,7 @@ class Popup {
           popupItems[prev].focus();
         } else {
           if (next === -1) {
-            this.focusMainNavNext(isFooter);
+            this.focusMainNavNext(isFooter, isMegaMenuSection);
             break;
           }
           popupItems[next].focus();
@@ -143,14 +164,104 @@ class Popup {
     }
   };
 
+  handleTabsAndContentA11Y = (e, popup) => {
+    const {
+      tabs,
+      leftPanel,
+      currentTabIndex,
+      tabContentLinks,
+      currentLinkIndex,
+    } = getTabsContent({ e, element: popup });
+
+    const key = e.code;
+    const isShift = e.shiftKey;
+
+    const focusTab = (index) => {
+      tabs.forEach((tab) => tab.setAttribute('aria-selected', 'false'));
+      tabs[index].setAttribute('aria-selected', 'true');
+      tabs[index].focus();
+    };
+
+    const focusLink = (index) => tabContentLinks[index]?.focus();
+    const moveIndex = (current, length, delta) => (current + delta + length) % length;
+
+    // Handle navigation with arrow keys
+    const handleArrowNavigation = (direction) => {
+      e.preventDefault();
+
+      if (direction === 'up' || direction === 'down') {
+        const delta = direction === 'up' ? -1 : 1;
+        if (leftPanel) {
+          const nextTabIndex = moveIndex(currentTabIndex, tabs.length, delta);
+          focusTab(nextTabIndex);
+        } else {
+          const nextLinkIndex = moveIndex(
+            currentLinkIndex,
+            tabContentLinks.length,
+            delta,
+          );
+          focusLink(nextLinkIndex);
+        }
+      } else if (direction === 'left' && !leftPanel) {
+        tabs[currentTabIndex]?.focus();
+      } else if (direction === 'right' && leftPanel) {
+        focusLink(0);
+      }
+    };
+
+    // Handle Tab and Shift+Tab navigation between panels
+    const handleTabKey = () => {
+      e.preventDefault();
+
+      if (isShift) {
+        if (leftPanel) {
+          popup.parentElement.querySelector('.feds-navLink')?.focus();
+        } else {
+          tabs[currentTabIndex]?.focus();
+        }
+      } else if (leftPanel) {
+        focusLink(0);
+      }
+    };
+
+    // Handle Escape key: close dropdowns and reset focus
+    const handleEscapeKey = () => {
+      e.preventDefault();
+      closeAllDropdowns();
+      this.focusMainNav(false);
+    };
+
+    // Keyboard action map
+    const keyActions = {
+      ArrowUp: () => handleArrowNavigation('up'),
+      ArrowDown: () => handleArrowNavigation('down'),
+      ArrowLeft: () => handleArrowNavigation('left'),
+      ArrowRight: () => handleArrowNavigation('right'),
+      Tab: handleTabKey,
+      Escape: handleEscapeKey,
+    };
+
+    if (keyActions[key]) keyActions[key]();
+  };
+
   addEventListeners = () => {
     document.querySelector(selectors.globalNavTag)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
         if (!e.target.closest(selectors.globalNav)) return;
         const element = getOpenPopup();
         if (!e.target.closest(selectors.popup) || !element || !this.desktop.matches) return;
+        if (this.isTestNav && e.target.closest('section')) return;
         this.handleKeyDown({ e, element, isFooter: false });
       }, `popup key failed ${e.code}`, 'gnav-keyboard', 'e'));
+
+    document.querySelector(selectors.globalNavTag)
+      ?.addEventListener('keydown', (e) => logErrorFor(() => {
+        if (!e.target.closest(selectors.globalNav)) return;
+        const element = getOpenPopup();
+        if (!e.target.closest(selectors.popup) || !element || !this.desktop.matches) return;
+        if (!(this.isTestNav && e.target.closest('section'))) return;
+        this.handleTabsAndContentA11Y(e, element);
+      }, `popup(test-nav) key failed ${e.code}`, 'gnav-keyboard', 'e'));
 
     document.querySelector(selectors.globalFooterTag)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {

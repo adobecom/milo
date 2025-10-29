@@ -1289,6 +1289,7 @@ class Gnav {
 
   // update GNAV popup position based on branch banner
   updatePopupPosition = (activePopup) => {
+    if (isDesktop.matches) return;
     const popup = activePopup || this.elements.mainNav?.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
@@ -1299,12 +1300,13 @@ class Gnav {
       popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       if (isSmallScreen) return;
     }
+    debugger
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
-    if (isLocalNav) {
-      popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
-    }
+    // if (isLocalNav) {
+    //   popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+    // }
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent) {
       const delta = yOffset - height;
@@ -1327,6 +1329,7 @@ class Gnav {
 
     const makeTabActive = (popup) => {
       if (popup?.classList.contains('loading')) return;
+      const isTestNav = !!document.querySelector('header.test-nav');
       const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
       const tabpanels = popup.querySelectorAll('.global-navigation .tab-content [role="tabpanel"]');
       closeAllTabs(tabbuttons, tabpanels);
@@ -1345,7 +1348,9 @@ class Gnav {
         const title = popup.querySelector('.title h2');
         title?.setAttribute('tabindex', '-1'); // Make title focusable
         title?.focus();
-        addA11YMobileDropdowns(this.elements.topnav, popup.previousElementSibling);
+        if (!isTestNav && !isDesktop.matches) {
+          addA11YMobileDropdowns(this.elements.topnav, popup.previousElementSibling);
+        }
       }, 100);
     };
 
@@ -1405,7 +1410,6 @@ class Gnav {
       const decorateDropdown = () => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
-
         (async () => {
           try {
             const menuLogic = await loadDecorateMenu();
@@ -1481,7 +1485,7 @@ class Gnav {
 
           // Toggle trigger's dropdown on click
           dropdownTrigger.addEventListener('click', (e) => {
-            if (document.querySelector('.test-nav') && this.newMobileNav && isSectionMenu) {
+            if ((document.querySelector('.test-nav') || this.newMobileNav) && isSectionMenu) {
               const popup = dropdownTrigger.nextElementSibling;
               // document.body.style.top should always be set
               // at this point by calling disableMobileScroll
