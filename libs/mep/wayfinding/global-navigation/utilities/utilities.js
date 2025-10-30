@@ -603,7 +603,7 @@ const parseTabsFromMenuSection = async (section, index) => {
   const content = section.querySelector('.feds-menu-items') ?? section;
 
   const links = [...content.querySelectorAll(
-    'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary'
+    'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary',
   )]
     .map((x) => x.outerHTML)
     .join('');
@@ -618,15 +618,15 @@ const parseTabsFromMenuSection = async (section, index) => {
     daallTab,
     daalhTabContent,
     description: description?.textContent?.trim() ?? '',
+    cta,
     ...(isHeadingAsRedirection
       ? {
-          isHeadingAsRedirection: true,
-          headlineHref: headlineAnchor?.getAttribute('href') ?? '',
-        }
+        isHeadingAsRedirection: true,
+        headlineHref: headlineAnchor?.getAttribute('href') ?? '',
+      }
       : {}),
   };
 };
-
 
 const promoCrossCloudTab = async (popup) => {
   const additionalLinks = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
@@ -668,27 +668,20 @@ export const transformTemplateToMobile = async ({
 
   const isLoading = popup.classList.contains('loading');
   const tabs = await (async () => {
-  // Parse all .feds-menu-section elements in parallel
-  const parsedSections = await Promise.all(
-    [...popup.querySelectorAll('.feds-menu-section')]
-      .filter(
-        (section) =>
-          !section.querySelector('.feds-promo') && section.textContent
-      )
-      .map(parseTabsFromMenuSection)
-  );
-
-  // Split parsed results into normal vs heading-link tabs
-  const normalTabs = parsedSections.filter((t) => !t.isHeadingAsRedirection);
-  const headingLinkTabs = parsedSections.filter((t) => t.isHeadingAsRedirection);
-
-  // Get promoCrossCloudTab if not loading
-  const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
-
-  // Combine everything in order:
-  // [ normal tabs, promo tab(s), heading-link tabs ]
-  return [...normalTabs, ...promoTabs, ...headingLinkTabs];
-})();
+    const parsedSections = await Promise.all(
+      [...popup.querySelectorAll('.feds-menu-section')]
+        .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
+        .map(parseTabsFromMenuSection),
+    );
+    const normalTabs = [];
+    const headingLinkTabs = [];
+    for (const tab of parsedSections) {
+      if (tab.isHeadingAsRedirection) headingLinkTabs.push(tab);
+      else normalTabs.push(tab);
+    }
+    const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
+    return normalTabs.concat(promoTabs, headingLinkTabs);
+  })();
 
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
   const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
@@ -707,69 +700,75 @@ export const transformTemplateToMobile = async ({
     </div>
     <div class="tabs" role="tablist">
       ${tabs
-        .map(
-          (
-            { name, daallTab, description, isHeadingAsRedirection, headlineHref },
-            i
-          ) => {
-            const label =
-              name.trim() === ''
-                ? '<div></div>'
-                : `<span>${name}</span>`;
+    .map(
+      (
+        { name, daallTab, description, isHeadingAsRedirection, headlineHref },
+        i,
+      ) => {
+        const label = name.trim() === ''
+          ? '<div></div>'
+          : `<span>${name}</span>`;
 
-            const desc = description
-              ? `<span class="feds-menu-description">${description}</span>`
-              : '';
+        const desc = description
+          ? `<span class="feds-menu-description">${description}</span>`
+          : '';
 
-            // Determine role and extra data attributes
-            const role = isHeadingAsRedirection ? 'link' : 'tab';
-            const dataHrefAttr =
-              isHeadingAsRedirection && headlineHref
-                ? `data-href="${headlineHref}"`
-                : '';
-            
-            const redirectIcon = isHeadingAsRedirection
-              ? icons.redirectIcon
-              : '';
+        // Determine role and extra data attributes
+        const role = isHeadingAsRedirection ? 'link' : 'tab';
+        const dataHrefAttr = isHeadingAsRedirection && headlineHref
+          ? `data-href="${headlineHref}"`
+          : '';
 
-            return `
-              <button
-                role="${role}"
-                class="tab"
-                aria-selected="false"
-                aria-controls="${i}"
-                ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
-                ${dataHrefAttr}
-              >
-                ${label}${desc}${redirectIcon}
-              </button>
-            `;
-          }
-        )
-        .join('')}
+        const redirectIcon = isHeadingAsRedirection
+          ? icons.redirectIcon
+          : '';
+
+        return `
+          <button
+            role="${role}"
+            class="tab"
+            aria-selected="false"
+            aria-controls="${i}"
+            ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
+            ${dataHrefAttr}
+          >
+            ${label}${desc}${redirectIcon}
+          </button>
+        `;
+      },
+    )
+    .join('')}
     </div>
     <div class="tab-content">
-    ${tabs.map(({ links, daalhTabContent, description, cta }, i) => `
-        <div
-          id="${i}"
-          role="tabpanel"
-          aria-labelledby="${i}"
-          class="${links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/) !== null ? 'has-subheader' : ''}"
-          ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
-          hidden
-        >
+      ${tabs
+    .map(
+      ({ links, daalhTabContent, description, cta }, i) => `
+    <div
+      id="${i}"
+      role="tabpanel"
+      aria-labelledby="${i}"
+      class="${
+  links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/)
+    ? 'has-subheader'
+    : ''
+}"
+      ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
+      hidden
+    >
       ${description ? `<div class="feds-content-description">${description}</div>` : ''}
       ${links}
       ${cta ? `<div class="sticky-cta">${cta.outerHTML}</div>` : ''}
-      </div>`).join('')}
+    </div>`,
+    )
+    .join('')}
     </div>
-    <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
+    <button class="close-icon" daa-ll="Close button_SubNav" aria-label="Close">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
-        <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
+        <path d="M1.5 1L13 12.5" stroke="${isDarkMode() ? '#f2f2f2' : 'black'}" stroke-width="1.7037" stroke-linecap="round"/>
+        <path d="M13 1L1.5 12.5" stroke="${isDarkMode() ? '#f2f2f2' : 'black'}" stroke-width="1.7037" stroke-linecap="round"/>
       </svg>
     </button>
-    `;
+  `;
 
   const closeIcon = popup.querySelector('.close-icon');
   const main = popup.querySelector('.main-menu');

@@ -59,8 +59,8 @@ const decorateHeadline = (elem, index, context = 'viewport') => {
   if (!(elem instanceof HTMLElement)) return null;
   const headingAsLink = elem.querySelector('a') instanceof HTMLElement;
   let headlineTexts = [];
-  if (!!headingAsLink) {
-    headlineTexts.push(elem.querySelector('a'));
+  if (headingAsLink) {
+    headlineTexts.push(headingAsLink);
   } else {
     headlineTexts = elem.textContent.trim().split('||');
   }
