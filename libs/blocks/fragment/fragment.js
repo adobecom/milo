@@ -68,7 +68,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { decorateArea, mep, placeholders } = getConfig();
+  const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
 
@@ -82,10 +82,9 @@ export default async function init(a) {
 
   let mepFrag;
   try {
-    const path = !a.href.includes('/federal/')
-      ? new URL(a.href).pathname
+    const path = !a.href.includes('/federal/') ? new URL(a.href).pathname
       : a.href.replace('#_inline', '');
-    mepFrag = mep?.fragments?.[path];
+    mepFrag = mep?.fragments?.[path] || mep?.fragments?.[path.replace(locale.prefix, '')];
   } catch (e) {
     // do nothing
   }
