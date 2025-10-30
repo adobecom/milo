@@ -1420,6 +1420,11 @@ class Gnav {
               template,
               type: itemType,
             });
+
+            if (this.isLocalNav()) decorateLocalNavItems(item, template);
+
+            if (itemType !== 'asyncDropdownTrigger') return;
+
             const popup = template.querySelector('.feds-popup');
             await transformTemplateToMobile({
               popup,
@@ -1428,12 +1433,8 @@ class Gnav {
               toggleMenu: this.toggleMenuMobile,
               updatePopupPosition: this.updatePopupPosition,
             });
-            if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
-          } finally {
-            if (this.isLocalNav()) {
-              decorateLocalNavItems(item, template);
-            }
-          }
+            if (popup.closest('.feds-navItem--megaMenu.feds-dropdown--active')) makeTabActive(popup);
+          } finally {} // eslint-disable-line
         })();
         isDesktop.addEventListener('change', async () => {
           const newPopup = template.querySelector('.feds-popup');
@@ -1486,7 +1487,9 @@ class Gnav {
 
           // Toggle trigger's dropdown on click
           dropdownTrigger.addEventListener('click', (e) => {
-            if ((document.querySelector('.test-nav') || this.newMobileNav) && isSectionMenu) {
+            if ((document.querySelector('.test-nav')
+              || this.newMobileNav)
+              && (isSectionMenu || dropdownTrigger.closest('.feds-navItem--megaMenu'))) {
               const popup = dropdownTrigger.nextElementSibling;
               // document.body.style.top should always be set
               // at this point by calling disableMobileScroll

@@ -663,9 +663,6 @@ export const transformTemplateToMobile = async ({
   toggleMenu,
   updatePopupPosition,
 }) => {
-  const notMegaMenu = popup.parentElement.tagName === 'DIV';
-  if (notMegaMenu) return () => {};
-
   const isLoading = popup.classList.contains('loading');
   const tabs = await (async () => {
     const parsedSections = await Promise.all(
