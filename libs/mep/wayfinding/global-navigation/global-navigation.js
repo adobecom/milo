@@ -1300,7 +1300,6 @@ class Gnav {
       popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       if (isSmallScreen) return;
     }
-    debugger
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
@@ -1419,6 +1418,9 @@ class Gnav {
               template,
               type: itemType,
             });
+
+            if (itemType !== 'asyncDropdownTrigger') return;
+
             const popup = template.querySelector('.feds-popup');
             await transformTemplateToMobile({
               popup,
@@ -1485,7 +1487,9 @@ class Gnav {
 
           // Toggle trigger's dropdown on click
           dropdownTrigger.addEventListener('click', (e) => {
-            if ((document.querySelector('.test-nav') || this.newMobileNav) && isSectionMenu) {
+            if ((document.querySelector('.test-nav')
+              || this.newMobileNav)
+              && (isSectionMenu || dropdownTrigger.closest('.feds-navItem--megaMenu'))) {
               const popup = dropdownTrigger.nextElementSibling;
               // document.body.style.top should always be set
               // at this point by calling disableMobileScroll
