@@ -8,10 +8,6 @@
   --primary-cell-path-color: #05834E;
 }
 
-.comparison-table {
-  margin: 24px 0 56px 0;
-}
-
 .comparison-table .table {
   max-height: 10000px;
   transition: max-height 0.3s ease-in-out;
@@ -24,7 +20,7 @@
 
 .comparison-table .table-container {
   max-width: calc(var(--comparison-desktop-max-width) - 2px);
-  margin: 16px auto 0;
+  margin: var(--spacing-xs) auto 0;
   border: 1px solid var(--comparison-border-color);
   border-radius: var(--comparison-border-radius) var(--comparison-border-radius) 0 0;
   overflow: hidden;
@@ -34,14 +30,14 @@
   width: 100%;
   min-height: 72px;
   border: none;
-  line-height: 125%;
-  font-size: 18px;
+  line-height: var(--type-heading-s-lh);
+  font-size: var(--type-heading-s-size);
   text-align: center;
   background-color: var(--comparison-column-background-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 var(--spacing-s);
   border-radius: var(--comparison-border-radius) var(--comparison-border-radius) 0 0;
 }
 
@@ -59,7 +55,7 @@
 }
 
 .comparison-table .table-container .table-row {
-  margin: 0 24px;
+  margin: 0 var(--spacing-s);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
@@ -71,11 +67,11 @@
 
 .comparison-table .table-container .table-row-header {
   text-align: center;
-  font-size: 14px;
+  font-size: var(--type-body-xs-size);
   font-style: normal;
   font-weight: 700;
   line-height: 130%;
-  padding: 24px 0;
+  padding: var(--spacing-s) 0;
   display: flex;
   align-items: center;
 }
@@ -117,7 +113,7 @@
   border: 1px solid var(--comparison-border-color);
   border-radius: 4px;
   width: calc(100% - 32px);
-  padding: 16px;
+  padding: var(--spacing-xs);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -126,9 +122,9 @@
 
 .comparison-table .table-container .table-cell p:nth-child(2) {
   margin-top: 4px;
-  font-size: 12px;
+  font-size: var(--type-body-xxs-size);
   font-weight: 400;
-  line-height: 150%;
+  line-height: var(--type-body-xxs-lh);
 }
 
 .comparison-table *:is(p, h1, h2, h3, h4, h5, h6) {
@@ -136,7 +132,7 @@
 }
 
 .comparison-table .header-content {
-  padding-bottom: 8px;
+  padding-bottom: var(--spacing-xxs);
 }
 
 .comparison-table .header-content.sticky {
@@ -176,7 +172,7 @@
   align-items: center;
   border-radius: var(--comparison-border-radius);
   border: 1px solid var(--comparison-border-color);
-  padding: 8px;
+  padding: var(--spacing-xxs);
   position: relative;
   overflow: hidden;
 }
@@ -197,8 +193,8 @@
 
 .comparison-table .sub-header-item-container .description {
   text-align: center;
-  padding: 8px;
-  font-size: 12px;
+  padding: var(--spacing-xxs);
+  font-size: var(--type-body-xxs-size);
   line-height: 125%;
   min-height: 15px;
 }
@@ -206,9 +202,9 @@
 .comparison-table .sub-header-item-container .btn-container {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: var(--spacing-xxs);
   width: 100%;
-  margin-top: 8px;
+  margin-top: var(--spacing-xxs);
 }
 
 .comparison-table .sub-header-item-container .btn-container .action-area,
@@ -241,10 +237,10 @@
 }
 
 .comparison-table .sub-header-item-container *:is(h1, h2, h3, h4, h5, h6) {
-  font-size: 16px;
+  font-size: var(--type-body-s-size);
   font-style: normal;
   font-weight: 700;
-  line-height: 150%;
+  line-height: var(--type-body-s-lh);
   height: 100%;
   display: flex;
   justify-content: center;
@@ -252,7 +248,7 @@
 }
 
 .comparison-table .price {
-  font-size: 16px;
+  font-size: var(--type-body-s-size);
   font-style: normal;
   font-weight: 700;
   line-height: 125%;
@@ -261,7 +257,7 @@
 }
 
 .comparison-table .sub-header-item-container em {
-  font-size: 12px;
+  font-size: var(--type-body-xxs-size);
   font-weight: 400;
   line-height: 125%;
 }
@@ -271,7 +267,7 @@
 }
 
 .comparison-table .price.price-strikethrough {
-  font-size: 12px;
+  font-size: var(--type-body-xxs-size);
 }
 
 .comparison-table .header-item.hidden,
@@ -323,10 +319,6 @@
 }
 
 @media screen and (max-width: 899px) {
-  .comparison-table {
-    margin-bottom: 48px;
-  }
-
   .comparison-table .header-content-wrapper .header-item:first-child {
     display: none;
   }
@@ -334,15 +326,15 @@
   .comparison-table .table-row .table-row-header {
     grid-column: 1 / -1;
     margin: 0 auto;
-    padding: 16px 0 0 0;
+    padding: var(--spacing-xs) 0 0 0;
   }
 
   .comparison-table .table-row .table-cell {
-    padding: 0 0 24px 0;
+    padding: 0 0 var(--spacing-s) 0;
   }
 
   .comparison-table .table-container .table-row {
-    margin: 0 24px;
+    margin: 0 var(--spacing-s);
     grid-template-columns: 1fr 1fr;
   }
 
