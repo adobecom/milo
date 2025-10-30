@@ -57,7 +57,13 @@ function decorateCta({ elem, type = 'primaryCta', index } = {}) {
 
 const decorateHeadline = (elem, index, context = 'viewport') => {
   if (!(elem instanceof HTMLElement)) return null;
-  const headlineTexts = elem.textContent.trim().split('||');
+  const headingAsLink = elem.querySelector('a') instanceof HTMLElement;
+  let headlineTexts = [];
+  if (headingAsLink) {
+    headlineTexts.push(headingAsLink);
+  } else {
+    headlineTexts = elem.textContent.trim().split('||');
+  }
   const description = toFragment`<div class="feds-menu-description">
   ${headlineTexts.length > 1 ? headlineTexts[1] : null}
 </div>`;
