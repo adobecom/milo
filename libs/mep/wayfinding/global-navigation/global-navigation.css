@@ -1597,6 +1597,17 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   padding: 2px 0;
 }
 
+header.test-nav .feds-nav > .feds-navItem > .feds-popup .feds-menu-column .feds-navLink {
+  border: none;
+  white-space: normal;
+  font-weight: 700;
+  text-align: unset;
+  color: #fff;;
+  font-family: var(--body-font-family);
+  font-size: 24px;
+  padding-bottom: 24px;
+}
+
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button:hover {
   color: #fff;
 }
@@ -1754,7 +1765,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink:not(:has(div)) {
   white-space: break-spaces;
   padding: 20px;
-  font-size: 16px;
+  font-size: 20px;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink-title {
