@@ -1419,6 +1419,8 @@ class Gnav {
               type: itemType,
             });
 
+            if (this.isLocalNav()) decorateLocalNavItems(item, template);
+
             if (itemType !== 'asyncDropdownTrigger') return;
 
             const popup = template.querySelector('.feds-popup');
@@ -1430,11 +1432,7 @@ class Gnav {
               updatePopupPosition: this.updatePopupPosition,
             });
             if (popup.closest('.feds-navItem--megaMenu.feds-dropdown--active')) makeTabActive(popup);
-          } finally {
-            if (this.isLocalNav()) {
-              decorateLocalNavItems(item, template);
-            }
-          }
+          } finally {} // eslint-disable-line
         })();
         isDesktop.addEventListener('change', async () => {
           const newPopup = template.querySelector('.feds-popup');
