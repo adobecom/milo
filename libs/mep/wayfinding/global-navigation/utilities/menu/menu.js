@@ -57,9 +57,9 @@ function decorateCta({ elem, type = 'primaryCta', index } = {}) {
 
 const decorateHeadline = (elem, index, context = 'viewport') => {
   if (!(elem instanceof HTMLElement)) return null;
-  const headingAsLink = elem.querySelector('a') instanceof HTMLElement;
+  const headingAsLink = elem.querySelector('a');
   let headlineTexts = [];
-  if (headingAsLink) {
+  if (headingAsLink instanceof HTMLElement) {
     headlineTexts.push(headingAsLink);
   } else {
     headlineTexts = elem.textContent.trim().split('||');
