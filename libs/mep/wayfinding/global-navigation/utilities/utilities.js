@@ -587,8 +587,8 @@ const getAnalyticsValue = async (str, index) => {
 const parseTabsFromMenuSection = async (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const description = section.querySelector('.feds-menu-description');
-
-  const name = headline?.textContent?.trim() ?? 'Shop For';
+  const name = headline?.textContent ?? 'Shop For';
+  const cta = section.querySelector('.feds-cta');
   let daallTab = headline?.getAttribute('daa-ll');
 
   // Handle desktop → mobile transition case
@@ -690,7 +690,6 @@ export const transformTemplateToMobile = async ({
   return [...normalTabs, ...promoTabs, ...headingLinkTabs];
 })();
 
-  const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
   const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
@@ -750,7 +749,7 @@ export const transformTemplateToMobile = async ({
         .join('')}
     </div>
     <div class="tab-content">
-    ${tabs.map(({ links, daalhTabContent }, i) => `
+    ${tabs.map(({ links, daalhTabContent, description, cta }, i) => `
         <div
           id="${i}"
           role="tabpanel"
@@ -759,11 +758,10 @@ export const transformTemplateToMobile = async ({
           ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden
         >
+      ${description ? `<div class="feds-content-description">${description}</div>` : ''}
       ${links}
+      ${cta ? `<div class="sticky-cta">${cta.outerHTML}</div>` : ''}
       </div>`).join('')}
-    </div>
-    <div class="sticky-cta">
-      ${CTA}
     </div>
     <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -830,11 +828,16 @@ export const transformTemplateToMobile = async ({
   return cleanup;
 };
 
-export const loaderMegaMenu = () => {
+export const loaderMegaMenu = (title) => {
   const tab = () => ({ name: '' });
   const tabs = [0, 1, 2, 3].map(tab);
   return toFragment`
   <div class="feds-popup loading" aria-hidden="true">
+    <div class="top-bar">
+    </div>
+    <div class="title">
+      <h2>${title}</h2>
+    </div>
     <div class="tabs" role="tablist">
       ${tabs.map(({ name, description }, i) => `
         <div class="tab-wrapper">

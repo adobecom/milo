@@ -14,6 +14,7 @@
   --feds-borderColor: #eaeaea;
   --feds-borderColor-menu: #e1e1e1;
   --feds-borderColor-navLink: #2c2c2c;
+  --feds-test-borderColor: #2c2c2c;
   /* Top navigation - colors */
   --feds-color-adobeBrand: #eb1000;
   --feds-color-headline: #505050;
@@ -62,6 +63,10 @@
   --feds-test-nav-skeleton-color-2: #404040;
   --feds-test-nav-skeleton-color-3: #2A2A2A;
   --feds-test-nav-skeleton-opacity: 0.7;
+  --feds-skeleton-color-1: #D3D3D3;
+  --feds-skeleton-color-2: #EAEAEA;
+  --feds-skeleton-color-3: #D3D3D3;
+  --feds-skeleton-opacity: 0.7;
 
   /* Site pivot*/
   --feds-navLink-inactive: #9F9F9F;
@@ -207,6 +212,10 @@ header.global-navigation.ready {
     right: 0;
     border-bottom: 2px solid var(--feds-borderColor-navLink);
     content: "";
+  }
+
+  header.test-nav.dropdown-active .feds-navItem--active > .feds-navLink:before {
+    border-bottom: 2px solid #EB1000;
   }
 
   .feds-navItem--active > .feds-navLink:before {
