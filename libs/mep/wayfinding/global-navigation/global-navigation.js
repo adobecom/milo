@@ -1427,7 +1427,7 @@ class Gnav {
               toggleMenu: this.toggleMenuMobile,
               updatePopupPosition: this.updatePopupPosition,
             });
-            if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
+            if (popup.closest('.feds-navItem--megaMenu.feds-dropdown--active')) makeTabActive(popup);
           } finally {
             if (this.isLocalNav()) {
               decorateLocalNavItems(item, template);
