@@ -1066,14 +1066,28 @@ export function getMepConsentConfig() {
   const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
   const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
   const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
+  const signedOut = isSignedOut();
 
   if (!optOnConsentCookie || consentState === 'pre') {
     return {
       performance: true,
-      advertising: isSignedOut() && consentState !== 'pre',
+      advertising: signedOut && consentState !== 'pre',
     };
   }
-  return parseOptanonConsent(optOnConsentCookie).configuration;
+
+  const cookieConfig = parseOptanonConsent(optOnConsentCookie).configuration;
+
+  // In non-GDPR countries (post-consent), be permissive for logged-out users
+  // This handles cases where a cookie exists but user never explicitly made a choice
+  if (consentState === 'post' && signedOut) {
+    return {
+      ...cookieConfig,
+      advertising: true, // Default to allowing in non-GDPR countries when logged out
+    };
+  }
+
+  // GDPR country with cookie OR logged in user - respect their explicit preferences
+  return cookieConfig;
 }
 
 export const overrideVariant = (manifestPath, variantName) => {
@@ -1105,7 +1119,8 @@ export function canServeManifest(manifestConfig) {
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
   if (mktgAction === 'core services') return true;
 
-  const { performance, advertising } = getConfig().mep.consentState;
+  // Recalculate consent dynamically to ensure it reflects current login state
+  const { performance, advertising } = getMepConsentConfig();
   if (mktgAction === 'non-marketing') return performance;
   if (mktgAction === 'marketing increase') return advertising;
 
