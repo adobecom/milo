@@ -3,7 +3,7 @@ import getServiceConfig from '../../../utils/service-config.js';
 import { getConfig, updateConfig } from '../../../utils/utils.js';
 
 const KNOWN_BAD_URLS = ['news.adobe.com'];
-const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
+const SPIDY_URL_FALLBACK = 'https://spidy.gwp.corp.adobe.com';
 
 const linksCache = new Map();
 
