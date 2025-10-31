@@ -251,6 +251,10 @@ main > .section[class*='-up'] > .content {
   gap: 0.5em;
 }
 
+.section .show-more-button.hidden {
+  display: none;
+}
+
 .section .show-more-icon {
   display: inline-flex;
   align-items: center;

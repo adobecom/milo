@@ -110,9 +110,12 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, {});
 
-async function createShowMoreButton(section) {
+async function createShowMoreButton(section, cardsCount) {
   const seeMoreText = await replacePlaceholder('see-more-features');
-  const showMoreButton = createTag('div', { class: 'show-more-button' });
+  const showMoreButton = createTag(
+    'div',
+    { class: `show-more-button${cardsCount <= 3 ? ' hidden' : ''}` },
+  );
   const button = createTag('button', {}, seeMoreText);
 
   const iconSpan = createTag('span', {
@@ -132,10 +135,8 @@ async function createShowMoreButton(section) {
 
 async function handleCollapseSection(section) {
   if (!section) return;
-  const blocks = section.querySelectorAll('div:not(:last-child)');
-  const existingShowMoreButton = section.querySelector('.show-more-button');
-  if (blocks.length <= 3 || existingShowMoreButton) return;
-  const showMoreButton = await createShowMoreButton(section);
+  const blocks = section.querySelectorAll(':scope > div:not(:last-child)');
+  const showMoreButton = await createShowMoreButton(section, blocks.length);
   section.append(showMoreButton);
   const { decorateDefaultLinkAnalytics } = await import('../../martech/attributes.js');
   decorateDefaultLinkAnalytics(showMoreButton);
