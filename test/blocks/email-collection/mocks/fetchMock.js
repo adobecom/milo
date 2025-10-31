@@ -6,8 +6,11 @@ const IS_SUBSCRIBED_URL = 'https://www.stage.adobe.com/milo-email-collection-api
 const FORM_SUBMIT_URL = 'https://www.stage.adobe.com/milo-email-collection-api/form-submit';
 const CONSENT_URL = 'https://main--federal--adobecom.aem.page/federal/email-collection/consents/cs4.plain.html';
 
-export function mockFetch({ subscribed = false }) {
+export function mockFetch({ subscribed = false, signedIn = true }) {
   window.fetch = async (url) => {
+    if (!signedIn) {
+      return new Response('{"error":"Bad or missing credentials"}', { ok: false, status: 401 });
+    }
     switch (url) {
       case PLACEHOLDERS_URL:
         return new Response('{"total":2,"offset":0,"limit":2,"data":[{"key":"required","value":"This field is required."},{"key":"email","value":"Enter a valid email."}],"columns":["key","value"],":type":"sheet"}', { ok: true });
