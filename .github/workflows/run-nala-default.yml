@@ -104,6 +104,8 @@ jobs:
           GITHUB_ACTION_PATH: ${{ github.workspace }}
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
+          EMAIL_COLLECTION_IMS_MAIL: ${{ secrets.EMAIL_COLLECTION_IMS_MAIL }}
+          EMAIL_COLLECTION_IMS_PASS: ${{ secrets.EMAIL_COLLECTION_IMS_PASS }}
           PROJECT: ${{ matrix.project }}
           # SHARD: ${{ matrix.shard }}     # disabled for now
           # reporter: list,blob            # disabled for now (as it is driven from playwright.config.js)
