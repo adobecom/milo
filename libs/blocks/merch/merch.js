@@ -58,6 +58,7 @@ export const CC_SINGLE_APPS = [
   ['PREMIERE', 'PREMIERE_STOCK_BUNDLE'],
   ['RUSH'],
   ['XD'],
+  ['CC_PRO_APPS'], ['NIMBUS_LIGHTROOM'], ['NIMBUS_LIGHTROOM_PHOTOSHOP'],
 ];
 
 const LanguageMap = {
