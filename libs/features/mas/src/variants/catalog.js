@@ -5,6 +5,7 @@ import { EVENT_MERCH_CARD_ACTION_MENU_TOGGLE } from '../constants.js';
 import { CSS } from './catalog.css.js';
 
 export const CATALOG_AEM_FRAGMENT_MAPPING = {
+    cardName: { attribute: 'name' },
     badge: true,
     ctas: { slot: 'footer', size: 'm' },
     description: { tag: 'div', slot: 'body-xs' },
