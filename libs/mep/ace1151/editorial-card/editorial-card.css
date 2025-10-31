@@ -86,6 +86,19 @@
   max-height: var(--card-height-default);
 }
 
+.editorial-card .video-icon-container {
+  position:relative;
+}
+
+.editorial-card .video-icon-container img.video-icon {
+  pointer-events: none;
+  position:absolute;
+  bottom: -15px;
+  right: 15px;
+  height: 50px;
+  width: auto;
+}
+
 .editorial-card.no-foreground,
 .editorial-card.no-foreground .media-area {
   height: 100%;
@@ -137,7 +150,8 @@
   padding-top: 0;
 }
 
-.editorial-card.no-bg.no-border :is(.static, .card-footer) {
+.editorial-card.no-bg.no-border .static,
+.editorial-card.no-bg.no-border .card-footer {
   padding-inline: 0;
 }
 
@@ -210,6 +224,10 @@
   flex-direction: row;
 }
 
+.editorial-card .action-area .con-button { 
+  white-space: nowrap;
+}
+
 .editorial-card.center .action-area {
   justify-content: center;
 }
@@ -231,6 +249,7 @@
 
 .editorial-card .media-area {
   overflow: hidden;
+  position: relative;
   width: 100%;
 }
 
@@ -289,8 +308,8 @@
 .editorial-card.footer-align-left .action-area { justify-content: start; }
 .editorial-card.footer-align-center .action-area { justify-content: center; }
 
-/* ace1151 */
-.editorial-card .ace1151-card-overlay {
+/* s2a */
+.editorial-card .s2a-card-overlay {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -303,7 +322,7 @@
   padding: 56px 50px;
 }
 
-.editorial-card .ace1151-card-overlay button {
+.editorial-card .s2a-card-overlay button {
   all: unset;
   cursor: pointer;
   position: absolute;
@@ -315,7 +334,7 @@
   border-radius: 50%;
 }
 
-.editorial-card .ace1151-card-overlay button .overlay-btn-icon {
+.editorial-card .s2a-card-overlay button .overlay-btn-icon {
   display: block;
   text-align: center;
   color: black;
@@ -326,34 +345,34 @@
   line-height: 1;
 }
 
-.editorial-card .ace1151-card-overlay h1 {
+.editorial-card .s2a-card-overlay h1 {
   all: unset;
   font-size: 28px;
   font-weight: 900;
 }
 
-.editorial-card .ace1151-card-overlay p {
+.editorial-card .s2a-card-overlay p {
   visibility: hidden !important;
   all: unset;
   font-size: 20px;
   font-weight: 400;
 }
 
-.editorial-card .ace1151-card-overlay {
+.editorial-card .s2a-card-overlay {
   transition: background 1s;
 }
 
-.editorial-card .ace1151-card-overlay.active {
+.editorial-card .s2a-card-overlay.active {
   background: rgba(0, 0, 0, 0.6);
 }
 
-.editorial-card .ace1151-card-overlay p {
+.editorial-card .s2a-card-overlay p {
   opacity: 0;
   visibility: hidden !important;
   transition: opacity 1s;
 }
 
-.editorial-card .ace1151-card-overlay.active p {
+.editorial-card .s2a-card-overlay.active p {
   opacity: 1;
   visibility: visible !important;
 }
@@ -391,36 +410,48 @@
 }
 
 
-body .editorial-card .ace1151-card-overlay button.ace1151-card-overlay-btn  .overlay-btn-icon {
+body .editorial-card .s2a-card-overlay button.s2a-card-overlay-btn  .overlay-btn-icon {
   display: inline-block;
 }
 
-body .editorial-card .ace1151-card-overlay.active button.ace1151-card-overlay-btn  span.overlay-btn-icon.open { 
+body .editorial-card .s2a-card-overlay.active button.s2a-card-overlay-btn  span.overlay-btn-icon.open { 
   display: none !important;
 }
 
-body .editorial-card .ace1151-card-overlay.active button.ace1151-card-overlay-btn  span.overlay-btn-icon.close { 
+body .editorial-card .s2a-card-overlay.active button.s2a-card-overlay-btn  span.overlay-btn-icon.close { 
   display: inline-block ! important;
 }
 
-body .editorial-card .ace1151-card-overlay:not(.active) button.ace1151-card-overlay-btn  span.overlay-btn-icon.close { 
+body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn  span.overlay-btn-icon.close { 
   display: none !important;
 }
 
 /* media stacking */
 @media screen and (max-width: 599px) {
-  .editorial-card.media-bottom-mobile .media-area {
+  .editorial-card.s2a-media-bottom-mobile .media-area {
     order: 2;
+  }
+  .editorial-card.s2a-media-bottom-mobile .video-icon-container {
+    order: 3;
+    bottom: 32px;
   }
 }
 @media screen and (min-width: 600px) and (max-width: 1199px) {
-  .editorial-card.media-bottom-tablet .media-area {
+  .editorial-card.s2a-media-bottom-tablet .media-area {
     order: 2;
+  }
+  .editorial-card.s2a-media-bottom-tablet .video-icon-container {
+    order: 3;
+    bottom: 32px;
   }
 }
 @media screen and (min-width: 1200px) {
-  .editorial-card.media-bottom-desktop .media-area {
+  .editorial-card.s2a-media-bottom-desktop .media-area {
     order: 2;
+  }
+  .editorial-card.s2a-media-bottom-desktop .video-icon-container {
+    order: 3;
+    bottom: 32px;
   }
 }
 

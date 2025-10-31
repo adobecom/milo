@@ -122,11 +122,11 @@ const decorateHoverText = (el) => {
   const key = `overlay-${index + 1}`;
   const [header, body] = (metadata[key].text.split('\n') || []).map((s) => s.trim());
 
-  const overlay = createTag('div', { class: 'ace1151-card-overlay' });
+  const overlay = createTag('div', { class: 's2a-card-overlay' });
   if (header) overlay.appendChild(createTag('h1', {}, header));
   if (body) overlay.appendChild(createTag('p', {}, body));
 
-  const button = createTag('button', { class: 'ace1151-card-overlay-btn' }, '<div><span class="overlay-btn-icon open">+</span><span class="overlay-btn-icon close">-</span></div>');
+  const button = createTag('button', { class: 's2a-card-overlay-btn' }, '<div><span class="overlay-btn-icon open">+</span><span class="overlay-btn-icon close">-</span></div>');
 
   button.addEventListener('click', () => {
     overlay.classList.toggle('active');
@@ -139,14 +139,52 @@ const decorateHoverText = (el) => {
   el.appendChild(overlay);
 };
 
+function parseRowMetaData(rows) {
+  const metaDataKeys = ['video-icon'];
+  const metaData = [];
+
+  const rowArray = Array.from(rows);
+  rowArray.forEach((row) => {
+    const cols = row.querySelectorAll('div');
+    if (cols.length >= 2) {
+      const key = cols[0].textContent.trim();
+      const child = cols[1].querySelector('a, img');
+      const value = child?.href || child?.src || '';
+      if (metaDataKeys.includes(key)) {
+        metaData.push({ key, value });
+        row.remove();
+      }
+    }
+  });
+
+  const filteredRows = rowArray.filter((row) => row.isConnected);
+  return { rows: filteredRows, metaData };
+}
+
+const addVideoIcons = (el, metaData) => {
+  if (!metaData || !Array.isArray(metaData)) return;
+  metaData.forEach((item) => {
+    if (item.key === 'video-icon' || item.value !== '') {
+      const container = createTag('div', { class: 'video-icon-container' });
+      const img = createTag('img', { src: item.value, class: 'video-icon' });
+      container.append(img);
+      el.insertAdjacentElement('afterEnd', container);
+    }
+  });
+};
+
 const init = async (el) => {
   el.classList.add('con-block');
   const hasOpenClass = el.className.includes('open');
+  if (hasOpenClass) el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy'); // ace1081 change
+
   handleOpenClasses(el, hasOpenClass);
 
   if (el.className.includes('rounded-corners')) loadStyle(`${base}/styles/rounded-corners.css`);
   if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
+  let metaData = [];
+  ({ rows, metaData } = parseRowMetaData(rows));
   const [head, middle, ...tail] = rows;
   if (rows.length === 4) el.classList.add('equal-height');
   if (rows.length >= 1) {
@@ -190,10 +228,11 @@ const init = async (el) => {
       default:
     }
   }
+  addVideoIcons(middle, metaData); // ace1081 change
   extendDeviceContent(el);
   decorateTextOverrides(el);
   handleClickableCard(el);
-  if (el.classList.contains('overlay')) decorateHoverText(el);
+  if (el.classList.contains('s2a-overlay')) decorateHoverText(el);
 };
 
 export default init;
