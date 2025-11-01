@@ -1,6 +1,7 @@
 :root {
   --notch-size: 12px;
   --action-color: #FF1593;
+  --sidekick-height: 58px;
 }
 
 #preflight .fragment,
@@ -16,10 +17,30 @@
 }
 
 .dialog-modal#preflight {
-  width: 1200px;
-  height: 680px;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(100% - var(--sidekick-height));
+  margin: 0;
   color: #FFF;
   overflow: hidden;
+}
+
+/* dialog-modal breakpoint */
+@media (min-width: 600px) {
+  .dialog-modal#preflight {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* sidekick breakpoint */
+@media (min-width: 800px) {
+  .dialog-modal#preflight {
+    width: 100%;
+    max-height: calc(100% - var(--sidekick-height));
+    max-width: calc(100% - var(--sidekick-height));
+    margin: calc(var(--sidekick-height) / 2) auto calc(var(--sidekick-height) * 2.5) auto;
+  }
 }
 
 .preflight-tab-panel {
@@ -45,7 +66,7 @@
 p#preflight-title {
   margin: 0;
   font-weight: 700;
-  font-size: 38px;
+  /* font-size: 38px; */
   text-transform: uppercase;
   line-height: 1;
 }
@@ -60,7 +81,7 @@ button.preflight-tab-button {
   background: none;
   font-family: var(--body-font-family);
   color: #FFF;
-  font-size: 24px;
+  /* font-size: 24px; */
   margin: 0 18px 0 0;
   padding: 0;
   line-height: 1;
