@@ -55,37 +55,139 @@ describe('getManifestMarketingAction', () => {
 });
 
 describe('canServeManifest', () => {
-  beforeEach(() => {
+  function setupEnvironment({
+    signedOut = true,
+    hasOptanonCookie = false,
+    advertising = true,
+    performance = true,
+  }) {
     sessionStorage.setItem('akamai', 'us');
-    getConfig().mep.consentState = { performance: true, advertising: true };
-    getConfig().mep.variantOverride = {};
+    getConfig().mep = { variantOverride: {} };
+    if (!window.performance.getEntriesByType) {
+      window.performance.getEntriesByType = () => [];
+    }
+    const originalGetEntriesByType = window.performance.getEntriesByType.bind(window.performance);
+    window.performance.getEntriesByType = (type) => {
+      if (type === 'navigation') {
+        return [{
+          serverTiming: [
+            { name: 'sis', description: signedOut ? '0' : '1' },
+          ],
+        }];
+      }
+      return originalGetEntriesByType(type);
+    };
+
+    // Set up cookies for consent
+    if (hasOptanonCookie) {
+      const p = performance ? 1 : 0;
+      const a = advertising ? 1 : 0;
+      const groups = `C0001:${p},C0002:${p},C0003:${p},C0004:${a}`;
+      document.cookie = `OptanonConsent=groups=${encodeURIComponent(groups)}`;
+    } else {
+      // Clear the cookie
+      document.cookie = 'OptanonConsent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+  }
+
+  afterEach(() => {
+    // Clean up
+    document.cookie = 'OptanonConsent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   });
+
   it('should return false if the geo restriction is false', () => {
+    setupEnvironment({ signedOut: true, hasOptanonCookie: false });
     expect(canServeManifest({ geoRestriction: 'fr, ca', manifestPath: '/test/test.json' })).to.be.false;
   });
+
   it('should return true if mktgAction is core services', () => {
+    setupEnvironment({ signedOut: true, hasOptanonCookie: false });
     expect(canServeManifest({ mktgAction: 'core services', manifestPath: '/test/test.json' })).to.be.true;
   });
+
   it('should return true if mktgAction is non-marketing and performance is true', () => {
-    expect(canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.true;
+    const config = {
+      signedOut: true,
+      hasOptanonCookie: true,
+      performance: true,
+      advertising: true,
+    };
+    setupEnvironment(config);
+    const manifestPath = '/test/test.json';
+    expect(canServeManifest({ mktgAction: 'non-marketing', manifestPath })).to.be.true;
   });
-  it('should return true if mktgAction is non-marketing and performance is false', () => {
-    getConfig().mep.consentState = { performance: false, advertising: true };
-    expect(canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.false;
+
+  it('should return false if mktgAction is non-marketing and performance is false', () => {
+    const config = {
+      signedOut: true,
+      hasOptanonCookie: true,
+      performance: false,
+      advertising: true,
+    };
+    setupEnvironment(config);
+    const manifestPath = '/test/test.json';
+    expect(canServeManifest({ mktgAction: 'non-marketing', manifestPath })).to.be.false;
   });
+
   it('should return true if mktgAction is marketing increase and advertising is true', () => {
-    expect(canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' })).to.be.true;
+    const config = {
+      signedOut: true,
+      hasOptanonCookie: true,
+      performance: true,
+      advertising: true,
+    };
+    setupEnvironment(config);
+    const manifestPath = '/test/test.json';
+    expect(canServeManifest({ mktgAction: 'marketing increase', manifestPath })).to.be.true;
   });
-  it('should return false if mktgAction is marketing increase and advertising is false', () => {
-    getConfig().mep.consentState = { performance: true, advertising: false };
-    expect(canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' })).to.be.false;
+
+  it('should return false if mktgAction is marketing increase and advertising is false (logged in)', () => {
+    const config = {
+      signedOut: false,
+      hasOptanonCookie: true,
+      performance: true,
+      advertising: false,
+    };
+    setupEnvironment(config);
+    const manifestPath = '/test/test.json';
+    expect(canServeManifest({ mktgAction: 'marketing increase', manifestPath })).to.be.false;
   });
+
+  it('should return true if marketing increase and advertising is false but logged out', () => {
+    const config = {
+      signedOut: true,
+      hasOptanonCookie: true,
+      performance: true,
+      advertising: false,
+    };
+    setupEnvironment(config);
+    const manifestPath = '/test/test.json';
+    expect(canServeManifest({ mktgAction: 'marketing increase', manifestPath })).to.be.true;
+  });
+
   it('should return true if mktgAction is unspecified and performance and advertising are true', () => {
-    expect(canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json' })).to.be.true;
+    const config = {
+      signedOut: true,
+      hasOptanonCookie: true,
+      performance: true,
+      advertising: true,
+    };
+    setupEnvironment(config);
+    const manifestPath = '/test/test.json';
+    expect(canServeManifest({ mktgAction: 'marketing decrease', manifestPath })).to.be.true;
   });
+
   it('should return true and override the variant if mktgAction is unspecified and performance is false', () => {
-    getConfig().mep.consentState = { performance: false, advertising: true };
-    expect(canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] })).to.be.true;
+    const config = {
+      signedOut: true,
+      hasOptanonCookie: true,
+      performance: false,
+      advertising: true,
+    };
+    setupEnvironment(config);
+    const manifestPath = '/test/test.json';
+    const variantNames = ['test'];
+    expect(canServeManifest({ mktgAction: 'marketing decrease', manifestPath, variantNames })).to.be.true;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('test');
   });
 });
