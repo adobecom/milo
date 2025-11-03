@@ -110,7 +110,7 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, {});
 
-async function createShowMoreButton(section, cardsCount) {
+async function createAndConfigureShowMoreButton(section, cardsCount) {
   const seeMoreText = await replacePlaceholder('see-more-features');
   const showMoreButton = createTag(
     'div',
@@ -136,7 +136,7 @@ async function createShowMoreButton(section, cardsCount) {
 async function handleCollapseSection(section) {
   if (!section) return;
   const blocks = section.querySelectorAll(':scope > div:not(:last-child)');
-  const showMoreButton = await createShowMoreButton(section, blocks.length);
+  const showMoreButton = await createAndConfigureShowMoreButton(section, blocks.length);
   section.append(showMoreButton);
   const { decorateDefaultLinkAnalytics } = await import('../../martech/attributes.js');
   decorateDefaultLinkAnalytics(showMoreButton);
