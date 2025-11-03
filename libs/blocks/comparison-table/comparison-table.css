@@ -8,14 +8,8 @@
   --primary-cell-path-color: #05834E;
 }
 
-.comparison-table .table {
-  max-height: 10000px;
-  transition: max-height 0.3s ease-in-out;
-  overflow: hidden;
-}
-
 .comparison-table .table.hide {
-  max-height: 0;
+  display: none;
 }
 
 .comparison-table .table-container {

@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import { replaceKeyArray } from '../../features/placeholders.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
@@ -410,11 +410,8 @@ function setupResponsiveHiding(el) {
 }
 
 async function setAriaLabelForButtons(el) {
-  const ariaLabels = await replaceKeyArray(['toggle-table', 'choose-table-column'], getConfig());
-  [...el.querySelectorAll('.mobile-filter-select, .table-column-header button')].forEach((element) => {
-    const labelIndex = element.classList.contains('mobile-filter-select') ? 1 : 0;
-    element.setAttribute('aria-label', ariaLabels[labelIndex]);
-  });
+  const ariaLabel = await replaceKey('choose-table-column', getConfig());
+  [...el.querySelectorAll('.mobile-filter-select')].forEach((element) => element.setAttribute('aria-label', ariaLabel));
 }
 
 function setupStickyHeader(el) {
