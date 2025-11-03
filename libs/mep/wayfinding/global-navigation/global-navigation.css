@@ -422,10 +422,11 @@ header.test-nav.dropdown-active .feds-cta--secondary:hover {
   overflow-y: auto;
 }
 
-.feds-breadcrumbs ul {
+.test-nav .feds-breadcrumbs ul {
   padding: 0;
   margin: 0;
   display: flex;
+  height: 44px;
 }
 
 .feds-breadcrumbs li {
@@ -643,6 +644,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   padding: 5px 18px 6px;
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .sticky-cta .feds-cta--secondary {
+  max-width: 320px;
+}
+
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   border-left: none;
   border-right: 1px solid var(--feds-borderColor-link-v2);
@@ -712,7 +717,6 @@ header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-po
   height: 39px;
   border-radius: 50px;
 }
-
 
 header.test-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup .sticky-cta a {
   width: 320px;
@@ -1040,9 +1044,13 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     position: static;
   }
 
+  .global-navigation.test-nav.has-breadcrumbs .feds-navItem .feds-popup {
+    padding-top: 76px;
+  }
+
   .feds-navItem .feds-popup {
     right: 0;
-    padding: 40px 0 0;
+    padding: 32px 0 0;
     max-height: calc(100dvh - 100%);
     overflow: auto;
     box-sizing: border-box;
@@ -1076,7 +1084,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   }
 
   .feds-navItem--section > .feds-navLink {
-    padding: 0 20px;
+    padding: 0 12px;
   }
 
   .feds-navItem--section.feds-navItem--active > .feds-navLink:before {
@@ -1704,7 +1712,7 @@ header.test-nav .feds-popup .feds-navLink {
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content {
   min-height: 0;
   background-color: #000;
-  padding: 10px 33px 25px;
+  padding: 10px 33px 25px 90px;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -1712,7 +1720,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   line-height: 16px;
   overflow-y: scroll;
   border-left: 1px solid var(--feds-test-borderColor);
-  margin-left: 220px;
+  margin-left: 228px;
   width: 340px;
 }
 
