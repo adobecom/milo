@@ -180,6 +180,14 @@ const buildDataObject = (formData, surveyType, eventType) => {
     },
     _adobe_corpnew: {
       digitalData: {
+        primaryUser: {
+          primaryProfile: {
+            profileInfo: {
+              fullProfileID: searchParams.get('source_user_guid'),
+              fullAuthID: searchParams.get('source_user_guid'),
+            },
+          },
+        },
         primaryEvent: {
           eventInfo: {
             eventName: eventType,
