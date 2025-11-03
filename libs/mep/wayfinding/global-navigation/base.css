@@ -106,7 +106,7 @@ html[lang="ja-jp"] a.feds-navLink wbr {
 }
 
 .feds-navLink--blue {
-  color: var(--feds-color-blue-link);
+  color: #1473E6;
 }
 
 .feds-navLink--hoverCaret {

@@ -365,9 +365,9 @@ header.test-nav.dropdown-active .feds-cta--secondary:hover {
   border-color: #fff;
 }
 
-.feds-cta--secondary:focus-visible {
+.test-nav .feds-cta--secondary:focus-visible {
   outline: 2px solid #507BFF;
-  background: #E9E9E9;
+  background: transparent;
 }
 
 .feds-promo--dark .feds-cta--secondary {
@@ -679,8 +679,9 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   white-space: break-spaces;
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
+header .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
   font-weight: 400;
+  text-decoration: underline;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-description {
