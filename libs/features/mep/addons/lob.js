@@ -5,8 +5,8 @@ export async function getSpectraLOB(lastVisitedPage) {
   const getECID = getCookie(AMCV_COOKIE);
   if (!getECID) return false;
   const [, ECID] = getECID.split('|');
-  const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '-stage';
-  let url = `https://cchome${domainSuffix}.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
+  const domain = getConfig()?.env?.name === 'prod' ? '' : 'stage.';
+  let url = `https://${domain}adobe.com/int/v1/aep/events/webpage?ecid=${ECID}`;
   if (lastVisitedPage) url = `${url}&lastVisitedPage=${lastVisitedPage}`;
 
   try {
