@@ -1,5 +1,9 @@
 import * as esbuild from 'esbuild'; // eslint-disable-line
 import fs from 'node:fs';
+import nodepath from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = nodepath.dirname(fileURLToPath(import.meta.url)); // eslint-disable-line
 
 fs.rmSync('./dist/', { recursive: true, force: true });
 
@@ -52,6 +56,17 @@ const StyleLoader = {
   },
 };
 
+const LitResolver = {
+  name: 'lit-resolver',
+  setup({ onResolve }) {
+    // Resolve lit-all.min.js imports to the actual file location
+    onResolve({ filter: /lit-all\.min\.js$/ }, (args) => {
+      const litPath = nodepath.resolve(__dirname, '../deps/lit-all.min.js');
+      return { path: litPath };
+    });
+  },
+};
+
 await esbuild.build({
   entryPoints: ['navigation.js'],
   bundle: true,
@@ -59,5 +74,5 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
-  plugins: [StyleLoader],
+  plugins: [LitResolver, StyleLoader],
 });
