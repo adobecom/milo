@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 import { restoreFetch, mockFetch } from './mocks/fetchMock.js';
 import { setFormData, getFormData } from '../../../libs/blocks/email-collection/utils.js';
@@ -26,6 +27,7 @@ async function sleep(time = 10) {
 function setIms(signedIn = true) {
   window.adobeIMS = {
     isSignedInUser: () => signedIn,
+    signIn: () => {},
     getProfile: () => ({
       countryCode: 'US',
       first_name: 'Test first name',
@@ -53,6 +55,26 @@ describe('Email collection', () => {
   afterEach(() => {
     document.body.innerHTML = '';
     restoreFetch();
+  });
+
+  it('Should redirect user to the IMS if not signed in.', async () => {
+    setIms(false);
+    sinon.spy(window.adobeIMS, 'signIn');
+    window.location.hash = 'modal';
+    const block = document.querySelector('#waitlist');
+    await init(block);
+    await sleep();
+    expect(window.adobeIMS.signIn.called).to.be.true;
+  });
+
+  it('Should redirect user to the IMS if runtime reutrns 401', async () => {
+    mockFetch({ signedIn: false });
+    sinon.spy(window.adobeIMS, 'signIn');
+    window.location.hash = 'modal';
+    const block = document.querySelector('#waitlist');
+    await init(block);
+    await sleep();
+    expect(window.adobeIMS.signIn.called).to.be.true;
   });
 
   it('Should populate email collection data object', async () => {

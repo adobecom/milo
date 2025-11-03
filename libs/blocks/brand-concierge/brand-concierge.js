@@ -18,7 +18,7 @@ function getBetaLabel() {
 }
 
 function getAnalyticsLabel(step) {
-  return `Filters|${getConfig()?.brandConciergeAA}|bc#${step}`;
+  return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
 }
 
 function updateModalHeight() {
