@@ -745,6 +745,7 @@ export const transformTemplateToMobile = async ({
       ({ links, daalhTabContent, description, cta }, i) => `
     <div
       id="${i}"
+      class="tab-panel"
       role="tabpanel"
       aria-labelledby="${i}"
       class="${

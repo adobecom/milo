@@ -177,10 +177,10 @@ header.global-navigation.ready {
   pointer-events: none;
 }
 
-.feds-navLink-description {
+header.test-nav .feds-navLink-description {
   display: flex;
   font-size: 12px;
-  color: var(--feds-color-navLink-description);
+  color: #FFF;
 }
 
 /* Desktop styles */
