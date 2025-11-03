@@ -455,3 +455,9 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   }
 }
 
+/* s2a overlay height settings */
+@media screen and (min-width: 600px) and (max-width: 1560px) {
+  .editorial-card.s2a-overlay {
+    min-height: 550px !important;
+  }
+}
