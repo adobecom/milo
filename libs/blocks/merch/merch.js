@@ -57,7 +57,7 @@ export const CC_SINGLE_APPS = [
   ['PHOTOSHOP', 'PHOTOSHOP_STOCK_BUNDLE'],
   ['PREMIERE', 'PREMIERE_STOCK_BUNDLE'],
   ['RUSH'],
-  ['XD'],
+  ['XD'], ['FIREFLY'],
   ['CC_PRO_APPS'], ['NIMBUS_LIGHTROOM'], ['NIMBUS_LIGHTROOM_PHOTOSHOP'],
 ];
 
@@ -639,6 +639,27 @@ export async function getCheckoutLinkConfig(
   return finalConfig;
 }
 
+/**
+ * If user has entitlement :
+ * for Acrobat Studio, the download CTA should be displayed for both Acrobat Studio and Pro,
+ * for Acrobat Pro, the download CTA should be displayed for Acrobat Pro,
+ * for Acrobat Standard, the download CTA should be displayed for Acrobat Standard.
+ */
+const DOWNLOAD_FAMILY_CODE = {
+  ACROBAT: {
+    ARCH: ['ARCH', 'APCC'],
+    APCC: ['APCC'],
+    ACRO: ['ACRO'],
+  },
+};
+
+function showDownloadForCode(familySubscr, codeSubscr, codeCta) {
+  const family = DOWNLOAD_FAMILY_CODE[familySubscr];
+  if (!family) return true;
+
+  return family[codeSubscr]?.includes(codeCta);
+}
+
 export async function getDownloadAction(
   options,
   imsSignedInPromise,
@@ -663,7 +684,8 @@ export async function getDownloadAction(
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
-    ({ offer: { product_arrangement_v2: { family: subscriptionFamily } } }) => {
+    // eslint-disable-next-line max-len
+    ({ offer: { product_code: subscrCode, product_arrangement_v2: { family: subscriptionFamily } } }) => {
       if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
       if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
       const singleAppFamily = CC_SINGLE_APPS.find(
@@ -671,7 +693,8 @@ export async function getDownloadAction(
           singleAppFamilies, // has single and and cta is single app
         ) => singleAppFamilies.includes(offerFamily),
       );
-      return singleAppFamily?.includes(subscriptionFamily);
+      return singleAppFamily?.includes(subscriptionFamily)
+      && showDownloadForCode(subscriptionFamily, subscrCode, productCode);
     },
   );
   if (!offer) return undefined;

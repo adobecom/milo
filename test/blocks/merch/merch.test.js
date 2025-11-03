@@ -64,6 +64,7 @@ const CHECKOUT_LINK_CONFIGS = {
     LOCALE: 'fr',
   },
   { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' },
+  { PRODUCT_FAMILY: 'ACROBAT', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' },
   {
     PRODUCT_FAMILY: 'PREMIERE',
     DOWNLOAD_TEXT: 'Download',
@@ -138,6 +139,20 @@ const SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE = [
   {
     change_plan_available: true,
     offer: { product_arrangement_v2: { family: 'CC_ALL_APPS' } },
+  },
+];
+
+const SUBSCRIPTION_DATA_ARCH_RAW_ELIGIBLE = [
+  {
+    change_plan_available: true,
+    offer: { product_code: 'ARCH', product_arrangement_v2: { family: 'ACROBAT' } },
+  },
+];
+
+const SUBSCRIPTION_DATA_ACRO_RAW_ELIGIBLE = [
+  {
+    change_plan_available: true,
+    offer: { product_code: 'ACRO', product_arrangement_v2: { family: 'ACROBAT' } },
   },
 ];
 
@@ -687,6 +702,46 @@ describe('Merch Block', () => {
       setSubscriptionsData(SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE);
       const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }]);
       expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getDownloadAction: returns download action for ACRO', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ACRO_RAW_ELIGIBLE);
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productCode: 'ACRO', productFamily: 'ACROBAT' } }]);
+      expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getDownloadAction: returns download action for ARCH - ARCH', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ARCH_RAW_ELIGIBLE);
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productCode: 'ARCH', productFamily: 'ACROBAT' } }]);
+      expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getDownloadAction: returns download action for ARCH - APCC', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ARCH_RAW_ELIGIBLE);
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productCode: 'APCC', productFamily: 'ACROBAT' } }]);
+      expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getDownloadAction: returns download action for ARCH - ACRO', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ARCH_RAW_ELIGIBLE);
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productCode: 'ACRO', productFamily: 'ACROBAT' } }]);
+      expect(checkoutLinkConfig).to.be.undefined;
     });
 
     it('getCheckoutAction: handles errors gracefully', async () => {
