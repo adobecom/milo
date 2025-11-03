@@ -178,6 +178,13 @@ const buildDataObject = (formData, surveyType, eventType) => {
         name: eventType,
       },
     },
+    identityMap: {
+      adobeGUID: [{
+        id: searchParams.get('source_user_guid'),
+        authenticatedState: 'authenticated',
+        primary: true,
+      }],
+    },
     _adobe_corpnew: {
       digitalData: {
         primaryUser: {
