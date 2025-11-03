@@ -63,6 +63,12 @@ export function cleanupTabsAnalytics(el) {
     if (tabPanelDaaLh) {
       tabPanel.setAttribute('daa-lh', `${tabPanelDaaLh}--tab`);
     }
+    [...tabs.querySelectorAll('button[role=tab]')].forEach((tab) => {
+      const tabDaaLl = tab.getAttribute('daa-ll');
+      if (!tabDaaLl.includes('-useraction')) {
+        tab.setAttribute('daa-ll', `${tabDaaLl}-useraction`);
+      }
+    });
   }
 }
 
