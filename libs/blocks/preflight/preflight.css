@@ -23,6 +23,7 @@
   margin: 0;
   color: #FFF;
   overflow: hidden;
+  border-radius: 0;
 }
 
 /* dialog-modal breakpoint */
@@ -40,6 +41,7 @@
     max-height: calc(100% - var(--sidekick-height));
     max-width: calc(100% - var(--sidekick-height));
     margin: calc(var(--sidekick-height) / 2) auto calc(var(--sidekick-height) * 2.5) auto;
+    border-radius: 6px;
   }
 }
 
