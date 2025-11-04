@@ -602,7 +602,15 @@ const parseTabsFromMenuSection = async (section, index) => {
 
   const content = section.querySelector('.feds-menu-items') ?? section;
 
-  const links = [...content.querySelectorAll('ul')]
+  if (name === 'Shop For') {
+    console.log(section.outerHTML);
+  }
+
+  const columns = content.classList.contains('feds-menu-items')
+    ? [...content.querySelectorAll('ul')]
+    : [content];
+
+  const links = columns
     .map((container) => [...container.querySelectorAll(
       'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary',
     )]
