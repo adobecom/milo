@@ -292,6 +292,10 @@
   border-radius: 0 0 var(--comparison-border-radius) var(--comparison-border-radius);
 }
 
+.comparison-table .mobile-filter-select option {
+  color: var(--color-black);
+}
+
 @media screen and (min-width: 600px) and (max-width: 899px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(100% - 160px);
