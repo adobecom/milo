@@ -23,17 +23,18 @@ function addLoader(a) {
 
 async function decorateQuickLink(a, hasConsent, isNewTab) {
   let ecid = null;
+  const urlObj = new URL(a.href, window.location.origin);
   try {
     const data = await window.alloy_getIdentity;
     ecid = data?.identity?.ECID;
   } catch (e) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
-  if (ecid && hasConsent && !a.href.includes('ecid')) {
-    const urlObj = new URL(a.href, window.location.origin);
-    urlObj.searchParams.set('ecid', ecid);
-    a.href = urlObj.href;
-  }
+  if (ecid && hasConsent && !a.href.includes('ecid')) urlObj.searchParams.set('ecid', ecid);
+  urlObj.searchParams.set('locale', document.documentElement.lang || 'en-US');
+  const blockName = a.closest('[data-block-status="loaded"]').classList[0];
+  if (blockName) urlObj.searchParams.set('placement', blockName);
+  a.href = urlObj.href;
   if (isNewTab) window.open(a.href, '_blank');
   else window.location.href = a.href;
 }
