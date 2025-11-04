@@ -3877,6 +3877,12 @@ merch-card-collection-header > div[slot] p {
     z-index: 3;
 }
 
+/* hide download/upgrade links except the first one */
+merch-card a[is="checkout-link"].download:not(:first-of-type),
+merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
+  display: none;
+}
+
 merch-card[variant="ccd-suggested"] *,
 merch-card[variant="ccd-slice"] * {
   box-sizing: border-box;
