@@ -1,3 +1,5 @@
+import { getConfig, loadScript } from '../../../utils/utils.js';
+
 // Calculates the relative luminance of an RGB color.
 function luminance(r, g, b) {
   const [R, G, B] = [r, g, b].map((channel) => {
@@ -42,6 +44,80 @@ function isTransparent(rgbStr) {
   return false;
 }
 
+function extractBgImageUrl(bgImageCss) {
+  if (!bgImageCss || bgImageCss === 'none') return null;
+  const match = bgImageCss.match(/url\(["']?([^"')]+)["']?\)/);
+  return match ? match[1] : null;
+}
+
+async function loadColorThief() {
+  if (window.ColorThief) return window.ColorThief;
+  try {
+    const { base } = getConfig();
+    await loadScript(`${base}/deps/colorThief.js`);
+    return window.ColorThief;
+  } catch (e) {
+    return null;
+  }
+}
+
+function waitForImage(img) {
+  return new Promise((resolve, reject) => {
+    if (img.complete && img.naturalWidth > 0) {
+      resolve();
+      return;
+    }
+    const controller = new AbortController();
+    const { signal } = controller;
+    img.addEventListener('load', () => { controller.abort(); resolve(); }, { signal });
+    img.addEventListener('error', () => { controller.abort(); reject(new Error('image load error')); }, { signal });
+  });
+}
+
+async function getAverageColorFromUrl(url) {
+  try {
+    const colorThief = await loadColorThief();
+    if (!colorThief) return null;
+    const img = document.createElement('img');
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+    await waitForImage(img);
+    const thief = new window.ColorThief();
+    const color = thief.getColor(img);
+    return Array.isArray(color) ? color : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function getAverageColorFromNearestImg(element) {
+  const colorThief = await loadColorThief();
+  if (!colorThief) return null;
+  const candidates = [];
+  candidates.push(...element.querySelectorAll('img'));
+  let el = element.parentElement;
+  const maxHops = 5;
+  let hops = 0;
+  while (el && hops < maxHops) {
+    candidates.push(...el.querySelectorAll('img'));
+    el = el.parentElement;
+    hops += 1;
+  }
+  if (!candidates.length) return null;
+  for (let i = 0; i < candidates.length; i += 1) {
+    const img = candidates[i];
+    try {
+      await waitForImage(img);
+      const thief = new window.ColorThief();
+      const color = thief.getColor(img);
+      if (Array.isArray(color)) return color;
+    } catch (e) {
+      // continue
+    }
+  }
+  return null;
+}
+
 // Traverses the DOM to find the effective background color.
 function getEffectiveBackgroundColor(element) {
   let el = element;
@@ -68,7 +144,7 @@ function getComputedColors(element) {
  * @param {Object} config - Config containing checks and minContrast.
  * @returns {Array} - List of violations.
  */
-export default function checkColorContrast(elements = [], config = {}) {
+export default async function checkColorContrast(elements = [], config = {}) {
   const { checks = [], minContrast = 4.5 } = config;
   if (!checks.includes('color-contrast')) return [];
   const violations = [];
@@ -79,23 +155,53 @@ export default function checkColorContrast(elements = [], config = {}) {
     const tagWhitelist = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'button'];
     return isVisible && hasText && tagWhitelist.includes(el.tagName.toLowerCase());
   });
-  validElements.forEach((el) => {
+  for (const el of validElements) {
     const { fgColor, bgColor } = getComputedColors(el);
-    if (!fgColor || !bgColor) return;
-    const contrast = contrastRatio(fgColor, bgColor);
+    // eslint-disable-next-line no-continue
+    if (!fgColor || !bgColor) continue;
     const styles = window.getComputedStyle(el);
     const fontSize = parseFloat(styles.fontSize) || 0;
     const fontWeight = parseInt(styles.fontWeight, 10) || 400;
-    // WCAG 2.1 Large Text Definition:
-    // Bold text >= 14pt (≈ 18.66px), Normal text >= 18pt (≈ 24px)
-    // Large text requires contrast ratio of 3:1, Normal text requires 4.5:1
     const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
     const requiredContrast = isLargeText ? 3.0 : minContrast;
-    if (contrast < requiredContrast) {
+    const baseContrast = contrastRatio(fgColor, bgColor);
+
+    let effectiveBg = bgColor;
+    let usedImageSampling = false;
+
+    let ancestor = el;
+    while (ancestor) {
+      const bgImage = window.getComputedStyle(ancestor).backgroundImage;
+      const url = extractBgImageUrl(bgImage);
+      if (url) {
+        // eslint-disable-next-line
+        const avg = await getAverageColorFromUrl(url);
+        if (avg) {
+          effectiveBg = avg;
+          usedImageSampling = true;
+          break;
+        }
+      }
+      ancestor = ancestor.parentElement;
+    }
+
+    if (!usedImageSampling) {
+      // eslint-disable-next-line
+      const avgFromImg = await getAverageColorFromNearestImg(el);
+      if (avgFromImg) {
+        effectiveBg = avgFromImg;
+        usedImageSampling = true;
+      }
+    }
+
+    const contrast = contrastRatio(fgColor, effectiveBg);
+    if (usedImageSampling && contrast < requiredContrast) {
+      const description = `Low contrast text over image (ratio: ${contrast.toFixed(2)}:1) - `
+        + `WCAG AA Minimum is ${requiredContrast}:1`;
       violations.push({
-        description: `Low contrast text (ratio: ${contrast.toFixed(2)}:1) - WCAG AA Minimum is ${requiredContrast}:1`,
+        description,
         impact: 'serious',
-        id: 'color-contrast',
+        id: 'color-contrast-image',
         help: `Ensure contrast ratio is at least ${requiredContrast}:1.`,
         helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html',
         nodes: [{
@@ -103,10 +209,33 @@ export default function checkColorContrast(elements = [], config = {}) {
           html: el.outerHTML,
           contrastRatio: contrast.toFixed(2),
           foreground: `rgb(${fgColor.join(', ')})`,
+          background: `rgb(${effectiveBg.join(', ')})`,
+          baseBackground: `rgb(${bgColor.join(', ')})`,
+        }],
+      });
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+    if (baseContrast < requiredContrast) {
+      const descriptionBase = 'Low contrast text over color background (ratio: '
+        + `${baseContrast.toFixed(2)}:1) - WCAG AA Minimum is ${requiredContrast}:1`;
+      violations.push({
+        description: descriptionBase,
+        impact: 'serious',
+        id: 'color-contrast',
+        help: `Ensure contrast ratio is at least ${requiredContrast}:1.`,
+        helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html',
+        nodes: [{
+          target: [`${el.tagName.toLowerCase()}${el.className ? `.${el.className.replace(/\s+/g, '.')}` : ''}: "${el.textContent.trim().slice(0, 30)}"`],
+          html: el.outerHTML,
+          contrastRatio: baseContrast.toFixed(2),
+          foreground: `rgb(${fgColor.join(', ')})`,
           background: `rgb(${bgColor.join(', ')})`,
         }],
       });
+      // eslint-disable-next-line no-continue
+      continue;
     }
-  });
+  }
   return violations;
 }
