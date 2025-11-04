@@ -272,7 +272,7 @@ main > .section[class*='-up'] > .content {
 
   .section:has(> .show-more-button),
   .section.show-all {
-    margin-inline: 30px;
+    margin-inline: 16px;
     padding: var(--spacing-xs);
     border-radius: 8px;
   }
