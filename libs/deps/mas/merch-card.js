@@ -2449,6 +2449,7 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals {
   text-decoration: line-through;
+  vertical-align: baseline;
 }
 
 /* Apply indigo-800 color to optical price when preceded by strikethrough */
@@ -3180,6 +3181,7 @@ merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
     text-decoration: line-through;
     text-decoration-thickness: 2px;
+    vertical-align: baseline;
 }
 
 /* Apply indigo-800 color to optical price when preceded by strikethrough */

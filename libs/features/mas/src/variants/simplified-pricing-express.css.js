@@ -201,6 +201,7 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals {
   text-decoration: line-through;
+  vertical-align: baseline;
 }
 
 /* Apply indigo-800 color to optical price when preceded by strikethrough */
