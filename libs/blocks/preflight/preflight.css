@@ -43,6 +43,14 @@
     margin: calc(var(--sidekick-height) / 2) auto calc(var(--sidekick-height) * 2.5) auto;
     border-radius: 6px;
   }
+
+  p#preflight-title {
+    font-size: 38px;
+  }
+  
+  button.preflight-tab-button {
+    font-size: 24px;
+  }
 }
 
 .preflight-tab-panel {
