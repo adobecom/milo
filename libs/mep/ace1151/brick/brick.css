@@ -240,6 +240,19 @@
   .brick .mobile-only {
     display: block;
   }
+
+  .brick.s2a-mobile:nth-child(odd) {
+    border-radius: var(--spacing-xs) var(--spacing-xs) 0 0;
+  }
+
+  .brick.s2a-mobile:nth-child(even) {
+    margin-top: -24px;
+    border-radius: 0 0 var(--spacing-xs) var(--spacing-xs);
+  }
+
+  .brick.s2a-mobile * {
+    border-radius: inherit !important;
+  }
 }
 
 @media screen and (min-width: 600px) {
