@@ -136,10 +136,7 @@ function SeoItem({ id, icon, title, description, supportsAi }) {
 }
 
 async function getResults() {
-  const results = (await getPreflightResults({
-    url: window.location.href,
-    area: document,
-  })).runChecks.seo || [];
+  const results = (await getPreflightResults(window.location.href, document)).runChecks.seo || [];
 
   // Update UI as each check resolves
   const icons = [];

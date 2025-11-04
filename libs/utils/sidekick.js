@@ -1,6 +1,5 @@
 import stylePublish from './sidekick-decorate.js';
 import { debounce } from './action.js';
-import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
@@ -21,8 +20,6 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   };
 
   const preflightListener = async () => {
-    await getPreflightResults();
-
     const preflight = createTag('div', { class: 'preflight' });
     const content = await loadBlock(preflight);
 

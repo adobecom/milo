@@ -1,7 +1,8 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import preflightApi from '../checks/preflightApi.js';
 import { STATUS } from '../checks/constants.js';
-import { getPreflightResults } from '../checks/preflightApi.js';
-import { isViewportTooSmall } from '../checks/assets.js';
+
+const { isViewportTooSmall, runChecks } = preflightApi.assets;
 
 // Define signals for check results and viewport status
 const assetDimensionsResult = signal({
@@ -10,21 +11,13 @@ const assetDimensionsResult = signal({
 });
 const assetsWithMismatch = signal([]);
 const assetsWithMatch = signal([]);
-const criticalAssetFailures = signal([]);
-const warningAssetFailures = signal([]);
 const viewportTooSmall = signal(isViewportTooSmall());
 
 /**
  * Runs asset checks and updates signals with the results.
  */
 async function getResults() {
-  const results = await getPreflightResults({
-    url: window.location.pathname,
-    area: document,
-    useCache: false,
-    injectVisualMetadata: false,
-  });
-  const checks = results.runChecks.assets || [];
+  const checks = runChecks(window.location.pathname, document, true);
 
   const result = await Promise.resolve(checks[0]).catch((error) => ({
     title: 'Assets - Image Dimensions',
@@ -40,8 +33,6 @@ async function getResults() {
   if (result.details) {
     assetsWithMismatch.value = result.details.assetsWithMismatch || [];
     assetsWithMatch.value = result.details.assetsWithMatch || [];
-    criticalAssetFailures.value = result.details.criticalAssetFailures || [];
-    warningAssetFailures.value = result.details.warningAssetFailures || [];
   }
 }
 
@@ -63,8 +54,6 @@ function AssetsItem({ title, description }) {
  */
 function AssetGroup({ group }) {
   const { title, assetArray } = group;
-  const isCriticalGroup = title.includes('Critical');
-
   return html`
     <div class="grid-heading">
       <div class="grid-toggle">${title}</div>
@@ -78,12 +67,8 @@ function AssetGroup({ group }) {
 
     ${!viewportTooSmall.value && assetArray.value.length > 0 && html`
     <div class='assets-image-grid'>
-      ${assetArray.value.map((asset) => {
-    const isAboveFoldWithMismatch = isCriticalGroup;
-    const itemClass = isAboveFoldWithMismatch ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
-
-    return html`
-      <div class='${itemClass}' title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'>
+      ${assetArray.value.map((asset) => html`
+      <div class='assets-image-grid-item'>
         ${asset.type === 'image' && html`<img src='${asset.src}' />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
         ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
@@ -94,13 +79,11 @@ function AssetGroup({ group }) {
           ${asset.hasMismatch && html`<span>Recommended size: ${asset.recommendedDimensions}</span>`}
           <span>Type: ${asset.typeLabel}</span>
           ${asset.notes && html`<span><strong>Notes:</strong> ${asset.notes}</span>`}
-          ${isAboveFoldWithMismatch && html`<span class="above-fold-notice"><strong>⚠️ CRITICAL:</strong></span>`}
         </div>
-      </div>`;
-  })}
+      </div>`)}
     </div>`}
 
-    ${!viewportTooSmall.value && assetArray.value.length === 0 && html`
+    ${!viewportTooSmall.value && !assetArray.value.length && html`
       <div class='assets-image-grid'>
         <div class='assets-image-grid-item full-width'>No assets found</div>
       </div>
@@ -136,8 +119,7 @@ export default function Assets() {
   }, []);
 
   const groups = [
-    { title: 'Critical Asset Issues (Above-the-fold)', assetArray: criticalAssetFailures },
-    { title: 'Warning Asset Issues (Below-the-fold)', assetArray: warningAssetFailures },
+    { title: 'Assets with dimension mismatch', assetArray: assetsWithMismatch },
     { title: 'Assets with matching dimensions', assetArray: assetsWithMatch },
   ];
 
