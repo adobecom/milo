@@ -1061,6 +1061,43 @@ export const addMepAnalytics = (config, header) => {
   });
 };
 
+const CONSENT_TRACKING_KEY = 'mep-consent-tracking';
+
+/**
+ * Track consent changes with login state.
+ * Should be called when consent preferences change.
+ */
+export function trackConsentChange() {
+  try {
+    const cookieGroups = window.adobePrivacy?.activeCookieGroups() || [];
+    const consentData = {
+      advertising: cookieGroups.includes('C0004'),
+      performance: cookieGroups.includes('C0002'),
+      wasLoggedIn: !isSignedOut(),
+      timestamp: Date.now(),
+    };
+    sessionStorage.setItem(CONSENT_TRACKING_KEY, JSON.stringify(consentData));
+  } catch (e) {
+    // sessionStorage failed - continue without tracking
+  }
+}
+
+/**
+ * Get stored consent tracking data if available.
+ * @returns {Object|null} Stored consent data or null if not available
+ */
+function getConsentTracking() {
+  try {
+    const stored = sessionStorage.getItem(CONSENT_TRACKING_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    // Failed to read or parse - ignore
+  }
+  return null;
+}
+
 export function getMepConsentConfig() {
   const cookies = getAllCookies();
   const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
@@ -1077,9 +1114,17 @@ export function getMepConsentConfig() {
 
   const cookieConfig = parseOptanonConsent(optOnConsentCookie).configuration;
 
-  // In non-GDPR countries (post-consent), be permissive for logged-out users
-  // This handles cases where a cookie exists but user never explicitly made a choice
+  // In non-GDPR countries (post-consent), check if we should override
   if (consentState === 'post' && signedOut) {
+    const tracking = getConsentTracking();
+
+    // If we have tracking data showing consent was set while logged OUT, respect it
+    if (tracking && !tracking.wasLoggedIn) {
+      return cookieConfig; // Respect explicit logged-out choice
+    }
+
+    // No tracking data OR tracking shows was logged in - assume cookie is stale, override it
+    // This fixes the bug where logged-in cookies persist after logout
     return {
       ...cookieConfig,
       advertising: true, // Default to allowing in non-GDPR countries when logged out

@@ -67,6 +67,39 @@ export const loadPrivacy = async (getConfig, loadScript) => {
   }
   loadScript(`https://www.${privacyEnv && `${privacyEnv}.`}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
 
+  // Set up consent tracking to distinguish logged-in vs logged-out consent choices
+  const setupConsentTracking = async () => {
+    try {
+      const { trackConsentChange } = await import('../features/personalization/personalization.js');
+
+      // Track consent ONLY when user makes a choice (not on every page load)
+      // This ensures we capture the login state at the moment consent is set
+      ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
+        .forEach((event) => {
+          window.addEventListener(event, trackConsentChange);
+        });
+    } catch (e) {
+      // Personalization module not available or tracking failed - continue without tracking
+    }
+  };
+
+  // Wait for adobePrivacy to be available (similar pattern to imsReady)
+  const waitForPrivacy = (maxAttempts = 50, interval = 200) => {
+    let attempts = 0;
+    function poll() {
+      if (window.adobePrivacy) {
+        setupConsentTracking();
+      } else if (attempts < maxAttempts) {
+        attempts += 1;
+        setTimeout(poll, interval);
+      }
+      // After maxAttempts, silently give up (consent tracking is optional)
+    }
+    poll();
+  };
+
+  waitForPrivacy();
+
   // Privacy triggers can exist anywhere on the page and can be added at any time
   document.addEventListener('click', (event) => {
     if (event.target.closest('a[href*="#openPrivacy"]')) {
