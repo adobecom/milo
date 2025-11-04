@@ -104,10 +104,7 @@ const cancelActions = (() => {
     );
     const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
     const dataObj = buildDataObject(d, surveyType, CancelSurvey);
-    window._satellite?.track?.('event', { // eslint-disable-line
-      xdm: {},
-      data: dataObj,
-    });
+    window._satellite?.track?.('event', dataObj) // eslint-disable-line
   };
 })();
 
@@ -224,7 +221,18 @@ const buildDataObject = (formData, surveyType, eventType) => {
       },
     },
   };
-  return data;
+  return {
+    xdm: {
+      identityMap: {
+        adobeGUID: [{
+          id: searchParams.get('source_user_guid'),
+          authenticatedState: 'authenticated',
+          primary: true,
+        }],
+      },
+    },
+    data,
+  };
 };
 
 // ############################################
@@ -501,10 +509,7 @@ export default async (block) => {
     };
     const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
     const dataObj = buildDataObject(d, surveyType, SubmitSurvey);
-    window._satellite?.track?.('event', { // eslint-disable-line
-      xdm: {},
-      data: dataObj,
-    });
+    window._satellite?.track?.('event', dataObj) // eslint-disable-line
     sendMessage(SUBMIT(d));
   });
 
