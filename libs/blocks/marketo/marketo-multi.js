@@ -17,6 +17,7 @@ const VALIDATION_STEP = {
     'mktoFormsCompanyType',
   ],
 };
+let stepText = {};
 
 export function updateTabIndex(formEl, stepToAdd, stepToRemove) {
   const fieldsToAdd = formEl.querySelectorAll(`.mktoFormRowTop[data-validate="${stepToAdd}"]:not(.mktoHidden) input, 
@@ -34,7 +35,7 @@ function updateStepDetails(formEl, step, totalSteps) {
   formEl.classList.add('hide-errors');
   formEl.classList.remove('show-warnings');
   formEl.dataset.step = step;
-  formEl.querySelector('.step-details .step-count').textContent = `${step} / ${totalSteps}`;
+  formEl.querySelector('.step-details .step').textContent = stepText[step];
   formEl.querySelector('#mktoButton_new')?.classList.toggle('mktoHidden', step !== totalSteps);
   formEl.querySelector('#mktoButton_next')?.classList.toggle('mktoHidden', step === totalSteps);
   setTimeout(() => {
@@ -104,20 +105,36 @@ function onRender(formEl, totalSteps) {
   const currentStep = parseInt(formEl.dataset.step, 10);
   const submitButton = formEl.querySelector('#mktoButton_new');
   submitButton?.classList.toggle('mktoHidden', currentStep !== totalSteps);
-  formEl.querySelector('.step-details .step-count').textContent = `${currentStep} / ${totalSteps}`;
+  formEl.querySelector('.step-details .step').textContent = stepText[currentStep];
   setValidationSteps(formEl, totalSteps, currentStep);
+}
+
+async function setStepText(totalSteps) {
+  const config = getConfig();
+  if (totalSteps === 2) {
+    stepText = {
+      1: await replaceKey('step-1-of-2', config),
+      2: await replaceKey('step-2-of-2', config),
+    };
+  } else {
+    stepText = {
+      1: await replaceKey('step-1-of-3', config),
+      2: await replaceKey('step-2-of-3', config),
+      3: await replaceKey('step-3-of-3', config),
+    };
+  }
 }
 
 const readyForm = async (form, totalSteps) => {
   const formEl = form.getFormElem().get(0);
   formEl.dataset.step = 1;
+  await setStepText(totalSteps);
   form.onValidate(() => formValidate(formEl));
 
   const nextButton = createTag('button', { type: 'button', id: 'mktoButton_next', class: 'mktoButton mktoUpdatedBTN mktoVisible' }, 'Next');
   nextButton.addEventListener('click', () => form.validate());
   const nextContainer = createTag('div', { class: 'mktoButtonRow' }, nextButton);
-  const stepText = await replaceKey('step', getConfig());
-  const stepEl = createTag('p', { class: 'step' }, `${stepText} <span class="step-count">1 / ${totalSteps}</span>`);
+  const stepEl = createTag('p', { class: 'step' }, stepText[1]);
   const stepDetails = createTag('div', { class: 'step-details' }, stepEl);
   formEl.append(nextContainer, stepDetails);
 
