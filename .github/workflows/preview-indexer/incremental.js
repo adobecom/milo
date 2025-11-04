@@ -14,15 +14,15 @@ const reposToProcess = PREVIEW_INDEXER_REPOS.split(',').map((path) => path.trim(
 const lingoConfigMap = await getLingoConfigMap();
 
 const queue = new PQueue({ concurrency: Number(process.env.PREVIEW_INDEXER_CONCURRENCY || '1') });
-reposToProcess
-  .filter((repo) => !SITE || repo === SITE)
-  .forEach(async (repo) => {
-    await queue.add(async () => {
-      console.log(`Initiating incremental index for ${ORG}/${repo}`);
-      const indexer = await initIndexer(ORG, repo, lingoConfigMap);
-      return indexer.incremental();
-    });
+const filteredRepos = reposToProcess.filter((repo) => !SITE || repo === SITE);
+
+for (const repo of filteredRepos) {
+  await queue.add(async () => {
+    console.log(`Initiating incremental index for ${ORG}/${repo}`);
+    const indexer = await initIndexer(ORG, repo, lingoConfigMap);
+    return indexer.incremental();
   });
+}
 
 await queue.onIdle();
 
