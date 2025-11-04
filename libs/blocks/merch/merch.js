@@ -57,7 +57,8 @@ export const CC_SINGLE_APPS = [
   ['PHOTOSHOP', 'PHOTOSHOP_STOCK_BUNDLE'],
   ['PREMIERE', 'PREMIERE_STOCK_BUNDLE'],
   ['RUSH'],
-  ['XD'],
+  ['XD'], ['FIREFLY'],
+  ['CC_PRO_APPS'], ['NIMBUS_LIGHTROOM'], ['NIMBUS_LIGHTROOM_PHOTOSHOP'],
 ];
 
 const LanguageMap = {
@@ -638,6 +639,27 @@ export async function getCheckoutLinkConfig(
   return finalConfig;
 }
 
+/**
+ * If user has entitlement :
+ * for Acrobat Studio, the download CTA should be displayed for both Acrobat Studio and Pro,
+ * for Acrobat Pro, the download CTA should be displayed for Acrobat Pro,
+ * for Acrobat Standard, the download CTA should be displayed for Acrobat Standard.
+ */
+const DOWNLOAD_FAMILY_CODE = {
+  ACROBAT: {
+    ARCH: ['ARCH', 'APCC'],
+    APCC: ['APCC'],
+    ACRO: ['ACRO'],
+  },
+};
+
+function showDownloadForCode(familySubscr, codeSubscr, codeCta) {
+  const family = DOWNLOAD_FAMILY_CODE[familySubscr];
+  if (!family) return true;
+
+  return family[codeSubscr]?.includes(codeCta);
+}
+
 export async function getDownloadAction(
   options,
   imsSignedInPromise,
@@ -662,7 +684,8 @@ export async function getDownloadAction(
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
-    ({ offer: { product_arrangement_v2: { family: subscriptionFamily } } }) => {
+    // eslint-disable-next-line max-len
+    ({ offer: { product_code: subscrCode, product_arrangement_v2: { family: subscriptionFamily } } }) => {
       if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
       if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
       const singleAppFamily = CC_SINGLE_APPS.find(
@@ -670,7 +693,8 @@ export async function getDownloadAction(
           singleAppFamilies, // has single and and cta is single app
         ) => singleAppFamilies.includes(offerFamily),
       );
-      return singleAppFamily?.includes(subscriptionFamily);
+      return singleAppFamily?.includes(subscriptionFamily)
+      && showDownloadForCode(subscriptionFamily, subscrCode, productCode);
     },
   );
   if (!offer) return undefined;
@@ -688,6 +712,7 @@ export async function getUpgradeAction(
   options,
   imsSignedInPromise,
   [{ productArrangement: { productFamily: offerFamily } = {} }],
+  el,
 ) {
   if (!options.upgrade) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -710,6 +735,7 @@ export async function getUpgradeAction(
       CC_SINGLE_APPS_ALL,
       CC_ALL_APPS,
     );
+    el?.closest('merch-card')?.querySelector('merch-addon')?.remove();
     return upgradeAction;
   }
   return undefined;
@@ -761,6 +787,18 @@ function appendExtraOptions(url, extraOptions) {
   return url;
 }
 
+export function applyPromo(url) {
+  const { mep } = getConfig();
+  const promoModal = mep?.inBlock?.merch?.fragments?.[url.pathname];
+  try {
+    const promoUrl = new URL(promoModal?.content);
+    return promoUrl;
+  } catch (e) {
+    log?.error('Failed to apply promo to external modal', e);
+  }
+  return url;
+}
+
 // TODO this should migrate to checkout.js buildCheckoutURL
 export function appendDexterParameters(url, extraOptions, el) {
   const isRelativePath = url.startsWith('/');
@@ -773,6 +811,7 @@ export function appendDexterParameters(url, extraOptions, el) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
+  absoluteUrl = applyPromo(absoluteUrl);
   absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
   absoluteUrl = appendTabName(absoluteUrl, el);
   return isRelativePath
@@ -993,7 +1032,7 @@ export async function getCheckoutAction(
     await imsSignedInPromise;
     const [downloadAction, upgradeAction, modalAction] = await Promise.all([
       getDownloadAction(options, imsSignedInPromise, offers),
-      getUpgradeAction(options, imsSignedInPromise, offers),
+      getUpgradeAction(options, imsSignedInPromise, offers, el),
       getModalAction(offers, options, el),
     ]);
     return downloadAction || upgradeAction || modalAction;
@@ -1219,6 +1258,7 @@ export async function getPriceContext(el, params) {
   const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
+  const quantity = params.get('quantity');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -1232,6 +1272,7 @@ export async function getPriceContext(el, params) {
     forceTaxExclusive,
     alternativePrice,
     template,
+    quantity,
   };
 }
 
