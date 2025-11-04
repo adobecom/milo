@@ -93,6 +93,12 @@ const processPage = async (browser, urlConfig) => {
       (baseHtml, snippet, headerClasses, cssAssets, jsAssets, globalPreloadLinks, baseUrl) => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(baseHtml, 'text/html');
+
+        // Add nofollow, noindex
+        const metaRobots = doc.createElement('meta');
+        metaRobots.setAttribute('name', 'robots');
+        metaRobots.setAttribute('content', 'noindex, nofollow');
+        doc.head.appendChild(metaRobots);
         
         // Add header classes
         const headerEl = doc.querySelector('header');
@@ -107,13 +113,30 @@ const processPage = async (browser, urlConfig) => {
           targetDiv.outerHTML = snippet;
         }
 
+        const injectedDiv = doc.querySelector('main > div.prerender');
+        if (injectedDiv) {
+          injectedDiv.querySelectorAll('video').forEach(videoEl => {
+            videoEl.classList.add('video');
+
+            // Check for poster image and add base URL if needed
+            const oldPoster = videoEl.getAttribute('poster');
+            if (isValidBaseUrl && oldPoster && !oldPoster.startsWith('http') && !oldPoster.startsWith('data:')) {
+              try {
+                const newPoster = new URL(oldPoster, baseUrl).href;
+                videoEl.setAttribute('poster', newPoster);
+              } catch (e) {
+                console.warn('Skipping video poster rewrite due to error:', e.message, oldPoster);
+              }
+            }
+          });
+        }
+
         // --- Image Processing and Preload Generation ---
         const imagePreloadLinks = [];
-        const injectedDiv = doc.querySelector('main > div.prerender');
         const isValidBaseUrl = baseUrl && (baseUrl.startsWith('http://') || baseUrl.startsWith('https://'));
 
         if (injectedDiv && isValidBaseUrl) {
-          injectedDiv.querySelectorAll('picture').forEach(picture => {
+          doc.querySelectorAll('picture').forEach(picture => {
             // Process <source> tags
             picture.querySelectorAll('source').forEach(source => {
               const oldSrcset = source.getAttribute('srcset');
@@ -160,17 +183,18 @@ const processPage = async (browser, urlConfig) => {
         // --- Asset Injection ---
 
         // **FIX 2: Preload links injected BEFORE inline CSS**
-        const allPreloadLinks = [...globalPreloadLinks, ...imagePreloadLinks];
+        // const allPreloadLinks = [...globalPreloadLinks, ...imagePreloadLinks];
+        const allPreloadLinks = [...imagePreloadLinks];
         allPreloadLinks.forEach(link => {
-          // if (!link.href) return;
-          // const linkTag = doc.createElement('link');
-          // linkTag.rel = 'preload';
-          // linkTag.href = link.href;
-          // linkTag.as = link.as;
-          // if (link.type) linkTag.type = link.type;
-          // if (link.media) linkTag.media = link.media;
-          // if (link.crossorigin) linkTag.crossOrigin = link.crossorigin;
-          // doc.head.appendChild(linkTag);
+          if (!link.href) return;
+          const linkTag = doc.createElement('link');
+          linkTag.rel = 'preload';
+          linkTag.href = link.href;
+          linkTag.as = link.as;
+          if (link.type) linkTag.type = link.type;
+          if (link.media) linkTag.media = link.media;
+          if (link.crossorigin) linkTag.crossOrigin = link.crossorigin;
+          doc.head.appendChild(linkTag);
         });
         
         // Inject inline CSS (now runs *after* preloads)
