@@ -477,6 +477,35 @@ export function decoratePausePlayWrapper(videoEl, videoAttrs) {
   }
 }
 
+export function decorateVideo(videoEl) {
+  const accessibilityEnabled = !!videoEl.parentElement.querySelector('.accessibility-control');
+  if (!videoEl.hasAttribute('controls') && !videoEl.hasAttribute('data-hoverplay') && accessibilityEnabled) {
+    videoCounter += 1;
+  }
+  const indexOfVideo = videoCounter;
+  if (indexOfVideo === 1) {
+    firstVideo = videoEl;
+  }
+
+  if (videoEl.controls) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(({ isIntersecting, target }) => {
+        if (!isIntersecting && !target.paused) target.pause();
+      });
+    }, { rootMargin: '0px' });
+    io.observe(videoEl);
+  }
+
+  if (accessibilityEnabled) {
+    applyAccessibilityEvents(videoEl);
+    if (!videoEl.controls) {
+      decoratePausePlayWrapper(videoEl, attrs);
+    }
+  }
+  applyHoverPlay(videoEl);
+  applyInViewPortPlay(videoEl);
+}
+
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   const accessibilityEnabled = isVideoAccessible(anchorTag);

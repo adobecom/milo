@@ -1,7 +1,12 @@
 import { getConfig } from '../../utils/utils.js';
-import { decorateAnchorVideo } from '../../utils/decorate.js';
+import { decorateAnchorVideo, decorateVideo } from '../../utils/decorate.js';
 
 export default function init(a) {
+  if (a.tagName === 'VIDEO') {
+    decorateVideo(a);
+    a.classList.remove('video');
+    return;
+  }
   a.classList.add('hide-video');
   if (!a.parentNode) {
     a.remove();

@@ -1234,8 +1234,9 @@ export function filterDuplicatedLinkBlocks(blocks) {
 
 function decorateSection(section, idx) {
   if(section.classList.contains('prerender')) {
+    const blcks = section.querySelectorAll('video');
     return {
-      blocks: [],
+      blocks: [...blcks],
       el: section,
       idx,
       preloadLinks: [],
@@ -1764,6 +1765,7 @@ async function resolveInlineFrags(section) {
 
 async function processSection(section, config, isDoc, lcpSectionId) {
   if(section.el.classList.contains('prerender')) {
+    section.blocks.forEach((block) => loadBlock(block));
     if (isDoc) await loadPostLCP(config);
     return [];
   }
