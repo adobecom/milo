@@ -1113,7 +1113,7 @@ async function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
-  if (isLocalNav()) {
+  if (isLocalNav() && !document.querySelector('.feds-localnav')) {
     // Preserving space to avoid CLS issue
     const localNavWrapper = createTag('div', { class: 'feds-localnav' });
     header.after(localNavWrapper);

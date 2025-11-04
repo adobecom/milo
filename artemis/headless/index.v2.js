@@ -68,6 +68,9 @@ const processPage = async (browser, urlConfig) => {
       const targetClasses = headerClasses.filter(
         c => c === 'global-navigation' || c === 'has-breadcrumbs'
       );
+
+      // Check for the div *immediately following* the header
+      const hasFedsLocalNav = !!document.querySelector('header + div.feds-localnav');
       
       let snippet = null;
       if (mainDiv) {
@@ -75,7 +78,7 @@ const processPage = async (browser, urlConfig) => {
         snippet = mainDiv.outerHTML;
       }
       
-      return { snippet, headerClasses: targetClasses };
+      return { snippet, headerClasses: targetClasses, hasFedsLocalNav };
     });
 
     if (!prerenderedData.snippet) {
@@ -90,7 +93,7 @@ const processPage = async (browser, urlConfig) => {
     
     // 3. Perform HTML replacement, asset injection, and image processing
     let finalHtml = await page.evaluate(
-      (baseHtml, snippet, headerClasses, cssAssets, jsAssets, globalPreloadLinks, baseUrl) => {
+      (baseHtml, snippet, headerClasses, hasFedsLocalNav, cssAssets, jsAssets, globalPreloadLinks, baseUrl) => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(baseHtml, 'text/html');
 
@@ -104,6 +107,13 @@ const processPage = async (browser, urlConfig) => {
         const headerEl = doc.querySelector('header');
         if (headerEl && headerClasses.length > 0) {
           headerEl.classList.add(...headerClasses);
+        }
+
+        if (hasFedsLocalNav && headerEl) {
+          const fedsDiv = doc.createElement('div');
+          fedsDiv.className = 'feds-localnav';
+          // Insert the new empty div immediately after the header
+          headerEl.insertAdjacentElement('afterend', fedsDiv);
         }
         
         // Replace the target div
@@ -219,6 +229,7 @@ const processPage = async (browser, urlConfig) => {
       originalHtml,
       prerenderedData.snippet,
       prerenderedData.headerClasses,
+      prerenderedData.hasFedsLocalNav,
       assets.css,
       assets.js,
       assets.preloadLinks,
