@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import { replaceKey } from '../../features/placeholders.js';
+import { replaceKeyArray } from '../../features/placeholders.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
@@ -409,9 +409,15 @@ function setupResponsiveHiding(el) {
   mediaQuery.addEventListener('change', handleResponsive);
 }
 
-async function setAriaLabelForButtons(el) {
-  const ariaLabel = await replaceKey('choose-table-column', getConfig());
+async function setAccessibilityLabels(el) {
+  const [ariaLabel, emptyText] = await replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig());
   [...el.querySelectorAll('.mobile-filter-select')].forEach((element) => element.setAttribute('aria-label', ariaLabel));
+
+  [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
+    const content = cellDiv.textContent.trim();
+    if (content && !/^-+$/.test(content)) return;
+    cellDiv.parentElement.setAttribute('aria-label', emptyText);
+  });
 }
 
 function setupStickyHeader(el) {
@@ -452,5 +458,5 @@ export default function init(el) {
   equalHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
-  setAriaLabelForButtons(el);
+  setAccessibilityLabels(el);
 }
