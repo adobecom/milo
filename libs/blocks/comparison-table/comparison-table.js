@@ -415,10 +415,8 @@ async function setAccessibilityLabels(el) {
 
   [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
     const content = cellDiv.textContent.trim();
-    const hasEmptyContent = /^-+$/.test(content);
-    if (content && !hasEmptyContent) return;
-    if (hasEmptyContent) cellDiv.children[0].setAttribute('aria-label', emptyText);
-    else cellDiv.setAttribute('aria-label', emptyText);
+    if (content && !/^-+$/.test(content)) return;
+    cellDiv.setAttribute('aria-label', emptyText);
   });
 }
 
