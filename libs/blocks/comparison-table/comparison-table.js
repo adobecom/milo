@@ -160,6 +160,7 @@ function createSubHeaderContainer({
   isFirst = false,
   headerTitles = [],
   headerItemIndex = 0,
+  headerItemsCount = 0,
 }) {
   const container = createTag('div', { class: 'sub-header-item-container' });
   for (let i = startIndex; i < endIndex; i += 1) {
@@ -170,7 +171,7 @@ function createSubHeaderContainer({
          && !(em && em.firstChild?.nodeType === Node.TEXT_NODE)) decorateButtons(childrenArray[i]);
     }
   }
-  if (isFirst) {
+  if (isFirst && headerItemsCount > 3) {
     const select = createMobileFilterSelect({ headerTitles, headerItemIndex, el });
     container.appendChild(select);
   }
@@ -179,7 +180,7 @@ function createSubHeaderContainer({
   return container;
 }
 
-function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el }) {
+function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, headerItemsCount }) {
   headerItem.classList.add('header-item');
   headerItem.setAttribute('data-column-index', headerItemIndex);
   const childrenArray = [...headerItem.children];
@@ -199,6 +200,7 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el }) {
       isFirst: containerIndex === 0,
       headerTitles,
       headerItemIndex,
+      headerItemsCount,
     });
     if (isLast) {
       headerItem.appendChild(container);
@@ -226,7 +228,13 @@ function decorateHeader(el, headerContent) {
       headerItem.remove();
       return;
     }
-    decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el });
+    decorateHeaderItem({
+      headerItem,
+      headerTitles,
+      headerItemIndex,
+      el,
+      headerItemsCount: headerItems.length,
+    });
   });
   headerContentWrapper.prepend(createTag('div', { class: 'header-item' }));
 }
