@@ -144,6 +144,7 @@ function addLastContainerElements(container) {
   const actionAreaElements = container.querySelectorAll('.action-area');
   if (actionAreaElements.length > 0) {
     const btnContainer = createTag('div', { class: 'btn-container' });
+    if (actionAreaElements.length > 1) btnContainer.classList.add('has-multiple');
     actionAreaElements.forEach((element) => btnContainer.appendChild(element));
     container.appendChild(btnContainer);
   }
@@ -375,14 +376,11 @@ function setupResponsiveHiding(el) {
   const hideElements = (elements, isMobile, header = false) => {
     const totalColumns = header ? elements.length - 1 : elements.length;
     if (totalColumns === 2) return;
-
-    if (totalColumns === 3) {
-      elements[elements.length - 1].classList.toggle('hidden', isMobile);
-      return;
-    }
+    const visibleColumnsOnMobile = 2;
+    const startIndexToHide = header ? visibleColumnsOnMobile + 1 : visibleColumnsOnMobile;
 
     elements.forEach((element, index) => {
-      if (index < elements.length - 2) return;
+      if (index < startIndexToHide) return;
       element.classList.toggle('hidden', isMobile);
     });
   };

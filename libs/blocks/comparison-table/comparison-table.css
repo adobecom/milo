@@ -201,6 +201,10 @@
   margin-top: var(--spacing-xxs);
 }
 
+.comparison-table .sub-header-item-container .btn-container.has-multiple .action-area {
+  max-width: 50%;
+}
+
 .comparison-table .sub-header-item-container .btn-container .action-area,
 .comparison-table .sub-header-item-container .btn-container .action-area .con-button,
 .comparison-table .sub-header-item-container .btn-container .action-area strong,
