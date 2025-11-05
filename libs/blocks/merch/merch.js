@@ -763,6 +763,18 @@ function appendExtraOptions(url, extraOptions) {
   return url;
 }
 
+export function applyPromo(url) {
+  const { mep } = getConfig();
+  const promoModal = mep?.inBlock?.merch?.fragments?.[url.pathname];
+  try {
+    const promoUrl = new URL(promoModal?.content);
+    return promoUrl;
+  } catch (e) {
+    log?.error('Failed to apply promo to external modal', e);
+  }
+  return url;
+}
+
 // TODO this should migrate to checkout.js buildCheckoutURL
 export function appendDexterParameters(url, extraOptions, el) {
   const isRelativePath = url.startsWith('/');
@@ -775,6 +787,7 @@ export function appendDexterParameters(url, extraOptions, el) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
+  absoluteUrl = applyPromo(absoluteUrl);
   absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
   absoluteUrl = appendTabName(absoluteUrl, el);
   return isRelativePath
