@@ -44,6 +44,9 @@ async function checkWcsElements() {
       const result = await checkUrl(elementData.href);
       wcsElements.value[index].urlStatus = result.status;
       wcsElements.value[index].finalUrl = result.finalUrl;
+      wcsElements.value[index].idMismatch = result.idMismatch;
+      wcsElements.value[index].originalId = result.originalId;
+      wcsElements.value[index].finalId = result.finalId;
       wcsElements.value[index].checking = false;
       wcsElements.value = [...wcsElements.value];
       
@@ -67,14 +70,27 @@ async function checkUrl(url) {
     const finalUrl = response.url;
     const hasError = finalUrl.toLowerCase().includes('error');
     
+    // Check if items[0][id] parameter matches between original and final URL
+    const originalParams = new URLSearchParams(new URL(url).search);
+    const finalParams = new URLSearchParams(new URL(finalUrl).search);
+    
+    const originalId = originalParams.get('items[0][id]');
+    const finalId = finalParams.get('items[0][id]');
+    
+    const idMismatch = originalId && finalId && originalId !== finalId;
+    
     return {
-      status: hasError ? 'error' : 'success',
+      status: (hasError || idMismatch) ? 'error' : 'success',
       finalUrl,
+      idMismatch,
+      originalId,
+      finalId,
     };
   } catch (error) {
     return {
       status: 'error',
       finalUrl: url,
+      idMismatch: false,
     };
   }
 }
@@ -108,14 +124,21 @@ function WcsElementItem({ wcsElem }) {
           ${showUrlInfo && html`
             <br/><br/>
             <strong>Original URL: </strong> ${wcsElem.href}
-            ${wcsElem.checking && html`<br/><span class="url-checking">hecking URL...</span>`}
+            ${wcsElem.checking && html`<br/><span class="url-checking">Checking URL...</span>`}
             ${wcsElem.finalUrl && html`
               <br/><strong>Final URL: </strong> 
               <span class="${wcsElem.urlStatus === 'error' ? 'url-error' : 'url-success'}">
                 ${wcsElem.finalUrl}
               </span>
             `}
-            ${wcsElem.urlStatus === 'error' && html`
+            ${wcsElem.idMismatch && html`
+              <br/><span class="url-error-message">items[0][id] parameter mismatch!</span>
+              <br/><span class="id-comparison">
+                Original ID: <code class="wcs-osi-code">${wcsElem.originalId}</code> 
+                → Final ID: <code class="wcs-osi-code">${wcsElem.finalId}</code>
+              </span>
+            `}
+            ${wcsElem.urlStatus === 'error' && !wcsElem.idMismatch && html`
               <br/><span class="url-error-message">URL contains "error" or failed to load</span>
             `}
           `}
