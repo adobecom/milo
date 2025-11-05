@@ -191,7 +191,7 @@ export function getExperienceName() {
 
 export function rootPath(path) {
   const { miloLibs, codeRoot } = getConfig();
-  const url = `${miloLibs || codeRoot}/mep/wayfinding/global-navigation/${path}`;
+  const url = `${miloLibs || codeRoot}/mep/ace1151/global-navigation/${path}`;
   return url;
 }
 
@@ -687,8 +687,8 @@ export const transformTemplateToMobile = async ({
       if (tab.isHeadingAsRedirection) headingLinkTabs.push(tab);
       else normalTabs.push(tab);
     }
-    const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
-    return normalTabs.concat(promoTabs, headingLinkTabs);
+    // const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
+    return normalTabs.concat(headingLinkTabs);
   })();
 
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
