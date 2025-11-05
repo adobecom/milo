@@ -893,6 +893,17 @@ describe('Merch Block', () => {
       expect(setCtaHash()).to.be.undefined;
     });
 
+    it('applyDexterPromo: applies promo to external modal', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/all-apps/master.modal.html';
+      const promoUrl = 'https://www.adobe.com/plans-fragments/modals/all-apps/black-friday.modal.html';
+      setConfig({
+        ...config,
+        mep: { inBlock: { merch: { fragments: { '/plans-fragments/modals/all-apps/master.modal.html': { content: promoUrl } } } } },
+      });
+      const resultUrl = appendDexterParameters(url);
+      expect(resultUrl).to.equal(promoUrl);
+    });
+
     const MODAL_URLS = [
       {
         url: 'https://www.adobe.com/mini-plans/illustrator1.html?mid=ft&web=1',

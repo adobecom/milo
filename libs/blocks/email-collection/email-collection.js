@@ -13,11 +13,13 @@ import {
   getAEPData,
   disableForm,
   runtimePost,
+  redirectToSignIn,
   FORM_FIELDS,
 } from './utils.js';
 
 const miloConfig = getConfig();
 const FORM_ID = 'email-collection-form';
+let dialog;
 
 function showHideSubscribedMessage(el, subscribed, email) {
   el.querySelector('.button-container')?.classList.toggle('hidden', subscribed);
@@ -61,6 +63,28 @@ export const [showHideMessage, setMessageEls] = (() => {
     },
   ];
 })();
+
+export function overrideForegroundContent() {
+  const params = new URLSearchParams(window.location.search);
+  const show = params.get('email-collection-show');
+  if (!show) return;
+  switch (show) {
+    case 'form':
+      showHideMessage({ hideMessage: true });
+      break;
+    case 'success':
+      showHideMessage({});
+      break;
+    case 'error':
+      showHideMessage({ errorMsg: 'Testing' });
+      break;
+    case 'subscribed':
+      showHideMessage({ subscribed: true, email: 'test@test.com' });
+      break;
+    default:
+      break;
+  }
+}
 
 async function insertProgress(el, size = 'm') {
   if (!el) return;
@@ -206,13 +230,16 @@ async function submitForm(form) {
       timezoneOffset: -date.getTimezoneOffset(),
     };
 
-    const { error, data } = await runtimePost(
+    const { error, data, status } = await runtimePost(
       getApiEndpoint(),
       bodyData,
       ['occupation', 'organization', 'state'],
     );
 
-    if (error) messageParams.errorMsg = error;
+    if (error) {
+      if (status === 401) await redirectToSignIn(dialog);
+      messageParams.errorMsg = error;
+    }
 
     messageParams.email = email;
     const { subscribed } = data;
@@ -367,11 +394,7 @@ function transformCtaToBtn(el) {
     link.innerHTML,
   );
 
-  if (type === 'close-form') {
-    button.addEventListener('click', function closeForm() {
-      closeModal(this.closest('.dialog-modal'));
-    });
-  }
+  if (type === 'close-form') button.addEventListener('click', () => closeModal(dialog));
 
   const buttonContainer = createTag('div', { class: 'button-container' });
   buttonContainer.appendChild(button);
@@ -443,31 +466,23 @@ async function checkIsSubscribed() {
   const { mpsSname } = getFormData('metadata');
   const { email } = await getIMSProfile();
 
-  const { data, error } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname });
+  const { data, error, status } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname });
   const { subscribed } = data;
 
   if (subscribed) showHideMessage({ subscribed, email });
-  else if (error) showHideMessage({ errorMsg: error });
-  return subscribed;
-}
 
-function waitForModal() {
-  return new Promise((resolve) => {
-    const timeout = setTimeout(() => resolve(), 3000);
-    window.addEventListener('milo:modal:loaded', () => {
-      clearTimeout(timeout);
-      resolve();
-    }, { once: true });
-  });
+  if (error) {
+    if (status === 401) await redirectToSignIn(dialog);
+    showHideMessage({ errorMsg: error });
+  }
+
+  return subscribed;
 }
 
 async function decorate(el, blockChildren) {
   const ims = await getIMS();
   if (!ims.isSignedInUser()) {
-    const dialog = el.closest('.dialog-modal');
-    if (!document.body.contains(dialog)) await waitForModal();
-    await ims.signIn();
-    closeModal(dialog);
+    await redirectToSignIn(dialog);
     return false;
   }
 
@@ -483,6 +498,8 @@ async function decorate(el, blockChildren) {
     await decorateForm(el, blockChildren[0]);
     decorateDefaultLinkAnalytics(blockChildren[0], miloConfig);
     if (!isSubscribed) updateAriaLive(blockChildren[0]);
+    const { env } = miloConfig;
+    if (env.name !== 'prod') overrideForegroundContent();
     return true;
   } catch (e) {
     showHideMessage({ errorMsg: e });
@@ -496,7 +513,7 @@ export default async function init(el) {
   await insertProgress(el, 'l');
 
   el.classList.remove('hidden');
-  const dialog = el.closest('.dialog-modal');
+  dialog = el.closest('.dialog-modal');
   dialog?.setAttribute('aria-label', 'Form loading');
   createAriaLive(el);
 

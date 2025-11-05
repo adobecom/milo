@@ -436,3 +436,122 @@
     display: none;
   }
 }
+
+:root:has(meta[name="theme"][content="max25"]) {
+  .text-block [class*="detail-"] {
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .text-block [class*="detail-l"] {
+    font-size: 16px;
+  }
+
+  .section:not(.dark) .text-block:not(.dark) [class*="detail-"] {
+    color: #5d5d5d;
+  }
+
+  @media (max-width: 1199px) {
+    .text-block .title-l {
+      font-size: 16px;
+    }
+  }
+
+  .text-block .title-l {
+    margin-bottom: 10px;
+  }
+
+  .text-block [class*="heading-"] {
+    font-weight: 900;
+  }
+
+  .section:not(.dark) .text-block:not(.dark) [class*="heading-"] {
+    color: var(--color-black);
+  }
+
+  .text-block [class*="heading-xxxl"] {
+    font-size: 36px;
+    line-height: 0.98;
+    letter-spacing: -1px;
+  }
+
+  .text-block.center [class*="body-"] {
+    max-width: 670px;
+    margin: 0 auto;
+  }
+
+  .section:not(.dark) .text-block:not(.dark) [class*="body-"] {
+    color: #575151;
+  }
+
+  .text-block [class*="body-xl"] {
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .text-block .cta-container:only-child {
+    margin-top: 0;
+  }
+
+  .section:has(.carousel.show-2.ups-desktop) + .section .text-block .cta-container:only-child .con-button.outline:not(:hover) {
+    background: var(--color-white);
+    border-color: var(--color-white);
+  }
+
+  .text-block.ff-max-merch-spacing {
+    padding-top: 46px;
+    padding-bottom: 24px;
+  }
+
+  .text-block.ff-max-merch-spacing .detail-m {
+    font-size: 16px;
+  }
+
+  @media (max-width: 599px) {
+    .text-block.no-spacing-top-mobile {
+      padding-top: 0;
+    }
+  }
+
+  @media (min-width: 600px) {
+    .text-block [class*="heading-xxxl"] {
+      font-size: 72px;
+      letter-spacing: -3px;
+    }
+
+    .text-block [class*="body-xl"] {
+      font-size: 24px;
+    }
+
+    .text-block [class*="detail-l"] {
+      font-size: 20px;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .text-block.ff-max-merch-spacing {
+      padding-top: 160px;
+      padding-bottom: 60px;
+    }
+
+    .text-block.ff-max-merch-spacing .detail-m {
+      font-size: 18px;
+    }
+
+    .text-block.ff-max-merch-spacing .body-m {
+      font-size: 24px;
+    }
+  }
+
+  @media (min-width: 600px) and (max-width: 1199px) {
+    .text-block.no-spacing-top-tablet {
+      padding-top: 0;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .text-block.xxl-spacing-top.no-spacing-top-tablet {
+      padding-top: var(--spacing-xxl);
+    }
+  }
+}
