@@ -1688,6 +1688,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button > svg {
   margin-left: 5px;
   margin-top: 3px;
+  min-width: 20px;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button path {
@@ -1695,9 +1696,10 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   stroke: #9F9F9F;
 }
 
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button[aria-selected="true"] path,
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button:hover path {
-  fill: white;
-  stroke: white;
+  fill: var(--feds-color-white-v2);
+  stroke: var(--feds-color-white-v2);
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button span:first-child {
