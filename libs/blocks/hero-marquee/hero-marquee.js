@@ -271,12 +271,9 @@ export default async function init(el) {
     const mediaClasses = ['media-cover', 'media-cover-left', 'media-cover-right', 'media-cover-top', 'media-cover-bottom'];
     asset.parentElement.classList.add('asset');
     mediaClasses.forEach((className) => {
-      if (el.classList.contains(className)) {
-        asset.style.setProperty('--media-cover-position', className.split('-').length > 2
-          ? className.split('-').pop()
-          : 'center top');
-        el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
-      }
+      if (!el.classList.contains(className)) return;
+      asset.style.setProperty('--media-cover-position', className.split('-')[2] ?? 'center top');
+      el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     });
   } else {
     [...fRows].forEach((row) => {
