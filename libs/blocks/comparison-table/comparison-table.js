@@ -5,9 +5,12 @@ import { replaceKeyArray } from '../../features/placeholders.js';
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
 function equalHeight(el) {
-  const calculateMaxHeight = (elements) => Math.max(...elements.map((p) => p.offsetHeight
-      - p.computedStyleMap().get('padding-top').value - p.computedStyleMap().get('padding-bottom').value
-      - p.computedStyleMap().get('border-top-width').value - p.computedStyleMap().get('border-bottom-width').value));
+  const calculateMaxHeight = (elements) => Math.max(...elements.map((p) => {
+    const styles = window.getComputedStyle(p);
+    return p.offsetHeight
+      - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom)
+      - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
+  }));
 
   const setupHeightHandler = (handler) => {
     const resizeObserver = new ResizeObserver((entries) => {
