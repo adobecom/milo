@@ -31,14 +31,20 @@ const getTabsContent = ({ e, element } = {}) => {
   const activeTab = element.querySelector('.tab[aria-selected="true"]');
   const currentTabIndex = tabs.findIndex((tab) => tab === activeTab);
   const leftPanel = !e.target.closest('.tab-content');
-  const tabContentLinks = Array.from(element.querySelectorAll(`.tab-content [aria-labelledby="${currentTabIndex}"] a`));
+  const tabContentLinks = Array.from(element.querySelectorAll(`.tab-content [aria-labelledby="${currentTabIndex}"] .tab-column a`));
   const currentLinkIndex = tabContentLinks.indexOf(e.target);
+  const currentColumn = e.target.closest('.tab-column');
+  const previousColumn = currentColumn?.previousElementSibling;
+  const nextColumn = currentColumn?.nextElementSibling;
+  const isContainTabColumn = (node) => node?.classList?.contains('tab-column');
   return {
     tabs,
     leftPanel,
     currentTabIndex,
     tabContentLinks,
     currentLinkIndex,
+    previousColumn: isContainTabColumn(previousColumn) ? previousColumn : null,
+    nextColumn: isContainTabColumn(nextColumn) ? nextColumn : null,
   };
 };
 
@@ -171,6 +177,8 @@ class Popup {
       currentTabIndex,
       tabContentLinks,
       currentLinkIndex,
+      previousColumn,
+      nextColumn,
     } = getTabsContent({ e, element: popup });
 
     const key = e.code;
@@ -203,7 +211,9 @@ class Popup {
           focusLink(nextLinkIndex);
         }
       } else if (direction === 'left' && !leftPanel) {
-        tabs[currentTabIndex]?.focus();
+        previousColumn ? previousColumn.querySelector('a')?.focus() : tabs[currentTabIndex]?.focus();
+      } else if (direction === 'right' && !leftPanel) {
+        nextColumn && nextColumn.querySelector('a')?.focus();
       } else if (direction === 'right' && leftPanel) {
         focusLink(0);
       }
