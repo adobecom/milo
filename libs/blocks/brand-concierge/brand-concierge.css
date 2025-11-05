@@ -343,17 +343,8 @@
 }
 
 #brand-concierge-mount .ai-chat-label {
-  align-self: start;
   height: 32px !important;
   width: 32px !important;
-  margin-right: 4px !important;
-  margin-top: 10px !important;
-  padding: 0 !important;
-}
-
-#brand-concierge-mount .ai-chat-label:focus {
-  outline: 2px solid #5574F7 !important;
-  outline-offset: 2px !important;
 }
 
 #brand-concierge-mount .input-container:has(.ai-chat-label) {
@@ -402,7 +393,6 @@
 
 #brand-concierge-mount .message-blocker {
   height: calc(90px - 24px) !important;
-  bottom: -1px !important;
 }
 
 /* Hero */
@@ -431,12 +421,14 @@
 
 .hero .prompt-card-button,
 .pill-cards .prompt-card-button {
+  align-items: center;
   box-shadow: 0 0 6px 0 rgba(0 0 0 / 25%);
 }
 
 .hero .card-icon,
 .pill-cards .card-icon {
   align-self: flex-start;
+  margin-top: 4px;
 }
 
 /* Sticky */
@@ -718,10 +710,6 @@
     padding: 56px 24px 12px;
   }
 
-  .bc-header {
-    padding: 0 48px;
-  }
-
   .bc-prompt-cards {
     flex-wrap: nowrap;
     gap: 16px;
@@ -787,6 +775,10 @@
     padding: 80px 48px 24px;
   }
 
+  .hero .bc-header {
+    padding: 0 50px;
+  }
+
   .hero .bc-input-field {
     margin-bottom: 32px;
     max-width: calc(768px - 4px);
@@ -801,12 +793,12 @@
   .pill-cards .prompt-card-button {
     flex-direction: row;
     height: 40px;
-    width: unset;
   }
 
   .hero .card-icon,
   .pill-cards .card-icon {
     align-self: center;
+    margin-top: 0;
   }
 
   .hero .prompt-card-text,
@@ -857,13 +849,27 @@
   }
 }
 
+/* tablet wide up */
+@media screen and (min-width: 900px) {
+  .hero .bc-prompt-cards,
+  .pill-cards .bc-prompt-cards {
+    max-width: 768px;
+  }
+
+  .hero .prompt-card-button,
+  .pill-cards .prompt-card-button {
+    width: unset;
+  }
+}
+
 /* desktop up */
 @media screen and (min-width: 1200px) {
   .brand-concierge {
     padding: 80px 48px 12px;
   }
 
-  .bc-header {
+  .bc-header,
+  .hero .bc-header {
     padding: 0 24px;
   }
 
