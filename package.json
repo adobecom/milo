@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Website foundation technology.",
   "scripts": {
-    "test": "npx playwright install && wtr --config ./web-test-runner.config.mjs \"./test/**/.test.(js|html)\" --node-resolve --port=2000 --coverage --concurrent-browsers 4 --debug",
+    "test": "npx playwright install && wtr --config ./web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2000 --coverage --concurrent-browsers 4 --debug",
     "test:watch": "npx playwright install && npm test -- --watch",
     "test:file": "npx playwright install && wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage",
     "test:file:watch": "npx playwright install && wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage --watch",
