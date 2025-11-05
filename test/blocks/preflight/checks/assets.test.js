@@ -10,24 +10,14 @@ describe('Preflight Asset Checks', () => {
   let mockDocument;
   let mockImage;
   let mockPicture;
-  let mockMain;
 
   beforeEach(() => {
     mockMatchMedia = sinon.stub(window, 'matchMedia').returns({ matches: true });
 
     mockPicture = {
-      querySelectorAll: sinon.stub().returns([]),
+      querySelector: sinon.stub().returns(null),
       insertBefore: sinon.stub(),
     };
-
-    mockMain = {
-      querySelector: sinon.stub(),
-      querySelectorAll: sinon.stub().returns([]),
-      contains: sinon.stub().returns(false),
-    };
-
-    mockMain.querySelector.withArgs(':scope > div.section:first-of-type').returns(null);
-    mockMain.querySelector.withArgs(':scope > div.section:nth-of-type(2)').returns(null);
 
     mockImage = {
       complete: true,
@@ -39,12 +29,7 @@ describe('Preflight Asset Checks', () => {
       setAttribute: sinon.stub(),
       addEventListener: sinon.stub(),
       checkVisibility: sinon.stub().returns(true),
-      closest: (selector) => {
-        if (selector === '.icon-area') return null;
-        if (selector === 'main') return mockMain;
-        if (selector === '.hero, .marquee, .hero-marquee') return null;
-        return mockPicture;
-      },
+      closest: (selector) => (selector === '.icon-area' ? null : mockPicture),
       src: 'test.jpg',
       nextSibling: null,
     };
@@ -105,27 +90,6 @@ describe('Preflight Asset Checks', () => {
     it('tests basic runChecks functionality', () => {
       const results = runChecks('test-url', mockDocument);
       expect(results).to.be.an('array');
-    });
-  });
-
-  describe('Above-Fold Detection', () => {
-    it('should detect above-fold assets in hero elements', async () => {
-      // Mock asset in hero section
-      const mockHeroElement = { classList: { contains: sinon.stub().returns(true) } };
-      mockImage.closest = (selector) => {
-        if (selector === '.icon-area') return null;
-        if (selector === 'main') return mockMain;
-        if (selector === '.hero, .marquee, .hero-marquee') return mockHeroElement;
-        return mockPicture;
-      };
-
-      mockImage.getAttribute.withArgs('width').returns('2000');
-      mockImage.getAttribute.withArgs('height').returns('1000');
-      mockImage.getAttribute.withArgs('src').returns('test.jpg');
-      window.createTag = () => ({ append: sinon.stub() });
-
-      const result = await checkImageDimensions('test-url-hero', mockDocument);
-      expect(result.details.assets[0].isAboveFold).to.be.true;
     });
   });
 

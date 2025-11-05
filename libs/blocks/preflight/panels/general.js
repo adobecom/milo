@@ -34,7 +34,6 @@ async function getStructureResults() {
   const statusToIconMap = {
     [STATUS.PASS]: 'green',
     [STATUS.FAIL]: 'red',
-    [STATUS.LIMBO]: 'orange',
     [STATUS.EMPTY]: 'empty',
   };
 
