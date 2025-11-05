@@ -1196,16 +1196,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   }
 }
 
-/* Small desktop styles */
-@media (min-width: 900px) and (max-width: 1199px) {
-  .feds-brand-image + .feds-brand-label {
-    display: none;
-  }
-  .feds-localnav {
-    display: none;
-  }
-}
-
 /* Desktop styles */
 @media (min-width: 1200px) {
   .feds-logo {
@@ -2069,5 +2059,24 @@ header.test-nav .feds-popup.loading.hide {
   header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button {
     padding: 15px 11px 15px 20px;
     min-height: max-content;
+  }
+}
+
+/* Small desktop styles */
+@media (min-width: 900px) and (max-width: 1199px) {
+  .feds-brand-image + .feds-brand-label {
+    display: none;
+  }
+  
+  .feds-localnav {
+    display: none;
+  }
+
+  header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs {
+    margin-left: 200px;
+  }
+
+  header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content {
+    margin-left: 128px;
   }
 }

@@ -602,10 +602,6 @@ const parseTabsFromMenuSection = async (section, index) => {
 
   const content = section.querySelector('.feds-menu-items') ?? section;
 
-  if (name === 'Shop For') {
-    console.log(section.outerHTML);
-  }
-
   const columns = content.classList.contains('feds-menu-items')
     ? [...content.querySelectorAll('ul')]
     : [content];
