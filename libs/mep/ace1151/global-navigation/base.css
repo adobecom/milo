@@ -106,7 +106,7 @@ html[lang="ja-jp"] a.feds-navLink wbr {
 }
 
 .feds-navLink--blue {
-  color: var(--feds-color-blue-link);
+  color: #1473E6;
 }
 
 .feds-navLink--hoverCaret {
@@ -177,10 +177,14 @@ header.global-navigation.ready {
   pointer-events: none;
 }
 
-.feds-navLink-description {
+header.test-nav .feds-navLink-description {
   display: flex;
   font-size: 12px;
-  color: var(--feds-color-navLink-description);
+  color: #FFF;
+}
+
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-cta--secondary {
+  margin-left: 0;
 }
 
 /* Desktop styles */
@@ -189,6 +193,10 @@ header.global-navigation.ready {
   .feds-navLink--hoverCaret,
   [dir = "rtl"] .feds-navLink--hoverCaret {
     padding: 0 12px;
+  }
+
+  .test-nav .tab-content .feds-navLink {
+    padding: 0 12px 0 0;
   }
 
   .feds-navItem--active > .feds-navLink {
@@ -251,10 +259,10 @@ header.global-navigation.ready {
     background-color: var(--feds-background-popup);
   }
 
-  .feds-navLink--hoverCaret:after {
+  .test-nav .feds-navLink--hoverCaret:after {
     position: static;
     margin-top: 0;
-    margin-left: 5px;
+    margin-left: 8px;
   }
 
   .feds-topnav--overflowing .feds-navLink--hoverCaret:after {

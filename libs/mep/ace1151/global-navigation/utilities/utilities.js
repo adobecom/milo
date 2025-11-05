@@ -191,7 +191,7 @@ export function getExperienceName() {
 
 export function rootPath(path) {
   const { miloLibs, codeRoot } = getConfig();
-  const url = `${miloLibs || codeRoot}/mep/wayfinding/global-navigation/${path}`;
+  const url = `${miloLibs || codeRoot}/mep/ace1151/global-navigation/${path}`;
   return url;
 }
 
@@ -602,10 +602,17 @@ const parseTabsFromMenuSection = async (section, index) => {
 
   const content = section.querySelector('.feds-menu-items') ?? section;
 
-  const links = [...content.querySelectorAll(
-    'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary',
-  )]
-    .map((x) => x.outerHTML)
+  const columns = content.classList.contains('feds-menu-items')
+    ? [...content.querySelectorAll('ul')]
+    : [content];
+
+  const links = columns
+    .map((container) => [...container.querySelectorAll(
+      'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary',
+    )]
+      .map((x) => x.outerHTML)
+      .join(''))
+    .map((l) => `<div class="tab-column">${l}</div>`)
     .join('');
 
   // Detect if headline itself is a redirection (contains an anchor)
@@ -676,8 +683,8 @@ export const transformTemplateToMobile = async ({
       if (tab.isHeadingAsRedirection) headingLinkTabs.push(tab);
       else normalTabs.push(tab);
     }
-    const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
-    return normalTabs.concat(promoTabs, headingLinkTabs);
+    // const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
+    return normalTabs.concat(headingLinkTabs);
   })();
 
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
@@ -742,6 +749,7 @@ export const transformTemplateToMobile = async ({
       ({ links, daalhTabContent, description, cta }, i) => `
     <div
       id="${i}"
+      class="tab-panel"
       role="tabpanel"
       aria-labelledby="${i}"
       class="${
