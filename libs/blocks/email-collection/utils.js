@@ -124,7 +124,7 @@ export const [createAriaLive, updateAriaLive] = (() => {
   return [
     (el) => {
       ariaLive = createTag('div', {
-        class: 'email-aria-live',
+        class: 'email-collection-aria-live',
         'aria-live': 'polite',
         role: 'status',
       });
