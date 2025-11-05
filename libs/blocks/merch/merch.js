@@ -642,22 +642,16 @@ export async function getCheckoutLinkConfig(
 /**
  * If user has entitlement :
  * for Acrobat Studio, the download CTA should be displayed for both Acrobat Studio and Pro,
- * for Acrobat Pro, the download CTA should be displayed for Acrobat Pro,
- * for Acrobat Standard, the download CTA should be displayed for Acrobat Standard.
+ * for all other Acrobat cards the download CTA will be displayed only for cards with
+ * matching product code.
  */
-const DOWNLOAD_FAMILY_CODE = {
-  ACROBAT: {
-    ARCH: ['ARCH', 'APCC'],
-    APCC: ['APCC'],
-    ACRO: ['ACRO'],
-  },
-};
+const DOWNLOAD_FAMILY_CODE = { ACROBAT: { ARCH: ['ARCH', 'APCC'] } };
 
 function showDownloadForCode(familySubscr, codeSubscr, codeCta) {
   const family = DOWNLOAD_FAMILY_CODE[familySubscr];
   if (!family) return true;
 
-  return family[codeSubscr]?.includes(codeCta);
+  return family[codeSubscr]?.includes(codeCta) || codeSubscr === codeCta;
 }
 
 export async function getDownloadAction(
