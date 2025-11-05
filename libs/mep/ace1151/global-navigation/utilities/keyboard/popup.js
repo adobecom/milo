@@ -211,9 +211,15 @@ class Popup {
           focusLink(nextLinkIndex);
         }
       } else if (direction === 'left' && !leftPanel) {
-        previousColumn ? previousColumn.querySelector('a')?.focus() : tabs[currentTabIndex]?.focus();
+        if (previousColumn) {
+          previousColumn.querySelector('a')?.focus();
+        } else {
+          tabs[currentTabIndex]?.focus();
+        }
       } else if (direction === 'right' && !leftPanel) {
-        nextColumn && nextColumn.querySelector('a')?.focus();
+        if (nextColumn) {
+          nextColumn.querySelector('a')?.focus();
+        }
       } else if (direction === 'right' && leftPanel) {
         focusLink(0);
       }
