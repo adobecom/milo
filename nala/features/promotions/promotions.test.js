@@ -546,7 +546,7 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Validate promo replace card in collection', async () => {
       const collection = await PROMO.getMerchCardCollection(data.collectionId);
-      await expect(collection).toBeVisible({ timeout: 15000});
+      await expect(collection).toBeVisible({ timeout: 15000 });
       expect(await collection.getAttribute('overrides')).toBe(data.overrideAttributes);
 
       // check that the base card is not visible
