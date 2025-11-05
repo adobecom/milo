@@ -325,20 +325,20 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate Buy now CTA', async () => {
-      await COMM.buyNowCta.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(COMM.buyNowCta).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.promo}`));
-      await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.CO}`));
-      await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.lang}`));
+      await COMM.checkoutCTA.nth(0).waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.checkoutCTA.nth(0)).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.checkoutCTA.nth(0)).toHaveAttribute('href', new RegExp(`${data.promo}`));
+      await expect(COMM.checkoutCTA.nth(0)).toHaveAttribute('href', new RegExp(`${data.CO}`));
+      await expect(COMM.checkoutCTA.nth(0)).toHaveAttribute('href', new RegExp(`${data.lang}`));
     });
 
     await test.step('Validate Free Trial CTA', async () => {
-      await COMM.freeTrialCta.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(COMM.freeTrialCta).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.freeTrialCta).toHaveAttribute('href', new RegExp(`${data.promo}`));
-      await expect(COMM.freeTrialCta).toHaveAttribute('href', new RegExp(`${data.CO}`));
-      await expect(COMM.freeTrialCta).toHaveAttribute('href', new RegExp(`${data.lang}`));
-      await expect(COMM.freeTrialCta).toHaveAttribute('href', new RegExp(`${data.workflow}`));
+      await COMM.checkoutCTA.nth(1).waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('href', new RegExp(`${data.promo}`));
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('href', new RegExp(`${data.CO}`));
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('href', new RegExp(`${data.lang}`));
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('href', new RegExp(`${data.workflow}`));
     });
 
     await test.step('Validate regular price display', async () => {
