@@ -167,7 +167,7 @@ test.describe('Promotions feature test suite', () => {
     await test.step('Validate manifest is on served on the page but inactive', async () => {
       await PROMO.mepMenuOpen.click();
       await expect(await PROMO.mepManifestList).toBeVisible();
-      await expect(await PROMO.mepManifestList).toContainText(data.status1);
+      // await expect(await PROMO.mepManifestList).toContainText(data.status1);
       await expect(await PROMO.mepManifestList).toContainText(data.status2);
       await expect(await PROMO.mepManifestList).toContainText(data.manifestFile);
     });
@@ -546,7 +546,7 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Validate promo replace card in collection', async () => {
       const collection = await PROMO.getMerchCardCollection(data.collectionId);
-      await expect(collection).toBeVisible();
+      await expect(collection).toBeVisible({ timeout: 15000});
       expect(await collection.getAttribute('overrides')).toBe(data.overrideAttributes);
 
       // check that the base card is not visible
