@@ -585,6 +585,24 @@
   background-color: var(--color-white);
 }
 
+.tabs.s2a-segment-control .tabList {
+  background: #000;
+  border: 1px solid transparent;
+}
+.tabs.s2a-segment-control .tabList button { 
+  color: var(--color-white);
+}
+.tabs.s2a-segment-control .tabList button[aria-selected="true"], 
+.tabs.s2a-segment-control .tabList button[aria-checked="true"] {
+    background: var(--color-white);
+    color: #000;
+}
+
+.tabs.s2a-transparent-bg,
+.tabs.s2a-transparent-bg .tabs-wrapper {
+  background: transparent;
+}
+
 @media screen and (min-width: 600px) {
   .tabs.radio .tabList.tabList .tab-list-container {
     flex-direction: row;
