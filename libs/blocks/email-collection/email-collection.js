@@ -213,7 +213,6 @@ async function submitForm(form) {
     const { consentId } = await getFormData('consent');
     const { country } = await getIMSProfile();
 
-    const date = new Date();
     const { guid, ecid } = await getAEPData();
     const bodyData = {
       ecid,
@@ -226,8 +225,6 @@ async function submitForm(form) {
       consentId,
       mpsSname,
       appClientId: imsClientId,
-      eventDts: date.toISOString(),
-      timezoneOffset: -date.getTimezoneOffset(),
     };
 
     const { error, data, status } = await runtimePost(
