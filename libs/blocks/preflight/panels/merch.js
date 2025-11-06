@@ -3,6 +3,47 @@ import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 const wcsElements = signal([]);
 const loading = signal(true);
 
+function getBlockLocation(element) {
+  const rect = element.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  return Math.round(rect.top + scrollTop);
+}
+
+async function checkUrl(url) {
+  try {
+    const response = await fetch(url, {
+      method: 'HEAD',
+      redirect: 'follow',
+    });
+
+    const finalUrl = response.url;
+    const hasError = finalUrl.toLowerCase().includes('error');
+
+    // Check if items[0][id] parameter matches between original and final URL
+    const originalParams = new URLSearchParams(new URL(url).search);
+    const finalParams = new URLSearchParams(new URL(finalUrl).search);
+
+    const originalId = originalParams.get('items[0][id]');
+    const finalId = finalParams.get('items[0][id]');
+
+    const idMismatch = originalId && finalId && originalId !== finalId;
+
+    return {
+      status: (hasError || idMismatch) ? 'error' : 'success',
+      finalUrl,
+      idMismatch,
+      originalId,
+      finalId,
+    };
+  } catch (error) {
+    return {
+      status: 'error',
+      finalUrl: url,
+      idMismatch: false,
+    };
+  }
+}
+
 async function checkWcsElements() {
   const elements = [];
 
@@ -60,47 +101,6 @@ async function checkWcsElements() {
   });
 }
 
-async function checkUrl(url) {
-  try {
-    const response = await fetch(url, {
-      method: 'HEAD',
-      redirect: 'follow',
-    });
-
-    const finalUrl = response.url;
-    const hasError = finalUrl.toLowerCase().includes('error');
-
-    // Check if items[0][id] parameter matches between original and final URL
-    const originalParams = new URLSearchParams(new URL(url).search);
-    const finalParams = new URLSearchParams(new URL(finalUrl).search);
-
-    const originalId = originalParams.get('items[0][id]');
-    const finalId = finalParams.get('items[0][id]');
-
-    const idMismatch = originalId && finalId && originalId !== finalId;
-
-    return {
-      status: (hasError || idMismatch) ? 'error' : 'success',
-      finalUrl,
-      idMismatch,
-      originalId,
-      finalId,
-    };
-  } catch (error) {
-    return {
-      status: 'error',
-      finalUrl: url,
-      idMismatch: false,
-    };
-  }
-}
-
-function getBlockLocation(element) {
-  const rect = element.getBoundingClientRect();
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  return Math.round(rect.top + scrollTop);
-}
-
 function scrollToElement(location) {
   window.scrollTo({
     top: location - 100,
@@ -109,7 +109,12 @@ function scrollToElement(location) {
 }
 
 function WcsElementItem({ wcsElem }) {
-  const statusIconClass = wcsElem.urlStatus === 'error' ? 'result-icon red' : wcsElem.urlStatus === 'success' ? 'result-icon green' : '';
+  let statusIconClass = '';
+  if (wcsElem.urlStatus === 'error') {
+    statusIconClass = 'result-icon red';
+  } else if (wcsElem.urlStatus === 'success') {
+    statusIconClass = 'result-icon green';
+  }
   const showUrlInfo = wcsElem.href;
 
   return html`
