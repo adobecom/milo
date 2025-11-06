@@ -270,7 +270,7 @@ content auhtored manually and AEM-imported content */
     border-bottom: none;
   }
 
-  .global-navigation .feds-menu-headline + .feds-menu-items {
+  .global-navigation .feds-menu-headline ~ .feds-menu-items {
     display: flex;
     flex-direction: column;
     padding: 0;

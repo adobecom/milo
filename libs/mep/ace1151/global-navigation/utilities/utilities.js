@@ -635,6 +635,19 @@ const parseTabsFromMenuSection = async (section, index) => {
   };
 };
 
+// const promoCrossCloudTab = async (popup) => {
+//   const additionalLinks =
+//   [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
+//   if (!additionalLinks.length) return [];
+//   const tabName = await replaceKey('more', getFedsPlaceholderConfig());
+//   return [{
+//     name: tabName,
+//     links: additionalLinks.map((x) => x.outerHTML).join(''),
+//     daallTab: tabName,
+//     daalhTabContent: tabName,
+//   }];
+// };
+
 export async function getMainMenuPlaceholder() {
   const config = getConfig();
   const cloudPlaceholders = await fetchPlaceholders({ config });
@@ -658,9 +671,10 @@ export const transformTemplateToMobile = async ({
   toggleMenu,
   updatePopupPosition,
 }) => {
+  // const isLoading = popup.classList.contains('loading');
   const tabs = await (async () => {
     const parsedSections = await Promise.all(
-      [...popup.querySelectorAll('.feds-menu-section')]
+      [...popup.querySelectorAll('.feds-menu-column')]
         .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
         .map(parseTabsFromMenuSection),
     );
@@ -670,6 +684,7 @@ export const transformTemplateToMobile = async ({
       if (tab.isHeadingAsRedirection) headingLinkTabs.push(tab);
       else normalTabs.push(tab);
     }
+    // const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
     return normalTabs.concat(headingLinkTabs);
   })();
 
@@ -815,6 +830,12 @@ export const transformTemplateToMobile = async ({
     tabbuttons.forEach((tab, i) => tab.removeEventListener('click', tabbuttonClickCallbacks[i]));
   };
 
+  // This is here to handle the case where we're treating a multicolumn small menu
+  // as a mega menu. If it gets all the way to this point, it should probably have
+  // this class
+  if (!popup.parentElement?.classList.contains('feds-navItem--megaMenu')) {
+    popup.parentElement.classList.add('feds-navItem--megaMenu');
+  }
   return cleanup;
 };
 

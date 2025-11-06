@@ -1423,7 +1423,8 @@ class Gnav {
 
             if (this.isLocalNav()) decorateLocalNavItems(item, template);
 
-            if (itemType !== 'asyncDropdownTrigger') return;
+            const transformable = template.querySelectorAll('.feds-menu-column').length > 1;
+            if (!transformable) return;
 
             const popup = template.querySelector('.feds-popup');
             await transformTemplateToMobile({
