@@ -326,22 +326,30 @@ export class MerchCardCollection extends LitElement {
 
         function normalizePayload(fragment, overrideMap) {
 
-            const tagFilters = [
-              {
-                "title": fragment.fields?.tagFiltersTitle,
-                "label": "types",
-                "deeplink": "types",
-                "checkboxes": fragment.fields?.tagFilters?.map((tag) => {
-                  // Example: "mas:types/desktop" -> "desktop"
-                  // Example: "mas:types/mobile" -> "mobile"
-                  // Example: "mas:types/web" -> "web"
-                  // TODO: Get tag label from fragment instead of parsing the tag
-                  const parsedTag = tag.split('/').pop();
-                  const tagLabel = fragment.placeholders.tags[parsedTag] || parsedTag;
-                  return { name: parsedTag, label: tagLabel };
-                }) || []
-              }
-            ];
+            // Support both checkboxGroups (direct format) and tagFilters (parsed format)
+            let tagFilters;
+            if (fragment.fields?.checkboxGroups) {
+              // Use checkboxGroups directly if provided
+              tagFilters = fragment.fields.checkboxGroups;
+            } else if (fragment.fields?.tagFilters) {
+              // Parse tagFilters into checkbox group format
+              tagFilters = [
+                {
+                  "title": fragment.fields?.tagFiltersTitle,
+                  "label": "types",
+                  "deeplink": "types",
+                  "checkboxes": fragment.fields.tagFilters.map((tag) => {
+                    // Example: "mas:types/desktop" -> "desktop"
+                    // Example: "mas:types/mobile" -> "mobile"
+                    // Example: "mas:types/web" -> "web"
+                    // TODO: Get tag label from fragment instead of parsing the tag
+                    const parsedTag = tag.split('/').pop();
+                    const tagLabel = fragment.placeholders.tags[parsedTag] || parsedTag;
+                    return { name: parsedTag, label: tagLabel };
+                  })
+                }
+              ];
+            }
 
             const sidenavSettings = {
               searchText: fragment.fields?.searchText,
