@@ -11,7 +11,7 @@ The Preview Indexer tracks content preview activity across regional sites and ma
 - **Incremental Updates**: Automatically tracks preview activity and updates indexes based on recent changes
 - **Full Index Generation**: Regenerates complete preview indexes for specific regional paths
 - **Multi-site Support**: Handles multiple DA sites (e.g., da-bacom, da-bacom-lingo)
-- **Regional Path Filtering**: Supports region-specific indexing (e.g., /au/, /de/)
+- **Regional Path Filtering**: Supports region-specific indexing (e.g., /be_en/, /ch_fr/, /lu_de/)
 - **State Management**: Maintains checkpoint data to track last successful runs
 - **Retry Logic**: Built-in retry mechanism for failed API requests
 - **Concurrent Processing**: Supports parallel processing of multiple sites
@@ -54,7 +54,7 @@ Updates preview indexes based on recent activity from Helix admin logs.
 - `lastRunISOFrom` (optional): Start timestamp for log fetching
 - `lastRunISOTo` (optional): End timestamp for log fetching
 - `site` (optional): Specific site to process (e.g., da-bacom)
-- `siteRegions` (optional): Comma-separated regional paths (e.g., /au/,/de/)
+- `siteRegions` (optional): Comma-separated regional paths (e.g., /be_en/, /ch_fr/, /lu_de/)
 
 **Features**:
 - Uses GitHub Actions cache to persist state across runs
@@ -71,7 +71,7 @@ Generates complete preview indexes for specific regional paths.
 
 **Inputs**:
 - `site` (required): Site name (e.g., da-bacom) - must be in `PREVIEW_INDEXER_REPOS`
-- `siteRegions` (required): Comma-separated regional paths (e.g., /au/,/de/)
+- `siteRegions` (required): Comma-separated regional paths (e.g., /be_en/, /ch_fr/, /lu_de/)
 
 **Note**: Both inputs are mandatory for execution; the workflow will fail if either is missing.
 
@@ -129,10 +129,10 @@ For each site (e.g., `adobecom/da-bacom`), configure:
 ### Index File Path Template
 
 The `PREVIEW_INDEX_FILE` supports placeholders:
-- `{REGION_PATH}`: Full regional path (e.g., `/au/`)
-- `{REGION}`: Sanitized region name (e.g., `au`)
+- `{REGION_PATH}`: Full regional path (e.g., `/be_en/`)
+- `{REGION}`: Sanitized region name (e.g., `be_en`)
 
-**Example**: `{REGION_PATH}/drafts/preview-index` → `/au/drafts/preview-index`
+**Example**: `{REGION_PATH}/drafts/preview-index` → `/be_en/drafts/preview-index`
 
 ## How It Works
 
@@ -213,7 +213,7 @@ With manual parameters:
 LAST_RUN_ISO_FROM="2025-10-19T20:30:35.751Z" \
 LAST_RUN_ISO_TO="2025-10-20T17:22:06.988Z" \
 SITE="da-bacom" \
-SITE_REGION_PATHS="/au/,/de/" \
+SITE_REGION_PATHS="/be_en/,/ch_fr/,/lu_de/" \
 node --env-file=.env .github/workflows/preview-indexer/incremental.js
 ```
 
@@ -221,7 +221,7 @@ node --env-file=.env .github/workflows/preview-indexer/incremental.js
 
 ```bash
 SITE="da-bacom" \
-SITE_REGION_PATHS="/au/,/de/" \
+SITE_REGION_PATHS="/be_en/,/ch_fr/,/lu_de/" \
 node --env-file=.env .github/workflows/preview-indexer/full-index.js
 ```
 
@@ -254,7 +254,7 @@ Example `act-event.json`:
     "lastRunISOFrom": "2025-10-19T20:30:35.751Z",
     "lastRunISOTo": "2025-10-20T17:22:06.988Z",
     "site": "da-bacom",
-    "siteRegions": "/au/,/de/"
+    "siteRegions": "/be_en/,/ch_fr/,/lu_de/"
   }
 }
 ```
@@ -265,7 +265,7 @@ Example `act-event.json`:
   "event_name": "workflow_dispatch",
   "inputs": {
     "site": "da-bacom",
-    "siteRegionPaths": "/au/,/in/,/de/lu/"
+    "siteRegionPaths": "/be_en/,/ch_fr/,/lu_de/"
   }
 }
 ```
@@ -282,8 +282,8 @@ The generated preview index follows this structure:
   "limit": 150,
   "offset": 0,
   "data": [
-    { "Path": "/au/products/acrobat" },
-    { "Path": "/au/products/photoshop" }
+    { "Path": "/be_en/products/acrobat" },
+    { "Path": "/be_en/products/photoshop" }
   ],
   ":colWidths": [200],
   ":sheetname": "data",
@@ -294,50 +294,12 @@ The generated preview index follows this structure:
 ### Index Locations
 
 Indexes are saved to DA at paths like:
-- `https://da.live/edit#/adobecom/da-bacom/au/drafts/preview-index`
-- `https://da.live/edit#/adobecom/da-bacom/de/drafts/preview-index`
+- `https://da.live/edit#/adobecom/da-bacom/be_en/shared/preview-index`
+- `https://da.live/edit#/adobecom/da-bacom/lu_de/shared/preview-index`
 
 And previewed at:
-- `https://main--da-bacom--adobecom.aem.page/au/drafts/preview-index.json`
-- `https://main--da-bacom--adobecom.aem.page/de/drafts/preview-index.json`
-
-## Troubleshooting
-
-### Common Issues
-
-#### Workflow skips with exit code 78
-**Cause**: Another workflow run is in progress
-**Solution**: Wait for the current run to complete or cancel it
-
-#### No entries found
-**Cause**: No preview activity in the time window
-**Solution**: Check if the time range is correct and if there was actual preview activity
-
-#### Authentication failures
-**Cause**: Invalid or expired IMS token
-**Solution**: Verify IMS credentials and ensure the authorization code is valid
-
-#### Missing regional paths
-**Cause**: Lingo config not loaded or incorrect PREVIEW_ROOTS key
-**Solution**: Verify LINGO_CONFIG URL and PREVIEW_ROOTS key matches lingo config
-
-#### State not persisting
-**Cause**: GitHub Actions cache not being saved
-**Solution**: Check workflow permissions and cache configuration
-
-### Debugging
-
-Enable verbose logging:
-```bash
-LOCAL_RUN=true node .github/workflows/preview-indexer/incremental.js
-```
-
-Check state file:
-```bash
-cat preview-indexer/state/last-runs.json
-```
-
-## Monitoring
+- `https://main--da-bacom--adobecom.aem.page/be_en/shared/preview-index.json`
+- `https://main--da-bacom--adobecom.aem.page/lu_de/shared/preview-index.json`
 
 ### Logs
 
