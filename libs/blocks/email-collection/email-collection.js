@@ -195,6 +195,12 @@ async function decorateInput(key, value) {
 }
 
 async function submitForm(form) {
+  const ims = await getIMS();
+  if (!ims.isSignedInUser()) {
+    await redirectToSignIn(dialog);
+    return;
+  }
+
   const messageParams = {
     errorMsg: '',
     subscribed: false,
