@@ -236,8 +236,8 @@ export class MerchCardCollection extends LitElement {
         this.sidenav = this.parentElement.querySelector('merch-sidenav');
         if (this.filtered) {
             this.filter = this.filtered;
-                this.page = 1;
-            } else {
+            this.page = 1;
+        } else {
             this.startDeeplink();
         }
         this.initializePlaceholders();
@@ -350,8 +350,8 @@ export class MerchCardCollection extends LitElement {
                 fragment.referencesTree,
             );
             if (payload.hierarchy.length === 0) {
-              self.filtered = 'all';
-          }
+                self.filtered = 'all';
+            }
             return payload;
         }
         

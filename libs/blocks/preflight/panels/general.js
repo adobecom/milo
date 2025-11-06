@@ -126,10 +126,8 @@ function findLinks(selector) {
     }, []);
 }
 
-async function setContent() {
-  if (content.value.page) return;
-
-  content.value = {
+export function runGeneralChecks() {
+  const contentValue = {
     page: { items: [{ url: new URL(window.location.href), edit: null, preview: 'Fetching', live: 'Fetching' }] },
     fragments: { items: findLinks('main .fragment, a[data-modal-path], [data-path]') },
     links: { items: findLinks('main a[href^="/"') },
@@ -137,6 +135,14 @@ async function setContent() {
     pdfs: { items: findLinks('main iframe') },
     nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
+
+  return contentValue;
+}
+
+async function setContent() {
+  if (content.value.page) return;
+
+  content.value = runGeneralChecks();
 
   getStatuses();
   const sk = document.querySelector('aem-sidekick, helix-sidekick');

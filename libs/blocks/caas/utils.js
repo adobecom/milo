@@ -407,9 +407,12 @@ const alphaSort = (a, b) => {
   return 0;
 };
 
-const getLocalTitle = (tag, country, lang) => tag[`title.${lang}_${country}`]
+const getLocalTitle = (tag, country, lang) => {
+  const searchKey = `${lang}_${country}`.toLowerCase();
+  return tag[`title.${searchKey}`]
   || tag[`title.${lang}`]
   || tag.title;
+};
 
 const getFilterObj = (
   { excludeTags, filterTag, icon, openedOnLoad },
@@ -765,6 +768,7 @@ export const getConfig = async (originalState, strs = {}) => {
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
+      useCenterVideoPlay: state.useCenterVideoPlay,
       partialLoadWithBackgroundFetch: {
         enabled: state.partialLoadEnabled,
         partialLoadCount: state.partialLoadCount,
@@ -1034,6 +1038,7 @@ export const defaultState = {
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
+  useCenterVideoPlay: false,
   collectionButtonStyle: 'primary',
   userInfo: [],
 };

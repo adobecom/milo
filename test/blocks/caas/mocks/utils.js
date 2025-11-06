@@ -92,5 +92,6 @@ export const parseEncodedConfig = stub().returns({
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
+  useCenterVideoPlay: false,
   userInfo: [],
 });
