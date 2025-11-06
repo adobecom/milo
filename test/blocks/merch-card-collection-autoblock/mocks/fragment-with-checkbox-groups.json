@@ -1,0 +1,213 @@
+{
+  "description": "Test fragment with checkbox groups",
+  "fields": {
+    "cards": [],
+    "collections": [
+      "d5b3180a-41e3-4df1-adb4-73daa8f392b5",
+      "1c0b2890-567a-4771-933c-84b032c8e51d"
+    ],
+    "label": "Catalog Plans",
+    "variant": "catalog",
+    "checkboxGroups": [
+      {
+        "title": "Types",
+        "label": "types",
+        "deeplink": "types",
+        "checkboxes": [
+          { "name": "desktop", "label": "Desktop" },
+          { "name": "mobile", "label": "Mobile" },
+          { "name": "web", "label": "Web" }
+        ]
+      }
+    ]
+  },
+  "id": "e58f8f75-b882-409a-9ff8-8826b36a8368",
+  "model": {
+    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+  },
+  "name": "",
+  "path": "/content/dam/mas/sandbox/en_US/catalog-plans",
+  "placeholders": {
+    "catalogSidenavTitle": "REFINE YOUR RESULTS",
+    "searchText": "Search all products"
+  },
+  "references": {
+    "049231fd-0c45-4ef5-8792-7fa2dcd5005a": {
+      "type": "content-fragment",
+      "value": {
+        "description": "",
+        "fields": {
+          "badge": {
+            "mimeType": "text/html"
+          },
+          "callout": {
+            "mimeType": "text/html"
+          },
+          "cardTitle": "Photography (1TB)",
+          "ctas": {
+            "mimeType": "text/html",
+            "value": "<a class=\"accent\" data-wcs-osi=\"BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c\" data-template=\"checkoutUrl\" target=\"_self\" data-analytics-id=\"buy-now\">buy-now</a>"
+          },
+          "description": {
+            "mimeType": "text/html",
+            "value": "<p>Edit and organize photos.</p>"
+          },
+          "mnemonicAlt": ["Lightroom", "Photoshop"],
+          "mnemonicIcon": [
+            "https://www.adobe.com/content/dam/shared/images/product-icons/svg/lightroom.svg",
+            "https://www.adobe.com/content/dam/shared/images/product-icons/svg/photoshop.svg"
+          ],
+          "mnemonicLink": [],
+          "prices": {
+            "mimeType": "text/html"
+          },
+          "promoCode": "Save over 30% with an annual plan.",
+          "shortDescription": {
+            "mimeType": "text/html"
+          },
+          "showStockCheckbox": true,
+          "tags": [
+            "mas:offer_type/base",
+            "mas:customer_segment/individual",
+            "mas:product/cc/photoshop"
+          ],
+          "types": ["desktop", "mobile"],
+          "variant": "catalog"
+        },
+        "id": "049231fd-0c45-4ef5-8792-7fa2dcd5005a",
+        "model": {
+          "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+        },
+        "name": "",
+        "path": "/content/dam/mas/sandbox/en_US/photo-card",
+        "title": "Photo Card"
+      }
+    },
+    "c6727147-7992-4ca4-b566-819c52b0a585": {
+      "type": "content-fragment",
+      "value": {
+        "description": "",
+        "fields": {
+          "badge": {
+            "mimeType": "text/html"
+          },
+          "callout": {
+            "mimeType": "text/html"
+          },
+          "cardTitle": "Video Editing",
+          "ctas": {
+            "mimeType": "text/html",
+            "value": "<a class=\"accent\" data-wcs-osi=\"test-osi\" target=\"_self\" data-analytics-id=\"buy-now\">buy-now</a>"
+          },
+          "description": {
+            "mimeType": "text/html",
+            "value": "<p>Edit videos professionally.</p>"
+          },
+          "mnemonicAlt": ["Premiere Pro"],
+          "mnemonicIcon": [
+            "https://www.adobe.com/content/dam/shared/images/product-icons/svg/premiere.svg"
+          ],
+          "mnemonicLink": [],
+          "prices": {
+            "mimeType": "text/html"
+          },
+          "shortDescription": {
+            "mimeType": "text/html"
+          },
+          "showStockCheckbox": false,
+          "tags": [
+            "mas:offer_type/base",
+            "mas:customer_segment/individual"
+          ],
+          "types": ["desktop"],
+          "variant": "catalog"
+        },
+        "id": "c6727147-7992-4ca4-b566-819c52b0a585",
+        "model": {
+          "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+        },
+        "name": "",
+        "path": "/content/dam/mas/sandbox/en_US/video-card",
+        "title": "Video Card"
+      }
+    },
+    "1c0b2890-567a-4771-933c-84b032c8e51d": {
+      "type": "content-fragment",
+      "value": {
+        "description": "",
+        "fields": {
+          "cards": [
+            "049231fd-0c45-4ef5-8792-7fa2dcd5005a",
+            "c6727147-7992-4ca4-b566-819c52b0a585"
+          ],
+          "collections": [],
+          "icon": "https://main--milo--adobecom.aem.page/drafts/astatescu/icons/camera.svg",
+          "label": "Photo"
+        },
+        "id": "1c0b2890-567a-4771-933c-84b032c8e51d",
+        "model": {
+          "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+        },
+        "name": "",
+        "path": "/content/dam/mas/sandbox/en_US/photo-collection",
+        "title": "Photo Collection"
+      }
+    },
+    "d5b3180a-41e3-4df1-adb4-73daa8f392b5": {
+      "type": "content-fragment",
+      "value": {
+        "description": "",
+        "fields": {
+          "cards": [
+            "049231fd-0c45-4ef5-8792-7fa2dcd5005a",
+            "c6727147-7992-4ca4-b566-819c52b0a585"
+          ],
+          "collections": [],
+          "label": "All"
+        },
+        "id": "d5b3180a-41e3-4df1-adb4-73daa8f392b5",
+        "model": {
+          "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+        },
+        "name": "",
+        "path": "/content/dam/mas/sandbox/en_US/all-collection",
+        "title": "All Collection"
+      }
+    }
+  },
+  "referencesTree": [
+    {
+      "fieldName": "collections",
+      "identifier": "d5b3180a-41e3-4df1-adb4-73daa8f392b5",
+      "referencesTree": [
+        {
+          "fieldName": "cards",
+          "identifier": "049231fd-0c45-4ef5-8792-7fa2dcd5005a",
+          "referencesTree": []
+        },
+        {
+          "fieldName": "cards",
+          "identifier": "c6727147-7992-4ca4-b566-819c52b0a585",
+          "referencesTree": []
+        }
+      ]
+    },
+    {
+      "fieldName": "collections",
+      "identifier": "1c0b2890-567a-4771-933c-84b032c8e51d",
+      "referencesTree": [
+        {
+          "fieldName": "cards",
+          "identifier": "049231fd-0c45-4ef5-8792-7fa2dcd5005a",
+          "referencesTree": []
+        },
+        {
+          "fieldName": "cards",
+          "identifier": "c6727147-7992-4ca4-b566-819c52b0a585",
+          "referencesTree": []
+        }
+      ]
+    }
+  ],
+  "title": "Catalog Plans"
+}
