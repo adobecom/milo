@@ -172,6 +172,10 @@ header.global-navigation.ready {
   color: var(--feds-color-navLink-description);
 }
 
+.global-navigation .feds-popup .feds-navLink-description {
+  white-space: normal;
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
   .feds-navLink,
