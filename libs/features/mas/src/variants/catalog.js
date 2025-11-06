@@ -11,6 +11,7 @@ export const CATALOG_AEM_FRAGMENT_MAPPING = {
     description: { tag: 'div', slot: 'body-xs' },
     mnemonics: { size: 'l' },
     prices: { tag: 'h3', slot: 'heading-xs' },
+    shortDescription: { tag: 'div', slot: 'action-menu-content', attributes: { tabindex: '0' } },
     size: ['wide', 'super-wide'],
     title: { tag: 'h3', slot: 'heading-xs' },
 };
@@ -28,6 +29,32 @@ export class Catalog extends VariantLayout {
         return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');
     }
 
+    get slottedContent() {
+        return this.card.querySelector('[slot="action-menu-content"]');
+    }
+
+    setIconVisibility(visible) {
+        if (isMobileOrTablet() && this.card.actionMenu) return;
+        this.actionMenu?.classList.toggle('hidden', !visible);
+        this.actionMenu?.classList.toggle('always-visible', visible);
+    }
+
+    setMenuVisibility(open) {
+        this.actionMenuContentSlot?.classList.toggle('hidden', !open);
+        this.setAriaExpanded(this.actionMenu, open.toString());
+        if (open) {
+            this.dispatchActionMenuToggle();
+            setTimeout(() => {
+                const firstLink = this.slottedContent?.querySelector('a');
+                if (firstLink) firstLink.focus();
+            }, 0);
+        }
+    }
+
+    isMenuOpen() {
+        return !this.actionMenuContentSlot?.classList.contains('hidden');
+    }
+
     renderLayout() {
         return html` <div class="body">
                 <div class="top-section">
@@ -36,10 +63,11 @@ export class Catalog extends VariantLayout {
                         class="action-menu
                 ${isMobileOrTablet() && this.card.actionMenu
                             ? 'always-visible'
-                            : ''}
-                ${!this.card.actionMenu ? 'hidden' : 'invisible'}"
+                            : 'hidden'}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
+                        @focus="${this.showActionMenuOnHover}"
+                        @blur="${this.hideActionMenuOnBlur}"
                         tabindex="0"
                         aria-expanded="false"
                         role="button"
@@ -49,7 +77,6 @@ export class Catalog extends VariantLayout {
                     name="action-menu-content"
                     class="action-menu-content
             ${!this.card.actionMenuContent ? 'hidden' : ''}"
-                    @focusout="${this.hideActionMenu}"
                     >${this.card.actionMenuContent}
                 </slot>
                 <slot name="heading-xs"></slot>
@@ -74,55 +101,106 @@ export class Catalog extends VariantLayout {
     }
 
     dispatchActionMenuToggle = () => {
-      this.card.dispatchEvent(
-        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
-            bubbles: true,
-            composed: true,
-            detail: {
-                card: this.card.name,
-                type: 'action-menu',
-            },
-        }),
-      );
+        this.card.dispatchEvent(
+            new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.card.name,
+                    type: 'action-menu',
+                },
+            }),
+        );
     };
 
     toggleActionMenu = (e) => {
       if (!this.actionMenuContentSlot || !e || (e.type !== 'click' && e.code !== 'Space' && e.code !== 'Enter')) return;
 
       e.preventDefault();
-      this.actionMenuContentSlot.classList.toggle('hidden');
-      const isHidden = this.actionMenuContentSlot.classList.contains('hidden');
-      if (!isHidden) this.dispatchActionMenuToggle();
-      this.setAriaExpanded(this.actionMenu, (!isHidden).toString());
+      e.stopPropagation();
+      this.setMenuVisibility(!this.isMenuOpen());
     };
-    
+
     toggleActionMenuFromCard = (e) => {
         //beware this is an event on card, so this points to the card, not the layout
         const retract = e?.type === 'mouseleave' ? true : undefined;
         this.card.blur();
-        this.actionMenu?.classList.remove('always-visible');
+        this.setIconVisibility(false);
         if (!this.actionMenuContentSlot) return;
 
-        if (!retract) this.dispatchActionMenuToggle();
-        this.actionMenuContentSlot.classList.toggle('hidden', retract);
-        this.setAriaExpanded(this.actionMenu, 'false');
+        if (e?.type === 'mouseleave') {
+          this.setMenuVisibility(false);
+        }
     };
-    
-    hideActionMenu = (e) => {
-      this.actionMenuContentSlot?.classList.add('hidden');
-      this.setAriaExpanded(this.actionMenu, 'false');
+
+    showActionMenuOnHover = () => {
+        if (!this.actionMenu) return;
+        this.setIconVisibility(true);
+    };
+
+    hideActionMenu = () => {
+      this.setMenuVisibility(false);
+      this.setIconVisibility(false);
     }
-    
+
+    hideActionMenuOnBlur = (e) => {
+      if (e.relatedTarget === this.actionMenu || this.actionMenu?.contains(e.relatedTarget)) return;
+
+      if (this.slottedContent?.contains(e.relatedTarget)) return;
+
+      if (this.isMenuOpen()) {
+        this.setMenuVisibility(false);
+      }
+
+      if (!this.card.contains(e.relatedTarget)) {
+        this.setIconVisibility(false);
+      }
+    };
+
+    handleCardFocusOut = (e) => {
+      if (e.relatedTarget === this.actionMenu ||
+          this.actionMenu?.contains(e.relatedTarget) ||
+          e.relatedTarget === this.card) {
+        return;
+      }
+
+      if (this.slottedContent && (e.target === this.slottedContent || this.slottedContent.contains(e.target))) {
+        if (!this.slottedContent.contains(e.relatedTarget)) {
+          this.setMenuVisibility(false);
+        }
+      }
+
+      if (!this.card.contains(e.relatedTarget) && !this.isMenuOpen()) {
+        this.setIconVisibility(false);
+      }
+    };
+
+    handleKeyDown = (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        this.hideActionMenu();
+        this.actionMenu?.focus();
+      }
+    };
+
     setAriaExpanded(element, value) {
         element.setAttribute('aria-expanded', value);
     }
 
     connectedCallbackHook() {
+        this.card.addEventListener('mouseenter', this.showActionMenuOnHover);
         this.card.addEventListener('mouseleave', this.toggleActionMenuFromCard);
+        this.card.addEventListener('focusin', this.showActionMenuOnHover);
+        this.card.addEventListener('focusout', this.handleCardFocusOut);
+        this.card.addEventListener('keydown', this.handleKeyDown);
     }
 
     disconnectedCallbackHook() {
+        this.card.removeEventListener('mouseenter', this.showActionMenuOnHover);
         this.card.removeEventListener('mouseleave', this.toggleActionMenuFromCard);
+        this.card.removeEventListener('focusin', this.showActionMenuOnHover);
+        this.card.removeEventListener('focusout', this.handleCardFocusOut);
+        this.card.removeEventListener('keydown', this.handleKeyDown);
     }
 
     static variantStyle = css`

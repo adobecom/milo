@@ -1,15 +1,12 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
-import '../../deps/mas/merch-card.js';
-import '../../deps/mas/merch-quantity-select.js';
 import {
   initService,
   getOptions,
   MEP_SELECTOR,
   overrideOptions,
   updateModalState,
-  loadLitDependency,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -40,7 +37,6 @@ function getTimeoutPromise(timeout) {
 
 async function loadDependencies(options) {
   /** Load lit first as it's needed by MAS components */
-  await loadLitDependency();
 
   /** Load service */
   const servicePromise = initService();

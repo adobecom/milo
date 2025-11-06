@@ -134,14 +134,14 @@ describe('Email collection', () => {
         label: 'First Name',
         attributes: {
           type: 'text',
-          readonly: '',
+          disabled: '',
         },
       },
       'last-name': {
         label: 'Last Name',
         attributes: {
           type: 'text',
-          readonly: '',
+          disabled: '',
         },
       },
       country: {
@@ -149,7 +149,7 @@ describe('Email collection', () => {
         url: 'https://main--federal--adobecom.aem.page/federal/email-collection/form-config.json?sheet=countries',
         attributes: {
           type: 'text',
-          readonly: '',
+          disabled: '',
         },
       },
       organization: {
@@ -177,7 +177,7 @@ describe('Email collection', () => {
       const error = inputContainer.querySelector('div[id^="error"]');
       expect(label).to.exist;
       expect(input).to.exist;
-      if (input.getAttribute('readonly') === null) expect(error).to.exist;
+      if (input.getAttribute('disabled') === null) expect(error).to.exist;
       const { id } = input;
       const { label: labelValue, attributes } = formInputs[id];
       expect(label.textContent).to.be.equal(labelValue);
