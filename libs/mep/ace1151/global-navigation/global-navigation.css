@@ -422,10 +422,13 @@ header.test-nav.dropdown-active .feds-cta--secondary:hover {
   overflow-y: auto;
 }
 
-.test-nav .feds-breadcrumbs ul {
+.feds-breadcrumbs ul {
   padding: 0;
   margin: 0;
   display: flex;
+}
+
+.test-nav .feds-breadcrumbs ul {
   height: 44px;
 }
 
