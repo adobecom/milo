@@ -16,7 +16,10 @@
   max-width: calc(var(--comparison-desktop-max-width) - 2px);
   margin: var(--spacing-xs) auto 0;
   border: 1px solid var(--comparison-border-color);
-  border-radius: var(--comparison-border-radius) var(--comparison-border-radius) 0 0;
+  border-start-start-radius: var(--comparison-border-radius);
+  border-start-end-radius: var(--comparison-border-radius);
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
   overflow: hidden;
 }
 
@@ -32,7 +35,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--spacing-s);
-  border-radius: var(--comparison-border-radius) var(--comparison-border-radius) 0 0;
+  border-start-start-radius: var(--comparison-border-radius);
+  border-start-end-radius: var(--comparison-border-radius);
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
 }
 
 .comparison-table .table-container .table-column-header button:hover {
@@ -276,7 +282,7 @@
 
 .comparison-table .accessibility-header-row {
   position: absolute;
-  left: -99999999px;
+  inset-inline-start: -99999999px;
 }
 
 .comparison-table .mobile-filter-select {
@@ -293,7 +299,8 @@
   border: none;
   border-top: 1px solid var(--comparison-border-color);
   bottom: 1px;
-  border-radius: 0 0 var(--comparison-border-radius) var(--comparison-border-radius);
+  border-end-start-radius: var(--comparison-border-radius);
+  border-end-end-radius: var(--comparison-border-radius);
 }
 
 .comparison-table .mobile-filter-select option {
