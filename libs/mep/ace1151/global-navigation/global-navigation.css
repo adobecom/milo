@@ -31,7 +31,7 @@ header .feds-content-description {
 
 .global-navigation.test-nav.dropdown-active .feds-navLink[aria-expanded = "true"],
 .global-navigation.test-nav.dropdown-active .feds-navLink:hover {
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 .global-navigation a:hover {
@@ -281,7 +281,7 @@ header.global-navigation {
 .test-nav .feds-popup .feds-navLink:hover,
 .test-nav .feds-popup .feds-navLink:focus {
   background-color: transparent;
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 .feds-cta-wrapper {
@@ -350,7 +350,7 @@ header.global-navigation {
 }
 
 .global-navigation.test-nav.dropdown-active .feds-cta--secondary {
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 .feds-cta--secondary:hover {
@@ -361,8 +361,8 @@ header.global-navigation {
 
 header.test-nav.dropdown-active .feds-cta--secondary:hover {
   background: transparent;
-  color: #fff;
-  border-color: #fff;
+  color: var(--feds-color-white-v2);
+  border-color: var(--feds-color-white-v2);
 }
 
 .test-nav .feds-cta--secondary:focus-visible {
@@ -487,7 +487,7 @@ header.test-nav.dropdown-active .feds-cta--secondary:hover {
 }
 
 .test-nav.dropdown-active .feds-breadcrumbs [aria-current] {
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 .feds-breadcrumbs li span[aria-hidden="true"] {
@@ -547,7 +547,7 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
 }
 
 .test-nav.dropdown-active .feds-signIn {
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 .feds-signIn:hover {
@@ -1650,14 +1650,14 @@ header.test-nav .feds-nav > .feds-navItem > .feds-popup .feds-menu-column .feds-
   white-space: normal;
   font-weight: 700;
   text-align: unset;
-  color: #fff;;
+  color: var(--feds-color-white-v2);;
   font-family: var(--body-font-family);
   font-size: 24px;
   padding-bottom: 24px;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button:hover {
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
@@ -1751,7 +1751,7 @@ header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret:after {
 }
 
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret[aria-expanded="true"]:after {
-  border-color: #fff;
+  border-color: var(--feds-color-white-v2);
 }
 
 header.test-nav .feds-navLink--hoverCaret:after {
@@ -1790,7 +1790,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink,
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel:hover a.feds-navLink:hover {
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel:hover a.feds-navLink {
@@ -1799,7 +1799,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink:hover,
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink:focus {
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink:hover .feds-navLink-content .feds-navLink-title,
@@ -1807,7 +1807,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink:hover .feds-navLink-content .feds-navLink-description,
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink:focus .feds-navLink-content .feds-navLink-description,
 header.test-nav .feds-popup .feds-navLink-content:hover .feds-navLink{
-  color: #fff;
+  color: var(--feds-color-white-v2);
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-promo-wrapper {
