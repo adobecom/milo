@@ -331,7 +331,7 @@ export class MerchCardCollection extends LitElement {
                 "title": fragment.fields?.tagFiltersTitle,
                 "label": "types",
                 "deeplink": "types",
-                "checkboxes": fragment.fields?.tagFilters.map((tag) => {
+                "checkboxes": fragment.fields?.tagFilters?.map((tag) => {
                   // Example: "mas:types/desktop" -> "desktop"
                   // Example: "mas:types/mobile" -> "mobile"
                   // Example: "mas:types/web" -> "web"
@@ -339,7 +339,7 @@ export class MerchCardCollection extends LitElement {
                   const parsedTag = tag.split('/').pop();
                   const tagLabel = fragment.placeholders.tags[parsedTag] || parsedTag;
                   return { name: parsedTag, label: tagLabel };
-                })
+                }) || []
               }
             ];
 
