@@ -569,6 +569,40 @@
   border-bottom-color: var(--tabs-active-bg-color);
 }
 
+.tabs.s2a-dark .tabList button  {
+  border-radius: 16px 16px 0 0;
+}
+
+.tabs.s2a-dark .tabList button:not([aria-selected="true"])  {
+  color: var(--color-white);
+}
+
+.tabs.s2a-dark {
+  background-color: #201F32;
+}
+
+.tabs.s2a-dark .tab-content  {
+  background-color: var(--color-white);
+}
+
+.tabs.s2a-segment-control .tabList {
+  background: #000;
+  border: 1px solid transparent;
+}
+.tabs.s2a-segment-control .tabList button { 
+  color: var(--color-white);
+}
+.tabs.s2a-segment-control .tabList button[aria-selected="true"], 
+.tabs.s2a-segment-control .tabList button[aria-checked="true"] {
+    background: var(--color-white);
+    color: #000;
+}
+
+.tabs.s2a-transparent-bg,
+.tabs.s2a-transparent-bg .tabs-wrapper {
+  background: transparent;
+}
+
 @media screen and (min-width: 600px) {
   .tabs.radio .tabList.tabList .tab-list-container {
     flex-direction: row;
