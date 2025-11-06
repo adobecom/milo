@@ -11,7 +11,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
 } from '../../../../utils/utils.js';
-import { replaceKey, replaceText, fetchPlaceholders } from '../../../../features/placeholders.js';
+import { replaceText, fetchPlaceholders } from '../../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS, FLAGS, handleCommands } from '../../../../features/personalization/personalization.js';
 
 loadLana();
