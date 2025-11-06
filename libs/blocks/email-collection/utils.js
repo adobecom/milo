@@ -1,4 +1,5 @@
 import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '../../utils/utils.js';
+import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
   local: 'https://www.stage.adobe.com/milo-email-collection-api',
@@ -31,14 +32,14 @@ export const FORM_FIELDS = {
     tag: 'input',
     attributes: {
       type: 'text',
-      readonly: '',
+      disabled: '',
     },
   },
   'last-name': {
     tag: 'input',
     attributes: {
       type: 'text',
-      readonly: '',
+      disabled: '',
     },
   },
   country: {
@@ -46,7 +47,7 @@ export const FORM_FIELDS = {
     url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=countries`),
     attributes: {
       type: 'text',
-      readonly: '',
+      disabled: '',
     },
   },
   organization: {
@@ -123,7 +124,7 @@ export const [createAriaLive, updateAriaLive] = (() => {
   return [
     (el) => {
       ariaLive = createTag('div', {
-        class: 'email-aria-live',
+        class: 'email-collection-aria-live',
         'aria-live': 'polite',
         role: 'status',
       });
@@ -263,6 +264,23 @@ export async function getAEPData() {
   } catch (e) {
     return {};
   }
+}
+
+function waitForModal() {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(), 3000);
+    window.addEventListener('milo:modal:loaded', () => {
+      clearTimeout(timeout);
+      resolve();
+    }, { once: true });
+  });
+}
+
+export async function redirectToSignIn(dialog) {
+  const ims = await getIMS();
+  if (!document.body.contains(dialog)) await waitForModal();
+  await ims.signIn();
+  if (dialog) closeModal(dialog);
 }
 
 export async function runtimePost(url, data, notRequiredData = []) {

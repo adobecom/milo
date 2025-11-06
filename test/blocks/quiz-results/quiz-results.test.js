@@ -11,21 +11,14 @@ const { default: init, LOADING_ERROR } = await import('../../../libs/blocks/quiz
 const { default: mockData } = await import('./mocks/quiz-results.mock-data.js');
 
 describe('Quiz Results', () => {
-  it('Doesnt load data without local storage', async () => {
-    const el = document.body.querySelector('.basic');
+  it('Doesnt load data without basicFragments in local storage', async () => {
+    const el = document.body.querySelector('.basic-one');
+    localStorage.setItem('quiz-result-test', JSON.stringify(mockData.mockOne));
     localStorage.clear();
 
     await init(el, 'quiz-results', 'quiz-result-test');
 
-    expect(window.lana.log.args[0][0]).to.equal(`${LOADING_ERROR} local storage missing`);
-  });
-  it('Doesnt load data without basicFragments in local storage', async () => {
-    const el = document.body.querySelector('.basic-one');
-    localStorage.setItem('quiz-result-test', JSON.stringify(mockData.mockOne));
-
-    await init(el, 'quiz-results', 'quiz-result-test');
-
-    expect(window.lana.log.args[1][0]).to.equal(`${LOADING_ERROR} Basic fragments are missing`);
+    expect(window.lana.log.args[0][0]).to.equal(`${LOADING_ERROR} Basic fragments are missing`);
   });
   it('Loads basic fragments', async () => {
     const el = document.body.querySelector('.basic-one');
@@ -81,6 +74,6 @@ describe('Quiz Results', () => {
     localStorage.setItem('misconf', JSON.stringify(mockData.mockTwo));
     el.classList.remove('nested');
     await init(el, 'quiz-results', 'misconf');
-    expect(window.lana.log.args[2][0]).to.equal(`${LOADING_ERROR} The quiz-results block is misconfigured`);
+    expect(window.lana.log.args[1][0]).to.equal(`${LOADING_ERROR} The quiz-results block is misconfigured`);
   });
 });

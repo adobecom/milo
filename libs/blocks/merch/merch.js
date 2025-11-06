@@ -329,7 +329,6 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
 let upgradeOffer = null;
-let litPromise;
 
 /**
  * Given a url, calculates the hostname of MAS platform.
@@ -437,23 +436,6 @@ function getFragmentClientUrl() {
 const failedExternalLoads = new Set();
 
 const loadingPromises = new Map();
-
-/**
- * Loads lit dependency dynamically when needed
- * @returns {Promise} Promise that resolves when lit is loaded
- */
-export async function loadLitDependency() {
-  if (litPromise) return litPromise;
-
-  if (window.customElements?.get('lit-element')) {
-    return Promise.resolve();
-  }
-
-  const { base } = getConfig();
-  litPromise = import(`${base}/deps/lit-all.min.js`);
-
-  return litPromise;
-}
 
 /**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
@@ -763,6 +745,18 @@ function appendExtraOptions(url, extraOptions) {
   return url;
 }
 
+export function applyPromo(url) {
+  const { mep } = getConfig();
+  const promoModal = mep?.inBlock?.merch?.fragments?.[url.pathname];
+  try {
+    const promoUrl = new URL(promoModal?.content);
+    return promoUrl;
+  } catch (e) {
+    log?.error('Failed to apply promo to external modal', e);
+  }
+  return url;
+}
+
 // TODO this should migrate to checkout.js buildCheckoutURL
 export function appendDexterParameters(url, extraOptions, el) {
   const isRelativePath = url.startsWith('/');
@@ -775,6 +769,7 @@ export function appendDexterParameters(url, extraOptions, el) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
+  absoluteUrl = applyPromo(absoluteUrl);
   absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
   absoluteUrl = appendTabName(absoluteUrl, el);
   return isRelativePath
