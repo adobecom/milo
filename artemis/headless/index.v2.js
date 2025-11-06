@@ -50,7 +50,7 @@ const processPage = async (browser, urlConfig) => {
     page = await browser.newPage();
     await page.setRequestInterception(true);
     page.on("request", (req) => {
-      if (["image", "font", "media", "stylesheet"].includes(req.resourceType())) {
+      if (["image", "media"].includes(req.resourceType())) {
         req.abort();
       } else {
         req.continue();
@@ -287,7 +287,12 @@ const runBatch = async () => {
     await fs.mkdir(OUTPUT_DIR, { recursive: true });
 
     console.log("🚀 Launching browser...");
-    browser = await puppeteer.launch({ headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    browser = await puppeteer.launch({ headless: "new", 
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1440,9000'], 
+      defaultViewport: {
+        width: 1440, // <-- And change width here
+        height: 9000
+      }});
 
     for (const config of urlConfigs) {
       // --- Merge global and page-specific assets ---

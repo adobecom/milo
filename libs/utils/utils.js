@@ -198,8 +198,11 @@ export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
   }
+  const params = new URLSearchParams(window.location.search);
+  const localeFromParam = params.get('locale');
+
   const split = pathname.split('/');
-  const localeString = split[1];
+  const localeString = localeFromParam || split[1];
   let locale = locales[localeString] || locales[''];
   if ([LANGSTORE, PREVIEW].includes(localeString)) {
     const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
