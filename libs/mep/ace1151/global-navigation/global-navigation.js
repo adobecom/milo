@@ -1623,7 +1623,7 @@ class Gnav {
 export default async function init(block) {
   const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
-  let newMobileNav = true;
+  const newMobileNav = true;
   const [url, hash = ''] = sourceUrl.split('#');
   if (hash === '_noActiveItem') {
     setDisableAEDState();

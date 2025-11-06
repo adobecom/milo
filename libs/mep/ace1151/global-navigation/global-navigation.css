@@ -1836,6 +1836,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink--gray-gradient .feds-navLink-title {
   padding-top: 10px;
+  color: #000;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
