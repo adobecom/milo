@@ -8,7 +8,7 @@ async function checkWcsElements() {
 
   // Check for elements with data-wcs-osi attribute
   const allWcsElements = document.querySelectorAll('[data-wcs-osi]');
-  
+
   for (const elem of allWcsElements) {
     const wcsOsi = elem.getAttribute('data-wcs-osi');
     const tagName = elem.tagName.toLowerCase();
@@ -16,7 +16,7 @@ async function checkWcsElements() {
     const ariaLabel = elem.getAttribute('aria-label');
     const textContent = elem.textContent?.trim();
     const displayText = ariaLabel || textContent || `<${tagName}> element`;
-    
+
     const elementData = {
       type: tagName,
       displayText,
@@ -28,7 +28,7 @@ async function checkWcsElements() {
       finalUrl: null,
       checking: false,
     };
-    
+
     elements.push(elementData);
   }
 
@@ -40,7 +40,7 @@ async function checkWcsElements() {
     if (elementData.href) {
       wcsElements.value[index].checking = true;
       wcsElements.value = [...wcsElements.value];
-      
+
       const result = await checkUrl(elementData.href);
       wcsElements.value[index].urlStatus = result.status;
       wcsElements.value[index].finalUrl = result.finalUrl;
@@ -49,7 +49,7 @@ async function checkWcsElements() {
       wcsElements.value[index].finalId = result.finalId;
       wcsElements.value[index].checking = false;
       wcsElements.value = [...wcsElements.value];
-      
+
       // Highlight error elements with red outline
       if (result.status === 'error') {
         elementData.element.classList.add('preflight-merch-error');
@@ -62,23 +62,23 @@ async function checkWcsElements() {
 
 async function checkUrl(url) {
   try {
-    const response = await fetch(url, { 
+    const response = await fetch(url, {
       method: 'HEAD',
       redirect: 'follow',
     });
-    
+
     const finalUrl = response.url;
     const hasError = finalUrl.toLowerCase().includes('error');
-    
+
     // Check if items[0][id] parameter matches between original and final URL
     const originalParams = new URLSearchParams(new URL(url).search);
     const finalParams = new URLSearchParams(new URL(finalUrl).search);
-    
+
     const originalId = originalParams.get('items[0][id]');
     const finalId = finalParams.get('items[0][id]');
-    
+
     const idMismatch = originalId && finalId && originalId !== finalId;
-    
+
     return {
       status: (hasError || idMismatch) ? 'error' : 'success',
       finalUrl,
@@ -111,7 +111,7 @@ function scrollToElement(location) {
 function WcsElementItem({ wcsElem }) {
   const statusIconClass = wcsElem.urlStatus === 'error' ? 'result-icon red' : wcsElem.urlStatus === 'success' ? 'result-icon green' : '';
   const showUrlInfo = wcsElem.href;
-  
+
   return html`
     <div class="preflight-item merch-item merch-wcs-item ${wcsElem.urlStatus === 'error' ? 'has-url-error' : ''}">
       <div class="preflight-item-text">
@@ -126,7 +126,7 @@ function WcsElementItem({ wcsElem }) {
             <strong>Original URL: </strong> ${wcsElem.href}
             ${wcsElem.checking && html`<br/><span class="url-checking">Checking URL...</span>`}
             ${wcsElem.finalUrl && html`
-              <br/><strong>Final URL: </strong> 
+              <br/><strong>Final URL: </strong>
               <span class="${wcsElem.urlStatus === 'error' ? 'url-error' : 'url-success'}">
                 ${wcsElem.finalUrl}
               </span>
@@ -134,7 +134,7 @@ function WcsElementItem({ wcsElem }) {
             ${wcsElem.idMismatch && html`
               <br/><span class="url-error-message">items[0][id] parameter mismatch!</span>
               <br/><span class="id-comparison">
-                Original ID: <code class="wcs-osi-code">${wcsElem.originalId}</code> 
+                Original ID: <code class="wcs-osi-code">${wcsElem.originalId}</code>
                 → Final ID: <code class="wcs-osi-code">${wcsElem.finalId}</code>
               </span>
             `}
@@ -143,8 +143,8 @@ function WcsElementItem({ wcsElem }) {
             `}
           `}
         </p>
-        <button 
-          class="preflight-action merch-scroll-btn" 
+        <button
+          class="preflight-action merch-scroll-btn"
           onclick=${() => scrollToElement(wcsElem.location)}>
           Scroll to element
         </button>
@@ -220,4 +220,3 @@ export default function Merch() {
     </div>
   `;
 }
-
