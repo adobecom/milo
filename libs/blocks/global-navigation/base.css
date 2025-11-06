@@ -73,6 +73,10 @@
   flex-shrink: 0;
 }
 
+.global-navigation .feds-popup .feds-menu-container .feds-menu-content .feds-navLink {
+  white-space: normal;
+}
+
 .feds-popup .has-subheader .feds-navLink:not(.feds-navLink--header) {
   padding: 12px 24px;
 }
@@ -170,10 +174,6 @@ header.global-navigation.ready {
   display: flex;
   font-size: 12px;
   color: var(--feds-color-navLink-description);
-}
-
-.global-navigation .feds-popup .feds-navLink-description {
-  white-space: normal;
 }
 
 /* Desktop styles */
