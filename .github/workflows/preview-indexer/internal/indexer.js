@@ -2,7 +2,7 @@
 import { getImsToken, saveJsonToDa, getJsonFromDa } from './da-client.js';
 import { fetchLogsForSite, getSiteEnvKey, triggerPreview, getPreviewPathsForRegion } from './helix-client.js';
 import { getLastRunInfo, saveLastRuns } from './indexer-state.js';
-import { SiteConfig } from './config.js';
+import { SiteConfig } from './site-config.js';
 
 const previewJsonTemplate = {
   total: 0,
@@ -178,12 +178,15 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       const notExcluded = (path) => !config.excludePathsRegex?.test(path);
       const filteredPreviewPaths = previewPaths?.filter(
         (path) => hasNoExtension(path) && notExcluded(path),
-      );
+      ) || [];
 
-      if (filteredPreviewPaths?.length) {
+      const defaultPreviewsPathsJson = await getJsonFromDa(siteOrg, siteRepo, `${indexPath}-default`);
+      const defaultPreviewPaths = defaultPreviewsPathsJson?.data?.map?.((item) => item.Path) || [];
+      const mergedPreviewPaths = [...defaultPreviewPaths, ...filteredPreviewPaths];
+      if (mergedPreviewPaths?.length) {
         let previewIndex = { ...previewJsonTemplate };
-        const pathData = filteredPreviewPaths.map((path) => ({ Path: path }));
-        const total = filteredPreviewPaths.length;
+        const pathData = mergedPreviewPaths.map((path) => ({ Path: path }));
+        const total = mergedPreviewPaths.length;
         previewIndex = { ...previewIndex, total, limit: total, data: pathData };
         const result = await saveJsonToDa(siteOrg, siteRepo, indexPath, previewIndex);
         console.log(`Preview index saved to DA at ${result.daHref} with ${JSON.stringify(result)}`);
