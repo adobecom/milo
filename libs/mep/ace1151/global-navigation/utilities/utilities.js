@@ -635,18 +635,6 @@ const parseTabsFromMenuSection = async (section, index) => {
   };
 };
 
-const promoCrossCloudTab = async (popup) => {
-  const additionalLinks = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
-  if (!additionalLinks.length) return [];
-  const tabName = await replaceKey('more', getFedsPlaceholderConfig());
-  return [{
-    name: tabName,
-    links: additionalLinks.map((x) => x.outerHTML).join(''),
-    daallTab: tabName,
-    daalhTabContent: tabName,
-  }];
-};
-
 export async function getMainMenuPlaceholder() {
   const config = getConfig();
   const cloudPlaceholders = await fetchPlaceholders({ config });
@@ -670,7 +658,6 @@ export const transformTemplateToMobile = async ({
   toggleMenu,
   updatePopupPosition,
 }) => {
-  const isLoading = popup.classList.contains('loading');
   const tabs = await (async () => {
     const parsedSections = await Promise.all(
       [...popup.querySelectorAll('.feds-menu-section')]
@@ -683,7 +670,6 @@ export const transformTemplateToMobile = async ({
       if (tab.isHeadingAsRedirection) headingLinkTabs.push(tab);
       else normalTabs.push(tab);
     }
-    // const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
     return normalTabs.concat(headingLinkTabs);
   })();
 
