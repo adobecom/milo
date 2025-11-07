@@ -686,7 +686,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   white-space: break-spaces;
 }
 
-header .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
+header .feds-nav > .feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
   font-weight: 400;
   text-decoration: underline;
 }
@@ -1189,7 +1189,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     display: none;
   }
 
-  header.test-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta, header.test-nav .feds-nav .close-icon {
+  header.test-nav .feds-nav > .feds-navItem > .feds-popup .sticky-cta, header.test-nav .feds-nav .close-icon {
     display: none;
   }
 
@@ -1777,6 +1777,11 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   padding: 5px 18px 6px;
 }
 
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-cta--primary {
+  min-width: 100px;
+  max-width: 200px;
+}
+
 [dir = "rtl"] header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content {
   border-left: none;
   border-right: 1px solid var(--feds-borderColor-link-v2);
@@ -1827,7 +1832,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink:not(:has(div)) {
   white-space: break-spaces;
-  padding: 20px;
+  padding: 20px 0;
   font-size: 20px;
 }
 

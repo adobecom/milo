@@ -588,7 +588,9 @@ const parseTabsFromMenuSection = async (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const description = section.querySelector('.feds-menu-description');
   const name = headline?.textContent ?? 'Shop For';
-  const cta = section.querySelector('.feds-cta');
+  const stickyCta = section.querySelectorAll('.feds-cta--secondary');
+  const ctas = section.querySelectorAll('.feds-cta');
+
   let daallTab = headline?.getAttribute('daa-ll');
 
   // Handle desktop → mobile transition case
@@ -608,7 +610,7 @@ const parseTabsFromMenuSection = async (section, index) => {
 
   const links = columns
     .map((container) => [...container.querySelectorAll(
-      'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary',
+      isDesktop.matches ? 'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary, .feds-cta--secondary': 'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary',
     )]
       .map((x) => x.outerHTML)
       .join(''))
@@ -622,10 +624,11 @@ const parseTabsFromMenuSection = async (section, index) => {
   return {
     name,
     links,
+    ctas,
     daallTab,
     daalhTabContent,
     description: description?.textContent?.trim() ?? '',
-    cta,
+    stickyCta,
     ...(isHeadingAsRedirection
       ? {
         isHeadingAsRedirection: true,
@@ -750,7 +753,7 @@ export const transformTemplateToMobile = async ({
     <div class="tab-content">
       ${tabs
     .map(
-      ({ links, daalhTabContent, description, cta }, i) => `
+      ({ links, daalhTabContent, description, stickyCta, ctas }, i) => `
     <div
       id="${i}"
       class="tab-panel"
@@ -766,7 +769,7 @@ export const transformTemplateToMobile = async ({
     >
       ${description ? `<div class="feds-content-description">${description}</div>` : ''}
       ${links}
-      ${cta ? `<div class="sticky-cta">${cta.outerHTML}</div>` : ''}
+      ${stickyCta ? `<div class="sticky-cta">${stickyCta.outerHTML}</div>` : ''}
     </div>`,
     )
     .join('')}

@@ -974,47 +974,11 @@ class Gnav {
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
-    // this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
     });
   };
-
-  static decorateAppPrompt = async () => {
-    // Disabled PEP for the wayfinding test
-    // performance.mark('PEP-Start');
-    // const state = getMetadata('app-prompt')?.toLowerCase();
-    // const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
-    // const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
-    // const hasMobileUA =
-    // /Android|webOS|iPhone|iPad|iPod|BlackBerry
-    // |IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
-
-    // if (state === 'off'
-    //   || !window.adobeIMS?.isSignedInUser()
-    //   || !isDesktop.matches
-    //   || hasMobileUA
-    //   || !entName?.length
-    //   || !promptPath?.length) return;
-
-    // const { base } = getConfig();
-    // const [
-    //   webappPrompt,
-    // ] = await Promise.all([
-    //   import('../../features/webapp-prompt/webapp-prompt.js'),
-    //   loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
-    // ]);
-
-    // await webappPrompt.default({
-    //   promptPath,
-    //   entName,
-    //   parent: this.blocks.universalNav,
-    //   getAnchorState,
-    // });
-    // performance.mark('PEP-End');
-    // logPerformance('PEP-Time', 'PEP-Start', 'PEP-End');
-  };
-
+  
   loadSearch = () => {
     const instanceAlreadyExists = !!this.blocks?.search?.instance;
     const searchNotInContent = !this.searchPresent();
