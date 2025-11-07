@@ -6,6 +6,9 @@ import {
     Env,
     Commitment,
     Term,
+    SUPPORTED_LANGUAGE_COUNTRY,
+    SUPPORTED_LANGUAGES,
+    SUPPORTED_COUNTRIES,
 } from './constants.js';
 
 import { PlanType, applyPlanType } from '@dexter/tacocat-core';
@@ -14,6 +17,7 @@ import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
 import { getLogHeaders, getService } from './utilities.js';
 import { printMeasure } from './utils.js';
+import { Defaults } from './defaults.js';
 
 const NAMESPACE = 'wcs';
 
@@ -259,6 +263,33 @@ export function Wcs({ settings }) {
     }
 
     /**
+     * Validates that country and language are supported and determines the appropriate locale.
+     *
+     * @param {string} country - The country code
+     * @param {string} language - The language code
+     * @param {boolean} perpetual - Whether to use perpetual offers
+     * @returns {{ validLanguage: string, validCountry: string, locale: string }} Returns either valid language and locale, or default language and locale
+     */
+      function validateLanguageAndLocale(country, language, perpetual) {
+        const validLanguage = SUPPORTED_LANGUAGES.includes(language)
+            ? language
+            : Defaults.language;
+        const validCountry = SUPPORTED_COUNTRIES.includes(country)
+            ? country
+            : Defaults.country;
+        return {
+            validCountry,
+            validLanguage:
+                country !== 'GB' && !perpetual ? 'MULT' : validLanguage,
+            validLocale: SUPPORTED_LANGUAGE_COUNTRY.includes(
+                `${validLanguage}_${validCountry}`,
+            )
+                ? `${validLanguage}_${validCountry}`
+                : `${Defaults.language}_${Defaults.country}`,
+        };
+    }
+
+    /**
      * Resolves requested list of "Offer Selector Ids" (`osis`) from WCS or local cache.
      * Returns one promise per OSI, the promise resolves to array of product offers
      * associated with this OSI.
@@ -280,9 +311,9 @@ export function Wcs({ settings }) {
         promotionCode = '',
         wcsOsi = [],
     }) {
-        const locale = `${language}_${country}`;
-        if (country !== 'GB' && !perpetual) language = 'MULT';
-        const groupKey = [country, language, promotionCode]
+        const { validCountry, validLanguage, validLocale } =
+            validateLanguageAndLocale(country, language, perpetual);
+        const groupKey = [validCountry, validLanguage, promotionCode]
             .filter((val) => val)
             .join('-')
             .toLowerCase();
@@ -296,11 +327,11 @@ export function Wcs({ settings }) {
                 let group = queue.get(groupKey);
                 if (!group) {
                     const options = {
-                        country,
-                        locale,
+                        country: validCountry,
+                        locale: validLocale,
                         offerSelectorIds: [],
                     };
-                    if (country !== 'GB' && !perpetual) options.language = language;
+                    if (country !== 'GB' && !perpetual) options.language = validLanguage;
                     const promises = new Map();
                     group = { options, promises };
                     queue.set(groupKey, group);
@@ -333,6 +364,7 @@ export function Wcs({ settings }) {
         resolveOfferSelectors,
         flushWcsCacheInternal,
         prefillWcsCache,
+        validateLanguageAndLocale,
     };
 }
 

@@ -6,9 +6,10 @@ import {
     WCS_PROD_URL,
     WCS_STAGE_URL,
     FF_DEFAULTS,
+    SUPPORTED_LANGUAGE_COUNTRY,
 } from './constants.js';
 import { Defaults } from './defaults.js';
-import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
+import { Env, CheckoutWorkflowStep } from './constants.js';
 
 import {
     getParameter,
@@ -27,7 +28,9 @@ function getLocaleSettings({
 } = {}) {
     language ??= locale?.split('_')?.[0] || Defaults.language;
     country ??= locale?.split('_')?.[1] || Defaults.country;
-    locale ??= `${language}_${country}`;
+    locale ??= SUPPORTED_LANGUAGE_COUNTRY.includes(`${language}_${country}`)
+        ? `${language}_${country}`
+        : `${Defaults.language}_${Defaults.country}`;
     return { locale, country, language };
 }
 
