@@ -585,15 +585,15 @@
   background-color: var(--color-white);
 }
 
-.tabs.s2a-segment-control .tabList {
+.tabs.segmented-control.s2a-segment-control .tabList {
   background: #000;
   border: 1px solid transparent;
 }
-.tabs.s2a-segment-control .tabList button { 
+.tabs.segmented-control.s2a-segment-control .tabList button { 
   color: var(--color-white);
 }
-.tabs.s2a-segment-control .tabList button[aria-selected="true"], 
-.tabs.s2a-segment-control .tabList button[aria-checked="true"] {
+.tabs.segmented-control.s2a-segment-control .tabList button[aria-selected="true"], 
+.tabs.segmented-control.s2a-segment-control .tabList button[aria-checked="true"] {
     background: var(--color-white);
     color: #000;
 }
