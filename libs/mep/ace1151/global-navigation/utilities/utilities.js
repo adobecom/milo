@@ -588,7 +588,7 @@ const parseTabsFromMenuSection = async (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const description = section.querySelector('.feds-menu-description');
   const name = headline?.textContent ?? 'Shop For';
-  const stickyCta = section.querySelectorAll('.feds-cta--secondary');
+  const stickyCta = section.querySelector('.feds-cta--secondary');
   const ctas = section.querySelectorAll('.feds-cta');
 
   let daallTab = headline?.getAttribute('daa-ll');
@@ -610,7 +610,7 @@ const parseTabsFromMenuSection = async (section, index) => {
 
   const links = columns
     .map((container) => [...container.querySelectorAll(
-      isDesktop.matches ? 'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary, .feds-cta--secondary': 'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary',
+      isDesktop.matches ? 'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary, .feds-cta--secondary' : 'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary',
     )]
       .map((x) => x.outerHTML)
       .join(''))
@@ -753,7 +753,7 @@ export const transformTemplateToMobile = async ({
     <div class="tab-content">
       ${tabs
     .map(
-      ({ links, daalhTabContent, description, stickyCta, ctas }, i) => `
+      ({ links, daalhTabContent, description, stickyCta }, i) => `
     <div
       id="${i}"
       class="tab-panel"

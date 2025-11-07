@@ -978,7 +978,7 @@ class Gnav {
       window.UniversalNav.reload(getConfiguration());
     });
   };
-  
+
   loadSearch = () => {
     const instanceAlreadyExists = !!this.blocks?.search?.instance;
     const searchNotInContent = !this.searchPresent();
