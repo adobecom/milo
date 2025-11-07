@@ -974,7 +974,7 @@ class Gnav {
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
-    this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
+    // this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
     });

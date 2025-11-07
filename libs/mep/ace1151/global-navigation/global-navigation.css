@@ -1225,6 +1225,11 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   header.test-nav .feds-nav > .feds-navItem > .feds-popup .feds-menu-column:hover .feds-navLink:hover {
     color: var(--feds-color-white-v2);
   }
+
+  header.test-nav.dropdown-active .feds-cta--secondary:hover {
+    border-color: #444;
+    background: #2c2c2c;
+  }
 }
 
 /* Desktop styles */
