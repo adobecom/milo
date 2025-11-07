@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
-import { replaceKey } from '../../features/placeholders.js';
+import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 const VALIDATION_STEP = {
   2: [
@@ -112,16 +112,11 @@ function onRender(formEl, totalSteps) {
 async function setStepText(totalSteps) {
   const config = getConfig();
   if (totalSteps === 2) {
-    stepText = {
-      1: await replaceKey('step-1-of-2', config),
-      2: await replaceKey('step-2-of-2', config),
-    };
+    const [step1, step2] = await replaceKeyArray(['step-1-of-2', 'step-2-of-2'], config);
+    stepText = { 1: step1, 2: step2 };
   } else {
-    stepText = {
-      1: await replaceKey('step-1-of-3', config),
-      2: await replaceKey('step-2-of-3', config),
-      3: await replaceKey('step-3-of-3', config),
-    };
+    const [step1, step2, step3] = await replaceKeyArray(['step-1-of-3', 'step-2-of-3', 'step-3-of-3'], config);
+    stepText = { 1: step1, 2: step2, 3: step3 };
   }
 }
 
