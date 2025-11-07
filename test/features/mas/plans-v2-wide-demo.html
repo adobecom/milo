@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plans V2 Wide Variant Demo</title>
+    <style>
+        body {
+            font-family: 'Adobe Clean', sans-serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #F5F5F5;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2C2C2C;
+        }
+        
+        .cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            align-items: center;
+        }
+
+        /* Button styles for demo */
+        .con-button {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .con-button.blue {
+            background-color: #1473E6;
+            color: #FFFFFF;
+            border-color: #1473E6;
+        }
+
+        .con-button.blue:hover {
+            background-color: #0D66D0;
+            border-color: #0D66D0;
+        }
+
+        .con-button.outline {
+            background-color: transparent;
+            color: #1473E6;
+            border-color: #1473E6;
+        }
+
+        .con-button.outline:hover {
+            background-color: #F5F5F5;
+        }
+    </style>
+    <script type="module" src="../../../libs/features/mas/dist/mas.js"></script>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Plans V2 Wide Variant Demo</h1>
+        
+        <div class="cards-grid">
+            <!-- Wide Card 1: Adobe Express Premium -->
+            <merch-card variant="plans-v2" size="wide">
+                <div slot="icons">
+                    <img src="https://www.adobe.com/content/dam/cc/icons/express.svg" 
+                         alt="Adobe Express" 
+                         width="41" 
+                         height="41">
+                </div>
+                
+                <h3 slot="heading-xs">Adobe Express Premium</h3>
+                
+                <p slot="subtitle">For creative teams</p>
+                
+                <div slot="body-xs">
+                    <p>Empower your team to make on-brand flyers, videos, and social posts that stand out. Create across web and mobile with unlimited access to premium templates and assets.</p>
+                </div>
+                
+                <div slot="heading-m">
+                    <div class="price-wrapper">
+                        <span class="price price-strikethrough">US$7.99/mo</span>
+                        <span class="price">US$4.99/mo</span>
+                    </div>
+                    <span class="price-legal">per license</span>
+                    <span class="price-legal">Annual, billed monthly</span>
+                </div>
+                
+                <p slot="promo-text">
+                    Save 38% promo messaging lorem ipsum dolor. <a href="#">See terms</a>
+                </p>
+                
+                <div slot="quantity-select">
+                    <label>Number of licenses</label>
+                    <select>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                    </select>
+                    <p class="help-text">Help text, gives more information.</p>
+                </div>
+                
+                <div slot="whats-included">
+                    <h4>What you get:</h4>
+                    <ul>
+                        <li>Create across web and mobile.</li>
+                        <li>Make standout content with millions of premium templates.</li>
+                        <li>Access over 200 million royalty-free Adobe Stock photos, videos, music tracks, and more.</li>
+                        <li>Put 30,000 fonts at your fingertips with the complete Adobe Fonts collection.</li>
+                        <li>Edit like a pro with Remove Video Background, advanced animation, and more.</li>
+                    </ul>
+                </div>
+                
+                <div slot="footer">
+                    <a href="#" class="con-button blue">Buy now</a>
+                    <a href="#" class="con-button outline">Select</a>
+                </div>
+                
+                <div slot="badge">Best value</div>
+            </merch-card>
+
+            <!-- Wide Card 2: Creative Cloud Single App -->
+            <merch-card variant="plans-v2" size="wide" border-color="spectrum-red-700-plans">
+                <div slot="icons">
+                    <img src="https://www.adobe.com/content/dam/cc/icons/photoshop.svg" 
+                         alt="Adobe Photoshop" 
+                         width="41" 
+                         height="41">
+                </div>
+                
+                <h3 slot="heading-xs">Creative Cloud Single App for teams</h3>
+                
+                <p slot="subtitle">Professional creative tools</p>
+                
+                <div slot="body-xs">
+                    <p>Get full access to one Creative Cloud app, such as Photoshop or Illustrator. Perfect for teams that need specialized creative tools with enterprise-level support and licensing management.</p>
+                </div>
+                
+                <div slot="heading-m">
+                    <div class="price-wrapper">
+                        <span class="price">US$37.99/mo</span>
+                    </div>
+                    <span class="price-legal">per license</span>
+                    <span class="price-legal">Annual, billed monthly</span>
+                </div>
+                
+                <div slot="quantity-select">
+                    <label>Number of licenses</label>
+                    <select>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                    </select>
+                    <p class="help-text">Help text, gives more information.</p>
+                </div>
+                
+                <div slot="whats-included">
+                    <h4>What you get:</h4>
+                    <ul>
+                        <li>Full access to one Adobe Creative Cloud app.</li>
+                        <li>100GB of cloud storage per user.</li>
+                        <li>Easy license management through Admin Console.</li>
+                        <li>Expert support and dedicated resources.</li>
+                    </ul>
+                </div>
+                
+                <div slot="footer">
+                    <a href="#" class="con-button blue">Buy now</a>
+                    <a href="#" class="con-button outline">Choose app</a>
+                </div>
+                
+                <div slot="badge">Best value</div>
+            </merch-card>
+
+            <!-- Wide Card 3: Basic example without promo -->
+            <merch-card variant="plans-v2" size="wide">
+                <div slot="icons">
+                    <img src="https://www.adobe.com/content/dam/cc/icons/acrobat.svg" 
+                         alt="Adobe Acrobat" 
+                         width="41" 
+                         height="41">
+                </div>
+                
+                <h3 slot="heading-xs">Acrobat Pro for teams</h3>
+                
+                <p slot="subtitle">Complete PDF solution</p>
+                
+                <div slot="body-xs">
+                    <p>Complete PDF solution for teams who need to create, edit, and sign documents. Streamline workflows with powerful tools for digital documents.</p>
+                </div>
+                
+                <div slot="heading-m">
+                    <div class="price-wrapper">
+                        <span class="price">US$19.99/mo</span>
+                    </div>
+                    <span class="price-legal">per license</span>
+                    <span class="price-legal">Annual, billed monthly</span>
+                </div>
+                
+                <div slot="quantity-select">
+                    <label>Number of licenses</label>
+                    <select>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                
+                <div slot="footer">
+                    <a href="#" class="con-button blue">Buy now</a>
+                </div>
+            </merch-card>
+
+            <hr style="width: 100%; border: 1px solid #E8E8E8; margin: 40px 0;">
+
+            <!-- Regular Card for Comparison -->
+            <h2 style="text-align: center; color: #2C2C2C;">Regular Size for Comparison</h2>
+            
+            <merch-card variant="plans-v2">
+                <div slot="icons">
+                    <img src="https://www.adobe.com/content/dam/cc/icons/express.svg" 
+                         alt="Adobe Express" 
+                         width="41" 
+                         height="41">
+                </div>
+                
+                <h3 slot="heading-xs">Adobe Express Premium</h3>
+                
+                <div slot="heading-m">
+                    <div class="price-wrapper">
+                        <span class="price price-strikethrough">US$7.99/mo</span>
+                        <span class="price">US$4.99/mo</span>
+                    </div>
+                    <span class="price-legal">per license</span>
+                    <span class="price-legal">Annual, billed monthly</span>
+                </div>
+                
+                <p slot="promo-text">
+                    Save 38% promo messaging lorem ipsum dolor. <a href="#">See terms</a>
+                </p>
+                
+                <div slot="body-xs">
+                    <p>Empower your team to make on-brand flyers, videos, and social posts that stand out.</p>
+                </div>
+                
+                <div slot="footer">
+                    <a href="#" class="con-button blue">Buy now</a>
+                    <a href="#" class="con-button outline">Select</a>
+                </div>
+                
+                <div slot="badge">Best value</div>
+            </merch-card>
+        </div>
+    </div>
+</body>
+</html>
+
