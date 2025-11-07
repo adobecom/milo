@@ -4,7 +4,6 @@ import {
   decorateIconStack,
   decorateTextOverrides,
   decorateButtons,
-  handleObjectFit,
 } from '../../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 
@@ -105,6 +104,34 @@ function decorateBrickIconStack(el) {
     liEl.append(txt);
     txt.querySelector('picture')?.remove();
     txt.querySelector('a:empty')?.remove();
+  });
+}
+function setObjectFitAndPos(text, pic, bgEl, objFitOptions) {
+  const hasPopupVideo = bgEl.querySelector('.modal-img-link');
+
+  const backgroundConfig = text.split(',').map((c) => c.toLowerCase().trim());
+  const fitOption = objFitOptions.filter((c) => backgroundConfig.includes(c));
+  const focusOption = backgroundConfig.filter((c) => !fitOption.includes(c));
+  if (fitOption) [pic.querySelector('img').style.objectFit] = fitOption;
+
+  if (hasPopupVideo) return;
+
+  bgEl.innerHTML = '';
+  bgEl.append(pic);
+  bgEl.append(document.createTextNode(focusOption.join(',')));
+}
+
+export function handleObjectFit(bgRow) {
+  const bgConfig = bgRow.querySelectorAll('div');
+  [...bgConfig].forEach((r) => {
+    const pic = r.querySelector('picture');
+    if (!pic) return;
+    let text = '';
+    const pchild = [...r.querySelectorAll('p:not(:empty)')].filter((p) => p.innerHTML.trim() !== '');
+    if (pchild.length > 2) text = pchild[1]?.textContent.trim();
+    if (!text && r.textContent) text = r.textContent;
+    if (!text) return;
+    setObjectFitAndPos(text, pic, r, ['fill', 'contain', 'cover', 'none', 'scale-down']);
   });
 }
 

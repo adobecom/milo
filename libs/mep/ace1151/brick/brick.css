@@ -250,7 +250,9 @@
     border-radius: 0 0 var(--spacing-xs) var(--spacing-xs);
   }
 
-  .brick.s2a-mobile * {
+  .brick.s2a-mobile > .background,
+  .brick.s2a-mobile > .foreground,
+  .brick.s2a-mobile img {
     border-radius: inherit !important;
   }
 }
