@@ -26,6 +26,8 @@ const KEY_CODES = {
 };
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
+const isDesktop = window.matchMedia('(min-width: 900px)');
+
 function getPreviousAriaLabel(currentIndex, totalSlides) {
   return currentIndex === 0 && totalSlides > 0
     ? `Previous slide, slide ${currentIndex + 1} of ${totalSlides}`
@@ -259,9 +261,10 @@ function updateAriaLive(ariaLive, slide, carouselElements) {
 function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
   const active = activeEl ?? block.querySelector('.carousel-slide.active');
   const activeIdx = slides.findIndex((el) => el === active);
-  const isWide = window.matchMedia('(min-width: 900px)').matches;
   const showClass = [...block.classList].find((cls) => cls.startsWith('show-'));
-  const visible = isWide && showClass ? showClass.split('-')[1] : 1;
+  const visible = (isDesktop.matches && block.matches('.ups-desktop') && slides.length)
+    || (isDesktop.matches && showClass?.split('-')[1])
+    || 1;
   const ordered = activeIdx > 0
     ? [...slides.slice(activeIdx), ...slides.slice(0, activeIdx)] : slides;
   ordered.forEach((slide, i) => {
@@ -482,7 +485,6 @@ function readySlides(slides, slideContainer, isUpsDesktop, carouselElements) {
     });
   };
 
-  const isDesktop = window.matchMedia('(min-width: 900px)');
   const setUpsOrder = () => {
     if (!isDesktop.matches) setOrder();
     else slides.forEach((slide) => { slide.style.order = ''; });

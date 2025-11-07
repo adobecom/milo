@@ -18,6 +18,7 @@ const {
   chartData,
   processDataset,
   processMarkData,
+  processUnits,
   areaSeriesOptions,
   donutTooltipFormatter,
   donutTitleOptions,
@@ -42,6 +43,14 @@ setConfig(config);
 describe('chart', () => {
   let fetch;
   let paramsGetStub;
+  const units = {
+    xAxis: { date: false },
+    yAxes: [{
+      prefix: '',
+      suffix: 'k',
+    }],
+  };
+
   before(() => {
     fetch = sinon.stub(window, 'fetch');
     paramsGetStub = sinon.stub(URLSearchParams.prototype, 'get');
@@ -98,7 +107,7 @@ describe('chart', () => {
     ];
     const tooltip = 'Sunday<br /><span>x</span> 140k Chrome with a Really Really Long Name<br /><span>x</span> 180k Firefox Lorem Ipsum Dolor Sit Amet<i class="tooltip-icon"></i>';
 
-    expect(tooltipFormatter(params, 'k')).to.equal(tooltip);
+    expect(tooltipFormatter(params, units)).to.equal(tooltip);
   });
 
   it('getColors returns default color list if no color provided', () => {
@@ -393,24 +402,24 @@ describe('chart', () => {
   it('setDonutTitle sets expects options', () => {
     const chart = { setOption: sinon.spy() };
     const expected = [[{ title: { text: [`{a|${'100'.toLocaleString()}k}`, '{b|title}'].join('\n') } }]];
-    setDonutTitle(chart, 100, 'k', 'title');
+    setDonutTitle(chart, 100, units, 'title');
     expect(chart.setOption.args).to.eql(expected);
   });
 
   it('handleDonutSelect returns new sum', () => {
     const source = [[100, 'Monday'], [276, 'Tuesday'], [200, 'Wednesday']];
     const selected = { Monday: false, Tuesday: true, Wednesday: true };
-    expect(handleDonutSelect(source, selected, { setOption: () => { } }, null, null)).to.equal(476);
+    expect(handleDonutSelect(source, selected, { setOption: () => {} }, units, null)).to.equal(476);
   });
 
   it('donutTitleOptions sums values', () => {
     const source = [[100, 'Monday'], [276, 'Tuesday'], [200, 'Wednesday']];
-    const options = donutTitleOptions(source, ['test'], 'M', 'small');
+    const options = donutTitleOptions(source, ['test'], units, 'small');
     const expected = {
       show: true,
       left: 'center',
       bottom: '48%',
-      text: '{a|576M}\n{b|}',
+      text: '{a|576k}\n{b|}',
       textStyle: {
         rich: {
           a: {
@@ -434,7 +443,7 @@ describe('chart', () => {
     const data = [43, 'Mobile'];
     const encode = { value: [0] };
     const expected = '* Mobile<br />43k 43%<i class="tooltip-icon"></i>';
-    expect(donutTooltipFormatter({ marker: '*', data, encode, name: 'Mobile', percent: 43 }, 'k')).to.equal(expected);
+    expect(donutTooltipFormatter({ marker: '*', data, encode, name: 'Mobile', percent: 43 }, units.yAxes[0])).to.equal(expected);
   });
 
   it('getChartOptions', () => {
@@ -466,7 +475,7 @@ describe('chart', () => {
   });
 
   it('getChartOptions axisLabel formatter', () => {
-    const options = getChartOptions({ processedData: { units: ['k', 'm'] } });
+    const options = getChartOptions({ processedData: { units } });
     expect(typeof options.yAxis[0].axisLabel.formatter()).to.equal('string');
   });
 
@@ -494,7 +503,7 @@ describe('chart', () => {
     const value = ['Avg Visitors', 100, 156, 105];
     const encode = { x: [1] };
     const expected = 'Chrome<br />* 100k Avg Visitors<i class="tooltip-icon"></i>';
-    expect(barTooltipFormatter({ seriesName: 'Chrome', marker: '*', value, encode, name: 'Avg Visitors' }, 'k')).to.equal(expected);
+    expect(barTooltipFormatter({ seriesName: 'Chrome', marker: '*', value, encode, name: 'Avg Visitors' }, units.yAxes[0])).to.equal(expected);
   });
 
   it('barSeriesOptions', () => {
@@ -505,7 +514,7 @@ describe('chart', () => {
         type: 'bar',
         label: {
           show: true,
-          formatter: '{@[1]}K',
+          formatter: '{@[1]}k',
           position: 'right',
           textBorderColor: '#000',
           distance: 8,
@@ -528,7 +537,7 @@ describe('chart', () => {
         type: 'bar',
         label: {
           show: true,
-          formatter: '{@[2]}K',
+          formatter: '{@[2]}k',
           position: 'right',
           textBorderColor: '#000',
           distance: 8,
@@ -548,14 +557,12 @@ describe('chart', () => {
         yAxisIndex: 0,
       },
     ];
-    expect(barSeriesOptions('bar', false, firstDataset, colors, 'medium', ['K'])).to.eql(expected);
+    expect(barSeriesOptions('bar', false, firstDataset, colors, 'medium', units)).to.eql(expected);
   });
 
   it('lineSeriesOptions returns correct options with marks', () => {
     const series = [{ Type: 'markArea', Name: 'Weekend', Axis: 'xAxis', Value: 'Saturday-Sunday' }, { Type: 'markLine', Name: 'Standout', Axis: 'xAxis', Value: 'Tuesday' }, { Type: 'markLine', Name: 'Average', Axis: 'yAxis', Value: '200' }];
     const firstDataset = [100, 156, 160];
-    const xUnit = '';
-    const yUnits = ['K'];
     const expected = [
       {
         type: 'line',
@@ -617,7 +624,7 @@ describe('chart', () => {
       },
     ];
 
-    expect(lineSeriesOptions(series, firstDataset, xUnit, yUnits)).to.eql(expected);
+    expect(lineSeriesOptions(series, firstDataset, units)).to.eql(expected);
   });
 
   it('init donut chart', async () => {
@@ -675,7 +682,7 @@ describe('chart', () => {
     const data = [100, 'Chrome'];
     const encode = { value: [0] };
     const expected = 'Chrome<br />* 100k<i class="tooltip-icon"></i>';
-    expect(pieTooltipFormatter({ marker: '*', data, encode, name: 'Chrome' }, 'k')).to.equal(expected);
+    expect(pieTooltipFormatter({ marker: '*', data, encode, name: 'Chrome' }, units.yAxes[0])).to.equal(expected);
   });
 
   it('pieSeriesOptions returns correct options', () => {
@@ -773,5 +780,91 @@ describe('chart', () => {
     expect(chartWrapper).to.exist;
     expect(chartWrapper.getAttribute('role')).to.equal('img');
     expect(chartWrapper.getAttribute('aria-label')).to.contain('This is a chart');
+  });
+
+  describe('processUnits', () => {
+    it('returns default units when no unit headers provided', () => {
+      const headers = { Day: 'Monday', Visitors: '100' };
+      const expected = {
+        xAxis: { date: false },
+        yAxes: [{
+          prefix: '',
+          suffix: '',
+        }],
+      };
+      expect(processUnits(headers)).to.eql(expected);
+    });
+
+    it('handles legacy unit format with suffix only', () => {
+      const headers = { Day: 'Monday', Visitors: '100', Unit: 'k' };
+      const expected = {
+        xAxis: { date: false },
+        yAxes: [{
+          prefix: '',
+          suffix: 'k',
+        }],
+      };
+      expect(processUnits(headers)).to.eql(expected);
+    });
+
+    it('handles legacy unit format with date and two y-axis units', () => {
+      const headers = { Day: 'Monday', Visitors: '100', Unit: 'date-k-m' };
+      const expected = {
+        xAxis: { date: true },
+        yAxes: [
+          {
+            prefix: '',
+            suffix: 'k',
+          },
+          {
+            prefix: '',
+            suffix: 'm',
+          },
+        ],
+      };
+      expect(processUnits(headers)).to.eql(expected);
+    });
+
+    it('handles new format with y axis unit suffix only', () => {
+      const headers = { Day: 'Monday', Visitors: '100', 'Y Axis Unit': 'k' };
+      const expected = {
+        xAxis: { date: false },
+        yAxes: [{
+          prefix: '',
+          suffix: 'k',
+        }],
+      };
+      expect(processUnits(headers)).to.eql(expected);
+    });
+
+    it('handles new format with y axis unit prefix and suffix', () => {
+      const headers = { Day: 'Monday', Visitors: '100', 'Y Axis Unit': '$, k' };
+      const expected = {
+        xAxis: { date: false },
+        yAxes: [{
+          prefix: '$',
+          suffix: 'k',
+        }],
+      };
+      expect(processUnits(headers)).to.eql(expected);
+    });
+
+    it('handles new format with date and two y-axis units', () => {
+      const headers = { Day: 'Monday', Visitors: '100', 'X Axis Unit': 'date', 'Y Axis Unit': '£, K', 'Secondary Y Axis Unit': '$,M' };
+      const expected = {
+        xAxis: { date: true },
+        yAxes: [
+          {
+            prefix: '£',
+            suffix: 'K',
+          },
+          {
+            prefix: '$',
+            suffix: 'M',
+          },
+        ],
+      };
+      expect(processUnits(headers)).to.eql(expected);
+    });
   });
 });
