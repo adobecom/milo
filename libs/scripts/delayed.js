@@ -37,7 +37,7 @@ export const loadBlockNotifications = async (getConfig, loadStyle) => {
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
-  const { privacyId, env, holdPrivacyBanner } = getConfig();
+  const { privacyId, env, holdPrivacyBanner, locale } = getConfig();
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
     'hlx.page': 'f5b9e81a-54b5-40cb-afc3-84ca26e7dbaf-test',
@@ -51,7 +51,7 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     .find((domainId) => window.location.host.includes(domainId))]
       ?? privacyId ?? acom;
   window.fedsConfig = {
-    privacy: { otDomainId },
+    privacy: { otDomainId, locale: locale?.prefix },
     documentLanguage: true,
   };
   if (holdPrivacyBanner === true) {
