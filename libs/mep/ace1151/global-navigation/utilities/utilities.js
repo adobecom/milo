@@ -673,8 +673,11 @@ export const transformTemplateToMobile = async ({
 }) => {
   // const isLoading = popup.classList.contains('loading');
   const tabs = await (async () => {
+    const selectMultiColumnSections = '.feds-menu-column--group .feds-menu-section';
+    const selectSingleColumns = '.feds-menu-column > .feds-menu-section'; // includes multi-section single columns
+    const selectMultiColumnSmallMenus = '.feds-menu-column:has(> .feds-menu-items)';
     const parsedSections = await Promise.all(
-      [...popup.querySelectorAll('.feds-menu-column')]
+      [...popup.querySelectorAll(`:is(${selectMultiColumnSections}, ${selectSingleColumns}, ${selectMultiColumnSmallMenus})`)]
         .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
         .map(parseTabsFromMenuSection),
     );
