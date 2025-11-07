@@ -1,0 +1,140 @@
+.s2a-fontcheck {
+  display: none !important;
+}
+
+/* s2a theme overrides */
+:root:has(meta[name="theme"][content="s2a"]) {
+  /* s2a theme font overrides */
+    --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+
+    /* mobile and tablet heading overrides */
+    --type-heading-all-weight: 900;
+    --type-heading-xxxxl-size: 48px;
+    --type-heading-xxxxl-lh: 110%;
+    --type-heading-xxxl-size: 40px;
+    --type-heading-xxxl-lh: 110%;
+    --type-heading-xxl-size: 32px;
+    --type-heading-xxl-lh: 110%;
+    --type-heading-xl-size: 28px;
+    --type-heading-xl-lh: 110%;
+    --type-heading-l-size: 24px;
+    --type-heading-l-lh: 110%;
+    --type-heading-m-size: 20px;
+    --type-heading-m-lh: 115%;
+    --type-heading-s-size: 18px;
+    --type-heading-s-lh: 115%;
+    --type-heading-xs-size: 16px;
+    --type-heading-xs-lh: 115%;
+
+  /* base desktop heading overrides */
+  @media (min-width: 1200px) {
+    --type-heading-xxxxl-size: 73px;
+    --type-heading-xxxxl-lh: 110%;
+    --type-heading-xxxl-size: 52px;
+    --type-heading-xxxl-lh: 110%;
+    --type-heading-xxl-size: 44px;
+    --type-heading-xxl-lh: 110%;
+    --type-heading-xl-size: 36px;
+    --type-heading-xl-lh: 110%;
+    --type-heading-l-size: 28px;
+    --type-heading-l-lh: 110%;
+    --type-heading-m-size: 24px;
+    --type-heading-m-lh: 115%;
+    --type-heading-s-size: 20px;
+    --type-heading-s-lh: 115%;
+    --type-heading-xs-size: 18px;
+    --type-heading-xs-lh: 115%;
+  }
+  
+  /* xl desktop heading overrides */
+  @media (min-width: 1680px) {
+    --type-heading-xxxxl-size: 82px;
+    --type-heading-xxxxl-lh: 110%;
+    --type-heading-xxxl-size: 58px;
+    --type-heading-xxxl-lh: 110%;
+    --type-heading-xxl-size: 52px;
+    --type-heading-xxl-lh: 110%;
+    --type-heading-xl-size: 40px;
+    --type-heading-xl-lh: 110%;
+    --type-heading-l-size: 32px;
+    --type-heading-l-lh: 110%;
+    --type-heading-m-size: 28px;
+    --type-heading-m-lh: 115%;
+    --type-heading-s-size: 22px;
+    --type-heading-s-lh: 115%;
+    --type-heading-xs-size: 20px;
+    --type-heading-xs-lh: 115%;
+  }
+  
+  /* heading overrides for hardcoded heading variables */
+  [class^="heading-xxxxl"] {
+    font-size: var(--type-heading-xxxxl-size);
+    line-height: var(--type-heading-xxxxl-lh);
+  }
+  
+  [class^="heading-xxxl"] {
+    font-size: var(--type-heading-xxxl-size);
+    line-height: var(--type-heading-xxxl-lh);
+  }
+
+  [class^="heading-xxl"] {
+    font-size: var(--type-heading-xxl-size);
+    line-height: var(--type-heading-xxl-lh);
+  }
+
+  [class^="heading-xl"] {
+    font-size: var(--type-heading-xl-size);
+    line-height: var(--type-heading-xl-lh);
+  }
+
+  [class^="heading-l"] {
+    font-size: var(--type-heading-l-size);
+    line-height: var(--type-heading-l-lh);
+  }
+
+  [class^="heading-m"] {
+    font-size: var(--type-heading-m-size);
+    line-height: var(--type-heading-m-lh);
+  }
+
+  [class^="heading-s"] {
+    font-size: var(--type-heading-s-size);
+    line-height: var(--type-heading-s-lh);
+  }
+
+  [class^="heading-xs"] {
+    font-size: var(--type-heading-xs-size);
+    line-height: var(--type-heading-xs-lh);
+  }
+
+  body.mweb-enabled [class^="heading-"], h1, h2, h3, h4, h5, h6 {
+    font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
+    font-weight: var(--type-heading-all-weight);
+  }
+
+  /* s2a 1920px content max width overrides */
+  @media (max-width: 599px) {
+    --grid-container-width: 93.33%;
+  }
+  @media (max-width: 2219px) {
+      --grid-container-width: 83.33%;
+  }
+  @media (min-width: 2220px) {
+      --grid-container-width: 1920px;
+  }
+
+  /* two tone heading color feature */
+  --two-tone-heading-color-gray: var(--color-gray-600);
+  --two-tone-heading-color-red: #EB1000;
+
+  :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em) {
+    color: var(--two-tone-heading-color-gray);
+    font-style: normal;
+  }
+  
+  :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em) {
+    color: var(--two-tone-heading-color-red);
+    font-style: normal;
+  }
+
+}
