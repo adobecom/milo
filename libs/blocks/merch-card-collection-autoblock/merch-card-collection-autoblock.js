@@ -99,6 +99,7 @@ function generateCheckboxGroups(checkboxGroups) {
         const spCheckbox = createTag('sp-checkbox', {
           emphasized: true,
           name: checkbox.name,
+          'daa-ll': `${checkbox.label}--${group.deeplink}`,
         });
         spCheckbox.textContent = checkbox.label;
         checkboxGroup.append(spCheckbox);
