@@ -37,8 +37,6 @@
 /* sidekick breakpoint */
 @media (min-width: 800px) {
   .dialog-modal#preflight {
-    width: 100%;
-    max-height: calc(100% - var(--sidekick-height));
     max-width: calc(100% - var(--sidekick-height));
     margin: calc(var(--sidekick-height) / 2) auto calc(var(--sidekick-height) * 2.5) auto;
     border-radius: 6px;
