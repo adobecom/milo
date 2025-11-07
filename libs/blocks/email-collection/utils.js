@@ -32,14 +32,14 @@ export const FORM_FIELDS = {
     tag: 'input',
     attributes: {
       type: 'text',
-      readonly: '',
+      disabled: '',
     },
   },
   'last-name': {
     tag: 'input',
     attributes: {
       type: 'text',
-      readonly: '',
+      disabled: '',
     },
   },
   country: {
@@ -47,7 +47,7 @@ export const FORM_FIELDS = {
     url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=countries`),
     attributes: {
       type: 'text',
-      readonly: '',
+      disabled: '',
     },
   },
   organization: {
