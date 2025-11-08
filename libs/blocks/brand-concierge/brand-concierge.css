@@ -778,8 +778,7 @@
 
   /* Hero */
   .brand-concierge.hero {
-    display: block;
-    padding: 80px 32px 24px;
+    padding: 80px 48px 24px;
   }
 
   .hero .bc-header {
@@ -869,6 +868,10 @@
 
 /* tablet wide up */
 @media screen and (min-width: 960px) {
+  .brand-concierge.hero {
+    padding: 80px 46px 24px;
+  }
+
   .hero .bc-prompt-cards,
   .pill-cards .bc-prompt-cards {
     max-width: 932px;
@@ -880,11 +883,6 @@
 @media screen and (min-width: 1200px) {
   .brand-concierge {
     padding: 80px 48px 12px;
-  }
-
-  .brand-concierge.hero {
-    display: block;
-    padding: 80px 48px 24px;
   }
 
   .bc-header,
