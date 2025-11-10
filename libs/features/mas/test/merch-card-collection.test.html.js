@@ -167,6 +167,40 @@ runTests(async () => {
                 'noSearchResultsMobileText',
             );
         });
+
+        it('should have touch-friendly search input on mobile', async () => {
+            await renderWithSidenav();
+            const searchInput = header.shadowRoot.querySelector('#search sp-search');
+            expect(searchInput).to.exist;
+            const styles = window.getComputedStyle(searchInput);
+            const minHeight = parseInt(styles.minHeight);
+            expect(minHeight).to.be.at.least(44); // Minimum touch target size
+        });
+
+        it('should have proper mobile grid layout with search, filter, and sort', async () => {
+            await renderWithSidenav();
+            const headerElement = header.shadowRoot.querySelector('#header');
+            expect(headerElement).to.exist;
+            const styles = window.getComputedStyle(headerElement);
+            expect(styles.display).to.equal('grid');
+            // Verify search is visible on mobile
+            const searchElement = header.shadowRoot.querySelector('#search');
+            const filterElement = header.shadowRoot.querySelector('#filter');
+            const sortElement = header.shadowRoot.querySelector('#sort');
+            expect(searchElement).to.exist;
+            expect(filterElement).to.exist;
+            expect(sortElement).to.exist;
+        });
+
+        it('should have accessible aria-label on search input', async () => {
+            await renderWithSidenav();
+            const searchInput = header.shadowRoot.querySelector('#search sp-search');
+            expect(searchInput).to.exist;
+            expect(searchInput.hasAttribute('aria-label')).to.be.true;
+            const ariaLabel = searchInput.getAttribute('aria-label');
+            expect(ariaLabel).to.be.a('string');
+            expect(ariaLabel.length).to.be.greaterThan(0);
+        });
     })
 
     describe('merch-card-collection web component on desktop', () => {
