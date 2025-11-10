@@ -4,6 +4,7 @@
   --comparison-column-background-color: #f8f8f8;
   --comparison-row-border-color: #e9e9e9;
   --comparison-desktop-max-width: 1200px;
+  --comparison-tablet-spacing: 50px;
   --hover-border-color: #357BEB;
   --primary-cell-path-color: #05834E;
 }
@@ -337,7 +338,11 @@
 
 @media screen and (min-width: 900px) and (max-width: 1199px) {
   .comparison-table .header-content-wrapper {
-    max-width: calc(100% - 48px);
+    max-width: calc(100% - 96px);
+  }
+
+  .comparison-table .table-container {
+    max-width: calc(100% - var(--comparison-tablet-spacing));
   }
 }
 
