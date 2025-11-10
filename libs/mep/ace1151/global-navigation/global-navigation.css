@@ -1445,6 +1445,10 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   color: var(--feds-navLink-inactive);
 }
 
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel {
+  height: calc(100vh - var(--feds-height-nav) - 120px)
+}
+
 header.test-nav .tab[role="tab"] {
   display: inline-block;
 }
