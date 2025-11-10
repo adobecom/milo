@@ -19,7 +19,11 @@ const placeholders = {
   limit: 2,
   data: [
     { key: 'back', value: 'Back', link: '' },
-    { key: 'step', value: 'Step', link: '' },
+    { key: 'step-1-of-2', value: 'Step 1 of 2', link: '' },
+    { key: 'step-2-of-2', value: 'Step 2 of 2', link: '' },
+    { key: 'step-1-of-3', value: 'Step 1 of 3', link: '' },
+    { key: 'step-2-of-3', value: 'Step 2 of 3', link: '' },
+    { key: 'step-3-of-3', value: 'Step 3 of 3', link: '' },
   ],
   ':type': 'sheet',
 };
@@ -54,7 +58,7 @@ describe('marketo multi-step', () => {
     const stepDetails = el.querySelector('.step-details .step');
 
     expect(stepDetails).to.exist;
-    expect(stepDetails.textContent).to.equal('Step 1 / 2');
+    expect(stepDetails.textContent).to.equal('Step 1 of 2');
     expect(window.MktoForms2.whenReady.calledOnce).to.be.true;
 
     const step1 = el.querySelector('.mktoFormRowTop[data-validate="1"]');
@@ -99,7 +103,7 @@ describe('marketo multi-step', () => {
 
     expect(formEl.dataset.step).to.equal('1');
     expect(formEl.querySelector('.back-btn')).to.be.null;
-    expect(formEl.querySelector('.step-details .step').textContent).to.equal('Step 1 / 2');
+    expect(formEl.querySelector('.step-details .step').textContent).to.equal('Step 1 of 2');
   });
 
   it('sets initial tabindex for fields', () => {
