@@ -996,6 +996,10 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     background-color: transparent;
   }
 
+  .dropdown-active .feds-nav-wrapper {
+    z-index: 0;
+  }
+
   .feds-nav {
     flex-direction: row;
     overflow-y: visible;
@@ -1168,7 +1172,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
   .global-navigation.test-nav.dropdown-active .feds-breadcrumbs-wrapper {
     background: #000;
-    z-index: 100;
   }
 
   .feds-breadcrumbs {
