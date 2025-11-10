@@ -84,16 +84,43 @@ function localizeIconPath(iconPath) {
   return iconPath;
 }
 
+function generateCheckboxGroups(checkboxGroups) {
+  if (!checkboxGroups?.length) return [];
+  const groups = [];
+  for (const group of checkboxGroups) {
+    const { title, label, deeplink, checkboxes } = group;
+    if (checkboxes?.length) {
+      const checkboxGroup = createTag('merch-sidenav-checkbox-group', {
+        sidenavCheckboxTitle: title,
+        label: label || deeplink,
+        deeplink,
+      });
+      for (const checkbox of checkboxes) {
+        const spCheckbox = createTag('sp-checkbox', {
+          emphasized: true,
+          name: checkbox.name,
+          'daa-ll': `${checkbox.label}--${group.deeplink}`,
+        });
+        spCheckbox.textContent = checkbox.label;
+        checkboxGroup.append(spCheckbox);
+      }
+      groups.push(checkboxGroup);
+    }
+  }
+
+  return groups;
+}
+
 function getSidenav(collection) {
   if (!collection.data) return null;
-  const { hierarchy, placeholders } = collection.data;
+  const { hierarchy, placeholders, sidenavSettings } = collection.data;
   if (!hierarchy?.length) return null;
 
   const titleKey = `${collection.variant}SidenavTitle`;
   const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '' });
 
   /* Search */
-  const searchText = placeholders?.searchText;
+  const searchText = sidenavSettings?.searchText;
   if (searchText) {
     const spectrumSearch = createTag('sp-search', { placeholder: searchText });
     const search = createTag('merch-search', { deeplink: 'search' });
@@ -144,6 +171,42 @@ function getSidenav(collection) {
   if (multilevel) spSidenav.setAttribute('variant', 'multilevel');
 
   sidenav.append(sidenavList);
+
+  /* Checkbox Groups */
+  const checkboxGroupElements = generateCheckboxGroups(sidenavSettings?.tagFilters);
+  for (const group of checkboxGroupElements) {
+    sidenav.append(group);
+  }
+
+  /* Resources List */
+  if (sidenavSettings?.linksTitle && sidenavSettings?.link) {
+    const resourcesSpSidenav = createTag('sp-sidenav', { manageTabIndex: true });
+    resourcesSpSidenav.classList.add('resources');
+
+    const resourcesList = createTag('merch-sidenav-list', {
+      sidenavListTitle: sidenavSettings.linksTitle,
+      'daa-ll': `${sidenavSettings.linksTitle}--resources`,
+    }, resourcesSpSidenav);
+
+    const resourceItem = createTag('sp-sidenav-item', {
+      href: sidenavSettings.link,
+      target: '_blank',
+    });
+
+    resourceItem.textContent = sidenavSettings.linkText || 'Link';
+
+    if (sidenavSettings.linkIcon !== false) {
+      const icon = createTag('sp-icon-link-out-light', {
+        class: 'right',
+        slot: 'icon',
+        label: sidenavSettings.linkText || 'Link',
+      });
+      resourceItem.append(icon);
+    }
+
+    resourcesSpSidenav.append(resourceItem);
+    sidenav.append(resourcesList);
+  }
 
   return sidenav;
 }
