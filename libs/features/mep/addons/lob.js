@@ -28,6 +28,7 @@ export async function getSpectraLOB(lastVisitedPage) {
 
 export default async function init(enablement) {
   if (enablement !== true) return enablement;
+  if (window.location.hostname.includes('.aem.')) return 'cc';
   const consentCookieValue = getCookie('OptanonConsent');
   if (consentCookieValue?.includes('C0002:0')) return 'cc';
   const lobValue = await getSpectraLOB(document.referrer);
