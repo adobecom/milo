@@ -22,6 +22,7 @@ function addLoader(a) {
 }
 
 async function decorateQuickLink(a, hasConsent, isNewTab) {
+  const { locale } = getConfig();
   let ecid = null;
   const urlObj = new URL(a.href, window.location.origin);
   try {
@@ -31,7 +32,7 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
   if (ecid && hasConsent && !a.href.includes('ecid')) urlObj.searchParams.set('ecid', ecid);
-  urlObj.searchParams.set('locale', document.documentElement.lang || 'en-US');
+  urlObj.searchParams.set('locale', locale.ietf || 'en-US');
   const blockName = a.closest('[data-block-status="loaded"]').classList[0];
   if (blockName) urlObj.searchParams.set('placement', blockName);
   a.href = urlObj.href;
