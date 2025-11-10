@@ -83,6 +83,7 @@
   padding: var(--spacing-s) 0;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .comparison-table span[data-tooltip] .icon-milo:hover {
@@ -221,10 +222,7 @@
   gap: var(--spacing-xxs);
   width: 100%;
   margin-top: var(--spacing-xxs);
-}
-
-.comparison-table .sub-header-item-container .btn-container.has-multiple .action-area {
-  max-width: 50%;
+  flex-wrap: wrap;
 }
 
 .comparison-table .sub-header-item-container .btn-container .action-area,
