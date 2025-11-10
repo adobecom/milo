@@ -262,12 +262,12 @@ export function Wcs({ settings }) {
     }
 
     /**
-     * Validates that country is supported and determines the locale.
+     * Validates that country is supported and determines language and locale.
      *
      * @param {string} country - The country code
      * @param {string} language - The language code
      * @param {boolean} perpetual - Whether to use perpetual offers
-     * @returns {{ validCountry: string, validLanguage: string, validLocale: string }} Returns either valid or default country, language, and locale
+     * @returns { validCountry: string, validLanguage: string, validLocale: string } Returns either valid or default country, language, and locale
      */
       function normalizeCountryLanguageAndLocale(country, language, perpetual) {
         const validLanguage = (country !== 'GB' && !perpetual) ? 'MULT' : 'en';
