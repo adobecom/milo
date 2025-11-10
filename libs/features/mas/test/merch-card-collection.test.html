@@ -2572,7 +2572,13 @@
         </div>
     </template>
     <template id="catalogCollectionWithHeader" title="Catalog collection with header">
-        <merch-card-collection-header class="catalog"></merch-card-collection-header>
+        <merch-card-collection-header class="catalog">
+            <p slot="searchText">Search all products</p>
+            <p slot="filtersText">Filters</p>
+            <p slot="sortText">Sort</p>
+            <p slot="popularityText">Popularity</p>
+            <p slot="alphabeticallyText">Alphabetically</p>
+        </merch-card-collection-header>
         <merch-card-collection class="four-merch-cards catalog">
             <merch-card variant="catalog" data-key="catalog-fragments_cards_additional_adobe-connect_master"
                 tabindex="-1" filters="all:1,eLearning:1" types="desktop,mobile">
