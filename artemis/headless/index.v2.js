@@ -3,6 +3,7 @@ import path from "path";
 import puppeteer from "puppeteer";
 import { performance } from "perf_hooks";
 import { minify } from 'html-minifier';
+import * as lightningcss from 'lightningcss';
 
 const OUTPUT_DIR = "generated_html";
 
@@ -20,8 +21,24 @@ const fetchAssetContent = async (url) => {
 };
 
 const fetchAndMinifyCss = async (url) => {
-  const css = await fetchAssetContent(url);
-  return css ? css.replace(/\s+/g, ' ').trim() : null;
+  const cssContent = await fetchAssetContent(url);
+  if (!cssContent) return null;
+
+  try {
+    // Use lightningcss to safely minify
+    const { code } = lightningcss.transform({
+      filename: url, // Provide a "filename" for better error messages
+      code: Buffer.from(cssContent),
+      minify: true,
+      // You can also set browser targets here if needed
+      // targets: { chrome: 98 << 16 }
+    });
+    return code.toString();
+  } catch (error) {
+    console.error(`Failed to minify CSS from ${url}:`, error.message);
+    // Fallback to simple whitespace removal if minification fails
+    return cssContent.replace(/\s+/g, ' ').trim();
+  }
 };
 
 
@@ -123,6 +140,7 @@ const processPage = async (browser, urlConfig) => {
           targetDiv.outerHTML = snippet;
         }
 
+        const isValidBaseUrl = baseUrl && (baseUrl.startsWith('http://') || baseUrl.startsWith('https://'));
         const injectedDiv = doc.querySelector('main > div.prerender');
         if (injectedDiv) {
           injectedDiv.querySelectorAll('video').forEach(videoEl => {
@@ -143,7 +161,6 @@ const processPage = async (browser, urlConfig) => {
 
         // --- Image Processing and Preload Generation ---
         const imagePreloadLinks = [];
-        const isValidBaseUrl = baseUrl && (baseUrl.startsWith('http://') || baseUrl.startsWith('https://'));
 
         if (injectedDiv && isValidBaseUrl) {
           doc.querySelectorAll('picture').forEach(picture => {
@@ -224,7 +241,7 @@ const processPage = async (browser, urlConfig) => {
         }).join('\n');
         doc.body.insertAdjacentHTML('beforeend', inlineJsString);
 
-        return doc.documentElement.outerHTML;
+        return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
       },
       originalHtml,
       prerenderedData.snippet,
@@ -239,7 +256,7 @@ const processPage = async (browser, urlConfig) => {
     const minifiedHtml = minify(finalHtml, {
       collapseWhitespace: true,
       removeComments: true,
-      minifyCSS: true,
+      minifyCSS: false,
       minifyJS: true,
       useShortDoctype: true,
     });

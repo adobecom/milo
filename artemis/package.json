@@ -8,12 +8,13 @@
     "libs": "aem up --port=6456"
   },
   "dependencies": {
-    "html-minifier": "^4.0.0",
-    "puppeteer": "^24.4.0",
     "@babel/generator": "^7.26.10",
     "@babel/parser": "^7.26.10",
     "@babel/traverse": "^7.26.10",
-    "js-beautify": "^1.15.4"
+    "html-minifier": "^4.0.0",
+    "js-beautify": "^1.15.4",
+    "lightningcss": "^1.30.2",
+    "puppeteer": "^24.4.0"
   },
   "author": "",
   "license": "ISC",

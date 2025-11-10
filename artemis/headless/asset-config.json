@@ -1,10 +1,10 @@
 {
   "globalCssUrls": [
-    "https://main--milo--adobecom.aem.live/libs/styles/styles.css",
-    "https://main--milo--adobecom.aem.live/libs/blocks/text/text.css",
-    "https://main--milo--adobecom.aem.live/libs/styles/breakpoint-theme.css",
-    "https://main--milo--adobecom.aem.live/libs/blocks/section-metadata/section-metadata.css",
-    "https://main--milo--adobecom.aem.live/libs/blocks/merch/merch.css"
+    "https://artemis--milo--adobecom.aem.live/libs/styles/styles.css",
+    "https://artemis--milo--adobecom.aem.live/libs/blocks/text/text.css",
+    "https://artemis--milo--adobecom.aem.live/libs/styles/breakpoint-theme.css",
+    "https://artemis--milo--adobecom.aem.live/libs/blocks/section-metadata/section-metadata.css",
+    "https://artemis--milo--adobecom.aem.live/libs/blocks/merch/merch.css"
   ],
   "globalJsUrls": [
     
