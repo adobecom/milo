@@ -431,7 +431,7 @@ export function closeAllDropdowns({
   if (isDesktop.matches) {
     setCurtainState(false);
     window?.UniversalNav?.changeTheme?.(isDarkMode() ? 'dark' : 'light');
-  };
+  }
 }
 
 export const disableMobileScroll = () => {
