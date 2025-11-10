@@ -1,31 +1,21 @@
 import { getSiteEnvKey } from './helix-client.js';
 
-export class SiteConfig {
-  constructor(org, repo, lingoConfigMap) {
-    this.org = org;
-    this.repo = repo;
-    this.key = getSiteEnvKey(org, repo);
-    this.lingoConfigMap = lingoConfigMap;
-    this.adminToken = this.loadAdminToken();
-    this.previewRoots = this.loadPreviewRoots();
-    this.excludePaths = this.loadExcludePaths();
-    this.excludePathsRegex = this.buildExcludeRegex();
-    this.previewIndexFilePath = this.loadPreviewIndexFilePath();
-  }
+export default function SiteConfig(org, repo, lingoConfigMap) {
+  const key = getSiteEnvKey(org, repo);
 
-  loadAdminToken() {
-    const tokenKey = `AEM_ADMIN_TOKEN_${this.key}`;
+  function loadAdminToken() {
+    const tokenKey = `AEM_ADMIN_TOKEN_${key}`;
     return process.env[tokenKey];
   }
 
-  loadPreviewRoots() {
-    const previewRootsKey = `PREVIEW_ROOTS_${this.key}`;
+  function loadPreviewRoots() {
+    const previewRootsKey = `PREVIEW_ROOTS_${key}`;
     const configKey = process.env[previewRootsKey];
-    return this.lingoConfigMap[configKey] || [];
+    return lingoConfigMap[configKey] || [];
   }
 
-  loadExcludePaths() {
-    const excludesKey = `EXCLUDE_PREVIEW_PATHS_${this.key}`;
+  function loadExcludePaths() {
+    const excludesKey = `EXCLUDE_PREVIEW_PATHS_${key}`;
     const excludePathsStr = process.env[excludesKey] || '';
     const excludePaths = excludePathsStr.split(',')
       .map((path) => path.trim())
@@ -34,65 +24,85 @@ export class SiteConfig {
     return excludePaths;
   }
 
-  buildExcludeRegex() {
-    if (!this.excludePaths.length) {
+  function buildExcludeRegex(excludePaths) {
+    if (!excludePaths.length) {
       return null;
     }
 
-    const escapedPaths = this.excludePaths.map((path) =>
+    const escapedPaths = excludePaths.map((path) =>
       path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     );
 
     return new RegExp(escapedPaths.join('|'));
   }
 
-  loadPreviewIndexFilePath() {
-    const filePathKey = `PREVIEW_INDEX_FILE_${this.key}`;
+  function loadPreviewIndexFilePath() {
+    const filePathKey = `PREVIEW_INDEX_FILE_${key}`;
     return process.env[filePathKey]
       || process.env.PREVIEW_INDEX_FILE
       || '{REGION_PATH}/drafts/preview-index';
   }
 
-  filterPreviewRoots(requestedRegionPaths) {
-    if (!requestedRegionPaths || !requestedRegionPaths.length) {
-      return this.previewRoots;
-    }
-
-    return this.previewRoots.filter((root) =>
-      requestedRegionPaths.includes(root)
-    );
-  }
-
-  getIndexPath(regionPath) {
-    const region = this.sanitizeRegionName(regionPath);
-    return this.previewIndexFilePath
-      .replaceAll('{REGION_PATH}', regionPath)
-      .replaceAll('{REGION}', region);
-  }
-
-  sanitizeRegionName(regionPath) {
+  function sanitizeRegionName(regionPath) {
     return regionPath
       .replace(/^\/|\/$/g, '')
       .replaceAll('/', '-')
       .replaceAll('_', '-');
   }
 
-  isValid() {
-    return this.adminToken && this.previewRoots.length > 0;
-  }
+  const adminToken = loadAdminToken();
+  const previewRoots = loadPreviewRoots();
+  const excludePaths = loadExcludePaths();
+  const excludePathsRegex = buildExcludeRegex(excludePaths);
+  const previewIndexFilePath = loadPreviewIndexFilePath();
 
-  getValidationError() {
-    if (!this.adminToken) {
-      return `Admin token not found for ${this.org}/${this.repo}`;
-    }
-    if (!this.previewRoots.length) {
-      return `Preview roots are not setup for ${this.org}/${this.repo}`;
-    }
-    return null;
-  }
+  return {
+    org,
+    repo,
+    key,
+    lingoConfigMap,
+    adminToken,
+    previewRoots,
+    excludePaths,
+    excludePathsRegex,
+    previewIndexFilePath,
 
-  getPreviewPathExtension() {
-    const previewPathExtensionKey = `PREVIEW_PATH_EXTN_${this.key}`;
-    return process.env[previewPathExtensionKey] || '';
-  }
+    filterPreviewRoots(requestedRegionPaths) {
+      if (!requestedRegionPaths || !requestedRegionPaths.length) {
+        return previewRoots;
+      }
+
+      return previewRoots.filter((root) =>
+        requestedRegionPaths.includes(root)
+      );
+    },
+
+    getIndexPath(regionPath) {
+      const region = sanitizeRegionName(regionPath);
+      return previewIndexFilePath
+        .replaceAll('{REGION_PATH}', regionPath)
+        .replaceAll('{REGION}', region);
+    },
+
+    sanitizeRegionName,
+
+    isValid() {
+      return adminToken && previewRoots.length > 0;
+    },
+
+    getValidationError() {
+      if (!adminToken) {
+        return `Admin token not found for ${org}/${repo}`;
+      }
+      if (!previewRoots.length) {
+        return `Preview roots are not setup for ${org}/${repo}`;
+      }
+      return null;
+    },
+
+    getPreviewPathExtension() {
+      const previewPathExtensionKey = `PREVIEW_PATH_EXTN_${key}`;
+      return process.env[previewPathExtensionKey] || '';
+    },
+  };
 }

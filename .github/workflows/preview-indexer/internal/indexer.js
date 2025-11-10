@@ -2,7 +2,7 @@
 import { getImsToken, saveJsonToDa, getJsonFromDa } from './da-client.js';
 import { fetchLogsForSite, getSiteEnvKey, triggerPreview, getPreviewPathsForRegion } from './helix-client.js';
 import { getLastRunInfo, saveLastRuns } from './indexer-state.js';
-import { SiteConfig } from './site-config.js';
+import SiteConfig from './site-config.js';
 
 const previewJsonTemplate = {
   total: 0,
@@ -32,7 +32,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
   const self = {};
 
   // Initialize site configuration
-  const config = new SiteConfig(siteOrg, siteRepo, lingoConfigMap);
+  const config = SiteConfig(siteOrg, siteRepo, lingoConfigMap);
   const orgWithRepo = getSiteEnvKey(siteOrg, siteRepo);
 
   function getISOSinceXDaysAgo(days) {
