@@ -175,7 +175,7 @@ class MainNavItem {
     if (e) e.preventDefault();
     if (triggerElement.getAttribute('aria-expanded') === 'false' && !(this.isTestNav && triggerElement.closest('section'))) {
       trigger({ element: triggerElement });
-      if (this.isTestNav) {
+      if (this.isTestNav && this.desktop.matches) {
         document.querySelector('.global-navigation').classList.add('dropdown-active');
         window?.UniversalNav?.changeTheme?.('dark');
       }
