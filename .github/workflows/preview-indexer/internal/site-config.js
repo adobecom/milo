@@ -90,4 +90,9 @@ export class SiteConfig {
     }
     return null;
   }
+
+  getPreviewPathExtension() {
+    const previewPathExtensionKey = `PREVIEW_PATH_EXTN_${this.key}`;
+    return process.env[previewPathExtensionKey] || '';
+  }
 }

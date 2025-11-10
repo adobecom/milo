@@ -109,6 +109,7 @@ For each site (e.g., `adobecom/da-bacom`), configure:
 | `PREVIEW_ROOTS_<ORG>_<REPO>` | Key for regional paths in lingo config | `PREVIEW_ROOTS_ADOBECOM_DA_BACOM` |
 | `EXCLUDE_PREVIEW_PATHS_<ORG>_<REPO>` | Comma-separated paths to exclude | `EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM` |
 | `PREVIEW_INDEX_FILE_<ORG>_<REPO>` | Site-specific index path template | `PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM` |
+| `PREVIEW_PATH_EXTN_<ORG>_<REPO>` | Site-specific preview path extention that needs to be applied e.g. .html | `PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM` |
 
 **Notes**:
 - Hyphens in org/repo names are converted to underscores and uppercased.

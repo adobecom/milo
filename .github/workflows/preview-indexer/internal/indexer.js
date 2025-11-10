@@ -111,6 +111,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       (path) => hasNoExtension(path) && notExcluded(path),
     );
 
+    const pathExtn = config.getPreviewPathExtension();
     const previewPathsPerRoot = previewRoots.reduce((acc, root) => {
       const paths = filteredPreviewPaths.filter((path) => path.startsWith(root));
       if (paths.length) {
@@ -118,7 +119,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
         acc.push({
           indexPath,
           indexPreviewPath: `${indexPath}.json`,
-          paths,
+          paths: paths.map((path) => `${path}${pathExtn}`),
         });
       }
       return acc;
@@ -176,9 +177,10 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
 
       const hasNoExtension = (path) => !/\.[^/]+$/.test(path);
       const notExcluded = (path) => !config.excludePathsRegex?.test(path);
-      const filteredPreviewPaths = previewPaths?.filter(
+      const pathExtn = config.getPreviewPathExtension();
+      const filteredPreviewPaths = (previewPaths?.filter(
         (path) => hasNoExtension(path) && notExcluded(path),
-      ) || [];
+      ) || []).map((path) => `${path}${pathExtn}`);
 
       const defaultPreviewsPathsJson = await getJsonFromDa(siteOrg, siteRepo, `${indexPath}-default`);
       const defaultPreviewPaths = defaultPreviewsPathsJson?.data?.map?.((item) => item.Path) || [];
