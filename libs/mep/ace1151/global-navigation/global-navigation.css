@@ -666,7 +666,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .stic
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--header,
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content > div[role = "tabpanel"] > a.feds-cta {
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content > div[role = "tabpanel"] > a.feds-cta,
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content div[role = "tabpanel"] a.feds-cta {
   translate: 0 12px;
   opacity: 0;
   animation: slideup 0.6s ease, fadein 0.8s ease;
@@ -956,6 +957,10 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 @media (min-width: 900px) {
   header.global-navigation {
     contain: layout;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
+    padding: 8px 11px 8px 20px;
   }
 
   header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky .feds-cta {
@@ -1443,6 +1448,10 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   color: var(--feds-navLink-inactive);
 }
 
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel {
+  height: calc(100vh - var(--feds-height-nav) - 120px)
+}
+
 header.test-nav .tab[role="tab"] {
   display: inline-block;
 }
@@ -1592,6 +1601,7 @@ header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .t
   padding: 0 20px;
   box-sizing: inherit;
 }
+
 header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .title .breadcrumbs {
   display: block; /* even if the actual breadcrumbs are display none, we need the space to visible for the mobile gnav */
   height: 23px;
@@ -1626,6 +1636,7 @@ header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .t
   min-height:48px;
   width: 111px;
   border: none;
+  padding: 8px 20px;
   white-space: normal;
   font-weight: 700;
   text-align: unset;
@@ -1747,7 +1758,7 @@ header.test-nav .feds-popup .feds-navLink {
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content {
-  min-height: 0;
+  max-height: calc(100vh - var(--feds-height-nav) - 100px);
   background-color: #000;
   padding: 10px 33px 25px 90px;
   display: flex;
@@ -1759,6 +1770,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   border-left: 1px solid var(--feds-test-borderColor);
   margin-left: 228px;
   width: 340px;
+  overflow-y: auto;
 }
 
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret:after {
