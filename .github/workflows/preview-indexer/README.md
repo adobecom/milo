@@ -1,6 +1,6 @@
 # Preview Indexer
 
-A GitHub Actions-based system that automatically maintains preview indexes for DA (Dark Alley/Document Authoring) sites by monitoring and processing Helix admin logs.
+A GitHub Actions-based system that automatically maintains preview indexes for DA (Document Authoring) sites by monitoring and processing Helix admin logs.
 
 ## Overview
 
