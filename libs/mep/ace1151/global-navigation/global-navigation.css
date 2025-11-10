@@ -1751,7 +1751,7 @@ header.test-nav .feds-popup .feds-navLink {
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content {
-  min-height: 0;
+  max-height: calc(100vh - var(--feds-height-nav) - 100px);
   background-color: #000;
   padding: 10px 33px 25px 90px;
   display: flex;
@@ -1763,6 +1763,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   border-left: 1px solid var(--feds-test-borderColor);
   margin-left: 228px;
   width: 340px;
+  overflow-y: auto;
 }
 
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret:after {
