@@ -64,6 +64,28 @@ export const [showHideMessage, setMessageEls] = (() => {
   ];
 })();
 
+export function overrideForegroundContent() {
+  const params = new URLSearchParams(window.location.search);
+  const show = params.get('email-collection-show');
+  if (!show) return;
+  switch (show) {
+    case 'form':
+      showHideMessage({ hideMessage: true });
+      break;
+    case 'success':
+      showHideMessage({});
+      break;
+    case 'error':
+      showHideMessage({ errorMsg: 'Testing' });
+      break;
+    case 'subscribed':
+      showHideMessage({ subscribed: true, email: 'test@test.com' });
+      break;
+    default:
+      break;
+  }
+}
+
 async function insertProgress(el, size = 'm') {
   if (!el) return;
 
@@ -173,6 +195,12 @@ async function decorateInput(key, value) {
 }
 
 async function submitForm(form) {
+  const ims = await getIMS();
+  if (!ims.isSignedInUser()) {
+    await redirectToSignIn(dialog);
+    return;
+  }
+
   const messageParams = {
     errorMsg: '',
     subscribed: false,
@@ -191,7 +219,6 @@ async function submitForm(form) {
     const { consentId } = await getFormData('consent');
     const { country } = await getIMSProfile();
 
-    const date = new Date();
     const { guid, ecid } = await getAEPData();
     const bodyData = {
       ecid,
@@ -204,8 +231,6 @@ async function submitForm(form) {
       consentId,
       mpsSname,
       appClientId: imsClientId,
-      eventDts: date.toISOString(),
-      timezoneOffset: -date.getTimezoneOffset(),
     };
 
     const { error, data, status } = await runtimePost(
@@ -476,6 +501,8 @@ async function decorate(el, blockChildren) {
     await decorateForm(el, blockChildren[0]);
     decorateDefaultLinkAnalytics(blockChildren[0], miloConfig);
     if (!isSubscribed) updateAriaLive(blockChildren[0]);
+    const { env } = miloConfig;
+    if (env.name !== 'prod') overrideForegroundContent();
     return true;
   } catch (e) {
     showHideMessage({ errorMsg: e });

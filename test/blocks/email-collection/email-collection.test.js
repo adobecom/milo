@@ -16,7 +16,7 @@ const config = {
 setConfig(config);
 
 const emailCollectionModule = await import('../../../libs/blocks/email-collection/email-collection.js');
-const { default: init } = emailCollectionModule;
+const { default: init, overrideForegroundContent } = emailCollectionModule;
 
 async function sleep(time = 10) {
   return new Promise((resolve) => {
@@ -109,7 +109,7 @@ describe('Email collection', () => {
     await sleep();
     const foreground = block.querySelector('.foreground');
     const text = foreground.querySelector('.text');
-    const ariaLive = block.parentElement.querySelector('.email-aria-live');
+    const ariaLive = block.parentElement.querySelector('.email-collection-aria-live');
     const form = block.querySelector('form');
     const submitButton = form.querySelector('button[type="submit"]');
     const consentStirng = form.querySelector('.consent-string');
@@ -134,14 +134,14 @@ describe('Email collection', () => {
         label: 'First Name',
         attributes: {
           type: 'text',
-          readonly: '',
+          disabled: '',
         },
       },
       'last-name': {
         label: 'Last Name',
         attributes: {
           type: 'text',
-          readonly: '',
+          disabled: '',
         },
       },
       country: {
@@ -149,7 +149,7 @@ describe('Email collection', () => {
         url: 'https://main--federal--adobecom.aem.page/federal/email-collection/form-config.json?sheet=countries',
         attributes: {
           type: 'text',
-          readonly: '',
+          disabled: '',
         },
       },
       organization: {
@@ -177,7 +177,7 @@ describe('Email collection', () => {
       const error = inputContainer.querySelector('div[id^="error"]');
       expect(label).to.exist;
       expect(input).to.exist;
-      if (input.getAttribute('readonly') === null) expect(error).to.exist;
+      if (input.getAttribute('disabled') === null) expect(error).to.exist;
       const { id } = input;
       const { label: labelValue, attributes } = formInputs[id];
       expect(label.textContent).to.be.equal(labelValue);
@@ -336,5 +336,44 @@ describe('Email collection', () => {
     expect(subscribedEmail).to.exist;
     expect(subscribedEmail.textContent).to.be.equal(email);
     expect(showForm).to.exist;
+  });
+
+  it('Should override foreground content based on query param', async () => {
+    const block = document.querySelector('#waitlist');
+    await init(block);
+    await sleep();
+    const text = block.querySelectorAll('.foreground > .text');
+    const newUrl = new URL(window.location.href);
+
+    newUrl.searchParams.set('email-collection-show', 'success');
+    window.history.replaceState({}, '', newUrl.toString());
+    overrideForegroundContent();
+    expect(text[0].classList.contains('hidden')).to.be.true;
+    expect(text[1].classList.contains('hidden')).to.be.false;
+    expect(text[2].classList.contains('hidden')).to.be.true;
+
+    newUrl.searchParams.set('email-collection-show', 'error');
+    window.history.replaceState({}, '', newUrl.toString());
+    overrideForegroundContent();
+    expect(text[0].classList.contains('hidden')).to.be.true;
+    expect(text[1].classList.contains('hidden')).to.be.true;
+    expect(text[2].classList.contains('hidden')).to.be.false;
+
+    newUrl.searchParams.set('email-collection-show', 'form');
+    window.history.replaceState({}, '', newUrl.toString());
+    overrideForegroundContent();
+    expect(text[0].classList.contains('hidden')).to.be.false;
+    expect(text[1].classList.contains('hidden')).to.be.true;
+    expect(text[2].classList.contains('hidden')).to.be.true;
+
+    newUrl.searchParams.set('email-collection-show', 'subscribed');
+    window.history.replaceState({}, '', newUrl.toString());
+    overrideForegroundContent();
+    expect(text[0].classList.contains('hidden')).to.be.true;
+    expect(text[1].classList.contains('hidden')).to.be.false;
+    expect(text[2].classList.contains('hidden')).to.be.true;
+
+    const subscribed = text[1].querySelector('.subscribed-email');
+    expect(subscribed.classList.contains('hidden')).to.be.false;
   });
 });

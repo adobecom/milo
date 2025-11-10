@@ -3,6 +3,7 @@
   --m-min-height: 448px; /* 560px */
   --l-min-height: 588px; /* 700px */
   --default-block-spacing: 5px;
+  --media-cover-position: center top;
 
   /* 112 = 56px default padding */
 
@@ -100,7 +101,7 @@ html[lang="ja-jp"] .hero-marquee .action-area wbr:last-of-type{
 .hero-marquee .foreground-media picture img,
 .hero-marquee .foreground-media video {
   object-fit: cover;
-  object-position: center top;
+  object-position: var(--media-cover-position);
   width: 100%;
   height: 100%;
   display: block;
@@ -445,16 +446,25 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 }
 
 /* mweb mobile defaults */
-.hero-marquee.mobile-left-align.center {
+/* 
+  NOTE: Duplicated styles for backward compatibility.
+  - The class `.mobile-left-align` is already used in production.
+  - As per new naming conventions, `.left-mobile` is added with identical styles.
+  - Once all references to `.mobile-left-align` are updated, the old class can be safely removed.
+*/
+.hero-marquee.mobile-left-align.center, 
+.hero-marquee.left-mobile.center {
   text-align: start;
   align-items: flex-start;
 }
 
-.hero-marquee.mobile-left-align.center :is(.action-area, .lockup-area, .row-qrcode .row-wrapper) {
+.hero-marquee.mobile-left-align.center :is(.action-area, .lockup-area, .row-qrcode .row-wrapper),
+.hero-marquee.left-mobile.center :is(.action-area, .lockup-area, .row-qrcode .row-wrapper) {
   justify-content: flex-start;
 }
 
-.hero-marquee.mobile-left-align.center .row-list .row-wrapper {
+.hero-marquee.mobile-left-align.center .row-list .row-wrapper,
+.hero-marquee.left-mobile.center .row-list .row-wrapper {
   margin: 0;
 }
 
@@ -568,16 +578,19 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   .hero-marquee.s-min-height-desktop { min-height: var(--s-min-height);}
   .hero-marquee.l-min-height-desktop { min-height: var(--l-min-height);}
 
-  .hero-marquee.mobile-left-align.center {
+  .hero-marquee.mobile-left-align.center,
+  .hero-marquee.left-mobile.center {
     text-align: center;
     align-items: center;
   }
 
-  .hero-marquee.mobile-left-align.center :is(.action-area, .lockup-area, .row-qrcode .row-wrapper) {
+  .hero-marquee.mobile-left-align.center :is(.action-area, .lockup-area, .row-qrcode .row-wrapper),
+  .hero-marquee.left-mobile.center :is(.action-area, .lockup-area, .row-qrcode .row-wrapper) {
     justify-content: center;
   }
 
-  .hero-marquee.mobile-left-align.center .row-list .row-wrapper {
+  .hero-marquee.mobile-left-align.center .row-list .row-wrapper,
+  .hero-marquee.left-mobile.center .row-list .row-wrapper {
     margin: 0 auto;
   }
 

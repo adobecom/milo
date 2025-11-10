@@ -5,33 +5,6 @@ export const STATUS = {
   EMPTY: 'empty',
 };
 
-export const SEVERITY = {
-  CRITICAL: 'critical',
-  WARNING: 'warning',
-};
-
-export const PERFORMANCE_IDS = {
-  lcpElement: 'lcp-element',
-  singleBlock: 'single-block',
-  personalization: 'personalization',
-  imageSize: 'image-size',
-  videoPoster: 'video-poster',
-  fragments: 'fragments',
-  placeholders: 'placeholders',
-  icons: 'icons',
-};
-
-export const PERFORMANCE_SEVERITIES = {
-  lcpElement: 'critical',
-  singleBlock: 'critical',
-  personalization: 'warning',
-  imageSize: 'warning',
-  videoPoster: 'warning',
-  fragments: 'warning',
-  placeholders: 'warning',
-  icons: 'warning',
-};
-
 export const SEO_TITLES = {
   h1Count: 'H1 count',
   title: 'Title size',
@@ -50,27 +23,6 @@ export const SEO_IDS = {
   bodySize: 'body-size',
   loremIpsum: 'lorem-ipsum',
   links: 'links',
-};
-
-// Alternative IDs for native preflight checkId compatibility
-export const SEO_CHECK_IDS = {
-  title: 'title-size',
-  description: 'meta-description',
-  h1Count: 'h1-count',
-  canonical: 'canonical',
-  bodySize: 'body-size',
-  loremIpsum: 'lorem-ipsum',
-  links: 'broken-links',
-};
-
-export const SEO_SEVERITIES = {
-  title: 'critical',
-  description: 'critical',
-  h1Count: 'critical',
-  canonical: 'warning',
-  bodySize: 'critical',
-  loremIpsum: 'critical',
-  links: 'critical',
 };
 
 export const SEO_DESCRIPTIONS = {
@@ -99,14 +51,6 @@ export const STRUCTURE_IDS = {
   breadcrumbs: 'breadcrumbs',
 };
 
-export const STRUCTURE_SEVERITIES = {
-  navigation: 'critical',
-  footer: 'critical',
-  regionSelector: 'critical',
-  georouting: 'warning',
-  breadcrumbs: 'critical',
-};
-
 export const PERFORMANCE_TITLES = {
   Performance: 'Performance',
   LcpEl: 'LCP',
@@ -120,10 +64,6 @@ export const PERFORMANCE_TITLES = {
 };
 
 export const ASSETS_TITLES = { AssetDimensions: 'Asset Dimensions' };
-
-export const ASSETS_IDS = { imageDimensions: 'image-dimensions' };
-
-export const ASSETS_SEVERITIES = { imageDimensions: 'critical' };
 
 export const ASO_TIMEOUT_MS = 60_000;
 export const ASO_POLL_INTERVAL_MS = 2_000;
