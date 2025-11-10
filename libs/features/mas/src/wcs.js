@@ -7,7 +7,6 @@ import {
     Commitment,
     Term,
     SUPPORTED_LANGUAGE_COUNTRY,
-    SUPPORTED_LANGUAGES,
     SUPPORTED_COUNTRIES,
 } from './constants.js';
 
@@ -263,28 +262,25 @@ export function Wcs({ settings }) {
     }
 
     /**
-     * Validates that country and language are supported and determines the appropriate locale.
+     * Validates that country is supported and determines the locale.
      *
      * @param {string} country - The country code
      * @param {string} language - The language code
      * @param {boolean} perpetual - Whether to use perpetual offers
-     * @returns {{ validLanguage: string, validCountry: string, locale: string }} Returns either valid language and locale, or default language and locale
+     * @returns {{ validCountry: string, validLanguage: string, validLocale: string }} Returns either valid or default country, language, and locale
      */
-      function validateLanguageAndLocale(country, language, perpetual) {
-        const validLanguage = SUPPORTED_LANGUAGES.includes(language)
-            ? language
-            : Defaults.language;
+      function normalizeCountryLanguageAndLocale(country, language, perpetual) {
+        const validLanguage = (country !== 'GB' && !perpetual) ? 'MULT' : 'en';
         const validCountry = SUPPORTED_COUNTRIES.includes(country)
             ? country
             : Defaults.country;
         return {
             validCountry,
-            validLanguage:
-                country !== 'GB' && !perpetual ? 'MULT' : validLanguage,
+            validLanguage,
             validLocale: SUPPORTED_LANGUAGE_COUNTRY.includes(
-                `${validLanguage}_${validCountry}`,
+                `${language}_${validCountry}`,
             )
-                ? `${validLanguage}_${validCountry}`
+                ? `${language}_${validCountry}`
                 : `${Defaults.language}_${Defaults.country}`,
         };
     }
@@ -311,8 +307,8 @@ export function Wcs({ settings }) {
         promotionCode = '',
         wcsOsi = [],
     }) {
-        const { validCountry, validLanguage, validLocale } =
-            validateLanguageAndLocale(country, language, perpetual);
+        const { validCountry, validLanguage,validLocale } =
+            normalizeCountryLanguageAndLocale(country, language, perpetual);
         const groupKey = [validCountry, validLanguage, promotionCode]
             .filter((val) => val)
             .join('-')
@@ -329,9 +325,9 @@ export function Wcs({ settings }) {
                     const options = {
                         country: validCountry,
                         locale: validLocale,
+                        ...((country !== 'GB' && !perpetual) && { language: validLanguage }),
                         offerSelectorIds: [],
                     };
-                    if (country !== 'GB' && !perpetual) options.language = validLanguage;
                     const promises = new Map();
                     group = { options, promises };
                     queue.set(groupKey, group);
@@ -364,7 +360,7 @@ export function Wcs({ settings }) {
         resolveOfferSelectors,
         flushWcsCacheInternal,
         prefillWcsCache,
-        validateLanguageAndLocale,
+        normalizeCountryLanguageAndLocale,
     };
 }
 

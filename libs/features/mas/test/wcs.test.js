@@ -91,124 +91,94 @@ describe('prefillWcsCache', () => {
     });
 });
 
-describe('validateLanguageAndLocale', () => {
-  it('returns MULT language for valid language and country when not GB and not perpetual', async () => {
-      await mockFetch(withWcs);
-      const client = Wcs({
-          settings: {
-              ...Defaults,
-          },
-      });
-      const result = client.validateLanguageAndLocale('US', 'en', false);
-      expect(result).to.deep.equal({
-          validCountry: 'US',
-          validLanguage: 'MULT',
-          validLocale: 'en_US',
-      });
-  });
+describe('normalizeCountryLanguageAndLocale', () => {
+    it('returns MULT language for valid language and country when not GB and not perpetual', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('US', 'en', false);
+        expect(result).to.deep.equal({
+            validCountry: 'US',
+            validLanguage: 'MULT',
+            validLocale: 'en_US',
+        });
+    });
 
-  it('returns actual language when perpetual is true and language is valid', async () => {
-      await mockFetch(withWcs);
-      const client = Wcs({
-          settings: {
-              ...Defaults,
-          },
-      });
-      const result = client.validateLanguageAndLocale('US', 'en', true);
-      expect(result).to.deep.equal({
-          validCountry: 'US',
-          validLanguage: 'en',
-          validLocale: 'en_US',
-      });
-  });
+    it('returns en language when perpetual is true', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('US', 'en', true);
+        expect(result).to.deep.equal({
+            validCountry: 'US',
+            validLanguage: 'en',
+            validLocale: 'en_US',
+        });
+    });
 
-  it('returns actual valid language for GB country regardless of perpetual', async () => {
-      await mockFetch(withWcs);
-      const client = Wcs({
-          settings: {
-              ...Defaults,
-          },
-      });
-      const result = client.validateLanguageAndLocale('GB', 'en', false);
-      expect(result).to.deep.equal({
-          validCountry: 'GB',
-          validLanguage: 'en',
-          validLocale: 'en_GB',
-      });
-  });
+    it('returns en language for GB country regardless of perpetual', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('GB', 'en', false);
+        expect(result).to.deep.equal({
+            validCountry: 'GB',
+            validLanguage: 'en',
+            validLocale: 'en_GB',
+        });
+    });
 
-  it('falls back to default language for invalid language', async () => {
-      await mockFetch(withWcs);
-      const client = Wcs({
-          settings: {
-              ...Defaults,
-          },
-      });
-      const result = client.validateLanguageAndLocale('US', 'invalid', false);
-      expect(result).to.deep.equal({
-          validCountry: 'US',
-          validLanguage: 'MULT',
-          validLocale: 'en_US',
-      });
-  });
+    it('falls back to default country for invalid country', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('XX', 'en', false);
+        expect(result).to.deep.equal({
+            validCountry: 'US',
+            validLanguage: 'MULT',
+            validLocale: 'en_US',
+        });
+    });
 
-  it('falls back to default country for invalid country', async () => {
-      await mockFetch(withWcs);
-      const client = Wcs({
-          settings: {
-              ...Defaults,
-          },
-      });
-      const result = client.validateLanguageAndLocale('XX', 'en', false);
-      expect(result).to.deep.equal({
-          validCountry: 'US',
-          validLanguage: 'MULT',
-          validLocale: 'en_US',
-      });
-  });
+    it('returns correct locale for valid language-country combination in SUPPORTED_LANGUAGE_COUNTRY', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('FR', 'fr', true);
+        expect(result).to.deep.equal({
+            validCountry: 'FR',
+            validLanguage: 'en',
+            validLocale: 'fr_FR',
+        });
+    });
 
-  it('falls back to both defaults for invalid language and country', async () => {
-      await mockFetch(withWcs);
-      const client = Wcs({
-          settings: {
-              ...Defaults,
-          },
-      });
-      const result = client.validateLanguageAndLocale('XX', 'invalid', false);
-      expect(result).to.deep.equal({
-          validCountry: 'US',
-          validLanguage: 'MULT',
-          validLocale: 'en_US',
-      });
-  });
-
-  it('returns correct locale for valid language-country combination in SUPPORTED_LANGUAGE_COUNTRY', async () => {
-      await mockFetch(withWcs);
-      const client = Wcs({
-          settings: {
-              ...Defaults,
-          },
-      });
-      const result = client.validateLanguageAndLocale('FR', 'fr', true);
-      expect(result).to.deep.equal({
-          validCountry: 'FR',
-          validLanguage: 'fr',
-          validLocale: 'fr_FR',
-      });
-  });
-
-  it('returns default locale when valid language-country combination is not in SUPPORTED_LANGUAGE_COUNTRY', async () => {
-      await mockFetch(withWcs);
-      const client = Wcs({
-          settings: {
-              ...Defaults,
-          },
-      });
-      const result = client.validateLanguageAndLocale('FR', 'es', true);
-      expect(result).to.deep.equal({
-          validCountry: 'FR',
-          validLanguage: 'es',
-          validLocale: 'en_US',
-      });
-  });
+    it('returns default locale when valid language-country combination is not in SUPPORTED_LANGUAGE_COUNTRY', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('FR', 'es', true);
+        expect(result).to.deep.equal({
+            validCountry: 'FR',
+            validLanguage: 'en',
+            validLocale: 'en_US',
+        });
+    });
 });
