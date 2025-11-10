@@ -21,6 +21,14 @@ function addLoader(a) {
   return container;
 }
 
+function getLocale(loc) {
+  const ietf = loc.ietf?.toLowerCase();
+  const region = loc.region?.toLowerCase();
+  if (ietf && ietf.includes('-')) return ietf;
+  if (ietf && region) return `${ietf}-${region}`;
+  return ietf;
+}
+
 async function decorateQuickLink(a, hasConsent, isNewTab) {
   const { locale } = getConfig();
   let ecid = null;
@@ -32,7 +40,7 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
   if (ecid && hasConsent && !a.href.includes('ecid')) urlObj.searchParams.set('ecid', ecid);
-  urlObj.searchParams.set('locale', locale.ietf || 'en-US');
+  urlObj.searchParams.set('locale', getLocale(locale) || 'en-US');
   const blockName = a.closest('[data-block-status="loaded"]').classList[0];
   if (blockName) urlObj.searchParams.set('placement', blockName);
   a.href = urlObj.href;
