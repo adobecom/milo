@@ -242,8 +242,8 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
     padding: 0 8px;
   }
 
-  .feds-topnav--overflowing .feds-popup .feds-navLink {
-    padding: 6px 32px;
+  .test-nav .feds-topnav--overflowing .feds-popup .feds-navLink {
+    padding: 6px 0;
   }
 
   .feds-topnav--overflowing .feds-navItem--active > .feds-navLink:before {
