@@ -432,7 +432,7 @@ async function setAccessibilityLabels(el) {
 }
 
 function setupStickyHeader(el) {
-  if (!el.classList.contains('sticky')) return;
+  if (el.classList.contains('sticky-cancel')) return;
   const headerContent = el.querySelector('.header-content');
   const firstTableContainer = el.querySelector('.table-container');
   let isSticky = false;
