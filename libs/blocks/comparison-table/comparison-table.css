@@ -385,6 +385,10 @@
     padding-bottom: 30px;
   }
 
+  .comparison-table .header-content.sticky .sub-header-item-container:first-child {
+    padding-bottom: 0;
+  }
+
   .comparison-table .table-container .table-row .table-cell:not(.hidden):not(:nth-child(2)) div {
     background-color: var(--comparison-column-background-color);
   }
