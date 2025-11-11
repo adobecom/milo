@@ -18,6 +18,10 @@
   justify-content: center;
 }
 
+.email-collection :not(.message) .text {
+  flex: 1;
+}
+
 .email-collection .image picture {
   display: flex;
   justify-content: center;
@@ -79,6 +83,10 @@
   font-weight: 700;
 }
 
+.email-collection.mailing-list .icon-area {
+  margin-bottom: 24px;
+}
+
 .email-collection .message .icon-area {
   margin-bottom: 24px;
 }
@@ -96,6 +104,10 @@
   display: flex;
   flex-direction: column;
   margin-top: 12px;
+}
+
+.email-collection.mailing-list form {
+  margin-top: 24px;
 }
 
 .email-collection .input-container {
@@ -262,12 +274,8 @@
     padding-right: 0;
   }
 
-  .email-collection :not(.message) .text {
+  .email-collection .text > div {
     overflow-y: auto;
-    justify-content: unset;
-  }
-
-  .email-collection:not(.large-image) :not(.message) .text {
     padding-right: var(--form-padding);
   }
 }
