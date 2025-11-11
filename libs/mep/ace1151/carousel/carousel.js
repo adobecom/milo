@@ -1,6 +1,6 @@
-import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
-import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
-import { debounce } from '../../utils/action.js';
+import { createTag, getConfig, MILO_EVENTS } from '../../../utils/utils.js';
+import { decorateAnchorVideo, syncPausePlayIcon } from '../../../utils/decorate.js';
+import { debounce } from '../../../utils/action.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const isMobile = window.innerWidth < 900;
