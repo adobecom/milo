@@ -84,7 +84,7 @@ describe('Brand Concierge', () => {
     expect(button.disabled).to.equal(false);
 
     // trigger submit via Enter
-    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
     const modal = await waitForElement('#brand-concierge-modal');
     expect(modal).to.exist;
