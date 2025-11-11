@@ -14,6 +14,11 @@
   display: none;
 }
 
+.comparison-table *:is(h1, h2, h3, h4, h5, h6) {
+  line-height: 125%;
+  font-size: var(--type-body-m-size);
+}
+
 .comparison-table .table-container {
   max-width: calc(var(--comparison-desktop-max-width) - 2px);
   margin: var(--spacing-xs) auto 0;
@@ -33,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-s);
+  padding: var(--spacing-s);
   border-start-start-radius: var(--comparison-border-radius);
   border-start-end-radius: var(--comparison-border-radius);
 }
@@ -87,6 +92,10 @@
   margin-right: 12px;
 }
 
+.comparison-table .table-container .table-row-header a {
+  display: contents;
+}
+
 .comparison-table span[data-tooltip] .icon-milo:hover {
   cursor: pointer;
 }
@@ -118,6 +127,8 @@
   align-items: center;
   justify-content: center;
   word-break: break-word;
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
 }
 
 .comparison-table .table-container .table-cell div {
@@ -131,7 +142,7 @@
   align-items: center;
 }
 
-.comparison-table .table-container .table-cell p:nth-child(2) {
+.comparison-table .table-container .table-cell >p:nth-child(2) {
   margin-top: 4px;
   font-size: var(--type-body-xxs-size);
   font-weight: 400;
@@ -334,6 +345,10 @@
   padding-bottom: var(--spacing-xxs);
 }
 
+.comparison-table .table-container .table-column-header *:is(h1, h2, h3, h4, h5, h6) {
+  max-width: calc(100% - 36px);
+}
+
 @media screen and (min-width: 600px) and (max-width: 899px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(100% - 160px);
@@ -344,7 +359,7 @@
   }
 
   .comparison-table .table-container .table-column-header button {
-    padding: 0 12px;
+    padding: 12px;
   }
 }
 
@@ -363,16 +378,18 @@
     display: none;
   }
 
+  .comparison-table .table-container .table-column-header *:is(h1, h2, h3, h4, h5, h6) {
+    max-width: calc(100% - 82px);
+  }
+
   .comparison-table .table-container .table-column-header button {
     justify-content: center;
+    position: relative;
   }
 
   .comparison-table .toggle-icon {
-    margin-left: auto;
-  }
-
-  .comparison-table button *:is(h1, h2, h3, h4, h5, h6) {
     position: absolute;
+    right: 24px;
   }
 
   .comparison-table .sub-header-item-container .btn-container.has-multiple .action-area {
@@ -424,5 +441,9 @@
   .comparison-table .sub-header-item-container .btn-container p,
   .comparison-table .sub-header-item-container .btn-container p *:not(em a) {
     width: 100%;
+  }
+
+  .comparison-table .table-container .table-column-header *:is(h1, h2, h3, h4, h5, h6) {
+    max-width: calc(100% - 58px);
   }
 }
