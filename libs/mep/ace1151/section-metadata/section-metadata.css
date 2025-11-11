@@ -454,15 +454,19 @@ main > .section[class*='-up'] > .content {
 
 /* Collapsible Fragment Button */
 .collapse-frag-button {
-  all: unset;
   cursor: pointer;
-  font-weight: 800;
-  font-size: 24px;
-  line-height: 1.2;
+  color: currentcolor;
+  background: none;
+  border: none;
   padding: 16px 0;
   width: 100%;
   display: block;
   text-align: center;
+  margin: 0;
+  font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
+  font-size: var(--type-heading-m-size, 20px);
+  line-height: var(--type-heading-m-lh, 115%);
+  font-weight: var(--type-heading-all-weight, 900);
 }
 
 .collapse-frag-button:hover {
@@ -478,15 +482,15 @@ main > .section[class*='-up'] > .content {
 .collapse-frag-text::after {
   content: '';
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid currentcolor;
-  border-bottom: 2px solid currentcolor;
-  margin-left: 12px;
+  width: 0.4em;
+  height: 0.4em;
+  border-right: 0.15em solid currentcolor;
+  border-bottom: 0.15em solid currentcolor;
+  margin-left: 0.6em;
   transform: rotate(225deg);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  top: -2px;
+  top: -0.1em;
 }
 
 .collapse-frag-button[aria-expanded='true'] .collapse-frag-text::after {
