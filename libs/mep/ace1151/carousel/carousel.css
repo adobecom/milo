@@ -932,7 +932,7 @@ html[dir="rtl"] .carousel .move-indicators {
   /* Whats new Variant - start*/
 
   .carousel.s2a-whatsnew {
-    left: 15%;
+    left: 10%;
     border-radius: 16px 0 0 16px;
   }
   .carousel.s2a-whatsnew .carousel-wrapper {
@@ -1029,7 +1029,7 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 .carousel.s2a-whatsnew .carousel-button-container {
-  left: -8%;
+  left: -7.7%;
 }
 .carousel.s2a-whatsnew .carousel-button-container,
 .carousel.m-gap.s2a-peaking .carousel-button-container {
@@ -1055,9 +1055,6 @@ html[dir="rtl"] .carousel .move-indicators {
     width: 50px;
   }
   
-  .carousel.s2a-whatsnew {
-    left: 2%;
-  }
   .carousel.s2a-whatsnew .carousel-wrapper {
     border-radius: 16px 0 0 16px;
     box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.16);
