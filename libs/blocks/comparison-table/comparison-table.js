@@ -307,7 +307,7 @@ function processCellWithoutSeparator(child) {
   if (child.children.length > 1 || !child.textContent.trim()) {
     [...child.children].forEach((element) => cellDiv.appendChild(element));
   } else {
-    cellDiv.appendChild(createTag('p', {}, child.textContent));
+    cellDiv.appendChild(createTag('p', {}, child.innerHTML));
   }
   child.innerHTML = '';
   child.appendChild(cellDiv);
