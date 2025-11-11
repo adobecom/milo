@@ -16,6 +16,7 @@
 
 .comparison-table .icon {
   display: flex;
+  font-size: var(--type-heading-xs-size);
 }
 
 .comparison-table .icon svg {
