@@ -45,28 +45,3 @@ export function displayPreflightVisuals(processedAssets) {
     addAssetMetadata(assetData.asset, assetData);
   });
 }
-
-export function addAccessibilityMetadata(element, message, status = '') {
-  const picture = element.closest('picture');
-  let container;
-
-  if (picture) {
-    container = picture.querySelector('.asset-meta');
-    if (!container) {
-      container = createTag('div', { class: 'asset-meta' });
-      picture.insertBefore(container, element.nextSibling);
-    }
-  } else {
-    container = createTag('div', { class: 'asset-meta no-picture-tag' });
-    element.parentNode.insertBefore(container, element.nextSibling);
-  }
-
-  const statusMap = {
-    'has-alt': 'is-valid',
-    'is-decorative': 'needs-attention',
-    'is-invalid': 'is-invalid',
-  };
-
-  const metadataEl = createTag('div', { class: `asset-meta-entry ${statusMap[status] || ''}` }, message);
-  container.appendChild(metadataEl);
-}
