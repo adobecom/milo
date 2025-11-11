@@ -197,37 +197,28 @@ export function getEnv(conf) {
 
 function hydrateLocale(locales, key) {
   const locale = locales[key];
+  const addAttributes = (obj, k) => ({
+    ...obj,
+    prefix: k ? `/${k}` : '',
+    region: obj.region || k.split('_')[0] || 'us',
+  });
 
   if (!('base' in locale)) {
     // This is a base region. Gather all child regions, merging base values into each.
+    // TODO not fully sure if we even need these regions. Keep for now.
     const regions = Object.entries(locales)
-      .filter(([, value]) => value.base === key)
-      .reduce((acc, [k, value]) => {
+      .filter(([, v]) => v.base === key)
+      .reduce((acc, [k, v]) => {
         // Merge: child region inherits from base, child region's own values take precedence
-        acc[k] = {
-          ...locale,
-          ...value,
-          base: value.base, // preserve correct base property
-          prefix: `/${k}`,
-          region: value.region || k.split('_')[0] || 'us',
-        };
+        acc[k] = addAttributes({ ...locale, ...v, base: v.base }, k);
         return acc;
       }, {});
-    return {
-      ...locale,
-      regions,
-      prefix: key ? `/${key}` : '',
-      region: locale.region || key.split('_')[0] || 'us',
-    };
+    return { ...addAttributes(locale, key), regions };
   }
-  if ('base' in locale && locales[locale.base]) {
+
+  if ((locale.base || locale.base === '') && locales[locale.base]) {
     // This is a child region. Merge with its base, child region's own values take precedence
-    return {
-      ...locales[locale.base],
-      ...locale,
-      prefix: `/${key}`,
-      region: locale.region || key.split('_')[0] || 'us',
-    };
+    return addAttributes({ ...locales[locale.base], ...locale }, key);
   }
 
   return { ...locale };
@@ -237,13 +228,13 @@ export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
 
   const split = pathname.split('/');
-  const specialPrefix = [LANGSTORE, PREVIEW].includes(split[1]) ? split[1] : '';
+  const localeString = split[1];
+  const specialPrefix = [LANGSTORE, PREVIEW].includes(localeString) ? localeString : '';
 
   const matchedKeys = specialPrefix
     ? [Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]))]
     : Object.keys(locales)
-      .filter((k) => k !== '' && (pathname === `/${k}` || pathname.startsWith(`/${k}/`)))
-      .sort((a, b) => b.length - a.length);
+      .filter((k) => k === localeString);
 
   const matchedKey = matchedKeys[0] ?? '';
   const locale = hydrateLocale(locales, matchedKey);
