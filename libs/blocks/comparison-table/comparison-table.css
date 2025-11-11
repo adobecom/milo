@@ -97,7 +97,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-right: 12px;
+  margin-inline-end: 12px;
 }
 
 .comparison-table .table-container .table-row-header a {
@@ -200,7 +200,7 @@
 }
 
 .comparison-table .header-item:first-of-type {
-  margin-right: 12px;
+  margin-inline-end: 12px;
 }
 
 .comparison-table .header-item:nth-child(odd) .sub-header-item-container:not(:last-of-type) {
