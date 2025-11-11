@@ -312,9 +312,12 @@ header.global-navigation {
 }
 
 @media (min-width: 900px) {
-  .feds-cta--primary, .feds-cta--secondary {
-    white-space: normal !important;
-    height: initial !important;
+  .feds-cta--primary, 
+  .feds-cta--secondary, 
+  .feds-topnav--overflowing .feds-cta--primary,
+  .feds-topnav--overflowing .feds-cta--secondary {
+    white-space: normal;
+    height: initial;
     min-height: 32px;
     line-height: 1.25em;
     max-width: 100%;
