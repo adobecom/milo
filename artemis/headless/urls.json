@@ -17,6 +17,7 @@
     "prerenderDivsCount": 2,
     "assets": {
       "cssUrls": [
+        "https://artemis--milo--adobecom.aem.live/libs/blocks/notification/notification.css",
         "https://artemis--milo--adobecom.aem.live/libs/blocks/hero-marquee/hero-marquee.css",
         "https://artemis--milo--adobecom.aem.live/libs/styles/iconography.css"
       ]
