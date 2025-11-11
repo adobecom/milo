@@ -241,6 +241,7 @@ function decorateHeader(el, headerContent) {
     });
   });
   headerContentWrapper.prepend(createTag('div', { class: 'header-item' }));
+  headerContent.after(createTag('div', { class: 'header-content-dummy', 'aria-hidden': true }));
 }
 
 function createAccessibilityHeaderRow(el) {
@@ -434,6 +435,7 @@ async function setAccessibilityLabels(el) {
 function setupStickyHeader(el) {
   if (el.classList.contains('sticky-cancel')) return;
   const headerContent = el.querySelector('.header-content');
+  const headerContentDummy = el.querySelector('.header-content-dummy');
   const firstTableContainer = el.querySelector('.table-container');
   let isSticky = false;
 
@@ -443,8 +445,11 @@ function setupStickyHeader(el) {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
     if (scrollTop >= tableContainerOffset && !isSticky) {
+      const heightBeforeSticky = headerContent.offsetHeight;
       headerContent.style.top = `${document.querySelector('header')?.offsetHeight || 0}px`;
       headerContent.classList.add('sticky');
+      const heightDifference = heightBeforeSticky - headerContent.offsetHeight;
+      headerContentDummy.style.height = `${heightDifference}px`;
       isSticky = true;
       if (headerContent.offsetHeight / window.innerHeight >= 0.45) headerContent.classList.remove('sticky');
     }
@@ -452,6 +457,7 @@ function setupStickyHeader(el) {
     if (scrollTop === 0 && isSticky) {
       headerContent.classList.remove('sticky');
       headerContent.style.top = '';
+      headerContentDummy.style.height = '';
       isSticky = false;
     }
   };
