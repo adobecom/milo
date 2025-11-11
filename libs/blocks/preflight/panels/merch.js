@@ -51,26 +51,33 @@ async function checkWcsElements() {
   const allWcsElements = document.querySelectorAll('[data-wcs-osi]');
 
   for (const elem of allWcsElements) {
-    const wcsOsi = elem.getAttribute('data-wcs-osi');
-    const tagName = elem.tagName.toLowerCase();
-    const href = elem.getAttribute('href');
-    const ariaLabel = elem.getAttribute('aria-label');
+    // Skip elements that have a child with disabled attribute or class AND no text content
+    const hasDisabledChild = elem.querySelector('[disabled], .disabled');
     const textContent = elem.textContent?.trim();
-    const displayText = ariaLabel || textContent || `<${tagName}> element`;
 
-    const elementData = {
-      type: tagName,
-      displayText,
-      element: elem,
-      wcsOsi,
-      location: getBlockLocation(elem),
-      href,
-      urlStatus: null,
-      finalUrl: null,
-      checking: false,
-    };
+    if (hasDisabledChild && !textContent) {
+      // Skip this element - it has disabled children and no text content
+    } else {
+      const wcsOsi = elem.getAttribute('data-wcs-osi');
+      const tagName = elem.tagName.toLowerCase();
+      const href = elem.getAttribute('href');
+      const ariaLabel = elem.getAttribute('aria-label');
+      const displayText = ariaLabel || textContent || `<${tagName}> element`;
 
-    elements.push(elementData);
+      const elementData = {
+        type: tagName,
+        displayText,
+        element: elem,
+        wcsOsi,
+        location: getBlockLocation(elem),
+        href,
+        urlStatus: null,
+        finalUrl: null,
+        checking: false,
+      };
+
+      elements.push(elementData);
+    }
   }
 
   wcsElements.value = elements;
