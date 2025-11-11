@@ -1503,7 +1503,7 @@ merch-card[variant^="plans"] span.price-unit-type {
 }
 
 merch-card[variant^="plans"] .price-unit-type:not(.disabled)::before {
-    content: "";--consonant-merch-card-heading-xs-font-size
+    content: "";
 }
 merch-card[variant^="plans"] [slot="callout-content"] span.price-unit-type,
 merch-card[variant^="plans"] [slot="addon"] span.price-unit-type,
@@ -1837,7 +1837,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 /* desktop */
 @media screen and ${N} {
     :root {
-        --consonant-merch-card-plans-width: 333px;
+        --consonant-merch-card-plans-width: 276px;
         --consonant-merch-card-plans-students-width: 484px;
     }
 
@@ -1917,7 +1917,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
             min-height: 273px;
             border: 1px solid var(--consonant-merch-card-border-color, #dadada);
             --merch-card-plans-min-width: 244px;
-            --merch-card-plans-padding: 24px;
+            --merch-card-plans-padding: 15px;
             --merch-card-plans-subtitle-display: contents;
             --merch-card-plans-heading-min-height: 23px;
             --merch-color-green-promo: #05834E;
