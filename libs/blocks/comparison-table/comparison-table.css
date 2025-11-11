@@ -326,6 +326,14 @@
   color: var(--color-black);
 }
 
+.comparison-table .header-content.sticky .sub-header-item-container:first-child {
+  padding-bottom: 0;
+}
+
+.comparison-table .sub-header-item-container:first-child:not(:has(.mobile-filter-select)) {
+  padding-bottom: var(--spacing-xxs);
+}
+
 @media screen and (min-width: 600px) and (max-width: 899px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(100% - 160px);
@@ -356,7 +364,7 @@
   }
 
   .comparison-table .table-container .table-column-header button {
-    justify-self: center;
+    justify-content: center;
   }
 
   .comparison-table .toggle-icon {
@@ -364,7 +372,7 @@
   }
 
   .comparison-table button *:is(h1, h2, h3, h4, h5, h6) {
-    margin-left: auto;
+    position: absolute;
   }
 
   .comparison-table .sub-header-item-container .btn-container.has-multiple .action-area {
@@ -392,10 +400,6 @@
 
   .comparison-table .sub-header-item-container:first-child {
     padding-bottom: 30px;
-  }
-
-  .comparison-table .header-content.sticky .sub-header-item-container:first-child {
-    padding-bottom: 0;
   }
 
   .comparison-table .table-container .table-row .table-cell:not(.hidden):not(:nth-child(2)) div {
