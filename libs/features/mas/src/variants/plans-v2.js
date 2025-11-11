@@ -13,6 +13,7 @@ export const PLANS_V2_AEM_FRAGMENT_MAPPING = {
     title: { tag: 'h3', slot: 'heading-xs' },
     subtitle: { tag: 'p', slot: 'subtitle' },
     prices: { tag: 'p', slot: 'heading-m' },
+    shortDescription: { tag: 'p', slot: 'short-description' },
     promoText: { tag: 'p', slot: 'promo-text' },
     description: { tag: 'div', slot: 'body-xs' },
     mnemonics: { size: 'l' },
@@ -47,6 +48,8 @@ export class PlansV2 extends VariantLayout {
     constructor(card) {
         super(card);
         this.adaptForMedia = this.adaptForMedia.bind(this);
+        this.toggleShortDescription = this.toggleShortDescription.bind(this);
+        this.shortDescriptionExpanded = false;
     }
 
     priceOptionsProvider(element, options) {
@@ -58,93 +61,89 @@ export class PlansV2 extends VariantLayout {
         return CSS;
     }
 
-    /**
-     * Moves a slot to its proper place (body or footer) depending on card size and screen size
-     * @param {string} name 
-     * @param {string[]} sizes 
-     * @param {boolean} shouldBeInFooter 
-     * @returns 
-     */
     adjustSlotPlacement(name, sizes, shouldBeInFooter) {
-        const shadowRoot = this.card.shadowRoot;
+        const { shadowRoot } = this.card;
         const footer = shadowRoot.querySelector('footer');
-        const size = this.card.getAttribute('size');
-        if (!size)
-            return;
-
-        const slotInFooter = shadowRoot.querySelector(
-            `footer slot[name="${name}"]`,
-        );
-        const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
         const body = shadowRoot.querySelector('.body');
+        const size = this.card.getAttribute('size');
+        
+        if (!size) return;
+
+        const slotInFooter = shadowRoot.querySelector(`footer slot[name="${name}"]`);
+        const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
 
         if (!size.includes('wide')) {
             footer?.classList.remove('wide-footer');
-            if (slotInFooter) slotInFooter.remove();
+            slotInFooter?.remove();
         }
         if (!sizes.includes(size)) return;
-        
 
         footer?.classList.toggle('wide-footer', Media.isDesktopOrUp);
+
         if (!shouldBeInFooter && slotInFooter) {
-            if (slotInBody) 
+            if (slotInBody) {
                 slotInFooter.remove();
-            else {
+            } else {
                 const bodyPlaceholder = body.querySelector(`[data-placeholder-for="${name}"]`);
-                if (bodyPlaceholder) bodyPlaceholder.replaceWith(slotInFooter);
-                else body.appendChild(slotInFooter);
+                if (bodyPlaceholder) {
+                    bodyPlaceholder.replaceWith(slotInFooter);
+                } else {
+                    body.appendChild(slotInFooter);
+                }
             }
             return;
         }
+
         if (shouldBeInFooter && slotInBody) {
             const bodyPlaceholder = document.createElement('div');
             bodyPlaceholder.setAttribute('data-placeholder-for', name);
             bodyPlaceholder.classList.add('slot-placeholder');
             if (!slotInFooter) {
-                const slotInBodyClone = slotInBody.cloneNode(true);
-                footer.prepend(slotInBodyClone);
+                footer.prepend(slotInBody.cloneNode(true));
             }
-            slotInBody.replaceWith(bodyPlaceholder)
+            slotInBody.replaceWith(bodyPlaceholder);
         }
     }
 
     adaptForMedia() {
-        if (
-            !this.card.closest(
-                'merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns',
-            )
-        ) {
+        if (!this.card.closest('merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards,.columns')) {
             this.card.removeAttribute('size');
             return;
         }
-        
+        this.adjustSlotPlacement('heading-m', ['wide'], true);
         this.adjustSlotPlacement('addon', ['super-wide'], Media.isDesktopOrUp);
         this.adjustSlotPlacement('callout-content', ['super-wide'], Media.isDesktopOrUp);
     }
 
     adjustCallout() {
         const tooltipIcon = this.card.querySelector('[slot="callout-content"] .icon-button');
-        if (tooltipIcon && tooltipIcon.title) {
-            tooltipIcon.dataset.tooltip = tooltipIcon.title;
-            tooltipIcon.removeAttribute('title');
-            tooltipIcon.classList.add('hide-tooltip');
-            document.addEventListener('touchstart', (event) => {
-                event.preventDefault();
-                if (event.target !== tooltipIcon) {
-                    tooltipIcon.classList.add('hide-tooltip');
-                } else {
-                    event.target.classList.toggle('hide-tooltip');
-                }
-            });
-            document.addEventListener('mouseover', (event) => {
-                event.preventDefault();
-                if (event.target !== tooltipIcon) {
-                    tooltipIcon.classList.add('hide-tooltip');
-                } else {
-                    event.target.classList.remove('hide-tooltip');
-                }
-            });
-        }
+        if (!tooltipIcon?.title) return;
+
+        tooltipIcon.dataset.tooltip = tooltipIcon.title;
+        tooltipIcon.removeAttribute('title');
+        tooltipIcon.classList.add('hide-tooltip');
+
+        const hideTooltipExcept = (target) => {
+            if (target === tooltipIcon) {
+                tooltipIcon.classList.toggle('hide-tooltip');
+            } else {
+                tooltipIcon.classList.add('hide-tooltip');
+            }
+        };
+
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            hideTooltipExcept(e.target);
+        });
+
+        document.addEventListener('mouseover', (e) => {
+            e.preventDefault();
+            if (e.target !== tooltipIcon) {
+                tooltipIcon.classList.add('hide-tooltip');
+            } else {
+                tooltipIcon.classList.remove('hide-tooltip');
+            }
+        });
     }
 
     async postCardUpdateHook() {
@@ -152,48 +151,41 @@ export class PlansV2 extends VariantLayout {
         this.adjustTitleWidth();
         this.adjustAddon();
         this.adjustCallout();
+        this.removeShortDescriptionLabel();
         if (!this.legalAdjusted) {
             await this.adjustLegal();
         }
     }
 
-    get headingM() {
-        return this.card.querySelector('[slot="heading-m"]');
-    }
-
     get mainPrice() {
-        const price = this.headingM.querySelector(
-            `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
-        );
-        return price;
+        return this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
     }
 
     async adjustLegal() {
         if (this.legalAdjusted) return;
+        
         try {
             this.legalAdjusted = true;
             await this.card.updateComplete;
             await customElements.whenDefined('inline-price');
-            const prices = [];
-            const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
-            if (headingPrice) prices.push(headingPrice);
-            const legalPromises = prices.map(async (price) => {
-              const legal = price.cloneNode(true);
-              await price.onceSettled();
-              if (!price?.options) return;
-              if (price.options.displayPerUnit)
-                  price.dataset.displayPerUnit = 'false';
-              if (price.options.displayTax) price.dataset.displayTax = 'false';
-              if (price.options.displayPlanType)
-                  price.dataset.displayPlanType = 'false';
-              legal.setAttribute('data-template', 'legal');
-              price.parentNode.insertBefore(legal, price.nextSibling);
-              await legal.onceSettled();
-            });
-            await Promise.all(legalPromises);
-        }
-        catch {
-            /* Proceed with other adjustments */
+            
+            const headingPrice = this.mainPrice;
+            if (!headingPrice) return;
+
+            const legal = headingPrice.cloneNode(true);
+            await headingPrice.onceSettled();
+            
+            if (!headingPrice?.options) return;
+
+            if (headingPrice.options.displayPerUnit) headingPrice.dataset.displayPerUnit = 'false';
+            if (headingPrice.options.displayTax) headingPrice.dataset.displayTax = 'false';
+            if (headingPrice.options.displayPlanType) headingPrice.dataset.displayPlanType = 'false';
+            
+            legal.setAttribute('data-template', 'legal');
+            headingPrice.parentNode.insertBefore(legal, headingPrice.nextSibling);
+            await legal.onceSettled();
+        } catch {
+            // Proceed with other adjustments
         }
     }
 
@@ -201,13 +193,14 @@ export class PlansV2 extends VariantLayout {
         await this.card.updateComplete;
         const addon = this.card.addon;
         if (!addon) return;
+
         addon.setAttribute('custom-checkbox', '');
         const price = this.mainPrice;
         if (!price) return;
+
         await price.onceSettled();
         const planType = price.value?.[0]?.planType;
-        if (!planType) return;
-        addon.planType = planType;
+        if (planType) addon.planType = planType;
     }
 
     get stockCheckbox() {
@@ -220,14 +213,81 @@ export class PlansV2 extends VariantLayout {
             : nothing;
     }
 
+    get hasShortDescription() {
+        return !!this.card.querySelector('[slot="short-description"]');
+    }
+
+    get shortDescriptionLabel() {
+        const shortDescElement = this.card.querySelector('[slot="short-description"]');
+        if (!shortDescElement) return 'What you get:';
+        
+        const boldElement = shortDescElement.querySelector('strong, b');
+        if (boldElement?.textContent?.trim()) {
+            return boldElement.textContent.trim();
+        }
+        
+        const headingOrPara = shortDescElement.querySelector('h1, h2, h3, h4, h5, h6, p');
+        if (headingOrPara?.textContent?.trim()) {
+            return headingOrPara.textContent.trim();
+        }
+        
+        const firstLine = shortDescElement.textContent?.trim().split('\n')[0].trim();
+        return firstLine || 'What you get:';
+    }
+
+    removeShortDescriptionLabel() {
+        const shortDescElement = this.card.querySelector('[slot="short-description"]');
+        if (!shortDescElement) return;
+        
+        const boldElements = shortDescElement.querySelectorAll('strong, b');
+        boldElements.forEach(el => el.remove());
+    }
+
+    toggleShortDescription() {
+        this.shortDescriptionExpanded = !this.shortDescriptionExpanded;
+        this.card.requestUpdate();
+    }
+
+    get shortDescriptionToggle() {
+        if (!this.hasShortDescription) return nothing;
+        
+        if (Media.isDesktopOrUp) {
+            return html`
+                <div class="short-description-divider"></div>
+                <div class="short-description-content desktop">
+                    <slot name="short-description"></slot>
+                </div>
+            `;
+        }
+        
+        return html`
+            <div class="short-description-divider"></div>
+            <div class="short-description-toggle" @click=${this.toggleShortDescription}>
+                <span class="toggle-label">${this.shortDescriptionLabel}</span>
+                <span class="toggle-icon ${this.shortDescriptionExpanded ? 'expanded' : ''}">
+                    ${this.shortDescriptionExpanded ? '−' : '+'}
+                </span>
+            </div>
+            <div class="short-description-content ${this.shortDescriptionExpanded ? 'expanded' : ''}">
+                <slot name="short-description"></slot>
+            </div>
+        `;
+    }
+
     get icons() {
-        if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute('id')) return nothing;
-        return html`<slot name="icons"></slot>`;
+        return (this.card.querySelector('[slot="icons"]') || this.card.getAttribute('id'))
+            ? html`<slot name="icons"></slot>`
+            : nothing;
     }
 
     connectedCallbackHook() {
+        const handleMediaChange = () => {
+            this.adaptForMedia();
+            this.card.requestUpdate();
+        };
+
         Media.matchMobile.addEventListener('change', this.adaptForMedia);
-        Media.matchDesktopOrUp.addEventListener('change', this.adaptForMedia);
+        Media.matchDesktopOrUp.addEventListener('change', handleMediaChange);
     }
 
     disconnectedCallbackHook() {
@@ -242,10 +302,10 @@ export class PlansV2 extends VariantLayout {
                     ${this.icons}
                     <slot name="heading-xs"></slot>
                 </div>
+                <slot name="heading-m"></slot>
                 <slot name="subtitle"></slot>
                 <slot name="body-xs"></slot>
                 <div class="price-divider"></div>
-                <slot name="heading-m"></slot>
                 <slot name="annualPrice"></slot>
                 <slot name="priceLabel"></slot>
                 <slot name="body-xxs"></slot>
@@ -258,6 +318,7 @@ export class PlansV2 extends VariantLayout {
                 <slot name="badge"></slot>
             </div>
             ${this.secureLabelFooter}
+            ${this.shortDescriptionToggle}
             <slot></slot>`;
     }
 
@@ -271,13 +332,13 @@ export class PlansV2 extends VariantLayout {
             background-color: var(--spectrum-gray-50, #FFFFFF);
             border-radius: var(--consonant-merch-card-plans-v2-border-radius, 8px);
             overflow: hidden;
+            font-weight: 400;
             --merch-card-plans-v2-min-width: 244px;
             --merch-card-plans-v2-padding: 26px 32px;
             --merch-card-plans-v2-subtitle-display: contents;
             --merch-card-plans-v2-heading-min-height: 23px;
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
-            font-weight: 400;
         }
 
         :host([variant='plans-v2']) .slot-placeholder {
@@ -323,26 +384,8 @@ export class PlansV2 extends VariantLayout {
 
         :host([variant='plans-v2']) slot[name='icons'] {
             gap: 3px;
-            mask-image: linear-gradient(to right, 
-                rgba(0, 0, 0, 1) 0%, 
-                rgba(0, 0, 0, 1) 12.5%, 
-                rgba(0, 0, 0, 0.8) 25%, 
-                rgba(0, 0, 0, 0.6) 37.5%, 
-                rgba(0, 0, 0, 0.4) 50%, 
-                rgba(0, 0, 0, 0.2) 62.5%, 
-                rgba(0, 0, 0, 0.05) 75%, 
-                rgba(0, 0, 0, 0.03) 87.5%, 
-                rgba(0, 0, 0, 0) 100%);
-            -webkit-mask-image: linear-gradient(to right, 
-                rgba(0, 0, 0, 1) 0%, 
-                rgba(0, 0, 0, 1) 12.5%, 
-                rgba(0, 0, 0, 0.8) 25%, 
-                rgba(0, 0, 0, 0.6) 37.5%, 
-                rgba(0, 0, 0, 0.4) 50%, 
-                rgba(0, 0, 0, 0.2) 62.5%, 
-                rgba(0, 0, 0, 0.05) 75%, 
-                rgba(0, 0, 0, 0.03) 87.5%, 
-                rgba(0, 0, 0, 0) 100%);
+            mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 12.5%, rgba(0, 0, 0, 0.8) 25%, rgba(0, 0, 0, 0.6) 37.5%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.2) 62.5%, rgba(0, 0, 0, 0.05) 75%, rgba(0, 0, 0, 0.03) 87.5%, rgba(0, 0, 0, 0) 100%);
+            -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 12.5%, rgba(0, 0, 0, 0.8) 25%, rgba(0, 0, 0, 0.6) 37.5%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.2) 62.5%, rgba(0, 0, 0, 0.05) 75%, rgba(0, 0, 0, 0.03) 87.5%, rgba(0, 0, 0, 0) 100%);
         }
 
         :host([variant='plans-v2']) ::slotted([slot='icons']) {
@@ -426,7 +469,75 @@ export class PlansV2 extends VariantLayout {
             margin-bottom: 0;
         }
 
-        /* Border color variants */
+        :host([variant='plans-v2']) .short-description-divider {
+            height: 1px;
+            background-color: #E8E8E8;
+            margin: 0;
+        }
+
+        :host([variant='plans-v2']) .short-description-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 32px;
+            cursor: pointer;
+            background-color: var(--spectrum-gray-50, #FFFFFF);
+            transition: background-color 0.2s ease;
+        }
+
+        :host([variant='plans-v2']) .short-description-toggle:hover {
+            background-color: var(--spectrum-gray-75, #F8F8F8);
+        }
+
+        :host([variant='plans-v2']) .short-description-toggle .toggle-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--spectrum-gray-800, #2C2C2C);
+            text-align: left;
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        :host([variant='plans-v2']) .short-description-toggle .toggle-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            font-size: 24px;
+            font-weight: 300;
+            color: var(--spectrum-gray-700, #4B4B4B);
+            flex-shrink: 0;
+        }
+
+        :host([variant='plans-v2']) .short-description-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 32px;
+        }
+
+        :host([variant='plans-v2']) .short-description-content.expanded {
+            max-height: 500px;
+            padding: 24px 32px;
+        }
+
+        :host([variant='plans-v2']) .short-description-content.desktop {
+            max-height: none;
+            overflow: visible;
+            padding: 24px 32px;
+            transition: none;
+        }
+
+        :host([variant='plans-v2']) .short-description-content ::slotted([slot='short-description']) {
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--spectrum-gray-700, #4B4B4B);
+            line-height: 1.5;
+            margin: 0;
+        }
+
         :host([variant='plans-v2'][border-color='spectrum-yellow-300-plans']) {
             border-color: #FFD947;
         }
@@ -443,7 +554,6 @@ export class PlansV2 extends VariantLayout {
             border-color: #EB1000;
         }
 
-        /* Badge color variants */
         :host([variant='plans-v2']) ::slotted([slot='badge'].spectrum-yellow-300-plans),
         :host([variant='plans-v2']) #badge.spectrum-yellow-300-plans {
             background-color: #FFD947;
@@ -474,24 +584,20 @@ export class PlansV2 extends VariantLayout {
             color: #FFFFFF;
         }
 
-        /* Price divider - hidden by default */
         :host([variant='plans-v2']) .price-divider {
             display: none;
         }
 
-        /* Heading wrapper - default stacked layout */
         :host([variant='plans-v2']) .heading-wrapper {
             display: flex;
             flex-direction: column;
         }
 
-        /* Wide size variant styles */
         :host([variant='plans-v2'][size='wide']) {
             width: 100%;
             max-width: 768px;
         }
 
-        /* Wide variant - icons and title on same line */
         :host([variant='plans-v2'][size='wide']) .heading-wrapper {
             flex-direction: row;
             align-items: center;
@@ -530,12 +636,21 @@ export class PlansV2 extends VariantLayout {
 
         :host([variant='plans-v2'][size='wide']) footer {
             justify-content: flex-start;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        :host([variant='plans-v2'][size='wide']) footer ::slotted([slot='heading-m']) {
+            order: -1;
+            margin-bottom: 16px;
+            align-self: flex-start;
         }
 
         :host([variant='plans-v2'][size='wide']) footer ::slotted(a) {
             width: auto;
             min-width: 150px;
             margin-right: 12px;
+            margin-bottom: 0;
         }
 
         :host([variant='plans-v2'][size='wide']) footer ::slotted(a:last-child) {
@@ -546,27 +661,29 @@ export class PlansV2 extends VariantLayout {
     static collectionOptions = {
         customHeaderArea: (collection) => {
             if (!collection.sidenav) return nothing;
-            return html`<slot name="resultsText"></slot>`
+            return html`<slot name="resultsText"></slot>`;
         },
         headerVisibility: {
             search: false,
             sort: false,
             result: ['mobile', 'tablet'],
-            custom: ['desktop']
+            custom: ['desktop'],
         },
         onSidenavAttached: (collection) => {
             const minifyOverflowingWideCards = () => {
                 const merchCards = collection.querySelectorAll('merch-card');
-                for (const merchCard of merchCards) {
+                merchCards.forEach(merchCard => {
                     if (merchCard.hasAttribute('data-size')) {
                         merchCard.setAttribute('size', merchCard.getAttribute('data-size'));
                         merchCard.removeAttribute('data-size');
                     }
-                }
+                });
+
                 if (!Media.isDesktop) return;
+
                 let columns = 0;
-                for (const merchCard of merchCards) {
-                    if (merchCard.style.display === 'none') continue;
+                merchCards.forEach(merchCard => {
+                    if (merchCard.style.display === 'none') return;
                     const size = merchCard.getAttribute('size');
                     let columnCount = size === 'wide' ? 2 : size === 'super-wide' ? 3 : 1;
                     if (columnCount === 2 && columns % 3 === 2) {
@@ -575,8 +692,8 @@ export class PlansV2 extends VariantLayout {
                         columnCount = 1;
                     }
                     columns += columnCount;
-                }
-            }
+                });
+            };
 
             Media.matchDesktop.addEventListener('change', minifyOverflowingWideCards);
             collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, minifyOverflowingWideCards);
@@ -585,7 +702,6 @@ export class PlansV2 extends VariantLayout {
                 Media.matchDesktop.removeEventListener('change', minifyOverflowingWideCards);
                 collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, minifyOverflowingWideCards);
             });
-        }
+        },
     };
 }
-
