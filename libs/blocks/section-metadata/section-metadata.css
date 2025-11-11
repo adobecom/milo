@@ -251,6 +251,10 @@ main > .section[class*='-up'] > .content {
   gap: 0.5em;
 }
 
+.section .show-more-button.hidden {
+  display: none;
+}
+
 .section .show-more-icon {
   display: inline-flex;
   align-items: center;
@@ -409,6 +413,20 @@ main > .section[class*='-up'] > .content {
 :root:has(meta[name="theme"][content="max25"]) {
   --xl-rounded-corners: 20px;
 
+  .section.two-up, .section.three-up, .section.four-up, .section.five-up {
+    gap: var(--spacing-s);
+  }
+
+  .section.spacing-bottom-180 {
+    padding-bottom: 50px;
+  }
+
+  @media (max-width: 599px) {
+    .section.no-spacing-bottom-mobile {
+      padding-bottom: 0;
+    }
+  }
+
   @media (min-width: 600px) {
     --xl-rounded-corners: 32px;
   }
@@ -419,5 +437,21 @@ main > .section[class*='-up'] > .content {
 
   .section.xl-bottom-rounded-corners {
     border-radius: 0 0 var(--xl-rounded-corners) var(--xl-rounded-corners);
+  }
+
+  @media (min-width: 600px) {
+    .section.spacing-bottom-180 {
+      padding-bottom: 160px;
+    }
+  }
+
+  @media (min-width: 600px) and (max-width: 1199px) {
+    .section.no-spacing-bottom-tablet {
+      padding-bottom: 0;
+    }
+
+    .section.s-spacing:has(> .carousel.show-2.ups-desktop) {
+      padding-top: 0;
+    }
   }
 }

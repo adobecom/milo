@@ -18,7 +18,11 @@ describe('merch-card-collection autoblock', () => {
     document.head.appendChild(mockService);
     before(async () => {
       sinon.stub(window, 'fetch').callsFake(async (url) => {
-        const result = await originalFetch('/test/blocks/merch-card-collection-autoblock/mocks/fragment.json').then(async (res) => {
+        let mockPath = '/test/blocks/merch-card-collection-autoblock/mocks/fragment.json';
+        if (url.includes('with-checkbox-groups')) {
+          mockPath = '/test/blocks/merch-card-collection-autoblock/mocks/fragment-with-checkbox-groups.json';
+        }
+        const result = await originalFetch(mockPath).then(async (res) => {
           if (url.includes('id=1234')) {
             const responseBody = JSON.stringify(await res.json()).replaceAll('049231fd-0c45-4ef5-8792-7fa2dcd5005a', '4567');
             return new Response(responseBody, { status: 200 });
@@ -231,6 +235,72 @@ describe('merch-card-collection autoblock', () => {
 
       window.history.pushState = originalPushState;
       window.history.pushState({}, '', `${originalUrl}`);
+    });
+
+    it('creates checkbox groups when fragment includes checkboxGroups data', async () => {
+      const content = document.createElement('div');
+      content.classList.add('content');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=with-checkbox-groups');
+      a.textContent = 'merch-card-collection: SANDBOX / Catalog Plans';
+      content.append(a);
+      document.body.append(content);
+      await init(a);
+      await delay(100);
+      const sidenav = document.querySelector('merch-sidenav');
+      expect(sidenav).to.exist;
+      const checkboxGroups = sidenav.querySelectorAll('merch-sidenav-checkbox-group');
+      expect(checkboxGroups.length).to.equal(1);
+      const checkboxGroup = checkboxGroups[0];
+      expect(checkboxGroup.getAttribute('sidenavCheckboxTitle')).to.equal('Types');
+      expect(checkboxGroup.getAttribute('label')).to.equal('types');
+      expect(checkboxGroup.getAttribute('deeplink')).to.equal('types');
+      const checkboxes = checkboxGroup.querySelectorAll('sp-checkbox');
+      expect(checkboxes.length).to.equal(3);
+      expect(checkboxes[0].getAttribute('name')).to.equal('desktop');
+      expect(checkboxes[0].textContent).to.equal('Desktop');
+      expect(checkboxes[1].getAttribute('name')).to.equal('mobile');
+      expect(checkboxes[1].textContent).to.equal('Mobile');
+      expect(checkboxes[2].getAttribute('name')).to.equal('web');
+      expect(checkboxes[2].textContent).to.equal('Web');
+    });
+
+    it('does not create checkbox groups when fragment has no checkboxGroups data', async () => {
+      const content = document.createElement('div');
+      content.classList.add('content');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368');
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      content.append(a);
+      document.body.append(content);
+      await init(a);
+      await delay(100);
+      const sidenav = document.querySelector('merch-sidenav');
+      expect(sidenav).to.exist;
+      const checkboxGroups = sidenav.querySelectorAll('merch-sidenav-checkbox-group');
+      expect(checkboxGroups.length).to.equal(0);
+    });
+
+    it('places checkbox groups after filter list in sidenav', async () => {
+      const content = document.createElement('div');
+      content.classList.add('content');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=with-checkbox-groups');
+      a.textContent = 'merch-card-collection: SANDBOX / Catalog Plans';
+      content.append(a);
+      document.body.append(content);
+      await init(a);
+      await delay(100);
+      const sidenav = document.querySelector('merch-sidenav');
+      const sidenavList = sidenav.querySelector('merch-sidenav-list');
+      const checkboxGroup = sidenav.querySelector('merch-sidenav-checkbox-group');
+      expect(sidenavList).to.exist;
+      expect(checkboxGroup).to.exist;
+      // Check that checkbox group comes after sidenav list
+      const sidenavChildren = Array.from(sidenav.children);
+      const listIndex = sidenavChildren.indexOf(sidenavList);
+      const checkboxIndex = sidenavChildren.indexOf(checkboxGroup);
+      expect(checkboxIndex).to.be.greaterThan(listIndex);
     });
   });
 });
