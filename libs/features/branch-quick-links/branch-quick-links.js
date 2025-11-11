@@ -40,7 +40,7 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
   if (ecid && hasConsent && !a.href.includes('ecid')) urlObj.searchParams.set('ecid', ecid);
-  urlObj.searchParams.set('locale', getLocale(locale) || 'en-US');
+  urlObj.searchParams.set('locale', getLocale(locale));
   const blockName = a.closest('[data-block-status="loaded"]').classList[0];
   if (blockName) urlObj.searchParams.set('placement', blockName);
   a.href = urlObj.href;
