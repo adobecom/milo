@@ -22,8 +22,8 @@ function addLoader(a) {
 }
 
 function getLocale(loc) {
-  const ietf = loc.ietf?.toLowerCase();
-  const region = loc.region?.toLowerCase();
+  const ietf = loc?.ietf?.toLowerCase();
+  const region = loc?.region?.toLowerCase();
   if (ietf && ietf.includes('-')) return ietf;
   if (ietf && region) return `${ietf}-${region}`;
   return ietf;
@@ -40,11 +40,12 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
   if (ecid && hasConsent && !a.href.includes('ecid')) urlObj.searchParams.set('ecid', ecid);
-  urlObj.searchParams.set('locale', getLocale(locale));
-  const blockName = a.closest('[data-block-status="loaded"]').classList[0];
+  const loc = getLocale(locale);
+  if (loc) urlObj.searchParams.set('locale', loc);
+  const blockName = a.closest('[data-block-status="loaded"]')?.classList[0];
   if (blockName) urlObj.searchParams.set('placement', blockName);
   a.href = urlObj.href;
-  if (isNewTab) window.open(a.href, '_blank');
+  if (isNewTab) window.open(a.href, '_blank', 'noopener');
   else window.location.href = a.href;
 }
 
