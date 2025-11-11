@@ -156,6 +156,21 @@ function addListAttrToSection(section) {
   });
 }
 
+function isInDeeplinkTab(section) {
+  const tabPanel = section.closest('[role="tabpanel"], .tabpanel');
+  if (!tabPanel) return false;
+  if (tabPanel.hasAttribute('hidden')) return false;
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('tab')) return true;
+  const tabsBlock = section.closest('.tabs');
+  if (tabsBlock) {
+    const tabId = tabsBlock.id?.replace('tabs-', '');
+    if (tabId && params.has(tabId)) return true;
+  }
+
+  return false;
+}
+
 async function loadFragmentContent(placeholder, url) {
   const { default: initFragment } = await import('../../../blocks/fragment/fragment.js');
   const link = createTag('a', { href: url, class: 'fragment' });
@@ -163,18 +178,22 @@ async function loadFragmentContent(placeholder, url) {
   await initFragment(link);
 }
 
-function handleCollapseFrag(fragmentUrl, section, buttonText) {
+async function handleCollapseFrag(fragmentUrl, section, buttonText) {
   if (!fragmentUrl || !section || !buttonText) return null;
+
+  // Check if section is in a deeplinked tab
+  const shouldStartExpanded = isInDeeplinkTab(section);
+
   const contentId = `collapse-frag-${Math.random().toString(36).substr(2, 9)}`;
   const placeholder = createTag('div', {
     class: 'collapse-frag-placeholder',
     'data-fragment-url': fragmentUrl,
     id: contentId,
-    'aria-hidden': 'true',
+    'aria-hidden': shouldStartExpanded ? 'false' : 'true',
   });
   const toggleButton = createTag('button', {
     class: 'collapse-frag-button',
-    'aria-expanded': 'false',
+    'aria-expanded': shouldStartExpanded ? 'true' : 'false',
     'aria-controls': contentId,
   });
   const textSpan = createTag('span', { class: 'collapse-frag-text' }, buttonText);
@@ -228,25 +247,36 @@ function handleCollapseFrag(fragmentUrl, section, buttonText) {
     fragSection.addEventListener('transitionend', transitionEnd);
   }
 
-  toggleButton.addEventListener('click', async () => {
-    const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
-    if (!isLoaded && !isExpanded) {
-      toggleButton.disabled = true;
+  async function loadAndSetupFragment() {
+    toggleButton.disabled = true;
+    try {
       await loadFragmentContent(placeholder, fragmentUrl);
       const loadedFragment = placeholder.querySelector('.fragment');
       fragSection = loadedFragment?.querySelector(':scope > .section');
       if (!fragSection) {
         toggleButton.disabled = false;
-        return;
+        return false;
       }
-      const { decorateSectionAnalytics } = await import('../../../martech/attributes.js');
-      await decorateSectionAnalytics(fragSection, 'collapse-frag', getConfig());
       fragContent = fragSection.querySelector(':scope > *') || fragSection;
       fragSection.style.overflow = 'hidden';
       fragSection.style.transition = 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
       fragContent.style.transition = 'opacity 0.3s ease-in-out';
       isLoaded = true;
       toggleButton.disabled = false;
+      return true;
+    } catch (error) {
+      toggleButton.disabled = false;
+      return false;
+    }
+  }
+
+  toggleButton.addEventListener('click', async () => {
+    const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+    if (!isLoaded && !isExpanded) {
+      const loaded = await loadAndSetupFragment();
+      if (!loaded) return;
+      const { decorateSectionAnalytics } = await import('../../../martech/attributes.js');
+      await decorateSectionAnalytics(fragSection, 'collapse-frag', getConfig());
       expandContent();
     } else if (isExpanded) {
       collapseContent();
@@ -256,6 +286,16 @@ function handleCollapseFrag(fragmentUrl, section, buttonText) {
   });
 
   section.classList.add('has-collapse-frag');
+  if (shouldStartExpanded) {
+    (async () => {
+      const loaded = await loadAndSetupFragment();
+      if (!loaded) return;
+      fragSection.style.visibility = 'visible';
+      fragSection.style.maxHeight = 'none';
+      fragContent.style.opacity = '1';
+      section.classList.add('frag-expanded');
+    })();
+  }
 
   return { toggleButton, placeholder };
 }
@@ -275,7 +315,7 @@ export default async function init(el) {
   const collapseFragPath = metadata['collapse-frag-path']?.content?.textContent?.trim();
 
   if (collapseFragText && collapseFragPath) {
-    const result = handleCollapseFrag(collapseFragPath, section, collapseFragText);
+    const result = await handleCollapseFrag(collapseFragPath, section, collapseFragText);
     if (result) {
       const { toggleButton, placeholder } = result;
       el.parentElement.insertBefore(toggleButton, el);
