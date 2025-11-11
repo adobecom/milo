@@ -714,6 +714,9 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.s2a-whatsnew .carousel-button:focus {
     background-color: #292929
   }
+  .carousel.container {
+    padding-left: 2rem;
+  }
 }
 
 
