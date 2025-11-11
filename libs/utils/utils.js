@@ -205,7 +205,6 @@ function hydrateLocale(locales, key) {
 
   if (!('base' in locale)) {
     // This is a base region. Gather all child regions, merging base values into each.
-    // TODO not fully sure if we even need these regions. Keep for now.
     const regions = Object.entries(locales)
       .filter(([, v]) => v.base === key)
       .reduce((acc, [k, v]) => {
