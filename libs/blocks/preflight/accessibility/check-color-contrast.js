@@ -56,7 +56,7 @@ async function loadColorThief() {
     const { base } = getConfig();
     await loadScript(`${base}/deps/colorThief.js`);
     return window.ColorThief;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
