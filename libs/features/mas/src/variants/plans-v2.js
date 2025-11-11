@@ -602,7 +602,6 @@ export class PlansV2 extends VariantLayout {
             flex-direction: row;
             align-items: center;
             gap: 12px;
-            margin-bottom: 16px;
         }
 
         :host([variant='plans-v2'][size='wide']) .heading-wrapper slot[name='icons'] {
