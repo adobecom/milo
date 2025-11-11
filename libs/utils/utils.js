@@ -1769,7 +1769,7 @@ async function resolveInlineFrags(section) {
 async function processSection(section, config, isDoc, lcpSectionId) {
   if(section.el.classList.contains('prerender')) {
     section.blocks.forEach((block) => loadBlock(block));
-    if (isDoc) await loadPostLCP(config);
+    if (isDoc && (lcpSectionId === section.idx)) await loadPostLCP(config);
     return [];
   }
   await resolveInlineFrags(section);
@@ -1821,10 +1821,15 @@ export async function loadArea(area = document) {
   const areaBlocks = [];
   let lcpSectionId = null;
 
+  const lastPrerenderItem = sections.findLast(item => 
+    item.el.classList.contains('prerender')
+  );
+  const lastPrerenderIdx = lastPrerenderItem ? lastPrerenderItem.idx : null;
+
   for (const section of sections) {
     const isLastSection = section.idx === sections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection || section.el?.classList.contains('prerender'))) {
-      lcpSectionId = section.idx;
+      lcpSectionId = lastPrerenderIdx || section.idx;
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
