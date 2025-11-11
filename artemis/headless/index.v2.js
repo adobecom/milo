@@ -50,6 +50,8 @@ const fetchAndMinifyCss = async (url) => {
 const processPage = async (browser, urlConfig) => {
   // Destructure all needed properties from the config
   const { url, filename, assets, baseImageUrl } = urlConfig;
+
+  const divsToPrerender = urlConfig.prerenderDivsCount || 1;
   
   console.log(`Processing: ${url}`);
   const startTime = performance.now();
@@ -77,8 +79,7 @@ const processPage = async (browser, urlConfig) => {
     await page.goto(url, { waitUntil: "networkidle0" });
     await page.waitForSelector("main > div");
 
-    const prerenderedData = await page.evaluate(() => {
-      const mainDiv = document.querySelector("main > div");
+    const prerenderedData = await page.evaluate((divCount) => {
       const header = document.querySelector("header");
       
       const headerClasses = header ? Array.from(header.classList) : [];
@@ -88,18 +89,21 @@ const processPage = async (browser, urlConfig) => {
 
       // Check for the div *immediately following* the header
       const hasFedsLocalNav = !!document.querySelector('header + div.feds-localnav');
-      
-      let snippet = null;
-      if (mainDiv) {
+
+      const mainDivs = Array.from(document.querySelectorAll("main > div"));
+      const divsToProcess = mainDivs.slice(0, divCount);
+
+      const snippets = [];
+      for (const mainDiv of divsToProcess) {
         mainDiv.classList.add('prerender');
-        snippet = mainDiv.outerHTML;
+        snippets.push(mainDiv.outerHTML);
       }
       
-      return { snippet, headerClasses: targetClasses, hasFedsLocalNav };
-    });
+      return { snippets, headerClasses: targetClasses, hasFedsLocalNav };
+    }, divsToPrerender);
 
-    if (!prerenderedData.snippet) {
-      throw new Error("Could not extract the prerendered snippet from main > div.");
+    if (!prerenderedData.snippets || prerenderedData.snippets.length === 0) {
+      throw new Error("Could not extract any prerendered snippets from main > div.");
     }
 
     // Ensure the base URL has a trailing slash to preserve the path
@@ -110,7 +114,7 @@ const processPage = async (browser, urlConfig) => {
     
     // 3. Perform HTML replacement, asset injection, and image processing
     let finalHtml = await page.evaluate(
-      (baseHtml, snippet, headerClasses, hasFedsLocalNav, cssAssets, jsAssets, globalPreloadLinks, baseUrl) => {
+      (baseHtml, snippets, headerClasses, hasFedsLocalNav, cssAssets, jsAssets, globalPreloadLinks, baseUrl) => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(baseHtml, 'text/html');
 
@@ -134,27 +138,29 @@ const processPage = async (browser, urlConfig) => {
         }
         
         // Replace the target div
-        const mainEl = doc.querySelector("main");
-        const targetDiv = mainEl ? mainEl.querySelector("div") : null;
-        if (targetDiv) {
-          targetDiv.outerHTML = snippet;
+        const originalDivs = doc.querySelectorAll("main > div");
+        for (let i = 0; i < snippets.length; i++) {
+          if (originalDivs[i]) { // Check if the original div exists
+            originalDivs[i].outerHTML = snippets[i];
+          }
         }
 
         const isValidBaseUrl = baseUrl && (baseUrl.startsWith('http://') || baseUrl.startsWith('https://'));
-        const injectedDiv = doc.querySelector('main > div.prerender');
-        if (injectedDiv) {
+        
+        doc.querySelectorAll('main > div.prerender').forEach(injectedDiv => {
           injectedDiv.querySelectorAll('video').forEach(videoEl => {
             videoEl.classList.add('video');
+          });
+        });
 
-            // Check for poster image and add base URL if needed
+        if (isValidBaseUrl) {
+          doc.querySelectorAll('video').forEach(videoEl => {
             const oldPoster = videoEl.getAttribute('poster');
-            if (isValidBaseUrl && oldPoster && !oldPoster.startsWith('http') && !oldPoster.startsWith('data:')) {
+            if (oldPoster && !oldPoster.startsWith('http') && !oldPoster.startsWith('data:')) {
               try {
                 const newPoster = new URL(oldPoster, baseUrl).href;
                 videoEl.setAttribute('poster', newPoster);
-              } catch (e) {
-                console.warn('Skipping video poster rewrite due to error:', e.message, oldPoster);
-              }
+              } catch (e) { console.warn('Skipping video poster rewrite due to error:', e.message, oldPoster); }
             }
           });
         }
@@ -162,7 +168,7 @@ const processPage = async (browser, urlConfig) => {
         // --- Image Processing and Preload Generation ---
         const imagePreloadLinks = [];
 
-        if (injectedDiv && isValidBaseUrl) {
+        if (isValidBaseUrl) {
           doc.querySelectorAll('picture').forEach(picture => {
             // Process <source> tags
             picture.querySelectorAll('source').forEach(source => {
@@ -244,7 +250,7 @@ const processPage = async (browser, urlConfig) => {
         return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
       },
       originalHtml,
-      prerenderedData.snippet,
+      prerenderedData.snippets,
       prerenderedData.headerClasses,
       prerenderedData.hasFedsLocalNav,
       assets.css,
@@ -262,7 +268,7 @@ const processPage = async (browser, urlConfig) => {
     });
     
     const htmlPath = path.join(OUTPUT_DIR, filename);
-    await fs.writeFile(htmlPath, minifiedHtml);
+    await fs.writeFile(htmlPath, finalHtml);
 
     const endTime = performance.now();
     console.log(`✅ Finished ${filename} in ${(endTime - startTime).toFixed(2)} ms`);

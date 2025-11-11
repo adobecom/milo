@@ -3,6 +3,7 @@
     "url": "https://artemis--cc--adobecom.aem.live/br/products/special-offers?milolibs=artemis&mep=off",
     "filename": "special-offers.html",
     "baseImageUrl": "https://www.adobe.com/products",
+    "prerenderDivsCount": 1,
     "assets": {
       "cssUrls": [
         "https://artemis--milo--adobecom.aem.live/libs/blocks/marquee/marquee.css"
@@ -13,6 +14,7 @@
     "url": "https://artemis--cc--adobecom.aem.live/br/creativecloud/pro?milolibs=artemis&mep=off",
     "filename": "pro.html",
     "baseImageUrl": "https://www.adobe.com/creativecloud",
+    "prerenderDivsCount": 2,
     "assets": {
       "cssUrls": [
         "https://artemis--milo--adobecom.aem.live/libs/blocks/hero-marquee/hero-marquee.css",
@@ -24,6 +26,7 @@
     "url": "https://artemis--cc--adobecom.aem.live/br/products/premiere/free-trial-download?milolibs=artemis&mep=off",
     "filename": "premiere-free-trial-download.html",
     "baseImageUrl": "https://www.adobe.com/products",
+    "prerenderDivsCount": 1,
     "assets": {
       "cssUrls": [
         "https://artemis--milo--adobecom.aem.live/libs/blocks/hero-marquee/hero-marquee.css",
@@ -35,6 +38,7 @@
     "url": "https://artemis--cc--adobecom.aem.live/br/products/photoshop/free-trial-download?milolibs=artemis&mep=off",
     "filename": "photoshop-free-trial-download.html",
     "baseImageUrl": "https://www.adobe.com/products",
+    "prerenderDivsCount": 1,
     "assets": {
       "cssUrls": [
         "https://artemis--milo--adobecom.aem.live/libs/blocks/hero-marquee/hero-marquee.css",
