@@ -792,11 +792,7 @@ export default function init(el) {
   slides[activeSlideIndex + 1]?.classList.add('next-slide');
   handleChangingSlides(carouselElements);
   setAriaHiddenAndTabIndex(carouselElements, slides[activeSlideIndex], el);
-  window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
-  // slides[0].classList.add('active');
 
-  handleChangingSlides(carouselElements);
-  setAriaHiddenAndTabIndex(carouselElements, slides[0]);
   window.addEventListener('resize', () => {
     setAriaHiddenAndTabIndex(carouselElements);
     if (el.classList.contains('disable-buttons')) {
