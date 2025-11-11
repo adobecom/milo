@@ -1,4 +1,5 @@
 import { getConfig, loadScript } from '../../../utils/utils.js';
+import { loadImage } from '../checks/assets.js';
 
 // Calculates the relative luminance of an RGB color.
 function luminance(r, g, b) {
@@ -61,19 +62,6 @@ async function loadColorThief() {
   }
 }
 
-function waitForImage(img) {
-  return new Promise((resolve, reject) => {
-    if (img.complete && img.naturalWidth > 0) {
-      resolve();
-      return;
-    }
-    const controller = new AbortController();
-    const { signal } = controller;
-    img.addEventListener('load', () => { controller.abort(); resolve(); }, { signal });
-    img.addEventListener('error', () => { controller.abort(); reject(new Error('image load error')); }, { signal });
-  });
-}
-
 async function getAverageColorFromUrl(url) {
   try {
     const colorThief = await loadColorThief();
@@ -81,7 +69,7 @@ async function getAverageColorFromUrl(url) {
     const img = document.createElement('img');
     img.crossOrigin = 'anonymous';
     img.src = url;
-    await waitForImage(img);
+    await loadImage(img);
     const thief = new window.ColorThief();
     const color = thief.getColor(img);
     return Array.isArray(color) ? color : null;
@@ -93,8 +81,7 @@ async function getAverageColorFromUrl(url) {
 async function getAverageColorFromNearestImg(element) {
   const colorThief = await loadColorThief();
   if (!colorThief) return null;
-  const candidates = [];
-  candidates.push(...element.querySelectorAll('img'));
+  const candidates = [...element.querySelectorAll('img')];
   let el = element.parentElement;
   const maxHops = 5;
   let hops = 0;
@@ -107,7 +94,7 @@ async function getAverageColorFromNearestImg(element) {
   for (let i = 0; i < candidates.length; i += 1) {
     const img = candidates[i];
     try {
-      await waitForImage(img);
+      await loadImage(img);
       const thief = new window.ColorThief();
       const color = thief.getColor(img);
       if (Array.isArray(color)) return color;
