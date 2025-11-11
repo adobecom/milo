@@ -141,14 +141,6 @@
   gap: var(--spacing-xxxl);
 }
 
-.section.container-mobile, 
-.section .show-more-button {
-  display: flex;
-  justify-content: center;
-  padding: 6px 0;
-  gap: 10px;
-  border-radius: 8px;
-}
 
 .section.two-up,
 .section.three-up,
@@ -240,6 +232,14 @@ main > .section[class*='-up'] > .content {
 }
 
 /* show-more-button */
+.section .show-more-button {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0;
+  gap: 10px;
+  border-radius: 8px;
+}
+
 .section .show-more-button button {
   background-color: inherit;
   border: none;
