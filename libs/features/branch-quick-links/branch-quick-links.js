@@ -21,8 +21,18 @@ function addLoader(a) {
   return container;
 }
 
+function getLocale(loc) {
+  const ietf = loc?.ietf?.toLowerCase();
+  const region = loc?.region?.toLowerCase();
+  if (ietf && ietf.includes('-')) return ietf;
+  if (ietf && region) return `${ietf}-${region}`;
+  return ietf;
+}
+
 async function decorateQuickLink(a, hasConsent, isNewTab) {
+  const { locale } = getConfig();
   let ecid = null;
+  const urlObj = new URL(a.href, window.location.origin);
   try {
     const data = await window.alloy_getIdentity;
     ecid = data?.identity?.ECID;
@@ -30,11 +40,14 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
   if (ecid && hasConsent && !a.href.includes('ecid')) {
-    const urlObj = new URL(a.href, window.location.origin);
     urlObj.searchParams.set('ecid', ecid);
-    a.href = urlObj.href;
   }
-  if (isNewTab) window.open(a.href, '_blank');
+  const loc = getLocale(locale);
+  if (loc) urlObj.searchParams.set('locale', loc);
+  const blockName = a.closest('[data-block-status="loaded"]')?.classList[0];
+  if (blockName) urlObj.searchParams.set('placement', blockName);
+  a.href = urlObj.href;
+  if (isNewTab) window.open(a.href, '_blank', 'noopener');
   else window.location.href = a.href;
 }
 
