@@ -232,10 +232,6 @@
   align-items: center;
 }
 
-.tabs.s2a-dark .paddle {
-  border-bottom: 1px solid transparent;
-}
-
 .tabs.quiet .paddle {
   margin-top: 1px;
 }
