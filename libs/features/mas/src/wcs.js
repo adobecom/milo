@@ -325,7 +325,7 @@ export function Wcs({ settings }) {
                     const options = {
                         country: validCountry,
                         locale: validLocale,
-                        ...((country !== 'GB' && !perpetual) && { language: validLanguage }),
+                        ...(validLanguage === 'MULT' && { language: validLanguage }),
                         offerSelectorIds: [],
                     };
                     const promises = new Map();
