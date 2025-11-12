@@ -1063,7 +1063,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
 @media (min-width: 900px) and (max-width: 1999px) {
   .carousel.s2a-hovering .carousel-slides {
-    height: 50% !important;
+    height: 39vw !important;
   }
 }
 
