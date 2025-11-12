@@ -128,7 +128,7 @@ function checkGeorouting(area) {
   const param = new URL(window.location.href).searchParams.get('georouting')?.toLowerCase();
   const isOff = meta === 'off' || param === 'off';
 
-  return getStructureResult('georouting', STATUS.EMPTY, `Georouting is ${isOff ? 'off' : 'on'}.`);
+  return getStructureResult('georouting', isOff ? STATUS.EMPTY : STATUS.PASS, `Georouting is ${isOff ? 'off' : 'on'}.`);
 }
 
 function checkBreadcrumbs(area) {
