@@ -346,6 +346,11 @@ export const makeFaasConfig = (targetState) => {
     Object.assign(config.q, { 103: { c: targetState.q103 } });
   }
 
+  // Primary Product Interest Subset (Question 51)
+  if (targetState.q51) {
+    Object.assign(config.q, { 51: { c: targetState.q51 } });
+  }
+
   if (targetState.qjs69) {
     Object.assign(config.q, { 69: { c: { ...targetState.qjs69 } } });
   }
