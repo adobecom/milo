@@ -534,13 +534,6 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   text-decoration: none;
   font-family: var(--heading-font-family) !important;
   font-weight: 900 !important;
-  /* font-size: 28px !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.01em !important;
-  color: var(--text-color) !important;
-  text-decoration: none !important;
-  text-decoration-style: none !important;
-  text-decoration-color: var(--text-color) !important; */
 }
 
 .editorial-card.s2a-editorial-compact .foreground > div > p[class*="body-"] > a:hover {
@@ -565,3 +558,14 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   }
 }
 
+@media screen and (max-width: 1199px) {
+  .aside.s2a-background .foreground > div.text:has(.editorial-card.s2a-editorial-compact) {
+    min-width: 100% !important;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .section.three-up:has(.editorial-card.s2a-editorial-compact) {
+    grid-template-columns: repeat(auto-fit, minmax(47%, 1fr));
+  }
+}
