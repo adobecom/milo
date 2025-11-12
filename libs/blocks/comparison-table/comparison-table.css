@@ -32,8 +32,11 @@
   max-width: calc(var(--comparison-desktop-max-width) - 2px);
   margin: var(--spacing-xs) auto 0;
   border: 1px solid var(--comparison-border-color);
-  border-start-start-radius: var(--comparison-border-radius);
-  border-start-end-radius: var(--comparison-border-radius);
+  border-radius: var(--comparison-border-radius);
+}
+
+.comparison-table .header-content-dummy + .table-container {
+  margin-top: 0;
 }
 
 .comparison-table .table-container .table-column-header button {
@@ -89,7 +92,7 @@
 }
 
 .comparison-table .table-container .table-row-header {
-  text-align: center;
+  text-align: left;
   font-size: var(--type-body-xs-size);
   font-style: normal;
   font-weight: var(--type-detail-all-weight);
@@ -409,6 +412,7 @@
     grid-column: 1 / -1;
     margin: 0 auto;
     padding: var(--spacing-xs) 0 0 0;
+    text-align: center;
   }
 
   .comparison-table .table-row .table-cell {
