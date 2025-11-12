@@ -743,23 +743,6 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
-
-@media (min-width: 900px) and (max-width: 1199px) {
-  .section:has(.carousel.s2a-tabs) {
-  overflow: hidden;
-}
-  .carousel.s2a-hovering .carousel-menu {
-    gap: 2px !important;
-  }
-  .carousel.s2a-hovering .carousel-menu-item {
-    font-size: 14px !important;
-    max-width: 150px !important;
-  }
-  .carousel.s2a-hovering .carousel-slide p.body-m {
-    font-size: 14px;
-  }
-  }
-
 @media (min-width: 900px) {
   .carousel.lightbox-active.container .carousel-wrapper {
     width: 80.3333%;
@@ -902,8 +885,8 @@ html[dir="rtl"] .carousel .move-indicators {
     cursor: pointer;
   }
   .carousel.s2a-hovering .carousel-slides {
-    /* height: 37vw; */
-    /* max-height: 636px; */
+    height: 75vh;
+    max-height: 750px;
     position: relative;
   }
 .carousel.s2a-tabs.container {
@@ -922,7 +905,7 @@ html[dir="rtl"] .carousel .move-indicators {
     transition-delay: .5s;
     text-align: center;
     line-height: 140%;
-    width: 70%;
+    width: 75%;
     display: flex;
     margin: 1rem auto;
   }
@@ -934,7 +917,7 @@ html[dir="rtl"] .carousel .move-indicators {
     flex-wrap: wrap;
   }
   .carousel.s2a-hovering .carousel-slide p.body-m {
-    max-height: 1.5rem;
+    max-height: 2.5rem;
   }
 
   .carousel.s2a-hovering .carousel-menu-item.active,
@@ -1059,6 +1042,28 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-button-container,
   .carousel[class*='show-'].ups-desktop:has(.editorial-card).lightbox .carousel-expand {
     display: none;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .section:has(.carousel.s2a-tabs) {
+    overflow: hidden;
+  }
+  .carousel.s2a-hovering .carousel-menu {
+    gap: 2px !important;
+  }
+  .carousel.s2a-hovering .carousel-menu-item {
+    font-size: 14px !important;
+    max-width: 150px !important;
+  }
+  .carousel.s2a-hovering .carousel-slide p.body-m {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1999px) {
+  .carousel.s2a-hovering .carousel-slides {
+    height: 50% !important;
   }
 }
 
