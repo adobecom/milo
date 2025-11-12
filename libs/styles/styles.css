@@ -13,8 +13,8 @@
   /* Colors */
   --link-color: rgb(39, 77, 234);
   --link-hover-color: rgb(29, 62, 207);
-  --link-color-dark: rgb(59, 99, 251);
-  --link-hover-color-dark: rgb(39, 77, 234);
+  --link-color-dark: rgb(86, 129, 255);
+  --link-hover-color-dark: rgb(105, 149, 254);
   --background-color: #fff;
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;
@@ -30,8 +30,10 @@
   --color-gray-800: #242424;
   --color-black: #000;
   --color-brand-title: #000B1D;
-  --color-accent: var(--link-color-dark);
-  --color-accent-hover: var(--link-hover-color-dark);
+  --color-accent: rgb(59, 99, 251);
+  --color-accent-hover: rgb(39, 77, 234);
+  --color-accent-dark: rgb(64, 105, 253);
+  --color-accent-hover-dark: rgb(52, 91, 248);
   --color-accent-down: #095aba;
   --color-accent-focus-ring: #378ef0;
   --color-info-accent: #5C5CE0;
@@ -415,6 +417,17 @@
   background: var(--color-accent-hover);
   border-color: var(--color-accent-hover);
   color: var(--color-white);
+}
+
+.dark .con-button.blue {
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+}
+
+.dark .con-button.blue:hover,
+.dark .con-button.blue:active {
+  background: var(--color-accent-hover-dark);
+  border-color: var(--color-accent-hover-dark);
 }
 
 .con-button.fill {
@@ -910,6 +923,10 @@ a.static:active  {
 /* Buttons */
 .dark a {
   color: var(--link-color-dark);
+}
+
+.dark a:hover {
+  color: var(--link-hover-color-dark);
 }
 
 .static-links a:not([class*="button"]) {

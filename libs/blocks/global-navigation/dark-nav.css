@@ -1,8 +1,8 @@
 :root {
   --text-color: #f2f2f2;
   --background-color: #111;
-  --link-color: #1473e6;
-  --link-hover-color: #1473e6;
+  --link-color: #5681ff;
+  --link-hover-color: #6995FE;
   /* Top navigation - backgrounds */
   --feds-background-popup: #111;
   --feds-background-nav: #222;
@@ -25,8 +25,8 @@
   --feds-color-link: #f2f2f2;
   /* --feds-color-link--mobile: #f2f2f2; */
   --feds-color-link--desktop: #dbdbdb;
-  --feds-color-link--hover: #1473e6;
-  --feds-color-blue-link: #5eaaF7;
+  --feds-color-link--hover: #6995FE;
+  --feds-color-blue-link: #5681FF;
   --feds-color-navLink-description: #b0b0b0;
   --feds-color-link-breadcrumbs: #b0b0b0;
   --feds-background-link--hover: #1b1b1b;
