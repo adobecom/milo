@@ -401,7 +401,7 @@
 
   .comparison-table .toggle-icon {
     position: absolute;
-    right: 24px;
+    inset-inline-end: 24px;
   }
 
   .comparison-table .sub-header-item-container .btn-container.has-multiple .action-area {
