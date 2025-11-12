@@ -468,6 +468,14 @@ export async function loadMasComponent(componentName) {
         failedExternalLoads.add(externalUrl);
         throw error;
       }
+    } else if (isMasDepsFlagEnabled()) {
+      const masUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
+      try {
+        return await import(masUrl);
+      } catch (error) {
+        console.warn(`Failed to load from MAS repository, falling back to Milo deps: ${error.message}`);
+        return import(`../../deps/mas/${componentName}.js`);
+      }
     } else {
       return import(`../../deps/mas/${componentName}.js`);
     }
@@ -477,6 +485,15 @@ export async function loadMasComponent(componentName) {
   loadPromise.finally(() => loadingPromises.delete(componentName));
 
   return loadPromise;
+}
+
+/**
+ * Checks if mas-ff-mas-deps feature flag is enabled
+ * @returns {boolean} true if flag is on
+ */
+function isMasDepsFlagEnabled() {
+  const metaFlag = getMetadata('mas-ff-mas-deps');
+  if (metaFlag === 'on' || metaFlag === 'true') return true;
 }
 
 function getCommercePreloadUrl() {
