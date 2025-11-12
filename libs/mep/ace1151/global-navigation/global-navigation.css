@@ -682,18 +682,12 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   animation-fill-mode: forwards;
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:not(:has(div)) {
-  white-space: break-spaces;
-}
-
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:not(:has(div)),
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-title {
-  font-weight: 700;
   white-space: break-spaces;
 }
 
 header .feds-nav > .feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
-  font-weight: 400;
-  text-decoration: underline;
   padding: 6px 0;
 }
 
@@ -1243,6 +1237,24 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     border-color: #444;
     background: #2c2c2c;
   }
+
+  header .feds-nav > .feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
+    text-decoration: underline;
+    font-weight: 400;
+  }
+
+  header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs,
+  header.test-nav .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-popup > .feds-menu-content {
+    max-height: calc(100vh - var(--feds-height-nav) - 100px);
+    overflow-y: auto;
+  }
+
+  header.test-nav.hs-promo .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs,
+  header.test-nav.has-promo .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-popup > .feds-menu-content {
+    max-height: calc(100vh - var(--feds-height-nav) - 100px - 92px);
+    overflow-y: auto;
+  }
+
 }
 
 /* Desktop styles */
@@ -1771,6 +1783,10 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   margin-left: 228px;
   width: 340px;
   overflow-y: auto;
+}
+
+header.test-nav.has-promo .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content {
+  max-height: calc(100vh - var(--feds-height-nav) - 100px - 92px);
 }
 
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret:after {

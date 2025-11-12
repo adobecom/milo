@@ -308,6 +308,7 @@ export function setActiveDropdown(elem, type) {
     return false;
   });
   document.querySelector('.global-navigation').classList.add('dropdown-active');
+  document.body.style.overflow = 'hidden';
   if (isDesktop.matches) window?.UniversalNav?.changeTheme?.('dark');
 }
 
@@ -428,6 +429,7 @@ export function closeAllDropdowns({
   setActiveDropdown(undefined, type);
 
   document.querySelector('.global-navigation').classList.remove('dropdown-active');
+  document.body.style.removeProperty('overflow');
   if (isDesktop.matches) {
     setCurtainState(false);
     window?.UniversalNav?.changeTheme?.(isDarkMode() ? 'dark' : 'light');
