@@ -439,6 +439,16 @@ const failedExternalLoads = new Set();
 const loadingPromises = new Map();
 
 /**
+ * Checks if mas-ff-mas-deps feature flag is enabled
+ * @returns {boolean} true if flag is on
+ */
+function isMasDepsFlagEnabled() {
+  const metaFlag = getMetadata('mas-ff-mas-deps');
+  if (metaFlag === 'on' || metaFlag === 'true') return true;
+  return false;
+}
+
+/**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
@@ -485,15 +495,6 @@ export async function loadMasComponent(componentName) {
   loadPromise.finally(() => loadingPromises.delete(componentName));
 
   return loadPromise;
-}
-
-/**
- * Checks if mas-ff-mas-deps feature flag is enabled
- * @returns {boolean} true if flag is on
- */
-function isMasDepsFlagEnabled() {
-  const metaFlag = getMetadata('mas-ff-mas-deps');
-  if (metaFlag === 'on' || metaFlag === 'true') return true;
 }
 
 function getCommercePreloadUrl() {
