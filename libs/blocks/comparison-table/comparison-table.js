@@ -454,7 +454,7 @@ function setupStickyHeader(el) {
       if (headerContent.offsetHeight / window.innerHeight >= 0.45) headerContent.classList.remove('sticky');
     }
 
-    if (scrollTop === 100 && isSticky) {
+    if (scrollTop === 0 && isSticky) {
       headerContent.classList.remove('sticky');
       headerContent.style.top = '';
       headerContentDummy.style.height = '';
