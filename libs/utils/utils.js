@@ -248,7 +248,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   const region = split[locOffset + 2];
   let regionPath = '';
 
-  const language = languages[languageString];
+  const language = languages?.[languageString];
   if (language && region && language.regions) {
     const [matchingRegion] = language.regions.filter((r) => r.region === region);
     if (matchingRegion?.region) language.region = matchingRegion.region;
@@ -261,7 +261,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
     || (language.languageBased === false && !language.region);
   if (isLegacyLocaleRoutingMode) {
     const locale = getLocale(locales, pathname);
-    const englishLang = languages.en;
+    const englishLang = languages?.en;
     if (locale.prefix === '' && englishLang) {
       locale.language = DEFAULT_LANG;
       if (englishLang.region) locale.region = englishLang.region;
