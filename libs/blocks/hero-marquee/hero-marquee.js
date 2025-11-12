@@ -268,10 +268,13 @@ export default async function init(el) {
   copy.classList.add('copy');
 
   if (asset) {
+    const mediaClasses = ['media-cover', 'media-cover-left', 'media-cover-right', 'media-cover-top', 'media-cover-bottom'];
     asset.parentElement.classList.add('asset');
-    if (el.classList.contains('media-cover')) {
+    mediaClasses.forEach((className) => {
+      if (!el.classList.contains(className)) return;
+      asset.style.setProperty('--media-cover-position', className.split('-')[2] ?? 'center top');
       el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
-    }
+    });
   } else {
     [...fRows].forEach((row) => {
       if (row.childElementCount === 0) {

@@ -114,11 +114,16 @@ function decorateHeader(el, header) {
   const hTag = header.querySelector('h1, h2, h3, h4, h5, h6');
   const subTitle = header.querySelector('p');
   const headerSection = createTag('section', { class: 'bc-header' });
-  hTag.classList.add('bc-header-title');
-  headerSection.append(hTag);
+  if (hTag) {
+    hTag.classList.add('bc-header-title');
+    headerSection.append(hTag);
+  }
   if (subTitle) {
     subTitle.classList.add('bc-header-subtitle');
     headerSection.append(subTitle);
+  }
+  if (!hTag && !subTitle) {
+    headerSection.append(createTag('p', { class: 'bc-header-subtitle' }, header.textContent.trim()));
   }
   el.append(headerSection);
   el.removeChild(header);
@@ -228,9 +233,9 @@ function decorateInput(el, input) {
     window.addEventListener('scroll', handleScroll);
   }
 
-  fieldInput.addEventListener('keyup', (e) => {
+  fieldInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      if (!fieldInput.value || fieldInput.value.trim() === '') return;
+      if (!fieldInput.value || fieldInput.value.trim() === '') e.preventDefault();
       fieldButton.click();
     }
   });
