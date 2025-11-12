@@ -328,7 +328,6 @@ export async function runtimePost(url, data) {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
-        'X-OW-EXTRA-LOGGING': 'on', // DELETE
       },
       body: JSON.stringify(data),
     });

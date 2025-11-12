@@ -266,10 +266,6 @@
     padding: unset;
   }
 
-  .email-collection.large-image .text > * {
-    margin-right: var(--form-padding);
-  }
-
   .email-collection > :not(.message) {
     padding-right: 0;
   }
