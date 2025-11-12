@@ -297,7 +297,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   height: auto;
 }
 
-.hero-marquee.s2a-hero-marquee .foreground .copy {
+.hero-marquee.s2a-hero-marquee .foreground > .copy {
   align-self: start;
 }
 
@@ -307,6 +307,17 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
 .hero-marquee.s2a-hero-marquee .editorial-card .foreground {
   padding: 29px;
+}
+
+/* Hacky s2a Fix */
+@media (max-width: 1199px) {
+  .hero-marquee.s2a-hero-marquee > .foreground {
+    margin-top: -143px;
+  }
+
+  .hero-marquee.s2a-hero-marquee .foreground > .copy {
+    margin-bottom: 22px;
+  }
 }
 
 /* mobile ONLY */
