@@ -1304,7 +1304,13 @@ class Gnav {
         const activeLink = [
           ...popup.querySelectorAll('a:not([data-modal-hash])'),
         ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
-        const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
+        const tabIndex = (() => {
+          const numString = activeLink?.closest('.tab-panel')?.id;
+          if (!numString) return 0;
+          const n = parseInt(numString, 10);
+          if (Number.isNaN(n)) return 0;
+          return n;
+        })();
         const selectTab = popup.querySelectorAll('.tab')[tabIndex];
         const daallTab = selectTab?.getAttribute('daa-ll');
         selectTab?.setAttribute('daa-ll', `${daallTab?.replace('click', 'open')}`);
