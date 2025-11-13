@@ -277,8 +277,20 @@ function renderLanguages({
         langLink.addEventListener('click', (e) => {
           sendAnalyticsEvent(`language-switch:${lang.prefix || 'us'}`);
           e.preventDefault();
-          const cookieValue = getInternationalCookieValue(lang.prefix);
+
+          const { prefix } = lang;
+          let cookieValue;
+          if (prefix === '') {
+            cookieValue = 'us';
+          } else {
+            const segments = prefix.split('/');
+            cookieValue = segments.length > 1
+              ? segments[1]
+              : (getConfig().languages?.[prefix]?.region || prefix);
+          }
+          if (cookieValue === 'gb') cookieValue = 'uk';
           setInternational(cookieValue);
+
           const { pathname, href } = window.location;
           const currentLangForPath = getCurrentLanguage(filteredLanguages);
           const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
