@@ -1263,7 +1263,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   }
 
   header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup {
-    padding-left: 10%;
+    padding-left: 15%;
   }
 }
 
@@ -1468,6 +1468,10 @@ header.test-nav .tab {
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel:hover .feds-navLink-title,
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel:hover .feds-navLink-description {
   color: var(--feds-navLink-inactive);
+}
+
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel {
+  height: calc(100vh - var(--feds-height-nav) - 120px)
 }
 
 header.test-nav .tab[role="tab"] {
