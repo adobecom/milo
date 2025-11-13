@@ -712,8 +712,14 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
   height: 100%;
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .feds-cta {
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .tab-column .feds-cta--secondary {
   display: none;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-cta--primary {
+  max-width: 200px;
+  min-width: 100px;
+  margin: 0 12px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta .feds-cta {

@@ -613,9 +613,7 @@ const parseTabsFromMenuSection = async (section, index) => {
     : [content];
 
   const links = columns
-    .map((container) => [...container.querySelectorAll(
-      isDesktop.matches ? 'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary, .feds-cta--secondary' : 'a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary',
-    )]
+    .map((container) => [...container.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary, .feds-cta--secondary')]
       .map((x) => x.outerHTML)
       .join(''))
     .map((l) => `<div class="tab-column">${l}</div>`)
