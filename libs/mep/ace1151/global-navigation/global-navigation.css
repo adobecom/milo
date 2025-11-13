@@ -640,7 +640,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   gap: 28px;
   font-size:14px;
   line-height: 16px;
-  overflow-y: scroll;
+  overflow-y: auto;
   border-left: 1px solid var(--feds-borderColor-link-v2);
 }
 
@@ -1066,7 +1066,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
   .global-navigation.test-nav .feds-navItem .feds-popup {
     max-height: calc(100vh - var(--feds-height-nav) - 32px);
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   .global-navigation.test-nav.has-breadcrumbs .feds-navItem .feds-popup {
@@ -1468,10 +1468,6 @@ header.test-nav .tab {
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel:hover .feds-navLink-title,
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel:hover .feds-navLink-description {
   color: var(--feds-navLink-inactive);
-}
-
-header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel {
-  height: calc(100vh - var(--feds-height-nav) - 120px)
 }
 
 header.test-nav .tab[role="tab"] {
