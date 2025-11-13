@@ -10,6 +10,7 @@ import {
   getFederatedContentRoot,
   getFederatedUrl,
   getFedsPlaceholderConfig,
+  createTag,
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS, FLAGS, handleCommands } from '../../../features/personalization/personalization.js';
@@ -121,6 +122,7 @@ export const logErrorFor = async (fn, message, tags, errorType) => {
     await fn();
   } catch (e) {
     lanaLog({ message, e, tags, errorType });
+    throw new Error(e);
   }
 };
 
@@ -149,6 +151,34 @@ export function toFragment(htmlStrings, ...values) {
   });
 
   return fragment;
+}
+
+export async function createErrorPopup() {
+  const errorIcon = `<svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18.9987 28.7344C18.5604 28.7499 18.1335 28.5943 17.8081 28.3006C17.1805 27.6078 17.1805 26.5527 17.8081 25.8599C18.1299 25.5591 18.5583 25.3986 18.9987 25.4139C19.4478 25.3959 19.8839 25.5664 20.2015 25.884C20.5094 26.2027 20.6749 26.6324 20.6601 27.075C20.6836 27.5209 20.5279 27.9577 20.2274 28.2884C19.8976 28.601 19.4525 28.7626 18.9987 28.7344Z" fill="#292929"/>
+    <path d="M19 22.325C18.2132 22.325 17.575 21.6867 17.575 20.9V13.3C17.575 12.5133 18.2132 11.875 19 11.875C19.7867 11.875 20.425 12.5133 20.425 13.3V20.9C20.425 21.6867 19.7867 22.325 19 22.325Z" fill="#292929"/>
+    <path d="M31.7934 34.2001H6.20649C4.68594 34.2001 3.31289 33.4208 2.53451 32.1145C1.75614 30.8083 1.72274 29.2293 2.44637 27.8914L15.2399 4.24166C15.9876 2.85933 17.4284 2.00024 19 2.00024C20.5715 2.00024 22.0123 2.85933 22.7601 4.24166L35.5535 27.8915C36.2771 29.2293 36.2437 30.8083 35.4654 32.1145C34.687 33.4208 33.314 34.2001 31.7934 34.2001ZM19 4.85024C18.7448 4.85024 18.1112 4.92262 17.7466 5.59615L4.95312 29.246C4.60521 29.8898 4.85757 30.4465 4.9828 30.6543C5.10711 30.8639 5.47543 31.3501 6.20647 31.3501H31.7934C32.5245 31.3501 32.8928 30.8639 33.0171 30.6543C33.1423 30.4464 33.3947 29.8898 33.0467 29.246L20.2533 5.59615C19.8887 4.92262 19.2551 4.85024 19 4.85024Z" fill="#292929"/>
+  </svg>`;
+
+  // Get localized error messages using placeholder system
+  const [errorTitle, errorMessage, tryAgainMessage] = await Promise.all([
+    replaceKey('something-went-wrong', getFedsPlaceholderConfig()),
+    replaceKey('unexpected-error', getFedsPlaceholderConfig()),
+    replaceKey('please-try-again', getFedsPlaceholderConfig()),
+  ]);
+
+  return createTag('div', { class: 'feds-popup error' }, `
+    <div class="feds-menu-container">
+      <div class="feds-menu-content" style="text-align: center;justify-content: center;">
+        <div class="feds-menu-error">
+          ${errorIcon}
+          <h4 style="margin: 0 0 8px 0;">${errorTitle}</h4>
+          <p style="margin: 0 0 4px 0;">${errorMessage}</p>
+          <p style="margin: 0;">${tryAgainMessage}</p>
+        </div>
+      </div>
+    </div>
+  `);
 }
 
 const getPath = (urlOrPath = '') => {
@@ -485,7 +515,7 @@ export async function fetchAndProcessPlainHtml({
       tags: 'utilities',
       errorType: 'i',
     });
-    return null;
+    throw new Error('Fail to fetch');
   }
   const text = await (plainHTMLPromise ? res.clone().text() : res.text());
   const { body } = new DOMParser().parseFromString(text, 'text/html');
@@ -705,6 +735,14 @@ export const transformTemplateToMobile = async ({
 
   closeIcon?.addEventListener('click', closeIconClickCallback);
   main?.addEventListener('click', mainMenuClickCallback);
+
+  if (popup.classList.contains('error')) {
+    const errorDiv = await createErrorPopup();
+    const topBar = popup.querySelector('.top-bar');
+    if (popup) popup.replaceWith(errorDiv);
+    errorDiv.append(closeIcon);
+    errorDiv.prepend(topBar);
+  }
 
   const tabbuttons = popup.querySelectorAll('.tabs button');
   const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
