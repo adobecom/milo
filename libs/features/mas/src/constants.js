@@ -175,7 +175,7 @@ export const SORT_ORDER = {
     authored: 'authored',
 };
 
-export const SUPPORTED_LANGUAGE_COUNTRY = [
+export const SUPPORTED_LOCALE = [
   'ar_AE',
   'ar_DZ',
   'ar_EG',

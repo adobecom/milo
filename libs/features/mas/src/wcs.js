@@ -6,7 +6,7 @@ import {
     Env,
     Commitment,
     Term,
-    SUPPORTED_LANGUAGE_COUNTRY,
+    SUPPORTED_LOCALE,
     SUPPORTED_COUNTRIES,
 } from './constants.js';
 
@@ -277,7 +277,7 @@ export function Wcs({ settings }) {
         return {
             validCountry,
             validLanguage,
-            validLocale: SUPPORTED_LANGUAGE_COUNTRY.includes(
+            validLocale: SUPPORTED_LOCALE.includes(
                 `${language}_${validCountry}`,
             )
                 ? `${language}_${validCountry}`

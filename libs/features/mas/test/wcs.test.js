@@ -152,7 +152,7 @@ describe('normalizeCountryLanguageAndLocale', () => {
         });
     });
 
-    it('returns correct locale for valid language-country combination in SUPPORTED_LANGUAGE_COUNTRY', async () => {
+    it('returns correct locale for valid language-country combination in SUPPORTED_LOCALE', async () => {
         await mockFetch(withWcs);
         const client = Wcs({
             settings: {
@@ -167,7 +167,7 @@ describe('normalizeCountryLanguageAndLocale', () => {
         });
     });
 
-    it('returns default locale when valid language-country combination is not in SUPPORTED_LANGUAGE_COUNTRY', async () => {
+    it('returns default locale when valid language-country combination is not in SUPPORTED_LOCALE', async () => {
         await mockFetch(withWcs);
         const client = Wcs({
             settings: {
