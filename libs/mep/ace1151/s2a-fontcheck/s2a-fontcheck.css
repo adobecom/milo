@@ -125,6 +125,7 @@
 
   /* two tone heading color feature */
   --two-tone-heading-color-gray: var(--color-gray-600);
+  --two-tone-heading-color-gray-dark: var(--color-gray-300);
   --two-tone-heading-color-red: #EB1000;
 
   :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em), 
@@ -132,7 +133,13 @@
     color: var(--two-tone-heading-color-gray);
     font-style: normal;
   }
-  
+
+  .section > .dark :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em), 
+  .section > .dark :is(h1, h2, h3, h4, h5, h6) > strong > em {
+    color: var(--two-tone-heading-color-gray-dark);
+    font-style: normal;
+  }
+
   :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > em, 
   :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > strong > em {
     color: var(--two-tone-heading-color-red);
