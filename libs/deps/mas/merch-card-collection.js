@@ -959,6 +959,10 @@ merch-card[variant^="plans"] {
     width: var(--consonant-merch-card-plans-width);
 }
 
+merch-card[variant^="plans"]:not([size]) merch-badge {
+    max-width: calc(var(--consonant-merch-card-plans-width) - var(--merch-badge-with-offset) * 40px - var(--merch-badge-offset) * 48px);
+}
+
 merch-card[variant="plans-students"] {
     width: var(--consonant-merch-card-plans-students-width);
 }
