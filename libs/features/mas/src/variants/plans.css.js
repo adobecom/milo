@@ -12,8 +12,8 @@ merch-card[variant^="plans"] {
     width: var(--consonant-merch-card-plans-width);
 }
 
-merch-card[variant^="plans"]:not([size]) merch-badge {
-    max-width: calc(var(--consonant-merch-card-plans-width) - var(--merch-badge-with-offset) * 40px - var(--merch-badge-offset) * 48px);
+merch-card[variant^="plans"] merch-badge {
+    max-width: calc(var(--consonant-merch-card-plans-width) * var(--merch-badge-card-size) - var(--merch-badge-with-offset) * 40px - var(--merch-badge-offset) * 48px);
 }
 
 merch-card[variant="plans-students"] {
@@ -345,6 +345,10 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 
     merch-card[variant="plans-education"] .spacer {
         height: 0px;
+    }
+
+    merch-card[variant^="plans"] merch-badge {
+        max-width: calc(var(--consonant-merch-card-plans-width) - var(--merch-badge-with-offset) * 40px - var(--merch-badge-offset) * 48px);
     }
 }
 
