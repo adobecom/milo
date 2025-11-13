@@ -82,18 +82,19 @@ export default async function blockNotifications(base) {
     return acc;
   }, []);
 
-  blockQueries.forEach((query) => {
-    const blocks = document.querySelectorAll(query.selector);
-    if (blocks.length === 0) return;
+  const blockResults = blockQueries.map((query) => ({
+    query,
+    blocks: document.querySelectorAll(query.selector),
+  })).filter((result) => result.blocks.length > 0);
 
+  // Stop duplicate show/hide controls
+  if (blockResults.length > 0 && !document.querySelector('.notification-controls-container')) {
     const { body } = document;
     body.classList.add('block-notifications');
+    decorateNotificationControls(body);
+  }
 
-    // Stop duplicate show/hide controls
-    if (!document.querySelector('.notification-controls-container')) {
-      decorateNotificationControls(body);
-    }
-
+  blockResults.forEach(({ query, blocks }) => {
     blocks.forEach((foundBlock) => {
       const labelContainer = foundBlock.querySelector('.block-label-container');
       const delistNotificationLabel = foundBlock.querySelector('.notification-label');
