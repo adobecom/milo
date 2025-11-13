@@ -630,4 +630,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
     gap: var(--spacing-xxs) !important;
   }
   
+  .editorial-card.s2a-media-bottom-mobile.s2a-editorial-separate-mobile div[class*="body-"] > .lockup-area {
+    width: 100% !important;
+  }
 }
