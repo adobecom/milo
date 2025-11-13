@@ -443,8 +443,9 @@ html[dir="rtl"] .carousel .move-indicators {
 
 .carousel.container {
   max-width: 1920px;
-  width: 100vw;
+  width: 100vw;  
 }
+
 
 .carousel.container .carousel-slide .container {
   width: unset;
@@ -607,6 +608,10 @@ html[dir="rtl"] .carousel .move-indicators {
     display: none;
   }
 
+  .carousel.s2a-hovering .carousel-slide.active .foreground {
+    border-radius: .5rem;
+    overflow: hidden;
+  }
   .carousel.s2a-hovering .carousel-slide.active {
     max-height: 100vh;
   }
@@ -615,11 +620,18 @@ html[dir="rtl"] .carousel .move-indicators {
     max-height: 54px;
     transition: max-height 0.3s ease-out;
   }
+  .carousel.s2a-whatsnew .carousel-wrapper {
+    margin-left: 1rem;
+  }
+  .carousel.s2a-hovering .carousel-wrapper,
+  .carousel.s2a-tabs .carousel-wrapper {
+    padding: 1rem;
+  }
   .carousel.s2a-hovering {
     background-color: #FAFAFA;
-    margin-bottom: 0;
+    margin: 0;
     padding-bottom: 2rem;
-    max-width: 600px;
+    width: 100%;
   }
   .carousel.s2a-hovering .carousel-slide:not(.active) h2 {
     color: black;
@@ -640,7 +652,7 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.s2a-hovering .carousel-slide p.body-m:not(.action-area) {
     background-color: #1F2332;
     z-index: 1;
-    padding: 22px 20px 0;
+    padding: 22px 20px 30px;
     color: white;
     margin: 0;
     position: relative;
@@ -650,7 +662,17 @@ html[dir="rtl"] .carousel .move-indicators {
     flex-direction: column;
   }
 
-  .carousel.s2a-hovering .carousel-slide.active h2 svg {
+  
+  .carousel.s2a-hovering .carousel-slide h2 svg.icon-collapse {
+    display: none;
+  }
+  .carousel.s2a-hovering .carousel-slide h2 svg.icon-expand {
+    display: flex;
+  }
+  .carousel.s2a-hovering .carousel-slide.active h2 svg.icon-collapse {
+    display: flex;
+  }
+  .carousel.s2a-hovering .carousel-slide.active h2 svg.icon-expand {
     display: none;
   }
   .carousel.s2a-peaking .carousel-slide h2 {
@@ -677,7 +699,9 @@ html[dir="rtl"] .carousel .move-indicators {
     border-bottom-left-radius: 1rem;
     border-bottom-right-radius: 1rem;
   }
-
+.section:has(.carousel.s2a-tabs) {
+  overflow: hidden;
+}
   .carousel.s2a-hovering .carousel-slide p.body-m:not(.action-area) {
     padding-top: .5rem;
   }
@@ -714,21 +738,10 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.s2a-whatsnew .carousel-button:focus {
     background-color: #292929
   }
+  .carousel.s2a-whatsnew .container {
+    padding-left: 2rem;
+  }
 }
-
-
-@media (min-width: 900px) and (max-width: 1199px) {
-  .carousel.s2a-hovering .carousel-menu {
-    gap: 2px !important;
-  }
-  .carousel.s2a-hovering .carousel-menu-item {
-      font-size: 18px !important;
-      max-width: 150px !important;
-  }
-  .carousel.s2a-hovering .carousel-slide p.body-m {
-    font-size: 14px;
-  }
-  }
 
 @media (min-width: 900px) {
   .carousel.lightbox-active.container .carousel-wrapper {
@@ -872,11 +885,15 @@ html[dir="rtl"] .carousel .move-indicators {
     cursor: pointer;
   }
   .carousel.s2a-hovering .carousel-slides {
-    height: 37vw;
-    max-height: 636px;
+    height: 75vh;
+    max-height: 750px;
     position: relative;
   }
-
+.carousel.s2a-tabs.container {
+  width: 200%;
+  max-width: none;
+  left: -50%;
+}
   .carousel.s2a-hovering .carousel-slide:not(.active) .cta-container,
   .carousel.s2a-hovering .carousel-slide:not(.active) p.body-m {
     opacity: 0;
@@ -887,7 +904,10 @@ html[dir="rtl"] .carousel .move-indicators {
     transition: opacity .3s ease;
     transition-delay: .5s;
     text-align: center;
-    line-height: 1.25rem;
+    line-height: 140%;
+    width: 75%;
+    display: flex;
+    margin: 1rem auto;
   }
 
   .carousel.s2a-hovering .carousel-menu {
@@ -897,7 +917,7 @@ html[dir="rtl"] .carousel .move-indicators {
     flex-wrap: wrap;
   }
   .carousel.s2a-hovering .carousel-slide p.body-m {
-    max-height: 1.5rem;
+    max-height: 2.5rem;
   }
 
   .carousel.s2a-hovering .carousel-menu-item.active,
@@ -932,7 +952,7 @@ html[dir="rtl"] .carousel .move-indicators {
   /* Whats new Variant - start*/
 
   .carousel.s2a-whatsnew {
-    left: 15%;
+    left: 10%;
     border-radius: 16px 0 0 16px;
   }
   .carousel.s2a-whatsnew .carousel-wrapper {
@@ -949,7 +969,10 @@ html[dir="rtl"] .carousel .move-indicators {
     align-self: stretch;
     box-shadow: 3px 0px 4px 0 rgba(0, 0, 0, 0.1);
   }
-
+.section:has(.carousel.s2a-tabs) {
+  max-width: 2000px;
+  margin: 0 auto;
+}
   .carousel.s2a-whatsnew .carousel-slides {
     left: 0 !important;
   }
@@ -1022,6 +1045,28 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
+@media (min-width: 900px) and (max-width: 1199px) {
+  .section:has(.carousel.s2a-tabs) {
+    overflow: hidden;
+  }
+  .carousel.s2a-hovering .carousel-menu {
+    gap: 2px !important;
+  }
+  .carousel.s2a-hovering .carousel-menu-item {
+    font-size: 14px !important;
+    max-width: 150px !important;
+  }
+  .carousel.s2a-hovering .carousel-slide p.body-m {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1999px) {
+  .carousel.s2a-hovering .carousel-slides {
+    height: 39vw !important;
+  }
+}
+
 .carousel.s2a-peaking .carousel-button-container,
 .carousel.s2a-whatsnew .carousel-button-container,
 .carousel.s2a-hovering .carousel-button-container {
@@ -1029,9 +1074,10 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 .carousel.s2a-whatsnew .carousel-button-container {
-  left: -8%;
+  left: -7.7%;
 }
 .carousel.s2a-whatsnew .carousel-button-container,
+.carousel.s2a-tabs .carousel-button-container,
 .carousel.m-gap.s2a-peaking .carousel-button-container {
   margin-top: 2rem;
 }
@@ -1055,9 +1101,6 @@ html[dir="rtl"] .carousel .move-indicators {
     width: 50px;
   }
   
-  .carousel.s2a-whatsnew {
-    left: 2%;
-  }
   .carousel.s2a-whatsnew .carousel-wrapper {
     border-radius: 16px 0 0 16px;
     box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.16);
@@ -1077,10 +1120,20 @@ html[dir="rtl"] .carousel .move-indicators {
     left: 0 !important;
   }
 
+.carousel.s2a-hovering .carousel-menu {
+  border-radius: 60px;
+  background: #FFF;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.16);
+  align-self: center;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  padding: .5rem;
+}
 .carousel.s2a-hovering .carousel-menu-item {
   font-family: var(--body-font-family);
-  color: var(--color-gray-600);
-  font-size: 24px;
+  border-radius: 60px;
+  color: #2C2C2C;;
+  font-size: 20px;
   padding: .5rem .75rem;
   border-radius: 8px;
   line-height: 1.25;
@@ -1092,8 +1145,10 @@ html[dir="rtl"] .carousel .move-indicators {
   transition: all .25s ease;
   align-self: baseline;
   border: 0;
-  background-color: inherit;
+  border-radius: 60px;
+  background-color: white;
 }
+
 
 .section:has(.carousel.s2a-whatsnew) {
   overflow: hidden;

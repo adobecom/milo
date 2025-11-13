@@ -1,6 +1,6 @@
-import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
-import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
-import { debounce } from '../../utils/action.js';
+import { createTag, getConfig, MILO_EVENTS } from '../../../utils/utils.js';
+import { decorateAnchorVideo, syncPausePlayIcon } from '../../../utils/decorate.js';
+import { debounce } from '../../../utils/action.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const isMobile = window.innerWidth < 900;
@@ -17,11 +17,17 @@ const ARROW_PREVIOUS_IMG = `<svg xmlns="http://www.w3.org/2000/svg" width="21" h
 </svg>`;
 const LIGHTBOX_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/expand.svg" height="14" width="20">`;
 const CLOSE_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/close.svg" height="20" width="20">`;
-const EXPAND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19" fill="none">
+const EXPAND_ICON = `<svg class="icon-expand" xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19" fill="none">
   <title>Expand slide</title>
   <circle cx="9.9375" cy="9.5" r="9.5" fill="black"/>
   <path d="M13.301 8.28592H11.1505V5.78397C11.1505 5.03653 10.6289 4.42969 9.98641 4.42969C9.34397 4.42969 8.82237 5.03653 8.82237 5.78397V8.28592H6.67186C6.02942 8.28592 5.50781 8.89277 5.50781 9.64021C5.50781 10.3876 6.02942 10.9945 6.67186 10.9945H8.82237V13.4964C8.82237 14.2439 9.34397 14.8507 9.98641 14.8507C10.6289 14.8507 11.1505 14.2439 11.1505 13.4964V10.9945H13.301C13.9434 10.9945 14.465 10.3876 14.465 9.64021C14.465 8.89277 13.9434 8.28592 13.301 8.28592Z" fill="white"/>
 </svg>`;
+const COLLAPSE_ICON = `
+<svg class="icon-collapse" xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 19 19" fill="none">
+  <circle cx="9.5" cy="9.5" r="9.5" fill="white"/>
+  <path d="M6.23047 8.86426H12.8594C13.0668 8.86426 13.3926 9.09511 13.3926 9.58691C13.3925 10.0786 13.0668 10.3096 12.8594 10.3096H6.23047C6.02302 10.3096 5.69734 10.0786 5.69727 9.58691C5.69727 9.09511 6.023 8.86426 6.23047 8.86426Z" fill="#292929" stroke="black" stroke-width="1.26269"/>
+</svg>
+`;
 
 const KEY_CODES = {
   SPACE: 'Space',
@@ -620,7 +626,7 @@ const buildMenuItems = (slides, el) => {
       const title = slide.querySelector('h2');
       if (!title) return null;
       const item = createTag('button', { class: 'carousel-menu-item', tabindex: 0, 'aria-label': title.textContent }, title.textContent);
-      const headerWrapper = createTag('h2', { class: 'slide-header-control' }, `${title.textContent}${EXPAND_ICON}`);
+      const headerWrapper = createTag('h2', { class: 'slide-header-control' }, `${title.textContent}${EXPAND_ICON}${COLLAPSE_ICON}`);
       title.parentElement.insertBefore(headerWrapper, title);
       title.remove();
       item.dataset.index = index;
@@ -792,11 +798,7 @@ export default function init(el) {
   slides[activeSlideIndex + 1]?.classList.add('next-slide');
   handleChangingSlides(carouselElements);
   setAriaHiddenAndTabIndex(carouselElements, slides[activeSlideIndex], el);
-  window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
-  // slides[0].classList.add('active');
 
-  handleChangingSlides(carouselElements);
-  setAriaHiddenAndTabIndex(carouselElements, slides[0]);
   window.addEventListener('resize', () => {
     setAriaHiddenAndTabIndex(carouselElements);
     if (el.classList.contains('disable-buttons')) {
