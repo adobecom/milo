@@ -42,7 +42,7 @@ const selectors = {
   activePopup: 'header.new-nav section.feds-dropdown--active > .feds-popup',
   tab: '.tab',
   activeTabpanel: '.tab-content [role="tabpanel"]',
-  activeLinks: '.tab-content [role="tabpanel"]:not([hidden="true"]) a',
+  activeLinks: '.tab-content [role="tabpanel"]:not([hidden="true"]) .tab-column a',
   stickyCta: 'header.new-nav .feds-popup .sticky-cta a',
   topBarLinks: 'header.new-nav .feds-popup .top-bar a, header.new-nav .feds-popup .top-bar button',
   closeLink: 'header.new-nav .feds-popup .close-icon',
