@@ -1,0 +1,311 @@
+:root {
+  --text-color: #f2f2f2;
+  --background-color: #111;
+  --link-color: #1473e6;
+  --link-hover-color: #1473e6;
+  /* Top navigation - backgrounds */
+  --feds-background-popup: #111;
+  --feds-background-nav: #222;
+  --feds-background-nav--desktop: #1b1b1b;
+  /* Top navigation - borders */
+  --feds-borderColor: #303030;
+  --feds-borderColor-menu: #4b4b4b;
+  --feds-borderColor-navLink: #dbdbdb;
+  --feds-background-promo: #1d1d1d;
+  /* Top navigation - colors */
+  --feds-color-adobeBrand: #fff;
+  --feds-color-headline--mobile: #f2f2f2;
+  --feds-color-headline: #ebebeb;
+  --feds-color-popup: #ebebeb;
+  --feds-color-hamburger: #fff;
+  --feds-color-breadcrumbs--current: #dbdbdb;
+  --feds-color-signIn: #dbdbdb;
+  --feds-color-search: #dbdbdb;
+  /* Links */
+  --feds-color-link: #f2f2f2;
+  /* --feds-color-link--mobile: #f2f2f2; */
+  --feds-color-link--desktop: #dbdbdb;
+  --feds-color-link--hover: #1473e6;
+  --feds-color-blue-link: #5eaaF7;
+  --feds-color-navLink-description: #b0b0b0;
+  --feds-color-link-breadcrumbs: #b0b0b0;
+  --feds-background-link--hover: #1b1b1b;
+  --feds-borderColor-link: #323232;
+  /* Footer */
+  --feds-background-footer: #222;
+  --feds-background-footer--desktop: #1b1b1b;
+  --feds-borderColor-featuredProducts: #999;
+  /* Dropdown */
+  --feds-color-profile-heading--dark: #909090;
+  --feds-color-profile--dark: #dbdbdb;
+  --feds-color-profile--emphasis--dark: #f2f2f2;
+  --feds-border-profile--dark: 1px solid var(--feds-borderColor);
+
+  /* CTA Buttons */
+  --feds-cta-primary-bg: #4069fd;
+  --feds-cta-primary-bg--hover: #345bf8;
+
+  /* mobile gnav redesign */
+  --feds-borderColor-link-v2: #323232;
+  --feds-borderColor-localnav-v2: #323232;
+
+  /* Skeleton loading state - dark theme */
+  --feds-skeleton-color-1: #2c2c2c;
+  --feds-skeleton-color-2: #3a3a3a;
+  --feds-skeleton-color-3: #2c2c2c;
+  --feds-skeleton-opacity: 0.5;
+}
+
+.feds--dark .feds-navLink--hoverCaret:hover,
+.feds--dark .feds-navLink--hoverCaret:focus {
+  background-color: #151515;
+}
+
+/* Desktop styles */
+@media (min-width: 900px) {
+  .feds--dark .feds-navLink {
+    color: var(--feds-color-link--desktop);
+  }
+
+  .feds--dark .feds-navLink:hover {
+    color: var(--feds-color-link--hover);
+  }
+  
+  .feds--dark .feds-navLink--hoverCaret:hover,
+  .feds--dark .feds-navLink--hoverCaret:focus {
+    color: var(--feds-color-link--desktop);
+    background-color: var(--background-color);
+  }
+}
+
+/* global-navigation.css */
+.feds--dark .feds-cta--secondary,
+.feds--dark + .feds-localnav .feds-cta--secondary {
+  border: .125rem solid #393939;
+  color: #DBDBDB;
+}
+
+.feds--dark .feds-cta--secondary:hover,
+.feds--dark + .feds-localnav .feds-cta--secondary:hover {
+  border-color: #444;
+  background: #2c2c2c;
+}
+
+.feds--dark .feds-cta--secondary:focus-visible, 
+.feds--dark + .feds-localnav .feds-cta--secondary:focus-visible{
+  outline: 2px solid #3860FA;
+  background: #2c2c2c;
+}
+
+header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-bar {
+  background-color: var(--feds-background-nav--desktop);
+  border-bottom: 1px solid var(--feds-background-nav--desktop);
+}
+
+header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .title {
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--feds-borderColor-link-v2);
+}
+
+header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .tabs {
+  background-color: var(--background-color);
+}
+
+header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .tab-content {
+  background-color: var(--background-color);
+  border-left: 1px solid var(--feds-borderColor-link-v2);
+}
+
+[dir = "rtl"] header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .tab-content {
+  border-left: none;
+  border-right: 1px solid var(--feds-borderColor-link-v2);
+}
+
+header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
+  color: var(--background-color);
+  background-color: var(--feds-borderColor-navLink);
+}
+
+header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
+  background-color: var(--background-color);
+  border-top: 1px solid var(--feds-borderColor-link-v2);
+}
+
+header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu {
+  color: var(--text-color);
+}
+
+/* Popup */
+.feds--dark .feds-popup {
+  background-color: #151515;
+}
+
+.feds--dark .feds-popup .feds-navLink {
+  color: var(--feds-color-popup);
+}
+
+.feds--dark .feds-popup .feds-navLink:hover,
+.feds--dark .feds-popup .feds-navLink:focus {
+  color: var(--feds-color-link--hover);
+}
+
+.feds--dark .feds-popup .feds-navLink--blue {
+  color: var(--feds-color-blue-link);
+}
+
+.feds--dark .feds-popup .feds-navLink--blue:hover,
+.feds--dark .feds-popup .feds-navLink--blue:focus {
+  color: var(--feds-color-link--hover);
+}
+
+.feds--dark .feds-brand-label,
+.feds--dark .feds-brand-image,
+.feds--dark .feds-logo,
+.feds--dark .feds-logo-label {
+  color: var(--feds-color-adobeBrand);
+}
+
+header.global-navigation.feds--dark,
+.feds--dark .feds-topnav-wrapper {
+  background-color: var(--feds-background-nav--desktop);
+}
+
+/* Desktop styles */
+@media (min-width: 900px) {
+  /* Popup */
+  .feds--dark .feds-popup {
+    background-color: var(--feds-background-popup);
+    box-shadow: 0 3px 3px 0 rgb(255 255 255 / 20%);
+  }
+}
+
+/* gnav-search.css */
+.feds--dark .feds-search-input {
+  border: 1px solid var(--feds-borderColor);
+  background-color: transparent;
+  color: var(--feds-color-search);
+}
+
+.feds--dark .feds-search-icons svg path {
+  fill: var(--feds-color-search);
+}
+
+.feds--dark .feds-search-clear {
+  border: none;
+  color: var(--feds-color-search);
+}
+
+.feds--dark .feds-search-clear:hover {
+  color: var(--feds-color-link--hover);
+}
+
+.feds--dark .feds-search-results:not(:empty) {
+  border-color: var(--feds-borderColor);
+}
+
+.feds--dark .feds-search-result {
+  color: var(--feds-color-link);
+}
+
+.feds--dark .feds-search-result:hover,
+.feds--dark .feds-search-result:focus {
+  background: var(--feds-background-nav);
+}
+
+/* This is to fix the Dark theme on Adobe Home
+* Currently bacom doesn't have a dark theme
+* so we have no designs for the gradient on
+* dark theme.So for now we're making the
+* background transparent
+*/
+.feds-navLink--gray-gradient {
+  background: #1b1b1b;
+}
+
+.feds--dark .feds-promo {
+  border: 1px solid var(--feds-borderColor);
+  background: var(--feds-background-promo);
+}
+
+.feds--dark .feds-promo--dark,
+.feds--dark .feds-promo--dark a:not(.feds-cta) {
+  color: var(--feds-color-headline);
+}
+
+.feds--dark .feds-promo-link {
+  color: var(--feds-color-blue-link);
+}
+
+.feds--dark .feds-promo-link:hover {
+  color: var(--feds-color-link--hover);
+}
+
+/* dropdown.css */
+.feds--dark .feds-profile-name {
+  color: var(--feds-color-profile--emphasis--dark);
+}
+
+.feds--dark .feds-profile-email {
+  color: var(--feds-color-profile-heading--dark);
+}
+
+.feds--dark .feds-profile-account {
+  color: var(--feds-color-profile--dark);
+}
+
+.feds--dark .feds-profile-menu {
+  border: var(--feds-border-profile--dark);
+  background: var(--feds-background-nav);
+}
+
+.feds--dark .feds-local-menu {
+  border-top: var(--feds-border-profile--dark);
+}
+
+.feds--dark .feds-local-menu h5 {
+  color: var(--feds-color-profile-heading--dark);
+}
+
+.feds--dark .feds-profile-action {
+  border-top: var(--feds-border-profile--dark);
+}
+
+.feds--dark .feds-regionPicker-wrapper > .fragment {
+  background: var(--feds-background-popup);
+}
+
+.feds--dark .feds-social-icon {
+  color: #AAA;
+}
+
+.feds-social-link:hover .feds-social-icon {
+  color: #CCC;
+}
+
+.dialog-modal .region-nav {
+  color: var(--feds-color-link);
+  background-color: var(--feds-background-popup);
+}
+
+.dialog-modal .region-nav a {
+  color: var(--feds-color-blue-link);
+}
+
+.dialog-modal .region-nav a:hover {
+  text-decoration: underline;
+}
+
+header.global-navigation.feds--dark {
+  visibility: visible;
+}
+
+@media (min-width: 900px) {
+  .global-footer.feds--dark {
+    background: var(--feds-background-footer--desktop);
+  }
+
+  .feds--dark .feds-crossCloudMenu-wrapper {
+    border-top: solid 1px var(--feds-borderColor);
+    background-color: var(--feds-background-popup);
+  }
+}
