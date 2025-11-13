@@ -197,27 +197,33 @@ export function getEnv(conf) {
 
 function hydrateLocale(locales, key) {
   const locale = locales[key];
-  const addAttributes = (obj, k) => ({
-    ...obj,
-    prefix: k ? `/${k}` : '',
-    region: obj.region || k.split('_')[0] || 'us',
+
+  const buildExpandedLocale = (localeData, localeKey) => ({
+    ...localeData,
+    prefix: localeKey ? `/${localeKey}` : '',
+    region: localeData.region || localeKey.split('_')[0] || 'us',
   });
 
-  if (!('base' in locale)) {
-    // This is a base region. Gather all child regions, merging base values into each.
-    const regions = Object.entries(locales)
-      .filter(([, v]) => v.base === key)
-      .reduce((acc, [k, v]) => {
-        // Merge: child region inherits from base, child region's own values take precedence
-        acc[k] = addAttributes({ ...locale, ...v, base: v.base }, k);
-        return acc;
-      }, {});
-    return { ...addAttributes(locale, key), regions };
+  const isBaseLocale = !('base' in locale);
+  if (isBaseLocale) {
+    const childLocaleEntries = Object.entries(locales)
+      .filter(([, childLocale]) => childLocale.base === key);
+
+    const hydratedChildren = childLocaleEntries.reduce((acc, [childKey, childLocale]) => {
+      const mergedLocale = { ...locale, ...childLocale, base: childLocale.base };
+      acc[childKey] = buildExpandedLocale(mergedLocale, childKey);
+      return acc;
+    }, {});
+
+    const hydratedBase = buildExpandedLocale(locale, key);
+    return { ...hydratedBase, regions: hydratedChildren };
   }
 
-  if ((locale.base || locale.base === '') && locales[locale.base]) {
-    // This is a child region. Merge with its base, child region's own values take precedence
-    return addAttributes({ ...locales[locale.base], ...locale }, key);
+  const hasValidBase = (locale.base || locale.base === '') && locales[locale.base];
+  if (hasValidBase) {
+    const baseLocale = locales[locale.base];
+    const mergedLocale = { ...baseLocale, ...locale };
+    return buildExpandedLocale(mergedLocale, key);
   }
 
   return { ...locale };
@@ -229,15 +235,16 @@ export function getLocale(locales, pathname = window.location.pathname) {
   const split = pathname.split('/');
   const localeString = split[1];
   const specialPrefix = [LANGSTORE, PREVIEW].includes(localeString) ? localeString : '';
+  const ietfSegment = split[2];
 
   const matchedKeys = specialPrefix
-    ? [Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]))]
+    ? [Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(ietfSegment))]
     : Object.keys(locales)
       .filter((k) => k === localeString);
 
   const matchedKey = matchedKeys[0] ?? '';
   const locale = hydrateLocale(locales, matchedKey);
-  if (specialPrefix) locale.prefix = `/${specialPrefix}${split[2] ? `/${split[2]}` : ''}`;
+  if (specialPrefix) locale.prefix = `/${specialPrefix}${ietfSegment ? `/${ietfSegment}` : ''}`;
   return locale;
 }
 
