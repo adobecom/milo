@@ -179,7 +179,12 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
-    color: var(--color-accent);
+    color: var(--link-color);
+  }
+  
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-description a:focus,
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-description a:hover {
+    color: var(--link-hover-color);
   }
 
   merch-card[variant="mini-compare-chart"] .toggle-icon {

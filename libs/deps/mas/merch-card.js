@@ -977,7 +977,7 @@ merch-card[variant="catalog"] [slot="footer"] .spectrum-Link--primary {
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     color: var(--link-color);
   }
-
+  
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a:focus,
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a:hover {
     color: var(--link-hover-color);
