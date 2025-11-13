@@ -15,7 +15,7 @@ const siteToProcess = PREVIEW_INDEXER_REPOS?.split(',').map((path) => path.trim(
 const siteRegionPaths = SITE_REGION_PATHS?.split(',').map((path) => path.trim()).filter(Boolean);
 const lingoConfigMap = await getLingoConfigMap();
 
-if (siteToProcess && siteRegionPaths?.length) {
+if (siteToProcess) {
   const indexer = await initIndexer(ORG, siteToProcess, lingoConfigMap);
   await indexer.full(siteRegionPaths);
 } else {
