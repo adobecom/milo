@@ -1,4 +1,4 @@
-import { createTag, getConfig, getLanguage, loadLanguageConfig } from '../../utils/utils.js';
+import { createTag, getConfig, getLanguage, loadLanguageConfig, setInternational } from '../../utils/utils.js';
 
 const queriedPages = [];
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -246,6 +246,20 @@ function renderLanguages({
         `;
         langLink.addEventListener('click', (e) => {
           e.preventDefault();
+
+          const { prefix } = lang;
+          let cookieValue;
+          if (prefix === '') {
+            cookieValue = 'us';
+          } else {
+            const segments = prefix.split('/');
+            cookieValue = segments.length > 1
+              ? segments[1]
+              : (getConfig().languages?.[prefix]?.region || prefix);
+          }
+          if (cookieValue === 'gb') cookieValue = 'uk';
+          setInternational(cookieValue);
+
           const { pathname, href } = window.location;
           const currentLangForPath = getCurrentLanguage(filteredLanguages);
           const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
