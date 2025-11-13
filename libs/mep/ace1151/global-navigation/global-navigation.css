@@ -1451,7 +1451,7 @@ header.test-nav .feds-menu-description {
 header.test-nav .tab {
   display: flex;
   flex-direction: column;
-  width: 213px;
+  width: 223px;
   color: var(--feds-navLink-inactive);
 }
 

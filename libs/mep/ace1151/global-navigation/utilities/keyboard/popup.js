@@ -225,11 +225,14 @@ class Popup {
       }
     };
 
-    // Handle Tab and Shift+Tab navigation between panels
+    // Handle Tab and Shift+Tab navigation between panels and tab content links
     const handleTabKey = () => {
       e.preventDefault();
-
-      if (isShift) {
+      if (!leftPanel && tabContentLinks.length > 0) {
+        const delta = isShift ? -1 : 1;
+        const nextLinkIndex = moveIndex(currentLinkIndex, tabContentLinks.length, delta);
+        focusLink(nextLinkIndex);
+      } else if (isShift) {
         if (leftPanel) {
           popup.parentElement.querySelector('.feds-navLink')?.focus();
         } else {
