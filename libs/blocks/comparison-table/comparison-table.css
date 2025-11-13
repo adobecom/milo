@@ -220,6 +220,7 @@
   padding: var(--spacing-xxs);
   position: relative;
   overflow: hidden;
+  justify-content: center;
 }
 
 .comparison-table .header-content.sticky .sub-header-item-container {
@@ -291,7 +292,6 @@
   font-style: normal;
   font-weight: var(--type-detail-all-weight);
   line-height: var(--type-body-s-lh);
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
