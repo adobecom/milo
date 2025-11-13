@@ -466,6 +466,7 @@ function setupStickyHeader(el) {
 }
 
 function decorate(el) {
+  el.classList.add('con-block');
   const [headerChild, ...tableChildren] = [...el.children];
   decorateHeader(el, headerChild);
   decorateTables(el, tableChildren);
