@@ -2167,3 +2167,19 @@ header.test-nav .feds-popup.loading.hide {
     padding-left: 5%;
   }
 }
+
+/* adobe clean display css overrides */ 
+:root {
+  /* --heading-font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif; */
+  --heading-font-family: serif;
+}
+
+header.global-navigation :is(
+  div.tabs[role="tablist"] > button > span:not([class]), 
+  div[role="listitem"] > :is(button, a),
+  .tab-panel .tab-column > a.feds-navLink .feds-navLink-title, 
+  .tab-panel .tab-column > a.feds-navLink:not(:has(.feds-navLink-title)),
+  .feds-menu-column ul > li > a) { 
+    font-family: var(--heading-font-family);
+  }
+
