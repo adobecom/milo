@@ -244,6 +244,10 @@
   min-height: 15px;
 }
 
+.comparison-table .sub-header-item-container .description.zero-height {
+  padding: 0;
+}
+
 .comparison-table .sub-header-item-container .btn-container {
   display: flex;
   justify-content: center;

@@ -46,6 +46,7 @@ function equalHeight(el) {
         if (!elements.length) return;
         const maxHeight = calculateMaxHeight(elements);
         elements.forEach((element) => {
+          if (maxHeight === 0) element.classList.add('zero-height');
           element.style.minHeight = `${maxHeight}px`;
         });
       });
