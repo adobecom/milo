@@ -236,6 +236,10 @@
   color: var(--color-white);
 }
 
+.brick.s2a-mobile .modal-img-link {
+  display: initial;
+}
+
 @media screen and (max-width: 600px) {
   .brick .mobile-only {
     display: block;
