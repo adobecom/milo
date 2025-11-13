@@ -47,7 +47,9 @@ export class MerchSideNav extends LitElement {
         const searchSize = SEARCH_SIZE[this.variant];
         if (searchSize) {
             const search = this.querySelector('merch-search sp-search');
-            search.setAttribute('size', searchSize);
+            if (search) {
+              search?.setAttribute('size', searchSize);          
+            }
         }
 
         /* Adjust checkboxes size */
