@@ -318,7 +318,7 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl, el) {
 
 function toggleActiveSlide(event, carouselElements, jumpToIndex) {
   const { slides } = carouselElements;
-  slides.forEach((slide) => slide.classList.remove('active'));
+  if (!isMobile) slides.forEach((slide) => slide.classList.remove('active'));
   slides[jumpToIndex].classList.add('active');
 }
 
@@ -626,10 +626,18 @@ const buildMenuItems = (slides, el) => {
       const title = slide.querySelector('h2');
       if (!title) return null;
       const item = createTag('button', { class: 'carousel-menu-item', tabindex: 0, 'aria-label': title.textContent }, title.textContent);
-      const headerWrapper = createTag('h2', { class: 'slide-header-control' }, `${title.textContent}${EXPAND_ICON}${COLLAPSE_ICON}`);
+      const headerWrapper = createTag('h2', { class: 'slide-header-control' }, `${title.textContent}<a>${EXPAND_ICON}</a><a class="collapse-wrapper">${COLLAPSE_ICON}</a>`);
       title.parentElement.insertBefore(headerWrapper, title);
       title.remove();
       item.dataset.index = index;
+      headerWrapper.querySelector('a.collapse-wrapper').addEventListener('click', (event) => {
+        event.stopPropagation();
+        slide.classList.add('collapsing');
+        setTimeout(() => {
+          slide.classList.remove('active');
+          slide.classList.remove('collapsing');
+        }, 290);
+      });
       item.addEventListener('click', (event) => {
         const customEvent = new CustomEvent('carousel:jumpTo', { detail: { index: event.target.dataset.index * 1 } });
         el.dispatchEvent(customEvent);
