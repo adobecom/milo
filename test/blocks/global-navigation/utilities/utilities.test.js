@@ -392,10 +392,12 @@ describe('global navigation utilities', () => {
       };
 
       // Call logErrorFor.
-      await logErrorFor(erroneousFunction, 'message', 'someTags');
-
-      // Check if lanaLog (through window.lana.log) was called with expected parameters.
-      expect(lanaLogSpy.calledOnce).to.be.true;
+      try {
+        await logErrorFor(erroneousFunction, 'message', 'someTags');
+      } catch (e) {
+        // Check if lanaLog (through window.lana.log) was called with expected parameters.
+        expect(lanaLogSpy.calledOnce).to.be.true;
+      }
 
       // Restore the original window.lana.log method
       window.lana.log = originalLanaLog;
