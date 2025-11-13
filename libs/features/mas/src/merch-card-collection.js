@@ -344,7 +344,8 @@ export class MerchCardCollection extends LitElement {
                     // Example: "mas:types/web" -> "web"
                     // TODO: Get tag label from fragment instead of parsing the tag
                     const parsedTag = tag.split('/').pop();
-                    const tagLabel = fragment?.tagLabels?.[parsedTag] || parsedTag;
+                    let tagLabel = fragment.settings?.tagLabels?.[parsedTag] || parsedTag;
+                    tagLabel = tagLabel.startsWith('coll-tag-filter') ? parsedTag : tagLabel;
                     return { name: parsedTag, label: tagLabel };
                   })
                 }
