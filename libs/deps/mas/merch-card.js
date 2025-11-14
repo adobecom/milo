@@ -2231,6 +2231,10 @@ merch-card[variant="plans-v2"] [slot="quantity-select"] merch-quantity-select {
     --picker-button-border-left: none;
 }
 
+merch-card[variant="plans-v2"] .picker-button {
+    border-left: none;
+}
+
 merch-card[variant="plans-v2"] [slot="footer"] {
     display: flex;
     flex-direction: column;
@@ -2324,7 +2328,6 @@ merch-card[variant="plans-v2"] .help-text {
     --merch-card-collection-card-min-height: 273px;
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-v2-width);
     max-width: 100%;
-    overflow: hidden;
 }
 
 merch-sidenav.plans-v2 {
@@ -2346,6 +2349,34 @@ merch-card-collection-header.plans {
 merch-card-collection.plans merch-card {
     width: auto;
     height: 100%;
+}
+
+merch-card-collection.plans merch-card[variant="plans-v2"] {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+
+merch-card-collection.plans merch-card[variant="plans-v2"] .body {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: min-content;
+    align-content: start;
+}
+
+merch-card-collection.plans merch-card[variant="plans-v2"] .heading-wrapper {
+    min-height: 35px;
+    align-items: center;
+}
+
+merch-card-collection.plans merch-card[variant="plans-v2"] [slot="icons"] {
+    height: 35px;
+    align-items: center;
+}
+
+merch-card-collection.plans merch-card[variant="plans-v2"] [slot="heading-xs"] {
+    min-height: 31px;
+    display: flex;
+    align-items: center;
 }
 
 merch-card-collection.plans merch-card[variant="plans-v2"] aem-fragment + [slot^="heading-"] {
@@ -2434,6 +2465,11 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-v2-width));
     }
 
+    .four-merch-cards.plans,
+    .four-merch-cards.plans-v2 {
+        grid-template-columns: repeat(2, var(--consonant-merch-card-plans-v2-width));
+    }
+
     merch-card-collection-header.plans {
         --merch-card-collection-header-columns: fit-content(100%);
         --merch-card-collection-header-areas: "custom";
@@ -2452,6 +2488,11 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
 
 /* Large Desktop */
 @media screen and ${T} {
+    .four-merch-cards.plans,
+    .four-merch-cards.plans-v2 {
+        grid-template-columns: repeat(4, var(--consonant-merch-card-plans-v2-width));
+    }
+
     .columns .four-merch-cards.plans {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-v2-width));
     }
