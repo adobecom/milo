@@ -22,6 +22,11 @@ export default function init(el, a, btnFormat) {
   a.classList.add('consonant-play-btn');
   a.setAttribute('role', 'button');
   a.setAttribute('aria-label', `Play${alt ? ` ${alt}` : ''}`);
+  a.addEventListener('keydown', (e) => {
+    if (e.key !== ' ') return;
+    e.preventDefault();
+    a.click();
+  });
   a.append(playIcon);
   imgLinkContainer.append(pic, a);
 }

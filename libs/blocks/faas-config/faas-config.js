@@ -302,6 +302,7 @@ const RequiredPanel = () => {
   const [field172, setField172] = useState('');
   const [field103, setField103] = useState('');
   const [field69, setField69] = useState('');
+  const [field51, setField51] = useState('');
   const [fieldMultiCampStyle, setFieldMultiCampStyle] = useState('');
   const [fieldpjs36, setFieldpjs36] = useState('');
 
@@ -351,6 +352,7 @@ const RequiredPanel = () => {
     setField149('');
     setField172('');
     setField103('');
+    setField51('');
     setFieldMultiCampStyle('');
     setFieldpjs36('');
 
@@ -403,6 +405,15 @@ const RequiredPanel = () => {
             options=${buildOptionsFromApi(d.question.collection.collectionValues)}
             sort="true" />`);
         }
+        // Primary Product Interest Subset
+        if (d.question.id === '51') {
+          setField51(html`
+          <${MultiSelectCheckbox}
+            label="${d.question.name}"
+            prop="q${d.question.id}"
+            options=${buildOptionsFromApi(d.question.collection.collectionValues)}
+            sort="true" />`);
+        }
         // Last Asset
         if (d.question.id === '172') {
           setField172(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
@@ -451,6 +462,7 @@ const RequiredPanel = () => {
     ${field93}
     ${field94}
     ${field69}
+    ${field51}
     ${field149}
     ${field172}
     <${Input} label="Destination URL" prop="d" />

@@ -28,7 +28,7 @@ export function normalizeVariant(variant) {
 export function appendSlot(fieldName, fields, el, mapping) {
     const config = mapping[fieldName];
     if (fields[fieldName] && config) {
-        const attributes = { slot: config?.slot };
+        const attributes = { slot: config?.slot, ...config?.attributes };
         let content = fields[fieldName];
 
         // Handle maxCount if specified in the config
@@ -103,14 +103,14 @@ function processBadge(fields, merchCard, mapping) {
                 borderColorToUse = mapping.badge?.default;
                 fields.borderColor = mapping.badge?.default;
             }
-            
+
             fields.badge = `<merch-badge variant="${fields.variant}" background-color="${bgColorToUse}" border-color="${borderColorToUse}">${fields.badge}</merch-badge>`;
         }
         appendSlot('badge', fields, merchCard, mapping);
     } else {
         if (fields.badge) {
             merchCard.setAttribute('badge-text', fields.badge);
-            
+
             // Only set badge-color if not disabled
             if (!mapping.disabledAttributes?.includes('badgeColor')) {
                 merchCard.setAttribute(
@@ -118,7 +118,7 @@ function processBadge(fields, merchCard, mapping) {
                     fields.badgeColor || DEFAULT_BADGE_COLOR,
                 );
             }
-            
+
             // Only set badge-background-color if not disabled
             if (!mapping.disabledAttributes?.includes('badgeBackgroundColor')) {
                 merchCard.setAttribute(
@@ -126,7 +126,7 @@ function processBadge(fields, merchCard, mapping) {
                     fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
                 );
             }
-            
+
             merchCard.setAttribute(
                 'border-color',
                 fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
@@ -144,7 +144,7 @@ export function processTrialBadge(fields, merchCard, mapping) {
     if (mapping.trialBadge && fields.trialBadge) {
         if (!fields.trialBadge.startsWith('<merch-badge')) {
             // Only use trialBadgeBorderColor if not disabled
-            const borderColorToUse = (!mapping.disabledAttributes?.includes('trialBadgeBorderColor') && fields.trialBadgeBorderColor) 
+            const borderColorToUse = (!mapping.disabledAttributes?.includes('trialBadgeBorderColor') && fields.trialBadgeBorderColor)
                 || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
             fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${borderColorToUse}">${fields.trialBadge}</merch-badge>`;
         }
@@ -207,11 +207,11 @@ export function processBorderColor(fields, merchCard, variantMapping) {
         // Check if it's a gradient using specialValues or pattern matching
         const specialValue = borderColorConfig?.specialValues?.[fields.borderColor];
         const isGradient = specialValue?.includes('gradient') || /-gradient/.test(fields.borderColor);
-        
+
         if (isGradient) {
             // For gradients, set both attributes needed for CSS selectors
             merchCard.setAttribute('gradient-border', 'true');
-            
+
             // Find the key name for this gradient value
             let borderColorKey = fields.borderColor;
             if (borderColorConfig?.specialValues) {
@@ -223,7 +223,7 @@ export function processBorderColor(fields, merchCard, variantMapping) {
                     }
                 }
             }
-            
+
             merchCard.setAttribute('border-color', borderColorKey);
             merchCard.style.removeProperty(customBorderColor);
         } else {
@@ -275,16 +275,16 @@ export function processBackgroundImage(
  */
 function processMnemonicElements(htmlContent) {
     if (!htmlContent || typeof htmlContent !== 'string') return htmlContent;
-    
+
     // This function ensures mas-mnemonic elements are properly formed
     // The actual parsing happens when the HTML is added to the DOM
     // and the mas-mnemonic web component initializes
-    
+
     // Import mas-mnemonic to ensure it's loaded when mnemonics are used
     if (htmlContent.includes('<mas-mnemonic')) {
         import('./mas-mnemonic.js').catch(console.error);
     }
-    
+
     return htmlContent;
 }
 
@@ -326,7 +326,7 @@ function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
         newButtonElement = merchCard.spectrum === 'swc'
             ? createSpectrumSwcButton(
                   linkElement,
-                  aemFragmentMapping, 
+                  aemFragmentMapping,
                   isOutline,
                   variant,
                   isCheckoutLink
@@ -362,10 +362,18 @@ export function processDescription(fields, merchCard, mapping) {
     if (fields.shortDescription) {
         fields.shortDescription = processMnemonicElements(fields.shortDescription);
     }
-    
+
     appendSlot('promoText', fields, merchCard, mapping);
     appendSlot('description', fields, merchCard, mapping);
     appendSlot('shortDescription', fields, merchCard, mapping);
+
+   if (fields.shortDescription) {
+        merchCard.setAttribute('action-menu', 'true');
+        if (!fields.actionMenuLabel) {
+            merchCard.setAttribute('action-menu-label', 'More options');
+        }
+    }
+
     processDescriptionLinks(merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
@@ -590,7 +598,7 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
     if (fields.ctas) {
         // Process tooltips in CTAs
         fields.ctas = processMnemonicElements(fields.ctas);
-        
+
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fields.ctas);
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
