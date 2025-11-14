@@ -459,10 +459,13 @@ main > .section[class*='-up'] > .content {
   background: none;
   border: none;
   padding: 16px 0;
-  width: 100%;
-  display: block;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
   text-align: center;
-  margin: 0;
+  margin: 0 auto;
   font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
   font-size: var(--type-heading-m-size, 20px);
   line-height: var(--type-heading-m-lh, 115%);
@@ -479,20 +482,12 @@ main > .section[class*='-up'] > .content {
   border-radius: 4px;
 }
 
-.collapse-frag-text::after {
-  content: '';
-  display: inline-block;
-  width: 0.4em;
-  height: 0.4em;
-  border-right: 0.15em solid currentcolor;
-  border-bottom: 0.15em solid currentcolor;
-  margin-left: 0.6em;
-  transform: rotate(225deg);
+.collapse-frag-chevron {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  top: -0.1em;
+  transform: rotate(180deg);
+  flex-shrink: 0;
 }
 
-.collapse-frag-button[aria-expanded='true'] .collapse-frag-text::after {
-  transform: rotate(45deg);
+.collapse-frag-button[aria-expanded='true'] .collapse-frag-chevron {
+  transform: rotate(0deg);
 }
