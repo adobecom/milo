@@ -3,7 +3,6 @@ import { decorateButtons } from '../../utils/decorate.js';
 import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
 import { closeModal } from '../modal/modal.js';
 import {
-  getIMS,
   getIMSProfile,
   getApiEndpoint,
   createAriaLive,
@@ -14,6 +13,7 @@ import {
   disableForm,
   runtimePost,
   redirectToSignIn,
+  isUserGuest,
   FORM_FIELDS,
 } from './utils.js';
 
@@ -21,7 +21,6 @@ const miloConfig = getConfig();
 const FORM_ID = 'email-collection-form';
 let dialog;
 let signIn = true;
-let isGuest = true;
 
 function showHideSubscribedMessage(el, subscribed, email) {
   el.querySelector('.button-container')?.classList.toggle('hidden', subscribed);
@@ -197,6 +196,7 @@ async function decorateInput(key, value) {
 }
 
 async function submitForm(form) {
+  const isGuest = await isUserGuest();
   if (signIn && isGuest) {
     await redirectToSignIn(dialog);
     return;
@@ -475,6 +475,7 @@ function decorateText(elChildren) {
 }
 
 async function checkIsSubscribed() {
+  const isGuest = await isUserGuest();
   if (isGuest) return false;
   const { mpsSname } = getFormData('metadata');
   const { email } = await getIMSProfile();
@@ -493,8 +494,7 @@ async function checkIsSubscribed() {
 }
 
 async function decorate(el, blockChildren) {
-  const ims = await getIMS();
-  isGuest = !ims.isSignedInUser();
+  const isGuest = await isUserGuest();
   if (signIn && isGuest) {
     await redirectToSignIn(dialog);
     return false;

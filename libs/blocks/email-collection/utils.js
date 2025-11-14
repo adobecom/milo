@@ -342,3 +342,8 @@ export async function runtimePost(url, data) {
     return { error: e.message };
   }
 }
+
+export async function isUserGuest() {
+  const ims = await getIMS();
+  return !ims.isSignedInUser();
+}
