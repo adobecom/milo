@@ -779,7 +779,7 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use GEO IP for langFirst when country not in URL and not news source', async () => {
+  it('should use GEO IP for langFirst when not news source (regardless of URL country)', async () => {
     // Set metadata to enable langFirst
     const metaLangFirst = document.createElement('meta');
     metaLangFirst.setAttribute('name', 'langfirst');
@@ -798,7 +798,8 @@ describe('getCountryAndLang', () => {
       source: ['hawks'],
     });
 
-    // Should get GEO IP country (mocked in georoutingv2)
+    // Should ALWAYS try GEO IP first (not just when country is 'xx')
+    // Will get GEO IP country or fall back to URL path country
     expect(expected.country).to.not.eq('xx');
     expect(expected.language).to.eq('en');
 
@@ -831,7 +832,7 @@ describe('getCountryAndLang', () => {
     document.head.removeChild(metaLangFirst);
   });
 
-  it('should handle GEO IP lookup failure gracefully', async () => {
+  it('should fall back to URL path country when GEO IP fails', async () => {
     // Set metadata to enable langFirst
     const metaLangFirst = document.createElement('meta');
     metaLangFirst.setAttribute('name', 'langfirst');
@@ -839,22 +840,25 @@ describe('getCountryAndLang', () => {
     document.head.appendChild(metaLangFirst);
 
     setConfig({
-      pathname: '/en/blah.html',
+      pathname: '/en/be/blah.html',
       locales: {
         '': { ietf: 'en-US' },
+        be: { ietf: 'nl-BE' },
       },
     });
 
-    // Mock import failure by testing with invalid path
     const expected = await getCountryAndLang({
       autoCountryLang: true,
       source: ['hawks'],
     });
 
-    // Should still return valid structure even if GEO IP fails
+    // If GEO IP fails or returns empty, should fall back to URL path country
+    // In this case, URL has 'be' so should use that as fallback
     expect(expected).to.have.property('country');
     expect(expected).to.have.property('language');
     expect(expected.language).to.eq('en');
+    // Country should be either from GEO IP or 'be' from URL
+    expect(['be', 'BE'].some((c) => expected.country.toLowerCase() === c.toLowerCase())).to.be.true;
 
     document.head.removeChild(metaLangFirst);
   });
