@@ -527,28 +527,36 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     const langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
 
+    // Extract fallback country from URL path for when GEO IP fails
+    let fallbackCountry = countryStr;
+    if (typeof fallbackCountry === 'object') {
+      fallbackCountry = fallbackCountry.ietf?.split('-')[1] ?? 'xx';
+    }
+
     // Check if origin/source is NOT 'news' to use GEO IP detection
     const sourceArray = Array.isArray(source) ? source : [source];
     const isNewsSource = sourceArray.some((s) => s?.toLowerCase().includes('news'));
 
-    // If no country found in URL path and not a news source, try GEO IP lookup
-    if (countryStr === 'xx' && !isNewsSource) {
+    // Always try GEO IP lookup when not a news source (regardless of URL path country)
+    if (!isNewsSource) {
       try {
         const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
         const geoCountry = await getAkamaiCode(true);
         if (geoCountry) {
-          // Map the akamai code to our LOCALES format
+          // Use GEO IP country as the primary source
           countryStr = geoCountry.toLowerCase();
+        } else {
+          // Fall back to URL path country if GEO IP returns empty
+          countryStr = fallbackCountry;
         }
       } catch (error) {
-        // Fallback to 'xx' if GEO IP lookup fails
+        // Fallback to URL path country if GEO IP lookup fails
         // eslint-disable-next-line no-console
-        console.warn('GEO IP lookup failed for CaaS country detection:', error);
-        countryStr = 'xx';
+        console.warn('GEO IP lookup failed for CaaS country detection, using fallback:', error);
+        countryStr = fallbackCountry;
       }
-    }
-
-    if (typeof countryStr === 'object') {
+    } else if (typeof countryStr === 'object') {
+      // For news sources, just extract country from URL path
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
 
