@@ -133,9 +133,9 @@ export async function findFragments(baseUrl, params) {
 export async function fetchBulkCopyStatus(baseUrl, repo, experienceName) {
   // Handle special case for repo 'cc-graybox' where the sharepoint folder is 'www-graybox'.
   // Only for CC, the repo and sharepoint folder names don't match hence map to the correct sharepoint folder. 
-  const aioFolder = `${repo}` === 'cc-graybox' ? 'www-graybox' : `${repo}`;
+  const sharepointRootFolder = `${repo}` === 'cc-graybox' ? 'www-graybox' : `${repo}`;
   const statusUrl = `${baseUrl}/file-status.json?showContent=graybox_promote/`
-    + `${aioFolder}/${experienceName}/bulk-copy-status.json`;
+    + `${sharepointRootFolder}/${experienceName}/bulk-copy-status.json`;
   const response = await fetch(statusUrl);
   if (!response.ok) throw new Error('Failed to fetch bulk copy status');
   return response.json();
