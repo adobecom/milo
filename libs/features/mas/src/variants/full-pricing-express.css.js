@@ -275,13 +275,15 @@ merch-card[variant="full-pricing-express"] [slot="price"] p a {
 /* Strikethrough price styling */
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price,
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-strikethrough,
-merch-card[variant="full-pricing-express"] span.placeholder-resolved[data-template='strikethrough'] {
+merch-card[variant="full-pricing-express"] span.placeholder-resolved[data-template='strikethrough'],
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-strikethrough {
     text-decoration: none;
     font-size: 12px;
     line-height: 15.6px;
 }
 
-merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price {
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price,
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-strikethrough {
     color: var(--spectrum-gray-700);
 }
 
@@ -297,14 +299,19 @@ merch-card[variant="full-pricing-express"] [slot="price"] p .heading-l {
 
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
-merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals,
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-strikethrough .price-integer,
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-strikethrough .price-decimals-delimiter,
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-strikethrough .price-decimals {
     text-decoration: line-through;
     text-decoration-thickness: 2px;
 }
 
 /* Apply indigo-800 color to optical price when preceded by strikethrough */
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'],
-merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol {
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol,
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-alternative,
+merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-alternative .price-currency-symbol {
     color: var(--spectrum-indigo-900);
 }
 
