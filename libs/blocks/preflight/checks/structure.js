@@ -126,7 +126,7 @@ function checkRegionSelector(area) {
 function checkGeorouting(area) {
   const meta = getMetadata('georouting', area)?.toLowerCase();
   const param = new URL(window.location.href).searchParams.get('georouting')?.toLowerCase();
-  const isOff = meta === 'off' || param === 'off';
+  const isOff = meta === 'off' || param === 'off' || !meta;
 
   return getStructureResult('georouting', isOff ? STATUS.EMPTY : STATUS.PASS, `Georouting is ${isOff ? 'off' : 'on'}.`);
 }
