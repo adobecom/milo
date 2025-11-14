@@ -334,7 +334,8 @@
 }
 
 .notification .foreground:not(.no-image) .text .body-s.action-area,
-.notification .foreground:not(.no-image) .text .body-m.action-area {
+.notification .foreground:not(.no-image) .text .body-m.action-area,
+.notification.ribbon .foreground .text .body-m.action-area {
   margin-block-end: 0;
 }
 
