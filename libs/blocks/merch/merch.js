@@ -439,6 +439,16 @@ const failedExternalLoads = new Set();
 const loadingPromises = new Map();
 
 /**
+ * Checks if mas-ff-mas-deps feature flag is enabled
+ * @returns {boolean} true if flag is on
+ */
+function isMasDepsFlagEnabled() {
+  const metaFlag = getMetadata('mas-ff-mas-deps');
+  if (metaFlag === 'on' || metaFlag === 'true') return true;
+  return false;
+}
+
+/**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
@@ -467,6 +477,14 @@ export async function loadMasComponent(componentName) {
       } catch (error) {
         failedExternalLoads.add(externalUrl);
         throw error;
+      }
+    } else if (isMasDepsFlagEnabled()) {
+      const masUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
+      try {
+        return await import(masUrl);
+      } catch (error) {
+        console.warn(`Failed to load from MAS repository, falling back to Milo deps: ${error.message}`);
+        return import(`../../deps/mas/${componentName}.js`);
       }
     } else {
       return import(`../../deps/mas/${componentName}.js`);
