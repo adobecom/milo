@@ -32,6 +32,12 @@ function decorateImage(block) {
   return wrapper;
 }
 
+const adaptForTextExtension = (el) => {
+  const { letterSpacing, wordSpacing } = getComputedStyle(el);
+  const isExtensionActive = letterSpacing !== 'normal' || wordSpacing !== '0px';
+  el.classList.toggle('no-clamp', isExtensionActive);
+};
+
 function decorateContent(block) {
   if (!block) return;
   const card = block.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
@@ -62,4 +68,14 @@ export default function init(el) {
   const block = el.querySelector(':scope > div:not([class])');
   decorateContent(block);
   foreground.insertAdjacentElement('beforeEnd', block);
+  adaptForTextExtension(el);
+
+  const observer = new MutationObserver(() => {
+    adaptForTextExtension(el);
+  });
+
+  observer.observe(el, {
+    attributes: true,
+    attributeFilter: ['style'],
+  });
 }
