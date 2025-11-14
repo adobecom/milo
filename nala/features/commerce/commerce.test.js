@@ -316,6 +316,9 @@ test.describe('Commerce feature test suite', () => {
 
     // Validate there are no unresolved commerce placeholders
     await test.step('Validate wcs placeholders', async () => {
+      // Wait for at least one placeholder to be resolved
+      await page.waitForSelector('[data-wcs-osi].placeholder-resolved', { timeout: 10000 });
+
       const unresolvedPlaceholders = await page.evaluate(
         () => [...document.querySelectorAll('[data-wcs-osi]')].filter(
           (el) => !el.classList.contains('placeholder-resolved'),
@@ -410,6 +413,9 @@ test.describe('Commerce feature test suite', () => {
 
     // Validate there are no unresolved commerce placeholders
     await test.step('Validate wcs placeholders', async () => {
+      // Wait for at least one placeholder to be resolved
+      await page.waitForSelector('[data-wcs-osi].placeholder-resolved', { timeout: 10000 });
+
       const unresolvedPlaceholders = await page.evaluate(
         () => [...document.querySelectorAll('[data-wcs-osi]')].filter(
           (el) => !el.classList.contains('placeholder-resolved'),

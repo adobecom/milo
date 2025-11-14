@@ -246,7 +246,7 @@ describe('Quiz', () => {
   });
 
   it('Testing getLocalizedURL with country code or without country code', async () => {
-    locales = { '': { ietf: 'de-DE', tk: 'hah7vzn.css' } };
+    locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, de: { ietf: 'de-DE', tk: 'hah7vzn.css' } };
     setConfig({ locales, pathname: '/de' });
 
     // Import getLocalizedURL function
