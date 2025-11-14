@@ -3,11 +3,13 @@ import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
   dev: 'https://14257-miloemailcollection-dev.adobeioruntime.net/api/v1/web/email-collection',
+  nala: 'https://14257-miloemailcollection-stage.adobeioruntime.net/api/v1/web/email-collection',
   local: 'https://www.stage.adobe.com/milo-email-collection-api',
   stage: 'https://www.stage.adobe.com/milo-email-collection-api',
   prod: 'https://www.adobe.com/milo-email-collection-api',
 };
 const FORM_METADATA = {
+  'email-collection-test': 'emailCollectionTest',
   'mps-sname': 'mpsSname',
   'subscription-name': 'subscriptionName',
   'sign-in': 'signIn',
@@ -113,16 +115,6 @@ export async function getIMSProfile() {
   } catch (e) {
     return {};
   }
-}
-
-export function getApiEndpoint(action = 'submit') {
-  const { env } = getConfig();
-  let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
-  if (env.name !== 'prod') {
-    const params = new URLSearchParams(window.location.search);
-    endPoint = API_ENDPOINTS[params.get('email-collection-env')] ?? endPoint;
-  }
-  return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
 }
 
 export const [createAriaLive, updateAriaLive] = (() => {
@@ -252,6 +244,18 @@ export const [getFormData, setFormData] = (() => {
     },
   ];
 })();
+
+export function getApiEndpoint(action = 'submit') {
+  const { env } = getConfig();
+  const { emailCollectionTest } = getFormData('metadata');
+  let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
+  if (emailCollectionTest) endPoint = API_ENDPOINTS.nala;
+  if (env.name !== 'prod') {
+    const params = new URLSearchParams(window.location.search);
+    endPoint = API_ENDPOINTS[params.get('email-collection-env')] ?? endPoint;
+  }
+  return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
+}
 
 export function disableForm(form, disable = true) {
   form.querySelectorAll('input, button').forEach((el) => {
