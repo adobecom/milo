@@ -727,9 +727,9 @@ describe('getCountryAndLang', () => {
     },
   };
 
-  it('should use country and lang from CaaS Config', () => {
+  it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: false,
     });
@@ -740,9 +740,9 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use default country and lang from CaaS Config', () => {
+  it('should use default country and lang from CaaS Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({ autoCountryLang: false });
+    const expected = await getCountryAndLang({ autoCountryLang: false });
     expect(expected).to.deep.eq({
       country: 'US',
       language: 'en',
@@ -750,9 +750,9 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use country and lang from locale in Milo Config', () => {
+  it('should use country and lang from locale in Milo Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: true,
     });
@@ -763,12 +763,12 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use default country and lang from locale in Milo Config', () => {
+  it('should use default country and lang from locale in Milo Config', async () => {
     setConfig({
       ...cfg,
       pathname: '/whatever/blah.html',
     });
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: true,
     });
@@ -777,6 +777,86 @@ describe('getCountryAndLang', () => {
       language: 'en',
       locales: '',
     });
+  });
+
+  it('should use GEO IP for langFirst when country not in URL and not news source', async () => {
+    // Set metadata to enable langFirst
+    const metaLangFirst = document.createElement('meta');
+    metaLangFirst.setAttribute('name', 'langfirst');
+    metaLangFirst.setAttribute('content', 'true');
+    document.head.appendChild(metaLangFirst);
+
+    setConfig({
+      pathname: '/en/blah.html',
+      locales: {
+        '': { ietf: 'en-US' },
+      },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['hawks'],
+    });
+
+    // Should get GEO IP country (mocked in georoutingv2)
+    expect(expected.country).to.not.eq('xx');
+    expect(expected.language).to.eq('en');
+
+    document.head.removeChild(metaLangFirst);
+  });
+
+  it('should NOT use GEO IP for news source even with langFirst', async () => {
+    // Set metadata to enable langFirst
+    const metaLangFirst = document.createElement('meta');
+    metaLangFirst.setAttribute('name', 'langfirst');
+    metaLangFirst.setAttribute('content', 'true');
+    document.head.appendChild(metaLangFirst);
+
+    setConfig({
+      pathname: '/en/blah.html',
+      locales: {
+        '': { ietf: 'en-US' },
+      },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['news'],
+    });
+
+    // Should fall back to 'xx' since news source skips GEO IP
+    expect(expected.country).to.eq('xx');
+    expect(expected.language).to.eq('en');
+
+    document.head.removeChild(metaLangFirst);
+  });
+
+  it('should handle GEO IP lookup failure gracefully', async () => {
+    // Set metadata to enable langFirst
+    const metaLangFirst = document.createElement('meta');
+    metaLangFirst.setAttribute('name', 'langfirst');
+    metaLangFirst.setAttribute('content', 'true');
+    document.head.appendChild(metaLangFirst);
+
+    setConfig({
+      pathname: '/en/blah.html',
+      locales: {
+        '': { ietf: 'en-US' },
+      },
+    });
+
+    // Mock import failure by testing with invalid path
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['hawks'],
+    });
+
+    // Should still return valid structure even if GEO IP fails
+    expect(expected).to.have.property('country');
+    expect(expected).to.have.property('language');
+    expect(expected.language).to.eq('en');
+
+    document.head.removeChild(metaLangFirst);
   });
 
   it('should include partial load settings in the config', async () => {

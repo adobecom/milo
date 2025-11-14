@@ -517,7 +517,7 @@ const getFilterArray = async (state, country, lang, strs) => {
   return filters;
 };
 
-export function getCountryAndLang({ autoCountryLang, country, language }) {
+export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
   const langFirst = getMetadata('langfirst');
   /* if it is a language first localized page don't use the milo locales.
@@ -526,6 +526,28 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
     const pathArr = pageConfigHelper()?.pathname?.split('/') || [];
     const langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
+
+    // Check if origin/source is NOT 'news' to use GEO IP detection
+    const sourceArray = Array.isArray(source) ? source : [source];
+    const isNewsSource = sourceArray.some((s) => s?.toLowerCase().includes('news'));
+
+    // If no country found in URL path and not a news source, try GEO IP lookup
+    if (countryStr === 'xx' && !isNewsSource) {
+      try {
+        const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+        const geoCountry = await getAkamaiCode(true);
+        if (geoCountry) {
+          // Map the akamai code to our LOCALES format
+          countryStr = geoCountry.toLowerCase();
+        }
+      } catch (error) {
+        // Fallback to 'xx' if GEO IP lookup fails
+        // eslint-disable-next-line no-console
+        console.warn('GEO IP lookup failed for CaaS country detection:', error);
+        countryStr = 'xx';
+      }
+    }
+
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
@@ -688,7 +710,7 @@ export const getGrayboxExperienceId = (
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const { country, language, locales } = getCountryAndLang(state);
+  const { country, language, locales } = await getCountryAndLang(state);
   const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
