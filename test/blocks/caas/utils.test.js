@@ -788,9 +788,7 @@ describe('getCountryAndLang', () => {
 
     setConfig({
       pathname: '/en/blah.html',
-      locales: {
-        '': { ietf: 'en-US' },
-      },
+      locales: { '': { ietf: 'en-US' } },
     });
 
     const expected = await getCountryAndLang({
@@ -815,9 +813,7 @@ describe('getCountryAndLang', () => {
 
     setConfig({
       pathname: '/en/blah.html',
-      locales: {
-        '': { ietf: 'en-US' },
-      },
+      locales: { '': { ietf: 'en-US' } },
     });
 
     const expected = await getCountryAndLang({
