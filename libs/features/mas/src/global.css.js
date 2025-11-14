@@ -1,3 +1,4 @@
+
 import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP } from './media.js';
 
 const styles = document.createElement('style');
@@ -225,6 +226,12 @@ merch-card-collection-header > div[slot] p {
     z-index: 3;
 }
 
+/* hide download/upgrade links except the first one */
+merch-card a[is="checkout-link"].download:not(:first-of-type),
+merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
+  display: none;
+}
+
 merch-card[variant="ccd-suggested"] *,
 merch-card[variant="ccd-slice"] * {
   box-sizing: border-box;
@@ -272,7 +279,7 @@ merch-card span[is='inline-price'] {
   line-height: 0;
 }
 
-.annual-price-new-line > span[is="inline-price"] .price-alternative {
+.annual-price-new-line > span[is="inline-price"] .price:not(.price-annual) {
   display: block;
 }
 

@@ -11,13 +11,14 @@ const chatLabelText = 'Ask';
 const mountId = 'brand-concierge-mount';
 const stickyLegalContent = {};
 // ^^ used to dynamically add content to legal for accessibility using aria-live
+const animationMs = 500;
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
 }
 
 function getAnalyticsLabel(step) {
-  return `Filters|${getConfig()?.brandConciergeAA}|bc#${step}`;
+  return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
 }
 
 function updateModalHeight() {
@@ -51,6 +52,12 @@ async function openChatModal(initialMessage, el) {
   const modal = await getModal(null, {
     id: 'brand-concierge-modal',
     content: innerModal,
+    closeCallback: async () => {
+      modal.classList.add('closing');
+      await new Promise((resolve) => {
+        setTimeout(() => resolve(), animationMs);
+      });
+    },
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));

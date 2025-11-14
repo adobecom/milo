@@ -5,6 +5,7 @@ import {
     createPromoPriceTemplate,
     createPriceWithAnnualTemplate,
     createPromoPriceWithAnnualTemplate,
+    formatLiteral,
 } from '../../src/price/template.js';
 
 const context = {
@@ -36,6 +37,16 @@ const valueDiscountAbm = {
     priceWithoutDiscount: 100,
     commitment: 'YEAR',
     term: 'MONTHLY',
+    promotion: {
+        start: '2024-11-15T04:02:37.000Z',
+        end: '2030-03-01T07:59:00.000Z',
+        displaySummary: {
+          outcomeType: 'PERCENTAGE_DISCOUNT',
+          duration: 'P12M',
+          amount: 25,
+          minProductQuantity: 1,
+        },
+    },
 };
 
 const valueNotApplicableDiscount = {
@@ -78,6 +89,77 @@ describe('function "createPriceTemplate"', () => {
         it('does not throw if attributes are missing', () => {
             const template = createPriceTemplate();
             expect(() => template(context, value)).to.not.throw();
+        });
+    });
+
+    describe('displayPrice logic', () => {
+        const promoValue = {
+            formatString: '#0',
+            price: 80,
+            priceWithoutDiscount: 100,
+            promotion: {
+                start: '2024-11-15T04:02:37.000Z',
+                end: '2030-03-01T07:59:00.000Z',
+                displaySummary: {
+                    outcomeType: 'PERCENTAGE_DISCOUNT',
+                    duration: 'P12M',
+                    amount: 25,
+                    minProductQuantity: 1,
+                },
+            },
+        };
+
+        it('uses priceWithoutDiscount when promotion exists but not applied (not alternative)', function () {
+            // isPromoApplied will be false when instant is before promotion start
+            const template = createPriceTemplate();
+            const promoContext = {
+                ...context,
+                isPromoApplied: false,
+            };
+            renderAndComparePrice(
+                'createPriceTemplatePromoNotApplied',
+                template(promoContext, promoValue, {}),
+            );
+        });
+
+        it('uses price when promotion exists but not applied and isAlternativePrice is true', function () {
+            const template = createPriceTemplate({ isAlternativePrice: true });
+            const promoContext = {
+                ...context,
+                isPromoApplied: false,
+            };
+            renderAndComparePrice(
+                'createPriceTemplatePromoNotAppliedAlternative',
+                template(promoContext, promoValue, {}),
+            );
+        });
+
+        it('uses priceWithoutDiscount when displayStrikethrough is true', function () {
+            const template = createPriceTemplate({ displayStrikethrough: true });
+            renderAndComparePrice(
+                'createPriceTemplateStrikethrough',
+                template(context, valueDiscount, {}),
+            );
+        });
+
+        it('uses price in default case', function () {
+            const template = createPriceTemplate();
+            renderAndComparePrice(
+                'createPriceTemplateDefault',
+                template(context, value, {}),
+            );
+        });
+
+        it('uses price when promotion is applied', function () {
+            const template = createPriceTemplate();
+            const promoContext = {
+                ...context,
+                isPromoApplied: true,
+            };
+            renderAndComparePrice(
+                'createPriceTemplatePromoApplied',
+                template(promoContext, promoValue, {}),
+            );
         });
     });
 });
@@ -134,7 +216,7 @@ describe('function "createPromoPriceWithAnnualTemplate"', function () {
         const template = createPromoPriceWithAnnualTemplate();
         renderAndComparePrice(
             'createPromoPriceWithAnnualTemplate1',
-            template(context, valueDiscountAbm, {}),
+            template({ ...context, quantity: 1 }, valueDiscountAbm, {}),
         );
     });
 });
@@ -151,6 +233,7 @@ describe('Promotion price display with annual template', () => {
         priceWithoutDiscount: 30.99,
         commitment: 'YEAR',
         term: 'MONTHLY',
+        quantity: 1,
         promotion: {
             start: '2024-11-15T04:02:37.000Z',
             end: '2030-03-01T07:59:00.000Z',
@@ -158,6 +241,12 @@ describe('Promotion price display with annual template', () => {
             duration: 'P6M',
             amount: 25,
             minProductQuantity: 1,
+            displaySummary: {
+              outcomeType: 'PERCENTAGE_DISCOUNT',
+              duration: 'P6M',
+              amount: 25,
+              minProductQuantity: 1,
+          },
         },
     };
 
@@ -230,5 +319,17 @@ describe('Promotion price display with annual template', () => {
             'annualTemplatePromoExpired',
             template(promoContext, promoValue, {}),
         );
+    });
+
+    it('format price literals with links', () => {
+        const literals = {
+            lang: 'fr',
+            taxInclusiveLabel: '{taxTerm, select, GST {TPS comprise} VAT {TVA comprise <u>underline</u> <strong>bold</strong> <a href="https://www.adobe.com/test.html">link</a> and another <a href="https://www.adobe.com/test2.html">link2</a> and text} TAX {taxes comprises} IVA {IVA comprise} SST {SST comprise} KDV {KDV comprise} other {}}'
+        }
+        const parameters = {
+            taxTerm: 'VAT'
+        };
+        const formattedLiteral = formatLiteral(literals, 'fr-FR', 'taxInclusiveLabel', parameters);
+        expect(formattedLiteral).to.be.equal('TVA comprise underline bold <a href="https://www.adobe.com/test.html">link</a> and another <a href="https://www.adobe.com/test2.html">link2</a> and text');
     });
 });
