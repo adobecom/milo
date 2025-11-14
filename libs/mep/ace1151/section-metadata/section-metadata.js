@@ -203,68 +203,54 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     </svg>
   `;
   let isLoaded = false;
-  let fragSection = null;
-  let fragContent = null;
+  let loadedFragment = null;
 
   function collapseContent() {
-    if (!fragSection || !fragContent) return;
-    const currentHeight = fragSection.scrollHeight;
-    fragSection.style.maxHeight = `${currentHeight}px`;
+    if (!loadedFragment) return;
+    const currentHeight = loadedFragment.scrollHeight;
+    loadedFragment.style.maxHeight = `${currentHeight}px`;
+    loadedFragment.style.overflow = 'hidden';
     // Force reflow
     /* eslint-disable-next-line no-unused-vars */
-    const temp = fragSection.offsetHeight;
-    fragContent.style.opacity = '0';
-    fragSection.style.maxHeight = '0';
-    fragSection.style.paddingBottom = '0';
+    const temp = loadedFragment.offsetHeight;
+    loadedFragment.style.maxHeight = '0';
     toggleButton.setAttribute('aria-expanded', 'false');
     placeholder.setAttribute('aria-hidden', 'true');
     section.classList.remove('frag-expanded');
-
-    setTimeout(() => {
-      fragSection.style.visibility = 'hidden';
-    }, 300); // Wait for opacity transition to complete (0.3s)
   }
 
   function expandContent() {
-    if (!fragSection || !fragContent) return;
-    fragSection.style.visibility = 'visible';
-    fragSection.style.maxHeight = 'none';
-    fragSection.style.paddingBottom = '';
-    const targetHeight = fragSection.scrollHeight;
-    fragSection.style.maxHeight = '0';
-    fragSection.style.paddingBottom = '0';
+    if (!loadedFragment) return;
+    loadedFragment.style.overflow = 'hidden';
+    loadedFragment.style.maxHeight = 'none';
+    const targetHeight = loadedFragment.scrollHeight;
+    loadedFragment.style.maxHeight = '0';
     // Force reflow
     /* eslint-disable-next-line no-unused-vars */
-    const temp = fragSection.offsetHeight;
-    fragSection.style.paddingBottom = '';
-    fragSection.style.maxHeight = `${targetHeight}px`;
+    const temp = loadedFragment.offsetHeight;
+    loadedFragment.style.maxHeight = `${targetHeight}px`;
     toggleButton.setAttribute('aria-expanded', 'true');
     placeholder.setAttribute('aria-hidden', 'false');
     section.classList.add('frag-expanded');
-    setTimeout(() => {
-      fragContent.style.opacity = '1';
-    }, 50);
     const transitionEnd = () => {
-      fragSection.style.maxHeight = 'none';
-      fragSection.removeEventListener('transitionend', transitionEnd);
+      loadedFragment.style.maxHeight = 'none';
+      loadedFragment.style.overflow = '';
+      loadedFragment.removeEventListener('transitionend', transitionEnd);
     };
-    fragSection.addEventListener('transitionend', transitionEnd);
+    loadedFragment.addEventListener('transitionend', transitionEnd);
   }
 
   async function loadAndSetupFragment() {
     toggleButton.disabled = true;
     try {
       await loadFragmentContent(placeholder, fragmentUrl);
-      const loadedFragment = placeholder.querySelector('.fragment');
-      fragSection = loadedFragment?.querySelector(':scope > .section');
+      loadedFragment = placeholder.querySelector('.fragment');
+      const fragSection = loadedFragment?.querySelector(':scope > .section');
       if (!fragSection) {
         toggleButton.disabled = false;
         return false;
       }
-      fragContent = fragSection.querySelector(':scope > *') || fragSection;
-      fragSection.style.overflow = 'hidden';
-      fragSection.style.transition = 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-      fragContent.style.transition = 'opacity 0.3s ease-in-out';
+      loadedFragment.style.transition = 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
       isLoaded = true;
       toggleButton.disabled = false;
       return true;
@@ -279,8 +265,11 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     if (!isLoaded && !isExpanded) {
       const loaded = await loadAndSetupFragment();
       if (!loaded) return;
-      const { decorateSectionAnalytics } = await import('../../../martech/attributes.js');
-      await decorateSectionAnalytics(fragSection, 'collapse-frag', getConfig());
+      const fragSection = placeholder.querySelector('.fragment > .section');
+      if (fragSection) {
+        const { decorateSectionAnalytics } = await import('../../../martech/attributes.js');
+        await decorateSectionAnalytics(fragSection, 'collapse-frag', getConfig());
+      }
       expandContent();
     } else if (isExpanded) {
       collapseContent();
@@ -294,9 +283,7 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     (async () => {
       const loaded = await loadAndSetupFragment();
       if (!loaded) return;
-      fragSection.style.visibility = 'visible';
-      fragSection.style.maxHeight = 'none';
-      fragContent.style.opacity = '1';
+      loadedFragment.style.maxHeight = 'none';
       section.classList.add('frag-expanded');
     })();
   }
