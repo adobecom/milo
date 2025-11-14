@@ -608,7 +608,7 @@ const parseTabsFromMenuSection = async (section, index) => {
 
   const content = section.querySelector('.feds-menu-items') ?? section;
 
-  const columns = content.classList.contains('feds-menu-items')
+  const columns = content.closest('feds-menu-column--group')
     ? [...content.querySelectorAll('ul')]
     : [content];
 
@@ -639,19 +639,6 @@ const parseTabsFromMenuSection = async (section, index) => {
       : {}),
   };
 };
-
-// const promoCrossCloudTab = async (popup) => {
-//   const additionalLinks =
-//   [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
-//   if (!additionalLinks.length) return [];
-//   const tabName = await replaceKey('more', getFedsPlaceholderConfig());
-//   return [{
-//     name: tabName,
-//     links: additionalLinks.map((x) => x.outerHTML).join(''),
-//     daallTab: tabName,
-//     daalhTabContent: tabName,
-//   }];
-// };
 
 export async function getMainMenuPlaceholder() {
   const config = getConfig();
