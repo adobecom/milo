@@ -165,6 +165,25 @@
   flex: 0 0 91px;
 }
 
+.card-horizontal.no-clamp {
+  align-self: stretch;
+}
+
+.card-horizontal.no-clamp .foreground,
+.card-horizontal.no-clamp .foreground > div,
+.card-horizontal.no-clamp .foreground .card-block {
+  height: 100%;
+}
+
+.card-horizontal.no-clamp .foreground .card-block .card-content {
+  -webkit-line-clamp: none;
+}
+
+.card-horizontal.no-clamp:not(.tile) .foreground .card-block .card-image {
+  height: auto;
+  align-self: stretch;
+}
+
 @media screen and (min-width: 600px) {
   .card-horizontal .foreground .card-block {
     gap: var(--spacing-m);
