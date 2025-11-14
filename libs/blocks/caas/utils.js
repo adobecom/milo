@@ -551,8 +551,6 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
         }
       } catch (error) {
         // Fallback to URL path country if GEO IP lookup fails
-        // eslint-disable-next-line no-console
-        console.warn('GEO IP lookup failed for CaaS country detection, using fallback:', error);
         countryStr = fallbackCountry;
       }
     } else if (typeof countryStr === 'object') {
