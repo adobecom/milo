@@ -985,7 +985,12 @@ merch-card[variant="catalog"] [slot="footer"] .spectrum-Link--primary {
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
-    color: var(--color-accent);
+    color: var(--link-color);
+  }
+  
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-description a:focus,
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-description a:hover {
+    color: var(--link-hover-color);
   }
 
   merch-card[variant="mini-compare-chart"] .toggle-icon {
@@ -4502,6 +4507,8 @@ merch-card[variant="mini"] span.renewal-text {
     /* colors */
     --consonant-merch-card-background-color: inherit;
     --consonant-merch-card-border-color: #eaeaea;
+    --link-color: rgb(39, 77, 234);
+    --link-hover-color: rgb(29, 62, 207);
     --color-accent: rgb(59, 99, 251);
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-10: #f6f6f6;
