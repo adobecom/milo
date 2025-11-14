@@ -1,7 +1,11 @@
 import { Landscape, WCS_PROD_URL, WCS_STAGE_URL, PARAM_ENV, PARAM_LANDSCAPE, FF_DEFAULTS } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { Env } from '../src/constants.js';
-import { getPreviewSurface, getSettings } from '../src/settings.js';
+import {
+  getLocaleSettings,
+  getPreviewSurface,
+  getSettings,
+} from '../src/settings.js';
 
 import { expect } from './utilities.js';
 
@@ -180,4 +184,197 @@ describe('getSettings', () => {
       const settings = getSettings(config, mockService);
       expect(settings.preview).to.be.undefined;
     });
+});
+
+describe('getLocaleSettings', () => {
+  it('returns default settings when called without arguments', () => {
+      const result = getLocaleSettings();
+      expect(result).to.deep.equal({
+          locale: `${Defaults.language}_${Defaults.country}`,
+          language: Defaults.language,
+          country: Defaults.country,
+      });
+  });
+
+  it('returns default settings when called with empty object', () => {
+      const result = getLocaleSettings({});
+      expect(result).to.deep.equal({
+          locale: `${Defaults.language}_${Defaults.country}`,
+          language: Defaults.language,
+          country: Defaults.country,
+      });
+  });
+
+  it('extracts language and country from supported locale', () => {
+      const result = getLocaleSettings({ locale: 'fr_FR' });
+      expect(result).to.deep.equal({
+          locale: 'fr_FR',
+          language: 'fr',
+          country: 'FR',
+      });
+  });
+
+  it('extracts language and country from another supported locale', () => {
+      const result = getLocaleSettings({ locale: 'ja_JP' });
+      expect(result).to.deep.equal({
+          locale: 'ja_JP',
+          language: 'ja',
+          country: 'JP',
+      });
+  });
+
+  it('uses provided language and country parameters', () => {
+      const result = getLocaleSettings({ language: 'de', country: 'DE' });
+      expect(result).to.deep.equal({
+          locale: 'de_DE',
+          language: 'de',
+          country: 'DE',
+      });
+  });
+
+  it('uses locale parameter as-is when provided with explicit country', () => {
+      const result = getLocaleSettings({ locale: 'en_US', country: 'GB' });
+      expect(result).to.deep.equal({
+          locale: 'en_US',
+          language: 'en',
+          country: 'GB',
+      });
+  });
+
+  it('uses locale parameter as-is when provided with explicit language', () => {
+      const result = getLocaleSettings({ locale: 'en_US', language: 'fr' });
+      expect(result).to.deep.equal({
+          locale: 'en_US',
+          language: 'fr',
+          country: 'US',
+      });
+  });
+
+  it('uses locale parameter as-is when provided with both explicit language and country', () => {
+      const result = getLocaleSettings({
+          locale: 'en_US',
+          language: 'de',
+          country: 'AT',
+      });
+      expect(result).to.deep.equal({
+          locale: 'en_US',
+          language: 'de',
+          country: 'AT',
+      });
+  });
+
+  it('uses default country when only language is provided', () => {
+      const result = getLocaleSettings({ language: 'en' });
+      expect(result).to.deep.equal({
+          locale: 'en_US',
+          language: 'en',
+          country: Defaults.country,
+      });
+  });
+
+  it('falls back to default locale when only unsupported country is provided', () => {
+      const result = getLocaleSettings({ country: 'FR' });
+      expect(result).to.deep.equal({
+          locale: `${Defaults.language}_${Defaults.country}`,
+          language: Defaults.language,
+          country: 'FR',
+      });
+  });
+
+  it('constructs supported locale when only supported country is provided', () => {
+      const result = getLocaleSettings({ country: 'GB' });
+      expect(result).to.deep.equal({
+          locale: 'en_GB',
+          language: Defaults.language,
+          country: 'GB',
+      });
+  });
+});
+
+describe('getPreviewSurface', () => {
+  it('returns "acom" for wcms-commerce-ims-ro pattern match', () => {
+      const result = getPreviewSurface('wcms-commerce-ims-ro-user-milo');
+      expect(result).to.equal('acom');
+  });
+
+  it('returns "acom" for another wcms-commerce-ims-ro pattern match', () => {
+      const result = getPreviewSurface('wcms-commerce-ims-ro-api-key-123');
+      expect(result).to.equal('acom');
+  });
+
+  it('returns "ccd" for CreativeCloud pattern match', () => {
+      const result = getPreviewSurface('CreativeCloud_Enterprise');
+      expect(result).to.equal('ccd');
+  });
+
+  it('returns "ccd" for another CreativeCloud pattern match', () => {
+      const result = getPreviewSurface('CreativeCloud_Personal');
+      expect(result).to.equal('ccd');
+  });
+
+  it('returns "adobe-home" for CCHome pattern match', () => {
+      const result = getPreviewSurface('CCHome_default');
+      expect(result).to.equal('adobe-home');
+  });
+
+  it('returns "adobe-home" for another CCHome pattern match', () => {
+      const result = getPreviewSurface('CCHome_v2');
+      expect(result).to.equal('adobe-home');
+  });
+
+  it('returns wcsApiKey when no pattern matches and no previewParam', () => {
+      const apiKey = 'custom-api-key-123';
+      const result = getPreviewSurface(apiKey);
+      expect(result).to.equal(apiKey);
+  });
+
+  it('returns wcsApiKey when no pattern matches and previewParam is undefined', () => {
+      const apiKey = 'another-custom-key';
+      const result = getPreviewSurface(apiKey, undefined);
+      expect(result).to.equal(apiKey);
+  });
+
+  it('returns wcsApiKey when no pattern matches and previewParam is null', () => {
+      const apiKey = 'test-api-key';
+      const result = getPreviewSurface(apiKey, null);
+      expect(result).to.equal(apiKey);
+  });
+
+  it('returns previewParam when no pattern matches and previewParam is provided', () => {
+      const apiKey = 'unmatched-key';
+      const previewParam = 'custom-surface';
+      const result = getPreviewSurface(apiKey, previewParam);
+      expect(result).to.equal(previewParam);
+  });
+
+  it('returns empty string when no pattern matches and previewParam is empty string', () => {
+      const apiKey = 'test-key';
+      const result = getPreviewSurface(apiKey, '');
+      expect(result).to.equal('');
+  });
+
+  it('returns previewParam when no pattern matches and previewParam is 0', () => {
+      const apiKey = 'test-key';
+      const result = getPreviewSurface(apiKey, 0);
+      expect(result).to.equal(0);
+  });
+
+  it('returns previewParam when no pattern matches and previewParam is false', () => {
+      const apiKey = 'test-key';
+      const result = getPreviewSurface(apiKey, false);
+      expect(result).to.equal(false);
+  });
+
+  it('prioritizes pattern match over previewParam', () => {
+      const result = getPreviewSurface(
+          'wcms-commerce-ims-ro-test',
+          'should-be-ignored',
+      );
+      expect(result).to.equal('acom');
+  });
+
+  it('handles pattern match with special characters', () => {
+      const result = getPreviewSurface('CreativeCloud_!@#$%');
+      expect(result).to.equal('ccd');
+  });
 });
