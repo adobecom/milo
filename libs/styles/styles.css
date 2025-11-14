@@ -819,6 +819,10 @@ body.mweb-enabled {
 
 h1, h2, h3, h4, h5, h6 {
   scroll-margin-top: var(--feds-totalheight-nav);
+
+  span.hidden {
+    display: none;
+  }
 }
 
 :is(h1, h2, h3, h4, h5, h6) strong {
