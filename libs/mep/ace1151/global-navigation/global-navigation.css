@@ -2170,16 +2170,15 @@ header.test-nav .feds-popup.loading.hide {
 
 /* adobe clean display css overrides */ 
 :root {
-  /* --heading-font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif; */
-  --heading-font-family: serif;
+  --heading-font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
-header.global-navigation :is(
-  div.tabs[role="tablist"] > button > span:not([class]), 
-  div[role="listitem"] > :is(button, a),
-  .tab-panel .tab-column > a.feds-navLink .feds-navLink-title, 
-  .tab-panel .tab-column > a.feds-navLink:not(:has(.feds-navLink-title)),
-  .feds-menu-column ul > li > a) { 
-    font-family: var(--heading-font-family);
-  }
-
+header.global-navigation div.tabs[role="tablist"] > button > span:not([class]), 
+header.global-navigation div.feds-nav[role="list"] [role="listitem"] > :is(button, a),
+header.global-navigation .tab-panel .tab-column > a.feds-navLink .feds-navLink-title, 
+header.global-navigation .tab-panel .tab-column > a.feds-navLink:not(:has(.feds-navLink-title)),
+header.global-navigation .feds-menu-column ul > li > a,
+header.global-navigation .feds-content-description { 
+  font-family: var(--heading-font-family);
+  /* color: green !important; */
+}
