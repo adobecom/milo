@@ -1,7 +1,7 @@
 import { VariantLayout } from './variant-layout';
-import { html, css, nothing } from 'lit';
+import { html, css, unsafeCSS, nothing } from 'lit';
 import { CSS } from './plans-v2.css.js';
-import Media from '../media.js';
+import Media, { MOBILE_LANDSCAPE, TABLET_DOWN } from '../media.js';
 import {
     EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED,
     SELECTOR_MAS_INLINE_PRICE,
@@ -151,7 +151,7 @@ export class PlansV2 extends VariantLayout {
         this.adjustTitleWidth();
         this.adjustAddon();
         this.adjustCallout();
-        this.removeShortDescriptionLabel();
+        this.updateShortDescriptionVisibility();
         if (!this.legalAdjusted) {
             await this.adjustLegal();
         }
@@ -219,7 +219,6 @@ export class PlansV2 extends VariantLayout {
 
     get shortDescriptionLabel() {
         const shortDescElement = this.card.querySelector('[slot="short-description"]');
-        if (!shortDescElement) return 'What you get:';
         
         const boldElement = shortDescElement.querySelector('strong, b');
         if (boldElement?.textContent?.trim()) {
@@ -232,15 +231,24 @@ export class PlansV2 extends VariantLayout {
         }
         
         const firstLine = shortDescElement.textContent?.trim().split('\n')[0].trim();
-        return firstLine || 'What you get:';
+        return firstLine
     }
 
-    removeShortDescriptionLabel() {
+    updateShortDescriptionVisibility() {
         const shortDescElement = this.card.querySelector('[slot="short-description"]');
         if (!shortDescElement) return;
-        
-        const boldElements = shortDescElement.querySelectorAll('strong, b');
-        boldElements.forEach(el => el.remove());
+
+        // Find the first bold or paragraph element
+        const firstElement = shortDescElement.querySelector('strong, b, p');
+        if (!firstElement) return;
+
+        // On mobile, hide the first element (it's shown in the toggle label)
+        // On desktop, show it (it's part of the content)
+        if (Media.isDesktopOrUp) {
+            firstElement.style.display = '';
+        } else {
+            firstElement.style.display = 'none';
+        }
     }
 
     toggleShortDescription() {
@@ -264,9 +272,7 @@ export class PlansV2 extends VariantLayout {
             <div class="short-description-divider"></div>
             <div class="short-description-toggle" @click=${this.toggleShortDescription}>
                 <span class="toggle-label">${this.shortDescriptionLabel}</span>
-                <span class="toggle-icon ${this.shortDescriptionExpanded ? 'expanded' : ''}">
-                    ${this.shortDescriptionExpanded ? '−' : '+'}
-                </span>
+                <span class="toggle-icon ${this.shortDescriptionExpanded ? 'expanded' : ''}"></span>
             </div>
             <div class="short-description-content ${this.shortDescriptionExpanded ? 'expanded' : ''}">
                 <slot name="short-description"></slot>
@@ -281,18 +287,19 @@ export class PlansV2 extends VariantLayout {
     }
 
     connectedCallbackHook() {
-        const handleMediaChange = () => {
+        this.handleMediaChange = () => {
             this.adaptForMedia();
+            this.updateShortDescriptionVisibility();
             this.card.requestUpdate();
         };
 
-        Media.matchMobile.addEventListener('change', this.adaptForMedia);
-        Media.matchDesktopOrUp.addEventListener('change', handleMediaChange);
+        Media.matchMobile.addEventListener('change', this.handleMediaChange);
+        Media.matchDesktopOrUp.addEventListener('change', this.handleMediaChange);
     }
 
     disconnectedCallbackHook() {
-        Media.matchMobile.removeEventListener('change', this.adaptForMedia);
-        Media.matchDesktopOrUp.removeEventListener('change', this.adaptForMedia);
+        Media.matchMobile.removeEventListener('change', this.handleMediaChange);
+        Media.matchDesktopOrUp.removeEventListener('change', this.handleMediaChange);
     }
 
     renderLayout() {
@@ -503,12 +510,18 @@ export class PlansV2 extends VariantLayout {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            font-size: 24px;
-            font-weight: 300;
-            color: var(--spectrum-gray-700, #4B4B4B);
+            width: 28px;
+            height: 28px;
             flex-shrink: 0;
+            background-image: url('data:image/svg+xml,<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="12" fill="%23F8F8F8"/><path d="M14 26C7.38258 26 2 20.6174 2 14C2 7.38258 7.38258 2 14 2C20.6174 2 26 7.38258 26 14C26 20.6174 20.6174 26 14 26ZM14 4.05714C8.51696 4.05714 4.05714 8.51696 4.05714 14C4.05714 19.483 8.51696 23.9429 14 23.9429C19.483 23.9429 23.9429 19.483 23.9429 14C23.9429 8.51696 19.483 4.05714 14 4.05714Z" fill="%23292929"/><path d="M18.5484 12.9484H15.0484V9.44844C15.0484 8.86875 14.5781 8.39844 13.9984 8.39844C13.4188 8.39844 12.9484 8.86875 12.9484 9.44844V12.9484H9.44844C8.86875 12.9484 8.39844 13.4188 8.39844 13.9984C8.39844 14.5781 8.86875 15.0484 9.44844 15.0484H12.9484V18.5484C12.9484 19.1281 13.4188 19.5984 13.9984 19.5984C14.5781 19.5984 15.0484 19.1281 15.0484 18.5484V15.0484H18.5484C19.1281 15.0484 19.5984 14.5781 19.5984 13.9984C19.5984 13.4188 19.1281 12.9484 18.5484 12.9484Z" fill="%23292929"/></svg>');
+            background-size: 28px 28px;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 0.3s ease;
+        }
+
+        :host([variant='plans-v2']) .short-description-toggle .toggle-icon.expanded {
+            background-image: url('data:image/svg+xml,<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="12" fill="%23292929"/><path d="M14 26C7.38258 26 2 20.6174 2 14C2 7.38258 7.38258 2 14 2C20.6174 2 26 7.38258 26 14C26 20.6174 20.6174 26 14 26ZM14 4.05714C8.51696 4.05714 4.05714 8.51696 4.05714 14C4.05714 19.483 8.51696 23.9429 14 23.9429C19.483 23.9429 23.9429 19.483 23.9429 14C23.9429 8.51696 19.483 4.05714 14 4.05714Z" fill="%23292929"/><path d="M9 14L19 14" stroke="%23F8F8F8" stroke-width="2" stroke-linecap="round"/></svg>');
         }
 
         :host([variant='plans-v2']) .short-description-content {
@@ -654,6 +667,24 @@ export class PlansV2 extends VariantLayout {
 
         :host([variant='plans-v2'][size='wide']) footer ::slotted(a:last-child) {
             margin-right: 0;
+        }
+
+        @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)}, ${unsafeCSS(TABLET_DOWN)} {
+            :host([variant='plans-v2']) {
+                --merch-card-plans-v2-padding: 26px 16px;
+            }
+
+            :host([variant='plans-v2']) .short-description-toggle {
+                padding: 16px;
+            }
+
+            :host([variant='plans-v2']) .short-description-content {
+                padding: 0 16px;
+            }
+
+            :host([variant='plans-v2']) .short-description-content.expanded {
+                padding: 24px 16px;
+            }
         }
     `;
 
