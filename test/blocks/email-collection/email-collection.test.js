@@ -28,26 +28,47 @@ function setIms(signedIn = true) {
   window.adobeIMS = {
     isSignedInUser: () => signedIn,
     signIn: () => {},
-    getProfile: () => ({
+    getProfile: () => (signedIn ? {
       countryCode: 'US',
       first_name: 'Test first name',
       last_name: 'Test last name',
       email: 'test@test.com',
       userId: 'Test',
-    }),
+    } : {}),
   };
 }
 
-function setSatellite(martechOff = false) {
-  // eslint-disable-next-line
-  window.__satelliteLoadedPromise = {
-    cookie: { get: () => (martechOff ? undefined : 'test|test') } };
+function setGetIdentity() {
+  window.alloy_getIdentity = { identity: { ECID: 'test-ecid' } };
+}
+
+function setAdobePrivacy(hasConsent = true) {
+  window.adobePrivacy = { activeCookieGroups: () => (hasConsent ? ['C0001', 'C0004'] : ['C0001']) };
+}
+
+function setAlloyAll() {
+  window.alloy_all = {
+    data: {
+      _adobe_corpnew: {
+        cmp: { state: 'test' },
+        otherConsents: {
+          configuration: {
+            performance: true,
+            functional: true,
+            advertising: true,
+          },
+        },
+      },
+    },
+  };
 }
 
 describe('Email collection', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    setSatellite();
+    setGetIdentity();
+    setAdobePrivacy();
+    setAlloyAll();
     setIms();
     mockFetch({});
   });
@@ -55,6 +76,8 @@ describe('Email collection', () => {
   afterEach(() => {
     document.body.innerHTML = '';
     restoreFetch();
+    setAdobePrivacy();
+    setIms();
   });
 
   it('Should redirect user to the IMS if not signed in.', async () => {
@@ -65,6 +88,16 @@ describe('Email collection', () => {
     await init(block);
     await sleep();
     expect(window.adobeIMS.signIn.called).to.be.true;
+  });
+
+  it('Should not redirect user to the IMS if not signed in and if form is anonymous', async () => {
+    setIms(false);
+    sinon.spy(window.adobeIMS, 'signIn');
+    window.location.hash = 'modal';
+    const block = document.querySelector('#mailing-list');
+    await init(block);
+    await sleep();
+    expect(window.adobeIMS.signIn.called).to.be.false;
   });
 
   it('Should redirect user to the IMS if runtime reutrns 401', async () => {
@@ -152,6 +185,12 @@ describe('Email collection', () => {
           disabled: '',
         },
       },
+      state: {
+        tag: 'select',
+        label: 'State',
+        url: 'https://main--federal--adobecom.aem.page/federal/email-collection/form-config.json?sheet=states&limit=2000',
+        attributes: { required: 'true' },
+      },
       organization: {
         label: 'Organization',
         attributes: {
@@ -170,10 +209,10 @@ describe('Email collection', () => {
     };
 
     const inputs = form.querySelectorAll('.input-container');
-    expect(inputs.length).to.be.equal(6);
+    expect(inputs.length).to.be.equal(7);
     inputs.forEach((inputContainer) => {
       const label = inputContainer.querySelector('label');
-      const input = inputContainer.querySelector('input');
+      const input = inputContainer.querySelector('input, select');
       const error = inputContainer.querySelector('div[id^="error"]');
       expect(label).to.exist;
       expect(input).to.exist;
@@ -237,11 +276,84 @@ describe('Email collection', () => {
     occupation.value = 'Test';
     const organization = block.querySelector('form input#organization');
     organization.value = 'Test';
+    const state = block.querySelector('form select#state');
+    state.value = 'NY';
     submitButton.click();
     await sleep(10);
     const foregroundText = block.querySelectorAll('.foreground > .text');
     expect(foregroundText[0].classList.contains('hidden')).to.be.true;
     expect(foregroundText[1].classList.contains('hidden')).to.be.false;
+  });
+
+  it('Should submit form and not send ecid if there is no cookie consent', async () => {
+    setIms(false);
+    setAdobePrivacy(false);
+    const fetchSpy = sinon.spy(window, 'fetch');
+
+    const block = document.querySelector('#mailing-list');
+    await init(block);
+    await sleep();
+    const submitButton = block.querySelector('form button[type="submit"]');
+    const email = block.querySelector('form input#email');
+    email.value = 'test@test.com';
+    submitButton.click();
+    await sleep(10);
+    const submitFetch = fetchSpy.getCalls()[2];
+    const { body } = submitFetch.args[1];
+    expect(JSON.parse(body).ecid).to.be.undefined;
+  });
+
+  it('Should submit form and send ecid if there is cookie consent', async () => {
+    setIms(false);
+    setAdobePrivacy(true);
+    const fetchSpy = sinon.spy(window, 'fetch');
+
+    const block = document.querySelector('#mailing-list');
+    await init(block);
+    await sleep();
+    const submitButton = block.querySelector('form button[type="submit"]');
+    const email = block.querySelector('form input#email');
+    email.value = 'test@test.com';
+    submitButton.click();
+    await sleep(10);
+    const submitFetch = fetchSpy.getCalls()[2];
+    const { body } = submitFetch.args[1];
+    expect(JSON.parse(body).ecid).to.equal('test-ecid');
+  });
+
+  it('Should submit form and not send guid if user is not signed in', async () => {
+    setIms(false);
+    const fetchSpy = sinon.spy(window, 'fetch');
+
+    const block = document.querySelector('#mailing-list');
+    await init(block);
+    await sleep();
+    const submitButton = block.querySelector('form button[type="submit"]');
+    const email = block.querySelector('form input#email');
+    email.value = 'test@test.com';
+    submitButton.click();
+    await sleep(10);
+    const submitFetch = fetchSpy.getCalls()[2];
+    const { body } = submitFetch.args[1];
+    expect(JSON.parse(body).guid).to.be.undefined;
+  });
+
+  it('Should submit form and send guid if user is signed in', async () => {
+    setIms(true);
+    setAdobePrivacy(true);
+    const fetchSpy = sinon.spy(window, 'fetch');
+
+    const block = document.querySelector('#mailing-list');
+    await init(block);
+    await sleep();
+    const submitButton = block.querySelector('form button[type="submit"]');
+    const email = block.querySelector('form input#email');
+    email.value = 'test@test.com';
+    submitButton.click();
+    await sleep(10);
+    const submitFetch = fetchSpy.getCalls()[3];
+    const { body } = submitFetch.args[1];
+    expect(JSON.parse(body).guid).to.be.equal('Test');
   });
 
   it('Should show hide message/form', async () => {
@@ -293,24 +405,6 @@ describe('Email collection', () => {
     expect(text[0].classList.contains('hidden')).to.be.false;
     expect(text[1].classList.contains('hidden')).to.be.true;
     expect(text[2].classList.contains('hidden')).to.be.true;
-  });
-
-  it('Should submit form and show error message if martech is disabled', async () => {
-    setSatellite(true);
-    const block = document.querySelector('#waitlist');
-    await init(block);
-    await sleep();
-    const submitButton = block.querySelector('form button[type="submit"]');
-    const occupation = block.querySelector('form input#occupation');
-    occupation.value = 'Test';
-    const organization = block.querySelector('form input#organization');
-    organization.value = 'Test';
-    submitButton.click();
-    await sleep(10);
-    const foregroundText = block.querySelectorAll('.foreground > .text');
-    expect(foregroundText[0].classList.contains('hidden')).to.be.true;
-    expect(foregroundText[1].classList.contains('hidden')).to.be.true;
-    expect(foregroundText[2].classList.contains('hidden')).to.be.false;
   });
 
   it('Should submit form and show subscribed message if user is subscribed', async () => {

@@ -3,7 +3,6 @@ import { decorateButtons } from '../../utils/decorate.js';
 import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
 import { closeModal } from '../modal/modal.js';
 import {
-  getIMS,
   getIMSProfile,
   getApiEndpoint,
   createAriaLive,
@@ -14,12 +13,14 @@ import {
   disableForm,
   runtimePost,
   redirectToSignIn,
+  isUserGuest,
   FORM_FIELDS,
 } from './utils.js';
 
 const miloConfig = getConfig();
 const FORM_ID = 'email-collection-form';
 let dialog;
+let signIn = true;
 
 function showHideSubscribedMessage(el, subscribed, email) {
   el.querySelector('.button-container')?.classList.toggle('hidden', subscribed);
@@ -195,8 +196,8 @@ async function decorateInput(key, value) {
 }
 
 async function submitForm(form) {
-  const ims = await getIMS();
-  if (!ims.isSignedInUser()) {
+  const isGuest = await isUserGuest();
+  if (signIn && isGuest) {
     await redirectToSignIn(dialog);
     return;
   }
@@ -217,26 +218,29 @@ async function submitForm(form) {
     const { imsClientId } = miloConfig;
     const { mpsSname } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
-    const { country } = await getIMSProfile();
+    const { country: countryField } = getFormData('fields');
+    const { country, userId: guid } = await getIMSProfile();
 
-    const { guid, ecid } = await getAEPData();
+    const { ecid, aepCmp, aepOtherConsents } = await getAEPData();
     const bodyData = {
       ecid,
       guid,
       occupation,
       organization,
       email,
-      countryCode: country,
       state,
       consentId,
       mpsSname,
       appClientId: imsClientId,
+      aepCmp,
+      aepOtherConsents,
+      isGuest,
+      ...(countryField && { countryCode: country }),
     };
 
     const { error, data, status } = await runtimePost(
       getApiEndpoint(),
       bodyData,
-      ['occupation', 'organization', 'state'],
     );
 
     if (error) {
@@ -261,7 +265,7 @@ function setMaxHeightToForm(formContainer, restore) {
     formContainer.style.maxHeight = '';
     return;
   }
-  const { height } = window.getComputedStyle(formContainer);
+  const { height } = window.getComputedStyle(formContainer.parentElement);
   const mq = window.matchMedia('(min-width: 700px)');
   if (!height) return;
 
@@ -341,9 +345,11 @@ async function decorateConsentString() {
 
 async function decorateForm(el, foreground) {
   const fields = getFormData('fields');
-  const text = foreground.querySelector('.text');
+  const text = foreground.querySelector('.text > div');
+  const isMailingList = Object.keys(fields).length === 1;
+  if (isMailingList) el.classList.add('mailing-list');
 
-  const shouldSplitFirstRow = !el.classList.contains('large-image');
+  const shouldSplitFirstRow = !el.classList.contains('large-image') && !isMailingList;
   const form = createTag('form', { id: FORM_ID, novalidate: true });
   const inputs = [];
   for (const [key, value] of Object.entries(fields)) {
@@ -443,6 +449,7 @@ function decorateText(elChildren) {
     const isForeground = child === foreground;
     const text = isForeground ? child.lastElementChild : child.firstElementChild;
     text.classList.add('text');
+    const contentContainer = createTag('div');
     decorateButtons(child);
     [...text.children].forEach((textEl) => {
       if (textEl.classList.contains('action-area')) {
@@ -456,20 +463,24 @@ function decorateText(elChildren) {
       }
     });
 
+    contentContainer.append(...text.children);
+
+    text.append(contentContainer);
+    foreground.appendChild(text);
     if (isForeground) return;
 
     text.classList.add('hidden');
-    text.parentElement.remove();
-    foreground.appendChild(text);
-    if (childIndex === 1) decorateSubscribedMessage(text);
+    if (childIndex === 1) decorateSubscribedMessage(contentContainer);
   });
 }
 
 async function checkIsSubscribed() {
+  const isGuest = await isUserGuest();
+  if (isGuest) return false;
   const { mpsSname } = getFormData('metadata');
   const { email } = await getIMSProfile();
 
-  const { data, error, status } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname });
+  const { data, error, status } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname, isGuest });
   const { subscribed } = data;
 
   if (subscribed) showHideMessage({ subscribed, email });
@@ -483,8 +494,8 @@ async function checkIsSubscribed() {
 }
 
 async function decorate(el, blockChildren) {
-  const ims = await getIMS();
-  if (!ims.isSignedInUser()) {
+  const isGuest = await isUserGuest();
+  if (signIn && isGuest) {
     await redirectToSignIn(dialog);
     return false;
   }
@@ -524,6 +535,7 @@ export default async function init(el) {
   if (configErrMessage) throw new Error(configErrMessage);
   const correctMessageEls = setMessageEls(blockChildren);
   if (!correctMessageEls) throw new Error('Missing success/error message');
+  signIn = getFormData('metadata')?.signIn !== 'off';
 
   decorate(el, blockChildren).then((isDecorated) => {
     if (!isDecorated) return;

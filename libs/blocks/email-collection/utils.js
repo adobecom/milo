@@ -2,6 +2,7 @@ import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '..
 import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
+  dev: 'https://14257-miloemailcollection-dev.adobeioruntime.net/api/v1/web/email-collection',
   nala: 'https://14257-miloemailcollection-stage.adobeioruntime.net/api/v1/web/email-collection',
   local: 'https://www.stage.adobe.com/milo-email-collection-api',
   stage: 'https://www.stage.adobe.com/milo-email-collection-api',
@@ -11,6 +12,7 @@ const FORM_METADATA = {
   'email-collection-test': 'emailCollectionTest',
   'mps-sname': 'mpsSname',
   'subscription-name': 'subscriptionName',
+  'sign-in': 'signIn',
 };
 
 export function localizeFederatedUrl(url) {
@@ -248,6 +250,10 @@ export function getApiEndpoint(action = 'submit') {
   const { emailCollectionTest } = getFormData('metadata');
   let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
   if (emailCollectionTest) endPoint = API_ENDPOINTS.nala;
+  if (env.name !== 'prod') {
+    const params = new URLSearchParams(window.location.search);
+    endPoint = API_ENDPOINTS[params.get('email-collection-env')] ?? endPoint;
+  }
   return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
 }
 
@@ -257,14 +263,45 @@ export function disableForm(form, disable = true) {
   });
 }
 
+function awaitWindowProperty(property, timeout = 5000, interval = 100) {
+  if (window[property]) return window[property];
+
+  return new Promise((resolve) => {
+    let timeoutRef;
+    const intervalRef = setInterval(() => {
+      if (!window[property]) return;
+      clearTimeout(timeoutRef);
+      clearInterval(intervalRef);
+      resolve(window[property]);
+    }, interval);
+
+    timeoutRef = setTimeout(() => {
+      clearInterval(intervalRef);
+      resolve(window[property]);
+    }, timeout);
+  });
+}
+
 export async function getAEPData() {
-  const ECID_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
   try {
+    const [adobePrivacy, alloyIdentity, alloyAll] = await Promise.all([
+      awaitWindowProperty('adobePrivacy'),
+      awaitWindowProperty('alloy_getIdentity'),
+      awaitWindowProperty('alloy_all'),
+    ]);
+
+    const privacyCookieGroups = adobePrivacy?.activeCookieGroups() || [];
+    const hasMarketingConsent = privacyCookieGroups.includes('C0004');
+    const { identity } = alloyIdentity || {};
+
     // eslint-disable-next-line
-    const satellite = await window.__satelliteLoadedPromise;
-    const ecid = decodeURIComponent(satellite?.cookie.get(ECID_COOKIE))?.split('|')[1];
-    const { userId: guid } = await getIMSProfile();
-    return { guid, ecid };
+    const { cmp, otherConsents } = alloyAll?.data?._adobe_corpnew || {};
+
+    return {
+      ...(hasMarketingConsent && { ecid: identity?.ECID }),
+      aepCmp: cmp,
+      aepOtherConsents: otherConsents,
+    };
   } catch (e) {
     return {};
   }
@@ -287,11 +324,7 @@ export async function redirectToSignIn(dialog) {
   if (dialog) closeModal(dialog);
 }
 
-export async function runtimePost(url, data, notRequiredData = []) {
-  const hasMissingData = Object.entries(data)
-    .find(([key, value]) => (value === undefined && !notRequiredData.includes(key)));
-  if (hasMissingData) return { error: 'Request body is missing required data' };
-
+export async function runtimePost(url, data) {
   const token = await getIMSAccessToken();
   try {
     const req = await fetch(url, {
@@ -312,4 +345,9 @@ export async function runtimePost(url, data, notRequiredData = []) {
   } catch (e) {
     return { error: e.message };
   }
+}
+
+export async function isUserGuest() {
+  const ims = await getIMS();
+  return !ims.isSignedInUser();
 }
