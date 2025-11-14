@@ -311,6 +311,23 @@ header.global-navigation {
   white-space: nowrap;
 }
 
+@media (min-width: 900px) {
+  .feds-cta--primary, 
+  .feds-cta--secondary, 
+  .feds-topnav--overflowing .feds-cta--primary,
+  .feds-topnav--overflowing .feds-cta--secondary {
+    white-space: normal;
+    height: initial;
+    min-height: 32px;
+    line-height: 1.25em;
+    max-width: 100%;
+  }
+  .feds-popup .feds-menu-container .feds-menu-content > .feds-menu-column:not(:has(.feds-promo-wrapper)) {
+    flex: 1;
+    min-width: 150px;
+  }
+}
+
 .feds-cta--secondary:hover {
   border-color: #C6C6C6;
   background: #E9E9E9;
