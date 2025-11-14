@@ -2,7 +2,6 @@ import { getConfig, getFederatedContentRoot } from '../../utils/utils.js';
 
 const iconCache = new Map();
 let miloIconsPromise;
-const LANA_CLIENT_ID = 'feds-milo';
 
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
@@ -74,7 +73,7 @@ async function fetchFederalIcon(iconName) {
     iconCache.set(iconName, svgElement);
     return svgElement;
   } catch (error) {
-    window?.lana.log(`Error fetching federal SVG for ${iconName}, falling back to Milo icon: ${error}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
+    window?.lana.log(`Error fetching federal SVG for ${iconName}, falling back to Milo icon: ${error}`, { tags: 'icons', errorType: 'i' });
     return null;
   }
 }
@@ -93,7 +92,7 @@ async function fetchMiloIcon(iconName) {
     return icon;
   }
 
-  window?.lana.log(`No fallback Milo icon found for ${iconName}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
+  window?.lana.log(`No fallback Milo icon found for ${iconName}`, { tags: 'icons', errorType: 'i' });
   return null;
 }
 
@@ -146,7 +145,7 @@ export function fetchIconList(url) {
     .then((resp) => resp.json())
     .then((json) => json.data || json.content.data)
     .catch((error) => {
-      window?.lana.log(`Failed to fetch iconList: ${error}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
+      window?.lana.log(`Failed to fetch iconList: ${error}`, { tags: 'icons', errorType: 'i' });
       return [];
     });
 }
