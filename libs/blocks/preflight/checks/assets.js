@@ -4,7 +4,7 @@ import { createTag } from '../../../utils/utils.js';
 const maxFullWidth = 1920;
 const assetsCache = new Map();
 
-function loadImage(asset) {
+export function loadImage(asset) {
   if (asset.complete) return Promise.resolve();
   asset.setAttribute('loading', 'eager');
 
