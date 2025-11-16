@@ -207,7 +207,10 @@ export async function initiatePromotion(baseUrl, setup) {
 }
 
 export async function fetchPromoteStatus(baseUrl, repo, experienceName) {
-  const statusUrl = `${baseUrl}/file-status.json?showContent=graybox_promote/${repo}/${experienceName}/status.json`;
+  // Handle special case for repo 'cc-graybox' where the sharepoint folder is 'www-graybox'.
+  // Only for CC, the repo and sharepoint folder names don't match hence map to the correct sharepoint folder. 
+  const sharepointRootFolder = `${repo}` === 'cc-graybox' ? 'www-graybox' : `${repo}`;
+  const statusUrl = `${baseUrl}/file-status.json?showContent=graybox_promote/${sharepointRootFolder}/${experienceName}/status.json`;
   const response = await fetch(statusUrl);
   if (!response.ok) throw new Error('Failed to fetch promote status');
   return response.json();
