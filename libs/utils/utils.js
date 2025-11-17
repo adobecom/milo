@@ -611,7 +611,6 @@ export function localizeLink(
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, languages, prodDomains } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
-    debugger;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
@@ -1866,9 +1865,9 @@ export async function loadArea(area = document) {
     // what happens if we load a fragment
 
   }
-  await response;
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const json = await response.json();
+  const resolvedResponse = await response;
+  if (!resolvedResponse.ok) throw new Error(`HTTP ${resolvedResponse.status}`);
+  const json = await resolvedResponse.json();
   const sqi = await loadSiteQueryIndexes();
   console.log(sqi);
   if (isDoc) {
