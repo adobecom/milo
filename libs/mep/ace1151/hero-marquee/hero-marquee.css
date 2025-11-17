@@ -312,7 +312,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 /* Hacky s2a Fix */
 @media (max-width: 1199px) {
   .hero-marquee.s2a-hero-marquee > .foreground {
-    margin-top: -143px;
+    margin-top: -161px;
   }
 
   .hero-marquee.s2a-hero-marquee .foreground > .copy {

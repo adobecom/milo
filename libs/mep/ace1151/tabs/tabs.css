@@ -274,6 +274,9 @@
   margin-inline-start: 24px;
 }
 
+.tabs:is(.no-top-border, .no-border) .tabList,
+.tabs:is(.no-top-border, .no-border) .paddle,
+.tabs:is(.no-bottom-border, .no-border) .tab-content,
 .tabs.quiet:is(.no-top-border, .no-border) .tabList,
 .tabs.quiet:is(.no-top-border, .no-border) .paddle,
 .tabs.quiet:is(.no-bottom-border, .no-border) .tab-content {
