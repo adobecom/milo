@@ -4,6 +4,7 @@ import General from './panels/general.js';
 import SEO from './panels/seo.js';
 import Accessibility from './accessibility/accessibility.js';
 import Martech from './panels/martech.js';
+import Merch from './panels/merch.js';
 import Performance from './panels/performance.js';
 import Assets from './panels/assets.js';
 
@@ -14,6 +15,7 @@ const tabs = signal([
   { title: 'General', selected: true },
   { title: 'SEO' },
   { title: 'Martech' },
+  { title: 'M@S' },
   { title: 'Accessibility' },
   { title: 'Performance' },
   { title: 'Assets' },
@@ -34,6 +36,8 @@ function setPanel(title) {
       return html`<${SEO} />`;
     case 'Martech':
       return html`<${Martech} />`;
+    case 'M@S':
+      return html`<${Merch} />`;
     case 'Accessibility':
       return html`<${Accessibility} />`;
     case 'Performance':

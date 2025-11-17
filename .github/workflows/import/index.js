@@ -171,6 +171,9 @@ const projectExclude = {
   'da-express-milo': [
     '.json',
   ],
+  'da-dc': [
+    '.json',
+  ],
 };
 const redirectsUrls = {
   'da-express-milo': `${importFrom}/redirects.json?limit=99999`,
