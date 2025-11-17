@@ -449,19 +449,34 @@ export async function loadLanguageConfig() {
   return {};
 }
 
-export async function loadSiteQueryIndexes() {
+export async function loadSiteQueryIndexes(finalPerfTest) {
   if (siteQueryIndexes) return siteQueryIndexes;
 
   const domainString = window.location.href.includes('.aem.live') ? 'live' : 'page';
   try {
-    const requests = await Promise.all([
-      fetch(`https://main--cc--adobecom.aem.${domainString}/cc-shared/assets/query-index.json`),
-      // fetch(`https://main--dc--adobecom.aem.${domainString}/dc-shared/assets/query-index.json`),
-      // fetch(`https://main--da-bacom--adobecom.aem.${domainString}/query-index.json`),
-      // fetch(`https://main--express-milo--adobecom.aem.${domainString}/express/query-index.json`),
-      // fetch(`https://main--homepage--adobecom.aem.${domainString}/homepage/query-index.json`),
-    ]);
-    return requests;
+    let requests;
+    let otherRequests;
+    if (finalPerfTest === 'on') {
+      requests = Promise.all([
+        fetch(`https://main--cc--adobecom.aem.${domainString}/cc-shared/assets/query-index.json`),
+      ]);
+      otherRequests = Promise.all([
+        fetch(`https://main--dc--adobecom.aem.${domainString}/dc-shared/assets/query-index.json`),
+        fetch(`https://main--da-bacom--adobecom.aem.${domainString}/query-index.json`),
+        fetch(`https://main--express-milo--adobecom.aem.${domainString}/express/query-index.json`),
+        fetch(`https://main--homepage--adobecom.aem.${domainString}/homepage/query-index.json`),
+      ]);
+    } else {
+      requests = Promise.all([
+        fetch(`https://main--cc--adobecom.aem.${domainString}/cc-shared/assets/query-index.json`),
+        fetch(`https://main--dc--adobecom.aem.${domainString}/dc-shared/assets/query-index.json`),
+        fetch(`https://main--da-bacom--adobecom.aem.${domainString}/query-index.json`),
+        fetch(`https://main--express-milo--adobecom.aem.${domainString}/express/query-index.json`),
+        fetch(`https://main--homepage--adobecom.aem.${domainString}/homepage/query-index.json`),
+      ]);
+    }
+
+    return [requests, otherRequests];
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
@@ -1875,7 +1890,7 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-  const { perfTest, fasterPerfOption } = Object.fromEntries(PAGE_URL.searchParams);
+  const { perfTest, fasterPerfOption, finalPerfTest } = Object.fromEntries(PAGE_URL.searchParams);
   let response;
   if (perfTest === 'on' && !fasterPerfOption) {
     response = fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
@@ -1899,13 +1914,15 @@ export async function loadArea(area = document) {
     // what happens if we load a fragment
 
   }
+  let sqi;
   if (perfTest === 'on') {
     if (!fasterPerfOption) {
       const resolvedResponse = await response;
       if (!resolvedResponse.ok) throw new Error(`HTTP ${resolvedResponse.status}`);
       const json = await resolvedResponse.json();
     }
-    const sqi = await loadSiteQueryIndexes();
+    sqi = await loadSiteQueryIndexes(finalPerfTest);
+    await sqi[0];
   }
   const endTime = performance.timeOrigin + performance.now();
   console.log(`Call to query indexes took ${endTime - startTime} milliseconds.`);
@@ -1923,6 +1940,9 @@ export async function loadArea(area = document) {
     const isLastSection = section.idx === sections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
       lcpSectionId = section.idx;
+    }
+    if (lcpSectionId !== section.idx && sqi && sqi[1]) {
+      await sqi[1];
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
