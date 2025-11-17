@@ -667,7 +667,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .stic
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--header,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content > div[role = "tabpanel"] > a.feds-cta,
-header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content div[role = "tabpanel"] a.feds-cta {
+header .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content div[role = "tabpanel"] a.feds-cta {
   translate: 0 12px;
   opacity: 0;
   animation: slideup 0.6s ease, fadein 0.8s ease;
@@ -721,7 +721,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .tab-
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-cta--primary {
   max-width: 200px;
   min-width: 100px;
-  margin: 0 12px;
+  margin: 12px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta .feds-cta {
