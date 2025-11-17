@@ -107,8 +107,8 @@
     line-height: var(--type-heading-xs-lh);
   }
 
-  body.mweb-enabled [class^="heading-"], h1, h2, h3, h4, h5, h6 {
-    font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
+  body.mweb-enabled main :is([class^="heading-"], h1, h2, h3, h4, h5, h6) {
+    font-family: var(--s2a-heading-font-family);
     font-weight: var(--type-heading-all-weight);
   }
 
@@ -116,12 +116,13 @@
   @media (max-width: 599px) {
     --grid-container-width: 93.33%;
   }
-  @media (max-width: 2219px) {
-      --grid-container-width: 83.33%;
+  @media (min-width: 600px) {
+    --grid-container-width: 83.33%;
   }
   @media (min-width: 2220px) {
-      --grid-container-width: 1920px;
+    --grid-container-width: 1920px;
   }
+  
 
   /* two tone heading color feature */
   --two-tone-heading-color-gray: var(--color-gray-600);
