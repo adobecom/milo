@@ -376,6 +376,7 @@
 }
 
 .icon-block:not(.small.full-width).s2a .foreground .text-content .action-area {
+  font-size: 18px;
   justify-content: flex-end;
 }
 
@@ -538,5 +539,10 @@
 
   .section.five-up {
     grid-template-columns: repeat(5, 1fr) !important;
+  }
+
+  .four-up .s2a .foreground .icon-area {
+    margin-bottom: 4px;
+    max-width: 100% !important;
   }
 }
