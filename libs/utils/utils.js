@@ -1816,15 +1816,45 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
+async function verifyLinks(section, config, isLcpSection) {
+  const { rushLCP } = Object.fromEntries(PAGE_URL.searchParams);
+  if (config.locale.base && rushLCP === 'on' && isLcpSection) {
+    const links = [...section.querySelectorAll('a')]
+      .filter((a) => {
+        const url = new URL(a.href);
+        const path = url.pathname;
+        const extension = getExtension(path);
+        const allowedExts = ['', 'html', 'json'];
+        return allowedExts.includes(extension);
+      });
+
+    return Promise.all(
+      links.map((link) => fetch(link.href, { method: 'HEAD' }).then((resp) => {
+        if (!resp.ok) {
+          const origin = config.origin || window.location.origin;
+          const contentRoot = config.contentRoot ?? '';
+          link.href = link.href.replace(`${origin}${config.locale.prefix}${contentRoot}`, `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${contentRoot}`);
+        }
+      })),
+    );
+  }
+  return null;
+}
+
 async function processSection(section, config, isDoc, lcpSectionId) {
   await resolveInlineFrags(section);
   const isLcpSection = lcpSectionId === section.idx;
+
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
+  const startTime = performance.timeOrigin + performance.now();
   await Promise.all([
     decoratePlaceholders(section.el, config),
     decorateIcons(section.el, config),
+    verifyLinks(section.el, config, isLcpSection),
   ]);
+  const endTime = performance.timeOrigin + performance.now();
+  console.log(`Call in process section took ${endTime - startTime} milliseconds.`);
   const loadBlocks = [...stylePromises];
   if (section.preloadLinks.length) {
     const [modals, blocks] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
@@ -1879,6 +1909,7 @@ export async function loadArea(area = document) {
   }
   const endTime = performance.timeOrigin + performance.now();
   console.log(`Call to query indexes took ${endTime - startTime} milliseconds.`);
+
   if (isDoc) {
     decorateDocumentExtras();
   }
