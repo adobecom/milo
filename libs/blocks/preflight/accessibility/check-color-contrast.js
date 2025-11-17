@@ -64,8 +64,6 @@ async function loadColorThief() {
 
 async function getAverageColorFromUrl(url) {
   try {
-    const colorThief = await loadColorThief();
-    if (!colorThief) return null;
     const img = document.createElement('img');
     img.crossOrigin = 'anonymous';
     img.src = url;
@@ -79,8 +77,6 @@ async function getAverageColorFromUrl(url) {
 }
 
 async function getAverageColorFromNearestImg(element) {
-  const colorThief = await loadColorThief();
-  if (!colorThief) return null;
   const candidates = [...element.querySelectorAll('img')];
   let el = element.parentElement;
   const maxHops = 5;
@@ -143,6 +139,8 @@ export default async function checkColorContrast(elements = [], config = {}) {
     return isVisible && hasText && tagWhitelist.includes(el.tagName.toLowerCase());
   });
   for (const el of validElements) {
+    const colorThief = await loadColorThief();
+    if (!colorThief) return null;
     const { fgColor, bgColor } = getComputedColors(el);
     // eslint-disable-next-line no-continue
     if (!fgColor || !bgColor) continue;
@@ -155,8 +153,8 @@ export default async function checkColorContrast(elements = [], config = {}) {
 
     let effectiveBg = bgColor;
     let usedImageSampling = false;
-
     let ancestor = el;
+
     while (ancestor) {
       const bgImage = window.getComputedStyle(ancestor).backgroundImage;
       const url = extractBgImageUrl(bgImage);
