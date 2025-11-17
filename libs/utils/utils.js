@@ -1845,9 +1845,9 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-  const { perfTest } = Object.fromEntries(PAGE_URL.searchParams);
+  const { perfTest, fasterPerfOption } = Object.fromEntries(PAGE_URL.searchParams);
   let response;
-  if (perfTest === 'on') {
+  if (perfTest === 'on' && !fasterPerfOption) {
     response = fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
   }
   const startTime = performance.timeOrigin + performance.now();
@@ -1870,9 +1870,11 @@ export async function loadArea(area = document) {
 
   }
   if (perfTest === 'on') {
-    const resolvedResponse = await response;
-    if (!resolvedResponse.ok) throw new Error(`HTTP ${resolvedResponse.status}`);
-    const json = await resolvedResponse.json();
+    if (!fasterPerfOption) {
+      const resolvedResponse = await response;
+      if (!resolvedResponse.ok) throw new Error(`HTTP ${resolvedResponse.status}`);
+      const json = await resolvedResponse.json();
+    }
     const sqi = await loadSiteQueryIndexes();
   }
   const endTime = performance.timeOrigin + performance.now();
