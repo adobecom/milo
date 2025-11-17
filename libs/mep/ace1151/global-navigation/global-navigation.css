@@ -1276,6 +1276,16 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup {
     padding-left: 15%;
   }
+
+  header.global-navigation.test-nav div.tabs[role="tablist"] > button > span:not([class]), 
+  header.global-navigation.test-nav div.feds-nav[role="list"] [role="listitem"] > :is(button, a),
+  header.global-navigation.test-nav .tab-panel .tab-column > a.feds-navLink .feds-navLink-title, 
+  header.global-navigation.test-nav .tab-panel .tab-column > a.feds-navLink:not(:has(.feds-navLink-title)),
+  header.global-navigation.test-nav .feds-menu-column ul > li > a,
+  header.global-navigation.test-nav .feds-content-description { 
+    font-family: var(--heading-font-family);
+    /* color: green !important; */
+  }
 }
 
 /* Desktop styles */
@@ -2177,14 +2187,4 @@ header.test-nav .feds-popup.loading.hide {
 /* adobe clean display css overrides */ 
 :root {
   --heading-font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
-}
-
-header.global-navigation div.tabs[role="tablist"] > button > span:not([class]), 
-header.global-navigation div.feds-nav[role="list"] [role="listitem"] > :is(button, a),
-header.global-navigation .tab-panel .tab-column > a.feds-navLink .feds-navLink-title, 
-header.global-navigation .tab-panel .tab-column > a.feds-navLink:not(:has(.feds-navLink-title)),
-header.global-navigation .feds-menu-column ul > li > a,
-header.global-navigation .feds-content-description { 
-  font-family: var(--heading-font-family);
-  /* color: green !important; */
 }
