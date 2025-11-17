@@ -126,7 +126,7 @@
   
 
   /* two tone heading color feature */
-  --two-tone-heading-color-gray: var(--color-gray-600);
+  --two-tone-heading-color-gray: #717171;
   --two-tone-heading-color-gray-dark: var(--color-gray-300);
   --two-tone-heading-color-red: #EB1000;
    
