@@ -260,7 +260,7 @@ export function disableForm(form, disable = true) {
 }
 
 function resolvePendingPromise(promise, resolve) {
-  const promiseTimeout = setTimeout(() => resolve(undefined), 3000);
+  const promiseTimeout = setTimeout(() => resolve(undefined), 5000);
   promise.then((result) => {
     clearTimeout(promiseTimeout);
     resolve(result);
