@@ -456,10 +456,10 @@ export async function loadSiteQueryIndexes() {
   try {
     const requests = await Promise.all([
       fetch(`https://main--cc--adobecom.aem.${domainString}/cc-shared/assets/query-index.json`),
-      fetch(`https://main--dc--adobecom.aem.${domainString}/dc-shared/assets/query-index.json`),
-      fetch(`https://main--da-bacom--adobecom.aem.${domainString}/query-index.json`),
-      fetch(`https://main--express-milo--adobecom.aem.${domainString}/express/query-index.json`),
-      fetch(`https://main--homepage--adobecom.aem.${domainString}/homepage/query-index.json`),
+      // fetch(`https://main--dc--adobecom.aem.${domainString}/dc-shared/assets/query-index.json`),
+      // fetch(`https://main--da-bacom--adobecom.aem.${domainString}/query-index.json`),
+      // fetch(`https://main--express-milo--adobecom.aem.${domainString}/express/query-index.json`),
+      // fetch(`https://main--homepage--adobecom.aem.${domainString}/homepage/query-index.json`),
     ]);
     return requests;
   } catch (e) {
