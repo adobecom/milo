@@ -996,6 +996,27 @@ header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-po
   visibility: visible;
 }
 
+header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup.error {
+  grid-template-rows: 56px auto;
+  grid-template-areas:
+        "top-bar top-bar"
+        "tabs tabs"
+}
+
+header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup.error .feds-menu-container {
+  display: flex;
+  grid-area: tabs;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-height: 490px) {
+  header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup.error .feds-menu-container {
+    padding-top: 157px;
+    align-items: flex-start;
+  }
+}
+
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
   translate: 0;
 }
