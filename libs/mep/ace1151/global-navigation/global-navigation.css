@@ -689,6 +689,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
 
 header .feds-nav > .feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
   padding: 6px 0;
+  text-decoration: underline;
+  font-weight: 400;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-description {
@@ -1266,11 +1268,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     background: #2c2c2c;
   }
 
-  header .feds-nav > .feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
-    text-decoration: underline;
-    font-weight: 400;
-  }
-
   .global-navigation.test-nav .feds-topnav-wrapper {
     padding-left: 10%;
     justify-content: flex-start;
@@ -1831,6 +1828,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-cta--primary {
   min-width: 100px;
   max-width: 200px;
+  margin: 12px 0;
 }
 
 [dir = "rtl"] header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content {
@@ -1849,7 +1847,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink .feds-navLink-content {
-  padding: 20px 0;
+  padding: 12px 0;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink,
