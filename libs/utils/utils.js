@@ -171,6 +171,7 @@ const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
 let langConfig;
+let siteQueryIndexes;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -448,6 +449,26 @@ export async function loadLanguageConfig() {
   return {};
 }
 
+export async function loadSiteQueryIndexes() {
+  if (siteQueryIndexes) return siteQueryIndexes;
+
+  const domainString = window.location.href.includes('.aem.live') ? 'live' : 'page';
+  try {
+    const requests = await Promise.all([
+      fetch(`https://main--cc--adobecom.aem.${domainString}/cc-shared/assets/query-index.json`),
+      fetch(`https://main--dc--adobecom.aem.${domainString}/dc-shared/assets/query-index.json`),
+      fetch(`https://main--da-bacom--adobecom.aem.${domainString}/query-index.json`),
+      fetch(`https://main--express-milo--adobecom.aem.${domainString}/express/query-index.json`),
+      fetch(`https://main--homepage--adobecom.aem.${domainString}/homepage/query-index.json`),
+    ]);
+    return requests;
+  } catch (e) {
+    window.lana?.log('Failed to load language-config.json:', e);
+  }
+
+  return {};
+}
+
 let fedsPlaceholderConfig;
 export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
@@ -590,9 +611,15 @@ export function localizeLink(
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, languages, prodDomains } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
+    debugger;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
+    // TODO let's solve the case for links on the page first, then we'll solve the complex case with cross site
+    if (locale.base) {
+
+      // call query index - does page exist?
+    }
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
@@ -1819,6 +1846,8 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  const response = fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
+
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
@@ -1827,10 +1856,21 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
+  // deprecated - This is to be removed once news.adobe.com shifts to the new link structure
   if (!langConfig && (config.languages || hasLanguageLinks(area))) {
     await loadLanguageConfig();
   }
+  // end deprecated
+  if (config.locale.base) {
+    // load in the query index
+    // what happens if we load a fragment
 
+  }
+  await response;
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const json = await response.json();
+  const sqi = await loadSiteQueryIndexes();
+  console.log(sqi);
   if (isDoc) {
     decorateDocumentExtras();
   }
