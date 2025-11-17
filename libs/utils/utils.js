@@ -1845,8 +1845,12 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-  const response = fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
-
+  const { perfTest } = Object.fromEntries(PAGE_URL.searchParams);
+  let response;
+  if (perfTest === 'on') {
+    response = fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
+  }
+  const startTime = performance.timeOrigin + performance.now();
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
@@ -1865,11 +1869,14 @@ export async function loadArea(area = document) {
     // what happens if we load a fragment
 
   }
-  const resolvedResponse = await response;
-  if (!resolvedResponse.ok) throw new Error(`HTTP ${resolvedResponse.status}`);
-  const json = await resolvedResponse.json();
-  const sqi = await loadSiteQueryIndexes();
-  console.log(sqi);
+  if (perfTest === 'on') {
+    const resolvedResponse = await response;
+    if (!resolvedResponse.ok) throw new Error(`HTTP ${resolvedResponse.status}`);
+    const json = await resolvedResponse.json();
+    const sqi = await loadSiteQueryIndexes();
+  }
+  const endTime = performance.timeOrigin + performance.now();
+  console.log(`Call to query indexes took ${endTime - startTime} milliseconds.`);
   if (isDoc) {
     decorateDocumentExtras();
   }
