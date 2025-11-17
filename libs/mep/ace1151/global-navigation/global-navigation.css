@@ -1075,8 +1075,16 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     overflow-y: auto;
   }
 
+  .global-navigation.test-nav.has-promo .feds-navItem .feds-popup {
+    max-height: calc(100vh - var(--feds-height-nav) - 32px - var(--global-height-navPromo));
+  }
+
   .global-navigation.test-nav.has-breadcrumbs .feds-navItem .feds-popup {
     max-height: calc(100vh - var(--feds-height-nav) - 76px);
+  }
+
+  .global-navigation.test-nav.has-breadcrumbs.has-promo .feds-navItem .feds-popup {
+    max-height: calc(100vh - var(--feds-height-nav) - 76px - var(--global-height-navPromo));
   }
 
   .feds-navItem .feds-popup {
