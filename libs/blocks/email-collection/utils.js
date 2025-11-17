@@ -2,8 +2,6 @@ import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '..
 import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
-  dev: 'https://14257-miloemailcollection-dev.adobeioruntime.net/api/v1/web/email-collection',
-  nala: 'https://14257-miloemailcollection-stage.adobeioruntime.net/api/v1/web/email-collection',
   local: 'https://www.stage.adobe.com/milo-email-collection-api',
   stage: 'https://www.stage.adobe.com/milo-email-collection-api',
   prod: 'https://www.adobe.com/milo-email-collection-api',
@@ -13,6 +11,7 @@ const FORM_METADATA = {
   'mps-sname': 'mpsSname',
   'subscription-name': 'subscriptionName',
   'sign-in': 'signIn',
+  'runtime-endpoint': 'runtimeEndpoint',
 };
 
 export function localizeFederatedUrl(url) {
@@ -247,13 +246,10 @@ export const [getFormData, setFormData] = (() => {
 
 export function getApiEndpoint(action = 'submit') {
   const { env } = getConfig();
-  const { emailCollectionTest } = getFormData('metadata');
+  const { runtimeEndpoint } = getFormData('metadata');
   let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
-  if (emailCollectionTest) endPoint = API_ENDPOINTS.nala;
-  if (env.name !== 'prod') {
-    const params = new URLSearchParams(window.location.search);
-    endPoint = API_ENDPOINTS[params.get('email-collection-env')] ?? endPoint;
-  }
+  if (env.name !== 'prod' && runtimeEndpoint) endPoint = runtimeEndpoint;
+
   return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
 }
 
