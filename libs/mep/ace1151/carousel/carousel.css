@@ -612,6 +612,16 @@ html[dir="rtl"] .carousel .move-indicators {
     border-radius: .5rem;
     overflow: hidden;
   }
+  .carousel.s2a-hovering .carousel-slide picture {
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+  }
+  .carousel.s2a-hovering .carousel-slide.active.collapsing picture {
+    opacity: 0;
+  }
+  .carousel.s2a-hovering .carousel-slide.active.collapsing {
+    max-height: 54px !important;
+  }
   .carousel.s2a-hovering .carousel-slide.active {
     max-height: 100vh;
   }
@@ -619,6 +629,7 @@ html[dir="rtl"] .carousel .move-indicators {
     width: 100%;
     max-height: 54px;
     transition: max-height 0.3s ease-out;
+    overflow: hidden;
   }
   .carousel.s2a-whatsnew .carousel-wrapper {
     margin-left: 1rem;
@@ -663,16 +674,16 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 
   
-  .carousel.s2a-hovering .carousel-slide h2 svg.icon-collapse {
+  .carousel.s2a-hovering .carousel-slide h2 a:has(svg.icon-collapse) {
     display: none;
   }
-  .carousel.s2a-hovering .carousel-slide h2 svg.icon-expand {
+  .carousel.s2a-hovering .carousel-slide h2 a:has(svg.icon-expand) {
     display: flex;
   }
-  .carousel.s2a-hovering .carousel-slide.active h2 svg.icon-collapse {
+  .carousel.s2a-hovering .carousel-slide.active h2 a:has(svg.icon-collapse) {
     display: flex;
   }
-  .carousel.s2a-hovering .carousel-slide.active h2 svg.icon-expand {
+  .carousel.s2a-hovering .carousel-slide.active h2 a:has(svg.icon-expand) {
     display: none;
   }
   .carousel.s2a-peaking .carousel-slide h2 {
@@ -1062,8 +1073,12 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 @media (min-width: 900px) and (max-width: 1999px) {
+  .carousel.s2a-hovering .carousel-menu {
+    margin-bottom: 1rem !important;
+  }
   .carousel.s2a-hovering .carousel-slides {
-    height: 39vw !important;
+    height: 40vw !important;
+    margin: 0;
   }
 }
 
