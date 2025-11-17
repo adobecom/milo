@@ -540,8 +540,18 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     // Always try GEO IP lookup when not a news source (regardless of URL path country)
     if (!isNewsSource) {
       try {
-        const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
-        const geoCountry = await getAkamaiCode(true);
+        // First check if GEO IP country is already cached
+        const urlParams = new URLSearchParams(window.location.search);
+        let geoCountry = urlParams.get('akamaiLocale')?.toLowerCase()
+          || sessionStorage.getItem('akamai')
+          || pageConfigHelper().mep?.countryIP;
+
+        // If not cached, fetch it
+        if (!geoCountry) {
+          const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+          geoCountry = await getAkamaiCode(true);
+        }
+
         if (geoCountry) {
           // Use GEO IP country as the primary source
           countryStr = geoCountry.toLowerCase();
