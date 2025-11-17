@@ -527,44 +527,33 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     const langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
 
-    // Extract fallback country from URL path for when GEO IP fails
     let fallbackCountry = countryStr;
     if (typeof fallbackCountry === 'object') {
       fallbackCountry = fallbackCountry.ietf?.split('-')[1] ?? 'xx';
     }
 
-    // Check if origin/source is NOT 'news' to use GEO IP detection
-    const sourceArray = Array.isArray(source) ? source : [source];
-    const isNewsSource = sourceArray.some((s) => s?.toLowerCase().includes('news'));
+    const isNewsSource = Array.from([source].flat()).some((s) => s?.toLowerCase().includes('news'));
 
-    // Always try GEO IP lookup when not a news source (regardless of URL path country)
     if (!isNewsSource) {
+      countryStr = fallbackCountry;
       try {
-        // First check if GEO IP country is already cached
         const urlParams = new URLSearchParams(window.location.search);
         let geoCountry = urlParams.get('akamaiLocale')?.toLowerCase()
           || sessionStorage.getItem('akamai')
           || pageConfigHelper().mep?.countryIP;
 
-        // If not cached, fetch it
         if (!geoCountry) {
           const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
           geoCountry = await getAkamaiCode(true);
         }
 
-        if (geoCountry) {
-          // Use GEO IP country as the primary source
-          countryStr = geoCountry.toLowerCase();
-        } else {
-          // Fall back to URL path country if GEO IP returns empty
-          countryStr = fallbackCountry;
-        }
+        if (geoCountry) countryStr = geoCountry.toLowerCase();
       } catch (error) {
-        // Fallback to URL path country if GEO IP lookup fails
-        countryStr = fallbackCountry;
+        window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
       }
-    } else if (typeof countryStr === 'object') {
-      // For news sources, just extract country from URL path
+    }
+
+    if (isNewsSource && typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
 
