@@ -6,6 +6,7 @@
 :root:has(meta[name="theme"][content="s2a"]) {
   /* s2a theme font overrides */
     --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+    --s2a-heading-font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
 
     /* mobile and tablet heading overrides */
     --type-heading-all-weight: 900;
@@ -107,7 +108,7 @@
     line-height: var(--type-heading-xs-lh);
   }
 
-  body.mweb-enabled main :is([class^="heading-"], h1, h2, h3, h4, h5, h6) {
+  body.mweb-enabled main [class^="heading-"], h1, h2, h3, h4, h5, h6 {
     font-family: var(--s2a-heading-font-family);
     font-weight: var(--type-heading-all-weight);
   }
@@ -128,22 +129,22 @@
   --two-tone-heading-color-gray: var(--color-gray-600);
   --two-tone-heading-color-gray-dark: var(--color-gray-300);
   --two-tone-heading-color-red: #EB1000;
+   
+  :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > strong > em,
+  :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > em {
+    color: var(--two-tone-heading-color-red);
+    font-style: normal;
+  }
 
-  :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em), 
-  :is(h1, h2, h3, h4, h5, h6) > strong > em {
+  .section:not(:has(.s2a-twotone-red)) :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em), 
+  .section:not(:has(.s2a-twotone-red)) :is(h1, h2, h3, h4, h5, h6) > strong > em {
     color: var(--two-tone-heading-color-gray);
     font-style: normal;
   }
 
-  .section > .dark :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em), 
-  .section > .dark :is(h1, h2, h3, h4, h5, h6) > strong > em {
+  .section:not(:has(.s2a-twotone-red)) > .dark :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em), 
+  .section:not(:has(.s2a-twotone-red)) > .dark :is(h1, h2, h3, h4, h5, h6) > strong > em {
     color: var(--two-tone-heading-color-gray-dark);
-    font-style: normal;
-  }
-
-  :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > em, 
-  :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > strong > em {
-    color: var(--two-tone-heading-color-red);
     font-style: normal;
   }
 }
