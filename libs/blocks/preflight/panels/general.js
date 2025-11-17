@@ -1,4 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { STATUS, STRUCTURE_TITLES } from '../checks/constants.js';
+import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 
 const DEF_NOT_FOUND = 'Not found';
@@ -12,6 +14,46 @@ const nonEDSContent = 'Non AEM EDS Content';
 const EXCLUDED_PATHS = ['/tools/caas'];
 
 const content = signal({});
+
+const navResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.navigation, description: 'Checking...' });
+const footerResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.footer, description: 'Checking...' });
+const regionSelectorResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.regionSelector, description: 'Checking...' });
+const georoutingResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.georouting, description: 'Checking...' });
+const breadcrumbsResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.breadcrumbs, description: 'Checking...' });
+
+async function getStructureResults() {
+  const signals = [
+    navResult,
+    footerResult,
+    regionSelectorResult,
+    georoutingResult,
+    breadcrumbsResult,
+  ];
+  const checks = runStructureChecks({ area: document });
+
+  const statusToIconMap = {
+    [STATUS.PASS]: 'green',
+    [STATUS.FAIL]: 'red',
+    [STATUS.EMPTY]: 'empty',
+  };
+
+  await Promise.all(checks.map((result, index) => Promise.resolve(result)
+    .then((res) => {
+      const icon = statusToIconMap[res.status] || 'orange';
+      signals[index].value = {
+        icon,
+        title: res.title,
+        description: res.description,
+      };
+    })
+    .catch((error) => {
+      signals[index].value = {
+        icon: 'red',
+        title: 'Error',
+        description: `Error: ${error.message}`,
+      };
+    })));
+}
 
 function getAdminUrl(url, type) {
   if (!(/adobecom\.(hlx|aem)./.test(url.hostname))) return false;
@@ -84,10 +126,8 @@ function findLinks(selector) {
     }, []);
 }
 
-async function setContent() {
-  if (content.value.page) return;
-
-  content.value = {
+export function runGeneralChecks() {
+  const contentValue = {
     page: { items: [{ url: new URL(window.location.href), edit: null, preview: 'Fetching', live: 'Fetching' }] },
     fragments: { items: findLinks('main .fragment, a[data-modal-path], [data-path]') },
     links: { items: findLinks('main a[href^="/"') },
@@ -95,6 +135,14 @@ async function setContent() {
     pdfs: { items: findLinks('main iframe') },
     nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
+
+  return contentValue;
+}
+
+async function setContent() {
+  if (content.value.page) return;
+
+  content.value = runGeneralChecks();
 
   getStatuses();
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
@@ -227,7 +275,16 @@ function ContentGroup({ name, group }) {
 }
 
 export default function General() {
-  useEffect(() => { setContent(); }, []);
+  useEffect(() => { setContent(); getStructureResults(); }, []);
+
+  const StructureItem = ({ icon, title, description }) => html`
+    <div class="preflight-item">
+      <div class="result-icon ${icon}"></div>
+      <div class="preflight-item-text">
+        <p class="preflight-item-title">${title}</p>
+        <p class="preflight-item-description">${description}</p>
+      </div>
+    </div>`;
 
   const allChecked = Object.values(content.value)
     .flatMap((item) => item.items).filter((item) => item.checked);
@@ -243,6 +300,18 @@ export default function General() {
 
   return html`
     <div class=preflight-general-content>
+    <p class="preflight-structure-title">Structure</p>
+       <div class=preflight-structure-columns>
+        <div class=preflight-column>
+          <${StructureItem} ...${navResult.value} />
+          <${StructureItem} ...${footerResult.value} />
+          <${StructureItem} ...${regionSelectorResult.value} />
+        </div>
+        <div class=preflight-column>
+          <${StructureItem} ...${georoutingResult.value} />
+          <${StructureItem} ...${breadcrumbsResult.value} />
+        </div>
+      </div>
       ${Object.keys(content.value).map((key) => html`<${ContentGroup} name=${key} group=${content.value[key]} />`)}
     </div>
 

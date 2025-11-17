@@ -37,7 +37,7 @@ describe('list', () => {
     expect(chart.classList.contains('carousel')).to.be.true;
   });
 
-  it('Multi list chart with table should be named', async () => {
+  it('Multi list chart with table should have heading', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/list.html' });
 
     const chartWrapper = document.querySelector('.chart_wrapper');
@@ -46,7 +46,7 @@ describe('list', () => {
     const chart = initList(chartWrapper, fetchedData);
 
     const carouselItems = chart.querySelector('.carousel-items').children;
-    const carouselTitle = carouselItems[0].querySelector('.title');
+    const carouselTitle = carouselItems[0].querySelector('.title h2');
 
     expect(carouselTitle.textContent).to.eql('Black Friday Numbers Ordered');
   });

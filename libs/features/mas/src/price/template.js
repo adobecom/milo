@@ -12,6 +12,7 @@ import {
     formatRegularPrice,
     formatAnnualPrice,
     makeSpacesAroundNonBreaking,
+    isPromotionActive,
 } from './utilities.js';
 
 export const defaultLiterals = {
@@ -103,17 +104,45 @@ export const renderSpan = (
     );
 };
 
+function encodeLinks(literal) {
+  literal = literal.replaceAll('</a>', '&lt;/a&gt;');
+
+  const regex = /<a [^>]+(>|$)/g;
+  const matches = literal.match(regex);
+  matches?.forEach((match) => {
+    const encodedMatch = match.replace('<a ', '&lt;a ').replace('>', '&gt;');
+    literal = literal.replaceAll(match, encodedMatch);
+  });
+
+  return literal;
+}
+
+function decodeLinks(literal) {
+  literal = literal.replaceAll('&lt;/a&gt;', '</a>');
+
+  const regex = /&lt;a (?!&gt;)(.*?)(&gt;|$)/g;
+  const matches = literal.match(regex);
+  matches?.forEach((match) => {
+    const encodedMatch = match.replace('&lt;a ', '<a ').replace('&gt;', '>');
+    literal = literal.replaceAll(match, encodedMatch);
+  });
+
+  return literal;
+}
+
 export function formatLiteral(literals, locale, key, parameters) {
-    const literal = literals[key];
+    let literal = literals[key];
     if (literal == undefined) {
         /* c8 ignore next 2 */
         return '';
     }
+    const hasHtml = literal.includes('<');
+    const hasLinks = literal.includes('<a ');
     try {
-        return new IntlMessageFormat(
-            literal.replace(htmlPattern, ''),
-            locale,
-        ).format(parameters);
+        literal = hasLinks ? encodeLinks(literal) : literal;
+        literal = hasHtml ? literal.replace(htmlPattern, '') : literal;
+        const formattedLiteral = new IntlMessageFormat(literal, locale).format(parameters);
+        return hasLinks ? decodeLinks(formattedLiteral) : formattedLiteral;
     } catch {
         /* c8 ignore next 2 */
         log.error('Failed to format literal:', literal);
@@ -194,6 +223,7 @@ const createPriceTemplate =
             literals: priceLiterals = {},
             quantity = 1,
             space = false, // add a space between price literals
+            isPromoApplied = false,
         } = {},
         {
             commitment,
@@ -230,10 +260,15 @@ const createPriceTemplate =
 
         const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
 
-        const displayPrice =
-            displayStrikethrough && priceWithoutDiscount
-                ? priceWithoutDiscount
-                : price;
+        let displayPrice;
+        
+        if (promotion && !isPromoApplied && priceWithoutDiscount) {
+            displayPrice = isAlternativePrice ? price : priceWithoutDiscount;
+        } else if (displayStrikethrough && priceWithoutDiscount) {
+            displayPrice = priceWithoutDiscount;
+        } else {
+            displayPrice = price;
+        }
 
         let method = displayOptical ? formatOpticalPrice : formatRegularPrice;
         if (displayAnnual) {
@@ -384,19 +419,24 @@ const createPriceTemplate =
  * or outdated promotion), or concatenation of new & old prices, old being stroke through.
  */
 const createPromoPriceTemplate = () => (context, value, attributes) => {
+    const isPromoApplied = isPromotionActive(
+      value.promotion, 
+      value.promotion?.displaySummary?.instant, 
+      Array.isArray(context.quantity) ? context.quantity[0] : context.quantity);
     const displayOldPrice =
         context.displayOldPrice === undefined ||
         toBoolean(context.displayOldPrice);
     const shouldDisplayOldPrice =
         displayOldPrice &&
         value.priceWithoutDiscount &&
-        value.priceWithoutDiscount != value.price;
+        value.priceWithoutDiscount != value.price &&
+        (!value.promotion || isPromoApplied);
     return `${shouldDisplayOldPrice
         ? createPriceTemplate({
           displayStrikethrough: true,
-        })(context, value, attributes) + '&nbsp;'
+        })({ isPromoApplied, ...context }, value, attributes) + '&nbsp;'
         : ''
-    }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}`;
+      }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })({ isPromoApplied, ...context }, value, attributes)}`;
 };
 
 const createPromoPriceWithAnnualTemplate =
@@ -415,11 +455,32 @@ const createPromoPriceWithAnnualTemplate =
             instant = undefined;
             /* ignore the error */
         }
+        const isPromoApplied = isPromotionActive(value.promotion, instant, Array.isArray(context.quantity) ? context.quantity[0] : context.quantity);
         const ctxStAnnual = {
             ...context,
             displayTax: false,
             displayPerUnit: false,
+            isPromoApplied,
         };
+        if (!isPromoApplied) {
+          return (
+            createPriceTemplate()(
+              context,
+              { ...value, price: value.priceWithoutDiscount },
+              attributes
+            ) +
+            renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(') +
+            createPriceTemplate({
+              displayAnnual: true,
+              instant,
+            })(
+              ctxStAnnual,
+              { ...value, price: value.priceWithoutDiscount },
+              attributes
+            ) +
+            renderSpan(cssClassNames.containerAnnualSuffix, ')')
+          );
+        }
         const displayOldPrice =
             context.displayOldPrice === undefined ||
             toBoolean(context.displayOldPrice);
@@ -433,7 +494,7 @@ const createPromoPriceWithAnnualTemplate =
                       displayStrikethrough: true,
                   })(ctxStAnnual, value, attributes) + '&nbsp;'
                 : ''
-        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })({ isPromoApplied, ...context }, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
             {
                 displayAnnual: true,
                 instant,

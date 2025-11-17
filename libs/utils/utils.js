@@ -27,6 +27,7 @@ const MILO_BLOCKS = [
   'chart',
   'columns',
   'editorial-card',
+  'email-collection',
   'faas',
   'featured-article',
   'figure',
@@ -65,6 +66,7 @@ const MILO_BLOCKS = [
   'modal',
   'modal-metadata',
   'notification',
+  'nps-csat-form',
   'pdf-viewer',
   'quote',
   'read-more',
@@ -1125,12 +1127,19 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const icons = area.querySelectorAll('span.icon');
+  let icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
-    const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
-    if (excludedIconsCount === icons.length) return;
+    if (getMetadata('theme') === 'max25') {
+      // TODO: Remove after correcting core logic
+      const includeIcons = [...icons].filter((icon) => !iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`)));
+      if (!includeIcons.length) return;
+      icons = includeIcons;
+    } else {
+      const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
+      if (excludedIconsCount === icons.length) return;
+    }
   }
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
@@ -1426,7 +1435,7 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob', 'event-id-stage-test'];
+  const mepAddons = ['lob', 'event-id'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
@@ -1459,20 +1468,18 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
+  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
 
   if (!(pzn || pznroc || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
 
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  if (mepgeolocation) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-    if (!akamaiCode) {
-      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
-      countryIPPromise = getAkamaiCode(true);
-    }
+  const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  if (mepgeolocation && !akamaiCode) {
+    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    countryIPPromise = getAkamaiCode(true);
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1521,6 +1528,8 @@ async function checkForPageMods() {
     calculatedTimeout,
     enablePersV2,
     promises,
+    mepMarketingDecrease,
+    akamaiCode,
   });
 }
 

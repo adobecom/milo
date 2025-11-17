@@ -3,7 +3,7 @@ import getServiceConfig from '../../../utils/service-config.js';
 import { getConfig, updateConfig } from '../../../utils/utils.js';
 
 const KNOWN_BAD_URLS = ['news.adobe.com'];
-const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
+const SPIDY_URL_FALLBACK = 'https://spidy.gwp.corp.adobe.com';
 
 const linksCache = new Map();
 
@@ -246,33 +246,22 @@ function compareResults(result, link) {
   return true;
 }
 
-export async function checkLinks({ area, urlHash, envName }) {
-  if (urlHash && linksCache.has(urlHash)) {
-    const cachedResult = linksCache.get(urlHash);
-    return {
-      ...cachedResult,
-      details: { ...cachedResult.details, linksChecked: true },
-    };
-  }
-
-  const { spidy, preflight } = await getServiceConfig(window.location.origin, envName);
-  const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
-  const canSpidy = await spidyCheck(spidyUrl);
-  if (!canSpidy) return connectionError();
-
-  /**
-   * Find all links with an href.
-   * Filter out any local or existing preflight links.
-   * Set link to use hlx.live so the service can see them without auth
-   * */
+export async function validLinkFilter(area = document, envName = null) {
+  const { preflight } = await getServiceConfig(window.location.origin, envName);
   const knownBadUrls = preflight?.ignoreDomains
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
     : KNOWN_BAD_URLS;
-
   const links = [...area.querySelectorAll('a')]
     .filter((link) => {
       if (
         link.href
+        // Added extra checks because Spidy misidentifies these URL schemes as faulty.
+        // Can be removed once we stop using Spidy.
+        && !link.href.includes('tel:')
+        && !link.href.includes('mailto:')
+        && !link.href.startsWith('#')
+        && !link.href.startsWith('https://#')
+        && !link.href.includes('bookmark://')
         && !link.href.includes('local')
         && !link.closest('.preflight')
         && !knownBadUrls.some((url) => url === link.hostname)
@@ -284,6 +273,29 @@ export async function checkLinks({ area, urlHash, envName }) {
       }
       return false;
     });
+  return links;
+}
+
+export async function checkLinks({ area, urlHash, envName }) {
+  if (urlHash && linksCache.has(urlHash)) {
+    const cachedResult = linksCache.get(urlHash);
+    return {
+      ...cachedResult,
+      details: { ...cachedResult.details, linksChecked: true },
+    };
+  }
+
+  const { spidy } = await getServiceConfig(window.location.origin, envName);
+  const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
+  const canSpidy = await spidyCheck(spidyUrl);
+  if (!canSpidy) return connectionError();
+
+  /**
+   * Find all links with an href.
+   * Filter out any local or existing preflight links.
+   * Set link to use hlx.live so the service can see them without auth
+   * */
+  const links = await validLinkFilter(area, envName);
 
   const groups = makeGroups(links);
   const baseOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };

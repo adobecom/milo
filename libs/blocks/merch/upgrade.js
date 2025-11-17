@@ -10,9 +10,16 @@ const MANAGE_PLAN_MSG_SUBTYPE = {
   Error: 'Error',
   Close: 'Close',
 };
+
+// Ignore Adobe Firefly Premium for upgrade flow
+const IGNORE_PRODUCT_CODES = ['FFPU'];
+
+const isProductCodeIgnored = (offer) => offer?.offer?.product_code
+  && IGNORE_PRODUCT_CODES.includes(offer.offer.product_code);
+
 const isProductFamily = (offer, pfs) => {
   const productFamily = offer?.offer?.product_arrangement_v2?.family;
-  return productFamily && pfs.includes(productFamily);
+  return productFamily && pfs.includes(productFamily) && !isProductCodeIgnored(offer);
 };
 export const LANA_OPTIONS = {
   clientId: 'merch-at-scale',
