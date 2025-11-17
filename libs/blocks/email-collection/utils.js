@@ -263,8 +263,16 @@ export function disableForm(form, disable = true) {
   });
 }
 
+function resolvePendingPromise(promise, resolve) {
+  const promiseTimeout = setTimeout(() => resolve(undefined), 3000);
+  promise.then((result) => {
+    clearTimeout(promiseTimeout);
+    resolve(result);
+  });
+}
+
 function awaitWindowProperty(property, timeout = 5000, interval = 100) {
-  if (window[property]) return window[property];
+  if (window[property] && !window[property].then) return window[property];
 
   return new Promise((resolve) => {
     let timeoutRef;
@@ -272,12 +280,14 @@ function awaitWindowProperty(property, timeout = 5000, interval = 100) {
       if (!window[property]) return;
       clearTimeout(timeoutRef);
       clearInterval(intervalRef);
-      resolve(window[property]);
+      if (window[property].then) resolvePendingPromise(window[property], resolve);
+      else resolve(window[property]);
     }, interval);
 
     timeoutRef = setTimeout(() => {
       clearInterval(intervalRef);
-      resolve(window[property]);
+      if (window[property]?.then) resolvePendingPromise(window[property], resolve);
+      else resolve(window[property]);
     }, timeout);
   });
 }
