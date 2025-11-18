@@ -333,7 +333,7 @@ function processCellContent(child) {
   processCellWithoutSeparator(child);
 }
 
-function decorateTableCells({ tableChild, arePrimaryColumns, tableElement }) {
+function decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el }) {
   [...tableChild.children].forEach((child, childIndex) => {
     setupCellAttributes(child, childIndex, arePrimaryColumns);
     if (childIndex === 0) return;
@@ -341,6 +341,7 @@ function decorateTableCells({ tableChild, arePrimaryColumns, tableElement }) {
   });
 
   tableChild.classList.add('table-row');
+  el.dataset.childCount = tableChild.children.length;
   tableChild.setAttribute('role', 'row');
   tableElement.appendChild(tableChild);
 }
@@ -361,7 +362,7 @@ function addTableClassesAndAppend({ el, tableContainer, tableChildren, expandMet
       });
       return;
     }
-    decorateTableCells({ tableChild, arePrimaryColumns, tableElement });
+    decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el });
   });
   tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
   tableContainer.appendChild(tableElement);

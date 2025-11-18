@@ -84,8 +84,12 @@
 .comparison-table .table-container .table-row {
   margin: 0 var(--spacing-s);
   display: grid;
-  grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: minmax(268px, 1.15fr) repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
+}
+
+.comparison-table[data-child-count="3"] .table-row {
+  grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
 }
 
 .comparison-table .table-container .table-row:not(:last-child) {
@@ -194,8 +198,12 @@
   max-width: calc(var(--comparison-desktop-max-width) - 2*var(--comparison-header-spacing) - 2px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: minmax(268px, 1.15fr) repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
+}
+
+.comparison-table[data-child-count="3"] .header-content-wrapper {
+  grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
 }
 
 .comparison-table .header-item {
