@@ -403,7 +403,7 @@
 }
 
 @media screen and (max-width: 899px) {
-  .comparison-table .header-content-wrapper {
+  .comparison-table .header-content .header-content-wrapper {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
 
