@@ -399,7 +399,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
       slideContainer,
     );
   }
-// ? - daves end
+  // ? - daves end
   activeSlideIndicator.removeAttribute('aria-current');
   // Next arrow button, swipe, keyboard navigation
   if ((event.currentTarget).dataset.toggle === 'next'
@@ -632,11 +632,11 @@ const buildMenuItems = (slides, el) => {
         class: 'carousel-menu-item',
         tabindex: 0,
         'aria-label': title.textContent,
-        'daa-ll': `slide-title-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`,
+        'daa-ll': `slide-title-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`,
       }, title.textContent);
       const headerWrapper = createTag('h2', {
         class: 'slide-header-control',
-      }, `${title.textContent}<a>${EXPAND_ICON}</a><a class="collapse-wrapper" data-ll="slide-close-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
+      }, `${title.textContent}<a>${EXPAND_ICON}</a><a class="collapse-wrapper" daa-ll="slide-close-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
       title.parentElement.insertBefore(headerWrapper, title);
       title.remove();
       item.dataset.index = index;
@@ -692,14 +692,14 @@ export default function init(el) {
       const title = slide.querySelector('h2');
 
       if (isLinkedSlides(el)) {
-        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', () => {
           window.open(slide.querySelector('a')?.href || '#', '_blank');
         });
       }
       if (isHovering(el)) {
         slide.querySelector('a')?.setAttribute('tabindex', -1);
-        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', (event) => {
           const customEvent = new CustomEvent('carousel:jumpTo', {
             detail: { index: event.target.closest('.carousel-slide').dataset.index * 1 },
