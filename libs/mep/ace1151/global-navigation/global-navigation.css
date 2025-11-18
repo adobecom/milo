@@ -677,6 +677,14 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .stic
   border-right: 1px solid var(--feds-borderColor-link-v2);
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink .feds-navLink-title {
+  color: var(--feds-color-link-mobile-test-nav);
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink .feds-navLink-description {
+  color: var(--feds-color-navLink-description-mobile-test-nav);
+}
+
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--header,
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content > div[role = "tabpanel"] > a.feds-cta,

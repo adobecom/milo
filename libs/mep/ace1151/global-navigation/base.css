@@ -27,11 +27,13 @@
   --feds-background-link--hover: #e9e9e9;
   --feds-borderColor-link: #e9e9e9;
   --feds-color-link: #292929;
+  --feds-color-link-mobile-test-nav: #2F2F2F;
   --feds-color-blue-link: #274dea;
   --feds-color-link--hover: #1d3ecf;
   --feds-color-link-dark: #DBDBDB;
   --feds-borderColor-link-dark: #393939;
   --feds-color-navLink-description: #505050;
+  --feds-color-navLink-description-mobile-test-nav: #4B4B4B;
   --feds-color-link-breadcrumbs: #707070;
 
   /* CTA Buttons */
