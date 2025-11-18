@@ -1129,15 +1129,19 @@ html[dir="rtl"] .carousel .move-indicators {
     font-size: 24px;
     font-weight: 800;
   }
-  .carousel.s2a-whatsnew .carousel-slide p:nth-child(3) picture {
+  .carousel.s2a-whatsnew .carousel-slide div > p:nth-child(2) picture {
+    position: absolute;
+    right: 20px;
+    top: -50px;
+    width: 50px;
+  }
+  .carousel.s2a-whatsnew .carousel-slide div > p:nth-child(3) picture {
     height: 17px;
     margin: 1rem 0 .5rem;
   }
-  .carousel.s2a-whatsnew .carousel-slide p:nth-child(2) picture {
-    position: absolute;
-    right: 20px;
-    top: -40px;
-    width: 50px;
+
+  .carousel.carousel.s2a-linked-slides .carousel-slide {
+    cursor: pointer;
   }
   
   .carousel.s2a-whatsnew .carousel-wrapper {
@@ -1200,6 +1204,14 @@ html[dir="rtl"] .carousel .move-indicators {
   width: 0;
   height: 0;
   overflow: hidden;
+}
+
+.carousel.s2a-linked-slides a {
+  text-decoration: none !important;
+  color: initial !important;
+}
+.carousel.s2a-linked-slides a:not(.carousel-slide) {
+  display: none;
 }
 
 :root:has(meta[name="theme"][content="max25"]) {

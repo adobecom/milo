@@ -56,6 +56,9 @@ function isPeaking(el) {
 function isWhatsnew(el) {
   return el?.classList.contains('s2a-whatsnew');
 }
+function isLinkedSlides(el) {
+  return el?.classList.contains('s2a-linked-slides');
+}
 function updatePreviousAriaLabel(carouselElements) {
   const { slides, nextPreviousBtns, currentActiveIndex } = carouselElements;
   if (!nextPreviousBtns?.[0]) return;
@@ -686,9 +689,15 @@ export default function init(el) {
       slide.classList.add('carousel-slide');
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
+      const title = slide.querySelector('h2');
 
+      if (isLinkedSlides(el)) {
+        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.addEventListener('click', () => {
+          window.open(slide.querySelector('a')?.href || '#', '_blank');
+        });
+      }
       if (isHovering(el)) {
-        const title = slide.querySelector('h2');
         slide.querySelector('a')?.setAttribute('tabindex', -1);
         slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', (event) => {
