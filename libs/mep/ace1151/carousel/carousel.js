@@ -56,6 +56,9 @@ function isPeaking(el) {
 function isWhatsnew(el) {
   return el?.classList.contains('s2a-whatsnew');
 }
+function isLinkedSlides(el) {
+  return el?.classList.contains('s2a-linked-slides');
+}
 function updatePreviousAriaLabel(carouselElements) {
   const { slides, nextPreviousBtns, currentActiveIndex } = carouselElements;
   if (!nextPreviousBtns?.[0]) return;
@@ -625,8 +628,15 @@ const buildMenuItems = (slides, el) => {
     const menuItems = slides.map((slide, index) => {
       const title = slide.querySelector('h2');
       if (!title) return null;
-      const item = createTag('button', { class: 'carousel-menu-item', tabindex: 0, 'aria-label': title.textContent }, title.textContent);
-      const headerWrapper = createTag('h2', { class: 'slide-header-control' }, `${title.textContent}<a>${EXPAND_ICON}</a><a class="collapse-wrapper">${COLLAPSE_ICON}</a>`);
+      const item = createTag('button', {
+        class: 'carousel-menu-item',
+        tabindex: 0,
+        'aria-label': title.textContent,
+        'daa-ll': `slide-title-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`,
+      }, title.textContent);
+      const headerWrapper = createTag('h2', {
+        class: 'slide-header-control',
+      }, `${title.textContent}<a>${EXPAND_ICON}</a><a class="collapse-wrapper" data-ll="slide-close-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
       title.parentElement.insertBefore(headerWrapper, title);
       title.remove();
       item.dataset.index = index;
@@ -673,15 +683,23 @@ export default function init(el) {
   const carouselName = keyDivs[0].textContent;
   const parentArea = el.closest('.fragment') || document;
   const candidateKeys = parentArea.querySelectorAll('div.section-metadata > div > div:first-child');
-  let slides = [...candidateKeys].reduce((rdx, key) => {
+  let slides = [...candidateKeys].reduce((rdx, key, index) => {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
-      if (isHovering(el)) slide.querySelector('a')?.setAttribute('tabindex', -1);
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
+      const title = slide.querySelector('h2');
 
+      if (isLinkedSlides(el)) {
+        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.addEventListener('click', () => {
+          window.open(slide.querySelector('a')?.href || '#', '_blank');
+        });
+      }
       if (isHovering(el)) {
+        slide.querySelector('a')?.setAttribute('tabindex', -1);
+        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', (event) => {
           const customEvent = new CustomEvent('carousel:jumpTo', {
             detail: { index: event.target.closest('.carousel-slide').dataset.index * 1 },

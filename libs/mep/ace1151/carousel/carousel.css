@@ -33,6 +33,10 @@
   visibility: hidden;
 }
 
+.carousel.carousel.s2a-tabs .carousel-wrapper {
+    overflow: visible !important;
+}
+
 .carousel .carousel-wrapper {
   position: relative;
   overflow: hidden;
@@ -696,9 +700,6 @@ html[dir="rtl"] .carousel .move-indicators {
     justify-content: space-between;
     align-items: center;
   }
-  .carousel.s2a-hovering .carousel-button-container {
-    display: none;
-  }
   .carousel.s2a-hovering .carousel-slide div.cta-container a {
     background-color: white;
     color: black; 
@@ -900,11 +901,12 @@ html[dir="rtl"] .carousel .move-indicators {
     max-height: 750px;
     position: relative;
   }
-.carousel.s2a-tabs.container {
-  width: 200%;
-  max-width: none;
-  left: -50%;
-}
+  .carousel.s2a-tabs.container {
+    width: 200%;
+    max-width: none;
+    left: -50%;
+    flex-direction: column-reverse;
+  }
   .carousel.s2a-hovering .carousel-slide:not(.active) .cta-container,
   .carousel.s2a-hovering .carousel-slide:not(.active) p.body-m {
     opacity: 0;
@@ -937,8 +939,21 @@ html[dir="rtl"] .carousel .move-indicators {
     color: var(--color-white)
   }
 
+  .carousel.s2a-hovering .carousel-slide p.body-m {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -12rem;
+    margin: 0 auto !important;
+    max-width: 70%;
+  }
+  
+  .carousel.s2a-hovering .carousel-slide {
+    position: relative;
+  }
+
   .carousel.s2a-hovering .carousel-slide h2 {
-    display: none;
+    display: none !important;
   }
 
   .carousel.s2a-hovering .cta-container .action-area {
@@ -1054,6 +1069,10 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel[class*='show-'].ups-desktop:has(.editorial-card).lightbox .carousel-expand {
     display: none;
   }
+
+  main:has(.carousel.s2a-tabs) {
+    overflow: hidden;
+  }
 }
 
 @media (min-width: 900px) and (max-width: 1199px) {
@@ -1062,6 +1081,11 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel.s2a-hovering .carousel-menu {
     gap: 2px !important;
+    margin-bottom: 90px;
+  }
+  .carousel.s2a-hovering .carousel-slide p.body-m {
+    bottom: -11rem;
+    max-width: 100%;
   }
   .carousel.s2a-hovering .carousel-menu-item {
     font-size: 14px !important;
@@ -1074,10 +1098,10 @@ html[dir="rtl"] .carousel .move-indicators {
 
 @media (min-width: 900px) and (max-width: 1999px) {
   .carousel.s2a-hovering .carousel-menu {
-    margin-bottom: 1rem !important;
+    margin-bottom: 150px !important;
   }
   .carousel.s2a-hovering .carousel-slides {
-    height: 40vw !important;
+    height: 38vw !important;
     margin: 0;
   }
 }
@@ -1105,15 +1129,19 @@ html[dir="rtl"] .carousel .move-indicators {
     font-size: 24px;
     font-weight: 800;
   }
-  .carousel.s2a-whatsnew .carousel-slide p:nth-child(3) picture {
+  .carousel.s2a-whatsnew .carousel-slide div > p:nth-child(2) picture {
+    position: absolute;
+    right: 20px;
+    top: -50px;
+    width: 50px;
+  }
+  .carousel.s2a-whatsnew .carousel-slide div > p:nth-child(3) picture {
     height: 17px;
     margin: 1rem 0 .5rem;
   }
-  .carousel.s2a-whatsnew .carousel-slide p:nth-child(2) picture {
-    position: absolute;
-    right: 20px;
-    top: -40px;
-    width: 50px;
+
+  .carousel.carousel.s2a-linked-slides .carousel-slide {
+    cursor: pointer;
   }
   
   .carousel.s2a-whatsnew .carousel-wrapper {
@@ -1164,6 +1192,9 @@ html[dir="rtl"] .carousel .move-indicators {
   background-color: white;
 }
 
+.carousel.s2a-hovering .carousel-button-container {
+  display: none;
+}
 
 .section:has(.carousel.s2a-whatsnew) {
   overflow: hidden;
@@ -1173,6 +1204,14 @@ html[dir="rtl"] .carousel .move-indicators {
   width: 0;
   height: 0;
   overflow: hidden;
+}
+
+.carousel.s2a-linked-slides a {
+  text-decoration: none !important;
+  color: initial !important;
+}
+.carousel.s2a-linked-slides a:not(.carousel-slide) {
+  display: none;
 }
 
 :root:has(meta[name="theme"][content="max25"]) {
