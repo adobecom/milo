@@ -1394,9 +1394,17 @@ class Gnav {
             if (this.isLocalNav()) decorateLocalNavItems(item, template);
 
             const transformable = template.querySelectorAll('.feds-menu-column').length > 1;
-            if (!transformable) return;
+            // We temporarily have both to avoid letting the old popup
+            // show up while were trying to get the new nav up and running.
+            // Remember transformTemplateToMobile is async
+            const loadingPopup = template.querySelector('.feds-popup.loading');
+            const popup = template.querySelector('.feds-popup:not(.loading)');
+            if (!popup) return;
+            if (!transformable) {
+              popup.style.visibility = '';
+              return;
+            }
 
-            const popup = template.querySelector('.feds-popup');
             await transformTemplateToMobile({
               popup,
               item,
@@ -1404,6 +1412,8 @@ class Gnav {
               toggleMenu: this.toggleMenuMobile,
               updatePopupPosition: this.updatePopupPosition,
             });
+            loadingPopup?.remove();
+            popup.style.visibility = '';
             if (popup.closest('.feds-navItem--megaMenu.feds-dropdown--active')) makeTabActive(popup);
           } finally {} // eslint-disable-line
         })();
