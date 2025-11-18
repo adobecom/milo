@@ -1,6 +1,7 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
@@ -264,6 +265,8 @@ function decorateTableToggleButton({
   arePrimaryColumns,
   tableElement,
   tableContainer,
+  expandMetadata,
+  el,
 }) {
   [...tableChild.children].forEach((child, childIndex) => {
     const isPrimary = childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY;
@@ -272,7 +275,12 @@ function decorateTableToggleButton({
   });
   tableChild.classList.add('table-column-header');
   const firstChild = tableChild.children[0];
-  const buttonElement = createTag('button', { 'aria-expanded': true });
+  const isExpanded = expandMetadata
+    ? expandMetadata?.includes(firstChild.textContent.trim().toLowerCase())
+    : el.querySelectorAll('.table-container').length === 0;
+  tableElement.classList.toggle('hide', !isExpanded);
+  const buttonElement = createTag('button', { 'aria-expanded': !!isExpanded });
+
   buttonElement.innerHTML = firstChild.innerHTML;
   buttonElement.appendChild(createTag('span', { class: 'toggle-icon' }));
   buttonElement.addEventListener('click', () => {
@@ -337,13 +345,20 @@ function decorateTableCells({ tableChild, arePrimaryColumns, tableElement }) {
   tableElement.appendChild(tableChild);
 }
 
-function addTableClassesAndAppend(el, tableContainer, tableChildren) {
+function addTableClassesAndAppend(el, tableContainer, tableChildren, expandMetadata) {
   const tableElement = createTag('div', { class: 'table', role: 'table' });
   const arePrimaryColumns = [];
 
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
-      decorateTableToggleButton({ tableChild, arePrimaryColumns, tableElement, tableContainer });
+      decorateTableToggleButton({
+        tableChild,
+        arePrimaryColumns,
+        tableElement,
+        tableContainer,
+        expandMetadata,
+        el,
+      });
       return;
     }
     decorateTableCells({ tableChild, arePrimaryColumns, tableElement });
@@ -356,10 +371,18 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
 function decorateTables(el, children) {
   let currentTableContainer = createTag('div', { class: 'table-container' });
   let currentTableChildren = [];
+  const sectionMetadata = el.closest('.section').querySelector('.section-metadata');
+  let expandMetadata = null;
+  if (sectionMetadata) expandMetadata = getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => item.trim());
 
   const processCurrentTable = () => {
     if (currentTableChildren.length === 0) return;
-    addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
+    addTableClassesAndAppend(
+      el,
+      currentTableContainer,
+      currentTableChildren,
+      expandMetadata,
+    );
     currentTableContainer = createTag('div', { class: 'table-container' });
     currentTableChildren = [];
   };
