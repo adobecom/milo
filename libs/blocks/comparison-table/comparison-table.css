@@ -84,7 +84,7 @@
 .comparison-table .table-container .table-row {
   margin: 0 var(--spacing-s);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
 }
 
@@ -194,7 +194,7 @@
   max-width: calc(var(--comparison-desktop-max-width) - 2*var(--comparison-header-spacing));
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
 }
 
@@ -387,6 +387,10 @@
 
   .comparison-table .table-container {
     max-width: calc(100% - var(--comparison-tablet-spacing));
+  }
+
+  .comparison-table .table-container .table-row, .comparison-table .header-content-wrapper {
+    grid-template-columns: minmax(192px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
   }
 }
 
