@@ -25,7 +25,7 @@
 
 .comparison-table *:is(h1, h2, h3, h4, h5, h6) {
   line-height: 125%;
-  font-size: var(--type-body-m-size);
+  font-size: var(--type-heading-s-size);
 }
 
 .comparison-table .table-container {
@@ -53,6 +53,7 @@
   padding: var(--spacing-s);
   border-start-start-radius: var(--comparison-border-radius);
   border-start-end-radius: var(--comparison-border-radius);
+  font-family: var(--body-font-family);
 }
 
 .comparison-table .table-container .table-column-header button:hover {
@@ -116,7 +117,7 @@
   color: var(--hover-border-color);
 }
 
-.comparison-table .table-container .primary-cell path {
+.comparison-table .table-container .primary-cell .icon-checkmark path {
   color: var(--primary-cell-path-color);
 }
 
@@ -146,8 +147,8 @@
 .comparison-table .table-container .table-cell div {
   border: 1px solid var(--comparison-border-color);
   border-radius: 4px;
-  width: calc(100% - 32px);
-  padding: var(--spacing-xs);
+  width: calc(100% - 24px);
+  padding: var(--spacing-xs) 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
