@@ -467,6 +467,7 @@ function setupStickyHeader(el) {
   const handleScroll = () => {
     const tableContainerOffset = firstTableContainer.getBoundingClientRect().top
      + (window.pageYOffset || document.documentElement.scrollTop);
+    const elOffset = el.getBoundingClientRect().top;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
     if (scrollTop >= tableContainerOffset && !isSticky) {
@@ -479,7 +480,7 @@ function setupStickyHeader(el) {
       if (headerContent.offsetHeight / window.innerHeight >= 0.45) headerContent.classList.remove('sticky');
     }
 
-    if (scrollTop <= 100 && isSticky) {
+    if (elOffset > 0 && elOffset < 100 && isSticky) {
       headerContent.classList.remove('sticky');
       headerContent.style.top = '';
       headerContentDummy.style.height = '';
