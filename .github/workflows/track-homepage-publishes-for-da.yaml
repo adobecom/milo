@@ -43,14 +43,14 @@ jobs:
           echo "One week from now: $(date -d @$ONE_WEEK_FROM_NOW)"
           
           if [ $EXPIRY -lt $ONE_WEEK_FROM_NOW ]; then
-            echo "::warning::AEM_LIVE_ADMIN_TOKEN_EXPRESS will expire in less than a week (on $(date -d @$EXPIRY)). Please renew the token soon."
+            echo "::warning::AEM_LIVE_ADMIN_TOKEN_HOMEPAGE will expire in less than a week (on $(date -d @$EXPIRY)). Please renew the token soon."
             echo "Token expiration is approaching" >> $GITHUB_STEP_SUMMARY
-            echo "The AEM_LIVE_ADMIN_TOKEN_EXPRESS will expire on $(date -d @$EXPIRY)" >> $GITHUB_STEP_SUMMARY
+            echo "The AEM_LIVE_ADMIN_TOKEN_HOMEPAGE will expire on $(date -d @$EXPIRY)" >> $GITHUB_STEP_SUMMARY
             echo "Please generate a new token and update the repository secret." >> $GITHUB_STEP_SUMMARY
           fi
           
           if [ $EXPIRY -lt $CURRENT_TIME ]; then
-            echo "::error::AEM_LIVE_ADMIN_TOKEN_EXPRESS has expired on $(date -d @$EXPIRY)"
+            echo "::error::AEM_LIVE_ADMIN_TOKEN_HOMEPAGE has expired on $(date -d @$EXPIRY)"
             exit 1
           fi
   check-last-run:
