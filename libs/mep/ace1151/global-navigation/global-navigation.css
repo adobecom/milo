@@ -1715,11 +1715,11 @@ header.test-nav .feds-nav > .feds-navItem > .feds-popup .feds-menu-column .feds-
   padding-bottom: 24px;
 }
 
-header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button:hover {
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button:hover > span:first-child {
   color: var(--feds-color-white-v2);
 }
 
-header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button[aria-selected="true"] > span:first-child {
   color: var(--feds-color-white-v2);
 }
 
