@@ -617,8 +617,14 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 
 /* individual card look in mobile for homepage */
 @media screen and (max-width: 599px) {
+  .section.s2a-full-width-mobile:has(.editorial-card.s2a-editorial-separate-mobile) {  
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
   .editorial-card.s2a-editorial-separate-mobile {
-    background: black !important;
+    /* background: #171624 !important; */
+    background: #171624 !important;
     border-radius: 16px;
   }
 
