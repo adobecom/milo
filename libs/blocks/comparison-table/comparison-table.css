@@ -191,7 +191,7 @@
 }
 
 .comparison-table .header-content-wrapper {
-  max-width: calc(var(--comparison-desktop-max-width) - 2*var(--comparison-header-spacing));
+  max-width: calc(var(--comparison-desktop-max-width) - 2*var(--comparison-header-spacing) - 2px);
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
