@@ -636,7 +636,7 @@ const buildMenuItems = (slides, el) => {
       }, title.textContent);
       const headerWrapper = createTag('h2', {
         class: 'slide-header-control',
-      }, `${title.textContent}<a>${EXPAND_ICON}</a><a class="collapse-wrapper" daa-ll="slide-close-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
+      }, `${title.textContent}<a daa-ll="slide-open-${title.textContent.toLowerCase().replace(/\s+/g, '-')}">${EXPAND_ICON}</a><a class="collapse-wrapper" daa-ll="slide-close-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
       title.parentElement.insertBefore(headerWrapper, title);
       title.remove();
       item.dataset.index = index;
@@ -683,7 +683,7 @@ export default function init(el) {
   const carouselName = keyDivs[0].textContent;
   const parentArea = el.closest('.fragment') || document;
   const candidateKeys = parentArea.querySelectorAll('div.section-metadata > div > div:first-child');
-  let slides = [...candidateKeys].reduce((rdx, key, index) => {
+  let slides = [...candidateKeys].reduce((rdx, key) => {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
@@ -692,14 +692,14 @@ export default function init(el) {
       const title = slide.querySelector('h2');
 
       if (isLinkedSlides(el)) {
-        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.setAttribute('daa-ll', `slide-image-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', () => {
           window.open(slide.querySelector('a')?.href || '#', '_blank');
         });
       }
       if (isHovering(el)) {
         slide.querySelector('a')?.setAttribute('tabindex', -1);
-        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.setAttribute('daa-ll', `slide-image-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', (event) => {
           const customEvent = new CustomEvent('carousel:jumpTo', {
             detail: { index: event.target.closest('.carousel-slide').dataset.index * 1 },
