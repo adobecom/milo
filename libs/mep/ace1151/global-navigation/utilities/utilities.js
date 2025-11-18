@@ -608,7 +608,7 @@ const parseTabsFromMenuSection = async (section, index) => {
 
   const content = section.querySelector('.feds-menu-items') ?? section;
 
-  const columns = content.closest('feds-menu-column--group')
+  const columns = content.closest('.feds-menu-column--group')
     ? [...content.querySelectorAll('ul')]
     : [content];
 
@@ -668,9 +668,16 @@ export const transformTemplateToMobile = async ({
     const selectMultiColumnSections = '.feds-menu-column--group .feds-menu-section';
     const selectSingleColumns = '.feds-menu-column > .feds-menu-section'; // includes multi-section single columns
     const selectMultiColumnSmallMenus = '.feds-menu-column:has(> .feds-menu-items)';
+    const validSection = (section) => {
+      if (!(section instanceof Element)) return false;
+      const isPromo = !!section.querySelector('.feds-promo');
+      const hasText = !!section.textContent;
+      const isGnavImage = !!section.querySelector('.gnav-image');
+      return !isPromo && !isGnavImage && hasText;
+    };
     const parsedSections = await Promise.all(
       [...popup.querySelectorAll(`:is(${selectMultiColumnSections}, ${selectSingleColumns}, ${selectMultiColumnSmallMenus})`)]
-        .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
+        .filter(validSection)
         .map(parseTabsFromMenuSection),
     );
     const normalTabs = [];
@@ -679,7 +686,6 @@ export const transformTemplateToMobile = async ({
       if (tab.isHeadingAsRedirection) headingLinkTabs.push(tab);
       else normalTabs.push(tab);
     }
-    // const promoTabs = isLoading ? [] : await promoCrossCloudTab(popup);
     return normalTabs.concat(headingLinkTabs);
   })();
 
