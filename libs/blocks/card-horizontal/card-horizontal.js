@@ -32,7 +32,8 @@ function decorateImage(block) {
   return wrapper;
 }
 
-const adaptForTextExtension = (el) => {
+const adaptForTextExtension = (block) => {
+  const el = block.closest('.card-horizontal');
   const { letterSpacing, wordSpacing } = getComputedStyle(el);
   const isExtensionActive = letterSpacing !== 'normal' || wordSpacing !== '0px';
   el.classList.toggle('no-clamp', isExtensionActive);
@@ -61,6 +62,11 @@ function decorateContent(block) {
     a.addEventListener('focus', () => card.classList.add('card-block-focus'));
     a.addEventListener('blur', () => card.classList.remove('card-block-focus'));
   }
+
+  adaptForTextExtension(block);
+  const observer = new ResizeObserver(() => { adaptForTextExtension(block); });
+  if (heading) observer.observe(heading);
+  if (paragraphs.length) observer.observe(paragraphs[0]);
 }
 
 export default function init(el) {
@@ -68,14 +74,4 @@ export default function init(el) {
   const block = el.querySelector(':scope > div:not([class])');
   decorateContent(block);
   foreground.insertAdjacentElement('beforeEnd', block);
-  adaptForTextExtension(el);
-
-  const observer = new MutationObserver(() => {
-    adaptForTextExtension(el);
-  });
-
-  observer.observe(el, {
-    attributes: true,
-    attributeFilter: ['style'],
-  });
 }
