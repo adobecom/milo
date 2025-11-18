@@ -177,6 +177,7 @@ export class InlinePrice extends HTMLSpanElement {
             'data-force-tax-exclusive',
             'data-template',
             'data-wcs-osi',
+            'data-quantity',
         ];
     }
 
@@ -299,7 +300,7 @@ export class InlinePrice extends HTMLSpanElement {
             let offers = selectOffers(await offerSelectors, options);
             let [offer] = offers;
 
-            if (service.featureFlags[FF_DEFAULTS]) {
+            if (service.featureFlags[FF_DEFAULTS] || options[FF_DEFAULTS]) {
                 if (priceOptions.displayPerUnit === undefined) {
                     options.displayPerUnit =
                         offer.customerSegment !== 'INDIVIDUAL';
