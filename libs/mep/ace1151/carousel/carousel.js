@@ -638,7 +638,7 @@ const buildMenuItems = (slides, el) => {
         class: 'slide-header-control',
       }, `${title.textContent}<a daa-ll="slide-open-${title.textContent.toLowerCase().replace(/\s+/g, '-')}">${EXPAND_ICON}</a><a class="collapse-wrapper" daa-ll="slide-close-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
       title.parentElement.insertBefore(headerWrapper, title);
-      title.remove();
+      title.remove();getPreviousAriaLabel
       item.dataset.index = index;
       headerWrapper.querySelector('a.collapse-wrapper').addEventListener('click', (event) => {
         event.stopPropagation();
