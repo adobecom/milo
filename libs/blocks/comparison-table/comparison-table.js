@@ -276,7 +276,7 @@ function decorateTableToggleButton({
   tableChild.classList.add('table-column-header');
   const firstChild = tableChild.children[0];
   const isExpanded = expandMetadata
-    ? expandMetadata?.includes(firstChild.textContent.trim().toLowerCase())
+    ? expandMetadata.includes(el.querySelectorAll('.table-container').length + 1)
     : el.querySelectorAll('.table-container').length === 0;
   tableElement.classList.toggle('hide', !isExpanded);
   const buttonElement = createTag('button', { 'aria-expanded': !!isExpanded });
@@ -373,7 +373,7 @@ function decorateTables(el, children) {
   let currentTableChildren = [];
   const sectionMetadata = el.closest('.section').querySelector('.section-metadata');
   let expandMetadata = null;
-  if (sectionMetadata) expandMetadata = getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => item.trim());
+  if (sectionMetadata) expandMetadata = getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => +item.trim());
 
   const processCurrentTable = () => {
     if (currentTableChildren.length === 0) return;
