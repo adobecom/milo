@@ -345,7 +345,7 @@ function decorateTableCells({ tableChild, arePrimaryColumns, tableElement }) {
   tableElement.appendChild(tableChild);
 }
 
-function addTableClassesAndAppend(el, tableContainer, tableChildren, expandMetadata) {
+function addTableClassesAndAppend({ el, tableContainer, tableChildren, expandMetadata }) {
   const tableElement = createTag('div', { class: 'table', role: 'table' });
   const arePrimaryColumns = [];
 
@@ -377,12 +377,12 @@ function decorateTables(el, children) {
 
   const processCurrentTable = () => {
     if (currentTableChildren.length === 0) return;
-    addTableClassesAndAppend(
+    addTableClassesAndAppend({
       el,
-      currentTableContainer,
-      currentTableChildren,
+      tableContainer: currentTableContainer,
+      tableChildren: currentTableChildren,
       expandMetadata,
-    );
+    });
     currentTableContainer = createTag('div', { class: 'table-container' });
     currentTableChildren = [];
   };
