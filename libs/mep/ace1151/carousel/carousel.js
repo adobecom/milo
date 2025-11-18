@@ -633,7 +633,6 @@ const buildMenuItems = (slides, el) => {
       }, title.textContent);
       const headerWrapper = createTag('h2', {
         class: 'slide-header-control',
-        'data-ll': `slide-open-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`,
       }, `${title.textContent}<a>${EXPAND_ICON}</a><a class="collapse-wrapper" data-ll="slide-close-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
       title.parentElement.insertBefore(headerWrapper, title);
       title.remove();
@@ -691,7 +690,7 @@ export default function init(el) {
       if (isHovering(el)) {
         const title = slide.querySelector('h2');
         slide.querySelector('a')?.setAttribute('tabindex', -1);
-        slide.setAttribute('daa-ll', `slide-img-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${index}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', (event) => {
           const customEvent = new CustomEvent('carousel:jumpTo', {
             detail: { index: event.target.closest('.carousel-slide').dataset.index * 1 },
