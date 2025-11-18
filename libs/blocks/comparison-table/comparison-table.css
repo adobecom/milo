@@ -403,6 +403,10 @@
 }
 
 @media screen and (max-width: 899px) {
+  .comparison-table .header-content-wrapper {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
   .comparison-table .header-content-wrapper .header-item:first-child {
     display: none;
   }
