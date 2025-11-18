@@ -122,6 +122,19 @@ header.global-navigation {
   min-height: var(--global-height-navPromo);
 }
 
+body:has(header.test-nav) .feds-promo-aside-wrapper {
+  border-bottom: 1px solid var(--feds-test-borderColor);
+}
+
+body:has(header.test-nav) .aside.promobar .action-area .con-button:hover {
+  border-color: #393939;
+  background: #2c2c2c;
+  color: var(--feds-color-white-v2);
+}
+
+body:has(header.test-nav) .aside.promobar .action-area .con-button {
+  border-color: #393939;
+}
 /* Product Entry CTA */
 .feds-product-entry-cta{
   align-items: center;
@@ -687,7 +700,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   white-space: break-spaces;
 }
 
-header .feds-nav > .feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
+header .feds-nav > .feds-navItem > .feds-popup .feds-navLink--blue .feds-navLink-title {
   padding: 6px 0;
   text-decoration: underline;
   font-weight: 400;
