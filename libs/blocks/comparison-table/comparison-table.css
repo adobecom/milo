@@ -147,7 +147,7 @@
 .comparison-table .table-container .table-cell div {
   border: 1px solid var(--comparison-border-color);
   border-radius: 4px;
-  width: calc(100% - 24px);
+  width: calc(100% - 26px);
   padding: var(--spacing-xs) 12px;
   display: flex;
   flex-direction: column;
