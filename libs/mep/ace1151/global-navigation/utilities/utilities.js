@@ -608,7 +608,7 @@ const parseTabsFromMenuSection = async (section, index) => {
 
   const content = section.querySelector('.feds-menu-items') ?? section;
 
-  const columns = content.closest('feds-menu-column--group')
+  const columns = content.closest('.feds-menu-column--group')
     ? [...content.querySelectorAll('ul')]
     : [content];
 
