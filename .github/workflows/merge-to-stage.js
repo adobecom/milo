@@ -212,7 +212,7 @@ const openStageToMainPR = async () => {
 
 const mergeLimitExceeded = () => MAX_MERGES - existingPRCount < 0;
 
-const isMondayBeforeRCP = () => {
+const isThursdayBeforeRCP = () => {
   const now = new Date();
   const { RCPDates } = require('./helpers.js');
   
@@ -238,7 +238,7 @@ const main = async (params) => {
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
   if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
-  if (isMondayBeforeRCP()) return console.log('Stopped, within 4 days before Monday RCP to have a clean stage branch for emergencies.');
+  if (isThursdayBeforeRCP()) return console.log('Stopped, batches are not created four days prior to a RCP to ensure a clean stage branch for emergencies.');
 
   try {
     const stageToMainPR = await getStageToMainPR();
