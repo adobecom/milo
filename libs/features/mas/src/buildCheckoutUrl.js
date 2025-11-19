@@ -75,6 +75,21 @@ const ALLOWED_KEYS = new Set([
 ]);
 const REQUIRED_KEYS = ['env', 'workflowStep', 'clientId', 'country'];
 
+// Parameters that are allowed to be passed to the checkout URL from the window.location.search of the current page
+const ALLOWED_URL_PARAMS = new Set([
+  'gid',
+  'gtoken',
+  'notifauditid',
+  'cohortid',
+  'productname',
+  'sdid',
+  'attimer',
+  'gcsrc',
+  'gcprog',
+  'gcprogcat',
+  'gcpagetype'
+]);
+
 /**
  * Maps human-readable parameter name to the name expected by Checkout Page.
  * Map contains values for UC versions, UCv2, UCv3 etc.
@@ -140,6 +155,25 @@ export function add3in1Parameters({ url, modal, is3in1 }) {
 }
 
 /**
+ * Adds parameters from the page URL to the checkout URL. 
+ * Only parameters that are allowed to be passed to the checkout URL from the page URL are added.
+ * @param {URL} url - The URL object to add parameters to
+ */
+export function addParamsFromPageUrl(url) {
+  const pageSearchParams = new URLSearchParams(window.location.search);
+  const nonCommerceParameters = {};
+  ALLOWED_URL_PARAMS.forEach((param) => {
+    const value = pageSearchParams.get(param);
+    if (value !== null) {
+      nonCommerceParameters[param] = value;
+    }
+  });
+  if (Object.keys(nonCommerceParameters).length > 0) {
+    addParameters(nonCommerceParameters, url.searchParams, ALLOWED_URL_PARAMS);
+  }
+}
+
+/**
  * Builds a UCv3 Checkout URL out of given parameters.
  */
 export function buildCheckoutUrl(checkoutData) {
@@ -153,6 +187,9 @@ export function buildCheckoutUrl(checkoutData) {
     setItemsParameter(items, url.searchParams);
   }
   addParameters({ ...rest }, url.searchParams, ALLOWED_KEYS);
+
+  addParamsFromPageUrl(url);
+
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
