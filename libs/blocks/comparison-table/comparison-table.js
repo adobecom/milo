@@ -17,14 +17,8 @@ function equalHeight(el) {
     const resizeObserver = new ResizeObserver((entries) => {
       if (entries.some((entry) => entry.contentBoxSize || entry.borderBoxSize)) handler();
     });
-    const observeElements = () => {
-      const elementsToObserve = [
-        ...el.querySelectorAll('.table-cell div'),
-        ...el.querySelectorAll('.sub-header-item-container'),
-      ];
-      elementsToObserve.forEach((element) => resizeObserver.observe(element));
-    };
-    observeElements();
+    el.querySelectorAll('.table-cell div, .sub-header-item-container')
+      .forEach((element) => resizeObserver.observe(element));
     return resizeObserver;
   };
 
