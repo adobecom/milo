@@ -574,6 +574,54 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
+export async function localizeLinkAsync(
+  href,
+  originHostName = window.location.hostname,
+  overrideDomain = false,
+) {
+  try {
+    const url = new URL(href);
+    
+    const sanitizedPath = url.pathname.replace(/\.html$/, '');
+    const matchingIndexes = Object.values(queryIndexes)
+      .filter((q) => q.domains.includes(url.hostname));
+    const pathsArrays = await Promise.all(
+      matchingIndexes.map((q) => q.pathsRequest)
+    );
+    const allPaths = pathsArrays.flat().filter(Boolean);
+    const isInQueryIndex = allPaths.some((path) => {
+      const sanitizedIndexPath = path.replace(/\.html$/, '');
+      return sanitizedPath === sanitizedIndexPath;
+    });
+    
+    //if (isInQueryIndex)
+    // add the prefix to the regional path
+
+    const relative = url.hostname === originHostName;
+    const processedHref = relative ? href.replace(url.origin, '') : href;
+    const { hash } = url;
+    if (hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
+    const path = url.pathname;
+    const extension = getExtension(path);
+    const allowedExts = ['', 'html', 'json'];
+    if (!allowedExts.includes(extension)) return processedHref;
+    const { locale, locales, languages, prodDomains } = getConfig();
+    if (!locale || !(locales || languages)) return processedHref;
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
+        || overrideDomain;
+    if (!isLocalizable) return processedHref;
+    const isLocalizedLink = isLocalizedPath(path, locales);
+    if (isLocalizedLink) return processedHref;
+
+    const prefix = getPrefixBySite(locale, url, relative);
+    const urlPath = `${prefix}${path}${url.search}${hash}`;
+    return relative ? urlPath : `${url.origin}${urlPath}`;
+  } catch (error) {
+    return href;
+  }
+}
+
+// this method is deprecated - use localizeLinksAsync instead
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
