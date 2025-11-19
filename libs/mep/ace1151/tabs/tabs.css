@@ -588,6 +588,12 @@
   background-color: var(--color-white);
 }
 
+.tabs.s2a-dark .paddle:not(:disabled) {
+  background: var(--tabs-active-bg-color);
+  border: 0;
+  border-bottom: 1px solid var(--tabs-border-color);
+}
+
 .tabs.segmented-control.s2a-segment-control .tabList {
   background: #000;
   border: 1px solid transparent;
