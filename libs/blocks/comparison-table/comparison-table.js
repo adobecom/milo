@@ -322,11 +322,8 @@ function processCellWithoutSeparator(child) {
 function processCellContent(child) {
   const childElements = [...child.children];
   const separatorIndex = childElements.findIndex((element) => element.textContent.trim() === '-');
-  if (separatorIndex !== -1) {
-    processCellWithSeparator(child, childElements, separatorIndex);
-    return;
-  }
-  processCellWithoutSeparator(child);
+  const processFn = separatorIndex !== -1 ? processCellWithSeparator : processCellWithoutSeparator;
+  processFn(child, childElements, separatorIndex);
 }
 
 function decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el }) {
