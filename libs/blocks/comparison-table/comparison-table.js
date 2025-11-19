@@ -54,19 +54,17 @@ function equalHeight(el) {
     });
   };
 
-  const performEqualHeight = () => performEqualHeightForElements('.table-row', '.table-cell', 'div');
-  const performHeaderEqualHeight = () => performEqualHeightForElements('.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)');
-  const performDescriptionEqualHeight = () => performEqualHeightForElements('.header-content-wrapper', '.header-item', '.description');
+  const configs = [
+    ['.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)'],
+    ['.table-row', '.table-cell', 'div'],
+    ['.header-content-wrapper', '.header-item', '.description'],
+  ];
 
-  const headerObserver = setupHeightHandler(performHeaderEqualHeight);
-  const tableObserver = setupHeightHandler(performEqualHeight);
-  const descriptionObserver = setupHeightHandler(performDescriptionEqualHeight);
+  const observers = configs.map(([parent, child, target]) => setupHeightHandler(
+    () => performEqualHeightForElements(parent, child, target),
+  ));
 
-  return () => {
-    headerObserver?.disconnect();
-    tableObserver?.disconnect();
-    descriptionObserver?.disconnect();
-  };
+  return () => observers.forEach((observer) => observer?.disconnect());
 }
 
 const getFirstVisibleColumnIndex = (el) => {
