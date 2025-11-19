@@ -73,8 +73,7 @@ function syncAccessibilityHeaders(el) {
   const visibleColumnIndices = new Set(visibleHeaderItems.map((item) => item.getAttribute('data-column-index')));
 
   visibleHeaderItems.forEach((headerItem) => {
-    const columnIndex = headerItem.getAttribute('data-column-index');
-    const cell = accessibilityHeaderRow.querySelector(`[data-column-index="${columnIndex}"]`);
+    const cell = accessibilityHeaderRow.querySelector(`[data-column-index="${headerItem.getAttribute('data-column-index')}"]`);
     if (!cell) return;
     cell.classList.remove('hidden');
     accessibilityHeaderRow.appendChild(cell);
