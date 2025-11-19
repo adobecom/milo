@@ -1,5 +1,6 @@
 import { handleFocalpoint } from '../../../utils/decorate.js';
 import { createTag, getConfig, getFedsPlaceholderConfig } from '../../../utils/utils.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
 
 const replacePlaceholder = async (key) => {
   const { replaceKey } = await import('../../../features/placeholders.js');
@@ -194,6 +195,7 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
   const shouldStartExpanded = isInDeeplinkTab(section) || isInDeeplinkHash(section);
 
   const contentId = `collapse-frag-${Math.random().toString(36).substring(2, 11)}`;
+  const analyticsString = `open-${processTrackingLabels(buttonText)}`;
   const placeholder = createTag('div', {
     class: 'collapse-frag-placeholder',
     'data-fragment-url': fragmentUrl,
@@ -204,6 +206,7 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     class: 'collapse-frag-button',
     'aria-expanded': shouldStartExpanded ? 'true' : 'false',
     'aria-controls': contentId,
+    'daa-ll': analyticsString,
   });
   toggleButton.innerHTML = `
     <span class="collapse-frag-text">${buttonText}</span>
@@ -226,6 +229,11 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     toggleButton.setAttribute('aria-expanded', 'false');
     placeholder.setAttribute('aria-hidden', 'true');
     section.classList.remove('frag-expanded');
+    // Update analytics to track close action
+    const analyticsValue = toggleButton.getAttribute('daa-ll');
+    if (analyticsValue) {
+      toggleButton.setAttribute('daa-ll', analyticsValue.replace(/close-/, 'open-'));
+    }
   }
 
   function expandContent() {
@@ -247,6 +255,11 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
       loadedFragment.removeEventListener('transitionend', transitionEnd);
     };
     loadedFragment.addEventListener('transitionend', transitionEnd);
+    // Update analytics to track open action
+    const analyticsValue = toggleButton.getAttribute('daa-ll');
+    if (analyticsValue) {
+      toggleButton.setAttribute('daa-ll', analyticsValue.replace(/open-/, 'close-'));
+    }
   }
 
   async function loadAndSetupFragment() {
