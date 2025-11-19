@@ -62,12 +62,9 @@ function equalHeight(el) {
 }
 
 const getFirstVisibleColumnIndex = (el) => {
-  const headerItems = el.querySelectorAll('.header-item[data-column-index]');
-  for (let i = 0; i < headerItems.length; i += 1) {
-    const item = headerItems[i];
-    if (!item.classList.contains('hidden')) return +item.getAttribute('data-column-index');
-  }
-  return -1;
+  const firstVisible = [...el.querySelectorAll('.header-item[data-column-index]')]
+    .find((item) => !item.classList.contains('hidden'));
+  return firstVisible ? +firstVisible.getAttribute('data-column-index') : -1;
 };
 
 function syncAccessibilityHeaders(el) {
