@@ -380,6 +380,11 @@
   justify-content: flex-end;
 }
 
+  .icon-block.s2a .foreground .action-area > a:not(.con-button) {
+    font-weight: 00;
+    font-size: 18px;
+  }
+
 @media (max-width: 600px) {
   .icon-block.container-mobile.left-mobile .foreground {
     text-align: start;
