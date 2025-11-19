@@ -106,6 +106,7 @@ function updateVisibleSelects({ el, headerTitles }) {
 function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
   const newValue = +e.target.value;
   const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex(el);
+
   el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => col.classList.add('hidden'));
   el.querySelectorAll(`[data-column-index="${newValue}"]`).forEach((col) => {
     col.classList.remove('hidden');
@@ -119,6 +120,7 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
     const rowHeader = parent.querySelector('.table-row-header');
     if (rowHeader) parent.insertBefore(col, rowHeader.nextSibling);
   });
+
   const selectElement = el.querySelector(`[data-column-index="${newValue}"] .mobile-filter-select`);
   if (selectElement) selectElement.value = newValue;
   updateVisibleSelects({ el, headerTitles });
