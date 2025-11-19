@@ -625,7 +625,7 @@ function readySlides(slides, slideContainer, isUpsDesktop, carouselElements) {
 
 const buildMenuItems = (slides, el) => {
   if (isHovering(el)) {
-    const menuItems = slides.map((slide, index) => {
+    let menuItems = slides.map((slide, index) => {
       const title = slide.querySelector('h2');
       if (!title) return null;
       const item = createTag('button', {
@@ -638,7 +638,7 @@ const buildMenuItems = (slides, el) => {
         class: 'slide-header-control',
       }, `${title.textContent}<a daa-ll="slide-open-${title.textContent.toLowerCase().replace(/\s+/g, '-')}">${EXPAND_ICON}</a><a class="collapse-wrapper" daa-ll="slide-close-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
       title.parentElement.insertBefore(headerWrapper, title);
-      title.remove();getPreviousAriaLabel
+      title.remove();
       item.dataset.index = index;
       headerWrapper.querySelector('a.collapse-wrapper').addEventListener('click', (event) => {
         event.stopPropagation();
@@ -656,6 +656,11 @@ const buildMenuItems = (slides, el) => {
       item.setAttribute('tab-index', 0);
       return item;
     }).filter((item) => item);
+
+    let offsetUndoneMenuItems;
+    offsetUndoneMenuItems = menuItems.slice(INDEX_OFFSET);
+    offsetUndoneMenuItems = offsetUndoneMenuItems.concat(menuItems.slice(0, INDEX_OFFSET));
+    menuItems = offsetUndoneMenuItems;
     return {
       menuItemsContainer: createTag('div', { class: 'carousel-menu' }, menuItems),
       menuItems,
@@ -819,7 +824,7 @@ export default function init(el) {
 
   slides[activeSlideIndex - 1]?.classList.add('previous-slide');
   slides[activeSlideIndex].classList.add('active');
-  if (menuItems) menuItems[activeSlideIndex].classList.add('active');
+  if (menuItems) menuItems[0].classList.add('active');
   if (isHovering(el)) slides[activeSlideIndex].querySelector('a')?.setAttribute('tabindex', 0);
   slides[activeSlideIndex + 1]?.classList.add('next-slide');
   handleChangingSlides(carouselElements);
