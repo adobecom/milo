@@ -338,7 +338,7 @@ function decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el })
   tableElement.appendChild(tableChild);
 }
 
-function addTableClassesAndAppend({ el, tableContainer, tableChildren, expandMetadata }) {
+function decorateAndAppendTable({ el, tableContainer, tableChildren, expandMetadata }) {
   const tableElement = createTag('div', { class: 'table', role: 'table' });
   const arePrimaryColumns = [];
 
@@ -369,9 +369,9 @@ function decorateTables(el, children) {
     ? getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => +item.trim())
     : null;
 
-  const processCurrentTable = () => {
+  const processTable = () => {
     if (!currentTableChildren.length) return;
-    addTableClassesAndAppend({
+    decorateAndAppendTable({
       el,
       tableContainer: currentTableContainer,
       tableChildren: currentTableChildren,
@@ -383,14 +383,14 @@ function decorateTables(el, children) {
 
   children.forEach((child) => {
     if (child.textContent.trim() === '+++') {
-      processCurrentTable();
+      processTable();
       child.remove();
       return;
     }
     currentTableChildren.push(child);
   });
 
-  processCurrentTable();
+  processTable();
 }
 
 function setupResponsiveHiding(el) {
