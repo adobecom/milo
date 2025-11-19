@@ -677,7 +677,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .stic
   border-right: 1px solid var(--feds-borderColor-link-v2);
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink .feds-navLink-title {
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:not(.feds-navLink--blue) .feds-navLink-title {
   color: var(--feds-color-link-mobile-test-nav);
 }
 
