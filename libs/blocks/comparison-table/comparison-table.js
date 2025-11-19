@@ -459,13 +459,11 @@ function setupStickyHeader(el) {
   let isSticky = false;
 
   const handleScroll = () => {
-    if (el.offsetHeight === 0) return;
-    const tableContainerOffset = firstTableContainer.getBoundingClientRect().top
-     + (window.pageYOffset || document.documentElement.scrollTop);
-    const elOffset = el.getBoundingClientRect().top;
+    if (!el.offsetHeight) return;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const elOffset = el.getBoundingClientRect().top;
 
-    if (scrollTop >= tableContainerOffset && !isSticky) {
+    if ((scrollTop >= (firstTableContainer.getBoundingClientRect().top + scrollTop)) && !isSticky) {
       const heightBeforeSticky = headerContent.offsetHeight;
       headerContent.style.top = `${document.querySelector('header')?.offsetHeight || 0}px`;
       headerContent.classList.add('sticky');
