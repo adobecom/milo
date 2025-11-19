@@ -171,7 +171,7 @@ const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
 let langConfig;
-let queryIndexes = [];
+const queryIndexes = [];
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -1571,6 +1571,13 @@ async function checkForPageMods() {
   });
 }
 
+// TODO rethink name
+function getRegionToServeContentFor(config) {
+  // TODO test on /ch_de
+  if (config.locale.base) return config.locale.prefix.replace('/', '');
+  return sessionStorage.getItem('akamai');
+}
+
 function setCountry() {
   const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
     ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
@@ -1823,20 +1830,30 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   return section.blocks;
 }
 
-async function processQueryIndex(link, siteMapping) {
-  return new Promise((resolve, reject) => {
-    fetch(link).then(async (response) => {
-      const queryIndexJson = await response.json();
-      resolve({ paths: queryIndexJson.data.path,  });
-    }).catch((error) => { reject(error); });
-  })
+function processQueryIndexMap(link, domain) {
+  return {
+    pathsRequest: new Promise((resolve) => {
+      fetch(link).then(async (response) => {
+        const queryIndexJson = await response.json();
+        resolve(queryIndexJson.data?.flatMap((d) => d.Path));
+      }).catch(() => {
+        resolve({});
+      });
+    }),
+    domains: [domain],
+  };
 }
 
-async function loadQueryIndexes(config) {
+async function loadQueryIndexes(config, prefix) {
   if (queryIndexes.length) return queryIndexes;
   // config.prodDomains
-  queryIndexes[config.imsClientId ?? ''] = ;
-
+  const origin = config.origin || window.location.origin;
+  const contentRoot = `${origin}${prefix}${config.contentRoot ?? ''}`;
+  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
+  // TODO get Raghu to change this
+  const predefinedQueryIndexPath = `${contentRoot}/assets/lingo/preview-query-index.json`;
+  // const predefinedQueryIndexPath = `${contentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`;
+  queryIndexes[config.imsClientId ?? ''] = processQueryIndexMap(predefinedQueryIndexPath, window.location.host);
   // TODO reuse method?
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
@@ -1845,15 +1862,27 @@ async function loadQueryIndexes(config) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
 
-    langConfig = {
-      localeToLanguageMap: configJson['locale-to-language-map']?.data,
-      siteLanguages: configJson['site-languages']?.data?.map((site) => ({
-        ...site,
-        pathMatches: parseList(site.pathMatches),
-        languages: parseList(site.languages),
-      })),
-      nativeToEnglishMapping: configJson['langmap-native-to-en']?.data || [],
-    };
+    const alreadyQueriedIndex = configJson['ims-query-index-map']?.data?.find((d) => d.imsClientId === config.imsClientId);
+    const alreadyQueriedIndexDomain = alreadyQueriedIndex?.queryIndexWebPath.split('/*')[0];
+    if (alreadyQueriedIndex && queryIndexes[alreadyQueriedIndex.imsClientId]
+        && !queryIndexes[alreadyQueriedIndex.imsClientId].domains.includes(alreadyQueriedIndexDomain)) {
+      queryIndexes[alreadyQueriedIndex.imsClientId].domains.push(alreadyQueriedIndexDomain);
+    }
+
+    const imsQueryIndexData = configJson['ims-query-index-map']?.data?.filter((d) => d.imsClientId !== config.imsClientId) || [];
+    const siteLocalesData = configJson['site-locales']?.data || [];
+
+    imsQueryIndexData.forEach((queryIndexMap) => {
+      const { imsClientId, queryIndexWebPath } = queryIndexMap;
+
+      const matchingSiteLocale = siteLocalesData.find((s) => (
+        s.imsClientId === config.imsClientId && parseList(s.regionalSites)
+          .includes(prefix)
+      ));
+      if (matchingSiteLocale) {
+        queryIndexes[imsClientId] = processQueryIndexMap(queryIndexWebPath.replace('/*', prefix), queryIndexWebPath.split('/*')[0]);
+      }
+    });
 
     return langConfig;
   } catch (e) {
@@ -1881,8 +1910,14 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
-  if (config.locale.base || swapFragment) {
-    loadQueryIndexes(config);
+  if (config.locale.base
+  // || swap fragment (code from Mark)
+  ) {
+    // TODO load by locale
+    // if(swapFragment) prefix = prefix of subregion (where fragments should load from)
+    // else
+    const { prefix } = config.locale;
+    loadQueryIndexes(config, prefix);
   }
 
   const sections = decorateSections(area, isDoc);
