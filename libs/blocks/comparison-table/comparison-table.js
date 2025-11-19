@@ -465,6 +465,7 @@ function setupStickyHeader(el) {
   let isSticky = false;
 
   const handleScroll = () => {
+    if (el.offsetHeight === 0) return;
     const tableContainerOffset = firstTableContainer.getBoundingClientRect().top
      + (window.pageYOffset || document.documentElement.scrollTop);
     const elOffset = el.getBoundingClientRect().top;
