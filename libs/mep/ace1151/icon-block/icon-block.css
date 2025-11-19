@@ -381,8 +381,8 @@
 }
 
   .icon-block.s2a .foreground .action-area > a:not(.con-button) {
-    font-weight: 00;
-    font-size: 18px;
+    font-weight: 600 ;
+    font-size: 18px !important;
   }
 
 @media (max-width: 600px) {
