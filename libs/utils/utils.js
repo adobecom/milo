@@ -171,6 +171,7 @@ const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
 let langConfig;
+let queryIndexes = [];
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -1822,6 +1823,46 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   return section.blocks;
 }
 
+async function processQueryIndex(link, siteMapping) {
+  return new Promise((resolve, reject) => {
+    fetch(link).then(async (response) => {
+      const queryIndexJson = await response.json();
+      resolve({ paths: queryIndexJson.data.path,  });
+    }).catch((error) => { reject(error); });
+  })
+}
+
+async function loadQueryIndexes(config) {
+  if (queryIndexes.length) return queryIndexes;
+  // config.prodDomains
+  queryIndexes[config.imsClientId ?? ''] = ;
+
+  // TODO reuse method?
+  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
+  try {
+    // get rid of hargrave and sync with Raghu
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+
+    langConfig = {
+      localeToLanguageMap: configJson['locale-to-language-map']?.data,
+      siteLanguages: configJson['site-languages']?.data?.map((site) => ({
+        ...site,
+        pathMatches: parseList(site.pathMatches),
+        languages: parseList(site.languages),
+      })),
+      nativeToEnglishMapping: configJson['langmap-native-to-en']?.data || [],
+    };
+
+    return langConfig;
+  } catch (e) {
+    window.lana?.log('Failed to load language-config.json:', e);
+  }
+
+  return {};
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
@@ -1838,6 +1879,10 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     decorateDocumentExtras();
+  }
+
+  if (config.locale.base || swapFragment) {
+    loadQueryIndexes(config);
   }
 
   const sections = decorateSections(area, isDoc);
