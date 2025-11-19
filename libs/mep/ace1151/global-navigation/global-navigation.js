@@ -1347,6 +1347,7 @@ class Gnav {
       if (elements) {
         const dropdownBtn = elements.querySelector('button');
         elements.innerHTML = template.innerHTML;
+        elements.querySelector('.feds-popup')?.style.setProperty('visibility', '');
         // To override the textcontent of button of first item of localnav
         if (dropdownBtn) {
           elements.querySelector('button').textContent = dropdownBtn.textContent;
@@ -1401,7 +1402,7 @@ class Gnav {
             const popup = template.querySelector('.feds-popup:not(.loading)');
             if (!popup) return;
             if (!transformable) {
-              popup.style.visibility = '';
+              popup.style.setProperty('visibility', '');
               return;
             }
 

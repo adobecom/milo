@@ -510,7 +510,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
 
   // Remove the loading state created in delayDropdownDecoration
   // config.template?.querySelector('.feds-popup.loading')?.remove();
-  menuTemplate.style.visibility = 'hidden';
+  menuTemplate.style.setProperty('visibility', 'hidden');
   config.template?.append(menuTemplate);
   if (config.type === 'asyncDropdownTrigger') {
     setAriaAtributes(menuTemplate.previousElementSibling);
