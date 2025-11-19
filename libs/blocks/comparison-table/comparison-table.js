@@ -130,10 +130,9 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
 function createMobileFilterSelect({ headerTitles, headerItemIndex, el }) {
   const select = createTag('select', { class: 'mobile-filter-select', name: 'column-filter' });
   headerTitles.forEach((title, index) => {
-    const shouldSkip = !title
+    if (!title
       || (headerItemIndex === 1 && index === 2)
-      || (headerItemIndex === 2 && index === 1);
-    if (shouldSkip) return;
+      || (headerItemIndex === 2 && index === 1)) return;
     const option = createTag('option', { value: index }, title);
     if (index === headerItemIndex) option.selected = true;
     select.appendChild(option);
