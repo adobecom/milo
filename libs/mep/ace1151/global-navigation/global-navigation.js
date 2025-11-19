@@ -1347,6 +1347,12 @@ class Gnav {
       if (elements) {
         const dropdownBtn = elements.querySelector('button');
         elements.innerHTML = template.innerHTML;
+        // we temporarily have both the loading popup
+        // and non loading popup present at the same time
+        // to avoid flashing the wrong thing before we're
+        // done creating the tabular view (using transformTemplateToMobile)
+        const loadingPopup = elements.querySelector('.feds-popup.loading');
+        if (loadingPopup) loadingPopup.remove();
         elements.querySelector('.feds-popup')?.style.setProperty('visibility', '');
         // To override the textcontent of button of first item of localnav
         if (dropdownBtn) {
