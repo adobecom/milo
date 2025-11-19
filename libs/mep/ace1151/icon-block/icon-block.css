@@ -414,6 +414,9 @@
     border-radius: 16px;
   }
 
+  .icon-block.s2a .foreground .action-area > a:not(.con-button) {
+    font-size: 16px !important;
+  }
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
