@@ -328,6 +328,65 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     return true;
   })() : null;
 
+  // Preload content in background after tabs become interactive (non-deeplink case)
+  if (!shouldStartExpanded) {
+    const preloadContent = async () => {
+      // Check if section-metadata is inside a tabs block
+      const tabsBlock = section.closest('.tabs');
+
+      if (tabsBlock) {
+        // Wait for tabs to be initialized (check for tab-content-container)
+        const waitForTabs = () => {
+          const tabContent = tabsBlock.querySelector('.tab-content-container');
+          if (tabContent) {
+            // Tabs is ready, wait a short delay then preload
+            setTimeout(async () => {
+              if (!isLoaded) {
+                const loaded = await loadAndSetupFragment();
+                // Ensure content stays hidden after preload
+                if (loaded && loadedFragment) {
+                  loadedFragment.style.maxHeight = '0';
+                  loadedFragment.style.overflow = 'hidden';
+                }
+              }
+            }, 250);
+          } else {
+            // Tabs not ready yet, check again
+            requestAnimationFrame(waitForTabs);
+          }
+        };
+        waitForTabs();
+        return;
+      }
+
+      // Not in tabs, fall back to window load
+      if (document.readyState === 'complete') {
+        setTimeout(async () => {
+          if (!isLoaded) {
+            const loaded = await loadAndSetupFragment();
+            if (loaded && loadedFragment) {
+              loadedFragment.style.maxHeight = '0';
+              loadedFragment.style.overflow = 'hidden';
+            }
+          }
+        }, 1000);
+      } else {
+        window.addEventListener('load', () => {
+          setTimeout(async () => {
+            if (!isLoaded) {
+              const loaded = await loadAndSetupFragment();
+              if (loaded && loadedFragment) {
+                loadedFragment.style.maxHeight = '0';
+                loadedFragment.style.overflow = 'hidden';
+              }
+            }
+          }, 1000);
+        }, { once: true });
+      }
+    };
+    preloadContent();
+  }
+
   return { toggleButton, placeholder, shouldScroll: isInDeeplinkHash(section), expansionPromise };
 }
 
