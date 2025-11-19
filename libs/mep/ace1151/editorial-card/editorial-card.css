@@ -447,6 +447,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
     bottom: 32px;
   }
 }
+
 @media screen and (min-width: 1200px) {
   .editorial-card.s2a-media-bottom-desktop .media-area {
     order: 2;
@@ -504,7 +505,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
     border: none;
     padding-right: 0;
   }
-  
+
   .editorial-card > .foreground > [class*="body-"] > .s2a-card-accordion-btn > div {
     height: 19px;
     width: 19px;
@@ -531,6 +532,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
     display: none;
   }
 }
+
 @media screen and (min-width: 600px) {
   .editorial-card.s2a-editorial-accordion .s2a-card-accordion-btn {
     display: none;
@@ -556,12 +558,6 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 .s2a-card-accordion-btn.active .accordion-btn-icon.close {
   display: flex;
 }
-
-/* .s2a-card-accordion-btn > div {
-  justify-content: center;
-  align-items: center;
-  display: flex;
-} */
 
 /* no spacing on editorial within other blocks */
 .section.s2a-editorial-no-margins[class*="-up"] {
@@ -602,8 +598,6 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   margin-left: 5px;
 }
 
-
-
 @media screen and (min-width: 1200px) {
   .aside.s2a-background .foreground > div.text:has(.editorial-card.s2a-editorial-compact) {
     max-width: 100% !important;
@@ -617,7 +611,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   }
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 599px) {
   .section.three-up:has(.editorial-card.s2a-editorial-compact) {
     grid-template-columns: repeat(auto-fit, minmax(47%, 1fr));
   }
@@ -631,12 +625,6 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
     display: flex;
     justify-content: space-between;
   }
-
-  /* .editorial-card.s2a-editorial-compact .foreground > div[class*="body-"] > [class*="body-"] > a:not(button),
-  .editorial-card.s2a-editorial-compact .foreground > div[class*="body-"] > [class*="heading-"] > a:not(button) {
-    text-decoration: none;
-    margin-left: 0;
-  } */
 }
 
 /* individual card look in mobile for homepage */
@@ -671,7 +659,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 }
 
 /* aside overrides when used with editorial-card */
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 599px) {
   .aside.s2a-background .editorial-card.editorial-card.s2a-editorial-compact {
     height: 100% !important;
   }
@@ -691,6 +679,13 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   .editorial-card.s2a-editorial-accordion > .foreground > [class*="body-"] > :is(h1, h2, h3, h4, h5, h6) {
     flex: 0 1 74%;
     font-size: var(--type-heading-xs-size) !important;
+  }
+}
+
+/* overrides for homepage spacing */
+@media screen and (min-width: 1200px) {
+  .section.s2a-full-width-mobile:has(.editorial-card.s2a-editorial-separate-mobile) {
+    row-gap: 84px;
   }
 }
 
