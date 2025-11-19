@@ -70,6 +70,8 @@ const getFirstVisibleColumnIndex = (el) => {
 function syncAccessibilityHeaders(el) {
   const accessibilityHeaderRow = el.querySelector('.accessibility-header-row');
   const visibleHeaderItems = [...el.querySelectorAll('.header-item:not(.hidden)')];
+  const visibleColumnIndices = new Set(visibleHeaderItems.map((item) => item.getAttribute('data-column-index')));
+
   visibleHeaderItems.forEach((headerItem) => {
     const columnIndex = headerItem.getAttribute('data-column-index');
     const cell = accessibilityHeaderRow.querySelector(`[data-column-index="${columnIndex}"]`);
@@ -77,9 +79,10 @@ function syncAccessibilityHeaders(el) {
     cell.classList.remove('hidden');
     accessibilityHeaderRow.appendChild(cell);
   });
+
   [...accessibilityHeaderRow.querySelectorAll('.accessibility-header-cell')].forEach((cell) => {
     const columnIndex = cell.getAttribute('data-column-index');
-    if (columnIndex !== '-1' && !visibleHeaderItems.some((item) => item.getAttribute('data-column-index') === columnIndex)) cell.classList.add('hidden');
+    if (columnIndex !== '-1' && !visibleColumnIndices.has(columnIndex)) cell.classList.add('hidden');
   });
 }
 
