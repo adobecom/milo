@@ -365,12 +365,13 @@ function addTableClassesAndAppend({ el, tableContainer, tableChildren, expandMet
 function decorateTables(el, children) {
   let currentTableContainer = createTag('div', { class: 'table-container' });
   let currentTableChildren = [];
-  const sectionMetadata = el.closest('.section').querySelector('.section-metadata');
-  let expandMetadata = null;
-  if (sectionMetadata) expandMetadata = getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => +item.trim());
+  const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
+  const expandMetadata = sectionMetadata
+    ? getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => +item.trim())
+    : null;
 
   const processCurrentTable = () => {
-    if (currentTableChildren.length === 0) return;
+    if (!currentTableChildren.length) return;
     addTableClassesAndAppend({
       el,
       tableContainer: currentTableContainer,
