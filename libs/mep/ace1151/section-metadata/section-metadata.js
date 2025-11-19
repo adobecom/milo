@@ -171,6 +171,14 @@ function isInDeeplinkTab(section) {
   return false;
 }
 
+function isInDeeplinkHash() {
+  const hash = window.location.hash.substring(1);
+  if (!hash) return false;
+  const hashParams = new URLSearchParams(hash);
+  const deeplinkParams = ['filter', 'category', 'search', 'sort', 'types', 'single_app', 'page'];
+  return deeplinkParams.some((param) => hashParams.has(param));
+}
+
 async function loadFragmentContent(placeholder, url) {
   const { default: initFragment } = await import('../../../blocks/fragment/fragment.js');
   const link = createTag('a', { href: url, class: 'fragment' });
@@ -179,10 +187,11 @@ async function loadFragmentContent(placeholder, url) {
 }
 
 async function handleCollapseFrag(fragmentUrl, section, buttonText) {
-  if (!fragmentUrl || !section || !buttonText) return null;
+  if (!fragmentUrl || !section || !buttonText) {
+    return null;
+  }
 
-  // Check if section is in a deeplinked tab
-  const shouldStartExpanded = isInDeeplinkTab(section);
+  const shouldStartExpanded = isInDeeplinkTab(section) || isInDeeplinkHash(section);
 
   const contentId = `collapse-frag-${Math.random().toString(36).substring(2, 11)}`;
   const placeholder = createTag('div', {
@@ -279,21 +288,40 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
   });
 
   section.classList.add('has-collapse-frag');
-  if (shouldStartExpanded) {
-    (async () => {
-      const loaded = await loadAndSetupFragment();
-      if (!loaded) return;
-      loadedFragment.style.maxHeight = 'none';
-      section.classList.add('frag-expanded');
-    })();
-  }
+  // Return a promise if we need to wait for expansion before scrolling
+  const expansionPromise = shouldStartExpanded ? (async () => {
+    const loaded = await loadAndSetupFragment();
+    if (!loaded) return false;
+    loadedFragment.style.maxHeight = 'none';
+    section.classList.add('frag-expanded');
+    // Add temporary min-height to footer to prevent layout shift during initial load
+    const footer = document.querySelector('footer');
+    if (footer) {
+      const estimatedMinHeight = 4000;
+      footer.style.minHeight = `${estimatedMinHeight}px`;
+      const removeMinHeight = () => {
+        if (footer.style.minHeight) {
+          footer.style.transition = 'min-height 0.5s ease';
+          footer.style.minHeight = '';
+          setTimeout(() => {
+            footer.style.transition = '';
+          }, 500);
+        }
+      };
+      setTimeout(removeMinHeight, 10000);
+    }
+    const { decorateSectionAnalytics } = await import('../../../martech/attributes.js');
+    await decorateSectionAnalytics(loadedFragment, 'collapse-frag', getConfig());
+    return true;
+  })() : null;
 
-  return { toggleButton, placeholder };
+  return { toggleButton, placeholder, shouldScroll: isInDeeplinkHash(section), expansionPromise };
 }
 
 export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
+
   if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
@@ -308,9 +336,59 @@ export default async function init(el) {
   if (collapseFragText && collapseFragPath) {
     const result = await handleCollapseFrag(collapseFragPath, section, collapseFragText);
     if (result) {
-      const { toggleButton, placeholder } = result;
+      const { toggleButton, placeholder, shouldScroll, expansionPromise } = result;
       el.parentElement.insertBefore(toggleButton, el);
       el.parentElement.insertBefore(placeholder, el);
+      if (shouldScroll) {
+        // Wait for fragment to fully expand before scrolling
+        if (expansionPromise) {
+          await expansionPromise;
+        }
+        // Phase 1: Immediate scroll to get button visible quickly
+        const immediateScroll = () => {
+          const rect = toggleButton.getBoundingClientRect();
+          const currentPosition = rect.top + window.scrollY;
+          const targetScroll = Math.max(0, currentPosition - 90);
+          window.scrollTo({ top: targetScroll, behavior: 'instant' });
+        };
+        setTimeout(immediateScroll, 50);
+        // Phase 2: Monitor and refine position as page content loads
+        let lastPosition = 0;
+        let stableCount = 0;
+        let checkCount = 0;
+        const maxChecks = 60;
+        const refinePosition = () => {
+          checkCount += 1;
+          const rect = toggleButton.getBoundingClientRect();
+          const currentPosition = rect.top + window.scrollY;
+          // Check if position has stabilized
+          if (Math.abs(currentPosition - lastPosition) < 1) {
+            stableCount += 1;
+            if (stableCount >= 3) {
+              // Position stable for 3 frames, do final smooth scroll if needed
+              const currentTop = rect.top;
+              if (Math.abs(currentTop - 90) > 5) {
+                const targetScroll = Math.max(0, currentPosition - 90);
+                window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+              }
+              toggleButton.focus({ preventScroll: true });
+              return;
+            }
+          } else {
+            stableCount = 0;
+            // Position changed significantly, adjust scroll immediately
+            if (Math.abs(currentPosition - lastPosition) > 50) {
+              const targetScroll = Math.max(0, currentPosition - 90);
+              window.scrollTo({ top: targetScroll, behavior: 'instant' });
+            }
+          }
+          lastPosition = currentPosition;
+          if (checkCount < maxChecks) {
+            requestAnimationFrame(refinePosition);
+          }
+        };
+        setTimeout(() => requestAnimationFrame(refinePosition), 200);
+      }
     }
   }
 
