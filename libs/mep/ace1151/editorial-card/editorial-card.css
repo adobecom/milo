@@ -488,14 +488,32 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 
   .editorial-card > .foreground > [class*="body-"] > :is(h1, h2, h3, h4, h5, h6) {
     display: flex;
+  }
+
+  .editorial-card.s2a-editorial-accordion > .foreground > [class*="body-"] > :is(h1, h2, h3, h4, h5, h6) {
     width: 76.5%;
   }
 
   .editorial-card > .foreground > [class*="body-"] > .s2a-card-accordion-btn {
-    width: 24px;
-    height: 24px;
-    border-radius: 100px;
+    display: flex;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    width: 10%;
     margin-left: 5px;
+    background: none;
+    border: none;
+    padding-right: 0;
+  }
+  
+  .editorial-card > .foreground > [class*="body-"] > .s2a-card-accordion-btn > div {
+    height: 19px;
+    width: 19px;
+    border-radius: 100px;
+    background: var(--color-gray-300);
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
   }
 
   .editorial-card.editorial-card.s2a-editorial-accordion > .foreground > [class*="body-"] > .lockup-area picture > img {
@@ -506,7 +524,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 
   .editorial-card.s2a-editorial-accordion .editorial-accordion-item.active {
     display: flex; 
-    margin-left: 13%;
+    margin-left: 12.5%;
   }
 
   .editorial-card.s2a-editorial-accordion .editorial-accordion-item {
@@ -539,11 +557,11 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   display: flex;
 }
 
-.s2a-card-accordion-btn > div {
+/* .s2a-card-accordion-btn > div {
   justify-content: center;
   align-items: center;
   display: flex;
-}
+} */
 
 /* no spacing on editorial within other blocks */
 .section.s2a-editorial-no-margins[class*="-up"] {
@@ -659,7 +677,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   }
 
   .hero-marquee.s2a-hero-marquee .editorial-card.s2a-editorial-accordion .foreground {
-    padding: 16px !important;
+    padding: 16px 19px !important;
   }
 
   .section.s2a-editorial-no-margins:has(.s2a-editorial-accordion) {
@@ -671,7 +689,7 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
   }
 
   .editorial-card.s2a-editorial-accordion > .foreground > [class*="body-"] > :is(h1, h2, h3, h4, h5, h6) {
-    flex: 0 1 75%;
+    flex: 0 1 74%;
     font-size: var(--type-heading-xs-size) !important;
   }
 }

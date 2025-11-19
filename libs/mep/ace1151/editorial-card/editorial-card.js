@@ -140,16 +140,19 @@ const decorateHoverText = (el) => {
 };
 
 const decorateAccordion = (el) => {
+  const title = el.querySelector('.foreground :is(h1, h2, h3, h4, h5, h6)');
+  if (!title) return;
   const closeButtonSvg = `<svg width="9" height="3" viewBox="0 0 9 3" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.16406 0.631836H7.79297C8.00044 0.631836 8.32617 0.862684 8.32617 1.35449C8.3261 1.84619 8.00042 2.07715 7.79297 2.07715H1.16406C0.956614 2.07715 0.63093 1.84619 0.630859 1.35449C0.630859 0.862684 0.956592 0.631836 1.16406 0.631836Z" fill="#292929" stroke="black" stroke-width="1.26269"/>
 </svg>`;
   const openButtonSvg = `<svg width="9" height="11" viewBox="0 0 9 11" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M7.79316 3.85624H5.64265V1.35428C5.64265 0.606847 5.12104 0 4.4786 0C3.83616 0 3.31455 0.606847 3.31455 1.35428V3.85624H1.16405C0.521604 3.85624 0 4.46308 0 5.21052C0 5.95795 0.521604 6.5648 1.16405 6.5648H3.31455V9.06675C3.31455 9.81419 3.83616 10.421 4.4786 10.421C5.12104 10.421 5.64265 9.81419 5.64265 9.06675V6.5648H7.79316C8.4356 6.5648 8.9572 5.95795 8.9572 5.21052C8.9572 4.46308 8.4356 3.85624 7.79316 3.85624Z" fill="black"/>
 </svg>`;
+  const titleContent = title.textContent.toLowerCase().replace(/\s+/g, '-');
   const cardHeader = el.querySelector('.foreground > div > [class*="heading-"]');
   const accordionItemBody = el.querySelector('.foreground > div > p[class*="body-"]');
   accordionItemBody.classList.add('editorial-accordion-item');
-  const button = createTag('button', { class: 's2a-card-accordion-btn' }, `<div><span class="accordion-btn-icon open">${openButtonSvg}</span><span class="accordion-btn-icon close">${closeButtonSvg}</span></div>`);
+  const button = createTag('button', { class: 's2a-card-accordion-btn' }, `<div><span daa-ll="${titleContent}-open"class="accordion-btn-icon open">${openButtonSvg}</span><span daa-ll="${titleContent}-close" class="accordion-btn-icon close">${closeButtonSvg}</span></div>`);
   cardHeader.insertAdjacentElement('afterend', button);
 
   button.addEventListener('click', () => {
