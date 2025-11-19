@@ -143,7 +143,7 @@ function createMobileFilterSelect({ headerTitles, headerItemIndex, el }) {
 
 function addLastContainerElements(container) {
   const actionAreaElements = container.querySelectorAll('.action-area');
-  if (actionAreaElements.length > 0) {
+  if (actionAreaElements.length) {
     const btnContainer = createTag('div', { class: 'btn-container' });
     if (actionAreaElements.length > 1) btnContainer.classList.add('has-multiple');
     actionAreaElements.forEach((element) => btnContainer.appendChild(element));
