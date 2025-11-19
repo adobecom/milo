@@ -1845,7 +1845,7 @@ function processQueryIndexMap(link, domain) {
 }
 
 async function loadQueryIndexes(config, prefix) {
-  if (queryIndexes.length) return queryIndexes;
+  if (Object.keys(queryIndexes).length) return queryIndexes;
   // config.prodDomains
   const origin = config.origin || window.location.origin;
   const contentRoot = `${origin}${prefix}${config.contentRoot ?? ''}`;
@@ -1869,7 +1869,9 @@ async function loadQueryIndexes(config, prefix) {
       queryIndexes[alreadyQueriedIndex.imsClientId].domains.push(alreadyQueriedIndexDomain);
     }
 
-    const imsQueryIndexData = configJson['ims-query-index-map']?.data?.filter((d) => d.imsClientId !== config.imsClientId) || [];
+    const imsQueryIndexData = configJson['ims-query-index-map']?.data?.filter(
+      (d) => d.imsClientId !== config.imsClientId && config.prodDomains.includes(d.queryIndexWebPath.split('/*')[0]),
+    ) || [];
     const siteLocalesData = configJson['site-locales']?.data || [];
 
     imsQueryIndexData.forEach((queryIndexMap) => {
