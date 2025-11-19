@@ -380,6 +380,16 @@
   justify-content: flex-end;
 }
 
+.icon-block.s2a .foreground .action-area > a:not(.con-button) {
+  font-weight: 600 ;
+  font-size: 18px !important;
+}
+
+.icon-block.s2a .foreground .icon-area {
+  margin-bottom: 4px;
+  max-width: 100% !important;
+}
+
 @media (max-width: 600px) {
   .icon-block.container-mobile.left-mobile .foreground {
     text-align: start;
@@ -539,10 +549,5 @@
 
   .section.five-up {
     grid-template-columns: repeat(5, 1fr) !important;
-  }
-
-  .four-up .s2a .foreground .icon-area {
-    margin-bottom: 4px;
-    max-width: 100% !important;
   }
 }

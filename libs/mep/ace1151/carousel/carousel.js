@@ -625,7 +625,7 @@ function readySlides(slides, slideContainer, isUpsDesktop, carouselElements) {
 
 const buildMenuItems = (slides, el) => {
   if (isHovering(el)) {
-    const menuItems = slides.map((slide, index) => {
+    let menuItems = slides.map((slide, index) => {
       const title = slide.querySelector('h2');
       if (!title) return null;
       const item = createTag('button', {
@@ -636,7 +636,7 @@ const buildMenuItems = (slides, el) => {
       }, title.textContent);
       const headerWrapper = createTag('h2', {
         class: 'slide-header-control',
-      }, `${title.textContent}<a>${EXPAND_ICON}</a><a class="collapse-wrapper" daa-ll="slide-close-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
+      }, `${title.textContent}<a daa-ll="slide-open-${title.textContent.toLowerCase().replace(/\s+/g, '-')}">${EXPAND_ICON}</a><a class="collapse-wrapper" daa-ll="slide-close-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
       title.parentElement.insertBefore(headerWrapper, title);
       title.remove();
       item.dataset.index = index;
@@ -656,6 +656,11 @@ const buildMenuItems = (slides, el) => {
       item.setAttribute('tab-index', 0);
       return item;
     }).filter((item) => item);
+
+    let offsetUndoneMenuItems;
+    offsetUndoneMenuItems = menuItems.slice(INDEX_OFFSET);
+    offsetUndoneMenuItems = offsetUndoneMenuItems.concat(menuItems.slice(0, INDEX_OFFSET));
+    menuItems = offsetUndoneMenuItems;
     return {
       menuItemsContainer: createTag('div', { class: 'carousel-menu' }, menuItems),
       menuItems,
@@ -683,7 +688,7 @@ export default function init(el) {
   const carouselName = keyDivs[0].textContent;
   const parentArea = el.closest('.fragment') || document;
   const candidateKeys = parentArea.querySelectorAll('div.section-metadata > div > div:first-child');
-  let slides = [...candidateKeys].reduce((rdx, key, index) => {
+  let slides = [...candidateKeys].reduce((rdx, key) => {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
@@ -692,14 +697,14 @@ export default function init(el) {
       const title = slide.querySelector('h2');
 
       if (isLinkedSlides(el)) {
-        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.setAttribute('daa-ll', `slide-image-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', () => {
           window.open(slide.querySelector('a')?.href || '#', '_blank');
         });
       }
       if (isHovering(el)) {
         slide.querySelector('a')?.setAttribute('tabindex', -1);
-        slide.setAttribute('daa-ll', `slide-${isMobile ? 'open' : 'image'}-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+        slide.setAttribute('daa-ll', `slide-image-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', (event) => {
           const customEvent = new CustomEvent('carousel:jumpTo', {
             detail: { index: event.target.closest('.carousel-slide').dataset.index * 1 },
@@ -819,7 +824,7 @@ export default function init(el) {
 
   slides[activeSlideIndex - 1]?.classList.add('previous-slide');
   slides[activeSlideIndex].classList.add('active');
-  if (menuItems) menuItems[activeSlideIndex].classList.add('active');
+  if (menuItems) menuItems[0].classList.add('active');
   if (isHovering(el)) slides[activeSlideIndex].querySelector('a')?.setAttribute('tabindex', 0);
   slides[activeSlideIndex + 1]?.classList.add('next-slide');
   handleChangingSlides(carouselElements);

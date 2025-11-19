@@ -606,6 +606,10 @@
   background: transparent;
 }
 
+.tabs.s2a-dark .tabList button {
+  line-height: 20px !important;
+}
+
 @media screen and (min-width: 600px) {
   .tabs.radio .tabList.tabList .tab-list-container {
     flex-direction: row;
@@ -660,6 +664,10 @@
   .tabs .tabList button {
     padding: 24px 32px 18px;
     line-height: 18px;
+  }
+
+  .tabs.s2a-dark .tabList button {
+    line-height: 18px !important;
   }
 
   .tabs.quiet .tabList button {
