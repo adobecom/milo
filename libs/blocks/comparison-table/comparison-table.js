@@ -88,11 +88,14 @@ function syncAccessibilityHeaders(el) {
 
 function updateVisibleSelects({ el, headerTitles }) {
   const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
+  const selectedIndices = new Set(visibleSelects.map((s) => +s.value));
+
   visibleSelects.forEach((selectItem) => {
     const currentValue = +selectItem.value;
     selectItem.innerHTML = '';
+
     headerTitles.forEach((title, index) => {
-      if (!title || visibleSelects.some((s) => s !== selectItem && +s.value === index)) return;
+      if (!title || (selectedIndices.has(index) && index !== currentValue)) return;
       const option = createTag('option', { value: index }, title);
       if (index === currentValue) option.selected = true;
       selectItem.appendChild(option);
