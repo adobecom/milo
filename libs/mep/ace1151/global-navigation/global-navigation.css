@@ -362,38 +362,26 @@ body:has(header.test-nav) .aside.promobar .action-area .con-button {
   white-space: nowrap;
 }
 
-.global-navigation.test-nav.dropdown-active .feds-cta--secondary {
-  color: var(--feds-color-white-v2);
-}
-
 .feds-cta--secondary:hover {
   border-color: #C6C6C6;
   background: #E9E9E9;
   color: #292929;
 }
 
-header.test-nav.dropdown-active .feds-cta--secondary:hover {
-  background: transparent;
-  color: var(--feds-color-white-v2);
-  border-color: var(--feds-color-white-v2);
-}
-
-.test-nav .feds-cta--secondary:focus-visible {
-  outline: 2px solid #507BFF;
-  background: transparent;
-}
-
-.feds-promo--dark .feds-cta--secondary {
+.feds-promo--dark .feds-cta--secondary,
+.test-nav.dropdown-active .feds-cta--secondary {
   border: .125rem solid var(--feds-borderColor-link-dark);
   color: var(--feds-color-link-dark);
 }
 
-.feds-promo--dark .feds-cta--secondary:hover {
+.feds-promo--dark .feds-cta--secondary:hover,
+.test-nav.dropdown-active .feds-cta--secondary:hover {
   border-color: #444;
   background: #2c2c2c;
 }
 
-.feds-promo--dark .feds-cta--secondary:focus-visible {
+.feds-promo--dark .feds-cta--secondary:focus-visible,
+.test-nav.dropdown-active .feds-cta--secondary:focus-visible {
   outline: 2px solid #3860FA;
   background: #2c2c2c;
 }
@@ -1285,11 +1273,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     color: var(--feds-color-white-v2);
   }
 
-  header.test-nav.dropdown-active .feds-cta--secondary:hover {
-    border-color: #444;
-    background: #2c2c2c;
-  }
-
   .global-navigation.test-nav .feds-topnav-wrapper {
     padding-left: 10%;
     justify-content: flex-start;
@@ -1446,7 +1429,6 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
 }
 
 header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
-  border-bottom: 1px solid #2c2c2c;
   padding: 20px;
   font-size: 20px;
   color: var(--feds-color-white-v2);
@@ -1826,6 +1808,10 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret:after {
   border-width: 0 2px 2px 0;
   border-color: var(--feds-navLink-inactive);
+}
+
+header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret[aria-expanded="true"]:focus-visible {
+  outline-offset: -2px;
 }
 
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret[aria-expanded="true"]:after {
