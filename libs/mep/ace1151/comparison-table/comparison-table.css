@@ -1,6 +1,6 @@
 :root {
   --comparison-border-radius: 8px;
-  --comparison-border-color: #e1e1e1;
+  --comparison-border-color: #d4d4d4;
   --comparison-column-background-color: #f8f8f8;
   --comparison-row-border-color: #e9e9e9;
   --comparison-desktop-max-width: 1200px;
@@ -14,12 +14,29 @@
   display: none;
 }
 
+.comparison-table .icon {
+  display: flex;
+  font-size: var(--type-heading-xs-size);
+}
+
+.comparison-table .icon svg {
+  top: unset;
+}
+
+.comparison-table *:is(h1, h2, h3, h4, h5, h6) {
+  line-height: 125%;
+  font-size: var(--type-heading-s-size);
+}
+
 .comparison-table .table-container {
   max-width: calc(var(--comparison-desktop-max-width) - 2px);
   margin: var(--spacing-xs) auto 0;
   border: 1px solid var(--comparison-border-color);
-  border-start-start-radius: var(--comparison-border-radius);
-  border-start-end-radius: var(--comparison-border-radius);
+  border-radius: var(--comparison-border-radius);
+}
+
+.comparison-table .header-content-dummy + .table-container {
+  margin-top: 0;
 }
 
 .comparison-table .table-container .table-column-header button {
@@ -33,9 +50,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-s);
+  padding: var(--spacing-s);
   border-start-start-radius: var(--comparison-border-radius);
   border-start-end-radius: var(--comparison-border-radius);
+  font-family: var(--body-font-family);
 }
 
 .comparison-table .table-container .table-column-header button:hover {
@@ -66,8 +84,12 @@
 .comparison-table .table-container .table-row {
   margin: 0 var(--spacing-s);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: minmax(268px, 1.15fr) repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
+}
+
+.comparison-table[data-child-count="3"] .table-row {
+  grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
 }
 
 .comparison-table .table-container .table-row:not(:last-child) {
@@ -75,15 +97,20 @@
 }
 
 .comparison-table .table-container .table-row-header {
-  text-align: center;
+  text-align: left;
   font-size: var(--type-body-xs-size);
   font-style: normal;
   font-weight: var(--type-detail-all-weight);
   line-height: 130%;
-  padding: var(--spacing-s) 0;
+  padding: var(--spacing-s) var(--spacing-s) var(--spacing-s) 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  margin-inline-end: 12px;
+}
+
+.comparison-table .table-container .table-row-header a {
+  display: contents;
 }
 
 .comparison-table span[data-tooltip] .icon-milo:hover {
@@ -94,7 +121,7 @@
   color: var(--hover-border-color);
 }
 
-.comparison-table .table-container .primary-cell path {
+.comparison-table .table-container .primary-cell .icon-checkmark path {
   color: var(--primary-cell-path-color);
 }
 
@@ -117,20 +144,22 @@
   align-items: center;
   justify-content: center;
   word-break: break-word;
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
 }
 
 .comparison-table .table-container .table-cell div {
   border: 1px solid var(--comparison-border-color);
   border-radius: 4px;
-  width: calc(100% - 32px);
-  padding: var(--spacing-xs);
+  width: calc(100% - 26px);
+  padding: var(--spacing-xs) 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-.comparison-table .table-container .table-cell p:nth-child(2) {
+.comparison-table .table-container .table-cell >p:nth-child(2) {
   margin-top: 4px;
   font-size: var(--type-body-xxs-size);
   font-weight: 400;
@@ -143,13 +172,13 @@
   align-items: center;
 }
 
-.comparison-table *:is(p, h1, h2, h3, h4, h5, h6) .milo-tooltip svg {
+.comparison-table .milo-tooltip svg {
   height: 12px;
   width: 12px;
 }
 
 .comparison-table .header-content {
-  padding-bottom: var(--spacing-xxs);
+  padding-bottom: var(--spacing-s);
 }
 
 .comparison-table .header-content.sticky {
@@ -166,17 +195,25 @@
 }
 
 .comparison-table .header-content-wrapper {
-  max-width: calc(var(--comparison-desktop-max-width) - 2*var(--comparison-header-spacing));
+  max-width: calc(var(--comparison-desktop-max-width) - 2*var(--comparison-header-spacing) - 2px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: minmax(268px, 1.15fr) repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
+}
+
+.comparison-table[data-child-count="3"] .header-content-wrapper {
+  grid-template-columns: minmax(268px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
 }
 
 .comparison-table .header-item {
   display: flex;
   flex-direction: column;  
   gap: 4px;
+}
+
+.comparison-table .header-item:first-of-type {
+  margin-inline-end: 12px;
 }
 
 .comparison-table .header-item:nth-child(odd) .sub-header-item-container:not(:last-of-type) {
@@ -192,6 +229,7 @@
   padding: var(--spacing-xxs);
   position: relative;
   overflow: hidden;
+  justify-content: center;
 }
 
 .comparison-table .header-content.sticky .sub-header-item-container {
@@ -214,6 +252,10 @@
   font-size: var(--type-body-xxs-size);
   line-height: 125%;
   min-height: 15px;
+}
+
+.comparison-table .sub-header-item-container .description.zero-height {
+  padding: 0;
 }
 
 .comparison-table .sub-header-item-container .btn-container {
@@ -259,7 +301,6 @@
   font-style: normal;
   font-weight: var(--type-detail-all-weight);
   line-height: var(--type-body-s-lh);
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -321,6 +362,18 @@
   color: var(--color-black);
 }
 
+.comparison-table .header-content.sticky .sub-header-item-container:first-child {
+  padding-bottom: 0;
+}
+
+.comparison-table .sub-header-item-container:first-child:not(:has(.mobile-filter-select)) {
+  padding-bottom: var(--spacing-xxs);
+}
+
+.comparison-table .table-container .table-column-header *:is(h1, h2, h3, h4, h5, h6) {
+  max-width: calc(100% - 36px);
+}
+
 @media screen and (min-width: 600px) and (max-width: 899px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(100% - 160px);
@@ -331,7 +384,7 @@
   }
 
   .comparison-table .table-container .table-column-header button {
-    padding: 0 12px;
+    padding: 12px;
   }
 }
 
@@ -343,23 +396,33 @@
   .comparison-table .table-container {
     max-width: calc(100% - var(--comparison-tablet-spacing));
   }
+
+  .comparison-table .table-container .table-row, .comparison-table .header-content-wrapper {
+    grid-template-columns: minmax(192px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
+  }
 }
 
 @media screen and (max-width: 899px) {
+  .comparison-table .header-content .header-content-wrapper {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
   .comparison-table .header-content-wrapper .header-item:first-child {
     display: none;
   }
 
+  .comparison-table .table-container .table-column-header *:is(h1, h2, h3, h4, h5, h6) {
+    max-width: calc(100% - 82px);
+  }
+
   .comparison-table .table-container .table-column-header button {
-    justify-self: center;
+    justify-content: center;
+    position: relative;
   }
 
   .comparison-table .toggle-icon {
-    margin-left: auto;
-  }
-
-  .comparison-table button *:is(h1, h2, h3, h4, h5, h6) {
-    margin-left: auto;
+    position: absolute;
+    inset-inline-end: 24px;
   }
 
   .comparison-table .sub-header-item-container .btn-container.has-multiple .action-area {
@@ -370,6 +433,7 @@
     grid-column: 1 / -1;
     margin: 0 auto;
     padding: var(--spacing-xs) 0 0 0;
+    text-align: center;
   }
 
   .comparison-table .table-row .table-cell {
@@ -387,10 +451,6 @@
 
   .comparison-table .sub-header-item-container:first-child {
     padding-bottom: 30px;
-  }
-
-  .comparison-table .header-content.sticky .sub-header-item-container:first-child {
-    padding-bottom: 0;
   }
 
   .comparison-table .table-container .table-row .table-cell:not(.hidden):not(:nth-child(2)) div {
@@ -415,5 +475,9 @@
   .comparison-table .sub-header-item-container .btn-container p,
   .comparison-table .sub-header-item-container .btn-container p *:not(em a) {
     width: 100%;
+  }
+
+  .comparison-table .table-container .table-column-header *:is(h1, h2, h3, h4, h5, h6) {
+    max-width: calc(100% - 58px);
   }
 }

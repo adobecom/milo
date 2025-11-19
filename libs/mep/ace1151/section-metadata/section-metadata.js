@@ -255,7 +255,6 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
       loadedFragment.removeEventListener('transitionend', transitionEnd);
     };
     loadedFragment.addEventListener('transitionend', transitionEnd);
-    // Update analytics to track open action
     const analyticsValue = toggleButton.getAttribute('daa-ll');
     if (analyticsValue) {
       toggleButton.setAttribute('daa-ll', analyticsValue.replace(/open-/, 'close-'));
@@ -349,7 +348,7 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
                   loadedFragment.style.overflow = 'hidden';
                 }
               }
-            }, 250);
+            }, 300);
           } else {
             // Tabs not ready yet, check again
             requestAnimationFrame(waitForTabs);
@@ -412,7 +411,7 @@ export default async function init(el) {
       el.parentElement.insertBefore(toggleButton, el);
       el.parentElement.insertBefore(placeholder, el);
       if (shouldScroll) {
-        // Wait for fragment to fully expand before scrolling
+        // Wait for fragment to fully expand before scrolling to it for layout shift prevention
         if (expansionPromise) {
           await expansionPromise;
         }
@@ -443,12 +442,16 @@ export default async function init(el) {
                 const targetScroll = Math.max(0, currentPosition - 90);
                 window.scrollTo({ top: targetScroll, behavior: 'smooth' });
               }
+              toggleButton.setAttribute('data-programmatic-focus', 'true');
               toggleButton.focus({ preventScroll: true });
+              toggleButton.addEventListener('blur', () => {
+                toggleButton.removeAttribute('data-programmatic-focus');
+              }, { once: true });
               return;
             }
           } else {
             stableCount = 0;
-            // Position changed significantly, adjust scroll immediately
+            // if position changed significantly, adjust scroll immediately
             if (Math.abs(currentPosition - lastPosition) > 50) {
               const targetScroll = Math.max(0, currentPosition - 90);
               window.scrollTo({ top: targetScroll, behavior: 'instant' });

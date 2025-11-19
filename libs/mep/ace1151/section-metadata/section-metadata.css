@@ -482,6 +482,11 @@ main > .section[class*='-up'] > .content {
   border-radius: 4px;
 }
 
+/* Hide outline for programmatic focus (deeplink) */
+.collapse-frag-button[data-programmatic-focus='true']:focus {
+  outline: none !important;
+}
+
 .collapse-frag-chevron {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: rotate(180deg);

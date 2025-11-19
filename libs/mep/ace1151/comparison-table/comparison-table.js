@@ -1,6 +1,7 @@
 import { createTag, getConfig } from '../../../utils/utils.js';
 import { decorateButtons } from '../../../utils/decorate.js';
 import { replaceKeyArray } from '../../../features/placeholders.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
@@ -16,14 +17,8 @@ function equalHeight(el) {
     const resizeObserver = new ResizeObserver((entries) => {
       if (entries.some((entry) => entry.contentBoxSize || entry.borderBoxSize)) handler();
     });
-    const observeElements = () => {
-      const elementsToObserve = [
-        ...el.querySelectorAll('.table-cell div'),
-        ...el.querySelectorAll('.sub-header-item-container'),
-      ];
-      elementsToObserve.forEach((element) => resizeObserver.observe(element));
-    };
-    observeElements();
+    el.querySelectorAll('.table-cell div, .sub-header-item-container')
+      .forEach((element) => resizeObserver.observe(element));
     return resizeObserver;
   };
 
@@ -46,59 +41,60 @@ function equalHeight(el) {
         if (!elements.length) return;
         const maxHeight = calculateMaxHeight(elements);
         elements.forEach((element) => {
+          if (maxHeight === 0) element.classList.add('zero-height');
           element.style.minHeight = `${maxHeight}px`;
         });
       });
     });
   };
 
-  const performEqualHeight = () => performEqualHeightForElements('.table-row', '.table-cell', 'div');
-  const performHeaderEqualHeight = () => performEqualHeightForElements('.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)');
-  const performDescriptionEqualHeight = () => performEqualHeightForElements('.header-content-wrapper', '.header-item', '.description');
+  const configs = [
+    ['.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)'],
+    ['.table-row', '.table-cell', 'div'],
+    ['.header-content-wrapper', '.header-item', '.description'],
+  ];
 
-  const headerObserver = setupHeightHandler(performHeaderEqualHeight);
-  const tableObserver = setupHeightHandler(performEqualHeight);
-  const descriptionObserver = setupHeightHandler(performDescriptionEqualHeight);
+  const observers = configs.map(([parent, child, target]) => setupHeightHandler(
+    () => performEqualHeightForElements(parent, child, target),
+  ));
 
-  return () => {
-    headerObserver?.disconnect();
-    tableObserver?.disconnect();
-    descriptionObserver?.disconnect();
-  };
+  return () => observers.forEach((observer) => observer?.disconnect());
 }
 
 const getFirstVisibleColumnIndex = (el) => {
-  const headerItems = el.querySelectorAll('.header-item[data-column-index]');
-  for (let i = 0; i < headerItems.length; i += 1) {
-    const item = headerItems[i];
-    if (!item.classList.contains('hidden')) return +item.getAttribute('data-column-index');
-  }
-  return -1;
+  const firstVisible = [...el.querySelectorAll('.header-item[data-column-index]')]
+    .find((item) => !item.classList.contains('hidden'));
+  return firstVisible ? +firstVisible.getAttribute('data-column-index') : -1;
 };
 
 function syncAccessibilityHeaders(el) {
   const accessibilityHeaderRow = el.querySelector('.accessibility-header-row');
   const visibleHeaderItems = [...el.querySelectorAll('.header-item:not(.hidden)')];
+  const visibleColumnIndices = new Set(visibleHeaderItems.map((item) => item.getAttribute('data-column-index')));
+
   visibleHeaderItems.forEach((headerItem) => {
-    const columnIndex = headerItem.getAttribute('data-column-index');
-    const cell = accessibilityHeaderRow.querySelector(`[data-column-index="${columnIndex}"]`);
+    const cell = accessibilityHeaderRow.querySelector(`[data-column-index="${headerItem.getAttribute('data-column-index')}"]`);
     if (!cell) return;
     cell.classList.remove('hidden');
     accessibilityHeaderRow.appendChild(cell);
   });
+
   [...accessibilityHeaderRow.querySelectorAll('.accessibility-header-cell')].forEach((cell) => {
     const columnIndex = cell.getAttribute('data-column-index');
-    if (columnIndex !== '-1' && !visibleHeaderItems.some((item) => item.getAttribute('data-column-index') === columnIndex)) cell.classList.add('hidden');
+    if (columnIndex !== '-1' && !visibleColumnIndices.has(columnIndex)) cell.classList.add('hidden');
   });
 }
 
 function updateVisibleSelects({ el, headerTitles }) {
   const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
+  const selectedIndices = new Set(visibleSelects.map((s) => +s.value));
+
   visibleSelects.forEach((selectItem) => {
     const currentValue = +selectItem.value;
     selectItem.innerHTML = '';
+
     headerTitles.forEach((title, index) => {
-      if (!title || visibleSelects.some((s) => s !== selectItem && +s.value === index)) return;
+      if (!title || (selectedIndices.has(index) && index !== currentValue)) return;
       const option = createTag('option', { value: index }, title);
       if (index === currentValue) option.selected = true;
       selectItem.appendChild(option);
@@ -109,6 +105,7 @@ function updateVisibleSelects({ el, headerTitles }) {
 function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
   const newValue = +e.target.value;
   const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex(el);
+
   el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => col.classList.add('hidden'));
   el.querySelectorAll(`[data-column-index="${newValue}"]`).forEach((col) => {
     col.classList.remove('hidden');
@@ -122,6 +119,7 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
     const rowHeader = parent.querySelector('.table-row-header');
     if (rowHeader) parent.insertBefore(col, rowHeader.nextSibling);
   });
+
   const selectElement = el.querySelector(`[data-column-index="${newValue}"] .mobile-filter-select`);
   if (selectElement) selectElement.value = newValue;
   updateVisibleSelects({ el, headerTitles });
@@ -131,10 +129,9 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
 function createMobileFilterSelect({ headerTitles, headerItemIndex, el }) {
   const select = createTag('select', { class: 'mobile-filter-select', name: 'column-filter' });
   headerTitles.forEach((title, index) => {
-    const shouldSkip = !title
+    if (!title
       || (headerItemIndex === 1 && index === 2)
-      || (headerItemIndex === 2 && index === 1);
-    if (shouldSkip) return;
+      || (headerItemIndex === 2 && index === 1)) return;
     const option = createTag('option', { value: index }, title);
     if (index === headerItemIndex) option.selected = true;
     select.appendChild(option);
@@ -145,7 +142,7 @@ function createMobileFilterSelect({ headerTitles, headerItemIndex, el }) {
 
 function addLastContainerElements(container) {
   const actionAreaElements = container.querySelectorAll('.action-area');
-  if (actionAreaElements.length > 0) {
+  if (actionAreaElements.length) {
     const btnContainer = createTag('div', { class: 'btn-container' });
     if (actionAreaElements.length > 1) btnContainer.classList.add('has-multiple');
     actionAreaElements.forEach((element) => btnContainer.appendChild(element));
@@ -241,6 +238,7 @@ function decorateHeader(el, headerContent) {
     });
   });
   headerContentWrapper.prepend(createTag('div', { class: 'header-item' }));
+  headerContent.after(createTag('div', { class: 'header-content-dummy', 'aria-hidden': true }));
 }
 
 function createAccessibilityHeaderRow(el) {
@@ -262,6 +260,8 @@ function decorateTableToggleButton({
   arePrimaryColumns,
   tableElement,
   tableContainer,
+  expandMetadata,
+  el,
 }) {
   [...tableChild.children].forEach((child, childIndex) => {
     const isPrimary = childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY;
@@ -270,7 +270,12 @@ function decorateTableToggleButton({
   });
   tableChild.classList.add('table-column-header');
   const firstChild = tableChild.children[0];
-  const buttonElement = createTag('button', { 'aria-expanded': true });
+  const isExpanded = expandMetadata
+    ? expandMetadata.includes(el.querySelectorAll('.table-container').length + 1)
+    : el.querySelectorAll('.table-container').length === 0;
+  tableElement.classList.toggle('hide', !isExpanded);
+  const buttonElement = createTag('button', { 'aria-expanded': !!isExpanded });
+
   buttonElement.innerHTML = firstChild.innerHTML;
   buttonElement.appendChild(createTag('span', { class: 'toggle-icon' }));
   buttonElement.addEventListener('click', () => {
@@ -307,7 +312,7 @@ function processCellWithoutSeparator(child) {
   if (child.children.length > 1 || !child.textContent.trim()) {
     [...child.children].forEach((element) => cellDiv.appendChild(element));
   } else {
-    cellDiv.appendChild(createTag('p', {}, child.textContent));
+    cellDiv.appendChild(createTag('p', {}, child.innerHTML));
   }
   child.innerHTML = '';
   child.appendChild(cellDiv);
@@ -316,14 +321,11 @@ function processCellWithoutSeparator(child) {
 function processCellContent(child) {
   const childElements = [...child.children];
   const separatorIndex = childElements.findIndex((element) => element.textContent.trim() === '-');
-  if (separatorIndex !== -1) {
-    processCellWithSeparator(child, childElements, separatorIndex);
-    return;
-  }
-  processCellWithoutSeparator(child);
+  const processFn = separatorIndex !== -1 ? processCellWithSeparator : processCellWithoutSeparator;
+  processFn(child, childElements, separatorIndex);
 }
 
-function decorateTableCells({ tableChild, arePrimaryColumns, tableElement }) {
+function decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el }) {
   [...tableChild.children].forEach((child, childIndex) => {
     setupCellAttributes(child, childIndex, arePrimaryColumns);
     if (childIndex === 0) return;
@@ -331,20 +333,28 @@ function decorateTableCells({ tableChild, arePrimaryColumns, tableElement }) {
   });
 
   tableChild.classList.add('table-row');
+  el.dataset.childCount = tableChild.children.length;
   tableChild.setAttribute('role', 'row');
   tableElement.appendChild(tableChild);
 }
 
-function addTableClassesAndAppend(el, tableContainer, tableChildren) {
+function decorateAndAppendTable({ el, tableContainer, tableChildren, expandMetadata }) {
   const tableElement = createTag('div', { class: 'table', role: 'table' });
   const arePrimaryColumns = [];
 
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
-      decorateTableToggleButton({ tableChild, arePrimaryColumns, tableElement, tableContainer });
+      decorateTableToggleButton({
+        tableChild,
+        arePrimaryColumns,
+        tableElement,
+        tableContainer,
+        expandMetadata,
+        el,
+      });
       return;
     }
-    decorateTableCells({ tableChild, arePrimaryColumns, tableElement });
+    decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el });
   });
   tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
   tableContainer.appendChild(tableElement);
@@ -354,24 +364,33 @@ function addTableClassesAndAppend(el, tableContainer, tableChildren) {
 function decorateTables(el, children) {
   let currentTableContainer = createTag('div', { class: 'table-container' });
   let currentTableChildren = [];
+  const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
+  const expandMetadata = sectionMetadata
+    ? getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => +item.trim())
+    : null;
 
-  const processCurrentTable = () => {
-    if (currentTableChildren.length === 0) return;
-    addTableClassesAndAppend(el, currentTableContainer, currentTableChildren);
+  const processTable = () => {
+    if (!currentTableChildren.length) return;
+    decorateAndAppendTable({
+      el,
+      tableContainer: currentTableContainer,
+      tableChildren: currentTableChildren,
+      expandMetadata,
+    });
     currentTableContainer = createTag('div', { class: 'table-container' });
     currentTableChildren = [];
   };
 
   children.forEach((child) => {
     if (child.textContent.trim() === '+++') {
-      processCurrentTable();
+      processTable();
       child.remove();
       return;
     }
     currentTableChildren.push(child);
   });
 
-  processCurrentTable();
+  processTable();
 }
 
 function setupResponsiveHiding(el) {
@@ -434,24 +453,29 @@ async function setAccessibilityLabels(el) {
 function setupStickyHeader(el) {
   if (el.classList.contains('sticky-cancel')) return;
   const headerContent = el.querySelector('.header-content');
+  const headerContentDummy = el.querySelector('.header-content-dummy');
   const firstTableContainer = el.querySelector('.table-container');
   let isSticky = false;
 
   const handleScroll = () => {
-    const tableContainerOffset = firstTableContainer.getBoundingClientRect().top
-     + (window.pageYOffset || document.documentElement.scrollTop);
+    if (!el.offsetHeight) return;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const elOffset = el.getBoundingClientRect().top;
 
-    if (scrollTop >= tableContainerOffset && !isSticky) {
+    if ((scrollTop >= (firstTableContainer.getBoundingClientRect().top + scrollTop)) && !isSticky) {
+      const heightBeforeSticky = headerContent.offsetHeight;
       headerContent.style.top = `${document.querySelector('header')?.offsetHeight || 0}px`;
       headerContent.classList.add('sticky');
+      const heightDifference = heightBeforeSticky - headerContent.offsetHeight;
+      headerContentDummy.style.height = `${heightDifference}px`;
       isSticky = true;
       if (headerContent.offsetHeight / window.innerHeight >= 0.45) headerContent.classList.remove('sticky');
     }
 
-    if (scrollTop === 0 && isSticky) {
+    if (elOffset > 0 && elOffset < 100 && isSticky) {
       headerContent.classList.remove('sticky');
       headerContent.style.top = '';
+      headerContentDummy.style.height = '';
       isSticky = false;
     }
   };
@@ -459,6 +483,7 @@ function setupStickyHeader(el) {
 }
 
 function decorate(el) {
+  el.classList.add('con-block');
   const [headerChild, ...tableChildren] = [...el.children];
   decorateHeader(el, headerChild);
   decorateTables(el, tableChildren);
