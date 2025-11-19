@@ -177,7 +177,9 @@ Preview paths are filtered based on:
 
 ```bash
 cd .github/workflows/preview-indexer
+echo "registry=https://registry.npmjs.org/" > .npmrc
 npm install
+rm .npmrc
 ```
 
 ### Running Locally
@@ -206,7 +208,8 @@ LOCAL_RUN=true
 #### Run Incremental Index
 
 ```bash
-node --env-file=.env .github/workflows/preview-indexer/incremental.js
+cd .github/workflows/preview-indexer
+node --env-file=../../../.env incremental.js
 ```
 
 With manual parameters:
