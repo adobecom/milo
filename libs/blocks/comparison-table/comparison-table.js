@@ -351,7 +351,7 @@ function decorateTableCells({ tableChild, arePrimaryColumns, el }) {
   return tableChild;
 }
 
-function decorateAndAppendTable({ el, tableChildren, expandMetadata }) {
+function decorateTable({ el, tableChildren, expandMetadata }) {
   const tableContainer = createTag('div', { class: 'table-container' });
   const tableElement = createTag('div', { class: 'table', role: 'table' });
   const arePrimaryColumns = [];
@@ -372,32 +372,33 @@ function decorateAndAppendTable({ el, tableChildren, expandMetadata }) {
   });
   tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
   tableContainer.appendChild(tableElement);
-  el.appendChild(tableContainer);
+  return tableContainer;
 }
 
 function decorateTables(el, children) {
-  let currentTableChildren = [];
   const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
   const expandMetadata = sectionMetadata
     ? getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => +item.trim())
     : null;
 
-  const processTable = () => {
-    if (!currentTableChildren.length) return;
-    decorateAndAppendTable({ el, tableChildren: currentTableChildren, expandMetadata });
-    currentTableChildren = [];
-  };
+  const tableGroups = [];
+  let currentGroup = [];
 
   children.forEach((child) => {
     if (child.textContent.trim() === '+++') {
-      processTable();
+      if (currentGroup.length) tableGroups.push(currentGroup);
+      currentGroup = [];
       child.remove();
       return;
     }
-    currentTableChildren.push(child);
+    currentGroup.push(child);
   });
 
-  processTable();
+  if (currentGroup.length) tableGroups.push(currentGroup);
+
+  tableGroups.forEach((tableChildren) => {
+    el.appendChild(decorateTable({ el, tableChildren, expandMetadata }));
+  });
 }
 
 function setupResponsiveHiding(el) {
