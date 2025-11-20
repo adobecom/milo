@@ -152,12 +152,17 @@ const decorateAccordion = (el) => {
   const cardHeader = el.querySelector('.foreground > div > [class*="heading-"]');
   const accordionItemBody = el.querySelector('.foreground > div > p[class*="body-"]');
   accordionItemBody.classList.add('editorial-accordion-item');
-  const button = createTag('button', { class: 's2a-card-accordion-btn' }, `<div><span daa-ll="${titleContent}-open"class="accordion-btn-icon open">${openButtonSvg}</span><span daa-ll="${titleContent}-close" class="accordion-btn-icon close">${closeButtonSvg}</span></div>`);
+  const button = createTag('button', { class: 's2a-card-accordion-btn', 'daa-ll': `open-btn-${titleContent}` }, `<div><span class="accordion-btn-icon open">${openButtonSvg}</span><span class="accordion-btn-icon close">${closeButtonSvg}</span></div>`);
   cardHeader.insertAdjacentElement('afterend', button);
 
   button.addEventListener('click', () => {
     accordionItemBody.classList.toggle('active');
     button.classList.toggle('active');
+    if (button.classList.contains('active')) {
+      button.setAttribute('daa-ll', `close-btn-${titleContent}`);
+    } else {
+      button.setAttribute('daa-ll', `open-btn-${titleContent}`);
+    }
   });
 };
 
