@@ -1847,7 +1847,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   padding: 5px 18px 6px;
 }
 
-header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-cta--primary {
+header:is(.test-nav,.new-nav) .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-cta--primary {
   min-width: 100px;
   max-width: 200px;
   height: unset;
