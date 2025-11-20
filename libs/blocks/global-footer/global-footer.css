@@ -62,6 +62,8 @@
 .feds-footer-wrapper .feds-menu-content .feds-navLink {
   padding-top: 0;
   padding-bottom: 0;
+  padding: 6px 16px;
+  margin: 0 16px;
 }
 
 /* Options (region selector, social, privacy) */
