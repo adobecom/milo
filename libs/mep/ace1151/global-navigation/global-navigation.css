@@ -1515,6 +1515,17 @@ header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[role
   margin-top: 20px;
   position: relative;
 }
+/* the redirect button on mobile needs to be a different color on active and focus */
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[role="link"]:active,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[role="link"]:focus {
+  color: var(--feds-color-redirect-tab-button-active);
+}
+/* We use !important to override inline svg styles */
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[role="link"]:active svg path,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[role="link"]:focus svg path {
+  stroke: var(--feds-color-redirect-tab-button-active);
+  fill: var(--feds-color-redirect-tab-button-active);
+}
 
 header.test-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[role="link"]::before {
   position: absolute;
@@ -1760,6 +1771,14 @@ header .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs butt
   stroke: var(--text-color);
 }
 
+header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button > svg {
+  margin-left: 5px;
+  margin-top: 3px;
+  min-width: 20px;
+  width: 20px;
+  height: 20px;
+}
+
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button:has(svg) {
   flex-direction: row;
   align-items: center;
@@ -1779,6 +1798,8 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   margin-left: 5px;
   margin-top: 3px;
   min-width: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button path {
