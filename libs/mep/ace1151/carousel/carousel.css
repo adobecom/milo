@@ -593,14 +593,29 @@ html[dir="rtl"] .carousel .move-indicators {
     flex-basis: 75%;
     min-width: 276px;
   }
+  .carousel.s2a-whatsnew .carousel-slide div > p {
+    margin-bottom: 0 !important;
+  }
 
+  .carousel.s2a-whatsnew .carousel-slide {
+    padding: 20px !important;
+  }
+.carousel.s2a-whatsnew .carousel-slide div > p:nth-child(2) picture {
+    width: 30px !important;
+    right: 10px !important;
+    top: -31px !important;
+}
   .carousel.hinting-center-mobile .carousel-slides.is-reversing {
     transform: translateX(-75%);
   }
 
-  .carousel.hinting-mobile .carousel-slides.is-ready,
-  .carousel.hinting-mobile .carousel-slides.is-ready.is-reversing {
-    /* transform: translateX(calc((var(--spacing-xs) - 1px) * -1)); */
+  .carousel.s2a-whatsnew .carousel-slide div > p:nth-child(3) picture {
+    height: 14px !important;
+  }
+
+  .carousel.s2a-whatsnew .carousel-slide h2 {
+    font-size: 20px !important;
+    line-height: 115%;
   }
 
   .carousel.hinting-center-mobile .carousel-slides.is-ready,
@@ -755,6 +770,9 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel.s2a-whatsnew .carousel-button-container {
     background: none !important;
+  }
+  .carousel.s2a-whatsnew .carousel-slide p {
+    font-size: 16px;
   }
 }
 
@@ -1132,10 +1150,15 @@ html[dir="rtl"] .carousel .move-indicators {
     font-size: 24px;
     font-weight: 800;
   }
+
+  .carousel.s2a-whatsnew.s2a-linked-slides p.image{
+    border-radius: 14px;
+    overflow: hidden;
+  }
   .carousel.s2a-whatsnew .carousel-slide div > p:nth-child(2) picture {
     position: absolute;
     right: 20px;
-    top: -50px;
+    top: -42px;
     width: 50px;
   }
   .carousel.s2a-whatsnew .carousel-slide div > p:nth-child(3) picture {
@@ -1220,6 +1243,11 @@ html[dir="rtl"] .carousel .move-indicators {
   display: none;
 }
 
+
+  .carousel.s2a-whatsnew .carousel-slide p{
+    color: #686868;
+    line-height: 140%;
+  }
 :root:has(meta[name="theme"][content="max25"]) {
   @media (min-width: 900px) {
     .carousel.show-2.ups-desktop.m-gap .carousel-slides {
