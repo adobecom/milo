@@ -2228,3 +2228,8 @@ header.global-navigation .feds-content-description {
   font-family: var(--heading-font-family);
   /* color: green !important; */
 }
+
+header.global-navigation div.feds-nav[role="list"] [role="listitem"] > :is(button, a) {
+  font-size: 16px;
+  font-weight: 800;
+}
