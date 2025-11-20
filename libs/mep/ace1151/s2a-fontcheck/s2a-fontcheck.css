@@ -152,7 +152,7 @@ html:has(meta[name="theme"][content="s2a"]) {
   }
 }
 
-/* xl desktop heading and body font size overrides */
+/* xl desktop heading, body, and button font size overrides */
 @media screen and (min-width: 1680px) {
   :root:has(meta[name="theme"][content="s2a"]) {
     --type-heading-xxxxl-size: 82px;
@@ -172,6 +172,44 @@ html:has(meta[name="theme"][content="s2a"]) {
     --type-heading-xs-size: 20px;
     --type-heading-xs-lh: 115%;
   }
+
+  /* biz pro desktop xl button */
+  :root:has(meta[name="theme"][content="s2a"]) .xl-button .con-button,
+  :root:has(meta[name="theme"][content="s2a"]) .con-button.button-xl {
+    font-size: 20px;
+    min-height: 56px;
+    border-radius: 50px;
+    padding: 14px 24px 8px;
+    box-sizing: border-box;
+  }
+
+  /* homepage m button */
+  :root:has(meta[name="theme"][content="s2a"]) .m-button .con-button,
+  :root:has(meta[name="theme"][content="s2a"]) .con-button.button-m {
+    font-size: 18px;
+    padding: 8px 14px;
+    border-radius: 18px;
+  }
+}
+
+@media screen and (max-width: 599px) {
+  /* mobile s2a button overrides  */
+  :root:has(meta[name="theme"][content="s2a"]) .xl-button .con-button,
+  :root:has(meta[name="theme"][content="s2a"]) .con-button.button-xl {
+    font-size: 20px;
+    min-height: 56px;
+    border-radius: 50px;
+    padding: 14px 24px 8px;
+    box-sizing: border-box;
+  }
+
+  /* homepage m button */
+  :root:has(meta[name="theme"][content="s2a"]) .m-button .con-button,
+  :root:has(meta[name="theme"][content="s2a"]) .con-button.button-m {
+    font-size: 16px;
+    padding: 10px 14px;
+    border-radius: 18px;
+  }
 }
 
 /* s2a 1920px content max width overrides */
@@ -190,4 +228,7 @@ html:has(meta[name="theme"][content="s2a"]) {
     --grid-container-width: 1920px;
   }
 }
+
+/* s2a button overrides */
+
 
