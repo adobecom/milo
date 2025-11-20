@@ -13,8 +13,7 @@ const getLogsEndpoint = () => {
 };
 
 const ID_TO_COLUMN = {
-  // Accesibilty mapping
-  // performance mapping
+  // Performance Checks
   'lcp-element': 'performance_valid_lcp',
   'single-block': 'performance_first_section_one_block',
   'image-size': 'performance_lcp_image_size_kb',
@@ -24,10 +23,10 @@ const ID_TO_COLUMN = {
   placeholders: 'performance_placeholders_within_lcp',
   icons: 'performance_icons_within_lcp',
 
-  // Assets mapping
+  // Asset Checks
   'image-dimensions': 'assets_images_dimension_mismatch',
 
-  // SEO Mapping
+  // SEO Checks
   'h1-count': 'seo_h1_count',
   title: 'seo_title_length',
   canonical: 'seo_canonical_status',
@@ -35,9 +34,8 @@ const ID_TO_COLUMN = {
   'body-size': 'seo_body_size',
   'lorem-ipsum': 'seo_has_lorem_ipsum',
   links: 'seo_bad_links_count',
-  // TODO: search why in the back end there is an seo_broken_internal_links
 
-  // Structure mappings
+  // Structure Checks
   navigation: 'structure_navigation_status',
   footer: 'structure_footer_status',
   'region-selector': 'structure_region_selector_status',
@@ -55,12 +53,10 @@ const capture = async (results) => {
   try {
     profile = await window.adobeIMS.getProfile();
   } catch (error) {
-    // Handle IMS authentication failures gracefully
     console.warn('IMS profile fetch failed, continuing without profile data');
     profile = { email: '' };
   }
 
-  // Transform results to include column keys
   const transformedResults = {
     performance: results.performance?.map((check) => ({
       ...check,
@@ -92,10 +88,13 @@ const capture = async (results) => {
     performance_cls: 0,
   };
 
-  contextData.performance_fcp = window.performance.getEntriesByType('paint')
+  contextData.performance_fcp = window.performance
+    .getEntriesByType('paint')
     .find((entry) => entry.name === 'first-contentful-paint')?.startTime;
 
-  contextData.performance_ttfb = window.performance.getEntriesByType('navigation')[0]?.responseStart;
+
+  contextData.performance_ttfb = window.performance
+    .getEntriesByType('navigation')[0]?.responseStart;
 
   await new Promise((resolve) => {
     new PerformanceObserver((list) => {
@@ -127,6 +126,7 @@ const sendMetrics = async (metricsData) => {
 
   const { results, contextData, token, imsClientId } = metricsData;
   const endpoint = getLogsEndpoint();
+
   // eslint-disable-next-line no-console
   console.log('Using endpoint: ', endpoint);
 
@@ -164,4 +164,5 @@ const captureMetrics = async (results) => {
     console.error('Failed to send metrics:', error);
   }
 };
+
 export default captureMetrics;
