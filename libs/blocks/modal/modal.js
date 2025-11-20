@@ -61,18 +61,19 @@ function focusAfterModalClose(modal) {
   return toFocus;
 }
 
-function focusTriggerElement(modalId) {
+function focusTriggerElement(modalId, shouldFocus) {
   const triggerElement = document.querySelector(
     `[data-modal-hash="#${modalId}"][data-is-modal-trigger="true"]`,
   );
+
   if (triggerElement) {
-    triggerElement.focus();
+    if (shouldFocus) triggerElement.focus();
     triggerElement.removeAttribute('data-is-modal-trigger');
     return;
   }
 
   // Fallback focus options for deep links
-  if (!isDeepLink) return;
+  if (!isDeepLink || !shouldFocus) return;
   const fallbackSelectors = [
     `[data-modal-hash="#${modalId}"]`,
     `a[data-modal-id="${modalId}"].con-button`,
@@ -87,7 +88,7 @@ function focusTriggerElement(modalId) {
   }
 }
 
-export async function closeModal(modal) {
+export async function closeModal(modal, shouldFocusTriggerEl = true) {
   if (typeof modal.closeCallback === 'function') await modal.closeCallback(modal);
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
@@ -117,7 +118,7 @@ export async function closeModal(modal) {
       }
       mod.remove();
     }
-    focusTriggerElement(mod.id);
+    focusTriggerElement(mod.id, shouldFocusTriggerEl);
   });
 
   if (!document.querySelectorAll('.modal-curtain').length) {
@@ -140,7 +141,7 @@ export async function closeModal(modal) {
     return;
   }
 
-  focusTriggerElement(id);
+  focusTriggerElement(id, shouldFocusTriggerEl);
 }
 
 function isElementInView(element) {
@@ -195,7 +196,13 @@ export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
   if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
-  if (!isDeepLink) document.activeElement.dataset.isModalTrigger = 'true';
+  const activeElementData = document.activeElement.dataset;
+  if (!isDeepLink
+    && (activeElementData.modalHash === `#${id}`
+    || activeElementData.modalId === id)
+  ) {
+    document.activeElement.dataset.isModalTrigger = 'true';
+  }
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
@@ -390,13 +397,24 @@ window.addEventListener('hashchange', (e) => {
       /* do nothing */
     }
   } else {
-    if (isDeepLink) return;
     const details = findDetails(window.location.hash, null);
-    if (details) getModal(details);
-    const { hash } = new URL(e.oldURL);
+    const oldUrl = new URL(e.oldURL);
+    const { hash } = oldUrl;
     const isFromIms = hash.includes(`old_hash=${details.id}`) || hash.includes('from_ims=true');
+
+    const { path: oldDialogPath } = findDetails(oldUrl.hash, null);
+    const oldDialog = !isFromIms && oldDialogPath ? document.querySelector(`.dialog-modal${oldUrl.hash}`) : null;
+    if (oldDialog) {
+      const potentialScrollTarget = !!document.querySelector(window.location.hash);
+      const persistPrevHash = prevHash;
+      closeModal(oldDialog, !potentialScrollTarget);
+      prevHash = potentialScrollTarget ? '' : persistPrevHash;
+    }
+
+    if (isDeepLink) return;
+    if (details) getModal(details);
     isDeepLink = isFromIms;
-    if (!hash || isFromIms) return;
+    if (!hash || isFromIms || oldDialog) return;
 
     if (hash.includes('=') || !document.querySelector(`${hash}:not(.dialog-modal)`)) {
       prevHash = hash;
