@@ -1,6 +1,4 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { decorateButtons } from '../../utils/decorate.js';
-import { replaceKeyArray } from '../../features/placeholders.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
@@ -13,12 +11,11 @@ function equalHeight(el) {
       - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
   }));
 
-  const setupHeightHandler = (handler) => {
+  const setupHeightHandler = (handler, parentSelector) => {
     const resizeObserver = new ResizeObserver((entries) => {
       if (entries.some((entry) => entry.contentBoxSize || entry.borderBoxSize)) handler();
     });
-    el.querySelectorAll('.table-cell div, .sub-header-item-container')
-      .forEach((element) => resizeObserver.observe(element));
+    el.querySelectorAll(parentSelector).forEach((element) => resizeObserver.observe(element));
     return resizeObserver;
   };
 
@@ -49,13 +46,14 @@ function equalHeight(el) {
   };
 
   const configs = [
-    ['.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)'],
-    ['.table-row', '.table-cell', 'div'],
-    ['.header-content-wrapper', '.header-item', '.description'],
+    ['.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)', '.header-item'],
+    ['.table-row', '.table-cell', 'div', '.table-row'],
+    ['.header-content-wrapper', '.header-item', '.description', '.header-item'],
   ];
 
-  const observers = configs.map(([parent, child, target]) => setupHeightHandler(
+  const observers = configs.map(([parent, child, target, observeSelector]) => setupHeightHandler(
     () => performEqualHeightForElements(parent, child, target),
+    observeSelector,
   ));
 
   return () => observers.forEach((observer) => observer?.disconnect());
@@ -69,7 +67,11 @@ const getFirstVisibleColumnIndex = (el) => {
 
 function syncAccessibilityHeaders(el) {
   const accessibilityHeaderRow = el.querySelector('.accessibility-header-row');
+  if (!accessibilityHeaderRow) return;
+
   const visibleHeaderItems = [...el.querySelectorAll('.header-item:not(.hidden)')];
+  if (!visibleHeaderItems.length) return;
+
   const visibleColumnIndices = new Set(visibleHeaderItems.map((item) => item.getAttribute('data-column-index')));
 
   visibleHeaderItems.forEach((headerItem) => {
@@ -145,11 +147,16 @@ function addLastContainerElements(container) {
   if (actionAreaElements.length) {
     const btnContainer = createTag('div', { class: 'btn-container' });
     if (actionAreaElements.length > 1) btnContainer.classList.add('has-multiple');
-    actionAreaElements.forEach((element) => btnContainer.appendChild(element));
+    btnContainer.append(...actionAreaElements);
     container.appendChild(btnContainer);
   }
-  const description = container.querySelector('p:not(.action-area)');
-  (description || container.prepend(createTag('p', { class: 'description' })) || container.firstChild).classList.add('description');
+  let description = container.querySelector('p:not(.action-area)');
+  if (!description) {
+    description = createTag('p', { class: 'description' });
+    container.prepend(description);
+    return;
+  }
+  description.classList.add('description');
 }
 
 function createSubHeaderContainer({
@@ -164,12 +171,19 @@ function createSubHeaderContainer({
   headerItemsCount = 0,
 }) {
   const container = createTag('div', { class: 'sub-header-item-container' });
+  const decoratePromises = [];
+
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
       const em = childrenArray[i].querySelector('em');
       if (isLast
-         && !(em && em.firstChild?.nodeType === Node.TEXT_NODE)) decorateButtons(childrenArray[i]);
+         && !(em && em.firstChild?.nodeType === Node.TEXT_NODE)) {
+        const promise = import('../../utils/decorate.js').then(({ decorateButtons }) => {
+          decorateButtons(childrenArray[i]);
+        });
+        decoratePromises.push(promise);
+      }
     }
   }
   if (isFirst && headerItemsCount > 3) {
@@ -177,7 +191,11 @@ function createSubHeaderContainer({
     container.appendChild(select);
   }
   if (!isLast) return container;
-  addLastContainerElements(container);
+  if (decoratePromises.length) {
+    Promise.all(decoratePromises).then(() => addLastContainerElements(container));
+  } else {
+    addLastContainerElements(container);
+  }
   return container;
 }
 
@@ -203,12 +221,8 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
       headerItemIndex,
       headerItemsCount,
     });
-    if (isLast) {
-      headerItem.appendChild(container);
-    } else {
-      headerItem.insertBefore(container, childrenArray[separatorIndex]);
-      childrenArray[separatorIndex].remove();
-    }
+    headerItem.appendChild(container);
+    childrenArray[separatorIndex]?.remove();
     containerIndex += 1;
     lastIndex = separatorIndex;
   });
@@ -217,8 +231,8 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
 function decorateHeader(el, headerContent) {
   headerContent.classList.add('header-content');
   const headerContentWrapper = createTag('div', { class: 'header-content-wrapper' });
-  [...headerContent.children].forEach((child) => headerContentWrapper.appendChild(child));
-  headerContent.appendChild(headerContentWrapper);
+  headerContentWrapper.append(...headerContent.children);
+  headerContent.append(headerContentWrapper);
   const headerItems = [...headerContentWrapper.children];
   const headerTitles = headerItems.map((item) => {
     const titleElement = item.querySelector('h1, h2, h3, h4, h5, h6');
@@ -437,16 +451,19 @@ function setupResponsiveHiding(el) {
   mediaQuery.addEventListener('change', handleResponsive);
 }
 
-async function setAccessibilityLabels(el) {
-  const [ariaLabel, emptyText] = await replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig());
-  [...el.querySelectorAll('.mobile-filter-select')].forEach((element) => element.setAttribute('aria-label', ariaLabel));
+function setAccessibilityLabels(el) {
+  import('../../features/placeholders.js').then(({ replaceKeyArray }) => {
+    replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig()).then(([ariaLabel, emptyText]) => {
+      [...el.querySelectorAll('.mobile-filter-select')].forEach((element) => element.setAttribute('aria-label', ariaLabel));
 
-  [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
-    const content = cellDiv.textContent.trim();
-    const hasEmptyContent = /^-+$/.test(content);
-    if (content && !hasEmptyContent) return;
-    cellDiv.setAttribute('aria-label', emptyText);
-    if (hasEmptyContent) cellDiv.children[0].setAttribute('aria-hidden', 'true');
+      [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
+        const content = cellDiv.textContent.trim();
+        const hasEmptyContent = /^-+$/.test(content);
+        if (content && !hasEmptyContent) return;
+        cellDiv.setAttribute('aria-label', emptyText);
+        if (hasEmptyContent) cellDiv.children[0].setAttribute('aria-hidden', 'true');
+      });
+    });
   });
 }
 
@@ -459,10 +476,9 @@ function setupStickyHeader(el) {
 
   const handleScroll = () => {
     if (!el.offsetHeight) return;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const elOffset = el.getBoundingClientRect().top;
 
-    if ((scrollTop >= (firstTableContainer.getBoundingClientRect().top + scrollTop)) && !isSticky) {
+    if ((firstTableContainer.getBoundingClientRect().top <= 0) && !isSticky) {
       const heightBeforeSticky = headerContent.offsetHeight;
       headerContent.style.top = `${document.querySelector('header')?.offsetHeight || 0}px`;
       headerContent.classList.add('sticky');
@@ -472,7 +488,7 @@ function setupStickyHeader(el) {
       if (headerContent.offsetHeight / window.innerHeight >= 0.45) headerContent.classList.remove('sticky');
     }
 
-    if (elOffset > 0 && elOffset < 100 && isSticky) {
+    if (elOffset > 0 && isSticky) {
       headerContent.classList.remove('sticky');
       headerContent.style.top = '';
       headerContentDummy.style.height = '';
