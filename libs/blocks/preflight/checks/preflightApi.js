@@ -1,6 +1,7 @@
 import { getConfig, getFederatedContentRoot } from '../../../utils/utils.js';
 import { fetchPreflightChecks } from './asoApi.js';
 import { isViewportTooSmall, checkImageDimensions, runChecks as runChecksAssets } from './assets.js';
+import captureMetrics from './captureMetrics.js';
 import {
   getLcpEntry,
   checkSingleBlock,
@@ -123,6 +124,8 @@ export async function getPreflightResults(options = {}) {
     runChecks: res,
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
+
+  await captureMetrics(res);
 
   if (useCache) globalPreflightCache.set(cacheKey, result);
 
