@@ -257,7 +257,7 @@ function renderLanguages({
               ? segments[1]
               : (getConfig().languages?.[prefix]?.region || prefix);
           }
-          if (cookieValue === 'gb') cookieValue = 'uk';
+          cookieValue = cookieValue === 'gb' ? 'uk' : cookieValue === 'apac' ? 'au' : cookieValue;
           setInternational(cookieValue);
 
           const { pathname, href } = window.location;
