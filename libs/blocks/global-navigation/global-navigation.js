@@ -1226,6 +1226,7 @@ class Gnav {
   });
 
   decorateMainNav = async () => {
+    const { explorePlansCta } = getConfig();
     performance.mark('Decorate-MainNav-Start');
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav" role="list"></div>`;
@@ -1254,6 +1255,9 @@ class Gnav {
     }
     if (this.newMobileNav) {
       await this.decorateLocalNav();
+    }
+    if (explorePlansCta) {
+      this.elements.mainNav.appendChild(toFragment`<div class="feds-client-explore-plans-xs"></div>`);
     }
     performance.mark('Decorate-MainNav-End');
     return this.elements.mainNav;
