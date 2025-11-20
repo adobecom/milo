@@ -74,7 +74,7 @@ export function cleanupTabsAnalytics(el) {
 
 export function enableAnalytics(card) {
   const getCardLL = (ll) => `${ll}--${card.getAttribute('data-analytics-id')}--card`;
-  card.setAttribute('data-analytics-id', card.getAttribute('daa-lh'));
+  card.setAttribute('data-analytics-id', card.getAttribute('daa-lh') || '');
   card.removeAttribute('daa-lh');
   card.querySelectorAll('a[daa-ll]').forEach((anchor) => {
     const ll = anchor.getAttribute('daa-ll');
