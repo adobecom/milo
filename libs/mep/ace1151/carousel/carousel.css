@@ -748,6 +748,10 @@ html[dir="rtl"] .carousel .move-indicators {
     left: 0;
   }
 
+  .carousel.s2a-whatsnew.s2a-linked-slides p.image{
+    border-radius: 8px !important;
+  }
+
   .carousel.s2a-whatsnew .carousel-slide {
     flex: 1 0 75%;
   }
