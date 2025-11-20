@@ -19,6 +19,12 @@ export default async function checkVideoCaptions(elements = [], config = {}) {
       .then((res) => res.json());
     // eslint-disable-next-line
     if (videoData?.captions?.length > 0) continue;
+    if (captionsLang !== 'eng') {
+      const engCaptions = await fetch(`https://video.tv.adobe.com/vc/${videoId}/eng.json`)
+        .then((res) => res.json());
+      // eslint-disable-next-line
+      if (engCaptions?.captions?.length > 0) continue;
+    }
     violations.push({
       description: `Video ${videoId} with title "${iframe.title}" is missing captions`,
       impact: 'serious',
