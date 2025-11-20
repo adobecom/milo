@@ -740,7 +740,7 @@ html[dir="rtl"] .carousel .move-indicators {
     filter: brightness(100);
   }
   .carousel.s2a-whatsnew .carousel-controls {
-    display: block;
+    display: flex;
   }
   .carousel.s2a-whatsnew .carousel-button-container {
     left: 0 !important;
@@ -752,6 +752,9 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel.s2a-whatsnew .container {
     padding-left: 2rem;
+  }
+  .carousel.s2a-whatsnew .carousel-button-container {
+    background: none !important;
   }
 }
 
@@ -1106,8 +1109,8 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
+
 .carousel.s2a-peaking .carousel-button-container,
-.carousel.s2a-whatsnew .carousel-button-container,
 .carousel.s2a-hovering .carousel-button-container {
   background: rgba(36, 36, 36, 0.05)
 }
@@ -1192,6 +1195,9 @@ html[dir="rtl"] .carousel .move-indicators {
   background-color: white;
 }
 
+.carousel.s2a-whatsnew .carousel-button-container {
+  background: rgba(36, 36, 36, 0.05);
+}
 .carousel.s2a-hovering .carousel-button-container {
   display: none;
 }
