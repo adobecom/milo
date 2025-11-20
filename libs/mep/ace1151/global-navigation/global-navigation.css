@@ -1469,7 +1469,7 @@ header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup {
   translate: 300vw 0;
   display: grid;
   grid-template-rows: 56px max-content auto 80px;
-  grid-template-columns: 111px 1fr;
+  grid-template-columns: 127px 1fr;
   grid-template-areas:
     "top-bar top-bar"
     "title title"
@@ -1690,7 +1690,7 @@ header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .t
 
 header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button {
   min-height:48px;
-  width: 111px;
+  width: 127px;
   border: none;
   padding: 8px 20px;
   white-space: normal;
@@ -1752,7 +1752,7 @@ header .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs butt
 }
 
 header .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button:has(svg) > span:first-child {
-  width: 60px;
+  width: 107px;
 }
 
 header .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button path {
