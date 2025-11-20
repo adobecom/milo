@@ -1,0 +1,1066 @@
+/**
+ * C2S2A Master Stylesheet
+ * Combined design tokens for S2A Design System
+ * 
+ * This file combines all design tokens in the correct layer order:
+ * 1. Primitives (raw values)
+ * 2. Semantic (meaning-based tokens)
+ * 3. Responsive (breakpoint-specific overrides)
+ * 4. Component (UI-specific tokens)
+ */
+
+/* ========================================================================
+   LAYER 1: PRIMITIVES
+   Raw values - foundation for all other tokens
+   ======================================================================== */
+
+/* --- 1.1 Primitives: Non-color --- */
+
+:root {
+  --border-radius-0: 0;
+  --border-radius-2: 2px;
+  --border-radius-4: 4px;
+  --border-radius-8: 8px;
+  --border-radius-16: 16px;
+  --border-radius-32: 32px;
+  --border-radius-round: 999px;
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --border-width-4: 4px;
+  --border-width-8: 8px;
+  --opacity-12: 0.12;
+  --opacity-16: 0.16;
+  --opacity-24: 0.24;
+  --opacity-32: 0.32;
+  --opacity-48: 0.48;
+  --opacity-64: 0.64;
+  --opacity-72: 0.72;
+  --opacity-84: 0.84;
+  --opacity-100: 1;
+  --opacity-00: 0;
+  --opacity-08: 0.08;
+  --shadow-level-1-x: 0;
+  --shadow-level-1-y: 1px;
+  --shadow-level-1-blur: 6px;
+  --shadow-level-1-spread: 0;
+  --shadow-level-1-color: rgb(0 0 0 / 12%);
+  --shadow-level-2-x: 0;
+  --shadow-level-2-y: 2px;
+  --shadow-level-2-blur: 8px;
+  --shadow-level-2-spread: 0;
+  --shadow-level-2-color: rgb(0 0 0 / 16%);
+  --shadow-level-3-x: 0;
+  --shadow-level-3-y: 4px;
+  --shadow-level-3-blur: 12px;
+  --shadow-level-3-spread: 0;
+  --shadow-level-3-color: rgb(0 0 0 / 16%);
+  --shadow-level-4-x: 0;
+  --shadow-level-4-y: 6px;
+  --shadow-level-4-blur: 16px;
+  --shadow-level-4-spread: 0;
+  --shadow-level-4-color: rgb(0 0 0 / 16%);
+  --spacing-0: 0;
+  --spacing-2: 2px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-96: 96px;
+  --spacing-104: 104px;
+  --typography-font-family-adobe-clean: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --typography-font-weight-black: black;
+  --typography-font-weight-extrabold: extrabold;
+  --typography-font-weight-bold: bold;
+  --typography-font-weight-medium: medium;
+  --typography-font-weight-regular: regular;
+  --typography-font-size-10: 0.625rem;
+  --typography-font-size-11: 0.6875rem;
+  --typography-font-size-12: 0.75rem;
+  --typography-font-size-14: 0.875rem;
+  --typography-font-size-16: 1rem;
+  --typography-font-size-18: 1.125rem;
+  --typography-font-size-20: 1.25rem;
+  --typography-font-size-22: 1.375rem;
+  --typography-font-size-25: 1.5625rem;
+  --typography-font-size-28: 1.75rem;
+  --typography-font-size-32: 2rem;
+  --typography-font-size-36: 2.25rem;
+  --typography-font-size-40: 2.5rem;
+  --typography-font-size-45: 2.8125rem;
+  --typography-font-size-48: 3rem;
+  --typography-font-size-51: 3.1875rem;
+  --typography-font-size-58: 3.625rem;
+  --typography-font-size-65: 4.0625rem;
+  --typography-font-size-73: 4.5625rem;
+  --typography-font-size-82: 5.125rem;
+  --typography-letter-spacing-0: 0;
+  --typography-letter-spacing-2: 2px;
+  --typography-letter-spacing-minus-2: -2px;
+  --typography-letter-spacing-minus-1-half: -1.5px;
+  --typography-letter-spacing-minus-1: -1px;
+  --typography-letter-spacing-minus-half: -0.5px;
+  --typography-letter-spacing-half: 0.5px;
+  --typography-line-height-12: 1;
+  --typography-line-height-14: 1;
+  --typography-line-height-16: 1;
+  --typography-line-height-20: 1;
+  --typography-line-height-22: 1;
+  --typography-line-height-24: 1.5;
+  --typography-line-height-26: 1.625;
+  --typography-line-height-30: 1.875;
+  --typography-line-height-32: 1;
+  --typography-line-height-36: 1;
+  --typography-line-height-42: 2.625;
+  --typography-line-height-46: 2.875;
+  --typography-line-height-52: 3.25;
+  --typography-line-height-54: 3.375;
+  --typography-line-height-58: 1;
+  --typography-line-height-66: 4.125;
+  --typography-line-height-74: 4.625;
+  --typography-line-height-84: 5.25;
+  --typography-line-height-95: 5.9375;
+  --typography-text-transform-none: none;
+  --typography-text-transform-uppercase: uppercase;
+  --typography-text-transform-lowercase: lowercase;
+  --typography-text-transform-capitalize: capitalize;
+}
+
+/* --- 1.2 Primitives: Light Mode default --- */
+
+:root {
+  --color-gray-25: #fff;
+  --color-gray-50: #f8f8f8;
+  --color-gray-75: #f3f3f3;
+  --color-gray-100: #e9e9e9;
+  --color-gray-200: #e1e1e1;
+  --color-gray-300: #dadada;
+  --color-gray-400: #c6c6c6;
+  --color-gray-500: #8f8f8f;
+  --color-gray-600: #717171;
+  --color-gray-700: #505050;
+  --color-gray-800: #292929;
+  --color-gray-900: #131313;
+  --color-gray-1000: #000;
+  --color-green-100: #edfcf1;
+  --color-green-200: #d7f7e1;
+  --color-green-300: #adeec5;
+  --color-green-400: #6be3a2;
+  --color-green-500: #2bd17d;
+  --color-green-600: #12b867;
+  --color-green-700: #0ba45d;
+  --color-green-800: #079355;
+  --color-green-900: #05834e;
+  --color-green-1000: #036e45;
+  --color-green-1100: #025d3c;
+  --color-green-1200: #014c34;
+  --color-green-1300: #003d2c;
+  --color-green-1400: #002e22;
+  --color-green-1500: #002119;
+  --color-green-1600: #000f0c;
+  --color-blue-100: #eefafe;
+  --color-blue-200: #d9f4fd;
+  --color-blue-300: #b7e7fc;
+  --color-blue-400: #8ad5ff;
+  --color-blue-500: #5cc0ff;
+  --color-blue-600: #30a7fe;
+  --color-blue-700: #1d95e7;
+  --color-blue-800: #1286cd;
+  --color-blue-900: #0b78b3;
+  --color-blue-1000: #046691;
+  --color-blue-1100: #005779;
+  --color-blue-1200: #004762;
+  --color-blue-1300: #00394e;
+  --color-blue-1400: #002b3b;
+  --color-blue-1500: #001f2b;
+  --color-blue-1600: #000e14;
+  --color-red-100: #fff6f5;
+  --color-red-200: #ffebe8;
+  --color-red-300: #ffd6d1;
+  --color-red-400: #ffbcb4;
+  --color-red-500: #ff9d91;
+  --color-red-600: #ff7665;
+  --color-red-700: #ff513d;
+  --color-red-800: #f03823;
+  --color-red-900: #d73220;
+  --color-red-1000: #b72818;
+  --color-red-1100: #9c2113;
+  --color-red-1200: #811b0e;
+  --color-red-1300: #68150a;
+  --color-red-1400: #501006;
+  --color-red-1500: #3b0b04;
+  --color-red-1600: #1d0502;
+  --color-orange-100: #fff6e7;
+  --color-orange-200: #ffeccf;
+  --color-orange-300: #ffda9e;
+  --color-orange-400: #ffc15e;
+  --color-orange-500: #ffa213;
+  --color-orange-600: #fc7d00;
+  --color-orange-700: #e86a00;
+  --color-orange-800: #d45b00;
+  --color-orange-900: #c24e00;
+  --color-orange-1000: #a73e00;
+  --color-orange-1100: #903300;
+  --color-orange-1200: #762900;
+  --color-orange-1300: #5f2000;
+  --color-orange-1400: #491800;
+  --color-orange-1500: #341200;
+  --color-orange-1600: #190800;
+  --color-yellow-100: #fff8cc;
+  --color-yellow-200: #fff197;
+  --color-yellow-300: #ffde2c;
+  --color-yellow-400: #f5c700;
+  --color-yellow-500: #e6af00;
+  --color-yellow-600: #d29500;
+  --color-yellow-700: #c18300;
+  --color-yellow-800: #af7400;
+  --color-yellow-900: #9e6600;
+  --color-yellow-1000: #865500;
+  --color-yellow-1100: #724800;
+  --color-yellow-1200: #5d3b00;
+  --color-yellow-1300: #4b2f00;
+  --color-yellow-1400: #382300;
+  --color-yellow-1500: #281900;
+  --color-yellow-1600: #120b00;
+  --color-dataviz-magenta-600: #ff709f;
+  --color-dataviz-magenta-700: #ff4885;
+  --color-dataviz-pink-600: #ff67cc;
+  --color-dataviz-pink-700: #f24cb8;
+  --color-dataviz-fuchsia-700: #df4df5;
+  --color-dataviz-fuchsia-800: #c844dc;
+  --color-dataviz-purple-800: #a65ce7;
+  --color-dataviz-purple-900: #9a47e2;
+  --color-dataviz-indigo-800: #7a6afd;
+  --color-dataviz-indigo-900: #7155fa;
+  --color-dataviz-cyan-600: #30a7fe;
+  --color-dataviz-cyan-700: #1d95e7;
+  --color-dataviz-turquoise-500: #27cad8;
+  --color-dataviz-turquoise-600: #0fb1c0;
+  --color-dataviz-seafoam-500: #10cfa9;
+  --color-dataviz-seafoam-600: #0db595;
+  --color-dataviz-celery-500: #6ece2a;
+  --color-dataviz-celery-600: #5db41f;
+  --color-dataviz-chartreuse-400: #b6db00;
+  --color-dataviz-chartreuse-500: #a3c400;
+  --color-transparent-black-12: rgb(0 0 0 / 12%);
+  --color-transparent-black-16: rgb(0 0 0 / 16%);
+  --color-transparent-black-24: rgb(0 0 0 / 24%);
+  --color-transparent-black-32: rgb(0 0 0 / 32%);
+  --color-transparent-black-48: rgb(0 0 0 / 48%);
+  --color-transparent-black-64: rgb(0 0 0 / 64%);
+  --color-transparent-black-72: rgb(0 0 0 / 72%);
+  --color-transparent-black-84: rgb(0 0 0 / 84%);
+  --color-transparent-black-00: rgb(0 0 0 / 0%);
+  --color-transparent-black-04: rgb(0 0 0 / 4%);
+  --color-transparent-black-08: rgb(0 0 0 / 8%);
+  --color-transparent-white-12: rgb(255 255 255 / 12%);
+  --color-transparent-white-16: rgb(255 255 255 / 16%);
+  --color-transparent-white-24: rgb(255 255 255 / 24%);
+  --color-transparent-white-32: rgb(255 255 255 / 32%);
+  --color-transparent-white-48: rgb(255 255 255 / 48%);
+  --color-transparent-white-64: rgb(255 255 255 / 64%);
+  --color-transparent-white-72: rgb(255 255 255 / 72%);
+  --color-transparent-white-84: rgb(255 255 255 / 84%);
+  --color-transparent-white-00: rgb(255 255 255 / 0%);
+  --color-transparent-white-04: rgb(255 255 255 / 4%);
+  --color-transparent-white-08: rgb(255 255 255 / 8%);
+}
+
+/* --- 1.3 Primitives: Dark Mode --- */
+
+:root[data-theme="dark"] {
+  --color-gray-25: #111;
+  --color-gray-50: #1b1b1b;
+  --color-gray-75: #222;
+  --color-gray-100: #2c2c2c;
+  --color-gray-200: #323232;
+  --color-gray-300: #393939;
+  --color-gray-400: #444;
+  --color-gray-500: #6d6d6d;
+  --color-gray-600: #8a8a8a;
+  --color-gray-700: #afafaf;
+  --color-gray-800: #dbdbdb;
+  --color-gray-900: #f2f2f2;
+  --color-gray-1000: #fff;
+  --color-green-100: #001e17;
+  --color-green-200: #00261d;
+  --color-green-300: #003326;
+  --color-green-400: #004430;
+  --color-green-500: #02573a;
+  --color-green-600: #036a43;
+  --color-green-700: #047c4b;
+  --color-green-800: #068c52;
+  --color-green-900: #099d59;
+  --color-green-1000: #0eaf62;
+  --color-green-1100: #18c16e;
+  --color-green-1200: #39d786;
+  --color-green-1300: #7ee7ac;
+  --color-green-1400: #bdf1d0;
+  --color-green-1500: #e5faec;
+  --color-green-1600: #fff;
+  --color-blue-100: #0e173f;
+  --color-blue-200: #0f1c52;
+  --color-blue-300: #0c2175;
+  --color-blue-400: #122d9a;
+  --color-blue-500: #1a3ac3;
+  --color-blue-600: #2549e5;
+  --color-blue-700: #345bf8;
+  --color-blue-800: #456efe;
+  --color-blue-900: #5681ff;
+  --color-blue-1000: #6995fe;
+  --color-blue-1100: #7ca9fc;
+  --color-blue-1200: #98c0fc;
+  --color-blue-1300: #b5d5fd;
+  --color-blue-1400: #d5e7fe;
+  --color-blue-1500: #eef5ff;
+  --color-blue-1600: #fff;
+  --color-red-100: #360a03;
+  --color-red-200: #440d05;
+  --color-red-300: #571107;
+  --color-red-400: #73180b;
+  --color-red-500: #931f11;
+  --color-red-600: #b12617;
+  --color-red-700: #cd2e1d;
+  --color-red-800: #e63623;
+  --color-red-900: #fc432e;
+  --color-red-1000: #ff6756;
+  --color-red-1100: #ff8678;
+  --color-red-1200: #ffa79d;
+  --color-red-1300: #ffc4bd;
+  --color-red-1400: #ffdedb;
+  --color-red-1500: #fff2f0;
+  --color-red-1600: #fff;
+  --color-orange-100: #311000;
+  --color-orange-200: #3d1500;
+  --color-orange-300: #501b00;
+  --color-orange-400: #6a2400;
+  --color-orange-500: #872f00;
+  --color-orange-600: #a23b00;
+  --color-orange-700: #b94900;
+  --color-orange-800: #cd5600;
+  --color-orange-900: #e06400;
+  --color-orange-1000: #f37500;
+  --color-orange-1100: #ff8900;
+  --color-orange-1200: #ffad2d;
+  --color-orange-1300: #ffc974;
+  --color-orange-1400: #ffe1b2;
+  --color-orange-1500: #fff3e1;
+  --color-orange-1600: #fff;
+  --color-yellow-100: #251700;
+  --color-yellow-200: #2f1d00;
+  --color-yellow-300: #3d2700;
+  --color-yellow-400: #533400;
+  --color-yellow-500: #6b4300;
+  --color-yellow-600: #825200;
+  --color-yellow-700: #976100;
+  --color-yellow-800: #a96e00;
+  --color-yellow-900: #ba7c00;
+  --color-yellow-1000: #cb8d00;
+  --color-yellow-1100: #da9f00;
+  --color-yellow-1200: #ebb700;
+  --color-yellow-1300: #f9ce00;
+  --color-yellow-1400: #ffe656;
+  --color-yellow-1500: #fff6c3;
+  --color-yellow-1600: #fff;
+  --color-dataviz-magenta-600: #cf1f5c;
+  --color-dataviz-magenta-700: #b5134c;
+  --color-dataviz-pink-600: #ab1d77;
+  --color-dataviz-pink-700: #c4278a;
+  --color-dataviz-fuchsia-700: #ad33c0;
+  --color-dataviz-fuchsia-800: #c040d4;
+  --color-dataviz-purple-800: #a154e5;
+  --color-dataviz-purple-900: #ad69e9;
+  --color-dataviz-indigo-800: #7761fc;
+  --color-dataviz-indigo-900: #8077fe;
+  --color-dataviz-cyan-600: #03638c;
+  --color-dataviz-cyan-700: #0873a8;
+  --color-dataviz-turquoise-500: #03545c;
+  --color-dataviz-turquoise-600: #056770;
+  --color-dataviz-seafoam-500: #02564b;
+  --color-dataviz-seafoam-600: #046959;
+  --color-dataviz-celery-500: #295608;
+  --color-dataviz-celery-600: #32690b;
+  --color-dataviz-chartreuse-400: #353f00;
+  --color-dataviz-chartreuse-500: #445200;
+  --color-transparent-black-12: rgb(0 0 0 / 12%); /* duplicate */
+  --color-transparent-black-16: rgb(0 0 0 / 16%); /* duplicate */
+  --color-transparent-black-24: rgb(0 0 0 / 24%); /* duplicate */
+  --color-transparent-black-32: rgb(0 0 0 / 32%); /* duplicate */
+  --color-transparent-black-48: rgb(0 0 0 / 48%); /* duplicate */
+  --color-transparent-black-64: rgb(0 0 0 / 64%); /* duplicate */
+  --color-transparent-black-72: rgb(0 0 0 / 72%); /* duplicate */
+  --color-transparent-black-84: rgb(0 0 0 / 84%); /* duplicate */
+  --color-transparent-black-00: rgb(0 0 0 / 0%); /* duplicate */
+  --color-transparent-black-04: rgb(0 0 0 / 4%); /* duplicate */
+  --color-transparent-black-08: rgb(0 0 0 / 8%); /* duplicate */
+  --color-transparent-white-12: rgb(255 255 255 / 12%); /* duplicate */
+  --color-transparent-white-16: rgb(255 255 255 / 16%); /* duplicate */
+  --color-transparent-white-24: rgb(255 255 255 / 24%); /* duplicate */
+  --color-transparent-white-32: rgb(255 255 255 / 32%); /* duplicate */
+  --color-transparent-white-48: rgb(255 255 255 / 48%); /* duplicate */
+  --color-transparent-white-64: rgb(255 255 255 / 64%); /* duplicate */
+  --color-transparent-white-72: rgb(255 255 255 / 72%); /* duplicate */
+  --color-transparent-white-84: rgb(255 255 255 / 84%); /* duplicate */
+  --color-transparent-white-00: rgb(255 255 255 / 0%); /* duplicate */
+  --color-transparent-white-04: rgb(255 255 255 / 4%); /* duplicate */
+  --color-transparent-white-08: rgb(255 255 255 / 8%); /* duplicate */
+}
+
+/* ========================================================================
+   LAYER 2: SEMANTIC TOKENS
+   Meaning-based mappings that reference primitives
+   ======================================================================== */
+
+/* --- 2.1 Semantic: Non-color --- */
+
+:root {
+  --border-radius-none: var(--border-radius-0);
+  --border-radius-2xs: var(--border-radius-2);
+  --border-radius-xs: var(--border-radius-4);
+  --border-radius-sm: var(--border-radius-8);
+  --border-radius-md: var(--border-radius-16);
+  --border-radius-lg: var(--border-radius-32);
+  --border-radius-full: var(--border-radius-round);
+  --border-width-sm: var(--border-width-1);
+  --border-width-md: var(--border-width-2);
+  --border-width-lg: var(--border-width-4);
+  --border-width-xl: var(--border-width-8);
+  --opacity-disabled: var(--opacity-48);
+  --spacing-none: var(--spacing-0);
+  --spacing-3xs: var(--spacing-2);
+  --spacing-2xs: var(--spacing-4);
+  --spacing-xs: var(--spacing-8);
+  --spacing-sm: var(--spacing-12);
+  --spacing-md: var(--spacing-16);
+  --spacing-lg: var(--spacing-24);
+  --spacing-xl: var(--spacing-32);
+  --spacing-2xl: var(--spacing-40);
+  --spacing-3xl: var(--spacing-48);
+  --spacing-4xl: var(--spacing-64);
+  --spacing-5xl: var(--spacing-80);
+  --spacing-6xl: var(--spacing-96);
+  --spacing-7xl: var(--spacing-104);
+  --typography-line-height-3xs: var(--typography-line-height-12);
+  --typography-line-height-2xs: var(--typography-line-height-14);
+  --typography-line-height-xs: var(--typography-line-height-16);
+  --typography-line-height-sm: var(--typography-line-height-18);
+  --typography-line-height-md: var(--typography-line-height-20);
+  --typography-line-height-lg: var(--typography-line-height-22);
+  --typography-line-height-xl: var(--typography-line-height-24);
+  --typography-line-height-2xl: var(--typography-line-height-26);
+  --typography-line-height-3xl: var(--typography-line-height-30);
+  --typography-line-height-4xl: var(--typography-line-height-32);
+  --typography-line-height-5xl: var(--typography-line-height-36);
+  --typography-line-height-6xl: var(--typography-line-height-42);
+  --typography-line-height-7xl: var(--typography-line-height-46);
+  --typography-line-height-8xl: var(--typography-line-height-52);
+  --typography-line-height-9xl: var(--typography-line-height-54);
+  --typography-line-height-10xl: var(--typography-line-height-58);
+  --typography-line-height-11xl: var(--typography-line-height-66);
+  --typography-line-height-12xl: var(--typography-line-height-74);
+  --typography-line-height-13xl: var(--typography-line-height-84);
+  --typography-line-height-14xl: var(--typography-line-height-95);
+}
+
+/* --- 2.2 Semantic: Light Mode --- */
+
+:root[data-theme="light"] {
+  --color-background-utility-error-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-highlight: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-highlight-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-info: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-info-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-success: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-success-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-warning: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-warning-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-brand-adobe-red: #eb1000;
+  --color-brand-cc-3dar: #99e83f;
+  --color-brand-cc-il: #ff9a00;
+  --color-brand-cc-ppafx: #99f;
+  --color-brand-cc-ps: #3a18ff;
+  --color-background-utility-error: var(--color-red-900);
+  --color-background-default: var(--color-gray-25);
+  --color-background-default-hover: var(--color-gray-25);
+  --color-background-subtle: var(--color-gray-50);
+  --color-background-subtle-hover: var(--color-gray-50); /** Placeholder token: awaiting design definition for final value */
+  --color-background-knockout: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --color-background-brand: var(--color-brand-adobe-red); /** Placeholder token: awaiting design definition for final value */
+  --color-border-utility-error: var(--color-red-900); /** Placeholder token: awaiting design definition for final value */
+  --color-border-default: var(--color-gray-800); /** Placeholder token: awaiting design definition for final value */
+  --color-border-default-hover: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --color-border-subtle: var(--color-gray-300); /** Placeholder token: awaiting design definition for final value */
+  --color-border-subtle-hover: var(--color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --color-border-knockout: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --color-border-brand: var(--color-brand-adobe-red); /** Placeholder token: awaiting design definition for final value */
+  --color-border-disabled: var(--color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --color-content-utility-error: var(--color-red-900);
+  --color-content-default: var(--color-gray-800); /** Placeholder token: awaiting design definition for final value */
+  --color-content-default-hover: var(--color-gray-900);
+  --color-content-subtle: var(--color-gray-700);
+  --color-content-subtle-hover: var(--color-gray-800);
+  --color-content-strong: var(--color-gray-900);
+  --color-content-knockout: var(--color-gray-25);
+  --color-content-brand: var(--color-brand-adobe-red);
+  --color-content-disabled: var(--color-gray-400);
+}
+
+/* --- 2.3 Semantic: Dark Mode --- */
+
+:root[data-theme="dark"] {
+  --color-background-utility-error-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-highlight: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-highlight-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-info: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-info-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-success: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-success-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-warning: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-background-utility-warning-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --color-brand-adobe-red: #eb1000;
+  --color-brand-cc-3dar: #99e83f;
+  --color-brand-cc-il: #ff9a00;
+  --color-brand-cc-ppafx: #99f;
+  --color-brand-cc-ps: #3a18ff;
+  --color-background-utility-error: var(--color-red-900);
+  --color-background-default: var(--color-gray-25);
+  --color-background-default-hover: var(--color-gray-25);
+  --color-background-subtle: var(--color-gray-50);
+  --color-background-subtle-hover: var(--color-gray-50); /** Placeholder token: awaiting design definition for final value */
+  --color-background-knockout: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --color-background-brand: var(--color-brand-adobe-red); /** Placeholder token: awaiting design definition for final value */
+  --color-border-utility-error: var(--color-red-900); /** Placeholder token: awaiting design definition for final value */
+  --color-border-default: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --color-border-default-hover: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --color-border-subtle: var(--color-gray-300); /** Placeholder token: awaiting design definition for final value */
+  --color-border-subtle-hover: var(--color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --color-border-knockout: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --color-border-brand: var(--color-brand-adobe-red); /** Placeholder token: awaiting design definition for final value */
+  --color-border-disabled: var(--color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --color-content-utility-error: var(--color-red-900);
+  --color-content-default: var(--color-gray-800); /** Placeholder token: awaiting design definition for final value */
+  --color-content-default-hover: var(--color-gray-900);
+  --color-content-subtle: var(--color-gray-700);
+  --color-content-strong: var(--color-gray-900);
+  --color-content-knockout: var(--color-gray-1000);
+  --color-content-brand: var(--color-brand-adobe-red);
+  --color-content-disabled: var(--color-gray-400);
+  --color-content-subtle-hover: var(--color-content-subtle);
+}
+
+/* ========================================================================
+   LAYER 3: RESPONSIVE TOKENS
+   Breakpoint-specific overrides for typography, containers, and density
+   ======================================================================== */
+
+/* --- 3.1 Responsive: Mobile (default, no media query) --- */
+
+:root {
+  --typography-logo-2xl-line-height: 1.25px; /** Placeholder token: awaiting design definition for final value */
+  --typography-heading-4xl-font-family: var(--typography-font-family-default);
+  --typography-heading-4xl-font-weight: var(--typography-font-weight-black);
+  --typography-heading-4xl-font-size: var(--typography-font-size-9xl);
+  --typography-heading-3xl-font-family: var(--typography-font-family-default);
+  --typography-heading-3xl-font-weight: var(--typography-font-weight-black);
+  --typography-heading-3xl-font-size: var(--typography-font-size-7xl);
+  --typography-heading-2xl-font-family: var(--typography-font-family-default);
+  --typography-heading-2xl-font-weight: var(--typography-font-weight-black);
+  --typography-heading-2xl-font-size: var(--typography-font-size-5xl);
+  --typography-heading-xl-font-family: var(--typography-font-family-default);
+  --typography-heading-xl-font-weight: var(--typography-font-weight-black);
+  --typography-heading-xl-font-size: var(--typography-font-size-4xl);
+  --typography-heading-lg-font-family: var(--typography-font-family-default);
+  --typography-heading-lg-font-weight: var(--typography-font-weight-black);
+  --typography-heading-lg-font-size: var(--typography-font-size-3xl);
+  --typography-heading-md-font-family: var(--typography-font-family-default);
+  --typography-heading-md-font-weight: var(--typography-font-weight-bold);
+  --typography-heading-md-font-size: var(--typography-font-size-xl);
+  --typography-title-2xl-font-family: var(--typography-font-family-default);
+  --typography-title-2xl-font-weight: var(--typography-font-weight-bold);
+  --typography-title-2xl-font-size: var(--typography-font-size-4xl);
+  --typography-title-xl-font-family: var(--typography-font-family-default);
+  --typography-title-xl-font-weight: var(--typography-font-weight-bold);
+  --typography-title-xl-font-size: var(--typography-font-size-3xl);
+  --typography-title-lg-font-family: var(--typography-font-family-default);
+  --typography-title-lg-font-weight: var(--typography-font-weight-bold);
+  --typography-title-lg-font-size: var(--typography-font-size-2xl);
+  --typography-title-md-font-family: var(--typography-font-family-default);
+  --typography-title-md-font-weight: var(--typography-font-weight-bold);
+  --typography-title-md-font-size: var(--typography-font-size-xl);
+  --typography-title-sm-font-family: var(--typography-font-family-default);
+  --typography-title-sm-font-weight: var(--typography-font-weight-bold);
+  --typography-title-sm-font-size: var(--typography-font-size-lg);
+  --typography-title-xs-font-family: var(--typography-font-family-default);
+  --typography-title-xs-font-weight: var(--typography-font-weight-bold);
+  --typography-title-xs-font-size: var(--typography-font-size-md);
+  --typography-title-2xs-font-family: var(--typography-font-family-default);
+  --typography-title-2xs-font-weight: var(--typography-font-weight-bold);
+  --typography-title-2xs-font-size: var(--typography-font-size-sm);
+  --typography-body-2xl-font-family: var(--typography-font-family-default);
+  --typography-body-2xl-font-weight: var(--typography-font-weight-medium);
+  --typography-body-2xl-font-size: var(--typography-font-size-3xl);
+  --typography-body-xl-font-family: var(--typography-font-family-default);
+  --typography-body-xl-font-weight: var(--typography-font-weight-medium);
+  --typography-body-xl-font-size: var(--typography-font-size-xl);
+  --typography-body-lg-font-family: var(--typography-font-family-default);
+  --typography-body-lg-font-weight: var(--typography-font-weight-medium);
+  --typography-body-lg-font-size: var(--typography-font-size-lg);
+  --typography-body-md-font-family: var(--typography-font-family-default);
+  --typography-body-md-font-weight: var(--typography-font-weight-medium);
+  --typography-body-md-font-size: var(--typography-font-size-md);
+  --typography-body-sm-font-family: var(--typography-font-family-default);
+  --typography-body-sm-font-weight: var(--typography-font-weight-medium);
+  --typography-body-sm-font-size: var(--typography-font-size-sm);
+  --typography-body-xs-font-family: var(--typography-font-family-default);
+  --typography-body-xs-font-weight: var(--typography-font-weight-medium);
+  --typography-body-xs-font-size: var(--typography-font-size-xs);
+  --typography-body-2xs-font-family: var(--typography-font-family-default);
+  --typography-body-2xs-font-weight: var(--typography-font-weight-regular);
+  --typography-body-2xs-font-size: var(--typography-font-size-xs);
+  --typography-logo-2xl-font-family: var(--typography-font-family-default);
+  --typography-logo-2xl-font-weight: var(--typography-font-weight-black);
+  --typography-logo-2xl-font-size: var(--typography-font-size-8xl);
+  --typography-heading-4xl-line-height: var(--typography-line-height-9xl);
+  --typography-heading-3xl-line-height: var(--typography-line-height-7xl);
+  --typography-heading-2xl-line-height: var(--typography-line-height-5xl);
+  --typography-heading-xl-line-height: var(--typography-line-height-4xl);
+  --typography-heading-lg-line-height: var(--typography-line-height-3xl);
+  --typography-heading-md-line-height: var(--typography-line-height-xl);
+  --typography-title-2xl-line-height: var(--typography-line-height-4xl);
+  --typography-title-xl-line-height: var(--typography-line-height-3xl);
+  --typography-title-lg-line-height: var(--typography-line-height-2xl);
+  --typography-title-md-line-height: var(--typography-line-height-xl);
+  --typography-title-sm-line-height: var(--typography-line-height-lg);
+  --typography-title-xs-line-height: var(--typography-line-height-md);
+  --typography-title-2xs-line-height: var(--typography-line-height-sm);
+  --typography-body-2xl-line-height: var(--typography-line-height-3xl);
+  --typography-body-xl-line-height: var(--typography-line-height-xl);
+  --typography-body-lg-line-height: var(--typography-line-height-lg);
+  --typography-body-md-line-height: var(--typography-line-height-md);
+  --typography-body-sm-line-height: var(--typography-line-height-sm);
+  --typography-body-xs-line-height: var(--typography-line-height-xs);
+  --typography-body-2xs-line-height: var(--typography-line-height-xs);
+}
+
+/* --- 3.2 Responsive: Tablet (min-width: 768px) --- */
+@media (min-width: 768px) {
+  :root {
+    --typography-logo-2xl-line-height: 1.25px; /** Placeholder token: awaiting design definition for final value */
+    --typography-heading-4xl-font-family: var(--typography-font-family-default);
+    --typography-heading-4xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-4xl-font-size: var(--typography-font-size-9xl);
+    --typography-heading-3xl-font-family: var(--typography-font-family-default);
+    --typography-heading-3xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-3xl-font-size: var(--typography-font-size-7xl);
+    --typography-heading-2xl-font-family: var(--typography-font-family-default);
+    --typography-heading-2xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-2xl-font-size: var(--typography-font-size-5xl);
+    --typography-heading-xl-font-family: var(--typography-font-family-default);
+    --typography-heading-xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-xl-font-size: var(--typography-font-size-4xl);
+    --typography-heading-lg-font-family: var(--typography-font-family-default);
+    --typography-heading-lg-font-weight: var(--typography-font-weight-black);
+    --typography-heading-lg-font-size: var(--typography-font-size-3xl);
+    --typography-heading-md-font-family: var(--typography-font-family-default);
+    --typography-heading-md-font-weight: var(--typography-font-weight-bold);
+    --typography-heading-md-font-size: var(--typography-font-size-xl);
+    --typography-title-2xl-font-family: var(--typography-font-family-default);
+    --typography-title-2xl-font-weight: var(--typography-font-weight-bold);
+    --typography-title-2xl-font-size: var(--typography-font-size-4xl);
+    --typography-title-xl-font-family: var(--typography-font-family-default);
+    --typography-title-xl-font-weight: var(--typography-font-weight-bold);
+    --typography-title-xl-font-size: var(--typography-font-size-3xl);
+    --typography-title-lg-font-family: var(--typography-font-family-default);
+    --typography-title-lg-font-weight: var(--typography-font-weight-bold);
+    --typography-title-lg-font-size: var(--typography-font-size-2xl);
+    --typography-title-md-font-family: var(--typography-font-family-default);
+    --typography-title-md-font-weight: var(--typography-font-weight-bold);
+    --typography-title-md-font-size: var(--typography-font-size-xl);
+    --typography-title-sm-font-family: var(--typography-font-family-default);
+    --typography-title-sm-font-weight: var(--typography-font-weight-bold);
+    --typography-title-sm-font-size: var(--typography-font-size-lg);
+    --typography-title-xs-font-family: var(--typography-font-family-default);
+    --typography-title-xs-font-weight: var(--typography-font-weight-bold);
+    --typography-title-xs-font-size: var(--typography-font-size-md);
+    --typography-title-2xs-font-family: var(--typography-font-family-default);
+    --typography-title-2xs-font-weight: var(--typography-font-weight-bold);
+    --typography-title-2xs-font-size: var(--typography-font-size-sm);
+    --typography-body-2xl-font-family: var(--typography-font-family-default);
+    --typography-body-2xl-font-weight: var(--typography-font-weight-medium);
+    --typography-body-2xl-font-size: var(--typography-font-size-3xl);
+    --typography-body-xl-font-family: var(--typography-font-family-default);
+    --typography-body-xl-font-weight: var(--typography-font-weight-medium);
+    --typography-body-xl-font-size: var(--typography-font-size-xl);
+    --typography-body-lg-font-family: var(--typography-font-family-default);
+    --typography-body-lg-font-weight: var(--typography-font-weight-medium);
+    --typography-body-lg-font-size: var(--typography-font-size-lg);
+    --typography-body-md-font-family: var(--typography-font-family-default);
+    --typography-body-md-font-weight: var(--typography-font-weight-medium);
+    --typography-body-md-font-size: var(--typography-font-size-md);
+    --typography-body-sm-font-family: var(--typography-font-family-default);
+    --typography-body-sm-font-weight: var(--typography-font-weight-medium);
+    --typography-body-sm-font-size: var(--typography-font-size-sm);
+    --typography-body-xs-font-family: var(--typography-font-family-default);
+    --typography-body-xs-font-weight: var(--typography-font-weight-medium);
+    --typography-body-xs-font-size: var(--typography-font-size-xs);
+    --typography-body-2xs-font-family: var(--typography-font-family-default);
+    --typography-body-2xs-font-weight: var(--typography-font-weight-regular);
+    --typography-body-2xs-font-size: var(--typography-font-size-xs);
+    --typography-logo-2xl-font-family: var(--typography-font-family-default);
+    --typography-logo-2xl-font-weight: var(--typography-font-weight-black);
+    --typography-logo-2xl-font-size: var(--typography-font-size-8xl);
+    --typography-heading-4xl-line-height: var(--typography-line-height-9xl);
+    --typography-heading-3xl-line-height: var(--typography-line-height-7xl);
+    --typography-heading-2xl-line-height: var(--typography-line-height-5xl);
+    --typography-heading-xl-line-height: var(--typography-line-height-4xl);
+    --typography-heading-lg-line-height: var(--typography-line-height-3xl);
+    --typography-heading-md-line-height: var(--typography-line-height-xl);
+    --typography-title-2xl-line-height: var(--typography-line-height-4xl);
+    --typography-title-xl-line-height: var(--typography-line-height-3xl);
+    --typography-title-lg-line-height: var(--typography-line-height-2xl);
+    --typography-title-md-line-height: var(--typography-line-height-xl);
+    --typography-title-sm-line-height: var(--typography-line-height-lg);
+    --typography-title-xs-line-height: var(--typography-line-height-md);
+    --typography-title-2xs-line-height: var(--typography-line-height-sm);
+    --typography-body-2xl-line-height: var(--typography-line-height-3xl);
+    --typography-body-xl-line-height: var(--typography-line-height-xl);
+    --typography-body-lg-line-height: var(--typography-line-height-lg);
+    --typography-body-md-line-height: var(--typography-line-height-md);
+    --typography-body-sm-line-height: var(--typography-line-height-sm);
+    --typography-body-xs-line-height: var(--typography-line-height-xs);
+    --typography-body-2xs-line-height: var(--typography-line-height-xs);
+  }
+}
+
+/* --- 3.3 Responsive: Desktop (min-width: 1024px) --- */
+@media (min-width: 1024px) {
+  :root {
+    --typography-logo-2xl-line-height: 1.25px; /** Placeholder token: awaiting design definition for final value */
+    --typography-heading-4xl-font-family: var(--typography-font-family-default);
+    --typography-heading-4xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-4xl-font-size: var(--typography-font-size-13xl);
+    --typography-heading-3xl-font-family: var(--typography-font-family-default);
+    --typography-heading-3xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-3xl-font-size: var(--typography-font-size-12xl);
+    --typography-heading-2xl-font-family: var(--typography-font-family-default);
+    --typography-heading-2xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-2xl-font-size: var(--typography-font-size-8xl);
+    --typography-heading-xl-font-family: var(--typography-font-family-default);
+    --typography-heading-xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-xl-font-size: var(--typography-font-size-6xl);
+    --typography-heading-lg-font-family: var(--typography-font-family-default);
+    --typography-heading-lg-font-weight: var(--typography-font-weight-black);
+    --typography-heading-lg-font-size: var(--typography-font-size-4xl);
+    --typography-heading-md-font-family: var(--typography-font-family-default);
+    --typography-heading-md-font-weight: var(--typography-font-weight-black);
+    --typography-heading-md-font-size: var(--typography-font-size-3xl);
+    --typography-title-2xl-font-family: var(--typography-font-family-default);
+    --typography-title-2xl-font-weight: var(--typography-font-weight-bold);
+    --typography-title-2xl-font-size: var(--typography-font-size-5xl);
+    --typography-title-xl-font-family: var(--typography-font-family-default);
+    --typography-title-xl-font-weight: var(--typography-font-weight-bold);
+    --typography-title-xl-font-size: var(--typography-font-size-4xl);
+    --typography-title-lg-font-family: var(--typography-font-family-default);
+    --typography-title-lg-font-weight: var(--typography-font-weight-bold);
+    --typography-title-lg-font-size: var(--typography-font-size-3xl);
+    --typography-title-md-font-family: var(--typography-font-family-default);
+    --typography-title-md-font-weight: var(--typography-font-weight-bold);
+    --typography-title-md-font-size: var(--typography-font-size-2xl);
+    --typography-title-sm-font-family: var(--typography-font-family-default);
+    --typography-title-sm-font-weight: var(--typography-font-weight-bold);
+    --typography-title-sm-font-size: var(--typography-font-size-xl);
+    --typography-title-xs-font-family: var(--typography-font-family-default);
+    --typography-title-xs-font-weight: var(--typography-font-weight-bold);
+    --typography-title-xs-font-size: var(--typography-font-size-lg);
+    --typography-title-2xs-font-family: var(--typography-font-family-default);
+    --typography-title-2xs-font-weight: var(--typography-font-weight-bold);
+    --typography-title-2xs-font-size: var(--typography-font-size-md);
+    --typography-body-2xl-font-family: var(--typography-font-family-default);
+    --typography-body-2xl-font-weight: var(--typography-font-weight-bold);
+    --typography-body-2xl-font-size: var(--typography-font-size-4xl);
+    --typography-body-xl-font-family: var(--typography-font-family-default);
+    --typography-body-xl-font-weight: var(--typography-font-weight-bold);
+    --typography-body-xl-font-size: var(--typography-font-size-2xl);
+    --typography-body-lg-font-family: var(--typography-font-family-default);
+    --typography-body-lg-font-weight: var(--typography-font-weight-bold);
+    --typography-body-lg-font-size: var(--typography-font-size-xl);
+    --typography-body-md-font-family: var(--typography-font-family-default);
+    --typography-body-md-font-weight: var(--typography-font-weight-bold);
+    --typography-body-md-font-size: var(--typography-font-size-lg);
+    --typography-body-sm-font-family: var(--typography-font-family-default);
+    --typography-body-sm-font-weight: var(--typography-font-weight-bold);
+    --typography-body-sm-font-size: var(--typography-font-size-md);
+    --typography-body-xs-font-family: var(--typography-font-family-default);
+    --typography-body-xs-font-weight: var(--typography-font-weight-bold);
+    --typography-body-xs-font-size: var(--typography-font-size-xs);
+    --typography-body-2xs-font-family: var(--typography-font-family-default);
+    --typography-body-2xs-font-weight: var(--typography-font-weight-regular);
+    --typography-body-2xs-font-size: var(--typography-font-size-xs);
+    --typography-logo-2xl-font-family: var(--typography-font-family-default);
+    --typography-logo-2xl-font-weight: var(--typography-font-weight-bold);
+    --typography-logo-2xl-font-size: var(--typography-font-size-11xl);
+    --typography-heading-4xl-line-height: var(--typography-line-height-13xl);
+    --typography-heading-3xl-line-height: var(--typography-line-height-12xl);
+    --typography-heading-2xl-line-height: var(--typography-line-height-8xl);
+    --typography-heading-xl-line-height: var(--typography-line-height-6xl);
+    --typography-heading-lg-line-height: var(--typography-line-height-4xl);
+    --typography-heading-md-line-height: var(--typography-line-height-3xl);
+    --typography-title-2xl-line-height: var(--typography-line-height-5xl);
+    --typography-title-xl-line-height: var(--typography-line-height-4xl);
+    --typography-title-lg-line-height: var(--typography-line-height-3xl);
+    --typography-title-md-line-height: var(--typography-line-height-2xl);
+    --typography-title-sm-line-height: var(--typography-line-height-xl);
+    --typography-title-xs-line-height: var(--typography-line-height-lg);
+    --typography-title-2xs-line-height: var(--typography-line-height-md);
+    --typography-body-2xl-line-height: var(--typography-line-height-4xl);
+    --typography-body-xl-line-height: var(--typography-line-height-2xl);
+    --typography-body-lg-line-height: var(--typography-line-height-xl);
+    --typography-body-md-line-height: var(--typography-line-height-lg);
+    --typography-body-sm-line-height: var(--typography-line-height-md);
+    --typography-body-xs-line-height: var(--typography-line-height-xs);
+    --typography-body-2xs-line-height: var(--typography-line-height-xs);
+  }
+}
+
+/* --- 3.4 Responsive: Desktop Wide (min-width: 1440px) --- */
+@media (min-width: 1440px) {
+  :root {
+    --typography-logo-2xl-line-height: 1.25px; /** Placeholder token: awaiting design definition for final value */
+    --typography-heading-4xl-font-family: var(--typography-font-family-default);
+    --typography-heading-4xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-4xl-font-size: var(--typography-font-size-14xl);
+    --typography-heading-3xl-font-family: var(--typography-font-family-default);
+    --typography-heading-3xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-3xl-font-size: var(--typography-font-size-11xl);
+    --typography-heading-2xl-font-family: var(--typography-font-family-default);
+    --typography-heading-2xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-2xl-font-size: var(--typography-font-size-10xl);
+    --typography-heading-xl-font-family: var(--typography-font-family-default);
+    --typography-heading-xl-font-weight: var(--typography-font-weight-black);
+    --typography-heading-xl-font-size: var(--typography-font-size-7xl);
+    --typography-heading-lg-font-family: var(--typography-font-family-default);
+    --typography-heading-lg-font-weight: var(--typography-font-weight-black);
+    --typography-heading-lg-font-size: var(--typography-font-size-5xl);
+    --typography-heading-md-font-family: var(--typography-font-family-default);
+    --typography-heading-md-font-weight: var(--typography-font-weight-black);
+    --typography-heading-md-font-size: var(--typography-font-size-5xl);
+    --typography-title-2xl-font-family: var(--typography-font-family-default);
+    --typography-title-2xl-font-weight: var(--typography-font-weight-bold);
+    --typography-title-2xl-font-size: var(--typography-font-size-5xl);
+    --typography-title-xl-font-family: var(--typography-font-family-default);
+    --typography-title-xl-font-weight: var(--typography-font-weight-bold);
+    --typography-title-xl-font-size: var(--typography-font-size-5xl);
+    --typography-title-lg-font-family: var(--typography-font-family-default);
+    --typography-title-lg-font-weight: var(--typography-font-weight-bold);
+    --typography-title-lg-font-size: var(--typography-font-size-3xl);
+    --typography-title-md-font-family: var(--typography-font-family-default);
+    --typography-title-md-font-weight: var(--typography-font-weight-bold);
+    --typography-title-md-font-size: var(--typography-font-size-2xl);
+    --typography-title-sm-font-family: var(--typography-font-family-default);
+    --typography-title-sm-font-weight: var(--typography-font-weight-bold);
+    --typography-title-sm-font-size: var(--typography-font-size-xl);
+    --typography-title-xs-font-family: var(--typography-font-family-default);
+    --typography-title-xs-font-weight: var(--typography-font-weight-bold);
+    --typography-title-xs-font-size: var(--typography-font-size-lg);
+    --typography-title-2xs-font-family: var(--typography-font-family-default);
+    --typography-title-2xs-font-weight: var(--typography-font-weight-bold);
+    --typography-title-2xs-font-size: var(--typography-font-size-md);
+    --typography-body-2xl-font-family: var(--typography-font-family-default);
+    --typography-body-2xl-font-weight: var(--typography-font-weight-bold);
+    --typography-body-2xl-font-size: var(--typography-font-size-4xl);
+    --typography-body-xl-font-family: var(--typography-font-family-default);
+    --typography-body-xl-font-weight: var(--typography-font-weight-bold);
+    --typography-body-xl-font-size: var(--typography-font-size-2xl);
+    --typography-body-lg-font-family: var(--typography-font-family-default);
+    --typography-body-lg-font-weight: var(--typography-font-weight-bold);
+    --typography-body-lg-font-size: var(--typography-font-size-xl);
+    --typography-body-md-font-family: var(--typography-font-family-default);
+    --typography-body-md-font-weight: var(--typography-font-weight-bold);
+    --typography-body-md-font-size: var(--typography-font-size-lg);
+    --typography-body-sm-font-family: var(--typography-font-family-default);
+    --typography-body-sm-font-weight: var(--typography-font-weight-bold);
+    --typography-body-sm-font-size: var(--typography-font-size-md);
+    --typography-body-xs-font-family: var(--typography-font-family-default);
+    --typography-body-xs-font-weight: var(--typography-font-weight-bold);
+    --typography-body-xs-font-size: var(--typography-font-size-xs);
+    --typography-body-2xs-font-family: var(--typography-font-family-default);
+    --typography-body-2xs-font-weight: var(--typography-font-weight-bold);
+    --typography-body-2xs-font-size: var(--typography-font-size-xs);
+    --typography-logo-2xl-font-family: var(--typography-font-family-default);
+    --typography-logo-2xl-font-weight: var(--typography-font-weight-bold);
+    --typography-logo-2xl-font-size: var(--typography-font-size-lg);
+    --typography-heading-4xl-line-height: var(--typography-line-height-14xl);
+    --typography-heading-3xl-line-height: var(--typography-line-height-11xl);
+    --typography-heading-2xl-line-height: var(--typography-line-height-10xl);
+    --typography-heading-xl-line-height: var(--typography-line-height-7xl);
+    --typography-heading-lg-line-height: var(--typography-line-height-5xl);
+    --typography-heading-md-line-height: var(--typography-line-height-5xl);
+    --typography-title-2xl-line-height: var(--typography-line-height-5xl);
+    --typography-title-xl-line-height: var(--typography-line-height-5xl);
+    --typography-title-lg-line-height: var(--typography-line-height-3xl);
+    --typography-title-md-line-height: var(--typography-line-height-2xl);
+    --typography-title-sm-line-height: var(--typography-line-height-xl);
+    --typography-title-xs-line-height: var(--typography-line-height-lg);
+    --typography-title-2xs-line-height: var(--typography-line-height-md);
+    --typography-body-2xl-line-height: var(--typography-line-height-4xl);
+    --typography-body-xl-line-height: var(--typography-line-height-2xl);
+    --typography-body-lg-line-height: var(--typography-line-height-xl);
+    --typography-body-md-line-height: var(--typography-line-height-lg);
+    --typography-body-sm-line-height: var(--typography-line-height-md);
+    --typography-body-xs-line-height: var(--typography-line-height-xs);
+    --typography-body-2xs-line-height: var(--typography-line-height-xs);
+  }
+}
+
+/* ========================================================================
+   LAYER 4: COMPONENT TOKENS
+   UI-specific tokens that reference semantic and responsive tokens
+   ======================================================================== */
+
+/* --- 4.1 Component: Non-color --- */
+
+/**
+ * Do not edit directly, this file was auto-generated.
+ *
+ * Note: This file is empty because component tokens reference tokens
+ * that are not yet defined. Define the missing tokens in Figma and re-sync to generate this file.
+ */
+
+/* --- 4.2 Component: Light Mode --- */
+
+:root[data-theme="light"] {
+  --button-color-border-primary-outlined-default: rgb(0 0 0 / 0%); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-outlined-default: rgb(0 0 0 / 0%); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-solid-default: var(--color-gray-800); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-solid-hover: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-solid-active: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-outlined-default: var(--color-transparent-black-00); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-outlined-hover: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-outlined-active: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-solid-default: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-solid-hover: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-solid-active: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-outlined-default: var(--color-transparent-black-00); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-outlined-hover: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-outlined-active: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-negative-solid-default: var(--color-red-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-negative-solid-hover: var(--color-red-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-negative-solid-active: var(--color-red-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-accent-solid-default: var(--color-blue-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-accent-solid-hover: var(--color-blue-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-accent-solid-active: var(--color-blue-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-solid-default: var(--color-gray-800); /** Placeholder token: button components need to be reworked from original s2a designs. */
+  --button-color-border-primary-solid-hover: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-solid-active: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-outlined-hover: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-outlined-active: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-solid-default: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-solid-hover: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-solid-active: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-outlined-default: var(--color-gray-300); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-outlined-hover: var(--color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-outlined-active: var(--color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-negative-default: var(--color-red-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-negative-hover: var(--color-red-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-negative-active: var(--color-red-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-accent-default: var(--color-blue-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-accent-hover: var(--color-blue-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-accent-active: var(--color-blue-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-solid-default: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-solid-hover: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-solid-active: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-outlined-hover: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-outlined-active: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-solid-default: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-solid-hover: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-solid-active: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-outlined-default: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-outlined-hover: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-outlined-active: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-negative-default: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-negative-hover: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-negative-active: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-accent-default: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-accent-hover: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-accent-active: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --focus-ring-color-outline-default: var(--color-blue-800); /** Placeholder token: awaiting design definition for final value */
+}
+
+/* --- 4.3 Component: Dark Mode --- */
+
+:root[data-theme="dark"] {
+  --button-color-background-primary-solid-default: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-solid-hover: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-solid-active: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-outlined-default: var(--color-transparent-white-00); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-outlined-hover: var(--color-transparent-white-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-primary-outlined-active: var(--color-transparent-white-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-solid-default: var(--color-transparent-white-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-solid-hover: var(--color-transparent-white-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-solid-active: var(--color-transparent-white-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-outlined-default: var(--color-transparent-white-00); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-outlined-hover: var(--color-transparent-white-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-secondary-outlined-active: var(--color-transparent-white-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-negative-solid-default: var(--color-red-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-negative-solid-hover: var(--color-red-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-negative-solid-active: var(--color-red-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-accent-solid-default: var(--color-blue-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-accent-solid-hover: var(--color-blue-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-background-accent-solid-active: var(--color-blue-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-solid-default: var(--color-gray-1000); /** Placeholder token: button components need to be reworked from original s2a designs. */
+  --button-color-border-primary-solid-hover: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-solid-active: var(--color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-outlined-default: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-outlined-hover: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-primary-outlined-active: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-solid-default: var(--color-transparent-black-08); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-solid-hover: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-solid-active: var(--color-transparent-black-12); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-outlined-default: var(--color-gray-300); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-outlined-hover: var(--color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-secondary-outlined-active: var(--color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-negative-default: var(--color-red-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-negative-hover: var(--color-red-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-negative-active: var(--color-red-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-accent-default: var(--color-blue-900); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-accent-hover: var(--color-blue-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-border-accent-active: var(--color-blue-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-solid-default: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-solid-hover: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-solid-active: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-outlined-default: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-outlined-hover: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-primary-outlined-active: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-solid-default: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-solid-hover: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-solid-active: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-outlined-default: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-outlined-hover: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-secondary-outlined-active: var(--color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-negative-default: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-negative-hover: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-negative-active: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-accent-default: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-accent-hover: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --button-color-content-accent-active: var(--color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --focus-ring-color-outline-default: var(--color-blue-800); /** Placeholder token: awaiting design definition for final value */
+}
+
+/* Base styles carried over from styles.css */
+body {
+  display: block;
+  font-family: var(--typography-font-family-adobe-clean);
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+  background-color: var(--background-color);
+  color: var(--color-gray-25);
+  margin: 0;
+  word-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+  opacity: 1 !important; /* Fix Target hiding */
+}

@@ -1,4 +1,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <script src="/libs/scripts/scripts.js" type="module"></script>
-<link rel="stylesheet" href="/libs/styles/styles.css"/>
+<script>
+  (function() {
+    const theme = document.head.querySelector('meta[name="theme"]')?.content;
+    const stylesheet = theme === 'c2s2a' ? '/libs/styles/c2s2a.css' : '/libs/styles/styles.css';
+    document.write('<link rel="stylesheet" href="' + stylesheet + '"/>');
+  })();
+</script>
 <link rel="icon" href="data:," size="any"/>
