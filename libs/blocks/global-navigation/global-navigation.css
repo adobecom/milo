@@ -14,6 +14,12 @@
   cursor: pointer;
 }
 
+.global-navigation .feds-client-explore-plans {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
 /* Curtain */
 .feds-curtain {
   position: fixed;
@@ -792,6 +798,12 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
     display: none;
   }
   .feds-localnav {
+    display: none;
+  }
+}
+
+@media (max-width: 600) {
+  .feds-client-explore-plans {
     display: none;
   }
 }

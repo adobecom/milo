@@ -1648,7 +1648,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep, miniGnav = false } = getConfig();
+  const { mep, miniGnav = false, explorePlansCta = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1672,7 +1672,7 @@ export default async function init(block) {
     newMobileNav,
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
-  if (miniGnav) block.classList.add('mini-gnav');
+  if (miniGnav || explorePlansCta) block.classList.add('mini-gnav');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
