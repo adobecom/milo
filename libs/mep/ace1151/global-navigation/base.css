@@ -112,7 +112,7 @@ html[lang="ja-jp"] a.feds-navLink wbr {
   color: #1473E6;
 }
 
-.new-nav .feds-navLink--blue {
+:is(.new-nav, .feds-localnav) .feds-navLink--blue {
   color: var(--feds-color-blue-link);
 }
 
