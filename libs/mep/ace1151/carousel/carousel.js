@@ -626,7 +626,7 @@ function readySlides(slides, slideContainer, isUpsDesktop, carouselElements) {
 const buildMenuItems = (slides, el) => {
   if (isHovering(el)) {
     let menuItems = slides.map((slide, index) => {
-      const title = slide.querySelector('h2');
+      const title = slide.querySelector('h2,h3');
       if (!title) return null;
       const item = createTag('button', {
         class: 'carousel-menu-item',
@@ -694,7 +694,7 @@ export default function init(el) {
       slide.classList.add('carousel-slide');
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
-      const title = slide.querySelector('h2');
+      const title = slide.querySelector('h2,h3');
 
       if (isLinkedSlides(el)) {
         slide.setAttribute('daa-ll', `slide-image-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);

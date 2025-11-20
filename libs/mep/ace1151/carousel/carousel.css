@@ -600,7 +600,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
   .carousel.hinting-mobile .carousel-slides.is-ready,
   .carousel.hinting-mobile .carousel-slides.is-ready.is-reversing {
-    transform: translateX(calc((var(--spacing-xs) - 1px) * -1));
+    /* transform: translateX(calc((var(--spacing-xs) - 1px) * -1)); */
   }
 
   .carousel.hinting-center-mobile .carousel-slides.is-ready,
