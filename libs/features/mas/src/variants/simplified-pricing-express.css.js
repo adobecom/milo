@@ -67,6 +67,11 @@ merch-card-collection.simplified-pricing-express p {
     merch-card[variant="simplified-pricing-express"] [slot="price"] {
         min-height: var(--consonant-merch-card-simplified-pricing-express-price-height);
     }
+
+    merch-card[variant="simplified-pricing-express"] [slot="short-description"] {
+        min-height: var(--consonant-merch-card-simplified-pricing-express-short-description-height);
+        margin-bottom: var(--merch-card-simplified-pricing-express-padding);
+    }
 }
 
 merch-card[variant="simplified-pricing-express"] p {
@@ -87,6 +92,14 @@ merch-card[variant="simplified-pricing-express"] [slot="body-xs"] {
     color: var(--spectrum-gray-700);
     margin-bottom: 32px;
     justify-content: space-between;
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="short-description"] {
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 15.6px;
+    color: var(--spectrum-gray-700);
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] {
@@ -111,7 +124,7 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.button {
 merch-card[variant="simplified-pricing-express"] [slot="price"] {
   display: flex;
   flex-direction: column;
-  margin-bottom: var(--merch-card-simplified-pricing-express-padding);
+  margin-bottom: 0;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"]:first-child {
@@ -284,9 +297,11 @@ merch-card[variant="simplified-pricing-express"] mas-mnemonic {
   /* Collapsed state - hide content sections */
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="body-xs"],
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="price"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="short-description"],
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="cta"],
   merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="body-xs"],
   merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="price"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="short-description"],
   merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="cta"] {
     display: none;
     visibility: hidden;
@@ -298,6 +313,7 @@ merch-card[variant="simplified-pricing-express"] mas-mnemonic {
   /* Expanded state - explicitly show content */
   merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="body-xs"],
   merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="price"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="short-description"],
   merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="cta"] {
     display: block;
     visibility: visible;
