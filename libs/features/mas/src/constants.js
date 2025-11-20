@@ -195,7 +195,6 @@ export const SUPPORTED_LOCALE = [
   'en_AZ',
   'en_BE',
   'en_CA',
-  'en_CR',
   'en_CY',
   'en_DZ',
   'en_EG',
