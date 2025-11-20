@@ -27,6 +27,7 @@ header .feds-content-description {
   opacity: 0;
   animation: slideup 0.6s ease, fadein 0.8s ease;
   animation-fill-mode: forwards;
+  text-wrap: wrap;
 }
 
 .global-navigation.test-nav.dropdown-active .feds-navLink[aria-expanded = "true"],
