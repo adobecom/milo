@@ -1913,6 +1913,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   white-space: break-spaces;
   padding-bottom: 10px;
   color: #FFF;
+  line-height: 115%;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink--gray-gradient .feds-navLink-title {
@@ -1929,6 +1930,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   font-weight: 400;
   white-space: break-spaces;
   font-size: 14px;
+  line-height: 140%;
 }
 
 header.test-nav .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-popup > .feds-menu-content {
