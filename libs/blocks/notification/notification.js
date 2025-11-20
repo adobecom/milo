@@ -388,7 +388,7 @@ function setStickyAccessibilityAttributes(el) {
     const isSticky = section.classList.contains('sticky-top') || section.classList.contains('sticky-bottom');
     if (!isSticky) return false;
 
-    if (el.classList.contains('no-closure') && el.matches(`:is(.${pill}, .${ribbon})`)) {
+    if (el.classList.contains('no-closure')) {
       el.classList.remove('no-closure');
       if (!el.querySelector('.close')) decorateClose(el);
     }
