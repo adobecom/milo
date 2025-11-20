@@ -546,7 +546,13 @@ class Gnav {
   };
 
   decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false, viewPlansCta = false } = getConfig();
+    const {
+      searchEnabled,
+      selfIntegrateUnav,
+      desktopAppsCta = false,
+      viewPlansCta = false,
+      explorePlansCta = false,
+    } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -561,6 +567,7 @@ class Gnav {
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${viewPlansCta ? toFragment`<div class="feds-client-view-plans"></div>` : ''}
+        ${explorePlansCta ? toFragment`<div class="feds-client-explore-plans"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
@@ -1046,9 +1053,9 @@ class Gnav {
   };
 
   decorateToggle = () => {
-    const { viewPlansCta = false } = getConfig();
+    const { explorePlansCta = false } = getConfig();
 
-    if (!viewPlansCta || !this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu())) return '';
+    if (!explorePlansCta && (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu()))) return '';
 
     const isLocalNav = this.isLocalNav();
 

@@ -8,7 +8,8 @@
 }
 
 .global-navigation button:not(.feds-client-desktop-apps button),
-.global-navigation button:not(.feds-client-view-plans button) {
+.global-navigation button:not(.feds-client-view-plans button), 
+.global-navigation button:not(.feds-client-explore-plans button) {
   background: none;
   cursor: pointer;
 }

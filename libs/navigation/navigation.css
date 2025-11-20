@@ -65,9 +65,14 @@ header.global-navigation + .feds-localnav {
   height: var(--global-height-navpromo);
 }
 
-.feds-client-desktop-apps,
-.feds-client-view-plans {
+.feds-client-desktop-apps {
   display: none;
+}
+
+.feds-client-view-plans {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (min-width: 900px) {
@@ -116,8 +121,7 @@ header.global-navigation + .feds-localnav {
     margin: 0 auto;
   }
 
-  .feds-client-desktop-apps,
-  .feds-client-view-plans {
+  .feds-client-desktop-apps {
     display: flex;
     align-items: center;
     justify-content: center;
