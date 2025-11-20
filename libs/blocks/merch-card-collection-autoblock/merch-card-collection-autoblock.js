@@ -223,7 +223,13 @@ function generateCardName(card) {
 }
 
 function enableSidenavAnalytics(el) {
-  el.sidenav?.addEventListener('merch-sidenav:select', ({ target }) => {
+  if (!el.sidenav) return;
+  const snContainer = el.sidenav.closest('.collection-container');
+  if (snContainer && !snContainer.getAttribute('daa-lh')) {
+    const selectedValue = el.sidenav.querySelector('merch-sidenav-list')?.getAttribute('selected-value');
+    snContainer.setAttribute('daa-lh', `${selectedValue || 'all'}--cat`);
+  }
+  el.sidenav.addEventListener('merch-sidenav:select', ({ target }) => {
     if (!target || target.oldValue === target.selectedValue) return;
     const container = target.closest('.collection-container');
     const updated = container.getAttribute('daa-lh')?.includes('--cat');
