@@ -82,6 +82,10 @@ div.accordion:not(.descr-list) {
   border-top: none;
 }
 
+.s2a.s-heading .accordion h3  {
+  font-size: var(--type-heading-s-size);
+}
+
 .accordion .descr-term button:hover {
   cursor: pointer;
   color: var(--color-black);
