@@ -82,9 +82,6 @@ div.accordion:not(.descr-list) {
   border-top: none;
 }
 
-.s2a.s-heading .accordion h3  {
-  font-size: var(--type-heading-s-size);
-}
 
 .accordion .descr-term button:hover {
   cursor: pointer;
@@ -228,7 +225,6 @@ html[dir="rtl"] .accordion .descr-term button::before {
   animation-name: fade-in;
 }
 
-
 @keyframes fade-in {
   0% {
     opacity: 0;
@@ -257,6 +253,15 @@ html[dir="rtl"] .accordion .descr-term button::before {
 div.editorial .video-container, div.editorial .descr-details img,
 div.editorial video {
   width: 100%;
+}
+
+:root:has(meta[name="theme"][content="s2a"]) .s2a.s-heading .accordion h3  {
+  --type-heading-s-size: 18px;
+  --body-font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+.s2a.s-heading .accordion h3 button {
+  font-size: var(--type-heading-s-size);
 }
 
 @media screen and (min-width: 600px) {
@@ -306,5 +311,15 @@ div.editorial video {
   .editorial.expand-all-button .accordion-expand-all {
     grid-column: span 2;
     max-width: 100%;
+  }
+
+  :root:has(meta[name="theme"][content="s2a"]) .s2a.s-heading .accordion h3  {
+    --type-heading-s-size: 20px;
+  }
+}
+
+@media screen and (min-width: 1680px) {
+  :root:has(meta[name="theme"][content="s2a"]) .s2a.s-heading .accordion h3  {
+    --type-heading-s-size: 22px;
   }
 }
