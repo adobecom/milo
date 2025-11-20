@@ -88,8 +88,8 @@ export default async function init(a) {
   let mepFrag;
   try {
     const path = !a.href.includes('/federal/') ? new URL(a.href).pathname
-      : a.href.replace('#_inline', '');
-    mepFrag = mep?.fragments?.[path] || mep?.fragments?.[path.replace(locale.prefix, '')];
+      : a.href.replace('#_inline', '').replace(locale.prefix, '');
+    mepFrag = mep?.fragments?.[path];
   } catch (e) {
     // do nothing
   }
@@ -115,11 +115,107 @@ export default async function init(a) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
-  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
+
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  // TODO: confirm what the final country decision should include
+  const country = urlSearchParams.get('akamaiLocale')?.toLowerCase()
+    || sessionStorage.getItem('akamai') || window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+    ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
+
+  const prefixParts = locale.prefix.split('/').filter((part) => part);
+  const localeCode = (prefixParts[0] === 'langstore' || prefixParts[0] === 'target-preview')
+    ? prefixParts[1]
+    : prefixParts[0];
+
+  // Current correct format: country_localeCode (e.g., ch_de)
+  // let regionKey = `${country}_${localeCode}`;
+
+  // Old incorrect format for testing (uncomment to test with wrong structure):
+  let regionKey = `${localeCode}/${country}`;
+
+  let matchingRegion = locale?.regions?.[regionKey];
+  if (!matchingRegion && locale?.regions?.[country]) {
+    regionKey = country;
+    matchingRegion = locale.regions[country];
+  }
+  const mepLingoFragSwap = !!(a.dataset.roc
+    && matchingRegion
+    && locale.prefix
+    && country
+    && resourcePath
+    && localeCode);
+
+  // *** site structure for English sites not finalized yet ***
+  // will need to update this when we have a final structure
+  let resp;
+  let rocResourcePath;
+  // let lingoOutcome;
+  let usedRocPath = false;
+  let usedFallbackPath = false;
+  const isBlockSwap = !!a.dataset.mepLingoBlockFragment;
+  if (mepLingoFragSwap && matchingRegion?.prefix) {
+    rocResourcePath = resourcePath.replace(locale.prefix, matchingRegion.prefix);
+
+    if (isBlockSwap) {
+      // Block swaps (including section-metadata): only try ROC, no fallback
+      const rocResp = await customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
+        .catch(() => ({}));
+
+      if (rocResp?.ok) {
+        usedRocPath = true;
+        resp = rocResp;
+        relHref = localizeLink(rocResourcePath);
+        a?.parentElement?.previousElementSibling.remove(); // Remove ROC row from table
+
+        // Special cleanup for section-metadata blocks
+        if (a.dataset.mepLingoSectionMetadata) {
+          const section = a.closest('.section');
+          if (section) {
+            a.parentElement.dataset.mepLingoNewBlock = true;
+            section.style = '';
+            if (section.childElementCount > 1) {
+              [...section.children].forEach((child) => {
+                if (!child.dataset.mepLingoNewBlock) child.remove();
+              });
+            }
+          }
+        }
+      } else {
+        // ROC doesn't exist, remove ROC row and keep original block
+        a.parentElement.remove();
+        return;
+      }
+    } else {
+      // Regular fragments: try both ROC and fallback in parallel
+      const [rocResp, fallbackResp] = await Promise.all([
+        customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
+          .catch(() => ({})),
+        customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+          .catch(() => ({})),
+      ]);
+
+      if (rocResp?.ok) {
+        usedRocPath = true;
+        resp = rocResp;
+        relHref = localizeLink(rocResourcePath);
+      } else if (fallbackResp?.ok) {
+        usedFallbackPath = true;
+        resp = fallbackResp;
+      }
+    }
+  } else if (!mepLingoFragSwap && isBlockSwap) {
+    a.parentElement.remove();
+  } else {
+    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
+  }
 
   if (!resp?.ok) {
-    window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
+    // *** still need to decide on what we will log and/or track ***
+    const message = mepLingoFragSwap
+      ? `Could not get lingo locale fragments: ${resourcePath}.plain.html or ${rocResourcePath}.plain.html`
+      : `Could not get fragment: ${resourcePath}.plain.html`;
+    window.lana?.log(message);
     return;
   }
 
@@ -135,7 +231,14 @@ export default async function init(a) {
     return;
   }
 
-  const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
+  const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
+  if (usedRocPath) {
+    fragmentAttrs['data-mep-lingo-roc'] = relHref;
+  } else if (usedFallbackPath) {
+    fragmentAttrs['data-mep-lingo-fallback'] = relHref;
+  }
+
+  const fragment = createTag('div', fragmentAttrs);
   fragment.append(...sections);
 
   await updateFragMap(fragment, a, relHref);

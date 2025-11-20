@@ -54,6 +54,17 @@ function updatePreviewButton(popup, pageId) {
     simulateHref.searchParams.delete('mepHighlight');
   }
 
+  const mepFragmentsCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepFragmentsCheckbox${pageId}`,
+  );
+
+  document.body.dataset.mepFragments = mepFragmentsCheckbox.checked;
+  if (mepFragmentsCheckbox.checked) {
+    simulateHref.searchParams.set('mepFragments', true);
+  } else {
+    simulateHref.searchParams.delete('mepFragments');
+  }
+
   const mepPreviewButtonCheckbox = popup.querySelector(
     `input[type="checkbox"]#mepPreviewButtonCheckbox${pageId}`,
   );
@@ -120,8 +131,7 @@ function parseMepConfig() {
   const { experiments, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
-      name, event, manifest, variantNames, selectedVariantName,
-      disabled, analyticsTitle, source, geoRestriction, mktgAction,
+      name, event, manifest, variantNames, selectedVariantName, disabled, analyticsTitle, source,
     } = experiment;
     let pathname = manifest;
     try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -136,8 +146,6 @@ function parseMepConfig() {
       eventEnd: event?.end,
       pathname,
       analyticsTitle,
-      geoRestriction,
-      mktgAction,
     };
   });
   const { page, url } = parsePageAndUrl(config, window.location, prefix);
@@ -186,8 +194,6 @@ function getManifestListDomAndParameter(mepConfig) {
       eventStart,
       eventEnd,
       disabled,
-      geoRestriction,
-      mktgAction,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
@@ -219,20 +225,17 @@ function getManifestListDomAndParameter(mepConfig) {
           ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
           <div class="mep-columns">
             <div class="mep-column">
-              <div class="mep-active">Experience</div>
+              <div class="mep-active">Active</div>
               <div>Source</div>
-              <div>Mktg action</div>
-              ${geoRestriction ? '<div>Geos</div>' : ''}
-              ${(eventStart && eventEnd) || disabled ? '<div>Active?</div>' : ''}
               ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
+              ${eventStart && eventEnd ? '<div>Scheduled</div>' : ''}
+            
             </div>
             <div class="mep-column">
               ${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}
               <div>${source}</div>
-              <div>${mktgAction}</div>
-              ${geoRestriction ? `<div>${geoRestriction?.toUpperCase()}</div>` : ''}
-              ${(eventStart && eventEnd) || disabled ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
               ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
+              ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
             </div>
           </div>
           ${eventStart && eventEnd ? `<div class="mep-columns">
@@ -339,10 +342,21 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
   const { manifestList } = getManifestListDomAndParameter(mepConfig);
+
+  // Check URL parameters for highlight and fragments
+  const urlParams = new URLSearchParams(window.location.search);
+  const highlightParam = urlParams.get('mepHighlight');
+  const fragmentsParam = urlParams.get('mepFragments');
+
   let mepHighlightChecked = '';
-  if (page?.highlight) {
+  if (page?.highlight || highlightParam === 'true') {
     mepHighlightChecked = 'checked="checked"';
     document.body.dataset.mepHighlight = true;
+  }
+  let mepFragmentsChecked = '';
+  if (page?.fragments || fragmentsParam === 'true') {
+    mepFragmentsChecked = 'checked="checked"';
+    document.body.dataset.mepFragments = true;
   }
   const PREVIEW_BUTTON_ID = 'preview-button';
   const pageUrl = isMmm ? page.url : new URL(window.location.href).href;
@@ -366,7 +380,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const targetEnabled = targetMapping[config.mep?.targetEnabled];
   const mepTarget = isMmm ? page.target : targetEnabled;
   const targetOnText = setTargetOnText(mepTarget, page);
-  const { akamaiCode, consentState } = config.mep;
 
   mepPageInfo.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Page Info</h6>
@@ -386,19 +399,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
         ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
       </div>
     </div>
-    <h6 class="mep-manifest-page-info-title">User Info</h6>
-    <div class="mep-columns">
-      <div class="mep-column">
-        <div>Country</div>
-        <div>Functional consent</div>
-        <div>Advertising consent</div>
-      </div>
-      <div class="mep-column">
-        <div>${akamaiCode}</div>
-        <div>${consentState.performance ? 'on' : 'off'}</div>
-        <div>${consentState.advertising ? 'on' : 'off'}</div>
-      </div>
-    </div>
     `;
   const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
     ? `<div>
@@ -414,6 +414,11 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <input type="checkbox" name="mepHighlight${pageId}"
         id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
         <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
+      </div>
+      <div>
+        <input type="checkbox" name="mepFragments${pageId}"
+        id="mepFragmentsCheckbox${pageId}" ${mepFragmentsChecked} value="true">
+        <label for="mepFragmentsCheckbox${pageId}">Highlight fragments</label>
       </div>
       ${showManifestsCheckbox}
       <div>
@@ -474,11 +479,24 @@ function addHighlightData(manifests) {
     const manifestName = getFileName(manifest);
 
     const updateManifestId = (selector, prop = 'manifestId') => {
-      document.querySelectorAll(selector).forEach((el) => (el.dataset[prop] = manifestName));
+      document.querySelectorAll(selector).forEach((el) => {
+        el.dataset[prop] = manifestName;
+        if (prop === 'manifestId') {
+          el.dataset.manifestDisplay = `${manifestName}: html`;
+        }
+      });
     };
 
     selectedVariant?.replacefragment?.forEach(
-      ({ val }) => updateManifestId(`[data-path*="${val}"]`),
+      ({ val }) => {
+        // Store both manifest ID and fragment path for replacefragment
+        document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
+          el.dataset.manifestId = manifestName;
+          el.dataset.fragmentPath = val;
+          // Combined display for badge - use path if available
+          el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path || val}`;
+        });
+      },
     );
 
     selectedVariant?.useblockcode?.forEach(({ selector }) => {
@@ -492,8 +510,54 @@ function addHighlightData(manifests) {
     // eslint-disable-next-line max-len
     document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`)
       .forEach((el) => (el.dataset.manifestId = manifestName));
+
+    document.querySelectorAll(`[data-manifest-id="${manifestName}"]`).forEach((el) => {
+      if (!el.dataset.manifestDisplay) {
+        if (el.dataset.path) {
+          el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path}`;
+          el.dataset.fragmentPath = el.dataset.path;
+        } else {
+          el.dataset.manifestDisplay = `${manifestName}: html`;
+        }
+      }
+    });
   });
 }
+
+function markDefaultFragments() {
+  document.querySelectorAll('.fragment').forEach((fragment) => {
+    const hasManifest = fragment.dataset.manifestId;
+    const hasRoc = fragment.dataset.mepLingoRoc;
+    const hasFallback = fragment.dataset.mepLingoFallback;
+    if (!hasManifest && !hasRoc && !hasFallback) {
+      fragment.dataset.fragmentDefault = '';
+      if (fragment.dataset.path) {
+        fragment.dataset.fragmentDisplay = fragment.dataset.path;
+      }
+    }
+  });
+}
+
+function addLingoFragmentClickHandlers() {
+  document.body.addEventListener('click', (e) => {
+    // Check for lingo fragments
+    const lingoFragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
+    if (lingoFragment) {
+      const rect = lingoFragment.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      if (clickY < 35 && clickX < 400 && clickX > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        const fragmentPath = lingoFragment.dataset.path;
+        if (fragmentPath) {
+          window.open(fragmentPath, '_blank');
+        }
+      }
+    }
+  });
+}
+
 export async function saveToMmm() {
   const data = parseMepConfig();
   const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/'];
@@ -529,4 +593,6 @@ export default async function decoratePreviewMode() {
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
+  markDefaultFragments();
+  addLingoFragmentClickHandlers();
 }

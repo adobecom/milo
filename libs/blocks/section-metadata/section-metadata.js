@@ -159,6 +159,10 @@ function addListAttrToSection(section) {
 
 export default async function init(el) {
   const section = el.closest('.section');
+  if (!section) {
+    console.warn('section-metadata block must be inside a .section element', el);
+    return;
+  }
   const metadata = getMetadata(el);
   if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata, section);

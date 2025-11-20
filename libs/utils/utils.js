@@ -398,6 +398,8 @@ export const getFederatedContentRoot = () => {
   return federatedContentRoot;
 };
 
+//REMOVE!!!!!
+window.getConfig = getConfig;
 // TODO we should match the akamai patterns /locale/federal/ at the start of the url
 // and make the check more strict.
 export const getFederatedUrl = (url = '') => {
@@ -748,6 +750,8 @@ export function localizeLink(
 ) {
   return localizeLinkCore(href, originHostName, overrideDomain, false);
 }
+
+window.localizeLink = localizeLink;
 
 export function loadLink(href, {
   id, as, callback, crossorigin, rel, fetchpriority,
