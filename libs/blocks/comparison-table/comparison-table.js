@@ -273,7 +273,6 @@ function decorateTableToggleButton({
   tableChild,
   arePrimaryColumns,
   tableElement,
-  tableContainer,
   expandMetadata,
   el,
 }) {
@@ -297,7 +296,7 @@ function decorateTableToggleButton({
     buttonElement.setAttribute('aria-expanded', buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
   });
   tableChild.replaceChild(buttonElement, firstChild);
-  tableContainer.appendChild(tableChild);
+  return tableChild;
 }
 
 function setupCellAttributes(child, childIndex, arePrimaryColumns) {
@@ -339,7 +338,7 @@ function processCellContent(child) {
   processFn(child, childElements, separatorIndex);
 }
 
-function decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el }) {
+function decorateTableCells({ tableChild, arePrimaryColumns, el }) {
   [...tableChild.children].forEach((child, childIndex) => {
     setupCellAttributes(child, childIndex, arePrimaryColumns);
     if (childIndex === 0) return;
@@ -349,26 +348,27 @@ function decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el })
   tableChild.classList.add('table-row');
   el.dataset.childCount = tableChild.children.length;
   tableChild.setAttribute('role', 'row');
-  tableElement.appendChild(tableChild);
+  return tableChild;
 }
 
-function decorateAndAppendTable({ el, tableContainer, tableChildren, expandMetadata }) {
+function decorateAndAppendTable({ el, tableChildren, expandMetadata }) {
+  const tableContainer = createTag('div', { class: 'table-container' });
   const tableElement = createTag('div', { class: 'table', role: 'table' });
   const arePrimaryColumns = [];
 
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
-      decorateTableToggleButton({
+      const decoratedHeader = decorateTableToggleButton({
         tableChild,
         arePrimaryColumns,
         tableElement,
-        tableContainer,
         expandMetadata,
         el,
       });
+      tableContainer.appendChild(decoratedHeader);
       return;
     }
-    decorateTableCells({ tableChild, arePrimaryColumns, tableElement, el });
+    tableElement.appendChild(decorateTableCells({ tableChild, arePrimaryColumns, el }));
   });
   tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
   tableContainer.appendChild(tableElement);
@@ -376,7 +376,6 @@ function decorateAndAppendTable({ el, tableContainer, tableChildren, expandMetad
 }
 
 function decorateTables(el, children) {
-  let currentTableContainer = createTag('div', { class: 'table-container' });
   let currentTableChildren = [];
   const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
   const expandMetadata = sectionMetadata
@@ -385,13 +384,7 @@ function decorateTables(el, children) {
 
   const processTable = () => {
     if (!currentTableChildren.length) return;
-    decorateAndAppendTable({
-      el,
-      tableContainer: currentTableContainer,
-      tableChildren: currentTableChildren,
-      expandMetadata,
-    });
-    currentTableContainer = createTag('div', { class: 'table-container' });
+    decorateAndAppendTable({ el, tableChildren: currentTableChildren, expandMetadata });
     currentTableChildren = [];
   };
 

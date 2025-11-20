@@ -91,12 +91,13 @@ describe('Comparison Table', () => {
       expect(subHeaderContainers.length).to.be.greaterThan(0);
     });
 
-    it('header items contain buttons', () => {
+    it('header items contain buttons', async () => {
+      await delay(100);
       const buttons = comparisonTable.querySelectorAll('.header-item .con-button');
       expect(buttons.length).to.be.greaterThan(0);
     });
 
-    it('header items have descriptions', () => {
+    it('header items have descriptions', async () => {
       const descriptions = comparisonTable.querySelectorAll('.header-item .description');
       expect(descriptions.length).to.be.greaterThan(0);
     });
