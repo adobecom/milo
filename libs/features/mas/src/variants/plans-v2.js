@@ -67,7 +67,7 @@ export class PlansV2 extends VariantLayout {
         const footer = shadowRoot.querySelector('footer');
         const body = shadowRoot.querySelector('.body');
         const size = this.card.getAttribute('size');
-        
+
         if (!size) return;
 
         const slotInFooter = shadowRoot.querySelector(`footer slot[name="${name}"]`);
@@ -153,6 +153,12 @@ export class PlansV2 extends VariantLayout {
         this.adjustAddon();
         this.adjustCallout();
         this.updateShortDescriptionVisibility();
+        // Track short-description presence for grid layout
+        if (this.hasShortDescription) {
+            this.card.setAttribute('has-short-description', '');
+        } else {
+            this.card.removeAttribute('has-short-description');
+        }
         if (!this.legalAdjusted) {
             await this.adjustLegal();
         }
@@ -164,24 +170,24 @@ export class PlansV2 extends VariantLayout {
 
     async adjustLegal() {
         if (this.legalAdjusted) return;
-        
+
         try {
             this.legalAdjusted = true;
             await this.card.updateComplete;
             await customElements.whenDefined('inline-price');
-            
+
             const headingPrice = this.mainPrice;
             if (!headingPrice) return;
 
             const legal = headingPrice.cloneNode(true);
             await headingPrice.onceSettled();
-            
+
             if (!headingPrice?.options) return;
 
             if (headingPrice.options.displayPerUnit) headingPrice.dataset.displayPerUnit = 'false';
             if (headingPrice.options.displayTax) headingPrice.dataset.displayTax = 'false';
             if (headingPrice.options.displayPlanType) headingPrice.dataset.displayPlanType = 'false';
-            
+
             legal.setAttribute('data-template', 'legal');
             headingPrice.parentNode.insertBefore(legal, headingPrice.nextSibling);
             await legal.onceSettled();
@@ -220,17 +226,17 @@ export class PlansV2 extends VariantLayout {
 
     get shortDescriptionLabel() {
         const shortDescElement = this.card.querySelector('[slot="short-description"]');
-        
+
         const boldElement = shortDescElement.querySelector('strong, b');
         if (boldElement?.textContent?.trim()) {
             return boldElement.textContent.trim();
         }
-        
+
         const headingOrPara = shortDescElement.querySelector('h1, h2, h3, h4, h5, h6, p');
         if (headingOrPara?.textContent?.trim()) {
             return headingOrPara.textContent.trim();
         }
-        
+
         const firstLine = shortDescElement.textContent?.trim().split('\n')[0].trim();
         return firstLine
     }
@@ -259,16 +265,15 @@ export class PlansV2 extends VariantLayout {
 
     get shortDescriptionToggle() {
         if (!this.hasShortDescription) return nothing;
-        
+
         if (Media.isDesktopOrUp) {
             return html`
-                <div class="short-description-divider"></div>
                 <div class="short-description-content desktop">
                     <slot name="short-description"></slot>
                 </div>
             `;
         }
-        
+
         return html`
             <div class="short-description-divider"></div>
             <div class="short-description-toggle" @click=${this.toggleShortDescription}>
@@ -285,6 +290,10 @@ export class PlansV2 extends VariantLayout {
         return (this.card.querySelector('[slot="icons"]') || this.card.getAttribute('id'))
             ? html`<slot name="icons"></slot>`
             : nothing;
+    }
+
+    get secureLabelFooter() {
+        return html`<footer>${this.secureLabel}<slot name="quantity-select"></slot><slot name="footer"></slot></footer>`;
     }
 
     connectedCallbackHook() {
@@ -308,19 +317,13 @@ export class PlansV2 extends VariantLayout {
             <div class="body">
                 <div class="heading-wrapper">
                     ${this.icons}
-                    <slot name="heading-xs"></slot>
+                    <div class="heading-xs-wrapper">
+                      <slot name="heading-xs"></slot>
+                      <slot name="subtitle"></slot>
+                    </div>
                 </div>
                 <slot name="heading-m"></slot>
-                <slot name="subtitle"></slot>
                 <slot name="body-xs"></slot>
-                <div class="price-divider"></div>
-                <slot name="annualPrice"></slot>
-                <slot name="priceLabel"></slot>
-                <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="whats-included"></slot>
-                <slot name="callout-content"></slot>
-                <slot name="quantity-select"></slot>
                 ${this.stockCheckbox}
                 <slot name="addon"></slot>
                 <slot name="badge"></slot>
@@ -342,11 +345,12 @@ export class PlansV2 extends VariantLayout {
             overflow: hidden;
             font-weight: 400;
             --merch-card-plans-v2-min-width: 244px;
-            --merch-card-plans-v2-padding: 26px 32px;
+            --merch-card-plans-v2-padding: 24px 24px;
             --merch-card-plans-v2-subtitle-display: contents;
             --merch-card-plans-v2-heading-min-height: 23px;
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
+            --list-checked-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' width='20' height='20'%3E%3Cpath fill='%23222222' d='M15.656,3.8625l-.7275-.5665a.5.5,0,0,0-.7.0875L7.411,12.1415,4.0875,8.8355a.5.5,0,0,0-.707,0L2.718,9.5a.5.5,0,0,0,0,.707l4.463,4.45a.5.5,0,0,0,.75-.0465L15.7435,4.564A.5.5,0,0,0,15.656,3.8625Z'%3E%3C/path%3E%3C/svg%3E");
         }
 
         :host([variant='plans-v2']) .slot-placeholder {
@@ -359,7 +363,8 @@ export class PlansV2 extends VariantLayout {
             min-width: var(--merch-card-plans-v2-min-width);
             padding: var(--merch-card-plans-v2-padding);
             padding-bottom: 0;
-            flex-grow: 1;
+            flex: 1 1 auto;
+            gap: 12px;
         }
 
         :host([variant='plans-v2'][size]) .body {
@@ -367,16 +372,24 @@ export class PlansV2 extends VariantLayout {
         }
 
         :host([variant='plans-v2']) footer {
+            justify-content: flex-end;
             padding: var(--merch-card-plans-v2-padding);
-            padding-top: 1px;
-            justify-content: flex-start;
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         :host([variant='plans-v2']) slot[name="subtitle"] {
             display: var(--merch-card-plans-v2-subtitle-display);
             min-height: 18px;
-            margin-top: 8px;
+            margin-top: 4px;
             margin-bottom: -8px;
+        }
+
+        :host([variant='plans-v2']) ::slotted([slot='subtitle']) {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--spectrum-gray-700, #505050);
+            line-height: 1.4;
         }
 
         :host([variant='plans-v2']) ::slotted([slot='heading-xs']) {
@@ -391,19 +404,27 @@ export class PlansV2 extends VariantLayout {
         }
 
         :host([variant='plans-v2']) slot[name='icons'] {
-            gap: 3px;
+            gap: 3.5px;
             mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 12.5%, rgba(0, 0, 0, 0.8) 25%, rgba(0, 0, 0, 0.6) 37.5%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.2) 62.5%, rgba(0, 0, 0, 0.05) 75%, rgba(0, 0, 0, 0.03) 87.5%, rgba(0, 0, 0, 0) 100%);
             -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 12.5%, rgba(0, 0, 0, 0.8) 25%, rgba(0, 0, 0, 0.6) 37.5%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.2) 62.5%, rgba(0, 0, 0, 0.05) 75%, rgba(0, 0, 0, 0.03) 87.5%, rgba(0, 0, 0, 0) 100%);
         }
 
         :host([variant='plans-v2']) ::slotted([slot='icons']) {
             display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
         }
 
         :host([variant='plans-v2']) ::slotted([slot='heading-m']) {
             margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 800;
+            font-family: 'Adobe Clean Display', sans-serif;
+            line-height: 1.15;
+            color: var(--spectrum-gray-800, #2C2C2C);
+        }
+
+        :host([variant='plans-v2']) ::slotted([slot='heading-m']) span[data-template="legal"] {
+            font-size: 20px;
+            color: var(--spectrum-gray-700, #6B6B6B);
         }
 
         :host([variant='plans-v2']) ::slotted([slot='promo-text']) {
@@ -417,8 +438,9 @@ export class PlansV2 extends VariantLayout {
         :host([variant='plans-v2']) ::slotted([slot='body-xs']) {
             font-size: 18px;
             font-weight: 400;
-            color: var(--spectrum-gray-700, #4B4B4B);
-            line-height: 1.5;
+            font-family: 'Adobe Clean', sans-serif;
+            color: var(--spectrum-gray-700, #505050);
+            line-height: 1.4;
             margin: 0 0 16px 0;
         }
 
@@ -426,9 +448,13 @@ export class PlansV2 extends VariantLayout {
             margin: 0 0 16px 0;
         }
 
+        :host([variant='plans-v2']) .spacer {
+            flex: 1 1 auto;
+        }
+
         :host([variant='plans-v2']) ::slotted([slot='whats-included']) {
-            margin-top: 24px;
             padding-top: 24px;
+            padding-bottom: 24px;
             border-top: 1px solid #E8E8E8;
         }
 
@@ -490,21 +516,24 @@ export class PlansV2 extends VariantLayout {
             gap: 16px;
             padding: 16px 32px;
             cursor: pointer;
-            background-color: var(--spectrum-gray-50, #FFFFFF);
+            background-color: #FFFFFF;
             transition: background-color 0.2s ease;
+            border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
         }
 
         :host([variant='plans-v2']) .short-description-toggle:hover {
-            background-color: var(--spectrum-gray-75, #F8F8F8);
+            background-color: #F8F8F8;
         }
 
         :host([variant='plans-v2']) .short-description-toggle .toggle-label {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
-            color: var(--spectrum-gray-800, #2C2C2C);
+            font-family: 'Adobe Clean', sans-serif;
+            color: #292929;
             text-align: left;
             flex: 1;
-            line-height: 1.5;
+            line-height: 22px;
         }
 
         :host([variant='plans-v2']) .short-description-toggle .toggle-icon {
@@ -530,25 +559,32 @@ export class PlansV2 extends VariantLayout {
             overflow: hidden;
             transition: max-height 0.3s ease, padding 0.3s ease;
             padding: 0 32px;
+            background-color: #FFFFFF;
         }
 
         :host([variant='plans-v2']) .short-description-content.expanded {
             max-height: 500px;
             padding: 24px 32px;
+            background-color: #FFFFFF;
         }
 
         :host([variant='plans-v2']) .short-description-content.desktop {
             max-height: none;
             overflow: visible;
-            padding: 24px 32px;
+            padding: 26px 24px;
             transition: none;
+            border-top: 1px solid #E9E9E9;
+            background-color: #FFFFFF;
+            border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
         }
 
         :host([variant='plans-v2']) .short-description-content ::slotted([slot='short-description']) {
             font-size: 16px;
             font-weight: 400;
-            color: var(--spectrum-gray-700, #4B4B4B);
-            line-height: 1.5;
+            font-family: 'Adobe Clean', sans-serif;
+            color: #292929;
+            line-height: 1.4;
             margin: 0;
         }
 
@@ -605,6 +641,7 @@ export class PlansV2 extends VariantLayout {
         :host([variant='plans-v2']) .heading-wrapper {
             display: flex;
             flex-direction: column;
+            gap: 12px;
         }
 
         :host([variant='plans-v2'][size='wide']) {
@@ -670,7 +707,7 @@ export class PlansV2 extends VariantLayout {
             margin-right: 0;
         }
 
-        @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)}, ${unsafeCSS(TABLET_DOWN)} {
+        @media ${unsafeCSS(MOBILE_LANDSCAPE)}, ${unsafeCSS(TABLET_DOWN)} {
             :host([variant='plans-v2']) {
                 --merch-card-plans-v2-padding: 26px 16px;
             }
@@ -686,6 +723,29 @@ export class PlansV2 extends VariantLayout {
             :host([variant='plans-v2']) .short-description-content.expanded {
                 padding: 24px 16px;
             }
+        }
+
+        /* Keep short-description section white in dark mode */
+        :host-context(.spectrum--dark) :host([variant='plans-v2']) .short-description-content,
+        :host-context(.spectrum--darkest) :host([variant='plans-v2']) .short-description-content {
+            background-color: #FFFFFF;
+            border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
+        }
+
+        :host-context(.spectrum--dark) :host([variant='plans-v2']) .short-description-content ::slotted([slot='short-description']),
+        :host-context(.spectrum--darkest) :host([variant='plans-v2']) .short-description-content ::slotted([slot='short-description']) {
+            color: #292929;
+        }
+
+        :host-context(.spectrum--dark) :host([variant='plans-v2']) .short-description-toggle,
+        :host-context(.spectrum--darkest) :host([variant='plans-v2']) .short-description-toggle {
+            background-color: #FFFFFF;
+        }
+
+        :host-context(.spectrum--dark) :host([variant='plans-v2']) .short-description-toggle .toggle-label,
+        :host-context(.spectrum--darkest) :host([variant='plans-v2']) .short-description-toggle .toggle-label {
+            color: #292929;
         }
     `;
 

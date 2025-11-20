@@ -69,6 +69,7 @@ export const styles = css`
         position: absolute;
         inset-inline-end: 0;
         border: var(--border-width) solid var(--border-color);
+        border-left: var(--picker-button-border-left, var(--border-width) solid var(--border-color));
         border-top-right-radius: var(--radius);
         border-bottom-right-radius: var(--radius);
         background-color: var(--background-color);
