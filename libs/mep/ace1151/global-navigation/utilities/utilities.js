@@ -616,7 +616,7 @@ const parseTabsFromMenuSection = async (section, index) => {
     .map((container) => [...container.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary, .feds-cta--secondary')]
       .map((x) => x.outerHTML));
   const links = columnArray
-    .flatMap((l) => `<div class="tab-column">${l}</div>`)
+    .flatMap((l) => `<div class="tab-column">${l.join('')}</div>`)
     .join('');
 
   // Detect if headline itself is a redirection (contains an anchor)
