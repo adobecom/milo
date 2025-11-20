@@ -1850,7 +1850,11 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-cta--primary {
   min-width: 100px;
   max-width: 200px;
+  height: unset;
   margin: 12px 0;
+  line-height: 1.2;
+  text-wrap: wrap;
+  text-align: center;
 }
 
 [dir = "rtl"] header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content {
