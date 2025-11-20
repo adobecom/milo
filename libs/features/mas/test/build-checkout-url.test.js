@@ -88,6 +88,25 @@ describe('addParamsFromPageUrl', () => {
     expect(url.searchParams.get('co')).to.equal('US');
   });
 
+
+  it('should add allowed parameters with empty value as well', () => {
+    window.history.replaceState({}, '', '?gid=&gtoken=&cohortid=&productname=&sdid=&attimer=&gcsrc=&gcprog=&gcprogcat=&gcpagetype=');
+    const url = new URL('https://commerce.adobe.com/store/checkout?cli=testClient&co=US');
+    addParamsFromPageUrl(url);
+    expect(url.searchParams.get('gid')).to.equal('');
+    expect(url.searchParams.get('gtoken')).to.equal('');
+    expect(url.searchParams.get('cohortid')).to.equal('');
+    expect(url.searchParams.get('productname')).to.equal('');
+    expect(url.searchParams.get('sdid')).to.equal('');
+    expect(url.searchParams.get('attimer')).to.equal('');
+    expect(url.searchParams.get('gcsrc')).to.equal('');
+    expect(url.searchParams.get('gcprog')).to.equal('');
+    expect(url.searchParams.get('gcprogcat')).to.equal('');
+    expect(url.searchParams.get('gcpagetype')).to.equal('');
+    expect(url.searchParams.get('cli')).to.equal('testClient');
+    expect(url.searchParams.get('co')).to.equal('US');
+  });
+
   it('should not add parameters that are not in the allowed list', () => {
     window.history.replaceState({}, '', '?gid=12345&notAllowed=value&anotherBad=test');
 
