@@ -62,7 +62,7 @@ export class Catalog extends VariantLayout {
                         class="action-menu
                 ${isMobileOrTablet() && this.card.actionMenu
                             ? 'always-visible'
-                            : 'hidden'}"
+                            : 'invisible'}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         @focus="${this.showActionMenuOnHover}"

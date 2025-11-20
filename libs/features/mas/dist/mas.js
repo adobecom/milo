@@ -666,7 +666,7 @@ merch-card[variant="catalog"] [slot="footer"] .spectrum-Link--primary {
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${ua()&&this.card.actionMenu?"always-visible":"hidden"}"
+                ${ua()&&this.card.actionMenu?"always-visible":"invisible"}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         @focus="${this.showActionMenuOnHover}"
