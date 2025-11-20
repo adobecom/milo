@@ -612,16 +612,16 @@ const parseTabsFromMenuSection = async (section, index) => {
     ? [...content.querySelectorAll('ul')]
     : [content];
 
-  const links = columns
+  const columnArray = columns
     .map((container) => [...container.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--primary, .feds-cta--secondary')]
-      .map((x) => x.outerHTML)
-      .join(''))
-    .map((l) => `<div class="tab-column">${l}</div>`)
+      .map((x) => x.outerHTML));
+  const links = columnArray
+    .flatMap((l) => `<div class="tab-column">${l}</div>`)
     .join('');
 
   // Detect if headline itself is a redirection (contains an anchor)
   const headlineAnchor = headline?.querySelector('a');
-  const isHeadingAsRedirection = !!headlineAnchor;
+  const isHeadingAsRedirection = !!headlineAnchor && columnArray.flat().length === 0;
 
   return {
     name,
