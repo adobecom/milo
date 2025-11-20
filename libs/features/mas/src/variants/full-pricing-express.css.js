@@ -223,7 +223,8 @@ merch-card[variant="full-pricing-express"] [slot="price"] .price-currency-symbol
     line-height: var(--merch-card-full-pricing-express-price-line-height);
 }
 
-merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence {
+merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence,
+merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"] .price-unit-type {
     font-size: 12px;
     font-weight: 700;
     line-height: 15.6px;

@@ -3134,6 +3134,12 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child 
   margin: 0;
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 15.6px;
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] {
   font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
   line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
@@ -3871,7 +3877,8 @@ merch-card[variant="full-pricing-express"] [slot="price"] .price-currency-symbol
     line-height: var(--merch-card-full-pricing-express-price-line-height);
 }
 
-merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence {
+merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence,
+merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"] .price-unit-type {
     font-size: 12px;
     font-weight: 700;
     line-height: 15.6px;
