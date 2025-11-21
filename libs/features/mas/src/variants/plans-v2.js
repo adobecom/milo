@@ -8,6 +8,7 @@ import {
     SELECTOR_MAS_INLINE_PRICE,
     TEMPLATE_PRICE_LEGAL,
 } from '../constants.js';
+import { getOuterHeight } from '../utils.js';
 
 export const PLANS_V2_AEM_FRAGMENT_MAPPING = {
     cardName: { attribute: 'name' },
@@ -161,11 +162,47 @@ export class PlansV2 extends VariantLayout {
         }
         if (!this.legalAdjusted) {
             await this.adjustLegal();
+            await this.adjustHeight();
         }
     }
 
     get mainPrice() {
         return this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
+    }
+
+    async adjustHeight() {
+        const existingSpacer = this.card.querySelector('.spacer');
+        if (existingSpacer) return;
+
+        const footer = this.card.querySelector('[slot="footer"]');
+        if (!footer) return;
+
+        const spacer = document.createElement('div');
+        spacer.classList.add('spacer');
+        footer.insertBefore(spacer, footer.firstChild);
+
+        const intersectionObs = new IntersectionObserver(([entry]) => {
+            if (entry.boundingClientRect.height === 0) return;
+            let offset = 0;
+
+            const icons = this.card.querySelector('[slot="icons"]');
+            if (icons) offset += getOuterHeight(icons);
+            const headingXS = this.card.querySelector('[slot="heading-xs"]');
+            if (headingXS) offset += getOuterHeight(headingXS);
+            const subtitle = this.card.querySelector('[slot="subtitle"]');
+            if (subtitle) offset += getOuterHeight(subtitle);
+            const headingM = this.card.querySelector('[slot="heading-m"]');
+            if (headingM) offset += getOuterHeight(headingM);
+
+            const maxOffset = this.card.parentElement.style.getPropertyValue('--merch-card-plans-v2-max-offset');
+            if (offset > (parseFloat(maxOffset) || 0)) {
+                this.card.parentElement.style.setProperty('--merch-card-plans-v2-max-offset', `${offset}px`);
+            }
+            this.card.style.setProperty('--merch-card-plans-v2-offset', `${offset}px`);
+            intersectionObs.disconnect();
+        });
+
+        intersectionObs.observe(this.card);
     }
 
     async adjustLegal() {
@@ -372,10 +409,8 @@ export class PlansV2 extends VariantLayout {
         }
 
         :host([variant='plans-v2']) footer {
-            justify-content: flex-end;
             padding: var(--merch-card-plans-v2-padding);
-            flex-direction: column;
-            align-items: flex-start;
+            display: block;
         }
 
         :host([variant='plans-v2']) slot[name="subtitle"] {
