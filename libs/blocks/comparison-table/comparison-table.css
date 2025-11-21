@@ -1,10 +1,8 @@
 :root {
   --comparison-border-radius: 8px;
-  --comparison-column-background-color: #f8f8f8;
   --comparison-row-border-color: #e9e9e9;
   --comparison-desktop-max-width: 1200px;
   --comparison-tablet-spacing: 50px;
-  --comparison-header-spacing: 24px;
   --hover-border-color: #357BEB;
   --primary-cell-path-color: #05834E;
 }
@@ -46,7 +44,7 @@
   line-height: var(--type-heading-s-lh);
   font-size: var(--type-heading-s-size);
   text-align: center;
-  background-color: var(--comparison-column-background-color);
+  background-color: var(--color-gray-100);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -122,7 +120,7 @@
 }
 
 .comparison-table .table-row .table-cell:nth-child(odd) div {
-  background-color: var(--comparison-column-background-color);
+  background-color: var(--color-gray-100);
 }
 
 .comparison-table .table-cell {
@@ -182,7 +180,7 @@
   position: sticky;
   top: 0;
   z-index: 9;
-  background-color: var(--comparison-column-background-color);
+  background-color: var(--color-gray-100);
   width: 100%;
   box-shadow: 0 1px 6px 0 rgb(0, 0, 0, 12%);
 }
@@ -192,7 +190,7 @@
 }
 
 .comparison-table .header-content-wrapper {
-  max-width: calc(var(--comparison-desktop-max-width) - 2*var(--comparison-header-spacing) - 2px);
+  max-width: calc(var(--comparison-desktop-max-width) - 2*var(--spacing-s) - 2px);
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(268px, 1.15fr) repeat(auto-fit, minmax(100px, 1fr));
@@ -210,7 +208,7 @@
 }
 
 .comparison-table .header-item:nth-child(odd) .sub-header-item-container:not(:last-of-type) {
-  background-color: var(--comparison-column-background-color);
+  background-color: var(--color-gray-100);
 }
 
 .comparison-table .sub-header-item-container {
@@ -383,7 +381,7 @@
 
 @media screen and (min-width: 900px) and (max-width: 1199px) {
   .comparison-table .header-content-wrapper {
-    max-width: calc(100% - 4*var(--comparison-header-spacing));
+    max-width: calc(100% - 4*var(--spacing-s));
   }
 
   .comparison-table .table-container {
@@ -446,12 +444,9 @@
     padding-bottom: 30px;
   }
 
-  .comparison-table .table-row .table-cell:not(.hidden):not(:nth-child(2)) div {
-    background-color: var(--comparison-column-background-color);
-  }
-
+  .comparison-table .table-row .table-cell:not(.hidden):not(:nth-child(2)) div,
   .comparison-table .header-item:not(.hidden):not(:nth-child(2)) .sub-header-item-container:not(:last-of-type) {
-    background-color: var(--comparison-column-background-color);
+    background-color: var(--color-gray-100);
   }
 }
 
