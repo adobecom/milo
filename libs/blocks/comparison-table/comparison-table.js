@@ -46,7 +46,7 @@ function equalHeight(el) {
   };
 
   const configs = [
-    ['.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)', '.header-item'],
+    ['.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)', '.sub-header-item-container'],
     ['.table-row', '.table-cell', 'div', '.table-row'],
     ['.header-content-wrapper', '.header-item', '.description', '.header-item'],
   ];
