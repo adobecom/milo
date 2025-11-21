@@ -6,7 +6,6 @@ import {
     Env,
     Commitment,
     Term,
-    SUPPORTED_LOCALE,
     SUPPORTED_COUNTRIES,
 } from './constants.js';
 
@@ -267,7 +266,7 @@ export function Wcs({ settings }) {
      * @param {string} country - The country code
      * @param {string} language - The language code
      * @param {boolean} perpetual - Whether to use perpetual offers
-     * @returns { validCountry: string, validLanguage: string, validLocale: string } Returns either valid or default country, language, and locale
+     * @returns { validCountry: string, validLanguage: string, locale: string } Returns either valid or default country, language, and locale
      */
       function normalizeCountryLanguageAndLocale(country, language, perpetual) {
         const validLanguage = (country !== 'GB' && !perpetual) ? 'MULT' : 'en';
@@ -277,11 +276,7 @@ export function Wcs({ settings }) {
         return {
             validCountry,
             validLanguage,
-            validLocale: SUPPORTED_LOCALE.includes(
-                `${language}_${validCountry}`,
-            )
-                ? `${language}_${validCountry}`
-                : `${Defaults.language}_${Defaults.country}`,
+            locale: `${language}_${validCountry}`,
         };
     }
 
@@ -307,7 +302,7 @@ export function Wcs({ settings }) {
         promotionCode = '',
         wcsOsi = [],
     }) {
-        const { validCountry, validLanguage,validLocale } =
+        const { validCountry, validLanguage, locale } =
             normalizeCountryLanguageAndLocale(country, language, perpetual);
         const groupKey = [validCountry, validLanguage, promotionCode]
             .filter((val) => val)
@@ -324,7 +319,7 @@ export function Wcs({ settings }) {
                 if (!group) {
                     const options = {
                         country: validCountry,
-                        locale: validLocale,
+                        locale,
                         ...(validLanguage === 'MULT' && { language: validLanguage }),
                         offerSelectorIds: [],
                     };

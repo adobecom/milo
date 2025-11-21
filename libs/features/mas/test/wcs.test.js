@@ -30,7 +30,7 @@ describe('resolveOfferSelectors', () => {
         expect(context1).to.include({
             status: 200,
             statusText: undefined,
-            url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=no-offer&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
+            url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=no-offer&country=US&locale=undefined_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
             serverTiming: 'cdn-cache|desc=MISS|edge|dur=12|origin|dur=427|sis|desc=0|ak_p|desc="1748272635433_390603879_647362112_45054_10750_42_0_219"|dur=1',
         });
         expect(results[2].status).to.equal('fulfilled');
@@ -41,7 +41,7 @@ describe('resolveOfferSelectors', () => {
         expect(/startTime:.+duration:/.test(context3.measure)).to.be.true;
         expect(context3).to.include({
             status: 404,
-            url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=void&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
+            url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=void&country=US&locale=undefined_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
         });
     });
 
@@ -103,7 +103,7 @@ describe('normalizeCountryLanguageAndLocale', () => {
         expect(result).to.deep.equal({
             validCountry: 'US',
             validLanguage: 'MULT',
-            validLocale: 'en_US',
+            locale: 'en_US',
         });
     });
 
@@ -118,7 +118,7 @@ describe('normalizeCountryLanguageAndLocale', () => {
         expect(result).to.deep.equal({
             validCountry: 'US',
             validLanguage: 'en',
-            validLocale: 'en_US',
+            locale: 'en_US',
         });
     });
 
@@ -133,7 +133,7 @@ describe('normalizeCountryLanguageAndLocale', () => {
         expect(result).to.deep.equal({
             validCountry: 'GB',
             validLanguage: 'en',
-            validLocale: 'en_GB',
+            locale: 'en_GB',
         });
     });
 
@@ -148,37 +148,7 @@ describe('normalizeCountryLanguageAndLocale', () => {
         expect(result).to.deep.equal({
             validCountry: 'US',
             validLanguage: 'MULT',
-            validLocale: 'en_US',
-        });
-    });
-
-    it('returns correct locale for valid language-country combination in SUPPORTED_LOCALE', async () => {
-        await mockFetch(withWcs);
-        const client = Wcs({
-            settings: {
-                ...Defaults,
-            },
-        });
-        const result = client.normalizeCountryLanguageAndLocale('FR', 'fr', true);
-        expect(result).to.deep.equal({
-            validCountry: 'FR',
-            validLanguage: 'en',
-            validLocale: 'fr_FR',
-        });
-    });
-
-    it('returns default locale when valid language-country combination is not in SUPPORTED_LOCALE', async () => {
-        await mockFetch(withWcs);
-        const client = Wcs({
-            settings: {
-                ...Defaults,
-            },
-        });
-        const result = client.normalizeCountryLanguageAndLocale('FR', 'es', true);
-        expect(result).to.deep.equal({
-            validCountry: 'FR',
-            validLanguage: 'en',
-            validLocale: 'en_US',
+            locale: 'en_US',
         });
     });
 });

@@ -275,7 +275,7 @@ describe('getLocaleSettings', () => {
   it('falls back to default locale when only unsupported country is provided', () => {
       const result = getLocaleSettings({ country: 'FR' });
       expect(result).to.deep.equal({
-          locale: `${Defaults.language}_${Defaults.country}`,
+          locale: 'en_FR',
           language: Defaults.language,
           country: 'FR',
       });
