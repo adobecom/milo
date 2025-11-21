@@ -188,6 +188,7 @@ export default async function init(a) {
 
   // Old incorrect format for testing (uncomment to test with wrong structure):
   // TODO: REVERT THIS TEMP CHANGE for ch_de!!!!!
+  // For temporary Milo page testing only!!
   let regionKey = `${localeCode}/${country}`;
 
   let matchingRegion = locale?.regions?.[regionKey];

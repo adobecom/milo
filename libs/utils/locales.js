@@ -13,7 +13,7 @@ export default {
   br: { ietf: 'pt-BR', tk: 'hah7vzn.css' },
   ca_fr: { ietf: 'fr-CA', tk: 'hah7vzn.css', base: 'fr' },
   ca: { ietf: 'en-CA', tk: 'hah7vzn.css', base: '' },
-  // TODO: REVERT THIS TEMP CHANGE for ch_de
+  // TODO: REVERT THIS TEMP CHANGE for ch_de -- for temporary Milo page testing only
   // ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css', base: 'de' },
   'de/ch': { ietf: 'de-CH', tk: 'hah7vzn.css', base: 'de' },
   ch_fr: { ietf: 'fr-CH', tk: 'hah7vzn.css', base: 'fr' },
