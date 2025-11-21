@@ -435,6 +435,9 @@ function setupResponsiveHiding(el) {
       el.querySelectorAll('.table-row').forEach((row) => {
         reorderElementsByColumnIndex(row.querySelectorAll('.table-cell'));
       });
+      [...el.querySelectorAll('.header-item[data-column-index] .mobile-filter-select')].forEach((select) => {
+        select.value = select?.closest('.header-item')?.getAttribute('data-column-index');
+      });
     }
 
     hideElements(el.querySelectorAll('.header-item'), isMobile, true);
