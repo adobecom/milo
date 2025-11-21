@@ -699,7 +699,7 @@ export default function init(el) {
       if (isLinkedSlides(el)) {
         slide.setAttribute('daa-ll', `slide-image-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', () => {
-          window.open(slide.querySelector('a')?.href || '#');
+          window.open(slide.querySelector('a')?.href || '#', '_self');
         });
       }
       if (isHovering(el)) {
