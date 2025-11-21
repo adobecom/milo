@@ -172,6 +172,9 @@ let isMartechLoaded = false;
 
 let langConfig;
 const queryIndexes = [];
+let baseQueryIndex;
+let lingoSiteMapping;
+let lingoSiteMappingLoaded;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -574,6 +577,123 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
+function processQueryIndexMap(link, domain, imsClientId) {
+  return {
+    pathsRequest: new Promise((resolve) => {
+      fetch(link).then(async (response) => {
+        const queryIndexJson = await response.json();
+        resolve(queryIndexJson.data?.flatMap((d) => d.Path));
+        queryIndexes[imsClientId].requestResolved = true;
+      }).catch(() => {
+        resolve({});
+      });
+    }),
+    requestResolved: false,
+    domains: [domain],
+  };
+}
+
+async function loadQueryIndexes(config, prefix) {
+  if (Object.keys(queryIndexes).length) return queryIndexes;
+  // config.prodDomains
+  const origin = config.origin || window.location.origin;
+  const regionalContentRoot = `${origin}${prefix}${config.contentRoot ?? ''}`;
+
+  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
+  const predefinedQueryIndexPath = `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`;
+  const clientId = config.imsClientId ?? '';
+  queryIndexes[clientId] = processQueryIndexMap(predefinedQueryIndexPath, window.location.host, clientId);
+
+  if (config.queryIndexPath) {
+    const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${config.contentRoot ?? ''}`;
+    const baseQueryIndexPath = `${baseContentRoot}${config.queryIndexPath}`;
+    baseQueryIndex = processQueryIndexMap(baseQueryIndexPath, window.location.host, clientId);
+  }
+
+  // TODO reuse method?
+  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
+
+  lingoSiteMapping = Promise((resolve) => {
+    // TODO get rid of -vhargrave
+    fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((configJson) => {
+        const alreadyQueriedIndex = configJson['ims-query-index-map']?.data?.find((d) => d.imsClientId === config.imsClientId);
+        const alreadyQueriedIndexDomain = alreadyQueriedIndex?.queryIndexWebPath.split('/*')[0];
+        const existingIndex = queryIndexes[alreadyQueriedIndex?.imsClientId];
+        if (alreadyQueriedIndex && existingIndex
+            && !existingIndex.domains.includes(alreadyQueriedIndexDomain)) {
+          existingIndex.domains.push(alreadyQueriedIndexDomain);
+        }
+        if (baseQueryIndex && !baseQueryIndex.domains.includes(alreadyQueriedIndexDomain)) {
+          baseQueryIndex.domains.push(alreadyQueriedIndexDomain);
+        }
+
+        const imsQueryIndexData = configJson['ims-query-index-map']?.data?.filter(
+          (d) => d.imsClientId !== config.imsClientId && config.prodDomains.includes(d.queryIndexWebPath.split('/*')[0]),
+        ) || [];
+        const siteLocalesData = configJson['site-locales']?.data || [];
+
+        imsQueryIndexData.forEach((queryIndexMap) => {
+          const { imsClientId, queryIndexWebPath } = queryIndexMap;
+
+          const matchingSiteLocale = siteLocalesData.find((s) => (
+            s.imsClientId === config.imsClientId && parseList(s.regionalSites)
+              .includes(prefix)
+          ));
+          if (matchingSiteLocale) {
+            queryIndexes[imsClientId] = processQueryIndexMap(queryIndexWebPath.replace('/*', prefix), queryIndexWebPath.split('/*')[0], imsClientId);
+          }
+        });
+        resolve();
+        lingoSiteMappingLoaded = true;
+      })
+      .catch((e) => {
+        window.lana?.log('Failed to load lingo-site-mapping-vhargrave.json:', e);
+        resolve();
+        lingoSiteMappingLoaded = true;
+      });
+  });
+
+  return queryIndexes;
+}
+
+async function urlInMatchingIndex(matchingIndexes, sanitizedPath) {
+  const pathsArrays = await Promise.all(
+    matchingIndexes.map((q) => q.pathsRequest),
+  );
+  const allPaths = pathsArrays.flat().filter(Boolean);
+  return allPaths.some((path) => {
+    const sanitizedIndexPath = path.replace(/\.html$/, '');
+    return sanitizedPath === sanitizedIndexPath;
+  });
+}
+
+async function urlInQueryIndex(url) {
+  const sanitizedPath = url.pathname.replace(/\.html$/, '');
+  const matchingIndexes = Object.values(queryIndexes)
+    .filter((q) => q.domains.includes(url.hostname));
+  const queryIndexPromises = Promise.all(matchingIndexes.map((m) => m.pathsRequest));
+
+  if (matchingIndexes.length && matchingIndexes.filter((m) => !m.requestResolved).length) {
+    const fastestProm = await Promise.race([lingoSiteMapping, queryIndexPromises]);
+    const isBaseQueryIndex = !!fastestProm.pathsRequest;
+    if (isBaseQueryIndex) {
+      const urlInIndex = urlInMatchingIndex(matchingIndexes, sanitizedPath);
+      if (!urlInIndex) {
+        const urlInBaseQueryIndex = urlInMatchingIndex(Object.values(baseQueryIndex)
+          .filter((q) => q.domains.includes(url.hostname)), sanitizedPath);
+        return !urlInBaseQueryIndex;
+      }
+    }
+  }
+  await queryIndexPromises;
+  return urlInMatchingIndex(matchingIndexes, sanitizedPath);
+}
+
 export async function localizeLinkAsync(
   href,
   originHostName = window.location.hostname,
@@ -581,22 +701,6 @@ export async function localizeLinkAsync(
 ) {
   try {
     const url = new URL(href);
-    
-    const sanitizedPath = url.pathname.replace(/\.html$/, '');
-    const matchingIndexes = Object.values(queryIndexes)
-      .filter((q) => q.domains.includes(url.hostname));
-    const pathsArrays = await Promise.all(
-      matchingIndexes.map((q) => q.pathsRequest)
-    );
-    const allPaths = pathsArrays.flat().filter(Boolean);
-    const isInQueryIndex = allPaths.some((path) => {
-      const sanitizedIndexPath = path.replace(/\.html$/, '');
-      return sanitizedPath === sanitizedIndexPath;
-    });
-    
-    //if (isInQueryIndex)
-    // add the prefix to the regional path
-
     const relative = url.hostname === originHostName;
     const processedHref = relative ? href.replace(url.origin, '') : href;
     const { hash } = url;
@@ -605,7 +709,7 @@ export async function localizeLinkAsync(
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
     if (!allowedExts.includes(extension)) return processedHref;
-    const { locale, locales, languages, prodDomains } = getConfig();
+    const { locale, locales, languages, prodDomains, base } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
         || overrideDomain;
@@ -613,7 +717,15 @@ export async function localizeLinkAsync(
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
-    const prefix = getPrefixBySite(locale, url, relative);
+    let prefix = getPrefixBySite(locale, url, relative);
+    if (base && !queryIndexes.length) {
+      loadQueryIndexes(getConfig(), prefix);
+    }
+    if (queryIndexes[0] && (!queryIndexes[0].requestResolved || lingoSiteMappingLoaded)) {
+      await Promise.all([queryIndexes[0].pathsRequest]);
+    }
+    const urlExists = await urlInQueryIndex(`${url.origin}${prefix}${path}`);
+    if (!urlExists && locale.base) prefix = locale.base === '' ? '' : `/${prefix}`;
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
@@ -1619,13 +1731,6 @@ async function checkForPageMods() {
   });
 }
 
-// TODO rethink name
-function getRegionToServeContentFor(config) {
-  // TODO test on /ch_de
-  if (config.locale.base) return config.locale.prefix.replace('/', '');
-  return sessionStorage.getItem('akamai');
-}
-
 function setCountry() {
   const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
     ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
@@ -1876,70 +1981,6 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   if (isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
-}
-
-function processQueryIndexMap(link, domain) {
-  return {
-    pathsRequest: new Promise((resolve) => {
-      fetch(link).then(async (response) => {
-        const queryIndexJson = await response.json();
-        resolve(queryIndexJson.data?.flatMap((d) => d.Path));
-      }).catch(() => {
-        resolve({});
-      });
-    }),
-    domains: [domain],
-  };
-}
-
-async function loadQueryIndexes(config, prefix) {
-  if (Object.keys(queryIndexes).length) return queryIndexes;
-  // config.prodDomains
-  const origin = config.origin || window.location.origin;
-  const contentRoot = `${origin}${prefix}${config.contentRoot ?? ''}`;
-  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
-  // TODO get Raghu to change this
-  const predefinedQueryIndexPath = `${contentRoot}/assets/lingo/preview-query-index.json`;
-  // const predefinedQueryIndexPath = `${contentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`;
-  queryIndexes[config.imsClientId ?? ''] = processQueryIndexMap(predefinedQueryIndexPath, window.location.host);
-  // TODO reuse method?
-  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
-  try {
-    // get rid of hargrave and sync with Raghu
-    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const configJson = await response.json();
-
-    const alreadyQueriedIndex = configJson['ims-query-index-map']?.data?.find((d) => d.imsClientId === config.imsClientId);
-    const alreadyQueriedIndexDomain = alreadyQueriedIndex?.queryIndexWebPath.split('/*')[0];
-    if (alreadyQueriedIndex && queryIndexes[alreadyQueriedIndex.imsClientId]
-        && !queryIndexes[alreadyQueriedIndex.imsClientId].domains.includes(alreadyQueriedIndexDomain)) {
-      queryIndexes[alreadyQueriedIndex.imsClientId].domains.push(alreadyQueriedIndexDomain);
-    }
-
-    const imsQueryIndexData = configJson['ims-query-index-map']?.data?.filter(
-      (d) => d.imsClientId !== config.imsClientId && config.prodDomains.includes(d.queryIndexWebPath.split('/*')[0]),
-    ) || [];
-    const siteLocalesData = configJson['site-locales']?.data || [];
-
-    imsQueryIndexData.forEach((queryIndexMap) => {
-      const { imsClientId, queryIndexWebPath } = queryIndexMap;
-
-      const matchingSiteLocale = siteLocalesData.find((s) => (
-        s.imsClientId === config.imsClientId && parseList(s.regionalSites)
-          .includes(prefix)
-      ));
-      if (matchingSiteLocale) {
-        queryIndexes[imsClientId] = processQueryIndexMap(queryIndexWebPath.replace('/*', prefix), queryIndexWebPath.split('/*')[0]);
-      }
-    });
-
-    return langConfig;
-  } catch (e) {
-    window.lana?.log('Failed to load language-config.json:', e);
-  }
-
-  return {};
 }
 
 export async function loadArea(area = document) {
