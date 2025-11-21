@@ -176,6 +176,8 @@ let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 
+const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
+
 export function getEnv(conf) {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
@@ -428,7 +430,6 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 export async function loadLanguageConfig() {
   if (langConfig) return langConfig;
 
-  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -594,15 +595,19 @@ function processQueryIndexMap(link, domain, imsClientId) {
 }
 
 async function loadQueryIndexes(config, prefix) {
-  if (Object.keys(queryIndexes).length) return queryIndexes;
-  // config.prodDomains
+  if (lingoSiteMapping) return;
+
   const origin = config.origin || window.location.origin;
   const regionalContentRoot = `${origin}${prefix}${config.contentRoot ?? ''}`;
-
   const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
   const predefinedQueryIndexPath = `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`;
   const clientId = config.imsClientId ?? '';
-  queryIndexes[clientId] = processQueryIndexMap(predefinedQueryIndexPath, window.location.host, clientId);
+
+  queryIndexes[clientId] = processQueryIndexMap(
+    predefinedQueryIndexPath,
+    window.location.host,
+    clientId,
+  );
 
   if (config.queryIndexPath) {
     const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${config.contentRoot ?? ''}`;
@@ -610,10 +615,7 @@ async function loadQueryIndexes(config, prefix) {
     baseQueryIndex = processQueryIndexMap(baseQueryIndexPath, window.location.host, clientId);
   }
 
-  // TODO reuse method?
-  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
-
-  lingoSiteMapping = Promise((resolve) => {
+  lingoSiteMapping = new Promise((resolve) => {
     // TODO get rid of -vhargrave
     fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`)
       .then((response) => {
@@ -621,44 +623,44 @@ async function loadQueryIndexes(config, prefix) {
         return response.json();
       })
       .then((configJson) => {
-        const alreadyQueriedIndex = configJson['ims-query-index-map']?.data?.find((d) => d.imsClientId === config.imsClientId);
+        const alreadyQueriedIndex = configJson['ims-query-index-map']?.data
+          ?.find((d) => d.imsClientId === clientId);
         const alreadyQueriedIndexDomain = alreadyQueriedIndex?.queryIndexWebPath.split('/*')[0];
-        const existingIndex = queryIndexes[alreadyQueriedIndex?.imsClientId];
-        if (alreadyQueriedIndex && existingIndex
-            && !existingIndex.domains.includes(alreadyQueriedIndexDomain)) {
-          existingIndex.domains.push(alreadyQueriedIndexDomain);
-        }
-        if (baseQueryIndex && !baseQueryIndex.domains.includes(alreadyQueriedIndexDomain)) {
-          baseQueryIndex.domains.push(alreadyQueriedIndexDomain);
-        }
+
+        // Add domain to existing indexes if not already present
+        [queryIndexes[clientId], baseQueryIndex].forEach((queryIndex) => {
+          const shouldAddDomain = queryIndex && alreadyQueriedIndexDomain
+            && !queryIndex.domains.includes(alreadyQueriedIndexDomain);
+          if (shouldAddDomain) queryIndex.domains.push(alreadyQueriedIndexDomain);
+        });
 
         const imsQueryIndexData = configJson['ims-query-index-map']?.data?.filter(
-          (d) => d.imsClientId !== config.imsClientId && config.prodDomains.includes(d.queryIndexWebPath.split('/*')[0]),
+          (d) => d.imsClientId !== clientId
+            && config.prodDomains?.includes(d.queryIndexWebPath.split('/*')[0]),
         ) || [];
         const siteLocalesData = configJson['site-locales']?.data || [];
 
         imsQueryIndexData.forEach((queryIndexMap) => {
           const { imsClientId, queryIndexWebPath } = queryIndexMap;
-
           const matchingSiteLocale = siteLocalesData.find((s) => (
-            s.imsClientId === config.imsClientId && parseList(s.regionalSites)
-              .includes(prefix)
+            s.imsClientId === clientId && parseList(s.regionalSites).includes(prefix)
           ));
           if (matchingSiteLocale) {
-            queryIndexes[imsClientId] = processQueryIndexMap(queryIndexWebPath.replace('/*', prefix), queryIndexWebPath.split('/*')[0], imsClientId);
+            const updatedPath = queryIndexWebPath.replace('/*', prefix);
+            const domain = queryIndexWebPath.split('/*')[0];
+            queryIndexes[imsClientId] = processQueryIndexMap(updatedPath, domain, imsClientId);
           }
         });
-        resolve();
+
         lingoSiteMappingLoaded = true;
+        resolve();
       })
       .catch((e) => {
         window.lana?.log('Failed to load lingo-site-mapping-vhargrave.json:', e);
-        resolve();
         lingoSiteMappingLoaded = true;
+        resolve();
       });
   });
-
-  return queryIndexes;
 }
 
 async function urlInMatchingIndex(matchingIndexes, sanitizedPath) {
