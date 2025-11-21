@@ -97,7 +97,7 @@
 }
 
 .comparison-table .table-container .table-row-header {
-  text-align: left;
+  text-align: start;
   font-size: var(--type-body-xs-size);
   font-style: normal;
   font-weight: var(--type-detail-all-weight);
