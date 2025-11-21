@@ -1863,6 +1863,7 @@ header:is(.test-nav,.new-nav) .feds-nav > .feds-navItem--megaMenu.feds-navItem >
   min-width: 100px;
   max-width: 200px;
   height: unset;
+  padding: 5px 18px 6px;
   margin: 12px 0;
   line-height: 1.2;
   text-wrap: wrap;
