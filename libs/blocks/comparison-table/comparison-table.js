@@ -353,7 +353,7 @@ function decorateTableCells({ tableChild, arePrimaryColumns, el }) {
 
 function decorateTable({ el, tableChildren, expandMetadata }) {
   const tableContainer = createTag('div', { class: 'table-container' });
-  const tableElement = createTag('div', { class: 'table', role: 'table' });
+  const tableElement = createTag('div', { class: 'table-body', role: 'table' });
   const arePrimaryColumns = [];
 
   tableChildren.forEach((tableChild, index) => {
