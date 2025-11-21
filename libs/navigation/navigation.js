@@ -6,7 +6,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta', 'viewPlansCta', 'explorePlansCta'],
   },
   {
     key: 'footer',
@@ -158,6 +158,7 @@ export default async function loadBlock(configs, customLib) {
             jarvis: configBlock.jarvis,
             isLocalNav: configBlock.isLocalNav,
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
+            signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
           });
           window.closeGnav = closeGnavOptions;
           configBlock.onReady?.();

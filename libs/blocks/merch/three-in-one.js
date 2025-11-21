@@ -20,6 +20,74 @@ export const LANA_OPTIONS = {
   tags: 'three-in-one',
 };
 
+export const sanitizeTarget = (target) => {
+  if (!target || typeof target !== 'string') return '_blank';
+  const trimmedTarget = target.trim();
+  const normalizedTarget = trimmedTarget
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\x00-\x1f\x7f]/g, '')
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001F\u007F-\u009F\u2000-\u200D\uFEFF]/g, '');
+  if (['_blank', '_self', '_parent', '_top'].includes(normalizedTarget)) {
+    return normalizedTarget;
+  }
+  if (/^[a-zA-Z0-9_-]+$/.test(normalizedTarget)) {
+    return normalizedTarget;
+  }
+  return '_blank';
+};
+
+export const decodeUrl = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  let decodedUrl = url;
+  let previousUrl;
+  let iterations = 0;
+  const maxIterations = 5;
+  while (iterations < maxIterations && decodedUrl !== previousUrl) {
+    previousUrl = decodedUrl;
+    try {
+      decodedUrl = decodeURIComponent(decodedUrl);
+    } catch (e) {
+      break;
+    }
+    iterations += 1;
+  }
+  return decodedUrl;
+};
+
+export const normalizeUrl = (url) => {
+  const normalizedUrl = url
+  // eslint-disable-next-line no-control-regex
+    .replace(/[\x00-\x1F\x7F]/g, '')
+  // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001F\u007F-\u009F\u2000-\u200D\uFEFF]/g, '')
+    .trim();
+
+  const dangerousProtocols = /^(javascript|data|vbscript|file|about|chrome|chrome-extension|filesystem|blob|mailto|tel|sms):/i;
+  return dangerousProtocols.test(normalizedUrl) ? null : normalizedUrl;
+};
+
+export const isHttps = (url) => {
+  if (/^https?:\/\//i.test(url)) {
+    try {
+      const urlObj = new URL(url);
+      if (!['https:'].includes(urlObj.protocol)) return null;
+      return urlObj.href;
+    } catch (e) {
+      return null;
+    }
+  }
+  const isRelativeUrl = /^\//.test(url);
+  return isRelativeUrl ? url : null;
+};
+
+export const sanitizeUrl = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  const decodedUrl = decodeUrl(url.trim());
+  const normalizedUrl = normalizeUrl(decodedUrl);
+  return isHttps(normalizedUrl);
+};
+
 export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) => {
   if (!msgWrapper || !iframe || !theme || !handleTimeoutError) return;
   msgWrapper.remove();
@@ -61,7 +129,8 @@ export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleT
   }
 };
 
-export const handle3in1IFrameEvents = ({ data: msgData }) => {
+export const handle3in1IFrameEvents = ({ data: msgData, origin }) => {
+  if (!['https://commerce.adobe.com', 'https://commerce-stg.adobe.com'].includes(origin)) return;
   let parsedMsg = null;
   try {
     parsedMsg = JSON.parse(msgData);
@@ -70,7 +139,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   }
   const { app, subType, data } = parsedMsg || {};
   if (app !== 'ucv3') return;
-  window.lana?.log(`3-in-1 modal: ${subType}, data: ${JSON.stringify(data)}`);
+  window.lana?.log(`3-in-1 modal: ${subType}`);
   const threeInOne = document.querySelector('.three-in-one');
   const closeBtn = threeInOne?.querySelector('.dialog-close');
   const iframe = threeInOne?.querySelector('iframe');
@@ -92,12 +161,19 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
     case MSG_SUBTYPE.SWITCH:
     case MSG_SUBTYPE.RETURN_BACK:
       if (data?.externalUrl && data.target) {
-        window.open(data.externalUrl, data.target);
+        const sanitizedUrl = sanitizeUrl(data.externalUrl);
+        const sanitizedTarget = sanitizeTarget(data.target);
+        if (sanitizedUrl) {
+          window.open(sanitizedUrl, sanitizedTarget);
+        }
       }
       break;
     case MSG_SUBTYPE.Close:
       if (data?.actionRequired && data?.actionUrl) {
-        window.open(data.actionUrl);
+        const sanitizedActionUrl = sanitizeUrl(data.actionUrl);
+        if (sanitizedActionUrl) {
+          window.open(sanitizedActionUrl);
+        }
       }
       relatedMerchCards.forEach((card) => {
         card?.closest('merch-card')?.dispatchEvent(new CustomEvent(
@@ -133,10 +209,17 @@ export const handleTimeoutError = async () => {
 
 export function createContent(iframeUrl) {
   const content = createTag('div', { class: 'milo-iframe' });
+  // Detect Mobile Safari - it doesn't properly support loading="lazy" on iframes
+  const isMobileSafari = /iPhone|iPad|iPod/.test(navigator.userAgent)
+    && /WebKit/.test(navigator.userAgent)
+    && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(navigator.userAgent);
+
+  const loadingAttr = isMobileSafari ? '' : ' loading="lazy"';
+
   content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr" style="display: flex; justify-content: center; align-items: center; height: 100%;">
   <sp-progress-circle label="progress circle" indeterminate="" size="l" dir="ltr" role="progressbar" aria-label="progress circle"></sp-progress-circle>
   </sp-theme>
-  <iframe src="${iframeUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
+  <iframe src="${iframeUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true"${loadingAttr} class="loading" style="height: 100%;"></iframe>`;
   return content;
 }
 

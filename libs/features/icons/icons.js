@@ -1,11 +1,8 @@
-import { lanaLog } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getFederatedContentRoot } from '../../utils/federated.js';
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, getFederatedContentRoot } from '../../utils/utils.js';
 
 const iconCache = new Map();
 let miloIconsPromise;
-
-let tooltipListenersPromise = false;
+const LANA_CLIENT_ID = 'feds-milo';
 
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
@@ -27,11 +24,9 @@ function decorateToolTip(icon, iconName) {
 
   wrapper.parentElement.replaceChild(icon, wrapper);
 
-  if (!tooltipListenersPromise) {
-    tooltipListenersPromise = import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
-      addTooltipListeners();
-    });
-  }
+  import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
+    addTooltipListeners(icon);
+  });
 }
 
 async function getSVGsfromFile(path) {
@@ -79,12 +74,7 @@ async function fetchFederalIcon(iconName) {
     iconCache.set(iconName, svgElement);
     return svgElement;
   } catch (error) {
-    lanaLog({
-      message: `Error fetching federal SVG for ${iconName}, falling back to Milo icon`,
-      error,
-      tags: 'icons',
-      errorType: 'error',
-    });
+    window?.lana.log(`Error fetching federal SVG for ${iconName}, falling back to Milo icon: ${error}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
     return null;
   }
 }
@@ -103,11 +93,7 @@ async function fetchMiloIcon(iconName) {
     return icon;
   }
 
-  lanaLog({
-    message: `No fallback Milo icon found for ${iconName}`,
-    tags: 'icons',
-    errorType: 'error',
-  });
+  window?.lana.log(`No fallback Milo icon found for ${iconName}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
   return null;
 }
 
@@ -158,9 +144,9 @@ export const fetchIcons = (config) => {
 export function fetchIconList(url) {
   return fetch(url)
     .then((resp) => resp.json())
-    .then((json) => json.content.data)
-    .catch(() => {
-      lanaLog({ message: 'Failed to fetch iconList', tags: 'icons', errorType: 'error' });
+    .then((json) => json.data || json.content.data)
+    .catch((error) => {
+      window?.lana.log(`Failed to fetch iconList: ${error}`, { clientId: LANA_CLIENT_ID, tags: 'icons', errorType: 'i' });
       return [];
     });
 }

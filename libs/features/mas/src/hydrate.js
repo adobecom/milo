@@ -13,10 +13,22 @@ export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 const TEXT_TRUNCATE_SUFFIX = '...';
 
+/**
+ * Normalizes variant names for consistency.
+ * Converts any variant starting with 'plans' to just 'plans'.
+ * @param {string} variant - The variant name to normalize
+ * @returns {string} The normalized variant name
+ */
+export function normalizeVariant(variant) {
+    if (!variant) return variant;
+    if (variant.startsWith('plans')) return 'plans';
+    return variant;
+}
+
 export function appendSlot(fieldName, fields, el, mapping) {
     const config = mapping[fieldName];
     if (fields[fieldName] && config) {
-        const attributes = { slot: config?.slot };
+        const attributes = { slot: config?.slot, ...config?.attributes };
         let content = fields[fieldName];
 
         // Handle maxCount if specified in the config
@@ -67,8 +79,8 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     });
 
     const slotIcons = merchCard.shadowRoot.querySelector('slot[name="icons"]');
-    if (!mnemonics?.length && slotIcons) {
-      slotIcons.remove();
+    if (slotIcons) {
+        slotIcons.style.display = mnemonics?.length ? null : 'none';
     }
 }
 
@@ -91,21 +103,30 @@ function processBadge(fields, merchCard, mapping) {
                 borderColorToUse = mapping.badge?.default;
                 fields.borderColor = mapping.badge?.default;
             }
-            
+
             fields.badge = `<merch-badge variant="${fields.variant}" background-color="${bgColorToUse}" border-color="${borderColorToUse}">${fields.badge}</merch-badge>`;
         }
         appendSlot('badge', fields, merchCard, mapping);
     } else {
         if (fields.badge) {
             merchCard.setAttribute('badge-text', fields.badge);
-            merchCard.setAttribute(
-                'badge-color',
-                fields.badgeColor || DEFAULT_BADGE_COLOR,
-            );
-            merchCard.setAttribute(
-                'badge-background-color',
-                fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
-            );
+
+            // Only set badge-color if not disabled
+            if (!mapping.disabledAttributes?.includes('badgeColor')) {
+                merchCard.setAttribute(
+                    'badge-color',
+                    fields.badgeColor || DEFAULT_BADGE_COLOR,
+                );
+            }
+
+            // Only set badge-background-color if not disabled
+            if (!mapping.disabledAttributes?.includes('badgeBackgroundColor')) {
+                merchCard.setAttribute(
+                    'badge-background-color',
+                    fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+                );
+            }
+
             merchCard.setAttribute(
                 'border-color',
                 fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
@@ -122,7 +143,9 @@ function processBadge(fields, merchCard, mapping) {
 export function processTrialBadge(fields, merchCard, mapping) {
     if (mapping.trialBadge && fields.trialBadge) {
         if (!fields.trialBadge.startsWith('<merch-badge')) {
-            const borderColorToUse = fields.trialBadgeBorderColor || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
+            // Only use trialBadgeBorderColor if not disabled
+            const borderColorToUse = (!mapping.disabledAttributes?.includes('trialBadgeBorderColor') && fields.trialBadgeBorderColor)
+                || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
             fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${borderColorToUse}">${fields.trialBadge}</merch-badge>`;
         }
         appendSlot('trialBadge', fields, merchCard, mapping);
@@ -142,6 +165,9 @@ export function processCardName(fields, merchCard) {
 }
 
 export function processTitle(fields, merchCard, titleConfig) {
+    if (fields.cardTitle) {
+        fields.cardTitle = processMnemonicElements(fields.cardTitle);
+    }
     appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
 }
 
@@ -173,18 +199,35 @@ export function processBackgroundColor(fields, merchCard, allowedColors, backgro
 
 export function processBorderColor(fields, merchCard, variantMapping) {
     const borderColorConfig = variantMapping?.borderColor;
-    const customBorderColor = '--merch-card-custom-border-color';
+    const customBorderColor = '--consonant-merch-card-border-color';
 
     if (fields.borderColor?.toLowerCase() === 'transparent') {
-        merchCard.style.removeProperty(customBorderColor);
-        if (variantMapping?.allowedBorderColors?.includes(variantMapping?.badge?.default)) {
-            merchCard.style.setProperty(customBorderColor, 'transparent');
-        }
+        merchCard.style.setProperty(customBorderColor, 'transparent');
     } else if (fields.borderColor && borderColorConfig) {
-        if (/-gradient/.test(fields.borderColor)) {
+        // Check if it's a gradient using specialValues or pattern matching
+        const specialValue = borderColorConfig?.specialValues?.[fields.borderColor];
+        const isGradient = specialValue?.includes('gradient') || /-gradient/.test(fields.borderColor);
+
+        if (isGradient) {
+            // For gradients, set both attributes needed for CSS selectors
             merchCard.setAttribute('gradient-border', 'true');
+
+            // Find the key name for this gradient value
+            let borderColorKey = fields.borderColor;
+            if (borderColorConfig?.specialValues) {
+                // Reverse lookup: find which key maps to this value
+                for (const [key, value] of Object.entries(borderColorConfig.specialValues)) {
+                    if (value === fields.borderColor) {
+                        borderColorKey = key;
+                        break;
+                    }
+                }
+            }
+
+            merchCard.setAttribute('border-color', borderColorKey);
             merchCard.style.removeProperty(customBorderColor);
         } else {
+            // For regular colors, use CSS variable
             merchCard.style.setProperty(
                 customBorderColor,
                 `var(--${fields.borderColor})`,
@@ -226,7 +269,29 @@ export function processBackgroundImage(
     }
 }
 
+/**
+ * Process mnemonic elements in HTML content
+ * Ensures mas-mnemonic elements have proper structure
+ */
+function processMnemonicElements(htmlContent) {
+    if (!htmlContent || typeof htmlContent !== 'string') return htmlContent;
+
+    // This function ensures mas-mnemonic elements are properly formed
+    // The actual parsing happens when the HTML is added to the DOM
+    // and the mas-mnemonic web component initializes
+
+    // Import mas-mnemonic to ensure it's loaded when mnemonics are used
+    if (htmlContent.includes('<mas-mnemonic')) {
+        import('./mas-mnemonic.js').catch(console.error);
+    }
+
+    return htmlContent;
+}
+
 export function processPrices(fields, merchCard, mapping) {
+    if (fields.prices) {
+        fields.prices = processMnemonicElements(fields.prices);
+    }
     appendSlot('prices', fields, merchCard, mapping);
 }
 
@@ -245,7 +310,7 @@ function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
     let newButtonElement;
 
     if (merchCard.consonant) {
-        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle);
+        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle, isPrimary);
     } else if (isLinkStyle) {
         newButtonElement = linkElement;
     } else {
@@ -261,7 +326,7 @@ function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
         newButtonElement = merchCard.spectrum === 'swc'
             ? createSpectrumSwcButton(
                   linkElement,
-                  aemFragmentMapping, 
+                  aemFragmentMapping,
                   isOutline,
                   variant,
                   isCheckoutLink
@@ -288,8 +353,27 @@ function processDescriptionLinks(merchCard, aemFragmentMapping) {
 }
 
 export function processDescription(fields, merchCard, mapping) {
+    if (fields.description) {
+        fields.description = processMnemonicElements(fields.description);
+    }
+    if (fields.promoText) {
+        fields.promoText = processMnemonicElements(fields.promoText);
+    }
+    if (fields.shortDescription) {
+        fields.shortDescription = processMnemonicElements(fields.shortDescription);
+    }
+
     appendSlot('promoText', fields, merchCard, mapping);
     appendSlot('description', fields, merchCard, mapping);
+    appendSlot('shortDescription', fields, merchCard, mapping);
+
+   if (fields.shortDescription) {
+        merchCard.setAttribute('action-menu', 'true');
+        if (!fields.actionMenuLabel) {
+            merchCard.setAttribute('action-menu-label', 'More options');
+        }
+    }
+
     processDescriptionLinks(merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
@@ -486,7 +570,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, is
     return spectrumCta;
 }
 
-function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
+function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle, isPrimary) {
     let button = cta;
     if (isCheckout) {
         const CheckoutLink = customElements.get('checkout-link');
@@ -496,9 +580,12 @@ function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
         );
     }
     if(!isLinkStyle) {
-        button.classList.add('con-button');
+        button.classList.add('button', 'con-button');
         if (isAccent) {
             button.classList.add('blue');
+        }
+        if (isPrimary) {
+            button.classList.add('primary');
         }
     }
     return button;
@@ -506,6 +593,9 @@ function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
 
 export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
     if (fields.ctas) {
+        // Process tooltips in CTAs
+        fields.ctas = processMnemonicElements(fields.ctas);
+
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fields.ctas);
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {

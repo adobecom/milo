@@ -1,7 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
-import '../../deps/mas/merch-card.js';
-import '../../deps/mas/merch-quantity-select.js';
 import {
   initService,
   getOptions,
@@ -37,7 +35,9 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load service first */
+  /** Load lit first as it's needed by MAS components */
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {
@@ -72,16 +72,55 @@ async function loadDependencies(options) {
   await Promise.all(dependencyPromises);
 }
 
+function localizeIconPath(iconPath) {
+  if (window.location.hostname.endsWith('.adobe.com') && iconPath?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
+    try {
+      const url = new URL(iconPath);
+      return `https://www.adobe.com${url.pathname}`;
+    } catch (e) {
+      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`);
+    }
+  }
+  return iconPath;
+}
+
+function generateCheckboxGroups(checkboxGroups) {
+  if (!checkboxGroups?.length) return [];
+  const groups = [];
+  for (const group of checkboxGroups) {
+    const { title, label, deeplink, checkboxes } = group;
+    if (checkboxes?.length) {
+      const checkboxGroup = createTag('merch-sidenav-checkbox-group', {
+        sidenavCheckboxTitle: title,
+        label: label || deeplink,
+        deeplink,
+      });
+      for (const checkbox of checkboxes) {
+        const spCheckbox = createTag('sp-checkbox', {
+          emphasized: true,
+          name: checkbox.name,
+          'daa-ll': `${checkbox.label}--${group.deeplink}`,
+        });
+        spCheckbox.textContent = checkbox.label;
+        checkboxGroup.append(spCheckbox);
+      }
+      groups.push(checkboxGroup);
+    }
+  }
+
+  return groups;
+}
+
 function getSidenav(collection) {
   if (!collection.data) return null;
-  const { hierarchy, placeholders } = collection.data;
+  const { hierarchy, placeholders, sidenavSettings } = collection.data;
   if (!hierarchy?.length) return null;
 
   const titleKey = `${collection.variant}SidenavTitle`;
   const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '' });
 
   /* Search */
-  const searchText = placeholders?.searchText;
+  const searchText = sidenavSettings?.searchText;
   if (searchText) {
     const spectrumSearch = createTag('sp-search', { placeholder: searchText });
     const search = createTag('merch-search', { deeplink: 'search' });
@@ -94,20 +133,29 @@ function getSidenav(collection) {
   spSidenav.setAttribute('manageTabIndex', true);
   const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
 
+  sidenavList.updateComplete.then(() => {
+    sidenavList.querySelector('sp-sidenav')?.setAttribute('role', 'tablist');
+    sidenavList.querySelectorAll('sp-sidenav-item').forEach((item) => {
+      item.removeAttribute('role');
+      item.shadowRoot?.querySelector('a')?.setAttribute('role', 'tab');
+    });
+  });
+
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
       const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
-      if (node.icon) {
-        createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
+      const iconPath = localizeIconPath(node.icon);
+      if (iconPath) {
+        createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };
         if (node.navigationLabel) attributes['data-selected-text'] = node.navigationLabel;
         if (node.iconLight) {
-          attributes['data-light'] = node.iconLight;
-          attributes['data-dark'] = node.icon;
+          attributes['data-light'] = localizeIconPath(node.iconLight);
+          attributes['data-dark'] = iconPath;
         }
         createTag('var', attributes, null, { parent: item });
       }
@@ -123,6 +171,42 @@ function getSidenav(collection) {
   if (multilevel) spSidenav.setAttribute('variant', 'multilevel');
 
   sidenav.append(sidenavList);
+
+  /* Checkbox Groups */
+  const checkboxGroupElements = generateCheckboxGroups(sidenavSettings?.tagFilters);
+  for (const group of checkboxGroupElements) {
+    sidenav.append(group);
+  }
+
+  /* Resources List */
+  if (sidenavSettings?.linksTitle && sidenavSettings?.link) {
+    const resourcesSpSidenav = createTag('sp-sidenav', { manageTabIndex: true });
+    resourcesSpSidenav.classList.add('resources');
+
+    const resourcesList = createTag('merch-sidenav-list', {
+      sidenavListTitle: sidenavSettings.linksTitle,
+      'daa-ll': `${sidenavSettings.linksTitle}--resources`,
+    }, resourcesSpSidenav);
+
+    const resourceItem = createTag('sp-sidenav-item', {
+      href: sidenavSettings.link,
+      target: '_blank',
+    });
+
+    resourceItem.textContent = sidenavSettings.linkText || 'Link';
+
+    if (sidenavSettings.linkIcon !== false) {
+      const icon = createTag('sp-icon-link-out-light', {
+        class: 'right',
+        slot: 'icon',
+        label: sidenavSettings.linkText || 'Link',
+      });
+      resourceItem.append(icon);
+    }
+
+    resourcesSpSidenav.append(resourceItem);
+    sidenav.append(resourcesList);
+  }
 
   return sidenav;
 }
@@ -143,7 +227,7 @@ function enableSidenavAnalytics(el) {
 export const enableModalOpeningOnPageLoad = () => {
   window.addEventListener('mas:ready', ({ target }) => {
     target.querySelectorAll('[is="checkout-link"][data-modal-id]').forEach((cta) => {
-      updateModalState({ cta });
+      if (!cta.closest('.tabpanel[hidden]')) updateModalState({ cta });
     });
   });
 };
@@ -169,8 +253,13 @@ export async function createCollection(el, options) {
   if (paragraph) toReplace = paragraph;
   toReplace.replaceWith(container);
 
-  await collection.checkReady();
-
+  const success = await collection.checkReady();
+  if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
+  }
   container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */

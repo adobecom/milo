@@ -27,6 +27,7 @@ const MILO_BLOCKS = [
   'chart',
   'columns',
   'editorial-card',
+  'email-collection',
   'faas',
   'featured-article',
   'figure',
@@ -65,6 +66,7 @@ const MILO_BLOCKS = [
   'modal',
   'modal-metadata',
   'notification',
+  'nps-csat-form',
   'pdf-viewer',
   'quote',
   'read-more',
@@ -185,7 +187,8 @@ export function getEnv(conf) {
     || host.includes(`${SLD}.live`)
     || host.includes('stage.adobe')
     || host.includes('corp.adobe')
-    || host.includes('graybox.adobe')) {
+    || host.includes('graybox.adobe')
+    || host.includes('aem.reviews')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
   return { ...ENVS.prod, consumer: conf.prod };
@@ -202,11 +205,13 @@ export function getLocale(locales, pathname = window.location.pathname) {
   if ([LANGSTORE, PREVIEW].includes(localeString)) {
     const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
     if (ietf) locale = locales[ietf];
-    locale.prefix = `/${localeString}/${split[2]}`;
+    const pathSegment = split[2] ? `/${split[2]}` : '';
+    locale.prefix = `/${localeString}${pathSegment}`;
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
-  locale.prefix = isUS ? '' : `/${localeString}`;
+  const localePathPrefix = localeString ? `/${localeString}` : '';
+  locale.prefix = isUS ? '' : localePathPrefix;
   locale.region = isUS ? 'us' : localeString.split('_')[0];
   return locale;
 }
@@ -716,8 +721,27 @@ export async function loadTemplate() {
 
 function getBlockData(block) {
   const name = block.classList[0];
-  const { miloLibs, codeRoot, mep } = getConfig();
-  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
+  const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
+
+  let base = codeRoot;
+  if (externalLibs) {
+    try {
+      const list = Array.isArray(externalLibs) ? externalLibs : [externalLibs];
+      const match = list.find((lib) => {
+        if (!lib || typeof lib !== 'object') return false;
+        if (!Array.isArray(lib.blocks)) return false;
+        if (!lib.base || typeof lib.base !== 'string') return false;
+
+        return lib.blocks.includes(name);
+      });
+      if (match?.base) base = match.base;
+    } catch (error) {
+      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`);
+    }
+  }
+
+  if (miloLibs && MILO_BLOCKS.includes(name)) base = miloLibs;
+
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
   const blockPath = `${path}/${name}`;
@@ -777,6 +801,11 @@ export function decorateSVG(a) {
 
     const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
+
+    if (altText) {
+      const parentHeading = a.parentElement.closest('h1, h2, h3, h4, h5, h6');
+      parentHeading?.appendChild(createTag('span', { class: 'hidden' }, altText));
+    }
 
     if (authoredUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
@@ -954,7 +983,9 @@ export function decorateLinks(el) {
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
-    a.href = localizeLink(a.href);
+    const hasDnt = a.href.includes('#_dnt');
+    if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
+    if (hasDnt) a.dataset.hasDnt = true;
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
@@ -1101,12 +1132,19 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const icons = area.querySelectorAll('span.icon');
+  let icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
-    const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
-    if (excludedIconsCount === icons.length) return;
+    if (getMetadata('theme') === 'max25') {
+      // TODO: Remove after correcting core logic
+      const includeIcons = [...icons].filter((icon) => !iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`)));
+      if (!includeIcons.length) return;
+      icons = includeIcons;
+    } else {
+      const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
+      if (excludedIconsCount === icons.length) return;
+    }
   }
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
@@ -1402,13 +1440,14 @@ export function enablePersonalizationV2() {
 }
 
 export function loadMepAddons() {
-  const mepAddons = ['lob'];
+  const mepAddons = ['lob', 'event-id'];
   const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
     if (enablement === false) return;
-    promises[addon] = (async () => {
-      const { default: init } = await import(`../features/mep/addons/${addon}.js`);
+    const addonName = addon.split('-')[0];
+    promises[addonName] = (async () => {
+      const { default: init } = await import(`../features/mep/addons/${addonName}.js`);
       return init(enablement);
     })();
   });
@@ -1434,18 +1473,18 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
+  const mepMarketingDecrease = getMepEnablement('mep-marketing-decrease');
 
   if (!(pzn || pznroc || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
+
+  loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  if (mepgeolocation) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-    if (!akamaiCode) {
-      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
-      countryIPPromise = getAkamaiCode(true);
-    }
+  const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  if (mepgeolocation && !akamaiCode) {
+    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    countryIPPromise = getAkamaiCode(true);
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1494,6 +1533,8 @@ async function checkForPageMods() {
     calculatedTimeout,
     enablePersV2,
     promises,
+    mepMarketingDecrease,
+    akamaiCode,
   });
 }
 
@@ -1611,7 +1652,9 @@ export async function loadDeferred(area, blocks, config) {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
+    const { getPreflightResults } = await import('../blocks/preflight/checks/preflightApi.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
+    getPreflightResults(window.location.href, document);
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {

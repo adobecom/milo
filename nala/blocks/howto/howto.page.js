@@ -7,12 +7,17 @@ export default class HowTo {
     this.howToLarge = this.page.locator('.how-to.large-image').nth(nth);
     this.howToSeo = this.page.locator('.how-to.seo').nth(nth);
     this.heading = this.howTo.locator('.how-to-heading');
+    this.headingL = this.howTo.locator('.how-to-heading .heading-l');
     this.image = this.howTo.locator('.how-to-media');
     this.list = this.howTo.locator('li');
     this.largeImage = page.locator('.how-to-media img');
 
     // howto contents css
     this.cssProperties = {
+      '.how-to': {
+        'font-size': '20px',
+        'line-height': '30px',
+      },
       '.how-to .foreground': {
         padding: '80px 0px',
         'max-width': /%$/,
@@ -23,9 +28,14 @@ export default class HowTo {
         'justify-self': 'center',
         'min-height': '100%',
       },
-      'body-m': {
-        'font-size': '18px',
-        'line-height': '27px',
+      'how-to-heading': {
+        'grid-area': 'heading',
+        'row-gap': '16px',
+        display: 'grid',
+      },
+      'heading-l': {
+        'font-size': '28px',
+        'line-height': '35px',
       },
       'how-to-large': {
         padding: '80px 24px',

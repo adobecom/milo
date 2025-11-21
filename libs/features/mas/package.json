@@ -1,12 +1,12 @@
 {
     "name": "@adobecom/mas",
-    "version": "0.5.2",
+    "version": "0.5.4",
     "type": "module",
     "main": "dist/mas.js",
     "private": true,
     "scripts": {
         "lint": "eslint --fix",
-        "build": "npm run test && npm run build:bundle",
+        "build": "npm run test && npm run build:bundle && npm run build:docs",
         "build:dev": "npm run build:bundle sourcemap no-minify",
         "build:docs": "cd ./docs/src && ./build-docs.sh",
         "build:bundle": "node ./build.mjs",

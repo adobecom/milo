@@ -46,7 +46,7 @@ const setJsonLd = (heading, description, mainImage, stepsLd) => {
   document.getElementsByTagName('head')[0].appendChild(jsonLdScript);
 };
 
-const getImage = (el) => el.querySelector('picture') || el.querySelector('a[href$=".svg"');
+const getImage = (el) => el.querySelector('.modal-img-link') || el.querySelector('.image-link') || el.querySelector('picture') || el.querySelector('a[href$=".svg"]');
 const getVideo = (el) => el.querySelector('.video-container, .pause-play-wrapper, video, .milo-video');
 
 const getHowToInfo = (el) => {
@@ -54,7 +54,7 @@ const getHowToInfo = (el) => {
   if (!infoDiv) return {};
 
   const heading = infoDiv.firstElementChild;
-  heading.classList.add('heading-xl');
+  heading.classList.add('heading-l');
   if (!heading.id) {
     heading.id = heading.textContent.replace(/\s+/g, '-').toLowerCase();
   }
@@ -120,6 +120,7 @@ export default function init(el) {
   el.classList.add('con-block');
   const isSeo = el.classList.contains('seo');
   const isLargeMedia = el.classList.contains('large-image') || el.classList.contains('large-media');
+  const mediaClass = `${isLargeMedia ? 'how-to-media-large' : 'mini-image'}`;
 
   const { desc, heading, mainImage, mainVideo } = getHowToInfo(el);
   const { steps, images } = getHowToSteps(el);
@@ -128,12 +129,11 @@ export default function init(el) {
   if (steps) orderedList.append(...steps);
 
   if (mainImage) {
-    const imageClass = `how-to-media${isLargeMedia ? ' how-to-media-large' : ''}`;
-    el.append(createTag('div', { class: imageClass }, mainImage));
+    el.append(createTag('div', { class: `how-to-media ${mediaClass}` }, mainImage));
   }
 
   if (mainVideo) {
-    const videoClass = `how-to-media${isLargeMedia ? ' how-to-media-large video' : ''}`;
+    const videoClass = `how-to-media${isLargeMedia ? ' how-to-media-large' : ''}`;
     el.append(createTag('div', { class: videoClass }, mainVideo));
   }
 
@@ -144,8 +144,8 @@ export default function init(el) {
   decorateTextOverrides(el);
   const rows = el.querySelectorAll(':scope > div');
   const foreground = createTag('div', { class: 'foreground' });
-  if (mainImage) foreground.classList.add('has-image');
-  if (mainVideo) foreground.classList.add('has-video');
+  if (mainImage || mainVideo) foreground.classList.add(mediaClass);
+
   rows.forEach((row) => { foreground.appendChild(row); });
   foreground.appendChild(orderedList);
   el.appendChild(foreground);

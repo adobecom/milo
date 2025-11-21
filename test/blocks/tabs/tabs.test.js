@@ -12,6 +12,7 @@ const { default: init, getRedirectionUrl, assignLinkedTabs } = await import('../
 loadStyle('../../../libs/blocks/tabs/tabs.css');
 
 describe('tabs', () => {
+  sessionStorage.setItem('//demo3-tab-state', '2');
   const allTabs = document.querySelectorAll('.tabs');
   allTabs.forEach((tabs) => {
     init(tabs);
@@ -30,6 +31,18 @@ describe('tabs', () => {
     expect(unselectedButton[0].ariaSelected).to.equal('true');
     expect(selectedButton.ariaSelected).to.equal('false');
     expect(unselectedButton[1].ariaSelected).to.equal('false');
+  });
+
+  it('Focus on previously active tab with index saved in sessionStorage', async () => {
+    let lsActiveTab = JSON.parse(sessionStorage.getItem('//demo3-tab-state'));
+    expect(lsActiveTab).to.equal(2);
+    expect(allTabs[6].querySelector('#tab-demo3-1').ariaSelected).to.equal('false');
+    expect(allTabs[6].querySelector('#tab-demo3-2').ariaSelected).to.equal('true');
+    allTabs[6].querySelector('#tab-demo3-1').click();
+    expect(allTabs[6].querySelector('#tab-demo3-1').ariaSelected).to.equal('true');
+    expect(allTabs[6].querySelector('#tab-demo3-2').ariaSelected).to.equal('false');
+    lsActiveTab = JSON.parse(sessionStorage.getItem('//demo3-tab-state'));
+    expect(lsActiveTab).to.equal(1);
   });
 
   it('focus on tabList button, ArrowRight key to next tab and Enter key to select aria', async () => {
@@ -206,6 +219,60 @@ describe('tabs', () => {
       const tabs = document.querySelector('#tabs-demo');
       expect(tabs.querySelector('button[id="tab-demo-1"]')?.dataset.deeplink).to.equal('custom-deeplink-1');
       expect(tabs.querySelector('button[id="tab-demo-2"]')?.dataset.deeplink).to.equal('custom-deeplink-2');
+    });
+  });
+
+  describe('Accessibility: tabindex management', () => {
+    it('sets tabindex="0" only on the active tab', () => {
+      const buttons = allTabs[1].querySelectorAll('button[role="tab"]');
+      const activeTab = Array.from(buttons).find((btn) => btn.getAttribute('aria-selected') === 'true');
+      const inactiveTabs = Array.from(buttons).filter((btn) => btn.getAttribute('aria-selected') === 'false');
+
+      expect(activeTab.getAttribute('tabindex')).to.equal('0');
+      inactiveTabs.forEach((tab) => {
+        expect(tab.getAttribute('tabindex')).to.equal('-1');
+      });
+    });
+
+    it('moves tabindex="0" to clicked tab', async () => {
+      const buttons = allTabs[1].querySelectorAll('button[role="tab"]');
+      const initialActiveIndex = Array.from(buttons).findIndex((btn) => btn.getAttribute('aria-selected') === 'true');
+      const targetIndex = (initialActiveIndex + 1) % buttons.length;
+
+      buttons[targetIndex].click();
+      await delay(50);
+
+      buttons.forEach((btn, index) => {
+        if (index === targetIndex) {
+          expect(btn.getAttribute('tabindex')).to.equal('0');
+        } else {
+          expect(btn.getAttribute('tabindex')).to.equal('-1');
+        }
+      });
+    });
+
+    it('arrow key navigation updates tabindex correctly', async () => {
+      const tabsContainer = allTabs[3];
+      const buttons = tabsContainer.querySelectorAll('button[role="tab"]');
+
+      buttons[0].focus();
+      await delay(50);
+      await sendKeys({ down: 'ArrowRight' });
+      await delay(100);
+
+      const hasOnlyOneTabindex0 = Array.from(buttons).filter((btn) => btn.getAttribute('tabindex') === '0').length === 1;
+      expect(hasOnlyOneTabindex0).to.be.true;
+    });
+
+    it('only one tab has tabindex="0" at any time', async () => {
+      const buttons = allTabs[2].querySelectorAll('button[role="tab"]');
+      const targetIndex = buttons.length > 2 ? 2 : 1;
+
+      buttons[targetIndex].click();
+      await delay(50);
+      const tabsWithTabindex0 = Array.from(buttons).filter((btn) => btn.getAttribute('tabindex') === '0');
+      expect(tabsWithTabindex0.length).to.equal(1);
+      expect(tabsWithTabindex0[0]).to.equal(buttons[targetIndex]);
     });
   });
 });

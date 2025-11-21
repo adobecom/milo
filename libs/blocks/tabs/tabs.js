@@ -57,7 +57,37 @@ export function getRedirectionUrl(linkedTabsList, targetId) {
   return currentUrl;
 }
 
-function changeTabs(e) {
+const generateStorageName = (tabId) => {
+  const { pathname } = window.location;
+  return `${pathname}/${tabId}-tab-state`;
+};
+
+const loadActiveTab = (config) => {
+  if (config.remember !== 'on') return 0;
+
+  const tabId = config['tab-id'];
+  return sessionStorage.getItem(generateStorageName(tabId));
+};
+
+const saveActiveTabInStorage = (targetId, config) => {
+  if (config.remember !== 'on') return;
+
+  const delimiterIndex = targetId.lastIndexOf('-');
+  const activeTabIndex = targetId.substring(delimiterIndex + 1);
+  const storageName = generateStorageName(config['tab-id']);
+  sessionStorage.setItem(storageName, activeTabIndex);
+};
+
+function getContentElement(parent, traversalDepth) {
+  let element = parent;
+  for (let i = 0; i < traversalDepth; i += 1) {
+    element = element.parentNode;
+    if (!element) return null;
+  }
+  return element.lastElementChild;
+}
+
+function changeTabs(e, config) {
   const { target } = e;
   const targetId = target.getAttribute('id');
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
@@ -67,8 +97,9 @@ function changeTabs(e) {
     return;
   }
   const parent = target.parentNode;
-  const content = parent.parentNode.parentNode.lastElementChild;
   const tabsBlock = target.closest('.tabs');
+  const hasSegmentedControl = tabsBlock.classList.contains('segmented-control');
+  const content = hasSegmentedControl ? getContentElement(parent, 3) : getContentElement(parent, 2);
   const blockId = tabsBlock.id;
   const isRadio = target.getAttribute('role') === 'radio';
   const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
@@ -84,11 +115,13 @@ function changeTabs(e) {
     .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
     .forEach((t) => {
       t.setAttribute(attributeName, false);
+      t.setAttribute('tabindex', '-1');
       if (Object.keys(tabColor).length) {
         t.removeAttribute('style', 'backgroundColor');
       }
     });
   target.setAttribute(attributeName, true);
+  target.setAttribute('tabindex', '0');
   if (tabColor[targetId]) {
     target.style.backgroundColor = tabColor[targetId];
   }
@@ -99,6 +132,7 @@ function changeTabs(e) {
   targetContent?.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
   window.dispatchEvent(tabChangeEvent);
+  saveActiveTabInStorage(targetId, config);
 }
 
 function getStringKeyName(str) {
@@ -113,6 +147,35 @@ function getUniqueId(el, rootElem) {
 }
 
 function configTabs(config, rootElem) {
+  const params = new URLSearchParams(window.location.search);
+  // Deeplink with a custom id parameter, e.g. ?plans=edu
+  const deeplinkParam = params.get(config.id);
+  if (deeplinkParam) {
+    const tabBtn = rootElem.querySelector(`[data-deeplink="${deeplinkParam}"]`);
+    if (tabBtn) {
+      tabBtn.click();
+      if (config.remember === 'on') {
+        const deeplinkUrl = new URL(window.location.href);
+        deeplinkUrl.searchParams.delete(config.id);
+        window.history.replaceState({}, null, deeplinkUrl);
+      }
+      return;
+    }
+  }
+  // Deeplink with tab parameter, e.g. ?tab=plans-2
+  const tabParam = params.get('tab');
+  if (tabParam) {
+    const dashIndex = tabParam.lastIndexOf('-');
+    const [tabsId, tabIdx] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
+    if (tabsId === config.id) {
+      const tabBtn = rootElem.querySelector(`#tab-${config.id}-${tabIdx}`);
+      if (tabBtn) {
+        tabBtn.click();
+        return;
+      }
+    }
+  }
+
   if (config['active-tab']) {
     const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
     const sel = rootElem.querySelector(id);
@@ -121,23 +184,6 @@ function configTabs(config, rootElem) {
       sel.click();
     }
   }
-
-  const params = new URLSearchParams(window.location.search);
-  // Deeplink with a custom id parameter, e.g. ?plans=edu
-  const deeplinkParam = params.get(config.id);
-  if (deeplinkParam) {
-    const tabBtn = rootElem.querySelector(`[data-deeplink="${deeplinkParam}"]`);
-    if (tabBtn) {
-      tabBtn.click();
-      return;
-    }
-  }
-  // Deeplink with tab parameter, e.g. ?tab=plans-2
-  const tabParam = params.get('tab');
-  if (!tabParam) return;
-  const dashIndex = tabParam.lastIndexOf('-');
-  const [tabsId, tabIndex] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
-  if (tabsId === config.id) rootElem.querySelector(`#tab-${config.id}-${tabIndex}`)?.click();
 }
 
 function initTabs(elm, config, rootElem) {
@@ -158,13 +204,17 @@ function initTabs(elm, config, rootElem) {
           /* c8 ignore next */
           if (tabFocus < 0) tabFocus = tabs.length - 1;
         }
-        tabs[tabFocus].setAttribute('tabindex', 0);
+        tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
+        tabs[tabFocus].setAttribute('tabindex', '0');
         tabs[tabFocus].focus();
       }
     });
   });
   tabs.forEach((tab) => {
-    tab.addEventListener('click', changeTabs);
+    tab.addEventListener('click', (e) => changeTabs(e, config));
+    if (elm?.classList.contains('segmented-control')) {
+      tab.addEventListener('focus', () => scrollTabIntoView(tab));
+    }
   });
   if (config) configTabs(config, rootElem);
 }
@@ -290,6 +340,10 @@ const init = (block) => {
   });
   const tabId = config.id || getUniqueId(block, rootElem);
   config['tab-id'] = tabId;
+
+  const activeTabIndex = loadActiveTab(config);
+  if (activeTabIndex) config['active-tab'] = activeTabIndex;
+
   block.id = `tabs-${tabId}`;
   parentSection?.classList.add(`tablist-${tabId}-section`);
 
@@ -311,7 +365,9 @@ const init = (block) => {
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
-    const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xs';
+    const btnClass = (pillVariant && handlePillSize(pillVariant))
+    || (block.classList.contains('segmented-control') && 'heading-xxs')
+    || 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
@@ -319,7 +375,7 @@ const init = (block) => {
         role: isRadio ? 'radio' : 'tab',
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
-        tabindex: '0',
+        tabindex: (i === 0) ? '0' : '-1',
         [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
@@ -346,11 +402,21 @@ const init = (block) => {
     tabListContainer.dataset.pretext = config.pretext;
   }
 
+  // For segmented-control variant, wrap tabList in tabs-wrapper container
+  if (block.classList.contains('segmented-control')) {
+    const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
+    tabList.insertAdjacentElement('beforebegin', tabsWrapper);
+    tabsWrapper.append(tabList);
+  }
+
   // Tab Paddles
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
-  tabList.insertAdjacentElement('afterend', paddleRight);
-  block.prepend(paddleLeft);
+  // For segmented-control variant, do not add paddles relative to tab-list-container
+  if (!block.classList.contains('segmented-control')) {
+    tabList.insertAdjacentElement('afterend', paddleRight);
+    block.prepend(paddleLeft);
+  }
   initPaddles(tabList, paddleLeft, paddleRight, isRadio);
 
   // Tab Sections

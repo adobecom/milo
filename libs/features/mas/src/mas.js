@@ -10,6 +10,7 @@ import './merch-offer.js';
 import './merch-quantity-select.js';
 import './merch-badge.js';
 import './merch-whats-included.js';
+import './mas-mnemonic.js';
 
 import { registerVariant } from './variants/variants.js';
 

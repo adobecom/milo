@@ -1,6 +1,4 @@
-import { createTag } from '../../utils/utils.js';
-import '../../deps/mas/merch-card.js';
-import '../../deps/mas/merch-quantity-select.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
   initService,
@@ -13,6 +11,8 @@ import {
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
+loadMasComponent(MAS_MERCH_CARD);
+loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -21,7 +21,6 @@ function getTimeoutPromise() {
 }
 
 async function loadDependencies() {
-  /** Load service first */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {
@@ -30,7 +29,6 @@ async function loadDependencies() {
   const service = await servicePromise;
   log = service.Log.module('merch-card');
 
-  /** Load required MAS components */
   await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
@@ -43,6 +41,10 @@ export async function checkReady(masElement) {
   if (success === 'timeout') {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   } else if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
     log.error(`${masElement.tagName} failed to initialize`);
   }
 }
@@ -50,7 +52,12 @@ export async function checkReady(masElement) {
 export async function createCard(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
-  el.replaceWith(merchCard);
+  const parent = el.parentElement;
+  if (parent && parent.tagName === 'P' && parent.children.length === 1) {
+    parent.replaceWith(merchCard);
+  } else {
+    el.replaceWith(merchCard);
+  }
   await checkReady(merchCard);
   await postProcessAutoblock(merchCard, true);
 }

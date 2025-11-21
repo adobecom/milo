@@ -11,6 +11,13 @@ import {
   getFederatedUrl,
   isSignedOut,
 } from '../../utils/utils.js';
+import {
+  getConsentState,
+  parseOptanonConsent,
+  getAllCookies,
+  KNDCTR_CONSENT_COOKIE,
+  OPT_ON_AND_CONSENT_COOKIE,
+} from '../../martech/helpers.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -90,7 +97,7 @@ export const normalizePath = (p, localize = true) => {
 
   if (isDamContent(path) || !path?.includes('/')) return path;
 
-  if (path.includes('/federal/')) return getFederatedUrl(path);
+  const isFederal = path.includes('/federal/');
 
   const config = getConfig();
   if (!path.startsWith(config.codeRoot) && !path.startsWith('http') && !path.startsWith('/')) {
@@ -118,8 +125,10 @@ export const normalizePath = (p, localize = true) => {
         path = `${config.locale.prefix}${pathname}`;
       }
     }
+    path = isFederal ? getFederatedUrl(path) : path;
     return `${path}${hash.replace(mepHash, '')}`;
   } catch (e) {
+    path = isFederal ? getFederatedUrl(path) : path;
     return path;
   }
 };
@@ -585,9 +594,9 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   try {
     els = root.querySelectorAll(modifiedSelector);
     if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
-      const regex = /free.trial|essai gratuit|kostenlos testen|testversion|無料で始める 無料体験の詳細|détails de la version d’essai gratuite|details zur kostenlosen testversion/g;
+      const regex = /free.trial|essai gratuit|kostenlos testen|testversion|無料で始める|détails de la version d’essai gratuite|details zur kostenlosen testversion/g;
       els = [...els]
-        .filter((el) => el.innerHTML.toLowerCase().match(regex))
+        .filter((el) => el.outerHTML.toLowerCase().match(regex))
         .map((el) => (['strong', 'em'].includes(el.parentElement.tagName.toLowerCase())
           ? el.parentElement
           : el));
@@ -996,8 +1005,9 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    const { lob } = config.mep.promises;
+    const { lob, event } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
+    if (name === 'registered' && event) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -1050,7 +1060,60 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(info = {}, variantOverride = false) {
+
+export function getMepConsentConfig() {
+  const cookies = getAllCookies();
+  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
+  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
+  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
+
+  if (!optOnConsentCookie || consentState === 'pre') {
+    return {
+      performance: true,
+      advertising: isSignedOut() && consentState !== 'pre',
+    };
+  }
+  return parseOptanonConsent(optOnConsentCookie).configuration;
+}
+
+export const overrideVariant = (manifestPath, variantName) => {
+  const config = getConfig();
+  if (!config.mep.variantOverride) config.mep.variantOverride = {};
+  if (!config.mep.variantOverride[manifestPath]) {
+    config.mep.variantOverride[manifestPath] = variantName;
+  }
+};
+
+export const getGeoRestriction = (manifestConfig) => {
+  const { geoRestriction, manifestPath } = manifestConfig;
+  if (!geoRestriction) return true;
+  const geoArray = geoRestriction?.split(',').map((item) => item.trim().toLowerCase());
+  const isAllowed = geoArray.includes(getConfig().mep.akamaiCode);
+  if (!isAllowed) overrideVariant(manifestPath, 'Default');
+  return isAllowed;
+};
+
+export function getManifestMarketingAction(mktgAction, source) {
+  const allowedServices = ['core services', 'non-marketing', 'marketing decrease', 'marketing increase'];
+  if (allowedServices.includes(mktgAction)) return mktgAction;
+  if (source?.includes('promo')) return 'core services';
+  return 'marketing increase';
+}
+
+export function canServeManifest(manifestConfig) {
+  if (!getGeoRestriction(manifestConfig)) return false;
+  const { mktgAction, variantNames, manifestPath } = manifestConfig;
+  if (mktgAction === 'core services') return true;
+
+  const { performance, advertising } = getConfig().mep.consentState;
+  if (mktgAction === 'non-marketing') return performance;
+  if (mktgAction === 'marketing increase') return advertising;
+
+  if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
+  return true;
+}
+
+async function getManifestConfig(info, variantOverride) {
   const {
     name,
     manifestData,
@@ -1109,13 +1172,23 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
       executionOrder[key] = index > -1 ? index : 1;
     });
     manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+    manifestConfig.mktgAction = infoObj['manifest-marketing-action']?.toLowerCase();
+    manifestConfig.geoRestriction = infoObj['manifest-geo-restriction']?.toLowerCase();
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
     manifestConfig.executionOrder = '1-1';
   }
 
+  let finalDisabled = disabled;
+  manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
   manifestConfig.manifestPath = normalizePath(manifestPath);
+  const isAllowed = canServeManifest(manifestConfig);
+  if (!isAllowed) {
+    if (!getConfig().mep?.preview) return null;
+    finalDisabled = true;
+  }
+
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
     manifestConfig.manifestPath,
     manifestConfig.variantNames,
@@ -1126,7 +1199,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   manifestConfig.name = name;
   manifestConfig.manifest = manifestPath;
   manifestConfig.manifestUrl = manifestUrl;
-  manifestConfig.disabled = disabled;
+  manifestConfig.disabled = finalDisabled;
   manifestConfig.event = event;
   if (source?.length) manifestConfig.source = source;
   return manifestConfig;
@@ -1264,6 +1337,7 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
+
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],
@@ -1324,17 +1398,19 @@ export const combineMepSources = async (
   rocPersEnabled,
   promoEnabled,
   mepParam,
+  mepMarketingDecrease,
 ) => {
   let persManifests = [];
 
-  if (persEnabled) {
-    persManifests = parseManifestUrlAndAddSource(persEnabled, 'pzn');
-  }
-
-  if (rocPersEnabled) {
-    const rocPersManifest = parseManifestUrlAndAddSource(rocPersEnabled, 'pzn-roc');
-    persManifests = persManifests.concat(rocPersManifest);
-  }
+  const sources = {
+    pzn: persEnabled,
+    'pzn-roc': rocPersEnabled,
+    'mktg-decrease': mepMarketingDecrease,
+  };
+  Object.entries(sources).forEach(([source, value]) => {
+    if (!value) return;
+    persManifests = persManifests.concat(parseManifestUrlAndAddSource(value, source));
+  });
 
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('./promo-utils.js');
@@ -1360,6 +1436,7 @@ export const combineMepSources = async (
       }
     });
   }
+
   return persManifests;
 };
 
@@ -1500,9 +1577,10 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP, promises,
+    postLCP, promises, mepMarketingDecrease, akamaiCode,
   } = enablements;
   const config = getConfig();
+
   if (postLCP) {
     isPostLCP = true;
   } else {
@@ -1522,9 +1600,17 @@ export async function init(enablements = {}) {
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,
+      akamaiCode: akamaiCode?.toLowerCase(),
+      consentState: getMepConsentConfig(),
     };
 
-    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
+    manifests = manifests.concat(await combineMepSources(
+      pzn,
+      pznroc,
+      promo,
+      mepParam,
+      mepMarketingDecrease,
+    ));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);

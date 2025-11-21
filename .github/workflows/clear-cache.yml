@@ -1,0 +1,56 @@
+name: Clear Akamai Cache
+
+on:
+  workflow_call:
+    inputs:
+      cpCode:
+        description: 'CP Code'
+        required: true
+        type: string
+      network:
+        description: 'Network'
+        required: true
+        type: string
+      command:
+        description: 'Command'
+        required: true
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      cpCode:
+        description: 'CP Code: Prod - 1318762 / Stage - 1318533'
+        type: string
+        required: true
+        default: '1318762'
+      network:
+        description: 'Network'
+        type: choice
+        required: true
+        default: 'staging'
+        options:
+          - 'staging'          
+          - 'production'
+      command:
+        description: 'Command'
+        type: choice
+        required: true
+        default: 'invalidate'
+        options:
+          - 'invalidate'          
+          - 'delete'
+
+jobs:
+  clear-cache:     
+    name: Clear Cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clear Cache
+        uses: jdmevo123/akamai-purge-action@962351e8415c03abe809a146403cb813c8dc3be4
+        env:
+          EDGERC: ${{ secrets.EDGERC }}
+        with:
+          command: ${{ inputs.command }}
+          type: 'cpcode'
+          ref: ${{ inputs.cpCode }}
+          network: ${{ inputs.network }}

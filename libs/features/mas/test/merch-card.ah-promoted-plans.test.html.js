@@ -52,7 +52,7 @@ export default async () => {
                 );
                 expect(
                     normalBorderCard.style.getPropertyValue(
-                        '--merch-card-custom-border-color',
+                        '--consonant-merch-card-border-color',
                     ),
                 ).to.equal('var(--spectrum-gray-200)');
             });
@@ -69,7 +69,7 @@ export default async () => {
                 ).to.include('linear-gradient');
                 expect(
                     gradientBorderCard.style.getPropertyValue(
-                        '--merch-card-custom-border-color',
+                        '--consonant-merch-card-border-color',
                     ),
                 ).to.equal('');
             });

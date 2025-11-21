@@ -1,8 +1,7 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { STATUS } from '../checks/constants.js';
-import preflightApi from '../checks/preflightApi.js';
-
-const { runChecks } = preflightApi.seo;
+import { asoCache, getASOToken } from '../checks/asoApi.js';
+import { SEO_IDS, SEO_TITLES, STATUS, ASO_TIMEOUT_MS, ASO_POLL_INTERVAL_MS } from '../checks/constants.js';
+import { getChecksSuite, getPreflightResults } from '../checks/preflightApi.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
@@ -10,13 +9,64 @@ const pass = 'green';
 const fail = 'red';
 const limbo = 'orange';
 
-const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC });
-const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC });
-const canonResult = signal({ icon: DEF_ICON, title: 'Canonical', description: DEF_DESC });
-const descResult = signal({ icon: DEF_ICON, title: 'Meta description', description: DEF_DESC });
-const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC });
-const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC });
-const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC, details: { badLinks: [] } });
+const h1Result = signal({
+  id: SEO_IDS.h1Count,
+  icon: DEF_ICON,
+  title: SEO_TITLES.h1Count,
+  description: DEF_DESC,
+});
+const titleResult = signal({
+  id: SEO_IDS.title,
+  icon: DEF_ICON,
+  title: SEO_TITLES.title,
+  description: DEF_DESC,
+});
+const canonResult = signal({
+  id: SEO_IDS.canonical,
+  icon: DEF_ICON,
+  title: SEO_TITLES.canonical,
+  description: DEF_DESC,
+});
+const descResult = signal({
+  id: SEO_IDS.description,
+  icon: DEF_ICON,
+  title: SEO_TITLES.description,
+  description: DEF_DESC,
+});
+const bodyResult = signal({
+  id: SEO_IDS.bodySize,
+  icon: DEF_ICON,
+  title: SEO_TITLES.bodySize,
+  description: DEF_DESC,
+});
+const loremResult = signal({
+  id: SEO_IDS.loremIpsum,
+  icon: DEF_ICON,
+  title: SEO_TITLES.loremIpsum,
+  description: DEF_DESC,
+});
+const linksResult = signal({
+  id: SEO_IDS.links,
+  icon: DEF_ICON,
+  title: SEO_TITLES.links,
+  description: DEF_DESC,
+  details: { badLinks: [] },
+});
+const aiSuggestions = signal([]);
+const authErrorMessage = signal('');
+const asoSessionTrigger = signal(0);
+
+const isAso = getChecksSuite() === 'ASO';
+
+const signals = [
+  h1Result,
+  titleResult,
+  canonResult,
+  descResult,
+  bodyResult,
+  loremResult,
+  linksResult,
+];
 
 function toUIFormat(result, signalResult) {
   let icon;
@@ -29,6 +79,7 @@ function toUIFormat(result, signalResult) {
   }
 
   signalResult.value = {
+    id: result.id,
     icon,
     status: result.status,
     title: result.title,
@@ -68,50 +119,46 @@ export async function sendResults() {
   );
 }
 
-function SeoItem({ icon, title, description }) {
+function SeoItem({ id, icon, title, description, supportsAi }) {
+  const aiSuggestion = aiSuggestions.value.find((suggestion) => suggestion.id === id)?.aiSuggestion;
+  const showLoadingAi = isAso && supportsAi && icon === 'red' && !aiSuggestion;
+  const showAiSuggestion = supportsAi && aiSuggestion && icon === 'red';
   return html`
     <div class=preflight-item>
       <div class="result-icon ${icon}"></div>
       <div class=preflight-item-text>
         <p class=preflight-item-title>${title}</p>
         <p class=preflight-item-description>${description}</p>
+         ${showLoadingAi && html`<p class="ai-suggestion">AI suggestion: <div class="result-icon purple"></div></p>`}
+        ${showAiSuggestion && html`<p class="ai-suggestion">AI suggestion: ${aiSuggestion}</p>`}
       </div>
     </div>`;
 }
 
 async function getResults() {
-  const signals = [
-    h1Result,
-    titleResult,
-    canonResult,
-    descResult,
-    bodyResult,
-    loremResult,
-    linksResult,
-  ];
-
-  const checks = runChecks(window.location.pathname);
+  const results = (await getPreflightResults(window.location.href, document)).runChecks.seo || [];
 
   // Update UI as each check resolves
   const icons = [];
   const checkPromises = [];
-  checks.forEach((resultOrPromise, index) => {
-    const signalResult = signals[index];
+  results.forEach((resultOrPromise) => {
     const promise = Promise.resolve(resultOrPromise)
       .then((result) => {
-        const icon = toUIFormat(result, signalResult);
-        icons[index] = icon;
+        const targetSignal = signals.find((s) => s.value.id === result.id);
+        const icon = toUIFormat(result, targetSignal);
+        icons.push(icon);
       })
       .catch((error) => {
+        const targetSignal = signals.find((s) => s.value.id === error.id);
         const icon = toUIFormat(
           {
-            title: signalResult.value.title,
+            title: targetSignal.value.title,
             status: STATUS.FAIL,
             description: `Error running check: ${error.message}`,
           },
-          signalResult,
+          targetSignal,
         );
-        icons[index] = icon;
+        icons.push(icon);
       });
     checkPromises.push(promise);
   });
@@ -134,20 +181,84 @@ async function getResults() {
   });
 }
 
+async function handleAsoSignIn() {
+  await window.asoIMS.signIn({ profile_filter: 'inc@AdobeOrg' });
+
+  const sessionIntervalId = setInterval(async () => {
+    try {
+      const res = await window.asoIMS.refreshToken();
+      if (res?.tokenInfo) {
+        authErrorMessage.value = '';
+        await getASOToken();
+        asoSessionTrigger.value += 1;
+        clearInterval(sessionIntervalId);
+      }
+    } catch (e) {
+      // no-op
+    }
+  }, ASO_POLL_INTERVAL_MS);
+
+  setTimeout(() => {
+    clearInterval(sessionIntervalId);
+  }, ASO_TIMEOUT_MS);
+}
+
 export default function SEO() {
-  useEffect(() => { getResults(); }, []);
-  return html`
+  useEffect(() => {
+    getResults();
+    if (!isAso) return;
+
+    if (!asoCache.sessionToken) {
+      authErrorMessage.value = 'Please make sure you are authenticated with IMS';
+      return;
+    }
+
+    const intervalIdIdentify = setInterval(() => {
+      if (asoCache.identify?.length > 0) {
+        asoCache.identify.forEach((partial) => {
+          const targetSignal = signals.find((s) => s.value.id === partial.id);
+          if (targetSignal) toUIFormat(partial, targetSignal);
+        });
+      }
+      if (asoCache.identifyFinished) clearInterval(intervalIdIdentify);
+    }, 1000);
+
+    const intervalIdSuggest = setInterval(() => {
+      if (asoCache.suggest?.length > 0) aiSuggestions.value = asoCache.suggest;
+      if (asoCache.suggestFinished) clearInterval(intervalIdSuggest);
+    }, 1000);
+
+    const timeoutId = setTimeout(() => {
+      clearInterval(intervalIdIdentify);
+      clearInterval(intervalIdSuggest);
+    }, ASO_TIMEOUT_MS);
+
+    // eslint-disable-next-line
+    return () => {
+      clearInterval(intervalIdIdentify);
+      clearInterval(intervalIdSuggest);
+      clearTimeout(timeoutId);
+    };
+  // eslint-disable-next-line
+  }, [asoSessionTrigger.value]);
+
+  return authErrorMessage.value ? html`
+  <div class="preflight-auth-error"><p class="warning">${authErrorMessage.value}</p>
+    <button class="preflight-action" onclick=${handleAsoSignIn}>
+      Sign in
+    </button>
+  </div>` : html`
     <div class=preflight-columns>
       <div class=preflight-column>
-        <${SeoItem} icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
-        <${SeoItem} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
-        <${SeoItem} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
-        <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.title} supportsAi icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.h1Count} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
+        <${SeoItem} id=${SEO_IDS.canonical} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.links} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
       </div>
       <div class=preflight-column>
-        <${SeoItem} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
-        <${SeoItem} icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
-        <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.bodySize} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.loremIpsum} supportsAi icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.description} supportsAi icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
       </div>
     </div>
     <div class='problem-links'>

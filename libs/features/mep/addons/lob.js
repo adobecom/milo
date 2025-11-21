@@ -1,18 +1,12 @@
 import { getConfig } from '../../../utils/utils.js';
-
-function getCookie(key) {
-  const cookie = document.cookie.split(';')
-    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
-    .find(([k]) => k === key);
-  return cookie ? cookie[1] : null;
-}
+import { getCookie, AMCV_COOKIE } from '../../../martech/helpers.js';
 
 export async function getSpectraLOB(lastVisitedPage) {
-  const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
+  const getECID = getCookie(AMCV_COOKIE);
   if (!getECID) return false;
   const [, ECID] = getECID.split('|');
-  const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '-stage';
-  let url = `https://cchome${domainSuffix}.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
+  const domainPrefix = getConfig()?.env?.name === 'prod' ? '' : 'stage.';
+  let url = `https://www.${domainPrefix}adobe.com/int/v1/aep/events/webpage?ecid=${ECID}`;
   if (lastVisitedPage) url = `${url}&lastVisitedPage=${lastVisitedPage}`;
 
   try {
@@ -34,6 +28,7 @@ export async function getSpectraLOB(lastVisitedPage) {
 
 export default async function init(enablement) {
   if (enablement !== true) return enablement;
+  if (window.location.hostname.includes('.aem.')) return 'cc';
   const consentCookieValue = getCookie('OptanonConsent');
   if (consentCookieValue?.includes('C0002:0')) return 'cc';
   const lobValue = await getSpectraLOB(document.referrer);

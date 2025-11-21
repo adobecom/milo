@@ -407,9 +407,12 @@ const alphaSort = (a, b) => {
   return 0;
 };
 
-const getLocalTitle = (tag, country, lang) => tag[`title.${lang}_${country}`]
+const getLocalTitle = (tag, country, lang) => {
+  const searchKey = `${lang}_${country}`.toLowerCase();
+  return tag[`title.${searchKey}`]
   || tag[`title.${lang}`]
   || tag.title;
+};
 
 const getFilterObj = (
   { excludeTags, filterTag, icon, openedOnLoad },
@@ -657,7 +660,7 @@ export const getGrayboxExperienceId = (
   pathname = window.location?.pathname || '',
 ) => {
   // Only allow trusted Adobe graybox domains
-  const isAdobeGraybox = /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname);
+  const isAdobeGraybox = /^[^.]+\.([a-z-]+-)?graybox\.adobe\.com$/.test(hostname);
   const isStageGraybox = (
     (hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live'))
     && hostname.includes('graybox')
@@ -666,7 +669,7 @@ export const getGrayboxExperienceId = (
   // Check for graybox.adobe.com format: https://[exn].[pn]-graybox.adobe.com/[path].html
   if (isAdobeGraybox) {
     const parts = hostname.split('.');
-    if (parts.length >= 3 && parts[1].includes('-graybox')) {
+    if (parts.length >= 3 && (parts[1] === 'graybox' || parts[1].includes('-graybox'))) {
       return parts[0]; // Return the experience ID (first part)
     }
   }
@@ -707,6 +710,8 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
+  const langFirst = state.langFirst ? `&langFirst=${state.langFirst}` : '';
+
   const config = {
     collection: {
       mode: state.theme,
@@ -735,7 +740,8 @@ export const getConfig = async (originalState, strs = {}) => {
       }${localesQueryParam
       }${debug
       }${flatFile
-      }${grayboxExperienceParam}`,
+      }${grayboxExperienceParam
+      }${langFirst}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       showCardBadges: state.showCardBadges,
@@ -762,6 +768,7 @@ export const getConfig = async (originalState, strs = {}) => {
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
+      useCenterVideoPlay: state.useCenterVideoPlay,
       partialLoadWithBackgroundFetch: {
         enabled: state.partialLoadEnabled,
         partialLoadCount: state.partialLoadCount,
@@ -1031,6 +1038,7 @@ export const defaultState = {
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
+  useCenterVideoPlay: false,
   collectionButtonStyle: 'primary',
   userInfo: [],
 };

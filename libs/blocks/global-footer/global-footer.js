@@ -347,7 +347,7 @@ class Footer {
 
     // Note: the region picker currently works only with Milo modals/fragments;
     // in the future we'll need to update this for non-Milo consumers
-    if (url.hash !== '') {
+    if (url.hash !== '' && url.hash !== '#_dnt') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
       regionPickerElem.href = url.hash;

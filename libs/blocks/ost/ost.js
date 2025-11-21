@@ -66,6 +66,9 @@ export const createLinkMarkup = (
       if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
         params.set('workflowStep', workflowStep);
       }
+      if (options.modal) params.set('modal', options.modal);
+      if (options.entitlement) params.set('entitlement', options.entitlement);
+      if (options.upgrade) params.set('upgrade', options.upgrade);
     } else {
       const {
         displayRecurrence,
@@ -92,11 +95,25 @@ export const createLinkMarkup = (
 };
 
 export async function loadOstEnv() {
+  const searchParameters = new URLSearchParams(window.location.search);
+  const ostSearchParameters = new URLSearchParams();
+  // deprecate unsupported parameters
+  const wcsLandscape = searchParameters.get('wcsLandscape');
+  const commerceEnv = searchParameters.get('commerce.env');
+  if (wcsLandscape || commerceEnv) {
+    if (wcsLandscape) {
+      searchParameters.set('commerce.landscape', wcsLandscape);
+      searchParameters.delete('wcsLandscape');
+    }
+    if (commerceEnv?.toLowerCase() === 'stage') {
+      searchParameters.set('commerce.landscape', 'DRAFT');
+      searchParameters.delete('commerce.env');
+    }
+    window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
+  }
   /* c8 ignore next */
   const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
-
-  // Load initService
-  await initService(MAS_COMMERCE_SERVICE);
+  await initService(true, { 'allow-override': 'true' });
   // Load commerce.js based on masLibs parameter
   await loadMasComponent(MAS_COMMERCE_SERVICE);
 
@@ -111,9 +128,6 @@ export async function loadOstEnv() {
     // Loaded as module
     ({ Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js'));
   }
-
-  const searchParameters = new URLSearchParams(window.location.search);
-  const ostSearchParameters = new URLSearchParams();
 
   const defaultPlaceholderOptions = Object.fromEntries([
     ['term', 'displayRecurrence', 'true'],
@@ -247,6 +261,7 @@ export async function loadOstEnv() {
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
     resolvePriceTaxFlags,
+    modalsAndEntitlements: true,
   };
 }
 

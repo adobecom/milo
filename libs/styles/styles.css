@@ -819,6 +819,10 @@ body.mweb-enabled {
 
 h1, h2, h3, h4, h5, h6 {
   scroll-margin-top: var(--feds-totalheight-nav);
+
+  span.hidden {
+    display: none;
+  }
 }
 
 :is(h1, h2, h3, h4, h5, h6) strong {
@@ -1035,6 +1039,23 @@ a.static:active  {
 
   header.gnav.has-breadcrumbs + main {
     margin-top: 97px;
+  }
+}
+
+/* tablet down */
+@media screen and (max-width: 1199px) {
+  /* Mweb specific changes for body typography */
+  .mweb-enabled {
+    --type-body-xxl-size: calc(var(--font-size-multiplier, 1) * 24px);
+    --type-body-xxl-lh: 36px;
+    --type-body-xl-size: calc(var(--font-size-multiplier, 1) * 20px);
+    --type-body-xl-lh: 30px;
+    --type-body-l-size: calc(var(--font-size-multiplier, 1) * 18px);
+    --type-body-l-lh: 27px;
+    --type-body-m-size: calc(var(--font-size-multiplier, 1) * 16px);
+    --type-body-m-lh: 24px;
+    --type-body-s-size: calc(var(--font-size-multiplier, 1) * 14px);
+    --type-body-s-lh: 21px;
   }
 }
 

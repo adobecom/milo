@@ -207,6 +207,9 @@ export default async function init(el) {
   let mep;
   let merchStyles;
   let merchCardStyles;
+
+  // Load lit first as it's needed by MAS components
+
   const merchCardCollectionDep = loadMasComponent(MAS_MERCH_CARD_COLLECTION);
   try {
     const cardsDataPromise = fetchCardsData(config, endpointElement, type, el);

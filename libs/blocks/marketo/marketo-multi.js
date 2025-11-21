@@ -1,18 +1,23 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
-import { replaceKey } from '../../features/placeholders.js';
+import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 const VALIDATION_STEP = {
-  name: '2',
-  phone: '2',
-  mktoFormsJobTitle: '2',
-  mktoFormsFunctionalArea: '2',
-  company: '3',
-  state: '3',
-  postcode: '3',
-  mktoFormsPrimaryProductInterest: '3',
-  mktoFormsCompanyType: '3',
+  2: [
+    'name',
+    'phone',
+    'mktoFormsJobTitle',
+    'mktoFormsFunctionalArea',
+  ],
+  3: [
+    'company',
+    'state',
+    'postcode',
+    'mktoFormsPrimaryProductInterest',
+    'mktoFormsCompanyType',
+  ],
 };
+let stepText = {};
 
 export function updateTabIndex(formEl, stepToAdd, stepToRemove) {
   const fieldsToAdd = formEl.querySelectorAll(`.mktoFormRowTop[data-validate="${stepToAdd}"]:not(.mktoHidden) input, 
@@ -30,7 +35,7 @@ function updateStepDetails(formEl, step, totalSteps) {
   formEl.classList.add('hide-errors');
   formEl.classList.remove('show-warnings');
   formEl.dataset.step = step;
-  formEl.querySelector('.step-details .step-count').textContent = `${step} / ${totalSteps}`;
+  formEl.querySelector('.step-details .step').textContent = stepText[step];
   formEl.querySelector('#mktoButton_new')?.classList.toggle('mktoHidden', step !== totalSteps);
   formEl.querySelector('#mktoButton_next')?.classList.toggle('mktoHidden', step === totalSteps);
   setTimeout(() => {
@@ -49,6 +54,7 @@ function showPreviousStep(formEl, totalSteps) {
 }
 
 const showNextStep = async (formEl, currentStep, totalSteps) => {
+  window.aaInteraction?.(`Marketo Step ${currentStep} of ${totalSteps}`, 'stepChange', formEl.id.split('_')[1], null);
   if (currentStep === totalSteps) return;
   const nextStep = currentStep + 1;
   const stepDetails = formEl.querySelector('.step-details');
@@ -78,9 +84,18 @@ export const formValidate = async (formEl) => {
 };
 
 function setValidationSteps(formEl, totalSteps, currentStep) {
+  const formData = window.mcz_marketoForm_pref || {};
+  const validationMap = formData.form?.fldStepPref || VALIDATION_STEP;
+  Object.keys(validationMap).forEach((step) => {
+    validationMap[step] = validationMap[step].join(',').split(',');
+  });
+  formData.form ??= {};
+  formData.form.fldStepPref = validationMap;
+
   formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
     const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
-    const step = VALIDATION_STEP[rowAttr] ? Math.min(VALIDATION_STEP[rowAttr], totalSteps) : 1;
+    const mapStep = Object.keys(validationMap).find((stepNum) => validationMap[stepNum].some((field) => field?.toLowerCase() === rowAttr?.toLowerCase())) || '1';
+    const step = Math.min(parseInt(mapStep, 10), totalSteps);
     row.dataset.validate = rowAttr?.startsWith('adobe-privacy') ? totalSteps : step;
     const fields = row.querySelectorAll('input, select, textarea');
     if (fields.length) fields.forEach((f) => { f.tabIndex = step === currentStep ? 0 : -1; });
@@ -91,19 +106,31 @@ function onRender(formEl, totalSteps) {
   const currentStep = parseInt(formEl.dataset.step, 10);
   const submitButton = formEl.querySelector('#mktoButton_new');
   submitButton?.classList.toggle('mktoHidden', currentStep !== totalSteps);
-  formEl.querySelector('.step-details .step-count').textContent = `${currentStep} / ${totalSteps}`;
+  formEl.querySelector('.step-details .step').textContent = stepText[currentStep];
   setValidationSteps(formEl, totalSteps, currentStep);
+}
+
+async function setStepText(totalSteps) {
+  const config = getConfig();
+  if (totalSteps === 2) {
+    const [step1, step2] = await replaceKeyArray(['step-1-of-2', 'step-2-of-2'], config);
+    stepText = { 1: step1, 2: step2 };
+  } else {
+    const [step1, step2, step3] = await replaceKeyArray(['step-1-of-3', 'step-2-of-3', 'step-3-of-3'], config);
+    stepText = { 1: step1, 2: step2, 3: step3 };
+  }
 }
 
 const readyForm = async (form, totalSteps) => {
   const formEl = form.getFormElem().get(0);
+  formEl.dataset.step = 1;
+  await setStepText(totalSteps);
   form.onValidate(() => formValidate(formEl));
 
   const nextButton = createTag('button', { type: 'button', id: 'mktoButton_next', class: 'mktoButton mktoUpdatedBTN mktoVisible' }, 'Next');
   nextButton.addEventListener('click', () => form.validate());
   const nextContainer = createTag('div', { class: 'mktoButtonRow' }, nextButton);
-  const stepText = await replaceKey('step', getConfig());
-  const stepEl = createTag('p', { class: 'step' }, `${stepText} <span class="step-count">1 / ${totalSteps}</span>`);
+  const stepEl = createTag('p', { class: 'step' }, stepText[1]);
   const stepDetails = createTag('div', { class: 'step-details' }, stepEl);
   formEl.append(nextContainer, stepDetails);
 
@@ -119,10 +146,7 @@ const readyForm = async (form, totalSteps) => {
 
 export default async (el) => {
   if (!el.classList.contains('multi-step')) return;
-  const formEl = el.querySelector('form');
   const totalSteps = el.classList.contains('multi-3') ? 3 : 2;
-  formEl.dataset.step = 1;
-
   const { MktoForms2 } = window;
   await MktoForms2.whenReady((form) => readyForm(form, totalSteps));
 };

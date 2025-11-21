@@ -77,6 +77,7 @@ const defaultOptions = {
     'text-card': 'Text Card',
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
+    'horizontal-card': 'Horizontal Card',
     'custom-card': 'Custom Card',
     'blade-card': 'Blade Card',
   },
@@ -148,7 +149,6 @@ const defaultOptions = {
     OR: 'OR',
   },
   layoutType: {
-    // '1up': '1up',
     '2up': '2up',
     '3up': '3up',
     '4up': '4up',
@@ -386,6 +386,7 @@ const UiPanel = () => {
     <${Input} label="Show Different CTA for Live Events" prop="dynamicCTAForLiveEvents" type="checkbox" />
     <${Input} label="Hide Date for On-Demand Content" prop="hideDateInterval" type="checkbox" />
     <${Input} label="Hide Card Banners" prop="disableBanners" type="checkbox" />
+    <${Input} label="Use Center Video Play Button" prop="useCenterVideoPlay" type="checkbox" />
     <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
     <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />

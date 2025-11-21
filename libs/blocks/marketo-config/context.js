@@ -5,6 +5,18 @@ export const saveStateToLocalStorage = (state, lsKey) => {
   localStorage.setItem(lsKey, JSON.stringify(state));
 };
 
+export const loadStateFromLocalStorage = (lsKey) => {
+  const lsState = localStorage.getItem(lsKey);
+  if (lsState) {
+    try {
+      return JSON.parse(lsState);
+      /* c8 ignore next 2 */
+      // eslint-disable-next-line no-empty
+    } catch (e) { }
+  }
+  return null;
+};
+
 function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -29,14 +41,8 @@ const getInitialState = (defaultState, lsKey) => {
     return mergedState;
   }
 
-  const lsState = localStorage.getItem(lsKey);
-  if (lsState) {
-    try {
-      Object.assign(mergedState, JSON.parse(lsState));
-      /* c8 ignore next 2 */
-      // eslint-disable-next-line no-empty
-    } catch (e) { }
-  }
+  const lsState = loadStateFromLocalStorage(lsKey);
+  if (lsState) Object.assign(mergedState, lsState);
 
   return mergedState;
 };
@@ -46,7 +52,7 @@ const createReducer = (defaultState) => (state, action) => {
     case 'SET_VALUE':
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
-      return deepCopy(defaultState);
+      return { ...deepCopy(defaultState), reset: Date.now() };
     /* c8 ignore next 2 */
     default:
       return state;

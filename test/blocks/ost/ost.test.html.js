@@ -81,7 +81,21 @@ describe('OST: loadOstEnv', async () => {
       environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
+      modalsAndEntitlements: true,
     });
+  });
+
+  it('redirects deprecated parameters', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, null, `${window.location.pathname}?wcsLandscape=DRAFT&commerce.env=stage&other=param`);
+    const { loadOstEnv } = await import('../../../libs/blocks/ost/ost.js');
+    await loadOstEnv();
+    const params = new URLSearchParams(window.location.search);
+    expect(params.get('commerce.landscape')).to.equal('DRAFT');
+    expect(params.get('wcsLandscape')).to.be.null;
+    expect(params.get('commerce.env')).to.be.null;
+    expect(params.get('other')).to.equal('param');
+    window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
   });
 
   it('tolerates page metadata request fail', async () => {
@@ -239,6 +253,15 @@ describe('OST: merch link creation', () => {
       const ctaText = texts.try;
       const link = createLink({ ctaText, promo, type });
       assertLink(link, perpM2M, { osi, promo, type }, ctaText);
+    });
+
+    it('with custom options', async () => {
+      const ctaText = texts.try;
+      const modal = 'd2p';
+      const entitlement = 'true';
+      const upgrade = 'false';
+      const link = createLink({ ctaText, modal, entitlement, upgrade, type });
+      assertLink(link, perpM2M, { osi, modal, entitlement, upgrade, type }, ctaText);
     });
   });
 

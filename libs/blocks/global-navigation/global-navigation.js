@@ -14,7 +14,7 @@ import {
   shouldBlockFreeTrialLinks,
 } from '../../utils/utils.js';
 
-(async () => {
+const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
   const loadStylePromise = (u) => new Promise((resolve, reject) => {
@@ -68,6 +68,7 @@ const { getMiloLocaleSettings } = merch;
 
 const {
   closeAllDropdowns,
+  createErrorPopup,
   fetchAndProcessPlainHtml,
   getActiveLink,
   getExperienceName,
@@ -107,6 +108,7 @@ const {
   getUnavWidthCSS,
   setupKeyboardNav,
   KEYBOARD_DELAY,
+  isSmallScreen,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -173,6 +175,14 @@ const getMessageEventListener = () => {
   };
 };
 
+const getSignInCtaStyle = () => {
+  const isPrimary = (
+    getMetadata('signin-cta-style') === 'primary'
+    || getConfig()?.unav?.profile?.signInCtaStyle === 'primary'
+  );
+  return isPrimary ? 'primary' : 'secondary';
+};
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -193,10 +203,8 @@ export const CONFIG = {
       profile: {
         name: 'profile',
         attributes: {
-          isSignUpRequired: false,
-          messageEventListener: getMessageEventListener(),
-          componentLoaderConfig: {
-            config: {
+          accountMenuContext: {
+            sharedContextConfig: {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
@@ -208,10 +216,15 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
                 },
               },
+              complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
             },
+            messageEventListener: getMessageEventListener(),
           },
-          complexConfig: getConfig().unav?.profile?.complexConfig || null,
+          // UNav 1.5: Support for primary/secondary signIn CTA style
+          // Setting signInCtaStyle = 'primary' makes signIn CTA primary and signUp secondary
+          signInCtaStyle: getSignInCtaStyle(),
+          isSignUpRequired: false,
           callbacks: {
             onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
@@ -425,11 +438,6 @@ export const closeGnavOptions = () => {
   enableMobileScroll();
   setMenuState();
 };
-
-const convertToPascalCase = (str) => str
-  ?.split('-')
-  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-  .join(' ');
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
@@ -504,9 +512,13 @@ class Gnav {
 
     document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
+    if (document.querySelector('.feds-promo-aside-wrapper')) {
+      isSmallScreen.addEventListener('change', this.updateGnavTop);
+    }
   }, 'Error in global navigation init', 'gnav', 'e');
 
-  revealGnav = () => {
+  revealGnav = async () => {
+    await cssPromise;
     this.block.classList.remove('gnav-hide');
     this.block.classList.add('ready');
     performance.mark('Gnav-Visible');
@@ -524,7 +536,9 @@ class Gnav {
     }));
 
   decorateProductEntryCTA = () => {
-    const button = this.content.querySelector('.product-entry-cta a');
+    const buttons = this.content.querySelectorAll('.product-entry-cta a');
+    const button = buttons[window.adobeIMS.isSignedInUser() && buttons.length > 1 ? 1 : 0];
+
     if (!button) return null;
     const cta = decorateCta({ elem: button, type: this.getMainNavItemType(button) });
     cta.closest('.feds-cta-wrapper').classList.add('feds-product-entry-cta');
@@ -532,7 +546,13 @@ class Gnav {
   };
 
   decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
+    const {
+      searchEnabled,
+      selfIntegrateUnav,
+      desktopAppsCta = false,
+      viewPlansCta = false,
+      explorePlansCta = false,
+    } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -543,9 +563,11 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
-        ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
+        ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
+        ${viewPlansCta ? toFragment`<div class="feds-client-view-plans"></div>` : ''}
+        ${explorePlansCta ? toFragment`<div class="feds-client-explore-plans"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
@@ -763,8 +785,10 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-
-    const tasks = [this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile];
+    const tasks = [
+      this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile,
+      this.setUpProductCTA,
+    ];
 
     try {
       for await (const task of tasks) {
@@ -778,6 +802,18 @@ class Gnav {
         errorType: 'i',
         message: `GNAV: issues within imsReady - ${this.useUniversalNav ? 'decorateUniversalNav' : 'decorateProfile'}`,
       });
+    }
+  };
+
+  setUpProductCTA = async () => {
+    const placeholder = this.elements.topnav.querySelector('.feds-product-entry-cta-placeholder');
+    if (!placeholder) return;
+
+    const productCta = this.decorateProductEntryCTA();
+    if (productCta) {
+      placeholder.replaceWith(productCta);
+    } else {
+      placeholder.remove();
     }
   };
 
@@ -849,7 +885,6 @@ class Gnav {
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity')
       .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
-    const experienceName = getExperienceName();
 
     const getDevice = () => {
       const agent = navigator.userAgent;
@@ -859,7 +894,11 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.4';
+    let unavVersion = new URLSearchParams(window.location.search).get('unavVersion');
+    // If versions follow a predictable format (digit.digit), validate using a regex
+    if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
+      unavVersion = '1.5';
+    }
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
@@ -883,63 +922,6 @@ class Gnav {
       return children;
     };
 
-    const onAnalyticsEvent = (data) => {
-      if (!data) return;
-      if (!data.event) data.event = { type: data.type, subtype: data.subtype };
-      if (!data.source) data.source = { name: data.workflow?.toLowerCase().trim() };
-
-      const getInteraction = () => {
-        const {
-          event: { type, subtype } = {},
-          source: { name } = {},
-          content: { name: contentName } = {},
-        } = data;
-
-        switch (`${name}|${type}|${subtype}${contentName ? `|${contentName}` : ''}`) {
-          case 'profile|click|sign-in':
-            return `Sign In|gnav|${experienceName}|unav`;
-          case 'profile|render|component':
-            return `Account|gnav|${experienceName}|unav`;
-          case 'profile|click|account':
-            return `View Account|gnav|${experienceName}|unav`;
-          case 'profile|click|sign-out':
-            return `Sign Out|gnav|${experienceName}|unav`;
-          case 'app-switcher|render|component':
-            return 'AppLauncher.appIconToggle';
-          case `app-switcher|click|app|${contentName}`:
-            return `AppLauncher.appClick.${convertToPascalCase(contentName)}`;
-          case 'app-switcher|click|footer|adobe-home':
-            return 'AppLauncher.adobe.com';
-          case 'app-switcher|click|footer|all-apps':
-            return 'AppLauncher.allapps';
-          case 'app-switcher|click|footer|adobe-dot-com':
-            return 'AppLauncher.adobe.com';
-          case 'app-switcher|click|footer|see-all-apps':
-            return 'AppLauncher.allapps';
-          case 'unc|click|icon':
-            return 'Open Notifications panel';
-          case 'unc|click|link':
-            return 'Open Notification';
-          case 'unc|click|markRead':
-            return 'Mark Notification as read';
-          case 'unc|click|dismiss':
-            return 'Dismiss Notifications';
-          case 'unc|click|markUnread':
-            return 'Mark Notification as unread';
-          default:
-            return null;
-        }
-      };
-      const interaction = getInteraction();
-
-      if (!interaction) return;
-      // eslint-disable-next-line no-underscore-dangle
-      window._satellite?.track('event', {
-        xdm: {},
-        data: { web: { webInteraction: { name: interaction } } },
-      });
-    };
-
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -956,7 +938,6 @@ class Gnav {
           os_version: navigator.platform,
         },
         event: { visitor_guid: visitorGuid },
-        onAnalyticsEvent,
       },
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
@@ -1072,7 +1053,9 @@ class Gnav {
   };
 
   decorateToggle = () => {
-    if (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu())) return '';
+    const { explorePlansCta = false } = getConfig();
+
+    if (!explorePlansCta && (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu()))) return '';
 
     const isLocalNav = this.isLocalNav();
 
@@ -1191,10 +1174,10 @@ class Gnav {
     const localNav = document.querySelector('.feds-localnav');
 
     document.querySelector('.feds-promo-aside-wrapper').style.height = promoHeight;
-    header.style.top = promoHeight;
+    header.style.top = isSmallScreen.matches ? 0 : promoHeight;
     if (!isDesktop.matches && localNav) {
       header.style.top = 0;
-      localNav.style.top = promoHeight;
+      localNav.style.top = isSmallScreen.matches ? 0 : promoHeight;
     }
     if (!isDesktop.matches) this.updatePopupPosition();
   };
@@ -1243,6 +1226,7 @@ class Gnav {
   });
 
   decorateMainNav = async () => {
+    const { explorePlansCta } = getConfig();
     performance.mark('Decorate-MainNav-Start');
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav" role="list"></div>`;
@@ -1256,7 +1240,7 @@ class Gnav {
     `;
 
     // Get all main menu items, but exclude any that are nested inside other features
-    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
+    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a, p:only-child > a.merch')]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
 
     // Save number of items to decide whether a hamburger menu is required
@@ -1264,13 +1248,16 @@ class Gnav {
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
-      const mainNavItem = this.decorateMainNavItem(item, index);
+      const mainNavItem = await this.decorateMainNavItem(item, index);
       if (mainNavItem) {
         this.elements.mainNav.appendChild(mainNavItem);
       }
     }
     if (this.newMobileNav) {
       await this.decorateLocalNav();
+    }
+    if (explorePlansCta) {
+      this.elements.mainNav.appendChild(toFragment`<div class="feds-client-explore-plans-xs"></div>`);
     }
     performance.mark('Decorate-MainNav-End');
     return this.elements.mainNav;
@@ -1302,27 +1289,30 @@ class Gnav {
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
 
-    if (!this.isLocalNav()) {
-      if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
-      return;
+    const isLocalNav = this.isLocalNav();
+    if (!isLocalNav && hasPromo) {
+      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+      if (isSmallScreen) return;
     }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
-    popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+    if (isLocalNav) {
+      popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+    }
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent) {
       const delta = yOffset - height;
       if (isSticky) {
         popup.style.height = `calc(100dvh - ${height}px + 2px)`;
       } else {
-        popup.style.top = `calc(0px - var(--feds-height-nav) + ${Math.max(delta, 0)}px - 2px)`;
+        popup.style.top = `calc(0px - var(--feds-height-nav) + ${!isLocalNav ? 0 : Math.max(delta, 0)}px - 2px)`;
         popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
       }
     }
   };
 
-  decorateMainNavItem = (item, index) => {
+  decorateMainNavItem = async (item, index) => {
     performance.mark(`Decorate-MainNav-Item-${index}-Start`);
     const itemType = this.getMainNavItemType(item);
 
@@ -1439,6 +1429,14 @@ class Gnav {
               updatePopupPosition: this.updatePopupPosition,
             });
             if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
+          } catch (e) {
+            const errorDiv = await createErrorPopup();
+            const loadingElement = template.querySelector('.feds-popup');
+            const topBar = loadingElement.querySelector('.top-bar');
+            const closeIcon = document.querySelector('.feds-popup .close-icon');
+            if (loadingElement) loadingElement.replaceWith(errorDiv);
+            if (closeIcon) errorDiv.append(closeIcon);
+            if (topBar) errorDiv.prepend(topBar);
           } finally {
             if (this.isLocalNav()) {
               decorateLocalNavItems(item, template);
@@ -1465,6 +1463,10 @@ class Gnav {
             enableMobileScroll();
             if (isDesktop.matches) {
               newPopup.innerHTML = desktopMegaMenuHTML ?? loadingDesktopMegaMenuHTML;
+              if (newPopup.classList.contains('error')) {
+                const errorDiv = await createErrorPopup();
+                if (newPopup) newPopup.replaceWith(errorDiv);
+              }
               this.block.classList.remove('new-nav');
               disableAriaHidden();
               removeA11YMobileDropdowns();
@@ -1494,7 +1496,7 @@ class Gnav {
     };
 
     // Decorate item based on its type
-    const returnValue = (() => {
+    const returnValue = await (async () => {
       switch (itemType) {
         case 'syncDropdownTrigger':
         case 'asyncDropdownTrigger': {
@@ -1548,12 +1550,15 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
-          const linkElem = item.querySelector('a');
+          let linkElem = item.querySelector('a');
+          if (linkElem.classList.contains('merch')) {
+            linkElem = await merch.default(linkElem);
+          }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
           linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
@@ -1588,7 +1593,7 @@ class Gnav {
         }
         case 'text':
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.textContent}
+              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
             </div>`, item);
         default:
           /* c8 ignore next 3 */
@@ -1647,7 +1652,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep, miniGnav = false } = getConfig();
+  const { mep, miniGnav = false, explorePlansCta = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1671,7 +1676,7 @@ export default async function init(block) {
     newMobileNav,
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
-  if (miniGnav) block.classList.add('mini-gnav');
+  if (miniGnav || explorePlansCta) block.classList.add('mini-gnav');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
