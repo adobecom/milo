@@ -1,8 +1,18 @@
+/* eslint-disable import/no-unresolved */
+import { saveDaVersion } from 'https://da.live/blocks/edit/utils/helpers.js';
+import { setImsDetails } from 'https://da.live/nx/utils/daFetch.js';
+import { getImsToken } from '../../tools/utils/utils.js';
 import stylePublish from './sidekick-decorate.js';
 import { debounce } from './action.js';
 
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
+  const publishListener = async ({ detail: path }) => {
+    const token = await getImsToken(loadScript);
+    if (token) setImsDetails(token);
+    if (path) await saveDaVersion(path);
+  };
+
   const sendToCaasListener = async (e) => {
     // handle v2 and v3 sidekick events
     const config = e.detail.data?.config ?? e.detail.config;
@@ -33,6 +43,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:send-to-caas', debounce(sendToCaasListener, 500));
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
+  sk.addEventListener('published', publishListener);
 
   // Color code publish button
   stylePublish(sk);
