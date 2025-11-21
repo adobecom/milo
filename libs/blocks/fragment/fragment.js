@@ -1,5 +1,7 @@
 /* eslint-disable max-classes-per-file */
-import { createTag, getConfig, loadArea, localizeLinkAsync, customFetch } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadArea, localizeLink, localizeLinkAsync, customFetch, queryIndexes,
+} from '../../utils/utils.js';
 
 const fragMap = {};
 
@@ -72,6 +74,60 @@ function replaceDotMedia(path, doc) {
   resetAttributeBase('source', 'srcset');
 }
 
+// Helper to get query index paths for a specific prefix
+// If checkImmediate=true, uses Promise.race to check if already resolved
+// Returns: { resolved: boolean, paths: array, available: boolean }
+//   - resolved: Promise is resolved (checkImmediate only)
+//   - paths: Array of paths from query index
+//   - available: Query index was successfully loaded (not error/unavailable)
+async function getQueryIndexPaths(prefix, checkImmediate = false) {
+  try {
+    const config = getConfig();
+    if (!config) {
+      return checkImmediate
+        ? { resolved: false, paths: [], available: false }
+        : { paths: [], available: false };
+    }
+
+    const imsClientId = config.imsClientId ?? '';
+
+    // Check if query indexes are loaded for this client
+    if (!queryIndexes || !queryIndexes[imsClientId]) {
+      // Query indexes not loaded yet or not available
+      return checkImmediate
+        ? { resolved: false, paths: [], available: false }
+        : { paths: [], available: false };
+    }
+
+    if (checkImmediate) {
+      // Race the Promise against an immediate resolution to check if already resolved
+      const result = await Promise.race([
+        queryIndexes[imsClientId].pathsRequest
+          .then((paths) => ({
+            resolved: true,
+            paths: Array.isArray(paths) ? paths : [],
+            available: true,
+          })),
+        Promise.resolve({ resolved: false, paths: [], available: false }),
+      ]);
+      return result;
+    }
+
+    // Normal await (for non-LCP)
+    const paths = await queryIndexes[imsClientId].pathsRequest;
+    return {
+      paths: Array.isArray(paths) ? paths : [],
+      available: true,
+    };
+  } catch (e) {
+    // Silently fail and allow normal fetch behavior
+    window.lana?.log(`Query index not available for ${prefix}, falling back to normal fetch:`, e);
+    return checkImmediate
+      ? { resolved: false, paths: [], available: false }
+      : { paths: [], available: false };
+  }
+}
+
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href);
@@ -131,6 +187,7 @@ export default async function init(a) {
   // let regionKey = `${country}_${localeCode}`;
 
   // Old incorrect format for testing (uncomment to test with wrong structure):
+  // TODO: REVERT THIS TEMP CHANGE for ch_de!!!!!
   let regionKey = `${localeCode}/${country}`;
 
   let matchingRegion = locale?.regions?.[regionKey];
@@ -153,54 +210,177 @@ export default async function init(a) {
   let usedRocPath = false;
   let usedFallbackPath = false;
   const isBlockSwap = !!a.dataset.mepLingoBlockFragment;
+
+  // Detect if we're in LCP section (first section with blocks)
+  const section = a.closest('.section');
+  const isLcpSection = section?.dataset.idx === '0'
+    || (section?.parentElement?.children[0] === section && section?.querySelector('[class*="block"]'));
+
   if (mepLingoFragSwap && matchingRegion?.prefix) {
     rocResourcePath = resourcePath.replace(locale.prefix, matchingRegion.prefix);
 
+    // Extract pathname for comparison
+    const rocPath = new URL(rocResourcePath).pathname;
+
+    // For LCP: check if query index is already resolved (non-blocking)
+    // For non-LCP: always await query index (we have time to optimize)
+    const queryIndexResult = isLcpSection
+      ? await getQueryIndexPaths(matchingRegion.prefix, true)
+      : await getQueryIndexPaths(matchingRegion.prefix);
+
+    const rocQueryIndexPaths = queryIndexResult.paths || [];
+    // For non-LCP, resolved is undefined (always considered resolved)
+    const queryIndexResolved = queryIndexResult.resolved !== false;
+    const queryIndexAvailable = queryIndexResult.available;
+    const queryIndexHasData = rocQueryIndexPaths.length > 0;
+
+    // Check if ROC path exists in query index
+    // Only meaningful if query index is available
+    const rocExistsInIndex = queryIndexHasData && rocQueryIndexPaths.includes(rocPath);
+
     if (isBlockSwap) {
-      // Block swaps (including section-metadata): only try ROC, no fallback
-      const rocResp = await customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
-        .catch(() => ({}));
+      // Block swaps: try ROC unless query index explicitly says it doesn't exist
+      // If query index unavailable/error: try ROC (might exist)
+      // If query index available but ROC not in it: skip ROC (we know it doesn't exist)
+      const shouldTryRoc = !queryIndexAvailable || rocExistsInIndex;
 
-      if (rocResp?.ok) {
-        usedRocPath = true;
-        resp = rocResp;
-        relHref = localizeLink(rocResourcePath);
-        a?.parentElement?.previousElementSibling.remove(); // Remove ROC row from table
+      if (shouldTryRoc) {
+        const rocResp = await customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
+          .catch(() => ({}));
 
-        // Special cleanup for section-metadata blocks
-        if (a.dataset.mepLingoSectionMetadata) {
-          const section = a.closest('.section');
-          if (section) {
-            a.parentElement.dataset.mepLingoNewBlock = true;
-            section.style = '';
-            if (section.childElementCount > 1) {
-              [...section.children].forEach((child) => {
-                if (!child.dataset.mepLingoNewBlock) child.remove();
-              });
+        if (rocResp?.ok) {
+          usedRocPath = true;
+          resp = rocResp;
+          relHref = localizeLink(rocResourcePath);
+          a?.parentElement?.previousElementSibling.remove(); // Remove ROC row from table
+
+          // Special cleanup for section-metadata blocks
+          if (a.dataset.mepLingoSectionMetadata) {
+            const sectionEl = a.closest('.section');
+            if (sectionEl) {
+              a.parentElement.dataset.mepLingoNewBlock = true;
+              sectionEl.style = '';
+              if (sectionEl.childElementCount > 1) {
+                [...sectionEl.children].forEach((child) => {
+                  if (!child.dataset.mepLingoNewBlock) child.remove();
+                });
+              }
             }
           }
+        } else {
+          // ROC fetch failed, remove ROC row and keep original block
+          a.parentElement.remove();
+          return;
         }
       } else {
-        // ROC doesn't exist, remove ROC row and keep original block
+        // Query index available and ROC doesn't exist in it
+        // Remove ROC row and keep original block
         a.parentElement.remove();
         return;
       }
-    } else {
-      // Regular fragments: try both ROC and fallback in parallel
-      const [rocResp, fallbackResp] = await Promise.all([
-        customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
-          .catch(() => ({})),
-        customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-          .catch(() => ({})),
-      ]);
+    }
 
-      if (rocResp?.ok) {
-        usedRocPath = true;
-        resp = rocResp;
-        relHref = localizeLink(rocResourcePath);
-      } else if (fallbackResp?.ok) {
-        usedFallbackPath = true;
-        resp = fallbackResp;
+    // Regular fragments: Strategy depends on LCP vs non-LCP
+    if (!isBlockSwap) {
+      if (isLcpSection) {
+        // LCP STRATEGY: Check if query index is already resolved AND available
+        if (queryIndexResolved && queryIndexAvailable) {
+          // Query index is available and loaded, use it to guide fetching
+          if (rocExistsInIndex) {
+            // ROC exists in index, try it first
+            const rocResp = await customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
+              .catch(() => ({}));
+            if (rocResp?.ok) {
+              usedRocPath = true;
+              resp = rocResp;
+              relHref = localizeLink(rocResourcePath);
+            } else {
+              // ROC failed, try fallback
+              const fallbackResp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+                .catch(() => ({}));
+              if (fallbackResp?.ok) {
+                usedFallbackPath = true;
+                resp = fallbackResp;
+              }
+            }
+          } else {
+            // ROC doesn't exist in index, go straight to fallback
+            const fallbackResp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+              .catch(() => ({}));
+            if (fallbackResp?.ok) {
+              usedFallbackPath = true;
+              resp = fallbackResp;
+            }
+          }
+        } else {
+          // Query index not resolved OR unavailable, use Direct-404 approach for speed
+          // Fetch both ROC and fallback in parallel
+          const [rocResp, fallbackResp] = await Promise.all([
+            customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
+              .catch(() => ({})),
+            customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+              .catch(() => ({})),
+          ]);
+
+          if (rocResp?.ok) {
+            usedRocPath = true;
+            resp = rocResp;
+            relHref = localizeLink(rocResourcePath);
+          } else if (fallbackResp?.ok) {
+            usedFallbackPath = true;
+            resp = fallbackResp;
+          }
+        }
+      }
+
+      // NON-LCP STRATEGY: Use query index if available, otherwise fall back to 404s
+      if (!isLcpSection) {
+        if (queryIndexAvailable) {
+          // Query index is available and loaded, use it to avoid 404s
+          if (rocExistsInIndex) {
+            // ROC exists in index, try it first
+            const rocResp = await customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
+              .catch(() => ({}));
+            if (rocResp?.ok) {
+              usedRocPath = true;
+              resp = rocResp;
+              relHref = localizeLink(rocResourcePath);
+            } else {
+              // ROC failed, try fallback
+              const fallbackResp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+                .catch(() => ({}));
+              if (fallbackResp?.ok) {
+                usedFallbackPath = true;
+                resp = fallbackResp;
+              }
+            }
+          } else {
+            // ROC doesn't exist in index, go straight to fallback
+            const fallbackResp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+              .catch(() => ({}));
+            if (fallbackResp?.ok) {
+              usedFallbackPath = true;
+              resp = fallbackResp;
+            }
+          }
+        } else {
+          // Query index not available, fall back to 404s approach (try both)
+          const [rocResp, fallbackResp] = await Promise.all([
+            customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
+              .catch(() => ({})),
+            customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+              .catch(() => ({})),
+          ]);
+
+          if (rocResp?.ok) {
+            usedRocPath = true;
+            resp = rocResp;
+            relHref = localizeLink(rocResourcePath);
+          } else if (fallbackResp?.ok) {
+            usedFallbackPath = true;
+            resp = fallbackResp;
+          }
+        }
       }
     }
   } else if (!mepLingoFragSwap && isBlockSwap) {

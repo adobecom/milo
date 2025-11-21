@@ -173,7 +173,7 @@ const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
 let langConfig;
-const queryIndexes = {};
+export const queryIndexes = {};
 let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
@@ -2021,9 +2021,25 @@ export async function loadArea(area = document) {
     initModalEventListener();
   }
 
-  if (config.locale?.base && lingoActive()) {
-    const { prefix } = config.locale;
-    loadQueryIndexes(prefix);
+  if (lingoActive()) {
+    const hasRegions = Object.keys(config.locale?.regions || {}).length > 0;
+    if (hasRegions) {
+      const country = new URLSearchParams(window.location.search).get('akamaiLocale')?.toLowerCase()
+        || sessionStorage.getItem('akamai');
+      const prefixParts = config.locale.prefix.split('/').filter((part) => part);
+      const localeCode = prefixParts[0];
+      const regionKey = `${country}_${localeCode}`;
+      const userIsInRegion = country && config.locale.regions[regionKey];
+      if (userIsInRegion) {
+        const targetPrefix = userIsInRegion
+          ? config.locale.regions[regionKey].prefix
+          : config.locale.prefix;
+        loadQueryIndexes(targetPrefix);
+      }
+    } else if (config.locale?.base) {
+      const { prefix } = config.locale;
+      loadQueryIndexes(prefix);
+    }
   }
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
