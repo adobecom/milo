@@ -692,3 +692,8 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 :root .aside.s2a-background .editorial-card.editorial-card.s2a-editorial-compact .foreground > div[class*="body-"] > :is(h1 , h2, h3, h4, h5, h6) {
   font-size: var(--type-heading-s-size) !important;
 }
+
+/* homepage lockup size override */
+:root .editorial-card.s2a-editorial-separate-mobile .lockup-area img {
+  --icon-size-xs: 20px;
+}
