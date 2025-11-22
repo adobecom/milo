@@ -253,20 +253,23 @@ export default async function init(a) {
           usedRocPath = true;
           resp = rocResp;
           relHref = localizeLink(rocResourcePath);
-          a?.parentElement?.previousElementSibling.remove(); // Remove ROC row from table
 
-          // Special cleanup for section-metadata blocks
+          // Special cleanup for block swaps
           if (a.dataset.mepLingoSectionMetadata) {
+            // Section-metadata: replace entire section
             const sectionEl = a.closest('.section');
             if (sectionEl) {
-              a.parentElement.dataset.mepLingoNewBlock = true;
+              a.parentElement.dataset.mepRocSectionContent = true;
               sectionEl.style = '';
               if (sectionEl.childElementCount > 1) {
                 [...sectionEl.children].forEach((child) => {
-                  if (!child.dataset.mepLingoNewBlock) child.remove();
+                  if (!child.dataset.mepRocSectionContent) child.remove();
                 });
               }
             }
+          } else {
+            // Regular block swap (marquee, etc.): mark for removal after fragment loads
+            a.dataset.removeOriginalBlock = true;
           }
         } else {
           // ROC fetch failed, remove ROC row and keep original block
@@ -438,6 +441,14 @@ export default async function init(a) {
     await insertInlineFrag(sections, a, relHref, mep);
   } else {
     a.parentElement.replaceChild(fragment, a);
+
+    // For block swaps (not section-metadata), remove the original block
+    if (a.dataset.removeOriginalBlock && a.dataset.originalBlockId) {
+      // Find the original block by the ID we stored earlier
+      const originalBlock = document.querySelector(`[data-roc-original-block="${a.dataset.originalBlockId}"]`);
+      if (originalBlock) originalBlock.remove();
+    }
+
     await loadArea(fragment);
   }
 }
