@@ -57,6 +57,16 @@ function decorateForeground(el, foreground) {
     const mediaEl = foreground.querySelector('div:not([class])');
     mediaEl.classList.add('brick-media');
     el.classList.add((foreground.firstElementChild === mediaEl) ? 'media-left' : 'media-right');
+    
+    // Handle focal point for media-visible-mobile-tablet bricks
+    if (el.classList.contains('media-visible-mobile-tablet')) {
+      const mediaClasses = ['media-cover-left', 'media-cover-right', 'media-cover-top', 'media-cover-bottom'];
+      mediaClasses.forEach((className) => {
+        if (!el.classList.contains(className)) return;
+        const position = className.split('-')[2] ?? 'center';
+        el.style.setProperty('--brick-media-position', position);
+      });
+    }
   }
   const hasIconArea = fgtext.querySelector('p')?.querySelector('img');
   if (hasIconArea) {
