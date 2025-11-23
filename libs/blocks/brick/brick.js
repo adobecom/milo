@@ -58,7 +58,6 @@ function decorateForeground(el, foreground) {
     mediaEl.classList.add('brick-media');
     el.classList.add((foreground.firstElementChild === mediaEl) ? 'media-left' : 'media-right');
     
-    // Handle focal point for media-visible-mobile-tablet bricks
     if (el.classList.contains('media-visible-mobile-tablet')) {
       const mediaClasses = ['media-cover-left', 'media-cover-right', 'media-cover-top', 'media-cover-bottom'];
       mediaClasses.forEach((className) => {

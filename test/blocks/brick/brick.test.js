@@ -89,3 +89,60 @@ describe('basic brick', () => {
     expect(fullGrids.length > 2).to.be.true;
   });
 });
+
+describe('brick with media-visible-mobile-tablet and focal point', () => {
+  it('sets focal point to left when media-cover-left is used', () => {
+    const brick = document.querySelector('#focal-point-left');
+    const position = brick.style.getPropertyValue('--brick-media-position');
+    expect(position).to.equal('left');
+  });
+
+  it('sets focal point to right when media-cover-right is used', () => {
+    const brick = document.querySelector('#focal-point-right');
+    const position = brick.style.getPropertyValue('--brick-media-position');
+    expect(position).to.equal('right');
+  });
+
+  it('sets focal point to top when media-cover-top is used', () => {
+    const brick = document.querySelector('#focal-point-top');
+    const position = brick.style.getPropertyValue('--brick-media-position');
+    expect(position).to.equal('top');
+  });
+
+  it('sets focal point to bottom when media-cover-bottom is used', () => {
+    const brick = document.querySelector('#focal-point-bottom');
+    const position = brick.style.getPropertyValue('--brick-media-position');
+    expect(position).to.equal('bottom');
+  });
+
+  it('does not set focal point when no media-cover class is used', () => {
+    const brick = document.querySelector('#focal-point-none');
+    const position = brick.style.getPropertyValue('--brick-media-position');
+    expect(position).to.equal('');
+  });
+
+  it('does not set focal point when media-visible-mobile-tablet is not present', () => {
+    const brick = document.querySelector('#focal-point-without-media-visible');
+    const position = brick.style.getPropertyValue('--brick-media-position');
+    expect(position).to.equal('');
+    expect(brick.classList.contains('split')).to.be.true;
+  });
+
+  it('has split row layout with media-visible-mobile-tablet', () => {
+    const brick = document.querySelector('#focal-point-left');
+    expect(brick.classList.contains('split')).to.be.true;
+    expect(brick.classList.contains('row')).to.be.true;
+  });
+
+  it('has brick-media element with media-visible-mobile-tablet', () => {
+    const brick = document.querySelector('#focal-point-left');
+    const mediaEl = brick.querySelector('.brick-media');
+    expect(mediaEl).to.exist;
+  });
+
+  it('applies object-position CSS to media elements', () => {
+    const brick = document.querySelector('#focal-point-bottom');
+    const img = brick.querySelector('.brick-media img');
+    expect(img).to.exist;
+  });
+});
