@@ -29,33 +29,31 @@ const axiosWithRetry = createAxiosWithRetry();
 export async function getLingoConfigMap() {
   const { LINGO_CONFIG } = process.env;
   if (!LINGO_CONFIG) {
+    console.error('LINGO_CONFIG is not set');
     return {};
   }
   try {
     const lingoConfig = await axiosWithRetry.get(LINGO_CONFIG, { headers: { 'Content-Type': 'application/json' } });
-    const lingoConfigMap = Object.fromEntries(
-      ['bacom-site-map'].map((key) => {
-        const configData = lingoConfig?.data?.[key]?.data;
-        if (!configData || !Array.isArray(configData)) {
-          console.warn(`No data found for key: ${key} in lingo config`);
-          return [key, []];
+    const lingoConfigMap = {};
+    const siteLocalesData = lingoConfig?.data?.['site-locales']?.data;
+    if (siteLocalesData && Array.isArray(siteLocalesData)) {
+      siteLocalesData.forEach((entry) => {
+        const { imsClientId, regionalSites } = entry;
+        if (!imsClientId) return;
+
+        if (!lingoConfigMap[imsClientId]) {
+          lingoConfigMap[imsClientId] = [];
         }
 
-        const regionalPaths = configData
-          .flatMap((d) => {
-            const regionalSites = d?.['regional-sites'];
-            if (!regionalSites) {
-              return [];
-            }
-            return regionalSites
-              .split(',')
-              .map((p) => `${p.trim()}/`)
-              .filter(Boolean);
-          });
-
-        return [key, regionalPaths];
-      }),
-    );
+        if (regionalSites && regionalSites.trim()) {
+          const sites = regionalSites
+            .split(',')
+            .map((site) => `${site.trim()}/`.replace(/\/+$/, '/'))
+            .filter(Boolean);
+            lingoConfigMap[imsClientId].push(...sites);
+        }
+      });
+    }
     return lingoConfigMap;
   } catch (error) {
     console.error(`Failed to load lingo config: ${error.message} ${error.response?.status} - ${error.response?.statusText}`);
