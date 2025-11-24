@@ -237,6 +237,7 @@
   font-size: var(--type-body-xxs-size);
   line-height: 125%;
   min-height: 15px;
+  display: block;
 }
 
 .comparison-table .sub-header-item-container .description.zero-height {
