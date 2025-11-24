@@ -47,6 +47,7 @@ const MILO_BLOCKS = [
   'iframe',
   'instagram',
   'language-selector',
+  'language-banner',
   'locui',
   'locui-create',
   'm7',
@@ -284,13 +285,6 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   language.language = languageString;
   language.prefix = `${languageString === DEFAULT_LANG && !regionPath ? '' : '/'}${languageString}${regionPath}`;
   return language;
-}
-
-export function setInternational(prefix) {
-  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
-  const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
-  document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
-  sessionStorage.setItem('international', prefix);
 }
 
 export function getMetadata(name, doc = document) {
@@ -1532,7 +1526,7 @@ async function checkForPageMods() {
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
   if (mepgeolocation && !akamaiCode) {
-    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    const { default: getAkamaiCode } = await import('./geo.js');
     countryIPPromise = getAkamaiCode(true);
   }
   const enablePersV2 = enablePersonalizationV2();
@@ -1607,16 +1601,26 @@ async function loadPostLCP(config) {
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
+  const languageBanner = getMetadata('language-banner') || config.languageBanner;
   const georouting = getMetadata('georouting') || config.geoRouting;
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
-  if (georouting === 'on') {
+
+  if (languageBanner === 'on') {
+    const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
+    const jsonPromise = fetch(
+      supportedMarketsPath
+        || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
+    );
+    const { default: init } = await import('../features/language-banner/language-banner.js');
+    await init(jsonPromise, config);
+  } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
     })();
-    // This is used only in webapp-prompt.js
   }
+
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
