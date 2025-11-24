@@ -268,7 +268,6 @@
 }
 
 .comparison-table .sub-header-item-container p:not(:has(picture, a)) {
-  height: 100%;
   display: flex;
   align-items: center;
   word-break: break-word;
