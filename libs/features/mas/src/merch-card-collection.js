@@ -432,6 +432,11 @@ export class MerchCardCollection extends LitElement {
                 merchCard.setAttribute('consonant', '');
                 merchCard.setAttribute('style', '');
 
+                const typesTags = fragment.fields.tags?.filter((tag) => tag.startsWith('mas:types/'))
+                    .map((tag) => tag.split('/')[1])
+                    .join(',');
+                if (typesTags) merchCard.setAttribute('types', typesTags);
+
                 // Check if this variant supports default child through mapping
                 const variantMapping = getFragmentMapping(fragment.fields.variant);
                 if (variantMapping?.supportsDefaultChild) {
