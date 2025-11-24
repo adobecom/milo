@@ -356,14 +356,13 @@ function decorateTable({ el, tableChildren, expandMetadata }) {
 
   tableChildren.forEach((tableChild, index) => {
     if (index === 0) {
-      const decoratedHeader = decorateTableToggleButton({
+      tableContainer.appendChild(decorateTableToggleButton({
         tableChild,
         arePrimaryColumns,
         tableElement,
         expandMetadata,
         el,
-      });
-      tableContainer.appendChild(decoratedHeader);
+      }));
       return;
     }
     tableElement.appendChild(decorateTableCells({ tableChild, arePrimaryColumns, el }));
