@@ -1947,11 +1947,13 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink {
   line-height: 115%;
+  background-color: transparent;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink--gray-gradient .feds-navLink-title {
   padding-top: 10px;
-  color: #000;
+  color: var(--feds-color-white-v2);
+  border-bottom: 1px solid #B6B6B6;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
