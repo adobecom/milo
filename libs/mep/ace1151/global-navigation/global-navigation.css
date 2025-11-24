@@ -265,10 +265,6 @@ body:has(header.test-nav) .aside.promobar .action-area .con-button {
   padding: 12px;
 }
 
-.feds-navItem:not(:last-child) > .feds-navLink {
-  border-bottom: 1px solid var(--feds-borderColor-link);
-}
-
 /* Item with active dropdown */
 .global-navigation .feds-dropdown--active {
   position: relative;
@@ -2237,4 +2233,17 @@ header.global-navigation .feds-content-description {
 header.global-navigation div.feds-nav[role="list"] [role="listitem"] > :is(button, a) {
   font-size: 16px;
   font-weight: 800;
+  color: var(--feds-color-navLink-description-mobile-test-nav);
+}
+
+header.global-navigation.dropdown-active div.feds-nav[role="list"] [role="listitem"] > :is(button, a):not([aria-expanded="true"]) {
+  color: var(--feds-navLink-inactive);
+}
+
+header.global-navigation.dropdown-active div.feds-nav[role="list"] [role="listitem"] > :is(button, a):not([aria-expanded="true"]):hover {
+  color: var(--feds-color-white-v2);
+}
+
+header.global-navigation:not(.dropdown-active) div.feds-nav[role="list"] [role="listitem"] > :is(button, a):not(.feds-navLink--hoverCaret):hover {
+  color: var(--link-hover-color);
 }

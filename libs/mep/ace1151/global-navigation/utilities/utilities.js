@@ -753,7 +753,6 @@ export const transformTemplateToMobile = async ({
       id="${i}"
       class="tab-panel"
       role="tabpanel"
-      aria-labelledby="${i}"
       class="${
   links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/)
     ? 'has-subheader'
@@ -821,7 +820,7 @@ export const transformTemplateToMobile = async ({
       if (isDesktop.matches) tabbuttonClickCallbacks[i](e);
     });
     tab.addEventListener('focus', (e) => {
-      if (isDesktop.matches) tabbuttonClickCallbacks[i](e);
+      if (isDesktop.matches && e?.target?.getAttribute('role') === 'link') tabbuttonClickCallbacks[i](e);
     });
   });
 

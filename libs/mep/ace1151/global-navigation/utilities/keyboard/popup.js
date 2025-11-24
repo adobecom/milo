@@ -31,7 +31,7 @@ const getTabsContent = ({ e, element } = {}) => {
   const activeTab = element.querySelector('.tab[aria-selected="true"]');
   const currentTabIndex = tabs.findIndex((tab) => tab === activeTab);
   const leftPanel = !e.target.closest('.tab-content');
-  const tabContentLinks = Array.from(element.querySelectorAll(`.tab-content [aria-labelledby="${currentTabIndex}"] .tab-column a`));
+  const tabContentLinks = Array.from(element.querySelectorAll(`.tab-content [id="${currentTabIndex}"] .tab-column a`));
   const currentLinkIndex = tabContentLinks.indexOf(e.target);
   const currentColumn = e.target.closest('.tab-column');
   const previousColumn = currentColumn?.previousElementSibling;
@@ -186,7 +186,9 @@ class Popup {
 
     const focusTab = (index) => {
       tabs.forEach((tab) => tab.setAttribute('aria-selected', 'false'));
-      tabs[index].setAttribute('aria-selected', 'true');
+      if (tabs[index]?.getAttribute('role') !== 'link') {
+        tabs[index].click();
+      }
       tabs[index].focus();
     };
 
@@ -230,8 +232,16 @@ class Popup {
       e.preventDefault();
       if (!leftPanel && tabContentLinks.length > 0) {
         const delta = isShift ? -1 : 1;
-        const nextLinkIndex = moveIndex(currentLinkIndex, tabContentLinks.length, delta);
-        focusLink(nextLinkIndex);
+        const nextLinkIndex = currentLinkIndex + delta;
+        if (isShift && currentLinkIndex === 0) {
+          tabs[currentTabIndex]?.focus();
+        } else if (!isShift && nextLinkIndex >= tabContentLinks.length) {
+          // close menu and focus next main nav item
+          closeAllDropdowns();
+          this.focusMainNavNext(false);
+        } else {
+          focusLink(nextLinkIndex);
+        }
       } else if (isShift) {
         if (leftPanel) {
           popup.parentElement.querySelector('.feds-navLink')?.focus();
@@ -269,7 +279,7 @@ class Popup {
         if (!e.target.closest(selectors.globalNav)) return;
         const element = getOpenPopup();
         if (!e.target.closest(selectors.popup) || !element || !this.desktop.matches) return;
-        if (this.isTestNav && e.target.closest('section')) return;
+        if (this.isTestNav && e.target.closest('.feds-navItem--megaMenu')) return;
         this.handleKeyDown({ e, element, isFooter: false });
       }, `popup key failed ${e.code}`, 'gnav-keyboard', 'e'));
 
@@ -278,7 +288,7 @@ class Popup {
         if (!e.target.closest(selectors.globalNav)) return;
         const element = getOpenPopup();
         if (!e.target.closest(selectors.popup) || !element || !this.desktop.matches) return;
-        if (!(this.isTestNav && e.target.closest('section'))) return;
+        if (!(this.isTestNav && e.target.closest('.feds-navItem--megaMenu'))) return;
         this.handleTabsAndContentA11Y(e, element);
       }, `popup(test-nav) key failed ${e.code}`, 'gnav-keyboard', 'e'));
 
