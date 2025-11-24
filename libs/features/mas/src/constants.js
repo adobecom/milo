@@ -233,6 +233,7 @@ export const SUPPORTED_COUNTRIES = [
   'KR',
   'KW',
   'KZ',
+  'LA',
   'LB',
   'LK',
   'LT',
@@ -285,6 +286,5 @@ export const SUPPORTED_COUNTRIES = [
   'VE',
   'VN',
   'YE',
-  'ZA',
-  'LA'
+  'ZA'
 ];
