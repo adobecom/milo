@@ -176,10 +176,7 @@ function createSubHeaderContainer({
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
-      const em = childrenArray[i].querySelector('em');
-      if (isLast
-         && !(em && em.firstChild?.nodeType === Node.TEXT_NODE)
-         && childrenArray[i]?.firstChild?.nodeType !== Node.TEXT_NODE) {
+      if (isLast && childrenArray[i].querySelector('strong')) {
         const promise = import('../../utils/decorate.js').then(({ decorateButtons }) => {
           decorateButtons(childrenArray[i]);
         });
