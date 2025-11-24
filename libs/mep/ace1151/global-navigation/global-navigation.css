@@ -1469,7 +1469,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   padding: 8px 6px;
   margin-bottom: 20px;
   margin-left: 2px;
-  cursor: pointer;
+  cursor: auto;
 }
 
 header.test-nav .feds-menu-description {
