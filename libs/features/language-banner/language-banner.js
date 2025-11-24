@@ -51,7 +51,6 @@ async function getTranslatedPage(prefLang) {
       return translatedUrl;
     }
   } catch (e) {
-    /* c8 ignore next 2 */
     console.warn(`Failed to check for translated page at ${translatedUrl}`, e);
   }
   return null;
@@ -99,10 +98,10 @@ async function showBanner(market, prefLang) {
 export default async function init() {
   const config = getConfig();
   const bannerEnabled = getMetadata('language-banner') || config.languageBanner;
-  if (bannerEnabled !== 'on') return true;
+  if (bannerEnabled !== 'on') return;
 
   const pageLang = config.locale.ietf.split('-')[0];
-  if (sessionStorage.getItem(SESSION_STORAGE_KEY) === pageLang) return true;
+  if (sessionStorage.getItem(SESSION_STORAGE_KEY) === pageLang) return;
 
   const prefLang = getPreferredLanguage(config.locales);
   const [geoIp, marketsConfig] = await Promise.all([
@@ -110,43 +109,37 @@ export default async function init() {
     fetch('/supported-markets.json').then((res) => res.json()).catch(() => null),
   ]);
 
-  if (!geoIp || !marketsConfig) return true;
+  if (!geoIp || !marketsConfig) return;
 
   const { siteBrand = 'acom' } = config;
   const pageMarket = marketsConfig.data.find((m) => m.siteBrand === siteBrand && m.prefix === (config.locale.prefix?.replace('/', '') || ''));
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   if (isSupportedMarket) {
-    if (!prefLang || pageLang === prefLang) return true;
+    if (!prefLang || pageLang === prefLang) return;
 
-    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp));
+    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.siteBrand === siteBrand && m.supportedRegions.includes(geoIp));
     if (prefMarket) {
       await showBanner(prefMarket);
     }
-    return true;
+    return;
   }
 
   // Unsupported Market Path
   const marketsForGeo = marketsConfig.data.filter((m) => m.siteBrand === siteBrand && m.supportedRegions.includes(geoIp));
-  if (!marketsForGeo.length) return true;
+  if (!marketsForGeo.length) return; 
 
   if (prefLang) {
     const prefMarketForGeo = marketsForGeo.find((m) => m.lang === prefLang);
     if (prefMarketForGeo) {
       if (siteBrand === 'bacom') {
-        await showBanner(prefMarketForGeo);
-        return true;
+        await showBanner(prefMarketForGeo); // Show Banner with recommendation based on PREF-LANG and GeoIP 
       }
-      // Else, ACOM needs Geo-Routing Modal. Delegate.
-      return false;
+      return;
     }
   }
 
-  // Fallback to first supported market for the GeoIP
   if (siteBrand === 'bacom') {
     await showBanner(marketsForGeo[0]);
-    return true;
   }
-  // Else,ACOM needs Geo-Routing Modal. Delegate.
-  return false;
 }

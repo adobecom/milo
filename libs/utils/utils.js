@@ -1590,15 +1590,7 @@ async function loadPostLCP(config) {
 
   if (languageBanner === 'on') {
     const { default: init } = await import('../features/language-banner/language-banner.js');
-    const bannerHandled = await init();
-    if (!bannerHandled && georouting === 'on') {
-      const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-      config.georouting = { loadedPromise: Promise.resolve() };
-      config.georouting.loadedPromise = (async () => {
-        const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-        await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
-      })();
-    }
+    await init();
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting = { loadedPromise: Promise.resolve() };
