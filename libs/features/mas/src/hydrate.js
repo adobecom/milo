@@ -310,7 +310,13 @@ function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
     let newButtonElement;
 
     if (merchCard.consonant) {
-        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle, isPrimary, isSecondary);
+        let buttonClass = null;
+        if (isPrimary) {
+            buttonClass = 'primary';
+        } else if (isSecondary) {
+            buttonClass = 'secondary';
+        }
+        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle, buttonClass);
     } else if (isLinkStyle) {
         newButtonElement = linkElement;
     } else {
@@ -570,7 +576,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, is
     return spectrumCta;
 }
 
-function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle, isPrimary, isSecondary) {
+function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle, buttonClass) {
     let button = cta;
     if (isCheckout) {
         const CheckoutLink = customElements.get('checkout-link');
@@ -584,11 +590,8 @@ function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle, isPrimary
         if (isAccent) {
             button.classList.add('blue');
         }
-        if (isPrimary) {
-            button.classList.add('primary');
-        }
-        if (isSecondary) {
-            button.classList.add('secondary');
+        if (buttonClass) {
+            button.classList.add(buttonClass);
         }
     }
     return button;
