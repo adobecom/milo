@@ -1,9 +1,9 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { getMetadata } from '../section-metadata/section-metadata.js';
+import { getMetadata as getSectionMetadata } from '../section-metadata/section-metadata.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
-function equalHeight(el) {
+function setEqualHeight(el) {
   const calculateMaxHeight = (elements) => Math.max(...elements.map((p) => {
     const styles = window.getComputedStyle(p);
     return p.offsetHeight
@@ -62,7 +62,7 @@ function equalHeight(el) {
 const getFirstVisibleColumnIndex = (el) => {
   const firstVisible = [...el.querySelectorAll('.header-item[data-column-index]')]
     .find((item) => !item.classList.contains('hidden'));
-  return firstVisible ? +firstVisible.getAttribute('data-column-index') : -1;
+  return firstVisible ? parseInt(firstVisible.getAttribute('data-column-index'), 10) : -1;
 };
 
 function syncAccessibilityHeaders(el) {
@@ -89,10 +89,10 @@ function syncAccessibilityHeaders(el) {
 
 function updateVisibleSelects({ el, headerTitles }) {
   const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
-  const selectedIndices = new Set(visibleSelects.map((s) => +s.value));
+  const selectedIndices = new Set(visibleSelects.map((s) => parseInt(s.value, 10)));
 
   visibleSelects.forEach((selectItem) => {
-    const currentValue = +selectItem.value;
+    const currentValue = parseInt(selectItem.value, 10);
     selectItem.innerHTML = '';
 
     headerTitles.forEach((title, index) => {
@@ -105,7 +105,7 @@ function updateVisibleSelects({ el, headerTitles }) {
 }
 
 function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
-  const newValue = +e.target.value;
+  const newValue = parseInt(e.target.value, 10);
   const isFirstVisible = headerItemIndex === getFirstVisibleColumnIndex(el);
 
   el.querySelectorAll(`[data-column-index="${headerItemIndex}"]`).forEach((col) => col.classList.add('hidden'));
@@ -239,7 +239,7 @@ function decorateHeader(el, headerContent) {
     return titleElement ? titleElement.textContent.trim() : '';
   });
   headerItems.forEach((headerItem, headerItemIndex) => {
-    if (!headerItem.innerHTML) {
+    if (!headerItem.innerHTML?.trim()) {
       headerItem.remove();
       return;
     }
@@ -378,7 +378,7 @@ function decorateTable({ el, tableChildren, expandMetadata }) {
 function decorateTables(el, children) {
   const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
   const expandMetadata = sectionMetadata
-    ? getMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => +item.trim())
+    ? getSectionMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => parseInt(item.trim(), 10))
     : null;
 
   const tableGroups = [];
@@ -402,7 +402,7 @@ function decorateTables(el, children) {
 }
 
 function setupResponsiveHiding(el) {
-  const mediaQuery = window.matchMedia('(max-width: 899px)');
+  const isStackedQuery = window.matchMedia('(max-width: 899px)');
   const hideElements = (elements, isMobile, header = false) => {
     const totalColumns = header ? elements.length - 1 : elements.length;
     if (totalColumns === 2) return;
@@ -420,7 +420,7 @@ function setupResponsiveHiding(el) {
     const parent = elementsArray[0]?.parentNode;
     if (!parent) return;
 
-    elementsArray.sort((a, b) => +a.getAttribute('data-column-index') - +b.getAttribute('data-column-index'));
+    elementsArray.sort((a, b) => parseInt(a.getAttribute('data-column-index'), 10) - parseInt(b.getAttribute('data-column-index'), 10));
     elementsArray.forEach((element) => {
       element.classList.remove('hidden');
       parent.appendChild(element);
@@ -428,7 +428,7 @@ function setupResponsiveHiding(el) {
   };
 
   const handleResponsive = (e) => {
-    const isMobile = e ? e.matches : mediaQuery.matches;
+    const isMobile = e ? e.matches : isStackedQuery.matches;
 
     if (!isMobile) {
       reorderElementsByColumnIndex(el.querySelectorAll('.header-item[data-column-index]'));
@@ -445,7 +445,7 @@ function setupResponsiveHiding(el) {
     syncAccessibilityHeaders(el);
   };
   handleResponsive();
-  mediaQuery.addEventListener('change', handleResponsive);
+  isStackedQuery.addEventListener('change', handleResponsive);
 }
 
 function setAccessibilityLabels(el) {
@@ -468,31 +468,37 @@ function setupStickyHeader(el) {
   if (el.classList.contains('sticky-cancel')) return;
   const headerContent = el.querySelector('.header-content');
   const headerContentDummy = el.querySelector('.header-content-dummy');
-  const firstTableContainer = el.querySelector('.table-container');
   let isSticky = false;
+  const headerOffset = document.querySelector('header')?.offsetHeight || 0;
 
-  const handleScroll = () => {
-    if (!el.offsetHeight) return;
-    const elOffset = el.getBoundingClientRect().top;
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (!el.offsetHeight) return;
 
-    if ((firstTableContainer.getBoundingClientRect().top <= 0) && !isSticky) {
-      const heightBeforeSticky = headerContent.offsetHeight;
-      headerContent.style.top = `${document.querySelector('header')?.offsetHeight || 0}px`;
-      headerContent.classList.add('sticky');
-      const heightDifference = heightBeforeSticky - headerContent.offsetHeight;
-      headerContentDummy.style.height = `${heightDifference}px`;
-      isSticky = true;
-      if (headerContent.offsetHeight / window.innerHeight >= 0.45) headerContent.classList.remove('sticky');
-    }
+      if (!entry.isIntersecting && !isSticky) {
+        const heightBeforeSticky = headerContent.offsetHeight;
+        headerContent.style.top = `${headerOffset}px`;
+        headerContent.classList.add('sticky');
+        const heightDifference = heightBeforeSticky - headerContent.offsetHeight;
+        headerContentDummy.style.height = `${heightDifference}px`;
+        isSticky = true;
+        if (headerContent.offsetHeight / window.innerHeight >= 0.45) {
+          headerContent.classList.remove('sticky');
+        }
+        return;
+      }
 
-    if (elOffset > 0 && isSticky) {
-      headerContent.classList.remove('sticky');
-      headerContent.style.top = '';
-      headerContentDummy.style.height = '';
-      isSticky = false;
-    }
-  };
-  window.addEventListener('scroll', handleScroll);
+      if (entry.isIntersecting && isSticky) {
+        headerContent.classList.remove('sticky');
+        headerContent.style.top = '';
+        headerContentDummy.style.height = '';
+        isSticky = false;
+      }
+    },
+    { rootMargin: `-${headerOffset}px 0px 0px 0px` },
+  );
+
+  observer.observe(headerContentDummy);
 }
 
 function decorate(el) {
@@ -504,7 +510,7 @@ function decorate(el) {
 
 export default function init(el) {
   decorate(el);
-  equalHeight(el);
+  setEqualHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
   setAccessibilityLabels(el);
