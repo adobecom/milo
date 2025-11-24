@@ -229,7 +229,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
     content: "";
   }
 
-  header.test-nav.dropdown-active .feds-navItem--active > .feds-navLink:before {
+  header.test-nav .feds-navItem--active > .feds-navLink:before {
     border-bottom: 2px solid #EB1000;
   }
 
