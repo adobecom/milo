@@ -56,12 +56,12 @@ describe('Comparison Table', () => {
     });
 
     it('has table element', () => {
-      const table = comparisonTable.querySelector('.table');
+      const table = comparisonTable.querySelector('.table-body');
       expect(table).to.exist;
     });
 
     it('has table role attributes', () => {
-      const table = comparisonTable.querySelector('.table');
+      const table = comparisonTable.querySelector('.table-body');
       expect(table.getAttribute('role')).to.equal('table');
     });
 
@@ -171,7 +171,7 @@ describe('Comparison Table', () => {
 
     it('toggles table visibility on button click', async () => {
       const columnHeaderButton = comparisonTable.querySelector('.table-column-header button');
-      const table = comparisonTable.querySelector('.table');
+      const table = comparisonTable.querySelector('.table-body');
 
       expect(table.classList.contains('hide')).to.be.false;
       expect(columnHeaderButton.getAttribute('aria-expanded')).to.equal('true');
@@ -306,7 +306,7 @@ describe('Comparison Table', () => {
       const comparisonTable = document.querySelector('.comparison-table');
       const tableContainers = comparisonTable.querySelectorAll('.table-container');
       tableContainers.forEach((container) => {
-        const table = container.querySelector('.table');
+        const table = container.querySelector('.table-body');
         expect(table).to.exist;
       });
     });
