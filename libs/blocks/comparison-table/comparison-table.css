@@ -3,6 +3,7 @@
   --comparison-row-border-color: #e9e9e9;
   --comparison-desktop-max-width: 1200px;
   --comparison-tablet-spacing: 50px;
+  --comparison-table-spacing: 12px;
   --hover-border-color: #357BEB;
   --primary-cell-path-color: #05834E;
 }
@@ -84,7 +85,7 @@
   margin: 0 var(--spacing-s);
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--comparison-table-spacing);
 }
 
 .comparison-table .table-row:not(:last-child) {
@@ -101,7 +102,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-inline-end: 12px;
+  margin-inline-end: var(--comparison-table-spacing);
   grid-column: 1 / -1;
   margin: 0 auto;
 }
@@ -144,8 +145,8 @@
 .comparison-table .table-cell div {
   border: 1px solid var(--color-gray-300);
   border-radius: 4px;
-  width: calc(100% - 26px);
-  padding: var(--spacing-xs) 12px;
+  width: calc(100% - 2*var(--comparison-table-spacing) - 2px);
+  padding: var(--spacing-xs) var(--comparison-table-spacing);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -192,7 +193,7 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 12px;
+  gap: var(--comparison-table-spacing);
 }
 
 .comparison-table .header-item {
@@ -202,7 +203,7 @@
 }
 
 .comparison-table .header-item:first-of-type {
-  margin-inline-end: 12px;
+  margin-inline-end: var(--comparison-table-spacing);
 }
 
 .comparison-table .header-content-wrapper .header-item:first-child {
@@ -405,7 +406,7 @@
   }
 
   .comparison-table .table-column-header button {
-    padding: 12px;
+    padding: var(--comparison-table-spacing);
   }
 
   .comparison-table .table-column-header :is(h1, h2, h3, h4, h5, h6) {
@@ -436,7 +437,7 @@
     padding: var(--spacing-s) var(--spacing-s) var(--spacing-s) 0;
     grid-column: auto;
     margin: 0;
-    margin-inline-end: 12px;
+    margin-inline-end: var(--comparison-table-spacing);
   }
 
   .comparison-table .table-cell {
