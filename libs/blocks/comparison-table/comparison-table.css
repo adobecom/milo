@@ -422,10 +422,7 @@
     max-width: calc(100% - var(--comparison-tablet-spacing));
   }
 
-  .comparison-table .table-row {
-    grid-template-columns: minmax(192px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
-  }
-
+  .comparison-table .table-row,
   .comparison-table .header-content-wrapper {
     grid-template-columns: minmax(192px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
   }
@@ -459,10 +456,7 @@
     background-color: transparent;
   }
 
-  .comparison-table .table-row .table-cell:nth-child(odd) div {
-    background-color: var(--color-gray-100);
-  }
-
+  .comparison-table .table-row .table-cell:nth-child(odd) div,
   .comparison-table .header-item:nth-child(odd) .sub-header-item-container:not(:last-of-type) {
     background-color: var(--color-gray-100);
   }
@@ -499,10 +493,7 @@
     max-width: var(--comparison-desktop-max-width);
   }
 
-  .comparison-table .table-row {
-    grid-template-columns: minmax(268px, 1.15fr) repeat(auto-fit, minmax(100px, 1fr));
-  }
-
+  .comparison-table .table-row,
   .comparison-table .header-content-wrapper {
     grid-template-columns: minmax(268px, 1.15fr) repeat(auto-fit, minmax(100px, 1fr));
   }
