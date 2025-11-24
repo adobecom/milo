@@ -48,7 +48,7 @@ export default function checkAriaLabels(elements = [], config = {}) {
   });
 
   const ariaLabelPrefixMismatch = targetElements.filter((el) => {
-    const ariaLabel = el.getAttribute('aria-label')?.toLowerCase();
+    const ariaLabel = el.getAttribute('aria-label')?.trim().toLowerCase();
     const textContent = el.textContent.trim().toLowerCase();
     if (!ariaLabel || !textContent) return false;
     return !ariaLabel.startsWith(textContent);
