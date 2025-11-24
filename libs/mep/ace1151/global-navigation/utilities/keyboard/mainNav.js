@@ -173,7 +173,7 @@ class MainNavItem {
     const triggerElement = triggerEl || items[curr];
     if (!triggerElement || !triggerElement.hasAttribute('aria-haspopup')) return;
     if (e) e.preventDefault();
-    if (triggerElement.getAttribute('aria-expanded') === 'false' && !(this.isTestNav && triggerElement.closest('section'))) {
+    if (triggerElement.getAttribute('aria-expanded') === 'false' && !(this.isTestNav && triggerElement.closest('.feds-navItem--megaMenu'))) {
       trigger({ element: triggerElement });
       if (this.isTestNav && this.desktop.matches) {
         document.querySelector('.global-navigation').classList.add('dropdown-active');
