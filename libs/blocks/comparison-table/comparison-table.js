@@ -400,7 +400,7 @@ function decorateTables(el, children) {
 }
 
 function setupResponsiveHiding(el) {
-  const isStackedQuery = window.matchMedia('(max-width: 899px)');
+  const compactLayoutQuery = window.matchMedia('(max-width: 899px)');
   const hideElements = (elements, isMobile, header = false) => {
     const totalColumns = header ? elements.length - 1 : elements.length;
     if (totalColumns === 2) return;
@@ -426,7 +426,7 @@ function setupResponsiveHiding(el) {
   };
 
   const handleResponsive = (e) => {
-    const isMobile = e ? e.matches : isStackedQuery.matches;
+    const isMobile = e ? e.matches : compactLayoutQuery.matches;
 
     if (!isMobile) {
       reorderElementsByColumnIndex(el.querySelectorAll('.header-item[data-column-index]'));
@@ -443,7 +443,7 @@ function setupResponsiveHiding(el) {
     syncAccessibilityHeaders(el);
   };
   handleResponsive();
-  isStackedQuery.addEventListener('change', handleResponsive);
+  compactLayoutQuery.addEventListener('change', handleResponsive);
 }
 
 function setAccessibilityLabels(el) {
@@ -473,16 +473,16 @@ function setupStickyHeader(el) {
     ([entry]) => {
       if (!el.offsetHeight) return;
 
-      if (!entry.isIntersecting && !isSticky) {
+      if (!entry.isIntersecting
+          && !isSticky
+          && headerContent.offsetHeight / window.innerHeight < 0.45
+      ) {
         const heightBeforeSticky = headerContent.offsetHeight;
         headerContent.style.top = `${headerOffset}px`;
         headerContent.classList.add('sticky');
         const heightDifference = heightBeforeSticky - headerContent.offsetHeight;
         headerContentDummy.style.height = `${heightDifference}px`;
         isSticky = true;
-        if (headerContent.offsetHeight / window.innerHeight >= 0.45) {
-          headerContent.classList.remove('sticky');
-        }
         return;
       }
 

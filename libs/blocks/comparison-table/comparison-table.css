@@ -483,6 +483,10 @@
   .comparison-table .sub-header-item-container .btn-container p :not(em a) {
     width: auto;
   }
+
+  .comparison-table .table-column-header button {
+    padding: var(--spacing-s);
+  }
 }
 
 @media screen and (min-width: 1200px) {
