@@ -473,10 +473,25 @@ function setupStickyHeader(el) {
     ([entry]) => {
       if (!el.offsetHeight) return;
 
-      if (!entry.isIntersecting
-          && !isSticky
-          && headerContent.offsetHeight / window.innerHeight < 0.45
-      ) {
+      if (!entry.isIntersecting && !isSticky) {
+        const firstChild = headerContent.querySelector('.sub-header-item-container:first-child');
+        const secondChild = headerContent.querySelector('.sub-header-item-container:nth-of-type(2)');
+        const firstChildPadding = parseFloat(getComputedStyle(firstChild)?.paddingBottom) || 0;
+        const firstChildBorderHeight = parseFloat(getComputedStyle(firstChild)?.borderTopWidth)
+          + parseFloat(getComputedStyle(firstChild)?.borderBottomWidth) || 0;
+        const secondChildBorderHeight = parseFloat(getComputedStyle(secondChild)?.borderTopWidth)
+          + parseFloat(getComputedStyle(secondChild)?.borderBottomWidth) || 0;
+
+        const deductHeight = (secondChild?.offsetHeight || 0)
+          + (headerContent.querySelector('.sub-header-item-container:last-child .description')?.offsetHeight || 0)
+          + (headerContent.querySelector('.sub-header-item-container .mobile-filter-select')?.offsetHeight || 0)
+          + firstChildPadding
+          + firstChildBorderHeight
+          + secondChildBorderHeight;
+        const adjustedHeight = headerContent.offsetHeight - deductHeight;
+
+        if (adjustedHeight / window.innerHeight >= 0.45) return;
+
         const heightBeforeSticky = headerContent.offsetHeight;
         headerContent.style.top = `${headerOffset}px`;
         headerContent.classList.add('sticky');
