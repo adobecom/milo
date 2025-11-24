@@ -643,10 +643,10 @@ async function loadQueryIndexes(config, prefix) {
         imsQueryIndexData.forEach((queryIndexMap) => {
           const { imsClientId, queryIndexWebPath } = queryIndexMap;
           const matchingSiteLocale = siteLocalesData.find((s) => (
-            s.imsClientId === clientId && parseList(s.regionalSites).includes(prefix)
+            s.imsClientId === imsClientId && parseList(s.regionalSites).includes(prefix)
           ));
           if (matchingSiteLocale) {
-            const updatedPath = queryIndexWebPath.replace('/*', prefix);
+            const updatedPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
             const domain = queryIndexWebPath.split('/*')[0];
             queryIndexes[imsClientId] = processQueryIndexMap(updatedPath, domain, imsClientId);
           }
@@ -681,7 +681,7 @@ async function urlInQueryIndex(url) {
   const queryIndexPromises = Promise.all(matchingIndexes.map((m) => m.pathsRequest));
 
   if (matchingIndexes.length && matchingIndexes.filter((m) => !m.requestResolved).length) {
-    const fastestProm = await Promise.race([lingoSiteMapping, queryIndexPromises]);
+    const fastestProm = await Promise.race([baseQueryIndex.pathsRequest, queryIndexPromises]);
     const isBaseQueryIndex = !!fastestProm.pathsRequest;
     if (isBaseQueryIndex) {
       const urlInIndex = urlInMatchingIndex(matchingIndexes, sanitizedPath);
@@ -2003,6 +2003,15 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
+  // TODO test only - remove for prod and real PR
+  if (window.location.href.startsWith('https://main--da-bacom--adobecom.aem.live/ar') || window.location.href.startsWith('https://main--da-bacom--adobecom.aem.page/ar')) {
+    config.locale.base = 'es';
+    config.queryIndexPath = '/query-index.json';
+  }
+  if (window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de') || window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de')) {
+    config.locale.base = 'de';
+    config.queryIndexPath = '/assets/query-index.json';
+  }
   if (config.locale.base
   // || swap fragment (code from Mark)
   ) {
