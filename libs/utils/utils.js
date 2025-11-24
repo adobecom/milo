@@ -1585,16 +1585,29 @@ async function loadPostLCP(config) {
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
+  const languageBanner = getMetadata('language-banner') || config.languageBanner;
   const georouting = getMetadata('georouting') || config.geoRouting;
-  config.georouting = { loadedPromise: Promise.resolve() };
-  if (georouting === 'on') {
+
+  if (languageBanner === 'on') {
+    const { default: init } = await import('../features/language-banner/language-banner.js');
+    const bannerHandled = await init();
+    if (!bannerHandled && georouting === 'on') {
+      const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
+      config.georouting = { loadedPromise: Promise.resolve() };
+      config.georouting.loadedPromise = (async () => {
+        const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+        await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+      })();
+    }
+  } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
+    config.georouting = { loadedPromise: Promise.resolve() };
     config.georouting.loadedPromise = (async () => {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
     })();
-    // This is used only in webapp-prompt.js
   }
+
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
