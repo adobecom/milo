@@ -60,11 +60,11 @@ function decorateForeground(el, foreground) {
     
     if (el.classList.contains('media-visible-mobile-tablet')) {
       const mediaClasses = ['media-cover-left', 'media-cover-right', 'media-cover-top', 'media-cover-bottom'];
-      mediaClasses.forEach((className) => {
-        if (!el.classList.contains(className)) return;
-        const position = className.split('-')[2] ?? 'center';
+      const focalClass = mediaClasses.find((className) => el.classList.contains(className));
+      if (focalClass) {
+        const position = focalClass.split('-')[2];
         el.style.setProperty('--brick-media-position', position);
-      });
+      }
     }
   }
   const hasIconArea = fgtext.querySelector('p')?.querySelector('img');
