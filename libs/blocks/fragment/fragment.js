@@ -178,18 +178,30 @@ export default async function init(a) {
     || sessionStorage.getItem('akamai') || window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
     ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
 
+  // Extract locale code from prefix, handling US (empty prefix), langstore, and target-preview
   const prefixParts = locale.prefix.split('/').filter((part) => part);
-  const localeCode = (prefixParts[0] === 'langstore' || prefixParts[0] === 'target-preview')
-    ? prefixParts[1]
-    : prefixParts[0];
+  const [firstPart, secondPart] = prefixParts;
+  let localeCode;
+
+  // Check if path starts with langstore or target-preview
+  const hasSpecialPrefix = firstPart === 'langstore' || firstPart === 'target-preview';
+
+  if (prefixParts.length === 0 || (hasSpecialPrefix && !secondPart)) {
+    // Empty prefix (US/English base) or special prefix without locale - map region to language code
+    localeCode = locale.region === 'us' ? 'en' : locale.language || 'en';
+  } else if (hasSpecialPrefix) {
+    localeCode = secondPart;
+  } else {
+    localeCode = firstPart;
+  }
 
   // Current correct format: country_localeCode (e.g., ch_de)
-  // let regionKey = `${country}_${localeCode}`;
+  let regionKey = `${country}_${localeCode}`;
 
   // Old incorrect format for testing (uncomment to test with wrong structure):
   // TODO: REVERT THIS TEMP CHANGE for ch_de!!!!!
   // For temporary Milo page testing only!!
-  let regionKey = `${localeCode}/${country}`;
+  // let regionKey = `${localeCode}/${country}`;
 
   let matchingRegion = locale?.regions?.[regionKey];
   if (!matchingRegion && locale?.regions?.[country]) {
@@ -198,7 +210,7 @@ export default async function init(a) {
   }
   const mepLingoFragSwap = !!(a.dataset.roc
     && matchingRegion
-    && locale.prefix
+    // && locale.prefix
     && country
     && resourcePath
     && localeCode);
@@ -218,7 +230,10 @@ export default async function init(a) {
     || (section?.parentElement?.children[0] === section && section?.querySelector('[class*="block"]'));
 
   if (mepLingoFragSwap && matchingRegion?.prefix) {
-    rocResourcePath = resourcePath.replace(locale.prefix, matchingRegion.prefix);
+    // For US (empty prefix), prepend the region prefix; otherwise replace the locale prefix
+    rocResourcePath = locale.prefix
+      ? resourcePath.replace(locale.prefix, matchingRegion.prefix)
+      : resourcePath.replace(/^(https?:\/\/[^/]+)/, `$1${matchingRegion.prefix}`);
 
     // Extract pathname for comparison
     const rocPath = new URL(rocResourcePath).pathname;
@@ -232,7 +247,9 @@ export default async function init(a) {
     const rocQueryIndexPaths = queryIndexResult.paths || [];
     // For non-LCP, resolved is undefined (always considered resolved)
     const queryIndexResolved = queryIndexResult.resolved !== false;
-    const queryIndexAvailable = queryIndexResult.available;
+    // TODO: revert this comment when ready to check against query index
+    // const queryIndexAvailable = queryIndexResult.available;
+    const queryIndexAvailable = false;
     const queryIndexHasData = rocQueryIndexPaths.length > 0;
 
     // Check if ROC path exists in query index
