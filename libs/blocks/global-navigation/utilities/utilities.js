@@ -6,7 +6,7 @@ import {
   loadLana,
   isLocalNav,
   decorateLinksAsync,
-  localizeLink,
+  localizeLinkAsync,
   getFederatedContentRoot,
   getFederatedUrl,
   getFedsPlaceholderConfig,
@@ -531,13 +531,13 @@ export async function fetchAndProcessPlainHtml({
 
   if (commands?.length) {
     /* c8 ignore next 3 */
-    handleCommands(commands, body, true, true);
+    await handleCommands(commands, body, true, true);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
-    const fragPromises = inlineFrags.map((link) => {
-      link.href = getFederatedUrl(localizeLink(link.href));
+    const fragPromises = inlineFrags.map(async (link) => {
+      link.href = getFederatedUrl(await localizeLinkAsync(link.href));
       return loadInlineFrags(link);
     });
     await Promise.all(fragPromises);

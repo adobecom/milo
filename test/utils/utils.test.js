@@ -560,69 +560,69 @@ describe('Utils', () => {
         config.pathname = path;
         utils.setConfig(config);
       }
-      it('Same domain link is relative and localized', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+      it('Same domain link is relative and localized', async () => {
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
       });
 
-      it('Same domain fragment link is relative and localized', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fragments/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/fragments/gnav/solutions');
+      it('Same domain fragment link is relative and localized', async () => {
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/fragments/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/fragments/gnav/solutions');
       });
 
-      it('Same domain langstore link is relative and localized', () => {
+      it('Same domain langstore link is relative and localized', async () => {
         setConfigPath('/langstore/fr/page');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
         setConfigPath('/be_fr/page');
       });
 
-      it('Same domain extensions /, .html, .json are handled', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.html', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.html');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.json', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.json');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions/', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions/');
+      it('Same domain extensions /, .html, .json are handled', async () => {
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions.html', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.html');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions.json', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.json');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions/', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions/');
       });
 
-      it('Same domain link that is already localized is returned as relative', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/be_fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi', 'main--milo--adobecom.hlx.page')).to.equal('/fi');
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+      it('Same domain link that is already localized is returned as relative', async () => {
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/be_fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/fi/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/fi', 'main--milo--adobecom.hlx.page')).to.equal('/fi');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
       });
 
-      it('Same domain PDF link is returned as relative and not localized', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.pdf', 'main--milo--adobecom.hlx.page')).to.equal('/gnav/solutions.pdf');
+      it('Same domain PDF link is returned as relative and not localized', async () => {
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions.pdf', 'main--milo--adobecom.hlx.page')).to.equal('/gnav/solutions.pdf');
       });
 
-      it('Same domain link with #_dnt is returned as relative, #_dnt is removed and not localized', () => {
-        expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions#_dnt', 'main--milo--adobecom.hlx.page'))
+      it('Same domain link with #_dnt is returned as relative, #_dnt is removed and not localized', async () => {
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions#_dnt', 'main--milo--adobecom.hlx.page'))
           .to
           .equal('/gnav/solutions');
       });
 
-      it('Live domain html link  is absolute and localized', () => {
-        expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+      it('Live domain html link  is absolute and localized', async () => {
+        expect(await utils.localizeLinkAsync('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
           .to
           .equal('https://milo.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
-        expect(utils.localizeLink('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+        expect(await utils.localizeLinkAsync('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
           .to
           .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
 
-      it('Live domain html link which is not in prod domains is absolute and localized', () => {
-        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+      it('Live domain html link which is not in prod domains is absolute and localized', async () => {
+        expect(await utils.localizeLinkAsync('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
           .to
           .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
-        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+        expect(await utils.localizeLinkAsync('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
           .to
           .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
 
-      it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
-        expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
+      it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', async () => {
+        expect(await utils.localizeLinkAsync('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
           .to
           .equal('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html');
       });
 
-      it('Invalid href fails gracefully', () => {
-        expect(utils.localizeLink('not-a-url', 'main--milo--adobecom.hlx.page'))
+      it('Invalid href fails gracefully', async () => {
+        expect(await utils.localizeLinkAsync('not-a-url', 'main--milo--adobecom.hlx.page'))
           .to
           .equal('not-a-url');
       });
@@ -1127,7 +1127,7 @@ describe('Utils', () => {
 
     // --- Tests for localizeLink ---
     describe('localizeLink', () => {
-      it('uses locale prefix when no language-based logic applies', () => {
+      it('uses locale prefix when no language-based logic applies', async () => {
         utils.setConfig({
           ...baseConfig,
           pathname: '/de/',
@@ -1137,12 +1137,12 @@ describe('Utils', () => {
           },
         });
         const href = 'https://examplesite.com/path';
-        const result = utils.localizeLink(href, 'examplesite.com');
+        const result = await utils.localizeLinkAsync(href, 'examplesite.com');
         expect(utils.getConfig().locale.prefix).to.equal('/de');
         expect(result).to.equal('/de/path');
       });
 
-      it('adjusts prefix to locale when no site match', () => {
+      it('adjusts prefix to locale when no site match', async () => {
         utils.setConfig({
           ...baseConfig,
           pathname: '/ch_de/',
@@ -1159,7 +1159,7 @@ describe('Utils', () => {
           },
         });
         const href = 'https://othersite.com/path';
-        const result = utils.localizeLink(href, 'othersite.com');
+        const result = await utils.localizeLinkAsync(href, 'othersite.com');
         expect(utils.getConfig().locale.prefix).to.equal('/ch_de');
         expect(utils.getConfig().locale.language).to.be.undefined;
         expect(result).to.equal('/ch_de/path');
@@ -1194,7 +1194,7 @@ describe('Utils', () => {
         });
         await utils.loadLanguageConfig();
         const href = 'https://news.adobe.com/path';
-        const result = utils.localizeLink(href, 'news.adobe.com');
+        const result = await utils.localizeLinkAsync(href, 'news.adobe.com');
         expect(utils.getConfig().locale.prefix).to.equal('/en/gb');
         expect(utils.getConfig().locale.language).to.equal('en');
         expect(result).to.equal('/en/gb/path');
@@ -1245,7 +1245,7 @@ describe('Utils', () => {
         await utils.loadLanguageConfig();
 
         const href = 'https://news.adobe.com/path';
-        const result = utils.localizeLink(href);
+        const result = await utils.localizeLinkAsync(href);
         expect(utils.getConfig().locale.prefix).to.equal('/de/ch');
         expect(utils.getConfig().locale.language).to.equal('de');
         expect(result).to.equal('https://news.adobe.com/ch_de/path');
@@ -1281,7 +1281,7 @@ describe('Utils', () => {
         });
         await utils.loadLanguageConfig();
         const href = 'https://news.adobe.com/path';
-        const result = utils.localizeLink(href, 'news.adobe.com');
+        const result = await utils.localizeLinkAsync(href, 'news.adobe.com');
         expect(utils.getConfig().locale.prefix).to.equal('/ch_de');
         expect(utils.getConfig().locale.language).to.be.undefined;
         expect(result).to.equal('/ch_de/path');
@@ -1293,13 +1293,13 @@ describe('Utils', () => {
           languages: { en: { tk: 'hah7vzn.css' } },
         });
         const href = '/path';
-        const result = utils.localizeLink(href);
+        const result = await utils.localizeLinkAsync(href);
         expect(utils.getConfig().locale.prefix).to.equal('');
         expect(utils.getConfig().locale.language).to.equal('en');
         expect(result).to.equal('/path');
       });
 
-      it('skips language logic on localhost', () => {
+      it('skips language logic on localhost', async () => {
         utils.setConfig({
           ...baseConfig,
           pathname: '/de/ch/',
@@ -1316,7 +1316,7 @@ describe('Utils', () => {
           },
         });
         const href = 'http://localhost/path';
-        const result = utils.localizeLink(href);
+        const result = await utils.localizeLinkAsync(href);
         expect(utils.getConfig().locale.prefix).to.equal('/de/ch');
         expect(utils.getConfig().locale.language).to.equal('de');
         expect(result).to.equal('/de/ch/path');

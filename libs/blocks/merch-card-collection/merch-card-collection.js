@@ -1,7 +1,7 @@
 import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION } from '../merch/merch.js';
 import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
-  createTag, decorateLinksAsync, getConfig, loadBlock, loadStyle, localizeLink,
+  createTag, decorateLinksAsync, getConfig, loadBlock, loadStyle, localizeLinkAsync,
 } from '../../utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
 
@@ -50,7 +50,7 @@ async function getCardsRoot(config, html) {
   if (mep?.commands?.length) {
     const mepRoot = createTag('div', {}, cards);
     const { handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
-    handleCommands(mep?.commands, mepRoot, false, true);
+    await handleCommands(mep?.commands, mepRoot, false, true);
     if (placeholders) mepRoot.innerHTML = replacePlaceholders(mepRoot.innerHTML, placeholders);
     cards = mepRoot.innerHTML;
   }
@@ -72,23 +72,26 @@ async function getCardsRoot(config, html) {
   return cardsRoot;
 }
 
-const fetchOverrideCard = (action, config) => new Promise((resolve, reject) => {
-  fetch(`${localizeLink(overrideUrlOrigin(action?.content))}.plain.html`).then((res) => {
-    if (res.ok) {
-      res.text().then((cardContent) => {
-        const response = { path: action.content, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] };
-        if (config?.mep?.preview) response.manifestId = action.manifestId;
-        resolve(response);
-      });
-    } else {
-      reject(res.statusText
-      /* c8 ignore next */
-         || res.status);
-    }
-  }).catch((error) => {
-    reject(error);
+const fetchOverrideCard = async (action, config) => {
+  const link = await localizeLinkAsync(overrideUrlOrigin(action?.content));
+  return new Promise((resolve, reject) => {
+    fetch(`${link}.plain.html`).then((res) => {
+      if (res.ok) {
+        res.text().then((cardContent) => {
+          const response = { path: action.content, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] };
+          if (config?.mep?.preview) response.manifestId = action.manifestId;
+          resolve(response);
+        });
+      } else {
+        reject(res.statusText
+        /* c8 ignore next */
+           || res.status);
+      }
+    }).catch((error) => {
+      reject(error);
+    });
   });
-});
+};
 
 async function overrideCards(root, overridePromises, config) {
   let overrideString = '';
@@ -150,7 +153,7 @@ async function fetchCardsData(config, endpointElement, type, el) {
   let cardsData;
   el.querySelector(`a[href*="${PROD_INDEX}"]`)?.remove();
   el.querySelector(`a[href*="${PREVIEW_INDEX}"]`)?.remove();
-  let queryIndexCardPath = localizeLink(endpointElement.getAttribute('href'), config);
+  let queryIndexCardPath = await localizeLinkAsync(endpointElement.getAttribute('href'), config);
   if (/\.json$/.test(queryIndexCardPath)) {
     queryIndexCardPath = `${queryIndexCardPath}?sheet=${type}`;
   }

@@ -40,7 +40,7 @@ describe('marketo', () => {
     const el = document.querySelector('.marketo');
     el.querySelector('a').remove();
 
-    init(el);
+    await init(el);
     await tick(10);
     expect(el.style.display).to.equal('none');
   });

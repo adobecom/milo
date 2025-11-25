@@ -1134,7 +1134,7 @@ describe('Merch Block', () => {
       expect(getOptions(a).fragment).to.be.undefined;
     });
   });
-  describe('Localize preview links', () => {
+  describe('Localize preview links', async () => {
     it('check if only preview URL is relative', () => {
       const div = document.createElement('div');
 
@@ -1156,7 +1156,7 @@ describe('Merch Block', () => {
       const aNoHref = document.createElement('a');
       div.append(aNoHref);
 
-      localizePreviewLinks(div);
+      await localizePreviewLinks(div);
 
       expect(div.querySelector('.link1').getAttribute('href')).to.equal('/test/milo/path');
       expect(div.querySelector('.link2').getAttribute('href')).to.equal('/test/cc/path');

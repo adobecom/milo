@@ -5,7 +5,7 @@ import {
   getMetadata,
   loadScript,
   loadStyle,
-  localizeLink,
+  localizeLinkAsync,
 } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
@@ -614,7 +614,7 @@ const fetchUuidForCard = async (card) => {
   }
   try {
     const url = new URL(card.contentId);
-    const localizedLink = localizeLink(url, null, true);
+    const localizedLink = await localizeLinkAsync(url, null, true);
     const substr = String(localizedLink).split('https://').pop();
     return await getUuid(substr);
   } catch (error) {

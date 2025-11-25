@@ -1,4 +1,4 @@
-import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '../../utils/utils.js';
+import { createTag, getConfig, getFederatedUrl, localizeLinkAsync, loadIms } from '../../utils/utils.js';
 import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
@@ -13,8 +13,9 @@ const FORM_METADATA = {
   'subscription-name': 'subscriptionName',
 };
 
-export function localizeFederatedUrl(url) {
-  return localizeLink(getFederatedUrl(url), '', true);
+export async function localizeFederatedUrl(url) {
+  const link = await localizeLinkAsync(getFederatedUrl(url), '', true);
+  return link;
 }
 
 const FEDERAL_ROOT = '/federal/email-collection';
@@ -166,7 +167,8 @@ async function fetchSheet(sheetData) {
   const formatData = { state: formatStateData };
   const { id, url } = sheetData;
   try {
-    const sheetReq = await fetch(url);
+    const resolvedUrl = await url;
+    const sheetReq = await fetch(resolvedUrl);
     if (!sheetReq.ok) return { [id]: {} };
     const { data } = await sheetReq.json();
 
@@ -179,7 +181,8 @@ async function fetchSheet(sheetData) {
 }
 
 async function fetchFormConfig(sheets) {
-  const sheetPromises = [{ url: PLACEHOLDER_URL, id: 'placeholders' }, ...sheets]
+  const placeholderUrl = await PLACEHOLDER_URL;
+  const sheetPromises = [{ url: placeholderUrl, id: 'placeholders' }, ...sheets]
     .map((sheet) => (fetchSheet(sheet)));
 
   const resolved = await Promise.all(sheetPromises);
@@ -190,7 +193,8 @@ async function fetchFormConfig(sheets) {
 
 export async function fetchConsentString() {
   try {
-    const stringReq = await fetch(CONSENT_URL);
+    const consentUrl = await CONSENT_URL;
+    const stringReq = await fetch(consentUrl);
     if (!stringReq.ok) return {};
 
     const string = await stringReq.text();

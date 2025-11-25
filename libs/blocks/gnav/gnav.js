@@ -5,7 +5,7 @@ import {
   getConfig,
   getMetadata,
   loadIms,
-  localizeLink,
+  localizeLinkAsync,
 } from '../../utils/utils.js';
 
 import {
@@ -194,7 +194,7 @@ class Gnav {
         mainNav.append(cta);
         return;
       }
-      navLink.href = localizeLink(navLink.href);
+      navLink.href = await localizeLinkAsync(navLink.href);
       const navItem = createTag('div', { class: 'gnav-navitem' });
       const navBlock = navLink.closest('.large-menu');
       const menu = navLink.closest('div');
@@ -235,16 +235,16 @@ class Gnav {
     navLink.setAttribute('daa-lh', 'header|Open');
   };
 
-  static decorateLinkGroups = (menu) => {
+  static decorateLinkGroups = async (menu) => {
     const linkGroups = menu.querySelectorAll('.link-group');
-    linkGroups.forEach((linkGroup) => {
+    await Promise.all([...linkGroups].map(async (linkGroup) => {
       const image = linkGroup.querySelector('picture');
       const anchor = linkGroup.querySelector('a');
       const title = anchor?.textContent;
       const subtitle = linkGroup.querySelector('p:last-of-type') || '';
       const titleWrapper = createTag('div');
       titleWrapper.className = 'link-group-title';
-      anchor.href = localizeLink(anchor.href);
+      anchor.href = await localizeLinkAsync(anchor.href);
       const link = createTag('a', { class: 'link-block', href: anchor.href });
 
       linkGroup.replaceChildren();
@@ -252,7 +252,7 @@ class Gnav {
       const contents = image ? [image, titleWrapper] : [titleWrapper];
       link.append(...contents);
       linkGroup.appendChild(link);
-    });
+    }));
   };
 
   setMenuAnalytics = (el) => {
@@ -306,7 +306,7 @@ class Gnav {
       await decorateLinksAsync(container);
       menu.append(container);
     }
-    Gnav.decorateLinkGroups(menu);
+    await Gnav.decorateLinkGroups(menu);
     this.decorateAnalytics(menu);
     navLink.addEventListener('focus', () => {
       window.addEventListener('keydown', this.toggleOnSpace);
@@ -324,7 +324,7 @@ class Gnav {
 
   decorateLargeMenu = async (navLink, navItem, menu) => {
     let path = navLink.href;
-    path = localizeLink(path);
+    path = await localizeLinkAsync(path);
     const promise = fetch(`${path}.plain.html`);
     promise.then(async (resp) => {
       if (resp.status === 200) {

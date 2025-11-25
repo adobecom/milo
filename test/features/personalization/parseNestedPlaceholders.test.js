@@ -19,10 +19,10 @@ describe('test different values for parseNestedPlaceholders', () => {
     expect(config.placeholders['promo-description']).to.equal('For just US$49.99, get 20+...');
   });
 });
-describe('test createContent', () => {
+describe('test createContent', async () => {
   const el = document.createElement('div');
   it('append action', () => {
-    const newContent = createContent(el, {
+    const newContent = await createContent(el, {
       content: '{{promo-discount}}',
       manifestId: false,
       targetManifestId: false,
@@ -31,9 +31,9 @@ describe('test createContent', () => {
     });
     expect(newContent.innerHTML).to.equal('50');
   });
-  it('replace action', () => {
+  it('replace action', async () => {
     el.innerHTML = 'Hello World';
-    const newContent = createContent(el, {
+    const newContent = await createContent(el, {
       content: '{{promo-discount}}',
       manifestId: false,
       targetManifestId: false,

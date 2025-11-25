@@ -1954,7 +1954,7 @@ async function decorateMeta() {
     const { miloLibs } = getConfig();
     const { findDetails, getModal } = await import('../blocks/modal/modal.js');
     loadStyle(`${miloLibs}/blocks/modal/modal.css`);
-    const details = findDetails(e.detail.hash);
+    const details = await findDetails(e.detail.hash);
     if (details) getModal(details);
   });
 }

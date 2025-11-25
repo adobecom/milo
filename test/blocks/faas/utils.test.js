@@ -36,11 +36,11 @@ describe('Faas', () => {
     expect(typeof $).to.equal('function');
   });
 
-  it('Make FaaS config', () => {
-    expect(makeFaasConfig()).to.equal(defaultState);
+  it('Make FaaS config', async () => {
+    expect(await makeFaasConfig()).to.equal(defaultState);
     state[149] = 1;
     state[172] = 'last asset';
-    const faasConfig = makeFaasConfig(state);
+    const faasConfig = await makeFaasConfig(state);
     expect(faasConfig.id).to.equal('42');
     expect(faasConfig.l).to.equal('en_us');
     expect(faasConfig.d).to.equal('https://business.adobe.com/request-consultation/thankyou.html');
@@ -92,14 +92,14 @@ describe('Faas', () => {
     expect(getFaasHostSubDomain()).to.equal('qa.');
   });
 
-  it('localizes the destination url', () => {
-    expect(makeFaasConfig()).to.equal(defaultState);
+  it('localizes the destination url', async () => {
+    expect(await makeFaasConfig()).to.equal(defaultState);
     const arConfig = config;
     arConfig.locales.ae_ar = { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' };
     arConfig.pathname = '/ae_ar/';
     arConfig.prodDomains = ['business.adobe.com'];
     setConfig(arConfig);
-    const faasConfig = makeFaasConfig(state);
+    const faasConfig = await makeFaasConfig(state);
     expect(faasConfig.d).to.equal('https://business.adobe.com/ae_ar/request-consultation/thankyou.html');
     setConfig(config);
   });

@@ -5,7 +5,7 @@ import {
   decorateLinksAsync,
   getMetadata,
   getConfig,
-  localizeLink,
+  localizeLinkAsync,
   loadStyle,
   loadScript,
   getFederatedUrl,
@@ -392,7 +392,7 @@ class Footer {
       // No hash -> region selector expands a dropdown
       regionPickerElem.setAttribute('aria-haspopup', 'true');
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
-      regionSelector.href = localizeLink(regionSelector.href);
+      regionSelector.href = await localizeLinkAsync(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       const { default: initFragment } = await import('../fragment/fragment.js');

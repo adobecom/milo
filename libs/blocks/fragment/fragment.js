@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { createTag, getConfig, loadArea, localizeLink, customFetch } from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLinkAsync, customFetch } from '../../utils/utils.js';
 
 const fragMap = {};
 
@@ -14,29 +14,35 @@ const isCircularRef = (href) => [...Object.values(fragMap)]
     return node?.isRecursive;
   });
 
-const updateFragMap = (fragment, a, href) => {
-  const fragLinks = [...fragment.querySelectorAll('a')]
-    .filter((link) => localizeLink(link.href).includes('/fragments/'));
-  if (!fragLinks.length) return;
+const updateFragMap = async (fragment, a, href) => {
+  const allLinks = [...fragment.querySelectorAll('a')];
+  const linkLocalizations = await Promise.all(
+    allLinks.map((link) => localizeLinkAsync(removeHash(link.href))),
+  );
+  const fragLinksWithLocalizations = linkLocalizations
+    .filter((localizedHref) => localizedHref.includes('/fragments/'));
+
+  if (!fragLinksWithLocalizations.length) return;
 
   if (document.body.contains(a) && !a.parentElement?.closest('.fragment')) {
     // eslint-disable-next-line no-use-before-define
     fragMap[href] = new Tree(href);
-    fragLinks.forEach((link) => fragMap[href].insert(href, localizeLink(removeHash(link.href))));
+    fragLinksWithLocalizations.forEach((localizedHref) => {
+      fragMap[href].insert(href, localizedHref);
+    });
   } else {
     Object.values(fragMap).forEach((tree) => {
       const hrefNode = tree.find(href);
-      if (!hrefNode) return;
-
-      fragLinks.forEach((link) => {
-        const localizedHref = localizeLink(removeHash(link.href));
-        const parentNodeSameHref = hrefNode.findParent(localizedHref);
-        if (parentNodeSameHref) {
-          parentNodeSameHref.isRecursive = true;
-        } else {
-          hrefNode.addChild(localizedHref);
-        }
-      });
+      if (hrefNode) {
+        fragLinksWithLocalizations.forEach((localizedHref) => {
+          const parentNodeSameHref = hrefNode.findParent(localizedHref);
+          if (parentNodeSameHref) {
+            parentNodeSameHref.isRecursive = true;
+          } else {
+            hrefNode.addChild(localizedHref);
+          }
+        });
+      }
     });
   }
 };
@@ -69,7 +75,7 @@ function replaceDotMedia(path, doc) {
 
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale } = getConfig();
-  let relHref = localizeLink(a.href);
+  let relHref = await localizeLinkAsync(a.href);
   let inline = false;
 
   if (a.parentElement?.nodeName === 'P') {
@@ -133,7 +139,7 @@ export default async function init(a) {
   const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
   fragment.append(...sections);
 
-  updateFragMap(fragment, a, relHref);
+  await updateFragMap(fragment, a, relHref);
   if (a.dataset.manifestId
     || a.dataset.adobeTargetTestid
     || mep?.commands?.length
@@ -142,7 +148,7 @@ export default async function init(a) {
     if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
       updateFragDataProps(a, inline, sections, fragment);
     }
-    if (mep?.commands?.length) handleCommands(mep?.commands, fragment, false, true);
+    if (mep?.commands?.length) await handleCommands(mep?.commands, fragment, false, true);
     if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
   if (inline) {
