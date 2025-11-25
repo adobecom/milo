@@ -522,8 +522,7 @@
     max-height: 480px;
     object-fit: cover;
     display: block;
-    border-radius: 0;
-    border-bottom-right-radius: inherit;
+    border-radius: 0 0 inherit inherit;
   }
 
   .brick.media-visible-mobile-tablet .foreground .brick-media picture {
