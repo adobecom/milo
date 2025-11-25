@@ -46,6 +46,7 @@ const MILO_BLOCKS = [
   'iframe',
   'instagram',
   'language-selector',
+  'language-banner',
   'locui',
   'locui-create',
   'm7',

@@ -1,12 +1,17 @@
 import { getConfig, getMetadata, createTag, loadStyle } from '../../utils/utils.js';
 import getAkamaiCode from '../../utils/geo.js';
 
-const SESSION_STORAGE_KEY = 'lingo-banner-dismissed';
+const COOKIE_NAME = 'lingo-banner-dismissed';
 
 const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
+
+const setCookie = (name, value) => {
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
+  document.cookie = `${name}=${value};path=/;${domain}`;
+};
 
 /**
  * Gets the user's preferred language, falling back from cookie to browser language.
@@ -28,49 +33,47 @@ function getPreferredLanguage(locales) {
 
 /**
  * Verifies if the translated version of the current page exists.
- * @param {string} prefLang - The user's preferred language code.
+ * @param {string} marketPrefix - The market prefix from the supported markets config.
  * @returns {Promise<string|null>} The URL of the page if it exists, otherwise null.
  */
-async function getTranslatedPage(prefLang) {
+async function getTranslatedPage(marketPrefix) {
   const { pathname } = window.location;
   const config = getConfig();
   const currentPrefix = config.locale.prefix;
 
   const pagePath = currentPrefix ? pathname.replace(currentPrefix, '') : pathname;
-  const newPrefix = Object.keys(config.locales).find(
-    (key) => config.locales[key].ietf?.startsWith(prefLang) && config.locales[key].prefix,
-  );
-
-  if (newPrefix === undefined) return null;
-
-  const translatedUrl = `${window.location.origin}/${newPrefix}${pagePath}`;
+  const translatedUrl = marketPrefix
+    ? `${window.location.origin}/${marketPrefix}${pagePath}`
+    : `${window.location.origin}${pagePath}`;
 
   try {
     const response = await fetch(translatedUrl, { method: 'HEAD' });
-    if (response.ok) {
+    // if (response.ok) {
       return translatedUrl;
-    }
+    // }
   } catch (e) {
     console.warn(`Failed to check for translated page at ${translatedUrl}`, e);
   }
   return null;
 }
 
-function buildBanner(copy, translatedUrl) {
+function buildBanner(market, translatedUrl) {
   const banner = createTag('div', { class: 'language-banner' });
-  const message = createTag('span', { class: 'language-banner-message' }, copy.text);
-  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, copy.button);
+  const messageContainer = createTag('div', { class: 'language-banner-content' });
+  const messageText = createTag('span', { class: 'language-banner-text' }, 'View this page in ');
+  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.language);
   const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close' });
 
-  banner.append(message, link, closeButton);
+  messageContainer.append(messageText, link);
+  banner.append(messageContainer, closeButton);
   return banner;
 }
 
-async function showBanner(market, prefLang) {
-  const translatedUrl = await getTranslatedPage(prefLang || market.lang);
+async function showBanner(market) {
+  const translatedUrl = await getTranslatedPage(market.prefix);
   if (!translatedUrl) return;
 
-  const banner = buildBanner(market.copy, translatedUrl);
+  const banner = buildBanner(market, translatedUrl);
   document.body.prepend(banner);
   loadStyle('/libs/features/language-banner/language-banner.css');
 
@@ -84,9 +87,9 @@ async function showBanner(market, prefLang) {
   banner.querySelector('.language-banner-close').addEventListener('click', () => {
     const config = getConfig();
     const pageLangPrefix = config.locale.prefix?.replace('/', '') || '';
-    const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+    const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
     document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
-    sessionStorage.setItem(SESSION_STORAGE_KEY, config.locale.ietf.split('-')[0]);
+    setCookie(COOKIE_NAME, config.locale.ietf.split('-')[0]);
     banner.remove();
   });
 }
@@ -97,11 +100,9 @@ async function showBanner(market, prefLang) {
  */
 export default async function init() {
   const config = getConfig();
-  const bannerEnabled = getMetadata('language-banner') || config.languageBanner;
-  if (bannerEnabled !== 'on') return;
 
   const pageLang = config.locale.ietf.split('-')[0];
-  if (sessionStorage.getItem(SESSION_STORAGE_KEY) === pageLang) return;
+  if (getCookie(COOKIE_NAME) === pageLang) return;
 
   const prefLang = getPreferredLanguage(config.locales);
   const [geoIp, marketsConfig] = await Promise.all([
@@ -112,13 +113,13 @@ export default async function init() {
   if (!geoIp || !marketsConfig) return;
 
   const { siteBrand = 'acom' } = config;
-  const pageMarket = marketsConfig.data.find((m) => m.siteBrand === siteBrand && m.prefix === (config.locale.prefix?.replace('/', '') || ''));
-  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
+  const pageMarket = marketsConfig.data.find((m) => m.siteBrand.toLowerCase() === siteBrand.toLowerCase() && m.prefix === (config.locale.prefix?.replace('/', '') || ''));
+  const isSupportedMarket = pageMarket?.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase());
 
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
 
-    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.siteBrand === siteBrand && m.supportedRegions.includes(geoIp));
+    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.siteBrand.toLowerCase() === siteBrand.toLowerCase() && m.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase()));
     if (prefMarket) {
       await showBanner(prefMarket);
     }
@@ -126,20 +127,16 @@ export default async function init() {
   }
 
   // Unsupported Market Path
-  const marketsForGeo = marketsConfig.data.filter((m) => m.siteBrand === siteBrand && m.supportedRegions.includes(geoIp));
-  if (!marketsForGeo.length) return; 
+  const marketsForGeo = marketsConfig.data.filter((m) => m.siteBrand.toLowerCase() === siteBrand.toLowerCase() && m.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase()));
+  if (!marketsForGeo.length) return;
 
   if (prefLang) {
     const prefMarketForGeo = marketsForGeo.find((m) => m.lang === prefLang);
     if (prefMarketForGeo) {
-      if (siteBrand === 'bacom') {
-        await showBanner(prefMarketForGeo); // Show Banner with recommendation based on PREF-LANG and GeoIP 
-      }
+      await showBanner(prefMarketForGeo); // Show Banner with recommendation based on PREF-LANG and GeoIP
       return;
     }
   }
 
-  if (siteBrand === 'bacom') {
-    await showBanner(marketsForGeo[0]);
-  }
+  await showBanner(marketsForGeo[0]);
 }
