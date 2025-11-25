@@ -18,11 +18,6 @@ export const CATALOG_AEM_FRAGMENT_MAPPING = {
 export class Catalog extends VariantLayout {
     constructor(card) {
         super(card);
-        this.card.addEventListener('mouseenter', this.showActionMenuOnHover);
-        this.card.addEventListener('mouseleave', this.toggleActionMenuFromCard);
-        this.card.addEventListener('focusin', this.showActionMenuOnHover);
-        this.card.addEventListener('focusout', this.handleCardFocusOut);
-        this.card.addEventListener('keydown', this.handleKeyDown);
     }
 
     get actionMenu() {
@@ -189,6 +184,22 @@ export class Catalog extends VariantLayout {
 
     setAriaExpanded(element, value) {
         element.setAttribute('aria-expanded', value);
+    }
+
+    connectedCallbackHook() {
+        this.card.addEventListener('mouseenter', this.showActionMenuOnHover);
+        this.card.addEventListener('mouseleave', this.toggleActionMenuFromCard);
+        this.card.addEventListener('focusin', this.showActionMenuOnHover);
+        this.card.addEventListener('focusout', this.handleCardFocusOut);
+        this.card.addEventListener('keydown', this.handleKeyDown);
+    }
+
+    disconnectedCallbackHook() {
+        this.card.removeEventListener('mouseenter', this.showActionMenuOnHover);
+        this.card.removeEventListener('mouseleave', this.toggleActionMenuFromCard);
+        this.card.removeEventListener('focusin', this.showActionMenuOnHover);
+        this.card.removeEventListener('focusout', this.handleCardFocusOut);
+        this.card.removeEventListener('keydown', this.handleKeyDown);
     }
 
     static variantStyle = css`
