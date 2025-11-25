@@ -545,6 +545,10 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     gap: 0;
   }
 
+  .hero-marquee.s2a-cols > .foreground.cols-2 {
+    grid-template-columns: minmax(48%, 1fr) minmax(57%, 1fr);
+  }
+
   .hero-marquee > .foreground.cols-2 .copy {
     padding-inline-end: 100px;
   }
