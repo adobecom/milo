@@ -243,6 +243,7 @@ function jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer) {
 }
 
 function checkSlideForVideo(activeSlide) {
+  if (!activeSlide) return;
   const video = activeSlide.querySelector('video');
   /* c8 ignore start */
   if (video?.played.length > 0 && !video?.paused) {

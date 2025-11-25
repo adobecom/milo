@@ -640,11 +640,12 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 
   .carousel.s2a-hovering .carousel-slide.active {
-    max-height: 100vh;
+    max-height: 600px;
+    transition: max-height 0.3s ease-out;
   }
-  .carousel.s2a-hovering .carousel-slide {
+  .carousel.s2a-hovering .carousel-slide:not(.active) {
     width: 100%;
-    max-height: 54px;
+    max-height: 200px;
     transition: max-height 0.3s ease-out;
     overflow: hidden;
   }
