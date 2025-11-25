@@ -3,10 +3,6 @@
   --form-padding: 56px;
 }
 
-.email-collection.hidden {
-  display: none;
-}
-
 .email-collection .foreground {
   display: flex;
   flex-direction: column;
@@ -16,67 +12,62 @@
   box-sizing: border-box;
 }
 
-.email-collection .foreground .text {
+.email-collection .text {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.email-collection .foreground .hidden,
-.email-collection .foreground .image {
-  display: none;
-}
-
-.email-collection .foreground .image picture {
+.email-collection .image picture {
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
-.email-collection .foreground .image img {
+.email-collection .image img {
   object-fit: cover;
   height: 100%;
   width: 100%;
 }
 
-.email-collection .foreground.message {
+.email-collection .message {
   padding: 40px 14px;
 }
 
-.email-collection .foreground.message .text {
+.email-collection .message .text {
   padding: 0 10px;
 }
 
-.email-collection .foreground.message .image {
+.email-collection .message .image {
   display: flex;
   align-items: center;
 }
 
-.email-collection .foreground.message .image img {
+.email-collection .message .image img {
   max-height: 350px;
 }
 
-.email-collection .foreground .text .consent-string {
+.email-collection .consent-string {
   margin: 12px 0 24px 0;
 }
 
-.email-collection .foreground .text .consent-string.empty {
+.email-collection .consent-string.empty {
   margin-bottom: 0;
 }
 
-.email-collection .foreground.message .action-area {
+.email-collection .message .action-area {
   margin-top: 24px;
 }
 
-.email-collection .foreground .text .consent-string a {
+.email-collection .consent-string a {
   color: inherit;
 }
 
-.email-collection .foreground .text .consent-string  p {
+.email-collection .consent-string  p {
   margin: 0;
 }
 
-.email-collection .foreground .text .icon-area {
+.email-collection .icon-area {
   margin-top: 0;
   margin-bottom: 12px;
   height: 44px;
@@ -88,36 +79,35 @@
   font-weight: 700;
 }
 
-.email-collection.mailing-list .foreground .text .icon-area,
-.email-collection .foreground.message .text .icon-area {
+.email-collection .message .icon-area {
   margin-bottom: 24px;
 }
 
-.email-collection .foreground .text .heading-l {
+.email-collection .heading-l {
   margin-bottom: 16px;
 }
 
-.email-collection .foreground .text .icon-area :is(picture, img) {
+.email-collection .icon-area :is(picture, img) {
   height: 44px;
   width: 45px;
 }
 
-.email-collection .foreground .text form {
+.email-collection form {
   display: flex;
   flex-direction: column;
   margin-top: 12px;
 }
 
-.email-collection.mailing-list .foreground .text form {
-  margin-top: 24px;
-}
-
-.email-collection .foreground .text .input-container {
+.email-collection .input-container {
   display: flex;
   flex-direction: column;
 }
 
-.email-collection .foreground .text form label {
+.email-collection input {
+  position: relative;
+}
+
+.email-collection label {
   color: #505050;
   position: relative;
   min-height: 32px;
@@ -125,16 +115,16 @@
   align-items: center;
 }
 
-.email-collection .foreground .text form label.required::after {
+.email-collection label.required::after {
   content: '';
-  background: url('/img/ui/asterisk.svg') no-repeat center;
+  background: url('./icons/asterisk.svg') no-repeat center;
   width: 8px;
   height: 8px;
   position: absolute;
   right: 0;
 }
 
-.email-collection .foreground form :is(input, select) {
+.email-collection :is(input, select) {
   box-sizing: border-box;
   margin-bottom: 12px;
   border: 2px #DADADA solid;
@@ -143,12 +133,12 @@
   padding: 0 12px;
 }
 
-.email-collection .foreground form .select-wrapper {
+.email-collection .select-wrapper {
   margin-bottom: 12px;
   position: relative;
 }
 
-.email-collection .foreground form .select-wrapper select {
+.email-collection select {
   margin-bottom: 0;
   width: 100%;
   appearance: none;
@@ -156,9 +146,9 @@
   -moz-appearance: none;
 }
 
-.email-collection .foreground form .select-wrapper::after {
+.email-collection .select-wrapper::after {
   content: '';
-  background: url('/img/ui/chevron-down.svg') no-repeat center #E9E9E9;
+  background: url('./icons/chevron-down.svg') no-repeat center #E9E9E9;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -169,23 +159,27 @@
   pointer-events: none;
 }
 
-.email-collection .foreground form .split-row,
-.email-collection .foreground form .split-row > div {
+.email-collection .split-row,
+.email-collection .split-row > div {
   display: flex;
   flex-direction: column;
 }
 
-.email-collection .foreground .text form .button-container {
+.email-collection .button-container {
   margin-bottom: 0;
   display: flex;
   justify-content: flex-end;
 }
 
-.email-collection .foreground.message .text .button-container {
+.email-collection .message .button-container {
   margin-top: 24px;
 }
 
-.email-collection .foreground .text .button-container button {
+.email-collection .message .button-container {
+  justify-content: unset;
+}
+
+.email-collection button {
   font-family: inherit;
 }
 
@@ -202,6 +196,12 @@
   cursor: pointer;
 }
 
+.email-collection.hidden,
+.email-collection .hidden,
+.email-collection .image {
+  display: none;
+}
+
 @media (min-width: 600px) {
   .email-collection {
     width: 80vw;
@@ -209,8 +209,7 @@
 }
 
 @media (min-width: 700px) {
-  .email-collection .foreground,
-  .email-collection .foreground.message {
+  .email-collection .foreground {
     padding: var(--form-padding);
     display: flex;
     flex-direction: row;
@@ -218,57 +217,57 @@
     height: inherit;
   }
 
-  .email-collection .foreground .text {
+  .email-collection .text {
     max-height: calc(var(--modal-max-height) - 2 * var(--form-padding));
   }
 
-  .email-collection .foreground .image {
+  .email-collection .image {
     flex: 1;
     display: flex;
     align-items: unset;
     min-width: 0;
   }
 
-  .email-collection .foreground.message .image img {
+  .email-collection .message .image img {
     max-height: unset;
   }
 
-  .email-collection .foreground .text,
-  .email-collection .foreground form .split-row > div {
+  .email-collection .text,
+  .email-collection .split-row > div {
     flex: 1;
     min-width: 0;
-  }
-
-  .email-collection.large-image .foreground .image picture {
-    height: 100%;
   }
 
   .email-collection.large-image .foreground {
     padding: 0;
   }
 
-  .email-collection.large-image .foreground .text {
+  .email-collection.large-image .image picture {
+    height: 100%;
+  }
+
+  .email-collection.large-image .text {
     padding: var(--form-padding) 0px;
   }
 
-  .email-collection:not(.large-image) .foreground.message .text {
+  .email-collection:not(.large-image) .message .text {
     padding: unset;
   }
 
-  .email-collection.large-image .foreground .text > * {
+  .email-collection.large-image .text > * {
     margin-right: var(--form-padding);
   }
 
-  .email-collection .foreground:not(.message) {
+  .email-collection > :not(.message) {
     padding-right: 0;
   }
 
-  .email-collection .foreground:not(.message) .text {
+  .email-collection :not(.message) .text {
     overflow-y: auto;
     justify-content: unset;
   }
 
-  .email-collection:not(.large-image) .foreground:not(.message) .text {
+  .email-collection:not(.large-image) :not(.message) .text {
     padding-right: var(--form-padding);
   }
 }
@@ -278,18 +277,18 @@
     width: 900px;
   }
 
-  .email-collection .foreground form .split-row {
+  .email-collection .split-row {
     flex-direction: row;
     display: flex;
     gap: 12px;
   }
 
-  .email-collection .foreground form .split-row div:first-child {
+  .email-collection .split-row div:first-child {
     margin-bottom: 0;
   }
 }
 
-.progress-circle-container {
+.email-collection .progress-circle-container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,55 +299,51 @@
   height: 444px;
 }
 
-.email-collection .button-container button.con-button.outline:has(sp-progress-circle) {
+.email-collection button.outline:has(sp-progress-circle) {
   background: var(--color-black);
 }
 
-.email-aria-live {
+.email-collection-aria-live {
   position: absolute;
   width: 0;
   height: 0;
   overflow: hidden;
 }
 
-.email-collection .foreground form :is(input, select).invalid {
+.email-collection :is(input, select).invalid {
   border-color: var(--form-error-color);
   margin-bottom: 0;
 }
 
-.email-collection .foreground form .select-wrapper:has(select.invalid) {
+.email-collection .select-wrapper:has(select.invalid) {
   margin-bottom: 0;
 }
 
-.email-collection .foreground form label.invalid { 
+.email-collection label.invalid { 
   color: var(--form-error-color);
 }
 
-.email-collection form [id^="error"]:not(.hidden) {
+.email-collection [id^="error"]:not(.hidden) {
   color: var(--form-error-color);
   min-height: 32px;
   display: flex;
   align-items: center;
 }
 
-.email-collection .foreground .text form label.required.invalid::after {
+.email-collection label.required.invalid::after {
   background: unset;
   background-color: var(--form-error-color);
-  -webkit-mask: url('/img/ui/asterisk.svg') no-repeat center;
-  mask: url('/img/ui/asterisk.svg') no-repeat center;
+  -webkit-mask: url('./icons/asterisk.svg') no-repeat center;
+  mask: url('./icons/asterisk.svg') no-repeat center;
 }
 
-.email-collection .foreground .text form input {
-  position: relative;
-}
-
-.email-collection .foreground .text form :is(input, select).invalid {
-  background-image: url('/img/ui/attention.svg');
+.email-collection :is(input, select).invalid {
+  background-image: url('./icons/attention.svg');
   background-size: 18px;
   background-repeat: no-repeat;
   background-position: calc(100% - 12px);
 }
 
-.email-collection .foreground .text form select.invalid {
+.email-collection select.invalid {
   background-position: calc(100% - 30px);
 }

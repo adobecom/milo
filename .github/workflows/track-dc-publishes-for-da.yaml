@@ -1,7 +1,8 @@
 name: Track Publishes DC
 on:
   schedule:
-    - cron: '35 */23 * * *'
+    - cron: '35 */23 * * *'  # existing schedule (every 23 hours)
+    - cron: '30 8 * * *'      # 2 PM IST (08:30 UTC)
   workflow_dispatch:
 
 permissions:

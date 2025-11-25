@@ -270,6 +270,19 @@ describe('Modals', () => {
     window.location.hash = '';
   });
 
+  it('doesn\'t restore the hash when hash is from IMS and the modal gets closed', async () => {
+    window.location.hash = '#old_hash=ims-hash-modal&from_ims=true';
+    window.location.hash = '#ims-hash-modal';
+    await waitForElement('#ims-hash-modal');
+    const modal = document.getElementById('ims-hash-modal');
+    expect(modal).to.exist;
+    expect(window.location.hash).to.equal('#ims-hash-modal');
+    const close = modal.querySelector('.dialog-close');
+    close.click();
+    expect(window.location.hash).to.equal('');
+    window.location.hash = '';
+  });
+
   it('never create modal when removed by MEP', async () => {
     const config = getConfig();
     config.mep = { fragments: { '/milo': { action: 'remove' } } };

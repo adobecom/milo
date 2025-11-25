@@ -29,6 +29,7 @@ import {
   MARK_DURATION_SUFFIX,
   EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
   EVENT_MERCH_CARD_QUANTITY_CHANGE,
+  FF_DEFAULTS,
 } from './constants.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
 import { getService, printMeasure } from './utils.js';
@@ -48,6 +49,9 @@ function priceOptionsProvider(element, options) {
   if (card.priceLiterals) {
     options.literals ??= {};
     Object.assign(options.literals, card.priceLiterals);
+  }
+  if (card.aemFragment) {
+    options[FF_DEFAULTS] = true;
   }
   card.variantLayout?.priceOptionsProvider?.(element, options);
 }

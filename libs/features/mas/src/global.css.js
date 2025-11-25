@@ -1,3 +1,4 @@
+
 import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP } from './media.js';
 
 // Create a shared CSSStyleSheet that can be adopted by multiple components
@@ -122,6 +123,7 @@ const getGlobalStyleSheet = () => {
     --spectrum-green-900-plans: #05834E;
     --spectrum-gray-300-plans: #DADADA;
     --spectrum-gray-700-plans: #505050;
+    --spectrum-red-700-plans: #EB1000;
 
     /* simplified-pricing-express colors */
     --spectrum-gray-50: #FFFFFF;
@@ -232,6 +234,12 @@ merch-card-collection-header > div[slot] p {
     z-index: 3;
 }
 
+/* hide download/upgrade links except the first one */
+merch-card a[is="checkout-link"].download:not(:first-of-type),
+merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
+  display: none;
+}
+
 merch-card[variant="ccd-suggested"] *,
 merch-card[variant="ccd-slice"] * {
   box-sizing: border-box;
@@ -279,7 +287,7 @@ merch-card span[is='inline-price'] {
   line-height: 0;
 }
 
-.annual-price-new-line > span[is="inline-price"] .price-alternative {
+.annual-price-new-line > span[is="inline-price"] .price:not(.price-annual) {
   display: block;
 }
 
@@ -696,6 +704,14 @@ merch-card [slot='callout-content'] .icon-button::after {
 merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
 merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
   display: none;
+}
+
+merch-badge[background-color="spectrum-red-700-plans"] {
+  color: #FFFFFF;
+}
+/* Red border color for merch-cards */
+merch-card[border-color="spectrum-red-700-plans"] {
+  border-color: var(--spectrum-red-700-plans);
 }
 
 @media (max-width: 600px) {

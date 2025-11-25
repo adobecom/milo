@@ -26,6 +26,7 @@ export function decorateCardCtasWithA11y(card) {
       });
     } else {
       const productName = card.querySelector('h3')?.textContent || '';
+      if (productName === link.textContent) return;
       link.setAttribute('aria-label', `${link.textContent}${productName ? ' - ' : ''}${productName}`);
     }
   });
@@ -62,12 +63,18 @@ export function cleanupTabsAnalytics(el) {
     if (tabPanelDaaLh) {
       tabPanel.setAttribute('daa-lh', `${tabPanelDaaLh}--tab`);
     }
+    [...tabs.querySelectorAll('button[role=tab]')].forEach((tab) => {
+      const tabDaaLl = tab.getAttribute('daa-ll');
+      if (!tabDaaLl.includes('-useraction')) {
+        tab.setAttribute('daa-ll', `${tabDaaLl}-useraction`);
+      }
+    });
   }
 }
 
 export function enableAnalytics(card) {
   const getCardLL = (ll) => `${ll}--${card.getAttribute('data-analytics-id')}--card`;
-  card.setAttribute('data-analytics-id', card.getAttribute('daa-lh'));
+  card.setAttribute('data-analytics-id', card.getAttribute('daa-lh') || '');
   card.removeAttribute('daa-lh');
   card.querySelectorAll('a[daa-ll]').forEach((anchor) => {
     const ll = anchor.getAttribute('daa-ll');
