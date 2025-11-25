@@ -56,7 +56,7 @@ export const [showHideMessage, setMessageEls] = (() => {
       const foreground = children[0];
       elsObject = {
         foreground,
-        form: foreground.children[1],
+        form: foreground.children[1] ?? foreground.children[0],
         success: children[1].firstElementChild,
         error: children[2].firstElementChild,
       };
@@ -503,9 +503,9 @@ async function decorate(el, blockChildren) {
   blockChildren[0].classList.add('foreground');
   blockChildren[1].classList.add('hidden');
   blockChildren[2].classList.add('hidden');
-  blockChildren[0].querySelector(':scope > div:not([class])').classList.add('image');
 
   decorateText(blockChildren);
+  blockChildren[0].querySelector(':scope > div:not([class])')?.classList.add('image');
 
   const isSubscribed = await checkIsSubscribed();
   try {
@@ -523,7 +523,10 @@ async function decorate(el, blockChildren) {
 
 export default async function init(el) {
   el.classList.add('hidden');
+
   const blockChildren = [...el.children];
+  if (blockChildren[0].childElementCount === 1) el.classList.add('no-image');
+
   await insertProgress(el, 'l');
 
   el.classList.remove('hidden');
