@@ -361,11 +361,6 @@
   padding-bottom: 30px;
 }
 
-.comparison-table .table-row .table-cell:not(.hidden):not(:nth-child(2)) div,
-.comparison-table .header-item:not(.hidden):not(:nth-child(2)) .sub-header-item-container:not(:last-of-type) {
-  background-color: var(--color-gray-100);
-}
-
 .comparison-table .table-column-header :is(h1, h2, h3, h4, h5, h6) {
   max-width: calc(100% - 82px);
 }
@@ -451,11 +446,6 @@
 
   .comparison-table .sub-header-item-container:first-child {
     padding-bottom: var(--spacing-xxs);
-  }
-
-  .comparison-table .table-row .table-cell:not(.hidden):not(:nth-child(2)) div,
-  .comparison-table .header-item:not(.hidden):not(:nth-child(2)) .sub-header-item-container:not(:last-of-type) {
-    background-color: transparent;
   }
 
   .comparison-table .table-row .table-cell:nth-child(odd) div,
