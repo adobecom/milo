@@ -92,7 +92,6 @@ const capture = async (results) => {
     .getEntriesByType('paint')
     .find((entry) => entry.name === 'first-contentful-paint')?.startTime;
 
-
   contextData.performance_ttfb = window.performance
     .getEntriesByType('navigation')[0]?.responseStart;
 
@@ -127,9 +126,6 @@ const sendMetrics = async (metricsData) => {
   const { results, contextData, token, imsClientId } = metricsData;
   const endpoint = getLogsEndpoint();
 
-  // eslint-disable-next-line no-console
-  console.log('Using endpoint: ', endpoint);
-
   try {
     const response = await fetch(`${endpoint}?clientId=${imsClientId}`, {
       method: 'POST',
@@ -144,12 +140,8 @@ const sendMetrics = async (metricsData) => {
     });
 
     if (!response.ok) {
-      console.warn(`Metrics endpoint returned ${response.status}: ${response.statusText}`);
       return;
     }
-
-    const responseData = await response.json();
-    console.log('Metrics sent successfully:', responseData);
   } catch (error) {
     console.warn('Failed to send metrics:', error.message);
   }
@@ -158,7 +150,6 @@ const sendMetrics = async (metricsData) => {
 const captureMetrics = async (results) => {
   try {
     const metrics = await capture(results);
-    console.log(results);
     await sendMetrics(metrics);
   } catch (error) {
     console.error('Failed to send metrics:', error);

@@ -190,8 +190,8 @@ export async function checkIcons(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
     return {
-      checkId: PERFORMANCE_IDS.Icons,
-      severity: PERFORMANCE_SEVERITIES.Icons,
+      checkId: PERFORMANCE_IDS.icons,
+      severity: PERFORMANCE_SEVERITIES.icons,
       title: PERFORMANCE_TITLES.Icons,
       status: STATUS.FAIL,
       description: 'No LCP element found.',
@@ -199,8 +199,8 @@ export async function checkIcons(url, area, observeLcp) {
   }
   const hasIcons = lcp.element.closest('.section')?.querySelector('.icon-milo');
   return {
-    checkId: PERFORMANCE_IDS.Icons,
-    severity: PERFORMANCE_SEVERITIES.Icons,
+    checkId: PERFORMANCE_IDS.icons,
+    severity: PERFORMANCE_SEVERITIES.icons,
     title: PERFORMANCE_TITLES.Icons,
     status: hasIcons ? STATUS.FAIL : STATUS.PASS,
     description: hasIcons
