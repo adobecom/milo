@@ -725,6 +725,7 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 .section:has(.carousel.s2a-tabs) {
   overflow: hidden;
+  padding-bottom: 0 !important;
 }
   .carousel.s2a-hovering .carousel-slide p.body-m:not(.action-area) {
     padding-top: .5rem;
@@ -1264,6 +1265,7 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 .carousel.carousel.s2a-tabs {
   background: linear-gradient(180deg, #FFF 9.31%, #F3F3F3 98.51%);
+  margin-bottom: 0 !important;
 }
 .carousel.s2a-whatsnew .carousel-slide p{
   color: #686868;
