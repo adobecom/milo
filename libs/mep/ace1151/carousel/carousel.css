@@ -623,8 +623,8 @@ html[dir="rtl"] .carousel .move-indicators {
     transform: translateX(calc((0.3rem) * -1));
   }
 
-  .carousel-menu {
-    display: none;
+  .carousel-menu, .carousel-slide-descriptions {
+    display: none !important;
   }
 
   .carousel.s2a-hovering .carousel-slide.active .foreground {
@@ -638,9 +638,7 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.s2a-hovering .carousel-slide.active.collapsing picture {
     opacity: 0;
   }
-  .carousel.s2a-hovering .carousel-slide.active.collapsing {
-    max-height: 54px !important;
-  }
+
   .carousel.s2a-hovering .carousel-slide.active {
     max-height: 100vh;
   }
@@ -658,7 +656,6 @@ html[dir="rtl"] .carousel .move-indicators {
     padding: 1rem;
   }
   .carousel.s2a-hovering {
-    background-color: #FAFAFA;
     margin: 0;
     padding-bottom: 2rem;
     width: 100%;
@@ -939,6 +936,7 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.s2a-hovering .carousel-slide.active .cta-container,
   .carousel.s2a-hovering .carousel-slide.active p.body-m {
     opacity: 1;
+    display: none !important;
     transition: opacity .3s ease;
     transition-delay: .5s;
     text-align: center;
@@ -1106,7 +1104,6 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel.s2a-hovering .carousel-menu {
     gap: 2px !important;
-    margin-bottom: 90px;
   }
   .carousel.s2a-hovering .carousel-slide p.body-m {
     bottom: -11rem;
@@ -1122,9 +1119,7 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 @media (min-width: 900px) and (max-width: 1999px) {
-  .carousel.s2a-hovering .carousel-menu {
-    margin-bottom: 150px !important;
-  }
+
   .carousel.s2a-hovering .carousel-slides {
     height: 38vw !important;
     margin: 0;
@@ -1193,6 +1188,27 @@ html[dir="rtl"] .carousel .move-indicators {
     left: 0 !important;
   }
 
+  .carousel-slide-descriptions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    margin-bottom: 70px;
+  }
+
+  .carousel-slide-descriptions .carousel-slide-description {
+    opacity: 0;
+    display: none;
+    transition: opacity .3s ease;
+    max-width: 750px;
+    text-align: center;
+    margin-top: 0;
+  }
+  .carousel-slide-descriptions .carousel-slide-description.active {
+    display: flex;
+    opacity: 1;
+  }
+
 .carousel.s2a-hovering .carousel-menu {
   border-radius: 60px;
   background: #FFF;
@@ -1246,12 +1262,13 @@ html[dir="rtl"] .carousel .move-indicators {
 .carousel.s2a-linked-slides a:not(.carousel-slide) {
   display: none;
 }
-
-
-  .carousel.s2a-whatsnew .carousel-slide p{
-    color: #686868;
-    line-height: 140%;
-  }
+.carousel.carousel.s2a-tabs {
+  background: linear-gradient(180deg, #FFF 9.31%, #F3F3F3 98.51%);
+}
+.carousel.s2a-whatsnew .carousel-slide p{
+  color: #686868;
+  line-height: 140%;
+}
 :root:has(meta[name="theme"][content="max25"]) {
   @media (min-width: 900px) {
     .carousel.show-2.ups-desktop.m-gap .carousel-slides {

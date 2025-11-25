@@ -333,6 +333,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     menuItems,
     menuItemsContainer,
     nextPreviousBtns,
+    slideDescriptionsContainer,
     slideIndicators,
     controlsContainer,
     direction,
@@ -346,6 +347,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
   let activeMenuItem = menuItemsContainer?.querySelector('.active');
+  let activeSlideDescription = slideDescriptionsContainer?.querySelector('.active');
   let activeSlideIndicator = controlsContainer.querySelector('.active');
   const activeSlideIndex = activeSlideIndicator.dataset.index * 1;
 
@@ -365,6 +367,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
   activeMenuItem?.classList.remove('active');
+  activeSlideDescription?.classList.remove('active');
   activeSlideIndicator.classList.remove('active');
   // ? -- remove for daves
   [...activeSlide.parentElement.children].forEach((item) => {
@@ -391,6 +394,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlide = slides[jumpToIndex];
     activeMenuItem = menuItemsContainer?.querySelector(`[data-index='${jumpToIndex}']`);
     activeMenuItem?.classList.add('active');
+    activeSlideDescription = slideDescriptionsContainer?.querySelector(`[data-index='${jumpToIndex}']`);
+    // Determine direction to jump
     const from = slides[activeSlideIndex].style.order !== '' ? slides[activeSlideIndex].style.order * 1 : activeSlideIndex;
     const to = slides[jumpToIndex].style.order !== '' ? slides[jumpToIndex].style.order * 1 : jumpToIndex;
     jumpToDirection(
@@ -439,6 +444,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
   activeMenuItem?.classList.add('active');
+  activeSlideDescription?.classList.add('active');
 
   // add classes to nearby siblings
   if (activeSlide.previousElementSibling) {
@@ -625,8 +631,11 @@ function readySlides(slides, slideContainer, isUpsDesktop, carouselElements) {
 
 const buildMenuItems = (slides, el) => {
   if (isHovering(el)) {
+    const slideDescriptions = [];
     let menuItems = slides.map((slide, index) => {
       const title = slide.querySelector('h2,h3');
+      const description = slide.querySelector('p:not(:has(picture))');
+      slideDescriptions.push(description ? createTag('p', { class: 'carousel-slide-description', 'data-index': index }, description.innerHTML) : '');
       if (!title) return null;
       const item = createTag('button', {
         class: 'carousel-menu-item',
@@ -663,10 +672,14 @@ const buildMenuItems = (slides, el) => {
     menuItems = offsetUndoneMenuItems;
     return {
       menuItemsContainer: createTag('div', { class: 'carousel-menu' }, menuItems),
+      slideDescriptionsContainer: createTag('div', { class: 'carousel-slide-descriptions' }, slideDescriptions),
       menuItems,
+      slideDescriptions,
     };
   } return {
     menuItemsContainer: null,
+    slideDescriptionsContainer: null,
+    slideDescriptions: null,
     menuItems: null,
   };
 };
@@ -740,7 +753,12 @@ export default function init(el) {
   });
   slideWrapper.appendChild(ariaLive);
 
-  const { menuItemsContainer, menuItems } = buildMenuItems(slides, el);
+  const {
+    menuItemsContainer,
+    menuItems,
+    slideDescriptions,
+    slideDescriptionsContainer,
+  } = buildMenuItems(slides, el);
 
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   if (isHovering(el) || isPeaking(el) || isWhatsnew(el)) {
@@ -749,6 +767,9 @@ export default function init(el) {
   const carouselElements = {
     el,
     menuItemsContainer,
+    slideDescriptions,
+    slideDescriptionsContainer,
+    jumpTo,
     menuItems,
     nextPreviousBtns,
     slideContainer,
@@ -777,6 +798,7 @@ export default function init(el) {
   }
 
   el.textContent = '';
+  if (slideDescriptionsContainer) el.append(slideDescriptionsContainer);
   if (menuItemsContainer) el.append(menuItemsContainer);
   el.append(slideWrapper);
 
@@ -825,6 +847,7 @@ export default function init(el) {
   slides[activeSlideIndex - 1]?.classList.add('previous-slide');
   slides[activeSlideIndex].classList.add('active');
   if (menuItems) menuItems[0].classList.add('active');
+  if (slideDescriptions) slideDescriptions[0].classList.add('active');
   if (isHovering(el)) slides[activeSlideIndex].querySelector('a')?.setAttribute('tabindex', 0);
   slides[activeSlideIndex + 1]?.classList.add('next-slide');
   handleChangingSlides(carouselElements);
