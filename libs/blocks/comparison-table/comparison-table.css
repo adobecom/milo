@@ -52,6 +52,7 @@
   padding: var(--spacing-s);
   border-radius: var(--comparison-border-radius) var(--comparison-border-radius) 0 0;
   font-family: var(--body-font-family);
+  color: var(--color-black);
 }
 
 .comparison-table .table-column-header button:hover {
