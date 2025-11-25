@@ -60,7 +60,7 @@ async function getTranslatedPage(marketPrefix) {
 function buildBanner(market, translatedUrl) {
   const banner = createTag('div', { class: 'language-banner' });
   const messageContainer = createTag('div', { class: 'language-banner-content' });
-  const messageText = createTag('span', { class: 'language-banner-text' }, 'View this page in ');
+  const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} `);
   const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.language);
   const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close' });
 
@@ -107,19 +107,18 @@ export default async function init() {
   const prefLang = getPreferredLanguage(config.locales);
   const [geoIp, marketsConfig] = await Promise.all([
     getAkamaiCode(),
-    fetch('/supported-markets.json').then((res) => res.json()).catch(() => null),
+    fetch(`${config.contentRoot ?? ''}/supported-markets.json`).then((res) => res.json()).catch(() => null),
   ]);
 
   if (!geoIp || !marketsConfig) return;
 
-  const { siteBrand = 'acom' } = config;
-  const pageMarket = marketsConfig.data.find((m) => m.siteBrand.toLowerCase() === siteBrand.toLowerCase() && m.prefix === (config.locale.prefix?.replace('/', '') || ''));
+  const pageMarket = marketsConfig.data.find((m) => m.prefix === (config.locale.prefix?.replace('/', '') || ''));
   const isSupportedMarket = pageMarket?.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase());
 
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
 
-    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.siteBrand.toLowerCase() === siteBrand.toLowerCase() && m.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase()));
+    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase()));
     if (prefMarket) {
       await showBanner(prefMarket);
     }
@@ -127,7 +126,7 @@ export default async function init() {
   }
 
   // Unsupported Market Path
-  const marketsForGeo = marketsConfig.data.filter((m) => m.siteBrand.toLowerCase() === siteBrand.toLowerCase() && m.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase()));
+  const marketsForGeo = marketsConfig.data.filter((m) => m.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase()));
   if (!marketsForGeo.length) return;
 
   if (prefLang) {

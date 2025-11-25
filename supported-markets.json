@@ -1,91 +1,80 @@
 {
   "data": [
     {
-      "siteBrand": "bacom",
       "prefix": "",
       "lang": "en",
       "language": "English",
-      "supportedRegions": ["US", "SG"],
-      "text": "This page is available in English"
+      "supportedRegions": ["us", "sg"],
+      "text": "View this page in"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "uk",
       "lang": "en",
       "language": "English",
-      "supportedRegions": ["UK"],
-      "text": "This page is available in English"
+      "supportedRegions": ["uk"],
+      "text": "View this page in"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "au",
       "lang": "en",
       "language": "English",
-      "supportedRegions": ["AU"],
-      "text": "This page is available in English"
+      "supportedRegions": ["au"],
+      "text": "View this page in"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "in",
       "lang": "en",
       "language": "English",
-      "supportedRegions": ["IN"],
-      "text": "This page is available in English"
+      "supportedRegions": ["in"],
+      "text": "View this page in"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "fr",
       "lang": "fr",
       "language": "Français",
-      "supportedRegions": ["FR", "LU", "BE", "CH", "CA"],
-      "text": "Cette page est disponible en français"
+      "supportedRegions": ["fr", "lu", "be", "ch", "ca"],
+      "text": "Voir cette page en"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "de",
       "lang": "de",
       "language": "Deutsch",
-      "supportedRegions": ["DE", "LU", "CH", "AT"],
+      "supportedRegions": ["de", "lu", "ch", "at"],
       "text": "Diese Seite ist auf Deutsch verfügbar"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "jp",
       "lang": "ja",
       "language": "日本語",
-      "supportedRegions": ["JP"],
+      "supportedRegions": ["jp"],
       "text": "このページは日本語でご利用いただけます"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "es",
       "lang": "es",
       "language": "Español",
-      "supportedRegions": ["CO", "ES", "MX"],
+      "supportedRegions": ["co", "es", "mx"],
       "text": "Esta página está disponible en español"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "kr",
-      "lang": "kr",
+      "lang": "ko",
       "language": "한국어",
-      "supportedRegions": ["KR"],
+      "supportedRegions": ["kr"],
       "text": "이 페이지는 한국어로 제공됩니다"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "it",
       "lang": "it",
       "language": "Italiano",
-      "supportedRegions": ["IT"],
+      "supportedRegions": ["it"],
       "text": "Questa pagina è disponibile in italiano"
     },
     {
-      "siteBrand": "bacom",
       "prefix": "pt",
       "lang": "pt",
       "language": "Português",
-      "supportedRegions": ["PT", "BR"],
+      "supportedRegions": ["pt", "br"],
       "text": "Esta página está disponível em português"
     }
   ]
