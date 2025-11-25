@@ -1204,6 +1204,7 @@ html[dir="rtl"] .carousel .move-indicators {
     max-width: 750px;
     text-align: center;
     margin-top: 0;
+    font-size: 20px;
   }
   .carousel-slide-descriptions .carousel-slide-description.active {
     display: flex;
