@@ -187,7 +187,7 @@ html:has(meta[name="theme"][content="s2a"]) {
   :root:has(meta[name="theme"][content="s2a"]) .m-button .con-button,
   :root:has(meta[name="theme"][content="s2a"]) .con-button.button-m {
     font-size: 18px;
-    padding: 7px 14px 9px;
+    padding: 9px 14px 11px;
     border-radius: 18px;
   }
 }
