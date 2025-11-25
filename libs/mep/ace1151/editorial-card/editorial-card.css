@@ -398,6 +398,10 @@
     display: none;
   }
 
+  .editorial-card.s2a-editorial-accordion .lockup-area {
+    margin-bottom: 12px;
+  }
+
   .editorial-card .vp-media .desktop-only { display: block; }
 }
 
