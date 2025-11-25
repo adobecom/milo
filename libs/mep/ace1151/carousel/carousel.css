@@ -1125,6 +1125,10 @@ html[dir="rtl"] .carousel .move-indicators {
     height: 38vw !important;
     margin: 0;
   }
+
+  .carousel-slide-descriptions .carousel-slide-description {
+    font-size: 18px;
+  }
 }
 
 
