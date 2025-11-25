@@ -545,10 +545,6 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     gap: 0;
   }
 
-  .hero-marquee.s2a-cols > .foreground.cols-2 {
-    grid-template-columns: minmax(48%, 1fr) minmax(57%, 1fr);
-  }
-
   .hero-marquee > .foreground.cols-2 .copy {
     padding-inline-end: 100px;
   }
@@ -629,6 +625,12 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-block.row-text .row-wrapper {
     align-self: unset;
     font-size: inherit;
+  }
+}
+
+@media screen and (min-width: 1919px) { 
+  .hero-marquee.s2a-cols > .foreground.cols-2 {
+    grid-template-columns: minmax(38%, 1fr) minmax(62%, 1fr);
   }
 }
 
