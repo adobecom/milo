@@ -45,6 +45,8 @@ const stageDomainsMap = {
 
 const config = {
   geoRouting: 'on',
+  languageBanner: 'on',
+  siteBrand: 'bacom',
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',

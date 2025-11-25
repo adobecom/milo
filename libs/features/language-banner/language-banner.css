@@ -1,0 +1,103 @@
+.language-banner {
+  display: flex;
+  padding: 16px 150px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+  position: relative;
+  width: 100%;
+  min-height: 32px;
+  background-color: #000;
+  box-sizing: border-box;
+}
+
+.language-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.language-banner-text {
+  color: var(--S2A-Palette-gray-25, #FFF);
+  font-family: var(--Font-family-Sans-serif, "Adobe Clean Spectrum VF");
+  font-size: var(--Font-size-100, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--Line-height-100, 18px);
+  letter-spacing: var(--Letter-spacing, 0);
+}
+
+.language-banner-link {
+  color: var(--S2A-Palette-gray-25, #FFF);
+  font-family: var(--Font-family-Sans-serif, "Adobe Clean Spectrum VF");
+  font-size: var(--Font-size-100, 14px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--Line-height-100, 18px);
+  letter-spacing: var(--Letter-spacing, 0);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.language-banner-link:hover {
+  opacity: 0.9;
+}
+
+.language-banner-close {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background-color: #FFF;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+
+.language-banner-close:hover {
+  opacity: 0.8;
+}
+
+.language-banner-close::before,
+.language-banner-close::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 2px;
+  background-color: #000;
+}
+
+.language-banner-close::before {
+  transform: rotate(45deg);
+}
+
+.language-banner-close::after {
+  transform: rotate(-45deg);
+}
+
+@media (max-width: 1024px) {
+  .language-banner {
+    padding: 16px 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .language-banner {
+    padding: 16px 40px 16px 16px;
+  }
+
+  .language-banner-close {
+    right: 12px;
+  }
+}
+
