@@ -630,7 +630,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 
 @media screen and (min-width: 1919px) { 
   .hero-marquee.s2a-cols > .foreground.cols-2 {
-    grid-template-columns: minmax(38%, 1fr) minmax(62%, 1fr);
+    grid-template-columns: minmax(48%, 1fr) minmax(52%, 1fr);
   }
 }
 
