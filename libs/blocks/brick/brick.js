@@ -56,8 +56,7 @@ function decorateForeground(el, foreground) {
     }
     const mediaEl = foreground.querySelector('div:not([class])');
     mediaEl.classList.add('brick-media');
-    el.classList.add((foreground.firstElementChild === mediaEl) ? 'media-left' : 'media-right');
-    
+    el.classList.add((foreground.firstElementChild === mediaEl) ? 'media-left' : 'media-right');    
     if (el.classList.contains('media-visible-mobile-tablet')) {
       const mediaClasses = ['media-cover-left', 'media-cover-right', 'media-cover-top', 'media-cover-bottom'];
       const focalClass = mediaClasses.find((className) => el.classList.contains(className));
