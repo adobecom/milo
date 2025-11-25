@@ -1899,7 +1899,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink .feds-navLink-content {
-  padding-bottom: 36px;
+  padding: 18px 0;
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content a.feds-navLink,
@@ -2249,12 +2249,16 @@ header.global-navigation div.feds-nav[role="list"] [role="listitem"] > :is(butto
 header.global-navigation .tab-panel .tab-column > a.feds-navLink .feds-navLink-title, 
 header.global-navigation .tab-panel .tab-column > a.feds-navLink:not(:has(.feds-navLink-title)),
 header.global-navigation .feds-menu-column ul > li > a,
-header.global-navigation .feds-content-description { 
+header.global-navigation .feds-content-description {
   font-family: var(--heading-font-family);
-  /* color: green !important; */
 }
 
 header.global-navigation div.feds-nav[role="list"] [role="listitem"] > :is(button, a) {
   font-size: 16px;
   font-weight: 800;
+}
+
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-column > a.feds-navLink:first-of-type .feds-navLink-content,
+header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-column > a.feds-navLink:first-of-type {
+  padding-top: 0;
 }
