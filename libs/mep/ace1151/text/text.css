@@ -315,6 +315,15 @@
   height: 100%;
 }
 
+.text.s2a-bold-link a {
+ font-weight: 700;
+}
+
+.text.s2a-spacing p.icon-area {
+ font-size: var(--type-body-xs-size);
+ margin-bottom: 14px;
+}
+
 /* Mweb specific */
 @media screen and (max-width: 599px) {
   .text.text-block.left-mobile {
