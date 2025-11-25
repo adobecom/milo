@@ -2,7 +2,7 @@
 import {
   loadBlock,
   decorateAutoBlock,
-  decorateLinks,
+  decorateLinksAsync,
   getMetadata,
   getConfig,
   localizeLink,
@@ -186,7 +186,7 @@ class Footer {
     // they don't get decorated twice
     [regionParent, socialParent].forEach((parent) => parent?.replaceChildren());
 
-    decorateLinks(this.body);
+    await decorateLinksAsync(this.body);
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);

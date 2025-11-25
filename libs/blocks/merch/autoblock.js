@@ -1,4 +1,4 @@
-import { decorateLinks, loadBlock, localizeLink } from '../../utils/utils.js';
+import { decorateLinksAsync, loadBlock, localizeLink } from '../../utils/utils.js';
 import { addAriaLabelToCta } from './merch.js';
 
 export function localizePreviewLinks(el) {
@@ -98,7 +98,7 @@ export async function postProcessAutoblock(autoblockEl, isCard = false) {
   const processPromises = cards.map(async (card) => {
     try {
       await card.checkReady();
-      decorateLinks(card);
+      await decorateLinksAsync(card);
       localizePreviewLinks(card);
       card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
       decorateCardCtasWithA11y(card);

@@ -5,7 +5,7 @@ import {
   loadStyle,
   loadLana,
   isLocalNav,
-  decorateLinks,
+  decorateLinksAsync,
   localizeLink,
   getFederatedContentRoot,
   getFederatedUrl,
@@ -545,7 +545,7 @@ export async function fetchAndProcessPlainHtml({
 
   // federatePictureSources should only be called after decorating the links.
   if (shouldDecorateLinks) {
-    decorateLinks(body);
+    await decorateLinksAsync(body);
     federatePictureSources({ section: body, forceFederate: path.includes('/federal/') });
   }
 

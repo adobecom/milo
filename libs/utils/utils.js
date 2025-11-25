@@ -583,7 +583,7 @@ function processQueryIndexMap(link, domain, imsClientId) {
     pathsRequest: new Promise((resolve) => {
       fetch(link).then(async (response) => {
         const queryIndexJson = await response.json();
-        resolve(queryIndexJson.data?.flatMap((d) => d.Path));
+        resolve(queryIndexJson.data?.flatMap((d) => d.path?.replace(/\.html$/, '')));
         queryIndexes[imsClientId].requestResolved = true;
       }).catch(() => {
         resolve({});
@@ -668,26 +668,24 @@ async function urlInMatchingIndex(matchingIndexes, sanitizedPath) {
     matchingIndexes.map((q) => q.pathsRequest),
   );
   const allPaths = pathsArrays.flat().filter(Boolean);
-  return allPaths.some((path) => {
-    const sanitizedIndexPath = path.replace(/\.html$/, '');
-    return sanitizedPath === sanitizedIndexPath;
-  });
+  return allPaths.some((path) => sanitizedPath === path);
 }
 
-async function urlInQueryIndex(url) {
-  const sanitizedPath = url.pathname.replace(/\.html$/, '');
+async function urlInQueryIndex(urlPath, urlHostname) {
+  const sanitizedPath = urlPath.replace(/\.html$/, '');
   const matchingIndexes = Object.values(queryIndexes)
-    .filter((q) => q.domains.includes(url.hostname));
+    .filter((q) => q.domains.includes(urlHostname));
   const queryIndexPromises = Promise.all(matchingIndexes.map((m) => m.pathsRequest));
 
   if (matchingIndexes.length && matchingIndexes.filter((m) => !m.requestResolved).length) {
-    const fastestProm = await Promise.race([baseQueryIndex.pathsRequest, queryIndexPromises]);
-    const isBaseQueryIndex = !!fastestProm.pathsRequest;
+    await Promise.race([baseQueryIndex.pathsRequest, queryIndexPromises]);
+    const isBaseQueryIndex = baseQueryIndex.requestResolved
+      && !queryIndexPromises.some((p) => !p.requestResolved);
     if (isBaseQueryIndex) {
       const urlInIndex = urlInMatchingIndex(matchingIndexes, sanitizedPath);
       if (!urlInIndex) {
         const urlInBaseQueryIndex = urlInMatchingIndex(Object.values(baseQueryIndex)
-          .filter((q) => q.domains.includes(url.hostname)), sanitizedPath);
+          .filter((q) => q.domains.includes(urlHostname)), sanitizedPath);
         return !urlInBaseQueryIndex;
       }
     }
@@ -713,6 +711,7 @@ export async function localizeLinkAsync(
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, languages, prodDomains, base } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
+    if (path.includes('solutions/personalization-at-scale')) debugger;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
         || overrideDomain;
     if (!isLocalizable) return processedHref;
@@ -720,14 +719,17 @@ export async function localizeLinkAsync(
     if (isLocalizedLink) return processedHref;
 
     let prefix = getPrefixBySite(locale, url, relative);
+    // TODO don't run all this code for json files
     if (base && !queryIndexes.length) {
       loadQueryIndexes(getConfig(), prefix);
     }
-    if (queryIndexes[0] && (!queryIndexes[0].requestResolved || lingoSiteMappingLoaded)) {
-      await Promise.all([queryIndexes[0].pathsRequest]);
+    if (queryIndexes[0] && !(queryIndexes[0].requestResolved || lingoSiteMappingLoaded)) {
+      await Promise.all([queryIndexes[0].pathsRequest, lingoSiteMapping]);
     }
-    const urlExists = await urlInQueryIndex(`${url.origin}${prefix}${path}`);
-    if (!urlExists && locale.base) prefix = locale.base === '' ? '' : `/${prefix}`;
+    if (path.includes('solutions/personalization-at-scale')) debugger;
+    const urlExists = await urlInQueryIndex(`${url.origin}${prefix}${path}`, url.hostname);
+    if (!urlExists && locale.base) prefix = locale.base === '' ? '' : `/${locale.base}`;
+    if (urlExists) debugger;
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
@@ -735,7 +737,7 @@ export async function localizeLinkAsync(
   }
 }
 
-// this method is deprecated - use localizeLinksAsync instead
+// this method is deprecated - use localizeLinkAsync instead
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -1170,6 +1172,77 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   });
 }
 
+export async function decorateLinksAsync(el) {
+  const config = getConfig();
+  decorateImageLinks(el);
+  const anchors = el.getElementsByTagName('a');
+  const { hostname, href } = window.location;
+
+  const linksPromises = [...anchors].map(async (a) => {
+    appendHtmlToLink(a);
+    if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
+    const hasDnt = a.href.includes('#_dnt');
+    if (!a.dataset?.hasDnt) a.href = await localizeLinkAsync(a.href);
+    if (hasDnt) a.dataset.hasDnt = true;
+    decorateSVG(a);
+    if (a.href.includes('#_blank')) {
+      a.setAttribute('target', '_blank');
+      a.href = a.href.replace('#_blank', '');
+    }
+    if (a.href.includes('#_alloy')) {
+      import('../martech/alloy-links.js').then(({ default: processAlloyLink }) => {
+        processAlloyLink(a);
+      });
+    }
+    if (a.href.includes('#_nofollow')) {
+      a.setAttribute('rel', 'nofollow');
+      a.href = a.href.replace('#_nofollow', '');
+    }
+
+    // Custom action links
+    const loginEvent = '#_evt-login';
+    if (a.href.includes(loginEvent)) {
+      a.href = a.href.replace(loginEvent, '');
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const { signInContext } = config;
+        window.adobeIMS?.signIn(signInContext);
+      });
+    }
+    const copyEvent = '#_evt-copy';
+    if (a.href.includes(copyEvent)) {
+      decorateCopyLink(a, copyEvent);
+    }
+    const branchQuickLink = 'app.link';
+    if (a.href.includes(branchQuickLink)) {
+      (async () => {
+        const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
+        processQuickLink(a);
+      })();
+    }
+    // Append aria-label
+    const pipeRegex = /\s?\|([^|]*)$/;
+    if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
+      const node = [...a.childNodes].reverse()[0];
+      const ariaLabel = node.textContent.match(pipeRegex)?.[1];
+      node.textContent = node.textContent.replace(pipeRegex, '');
+      a.setAttribute('aria-label', (ariaLabel || '').trim());
+    }
+
+    if (a.href.includes('#_dnb')) {
+      a.href = a.href.replace('#_dnb', '');
+      return null;
+    }
+    const autoBlock = decorateAutoBlock(a);
+    return autoBlock ? a : null;
+  });
+
+  const links = (await Promise.all(linksPromises)).filter(Boolean);
+  convertStageLinks({ anchors, config, hostname, href });
+  return links;
+}
+
+// this method is deprecated - use decorateLinksAsync instead
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
@@ -1438,8 +1511,8 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
-function decorateSection(section, idx) {
-  let links = decorateLinks(section);
+async function decorateSection(section, idx) {
+  let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
 
@@ -1861,20 +1934,20 @@ function initSidekick() {
   }
 }
 
-function decorateMeta() {
+async function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."], [content*="/federal/"]');
-  contents.forEach((meta) => {
+  await Promise.all(Array.from(contents).map(async (meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {
       const url = new URL(meta.content);
-      const localizedLink = localizeLink(`${origin}${url.pathname}`);
+      const localizedLink = await localizeLinkAsync(`${origin}${url.pathname}`);
       const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
       meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
-  });
+  }));
 
   // Event-based modal
   window.addEventListener('modal:open', async (e) => {
@@ -1886,8 +1959,8 @@ function decorateMeta() {
   });
 }
 
-function decorateDocumentExtras() {
-  decorateMeta();
+async function decorateDocumentExtras() {
+  await decorateMeta();
   decorateHeader();
 }
 
@@ -1953,7 +2026,7 @@ async function resolveInlineFrags(section) {
   const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
   const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
   await Promise.all(fragPromises);
-  const newlyDecoratedSection = decorateSection(section.el, section.idx);
+  const newlyDecoratedSection = await decorateSection(section.el, section.idx);
   section.blocks = newlyDecoratedSection.blocks;
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
@@ -1999,10 +2072,6 @@ export async function loadArea(area = document) {
     await loadLanguageConfig();
   }
 
-  if (isDoc) {
-    decorateDocumentExtras();
-  }
-
   // TODO test only - remove for prod and real PR
   if (window.location.href.startsWith('https://main--da-bacom--adobecom.aem.live/ar') || window.location.href.startsWith('https://main--da-bacom--adobecom.aem.page/ar')) {
     config.locale.base = 'es';
@@ -2012,7 +2081,12 @@ export async function loadArea(area = document) {
     config.locale.base = 'de';
     config.queryIndexPath = '/assets/query-index.json';
   }
-  if (config.locale.base
+
+  if (isDoc) {
+    await decorateDocumentExtras();
+  }
+
+  if (config.locale?.base
   // || swap fragment (code from Mark)
   ) {
     // TODO load by locale
@@ -2022,13 +2096,15 @@ export async function loadArea(area = document) {
     loadQueryIndexes(config, prefix);
   }
 
-  const sections = decorateSections(area, isDoc);
+  const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
+  // const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
   let lcpSectionId = null;
 
-  for (const section of sections) {
-    const isLastSection = section.idx === sections.length - 1;
+  for (const htmlSection of htmlSections) {
+    const section = await decorateSection(htmlSection, htmlSections.indexOf(htmlSection));
+    const isLastSection = section.idx === htmlSections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
       lcpSectionId = section.idx;
     }

@@ -183,7 +183,7 @@ describe('Utils', () => {
         setViewport({ width: 600, height: 1500 });
         await waitForElement('.disable-autoblock');
         const disableAutoBlockLink = document.querySelector('.disable-autoblock');
-        utils.decorateLinks(disableAutoBlockLink);
+        await utils.decorateLinksAsync(disableAutoBlockLink);
         expect(disableAutoBlockLink.href).to.equal('https://www.instagram.com/');
       });
 
@@ -220,13 +220,13 @@ describe('Utils', () => {
       it('Implements a login action', async () => {
         await waitForElement('.login-action');
         const login = document.querySelector('.login-action');
-        utils.decorateLinks(login);
+        await utils.decorateLinksAsync(login);
         expect(login.href).to.equal('https://www.adobe.com/');
       });
       it('Implements a copy link action', async () => {
         await waitForElement('.copy-action');
         const copy = document.querySelector('.copy-action');
-        utils.decorateLinks(copy);
+        await utils.decorateLinksAsync(copy);
         expect(copy.classList.contains('copy-link')).to.be.true;
       });
       it('triggers the event listener on clicking the custom links', async () => {
@@ -438,7 +438,7 @@ describe('Utils', () => {
       const alloyLink = marquee.querySelector('a');
       const alloyString = alloyLink.href.split('#_')?.find((s) => s.startsWith('alloy:'));
       expect(alloyLink.href).to.contain('#_alloy:');
-      utils.decorateLinks(marquee);
+      await utils.decorateLinksAsync(marquee);
       waitFor(() => {
         expect(alloyLink.href).to.not.contain('#_alloy:');
         alloyLink.click();
@@ -451,25 +451,25 @@ describe('Utils', () => {
         expect(eventPayload.data.__adobe.target).to.deep.equal({ [`${profile}.${business}`]: value });
       }, 10);
     });
-    it('Add rel=nofollow to a link', () => {
+    it('Add rel=nofollow to a link', async () => {
       const noFollowContainer = document.querySelector('main div');
-      utils.decorateLinks(noFollowContainer);
+      await utils.decorateLinksAsync(noFollowContainer);
       const noFollowLink = noFollowContainer.querySelector('.no-follow');
       expect(noFollowLink.rel).to.contain('nofollow');
       expect(noFollowLink.href).to.equal('https://www.adobe.com/test');
     });
 
-    it('Add data-attribute "data-http-link" if http shceme found', () => {
+    it('Add data-attribute "data-http-link" if http shceme found', async () => {
       const linksContainer = document.querySelector('main div');
-      utils.decorateLinks(linksContainer);
+      await utils.decorateLinksAsync(linksContainer);
       const httpLink = linksContainer.querySelector('[data-http-link]');
       expect(httpLink.dataset.httpLink).to.equal('true');
     });
 
-    it('Add data-attribute "hasDnt" for links with #_dnt hash to avoid localizing when in deeply nested inline fragments', () => {
+    it('Add data-attribute "hasDnt" for links with #_dnt hash to avoid localizing when in deeply nested inline fragments', async () => {
       const container = document.createElement('div');
       container.innerHTML = '<p><a class="dnt-link" href="https://www.adobe.com/test#_dnt">Do Not Track Link</a></p>';
-      utils.decorateLinks(container);
+      await utils.decorateLinksAsync(container);
       const dntLink = container.querySelector('.dnt-link');
       expect(dntLink.dataset.hasDnt).to.equal('true');
     });
@@ -874,7 +874,7 @@ describe('Utils', () => {
     it('should add .html to relative links when enabled', async () => {
       utils.setConfig({ useDotHtml: true, htmlExclude: [/exclude\/.*/gm] });
       expect(utils.getConfig().useDotHtml).to.be.true;
-      await utils.decorateLinks(document.getElementById('linklist'));
+      await utils.decorateLinksAsync(document.getElementById('linklist'));
       expect(document.getElementById('excluded')?.getAttribute('href'))
         .to.equal('/exclude/this/page');
       const htmlLinks = document.querySelectorAll('.has-html');
@@ -886,7 +886,7 @@ describe('Utils', () => {
     it('should not add .html to relative links when disabled', async () => {
       utils.setConfig({ useDotHtml: false, htmlExclude: [/exclude\/.*/gm] });
       expect(utils.getConfig().useDotHtml).to.be.false;
-      await utils.decorateLinks(document.getElementById('linklist'));
+      await utils.decorateLinksAsync(document.getElementById('linklist'));
       expect(document.getElementById('excluded')?.getAttribute('href'))
         .to.equal('/exclude/this/page');
       const htmlLinks = document.querySelectorAll('.has-html');

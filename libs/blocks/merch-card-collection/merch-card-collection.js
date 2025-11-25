@@ -1,7 +1,7 @@
 import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION } from '../merch/merch.js';
 import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
-  createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
+  createTag, decorateLinksAsync, getConfig, loadBlock, loadStyle, localizeLink,
 } from '../../utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
 
@@ -62,9 +62,11 @@ async function getCardsRoot(config, html) {
   const batchSize = 12;
   for (let i = 0; i < allBlockEls.length; i += batchSize) {
     const blockEls = allBlockEls.slice(i, i + batchSize);
-    await Promise.all(blockEls.map((cardEl) => Promise.all(
-      decorateLinks(cardEl).map(loadBlock),
-    ).then(() => loadBlock(cardEl))));
+    await Promise.all(blockEls.map(async (cardEl) => {
+      const links = await decorateLinksAsync(cardEl);
+      await Promise.all(links.map(loadBlock));
+      return loadBlock(cardEl);
+    }));
     await makePause();
   }
   return cardsRoot;
