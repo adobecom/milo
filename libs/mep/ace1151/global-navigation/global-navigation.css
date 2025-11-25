@@ -1647,7 +1647,7 @@ header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .t
   padding: 1px 0;
   border: 0;
   font-family: var(--body-font-family);
-  color: var(--text-color);
+  color: var(--feds-color-black-v2);
 }
 
 header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .top-bar .main-menu svg {
@@ -1685,6 +1685,7 @@ header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .t
   box-sizing: inherit;
   white-space: break-spaces;
   margin: 0;
+  color: var(--feds-color-black-v2);
 }
 
 header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .title h2:focus {
