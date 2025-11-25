@@ -38,11 +38,11 @@ export async function getLingoConfigMap() {
     const siteLocalesData = lingoConfig?.data?.['site-locales']?.data;
     if (siteLocalesData && Array.isArray(siteLocalesData)) {
       siteLocalesData.forEach((entry) => {
-        const { imsClientId, regionalSites } = entry;
-        if (!imsClientId) return;
+        const { uniqueSiteId, regionalSites } = entry;
+        if (!uniqueSiteId) return;
 
-        if (!lingoConfigMap[imsClientId]) {
-          lingoConfigMap[imsClientId] = [];
+        if (!lingoConfigMap[uniqueSiteId]) {
+          lingoConfigMap[uniqueSiteId] = [];
         }
 
         if (regionalSites && regionalSites.trim()) {
@@ -50,7 +50,7 @@ export async function getLingoConfigMap() {
             .split(',')
             .map((site) => `${site.trim()}/`.replace(/\/+$/, '/'))
             .filter(Boolean);
-            lingoConfigMap[imsClientId].push(...sites);
+            lingoConfigMap[uniqueSiteId].push(...sites);
         }
       });
     }
