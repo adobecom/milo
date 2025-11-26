@@ -341,7 +341,7 @@ function setupDropdownEvents({
 
   const closeDropdown = () => {
     if (!languageSelected) {
-      sendAnalyticsEvent('language-picker:dismissed', 'dismissal');
+      sendAnalyticsEvent('language-selector:dismissed', 'dismissal');
     }
     isDropdownOpen = false;
     dropdown.style.display = 'none';
@@ -410,7 +410,7 @@ function setupDropdownEvents({
   });
 
   async function openDropdown() {
-    sendAnalyticsEvent('language-picker:opened');
+    sendAnalyticsEvent('language-selector:opened');
     languageSelected = false;
     isDropdownOpen = true;
     dropdown.style.display = 'block';
