@@ -171,10 +171,11 @@ const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
 let langConfig;
-const queryIndexes = [];
+const queryIndexes = {};
 let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
+let isLoadingQueryIndexes = false;
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -591,17 +592,22 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
-function processQueryIndexMap(link, domain, imsClientId) {
+function processQueryIndexMap(link, domain, siteId) {
+  const pathsRequest = fetch(link)
+    .then((response) => response.json())
+    .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
+    .catch((error) => {
+      window.lana?.log(`Failed to load query index: ${link}`, error);
+      return [];
+    })
+    .finally(() => {
+      if (queryIndexes[siteId]) {
+        queryIndexes[siteId].requestResolved = true;
+      }
+    });
+
   return {
-    pathsRequest: new Promise((resolve) => {
-      fetch(link).then(async (response) => {
-        const queryIndexJson = await response.json();
-        resolve(queryIndexJson.data?.flatMap((d) => d.path?.replace(/\.html$/, '')));
-        queryIndexes[imsClientId].requestResolved = true;
-      }).catch(() => {
-        resolve({});
-      });
-    }),
+    pathsRequest,
     requestResolved: false,
     domains: [domain],
   };
@@ -609,102 +615,131 @@ function processQueryIndexMap(link, domain, imsClientId) {
 
 async function loadQueryIndexes(prefix) {
   const config = getConfig();
-  if (lingoSiteMapping) return;
+
+  if (lingoSiteMapping || isLoadingQueryIndexes) return;
+  isLoadingQueryIndexes = true;
 
   const origin = config.origin || window.location.origin;
-  const regionalContentRoot = `${origin}${prefix}${config.contentRoot ?? ''}`;
+  const contentRoot = config.contentRoot ?? '';
+  const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
   const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
-  const predefinedQueryIndexPath = `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`;
   const siteId = config.uniqueSiteId ?? '';
 
   queryIndexes[siteId] = processQueryIndexMap(
-    predefinedQueryIndexPath,
+    `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
     window.location.host,
     siteId,
   );
 
   if (config.queryIndexPath) {
-    const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${config.contentRoot ?? ''}`;
-    const baseQueryIndexPath = `${baseContentRoot}${config.queryIndexPath}`;
-    baseQueryIndex = processQueryIndexMap(baseQueryIndexPath, window.location.host, siteId);
+    const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${contentRoot}`;
+    baseQueryIndex = processQueryIndexMap(
+      `${baseContentRoot}${config.queryIndexPath}`,
+      window.location.host,
+      siteId,
+    );
   }
 
-  lingoSiteMapping = new Promise((resolve) => {
-    // TODO get rid of -vhargrave
-    fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`)
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-      })
-      .then((configJson) => {
-        const alreadyQueriedIndex = configJson['ims-query-index-map']?.data
-          ?.find((d) => d.uniqueSiteId === siteId);
-        const alreadyQueriedIndexDomain = alreadyQueriedIndex?.queryIndexWebPath.split('/*')[0];
+  lingoSiteMapping = (async () => {
+    try {
+      // TODO get rid of -vhargrave
+      const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const configJson = await response.json();
 
-        // Add domain to existing indexes if not already present
+      const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+      const siteLocalesData = configJson['site-locales']?.data ?? [];
+
+      const existingIndex = siteQueryIndexMap.find((d) => d.uniqueSiteId === siteId);
+      const existingDomain = existingIndex?.queryIndexWebPath.split('/*')[0];
+
+      if (existingDomain) {
         [queryIndexes[siteId], baseQueryIndex].forEach((queryIndex) => {
-          const shouldAddDomain = queryIndex && alreadyQueriedIndexDomain
-            && !queryIndex.domains.includes(alreadyQueriedIndexDomain);
-          if (shouldAddDomain) queryIndex.domains.push(alreadyQueriedIndexDomain);
-        });
-
-        const imsQueryIndexData = configJson['ims-query-index-map']?.data?.filter(
-          (d) => d.uniqueSiteId !== siteId
-            && config.prodDomains?.includes(d.queryIndexWebPath.split('/*')[0]),
-        ) || [];
-        const siteLocalesData = configJson['site-locales']?.data || [];
-
-        imsQueryIndexData.forEach((queryIndexMap) => {
-          const { uniqueSiteId, queryIndexWebPath } = queryIndexMap;
-          const matchingSiteLocale = siteLocalesData.find((s) => (
-            s.uniqueSiteId === uniqueSiteId && parseList(s.regionalSites).includes(prefix)
-          ));
-          if (matchingSiteLocale) {
-            const updatedPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
-            const domain = queryIndexWebPath.split('/*')[0];
-            queryIndexes[uniqueSiteId] = processQueryIndexMap(updatedPath, domain, uniqueSiteId);
+          if (queryIndex && !queryIndex.domains.includes(existingDomain)) {
+            queryIndex.domains.push(existingDomain);
           }
         });
+      }
 
-        lingoSiteMappingLoaded = true;
-        resolve();
-      })
-      .catch((e) => {
-        window.lana?.log('Failed to load lingo-site-mapping-vhargrave.json:', e);
-        lingoSiteMappingLoaded = true;
-        resolve();
-      });
-  });
+      const domainInProdDomains = (d) => d.uniqueSiteId !== siteId
+        && config.prodDomains?.includes(d.queryIndexWebPath.split('/*')[0]);
+
+      const hasRegionalQueryIndex = (locale) => parseList(locale.regionalSites).includes(prefix);
+
+      siteQueryIndexMap
+        .filter(domainInProdDomains)
+        .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
+          const regionalQueryIndexExistsForSite = siteLocalesData
+            .find((s) => s.uniqueSiteId === uniqueSiteId && hasRegionalQueryIndex(s));
+
+          if (!regionalQueryIndexExistsForSite) return;
+          const domain = queryIndexWebPath.split('/*')[0];
+          const indexPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
+          queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain, uniqueSiteId);
+        });
+    } catch (e) {
+      window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+    } finally {
+      lingoSiteMappingLoaded = true;
+    }
+  })();
 }
 
 async function urlInMatchingIndex(matchingIndexes, sanitizedPath) {
-  const pathsArrays = await Promise.all(
-    matchingIndexes.map((q) => q.pathsRequest),
-  );
+  const pathsArrays = await Promise.all(matchingIndexes.map((q) => q.pathsRequest));
   const allPaths = pathsArrays.flat().filter(Boolean);
   return allPaths.some((path) => sanitizedPath === path);
 }
 
-async function urlInQueryIndex(urlPath, urlHostname) {
-  const sanitizedPath = urlPath.replace(/\.html$/, '');
-  const matchingIndexes = Object.values(queryIndexes)
-    .filter((q) => q.domains.includes(urlHostname));
-  const queryIndexPromises = Promise.all(matchingIndexes.map((m) => m.pathsRequest));
+async function tryEarlyDecisionUsingBaseIndex(
+  matchingIndexes,
+  sanitizedPath,
+  urlHostname,
+  initialResolvedCount,
+) {
+  if (!baseQueryIndex?.pathsRequest) return null;
 
-  if (matchingIndexes.length && matchingIndexes.filter((m) => !m.requestResolved).length) {
-    await Promise.race([baseQueryIndex.pathsRequest, queryIndexPromises]);
-    const isBaseQueryIndex = baseQueryIndex.requestResolved
-      && !queryIndexPromises.some((p) => !p.requestResolved);
-    if (isBaseQueryIndex) {
-      const urlInIndex = urlInMatchingIndex(matchingIndexes, sanitizedPath);
-      if (!urlInIndex) {
-        const urlInBaseQueryIndex = urlInMatchingIndex(Object.values(baseQueryIndex)
-          .filter((q) => q.domains.includes(urlHostname)), sanitizedPath);
-        return !urlInBaseQueryIndex;
-      }
-    }
+  const baseIndexMatches = Object.values(baseQueryIndex)
+    .filter((q) => q.domains.includes(urlHostname));
+  const allRegionalPromises = Promise.all(matchingIndexes.map((m) => m.pathsRequest));
+
+  await Promise.race([baseQueryIndex.pathsRequest, allRegionalPromises]);
+
+  if (!baseQueryIndex.requestResolved) return null;
+
+  const currentResolvedIndexes = matchingIndexes.filter((m) => m.requestResolved);
+
+  if (currentResolvedIndexes.length > initialResolvedCount) {
+    const foundInNewlyResolved = await urlInMatchingIndex(currentResolvedIndexes, sanitizedPath);
+    if (foundInNewlyResolved) return true;
   }
-  await queryIndexPromises;
+
+  const urlExistsInBase = await urlInMatchingIndex(baseIndexMatches, sanitizedPath);
+  return urlExistsInBase ? false : null;
+}
+
+async function urlInQueryIndex(urlPath, urlHostname, matchingIndexes) {
+  const sanitizedPath = urlPath.replace(/\.html$/, '');
+
+  const allResolved = matchingIndexes.every((m) => m.requestResolved);
+  if (allResolved) return urlInMatchingIndex(matchingIndexes, sanitizedPath);
+
+  const resolvedIndexes = matchingIndexes.filter((m) => m.requestResolved);
+  if (resolvedIndexes.length) {
+    const foundInResolved = await urlInMatchingIndex(resolvedIndexes, sanitizedPath);
+    if (foundInResolved) return true;
+  }
+
+  const earlyDecision = await tryEarlyDecisionUsingBaseIndex(
+    matchingIndexes,
+    sanitizedPath,
+    urlHostname,
+    resolvedIndexes.length,
+  );
+
+  if (earlyDecision !== null) return earlyDecision;
+
+  await Promise.all(matchingIndexes.map((m) => m.pathsRequest));
   return urlInMatchingIndex(matchingIndexes, sanitizedPath);
 }
 
@@ -732,16 +767,22 @@ export async function localizeLinkAsync(
     if (isLocalizedLink) return processedHref;
 
     let prefix = getPrefixBySite(locale, url, relative);
-    // TODO don't run all this code for json files
+
     const siteId = uniqueSiteId ?? '';
-    if (locale.base && !queryIndexes[siteId]) {
-      loadQueryIndexes(prefix);
+    if (locale.base && extension !== 'json') {
+      if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
+        loadQueryIndexes(prefix);
+      }
+      if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
+        await Promise.all([queryIndexes[siteId].pathsRequest, lingoSiteMapping]);
+      }
+      const matchingIndexes = Object.values(queryIndexes)
+        .filter((q) => q.domains.includes(url.hostname));
+      if (matchingIndexes.length) {
+        const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, url.hostname, matchingIndexes);
+        if (!useRegionalPrefix && locale.base) prefix = locale.base === '' ? '' : `/${locale.base}`;
+      }
     }
-    if (queryIndexes[siteId] && !(queryIndexes[siteId].requestResolved || lingoSiteMappingLoaded)) {
-      await Promise.all([queryIndexes[siteId].pathsRequest, lingoSiteMapping]);
-    }
-    const urlExists = await urlInQueryIndex(`${url.origin}${prefix}${path}`, url.hostname);
-    if (!urlExists && locale.base) prefix = locale.base === '' ? '' : `/${locale.base}`;
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
@@ -1564,11 +1605,6 @@ async function decorateSection(section, idx) {
   };
 }
 
-function decorateSections(el, isDoc) {
-  const selector = isDoc ? 'body > main > div' : ':scope > div';
-  return [...el.querySelectorAll(selector)].map(decorateSection);
-}
-
 export async function decorateFooterPromo(doc = document) {
   const footerPromoTag = getMetadata('footer-promo-tag', doc);
   const footerPromoType = getMetadata('footer-promo-type', doc);
@@ -2099,7 +2135,6 @@ export async function loadArea(area = document) {
   }
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
-  // const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
   let lcpSectionId = null;
