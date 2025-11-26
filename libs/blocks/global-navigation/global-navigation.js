@@ -550,8 +550,7 @@ class Gnav {
       searchEnabled,
       selfIntegrateUnav,
       desktopAppsCta = false,
-      viewPlansCta = false,
-      explorePlansCta = false,
+      showPlansCta = false,
     } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
@@ -565,8 +564,7 @@ class Gnav {
         ${this.elements.navWrapper}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
-        ${viewPlansCta ? toFragment`<div class="feds-client-view-plans"></div>` : ''}
-        ${explorePlansCta ? toFragment`<div class="feds-client-explore-plans"></div>` : ''}
+        ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
@@ -1053,9 +1051,9 @@ class Gnav {
   };
 
   decorateToggle = () => {
-    const { explorePlansCta = false } = getConfig();
+    const { showPlansCta = false } = getConfig();
 
-    if (!explorePlansCta && (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu()))) return '';
+    if (!showPlansCta && (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu()))) return '';
 
     const isLocalNav = this.isLocalNav();
 
@@ -1226,7 +1224,6 @@ class Gnav {
   });
 
   decorateMainNav = async () => {
-    const { explorePlansCta } = getConfig();
     performance.mark('Decorate-MainNav-Start');
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav" role="list"></div>`;
@@ -1255,9 +1252,6 @@ class Gnav {
     }
     if (this.newMobileNav) {
       await this.decorateLocalNav();
-    }
-    if (explorePlansCta) {
-      this.elements.mainNav.appendChild(toFragment`<div class="feds-client-explore-plans-xs"></div>`);
     }
     performance.mark('Decorate-MainNav-End');
     return this.elements.mainNav;
@@ -1652,7 +1646,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep, miniGnav = false, explorePlansCta = false } = getConfig();
+  const { mep, miniGnav = false, showPlansCta = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1676,7 +1670,7 @@ export default async function init(block) {
     newMobileNav,
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
-  if (miniGnav || explorePlansCta) block.classList.add('mini-gnav');
+  if (miniGnav || showPlansCta) block.classList.add('mini-gnav');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
