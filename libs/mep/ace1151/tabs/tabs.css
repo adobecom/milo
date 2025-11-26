@@ -616,6 +616,10 @@
   line-height: 20px !important;
 }
 
+.tabs.s2a-dark .tabList button[role="tab"][aria-selected="false"] {
+  border: transparent;
+}
+
 @media screen and (min-width: 600px) {
   .tabs.radio .tabList.tabList .tab-list-container {
     flex-direction: row;
