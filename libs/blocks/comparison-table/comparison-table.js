@@ -189,11 +189,7 @@ function createSubHeaderContainer({
     container.appendChild(select);
   }
   if (!isLast) return container;
-  if (decoratePromises.length) {
-    Promise.all(decoratePromises).then(() => addLastContainerElements(container));
-  } else {
-    addLastContainerElements(container);
-  }
+  Promise.all(decoratePromises).then(() => addLastContainerElements(container));
   return container;
 }
 
@@ -261,7 +257,7 @@ function createAccessibilityHeaderRow(el) {
     const headerCell = createTag('div', { role: 'columnheader' });
     headerCell.setAttribute('data-column-index', headerItem.getAttribute('data-column-index'));
     headerCell.classList.add('accessibility-header-cell');
-    headerCell.textContent = titleElement ? titleElement.textContent.trim() : '';
+    headerCell.textContent = titleElement?.textContent.trim() ?? '';
     headerRow.appendChild(headerCell);
   });
   return headerRow;
@@ -276,7 +272,7 @@ function decorateTableToggleButton({
 }) {
   [...tableChild.children].forEach((child, childIndex) => {
     const isPrimary = childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY;
-    if (childIndex !== 0 && isPrimary) arePrimaryColumns[childIndex] = true;
+    if (isPrimary) arePrimaryColumns[childIndex] = true;
     if (!child.textContent.trim() || isPrimary) child.remove();
   });
   tableChild.classList.add('table-column-header');
@@ -291,7 +287,7 @@ function decorateTableToggleButton({
   buttonElement.appendChild(createTag('span', { class: 'toggle-icon' }));
   buttonElement.addEventListener('click', () => {
     tableElement.classList.toggle('hide');
-    buttonElement.setAttribute('aria-expanded', buttonElement.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+    buttonElement.setAttribute('aria-expanded', buttonElement.getAttribute('aria-expanded') !== 'true');
   });
   tableChild.replaceChild(buttonElement, firstChild);
   return tableChild;
@@ -308,14 +304,14 @@ function setupCellAttributes(child, childIndex, arePrimaryColumns) {
   if (arePrimaryColumns[childIndex]) child.classList.add('primary-cell');
 }
 
-function processCellWithSeparator(child, childElements, separatorIndex) {
+function processCellWithSeparator(child, separatorIndex) {
   const cellDiv = createTag('div');
-  const columnHeaderP = childElements[separatorIndex + 1];
-  childElements.slice(0, separatorIndex).forEach((element) => cellDiv.appendChild(element));
+  const columnHeaderP = [...child.children][separatorIndex + 1];
+  [...child.children].slice(0, separatorIndex).forEach((element) => cellDiv.appendChild(element));
   child.innerHTML = '';
   child.appendChild(cellDiv);
   if (columnHeaderP) child.appendChild(columnHeaderP);
-  childElements.slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
+  [...child.children].slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
 }
 
 function processCellWithoutSeparator(child) {
@@ -330,10 +326,9 @@ function processCellWithoutSeparator(child) {
 }
 
 function processCellContent(child) {
-  const childElements = [...child.children];
-  const separatorIndex = childElements.findIndex((element) => element.textContent.trim() === '-');
+  const separatorIndex = [...child.children].findIndex((element) => element.textContent.trim() === '-');
   const processFn = separatorIndex !== -1 ? processCellWithSeparator : processCellWithoutSeparator;
-  processFn(child, childElements, separatorIndex);
+  processFn(child, separatorIndex);
 }
 
 function decorateTableCells({ tableChild, arePrimaryColumns, el }) {
