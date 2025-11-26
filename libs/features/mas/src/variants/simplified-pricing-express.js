@@ -28,6 +28,12 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         maxCount: 2000,
         withSuffix: false,
     },
+    shortDescription: {
+        tag: 'div',
+        slot: 'short-description',
+        maxCount: 3000,
+        withSuffix: false,
+    },
     prices: {
         tag: 'div',
         slot: 'price',
@@ -75,6 +81,11 @@ export class SimplifiedPricingExpress extends VariantLayout {
         const priceSlot = this.card.querySelector('[slot="price"]');
         if (priceSlot) {
             this.updateCardElementMinHeight(priceSlot, 'price');
+        }
+
+        const shortDescriptionSlot = this.card.querySelector('[slot="short-description"]');
+        if (shortDescriptionSlot) {
+            this.updateCardElementMinHeight(shortDescriptionSlot, 'short-description');
         }
     }
 
@@ -185,6 +196,9 @@ export class SimplifiedPricingExpress extends VariantLayout {
                 </div>
                 <div class="price">
                     <slot name="price"></slot>
+                    <div class="short-description">
+                        <slot name="short-description"></slot>
+                    </div>
                 </div>
                 <div class="cta">
                     <slot name="cta"></slot>
@@ -364,6 +378,11 @@ export class SimplifiedPricingExpress extends VariantLayout {
             flex-direction: column;
             justify-content: flex-end;
             margin-top: auto;
+        }
+
+        :host([variant='simplified-pricing-express']) .short-description {
+            display: flex;
+            flex-direction: column;
         }
 
         /* Desktop only - Fixed heights for alignment */
