@@ -460,6 +460,38 @@ class Gnav {
   // eslint-disable-next-line no-return-assign
   getOriginalTitle = (firstElem) => this.originalTitle ||= firstElem.textContent?.split('::');
 
+  // eslint-disable-next-line class-methods-use-this
+  cleanupDropdownState() {
+    // Remove dropdown-active class
+    document.querySelector('.global-navigation')?.classList.remove('dropdown-active');
+
+    // Remove feds-dropdown--active class from all dropdowns
+    document.querySelectorAll('.feds-dropdown--active').forEach((dropdown) => {
+      dropdown.classList.remove('feds-dropdown--active');
+    });
+
+    // Set all aria-expanded to false
+    document.querySelectorAll('.global-navigation [aria-expanded="true"]').forEach((elem) => {
+      const isUnavElement = elem.closest('.universal-nav-container');
+      if (!isUnavElement) {
+        elem.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Close mobile menu if expanded
+    const toggle = document.querySelector('.feds-toggle');
+    if (toggle?.getAttribute('aria-expanded') === 'true') {
+      toggle.setAttribute('aria-expanded', 'false');
+      document.querySelector('.feds-nav-wrapper')?.classList.remove('feds-nav-wrapper--expanded');
+      document.body.classList.remove('disable-scroll');
+    }
+
+    // Close local nav if active
+    document.querySelectorAll('.feds-localnav--active').forEach((localNav) => {
+      localNav.classList.remove('feds-localnav--active');
+    });
+  }
+
   setupUniversalNav = () => {
     const meta = getMetadata('universal-nav')?.toLowerCase();
     this.universalNavComponents = meta?.split(',').map((option) => option.trim())
@@ -531,6 +563,12 @@ class Gnav {
     if (document.querySelector('.feds-promo-aside-wrapper')) {
       isSmallScreen.addEventListener('change', this.updateGnavTop);
     }
+
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) {
+        this.cleanupDropdownState();
+      }
+    });
   }, 'Error in global navigation init', 'gnav', 'e');
 
   revealGnav = async () => {
