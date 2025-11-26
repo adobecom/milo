@@ -707,11 +707,12 @@ html[dir="rtl"] .carousel .move-indicators {
     margin: 1.5rem 0 0rem;
   }
   .carousel.s2a-hovering .carousel-slide h2 {
-    font-size: 20px;
+    font-size: 16px;
     line-height: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-bottom: 10px;
   }
   .carousel.s2a-hovering .carousel-slide div.cta-container a {
     background-color: white;
@@ -729,11 +730,17 @@ html[dir="rtl"] .carousel .move-indicators {
   padding-bottom: 0 !important;
 }
   .carousel.s2a-hovering .carousel-slide p.body-m:not(.action-area) {
-    padding-top: .5rem;
+    padding-top: 0;
+    font-size: 14px;
+    line-height: 140%;
+  }
+  .carousel.s2a-tabs .carousel-slide p.image {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
   }
 
   .carousel.s2a-hovering .carousel-slide p.image {
-    margin-bottom: -3.5%;
+    margin-bottom: -2px;
   }
 
   .carousel.m-gap.s2a-peaking .carousel-slide .foreground {
