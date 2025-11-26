@@ -1,17 +1,10 @@
-import { getConfig, getMetadata, createTag, loadStyle } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import getAkamaiCode from '../../utils/geo.js';
-
-const COOKIE_NAME = 'lingo-banner-dismissed';
 
 const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
-
-const setCookie = (name, value) => {
-  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
-  document.cookie = `${name}=${value};path=/;${domain}`;
-};
 
 /**
  * Gets the user's preferred language, falling back from cookie to browser language.
@@ -20,25 +13,27 @@ const setCookie = (name, value) => {
  */
 function getPreferredLanguage(locales) {
   const cookie = getCookie('international');
+  console.log('language-banner cookie:', cookie);
   if (cookie && cookie !== 'us') {
     const locale = locales[cookie];
-    if (locale?.ietf) {
-      return locale.ietf.split('-')[0];
-    }
-    return cookie.split('_')[0];
+    const langFromCookie = locale?.ietf
+      ? locale.ietf.split('-')[0]
+      : cookie.split('_')[0];
+    return langFromCookie;
   }
   const browserLang = navigator.language?.split('-')[0];
+  console.log('language-banner browserLang:', browserLang);
   return browserLang || null;
 }
 
 /**
  * Verifies if the translated version of the current page exists.
- * @param {string} marketPrefix - The market prefix from the supported markets config.
- * @returns {Promise<string|null>} The URL of the page if it exists, otherwise null.
+ * @param {string} marketPrefix
+ * @param {object} config
+ * @returns {Promise<string|null>}
  */
-async function getTranslatedPage(marketPrefix) {
+async function getTranslatedPage(marketPrefix, config) {
   const { pathname } = window.location;
-  const config = getConfig();
   const currentPrefix = config.locale.prefix;
 
   const pagePath = currentPrefix ? pathname.replace(currentPrefix, '') : pathname;
@@ -48,12 +43,11 @@ async function getTranslatedPage(marketPrefix) {
 
   try {
     const response = await fetch(translatedUrl, { method: 'HEAD' });
-    // if (response.ok) {
+    if (response.ok) {
       return translatedUrl;
-    // }
+    }
   } catch (e) {
-    /* c8 ignore next 2 */
-    console.warn(`Failed to check for translated page at ${translatedUrl}`, e);
+    console.warn(`Failed to check translated page: ${translatedUrl}`, e);
   }
   return null;
 }
@@ -61,22 +55,28 @@ async function getTranslatedPage(marketPrefix) {
 function buildBanner(market, translatedUrl) {
   const banner = createTag('div', { class: 'language-banner' });
   const messageContainer = createTag('div', { class: 'language-banner-content' });
-  const messageText = createTag('span', { class: 'language-banner-text' }, 'View this page in ');
-  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.language);
+  const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} ${market.languageName}.`);
+  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.continueText || 'Continue');
   const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close' });
+  closeButton.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 0.5C15.2467 0.5 19.5 4.75329 19.5 10C19.5 15.2467 15.2467 19.5 10 19.5C4.75329 19.5 0.5 15.2467 0.5 10C0.5 4.75329 4.75329 0.5 10 0.5Z" stroke="white"/>
+      <path d="M6 14.0002L14 6.00024" stroke="white" stroke-width="2"/>
+      <path d="M14 14.0002L6 6.00024" stroke="white" stroke-width="2"/>
+    </svg>
+  `;
 
   messageContainer.append(messageText, link);
   banner.append(messageContainer, closeButton);
   return banner;
 }
 
-async function showBanner(market) {
-  const translatedUrl = await getTranslatedPage(market.prefix);
-  if (!translatedUrl) return;
-
+async function showBanner(market, config, translatedUrl) {
+  console.log('language-banner: showing banner for market:', market);
   const banner = buildBanner(market, translatedUrl);
   document.body.prepend(banner);
-  loadStyle('/libs/features/language-banner/language-banner.css');
+  const { codeRoot, miloLibs } = config;
+  loadStyle(`${miloLibs || codeRoot}/features/language-banner/language-banner.css`);
 
   banner.querySelector('.language-banner-link').addEventListener('click', async (e) => {
     e.preventDefault();
@@ -86,11 +86,9 @@ async function showBanner(market) {
   });
 
   banner.querySelector('.language-banner-close').addEventListener('click', () => {
-    const config = getConfig();
-    const pageLangPrefix = config.locale.prefix?.replace('/', '') || '';
+    const pageLangPrefix = config.locale.prefix?.replace('/', '') || 'us';
     const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
     document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
-    setCookie(COOKIE_NAME, config.locale.ietf.split('-')[0]);
     banner.remove();
   });
 }
