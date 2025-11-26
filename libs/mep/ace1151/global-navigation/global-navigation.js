@@ -508,9 +508,6 @@ class Gnav {
   };
 
   init = () => logErrorFor(async () => {
-    // Clean up any persisted dropdown state from bfcache immediately on init
-    this.cleanupDropdownState();
-
     branchBannerLoadCheck(this.updatePopupPosition);
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
 
@@ -567,22 +564,9 @@ class Gnav {
       isSmallScreen.addEventListener('change', this.updateGnavTop);
     }
 
-    // Multiple event listeners to handle bfcache restoration
     window.addEventListener('pageshow', (e) => {
       if (e.persisted) {
         this.cleanupDropdownState();
-      }
-    });
-
-    window.addEventListener('popstate', () => {
-      this.cleanupDropdownState();
-    });
-
-    // Also listen to visibility changes
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        // Small delay to ensure page is fully restored
-        setTimeout(() => this.cleanupDropdownState(), 50);
       }
     });
   }, 'Error in global navigation init', 'gnav', 'e');
