@@ -767,6 +767,9 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.s2a-whatsnew .carousel-controls {
     display: flex;
   }
+  .carousel.s2a-tabs .carousel-slide p.image {
+    border-radius: 8px !important;
+  }
   .carousel.s2a-whatsnew .carousel-button-container {
     left: 0 !important;
     background-color: transparent;  
