@@ -707,8 +707,10 @@ export default function init(el) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
       // handle mobile vs desktop content
-      const contentToRemove = slide.querySelector(`.text > div > div:has(p):nth-child(${isMobile ? '2' : '1'})`);
-      contentToRemove?.remove();
+      if (el.classList.contains('hero-carousel')) {
+        const contentToRemove = slide.querySelector(`.text > div > div:has(p):nth-child(${isMobile ? '2' : '1'})`);
+        contentToRemove?.remove();
+      }
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
       const title = slide.querySelector('h2,h3');
