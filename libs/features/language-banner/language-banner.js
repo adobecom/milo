@@ -61,7 +61,7 @@ function buildBanner(market, translatedUrl) {
   const banner = createTag('div', { class: 'language-banner' });
   const messageContainer = createTag('div', { class: 'language-banner-content' });
   const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} `);
-  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.language);
+  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.languageName);
   const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close' });
 
   messageContainer.append(messageText, link);
@@ -98,27 +98,36 @@ async function showBanner(market) {
  * Initializes the language banner feature.
  * @returns {Promise<boolean>} Returns true if the logic was handled, false if it should delegate.
  */
-export default async function init() {
+export default async function init(jsonPromise) {
   const config = getConfig();
 
   const pageLang = config.locale.ietf.split('-')[0];
   if (getCookie(COOKIE_NAME) === pageLang) return;
 
   const prefLang = getPreferredLanguage(config.locales);
+
+  const marketsConfigPromise = jsonPromise
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null);
+
   const [geoIp, marketsConfig] = await Promise.all([
     getAkamaiCode(),
-    fetch(`${config.contentRoot ?? ''}/supported-markets.json`).then((res) => res.json()).catch(() => null),
+    marketsConfigPromise,
   ]);
 
   if (!geoIp || !marketsConfig) return;
 
+  marketsConfig.data.forEach((market) => {
+    market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
+  });
+
   const pageMarket = marketsConfig.data.find((m) => m.prefix === (config.locale.prefix?.replace('/', '') || ''));
-  const isSupportedMarket = pageMarket?.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase());
+  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp.toLowerCase());
 
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
 
-    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase()));
+    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp.toLowerCase()));
     if (prefMarket) {
       await showBanner(prefMarket);
     }
@@ -126,7 +135,7 @@ export default async function init() {
   }
 
   // Unsupported Market Path
-  const marketsForGeo = marketsConfig.data.filter((m) => m.supportedRegions.map((r) => r.toLowerCase()).includes(geoIp.toLowerCase()));
+  const marketsForGeo = marketsConfig.data.filter((m) => m.supportedRegions.includes(geoIp.toLowerCase()));
   if (!marketsForGeo.length) return;
 
   if (prefLang) {

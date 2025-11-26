@@ -1590,8 +1590,11 @@ async function loadPostLCP(config) {
   const georouting = getMetadata('georouting') || config.geoRouting;
 
   if (languageBanner === 'on') {
+    // TODO: Replace with contentRoot path
+    //const jsonPromise = fetch(`${config.contentRoot ?? ''}/supported-markets.json`);
+    const jsonPromise = fetch('https://main--da-bacom--adobecom.aem.page/drafts/snehal/supported-markets.json');
     const { default: init } = await import('../features/language-banner/language-banner.js');
-    await init();
+    await init(jsonPromise);
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting = { loadedPromise: Promise.resolve() };
