@@ -458,12 +458,12 @@ main > .section[class*='-up'] > .content {
   color: currentcolor;
   background: none;
   border: none;
-  padding: 16px 0;
+  padding: var(--spacing-xl) 0;
   width: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6em;
+  gap: 0.4em;
   text-align: center;
   margin: 0 auto;
   font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;

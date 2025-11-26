@@ -104,7 +104,7 @@ function handleAnchor(anchor, section) {
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
-    const content = row.children[1];
+    const content = row?.children[1];
     const text = content.textContent.trim().toLowerCase();
     if (key && content) rdx[key] = { content, text };
   }
@@ -286,11 +286,6 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     if (!isLoaded && !isExpanded) {
       const loaded = await loadAndSetupFragment();
       if (!loaded) return;
-      const fragSection = placeholder.querySelector('.fragment > .section');
-      if (fragSection) {
-        const { decorateSectionAnalytics } = await import('../../../martech/attributes.js');
-        await decorateSectionAnalytics(fragSection, 'collapse-frag', getConfig());
-      }
       expandContent();
     } else if (isExpanded) {
       collapseContent();
@@ -330,47 +325,15 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
   // Preload content in background after tabs become interactive (non-deeplink case)
   if (!shouldStartExpanded) {
     const preloadContent = async () => {
-      // Check if section-metadata is inside a tabs block
       const tabsBlock = section.closest('.tabs');
-
-      if (tabsBlock) {
-        // Wait for tabs to be initialized (check for tab-content-container)
-        const waitForTabs = () => {
-          const tabContent = tabsBlock.querySelector('.tab-content-container');
-          if (tabContent) {
-            // Tabs is ready, wait a short delay then preload
-            setTimeout(async () => {
-              if (!isLoaded) {
-                const loaded = await loadAndSetupFragment();
-                // Ensure content stays hidden after preload
-                if (loaded && loadedFragment) {
-                  loadedFragment.style.maxHeight = '0';
-                  loadedFragment.style.overflow = 'hidden';
-                }
-              }
-            }, 300);
-          } else {
-            // Tabs not ready yet, check again
-            requestAnimationFrame(waitForTabs);
-          }
-        };
-        waitForTabs();
+      if (!tabsBlock) {
+        // Feature requires tabs block - exit if not found
         return;
       }
 
-      // Not in tabs, fall back to window load
-      if (document.readyState === 'complete') {
-        setTimeout(async () => {
-          if (!isLoaded) {
-            const loaded = await loadAndSetupFragment();
-            if (loaded && loadedFragment) {
-              loadedFragment.style.maxHeight = '0';
-              loadedFragment.style.overflow = 'hidden';
-            }
-          }
-        }, 1000);
-      } else {
-        window.addEventListener('load', () => {
+      const waitForTabs = () => {
+        const tabContent = tabsBlock.querySelector('.tab-content-container');
+        if (tabContent) {
           setTimeout(async () => {
             if (!isLoaded) {
               const loaded = await loadAndSetupFragment();
@@ -379,9 +342,12 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
                 loadedFragment.style.overflow = 'hidden';
               }
             }
-          }, 1000);
-        }, { once: true });
-      }
+          }, 300);
+        } else {
+          requestAnimationFrame(waitForTabs);
+        }
+      };
+      waitForTabs();
     };
     preloadContent();
   }
@@ -408,8 +374,17 @@ export default async function init(el) {
     const result = await handleCollapseFrag(collapseFragPath, section, collapseFragText);
     if (result) {
       const { toggleButton, placeholder, shouldScroll, expansionPromise } = result;
-      el.parentElement.insertBefore(toggleButton, el);
-      el.parentElement.insertBefore(placeholder, el);
+      const firstChild = section.children[0];
+      if (firstChild && firstChild.nextSibling) {
+        section.insertBefore(toggleButton, firstChild.nextSibling);
+        section.insertBefore(placeholder, toggleButton.nextSibling);
+      } else if (firstChild) {
+        firstChild.insertAdjacentElement('afterend', toggleButton);
+        toggleButton.insertAdjacentElement('afterend', placeholder);
+      } else {
+        el.parentElement.insertBefore(toggleButton, el);
+        el.parentElement.insertBefore(placeholder, el);
+      }
       if (shouldScroll) {
         // Wait for fragment to fully expand before scrolling to it for layout shift prevention
         if (expansionPromise) {
@@ -419,7 +394,7 @@ export default async function init(el) {
         const immediateScroll = () => {
           const rect = toggleButton.getBoundingClientRect();
           const currentPosition = rect.top + window.scrollY;
-          const targetScroll = Math.max(0, currentPosition - 90);
+          const targetScroll = Math.max(0, currentPosition - 60);
           window.scrollTo({ top: targetScroll, behavior: 'instant' });
         };
         setTimeout(immediateScroll, 50);
@@ -438,8 +413,8 @@ export default async function init(el) {
             if (stableCount >= 3) {
               // Position stable for 3 frames, do final smooth scroll if needed
               const currentTop = rect.top;
-              if (Math.abs(currentTop - 90) > 5) {
-                const targetScroll = Math.max(0, currentPosition - 90);
+              if (Math.abs(currentTop - 60) > 5) {
+                const targetScroll = Math.max(0, currentPosition - 60);
                 window.scrollTo({ top: targetScroll, behavior: 'smooth' });
               }
               toggleButton.setAttribute('data-programmatic-focus', 'true');
@@ -453,7 +428,7 @@ export default async function init(el) {
             stableCount = 0;
             // if position changed significantly, adjust scroll immediately
             if (Math.abs(currentPosition - lastPosition) > 50) {
-              const targetScroll = Math.max(0, currentPosition - 90);
+              const targetScroll = Math.max(0, currentPosition - 60);
               window.scrollTo({ top: targetScroll, behavior: 'instant' });
             }
           }
