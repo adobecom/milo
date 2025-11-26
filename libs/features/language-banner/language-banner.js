@@ -1,4 +1,4 @@
-import { getConfig, getMetadata, createTag, loadStyle } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import getAkamaiCode from '../../utils/geo.js';
 
 const COOKIE_NAME = 'lingo-banner-dismissed';
@@ -34,11 +34,11 @@ function getPreferredLanguage(locales) {
 /**
  * Verifies if the translated version of the current page exists.
  * @param {string} marketPrefix - The market prefix from the supported markets config.
+ * @param {object} config - The Milo config object.
  * @returns {Promise<string|null>} The URL of the page if it exists, otherwise null.
  */
-async function getTranslatedPage(marketPrefix) {
+async function getTranslatedPage(marketPrefix, config) {
   const { pathname } = window.location;
-  const config = getConfig();
   const currentPrefix = config.locale.prefix;
 
   const pagePath = currentPrefix ? pathname.replace(currentPrefix, '') : pathname;
@@ -49,7 +49,7 @@ async function getTranslatedPage(marketPrefix) {
   try {
     const response = await fetch(translatedUrl, { method: 'HEAD' });
     // if (response.ok) {
-      return translatedUrl;
+    return translatedUrl;
     // }
   } catch (e) {
     console.warn(`Failed to check for translated page at ${translatedUrl}`, e);
@@ -69,13 +69,15 @@ function buildBanner(market, translatedUrl) {
   return banner;
 }
 
-async function showBanner(market) {
-  const translatedUrl = await getTranslatedPage(market.prefix);
+async function showBanner(market, config) {
+  const translatedUrl = await getTranslatedPage(market.prefix, config);
   if (!translatedUrl) return;
 
   const banner = buildBanner(market, translatedUrl);
   document.body.prepend(banner);
-  loadStyle('/libs/features/language-banner/language-banner.css');
+  const { codeRoot, miloLibs } = config;
+  const base = miloLibs || codeRoot;
+  loadStyle(`${base}/features/language-banner/language-banner.css`);
 
   banner.querySelector('.language-banner-link').addEventListener('click', async (e) => {
     e.preventDefault();
@@ -85,7 +87,6 @@ async function showBanner(market) {
   });
 
   banner.querySelector('.language-banner-close').addEventListener('click', () => {
-    const config = getConfig();
     const pageLangPrefix = config.locale.prefix?.replace('/', '') || '';
     const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
     document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
@@ -129,7 +130,7 @@ export default async function init(jsonPromise) {
 
     const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp.toLowerCase()));
     if (prefMarket) {
-      await showBanner(prefMarket);
+      await showBanner(prefMarket, config);
     }
     return;
   }
@@ -141,10 +142,10 @@ export default async function init(jsonPromise) {
   if (prefLang) {
     const prefMarketForGeo = marketsForGeo.find((m) => m.lang === prefLang);
     if (prefMarketForGeo) {
-      await showBanner(prefMarketForGeo); // Show Banner with recommendation based on PREF-LANG and GeoIP
+      await showBanner(prefMarketForGeo, config); // Show Banner with recommendation based on PREF-LANG and GeoIP
       return;
     }
   }
 
-  await showBanner(marketsForGeo[0]);
+  await showBanner(marketsForGeo[0], config);
 }
