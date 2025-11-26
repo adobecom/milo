@@ -496,3 +496,14 @@ main > .section[class*='-up'] > .content {
 .collapse-frag-button[aria-expanded='true'] .collapse-frag-chevron {
   transform: rotate(0deg);
 }
+
+@media screen and (min-width: 1200px) {
+  .collapse-frag-placeholder .collection-container.plans:has(merch-sidenav) {
+    width: unset;
+    position: unset;
+    left: unset;
+    transform: unset;
+    justify-content: unset;
+    padding-inline: unset;
+  }
+}
