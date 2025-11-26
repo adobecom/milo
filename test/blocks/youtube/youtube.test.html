@@ -62,7 +62,7 @@
 
         it('Should add aria-label to play btn', async () => {
           await init(document.querySelector('a'));
-          await delay();
+          await delay(100);
           const btn = document.querySelector('.lty-playbtn');
           const ariaLabel = btn.getAttribute('aria-label');
           expect(ariaLabel).to.be.equal('Play Youtube video');

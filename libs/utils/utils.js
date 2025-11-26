@@ -355,6 +355,19 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.entitlements = handleEntitlements;
       config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
+
+      // TODO test only - remove for prod and real PR
+      if (window.location.href.startsWith('https://main--da-bacom--adobecom.aem.live/ar') || window.location.href.startsWith('https://main--da-bacom--adobecom.aem.page/ar')) {
+        config.locale.base = 'es';
+        config.queryIndexPath = '/query-index.json';
+        config.uniqueSiteId = 'da-bacom';
+      }
+      if (window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de') || window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de')) {
+        config.locale.base = 'de';
+        config.queryIndexPath = '/assets/query-index.json';
+        config.uniqueSiteId = 'cc';
+      }
+
       return config;
     },
     (conf) => (config = conf),
@@ -594,25 +607,26 @@ function processQueryIndexMap(link, domain, imsClientId) {
   };
 }
 
-async function loadQueryIndexes(config, prefix) {
+async function loadQueryIndexes(prefix) {
+  const config = getConfig();
   if (lingoSiteMapping) return;
 
   const origin = config.origin || window.location.origin;
   const regionalContentRoot = `${origin}${prefix}${config.contentRoot ?? ''}`;
   const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
   const predefinedQueryIndexPath = `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`;
-  const clientId = config.imsClientId ?? '';
+  const siteId = config.uniqueSiteId ?? '';
 
-  queryIndexes[clientId] = processQueryIndexMap(
+  queryIndexes[siteId] = processQueryIndexMap(
     predefinedQueryIndexPath,
     window.location.host,
-    clientId,
+    siteId,
   );
 
   if (config.queryIndexPath) {
     const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${config.contentRoot ?? ''}`;
     const baseQueryIndexPath = `${baseContentRoot}${config.queryIndexPath}`;
-    baseQueryIndex = processQueryIndexMap(baseQueryIndexPath, window.location.host, clientId);
+    baseQueryIndex = processQueryIndexMap(baseQueryIndexPath, window.location.host, siteId);
   }
 
   lingoSiteMapping = new Promise((resolve) => {
@@ -624,31 +638,31 @@ async function loadQueryIndexes(config, prefix) {
       })
       .then((configJson) => {
         const alreadyQueriedIndex = configJson['ims-query-index-map']?.data
-          ?.find((d) => d.imsClientId === clientId);
+          ?.find((d) => d.uniqueSiteId === siteId);
         const alreadyQueriedIndexDomain = alreadyQueriedIndex?.queryIndexWebPath.split('/*')[0];
 
         // Add domain to existing indexes if not already present
-        [queryIndexes[clientId], baseQueryIndex].forEach((queryIndex) => {
+        [queryIndexes[siteId], baseQueryIndex].forEach((queryIndex) => {
           const shouldAddDomain = queryIndex && alreadyQueriedIndexDomain
             && !queryIndex.domains.includes(alreadyQueriedIndexDomain);
           if (shouldAddDomain) queryIndex.domains.push(alreadyQueriedIndexDomain);
         });
 
         const imsQueryIndexData = configJson['ims-query-index-map']?.data?.filter(
-          (d) => d.imsClientId !== clientId
+          (d) => d.uniqueSiteId !== siteId
             && config.prodDomains?.includes(d.queryIndexWebPath.split('/*')[0]),
         ) || [];
         const siteLocalesData = configJson['site-locales']?.data || [];
 
         imsQueryIndexData.forEach((queryIndexMap) => {
-          const { imsClientId, queryIndexWebPath } = queryIndexMap;
+          const { uniqueSiteId, queryIndexWebPath } = queryIndexMap;
           const matchingSiteLocale = siteLocalesData.find((s) => (
-            s.imsClientId === imsClientId && parseList(s.regionalSites).includes(prefix)
+            s.uniqueSiteId === uniqueSiteId && parseList(s.regionalSites).includes(prefix)
           ));
           if (matchingSiteLocale) {
             const updatedPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
             const domain = queryIndexWebPath.split('/*')[0];
-            queryIndexes[imsClientId] = processQueryIndexMap(updatedPath, domain, imsClientId);
+            queryIndexes[uniqueSiteId] = processQueryIndexMap(updatedPath, domain, uniqueSiteId);
           }
         });
 
@@ -709,9 +723,8 @@ export async function localizeLinkAsync(
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
     if (!allowedExts.includes(extension)) return processedHref;
-    const { locale, locales, languages, prodDomains, base } = getConfig();
+    const { locale, locales, languages, prodDomains, uniqueSiteId } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
-    if (path.includes('solutions/personalization-at-scale')) debugger;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
         || overrideDomain;
     if (!isLocalizable) return processedHref;
@@ -720,16 +733,15 @@ export async function localizeLinkAsync(
 
     let prefix = getPrefixBySite(locale, url, relative);
     // TODO don't run all this code for json files
-    if (base && !queryIndexes.length) {
-      loadQueryIndexes(getConfig(), prefix);
+    const siteId = uniqueSiteId ?? '';
+    if (locale.base && !queryIndexes[siteId]) {
+      loadQueryIndexes(prefix);
     }
-    if (queryIndexes[0] && !(queryIndexes[0].requestResolved || lingoSiteMappingLoaded)) {
-      await Promise.all([queryIndexes[0].pathsRequest, lingoSiteMapping]);
+    if (queryIndexes[siteId] && !(queryIndexes[siteId].requestResolved || lingoSiteMappingLoaded)) {
+      await Promise.all([queryIndexes[siteId].pathsRequest, lingoSiteMapping]);
     }
-    if (path.includes('solutions/personalization-at-scale')) debugger;
     const urlExists = await urlInQueryIndex(`${url.origin}${prefix}${path}`, url.hostname);
     if (!urlExists && locale.base) prefix = locale.base === '' ? '' : `/${locale.base}`;
-    if (urlExists) debugger;
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
@@ -2072,16 +2084,6 @@ export async function loadArea(area = document) {
     await loadLanguageConfig();
   }
 
-  // TODO test only - remove for prod and real PR
-  if (window.location.href.startsWith('https://main--da-bacom--adobecom.aem.live/ar') || window.location.href.startsWith('https://main--da-bacom--adobecom.aem.page/ar')) {
-    config.locale.base = 'es';
-    config.queryIndexPath = '/query-index.json';
-  }
-  if (window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de') || window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de')) {
-    config.locale.base = 'de';
-    config.queryIndexPath = '/assets/query-index.json';
-  }
-
   if (isDoc) {
     await decorateDocumentExtras();
   }
@@ -2093,7 +2095,7 @@ export async function loadArea(area = document) {
     // if(swapFragment) prefix = prefix of subregion (where fragments should load from)
     // else
     const { prefix } = config.locale;
-    loadQueryIndexes(config, prefix);
+    loadQueryIndexes(prefix);
   }
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];

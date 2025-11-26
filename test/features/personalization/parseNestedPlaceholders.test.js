@@ -19,9 +19,9 @@ describe('test different values for parseNestedPlaceholders', () => {
     expect(config.placeholders['promo-description']).to.equal('For just US$49.99, get 20+...');
   });
 });
-describe('test createContent', async () => {
+describe('test createContent', () => {
   const el = document.createElement('div');
-  it('append action', () => {
+  it('append action', async () => {
     const newContent = await createContent(el, {
       content: '{{promo-discount}}',
       manifestId: false,

@@ -1135,7 +1135,7 @@ describe('Merch Block', () => {
     });
   });
   describe('Localize preview links', async () => {
-    it('check if only preview URL is relative', () => {
+    it('check if only preview URL is relative', async () => {
       const div = document.createElement('div');
 
       const a1 = document.createElement('a');
