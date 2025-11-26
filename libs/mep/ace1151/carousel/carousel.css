@@ -768,7 +768,8 @@ html[dir="rtl"] .carousel .move-indicators {
     display: flex;
   }
   .carousel.s2a-tabs .carousel-slide p.image {
-    border-radius: 8px !important;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
   }
   .carousel.s2a-whatsnew .carousel-button-container {
     left: 0 !important;
