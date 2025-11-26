@@ -1156,7 +1156,8 @@ html[dir="rtl"] .carousel .move-indicators {
     font-weight: 800;
   }
 
-  .carousel.s2a-whatsnew.s2a-linked-slides p.image{
+  .carousel.s2a-tabs .carousel-slide p.image,
+  .carousel.s2a-whatsnew.s2a-linked-slides p.image {
     border-radius: 14px;
     overflow: hidden;
   }
