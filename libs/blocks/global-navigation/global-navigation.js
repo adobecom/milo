@@ -1051,9 +1051,7 @@ class Gnav {
   };
 
   decorateToggle = () => {
-    const { showPlansCta = false } = getConfig();
-
-    if (!showPlansCta && (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu()))) return '';
+    if ((!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu()))) return '';
 
     const isLocalNav = this.isLocalNav();
 
@@ -1646,7 +1644,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep, miniGnav = false, showPlansCta = false } = getConfig();
+  const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1670,7 +1668,7 @@ export default async function init(block) {
     newMobileNav,
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
-  if (miniGnav || showPlansCta) block.classList.add('mini-gnav');
+  if (miniGnav) block.classList.add('mini-gnav');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
