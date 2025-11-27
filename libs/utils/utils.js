@@ -1751,8 +1751,40 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
+async function decorateMeta(ignoreNames = []) {
+  const { origin } = window.location;
+  const contents = document.head.querySelectorAll('[content*=".hlx."]:not([data-localized]), [content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
+  await Promise.all(Array.from(contents).map(async (meta) => {
+    const name = meta.getAttribute('name') || meta.getAttribute('property');
+    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule')) return;
+    if (ignoreNames.includes(name)) return;
+    try {
+      const url = new URL(meta.content);
+      const localizedLink = await localizeLinkAsync(`${origin}${url.pathname}`);
+      const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
+      meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
+      meta.dataset.localized = 'true';
+    } catch (e) {
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
+    }
+  }));
+}
+
+function initModalEventListener() {
+  window.addEventListener('modal:open', async (e) => {
+    const { miloLibs } = getConfig();
+    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
+    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
+    const details = await findDetails(e.detail.hash);
+    if (details) getModal(details);
+  });
+}
+
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
+
+  await decorateMeta();
+
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1871,34 +1903,9 @@ function initSidekick() {
   }
 }
 
-async function decorateMeta() {
-  const { origin } = window.location;
-  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."], [content*="/federal/"]');
-  await Promise.all(Array.from(contents).map(async (meta) => {
-    if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
-    try {
-      const url = new URL(meta.content);
-      const localizedLink = await localizeLinkAsync(`${origin}${url.pathname}`);
-      const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
-      meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
-    } catch (e) {
-      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
-    }
-  }));
-
-  // Event-based modal
-  window.addEventListener('modal:open', async (e) => {
-    const { miloLibs } = getConfig();
-    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
-    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
-    const details = await findDetails(e.detail.hash);
-    if (details) getModal(details);
-  });
-}
-
 async function decorateDocumentExtras() {
-  await decorateMeta();
-  decorateHeader();
+  await decorateMeta(['footer-promo-tag', ' footer-source', 'gnav-source']);
+  await decorateHeader();
 }
 
 async function documentPostSectionLoading(config) {
@@ -2011,6 +2018,7 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     await decorateDocumentExtras();
+    initModalEventListener();
   }
 
   if (config.locale?.base
