@@ -11,7 +11,7 @@ const previewJsonTemplate = {
   data: [
   ],
   ':colWidths': [
-    200,
+    1000,
   ],
   ':sheetname': 'data',
   ':type': 'sheet',
@@ -61,11 +61,11 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
     return {};
   };
 
-  async function getPreviewPaths(entries) {
+  async function getPreviewPaths(entries, method = 'POST') {
     const previewPaths = Array.from(
       new Set(
         entries
-          .filter((entry) => entry.method === 'POST' && entry.route === 'preview')
+          .filter((entry) => entry.method === method && entry.route === 'preview')
           .flatMap((log) => [
             log.path,
             ...(Array.isArray(log.paths) ? log.paths : []),
@@ -73,6 +73,34 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       ),
     );
     return previewPaths;
+  }
+
+  async function getUnpreviewPaths(entries) {
+    return getPreviewPaths(entries, 'DELETE');
+  }
+
+  function getFilteredPaths(paths) {
+    const hasNoExtension = (path) => !/\.[^/]+$/.test(path);
+    const notExcluded = (path) => !config.excludePathsRegex?.test(path);
+    return paths.filter(
+      (path) => hasNoExtension(path) && notExcluded(path),
+    );
+  }
+
+  function getPathsPerRoot(previewRoots, filteredPreviewPaths) {
+    const pathExtn = config.getPreviewPathExtension();
+    return previewRoots.reduce((acc, root) => {
+      const paths = filteredPreviewPaths.filter((path) => path.startsWith(root));
+      if (paths.length) {
+        const indexPath = config.getIndexPath(root);
+        acc[root] = {
+          indexPath,
+          indexPreviewPath: `${indexPath}.json`,
+          paths: paths.map((path) => path.endsWith('/') ? path : `${path}${pathExtn}`),
+        };
+      }
+      return acc;
+    }, {});
   }
 
   self.incremental = async () => {
@@ -103,47 +131,43 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       console.log(`No entries found, exiting for ${siteOrg}/${siteRepo} at ${toParam}.`);
       return;
     }
+
+    const unpreviewPaths = await getUnpreviewPaths(entries);
+    const filteredUnpreviewPaths = getFilteredPaths(unpreviewPaths);
+
     const previewPaths = await getPreviewPaths(entries);
+    const filteredPreviewPaths = getFilteredPaths(previewPaths).filter((path) => !filteredUnpreviewPaths.includes(path));
 
-    const hasNoExtension = (path) => !/\.[^/]+$/.test(path);
-    const notExcluded = (path) => !config.excludePathsRegex?.test(path);
-    const filteredPreviewPaths = previewPaths.filter(
-      (path) => hasNoExtension(path) && notExcluded(path),
-    );
+    const unpreviewPathsPerRoot = getPathsPerRoot(previewRoots, filteredUnpreviewPaths);
+    const previewPathsPerRoot = getPathsPerRoot(previewRoots, filteredPreviewPaths);
 
-    const pathExtn = config.getPreviewPathExtension();
-    const previewPathsPerRoot = previewRoots.reduce((acc, root) => {
-      const paths = filteredPreviewPaths.filter((path) => path.startsWith(root));
-      if (paths.length) {
-        const indexPath = config.getIndexPath(root);
-        acc.push({
-          indexPath,
-          indexPreviewPath: `${indexPath}.json`,
-          paths: paths.map((path) => `${path}${pathExtn}`),
-        });
+    for (const rootPath of previewRoots) {
+      const previewRoot = previewPathsPerRoot[rootPath];
+      const unpreviewRoot = unpreviewPathsPerRoot[rootPath];
+      if (!previewRoot?.paths?.length && !unpreviewRoot?.paths?.length) {
+        continue;
       }
-      return acc;
-    }, []);
-
-    for (const root of previewPathsPerRoot) {
-      const currentData = await getJsonFromDa(siteOrg, siteRepo, root.indexPath);
+      console.log(`Processing root: ${rootPath}`);
+      console.log(previewRoot.paths)
+      const currentData = await getJsonFromDa(siteOrg, siteRepo, previewRoot.indexPath || unpreviewRoot.indexPath);
       let previewIndex = { ...previewJsonTemplate };
       if (currentData?.data?.length) {
-        const mergedSet = new Set(currentData.data.map((item) => item.Path));
-        root.paths.forEach((path) => {
+        const filteredCurrentData = currentData.data.filter((item) => !unpreviewPathsPerRoot[rootPath]?.paths?.includes(item.Path));
+        const mergedSet = new Set(filteredCurrentData.map((item) => item.Path));
+        previewRoot.paths?.forEach((path) => {
           mergedSet.add(path);
         });
         const mergedData = [...mergedSet].map((path) => ({ Path: path }));
         const { length } = mergedData;
         previewIndex = { ...previewIndex, total: length, limit: length, data: mergedData };
-      } else {
-        const pathData = root.paths.map((path) => ({ Path: path }));
-        const { length } = root.paths;
+      } else if (previewRoot.paths) {
+        const pathData = previewRoot.paths.map((path) => ({ Path: path }));
+        const { length } = previewRoot.paths;
         previewIndex = { ...previewIndex, total: length, limit: length, data: pathData };
       }
-      const result = await saveJsonToDa(siteOrg, siteRepo, root.indexPath, previewIndex);
+      const result = await saveJsonToDa(siteOrg, siteRepo, previewRoot.indexPath, previewIndex);
       console.log(`Preview index saved to DA at ${result.daHref}`);
-      const previewResult = await triggerPreview(siteOrg, siteRepo, root.indexPreviewPath);
+      const previewResult = await triggerPreview(siteOrg, siteRepo, previewRoot.indexPreviewPath);
       console.log(`Preview result: ${previewResult?.preview?.url}`);
     }
 
