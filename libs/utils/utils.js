@@ -1565,6 +1565,7 @@ export function filterDuplicatedLinkBlocks(blocks) {
 }
 
 async function decorateSection(section, idx) {
+  section.dataset.status = 'pending';
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -1594,7 +1595,7 @@ async function decorateSection(section, idx) {
   if (embeddedLinks.length) {
     links = links.filter((link) => !embeddedLinks.includes(link));
   }
-  section.dataset.status = 'decorated';
+
   section.className = `${section.classList.contains('section') ? '' : 'section'} ${section.className}`;
   section.dataset.idx = idx;
   return {
@@ -2135,7 +2136,7 @@ export async function loadArea(area = document) {
   }
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
-  htmlSections.forEach((section) => { section.className = 'section'; });
+  htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
 
   const areaBlocks = [];
   let lcpSectionId = null;
