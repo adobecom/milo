@@ -131,7 +131,7 @@ function getSidenav(collection) {
   /* Filters */
   const spSidenav = createTag('sp-sidenav', { manageTabIndex: true });
   spSidenav.setAttribute('manageTabIndex', true);
-  const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
+  const sidenavList = createTag('merch-sidenav-list', { deeplink: 'category' }, spSidenav);
 
   sidenavList.updateComplete.then(() => {
     sidenavList.querySelector('sp-sidenav')?.setAttribute('role', 'tablist');
