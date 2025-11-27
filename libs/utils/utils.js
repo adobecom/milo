@@ -1594,8 +1594,8 @@ async function decorateSection(section, idx) {
   if (embeddedLinks.length) {
     links = links.filter((link) => !embeddedLinks.includes(link));
   }
-  section.className = 'section';
   section.dataset.status = 'decorated';
+  section.className = `${section.classList.contains('section') ? '' : 'section'} ${section.className}`;
   section.dataset.idx = idx;
   return {
     blocks: [...links, ...blocks],
@@ -2135,6 +2135,7 @@ export async function loadArea(area = document) {
   }
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
+  htmlSections.forEach((section) => { section.className = 'section'; });
 
   const areaBlocks = [];
   let lcpSectionId = null;
