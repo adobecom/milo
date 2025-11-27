@@ -154,7 +154,7 @@
   align-items: center;
 }
 
-.comparison-table .table-cell >p:nth-child(2) {
+.comparison-table .table-cell > p:nth-child(2) {
   margin-top: 4px;
   font-size: var(--type-body-xxs-size);
   font-weight: 400;
