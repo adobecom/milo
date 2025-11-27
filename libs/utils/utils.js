@@ -1754,6 +1754,7 @@ function setCountry() {
 async function decorateMeta(ignoreNames = []) {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."]:not([data-localized]), [content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
+  debugger;
   await Promise.all(Array.from(contents).map(async (meta) => {
     const name = meta.getAttribute('name') || meta.getAttribute('property');
     if (name === 'hlx:proxyUrl' || name?.endsWith('schedule')) return;
@@ -1763,6 +1764,7 @@ async function decorateMeta(ignoreNames = []) {
       const localizedLink = await localizeLinkAsync(`${origin}${url.pathname}`);
       const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
       meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
+      debugger;
       meta.dataset.localized = 'true';
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
@@ -1904,7 +1906,7 @@ function initSidekick() {
 }
 
 async function decorateDocumentExtras() {
-  await decorateMeta(['footer-promo-tag', ' footer-source', 'gnav-source']);
+  await decorateMeta(['footer-promo-tag', 'footer-source', 'gnav-source']);
   await decorateHeader();
 }
 
