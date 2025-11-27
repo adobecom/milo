@@ -490,6 +490,8 @@ class Gnav {
     document.querySelectorAll('.feds-localnav--active').forEach((localNav) => {
       localNav.classList.remove('feds-localnav--active');
     });
+
+    window?.UniversalNav?.changeTheme?.(isDarkMode() ? 'dark' : 'light');
   }
 
   setupUniversalNav = () => {
