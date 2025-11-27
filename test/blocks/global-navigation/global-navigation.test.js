@@ -67,7 +67,7 @@ describe('global navigation', () => {
         },
       });
 
-      expect(window.lana.log.getCalls().find((c) => c.args[0]?.includes && c.args[0]?.includes('Error with IMS'))).to.exist;
+      expect(window.lana.log.getCalls().find((c) => c.args[0]?.includes('Error with IMS'))).to.exist;
     });
 
     it('should send log when sign in link is not found', async () => {

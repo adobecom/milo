@@ -683,71 +683,11 @@ async function loadQueryIndexes(prefix) {
       lingoSiteMappingLoaded = true;
     }
   })();
+
+  import('./lingo.js');
 }
 
-async function urlInMatchingIndex(matchingIndexes, sanitizedPath) {
-  const pathsArrays = await Promise.all(matchingIndexes.map((q) => q.pathsRequest));
-  const allPaths = pathsArrays.flat().filter(Boolean);
-  return allPaths.some((path) => sanitizedPath === path);
-}
-
-async function tryEarlyDecisionUsingBaseIndex(
-  matchingIndexes,
-  sanitizedPath,
-  urlHostname,
-  initialResolvedCount,
-) {
-  if (!baseQueryIndex?.pathsRequest) return null;
-
-  const baseIndexMatches = Object.values(baseQueryIndex)
-    .filter((q) => q.domains.includes(urlHostname));
-  const allRegionalPromises = Promise.all(matchingIndexes.map((m) => m.pathsRequest));
-
-  await Promise.race([baseQueryIndex.pathsRequest, allRegionalPromises]);
-
-  if (!baseQueryIndex.requestResolved) return null;
-
-  const currentResolvedIndexes = matchingIndexes.filter((m) => m.requestResolved);
-
-  if (currentResolvedIndexes.length > initialResolvedCount) {
-    const foundInNewlyResolved = await urlInMatchingIndex(currentResolvedIndexes, sanitizedPath);
-    if (foundInNewlyResolved) return true;
-  }
-
-  const urlExistsInBase = await urlInMatchingIndex(baseIndexMatches, sanitizedPath);
-  return urlExistsInBase ? false : null;
-}
-
-async function urlInQueryIndex(urlPath, urlHostname, matchingIndexes) {
-  const sanitizedPath = urlPath.replace(/\.html$/, '');
-
-  const allResolved = matchingIndexes.every((m) => m.requestResolved);
-  if (allResolved) return urlInMatchingIndex(matchingIndexes, sanitizedPath);
-
-  const resolvedIndexes = matchingIndexes.filter((m) => m.requestResolved);
-  if (resolvedIndexes.length) {
-    const foundInResolved = await urlInMatchingIndex(resolvedIndexes, sanitizedPath);
-    if (foundInResolved) return true;
-  }
-
-  const earlyDecision = await tryEarlyDecisionUsingBaseIndex(
-    matchingIndexes,
-    sanitizedPath,
-    urlHostname,
-    resolvedIndexes.length,
-  );
-
-  if (earlyDecision !== null) return earlyDecision;
-
-  await Promise.all(matchingIndexes.map((m) => m.pathsRequest));
-  return urlInMatchingIndex(matchingIndexes, sanitizedPath);
-}
-
-export async function localizeLinkAsync(
-  href,
-  originHostName = window.location.hostname,
-  overrideDomain = false,
-) {
+function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
   try {
     const url = new URL(href);
     const relative = url.hostname === originHostName;
@@ -769,25 +709,39 @@ export async function localizeLinkAsync(
     let prefix = getPrefixBySite(locale, url, relative);
 
     const siteId = uniqueSiteId ?? '';
-    if (locale.base && extension !== 'json') {
-      if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
-        loadQueryIndexes(prefix);
-      }
-      if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
-        await Promise.all([queryIndexes[siteId].pathsRequest, lingoSiteMapping]);
-      }
-      const matchingIndexes = Object.values(queryIndexes)
-        .filter((q) => q.domains.includes(url.hostname));
-      if (matchingIndexes.length) {
-        const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, url.hostname, matchingIndexes);
-        if (!useRegionalPrefix && locale.base) prefix = locale.base === '' ? '' : `/${locale.base}`;
-      }
+    if (useAsync && locale.base && extension !== 'json') {
+      return (async () => {
+        if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
+          loadQueryIndexes(prefix);
+        }
+        if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
+          await Promise.all([queryIndexes[siteId].pathsRequest, lingoSiteMapping]);
+        }
+        const matchingIndexes = Object.values(queryIndexes)
+          .filter((q) => q.domains.includes(url.hostname));
+        if (matchingIndexes.length) {
+          const { default: urlInQueryIndex } = await import('./lingo.js');
+          const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex);
+          if (!useRegionalPrefix && locale.base) prefix = locale.base === '' ? '' : `/${locale.base}`;
+        }
+        const urlPath = `${prefix}${path}${url.search}${hash}`;
+        return relative ? urlPath : `${url.origin}${urlPath}`;
+      })();
     }
+
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
     return href;
   }
+}
+
+export async function localizeLinkAsync(
+  href,
+  originHostName = window.location.hostname,
+  overrideDomain = false,
+) {
+  return localizeLinkCore(href, originHostName, overrideDomain, true);
 }
 
 // this method is deprecated - use localizeLinkAsync instead
@@ -796,30 +750,7 @@ export function localizeLink(
   originHostName = window.location.hostname,
   overrideDomain = false,
 ) {
-  try {
-    const url = new URL(href);
-    const relative = url.hostname === originHostName;
-    const processedHref = relative ? href.replace(url.origin, '') : href;
-    const { hash } = url;
-    if (hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
-    const path = url.pathname;
-    const extension = getExtension(path);
-    const allowedExts = ['', 'html', 'json'];
-    if (!allowedExts.includes(extension)) return processedHref;
-    const { locale, locales, languages, prodDomains } = getConfig();
-    if (!locale || !(locales || languages)) return processedHref;
-    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
-      || overrideDomain;
-    if (!isLocalizable) return processedHref;
-    const isLocalizedLink = isLocalizedPath(path, locales);
-    if (isLocalizedLink) return processedHref;
-
-    const prefix = getPrefixBySite(locale, url, relative);
-    const urlPath = `${prefix}${path}${url.search}${hash}`;
-    return relative ? urlPath : `${url.origin}${urlPath}`;
-  } catch (error) {
-    return href;
-  }
+  return localizeLinkCore(href, originHostName, overrideDomain, false);
 }
 
 export function loadLink(href, {
@@ -1225,69 +1156,80 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   });
 }
 
-export async function decorateLinksAsync(el) {
+function decorateLinkElement(a, config, hasDnt) {
+  if (hasDnt) a.dataset.hasDnt = true;
+  appendHtmlToLink(a);
+  if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
+  decorateSVG(a);
+  if (a.href.includes('#_blank')) {
+    a.setAttribute('target', '_blank');
+    a.href = a.href.replace('#_blank', '');
+  }
+  if (a.href.includes('#_alloy')) {
+    import('../martech/alloy-links.js').then(({ default: processAlloyLink }) => {
+      processAlloyLink(a);
+    });
+  }
+  if (a.href.includes('#_nofollow')) {
+    a.setAttribute('rel', 'nofollow');
+    a.href = a.href.replace('#_nofollow', '');
+  }
+  // Custom action links
+  const loginEvent = '#_evt-login';
+  if (a.href.includes(loginEvent)) {
+    a.href = a.href.replace(loginEvent, '');
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const { signInContext } = config;
+      window.adobeIMS?.signIn(signInContext);
+    });
+  }
+  const copyEvent = '#_evt-copy';
+  if (a.href.includes(copyEvent)) {
+    decorateCopyLink(a, copyEvent);
+  }
+  const branchQuickLink = 'app.link';
+  if (a.href.includes(branchQuickLink)) {
+    (async () => {
+      const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
+      processQuickLink(a);
+    })();
+  }
+  // Append aria-label
+  const pipeRegex = /\s?\|([^|]*)$/;
+  if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
+    const node = [...a.childNodes].reverse()[0];
+    const ariaLabel = node.textContent.match(pipeRegex)?.[1];
+    node.textContent = node.textContent.replace(pipeRegex, '');
+    a.setAttribute('aria-label', (ariaLabel || '').trim());
+  }
+}
+
+function processLinkDecoration(a, config, hasDnt) {
+  decorateLinkElement(a, config, hasDnt);
+  if (a.href.includes('#_dnb')) {
+    a.href = a.href.replace('#_dnb', '');
+    return null;
+  }
+  const autoBlock = decorateAutoBlock(a);
+  return autoBlock ? a : null;
+}
+
+function setupLinksDecoration(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
+  return { config, anchors, hostname, href };
+}
+
+export async function decorateLinksAsync(el) {
+  const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
-    appendHtmlToLink(a);
-    if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
     const hasDnt = a.href.includes('#_dnt');
-    if (!a.dataset?.hasDnt) a.href = await localizeLinkAsync(a.href);
-    if (hasDnt) a.dataset.hasDnt = true;
-    decorateSVG(a);
-    if (a.href.includes('#_blank')) {
-      a.setAttribute('target', '_blank');
-      a.href = a.href.replace('#_blank', '');
-    }
-    if (a.href.includes('#_alloy')) {
-      import('../martech/alloy-links.js').then(({ default: processAlloyLink }) => {
-        processAlloyLink(a);
-      });
-    }
-    if (a.href.includes('#_nofollow')) {
-      a.setAttribute('rel', 'nofollow');
-      a.href = a.href.replace('#_nofollow', '');
-    }
-
-    // Custom action links
-    const loginEvent = '#_evt-login';
-    if (a.href.includes(loginEvent)) {
-      a.href = a.href.replace(loginEvent, '');
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        const { signInContext } = config;
-        window.adobeIMS?.signIn(signInContext);
-      });
-    }
-    const copyEvent = '#_evt-copy';
-    if (a.href.includes(copyEvent)) {
-      decorateCopyLink(a, copyEvent);
-    }
-    const branchQuickLink = 'app.link';
-    if (a.href.includes(branchQuickLink)) {
-      (async () => {
-        const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
-        processQuickLink(a);
-      })();
-    }
-    // Append aria-label
-    const pipeRegex = /\s?\|([^|]*)$/;
-    if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
-      const node = [...a.childNodes].reverse()[0];
-      const ariaLabel = node.textContent.match(pipeRegex)?.[1];
-      node.textContent = node.textContent.replace(pipeRegex, '');
-      a.setAttribute('aria-label', (ariaLabel || '').trim());
-    }
-
-    if (a.href.includes('#_dnb')) {
-      a.href = a.href.replace('#_dnb', '');
-      return null;
-    }
-    const autoBlock = decorateAutoBlock(a);
-    return autoBlock ? a : null;
+    if (!a.dataset.hasDnt) a.href = await localizeLinkAsync(a.href);
+    return processLinkDecoration(a, config, hasDnt);
   });
 
   const links = (await Promise.all(linksPromises)).filter(Boolean);
@@ -1297,71 +1239,16 @@ export async function decorateLinksAsync(el) {
 
 // this method is deprecated - use decorateLinksAsync instead
 export function decorateLinks(el) {
-  const config = getConfig();
-  decorateImageLinks(el);
-  const anchors = el.getElementsByTagName('a');
-  const { hostname, href } = window.location;
+  const { config, anchors, hostname, href } = setupLinksDecoration(el);
+
   const links = [...anchors].reduce((rdx, a) => {
-    appendHtmlToLink(a);
-    if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
-    if (hasDnt) a.dataset.hasDnt = true;
-    decorateSVG(a);
-    if (a.href.includes('#_blank')) {
-      a.setAttribute('target', '_blank');
-      a.href = a.href.replace('#_blank', '');
-    }
-    if (a.href.includes('#_alloy')) {
-      import('../martech/alloy-links.js').then(({ default: processAlloyLink }) => {
-        processAlloyLink(a);
-      });
-    }
-    if (a.href.includes('#_nofollow')) {
-      a.setAttribute('rel', 'nofollow');
-      a.href = a.href.replace('#_nofollow', '');
-    }
-    if (a.href.includes('#_dnb')) {
-      a.href = a.href.replace('#_dnb', '');
-    } else {
-      const autoBlock = decorateAutoBlock(a);
-      if (autoBlock) {
-        rdx.push(a);
-      }
-    }
-    // Custom action links
-    const loginEvent = '#_evt-login';
-    if (a.href.includes(loginEvent)) {
-      a.href = a.href.replace(loginEvent, '');
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        const { signInContext } = config;
-        window.adobeIMS?.signIn(signInContext);
-      });
-    }
-    const copyEvent = '#_evt-copy';
-    if (a.href.includes(copyEvent)) {
-      decorateCopyLink(a, copyEvent);
-    }
-    const branchQuickLink = 'app.link';
-
-    if (a.href.includes(branchQuickLink)) {
-      (async () => {
-        const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
-        processQuickLink(a);
-      })();
-    }
-    // Append aria-label
-    const pipeRegex = /\s?\|([^|]*)$/;
-    if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
-      const node = [...a.childNodes].reverse()[0];
-      const ariaLabel = node.textContent.match(pipeRegex)?.[1];
-      node.textContent = node.textContent.replace(pipeRegex, '');
-      a.setAttribute('aria-label', (ariaLabel || '').trim());
-    }
-
+    const result = processLinkDecoration(a, config, hasDnt);
+    if (result) rdx.push(result);
     return rdx;
   }, []);
+
   convertStageLinks({ anchors, config, hostname, href });
   return links;
 }
@@ -1597,6 +1484,7 @@ async function decorateSection(section, idx) {
   }
 
   section.className = `${section.classList.contains('section') ? '' : 'section'} ${section.className}`;
+  section.dataset.status = 'decorated';
   section.dataset.idx = idx;
   return {
     blocks: [...links, ...blocks],

@@ -18,7 +18,7 @@
     import sinon from 'sinon';
     import { loadScript } from '../../../libs/utils/utils.js';
     import init from '../../../libs/blocks/youtube/youtube.js';
-    import { delay } from '../../helpers/waitfor.js';
+    import { waitFor } from '../../helpers/waitfor.js';
 
 
     let fetchStub;
@@ -62,8 +62,12 @@
 
         it('Should add aria-label to play btn', async () => {
           await init(document.querySelector('a'));
-          await delay(100);
+
           const btn = document.querySelector('.lty-playbtn');
+          await waitFor(() => {
+            return btn?.getAttribute('aria-label') === 'Play Youtube video';
+          });
+  
           const ariaLabel = btn.getAttribute('aria-label');
           expect(ariaLabel).to.be.equal('Play Youtube video');
         });

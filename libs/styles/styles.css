@@ -489,7 +489,7 @@ picture.bg-img img {
 
 /* progressive section appearance */
 main > div,
-main .section[data-status='pending'] {
+main .section:is([data-status='decorated'], [data-status='pending']) {
   display: none;
 }
 
