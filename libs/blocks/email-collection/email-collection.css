@@ -234,7 +234,7 @@
     padding: var(--form-padding);
     display: flex;
     flex-direction: row;
-    gap: 40px;
+    gap: 35px;
     height: inherit;
   }
 
@@ -282,6 +282,10 @@
   .email-collection > :not(.message) .text > div {
     overflow-y: auto;
     padding-right: var(--form-padding);
+  }
+
+  .email-collection:not(.no-image) .text > div > * {
+    margin-left: 5px;
   }
 }
 
