@@ -296,14 +296,14 @@ describe('Comparison Table', () => {
   });
 
   describe('Multiple Tables', () => {
+    const comparisonTable = document.querySelector('.comparison-table');
+
     it('creates separate table containers for multiple tables', () => {
-      const comparisonTable = document.querySelector('.comparison-table');
       const tableContainers = comparisonTable.querySelectorAll('.table-container');
       expect(tableContainers.length).to.equal(2);
     });
 
     it('each table container has its own table', () => {
-      const comparisonTable = document.querySelector('.comparison-table');
       const tableContainers = comparisonTable.querySelectorAll('.table-container');
       tableContainers.forEach((container) => {
         const table = container.querySelector('.table-body');
