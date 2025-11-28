@@ -555,3 +555,80 @@
     }
   }
 }
+
+/* Northstar specific */
+:root:has(meta[name="theme"][content="northstar"]) {
+  .section:not(.dark) .text-block:not(.dark) [class*="heading-"],
+  .section:not(.dark) .text-block:not(.dark) [class*="body-"] {
+    color: var(--color-black);
+  }
+  
+  .text-block [class*="heading-"] {
+    font-weight: 900;
+  }
+
+  .text-block [class*="heading-xxxl"] {
+    font-size: 32px;
+    line-height: 1.05;
+    letter-spacing: -1px;
+  }
+
+  .text-block [class*="body-xl"] {
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  @media (max-width: 599px) {
+    .text-block.no-spacing-top-mobile {
+      padding-top: 0;
+    }
+
+    .text-block.left-mobile {
+      text-align: start;
+    }
+  }
+
+  @media (min-width: 600px) and (max-width: 1199px) {
+    .text-block [class*="heading-xxxl"] {
+      font-size: 44px;
+    }
+
+    .text-block.left-tablet {
+      text-align: start;
+    }
+  }
+
+  @media (max-width:1199px) {
+    .text-block.xs-spacing-bottom {
+      padding-bottom: 0;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .text-block [class*="heading-xxxl"] {
+      font-size: 96px;
+      line-height: 0.98;
+      max-width: 1072px;
+    }
+
+    .text-block [class*="body-xl"] {
+      font-size: 24px;
+      line-height: 1.3;
+      max-width: 840px;
+    }
+
+    .text-block [class*="body-xl"],
+    .text-block [class*="heading-xxxl"] {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .text-block [class*="body-"] {
+      margin-top: var(--spacing-s);
+    }
+
+    .text-block.xxl-spacing-top {
+      padding-top: var(--spacing-xxl);
+    }
+  }
+}
