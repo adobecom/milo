@@ -19,8 +19,8 @@ export async function localizeFederatedUrl(url) {
 }
 
 const FEDERAL_ROOT = '/federal/email-collection';
-const CONSENT_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/consents/cs4.plain.html`);
-const PLACEHOLDER_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=placeholders`);
+const CONSENT_URL_PROMISE = localizeFederatedUrl(`${FEDERAL_ROOT}/consents/cs4.plain.html`);
+const PLACEHOLDER_URL_PROMISE = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=placeholders`);
 
 export const FORM_FIELDS = {
   email: {
@@ -165,9 +165,9 @@ function defaultFormatData(data) {
 
 async function fetchSheet(sheetData) {
   const formatData = { state: formatStateData };
-  const { id, url } = sheetData;
+  const { id, urlOrPromise } = sheetData;
   try {
-    const resolvedUrl = await url;
+    const resolvedUrl = await urlOrPromise;
     const sheetReq = await fetch(resolvedUrl);
     if (!sheetReq.ok) return { [id]: {} };
     const { data } = await sheetReq.json();
@@ -181,9 +181,12 @@ async function fetchSheet(sheetData) {
 }
 
 async function fetchFormConfig(sheets) {
-  const placeholderUrl = await PLACEHOLDER_URL;
+  const placeholderUrl = await PLACEHOLDER_URL_PROMISE;
   const sheetPromises = [{ url: placeholderUrl, id: 'placeholders' }, ...sheets]
-    .map((sheet) => (fetchSheet(sheet)));
+    .map((sheet) => {
+      sheet.urlOrPromise = sheet.url;
+      return fetchSheet(sheet);
+    });
 
   const resolved = await Promise.all(sheetPromises);
   let config = {};
@@ -193,7 +196,7 @@ async function fetchFormConfig(sheets) {
 
 export async function fetchConsentString() {
   try {
-    const consentUrl = await CONSENT_URL;
+    const consentUrl = await CONSENT_URL_PROMISE;
     const stringReq = await fetch(consentUrl);
     if (!stringReq.ok) return {};
 

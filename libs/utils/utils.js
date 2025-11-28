@@ -707,7 +707,9 @@ function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
     let prefix = getPrefixBySite(locale, url, relative);
 
     const siteId = uniqueSiteId ?? '';
-    if (useAsync && locale.base && extension !== 'json') {
+    if (useAsync && extension !== 'json'
+        && ((locale.base && !path.includes('/fragments/'))
+          || (!!locale.regions?.length && path.includes('/fragments/')))) {
       return (async () => {
         if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
           loadQueryIndexes(prefix);
