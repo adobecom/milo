@@ -1506,6 +1506,7 @@ describe('Utils', () => {
     let originalFetch;
     let fetchStub;
     let lingoUtils;
+    let originalLana;
 
     const createQueryIndexData = (paths) => ({ data: paths.map((path) => ({ path })) });
     const lingoSiteMapping = {
@@ -1605,6 +1606,7 @@ describe('Utils', () => {
 
     beforeEach(async () => {
       originalFetch = window.fetch;
+      originalLana = window.lana;
       fetchStub = sinon.stub();
       window.fetch = fetchStub;
       setupDefaultFetchStub();
@@ -1617,6 +1619,11 @@ describe('Utils', () => {
 
     afterEach(() => {
       window.fetch = originalFetch;
+      if (originalLana) {
+        window.lana = originalLana;
+      } else {
+        delete window.lana;
+      }
     });
 
     it('should use regional prefix when regional page exists in query index', async () => {
@@ -1739,8 +1746,6 @@ describe('Utils', () => {
         return mockRes({ payload: { data: [] } });
       });
 
-      window.lana = { log: sinon.spy() };
-
       const result = await lingoUtils.localizeLinkAsync(
         'https://www.adobe.com/creativecloud/product',
         'www.adobe.com',
@@ -1748,8 +1753,6 @@ describe('Utils', () => {
 
       // When query index fails, should fall back to base prefix
       expect(result).to.equal('/de/creativecloud/product');
-
-      delete window.lana;
     });
 
     it('should not apply lingo logic when locale has no base', async () => {
