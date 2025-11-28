@@ -235,7 +235,7 @@ async function submitForm(form) {
     const { mpsSname } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
     const { country: countryField } = getFormData('fields');
-    const { userId: guid } = await getIMSProfile();
+    const { country: profileCountry, userId: guid } = await getIMSProfile();
 
     const { ecid, aepCmp, aepOtherConsents } = await getAEPData();
     const bodyData = {
@@ -251,7 +251,7 @@ async function submitForm(form) {
       aepCmp,
       aepOtherConsents,
       isGuest,
-      ...(countryField && { countryCode: country }),
+      ...(countryField && { countryCode: profileCountry ?? country }),
     };
 
     const { error, data, status } = await runtimePost(
