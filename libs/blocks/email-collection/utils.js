@@ -46,10 +46,10 @@ export const FORM_FIELDS = {
     },
   },
   country: {
-    tag: 'input',
+    tag: 'select',
     url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=countries`),
     attributes: {
-      type: 'text',
+      required: true,
       disabled: '',
     },
   },
@@ -231,6 +231,7 @@ export const [getFormData, setFormData] = (() => {
         metadataObject[newKey] = value;
 
         if (FORM_FIELDS[key]?.url) fetchConfigParams.push({ id: key, url: FORM_FIELDS[key].url });
+        if (newKey === 'runtimeEndpoint') child.lastElementChild.remove();
       });
 
       if (!fields.email

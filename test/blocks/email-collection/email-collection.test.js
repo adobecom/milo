@@ -180,9 +180,10 @@ describe('Email collection', () => {
       country: {
         label: 'Country',
         url: 'https://main--federal--adobecom.aem.page/federal/email-collection/form-config.json?sheet=countries',
+        tag: 'select',
         attributes: {
-          type: 'text',
           disabled: '',
+          required: 'true',
         },
       },
       state: {
@@ -285,6 +286,26 @@ describe('Email collection', () => {
     expect(foregroundText[1].classList.contains('hidden')).to.be.false;
   });
 
+  it('Should add country field that is not disabled if user is not signed in', async () => {
+    setIms(false);
+    const block = document.querySelector('#mailing-list');
+    await init(block);
+    await sleep();
+    const country = block.querySelector('form select#country');
+    expect(country.value).to.equal('');
+    expect(country.getAttribute('disabled')).to.not.exist;
+  });
+
+  it('Should prefill and disable country field if user is signed in', async () => {
+    setIms(true);
+    const block = document.querySelector('#mailing-list');
+    await init(block);
+    await sleep();
+    const country = block.querySelector('form select#country');
+    expect(country.value).to.equal('US');
+    expect(country.getAttribute('disabled')).to.exist;
+  });
+
   it('Should submit form and not send ecid if there is no cookie consent', async () => {
     setIms(false);
     setAdobePrivacy(false);
@@ -295,10 +316,12 @@ describe('Email collection', () => {
     await sleep();
     const submitButton = block.querySelector('form button[type="submit"]');
     const email = block.querySelector('form input#email');
+    const country = block.querySelector('form select#country');
     email.value = 'test@test.com';
+    country.value = 'US';
     submitButton.click();
     await sleep(10);
-    const submitFetch = fetchSpy.getCalls()[2];
+    const submitFetch = fetchSpy.getCalls()[3];
     const { body } = submitFetch.args[1];
     expect(JSON.parse(body).ecid).to.be.undefined;
   });
@@ -313,10 +336,12 @@ describe('Email collection', () => {
     await sleep();
     const submitButton = block.querySelector('form button[type="submit"]');
     const email = block.querySelector('form input#email');
+    const country = block.querySelector('form select#country');
     email.value = 'test@test.com';
+    country.value = 'US';
     submitButton.click();
     await sleep(10);
-    const submitFetch = fetchSpy.getCalls()[2];
+    const submitFetch = fetchSpy.getCalls()[3];
     const { body } = submitFetch.args[1];
     expect(JSON.parse(body).ecid).to.equal('test-ecid');
   });
@@ -330,10 +355,12 @@ describe('Email collection', () => {
     await sleep();
     const submitButton = block.querySelector('form button[type="submit"]');
     const email = block.querySelector('form input#email');
+    const country = block.querySelector('form select#country');
     email.value = 'test@test.com';
+    country.value = 'US';
     submitButton.click();
     await sleep(10);
-    const submitFetch = fetchSpy.getCalls()[2];
+    const submitFetch = fetchSpy.getCalls()[3];
     const { body } = submitFetch.args[1];
     expect(JSON.parse(body).guid).to.be.undefined;
   });
@@ -351,7 +378,7 @@ describe('Email collection', () => {
     email.value = 'test@test.com';
     submitButton.click();
     await sleep(10);
-    const submitFetch = fetchSpy.getCalls()[3];
+    const submitFetch = fetchSpy.getCalls()[4];
     const { body } = submitFetch.args[1];
     expect(JSON.parse(body).guid).to.be.equal('Test');
   });

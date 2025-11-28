@@ -126,7 +126,7 @@ async function insertProgress(el, size = 'm') {
   el.replaceChildren(theme);
 }
 
-function decorateSelect(data, id, placeholder) {
+function decorateSelect({ data, id, placeholder, selectValue }) {
   const selectWrapper = createTag('div', { class: 'select-wrapper' });
   const select = createTag('select', { id, name: id });
   const optionPlaceholder = createTag('option', { value: '' }, placeholder?.trim());
@@ -137,13 +137,14 @@ function decorateSelect(data, id, placeholder) {
     select.appendChild(option);
   });
 
+  select.value = selectValue ?? '';
   selectWrapper.appendChild(select);
   return selectWrapper;
 }
 
 async function decorateInput(key, value) {
   const profile = await getIMSProfile();
-  let inputValue = profile[key];
+  const inputValue = profile[key];
   const { tag, attributes } = FORM_FIELDS[key];
   const [labelText, placeholder] = value.split('|');
   let input;
@@ -156,8 +157,12 @@ async function decorateInput(key, value) {
 
   if (key === 'country') {
     const { country: countries } = await getFormData('config');
-    inputValue = countries?.[inputValue];
-    if (!inputValue) return null;
+    input = decorateSelect({
+      data: Object.entries(countries).map((country) => ({ key: country[0], value: country[1] })),
+      id: key,
+      placeholder: placeholder ?? labelText,
+      ...(countries[inputValue] && { selectValue: inputValue }),
+    });
   }
 
   if (key === 'state') {
@@ -165,7 +170,11 @@ async function decorateInput(key, value) {
     const fields = getFormData('fields');
     const { country } = profile;
     if (!fields.country || !states?.[country]) return null;
-    input = decorateSelect(states[country], key, placeholder ?? labelText);
+    input = decorateSelect({
+      data: states[country],
+      id: key,
+      placeholder: placeholder ?? labelText,
+    });
   }
 
   input = input ?? createTag(
@@ -178,16 +187,17 @@ async function decorateInput(key, value) {
     },
   );
 
+  const tempInput = input.querySelector('select') ?? input;
   Object.entries(attributes).forEach(([attrKey, attrValue]) => {
-    const tempInput = input.querySelector('select') ?? input;
+    if (attrKey === 'disabled' && !tempInput.value) return;
     tempInput?.setAttribute(attrKey, attrValue);
   });
 
-  label.classList.toggle('required', !!attributes.required);
+  label.classList.toggle('required', tempInput.getAttribute('required'));
   const container = createTag('div', { class: 'input-container' });
   container.append(label, input);
 
-  if (input.getAttribute('readonly') === null) {
+  if (tempInput.getAttribute('disabled') === null) {
     const error = createTag('div', { id: `error-${key}`, class: 'body-xs hidden' });
     container.append(error);
   }
@@ -207,7 +217,13 @@ async function submitForm(form) {
     subscribed: false,
     email: '',
   };
-  const { email, occupation, organization, state } = Object.fromEntries(new FormData(form));
+  const {
+    email,
+    occupation,
+    organization,
+    state,
+    country,
+  } = Object.fromEntries(new FormData(form));
   const button = form.querySelector('button[type="submit"]');
   const buttonContent = button.textContent;
   updateAriaLive('Form loading');
@@ -219,7 +235,7 @@ async function submitForm(form) {
     const { mpsSname } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
     const { country: countryField } = getFormData('fields');
-    const { country, userId: guid } = await getIMSProfile();
+    const { country: profileCountry, userId: guid } = await getIMSProfile();
 
     const { ecid, aepCmp, aepOtherConsents } = await getAEPData();
     const bodyData = {
@@ -235,7 +251,7 @@ async function submitForm(form) {
       aepCmp,
       aepOtherConsents,
       isGuest,
-      ...(countryField && { countryCode: country }),
+      ...(countryField && { countryCode: profileCountry ?? country }),
     };
 
     const { error, data, status } = await runtimePost(
@@ -289,14 +305,14 @@ function showInputError(form, input, placeholders) {
   const label = form.querySelector(`label[for=${id}]`);
   const error = form.querySelector(`div[id$=${id}]`);
   const errorType = validateInput(input);
-  error.textContent = placeholders[errorType];
+  if (error) error.textContent = placeholders[errorType];
 
   if (errorType) input.setAttribute('aria-describedby', error.id);
   else input.removeAttribute('aria-describedby');
 
   input.classList.toggle('invalid', errorType);
   label.classList.toggle('invalid', errorType);
-  error.classList.toggle('hidden', !errorType);
+  error?.classList.toggle('hidden', !errorType);
 
   return !!errorType;
 }
@@ -346,8 +362,7 @@ async function decorateConsentString() {
 async function decorateForm(el, foreground) {
   const fields = getFormData('fields');
   const text = foreground.querySelector('.text > div');
-  const isMailingList = Object.keys(fields).length === 1;
-  if (isMailingList) el.classList.add('mailing-list');
+  const isMailingList = el.classList.contains('mailing-list');
 
   const shouldSplitFirstRow = !el.classList.contains('large-image') && !isMailingList;
   const form = createTag('form', { id: FORM_ID, novalidate: true });
