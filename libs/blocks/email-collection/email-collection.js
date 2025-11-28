@@ -364,7 +364,7 @@ async function decorateForm(el, foreground) {
   const text = foreground.querySelector('.text > div');
   const isMailingList = el.classList.contains('mailing-list');
 
-  const shouldSplitFirstRow = !el.classList.contains('large-image') && !isMailingList;
+  const shouldSplitFirstRow = !el.classList.contains('large-image') && !isMailingList && Object.keys(fields).length > 1;
   const form = createTag('form', { id: FORM_ID, novalidate: true });
   const inputs = [];
   for (const [key, value] of Object.entries(fields)) {
