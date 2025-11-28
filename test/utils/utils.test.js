@@ -3,7 +3,7 @@ import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
-import { mockFetch } from '../helpers/generalHelpers.js';
+import { mockFetch, mockRes } from '../helpers/generalHelpers.js';
 import { createTag, customFetch } from '../../libs/utils/utils.js';
 
 const utils = {};
@@ -1499,6 +1499,327 @@ describe('Utils', () => {
       const cssLink = document.head.querySelector('link[href*="icons.css"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
+    });
+  });
+
+  describe('Lingo Link Transformation', () => {
+    let originalFetch;
+    let fetchStub;
+    let lingoUtils;
+
+    const createQueryIndexData = (paths) => ({ data: paths.map((path) => ({ path })) });
+    const lingoSiteMapping = {
+      'site-locales': {
+        data: [
+          {
+            uniqueSiteId: 'cc',
+            baseSite: '/de',
+            regionalSites: '/ch_de, /at',
+          },
+          {
+            uniqueSiteId: 'dc',
+            baseSite: '/de',
+            regionalSites: '/ch_de',
+          },
+          {
+            uniqueSiteId: 'da-bacom',
+            baseSite: '/de',
+            regionalSites: '/ch_de, /ch_fr, /at',
+          },
+        ],
+      },
+      'site-query-index-map': {
+        data: [
+          {
+            uniqueSiteId: 'cc',
+            queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/lingo/query-index.json',
+          },
+          {
+            uniqueSiteId: 'dc',
+            queryIndexWebPath: 'www.adobe.com/*/dc-shared/assets/lingo/query-index.json',
+          },
+          {
+            uniqueSiteId: 'da-bacom',
+            queryIndexWebPath: 'business.adobe.com/*/assets/lingo/query-index.json',
+          },
+        ],
+      },
+    };
+
+    const ccRegionalQueryIndex = createQueryIndexData([
+      '/ch_de/creativecloud/product',
+      '/ch_de/creativecloud/features',
+    ]);
+    const ccBaseQueryIndex = createQueryIndexData([
+      '/de/creativecloud/product',
+      '/de/creativecloud/features',
+      '/de/creativecloud/pricing',
+    ]);
+    const dcRegionalQueryIndex = createQueryIndexData([
+      '/ch_de/acrobat/reader',
+    ]);
+    const daBacomRegionalQueryIndex = createQueryIndexData([
+      '/ch_de/products/experience-platform/agent-orchestrator',
+    ]);
+    const daBacomBaseQueryIndex = createQueryIndexData([
+      '/de/products/experience-platform/agent-orchestrator',
+      '/de/products/acrobat-business',
+    ]);
+
+    const defaultTestConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+        ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css', base: 'de' },
+      },
+      prodDomains: ['www.adobe.com', 'business.adobe.com'],
+      pathname: '/ch_de/creativecloud/',
+      uniqueSiteId: 'cc',
+      contentRoot: '/cc-shared',
+      queryIndexPath: '/assets/lingo/query-index.json',
+    };
+
+    const setupDefaultFetchStub = () => {
+      fetchStub.callsFake((url) => {
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
+        }
+        if (url.includes('cc-shared') && url.includes('/ch_de/')) {
+          return mockRes({ payload: ccRegionalQueryIndex });
+        }
+        if (url.includes('cc-shared') && url.includes('/de/')) {
+          return mockRes({ payload: ccBaseQueryIndex });
+        }
+        if (url.includes('dc-shared') && url.includes('/ch_de/')) {
+          return mockRes({ payload: dcRegionalQueryIndex });
+        }
+        if (url.includes('business.adobe.com') && url.includes('/ch_de/')) {
+          return mockRes({ payload: daBacomRegionalQueryIndex });
+        }
+        if (url.includes('business.adobe.com') && url.includes('/de/')) {
+          return mockRes({ payload: daBacomBaseQueryIndex });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+    };
+
+    beforeEach(async () => {
+      originalFetch = window.fetch;
+      fetchStub = sinon.stub();
+      window.fetch = fetchStub;
+      setupDefaultFetchStub();
+      // cache busting
+      const timestamp = Date.now();
+      const module = await import(`../../libs/utils/utils.js?t=${timestamp}`);
+      lingoUtils = module;
+      lingoUtils.setConfig(defaultTestConfig);
+    });
+
+    afterEach(() => {
+      window.fetch = originalFetch;
+    });
+
+    it('should use regional prefix when regional page exists in query index', async () => {
+      const result = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/product',
+        'www.adobe.com',
+      );
+
+      expect(result).to.equal('/ch_de/creativecloud/product');
+    });
+
+    it('should use base prefix when regional page does not exist in query index', async () => {
+      const result = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/pricing',
+        'www.adobe.com',
+      );
+
+      expect(result).to.equal('/de/creativecloud/pricing');
+    });
+
+    it('should check regional index first, then race base vs other subsites', async () => {
+      let ccRegionalChecked = false;
+      let ccBaseResolved = false;
+      let dcRegionalResolved = false;
+
+      // Override with custom timing
+      fetchStub.callsFake((url) => {
+        if (url.includes('cc-shared') && url.includes('/ch_de/')) {
+          ccRegionalChecked = true;
+          return mockRes({ payload: createQueryIndexData(['/ch_de/creativecloud/product']) });
+        }
+        if (url.includes('cc-shared') && url.includes('/de/')) {
+          ccBaseResolved = true;
+          return mockRes({ payload: ccBaseQueryIndex });
+        }
+        if (url.includes('dc-shared') && url.includes('/ch_de/')) {
+          // DC Regional index is slow - simulating other subsites
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              dcRegionalResolved = true;
+              resolve({
+                ok: true,
+                json: () => Promise.resolve(dcRegionalQueryIndex),
+              });
+            }, 100);
+          });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const result = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/pricing',
+        'www.adobe.com',
+      );
+
+      // Should check CC regional first (finds nothing), then use CC base (wins race)
+      expect(ccRegionalChecked).to.be.true;
+      expect(ccBaseResolved).to.be.true;
+      expect(dcRegionalResolved).to.be.false; // Shouldn't wait for DC
+      expect(result).to.equal('/de/creativecloud/pricing');
+    });
+
+    it('should handle links to current subsite, other subsites, and other domains via lingo-site-mapping', async () => {
+      const ccProductResult = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/product',
+        'www.adobe.com',
+      );
+      expect(ccProductResult).to.equal('/ch_de/creativecloud/product');
+
+      const ccPricingResult = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/pricing',
+        'www.adobe.com',
+      );
+      expect(ccPricingResult).to.equal('/de/creativecloud/pricing');
+
+      // Test link to OTHER subsite (DC) loaded via lingo-site-mapping - regional exists
+      const dcReaderResult = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/acrobat/reader',
+        'www.adobe.com',
+      );
+
+      expect(dcReaderResult).to.equal('/ch_de/acrobat/reader');
+
+      // Test link to OTHER subsite (DC) - regional doesn't exist, use base
+      const dcProResult = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/acrobat/pro',
+        'www.adobe.com',
+      );
+      expect(dcProResult).to.equal('/de/acrobat/pro');
+
+      const bacomRegionalResult = await lingoUtils.localizeLinkAsync(
+        'https://business.adobe.com/products/experience-platform/agent-orchestrator',
+        'www.adobe.com',
+      );
+      expect(bacomRegionalResult).to.equal('https://business.adobe.com/ch_de/products/experience-platform/agent-orchestrator');
+
+      const bacomBaseRegionalResult = await lingoUtils.localizeLinkAsync(
+        'https://business.adobe.com/products/acrobat-business',
+        'www.adobe.com',
+      );
+      expect(bacomBaseRegionalResult).to.equal('https://business.adobe.com/de/products/acrobat-business');
+    });
+
+    it('should handle JSON files without query index lookup', async () => {
+      const result = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/data/config.json',
+        'www.adobe.com',
+      );
+
+      // JSON files should not go through query index lookup
+      expect(result).to.equal('/ch_de/data/config.json');
+    });
+
+    it('should handle errors gracefully when query index fails to load', async () => {
+      // Override with failing query index
+      fetchStub.callsFake((url) => {
+        if (url.includes('query-index')) {
+          return mockRes({ payload: null, ok: false, status: 404 });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+
+      window.lana = { log: sinon.spy() };
+
+      const result = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/product',
+        'www.adobe.com',
+      );
+
+      // When query index fails, should fall back to base prefix
+      expect(result).to.equal('/de/creativecloud/product');
+
+      delete window.lana;
+    });
+
+    it('should not apply lingo logic when locale has no base', async () => {
+      lingoUtils.setConfig({
+        ...defaultTestConfig,
+        locales: {
+          '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+          ch_de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+        },
+        pathname: '/ch_de/creativecloud/pricing',
+      });
+
+      const result = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/pricing',
+        'www.adobe.com',
+      );
+
+      // Should just use the regular prefix without query index lookup
+      expect(result).to.equal('/ch_de/creativecloud/pricing');
+    });
+
+    it('should not handle links that are already localized', async () => {
+      const result = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/ch_de/creativecloud/pricing',
+        'www.adobe.com',
+      );
+
+      // Already localized links should be returned as-is
+      expect(result).to.equal('/ch_de/creativecloud/pricing');
+    });
+
+    it('should handle relative links on same domain', async () => {
+      const productResult = await lingoUtils.localizeLinkAsync(
+        'https://localhost/creativecloud/product',
+        window.location.hostname,
+      );
+      expect(productResult).to.equal('/ch_de/creativecloud/product');
+
+      const pricingResult = await lingoUtils.localizeLinkAsync(
+        'https://localhost/creativecloud/pricing',
+        window.location.hostname,
+      );
+      expect(pricingResult).to.equal('/de/creativecloud/pricing');
+    });
+
+    it('should handle HTML extensions properly', async () => {
+      const productResult = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/product.html',
+        'www.adobe.com',
+      );
+      expect(productResult).to.equal('/ch_de/creativecloud/product.html');
+
+      const pricingResult = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/pricing.html',
+        'www.adobe.com',
+      );
+      expect(pricingResult).to.equal('/de/creativecloud/pricing.html');
+    });
+
+    it('should handle multiple concurrent link localizations', async () => {
+      // Localize multiple links concurrently
+      const results = await Promise.all([
+        lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/product', 'localhost'),
+        lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/pricing', 'localhost'),
+        lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/features', 'localhost'),
+      ]);
+
+      expect(results[0]).to.equal('https://www.adobe.com/ch_de/creativecloud/product');
+      expect(results[1]).to.equal('https://www.adobe.com/de/creativecloud/pricing');
+      expect(results[2]).to.equal('https://www.adobe.com/ch_de/creativecloud/features');
     });
   });
 });

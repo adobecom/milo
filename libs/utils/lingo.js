@@ -6,15 +6,17 @@ async function urlInMatchingIndex(matchingIndexes, sanitizedPath) {
 
 async function tryEarlyDecisionUsingBaseIndex(
   matchingIndexes,
-  sanitizedPath,
+  regionalPath,
+  basePath,
   urlHostname,
   initialResolvedCount,
   baseQueryIndex,
 ) {
   if (!baseQueryIndex?.pathsRequest) return null;
 
-  const baseIndexMatches = Object.values(baseQueryIndex)
-    .filter((q) => q.domains.includes(urlHostname));
+  const baseIndexMatches = baseQueryIndex.domains.includes(urlHostname) ? [baseQueryIndex] : [];
+  if (baseIndexMatches.length === 0) return null;
+
   const allRegionalPromises = Promise.all(matchingIndexes.map((m) => m.pathsRequest));
 
   await Promise.race([baseQueryIndex.pathsRequest, allRegionalPromises]);
@@ -24,21 +26,23 @@ async function tryEarlyDecisionUsingBaseIndex(
   const currentResolvedIndexes = matchingIndexes.filter((m) => m.requestResolved);
 
   if (currentResolvedIndexes.length > initialResolvedCount) {
-    const foundInNewlyResolved = await urlInMatchingIndex(currentResolvedIndexes, sanitizedPath);
+    const foundInNewlyResolved = await urlInMatchingIndex(currentResolvedIndexes, regionalPath);
     if (foundInNewlyResolved) return true;
   }
 
-  const urlExistsInBase = await urlInMatchingIndex(baseIndexMatches, sanitizedPath);
+  // Check if basePath exists in base query index
+  const urlExistsInBase = await urlInMatchingIndex(baseIndexMatches, basePath);
   return urlExistsInBase ? false : null;
 }
 
 export default async function urlInQueryIndex(
-  urlPath,
+  regionalPath,
+  basePath,
   urlHostname,
   matchingIndexes,
   baseQueryIndex,
 ) {
-  const sanitizedPath = urlPath.replace(/\.html$/, '');
+  const sanitizedPath = regionalPath.replace(/\.html$/, '');
 
   const allResolved = matchingIndexes.every((m) => m.requestResolved);
   if (allResolved) return urlInMatchingIndex(matchingIndexes, sanitizedPath);
@@ -49,9 +53,11 @@ export default async function urlInQueryIndex(
     if (foundInResolved) return true;
   }
 
+  const sanitizedBasePath = basePath.replace(/\.html$/, '');
   const earlyDecision = await tryEarlyDecisionUsingBaseIndex(
     matchingIndexes,
     sanitizedPath,
+    sanitizedBasePath,
     urlHostname,
     resolvedIndexes.length,
     baseQueryIndex,

@@ -592,8 +592,14 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
-function processQueryIndexMap(link, domain, siteId) {
-  const pathsRequest = fetch(link)
+function processQueryIndexMap(link, domain) {
+  const result = {
+    pathsRequest: null,
+    requestResolved: false,
+    domains: [domain],
+  };
+
+  result.pathsRequest = fetch(link)
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
@@ -601,16 +607,10 @@ function processQueryIndexMap(link, domain, siteId) {
       return [];
     })
     .finally(() => {
-      if (queryIndexes[siteId]) {
-        queryIndexes[siteId].requestResolved = true;
-      }
+      result.requestResolved = true;
     });
 
-  return {
-    pathsRequest,
-    requestResolved: false,
-    domains: [domain],
-  };
+  return result;
 }
 
 async function loadQueryIndexes(prefix) {
@@ -627,16 +627,14 @@ async function loadQueryIndexes(prefix) {
 
   queryIndexes[siteId] = processQueryIndexMap(
     `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
-    window.location.host,
-    siteId,
+    window.location.hostname,
   );
 
   if (config.queryIndexPath) {
     const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${contentRoot}`;
     baseQueryIndex = processQueryIndexMap(
       `${baseContentRoot}${config.queryIndexPath}`,
-      window.location.host,
-      siteId,
+      window.location.hostname,
     );
   }
 
@@ -675,7 +673,7 @@ async function loadQueryIndexes(prefix) {
           if (!regionalQueryIndexExistsForSite) return;
           const domain = queryIndexWebPath.split('/*')[0];
           const indexPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
-          queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain, uniqueSiteId);
+          queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
         });
     } catch (e) {
       window.lana?.log('Failed to load lingo-site-mapping.json:', e);
@@ -719,10 +717,13 @@ function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
         }
         const matchingIndexes = Object.values(queryIndexes)
           .filter((q) => q.domains.includes(url.hostname));
+        const basePrefix = locale.base === '' ? '' : `/${locale.base}`;
         if (matchingIndexes.length) {
           const { default: urlInQueryIndex } = await import('./lingo.js');
-          const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex);
-          if (!useRegionalPrefix && locale.base) prefix = locale.base === '' ? '' : `/${locale.base}`;
+          const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex);
+          if (!useRegionalPrefix && locale.base) prefix = basePrefix;
+        } else {
+          prefix = basePrefix;
         }
         const urlPath = `${prefix}${path}${url.search}${hash}`;
         return relative ? urlPath : `${url.origin}${urlPath}`;
