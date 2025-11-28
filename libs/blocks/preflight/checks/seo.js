@@ -54,7 +54,8 @@ export function checkH1s(area) {
 }
 
 export function checkTitle(area) {
-  const titleSize = area.title.replace(/\s/g, '').length;
+  const docTitle = area.title;
+  const titleSize = docTitle.replace(/\s/g, '').length;
   let status;
   let description;
 
@@ -74,6 +75,7 @@ export function checkTitle(area) {
     title: SEO_TITLES.title,
     status,
     description,
+    docTitle,
   };
 }
 
@@ -115,6 +117,7 @@ export async function checkCanon(area) {
 
 export async function checkDescription(area) {
   const metaDesc = area.querySelector('meta[name="description"]');
+  let docDescription;
   let status;
   let description;
 
@@ -122,7 +125,8 @@ export async function checkDescription(area) {
     status = STATUS.FAIL;
     description = 'Reason: No meta description found.';
   } else {
-    const descSize = metaDesc.content.replace(/\s/g, '').length;
+    docDescription = metaDesc.content;
+    const descSize = docDescription.replace(/\s/g, '').length;
     if (descSize < 50) {
       status = STATUS.FAIL;
       description = 'Reason: Meta description too short.';
@@ -140,6 +144,7 @@ export async function checkDescription(area) {
     title: SEO_TITLES.description,
     status,
     description,
+    docDescription,
   };
 }
 
