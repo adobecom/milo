@@ -356,19 +356,6 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.entitlements = handleEntitlements;
       config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
-
-      // TODO test only - remove for prod and real PR
-      if (window.location.href.startsWith('https://main--da-bacom--adobecom.aem.live/ar') || window.location.href.startsWith('https://main--da-bacom--adobecom.aem.page/ar')) {
-        config.locale.base = 'es';
-        config.queryIndexPath = '/query-index.json';
-        config.uniqueSiteId = 'da-bacom';
-      }
-      if (window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de') || window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de')) {
-        config.locale.base = 'de';
-        config.queryIndexPath = '/assets/query-index.json';
-        config.uniqueSiteId = 'cc';
-      }
-
       return config;
     },
     (conf) => (config = conf),
@@ -640,8 +627,7 @@ async function loadQueryIndexes(prefix) {
 
   lingoSiteMapping = (async () => {
     try {
-      // TODO get rid of -vhargrave
-      const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
+      const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const configJson = await response.json();
 
@@ -2024,12 +2010,7 @@ export async function loadArea(area = document) {
     initModalEventListener();
   }
 
-  if (config.locale?.base
-  // || swap fragment (code from Mark)
-  ) {
-    // TODO load by locale
-    // if(swapFragment) prefix = prefix of subregion (where fragments should load from)
-    // else
+  if (config.locale?.base) {
     const { prefix } = config.locale;
     loadQueryIndexes(prefix);
   }
