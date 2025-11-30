@@ -18,7 +18,7 @@ export const AXE_CORE_CONFIG = {
 };
 
 export const CUSTOM_CHECKS_CONFIG = {
-  checks: ['altText', 'color-contrast'],
+  checks: ['altText', 'color-contrast', 'aria-labels'],
   include: [['body']],
   exclude: [
     ['.preflight'],
