@@ -7,7 +7,7 @@ on:
         description: "Site name e.g da-bacom"
         required: false
         type: string
-      siteRegions:
+      siteRegionPaths:
         description: "Comma-separated regional paths e.g /au/,/de/"
         required: false
         type: string
@@ -23,13 +23,15 @@ env:
   ROLLING_IMPORT_CODE: ${{ secrets.ROLLING_IMPORT_CODE }}
   ROLLING_IMPORT_GRANT_TYPE: ${{ secrets.ROLLING_IMPORT_GRANT_TYPE }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  PREVIEW_INDEXER_REPO: ${{ vars.PREVIEW_INDEXER_REPO }}
+  LINGO_CONFIG: ${{ vars.LINGO_CONFIG }}
+  PREVIEW_INDEXER_REPOS: ${{ vars.PREVIEW_INDEXER_REPOS }}
   PREVIEW_INDEX_FILE: ${{ vars.PREVIEW_INDEX_FILE }}
   AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM }}
   EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM: ${{ vars.EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM }}
-  PREVIEW_ROOTS_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_ROOTS_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM }}
   PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM }}
   PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEXER_LOG_LEVEL: ${{ vars.PREVIEW_INDEXER_LOG_LEVEL }}
 
 jobs:
   preview-indexer-full:
