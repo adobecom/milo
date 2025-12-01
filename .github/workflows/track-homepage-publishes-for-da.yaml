@@ -1,7 +1,7 @@
-name: Track Publishes Bacom
+name: Track Publishes for Homepage
 on:
   schedule:
-    - cron: '35 */4 * * *'
+    - cron: '35 */23 * * *'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
           }
           
           # Get the token
-          TOKEN="${{ secrets.AEM_LIVE_ADMIN_TOKEN_BACOM }}"
+          TOKEN="${{ secrets.AEM_LIVE_ADMIN_TOKEN_HOMEPAGE }}"
           
           # Extract the payload (second part of the JWT)
           PAYLOAD=$(echo -n $TOKEN | cut -d '.' -f 2)
@@ -43,14 +43,14 @@ jobs:
           echo "One week from now: $(date -d @$ONE_WEEK_FROM_NOW)"
           
           if [ $EXPIRY -lt $ONE_WEEK_FROM_NOW ]; then
-            echo "::warning::AEM_LIVE_ADMIN_TOKEN_BACOM will expire in less than a week (on $(date -d @$EXPIRY)). Please renew the token soon."
+            echo "::warning::AEM_LIVE_ADMIN_TOKEN_HOMEPAGE will expire in less than a week (on $(date -d @$EXPIRY)). Please renew the token soon."
             echo "Token expiration is approaching" >> $GITHUB_STEP_SUMMARY
-            echo "The AEM_LIVE_ADMIN_TOKEN_BACOM will expire on $(date -d @$EXPIRY)" >> $GITHUB_STEP_SUMMARY
+            echo "The AEM_LIVE_ADMIN_TOKEN_HOMEPAGE will expire on $(date -d @$EXPIRY)" >> $GITHUB_STEP_SUMMARY
             echo "Please generate a new token and update the repository secret." >> $GITHUB_STEP_SUMMARY
           fi
           
           if [ $EXPIRY -lt $CURRENT_TIME ]; then
-            echo "::error::AEM_LIVE_ADMIN_TOKEN_BACOM has expired on $(date -d @$EXPIRY)"
+            echo "::error::AEM_LIVE_ADMIN_TOKEN_HOMEPAGE has expired on $(date -d @$EXPIRY)"
             exit 1
           fi
   check-last-run:
@@ -154,8 +154,8 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Check for required secrets
         run: |
-          if [[ -z "${{ secrets.AEM_LIVE_ADMIN_TOKEN_BACOM }}" ]]; then
-            echo "::error::The AEM_LIVE_ADMIN_TOKEN_BACOM secret is not configured. Please add this secret to your repository settings."
+          if [[ -z "${{ secrets.AEM_LIVE_ADMIN_TOKEN_HOMEPAGE }}" ]]; then
+            echo "::error::The AEM_LIVE_ADMIN_TOKEN_HOMEPAGE secret is not configured. Please add this secret to your repository settings."
             exit 1
           fi
       - name: Set up Node.js
@@ -168,10 +168,10 @@ jobs:
 
       - name: Run poll-logs.js
         env:
-          AEM_LIVE_ADMIN_TOKEN: ${{ secrets.AEM_LIVE_ADMIN_TOKEN_BACOM }}
+          AEM_LIVE_ADMIN_TOKEN: ${{ secrets.AEM_LIVE_ADMIN_TOKEN_HOMEPAGE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ROLLING_IMPORT_ORG: "adobecom"
-          ROLLING_IMPORT_REPO: "da-bacom"
+          ROLLING_IMPORT_REPO: "upp"
           ROLLING_IMPORT_SLACK: ${{ secrets.ROLLING_IMPORT_SLACK }}
           LAST_RUN_ISO: ${{ needs.check-last-run.outputs.last-run-iso }}
           ROLLING_IMPORT_IMS_URL: ${{ secrets.ROLLING_IMPORT_IMS_URL }}
@@ -180,7 +180,7 @@ jobs:
           ROLLING_IMPORT_CODE: ${{ secrets.ROLLING_IMPORT_CODE }}
           ROLLING_IMPORT_GRANT_TYPE: ${{ secrets.ROLLING_IMPORT_GRANT_TYPE }}
           ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
-          ROLLING_IMPORT_IMPORT_FROM: ${{ secrets.ROLLING_IMPORT_IMPORT_FROM_BACOM }}
-          ROLLING_IMPORT_LIVE_DOMAIN: ${{ secrets.ROLLING_IMPORT_LIVE_DOMAIN_BACOM }}
-          ROLLING_IMPORT_POLL_LOGS_FROM_REPO: ${{ secrets.ROLLING_IMPORT_POLL_LOGS_FROM_REPO_BACOM }}
+          ROLLING_IMPORT_IMPORT_FROM: "https://main--homepage--adobecom.aem.live"
+          ROLLING_IMPORT_LIVE_DOMAIN: "https://adobe.com/"
+          ROLLING_IMPORT_POLL_LOGS_FROM_REPO: "homepage"
         run: node ./.github/workflows/import/poll-logs.js
