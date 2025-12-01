@@ -383,7 +383,7 @@ export function getMasLibs() {
     return 'http://localhost:3030/web-components/dist';
   }
   if (sanitizedMasLibs === 'main') {
-    return 'http://www.adobe.com/mas';
+    return 'http://www.adobe.com/mas/libs';
   }
 
   // Detect current domain extension (.page or .live)
