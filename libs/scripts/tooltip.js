@@ -84,7 +84,6 @@ export default function addTooltipListeners() {
       } else if (eventType === 'keydown' && event.key === 'Escape') {
         const tooltip = document.querySelector('.milo-tooltip:not(.hide-tooltip)');
         tooltip?.classList.add('hide-tooltip');
-        tooltip?.blur();
       }
     }, true);
   });
