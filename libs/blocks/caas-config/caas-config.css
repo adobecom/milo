@@ -149,3 +149,10 @@ dd.content .sort-options > .field {
   transform: rotate(180deg);
   display: inline-block;
 }
+
+
+/* TEMP CODE */
+dd.content .carousel-options .field {
+  padding-left: 20px;
+  max-width: calc(var(--field-max-size) - 20px);
+}
