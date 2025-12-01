@@ -230,7 +230,6 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     toggleButton.setAttribute('aria-expanded', 'false');
     placeholder.setAttribute('aria-hidden', 'true');
     section.classList.remove('frag-expanded');
-    // Update analytics to track close action
     const analyticsValue = toggleButton.getAttribute('daa-ll');
     if (analyticsValue) {
       toggleButton.setAttribute('daa-ll', analyticsValue.replace(/close-/, 'open-'));
