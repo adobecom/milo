@@ -202,18 +202,19 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     id: contentId,
     'aria-hidden': shouldStartExpanded ? 'false' : 'true',
   });
+  const buttonWrapper = createTag('div', { class: 'collapse-frag-button' });
   const toggleButton = createTag('button', {
-    class: 'collapse-frag-button',
     'aria-expanded': shouldStartExpanded ? 'true' : 'false',
     'aria-controls': contentId,
     'daa-ll': analyticsString,
   });
   toggleButton.innerHTML = `
-    <span class="collapse-frag-text">${buttonText}</span>
-    <svg class="collapse-frag-chevron" width="15" height="9" viewBox="0 0 15 9" fill="none" aria-hidden="true">
+    <span>${buttonText}</span>
+    <svg width="15" height="9" viewBox="0 0 15 9" fill="none" aria-hidden="true">
       <path fill-rule="evenodd" clip-rule="evenodd" d="M2.55578 0.432756L7.49638 5.37325L12.437 0.432757C12.7192 0.15563 13.0994 0.0011564 13.4949 0.00294756C13.8904 0.00473872 14.2692 0.162649 14.5489 0.442321C14.8286 0.721993 14.9865 1.1008 14.9883 1.49631C14.9901 1.89182 14.8356 2.27204 14.5585 2.55423L8.55712 8.55556C8.27593 8.8369 7.8945 8.99501 7.49673 8.99512C7.09897 8.99522 6.71745 8.83731 6.43611 8.55612L0.434223 2.55423C0.155818 2.27228 0.000262095 1.89165 0.00151717 1.49542C0.00277224 1.09918 0.160736 0.719539 0.440922 0.439365C0.721107 0.159191 1.10076 0.00124444 1.49699 6.15687e-06C1.89322 -0.00123213 2.27385 0.154339 2.55578 0.432756Z" fill="currentColor"/>
     </svg>
   `;
+  buttonWrapper.appendChild(toggleButton);
   let isLoaded = false;
   let loadedFragment = null;
 
@@ -352,7 +353,13 @@ async function handleCollapseFrag(fragmentUrl, section, buttonText) {
     preloadContent();
   }
 
-  return { toggleButton, placeholder, shouldScroll: isInDeeplinkHash(section), expansionPromise };
+  return {
+    buttonWrapper,
+    toggleButton,
+    placeholder,
+    shouldScroll: isInDeeplinkHash(section),
+    expansionPromise,
+  };
 }
 
 export default async function init(el) {
@@ -373,16 +380,16 @@ export default async function init(el) {
   if (collapseFragText && collapseFragPath) {
     const result = await handleCollapseFrag(collapseFragPath, section, collapseFragText);
     if (result) {
-      const { toggleButton, placeholder, shouldScroll, expansionPromise } = result;
+      const { buttonWrapper, toggleButton, placeholder, shouldScroll, expansionPromise } = result;
       const firstChild = section.children[0];
       if (firstChild && firstChild.nextSibling) {
-        section.insertBefore(toggleButton, firstChild.nextSibling);
-        section.insertBefore(placeholder, toggleButton.nextSibling);
+        section.insertBefore(buttonWrapper, firstChild.nextSibling);
+        section.insertBefore(placeholder, buttonWrapper.nextSibling);
       } else if (firstChild) {
-        firstChild.insertAdjacentElement('afterend', toggleButton);
-        toggleButton.insertAdjacentElement('afterend', placeholder);
+        firstChild.insertAdjacentElement('afterend', buttonWrapper);
+        buttonWrapper.insertAdjacentElement('afterend', placeholder);
       } else {
-        el.parentElement.insertBefore(toggleButton, el);
+        el.parentElement.insertBefore(buttonWrapper, el);
         el.parentElement.insertBefore(placeholder, el);
       }
       if (shouldScroll) {
