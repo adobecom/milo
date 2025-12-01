@@ -77,8 +77,8 @@ export default function addTooltipListeners() {
       if (!isTooltip) return;
 
       if (['mouseenter', 'focus'].includes(eventType)) {
-        setTooltipPosition([event.target]);
         event.target.classList.remove('hide-tooltip');
+        setTooltipPosition([event.target]);
       } else if (['mouseleave', 'blur'].includes(eventType) || event.key === 'Escape') {
         event.target.classList.add('hide-tooltip');
       }
