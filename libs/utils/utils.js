@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'carousel',
   'chart',
   'columns',
+  'comparison-table',
   'editorial-card',
   'email-collection',
   'faas',
@@ -50,6 +51,7 @@ const MILO_BLOCKS = [
   'locui-create',
   'm7',
   'marketo',
+  'marketo-config',
   'marquee',
   'marquee-anchors',
   'martech-metadata',
@@ -1786,7 +1788,7 @@ async function loadPostLCP(config) {
   } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
-  config.georouting = { loadedPromise: Promise.resolve() };
+  config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
