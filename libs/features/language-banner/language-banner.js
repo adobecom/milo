@@ -22,10 +22,10 @@ function getPreferredLanguage(locales) {
   const cookie = getCookie('international');
   if (cookie && cookie !== 'us') {
     const locale = locales[cookie];
-    if (locale?.ietf) {
-      return locale.ietf.split('-')[0];
-    }
-    return cookie.split('_')[0];
+    const langFromCookie = locale?.ietf
+      ? locale.ietf.split('-')[0]
+      : cookie.split('_')[0];
+    return langFromCookie;
   }
   const browserLang = navigator.language?.split('-')[0];
   return browserLang || null;
@@ -48,9 +48,9 @@ async function getTranslatedPage(marketPrefix, config) {
 
   try {
     const response = await fetch(translatedUrl, { method: 'HEAD' });
-    // if (response.ok) {
-    return translatedUrl;
-    // }
+    if (response.ok) {
+      return translatedUrl;
+    }
   } catch (e) {
     console.warn(`Failed to check for translated page at ${translatedUrl}`, e);
   }
@@ -111,24 +111,27 @@ export default async function init(jsonPromise) {
     .then((res) => (res.ok ? res.json() : null))
     .catch(() => null);
 
-  const [geoIp, marketsConfig] = await Promise.all([
+  let [geoIp, marketsConfig] = await Promise.all([
     getAkamaiCode(),
     marketsConfigPromise,
   ]);
 
   if (!geoIp || !marketsConfig) return;
 
+  geoIp = geoIp.toLowerCase();
+  if (geoIp === 'gb') geoIp = 'uk';
+
   marketsConfig.data.forEach((market) => {
     market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   });
 
   const pageMarket = marketsConfig.data.find((m) => m.prefix === (config.locale.prefix?.replace('/', '') || ''));
-  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp.toLowerCase());
+  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
 
-    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp.toLowerCase()));
+    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp));
     if (prefMarket) {
       await showBanner(prefMarket, config);
     }
@@ -136,13 +139,13 @@ export default async function init(jsonPromise) {
   }
 
   // Unsupported Market Path
-  const marketsForGeo = marketsConfig.data.filter((m) => m.supportedRegions.includes(geoIp.toLowerCase()));
+  const marketsForGeo = marketsConfig.data.filter((m) => m.supportedRegions.includes(geoIp));
   if (!marketsForGeo.length) return;
 
   if (prefLang) {
     const prefMarketForGeo = marketsForGeo.find((m) => m.lang === prefLang);
     if (prefMarketForGeo) {
-      await showBanner(prefMarketForGeo, config); // Show Banner with recommendation based on PREF-LANG and GeoIP
+      await showBanner(prefMarketForGeo, config);
       return;
     }
   }
