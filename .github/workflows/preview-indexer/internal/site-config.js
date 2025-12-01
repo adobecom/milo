@@ -9,9 +9,8 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
   }
 
   function loadPreviewRoots() {
-    const previewRootsKey = `PREVIEW_ROOTS_${key}`;
-    const configKey = process.env[previewRootsKey];
-    return lingoConfigMap[configKey] || [];
+    const previewIndexKey = process.env[`PREVIEW_INDEX_KEY_${key}`];
+    return lingoConfigMap[previewIndexKey] || [];
   }
 
   function loadExcludePaths() {

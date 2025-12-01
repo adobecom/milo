@@ -102,6 +102,7 @@ jobs:
           prBranch: ${{ github.event.pull_request.head.ref }}
           prBaseBranch: ${{ github.event.pull_request.base.ref }}
           GITHUB_ACTION_PATH: ${{ github.workspace }}
+          isFork: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name }}
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
           EMAIL_COLLECTION_IMS_MAIL: ${{ secrets.EMAIL_COLLECTION_IMS_MAIL }}
