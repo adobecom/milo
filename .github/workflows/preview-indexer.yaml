@@ -1,4 +1,5 @@
-name: Generate/Updates Preview Index For DA Tenants
+name: Preview Indexer (Incremental)
+description: This workflow updates the preview index for the given site and region(s)
 
 on:
   workflow_dispatch:

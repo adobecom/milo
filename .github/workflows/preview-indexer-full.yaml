@@ -1,4 +1,5 @@
-name: Generate Full Preview Index For DA Tenant Regional Path
+name: Preview Indexer (Full)
+description: This workflow generates the preview index for the given site and region(s)
 
 on:
   workflow_dispatch:
