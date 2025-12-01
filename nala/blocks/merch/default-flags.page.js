@@ -25,7 +25,7 @@ export default class DefaultFlags {
       taxBusiness: {
         el: page.locator('[data-wcs-osi="yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI"] .price-tax-inclusivity:not(.disabled)'),
         textEN: '',
-        textFR: 'hors TVA',
+        textFR: 'HT',
         textNG: 'incl. VAT',
       },
       taxStudents: {
