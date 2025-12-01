@@ -71,7 +71,7 @@ export const FORM_FIELDS = {
   },
   state: {
     tag: 'select',
-    url: getFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=states&limit=2000`),
+    url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=states&limit=2000`),
     attributes: { required: true },
   },
 };
