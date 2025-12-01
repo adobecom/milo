@@ -1,7 +1,8 @@
 async function urlInMatchingIndex(matchingIndexes, sanitizedPath) {
-  const pathsArrays = await Promise.all(matchingIndexes.map((q) => q.pathsRequest));
-  const allPaths = pathsArrays.flat().filter(Boolean);
-  return allPaths.some((path) => sanitizedPath === path);
+  return (await Promise.all(matchingIndexes.map((q) => q.pathsRequest)))
+    .flat()
+    .filter(Boolean)
+    .includes(sanitizedPath);
 }
 
 async function tryEarlyDecisionUsingBaseIndex(
@@ -10,16 +11,14 @@ async function tryEarlyDecisionUsingBaseIndex(
   basePath,
   urlHostname,
   initialResolvedCount,
-  baseQueryIndex,
+  baseQueryIndex = {},
 ) {
-  if (!baseQueryIndex?.pathsRequest) return null;
+  if (!baseQueryIndex?.pathsRequest || !baseQueryIndex.domains?.includes(urlHostname)) return null;
 
-  const baseIndexMatches = baseQueryIndex.domains.includes(urlHostname) ? [baseQueryIndex] : [];
-  if (baseIndexMatches.length === 0) return null;
-
-  const allRegionalPromises = Promise.all(matchingIndexes.map((m) => m.pathsRequest));
-
-  await Promise.race([baseQueryIndex.pathsRequest, allRegionalPromises]);
+  await Promise.race([
+    baseQueryIndex.pathsRequest,
+    Promise.all(matchingIndexes.map((m) => m.pathsRequest)),
+  ]);
 
   if (!baseQueryIndex.requestResolved) return null;
 
@@ -30,8 +29,7 @@ async function tryEarlyDecisionUsingBaseIndex(
     if (foundInNewlyResolved) return true;
   }
 
-  // Check if basePath exists in base query index
-  const urlExistsInBase = await urlInMatchingIndex(baseIndexMatches, basePath);
+  const urlExistsInBase = await urlInMatchingIndex([baseQueryIndex], basePath);
   return urlExistsInBase ? false : null;
 }
 
@@ -44,8 +42,9 @@ export default async function urlInQueryIndex(
 ) {
   const sanitizedPath = regionalPath.replace(/\.html$/, '');
 
-  const allResolved = matchingIndexes.every((m) => m.requestResolved);
-  if (allResolved) return urlInMatchingIndex(matchingIndexes, sanitizedPath);
+  if (matchingIndexes.every((m) => m.requestResolved)) {
+    return urlInMatchingIndex(matchingIndexes, sanitizedPath);
+  }
 
   const resolvedIndexes = matchingIndexes.filter((m) => m.requestResolved);
   if (resolvedIndexes.length) {

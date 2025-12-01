@@ -165,7 +165,7 @@ function defaultFormatData(data) {
 
 async function fetchSheet(sheetData) {
   const formatData = { state: formatStateData };
-  const { id, urlOrPromise } = sheetData;
+  const { id, url: urlOrPromise } = sheetData;
   try {
     const resolvedUrl = await urlOrPromise;
     const sheetReq = await fetch(resolvedUrl);
@@ -181,12 +181,8 @@ async function fetchSheet(sheetData) {
 }
 
 async function fetchFormConfig(sheets) {
-  const placeholderUrl = await PLACEHOLDER_URL_PROMISE;
-  const sheetPromises = [{ url: placeholderUrl, id: 'placeholders' }, ...sheets]
-    .map((sheet) => {
-      sheet.urlOrPromise = sheet.url;
-      return fetchSheet(sheet);
-    });
+  const sheetPromises = [{ url: PLACEHOLDER_URL_PROMISE, id: 'placeholders' }, ...sheets]
+    .map((sheet) => fetchSheet(sheet));
 
   const resolved = await Promise.all(sheetPromises);
   let config = {};

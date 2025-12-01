@@ -213,20 +213,19 @@ function hydrateLocale(locales, key) {
 
   const isBaseLocale = !('base' in locale);
   if (isBaseLocale) {
-    const childLocaleEntries = Object.entries(locales)
-      .filter(([, childLocale]) => childLocale.base === key);
-
-    const hydratedChildren = childLocaleEntries.reduce((acc, [childKey, childLocale]) => {
-      const mergedLocale = { ...locale, ...childLocale, base: childLocale.base };
-      acc[childKey] = buildExpandedLocale(mergedLocale, childKey);
-      return acc;
-    }, {});
+    const hydratedChildren = Object.entries(locales)
+      .filter(([, childLocale]) => childLocale.base === key)
+      .reduce((acc, [childKey, childLocale]) => {
+        const mergedLocale = { ...locale, ...childLocale, base: childLocale.base };
+        acc[childKey] = buildExpandedLocale(mergedLocale, childKey);
+        return acc;
+      }, {});
 
     const hydratedBase = buildExpandedLocale(locale, key);
     return { ...hydratedBase, regions: hydratedChildren };
   }
 
-  const hasValidBase = (locale.base || locale.base === '') && locales[locale.base];
+  const hasValidBase = 'base' in locale && locales[locale.base] !== undefined;
   if (hasValidBase) {
     const baseLocale = locales[locale.base];
     const mergedLocale = { ...baseLocale, ...locale };
@@ -244,12 +243,13 @@ export function getLocale(locales, pathname = window.location.pathname) {
   const specialPrefix = [LANGSTORE, PREVIEW].includes(localeString) ? localeString : '';
   const ietfSegment = split[2];
 
-  const matchedKeys = specialPrefix
-    ? [Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(ietfSegment))]
-    : Object.keys(locales)
-      .filter((k) => k === localeString);
+  let matchedKey = '';
+  if (specialPrefix) {
+    matchedKey = Object.keys(locales).find((key) => locales[key]?.ietf?.startsWith(ietfSegment)) ?? '';
+  } else if (localeString in locales) {
+    matchedKey = localeString;
+  }
 
-  const matchedKey = matchedKeys[0] ?? '';
   const locale = hydrateLocale(locales, matchedKey);
   if (specialPrefix) locale.prefix = `/${specialPrefix}${ietfSegment ? `/${ietfSegment}` : ''}`;
   return locale;
@@ -633,9 +633,10 @@ async function loadQueryIndexes(prefix) {
 
       const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
       const siteLocalesData = configJson['site-locales']?.data ?? [];
+      const getDomain = (path) => path?.split('/*')[0];
 
       const existingIndex = siteQueryIndexMap.find((d) => d.uniqueSiteId === siteId);
-      const existingDomain = existingIndex?.queryIndexWebPath.split('/*')[0];
+      const existingDomain = getDomain(existingIndex?.queryIndexWebPath);
 
       if (existingDomain) {
         [queryIndexes[siteId], baseQueryIndex].forEach((queryIndex) => {
@@ -646,18 +647,18 @@ async function loadQueryIndexes(prefix) {
       }
 
       const domainInProdDomains = (d) => d.uniqueSiteId !== siteId
-        && config.prodDomains?.includes(d.queryIndexWebPath.split('/*')[0]);
+        && config.prodDomains?.includes(getDomain(d.queryIndexWebPath));
 
       const hasRegionalQueryIndex = (locale) => parseList(locale.regionalSites).includes(prefix);
 
       siteQueryIndexMap
         .filter(domainInProdDomains)
         .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
-          const regionalQueryIndexExistsForSite = siteLocalesData
-            .find((s) => s.uniqueSiteId === uniqueSiteId && hasRegionalQueryIndex(s));
+          const hasRegionalSite = siteLocalesData
+            .some((s) => s.uniqueSiteId === uniqueSiteId && hasRegionalQueryIndex(s));
 
-          if (!regionalQueryIndexExistsForSite) return;
-          const domain = queryIndexWebPath.split('/*')[0];
+          if (!hasRegionalSite) return;
+          const domain = getDomain(queryIndexWebPath);
           const indexPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
           queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
         });

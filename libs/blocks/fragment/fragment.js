@@ -33,16 +33,15 @@ const updateFragMap = async (fragment, a, href) => {
   } else {
     Object.values(fragMap).forEach((tree) => {
       const hrefNode = tree.find(href);
-      if (hrefNode) {
-        fragLinksWithLocalizations.forEach((localizedHref) => {
-          const parentNodeSameHref = hrefNode.findParent(localizedHref);
-          if (parentNodeSameHref) {
-            parentNodeSameHref.isRecursive = true;
-          } else {
-            hrefNode.addChild(localizedHref);
-          }
-        });
-      }
+      if (!hrefNode) return;
+      fragLinksWithLocalizations.forEach((localizedHref) => {
+        const parentNodeSameHref = hrefNode.findParent(localizedHref);
+        if (parentNodeSameHref) {
+          parentNodeSameHref.isRecursive = true;
+        } else {
+          hrefNode.addChild(localizedHref);
+        }
+      });
     });
   }
 };
