@@ -19,7 +19,7 @@ export default class DefaultFlags {
       taxIndividual: {
         el: page.locator('[data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"] .price-tax-inclusivity:not(.disabled)'),
         textEN: '',
-        textFR: 'TVA comprise',
+        textFR: 'TTC',
         textNG: 'incl. VAT',
       },
       taxBusiness: {
