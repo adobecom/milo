@@ -1592,7 +1592,7 @@ async function loadPostLCP(config) {
   } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
-  config.georouting = { loadedPromise: Promise.resolve() };
+  config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
