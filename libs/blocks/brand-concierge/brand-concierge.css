@@ -693,8 +693,8 @@
   font-weight: 700;
   line-height: 14px;
   text-transform: uppercase;
-  color: #5258E4;
-  background: #E0E2FF;
+  color: #6338EE;
+  background: #EBEEFF;
   border-radius: 4px;
   height: 14px;
   width: 30px;
@@ -710,6 +710,7 @@
   .brand-concierge {
     padding: 56px 32px 12px;
   }
+
   /* Hero */
   .brand-concierge.hero {
     padding: 80px 32px 24px;
