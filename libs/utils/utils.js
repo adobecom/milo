@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'carousel',
   'chart',
   'columns',
+  'comparison-table',
   'editorial-card',
   'email-collection',
   'faas',
@@ -50,6 +51,7 @@ const MILO_BLOCKS = [
   'locui-create',
   'm7',
   'marketo',
+  'marketo-config',
   'marquee',
   'marquee-anchors',
   'martech-metadata',
@@ -195,24 +197,56 @@ export function getEnv(conf) {
   /* c8 ignore stop */
 }
 
-export function getLocale(locales, pathname = window.location.pathname) {
-  if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+function hydrateLocale(locales, key) {
+  const locale = locales[key];
+
+  const buildExpandedLocale = (localeData, localeKey) => ({
+    ...localeData,
+    prefix: localeKey ? `/${localeKey}` : '',
+    region: localeData.region || localeKey.split('_')[0] || 'us',
+  });
+
+  const isBaseLocale = !('base' in locale);
+  if (isBaseLocale) {
+    const childLocaleEntries = Object.entries(locales)
+      .filter(([, childLocale]) => childLocale.base === key);
+
+    const hydratedChildren = childLocaleEntries.reduce((acc, [childKey, childLocale]) => {
+      const mergedLocale = { ...locale, ...childLocale, base: childLocale.base };
+      acc[childKey] = buildExpandedLocale(mergedLocale, childKey);
+      return acc;
+    }, {});
+
+    const hydratedBase = buildExpandedLocale(locale, key);
+    return { ...hydratedBase, regions: hydratedChildren };
   }
+
+  const hasValidBase = (locale.base || locale.base === '') && locales[locale.base];
+  if (hasValidBase) {
+    const baseLocale = locales[locale.base];
+    const mergedLocale = { ...baseLocale, ...locale };
+    return buildExpandedLocale(mergedLocale, key);
+  }
+
+  return { ...locale };
+}
+
+export function getLocale(locales, pathname = window.location.pathname) {
+  if (!locales) return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+
   const split = pathname.split('/');
   const localeString = split[1];
-  let locale = locales[localeString] || locales[''];
-  if ([LANGSTORE, PREVIEW].includes(localeString)) {
-    const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
-    if (ietf) locale = locales[ietf];
-    const pathSegment = split[2] ? `/${split[2]}` : '';
-    locale.prefix = `/${localeString}${pathSegment}`;
-    return locale;
-  }
-  const isUS = locale.ietf === 'en-US';
-  const localePathPrefix = localeString ? `/${localeString}` : '';
-  locale.prefix = isUS ? '' : localePathPrefix;
-  locale.region = isUS ? 'us' : localeString.split('_')[0];
+  const specialPrefix = [LANGSTORE, PREVIEW].includes(localeString) ? localeString : '';
+  const ietfSegment = split[2];
+
+  const matchedKeys = specialPrefix
+    ? [Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(ietfSegment))]
+    : Object.keys(locales)
+      .filter((k) => k === localeString);
+
+  const matchedKey = matchedKeys[0] ?? '';
+  const locale = hydrateLocale(locales, matchedKey);
+  if (specialPrefix) locale.prefix = `/${specialPrefix}${ietfSegment ? `/${ietfSegment}` : ''}`;
   return locale;
 }
 
@@ -223,7 +257,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   const region = split[locOffset + 2];
   let regionPath = '';
 
-  const language = languages[languageString];
+  const language = languages?.[languageString];
   if (language && region && language.regions) {
     const [matchingRegion] = language.regions.filter((r) => r.region === region);
     if (matchingRegion?.region) language.region = matchingRegion.region;
@@ -236,7 +270,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
     || (language.languageBased === false && !language.region);
   if (isLegacyLocaleRoutingMode) {
     const locale = getLocale(locales, pathname);
-    const englishLang = languages.en;
+    const englishLang = languages?.en;
     if (locale.prefix === '' && englishLang) {
       locale.language = DEFAULT_LANG;
       if (englishLang.region) locale.region = englishLang.region;
@@ -1559,7 +1593,7 @@ async function loadPostLCP(config) {
   } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
-  config.georouting = { loadedPromise: Promise.resolve() };
+  config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
