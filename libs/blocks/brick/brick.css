@@ -430,6 +430,12 @@
     display: block;
   }
 
+  .brick.media-visible-mobile-tablet.split.row .foreground .brick-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   .brick.media-visible-mobile-tablet.split .foreground {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
