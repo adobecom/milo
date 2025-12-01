@@ -269,6 +269,12 @@
   .brick.media-visible-mobile-tablet {
     min-height: 500px;
   }
+
+  .brick.media-visible-mobile-tablet.split.row .foreground .brick-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
   
   .brick .desktop-only,
   .brick .foreground .brick-media {
