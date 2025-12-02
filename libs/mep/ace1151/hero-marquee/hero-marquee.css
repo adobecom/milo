@@ -312,7 +312,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 /* Hacky s2a Fix */
 @media (max-width: 1199px) {
   .hero-marquee.s2a-hero-marquee > .foreground {
-    margin-top: -143px;
+    margin-top: -161px;
   }
 
   .hero-marquee.s2a-hero-marquee .foreground > .copy {
@@ -625,6 +625,12 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-block.row-text .row-wrapper {
     align-self: unset;
     font-size: inherit;
+  }
+}
+
+@media screen and (min-width: 1919px) { 
+  .hero-marquee.s2a-cols > .foreground.cols-2 {
+    grid-template-columns: minmax(48%, 1fr) minmax(52%, 1fr);
   }
 }
 

@@ -452,43 +452,64 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-/* Collapsible Fragment Button */
 .collapse-frag-button {
-  all: unset;
-  cursor: pointer;
-  font-weight: 800;
-  font-size: 24px;
-  line-height: 1.2;
-  padding: 16px 0;
-  width: 100%;
-  display: block;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  border-radius: 25px;
+  margin: var(--spacing-xxl) 0;
 }
 
-.collapse-frag-button:hover {
+.collapse-frag-button button {
+  cursor: pointer;
+  color: currentcolor;
+  background: none;
+  border: none;
+  padding: var(--spacing-xxs) var(--spacing-s);
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  text-align: center;
+  font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
+  font-size: var(--type-heading-m-size, 20px);
+  line-height: var(--type-heading-m-lh, 115%);
+  font-weight: var(--type-heading-all-weight, 900);
+}
+
+.collapse-frag-button button:hover {
   opacity: 0.8;
 }
 
-.collapse-frag-button:focus-visible {
+.collapse-frag-button button:focus-visible {
   outline: 2px solid #1473e6;
   outline-offset: 4px;
-  border-radius: 4px;
+  border-radius: 50px;
 }
 
-.collapse-frag-text::after {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid currentcolor;
-  border-bottom: 2px solid currentcolor;
-  margin-left: 12px;
-  transform: rotate(225deg);
+/* Hide outline for programmatic focus (deeplink) */
+.collapse-frag-button button[data-programmatic-focus='true']:focus {
+  outline: none !important;
+}
+
+.collapse-frag-button svg {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  top: -2px;
+  transform: rotate(180deg);
+  flex-shrink: 0;
 }
 
-.collapse-frag-button[aria-expanded='true'] .collapse-frag-text::after {
-  transform: rotate(45deg);
+.collapse-frag-button button[aria-expanded='true'] svg {
+  transform: rotate(0deg);
+}
+
+
+@media screen and (min-width: 1200px) {
+  .collapse-frag-placeholder .collection-container.plans:has(merch-sidenav) {
+    width: unset;
+    position: unset;
+    left: unset;
+    transform: unset;
+    justify-content: unset;
+    padding-inline: unset;
+  }
 }
