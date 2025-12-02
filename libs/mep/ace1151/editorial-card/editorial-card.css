@@ -472,6 +472,10 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 
 /* accordion card styling */
 @media screen and (max-width: 599px) {
+  .editorial-card.s2a-editorial-accordion {
+    border-radius: 8px !important;
+  }
+
   .editorial-card > .foreground > [class*="body-"] {
     display: flex;
     flex-direction: row;
