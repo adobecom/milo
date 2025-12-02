@@ -9,13 +9,17 @@ let marquee;
 let emailCollection;
 
 const miloLibs = process.env.MILO_LIBS || '';
-const branchName = process.env.branch || '';
-
+const branchName = process.env.prBranch || '';
+const isFork = process.env.isFork === 'true';
 const isValidBranch = /^mwpw-\d{6}$/i.test(branchName);
 
 test.skip(
-  !isValidBranch,
-  `Skipping Email Collection tests — branch name "${branchName}" does not match format "MWPW-123456"`,
+  !isValidBranch || isFork,
+  `Skipping Email Collection tests — reason: ${
+    !isValidBranch
+      ? `branch name “${branchName}” does not match required format “MWPW-123456"`
+      : 'PR comes from a forked repo'
+  }`,
 );
 
 test.describe('Milo Email Collection Block test suite', () => {

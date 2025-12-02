@@ -8,7 +8,7 @@ import {
     FF_DEFAULTS,
 } from './constants.js';
 import { Defaults } from './defaults.js';
-import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
+import { Env, CheckoutWorkflowStep } from './constants.js';
 
 import {
     getParameter,
