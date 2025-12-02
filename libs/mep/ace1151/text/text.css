@@ -9,10 +9,6 @@
   color: #fff;
 }
 
-.text-block.dark.s2a-dark-text p {
-  color: #CACACA;
-}
-
 .text-block p,
 .text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
 
@@ -585,7 +581,7 @@
 }
 
 .text-block.dark.s2a-dark-text p {
-  color: #292929;
+  color: #CACACA;
 }
 
 .text-block p,
