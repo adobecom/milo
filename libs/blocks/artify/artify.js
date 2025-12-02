@@ -64,10 +64,39 @@ const effectImages = [
 // Landing Page Component
 function LandingPage({ onFileChange }) {
   const fileInputRef = useRef(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      // Create a synthetic event to match the expected format
+      const syntheticEvent = {
+        target: { files },
+        preventDefault: () => {},
+      };
+      onFileChange(syntheticEvent);
     }
   };
 
@@ -77,19 +106,32 @@ function LandingPage({ onFileChange }) {
         <img src="${getAssetPath('banner.png')}" class="banner-img" alt="banner" />
       </div>
       <div class="info">
-        <h2>Add magic and transform your images in one go</h2>
-        <div class="artify-upload-container">
-          <div>
-            <button class="artify-upload-btn" onClick=${handleButtonClick}>Choose a photo</button>
-            <input
-              type="file"
-              ref=${fileInputRef}
-              style="display: none"
-              accept="image/*"
-              onChange=${onFileChange}
-            />
-            <div class="artify-upload-info">or Drag and Drop images</div>
+        <h2>Add magic and transform your images</h2>
+        <p class="artify-subheading">Skip the Steps, Get the Results</p>
+        <div 
+          class="artify-upload-container ${isDragOver ? 'drag-over' : ''}"
+          onDragOver=${handleDragOver}
+          onDragLeave=${handleDragLeave}
+          onDrop=${handleDrop}
+        >
+          <div class="artify-upload-dropzone">
+            <div class="artify-upload-cloud-icon">
+              <svg viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M80 35C80 20 68 10 55 10C45 10 36 16 32 25C30 24 28 23 25 23C15 23 7 31 7 41C7 51 15 59 25 59H75C85 59 93 51 93 41C93 33 88 26 80 35Z" fill="#0a2759" stroke="#a6c8e0" stroke-width="2"/>
+                <path d="M50 28V52" stroke="#59eeff" stroke-width="4" stroke-linecap="round"/>
+                <path d="M40 38L50 28L60 38" stroke="#59eeff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
           </div>
+          <p class="artify-upload-text">Drag & Drop your files here</p>
+          <button class="artify-upload-btn" onClick=${handleButtonClick}>Browse Files</button>
+          <input
+            type="file"
+            ref=${fileInputRef}
+            style="display: none"
+            accept="image/*"
+            onChange=${onFileChange}
+          />
         </div>
       </div>
     </div>
