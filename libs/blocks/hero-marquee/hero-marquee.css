@@ -853,6 +853,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     .hero-marquee.northstar .heading-xxl {
       font-size: 96px;
       line-height: 0.98;
+      letter-spacing: -3px;
     }
 
     .hero-marquee.northstar .foreground.cols-1 {

@@ -622,6 +622,7 @@
     .text-block .heading-xxxl {
       font-size: 96px;
       line-height: 0.98;
+      letter-spacing: -3px;
       max-width: 1220px;
     }
 
