@@ -583,6 +583,14 @@ describe('Merch Block', () => {
 
       expect(classList.contains('con-button')).to.be.true;
     });
+
+    it('sets target _blank if target is _blank', async () => {
+      const el = await merch(document.querySelector(
+        '.merch.cta.blank',
+      ));
+      await el.onceSettled();
+      expect(el.getAttribute('target')).to.equal('_blank');
+    });
   });
 
   describe('function "getCheckoutContext"', () => {

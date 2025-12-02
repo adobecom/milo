@@ -357,6 +357,21 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee .row-supplemental.center {
     text-align: center;
   }
+
+  /* Mweb specific changes */
+  .mweb-enabled .hero-marquee .foreground .copy, 
+  .mweb-enabled .hero-marquee .main-copy {
+    gap: 12px;
+  }
+  
+  .mweb-enabled .hero-marquee .action-area {
+    margin-top: 12px;
+    gap: var(--spacing-xs);
+  }
+
+  .mweb-enabled .hero-marquee .row-supplemental {
+    margin-top: 4px;
+  }
 }
 
 /* Tablet ONLY */
