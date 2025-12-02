@@ -620,7 +620,7 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
     padding-bottom: 0 !important; /* Remove JS-set one */
   }
 
-  .has-plans-cta .feds-nav {
+  .has-plans-cta.mini-gnav .feds-nav {
     display: none;
   }
 
