@@ -6,6 +6,7 @@ import {
     Env,
     Commitment,
     Term,
+    SUPPORTED_COUNTRIES,
 } from './constants.js';
 
 import { PlanType, applyPlanType } from '@dexter/tacocat-core';
@@ -14,6 +15,7 @@ import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
 import { getLogHeaders, getService } from './utilities.js';
 import { printMeasure } from './utils.js';
+import { Defaults } from './defaults.js';
 
 const NAMESPACE = 'wcs';
 
@@ -259,6 +261,26 @@ export function Wcs({ settings }) {
     }
 
     /**
+     * Validates that country is supported and determines language and locale.
+     *
+     * @param {string} country - The country code
+     * @param {string} language - The language code
+     * @param {boolean} perpetual - Whether to use perpetual offers
+     * @returns { validCountry: string, validLanguage: string, locale: string } Returns either valid or default country, language, and locale
+     */
+      function normalizeCountryLanguageAndLocale(country, language, perpetual) {
+        const validLanguage = (country !== 'GB' && !perpetual) ? 'MULT' : 'en';
+        const validCountry = SUPPORTED_COUNTRIES.includes(country)
+            ? country
+            : Defaults.country;
+        return {
+            validCountry,
+            validLanguage,
+            locale: `${language}_${validCountry}`,
+        };
+    }
+
+    /**
      * Resolves requested list of "Offer Selector Ids" (`osis`) from WCS or local cache.
      * Returns one promise per OSI, the promise resolves to array of product offers
      * associated with this OSI.
@@ -280,9 +302,9 @@ export function Wcs({ settings }) {
         promotionCode = '',
         wcsOsi = [],
     }) {
-        const locale = `${language}_${country}`;
-        if (country !== 'GB' && !perpetual) language = 'MULT';
-        const groupKey = [country, language, promotionCode]
+        const { validCountry, validLanguage, locale } =
+            normalizeCountryLanguageAndLocale(country, language, perpetual);
+        const groupKey = [validCountry, validLanguage, promotionCode]
             .filter((val) => val)
             .join('-')
             .toLowerCase();
@@ -296,11 +318,11 @@ export function Wcs({ settings }) {
                 let group = queue.get(groupKey);
                 if (!group) {
                     const options = {
-                        country,
+                        country: validCountry,
                         locale,
+                        ...(validLanguage === 'MULT' && { language: validLanguage }),
                         offerSelectorIds: [],
                     };
-                    if (country !== 'GB' && !perpetual) options.language = language;
                     const promises = new Map();
                     group = { options, promises };
                     queue.set(groupKey, group);
@@ -333,6 +355,7 @@ export function Wcs({ settings }) {
         resolveOfferSelectors,
         flushWcsCacheInternal,
         prefillWcsCache,
+        normalizeCountryLanguageAndLocale,
     };
 }
 
