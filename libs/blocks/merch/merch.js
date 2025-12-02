@@ -1286,6 +1286,10 @@ export async function buildCta(el, params) {
     cta.classList.toggle('blue', strong);
   }
 
+  if (params.get('target') === '_blank') {
+    cta.setAttribute('target', '_blank');
+  }
+
   const customClasses = el.href.matchAll(/#_button-([a-zA-Z-]+)/g);
   for (const match of customClasses) {
     cta.classList.add(match[1]);
