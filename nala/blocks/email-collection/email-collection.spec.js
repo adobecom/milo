@@ -35,7 +35,7 @@ module.exports = {
           outlineButtonText: 'Back to the website',
         },
       },
-      tags: '@emailCollection @smoke @regression @milo',
+      tags: '@emailCollection @smoke @regression @milo @nopr',
     },
   ],
 };
