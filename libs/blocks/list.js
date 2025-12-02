@@ -1,5 +1,6 @@
 const blocks = [
   'adobetv',
+  'artify',
   'caas',
   'faas',
   'columns',
