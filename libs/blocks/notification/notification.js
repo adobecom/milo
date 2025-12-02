@@ -385,8 +385,11 @@ function setStickyAccessibilityAttributes(el) {
   if (!section) return;
 
   const checkAndSetAttributes = () => {
-    const sticky = section.classList.contains('sticky-top') || section.classList.contains('sticky-bottom');
-    if (!sticky) return false;
+    const isSticky = section.classList.contains('sticky-top') || section.classList.contains('sticky-bottom');
+    if (!isSticky) return false;
+
+    el.classList.remove('no-closure');
+    if (!el.querySelector('.close')) decorateClose(el);
 
     el.setAttribute('aria-label', getHeadingText(el)
        || (section.classList.contains('sticky-bottom') ? 'Promotional Banner Bottom' : 'Promotional Banner Top'));

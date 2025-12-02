@@ -464,12 +464,6 @@
       min-height: 600px;
     }
     
-    .brick.rounded-corners,
-    .brick.rounded-corners .background,
-    .brick .background:after {
-      border-radius: 20px;
-    }
-
     .brick .foreground {
       padding: var(--spacing-m) var(--spacing-l);
     }
