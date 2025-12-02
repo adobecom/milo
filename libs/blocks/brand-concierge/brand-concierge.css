@@ -421,6 +421,7 @@
   margin-bottom: 40px;
 }
 
+.light .prompt-card-button,
 .hero .prompt-card-button,
 .pill-cards .prompt-card-button {
   box-shadow: 0 0 6px 0 rgba(0 0 0 / 25%);
@@ -710,6 +711,7 @@
   .brand-concierge {
     padding: 56px 32px 12px;
   }
+  
   /* Hero */
   .brand-concierge.hero {
     padding: 80px 32px 24px;

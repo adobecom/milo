@@ -580,6 +580,25 @@
         "title": "ABM",
         "titlePath": "Merch at Scale : Plan type / ABM"
       }
+    },
+    "auVariation": {
+        "type": "content-fragment",
+        "value": {
+          "description": "",
+          "fields": {
+            "cards": [
+            ],
+            "collections": [],
+            "label": "Cloud"
+          },
+          "id": "auVariation",
+          "model": {
+            "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+          },
+          "name": "",
+          "path": "/content/dam/mas/sandbox/en_AU/individual-plans-cloud",
+          "title": "Individual Plans Cloud"
+        }
     }
   },
   "referencesTree": [
@@ -860,6 +879,11 @@
           ]
         }
       ]
+    },
+    {
+      "fieldName": "variations",
+      "identifier": "auVariation",
+      "referencesTree": []
     }
   ],
   "title": "Individual Plans",
