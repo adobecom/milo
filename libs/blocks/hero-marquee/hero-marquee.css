@@ -13,7 +13,7 @@
   gap: var(--spacing-m);
   width: 100%;
   overflow: hidden;
-  min-height: 400px;
+  min-height: var(--m-min-height);
   justify-content: center;
   align-items: center;
 }
