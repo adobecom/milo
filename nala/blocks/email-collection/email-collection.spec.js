@@ -19,7 +19,7 @@ module.exports = {
           lastNameLabel: 'Cvijanovic',
           organizationLabel: 'Company',
           occupationLabel: 'Job',
-          countryLabel: 'Serbia',
+          countryLabel: 'RS',
           consentText: 'The Adobe family of companies may keep me informed with personalized emails about Adobe MAX 2025. See our Privacy Policy for more details or to opt-out at any time.',
           links: [
             { text: 'Adobe family of companies', number: 1 },
