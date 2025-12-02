@@ -825,14 +825,16 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   @media (max-width: 599px) {
-    .hero-marquee.left-mobile.northstar .foreground {
+    .hero-marquee.northstar.left-mobile.center {
       text-align: start;
+      align-items: center;
     }
   }
 
   @media (min-width: 600px) {
-    .hero-marquee.northstar .foreground {
+    .hero-marquee.northstar.left-mobile.center {
       text-align: center;
+      align-items: center;
     }
 
     .hero-marquee.northstar .heading-xxl {
