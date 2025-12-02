@@ -4,7 +4,6 @@
   --l-min-height: 588px; /* 700px */
   --default-block-spacing: 5px;
   --media-cover-position: center top;
-
   /* 112 = 56px default padding */
   padding: var(--spacing-xl) 0;
   position: relative;
@@ -13,7 +12,7 @@
   gap: var(--spacing-m);
   width: 100%;
   overflow: hidden;
-  min-height: 400px;
+  min-height: var(--m-min-height);
   justify-content: center;
   align-items: center;
 }
