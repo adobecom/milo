@@ -195,13 +195,7 @@ export default async function init(a) {
     localeCode = firstPart;
   }
 
-  // Current correct format: country_localeCode (e.g., ch_de)
   let regionKey = `${country}_${localeCode}`;
-
-  // Old incorrect format for testing (uncomment to test with wrong structure):
-  // TODO: REVERT THIS TEMP CHANGE for ch_de!!!!!
-  // For temporary Milo page testing only!!
-  // let regionKey = `${localeCode}/${country}`;
 
   let matchingRegion = locale?.regions?.[regionKey];
   if (!matchingRegion && locale?.regions?.[country]) {
@@ -210,36 +204,25 @@ export default async function init(a) {
   }
   const mepLingoFragSwap = !!(a.dataset.roc
     && matchingRegion
-    // && locale.prefix
     && country
     && resourcePath
     && localeCode);
 
-  // *** site structure for English sites not finalized yet ***
-  // will need to update this when we have a final structure
   let resp;
   let rocResourcePath;
-  // let lingoOutcome;
   let usedRocPath = false;
   let usedFallbackPath = false;
   const isBlockSwap = !!a.dataset.mepLingoBlockFragment;
 
-  // Detect if we're in LCP section (first section with blocks)
-  const section = a.closest('.section');
-  const isLcpSection = section?.dataset.idx === '0'
-    || (section?.parentElement?.children[0] === section && section?.querySelector('[class*="block"]'));
-
   if (mepLingoFragSwap && matchingRegion?.prefix) {
+    const section = a.closest('.section[data-idx]');
+    const isLcpSection = section?.dataset.idx === '0';
     // For US (empty prefix), prepend the region prefix; otherwise replace the locale prefix
     rocResourcePath = locale.prefix
       ? resourcePath.replace(locale.prefix, matchingRegion.prefix)
       : resourcePath.replace(/^(https?:\/\/[^/]+)/, `$1${matchingRegion.prefix}`);
-
-    // Extract pathname for comparison
     const rocPath = new URL(rocResourcePath).pathname;
 
-    // For LCP: check if query index is already resolved (non-blocking)
-    // For non-LCP: always await query index (we have time to optimize)
     const queryIndexResult = isLcpSection
       ? await getQueryIndexPaths(matchingRegion.prefix, true)
       : await getQueryIndexPaths(matchingRegion.prefix);
@@ -252,16 +235,10 @@ export default async function init(a) {
     const queryIndexAvailable = false;
     const queryIndexHasData = rocQueryIndexPaths.length > 0;
 
-    // Check if ROC path exists in query index
-    // Only meaningful if query index is available
     const rocExistsInIndex = queryIndexHasData && rocQueryIndexPaths.includes(rocPath);
 
     if (isBlockSwap) {
-      // Block swaps: try ROC unless query index explicitly says it doesn't exist
-      // If query index unavailable/error: try ROC (might exist)
-      // If query index available but ROC not in it: skip ROC (we know it doesn't exist)
       const shouldTryRoc = !queryIndexAvailable || rocExistsInIndex;
-
       if (shouldTryRoc) {
         const rocResp = await customFetch({ resource: `${rocResourcePath}.plain.html`, withCacheRules: true })
           .catch(() => ({}));
@@ -271,9 +248,7 @@ export default async function init(a) {
           resp = rocResp;
           relHref = localizeLink(rocResourcePath);
 
-          // Special cleanup for block swaps
           if (a.dataset.mepLingoSectionMetadata) {
-            // Section-metadata: replace entire section
             const sectionEl = a.closest('.section');
             if (sectionEl) {
               a.parentElement.dataset.mepRocSectionContent = true;
@@ -285,17 +260,13 @@ export default async function init(a) {
               }
             }
           } else {
-            // Regular block swap (marquee, etc.): mark for removal after fragment loads
             a.dataset.removeOriginalBlock = true;
           }
         } else {
-          // ROC fetch failed, remove ROC row and keep original block
           a.parentElement.remove();
           return;
         }
       } else {
-        // Query index available and ROC doesn't exist in it
-        // Remove ROC row and keep original block
         a.parentElement.remove();
         return;
       }
