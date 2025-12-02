@@ -99,9 +99,6 @@ const cancelActions = (() => {
       feedback: null,
       contactMe: false,
     };
-    const radioButtons = Array.from(
-      document.querySelectorAll('#nps input[type="radio"]'),
-    );
     const surveyType = 'CSAT 5pt'; // Hardcoded until NPS forms are implemented
     const dataObj = buildDataObject(d, surveyType, CancelSurvey);
     window._satellite?.track?.('event', dataObj) // eslint-disable-line
