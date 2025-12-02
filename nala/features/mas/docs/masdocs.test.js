@@ -21,7 +21,7 @@ test.describe('MAS Docs feature test suite', () => {
     await test.step('step-1: Go to MAS Checkout Link Docs page', async () => {
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}`);
+      await expect(page).toHaveURL(`${testPage}`);
     });
 
     await test.step('step-2: Verify on load pending & resolved events', async () => {
@@ -45,7 +45,7 @@ test.describe('MAS Docs feature test suite', () => {
     await test.step('step-1: Go to MAS Merch Card Docs page', async () => {
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[1].path}`);
+      await expect(page).toHaveURL(`${testPage}`);
     });
 
     await test.step('step-2: Verify successfull mas:ready events', async () => {

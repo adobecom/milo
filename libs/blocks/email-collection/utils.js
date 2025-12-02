@@ -2,7 +2,6 @@ import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '..
 import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
-  nala: 'https://14257-miloemailcollection-stage.adobeioruntime.net/api/v1/web/email-collection',
   local: 'https://www.stage.adobe.com/milo-email-collection-api',
   stage: 'https://www.stage.adobe.com/milo-email-collection-api',
   prod: 'https://www.adobe.com/milo-email-collection-api',
@@ -11,6 +10,8 @@ const FORM_METADATA = {
   'email-collection-test': 'emailCollectionTest',
   'mps-sname': 'mpsSname',
   'subscription-name': 'subscriptionName',
+  'sign-in': 'signIn',
+  'runtime-endpoint': 'runtimeEndpoint',
 };
 
 export function localizeFederatedUrl(url) {
@@ -45,10 +46,10 @@ export const FORM_FIELDS = {
     },
   },
   country: {
-    tag: 'input',
+    tag: 'select',
     url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=countries`),
     attributes: {
-      type: 'text',
+      required: true,
       disabled: '',
     },
   },
@@ -70,7 +71,7 @@ export const FORM_FIELDS = {
   },
   state: {
     tag: 'select',
-    url: getFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=states&limit=2000`),
+    url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=states&limit=2000`),
     attributes: { required: true },
   },
 };
@@ -230,6 +231,7 @@ export const [getFormData, setFormData] = (() => {
         metadataObject[newKey] = value;
 
         if (FORM_FIELDS[key]?.url) fetchConfigParams.push({ id: key, url: FORM_FIELDS[key].url });
+        if (newKey === 'runtimeEndpoint') child.lastElementChild.remove();
       });
 
       if (!fields.email
@@ -245,9 +247,10 @@ export const [getFormData, setFormData] = (() => {
 
 export function getApiEndpoint(action = 'submit') {
   const { env } = getConfig();
-  const { emailCollectionTest } = getFormData('metadata');
+  const { runtimeEndpoint } = getFormData('metadata');
   let endPoint = API_ENDPOINTS[env.name] ?? API_ENDPOINTS.prod;
-  if (emailCollectionTest) endPoint = API_ENDPOINTS.nala;
+  if (env.name !== 'prod' && runtimeEndpoint) endPoint = runtimeEndpoint;
+
   return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
 }
 
@@ -257,14 +260,55 @@ export function disableForm(form, disable = true) {
   });
 }
 
+function resolvePendingPromise(promise, resolve) {
+  const promiseTimeout = setTimeout(() => resolve(undefined), 5000);
+  promise.then((result) => {
+    clearTimeout(promiseTimeout);
+    resolve(result);
+  });
+}
+
+function awaitWindowProperty(property, timeout = 5000, interval = 100) {
+  if (window[property] && !window[property].then) return window[property];
+
+  return new Promise((resolve) => {
+    let timeoutRef;
+    const intervalRef = setInterval(() => {
+      if (!window[property]) return;
+      clearTimeout(timeoutRef);
+      clearInterval(intervalRef);
+      if (window[property].then) resolvePendingPromise(window[property], resolve);
+      else resolve(window[property]);
+    }, interval);
+
+    timeoutRef = setTimeout(() => {
+      clearInterval(intervalRef);
+      if (window[property]?.then) resolvePendingPromise(window[property], resolve);
+      else resolve(window[property]);
+    }, timeout);
+  });
+}
+
 export async function getAEPData() {
-  const ECID_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
   try {
+    const [adobePrivacy, alloyIdentity, alloyAll] = await Promise.all([
+      awaitWindowProperty('adobePrivacy'),
+      awaitWindowProperty('alloy_getIdentity'),
+      awaitWindowProperty('alloy_all'),
+    ]);
+
+    const privacyCookieGroups = adobePrivacy?.activeCookieGroups() || [];
+    const hasMarketingConsent = privacyCookieGroups.includes('C0004');
+    const { identity } = alloyIdentity || {};
+
     // eslint-disable-next-line
-    const satellite = await window.__satelliteLoadedPromise;
-    const ecid = decodeURIComponent(satellite?.cookie.get(ECID_COOKIE))?.split('|')[1];
-    const { userId: guid } = await getIMSProfile();
-    return { guid, ecid };
+    const { cmp, otherConsents } = alloyAll?.data?._adobe_corpnew || {};
+
+    return {
+      ...(hasMarketingConsent && { ecid: identity?.ECID }),
+      aepCmp: cmp,
+      aepOtherConsents: otherConsents,
+    };
   } catch (e) {
     return {};
   }
@@ -287,11 +331,7 @@ export async function redirectToSignIn(dialog) {
   if (dialog) closeModal(dialog);
 }
 
-export async function runtimePost(url, data, notRequiredData = []) {
-  const hasMissingData = Object.entries(data)
-    .find(([key, value]) => (value === undefined && !notRequiredData.includes(key)));
-  if (hasMissingData) return { error: 'Request body is missing required data' };
-
+export async function runtimePost(url, data) {
   const token = await getIMSAccessToken();
   try {
     const req = await fetch(url, {
@@ -312,4 +352,9 @@ export async function runtimePost(url, data, notRequiredData = []) {
   } catch (e) {
     return { error: e.message };
   }
+}
+
+export async function isUserGuest() {
+  const ims = await getIMS();
+  return !ims.isSignedInUser();
 }
