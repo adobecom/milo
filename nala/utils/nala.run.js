@@ -97,7 +97,7 @@ function parseArgs(args) {
   return parsedParams;
 }
 
-function getLocalTestLiveUrl(env, milolibs, maslibs,repo = 'milo', owner = 'adobecom') {
+function getLocalTestLiveUrl(env, milolibs, maslibs, repo = 'milo', owner = 'adobecom') {
   if (env === 'main') {
     return 'https://milo.adobe.com';
   }
