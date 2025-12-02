@@ -314,8 +314,8 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl, el) {
     let isVisible = i < visible;
     if (isHovering(el)) isVisible = slide === active;
     slide.setAttribute('aria-hidden', !isVisible);
-    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
-      el.setAttribute('tabindex', isVisible ? 0 : -1);
+    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((slideEl) => {
+      slideEl.setAttribute('tabindex', isVisible ? 0 : -1);
     });
   });
 }
@@ -644,9 +644,14 @@ const buildMenuItems = (slides, el) => {
         'aria-label': title.textContent,
         'daa-ll': `slide-title-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`,
       }, title.textContent);
-      const headerWrapper = createTag('h2', {
-        class: 'slide-header-control',
-      }, `${title.textContent}<a daa-ll="slide-open-${title.textContent.toLowerCase().replace(/\s+/g, '-')}">${EXPAND_ICON}</a><a class="collapse-wrapper" daa-ll="slide-close-${title.textContent.toLowerCase().replace(/\s+/g, '-')}" >${COLLAPSE_ICON}</a>`);
+      const processedTitle = title.textContent.toLowerCase().replace(/\s+/g, '-');
+      const headerWrapper = createTag(
+        'h2',
+        { class: 'slide-header-control' },
+        `${title.textContent}<a
+        daa-ll="slide-open-${processedTitle}">${EXPAND_ICON}</a><a class="collapse-wrapper"
+        daa-ll="slide-close-${processedTitle}" >${COLLAPSE_ICON}</a>`,
+      );
       title.parentElement.insertBefore(headerWrapper, title);
       title.remove();
       item.dataset.index = index;
@@ -725,9 +730,10 @@ export default function init(el) {
         slide.querySelector('a')?.setAttribute('tabindex', -1);
         slide.setAttribute('daa-ll', `slide-image-${title.textContent.toLowerCase().replace(/\s+/g, '-')}`);
         slide.addEventListener('click', (event) => {
-          const customEvent = new CustomEvent('carousel:jumpTo', {
-            detail: { index: event.target.closest('.carousel-slide').dataset.index * 1 },
-          });
+          const customEvent = new CustomEvent(
+            'carousel:jumpTo',
+            { detail: { index: event.target.closest('.carousel-slide').dataset.index * 1 } },
+          );
           el.dispatchEvent(customEvent);
         });
       }
