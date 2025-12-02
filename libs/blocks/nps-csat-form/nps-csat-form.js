@@ -102,7 +102,7 @@ const cancelActions = (() => {
     const radioButtons = Array.from(
       document.querySelectorAll('#nps input[type="radio"]'),
     );
-    const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
+    const surveyType = 'CSAT 5pt'; // Hardcoded until NPS forms are implemented
     const dataObj = buildDataObject(d, surveyType, CancelSurvey);
     window._satellite?.track?.('event', dataObj) // eslint-disable-line
   };
@@ -500,7 +500,7 @@ export default async (block) => {
       feedback,
       contactMe,
     };
-    const surveyType = radioButtons.length === 7 ? '7pt' : '5pt';
+    const surveyType = 'CSAT 5pt'; // Hardcoded until NPS forms are implemented
     const dataObj = buildDataObject(d, surveyType, SubmitSurvey);
     window._satellite?.track?.('event', dataObj) // eslint-disable-line
     sendMessage(SUBMIT(d));
