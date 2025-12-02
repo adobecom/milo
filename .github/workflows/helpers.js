@@ -184,6 +184,32 @@ const getReviews = ({ pr, github, owner, repo }) =>
       return pr;
     });
 
+const isWeekendOrMondayRCP = (start) => {
+  const day = new Date(start).getDay();
+  return day === 0 || day === 1 || day === 6;
+};
+
+const getDaysUntilRCP = (start, now = new Date()) => {
+  const rcpStart = new Date(start);
+  rcpStart.setHours(0, 0, 0, 0);
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  return Math.floor((rcpStart - today) / (1000 * 60 * 60 * 24));
+};
+
+const isStageFreezeActive = (now = new Date()) => {
+  return RCPDates.some(({ start, end }) => {
+    if (isShortRCP(start, end)) return false;
+    if (!isWeekendOrMondayRCP(start)) return false;
+    const days = getDaysUntilRCP(start, now);
+    const currentDay = new Date(now).getDay();
+    // Monday(1) RCP: Thu(4 days) -> Freeze
+    // Sunday(0) RCP: Wed(4 days) -> Skip, Thu(3 days) -> Freeze
+    const isThuFriSatSun = currentDay >= 4 || currentDay === 0;
+    return days > 0 && days <= 4 && isThuFriSatSun;
+  });
+};
+
 module.exports = {
   getLocalConfigs,
   slackNotification,
@@ -193,4 +219,7 @@ module.exports = {
   isWithinPrePostRCP,
   RCPDates,
   ZERO_IMPACT_PREFIX: '[ZERO IMPACT]',
+  isWeekendOrMondayRCP,
+  getDaysUntilRCP,
+  isStageFreezeActive,
 };
