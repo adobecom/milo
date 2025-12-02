@@ -8,18 +8,20 @@ on:
     inputs:
       site:
         description: "Site name e.g da-bacom"
-        required: false
-        type: string
+        required: true
+        type: choice
+        options:
+          - da-bacom
       siteRegionPaths:
-        description: "Comma-separated regional paths e.g /au/,/de/"
+        description: "Comma-separated regional paths (e.g. ar,ro) or blank for all regions"
         required: false
         type: string
       lastRunISOFrom:
-        description: "Last ISO From timestamp"
+        description: "Last ISO From timestamp (GMT: 2025-11-19T18:51:41.007Z)"
         required: false
         type: string
       lastRunISOTo:
-        description: "Last ISO To timestamp"
+        description: "Last ISO To timestamp (GMT: 2025-11-20T18:51:41.007Z)"
         required: false
         type: string
 
