@@ -28,10 +28,6 @@
   color: var(--color-white);
 }
 
-.hero-marquee.dark.s2a-dark-text p {
-  color: #292929;
-}
-
 .hero-marquee .background picture {
   line-height: 0;
   width: 100%;
