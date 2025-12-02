@@ -578,6 +578,20 @@
     line-height: 1.35;
   }
 
+  .text-block .cta-container {
+    margin-top: var(--spacing-xs);
+  }
+
+  .text-block .con-button {
+    font-size: 17px;
+    line-height: 21px;
+  }
+
+  .dark .text-block .con-button {
+    border-radius: 20px;
+    padding: 7px 16.5px 8px;
+  }
+
   @media (max-width: 599px) {
     .text-block.no-spacing-top-mobile {
       padding-top: 0;
@@ -608,7 +622,7 @@
     .text-block .heading-xxxl {
       font-size: 96px;
       line-height: 0.98;
-      max-width: 1072px;
+      max-width: 1220px;
     }
 
     .text-block .body-xl {
@@ -629,6 +643,16 @@
 
     .text-block.xxl-spacing-top {
       padding-top: var(--spacing-xxl);
+    }
+
+    .text-block .con-button {
+      font-size: 19px;
+      line-height: 24px;
+    }
+  
+    .dark .text-block .con-button {
+      padding: 10px 22.5px 12px;
+      border-radius: 40px;
     }
   }
 }
