@@ -445,6 +445,14 @@ function registerInBlockActions(command) {
         const { fragments } = config.mep.inBlock[blockName];
         command.content = getFragmentId(command.content);
         fragments[blockSelector] = command;
+        let overridesParent = document.querySelector('var.mas-overrides');
+        if (!overridesParent) {
+          overridesParent = createTag('var', { class: 'mas-overrides' });
+          document.body.appendChild(overridesParent);
+        }
+        if (!overridesParent.querySelector(`aem-fragment[fragment="${command.content}"]`)) {
+          overridesParent.appendChild(createTag('aem-fragment', { fragment: command.content }));
+        }
       }
       return;
     }

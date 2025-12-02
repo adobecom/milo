@@ -366,8 +366,7 @@ export class MerchCardCollection extends LitElement {
                 hierarchy: [],
                 placeholders: fragment.placeholders,
                 sidenavSettings: sidenavSettings
-            };
-
+            };          
             function traverseReferencesTree(root, references) {
                 for (const reference of references) {
                     if (reference.fieldName === 'variations') continue;
@@ -376,7 +375,17 @@ export class MerchCardCollection extends LitElement {
                         payload.cards.push(fragment.references[reference.identifier].value);
                         continue;
                     }
-                    const value = fragment.references[reference.identifier]?.value;
+                    let value = fragment.references[reference.identifier]?.value;
+                    let tree = reference.referencesTree;
+                    const overrideId = overrideMap[reference.identifier];
+                    if (overrideId) {
+                        const data = document.querySelector('aem-fragment[fragment="' + overrideId + '"]')?.rawData;
+                        if (data?.fields) {
+                          value = data;
+                          tree = data.referencesTree;
+                          fragment.references = { ...fragment.references, ...data.references};
+                        }
+                    }                  
                     if (!value?.fields) continue;
                     const { fields } = value;
                     const collection = {
@@ -391,7 +400,7 @@ export class MerchCardCollection extends LitElement {
                         collection.defaultchild = overrideMap[fields.defaultchild] || fields.defaultchild;
                     }
                     root.push(collection);
-                    traverseReferencesTree(collection.collections, reference.referencesTree);
+                    traverseReferencesTree(collection.collections, tree);
                 }
             }
             traverseReferencesTree(
