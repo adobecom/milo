@@ -415,7 +415,7 @@ const getLocalTitle = (tag, country, lang) => {
 };
 
 const getFilterObj = (
-  { excludeTags, filterTag, icon, openedOnLoad },
+  { excludeTags, filterTag, icon, openedOnLoad, useCategories },
   tags,
   state,
   country,
@@ -440,6 +440,7 @@ const getFilterObj = (
   const filterObj = {
     id: tagId,
     openedOnLoad: !!openedOnLoad,
+    useCategories: !!useCategories,
     items,
     group: getLocalTitle(tag, country, lang),
   };
@@ -488,7 +489,7 @@ const getCategoryArray = async (state, country, lang) => {
       title: value.title,
       icon: value.icon || '',
       items: Object.entries(value.tags)
-        .map((tag) => getFilterObj({ excludeTags: [], filterTag: [tag[1].tagID], icon: '', openedOnLoad: false }, tags, state, country, lang))
+        .map((tag) => getFilterObj({ excludeTags: [], filterTag: [tag[1].tagID], icon: '', openedOnLoad: false, useCategories: false}, tags, state, country, lang))
         .filter((tag) => tag !== null),
     }));
 
@@ -812,6 +813,7 @@ export const getConfig = async (originalState, strs = {}) => {
       filters: await getFilterArray(state, country, language, strs),
       categories: await getCategoryArray(state, country, language),
       filterLogic: state.filterLogic,
+      categoriesMappingFile: state.categoriesMappingFile || '',
       i18n: {
         leftPanel: {
           header: strs.filterLeftPanel || 'Refine Your Results',
@@ -920,6 +922,7 @@ export const getConfig = async (originalState, strs = {}) => {
     headers: caasRequestHeaders,
   };
 
+  console.log('***** config', config.filterPanel);
   return config;
 };
 

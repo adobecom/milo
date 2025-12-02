@@ -129,6 +129,7 @@ const defaultConfig = {
     showEmptyFilters: false,
     filters: [],
     filterLogic: 'or',
+    useCategories: false,
     i18n: {
       leftPanel: {
         header: 'Refine Your Results',

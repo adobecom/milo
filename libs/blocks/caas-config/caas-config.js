@@ -597,12 +597,22 @@ const FilterPanel = ({ tagsData }) => {
     });
   };
 
+  const categoriesMappingFile = html`
+    <${Input} 
+      label="Categories mapping file (optional)"
+      prop="categoriesMappingFile"
+      type="text"
+      value=${context.state.categoriesMappingFile}/>
+  `;
+
   const FilterOptions = html`
     <${Input} label="Show Empty Filters" prop="filtersShowEmpty" type="checkbox" />
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
-  `;
+    ${state.filterBuildPanel === 'automatic' && categoriesMappingFile}
+    `;
+
 
   const FilterBuildPanel = html`
     <${FilterOptions}>
@@ -614,6 +624,7 @@ const FilterPanel = ({ tagsData }) => {
       subTitle=""
     >
       <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${FormInput} label="Use Categories Mapping File" name="useCategoriesMappingFile" type="checkbox" />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
       <${FormInput} label="Icon Path" name="icon" />
       <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
