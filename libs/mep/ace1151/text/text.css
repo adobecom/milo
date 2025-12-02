@@ -12,7 +12,7 @@
 .text-block.dark.s2a-dark-text p {
   color: #CACACA;
 }
-/* force update */
+
 .text-block p,
 .text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
 
