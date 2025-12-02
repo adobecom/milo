@@ -425,6 +425,39 @@
   margin: 0 auto;
 }
 
+.artify-images-wrapper {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.artify-add-more-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.artify-add-more-btn {
+  background: #2A5787;
+  color: #FFF;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+.artify-add-more-btn:hover {
+  background: #1e3f5f;
+}
+
 .artify-image-container img {
   max-width: 100%;
   max-height: 100%;
@@ -467,10 +500,6 @@
   font-size: 16px;
   padding: 0;
   transition: all 0.2s ease;
-}
-
-.artify-download-json-btn {
-  display: none;
 }
 
 .artify-toggle-button i {
@@ -557,6 +586,12 @@
   stroke: white;
 }
 
+.artify-upload-btn,
+.artify-add-more-btn {
+  box-shadow: 0 0 0 0 rgba(77, 145, 255, 0.7);
+  animation: glow 1.5s infinite;
+}
+
 /* Loading Spinner */
 .artify-spinner {
   width: 40px;
@@ -570,6 +605,18 @@
 @keyframes artify-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(77, 145, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(77, 145, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(77, 145, 255, 0);
+  }
 }
 
 /* Responsive Design */

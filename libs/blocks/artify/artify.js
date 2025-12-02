@@ -199,23 +199,34 @@ function Header() {
 
 // Main Content Component
 function MainContent({
-  fileName,
   fileUrl,
   originalFile,
   uploading,
   imageState,
   onFileUrlChange,
   onImageStateChange,
+  secondFileUrl,
+  secondUploading,
+  onSecondFileChange,
 }) {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTransformed, setIsTransformed] = useState(false);
+  const secondFileInputRef = useRef(null);
+
+  const handleAddMoreClick = () => {
+    if (secondFileInputRef.current) {
+      secondFileInputRef.current.click();
+    }
+  };
 
   const handleCommandSubmit = async () => {
     setIsLoading(true);
     try {
       // Show loader for 1.5 seconds before displaying result.jpg
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1500);
+      });
 
       // Replace the image with result.jpg from assets folder
       const resultImagePath = getAssetPath('result.jpg');
@@ -280,20 +291,45 @@ function MainContent({
   return html`
     <div class="artify-main-content">
       <div class="artify-image-section">
-        <div class="artify-image-container ${showLoading ? 'loading' : ''}">
-          <img 
-            src=${currentImageUrl}
-            alt="Current Image"
-          />
-          ${showLoading && html`<div class="artify-loader"><div class="artify-spinner"></div></div>`}
-          <button
-            class="artify-toggle-button"
-            disabled=${!imageState}
-            onClick=${handleToggle}
-            title=${imageState === 'modified' ? 'Show Original' : 'Show Modified'}
-          >
-            <i class=${imageState === 'modified' ? 'fa-solid fa-rotate-left' : 'fa-jelly fa-regular fa-sparkles'}></i>
-          </button>
+        <div class="artify-images-wrapper">
+          <div class="artify-image-container ${showLoading ? 'loading' : ''}">
+            <img 
+              src=${currentImageUrl}
+              alt="Current Image"
+            />
+            ${showLoading && html`<div class="artify-loader"><div class="artify-spinner"></div></div>`}
+            <button
+              class="artify-toggle-button"
+              disabled=${!imageState}
+              onClick=${handleToggle}
+              title=${imageState === 'modified' ? 'Show Original' : 'Show Modified'}
+            >
+              <i class=${imageState === 'modified' ? 'fa-solid fa-rotate-left' : 'fa-jelly fa-regular fa-sparkles'}></i>
+            </button>
+          </div>
+          ${!secondFileUrl && html`
+            <div class="artify-add-more-container">
+              <button class="artify-add-more-btn" onClick=${handleAddMoreClick} title="Add another image">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+              <input
+                type="file"
+                ref=${secondFileInputRef}
+                style="display: none"
+                accept="image/*"
+                onChange=${onSecondFileChange}
+              />
+            </div>
+          `}
+          ${secondFileUrl && html`
+            <div class="artify-image-container ${secondUploading ? 'loading' : ''}">
+              <img 
+                src=${secondFileUrl}
+                alt="Second Image"
+              />
+              ${secondUploading && html`<div class="artify-loader"><div class="artify-spinner"></div></div>`}
+            </div>
+          `}
         </div>
       </div>
       
@@ -346,8 +382,9 @@ function Editor({
   originalFile,
   uploading,
   onFileUrlChange,
-  onLoadingChange,
-  onFileChange,
+  onSecondFileChange,
+  secondFileUrl,
+  secondUploading,
 }) {
   const [imageState, setImageState] = useState('');
 
@@ -363,6 +400,9 @@ function Editor({
             imageState=${imageState}
             onFileUrlChange=${onFileUrlChange}
             onImageStateChange=${setImageState}
+            onSecondFileChange=${onSecondFileChange}
+            secondFileUrl=${secondFileUrl}
+            secondUploading=${secondUploading}
           />
         </div>
       </div>
@@ -376,6 +416,8 @@ function ArtifyApp() {
   const [fileUrl, setFileUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [originalFile, setOriginalFile] = useState('');
+  const [secondFileUrl, setSecondFileUrl] = useState(null);
+  const [secondUploading, setSecondUploading] = useState(false);
 
   const handleFileChange = async (event) => {
     event.preventDefault();
@@ -396,6 +438,23 @@ function ArtifyApp() {
     }
   };
 
+  const handleSecondFileChange = async (event) => {
+    event.preventDefault();
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setSecondUploading(true);
+    const objectUrl = URL.createObjectURL(file);
+    setSecondFileUrl(objectUrl);
+    try {
+      await uploadImage(file);
+    } catch (error) {
+      // Upload failed
+    } finally {
+      setSecondUploading(false);
+    }
+  };
+
   return html`
     <div class="artify">
       <div class="artify-container">
@@ -408,6 +467,9 @@ function ArtifyApp() {
             onFileUrlChange=${setFileUrl}
             onLoadingChange=${setUploading}
             onFileChange=${handleFileChange}
+            secondFileUrl=${secondFileUrl}
+            secondUploading=${secondUploading}
+            onSecondFileChange=${handleSecondFileChange}
           />
         ` : html`
           <${LandingPage} onFileChange=${handleFileChange} />
