@@ -106,7 +106,7 @@ For each site (e.g., `adobecom/da-bacom`), configure:
 | Variable Pattern | Description | Example |
 |-----------------|-------------|---------|
 | `AEM_ADMIN_TOKEN_<ORG>_<REPO>` | Helix admin API token | `AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM` |
-| `PREVIEW_ROOTS_<ORG>_<REPO>` | Key for regional paths in lingo config | `PREVIEW_ROOTS_ADOBECOM_DA_BACOM` |
+| `PREVIEW_INDEX_KEY_<ORG>_<REPO>` | Key for regional paths in lingo config | `PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM` |
 | `EXCLUDE_PREVIEW_PATHS_<ORG>_<REPO>` | Comma-separated paths to exclude | `EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM` |
 | `PREVIEW_INDEX_FILE_<ORG>_<REPO>` | Site-specific index path template | `PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM` |
 | `PREVIEW_PATH_EXTN_<ORG>_<REPO>` | Site-specific preview path extention that needs to be applied e.g. .html | `PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM` |
@@ -197,7 +197,7 @@ ROLLING_IMPORT_GRANT_TYPE=authorization_code
 # Site Configuration
 PREVIEW_INDEXER_REPOS=da-bacom,da-bacom-lingo
 AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
-PREVIEW_ROOTS_ADOBECOM_DA_BACOM=bacom-site-map
+PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM=bacom
 EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM=/target-preview/
 LINGO_CONFIG=https://...
 
@@ -212,20 +212,11 @@ cd .github/workflows/preview-indexer
 node --env-file=../../../.env incremental.js
 ```
 
-With manual parameters:
-```bash
-LAST_RUN_ISO_FROM="2025-10-19T20:30:35.751Z" \
-LAST_RUN_ISO_TO="2025-10-20T17:22:06.988Z" \
-SITE="da-bacom" \
-SITE_REGION_PATHS="/be_en/,/ch_fr/,/lu_de/" \
-node --env-file=.env .github/workflows/preview-indexer/incremental.js
-```
-
 #### Run Full Index
 
 ```bash
 SITE="da-bacom" \
-SITE_REGION_PATHS="/be_en/,/ch_fr/,/lu_de/" \
+SITE_REGION_PATHS="/ar/,/br/" \
 node --env-file=.env .github/workflows/preview-indexer/full-index.js
 ```
 
@@ -258,7 +249,7 @@ Example `act-event.json`:
     "lastRunISOFrom": "2025-10-19T20:30:35.751Z",
     "lastRunISOTo": "2025-10-20T17:22:06.988Z",
     "site": "da-bacom",
-    "siteRegions": "/be_en/,/ch_fr/,/lu_de/"
+    "siteRegions": "/ar/,/br/"
   }
 }
 ```
@@ -269,7 +260,7 @@ Example `act-event.json`:
   "event_name": "workflow_dispatch",
   "inputs": {
     "site": "da-bacom",
-    "siteRegionPaths": "/be_en/,/ch_fr/,/lu_de/"
+    "siteRegionPaths": "/ar/,/br/"
   }
 }
 ```
