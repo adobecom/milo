@@ -1385,7 +1385,7 @@ export async function loadIms() {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
-    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
+    const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
@@ -1402,6 +1402,11 @@ export async function loadIms() {
         clearTimeout(timeout);
       },
       onError: reject,
+      ...(imsGuest === 'on' && {
+        api_parameters: { check_token: { guest_allowed: true } },
+        enableGuestAccounts: true,
+        enableGuestTokenForceRefresh: true,
+      }),
       ...adobeid,
     };
     const path = PAGE_URL.searchParams.get('useAlternateImsDomain')

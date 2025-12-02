@@ -370,6 +370,7 @@ export class MerchCardCollection extends LitElement {
 
             function traverseReferencesTree(root, references) {
                 for (const reference of references) {
+                    if (reference.fieldName === 'variations') continue;
                     if (reference.fieldName === 'cards') {
                         if (payload.cards.findIndex(card => card.id === reference.identifier) !== -1) continue;
                         payload.cards.push(fragment.references[reference.identifier].value);
