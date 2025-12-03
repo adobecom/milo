@@ -1,7 +1,7 @@
 import { createTag } from '../../utils/utils.js';
 
-// Mock API base URL - replace with actual endpoint when available
-const AI_HYDRATION_API_BASE = 'https://api.adobe.com/ai-hydration/v1/video';
+// AI Hydration API endpoint
+const AI_HYDRATION_API = 'https://14257-vortex-stage.adobeioruntime.net/api/v1/web/vortex/get-video-metadata';
 
 /**
  * Extracts the video ID from an Adobe TV URL
@@ -20,15 +20,23 @@ export function extractVideoId(url) {
  * @returns {boolean} - True if schema already exists
  */
 function videoSchemaExists(videoId) {
+  // First check for schemas injected by this module (fastest check)
+  if (document.head.querySelector(`script[data-adobetv-video-id="${videoId}"]`)) {
+    return true;
+  }
+
+  // Fall back to parsing existing JSON-LD schemas
   const existingSchemas = document.head.querySelectorAll('script[type="application/ld+json"]');
   return Array.from(existingSchemas).some((script) => {
     try {
       const schema = JSON.parse(script.textContent);
       if (schema['@type'] !== 'VideoObject') return false;
       // Check if contentUrl or embedUrl contains the video ID
+      // Handles both /v/{id} and /video/{id} patterns
       const contentUrl = schema.contentUrl || '';
       const embedUrl = schema.embedUrl || '';
-      return contentUrl.includes(`/v/${videoId}`) || embedUrl.includes(`/v/${videoId}`);
+      const idPattern = new RegExp(`/(v|video)/${videoId}($|[?#/])`);
+      return idPattern.test(contentUrl) || idPattern.test(embedUrl);
     } catch {
       return false;
     }
@@ -57,77 +65,17 @@ function injectVideoSchema(schema, videoId) {
 }
 
 /**
- * Mock API call - returns mock data for development
- * Replace this with actual API call when endpoint is available
- * @param {string} videoId - The video ID to fetch data for
- * @returns {Promise<object>} - The mock AI hydration data
- */
-async function mockApiFetch(videoId) {
-  // Simulate network delay
-  await new Promise((resolve) => { setTimeout(resolve, 100); });
-
-  return {
-    video: {
-      id: videoId,
-      title: 'Adobe Workfront and Frame.io Enterprise Experience Overview',
-      description: 'Learn how Adobe Workfront and Frame.io work together to streamline your creative workflows',
-      url: `https://video.tv.adobe.com/v/${videoId}`,
-      thumbnail: 'https://images-tv.adobe.com/mpcv3/3724077c-b289-47ab-8171-9682e7985d39/thumbnail.jpg',
-      duration: '5:34',
-      durationSeconds: 334,
-      uploadDate: '2024-11-20T10:00:00Z',
-      language: 'en',
-    },
-    ai: {
-      summary: 'This video provides a comprehensive overview of how Adobe Workfront and Frame.io work together to create a seamless enterprise experience for creative teams.',
-      titles: {
-        descriptive: 'Adobe Workfront & Frame.io: Complete Enterprise Integration Guide',
-        engaging: 'Transform Your Creative Workflow: Workfront + Frame.io Power Combo!',
-        seo: 'Adobe Workfront Frame.io Integration Tutorial | Enterprise Creative Workflow Management',
-      },
-      chapters: [
-        { title: 'Introduction to Workfront & Frame.io', time: '0:00', seconds: 0 },
-        { title: 'Setting Up Your Workspace', time: '1:15', seconds: 75 },
-        { title: 'Asset Review & Approval Workflows', time: '2:30', seconds: 150 },
-        { title: 'Collaboration Features', time: '3:45', seconds: 225 },
-        { title: 'Automation & Best Practices', time: '4:50', seconds: 290 },
-      ],
-      seoKeywords: [
-        'Adobe Workfront',
-        'Frame.io',
-        'Project Management',
-        'Creative Workflow',
-        'Collaboration',
-        'Enterprise',
-      ],
-      transcript: 'Welcome to this overview of Adobe Workfront and Frame.io enterprise experience. Today we\'ll explore how these two powerful platforms work together to revolutionize your creative operations...',
-    },
-    schema: {
-      '@context': 'https://schema.org',
-      '@type': 'VideoObject',
-      name: 'Adobe Workfront and Frame.io Enterprise Experience Overview',
-      description: 'Learn how Adobe Workfront and Frame.io work together to streamline your creative workflows',
-      thumbnailUrl: 'https://images-tv.adobe.com/mpcv3/3724077c-b289-47ab-8171-9682e7985d39/thumbnail.jpg',
-      uploadDate: '2024-11-20T10:30:00Z',
-      duration: 'PT5M34S',
-      contentUrl: `https://video.tv.adobe.com/v/${videoId}`,
-      embedUrl: `https://video.tv.adobe.com/v/${videoId}?embed=true`,
-    },
-  };
-}
-
-/**
  * Fetches AI hydration data from the API
  * @param {string} videoId - The video ID to fetch data for
  * @returns {Promise<object|null>} - The AI hydration data or null on error
  */
 async function fetchAiHydrationData(videoId) {
-  // TODO: Replace mock with actual API call when endpoint is available
-  // const response = await fetch(`${AI_HYDRATION_API_BASE}/${videoId}`);
-  // if (!response.ok) throw new Error(`AI Hydration API error: ${response.status}`);
-  // return response.json();
-
-  return mockApiFetch(videoId);
+  const url = `${AI_HYDRATION_API}?videoId=${encodeURIComponent(videoId)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`AI Hydration API error: ${response.status}`);
+  }
+  return response.json();
 }
 
 /**
