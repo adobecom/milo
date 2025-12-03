@@ -38,6 +38,7 @@ export class MerchSidenavList extends LitElement {
             padding: var(--merch-sidenav-list-title-padding);
             line-height: var(--merch-sidenav-list-title-line-height);
             margin: 0;
+            text-transform: uppercase;
         }
 
         .right {
@@ -65,7 +66,7 @@ export class MerchSidenavList extends LitElement {
           element.querySelector('img')?.setAttribute('src', iconSrc);
         }
         if (selected) {
-            this.selectedElement = element;            
+            this.selectedElement = element;
             this.selectedText = selection?.selectedText || element.label;
             this.selectedValue = element.value;
             setTimeout(() => {
@@ -104,7 +105,7 @@ export class MerchSidenavList extends LitElement {
         this.markCurrentItem(item);
         if (parentNode?.tagName === 'SP-SIDENAV') {
             //swc does not consider, in multilevel, first level as a potential selection
-            //and does not close other parents, we'll do that here          
+            //and does not close other parents, we'll do that here
             parentNode
                 .querySelectorAll('sp-sidenav-item[expanded],sp-sidenav-item[selected]')
                 .forEach((item) => {
@@ -169,7 +170,7 @@ export class MerchSidenavList extends LitElement {
                   if (element.firstElementChild?.tagName === 'SP-SIDENAV-ITEM') {
                     element.expanded = true;
                     element.setAttribute('aria-expanded', 'true');
-                  } 
+                  }
                   if (element.parentNode?.tagName === 'SP-SIDENAV-ITEM') {
                     element.parentNode.expanded = true;
                     element.parentNode.setAttribute('aria-expanded', 'true');
