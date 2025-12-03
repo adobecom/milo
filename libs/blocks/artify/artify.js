@@ -165,6 +165,7 @@ function LandingPage({ onFileChange }) {
             style="display: none"
             accept="image/*"
             onChange=${onFileChange}
+            multiple
           />
         </div>
       </div>
@@ -277,32 +278,29 @@ function Header() {
 // Main Content Component
 function MainContent({
   files,
-  fileUrl,
-  originalFile,
+  previewUrls,
+  originalUrls,
   uploading,
   imageState,
-  onFileUrlChange,
+  onPreviewUrlsChange,
   onImageStateChange,
-  secondFileUrl,
-  secondUploading,
-  onSecondFileChange,
-  setSecondUploading,
+  onAddMore,
 }) {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTransformed, setIsTransformed] = useState(false);
-  const secondFileInputRef = useRef(null);
+  const addMoreInputRef = useRef(null);
 
   const handleAddMoreClick = () => {
-    if (secondFileInputRef.current) {
-      secondFileInputRef.current.click();
+    if (addMoreInputRef.current) {
+      addMoreInputRef.current.click();
     }
   };
 
-  const handleDownloadImage = () => {
-    if (!currentImageUrl) return;
+  const handleDownloadImage = (url) => {
+    if (!url) return;
     const link = document.createElement('a');
-    link.href = currentImageUrl;
+    link.href = url;
     link.download = 'artify-image.png';
     document.body.appendChild(link);
     link.click();
@@ -311,12 +309,13 @@ function MainContent({
 
   const handleCommandSubmit = async () => {
     setIsLoading(true);
-    setSecondUploading(true);
     try {
       const resultUrl = await applyFluxa(prompt, files);
 
       if (resultUrl) {
-        onFileUrlChange(resultUrl);
+        const newPreviewUrls = [resultUrl];
+
+        onPreviewUrlsChange(newPreviewUrls);
         onImageStateChange('modified');
         setPrompt('');
         setIsTransformed(true);
@@ -327,9 +326,10 @@ function MainContent({
       console.error('Error processing image', error);
     } finally {
       setIsLoading(false);
-      setSecondUploading(false);
     }
   };
+  
+  // ... existing handleDownloadJSON ...
 
   const handleDownloadJSON = () => {
     // Create sample action JSON
@@ -371,34 +371,42 @@ function MainContent({
     URL.revokeObjectURL(url);
   };
 
+
   const handleToggle = () => {
     onImageStateChange(imageState === 'original' ? 'modified' : 'original');
   };
 
-  const currentImageUrl = imageState === 'modified' ? fileUrl : originalFile;
   const showLoading = isLoading || uploading;
 
   return html`
     <div class="artify-main-content">
       <div class="artify-image-section">
        <div class="artify-images-wrapper">
-          <div class="artify-image-container ${showLoading ? 'loading' : ''}">
-            <img 
-              src=${currentImageUrl}
-              alt="Current Image"
-            />
-            <button
-              class="artify-toggle-button"
-              disabled=${!imageState}
-              onClick=${handleToggle}
-              title=${imageState === 'modified' ? 'Show Original' : 'Show Modified'}
-            >
-              <i class=${imageState === 'modified' ? 'fa-solid fa-rotate-left' : 'fa-jelly fa-regular fa-sparkles'}></i>
-            </button>
-          </div>
-          ${!secondFileUrl && html`
-            <div class="artify-add-more-container ${isTransformed ? 'hidden' : ''}">
-              <button class="artify-download-img-btn" onClick=${handleDownloadImage} title="Download image">
+          ${previewUrls.map((url, index) => {
+            const currentUrl = imageState === 'modified' ? url : (originalUrls[index] || url);
+            return html`
+              <div class="artify-image-container ${showLoading ? 'loading' : ''}" key=${index}>
+                <img 
+                  src=${currentUrl}
+                  alt="Image ${index + 1}"
+                />
+                ${index === 0 && html`
+                  <button
+                    class="artify-toggle-button"
+                    disabled=${!imageState}
+                    onClick=${handleToggle}
+                    title=${imageState === 'modified' ? 'Show Original' : 'Show Modified'}
+                  >
+                    <i class=${imageState === 'modified' ? 'fa-solid fa-rotate-left' : 'fa-jelly fa-regular fa-sparkles'}></i>
+                  </button>
+                `}
+              </div>
+            `;
+          })}
+
+          ${!isTransformed && html`
+            <div class="artify-add-more-container">
+              <button class="artify-download-img-btn" onClick=${() => handleDownloadImage(previewUrls[0])} title="Download image">
                 <i class="fa-solid fa-download"></i>
               </button>
               <button class="artify-add-more-btn" onClick=${handleAddMoreClick} title="Add another image">
@@ -406,21 +414,15 @@ function MainContent({
               </button>
               <input
                 type="file"
-                ref=${secondFileInputRef}
+                ref=${addMoreInputRef}
                 style="display: none"
                 accept="image/*"
-                onChange=${onSecondFileChange}
+                onChange=${onAddMore}
+                multiple
               />
             </div>
           `}
-          ${!isTransformed && secondFileUrl && html`
-            <div class="artify-image-container ${secondUploading ? 'loading' : ''}">
-              <img 
-                src=${secondFileUrl}
-                alt="Second Image"
-              />
-            </div>
-          `}
+
          ${isLoading && html`<div class="artify-loader"><div class="artify-spinner"></div></div>`}
 
         </div>
@@ -471,16 +473,13 @@ function MainContent({
 // Editor Component
 function Editor({
   files,
-  fileUrl,
-  originalFile,
+  previewUrls,
+  originalUrls,
   uploading,
-  onFileUrlChange,
+  onPreviewUrlsChange,
   onLoadingChange,
   onFileChange,
-  onSecondFileChange,
-  secondFileUrl,
-  secondUploading,
-  setSecondUploading,
+  onAddMore,
 }) {
   const [imageState, setImageState] = useState('');
 
@@ -490,16 +489,13 @@ function Editor({
         <div class="artify-content">
           <${MainContent}
             files=${files}
-            fileUrl=${fileUrl}
-            originalFile=${originalFile}
+            previewUrls=${previewUrls}
+            originalUrls=${originalUrls}
             uploading=${uploading}
             imageState=${imageState}
-            onFileUrlChange=${onFileUrlChange}
+            onPreviewUrlsChange=${onPreviewUrlsChange}
             onImageStateChange=${setImageState}
-            onSecondFileChange=${onSecondFileChange}
-            secondFileUrl=${secondFileUrl}
-            secondUploading=${secondUploading}
-            setSecondUploading=${setSecondUploading}
+            onAddMore=${onAddMore}
           />
         </div>
       </div>
@@ -509,12 +505,10 @@ function Editor({
 
 // Main App Component
 function ArtifyApp() {
-  const [files, setFiles] = useState(null);
-  const [fileUrl, setFileUrl] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [originalFile, setOriginalFile] = useState('');
-  const [secondFileUrl, setSecondFileUrl] = useState(null);
-  const [secondUploading, setSecondUploading] = useState(false);
+  const [originalUrls, setOriginalUrls] = useState([]);
 
   const handleFileChange = async (event) => {
     event.preventDefault();
@@ -522,12 +516,13 @@ function ArtifyApp() {
     if (inputFiles.length < 1) return;
 
     setUploading(true);
-    const file = event.target.files[0];
-    const objectUrl = URL.createObjectURL(file);
-    setFileUrl(objectUrl);
-    setOriginalFile(objectUrl);
     try {
-      setFiles(inputFiles);
+      const newFiles = Array.from(inputFiles);
+      const newUrls = newFiles.map((file) => URL.createObjectURL(file));
+      
+      setPreviewUrls(newUrls);
+      setOriginalUrls(newUrls);
+      setFiles(newFiles);
     } catch (error) {
       console.error('Upload failed:', error);
     } finally {
@@ -535,39 +530,39 @@ function ArtifyApp() {
     }
   };
 
-  const handleSecondFileChange = async (event) => {
+  const handleAddMore = async (event) => {
     event.preventDefault();
-    const file = event.target.files[0];
-    if (!file) return;
+    const inputFiles = event.target.files;
+    if (inputFiles.length < 1) return;
 
-    setSecondUploading(true);
-    const objectUrl = URL.createObjectURL(file);
-    setSecondFileUrl(objectUrl);
+    setUploading(true);
     try {
-      setFiles([...files, file]);
+      const newFiles = Array.from(inputFiles);
+      const newUrls = newFiles.map((file) => URL.createObjectURL(file));
+
+      setFiles((prev) => [...prev, ...newFiles]);
+      setPreviewUrls((prev) => [...prev, ...newUrls]);
+      setOriginalUrls((prev) => [...prev, ...newUrls]);
     } catch (error) {
-      console.error('Second image upload failed:', error);
+      console.error('Add more failed:', error);
     } finally {
-      setSecondUploading(false);
+      setUploading(false);
     }
   };
 
   return html`
     <div class="artify">
       <div class="artify-container">
-        ${fileUrl ? html`
+        ${previewUrls.length > 0 ? html`
           <${Editor}
             files=${files}
-            fileUrl=${fileUrl}
-            originalFile=${originalFile}
+            previewUrls=${previewUrls}
+            originalUrls=${originalUrls}
             uploading=${uploading}
-            onFileUrlChange=${setFileUrl}
+            onPreviewUrlsChange=${setPreviewUrls}
             onLoadingChange=${setUploading}
             onFileChange=${handleFileChange}
-            secondFileUrl=${secondFileUrl}
-            secondUploading=${secondUploading}
-            onSecondFileChange=${handleSecondFileChange}
-            setSecondUploading=${setSecondUploading}
+            onAddMore=${handleAddMore}
           />
         ` : html`
           <${LandingPage} onFileChange=${handleFileChange} />
