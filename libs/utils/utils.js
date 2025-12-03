@@ -1223,6 +1223,58 @@ function setupLinksDecoration(el) {
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
+  // ROC preprocessing - must happen before async processing
+  if (lingoActive()) {
+    [...anchors].forEach((a) => {
+      let isRocBlockSwap = false;
+      let linkCell = a.parentElement;
+      const parentTag = linkCell?.tagName?.toLowerCase();
+      if (parentTag === 'strong' || parentTag === 'em') {
+        linkCell = linkCell.parentElement;
+      }
+      const previousCell = linkCell?.previousElementSibling;
+      const isRocRow = previousCell?.textContent?.toLowerCase().trim() === 'roc';
+      if (isRocRow) {
+        const swapBlock = a.closest('[class]');
+        if (swapBlock) {
+          const blockName = swapBlock.classList[0];
+
+          if (blockName === 'roc-fragment') {
+            const p = createTag('p', null, a);
+            a.dataset.roc = true;
+            swapBlock.insertAdjacentElement('afterend', p);
+            swapBlock.remove();
+          } else {
+            isRocBlockSwap = true;
+            const row = linkCell.parentElement;
+            row.remove();
+            const p = createTag('p', null, a);
+            if (blockName === 'section-metadata') {
+              a.dataset.mepLingoSectionMetadata = true;
+              a.dataset.removeOriginalBlock = true;
+              a.dataset.originalBlockId = `block-${Math.random().toString(36).substring(2, 11)}`;
+              swapBlock.dataset.rocOriginalBlock = a.dataset.originalBlockId;
+              swapBlock.insertAdjacentElement('afterend', p);
+            } else {
+              a.dataset.removeOriginalBlock = true;
+              a.dataset.originalBlockId = `block-${Math.random().toString(36).substring(2, 11)}`;
+              swapBlock.dataset.rocOriginalBlock = a.dataset.originalBlockId;
+              swapBlock.insertAdjacentElement('afterend', p);
+            }
+            if (a.href.includes('#_roc')) a.href = a.href.replace('#_roc', '');
+            a.dataset.mepLingoBlockFragment = a.href;
+            a.dataset.roc = true;
+          }
+        }
+      }
+
+      if (a.href.includes('#_roc') && !isRocBlockSwap) {
+        a.dataset.roc = true;
+        a.href = a.href.replace('#_roc', '');
+      }
+    });
+  }
+
   const linksPromises = [...anchors].map(async (a) => {
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset.hasDnt) a.href = await localizeLinkAsync(a.href);
