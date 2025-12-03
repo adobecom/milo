@@ -49,12 +49,11 @@ const processImage = async (prompt, files, modifiedName) => {
 const applyFluxa = async (tutorialUrl, images) => {
   debugger;
   const formData = new FormData();
-  formData.append('tutorial_url', tutorialUrl.value.trim());
+  formData.append('tutorial_url', tutorialUrl.trim());
   formData.append('inline_render', 'true');
   Array.from(images).forEach((file) => formData.append('images', file, file.name));
   const response = await fetch(`${API_URL_FLUXA}/apply`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: formData,
   });
 
@@ -64,6 +63,7 @@ const applyFluxa = async (tutorialUrl, images) => {
 
   const payload = await response.json();
   const { inline_render: inlineRender } = payload;
+  debugger
   if (inlineRender) {
     const blob = await (await fetch(`data:${inlineRender.content_type};base64,${inlineRender.base64_data}`)).blob();
     const url = URL.createObjectURL(blob);
@@ -301,7 +301,7 @@ function MainContent({
   const handleCommandSubmit = async () => {
     setIsLoading(true);
     try {
-      const resultUrl = await applyFluxa(prompt, [files]);
+      const resultUrl = await applyFluxa(prompt, files);
 
       if (resultUrl) {
         onFileUrlChange(resultUrl);
@@ -507,7 +507,7 @@ function ArtifyApp() {
     const file = event.target.files[0];
     const objectUrl = URL.createObjectURL(file);
     setFileUrl(objectUrl);
-    // setOriginalFile(objectUrl);
+    setOriginalFile(objectUrl);
     try {
       setFiles(inputFiles);
     } catch (error) {
@@ -526,7 +526,7 @@ function ArtifyApp() {
     const objectUrl = URL.createObjectURL(file);
     setSecondFileUrl(objectUrl);
     try {
-      await uploadImage(file);
+      setFiles([...files, file]);
     } catch (error) {
       console.error('Second image upload failed:', error);
     } finally {
