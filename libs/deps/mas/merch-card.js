@@ -2015,22 +2015,9 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
             padding: 2px 10px 3px;
         }
     `),d(_,"collectionOptions",{customHeaderArea:t=>t.sidenav?Ue`<slot name="resultsText"></slot>`:ot,headerVisibility:{search:!1,sort:!1,result:["mobile","tablet"],custom:["desktop"]},onSidenavAttached:t=>{let e=()=>{let r=t.querySelectorAll("merch-card");for(let n of r)n.hasAttribute("data-size")&&(n.setAttribute("size",n.getAttribute("data-size")),n.removeAttribute("data-size"));if(!x.isDesktop)return;let a=0;for(let n of r){if(n.style.display==="none")continue;let o=n.getAttribute("size"),s=o==="wide"?2:o==="super-wide"?3:1;s===2&&a%3===2&&(n.setAttribute("data-size",o),n.removeAttribute("size"),s=1),a+=s}};x.matchDesktop.addEventListener("change",e),t.addEventListener(pe,e),t.onUnmount.push(()=>{x.matchDesktop.removeEventListener("change",e),t.removeEventListener(pe,e)})}});import{html as H,css as zi,unsafeCSS as Ar,nothing as ct}from"../lit-all.min.js";var kr=`
-@font-face {
-    font-family: adobe-clean-display;
-    font-style: normal;
-    font-weight: 800;
-    src: url(/libs/features/mas/dist/fonts/AdobeCleanDisplay-ExtraBold.otf) format("opentype")
-}
-
-@font-face {
-    font-family: adobe-clean-display;
-    font-style: normal;
-    font-weight: 900;
-    src: url(/libs/features/mas/dist/fonts/AdobeCleanDisplay-Black.otf) format("opentype")
-}
 
 :root {
-    --consonant-merch-card-plans-v2-font-family: 'adobe-clean-display', 'Adobe Clean', sans-serif;
+    --consonant-merch-card-plans-v2-font-family: 'Adobe Clean', sans-serif;
     --consonant-merch-card-plans-v2-width: 385px;
     --consonant-merch-card-plans-v2-height: auto;
     --consonant-merch-card-plans-v2-icon-size: 41.5px;

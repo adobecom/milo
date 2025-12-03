@@ -2025,22 +2025,9 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
             padding: 2px 10px 3px;
         }
     `),g(pe,"collectionOptions",{customHeaderArea:e=>e.sidenav?f`<slot name="resultsText"></slot>`:M,headerVisibility:{search:!1,sort:!1,result:["mobile","tablet"],custom:["desktop"]},onSidenavAttached:e=>{let r=()=>{let i=e.querySelectorAll("merch-card");for(let a of i)a.hasAttribute("data-size")&&(a.setAttribute("size",a.getAttribute("data-size")),a.removeAttribute("data-size"));if(!I.isDesktop)return;let n=0;for(let a of i){if(a.style.display==="none")continue;let o=a.getAttribute("size"),s=o==="wide"?2:o==="super-wide"?3:1;s===2&&n%3===2&&(a.setAttribute("data-size",o),a.removeAttribute("size"),s=1),n+=s}};I.matchDesktop.addEventListener("change",r),e.addEventListener(tt,r),e.onUnmount.push(()=>{I.matchDesktop.removeEventListener("change",r),e.removeEventListener(tt,r)})}});$();var cl=`
-@font-face {
-    font-family: adobe-clean-display;
-    font-style: normal;
-    font-weight: 800;
-    src: url(/libs/features/mas/dist/fonts/AdobeCleanDisplay-ExtraBold.otf) format("opentype")
-}
-
-@font-face {
-    font-family: adobe-clean-display;
-    font-style: normal;
-    font-weight: 900;
-    src: url(/libs/features/mas/dist/fonts/AdobeCleanDisplay-Black.otf) format("opentype")
-}
 
 :root {
-    --consonant-merch-card-plans-v2-font-family: 'adobe-clean-display', 'Adobe Clean', sans-serif;
+    --consonant-merch-card-plans-v2-font-family: 'Adobe Clean', sans-serif;
     --consonant-merch-card-plans-v2-width: 385px;
     --consonant-merch-card-plans-v2-height: auto;
     --consonant-merch-card-plans-v2-icon-size: 41.5px;
