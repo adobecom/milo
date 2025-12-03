@@ -160,7 +160,7 @@
 .artify-upload-text {
   font-size: 18px;
   font-weight: 400;
-  color: ;
+  color: inherit;
   margin: 0;
   letter-spacing: 0.5px;
 }
@@ -185,12 +185,7 @@
   box-shadow: 0 1px 18px #59eeff;
 }
 
-.artify-upload-btn:hover {
-  background: linear-gradient(180deg, #e4f2fa 0%, #c8e0f0 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  color: #0a2759;
-}
+
 
 .artify-upload-info {
   font-size: 11px; 
@@ -471,6 +466,46 @@
   margin: 0 auto;
 }
 
+.artify-images-wrapper {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.artify-add-more-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  flex-shrink: 0;
+}
+
+.artify-add-more-container.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.artify-add-more-btn {
+  background: #2A5787;
+  color: #FFF;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+.artify-add-more-btn:hover {
+  background: #1e3f5f;
+}
+
 .artify-image-container img {
   max-width: 100%;
   max-height: 100%;
@@ -603,6 +638,15 @@
   stroke: white;
 }
 
+.artify-upload-btn {
+  box-shadow: 0 0 0 0 rgba(77, 145, 255, 0.7);
+  animation: glow 1.5s infinite;
+}
+
+.artify-add-more-btn {
+  box-shadow: 0 0 0 0 rgba(77, 145, 255, 0.7);
+}
+
 /* Loading Spinner */
 .artify-spinner {
   width: 40px;
@@ -616,6 +660,18 @@
 @keyframes artify-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(77, 145, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(77, 145, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(77, 145, 255, 0);
+  }
 }
 
 /* Responsive Design */
