@@ -1,5 +1,6 @@
 import { handleFocalpoint } from '../../../utils/decorate.js';
 import { createTag, getConfig, getFedsPlaceholderConfig } from '../../../utils/utils.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
 
 const replacePlaceholder = async (key) => {
   const { replaceKey } = await import('../../../features/placeholders.js');
@@ -103,7 +104,7 @@ function handleAnchor(anchor, section) {
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
-    const content = row.children[1];
+    const content = row?.children[1];
     const text = content.textContent.trim().toLowerCase();
     if (key && content) rdx[key] = { content, text };
   }
@@ -156,6 +157,29 @@ function addListAttrToSection(section) {
   });
 }
 
+function isInDeeplinkTab(section) {
+  const tabPanel = section.closest('[role="tabpanel"], .tabpanel');
+  if (!tabPanel) return false;
+  if (tabPanel.hasAttribute('hidden')) return false;
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('tab')) return true;
+  const tabsBlock = section.closest('.tabs');
+  if (tabsBlock) {
+    const tabId = tabsBlock.id?.replace('tabs-', '');
+    if (tabId && params.has(tabId)) return true;
+  }
+
+  return false;
+}
+
+function isInDeeplinkHash() {
+  const hash = window.location.hash.substring(1);
+  if (!hash) return false;
+  const hashParams = new URLSearchParams(hash);
+  const deeplinkParams = ['filter', 'category', 'search', 'sort', 'types', 'single_app', 'page'];
+  return deeplinkParams.some((param) => hashParams.has(param));
+}
+
 async function loadFragmentContent(placeholder, url) {
   const { default: initFragment } = await import('../../../blocks/fragment/fragment.js');
   const link = createTag('a', { href: url, class: 'fragment' });
@@ -163,90 +187,105 @@ async function loadFragmentContent(placeholder, url) {
   await initFragment(link);
 }
 
-function handleCollapseFrag(fragmentUrl, section, buttonText) {
-  if (!fragmentUrl || !section || !buttonText) return null;
-  const contentId = `collapse-frag-${Math.random().toString(36).substr(2, 9)}`;
+async function handleCollapseFrag(fragmentUrl, section, buttonText) {
+  if (!fragmentUrl || !section || !buttonText) {
+    return null;
+  }
+
+  const shouldStartExpanded = isInDeeplinkTab(section) || isInDeeplinkHash(section);
+
+  const contentId = `collapse-frag-${Math.random().toString(36).substring(2, 11)}`;
+  const analyticsString = `open-${processTrackingLabels(buttonText)}`;
   const placeholder = createTag('div', {
     class: 'collapse-frag-placeholder',
     'data-fragment-url': fragmentUrl,
     id: contentId,
-    'aria-hidden': 'true',
+    'aria-hidden': shouldStartExpanded ? 'false' : 'true',
   });
+  const buttonWrapper = createTag('div', { class: 'collapse-frag-button' });
   const toggleButton = createTag('button', {
-    class: 'collapse-frag-button',
-    'aria-expanded': 'false',
+    'aria-expanded': shouldStartExpanded ? 'true' : 'false',
     'aria-controls': contentId,
+    'daa-ll': analyticsString,
   });
-  const textSpan = createTag('span', { class: 'collapse-frag-text' }, buttonText);
-  toggleButton.append(textSpan);
+  toggleButton.innerHTML = `
+    <span>${buttonText}</span>
+    <svg width="15" height="9" viewBox="0 0 15 9" fill="none" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M2.55578 0.432756L7.49638 5.37325L12.437 0.432757C12.7192 0.15563 13.0994 0.0011564 13.4949 0.00294756C13.8904 0.00473872 14.2692 0.162649 14.5489 0.442321C14.8286 0.721993 14.9865 1.1008 14.9883 1.49631C14.9901 1.89182 14.8356 2.27204 14.5585 2.55423L8.55712 8.55556C8.27593 8.8369 7.8945 8.99501 7.49673 8.99512C7.09897 8.99522 6.71745 8.83731 6.43611 8.55612L0.434223 2.55423C0.155818 2.27228 0.000262095 1.89165 0.00151717 1.49542C0.00277224 1.09918 0.160736 0.719539 0.440922 0.439365C0.721107 0.159191 1.10076 0.00124444 1.49699 6.15687e-06C1.89322 -0.00123213 2.27385 0.154339 2.55578 0.432756Z" fill="currentColor"/>
+    </svg>
+  `;
+  buttonWrapper.appendChild(toggleButton);
   let isLoaded = false;
-  let fragSection = null;
-  let fragContent = null;
+  let loadedFragment = null;
 
   function collapseContent() {
-    if (!fragSection || !fragContent) return;
-    const currentHeight = fragSection.scrollHeight;
-    fragSection.style.maxHeight = `${currentHeight}px`;
+    if (!loadedFragment) return;
+    const currentHeight = loadedFragment.scrollHeight;
+    loadedFragment.style.maxHeight = `${currentHeight}px`;
+    loadedFragment.style.overflow = 'hidden';
     // Force reflow
     /* eslint-disable-next-line no-unused-vars */
-    const temp = fragSection.offsetHeight;
-    fragContent.style.opacity = '0';
-    fragSection.style.maxHeight = '0';
-    fragSection.style.paddingBottom = '0';
+    const temp = loadedFragment.offsetHeight;
+    loadedFragment.style.maxHeight = '0';
     toggleButton.setAttribute('aria-expanded', 'false');
     placeholder.setAttribute('aria-hidden', 'true');
     section.classList.remove('frag-expanded');
-
-    setTimeout(() => {
-      fragSection.style.visibility = 'hidden';
-    }, 300); // Wait for opacity transition to complete (0.3s)
+    const analyticsValue = toggleButton.getAttribute('daa-ll');
+    if (analyticsValue) {
+      toggleButton.setAttribute('daa-ll', analyticsValue.replace(/close-/, 'open-'));
+    }
   }
 
   function expandContent() {
-    if (!fragSection || !fragContent) return;
-    fragSection.style.visibility = 'visible';
-    fragSection.style.maxHeight = 'none';
-    fragSection.style.paddingBottom = '';
-    const targetHeight = fragSection.scrollHeight;
-    fragSection.style.maxHeight = '0';
-    fragSection.style.paddingBottom = '0';
+    if (!loadedFragment) return;
+    loadedFragment.style.overflow = 'hidden';
+    loadedFragment.style.maxHeight = 'none';
+    const targetHeight = loadedFragment.scrollHeight;
+    loadedFragment.style.maxHeight = '0';
     // Force reflow
     /* eslint-disable-next-line no-unused-vars */
-    const temp = fragSection.offsetHeight;
-    fragSection.style.paddingBottom = '';
-    fragSection.style.maxHeight = `${targetHeight}px`;
+    const temp = loadedFragment.offsetHeight;
+    loadedFragment.style.maxHeight = `${targetHeight}px`;
     toggleButton.setAttribute('aria-expanded', 'true');
     placeholder.setAttribute('aria-hidden', 'false');
     section.classList.add('frag-expanded');
-    setTimeout(() => {
-      fragContent.style.opacity = '1';
-    }, 50);
     const transitionEnd = () => {
-      fragSection.style.maxHeight = 'none';
-      fragSection.removeEventListener('transitionend', transitionEnd);
+      loadedFragment.style.maxHeight = 'none';
+      loadedFragment.style.overflow = '';
+      loadedFragment.removeEventListener('transitionend', transitionEnd);
     };
-    fragSection.addEventListener('transitionend', transitionEnd);
+    loadedFragment.addEventListener('transitionend', transitionEnd);
+    const analyticsValue = toggleButton.getAttribute('daa-ll');
+    if (analyticsValue) {
+      toggleButton.setAttribute('daa-ll', analyticsValue.replace(/open-/, 'close-'));
+    }
+  }
+
+  async function loadAndSetupFragment() {
+    toggleButton.disabled = true;
+    try {
+      await loadFragmentContent(placeholder, fragmentUrl);
+      loadedFragment = placeholder.querySelector('.fragment');
+      const fragSection = loadedFragment?.querySelector(':scope > .section');
+      if (!fragSection) {
+        toggleButton.disabled = false;
+        return false;
+      }
+      loadedFragment.style.transition = 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+      isLoaded = true;
+      toggleButton.disabled = false;
+      return true;
+    } catch (error) {
+      toggleButton.disabled = false;
+      return false;
+    }
   }
 
   toggleButton.addEventListener('click', async () => {
     const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
     if (!isLoaded && !isExpanded) {
-      toggleButton.disabled = true;
-      await loadFragmentContent(placeholder, fragmentUrl);
-      const loadedFragment = placeholder.querySelector('.fragment');
-      fragSection = loadedFragment?.querySelector(':scope > .section');
-      if (!fragSection) {
-        toggleButton.disabled = false;
-        return;
-      }
-      const { decorateSectionAnalytics } = await import('../../../martech/attributes.js');
-      await decorateSectionAnalytics(fragSection, 'collapse-frag', getConfig());
-      fragContent = fragSection.querySelector(':scope > *') || fragSection;
-      fragSection.style.overflow = 'hidden';
-      fragSection.style.transition = 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-      fragContent.style.transition = 'opacity 0.3s ease-in-out';
-      isLoaded = true;
-      toggleButton.disabled = false;
+      const loaded = await loadAndSetupFragment();
+      if (!loaded) return;
       expandContent();
     } else if (isExpanded) {
       collapseContent();
@@ -256,13 +295,76 @@ function handleCollapseFrag(fragmentUrl, section, buttonText) {
   });
 
   section.classList.add('has-collapse-frag');
+  // Return a promise if we need to wait for expansion before scrolling
+  const expansionPromise = shouldStartExpanded ? (async () => {
+    const loaded = await loadAndSetupFragment();
+    if (!loaded) return false;
+    loadedFragment.style.maxHeight = 'none';
+    section.classList.add('frag-expanded');
+    // Add temporary min-height to footer to prevent layout shift during initial load
+    const footer = document.querySelector('footer');
+    if (footer) {
+      const estimatedMinHeight = 4000;
+      footer.style.minHeight = `${estimatedMinHeight}px`;
+      const removeMinHeight = () => {
+        if (footer.style.minHeight) {
+          footer.style.transition = 'min-height 0.5s ease';
+          footer.style.minHeight = '';
+          setTimeout(() => {
+            footer.style.transition = '';
+          }, 500);
+        }
+      };
+      setTimeout(removeMinHeight, 10000);
+    }
+    const { decorateSectionAnalytics } = await import('../../../martech/attributes.js');
+    await decorateSectionAnalytics(loadedFragment, 'collapse-frag', getConfig());
+    return true;
+  })() : null;
 
-  return { toggleButton, placeholder };
+  // Preload content in background after tabs become interactive (non-deeplink case)
+  if (!shouldStartExpanded) {
+    const preloadContent = async () => {
+      const tabsBlock = section.closest('.tabs');
+      if (!tabsBlock) {
+        // Feature requires tabs block - exit if not found
+        return;
+      }
+
+      const waitForTabs = () => {
+        const tabContent = tabsBlock.querySelector('.tab-content-container');
+        if (tabContent) {
+          setTimeout(async () => {
+            if (!isLoaded) {
+              const loaded = await loadAndSetupFragment();
+              if (loaded && loadedFragment) {
+                loadedFragment.style.maxHeight = '0';
+                loadedFragment.style.overflow = 'hidden';
+              }
+            }
+          }, 300);
+        } else {
+          requestAnimationFrame(waitForTabs);
+        }
+      };
+      waitForTabs();
+    };
+    preloadContent();
+  }
+
+  return {
+    buttonWrapper,
+    toggleButton,
+    placeholder,
+    shouldScroll: isInDeeplinkHash(section),
+    expansionPromise,
+  };
 }
 
 export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
+
   if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
@@ -275,11 +377,74 @@ export default async function init(el) {
   const collapseFragPath = metadata['collapse-frag-path']?.content?.textContent?.trim();
 
   if (collapseFragText && collapseFragPath) {
-    const result = handleCollapseFrag(collapseFragPath, section, collapseFragText);
+    const result = await handleCollapseFrag(collapseFragPath, section, collapseFragText);
     if (result) {
-      const { toggleButton, placeholder } = result;
-      el.parentElement.insertBefore(toggleButton, el);
-      el.parentElement.insertBefore(placeholder, el);
+      const { buttonWrapper, toggleButton, placeholder, shouldScroll, expansionPromise } = result;
+      const firstChild = section.children[0];
+      if (firstChild && firstChild.nextSibling) {
+        section.insertBefore(buttonWrapper, firstChild.nextSibling);
+        section.insertBefore(placeholder, buttonWrapper.nextSibling);
+      } else if (firstChild) {
+        firstChild.insertAdjacentElement('afterend', buttonWrapper);
+        buttonWrapper.insertAdjacentElement('afterend', placeholder);
+      } else {
+        el.parentElement.insertBefore(buttonWrapper, el);
+        el.parentElement.insertBefore(placeholder, el);
+      }
+      if (shouldScroll) {
+        // Wait for fragment to fully expand before scrolling to it for layout shift prevention
+        if (expansionPromise) {
+          await expansionPromise;
+        }
+        // Phase 1: Immediate scroll to get button visible quickly
+        const immediateScroll = () => {
+          const rect = toggleButton.getBoundingClientRect();
+          const currentPosition = rect.top + window.scrollY;
+          const targetScroll = Math.max(0, currentPosition - 60);
+          window.scrollTo({ top: targetScroll, behavior: 'instant' });
+        };
+        setTimeout(immediateScroll, 50);
+        // Phase 2: Monitor and refine position as page content loads
+        let lastPosition = 0;
+        let stableCount = 0;
+        let checkCount = 0;
+        const maxChecks = 60;
+        const refinePosition = () => {
+          checkCount += 1;
+          const rect = toggleButton.getBoundingClientRect();
+          const currentPosition = rect.top + window.scrollY;
+          // Check if position has stabilized
+          if (Math.abs(currentPosition - lastPosition) < 1) {
+            stableCount += 1;
+            if (stableCount >= 3) {
+              // Position stable for 3 frames, do final smooth scroll if needed
+              const currentTop = rect.top;
+              if (Math.abs(currentTop - 60) > 5) {
+                const targetScroll = Math.max(0, currentPosition - 60);
+                window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+              }
+              toggleButton.setAttribute('data-programmatic-focus', 'true');
+              toggleButton.focus({ preventScroll: true });
+              toggleButton.addEventListener('blur', () => {
+                toggleButton.removeAttribute('data-programmatic-focus');
+              }, { once: true });
+              return;
+            }
+          } else {
+            stableCount = 0;
+            // if position changed significantly, adjust scroll immediately
+            if (Math.abs(currentPosition - lastPosition) > 50) {
+              const targetScroll = Math.max(0, currentPosition - 60);
+              window.scrollTo({ top: targetScroll, behavior: 'instant' });
+            }
+          }
+          lastPosition = currentPosition;
+          if (checkCount < maxChecks) {
+            requestAnimationFrame(refinePosition);
+          }
+        };
+        setTimeout(() => requestAnimationFrame(refinePosition), 200);
+      }
     }
   }
 

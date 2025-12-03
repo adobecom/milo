@@ -588,6 +588,12 @@
   background-color: var(--color-white);
 }
 
+.tabs.s2a-dark .paddle:not(:disabled) {
+  background: var(--tabs-active-bg-color);
+  border: 0;
+  border-bottom: 1px solid var(--tabs-border-color);
+}
+
 .tabs.segmented-control.s2a-segment-control .tabList {
   background: #000;
   border: 1px solid transparent;
@@ -604,6 +610,14 @@
 .tabs.s2a-transparent-bg,
 .tabs.s2a-transparent-bg .tabs-wrapper {
   background: transparent;
+}
+
+.tabs.s2a-dark .tabList button {
+  line-height: 20px !important;
+}
+
+.tabs.s2a-dark .tabList button[role="tab"][aria-selected="false"] {
+  border: transparent;
 }
 
 @media screen and (min-width: 600px) {
@@ -660,6 +674,10 @@
   .tabs .tabList button {
     padding: 24px 32px 18px;
     line-height: 18px;
+  }
+
+  .tabs.s2a-dark .tabList button {
+    line-height: 18px !important;
   }
 
   .tabs.quiet .tabList button {

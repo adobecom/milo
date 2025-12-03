@@ -628,6 +628,12 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 }
 
+@media screen and (min-width: 1919px) { 
+  .hero-marquee.s2a-cols > .foreground.cols-2 {
+    grid-template-columns: minmax(48%, 1fr) minmax(52%, 1fr);
+  }
+}
+
 :root:has(meta[name="theme"][content="max25"]) {
   .hero-marquee.max25 .foreground .copy .detail-l {
     font-size: 16px;

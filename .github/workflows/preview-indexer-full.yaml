@@ -1,0 +1,85 @@
+name: Generate Full Preview Index For DA Tenant Regional Path
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Site name e.g da-bacom"
+        required: false
+        type: string
+      siteRegionPaths:
+        description: "Comma-separated regional paths e.g /au/,/de/"
+        required: false
+        type: string
+
+permissions:
+  actions: read # required to access workflow runs
+  contents: write # required to access the repository, for the dispatch event
+
+env:
+  ROLLING_IMPORT_IMS_URL: ${{ secrets.ROLLING_IMPORT_IMS_URL }}
+  ROLLING_IMPORT_CLIENT_ID: ${{ secrets.ROLLING_IMPORT_CLIENT_ID }}
+  ROLLING_IMPORT_CLIENT_SECRET: ${{ secrets.ROLLING_IMPORT_CLIENT_SECRET }}
+  ROLLING_IMPORT_CODE: ${{ secrets.ROLLING_IMPORT_CODE }}
+  ROLLING_IMPORT_GRANT_TYPE: ${{ secrets.ROLLING_IMPORT_GRANT_TYPE }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  LINGO_CONFIG: ${{ vars.LINGO_CONFIG }}
+  PREVIEW_INDEXER_REPOS: ${{ vars.PREVIEW_INDEXER_REPOS }}
+  PREVIEW_INDEX_FILE: ${{ vars.PREVIEW_INDEX_FILE }}
+  AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM }}
+  EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM: ${{ vars.EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM }}
+  PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEXER_LOG_LEVEL: ${{ vars.PREVIEW_INDEXER_LOG_LEVEL }}
+
+jobs:
+  preview-indexer-full:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if previous run is in progress
+        id: check-run
+        run: |
+          # If MOCK_GH_RUNNING is set, skip immediately
+          if [ "${MOCK_GH_RUNNING}" = "true" ]; then
+            echo "Mock mode: pretending another run is active. Skipping..."
+            exit 78
+          elif [ "${MOCK_GH_RUNNING}" = "false" ]; then
+            echo "Mock mode: pretending another run is not active. Skipping..."
+            exit 0
+          fi
+
+          # Otherwise check real GitHub runs (only works in actual Actions)
+          running=$(gh run list \
+            --workflow="${{ github.workflow }}" \
+            --branch="${{ github.ref_name }}" \
+            --status=in_progress \
+            --limit 1 \
+            --json status \
+            --jq 'length' || echo "0")
+
+          if [ "$running" -gt 0 ]; then
+            echo "Another run is in progress. Exiting..."
+            exit 78
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 21
+
+      - name: Install dependencies
+        run: cd ./.github/workflows/preview-indexer/ && npm install
+
+      - name: Run preview-indexer/full-index.js
+        run: node ./.github/workflows/preview-indexer/full-index.js
+        env:
+          SITE: ${{ github.event.inputs.site }}
+          SITE_REGION_PATHS: ${{ github.event.inputs.siteRegionPaths }}
+
+      - name: Remove lock file
+        if: always()
+        run: rm -f preview-indexer/state/job.lock

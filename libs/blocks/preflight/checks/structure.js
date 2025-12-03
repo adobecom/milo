@@ -1,5 +1,5 @@
 import { STATUS, STRUCTURE_IDS, STRUCTURE_TITLES } from './constants.js';
-import { getMetadata, isLocalNav } from '../../../utils/utils.js';
+import { getConfig, getMetadata, isLocalNav } from '../../../utils/utils.js';
 
 function getElementStatus({ area, metaKey, selector }) {
   const metaValue = getMetadata(metaKey, area);
@@ -124,11 +124,11 @@ function checkRegionSelector(area) {
 }
 
 function checkGeorouting(area) {
+  const config = getConfig();
   const meta = getMetadata('georouting', area)?.toLowerCase();
   const param = new URL(window.location.href).searchParams.get('georouting')?.toLowerCase();
-  const isOff = meta === 'off' || param === 'off';
-
-  return getStructureResult('georouting', STATUS.EMPTY, `Georouting is ${isOff ? 'off' : 'on'}.`);
+  const isOff = [meta, param, config.georouting.enabled].includes('off') || !(meta || param || config.georouting.enabled);
+  return getStructureResult('georouting', isOff ? STATUS.EMPTY : STATUS.PASS, `Georouting is ${isOff ? 'off' : 'on'}.`);
 }
 
 function checkBreadcrumbs(area) {
