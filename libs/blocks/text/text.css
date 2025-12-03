@@ -558,8 +558,7 @@
 
 /* Northstar specific */
 :root:has(meta[name="theme"][content="northstar"]) {
-  .section:not(.dark) .text-block:not(.dark) [class*="heading-"],
-  .section:not(.dark) .text-block:not(.dark) [class*="body-"] {
+  .section:not(.dark) .text-block:not(.dark) :is([class*="heading-"],[class*="body-"]) {
     color: var(--color-black);
   }
   
@@ -612,7 +611,7 @@
     }
   }
 
-  @media (max-width:1199px) {
+  @media (max-width: 1199px) {
     .text-block.xs-spacing-bottom {
       padding-bottom: 0;
     }
@@ -632,8 +631,7 @@
       max-width: 840px;
     }
 
-    .text-block .body-xl,
-    .text-block .heading-xxxl {
+    .text-block :is(.body-xl, .heading-xxxl) {
       margin-left: auto;
       margin-right: auto;
     }

@@ -810,7 +810,6 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     min-height: 484px;
   }
 
-
   .hero-marquee.northstar [class*="heading-"] {
     font-weight: 900;
   }
@@ -840,7 +839,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     --spacing-xs: 32px;
   }
 
-  .hero-marquee.northstar .lockup-area:has(> [data-modal-path]:only-child) > [data-modal-path] {
+  .hero-marquee.northstar .lockup-area > [data-modal-path]:only-child {
     margin-top: var(--spacing-xl);
   }
 
