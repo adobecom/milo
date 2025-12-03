@@ -2,6 +2,7 @@ import { html, useState, useRef, render } from '../../deps/htm-preact.js';
 
 // API configuration - update these URLs to match your backend
 const API_URL = 'http://10.193.68.37:5000';
+const API_URL_FLUXA = 'http://10.193.70.83:8000';
 
 // API functions
 const uploadImage = async (file) => {
@@ -12,15 +13,15 @@ const uploadImage = async (file) => {
   if (!res.ok) {
     throw new Error('Upload failed');
   }
-  const { fileName } = await res.json();
-  return fileName;
+  const { files } = await res.json();
+  return files;
 };
 
-const applyEffect = async (effect, fileName) => {
+const applyEffect = async (effect, files) => {
   const res = await fetch(`${API_URL}/${effect}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fileName }),
+    body: JSON.stringify({ files }),
   });
   if (!res.ok) {
     throw new Error('Processing failed');
@@ -29,11 +30,11 @@ const applyEffect = async (effect, fileName) => {
   return `${API_URL}${modifiedImageUrl}`;
 };
 
-const processImage = async (prompt, fileName, modifiedName) => {
+const processImage = async (prompt, files, modifiedName) => {
   const res = await fetch(`${API_URL}/process-image`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fileName: modifiedName || fileName, prompt }),
+    body: JSON.stringify({ files: modifiedName || files, prompt }),
   });
   if (!res.ok) {
     throw new Error('Processing failed');
@@ -43,6 +44,40 @@ const processImage = async (prompt, fileName, modifiedName) => {
     modifiedImageUrl: `${API_URL}${modifiedImageUrl}`,
     modifiedImagePath: modifiedImageUrl,
   };
+};
+
+const applyFluxa = async (tutorialUrl, images) => {
+  debugger;
+  const formData = new FormData();
+  formData.append('tutorial_url', tutorialUrl.value.trim());
+  formData.append('inline_render', 'true');
+  Array.from(images).forEach((file) => formData.append('images', file, file.name));
+  const response = await fetch(`${API_URL_FLUXA}/apply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Pipeline failed: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const { inline_render: inlineRender } = payload;
+  if (inlineRender) {
+    const blob = await (await fetch(`data:${inlineRender.content_type};base64,${inlineRender.base64_data}`)).blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = inlineRender.filename;
+    link.click();
+    return url;
+  }
+  if (payload.application.download_url) {
+    console.log('Download via:', payload.application.download_url);
+  }
+
+  return null;
 };
 
 // Get base path for assets
@@ -139,11 +174,11 @@ function LandingPage({ onFileChange }) {
 }
 
 // Effects Component
-function Effects({ fileName, onFileUrlChange, onLoadingChange, onImageStateChange }) {
+function Effects({ files, onFileUrlChange, onLoadingChange, onImageStateChange }) {
   const handleImageClick = async (effect) => {
     onLoadingChange(true);
     try {
-      const urlImg = await applyEffect(effect, fileName);
+      const urlImg = await applyEffect(effect, files);
       onFileUrlChange(urlImg);
       onImageStateChange('modified');
     } catch (error) {
@@ -169,10 +204,10 @@ function Effects({ fileName, onFileUrlChange, onLoadingChange, onImageStateChang
 }
 
 // Sidebar Component
-function Sidebar({ fileName, onFileUrlChange, onLoadingChange, onImageStateChange, onFileChange }) {
+function Sidebar({ files, onFileUrlChange, onLoadingChange, onImageStateChange, onFileChange }) {
   const fileInputRef = useRef(null);
 
-  const handleUploadClick = () => {
+  const handleUploadClick = (files) => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -202,7 +237,7 @@ function Sidebar({ fileName, onFileUrlChange, onLoadingChange, onImageStateChang
       </div>
       
       <${Effects}
-        fileName=${fileName}
+        files=${files}
         onFileUrlChange=${onFileUrlChange}
         onLoadingChange=${onLoadingChange}
         onImageStateChange=${onImageStateChange}
@@ -241,7 +276,7 @@ function Header() {
 
 // Main Content Component
 function MainContent({
-  fileName,
+  files,
   fileUrl,
   originalFile,
   uploading,
@@ -266,17 +301,18 @@ function MainContent({
   const handleCommandSubmit = async () => {
     setIsLoading(true);
     try {
-      // Show loader for 1.5 seconds before displaying result.jpg
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const resultUrl = await applyFluxa(prompt, [files]);
 
-      // Replace the image with result.jpg from assets folder
-      const resultImagePath = getAssetPath('result.jpg');
-      onFileUrlChange(resultImagePath);
-      onImageStateChange('modified');
-      setPrompt('');
-      setIsTransformed(true);
+      if (resultUrl) {
+        onFileUrlChange(resultUrl);
+        onImageStateChange('modified');
+        setPrompt('');
+        setIsTransformed(true);
+      } else {
+        console.log('No inline renderable result from API');
+      }
     } catch (error) {
-      // Error processing image
+      console.error('Error processing image', error);
     } finally {
       setIsLoading(false);
     }
@@ -418,7 +454,7 @@ function MainContent({
 
 // Editor Component
 function Editor({
-  fileName,
+  files,
   fileUrl,
   originalFile,
   uploading,
@@ -436,7 +472,7 @@ function Editor({
       <div class="artify-main">
         <div class="artify-content">
           <${MainContent}
-            fileName=${fileName}
+            files=${files}
             fileUrl=${fileUrl}
             originalFile=${originalFile}
             uploading=${uploading}
@@ -455,7 +491,7 @@ function Editor({
 
 // Main App Component
 function ArtifyApp() {
-  const [fileName, setFileName] = useState(null);
+  const [files, setFiles] = useState(null);
   const [fileUrl, setFileUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [originalFile, setOriginalFile] = useState('');
@@ -464,18 +500,18 @@ function ArtifyApp() {
 
   const handleFileChange = async (event) => {
     event.preventDefault();
-    const file = event.target.files[0];
-    if (!file) return;
+    const inputFiles = event.target.files;
+    if (inputFiles.length < 1) return;
 
     setUploading(true);
+    const file = event.target.files[0];
     const objectUrl = URL.createObjectURL(file);
     setFileUrl(objectUrl);
-    setOriginalFile(objectUrl);
+    // setOriginalFile(objectUrl);
     try {
-      const uploadedFileName = await uploadImage(file);
-      setFileName(uploadedFileName);
+      setFiles(inputFiles);
     } catch (error) {
-      // Upload failed
+      console.error('Upload failed:', error);
     } finally {
       setUploading(false);
     }
@@ -492,7 +528,7 @@ function ArtifyApp() {
     try {
       await uploadImage(file);
     } catch (error) {
-      // Upload failed
+      console.error('Second image upload failed:', error);
     } finally {
       setSecondUploading(false);
     }
@@ -503,7 +539,7 @@ function ArtifyApp() {
       <div class="artify-container">
         ${fileUrl ? html`
           <${Editor}
-            fileName=${fileName}
+            files=${files}
             fileUrl=${fileUrl}
             originalFile=${originalFile}
             uploading=${uploading}
