@@ -94,6 +94,11 @@ html:has(meta[name="theme"][content="s2a"]) {
     font-weight: 900 !important;
   }
 
+  body.mweb-enabled main .tabs.segmented-control [class^="heading-"] {
+    font-family: var(--body-font-family);
+    font-weight: 700 !important;
+  }
+
   /* two tone heading color feature */
   :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > strong > em,
   :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > em {
