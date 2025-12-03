@@ -168,7 +168,7 @@ export class VariantLayout {
   }
 
   connectedCallbackHook() {
-    // nothing to do by default
+    this.insertVariantStyle();
   }
 
     disconnectedCallbackHook() {
