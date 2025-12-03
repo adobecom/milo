@@ -35,7 +35,7 @@ export class Catalog extends VariantLayout {
 
     setIconVisibility(visible) {
         if (isMobileOrTablet() && this.card.actionMenu) return;
-        this.actionMenu?.classList.toggle('hidden', !visible);
+        this.actionMenu?.classList.toggle('invisible', !visible);
         this.actionMenu?.classList.toggle('always-visible', visible);
     }
 
@@ -63,7 +63,7 @@ export class Catalog extends VariantLayout {
                         class="action-menu
                 ${isMobileOrTablet() && this.card.actionMenu
                             ? 'always-visible'
-                            : 'hidden'}"
+                            : 'invisible'}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         @focus="${this.showActionMenuOnHover}"
