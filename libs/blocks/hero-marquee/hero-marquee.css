@@ -840,6 +840,10 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     --spacing-xs: 32px;
   }
 
+  .hero-marquee.northstar .lockup-area:has(> [data-modal-path]:only-child) > [data-modal-path] {
+    margin-top: var(--spacing-xl);
+  }
+
   @media (max-width: 599px) {
     .hero-marquee.northstar.left-mobile.center {
       text-align: start;
