@@ -475,10 +475,13 @@
 
 .artify-add-more-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
+  gap: 12px;
   width: 44px;
   flex-shrink: 0;
+  padding-bottom: 8px;
 }
 
 .artify-add-more-container.hidden {
@@ -486,8 +489,29 @@
   pointer-events: none;
 }
 
+.artify-download-img-btn {
+  background: #0A2759;
+  color: #FFF;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+.artify-download-img-btn:hover {
+  background: #0d3470;
+  transform: scale(1.1);
+}
+
 .artify-add-more-btn {
-  background: #2A5787;
+  background: #0A2759;
   color: #FFF;
   border: none;
   width: 44px;
@@ -503,7 +527,8 @@
 }
 
 .artify-add-more-btn:hover {
-  background: #1e3f5f;
+  background: #0d3470;
+  transform: scale(1.1);
 }
 
 .artify-image-container img {

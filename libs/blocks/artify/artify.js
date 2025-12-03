@@ -298,6 +298,16 @@ function MainContent({
     }
   };
 
+  const handleDownloadImage = () => {
+    if (!currentImageUrl) return;
+    const link = document.createElement('a');
+    link.href = currentImageUrl;
+    link.download = 'artify-image.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleCommandSubmit = async () => {
     setIsLoading(true);
     try {
@@ -386,6 +396,9 @@ function MainContent({
           </div>
           ${!secondFileUrl && html`
             <div class="artify-add-more-container ${isTransformed ? 'hidden' : ''}">
+              <button class="artify-download-img-btn" onClick=${handleDownloadImage} title="Download image">
+                <i class="fa-solid fa-download"></i>
+              </button>
               <button class="artify-add-more-btn" onClick=${handleAddMoreClick} title="Add another image">
                 <i class="fa-solid fa-plus"></i>
               </button>
