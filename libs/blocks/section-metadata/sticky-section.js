@@ -7,6 +7,8 @@ function handleTopHeight(section) {
   section.style.top = `${topHeight}px`;
 }
 
+let visibleMerchCards;
+
 function promoIntersectObserve(el, stickySectionEl, options = {}) {
   return new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
@@ -28,6 +30,15 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         || entry.boundingClientRect.top < 0
         || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', shouldHideSticky);
+      } else if (target.matches('merch-card')) {
+        const section = target.closest('.section[daa-lh]');
+        if (!section) return;
+        const total = section.querySelectorAll('merch-card')?.length;
+        if (visibleMerchCards === undefined && isIntersecting) visibleMerchCards = 0;
+        else if (visibleMerchCards === undefined) return;
+        visibleMerchCards += isIntersecting ? 1 : -1;
+        visibleMerchCards = Math.min(Math.max(visibleMerchCards, 0), total);
+        el.classList.toggle('hide-sticky-section', visibleMerchCards > 0);
       } else el.classList.toggle('hide-sticky-section', abovePromoStart);
     });
   }, options);
@@ -70,6 +81,17 @@ function handleStickyPromobar(section, delay) {
     targetElement.parentElement.insertBefore(stickySectionEl, targetElement);
     io.observe(stickySectionEl);
   }
+
+  const mutationObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeName === 'MERCH-CARD') {
+          io.observe(node);
+        }
+      });
+    });
+  });
+  mutationObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 export default async function handleStickySection(sticky, section) {
