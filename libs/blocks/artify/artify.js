@@ -48,7 +48,6 @@ const processImage = async (prompt, files, modifiedName) => {
 };
 
 const applyFluxa = async (tutorialUrl, images) => {
-  debugger;
   const formData = new FormData();
   formData.append('tutorial_url', tutorialUrl.trim());
   formData.append('inline_render', 'true');
@@ -64,7 +63,6 @@ const applyFluxa = async (tutorialUrl, images) => {
 
   const payload = await response.json();
   const { inline_render: inlineRender } = payload;
-  debugger
   if (inlineRender) {
     const blob = await (await fetch(`data:${inlineRender.content_type};base64,${inlineRender.base64_data}`)).blob();
     const url = URL.createObjectURL(blob);
@@ -234,6 +232,7 @@ function Sidebar({ files, onFileUrlChange, onLoadingChange, onImageStateChange, 
           style="display: none"
           accept="image/*"
           onChange=${onFileChange}
+          multiple
         />
       </div>
       
@@ -287,6 +286,7 @@ function MainContent({
   secondFileUrl,
   secondUploading,
   onSecondFileChange,
+  setSecondUploading,
 }) {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -311,6 +311,7 @@ function MainContent({
 
   const handleCommandSubmit = async () => {
     setIsLoading(true);
+    setSecondUploading(true);
     try {
       const resultUrl = await applyFluxa(prompt, files);
 
@@ -326,6 +327,7 @@ function MainContent({
       console.error('Error processing image', error);
     } finally {
       setIsLoading(false);
+      setSecondUploading(false);
     }
   };
 
@@ -385,7 +387,6 @@ function MainContent({
               src=${currentImageUrl}
               alt="Current Image"
             />
-            ${showLoading && html`<div class="artify-loader"><div class="artify-spinner"></div></div>`}
             <button
               class="artify-toggle-button"
               disabled=${!imageState}
@@ -412,15 +413,16 @@ function MainContent({
               />
             </div>
           `}
-          ${secondFileUrl && html`
+          ${!isTransformed && secondFileUrl && html`
             <div class="artify-image-container ${secondUploading ? 'loading' : ''}">
               <img 
                 src=${secondFileUrl}
                 alt="Second Image"
               />
-              ${secondUploading && html`<div class="artify-loader"><div class="artify-spinner"></div></div>`}
             </div>
           `}
+         ${isLoading && html`<div class="artify-loader"><div class="artify-spinner"></div></div>`}
+
         </div>
       </div>
       
@@ -478,6 +480,7 @@ function Editor({
   onSecondFileChange,
   secondFileUrl,
   secondUploading,
+  setSecondUploading,
 }) {
   const [imageState, setImageState] = useState('');
 
@@ -496,6 +499,7 @@ function Editor({
             onSecondFileChange=${onSecondFileChange}
             secondFileUrl=${secondFileUrl}
             secondUploading=${secondUploading}
+            setSecondUploading=${setSecondUploading}
           />
         </div>
       </div>
@@ -563,6 +567,7 @@ function ArtifyApp() {
             secondFileUrl=${secondFileUrl}
             secondUploading=${secondUploading}
             onSecondFileChange=${handleSecondFileChange}
+            setSecondUploading=${setSecondUploading}
           />
         ` : html`
           <${LandingPage} onFileChange=${handleFileChange} />

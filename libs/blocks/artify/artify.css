@@ -547,7 +547,7 @@
 .artify-loader {
   position: absolute;
   z-index: 4;
-  display: none;
+  align-self: center;
 }
 
 .artify-image-container.loading .artify-loader {
