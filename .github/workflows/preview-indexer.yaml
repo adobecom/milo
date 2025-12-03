@@ -2,9 +2,9 @@ name: Preview Indexer (Incremental)
 description: This workflow updates the preview index for the given site and region(s)
 
 on:
+  schedule:
+    - cron: '*/15 * * * *'
   workflow_dispatch:
-    schedule:
-      - cron: '*/15 * * * *'
     inputs:
       site:
         description: "Site name e.g da-bacom"
