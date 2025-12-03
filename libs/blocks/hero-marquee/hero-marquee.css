@@ -845,6 +845,10 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   @media (max-width: 599px) {
+    .hero-marquee.northstar .main-copy {
+      gap: 16px;
+    }
+
     .hero-marquee.northstar.left-mobile.center {
       text-align: start;
       align-items: center;
