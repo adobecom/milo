@@ -19,7 +19,7 @@ const calculateDateOffset = (date, offset) => {
 };
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/rcp-notifier.js
-const main = async () => {  
+const main = async () => {
   console.log('Action: RCP Notifier started');
   for (const rcp of RCPDates) {
     const start = new Date(rcp.start);
@@ -46,7 +46,6 @@ const main = async () => {
     const daysUntil = getDaysUntilRCP(start);
     if (daysUntil <= 4 && daysUntil > 0 && !isShort && isWeekendOrMondayRCP(start)) {
       const today = new Date().getDay();
-      // Only notify on Thursday (4) or Friday (5)
       if (today === 4 || today === 5) {
         console.log('Stage freeze active (RCP starts on weekend/Monday)');
         await slackNotification(stageFreezeText(), process.env.MILO_DEV_HOOK);
