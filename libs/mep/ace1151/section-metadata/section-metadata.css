@@ -452,48 +452,53 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-/* Collapsible Fragment Button */
 .collapse-frag-button {
+  display: flex;
+  justify-content: center;
+  border-radius: 25px;
+  margin: var(--spacing-xxl) 0;
+}
+
+.collapse-frag-button button {
   cursor: pointer;
   color: currentcolor;
   background: none;
   border: none;
-  padding: var(--spacing-xl) 0;
+  padding: var(--spacing-xxs) var(--spacing-s);
   width: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.4em;
   text-align: center;
-  margin: 0 auto;
   font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
   font-size: var(--type-heading-m-size, 20px);
   line-height: var(--type-heading-m-lh, 115%);
   font-weight: var(--type-heading-all-weight, 900);
 }
 
-.collapse-frag-button:hover {
+.collapse-frag-button button:hover {
   opacity: 0.8;
 }
 
-.collapse-frag-button:focus-visible {
+.collapse-frag-button button:focus-visible {
   outline: 2px solid #1473e6;
   outline-offset: 4px;
-  border-radius: 4px;
+  border-radius: 50px;
 }
 
 /* Hide outline for programmatic focus (deeplink) */
-.collapse-frag-button[data-programmatic-focus='true']:focus {
+.collapse-frag-button button[data-programmatic-focus='true']:focus {
   outline: none !important;
 }
 
-.collapse-frag-chevron {
+.collapse-frag-button svg {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: rotate(180deg);
   flex-shrink: 0;
 }
 
-.collapse-frag-button[aria-expanded='true'] .collapse-frag-chevron {
+.collapse-frag-button button[aria-expanded='true'] svg {
   transform: rotate(0deg);
 }
 
