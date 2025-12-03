@@ -3,7 +3,7 @@ import { html, useState, useRef, render } from '../../deps/htm-preact.js';
 // API configuration - update these URLs to match your backend
 const API_URL = 'http://10.193.68.37:5000';
 // const API_URL_FLUXA = 'http://10.172.129.108:8000';
-const API_URL_FLUXA = 'http://10.193.71.83:8000';
+const API_URL_FLUXA = 'http://10.193.70.83:8000';
 
 // API functions
 const uploadImage = async (file) => {
@@ -68,10 +68,10 @@ const applyFluxa = async (tutorialUrl, images) => {
   if (inlineRender) {
     const blob = await (await fetch(`data:${inlineRender.content_type};base64,${inlineRender.base64_data}`)).blob();
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = inlineRender.filename;
-    link.click();
+    // const link = document.createElement('a');
+    // link.href = url;
+    // link.download = inlineRender.filename;
+    // link.click();
     return url;
   }
   if (payload.application.download_url) {
@@ -426,7 +426,7 @@ function MainContent({
       
       <div class="artify-command-section">
         <h3 class="artify-command-title">
-          ${isTransformed ? 'Image transformed successfully!' : 'Enter your prompt or tutorial link:'}
+          ${isTransformed ? '' : 'Enter your prompt or tutorial link:'}
         </h3>
         ${isTransformed ? html`
           <button class="artify-download-json-btn" onClick=${handleDownloadJSON}>
