@@ -111,14 +111,14 @@ export default async function init(jsonPromise) {
     .then((res) => (res.ok ? res.json() : null))
     .catch(() => null);
 
-  let [geoIp, marketsConfig] = await Promise.all([
+  const [akamaiCode, marketsConfig] = await Promise.all([
     getAkamaiCode(),
     marketsConfigPromise,
   ]);
 
-  if (!geoIp || !marketsConfig) return;
+  if (!akamaiCode || !marketsConfig) return;
 
-  geoIp = geoIp.toLowerCase();
+  let geoIp = akamaiCode.toLowerCase();
   if (geoIp === 'gb') geoIp = 'uk';
 
   marketsConfig.data.forEach((market) => {

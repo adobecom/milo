@@ -5,9 +5,9 @@
  * @param {boolean} [checkParams=false] - If true, checks URL parameters and session storage first.
  * @returns {Promise<string|null>} A promise that resolves to the lowercase Akamai country code.
  */
-const getAkamaiCode = (checkParams = false) => new Promise((resolve) => {
+const getAkamaiCode = (checkedParams = false) => new Promise((resolve, reject) => {
   let akamaiLocale = null;
-  if (checkParams) {
+  if (!checkedParams) {
     const urlParams = new URLSearchParams(window.location.search);
     akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
   }
@@ -23,12 +23,10 @@ const getAkamaiCode = (checkParams = false) => new Promise((resolve) => {
           resolve(code);
         });
       } else {
-        console.warn('Something went wrong getting the akamai Code.', { status: resp.status, statusText: resp.statusText });
-        resolve(null);
+        reject(new Error(`Something went wrong getting the akamai Code. Response status text: ${resp.statusText}`));
       }
     }).catch((error) => {
-      console.warn('Something went wrong getting the akamai Code.', { error });
-      resolve(null);
+      reject(new Error(`Something went wrong getting the akamai Code. ${error.message}`));
     });
   }
 });

@@ -1511,7 +1511,7 @@ async function checkForPageMods() {
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
   if (mepgeolocation && !akamaiCode) {
-    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    const { default: getAkamaiCode } = await import('./geo.js');
     countryIPPromise = getAkamaiCode(true);
   }
   const enablePersV2 = enablePersonalizationV2();
