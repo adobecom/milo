@@ -173,11 +173,16 @@ function isInDeeplinkTab(section) {
 }
 
 function isInDeeplinkHash() {
-  const hash = window.location.hash.substring(1);
-  if (!hash) return false;
-  const hashParams = new URLSearchParams(hash);
   const deeplinkParams = ['filter', 'category', 'search', 'sort', 'types', 'single_app', 'page'];
-  return deeplinkParams.some((param) => hashParams.has(param));
+
+  const hash = window.location.hash.substring(1);
+  if (hash) {
+    const hashParams = new URLSearchParams(hash);
+    if (deeplinkParams.some((param) => hashParams.has(param))) return true;
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  return deeplinkParams.some((param) => searchParams.has(param));
 }
 
 async function loadFragmentContent(placeholder, url) {
