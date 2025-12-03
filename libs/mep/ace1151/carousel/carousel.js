@@ -707,7 +707,7 @@ export default function init(el) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
       // handle mobile vs desktop content
-      if (el.classList.contains('hero-carousel')) {
+      if (isHovering(el)) {
         const contentToRemove = slide.querySelector(`.text > div > div:has(p):nth-child(${isMobile ? '2' : '1'})`);
         contentToRemove?.remove();
       }
