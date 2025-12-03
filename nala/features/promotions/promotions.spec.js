@@ -11,7 +11,7 @@ module.exports = {
         textBeforeText: 'Text promo text insert',
         textDefault: 'Default text',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '1',
@@ -21,14 +21,14 @@ module.exports = {
         textReplaceMarquee: 'Marquee promo replace',
         textReplace: 'Promo text replace',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '2',
       name: '@Promo-remove',
       path: '/drafts/nala/features/promotions/promo-remove',
       data: { textMarquee: 'Promo test page' },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '3',
@@ -40,14 +40,14 @@ module.exports = {
         textAfterMarquee: 'Marquee promo text insert',
         textBeforeText: 'Text promo text insert',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '4',
       name: '@Promo-replace-fragment',
       path: '/drafts/nala/features/promotions/promo-with-fragments',
       data: { textReplaceMarquee: 'Marquee promo replace' },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '5',
@@ -62,7 +62,7 @@ module.exports = {
         status2: 'inactive', // new format
         manifestFile: 'promo-insert-future.json',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '6',
@@ -73,7 +73,7 @@ module.exports = {
         textAfterMarquee: 'Marquee promo text insert',
         textBeforeText: 'Text promo text insert',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '7',
@@ -84,7 +84,7 @@ module.exports = {
         textAfterMarquee: 'Marquee promo text insert',
         textBeforeText: 'Text promo text insert',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '8',
@@ -105,7 +105,7 @@ module.exports = {
         manifestInsertFile: 'promo-insert.json',
         manifestReplaceFile: 'promo-replace.json',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '9',
@@ -116,7 +116,7 @@ module.exports = {
         textDefault: 'Default text',
         textAfterMarquee: 'Marquee promo text insert',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '10',
@@ -126,7 +126,7 @@ module.exports = {
         textReplaceMarquee: 'Marquee promo replace',
         textDefault: 'Default text',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '11',
@@ -141,13 +141,13 @@ module.exports = {
         CO_FR: '/fr',
         textBeforeTextFR: 'French Promo',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '12',
       name: '@Promo-remove-fragment',
       path: '/drafts/nala/features/promotions/promo-with-fragments-remove',
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '13',
@@ -158,7 +158,7 @@ module.exports = {
         textBeforeMarquee: 'Text promo text insert',
         textAfterMarquee: 'Marquee promo text insert',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @smoke @regression @milo',
     },
     {
       tcid: '14',

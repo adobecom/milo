@@ -18,6 +18,7 @@ var D=Object.defineProperty;var w=(i,e,t)=>e in i?D(i,e,{enumerable:!0,configura
             padding: var(--merch-sidenav-list-title-padding);
             line-height: var(--merch-sidenav-list-title-line-height);
             margin: 0;
+            text-transform: uppercase;
         }
 
         .right {
