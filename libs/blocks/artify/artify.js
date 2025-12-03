@@ -2,7 +2,8 @@ import { html, useState, useRef, render } from '../../deps/htm-preact.js';
 
 // API configuration - update these URLs to match your backend
 const API_URL = 'http://10.193.68.37:5000';
-const API_URL_FLUXA = 'http://10.193.70.83:8000';
+// const API_URL_FLUXA = 'http://10.172.129.108:8000';
+const API_URL_FLUXA = 'http://10.193.71.83:8000';
 
 // API functions
 const uploadImage = async (file) => {

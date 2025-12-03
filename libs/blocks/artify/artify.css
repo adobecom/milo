@@ -455,7 +455,6 @@
 .artify-image-container {
   position: relative;
   max-width: 600px;
-  max-height: 400px;
   width: 100%;
   background-color: #f8f9fa;
   border-radius: 8px;
