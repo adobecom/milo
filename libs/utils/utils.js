@@ -517,6 +517,10 @@ export function isInTextNode(node) {
   return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
+function lingoActive() {
+  return getMetadata('lingo') === 'on' || PAGE_URL.searchParams.get('lingo') === 'on';
+}
+
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
@@ -696,7 +700,7 @@ function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
     let prefix = getPrefixBySite(locale, url, relative);
 
     const siteId = uniqueSiteId ?? '';
-    if (useAsync && extension !== 'json'
+    if (useAsync && extension !== 'json' && lingoActive()
         && ((locale.base && !path.includes('/fragments/'))
           || (!!locale.regions?.length && path.includes('/fragments/')))) {
       return (async () => {
@@ -2013,7 +2017,7 @@ export async function loadArea(area = document) {
     initModalEventListener();
   }
 
-  if (config.locale?.base) {
+  if (config.locale?.base && lingoActive()) {
     const { prefix } = config.locale;
     loadQueryIndexes(prefix);
   }
