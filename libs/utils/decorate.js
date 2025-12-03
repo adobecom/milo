@@ -543,3 +543,15 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
 }
+
+/* NOTE: Experimental logic to substitute authored classes
+   with centralized kit classes */
+export function decorateBlockKit(el, kits = []) {
+  const kitClass = [...el.classList].find((cls) => cls.endsWith('-kit'));
+  if (!kitClass || !Object.keys(kits).includes(kitClass)) return;
+
+  const blockClass = [...el.classList][0];
+  const kitClasses = kits[kitClass];
+  el.className = blockClass;
+  el.classList.add(kitClass, ...kitClasses);
+}

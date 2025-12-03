@@ -1,0 +1,61 @@
+.box {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), 1fr);
+  gap: var(--grid-gutter-width);
+  counter-reset: box-cell;
+  position: relative;
+}
+
+.box.foo-kit {
+  background: var(--s2a-color-orange-1300);
+}
+
+.box-inner {
+  counter-increment: box-cell;
+  background: var(--s2a-color-red-400);
+  min-height: 150px;
+  border-radius: var(--s2a-border-radius-sm);
+  display: grid;
+  place-items: center;
+  color: var(--s2a-color-gray-25);
+  font-weight: var(--s2a-typography-font-weight-bold);
+  font-size: var(--s2a-typography-font-size-lg);
+}
+
+.box-inner::after {
+  content: counter(box-cell);
+}
+
+/* Mobile & Tablet — 6 column layouts */
+.box-inner:nth-child(1)  { grid-column: span 6; }  /* full width */
+.box-inner:nth-child(2)  { grid-column: span 3; }  /* 3 + 3 */
+.box-inner:nth-child(3)  { grid-column: span 3; }
+.box-inner:nth-child(4)  { grid-column: span 6; }  /* full width */
+.box-inner:nth-child(5)  { grid-column: span 6; }  /* full width */
+.box-inner:nth-child(6)  { grid-column: span 3; }  /* 3 + 3 */
+.box-inner:nth-child(7)  { grid-column: span 3; }
+.box-inner:nth-child(8)  { grid-column: span 2; }  /* 2 + 2 + 2 */
+.box-inner:nth-child(9)  { grid-column: span 2; }
+.box-inner:nth-child(10) { grid-column: span 2; }
+.box-inner:nth-child(11) { grid-column: span 3; }  /* 3 + 3 */
+.box-inner:nth-child(12) { grid-column: span 3; }
+
+.box.col-1 .box-inner {
+  grid-column: span 12;
+}
+
+/* Desktop — 12 column layouts */
+@media (width >= 1024px) {
+  .box-inner:nth-child(1)  { grid-column: span 3; }  /* 3 + 9 */
+  .box-inner:nth-child(2)  { grid-column: span 9; }
+  .box-inner:nth-child(3)  { grid-column: span 12; } /* full width */
+  .box-inner:nth-child(4)  { grid-column: span 4; }  /* 4 + 8 */
+  .box-inner:nth-child(5)  { grid-column: span 8; }
+  .box-inner:nth-child(6)  { grid-column: span 6; }  /* 6 + 6 */
+  .box-inner:nth-child(7)  { grid-column: span 6; }
+  .box-inner:nth-child(8)  { grid-column: span 4; }  /* 4 + 4 + 4 */
+  .box-inner:nth-child(9)  { grid-column: span 4; }
+  .box-inner:nth-child(10) { grid-column: span 4; }
+  .box-inner:nth-child(11) { grid-column: span 9; }  /* 9 + 3 (reversed) */
+  .box-inner:nth-child(12) { grid-column: span 3; }
+}

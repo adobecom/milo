@@ -1,0 +1,9 @@
+:root:has(meta[name="theme"][content="sum26"]) {
+  .box {
+    background: var(--s2a-color-green-1000);
+  }
+
+  .box.foo-kit {
+    background: var(--s2a-color-blue-900);
+  }
+}
