@@ -479,6 +479,7 @@ test.describe('Commerce feature test suite', () => {
     });
   });
 
+  // @Commerce-Volume-Discount - Validate volume discount price
   test(`${features[10].name}, ${features[10].tags}`, async ({ page, baseURL }) => {
     const testPage = constructTestUrl(baseURL, features[10].path);
     console.info('[Test Page]: ', testPage);
@@ -530,6 +531,7 @@ test.describe('Commerce feature test suite', () => {
     });
   });
 
+  // @Commerce-Volume-Discount-Annual - Validate volume discount price with annual price
   test(`${features[11].name}, ${features[11].tags}`, async ({ page, baseURL }) => {
     const testPage = constructTestUrl(baseURL, features[11].path);
     console.info('[Test Page]: ', testPage);
