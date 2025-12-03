@@ -150,7 +150,33 @@ function handlePrevious(previousElment, elements) {
   return elements[elements.length - 1];
 }
 
-function setEqualHeight(slides, slideContainer, currentActiveIndex = 0) {
+async function waitImgReady(img) {
+  if (!img) return;
+
+  if (!img.complete) {
+    await new Promise((resolve) => {
+      img.addEventListener('load', resolve, { once: true });
+    });
+  }
+
+  if ((img.offsetHeight === 0 || img.clientHeight === 0) && img.naturalHeight) {
+    await new Promise((resolve) => {
+      const ro = new ResizeObserver(() => {
+        if (img.offsetHeight > 0 && img.clientHeight > 0) {
+          ro.disconnect();
+          resolve();
+        }
+      });
+      ro.observe(img);
+    });
+  }
+}
+
+async function setEqualHeight(slides, slideContainer, currentActiveIndex = 0) {
+  const allImgs = slides[0]?.querySelectorAll('picture img');
+  if (allImgs?.length) {
+    await Promise.all([...allImgs].map((img) => waitImgReady(img)));
+  }
   const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
   const activeSlide = slides[currentActiveIndex];
   slides.forEach((slide) => {
