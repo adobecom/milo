@@ -383,7 +383,7 @@ export function getMasLibs() {
     return 'http://localhost:3030/web-components/dist';
   }
   if (sanitizedMasLibs === 'main') {
-    return 'https://mas.adobe.com/web-components/dist';
+    return 'http://www.adobe.com/mas/libs';
   }
 
   // Detect current domain extension (.page or .live)
@@ -439,6 +439,16 @@ const failedExternalLoads = new Set();
 const loadingPromises = new Map();
 
 /**
+ * Checks if mas-ff-mas-deps feature flag is enabled
+ * @returns {boolean} true if flag is on
+ */
+function isMasDepsFlagEnabled() {
+  const metaFlag = getMetadata('mas-ff-mas-deps');
+  if (metaFlag === 'on' || metaFlag === 'true') return true;
+  return false;
+}
+
+/**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
@@ -467,6 +477,14 @@ export async function loadMasComponent(componentName) {
       } catch (error) {
         failedExternalLoads.add(externalUrl);
         throw error;
+      }
+    } else if (isMasDepsFlagEnabled()) {
+      const masUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
+      try {
+        return await import(masUrl);
+      } catch (error) {
+        console.warn(`Failed to load from MAS repository, falling back to Milo deps: ${error.message}`);
+        return import(`../../deps/mas/${componentName}.js`);
       }
     } else {
       return import(`../../deps/mas/${componentName}.js`);
@@ -1284,6 +1302,10 @@ export async function buildCta(el, params) {
     cta.classList.add('con-button');
     cta.classList.toggle('button-l', large);
     cta.classList.toggle('blue', strong);
+  }
+
+  if (params.get('target') === '_blank') {
+    cta.setAttribute('target', '_blank');
   }
 
   const customClasses = el.href.matchAll(/#_button-([a-zA-Z-]+)/g);

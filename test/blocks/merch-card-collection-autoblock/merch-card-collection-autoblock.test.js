@@ -59,7 +59,7 @@ describe('merch-card-collection autoblock', () => {
       expect(collection.className).to.include('plans');
     });
 
-    it('creates creates sidenav by default', async () => {
+    it('creates sidenav by default', async () => {
       const content = document.createElement('div');
       content.classList.add('content');
       const a = document.createElement('a');
@@ -72,6 +72,11 @@ describe('merch-card-collection autoblock', () => {
       expect(collection).to.exist;
       const sidenav = document.querySelector('merch-sidenav');
       expect(sidenav).to.exist;
+      const sidenavList = sidenav.querySelector('merch-sidenav-list>sp-sidenav');
+      expect(sidenavList.querySelectorAll('sp-sidenav-item').length).to.equal(4);
+      expect(sidenavList.querySelector('sp-sidenav-item[label=All]')).to.exist;
+      expect(sidenavList.querySelector('sp-sidenav-item[label=Cloud]')).to.exist;
+      expect(sidenavList.querySelector('sp-sidenav-item[label=Photo]')).to.exist;
     });
 
     it('test analytics', async () => {
