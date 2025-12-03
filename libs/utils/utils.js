@@ -398,10 +398,6 @@ export const getFederatedContentRoot = () => {
   return federatedContentRoot;
 };
 
-//REMOVE!!!!!
-window.getConfig = getConfig;
-// TODO we should match the akamai patterns /locale/federal/ at the start of the url
-// and make the check more strict.
 export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
   if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
@@ -1092,8 +1088,9 @@ export function decorateAutoBlock(a) {
         return false;
       }
 
-      // Modals
-      if (url.hash !== '' && !isInlineFrag && !url.hash.includes('#_replacecell')) {
+      // Modals (exclude special fragment hashes)
+      const isRocFrag = url.hash.includes('#_roc');
+      if (url.hash !== '' && !isInlineFrag && !isRocFrag && !url.hash.includes('#_replacecell')) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
