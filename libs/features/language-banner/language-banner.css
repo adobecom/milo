@@ -7,9 +7,10 @@
   align-self: stretch;
   position: relative;
   width: 100%;
-  min-height: 32px;
+  min-height: var(--feds-language-banner-height);
   background-color: #000;
   box-sizing: border-box;
+  visibility: visible;
 }
 
 .language-banner-content {
