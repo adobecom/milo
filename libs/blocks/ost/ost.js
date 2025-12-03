@@ -1,5 +1,5 @@
 import ctaTextOption from './ctaTextOption.js';
-import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
+import { getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag } from '../../utils/utils.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -14,6 +14,8 @@ const OST_STYLE_URL = 'https://mas.adobe.com/studio/ost/index.css';
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 export const WCS_LANDSCAPE = 'PUBLISHED';
+export const WCS_LANDSCAPE_DRAFT = 'DRAFT';
+export const LANDSCAPE_URL_PARAM = 'commerce.landscape';
 
 /**
  * Maps Franklin page metadata to OST properties.
@@ -102,11 +104,11 @@ export async function loadOstEnv() {
   const commerceEnv = searchParameters.get('commerce.env');
   if (wcsLandscape || commerceEnv) {
     if (wcsLandscape) {
-      searchParameters.set('commerce.landscape', wcsLandscape);
+      searchParameters.set(LANDSCAPE_URL_PARAM, wcsLandscape);
       searchParameters.delete('wcsLandscape');
     }
     if (commerceEnv?.toLowerCase() === 'stage') {
-      searchParameters.set('commerce.landscape', 'DRAFT');
+      searchParameters.set(LANDSCAPE_URL_PARAM, WCS_LANDSCAPE_DRAFT);
       searchParameters.delete('commerce.env');
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
@@ -178,7 +180,7 @@ export async function loadOstEnv() {
   window.history.replaceState({}, null, newURL);
 
   const environment = searchParameters.get('env') ?? WCS_ENV;
-  const landscape = searchParameters.get('commerce.landscape') ?? WCS_LANDSCAPE;
+  const landscape = searchParameters.get(LANDSCAPE_URL_PARAM) ?? WCS_LANDSCAPE;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
@@ -265,6 +267,24 @@ export async function loadOstEnv() {
   };
 }
 
+function addLandscapeToggle(el, ostEnv) {
+  const { base } = getConfig();
+  loadStyle(`${base}/blocks/graybox/switch.css`);
+  const toggleContainer = createTag('span', { class: 'landscape-toggle' }, null, { parent: el });
+  const switchDiv = createTag('div', { class: 'spectrum-Switch' }, null, { parent: toggleContainer });
+  const input = createTag('input', { type: 'checkbox', class: 'spectrum-Switch-input', id: 'gb-overlay-toggle' }, null, { parent: switchDiv });
+  createTag('span', { class: 'spectrum-Switch-switch' }, null, { parent: switchDiv });
+  createTag('label', { class: 'spectrum-Switch-label', for: 'gb-overlay-toggle' }, 'Draft landscape offer', { parent: switchDiv });
+
+  input.checked = ostEnv.landscape === WCS_LANDSCAPE_DRAFT;
+  input.addEventListener('change', (e) => {
+    const landscape = e.target.checked ? WCS_LANDSCAPE_DRAFT : WCS_LANDSCAPE;
+    const url = new URL(window.location.href);
+    url.searchParams.set(LANDSCAPE_URL_PARAM, landscape);
+    window.location.href = url.toString();
+  });
+}
+
 export default async function init(el) {
   el.innerHTML = '<div />';
 
@@ -281,6 +301,7 @@ export default async function init(el) {
       ...ostEnv,
       rootElement: el.firstElementChild,
     });
+    addLandscapeToggle(el, ostEnv);
   }
 
   if (ostEnv.aosAccessToken) {

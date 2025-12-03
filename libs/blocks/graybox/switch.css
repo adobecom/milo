@@ -1,0 +1,109 @@
+.landscape-toggle {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+}
+
+/* Spectrum Switch */
+.spectrum-Switch {
+    display: inline-flex;
+    align-items: flex-start;
+    position: relative;
+    margin: auto;
+    min-block-size: var(--mod-switch-height, var(--spectrum-switch-min-height));
+    max-inline-size: 100%;
+    vertical-align: top;
+}
+
+.spectrum-Switch.gb-toggle-disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* .gb-toggle-disabled .spectrum-Switch {
+  pointer-events: none;
+} */
+
+.spectrum-Switch-input {
+    margin: 0;
+    box-sizing: border-box;
+    padding: 0;
+    position: absolute;
+    inline-size: 100%;
+    block-size: 100%;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    opacity: 0;
+    z-index: 1;
+    cursor: pointer;
+}
+
+.spectrum-Switch-switch {
+    display: inline-block;
+    box-sizing: border-box;
+    position: relative;
+    inline-size: 26px;
+    margin-block: 9px;
+    margin-inline: 0;
+    flex-grow: 0;
+    flex-shrink: 0;
+    vertical-align: middle;
+    transition: background 0.16s ease-in-out, border 0.16s ease-in-out;
+    block-size: 14px;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    border-radius: 7px;
+    background-color: rgb(225 225 225);
+}
+
+.spectrum-Switch-switch::after, .spectrum-Switch-switch::before {
+    display: block;
+    position: absolute;
+    content: "";
+    inset-block-start: 0;
+    inset-inline-start: 0;
+}
+
+.spectrum-Switch-switch::before {
+    box-sizing: border-box;
+    transition: background 0.16s ease-in-out, border 0.16s ease-in-out, transform 0.13s ease-in-out, box-shadow 0.16s ease-in-out;
+    inline-size: 14px;
+    block-size: 14px;
+    border-width: 2px;
+    border-radius: 7px;
+    border-style: solid;
+    background-color: rgb(248 248 248);
+    border-color: rgb(113 113 113);
+}
+
+.spectrum-Switch-switch::after {
+    border-radius: 11px;
+    inset-inline-end: 0;
+    inset-block-end: 0;
+    margin: 0;
+    transition: opacity 0.16s ease-out, margin 0.16s ease-out;
+}
+
+.spectrum-Switch-label {
+    color: rgb(41 41 41);
+    margin-inline: 10px;
+    margin-block-start: 6px;
+    margin-block-end: 0;
+    font-size: 14px;
+    line-height: 1.3;
+    transition: color 0.16s ease-in-out;
+}
+
+.spectrum-Switch-input:checked+.spectrum-Switch-switch::before {
+    transform: translate(calc(26px - 100%));
+    border-color: rgb(80 80 80);
+}
+
+.spectrum-Switch:hover .spectrum-Switch-input+.spectrum-Switch-switch::before {
+    border-color: rgb(80 80 80);
+    box-shadow: none;
+}
+
+.spectrum-Switch-input:checked+.spectrum-Switch-switch {
+    background-color: rgb(41 41 41);
+}
