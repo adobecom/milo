@@ -38,4 +38,12 @@ describe('function "getPriceLiterals"', () => {
             expect(literal).to.not.be.empty;
         });
     });
+
+    it('returns Indonesian literals when locale is id_ID', async () => {
+        const literals = await getPriceLiterals({
+            locale: 'id_ID',
+            language: 'en',
+        });
+        expect(literals.lang).to.equal('in');
+    });
 });
