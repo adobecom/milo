@@ -1,5 +1,6 @@
 import { decorateAnchorVideo } from '../../utils/decorate.js';
 import { createTag, getConfig, getFederatedContentRoot } from '../../utils/utils.js';
+import { hydrateVideo } from './ai-hydration.js';
 
 let captionsLangMapPromise = null;
 
@@ -34,6 +35,9 @@ const createIframe = (a, href) => {
   const videoId = idMatch ? idMatch[1] : null;
 
   if (videoId) {
+    // Kick off AI hydration async (non-blocking) - injects JSON-LD schema when ready
+    hydrateVideo(videoHref);
+
     window.fetch(`https://video.tv.adobe.com/v/${videoId}?format=json-ld`)
       .then((res) => res.json())
       .then(async (info) => {
