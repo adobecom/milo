@@ -379,7 +379,7 @@ export class MerchCardCollection extends LitElement {
                     let tree = reference.referencesTree;
                     const overrideId = overrideMap[reference.identifier];
                     if (overrideId) {
-                        const data = document.querySelector('aem-fragment[fragment="' + overrideId + '"]')?.rawData;
+                        const data = document.querySelector(`aem-fragment[fragment="${overrideId}"]`)?.rawData;
                         if (data?.fields) {
                           value = data;
                           tree = data.referencesTree;
