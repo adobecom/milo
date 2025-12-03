@@ -1615,6 +1615,10 @@ describe('Utils', () => {
       const module = await import(`../../libs/utils/utils.js?t=${timestamp}`);
       lingoUtils = module;
       lingoUtils.setConfig(defaultTestConfig);
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('content', 'on');
+      lingoMeta.setAttribute('name', 'lingo');
+      document.head.append(lingoMeta);
     });
 
     afterEach(() => {
@@ -1624,6 +1628,8 @@ describe('Utils', () => {
       } else {
         delete window.lana;
       }
+      const meta = document.querySelector('meta[name="lingo"]');
+      document.head.removeChild(meta);
     });
 
     it('should use regional prefix when regional page exists in query index', async () => {
