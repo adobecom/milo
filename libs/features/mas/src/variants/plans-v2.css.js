@@ -2,9 +2,8 @@
 import { MOBILE_LANDSCAPE, TABLET_DOWN, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 
 export const CSS = `
-
 :root {
-    --consonant-merch-card-plans-v2-font-family: 'Adobe Clean', sans-serif;
+    --consonant-merch-card-plans-v2-font-family: 'Adobe Clean Display', 'adobe-clean-display', 'Adobe Clean', 'adobe-clean', sans-serif;
     --consonant-merch-card-plans-v2-width: 385px;
     --consonant-merch-card-plans-v2-height: auto;
     --consonant-merch-card-plans-v2-icon-size: 41.5px;
@@ -13,7 +12,10 @@ export const CSS = `
     --picker-up-icon-black: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="10" width="10" viewBox="0 0 10 10"><path d="M5 3L8 6L2 6Z" fill="%222222"/></svg>');
     --picker-down-icon-black: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="10" width="10" viewBox="0 0 10 10"><path d="M5 7L2 4L8 4Z" fill="%222222"/></svg>');
     --consonant-merch-spacing-m: 20px;
-
+    --consonant-merch-card-plans-v2-toggle-background-color: #F8F8F8;
+    --consonant-merch-card-plans-v2-toggle-label-color: #292929;
+    --consonant-merch-card-plans-v2-divider-color: #E8E8E8;
+    --consonant-merch-card-plans-v2-toggle-expanded-background-color: #FFFFFF;
 }
 
 merch-card[variant="plans-v2"] {
@@ -52,11 +54,24 @@ merch-card[variant="plans-v2"] .spacer {
 .dark merch-card[variant="plans-v2"] merch-whats-included ul li {
     color: #292929;
 }
+.dark merch-card[variant="plans-v2"] [slot="body-xs"] {
+    color: #C6C6C6;
+}
+.dark merch-card[variant="plans-v2"] [slot="quantity-select"] merch-quantity-select {
+  --label-color: #C6C6C6 ;
+}
 
 /* Dark mode heading colors for wide cards */
 .dark merch-card[variant="plans-v2"][size="wide"] [slot^="heading-"],
-.dark merch-card[variant="plans-v2"][size="wide"] span[class^="heading-"] {
+.dark merch-card[variant="plans-v2"][size="wide"] span[class^="heading-"],
+.dark merch-card[variant="plans-v2"] span.price-unit-type,
+.dark merch-card[variant="plans-v2"] [slot="heading-m"] .price-recurrence  {
     color: #B6B6B6;
+}
+
+.dark merch-card[variant="plans-v2"] [slot="heading-m"] span.price.price-strikethrough,
+.dark merch-card[variant="plans-v2"] [slot="heading-m"] s {
+  color: #B6B6B6;
 }
 
 /* Dark mode strikethrough price size for wide cards */
@@ -65,6 +80,12 @@ merch-card[variant="plans-v2"] .spacer {
     font-size: 20px;
 }
 
+.dark merch-card[variant="plans-v2"] {
+  --consonant-merch-card-plans-v2-toggle-background-color: var(--consonant-merch-card-background-color);
+  --consonant-merch-card-plans-v2-toggle-expanded-background-color: var(--consonant-merch-card-background-color);
+  --consonant-merch-card-plans-v2-toggle-label-color: #FFFFFF;
+  --consonant-merch-card-plans-v2-divider-color: var(--consonant-merch-card-background-color);
+}
 merch-card[variant="plans-v2"][size="wide"],
 merch-card[variant="plans-v2"][size="super-wide"] {
     width: 100%;
@@ -75,10 +96,13 @@ merch-card[variant="plans-v2"] [slot="icons"] {
     --img-width: var(--consonant-merch-card-plans-v2-icon-size);
     --img-height: var(--consonant-merch-card-plans-v2-icon-size);
 }
+merch-card[variant="plans-v2"] [slot="heading-m"] .price-recurrence,
+merch-card[variant="plans-v2"] span.price-unit-type {
+    color: #6B6B6B;
+}
 
 merch-card[variant="plans-v2"] span.price-unit-type {
     display: inline;
-    color: #6B6B6B;
     font-size: 28px;
     font-weight: 900;
     line-height: 110%;
@@ -124,13 +148,17 @@ merch-card[variant="plans-v2"] merch-addon span[data-template="price"] {
     display: inline;
 }
 
-merch-card[variant="plans-v2"] span[data-template="legal"] {
+merch-card[variant^="plans-v2"] span[data-template="legal"] {
     display: inline;
     color: var(--spectrum-gray-600, #6E6E6E);
     font-size: 16px;
-    font-style: normal;
+    font-style: normal !important;
     font-weight: 400;
     line-height: 1.375;
+}
+
+merch-card[variant="plans-v2"] span[data-template="legal"] .price-plan-type {
+    font-style: italic;
 }
 
 merch-card[variant="plans-v2"] span.text-l {
@@ -216,11 +244,11 @@ merch-card[variant="plans-v2"] [slot="heading-m"] {
     color: inherit;
 }
 
-merch-card[variant="plans-v2"] [slot="heading-m"] .price-wrapper {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
+// merch-card[variant="plans-v2"] [slot="heading-m"] .price-wrapper {
+//     display: flex;
+//     align-items: baseline;
+//     gap: 8px;
+// }
 
 merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant="plans-v2"] [slot="heading-m"] p {
     font-size: 28px;
@@ -232,11 +260,11 @@ merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant
 
 merch-card[variant="plans-v2"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-v2"] [slot="heading-m"] s {
-    font-family: 'Adobe Clean', sans-serif;
-    font-size: 18px;
-    font-weight: 400;
+    font-size: 20px;
     color: #6B6B6B;
     text-decoration: line-through;
+    font-family: 'Adobe Clean', 'adobe-clean', sans-serif;
+    font-weight: 400;
 }
 
 merch-card[variant="plans-v2"] [slot="heading-m"]:has(span[is='inline-price'] + span[is='inline-price']) span[is='inline-price'] {
@@ -254,7 +282,6 @@ merch-card[variant="plans-v2"] [slot="heading-m"] .price-legal {
 merch-card[variant="plans-v2"] [slot="heading-m"] .price-recurrence,
 merch-card[variant="plans-v2"] [slot="heading-m"] span[data-template="recurrence"] {
     text-transform: lowercase;
-    color: #6B6B6B;
     line-height: 1.4;
 }
 
@@ -267,7 +294,6 @@ merch-card[variant="plans-v2"] [slot="heading-m"] span[data-template="recurrence
 merch-card[variant="plans-v2"] [slot="heading-m"] .price-plan-type,
 merch-card[variant="plans-v2"] [slot="heading-m"] span[data-template="planType"] {
     display: block;
-    text-transform: capitalize;
     color: var(--spectrum-gray-700, #505050);
     font-size: 16px;
     font-weight: 400;
@@ -290,6 +316,7 @@ merch-card[variant="plans-v2"] [slot="promo-text"] a {
 }
 
 merch-card[variant="plans-v2"] [slot="body-xs"] {
+    --consonant-merch-card-body-xs-font-size: 18px;
     font-size: 18px;
     font-weight: 400;
     font-family: 'Adobe Clean', sans-serif;
@@ -463,14 +490,14 @@ merch-card-collection-header.plans {
     align-items: stretch;
 }
 
-merch-card-collection.plans merch-card {
+merch-card-collection.plans merch-card[variant="plans-v2"] {
     width: auto;
     height: 100%;
     display: grid;
     grid-template-rows: 1fr auto;
 }
 
-merch-card-collection.plans merch-card[has-short-description] {
+merch-card-collection.plans merch-card[variant="plans-v2"][has-short-description] {
     grid-template-rows: min-content min-content auto;
 }
 
@@ -495,7 +522,10 @@ merch-card-collection.plans merch-card[variant="plans-v2"] aem-fragment + [slot^
     margin-top: calc(40px + var(--consonant-merch-spacing-xxs));
 }
 
-merch-card-collection:has([slot="subtitle"]) merch-card[variant="plans-v2"] {}
+merch-card-collection.plans merch-card[variant="plans-v2"] [slot="short-description"] strong {
+    font-weight: 800;
+    font-size: 18px;
+}
 
 merch-card[variant="plans-v2"][size="wide"] {
     width: 100%;
