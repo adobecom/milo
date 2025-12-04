@@ -71,8 +71,10 @@ function setTooltipPosition(tooltips) {
 }
 
 export default function addTooltipListeners(ownerElement) {
-  ownerElement?.addEventListener('click', () => {
-    if (ownerElement.querySelector('before')) ownerElement.classList.add('hide-tooltip');
+  ownerElement?.addEventListener('click', (e) => {
+    const isTouch = !!e.sourceCapabilities?.firesTouchEvents;
+    const isDisplayNone = window.getComputedStyle(ownerElement, '::before').getPropertyValue('display') === 'none';
+    if (isTouch === isDisplayNone) ownerElement.classList.add('hide-tooltip');
   });
   ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur', 'click'].forEach((eventType) => {
     document.addEventListener(eventType, (event) => {
