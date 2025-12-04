@@ -13,7 +13,10 @@ export const CSS = `
     --picker-up-icon-black: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="10" width="10" viewBox="0 0 10 10"><path d="M5 3L8 6L2 6Z" fill="%222222"/></svg>');
     --picker-down-icon-black: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="10" width="10" viewBox="0 0 10 10"><path d="M5 7L2 4L8 4Z" fill="%222222"/></svg>');
     --consonant-merch-spacing-m: 20px;
-
+    --consonant-merch-card-plans-v2-toggle-background-color: #F8F8F8;
+    --consonant-merch-card-plans-v2-toggle-label-color: #292929;
+    --consonant-merch-card-plans-v2-divider-color: #E8E8E8;
+    --consonant-merch-card-plans-v2-toggle-expanded-background-color: #FFFFFF;
 }
 
 merch-card[variant="plans-v2"] {
@@ -65,6 +68,12 @@ merch-card[variant="plans-v2"] .spacer {
     font-size: 20px;
 }
 
+.dark merch-card[variant="plans-v2"] {
+  --consonant-merch-card-plans-v2-toggle-background-color: var(--consonant-merch-card-background-color);
+  --consonant-merch-card-plans-v2-toggle-expanded-background-color: var(--consonant-merch-card-background-color);
+  --consonant-merch-card-plans-v2-toggle-label-color: #FFFFFF;
+  --consonant-merch-card-plans-v2-divider-color: var(--consonant-merch-card-background-color);
+}
 merch-card[variant="plans-v2"][size="wide"],
 merch-card[variant="plans-v2"][size="super-wide"] {
     width: 100%;
@@ -470,7 +479,7 @@ merch-card-collection.plans merch-card {
     grid-template-rows: 1fr auto;
 }
 
-merch-card-collection.plans merch-card[has-short-description] {
+merch-card-collection.plans merch-card[variant="plans-v2"][has-short-description] {
     grid-template-rows: min-content min-content auto;
 }
 

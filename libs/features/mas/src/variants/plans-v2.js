@@ -166,6 +166,8 @@ export class PlansV2 extends VariantLayout {
     }
 
     async postCardUpdateHook() {
+        if (!this.card.isConnected) return;
+
         this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustAddon();
@@ -181,18 +183,29 @@ export class PlansV2 extends VariantLayout {
             await this.adjustLegal();
         }
 
-        // Height syncing - only on desktop
-        if (!this.card.isConnected) return;
-
+        // Wait for card and prices to be ready
         await this.card.updateComplete;
-        await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+        if (this.card.prices?.length > 0) {
+            await Promise.all(this.card.prices.map((price) => price.onceSettled?.() || Promise.resolve()));
+        }
 
+        // Sync heights after all adjustments complete (desktop only)
         if (window.matchMedia('(min-width: 768px)').matches) {
-            // Only schedule one sync at a time to prevent excessive calls
-            if (!this.syncScheduled) {
-                this.syncScheduled = true;
+            const container = this.getContainer();
+            if (!container) return;
+
+            const prefix = `--consonant-merch-card-${this.card.variant}`;
+            const hasExistingVars = container.style.getPropertyValue(`${prefix}-body-height`);
+
+            if (!hasExistingVars) {
+                // First card: sync all cards in container
                 requestAnimationFrame(() => {
-                    this.syncScheduled = false;
+                    const cards = container.querySelectorAll(`merch-card[variant="${this.card.variant}"]`);
+                    cards.forEach(card => card.variantLayout?.syncHeights?.());
+                });
+            } else {
+                // Subsequent cards: sync only this card
+                requestAnimationFrame(() => {
                     this.syncHeights();
                 });
             }
@@ -203,113 +216,23 @@ export class PlansV2 extends VariantLayout {
         return this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
     }
 
-    groupCardsByRow(cards) {
-        const rows = [];
-        const cardPositions = cards.map(card => ({
-            card,
-            top: card.getBoundingClientRect().top
-        }));
-
-        // Sort by Y position
-        cardPositions.sort((a, b) => a.top - b.top);
-
-        // Group cards with similar Y positions (within 5px tolerance)
-        let currentRow = [];
-        let currentTop = null;
-
-        cardPositions.forEach(({ card, top }) => {
-            if (currentTop === null || Math.abs(top - currentTop) < 5) {
-                currentRow.push(card);
-                currentTop = top;
-            } else {
-                if (currentRow.length > 0) rows.push(currentRow);
-                currentRow = [card];
-                currentTop = top;
-            }
-        });
-
-        if (currentRow.length > 0) rows.push(currentRow);
-        return rows;
-    }
-
     syncHeights() {
-        const container = this.getContainer();
-        if (!container) return;
+        if (this.card.getBoundingClientRect().width <= 2) return;
 
-        // Prevent simultaneous syncing
-        if (container.__plans_v2_syncing) return;
-        container.__plans_v2_syncing = true;
-
-        const cards = Array.from(container.querySelectorAll('merch-card[variant="plans-v2"]'));
-        if (cards.length === 0) {
-            container.__plans_v2_syncing = false;
-            return;
+        const body = this.card.shadowRoot?.querySelector('.body');
+        if (body) {
+            this.updateCardElementMinHeight(body, 'body');
         }
 
-        // Sync heights immediately - no need to wait for intersection
-        const rows = this.groupCardsByRow(cards);
+        const footer = this.card.shadowRoot?.querySelector('footer');
+        if (footer) {
+            this.updateCardElementMinHeight(footer, 'footer');
+        }
 
-        // First, clear all height variables to allow natural sizing
-        cards.forEach(card => {
-            card.style.removeProperty('--consonant-merch-card-plans-v2-body-height');
-            card.style.removeProperty('--consonant-merch-card-plans-v2-footer-height');
-            card.style.removeProperty('--consonant-merch-card-plans-v2-short-description-height');
-        });
-
-        // Force reflow
-        document.body.offsetHeight;
-
-        // Sync heights for each row independently
-        rows.forEach(rowCards => {
-            // Get body heights - read natural clientHeight after clearing constraints
-            // Exclude cards without quantity-select as they have different layout
-            const cardsWithQS = rowCards.filter(card => card.querySelector('[slot="quantity-select"]'));
-            const cardsToSync = cardsWithQS.length > 0 ? cardsWithQS : rowCards;
-
-            const bodyHeights = cardsToSync.map(card => {
-                const body = card.shadowRoot?.querySelector('.body');
-                return body ? body.clientHeight : 0;
-            }).filter(h => h > 0);
-
-            // Get footer heights
-            const footerHeights = rowCards.map(card => {
-                const footer = card.shadowRoot?.querySelector('footer');
-                return footer ? parseInt(window.getComputedStyle(footer).height) || 0 : 0;
-            }).filter(h => h > 0);
-
-            // Get short-description heights
-            const shortDescHeights = rowCards.map(card => {
-                const shortDesc = card.querySelector('[slot="short-description"]');
-                return shortDesc ? parseInt(window.getComputedStyle(shortDesc).height) || 0 : 0;
-            }).filter(h => h > 0);
-
-            // Apply max heights to all cards in this row
-            if (bodyHeights.length > 0) {
-                const maxBodyHeight = Math.max(...bodyHeights);
-                rowCards.forEach(card => {
-                    card.style.setProperty('--consonant-merch-card-plans-v2-body-height', `${maxBodyHeight}px`);
-                });
-            }
-
-            if (footerHeights.length > 0) {
-                const maxFooterHeight = Math.max(...footerHeights);
-                rowCards.forEach(card => {
-                    card.style.setProperty('--consonant-merch-card-plans-v2-footer-height', `${maxFooterHeight}px`);
-                });
-            }
-
-            if (shortDescHeights.length > 0) {
-                const maxShortDescHeight = Math.max(...shortDescHeights);
-                rowCards.forEach(card => {
-                    card.style.setProperty('--consonant-merch-card-plans-v2-short-description-height', `${maxShortDescHeight}px`);
-                });
-            }
-        });
-
-        // Reset sync flag after a delay to allow for future recalculations if needed
-        setTimeout(() => {
-            container.__plans_v2_syncing = false;
-        }, 100);
+        const shortDescription = this.card.querySelector('[slot="short-description"]');
+        if (shortDescription) {
+            this.updateCardElementMinHeight(shortDescription, 'short-description');
+        }
     }
 
     async adjustLegal() {
@@ -458,11 +381,31 @@ export class PlansV2 extends VariantLayout {
 
         Media.matchMobile.addEventListener('change', this.handleMediaChange);
         Media.matchDesktopOrUp.addEventListener('change', this.handleMediaChange);
+
+        // Observe card visibility to trigger height sync when tab becomes visible
+        this.visibilityObserver = new IntersectionObserver(([entry]) => {
+            // Only sync when card has real dimensions (not hidden in tab)
+            if (entry.boundingClientRect.height === 0) return;
+            if (!entry.isIntersecting) return;
+
+            // Card is now visible, trigger height sync on desktop
+            if (window.matchMedia('(min-width: 768px)').matches) {
+                requestAnimationFrame(() => {
+                    this.syncHeights();
+                });
+            }
+
+            // Only need to observe once
+            this.visibilityObserver.disconnect();
+        });
+
+        this.visibilityObserver.observe(this.card);
     }
 
     disconnectedCallbackHook() {
         Media.matchMobile.removeEventListener('change', this.handleMediaChange);
         Media.matchDesktopOrUp.removeEventListener('change', this.handleMediaChange);
+        this.visibilityObserver?.disconnect();
     }
 
     renderLayout() {
@@ -676,7 +619,7 @@ export class PlansV2 extends VariantLayout {
 
         :host([variant='plans-v2']) .short-description-divider {
             height: 1px;
-            background-color: #E8E8E8;
+            background-color: var(--consonant-merch-card-plans-v2-divider-color, #E8E8E8);
             margin: 0;
         }
 
@@ -687,21 +630,17 @@ export class PlansV2 extends VariantLayout {
             gap: 16px;
             padding: 16px 32px;
             cursor: pointer;
-            background-color: #FFFFFF;
+            background-color: var(--consonant-merch-card-plans-v2-toggle-background-color, #F8F8F8);
             transition: background-color 0.2s ease;
             border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
             border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
-        }
-
-        :host([variant='plans-v2']) .short-description-toggle:not(.expanded) {
-            background-color: #F8F8F8;
         }
 
         :host([variant='plans-v2']) .short-description-toggle .toggle-label {
             font-size: 18px;
             font-weight: 700;
             font-family: 'Adobe Clean', sans-serif;
-            color: #292929;
+            color: var(--consonant-merch-card-plans-v2-toggle-label-color, #292929);
             text-align: left;
             flex: 1;
             line-height: 22px;
@@ -736,7 +675,6 @@ export class PlansV2 extends VariantLayout {
         :host([variant='plans-v2']) .short-description-content.expanded {
             max-height: 500px;
             padding: 24px 32px;
-            background-color: #FFFFFF;
             border-bottom-right-radius: 16px;
             border-bottom-left-radius: 16px;
         }
@@ -914,6 +852,10 @@ export class PlansV2 extends VariantLayout {
 
             :host([variant='plans-v2']) .short-description-toggle {
                 padding: 16px;
+            }
+
+            :host([variant='plans-v2']) .short-description-toggle.expanded {
+              background-color: var(--consonant-merch-card-plans-v2-toggle-expanded-background-color, #FFFFFF);
             }
 
             :host([variant='plans-v2']) .short-description-content {
