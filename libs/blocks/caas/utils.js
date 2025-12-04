@@ -518,7 +518,8 @@ const getFilterArray = async (state, country, lang, strs) => {
 };
 
 const getCategoryMappings = async (state) => {
-  console.log('state.categoriesMappingFile', state.categoriesMappingFile);
+  if (!state.categoriesMappingFile) return {};
+  console.log('[DEBUG] state.categoriesMappingFile', state.categoriesMappingFile);
   const mappings = await fetch(state.categoriesMappingFile);
   if (mappings.ok) {
     const json = await mappings.json();
@@ -822,7 +823,7 @@ export const getConfig = async (originalState, strs = {}) => {
       filters: await getFilterArray(state, country, language, strs),
       categories: await getCategoryArray(state, country, language),
       filterLogic: state.filterLogic,
-      // categoriesMappingFile: state.categoriesMappingFile || '',
+      categoriesMappingFile: state.categoriesMappingFile,
       categoryMappings: await getCategoryMappings(state) || {},
       i18n: {
         leftPanel: {
@@ -993,6 +994,7 @@ export const defaultState = {
   filterBuildPanel: 'automatic',
   filterLocation: 'left',
   filterLogic: 'or',
+  categoriesMappingFile: '',
   filters: [],
   filtersCustom: [],
   filtersShowEmpty: false,
