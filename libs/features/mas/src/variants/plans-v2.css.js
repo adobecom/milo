@@ -2,22 +2,9 @@
 import { MOBILE_LANDSCAPE, TABLET_DOWN, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 
 export const CSS = `
-@font-face {
-    font-family: adobe-clean-display;
-    font-style: normal;
-    font-weight: 800;
-    src: url(/libs/features/mas/dist/fonts/AdobeCleanDisplay-ExtraBold.otf) format("opentype")
-}
-
-@font-face {
-    font-family: adobe-clean-display;
-    font-style: normal;
-    font-weight: 900;
-    src: url(/libs/features/mas/dist/fonts/AdobeCleanDisplay-Black.otf) format("opentype")
-}
 
 :root {
-    --consonant-merch-card-plans-v2-font-family: 'adobe-clean-display', 'Adobe Clean', sans-serif;
+    --consonant-merch-card-plans-v2-font-family: 'Adobe Clean', sans-serif;
     --consonant-merch-card-plans-v2-width: 385px;
     --consonant-merch-card-plans-v2-height: auto;
     --consonant-merch-card-plans-v2-icon-size: 41.5px;

@@ -173,7 +173,11 @@ class MainNavItem {
     const triggerElement = triggerEl || items[curr];
     if (!triggerElement || !triggerElement.hasAttribute('aria-haspopup')) return;
     if (e) e.preventDefault();
-    if (triggerElement.getAttribute('aria-expanded') === 'false' && !(this.isTestNav && triggerElement.closest('.feds-navItem--megaMenu'))) {
+    const parentNavItem = triggerElement.closest('.feds-navItem');
+    const isExpanded = triggerElement.getAttribute('aria-expanded') === 'false';
+    const hasHoverCaret = this.isTestNav
+      && parentNavItem?.querySelector(':scope > .feds-navLink--hoverCaret');
+    if (isExpanded && !hasHoverCaret) {
       trigger({ element: triggerElement });
       if (this.isTestNav && this.desktop.matches) {
         document.querySelector('.global-navigation').classList.add('dropdown-active');
