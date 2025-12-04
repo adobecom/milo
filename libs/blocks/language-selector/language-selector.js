@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { createTag, getConfig, getLanguage, loadLanguageConfig, setInternational } from '../../utils/utils.js';
 
 function sendAnalyticsEvent(eventName, type = 'click') {
@@ -207,16 +208,15 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
-const getInternationalCookieValue = (prefix) => {
+export const getInternationalCookieValue = (prefix) => {
   if (!prefix) return 'us';
-
   const segments = prefix.split('/');
-  let cookieValue = segments.length > 1
+  const cookieValue = segments.length > 1
     ? segments[1]
     : (getConfig().languages?.[prefix]?.region || prefix);
 
-  cookieValue = cookieValue === 'gb' ? 'uk' : cookieValue === 'apac' ? 'au' : cookieValue;
-  return cookieValue;
+  const regionMapping = { gb: 'uk', apac: 'au' };
+  return regionMapping[cookieValue] || cookieValue;
 };
 
 function renderLanguages({
