@@ -523,7 +523,12 @@ const getCategoryMappings = async (state) => {
   const mappings = await fetch(state.categoriesMappingFile);
   if (mappings.ok) {
     const json = await mappings.json();
-    return json.data;
+    const data = json.data || [];
+    // Convert comma-separated items into arrays
+    return data.map((entry) => ({
+      ...entry,
+      items: entry.items ? entry.items.split(',').map((item) => item.trim()) : [],
+    }));
   }
   return {};
 };
