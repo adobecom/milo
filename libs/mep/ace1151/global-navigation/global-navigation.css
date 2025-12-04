@@ -1977,11 +1977,14 @@ header.test-nav .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-p
   font-weight: 800;
   font-size: 24px;
   margin-top: 32px;
-  margin-left: 300px;
+  padding-left: 15%;
   width: 100%;
   max-width: var(--feds-maxWidth-nav);
 }
 
+header.test-nav .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-popup > .feds-menu-content .feds-menu-column .feds-navLink {
+  padding-left: 0;
+}
 
 /*up test*/
 
@@ -2234,6 +2237,10 @@ header.test-nav .feds-popup.loading.hide {
   }
 
   header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup {
+    padding-left: 5%;
+  }
+
+  header.test-nav .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-popup > .feds-menu-content {
     padding-left: 5%;
   }
 }
