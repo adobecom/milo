@@ -293,6 +293,7 @@ merch-card[variant="plans-v2"] [slot="heading-m"] span[data-template="recurrence
 
 merch-card[variant="plans-v2"] [slot="heading-m"] .price-plan-type,
 merch-card[variant="plans-v2"] [slot="heading-m"] span[data-template="planType"] {
+    text-transform: unset;
     display: block;
     color: var(--spectrum-gray-700, #505050);
     font-size: 16px;
@@ -464,15 +465,10 @@ merch-card[variant="plans-v2"] .help-text {
         --consonant-merch-card-plans-v2-width: 385px;
     }
 }
-
-.collection-container.plans {
+collection-container.plans:has(merch-card[variant="plans-v2"]) {
     --merch-card-collection-card-min-height: 273px;
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-v2-width);
     grid-template-columns: auto;
-}
-
-merch-sidenav.plans-v2 {
-    --merch-sidenav-padding: 16px 20px 16px 16px;
 }
 
 merch-card-collection-header.plans {
@@ -480,10 +476,7 @@ merch-card-collection-header.plans {
     --merch-card-collection-header-areas: "result filter";
 }
 
-.one-merch-card.plans,
-.two-merch-cards.plans,
-.three-merch-cards.plans,
-.four-merch-cards.plans {
+merch-card-collection.plans:is(.one-merch-cards, .two-merch-cards, .three-merch-cards, .four-merch-cards):has(merch-card[variant="plans-v2"]) {
     --merch-card-collection-card-width: 100%;
     display: grid;
     grid-auto-rows: 1fr;
@@ -592,14 +585,11 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
         display: none;
     }
 
-    merch-card-collection.merch-card-collection.plans {
+    merch-card-collection.plans:is(.one-merch-cards, .two-merch-cards, .three-merch-cards, .four-merch-cards):has(merch-card[variant="plans-v2"]) {
         grid-auto-rows: auto;
     }
 
-    .one-merch-card.plans,
-    .two-merch-cards.plans,
-    .three-merch-cards.plans,
-    .four-merch-cards.plans {
+    merch-card-collection.plans:is(.one-merch-cards, .two-merch-cards, .three-merch-cards, .four-merch-cards):has(merch-card[variant="plans-v2"]) {
         --merch-card-collection-card-width: unset !important;
     }
 }
@@ -609,10 +599,10 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
     :root {
         --consonant-merch-card-plans-v2-width: 360px;
     }
-    .four-merch-cards.plans-v2 .foreground {
+    merch-card-collection.plans.four-merch-cards:has(merch-card[variant="plans-v2"]) .foreground {
         max-width: unset;
     }
-    .two-merch-cards, .three-merch-cards, .four-merch-cards {
+    merch-card-collection.plans:is(.two-merch-cards, .three-merch-cards, .four-merch-cards):has(merch-card[variant="plans-v2"]) {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-v2-width));
     }
     merch-card[variant="plans-v2"][size="wide"], merch-card[variant="plans-v2"][size="super-wide"]{
@@ -626,11 +616,7 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
         --consonant-merch-card-plans-v2-width: 385px;
     }
 
-    merch-sidenav.plans-v2 {
-        --merch-sidenav-collection-gap: 30px;
-    }
-
-    .three-merch-cards, .four-merch-cards.plans {
+    merch-card-collection.plans:is(.three-merch-cards, .four-merch-cards):has(merch-card[variant="plans-v2"]) {
         grid-template-columns: repeat(3, var(--consonant-merch-card-plans-v2-width));
     }
 
@@ -638,31 +624,13 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
         --merch-card-collection-header-columns: fit-content(100%);
         --merch-card-collection-header-areas: "custom";
     }
-
-    .collection-container.plans:has(merch-sidenav) {
-        width: fit-content;
-        max-width: 100%;
-        position: relative;
-        left: 50%;
-        transform: translateX(-50vw);
-        justify-content: start;
-        padding-inline: 30px;
-    }
 }
 
 /* Large Desktop */
 @media screen and ${LARGE_DESKTOP} {
-    .four-merch-cards.plans,
-    .four-merch-cards.plans-v2 {
-        grid-template-columns: repeat(4, var(--consonant-merch-card-plans-v2-width));
-    }
+.columns .four-merch-cards.plans:has(merch-card[variant="plans-v2"]) {
+    grid-template-columns: repeat(2, var(--consonant-merch-card-plans-v2-width));
+  }
 
-    .columns .four-merch-cards.plans {
-        grid-template-columns: repeat(4, var(--consonant-merch-card-plans-v2-width));
-    }
-
-    merch-sidenav.plans-v2 {
-        --merch-sidenav-collection-gap: 54px;
-    }
 }
 `;
