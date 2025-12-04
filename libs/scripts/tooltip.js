@@ -70,13 +70,8 @@ function setTooltipPosition(tooltips) {
   });
 }
 
-export default function addTooltipListeners(ownerElement) {
-  ownerElement?.addEventListener('click', (e) => {
-    const isTouch = !!e.sourceCapabilities?.firesTouchEvents;
-    const isDisplayNone = window.getComputedStyle(ownerElement, '::before').getPropertyValue('display') === 'none';
-    if (isTouch === isDisplayNone) ownerElement.classList.add('hide-tooltip');
-  });
-  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur', 'click'].forEach((eventType) => {
+export default function addTooltipListeners() {
+  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
     document.addEventListener(eventType, (event) => {
       const isTooltip = event.target?.matches?.('.milo-tooltip');
       if (!isTooltip && eventType !== 'keydown') return;
@@ -84,7 +79,7 @@ export default function addTooltipListeners(ownerElement) {
       if (['mouseenter', 'focus'].includes(eventType)) {
         event.target.classList.remove('hide-tooltip');
         setTooltipPosition([event.target]);
-      } else if (['mouseleave', 'blur', 'click'].includes(eventType)) {
+      } else if (['mouseleave', 'blur'].includes(eventType)) {
         event.target.classList.add('hide-tooltip');
         event.target.blur();
       } else if (eventType === 'keydown' && event.key === 'Escape') {
