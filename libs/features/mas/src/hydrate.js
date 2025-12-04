@@ -207,6 +207,8 @@ export function processBorderColor(fields, merchCard, variantMapping) {
         // Check if it's a gradient using specialValues or pattern matching
         const specialValue = borderColorConfig?.specialValues?.[fields.borderColor];
         const isGradient = specialValue?.includes('gradient') || /-gradient/.test(fields.borderColor);
+        // Check if it's a spectrum color that needs attribute-based styling
+        const isSpectrumColor = /^spectrum-.*-plans$/.test(fields.borderColor);
 
         if (isGradient) {
             // For gradients, set both attributes needed for CSS selectors
@@ -226,6 +228,15 @@ export function processBorderColor(fields, merchCard, variantMapping) {
 
             merchCard.setAttribute('border-color', borderColorKey);
             merchCard.style.removeProperty(customBorderColor);
+        } else if (isSpectrumColor) {
+            // For spectrum colors (like spectrum-red-700-plans), set both attribute and CSS variable
+            // Attribute enables CSS selectors like :host([border-color='spectrum-red-700-plans']) for drop-shadow
+            // CSS variable is still needed for border color rendering
+            merchCard.setAttribute('border-color', fields.borderColor);
+            merchCard.style.setProperty(
+                customBorderColor,
+                `var(--${fields.borderColor})`,
+            );
         } else {
             // For regular colors, use CSS variable
             merchCard.style.setProperty(
