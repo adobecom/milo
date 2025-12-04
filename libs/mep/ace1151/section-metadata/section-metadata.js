@@ -173,11 +173,16 @@ function isInDeeplinkTab(section) {
 }
 
 function isInDeeplinkHash() {
-  const hash = window.location.hash.substring(1);
-  if (!hash) return false;
-  const hashParams = new URLSearchParams(hash);
   const deeplinkParams = ['filter', 'category', 'search', 'sort', 'types', 'single_app', 'page'];
-  return deeplinkParams.some((param) => hashParams.has(param));
+
+  const hash = window.location.hash.substring(1);
+  if (hash) {
+    const hashParams = new URLSearchParams(hash);
+    if (deeplinkParams.some((param) => hashParams.has(param))) return true;
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  return deeplinkParams.some((param) => searchParams.has(param));
 }
 
 async function loadFragmentContent(placeholder, url) {
@@ -400,7 +405,7 @@ export default async function init(el) {
         const immediateScroll = () => {
           const rect = toggleButton.getBoundingClientRect();
           const currentPosition = rect.top + window.scrollY;
-          const targetScroll = Math.max(0, currentPosition - 60);
+          const targetScroll = Math.max(0, currentPosition - 88);
           window.scrollTo({ top: targetScroll, behavior: 'instant' });
         };
         setTimeout(immediateScroll, 50);
@@ -419,8 +424,8 @@ export default async function init(el) {
             if (stableCount >= 3) {
               // Position stable for 3 frames, do final smooth scroll if needed
               const currentTop = rect.top;
-              if (Math.abs(currentTop - 60) > 5) {
-                const targetScroll = Math.max(0, currentPosition - 60);
+              if (Math.abs(currentTop - 88) > 5) {
+                const targetScroll = Math.max(0, currentPosition - 88);
                 window.scrollTo({ top: targetScroll, behavior: 'smooth' });
               }
               toggleButton.setAttribute('data-programmatic-focus', 'true');
@@ -434,7 +439,7 @@ export default async function init(el) {
             stableCount = 0;
             // if position changed significantly, adjust scroll immediately
             if (Math.abs(currentPosition - lastPosition) > 50) {
-              const targetScroll = Math.max(0, currentPosition - 60);
+              const targetScroll = Math.max(0, currentPosition - 88);
               window.scrollTo({ top: targetScroll, behavior: 'instant' });
             }
           }
