@@ -1616,7 +1616,7 @@ merch-card[variant="plans-v2"] span.price-unit-type {
 
 merch-card[variant="plans-v2"] span.price-unit-type {
     display: inline;
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 900;
     line-height: 110%;
 }
@@ -1736,7 +1736,7 @@ merch-card[variant="plans-v2"][size="wide"] [slot="subtitle"] {
 }
 
 merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant="plans-v2"] [slot="heading-m"] p {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 900;
     font-family: var(--consonant-merch-card-plans-v2-font-family);
     color: var(--spectrum-gray-800, #2C2C2C);
@@ -1752,6 +1752,7 @@ merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant
         letter-spacing: 0px;
     }
 
+    merch-card[variant="plans-v2"] span.price-unit-type,
     merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant="plans-v2"] [slot="heading-m"] p {
         font-size: 28px;
     }
