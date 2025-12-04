@@ -415,7 +415,7 @@ const getLocalTitle = (tag, country, lang) => {
 };
 
 const getFilterObj = (
-  { excludeTags, filterTag, icon, openedOnLoad, useCategories },
+  { excludeTags, filterTag, icon, openedOnLoad },
   tags,
   state,
   country,
@@ -440,7 +440,6 @@ const getFilterObj = (
   const filterObj = {
     id: tagId,
     openedOnLoad: !!openedOnLoad,
-    useCategories: !!useCategories,
     items,
     group: getLocalTitle(tag, country, lang),
   };
@@ -489,7 +488,7 @@ const getCategoryArray = async (state, country, lang) => {
       title: value.title,
       icon: value.icon || '',
       items: Object.entries(value.tags)
-        .map((tag) => getFilterObj({ excludeTags: [], filterTag: [tag[1].tagID], icon: '', openedOnLoad: false, useCategories: false}, tags, state, country, lang))
+        .map((tag) => getFilterObj({ excludeTags: [], filterTag: [tag[1].tagID], icon: '', openedOnLoad: false}, tags, state, country, lang))
         .filter((tag) => tag !== null),
     }));
 
@@ -516,6 +515,15 @@ const getFilterArray = async (state, country, lang, strs) => {
   }
 
   return filters;
+};
+
+const getCategoryMappings = async (state) => {
+  console.log('state.categoriesMappingFile', state.categoriesMappingFile);
+  const mappings = await fetch(state.categoriesMappingFile);
+  if (mappings.ok) {
+    return mappings.json();
+  }
+  return {};
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
@@ -813,7 +821,8 @@ export const getConfig = async (originalState, strs = {}) => {
       filters: await getFilterArray(state, country, language, strs),
       categories: await getCategoryArray(state, country, language),
       filterLogic: state.filterLogic,
-      categoriesMappingFile: state.categoriesMappingFile || '',
+      // categoriesMappingFile: state.categoriesMappingFile || '',
+      categoryMappings: await getCategoryMappings(state) || {},
       i18n: {
         leftPanel: {
           header: strs.filterLeftPanel || 'Refine Your Results',
@@ -922,8 +931,9 @@ export const getConfig = async (originalState, strs = {}) => {
     headers: caasRequestHeaders,
   };
 
-  console.log('***** config', config.filterPanel);
-  return config;
+  console.log('********** config ****************************************');
+  console.log(config);
+  console.log('********** config ****************************************');
 };
 
 export const initCaas = async (state, caasStrs, el) => {

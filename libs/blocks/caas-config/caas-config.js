@@ -624,7 +624,6 @@ const FilterPanel = ({ tagsData }) => {
       subTitle=""
     >
       <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
-      <${FormInput} label="Use Categories Mapping File" name="useCategories" type="checkbox" />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
       <${FormInput} label="Icon Path" name="icon" />
       <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
