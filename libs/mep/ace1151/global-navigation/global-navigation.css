@@ -1413,6 +1413,11 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > bu
   padding: 15px 20px;
 }
 
+header.new-nav .feds-nav-wrapper--expanded .feds-nav > .feds-navItem >  a.feds-navLink {
+  font-size: 20px;
+  font-weight: 400;
+}
+
 [dir = "rtl"] header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
   translate: 100px 0;
   animation: rtlslideleft 0.4s ease, fadein 0.2s ease;
