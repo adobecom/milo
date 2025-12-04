@@ -183,7 +183,7 @@ function getSidenav(collection) {
     const resourceItem = createTag('sp-sidenav-item', {
       href: sidenavSettings.link,
       target: '_blank',
-      'aria-label': sidenavSettings.linkText
+      'aria-label': sidenavSettings.linkText,
     });
 
     resourceItem.textContent = sidenavSettings.linkText || 'Link';
