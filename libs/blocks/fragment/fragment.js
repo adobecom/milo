@@ -223,7 +223,7 @@ export default async function init(a) {
     const qiResult = await getQueryIndexPaths(matchingRegion.prefix, isLcp);
     const qiResolved = qiResult.resolved !== false;
     const qiAvailable = qiResult.available;
-    // *******TODO: remove qiAvailable = false when ready to check against query index****
+    // For testing on pages without queryIndex setup:
     // const qiAvailable = false;
     const rocPathname = new URL(rocPath).pathname;
     const rocInIndex = qiResult.paths?.length > 0 && qiResult.paths.includes(rocPathname);
