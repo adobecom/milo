@@ -100,20 +100,30 @@ const fetchRocParallel = async (rocPath, fallbackPath) => {
 async function getQueryIndexPaths(prefix, checkImmediate = false) {
   const unavailable = { resolved: false, paths: [], available: false };
   try {
-    const config = getConfig();
-    const imsClientId = config?.imsClientId ?? '';
-    const clientIndex = queryIndexes?.[imsClientId];
-
-    if (!clientIndex) return checkImmediate ? unavailable : { paths: [], available: false };
+    const allIndexes = Object.values(queryIndexes || {});
+    if (!allIndexes.length) return checkImmediate ? unavailable : { paths: [], available: false };
 
     if (checkImmediate) {
-      if (!clientIndex.requestResolved) return unavailable;
-      const paths = await clientIndex.pathsRequest;
-      return { resolved: true, paths: Array.isArray(paths) ? paths : [], available: true };
+      const resolved = allIndexes.filter((idx) => idx.requestResolved);
+      for (const index of resolved) {
+        const paths = await index.pathsRequest;
+        if (paths?.some((p) => p.startsWith(prefix))) {
+          return { resolved: true, paths, available: true };
+        }
+      }
+      return resolved.length ? { resolved: true, paths: [], available: true } : unavailable;
     }
 
-    const paths = await clientIndex.pathsRequest;
-    return { paths: Array.isArray(paths) ? paths : [], available: true };
+    const results = await Promise.all(
+      allIndexes.map(async (index) => {
+        const paths = await index.pathsRequest;
+        return { paths, hasMatch: paths?.some((p) => p.startsWith(prefix)) };
+      }),
+    );
+
+    const match = results.find((r) => r.hasMatch);
+    const anyLoaded = results.some((r) => Array.isArray(r.paths));
+    return match ? { paths: match.paths, available: true } : { paths: [], available: anyLoaded };
   } catch (e) {
     window.lana?.log(`Query index error for ${prefix}:`, e);
     return checkImmediate ? unavailable : { paths: [], available: false };
@@ -212,9 +222,9 @@ export default async function init(a) {
     const isLcp = section?.dataset.idx === '0';
     const qiResult = await getQueryIndexPaths(matchingRegion.prefix, isLcp);
     const qiResolved = qiResult.resolved !== false;
-    // *******TODO: revert to qiAvailable when ready to check against query index****
-    // const qiAvailable = qiResult.available;
-    const qiAvailable = false;
+    const qiAvailable = qiResult.available;
+    // *******TODO: remove qiAvailable = false when ready to check against query index****
+    // const qiAvailable = false;
     const rocPathname = new URL(rocPath).pathname;
     const rocInIndex = qiResult.paths?.length > 0 && qiResult.paths.includes(rocPathname);
 
