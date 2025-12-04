@@ -521,7 +521,8 @@ const getCategoryMappings = async (state) => {
   console.log('state.categoriesMappingFile', state.categoriesMappingFile);
   const mappings = await fetch(state.categoriesMappingFile);
   if (mappings.ok) {
-    return mappings.json();
+    const json = await mappings.json();
+    return json.data;
   }
   return {};
 };
@@ -934,6 +935,8 @@ export const getConfig = async (originalState, strs = {}) => {
   console.log('********** config ****************************************');
   console.log(config);
   console.log('********** config ****************************************');
+
+  return config;
 };
 
 export const initCaas = async (state, caasStrs, el) => {
