@@ -505,6 +505,11 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   font-weight: 700;
 }
 
+.hero-marquee.s2a-video-border .video-container {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
 /* tablet down */
 @media screen and (max-width: 1199px) {
   /* Mweb specific changes for lockup */
