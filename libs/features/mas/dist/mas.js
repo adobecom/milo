@@ -2486,7 +2486,7 @@ merch-card-collection-header.plans {
     align-items: stretch;
 }
 
-merch-card-collection.plans merch-card {
+merch-card-collection.plans merch-card[variant="plans-v2"] {
     width: auto;
     height: 100%;
     display: grid;
