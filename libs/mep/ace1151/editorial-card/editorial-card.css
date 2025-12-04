@@ -691,6 +691,12 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 }
 
 /* overrides for homepage spacing */
+@media screen and (min-width: 600px) {
+  :root .editorial-card.s2a-editorial-separate-mobile > .foreground {
+    padding-top: 46px !important;
+  }
+}
+
 @media screen and (min-width: 1200px) {
   .section.s2a-full-width-mobile:has(.editorial-card.s2a-editorial-separate-mobile) {
     row-gap: 84px;
