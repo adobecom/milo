@@ -217,22 +217,17 @@ export class PlansV2 extends VariantLayout {
     }
 
     syncHeights() {
+
         if (this.card.getBoundingClientRect().width <= 2) return;
 
         const body = this.card.shadowRoot?.querySelector('.body');
-        if (body) {
-            this.updateCardElementMinHeight(body, 'body');
-        }
+        if (body) this.updateCardElementMinHeight(body, 'body');
 
         const footer = this.card.shadowRoot?.querySelector('footer');
-        if (footer) {
-            this.updateCardElementMinHeight(footer, 'footer');
-        }
+        if (footer) this.updateCardElementMinHeight(footer, 'footer');
 
         const shortDescription = this.card.querySelector('[slot="short-description"]');
-        if (shortDescription) {
-            this.updateCardElementMinHeight(shortDescription, 'short-description');
-        }
+        if (shortDescription) this.updateCardElementMinHeight(shortDescription, 'short-description');
     }
 
     async adjustLegal() {

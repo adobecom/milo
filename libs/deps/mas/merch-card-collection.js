@@ -1511,6 +1511,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
         }
     `),g(Q,"collectionOptions",{customHeaderArea:t=>t.sidenav?vt`<slot name="resultsText"></slot>`:qt,headerVisibility:{search:!1,sort:!1,result:["mobile","tablet"],custom:["desktop"]},onSidenavAttached:t=>{let r=()=>{let i=t.querySelectorAll("merch-card");for(let n of i)n.hasAttribute("data-size")&&(n.setAttribute("size",n.getAttribute("data-size")),n.removeAttribute("data-size"));if(!L.isDesktop)return;let a=0;for(let n of i){if(n.style.display==="none")continue;let o=n.getAttribute("size"),s=o==="wide"?2:o==="super-wide"?3:1;s===2&&a%3===2&&(n.setAttribute("data-size",o),n.removeAttribute("size"),s=1),a+=s}};L.matchDesktop.addEventListener("change",r),t.addEventListener(ce,r),t.onUnmount.push(()=>{L.matchDesktop.removeEventListener("change",r),t.removeEventListener(ce,r)})}});import{html as ge,css as Qo,unsafeCSS as sa,nothing as Wt}from"../lit-all.min.js";var oa=`
 :root {
+    --consonant-merch-card-plans-v2-font-family-regular: 'Adobe Clean', 'adobe-clean', sans-serif;
     --consonant-merch-card-plans-v2-font-family: 'Adobe Clean Display', 'adobe-clean-display', 'Adobe Clean', 'adobe-clean', sans-serif;
     --consonant-merch-card-plans-v2-width: 385px;
     --consonant-merch-card-plans-v2-height: auto;
@@ -1622,19 +1623,19 @@ merch-card[variant="plans-v2"] .price-unit-type:not(.disabled)::before {
 
 merch-card[variant="plans-v2"] .price-unit-type.disabled,
 merch-card[variant="plans-v2"] .price-tax-inclusivity.disabled {
-    display: none !important;
+    display: none;
 }
 
 merch-card[variant="plans-v2"] [slot="heading-m"] .price-unit-type.disabled,
 merch-card[variant="plans-v2"] [slot="heading-m"] .price-tax-inclusivity.disabled {
-    display: none !important;
+    display: none;
 }
 
 merch-card[variant="plans-v2"] s .price-unit-type.disabled,
 merch-card[variant="plans-v2"] s .price-tax-inclusivity.disabled,
 merch-card[variant="plans-v2"] .price-strikethrough .price-unit-type.disabled,
 merch-card[variant="plans-v2"] .price-strikethrough .price-tax-inclusivity.disabled {
-    display: none !important;
+    display: none;
 }
 
 merch-card[variant="plans-v2"] [slot="description"] {
@@ -1660,13 +1661,9 @@ merch-card[variant^="plans-v2"] span[data-template="legal"] {
     display: inline;
     color: var(--spectrum-gray-600, #6E6E6E);
     font-size: 16px;
-    font-style: normal !important;
+    font-style: normal;
     font-weight: 400;
     line-height: 1.375;
-}
-
-merch-card[variant="plans-v2"] span[data-template="legal"] .price-plan-type {
-    font-style: italic;
 }
 
 merch-card[variant="plans-v2"] span.text-l {
@@ -1721,7 +1718,7 @@ merch-card[variant="plans-v2"] [slot="heading-xs"] {
 merch-card[variant="plans-v2"] [slot="subtitle"] {
     font-size: 18px;
     font-weight: 700;
-    font-family: 'Adobe Clean', sans-serif;
+    font-family: var(--consonant-merch-card-plans-v2-font-family-regular);
     color: var(--spectrum-gray-800, #2C2C2C);
     line-height: 23px;
 }
@@ -1752,12 +1749,6 @@ merch-card[variant="plans-v2"] [slot="heading-m"] {
     color: inherit;
 }
 
-// merch-card[variant="plans-v2"] [slot="heading-m"] .price-wrapper {
-//     display: flex;
-//     align-items: baseline;
-//     gap: 8px;
-// }
-
 merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant="plans-v2"] [slot="heading-m"] p {
     font-size: 28px;
     font-weight: 900;
@@ -1771,7 +1762,7 @@ merch-card[variant="plans-v2"] [slot="heading-m"] s {
     font-size: 20px;
     color: #6B6B6B;
     text-decoration: line-through;
-    font-family: 'Adobe Clean', 'adobe-clean', sans-serif;
+    font-family: var(--consonant-merch-card-plans-v2-font-family-regular);
     font-weight: 400;
 }
 
@@ -1806,14 +1797,14 @@ merch-card[variant="plans-v2"] [slot="heading-m"] span[data-template="planType"]
     color: var(--spectrum-gray-700, #505050);
     font-size: 16px;
     font-weight: 400;
-    font-family: 'Adobe Clean', sans-serif;
+    font-family: var(--consonant-merch-card-plans-v2-font-family-regular);
     line-height: 1.4;
 }
 
 merch-card[variant="plans-v2"] [slot="promo-text"] {
     font-size: 16px;
     font-weight: 700;
-    font-family: 'Adobe Clean', sans-serif;
+    font-family: var(--consonant-merch-card-plans-v2-font-family-regular);
     color: var(--merch-color-green-promo, #05834E);
     line-height: 1.5;
     margin-bottom: 16px;
@@ -1828,7 +1819,7 @@ merch-card[variant="plans-v2"] [slot="body-xs"] {
     --consonant-merch-card-body-xs-font-size: 18px;
     font-size: 18px;
     font-weight: 400;
-    font-family: 'Adobe Clean', sans-serif;
+    font-family: var(--consonant-merch-card-plans-v2-font-family-regular);
     color: var(--spectrum-gray-700, #505050);
     line-height: 1.4;
 }
@@ -1911,7 +1902,7 @@ merch-card[variant="plans-v2"] [slot="footer"] a.con-button.outline:hover {
 merch-card[variant="plans-v2"] h4 {
     font-size: 18px;
     font-weight: 700;
-    font-family: 'Adobe Clean', sans-serif;
+    font-family: var(--consonant-merch-card-plans-v2-font-family-regular);
     color: var(--spectrum-gray-800, #292929);
     line-height: 22px;
     margin: 0 0 16px 0;
@@ -1933,7 +1924,7 @@ merch-card[variant="plans-v2"] ul {
 }
 
 merch-card[variant="plans-v2"] ul li {
-    font-family: 'Adobe Clean', sans-serif;
+    font-family: var(--consonant-merch-card-plans-v2-font-family-regular);
     color: #292929;
     line-height: 140%;
     display: inline-flex;
@@ -2067,7 +2058,6 @@ merch-card[variant="plans-v2"][size="wide"] [slot="heading-m"] {
     margin-top: 0;
 }
 
-merch-card[variant="plans-v2"][size="wide"] [slot="heading-m"] .price-plan-type,
 merch-card[variant="plans-v2"][size="wide"] [slot="heading-m"] span[data-template="planType"] {
     font-style: italic;
 }
@@ -2098,7 +2088,7 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
     }
 
     merch-card-collection.plans:is(.one-merch-cards, .two-merch-cards, .three-merch-cards, .four-merch-cards):has(merch-card[variant="plans-v2"]) {
-        --merch-card-collection-card-width: unset !important;
+        --merch-card-collection-card-width: unset;
     }
 }
 
@@ -2115,7 +2105,6 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
     }
     merch-card[variant="plans-v2"][size="wide"], merch-card[variant="plans-v2"][size="super-wide"]{
       padding: 55px 47px;
-      margin-left: auto;
     }
 }
 
