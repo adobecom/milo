@@ -1513,7 +1513,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 :root {
     --consonant-merch-card-plans-v2-font-family-regular: 'Adobe Clean', 'adobe-clean', sans-serif;
     --consonant-merch-card-plans-v2-font-family: 'Adobe Clean Display', 'adobe-clean-display', 'Adobe Clean', 'adobe-clean', sans-serif;
-    --consonant-merch-card-plans-v2-width: 385px;
+    --consonant-merch-card-plans-v2-width: 276px;
     --consonant-merch-card-plans-v2-height: auto;
     --consonant-merch-card-plans-v2-icon-size: 41.5px;
     --consonant-merch-card-plans-v2-border-color: #E9E9E9;
@@ -1557,6 +1557,10 @@ merch-card[variant="plans-v2"] .spacer {
 /* Keep "What you get" section white in dark mode */
 .dark merch-card[variant="plans-v2"] merch-whats-included {
     background-color: #FFFFFF;
+}
+
+.dark merch-card[variant="plans-v2"] [slot="body-xs"] .spectrum-Link.spectrum-Link--primary {
+    color: #FFFFFF;
 }
 
 .dark merch-card[variant="plans-v2"] merch-whats-included h4,
@@ -1693,7 +1697,7 @@ merch-card[variant="plans-v2"] [slot="icons"] img {
 }
 
 merch-card[variant="plans-v2"] [slot="heading-xs"] {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 900;
     font-family: var(--consonant-merch-card-plans-v2-font-family);
     line-height: 1.1;
@@ -1731,6 +1735,14 @@ merch-card[variant="plans-v2"][size="wide"] [slot="subtitle"] {
     line-height: 1.1;
 }
 
+merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant="plans-v2"] [slot="heading-m"] p {
+    font-size: 22px;
+    font-weight: 900;
+    font-family: var(--consonant-merch-card-plans-v2-font-family);
+    color: var(--spectrum-gray-800, #2C2C2C);
+    line-height: 1.1;
+}
+
 /* Mobile-specific wide card subtitle styles */
 @media ${$} {
     merch-card[variant="plans-v2"][size="wide"] [slot="subtitle"] {
@@ -1738,6 +1750,10 @@ merch-card[variant="plans-v2"][size="wide"] [slot="subtitle"] {
         font-weight: 900;
         line-height: 1.1;
         letter-spacing: 0px;
+    }
+
+    merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant="plans-v2"] [slot="heading-m"] p {
+        font-size: 28px;
     }
 }
 
@@ -1747,14 +1763,6 @@ merch-card[variant="plans-v2"] [slot="heading-m"] {
     gap: 4px;
     margin-bottom: 8px;
     color: inherit;
-}
-
-merch-card[variant="plans-v2"] [slot="heading-m"] span.price, merch-card[variant="plans-v2"] [slot="heading-m"] p {
-    font-size: 28px;
-    font-weight: 900;
-    font-family: var(--consonant-merch-card-plans-v2-font-family);
-    color: var(--spectrum-gray-800, #2C2C2C);
-    line-height: 1.1;
 }
 
 merch-card[variant="plans-v2"] [slot="heading-m"] span.price.price-strikethrough,
@@ -1961,7 +1969,7 @@ merch-card[variant="plans-v2"] .help-text {
 
 @media screen and ${I}, ${P}, ${re} {
     :root {
-        --consonant-merch-card-plans-v2-width: 385px;
+        --consonant-merch-card-plans-v2-width: 276px;
     }
 }
 collection-container.plans:has(merch-card[variant="plans-v2"]) {
@@ -2111,11 +2119,15 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
 /* Desktop */
 @media screen and ${P} {
     :root {
-        --consonant-merch-card-plans-v2-width: 385px;
+        --consonant-merch-card-plans-v2-width: 276px;
     }
 
-    merch-card-collection.plans:is(.three-merch-cards, .four-merch-cards):has(merch-card[variant="plans-v2"]) {
+    merch-card-collection.plans:is(.three-merch-cards):has(merch-card[variant="plans-v2"]) {
         grid-template-columns: repeat(3, var(--consonant-merch-card-plans-v2-width));
+    }
+
+    merch-card-collection.plans:is(.four-merch-cards):has(merch-card[variant="plans-v2"]) {
+        grid-template-columns: repeat(4 , var(--consonant-merch-card-plans-v2-width));
     }
 
     merch-card-collection-header.plans {
@@ -2423,6 +2435,7 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
             background-color: #FFFFFF;
             border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
             border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            width: 226px;
         }
 
         :host([variant='plans-v2']) .short-description-content ::slotted([slot='short-description']) {
@@ -2594,6 +2607,7 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
 
             :host([variant='plans-v2']) .short-description-content {
                 padding: 0 16px;
+                width: auto !important;
             }
 
             :host([variant='plans-v2']) .short-description-content.expanded {

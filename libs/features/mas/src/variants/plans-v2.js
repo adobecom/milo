@@ -684,6 +684,7 @@ export class PlansV2 extends VariantLayout {
             background-color: #FFFFFF;
             border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
             border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            width: 226px;
         }
 
         :host([variant='plans-v2']) .short-description-content ::slotted([slot='short-description']) {
@@ -855,6 +856,7 @@ export class PlansV2 extends VariantLayout {
 
             :host([variant='plans-v2']) .short-description-content {
                 padding: 0 16px;
+                width: auto !important;
             }
 
             :host([variant='plans-v2']) .short-description-content.expanded {
