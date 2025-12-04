@@ -518,7 +518,7 @@ const getFilterArray = async (state, country, lang, strs) => {
 };
 
 const getCategoryMappings = async (state) => {
-  if (!state.categoriesMappingFile) return {};
+  if (!state.categoriesMappingFile) return [];
   console.log('[DEBUG] state.categoriesMappingFile', state.categoriesMappingFile);
   const mappings = await fetch(state.categoriesMappingFile);
   if (mappings.ok) {
@@ -530,7 +530,7 @@ const getCategoryMappings = async (state) => {
       items: entry.items ? entry.items.split(',').map((item) => item.trim()) : [],
     }));
   }
-  return {};
+  return [];
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
