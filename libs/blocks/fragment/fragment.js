@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLink, localizeLinkAsync, customFetch, queryIndexes,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, queryIndexes,
 } from '../../utils/utils.js';
 
 const fragMap = {};
