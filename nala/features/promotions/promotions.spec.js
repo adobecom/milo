@@ -192,5 +192,16 @@ module.exports = {
       },
       tags: '@promo @commerce @smoke @regression @milo',
     },
+    {
+      tcid: '17',
+      name: '@Promo-mas-replace-subcollection-with-subcollection',
+      path: '/drafts/nala/features/commerce/plans?mep=/drafts/nala/features/promotions/manifests/promo-replace-subcollection-with-subcollection.json#filter=photo',
+      data: {
+        collectionId: 'cffc325f-3405-4619-8892-75c303a37966',
+        cardId: 'c80e5353-792a-4d1b-b187-5e8583e71023',
+        filter: 'photo:2:wide',
+      },
+      tags: '@promo @commerce @smoke @regression @milo',
+    },
   ],
 };
