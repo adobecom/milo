@@ -823,7 +823,6 @@ export const getConfig = async (originalState, strs = {}) => {
       filters: await getFilterArray(state, country, language, strs),
       categories: await getCategoryArray(state, country, language),
       filterLogic: state.filterLogic,
-      categoriesMappingFile: state.categoriesMappingFile,
       categoryMappings: await getCategoryMappings(state) || {},
       i18n: {
         leftPanel: {
