@@ -3,6 +3,7 @@ const {
   getLocalConfigs,
   isWithinRCP,
   isWithinPrePostRCP,
+  isStageFreezeActive,
   pulls: { addLabels, addFiles, getChecks, getReviews },
   ZERO_IMPACT_PREFIX
 } = require('./helpers.js');
@@ -216,6 +217,8 @@ const main = async (params) => {
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
   if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
+  if (isStageFreezeActive()) return console.log('Stopped, batches are not created four days prior to a RCP to ensure a clean stage branch for emergencies.');
+
   try {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
