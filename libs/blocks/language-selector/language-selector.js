@@ -1,4 +1,22 @@
-import { createTag, getConfig, getLanguage, loadLanguageConfig } from '../../utils/utils.js';
+import { createTag, getConfig, getLanguage, loadLanguageConfig, setInternational } from '../../utils/utils.js';
+
+function sendAnalyticsEvent(eventName, type = 'click') {
+  if (window._satellite?.track) {
+    window._satellite.track('event', {
+      xdm: {},
+      data: {
+        eventType: 'web.webinteraction.linkClicks',
+        web: {
+          webInteraction: {
+            name: eventName,
+            linkClicks: { value: 1 },
+            type,
+          },
+        },
+      },
+    });
+  }
+}
 
 const queriedPages = [];
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -189,6 +207,18 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
+const getInternationalCookieValue = (prefix) => {
+  if (!prefix) return 'us';
+
+  const segments = prefix.split('/');
+  let cookieValue = segments.length > 1
+    ? segments[1]
+    : (getConfig().languages?.[prefix]?.region || prefix);
+
+  cookieValue = cookieValue === 'gb' ? 'uk' : cookieValue === 'apac' ? 'au' : cookieValue;
+  return cookieValue;
+};
+
 function renderLanguages({
   languageList,
   languagesList,
@@ -245,7 +275,10 @@ function renderLanguages({
           ${lang.name === currentLang.name ? CHECKMARK_SVG : ''}
         `;
         langLink.addEventListener('click', (e) => {
+          sendAnalyticsEvent(`language-switch:${lang.prefix || 'us'}`);
           e.preventDefault();
+          const cookieValue = getInternationalCookieValue(lang.prefix);
+          setInternational(cookieValue);
           const { pathname, href } = window.location;
           const currentLangForPath = getCurrentLanguage(filteredLanguages);
           const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
@@ -304,8 +337,12 @@ function setupDropdownEvents({
   let hasDragged = false;
   let isDropdownOpen = false;
   let documentClickHandler = null;
+  let languageSelected = false;
 
   const closeDropdown = () => {
+    if (!languageSelected) {
+      sendAnalyticsEvent('language-selector:dismissed', 'dismissal');
+    }
     isDropdownOpen = false;
     dropdown.style.display = 'none';
     selectedLangButton.setAttribute('aria-expanded', 'false');
@@ -373,6 +410,8 @@ function setupDropdownEvents({
   });
 
   async function openDropdown() {
+    sendAnalyticsEvent('language-selector:opened');
+    languageSelected = false;
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
@@ -427,6 +466,12 @@ function setupDropdownEvents({
         toFocus.focus();
         languageList.setAttribute('aria-activedescendant', toFocus.parentElement.id);
       }
+    }
+  });
+
+  languageList.addEventListener('click', (e) => {
+    if (e.target.closest('a.language-link')) {
+      languageSelected = true;
     }
   });
 
