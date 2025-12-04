@@ -607,6 +607,7 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
     }
     merch-card[variant="plans-v2"][size="wide"], merch-card[variant="plans-v2"][size="super-wide"]{
       padding: 55px 47px;
+      margin-left: auto;
     }
 }
 
