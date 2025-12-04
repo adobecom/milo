@@ -227,7 +227,7 @@ export default async function init(a) {
 
       resp = rocResp;
       usedRoc = true;
-      relHref = localizeLink(rocPath);
+      relHref = await localizeLinkAsync(rocPath);
 
       if (a.dataset.mepLingoSectionMetadata) {
         const sectionEl = a.closest('.section');
@@ -260,7 +260,7 @@ export default async function init(a) {
         resp = result.resp;
         usedRoc = result.usedRoc || false;
         usedFallback = result.usedFallback || false;
-        if (usedRoc) relHref = localizeLink(rocPath);
+        if (usedRoc) relHref = await localizeLinkAsync(rocPath);
       }
     }
   } else if (!rocEnabled && isBlockSwap) {
