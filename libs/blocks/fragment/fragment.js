@@ -48,7 +48,7 @@ const updateFragMap = async (fragment, a, href) => {
   }
 };
 
-const insertInlineFrag = async (sections, a, relHref) => {
+const insertInlineFrag = async (sections, a, relHref, fragment) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
@@ -59,6 +59,11 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
+    if (fragment?.dataset?.mepLingoRoc) {
+      child.setAttribute('data-mep-lingo-roc', fragment.dataset.mepLingoRoc);
+    } else if (fragment?.dataset?.mepLingoFallback) {
+      child.setAttribute('data-mep-lingo-fallback', fragment.dataset.mepLingoFallback);
+    }
     if (child.querySelector('a[href*="/fragments/"]')) promises.push(loadArea(child));
   });
   await Promise.all(promises);
@@ -74,25 +79,23 @@ function replaceDotMedia(path, doc) {
   resetAttributeBase('source', 'srcset');
 }
 
-/* ROC (Region-Optimized Content): Serves region-specific fragments based on user location */
-
 const fetchFragment = (path) => customFetch({ resource: `${path}.plain.html`, withCacheRules: true })
   .catch(() => ({}));
 
-const fetchRocThenFallback = async (rocPath, fallbackPath) => {
-  const rocResp = await fetchFragment(rocPath);
-  if (rocResp?.ok) return { resp: rocResp, usedRoc: true };
+const fetchMepLingoThenFallback = async (mepLingoPath, fallbackPath) => {
+  const mepLingoResp = await fetchFragment(mepLingoPath);
+  if (mepLingoResp?.ok) return { resp: mepLingoResp, usedMepLingo: true };
   const fallbackResp = await fetchFragment(fallbackPath);
   if (fallbackResp?.ok) return { resp: fallbackResp, usedFallback: true };
   return {};
 };
 
-const fetchRocParallel = async (rocPath, fallbackPath) => {
-  const [rocResp, fallbackResp] = await Promise.all([
-    fetchFragment(rocPath),
+const fetchMepLingoParallel = async (mepLingoPath, fallbackPath) => {
+  const [mepLingoResp, fallbackResp] = await Promise.all([
+    fetchFragment(mepLingoPath),
     fetchFragment(fallbackPath),
   ]);
-  if (rocResp?.ok) return { resp: rocResp, usedRoc: true };
+  if (mepLingoResp?.ok) return { resp: mepLingoResp, usedMepLingo: true };
   if (fallbackResp?.ok) return { resp: fallbackResp, usedFallback: true };
   return {};
 };
@@ -130,7 +133,7 @@ async function getQueryIndexPaths(prefix, checkImmediate = false) {
   }
 }
 
-function getRocContext(locale) {
+function getMepLingoContext(locale) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('akamaiLocale')?.toLowerCase()
     || sessionStorage.getItem('akamai')
@@ -204,17 +207,19 @@ export default async function init(a) {
     resourcePath = getFederatedUrl(a.href);
   }
 
-  const { country, localeCode, matchingRegion } = getRocContext(locale);
-  const rocEnabled = !!(a.dataset.roc && matchingRegion && country && resourcePath && localeCode);
+  const { country, localeCode, matchingRegion } = getMepLingoContext(locale);
+  const mepLingoEnabled = !!(
+    a.dataset.mepLingo && matchingRegion && country && resourcePath && localeCode
+  );
   const isBlockSwap = !!a.dataset.mepLingoBlockFragment;
 
   let resp;
-  let rocPath;
-  let usedRoc = false;
+  let mepLingoPath;
+  let usedMepLingo = false;
   let usedFallback = false;
 
-  if (rocEnabled && matchingRegion?.prefix) {
-    rocPath = locale.prefix
+  if (mepLingoEnabled && matchingRegion?.prefix) {
+    mepLingoPath = locale.prefix
       ? resourcePath.replace(locale.prefix, matchingRegion.prefix)
       : resourcePath.replace(/^(https?:\/\/[^/]+)/, `$1${matchingRegion.prefix}`);
 
@@ -223,29 +228,27 @@ export default async function init(a) {
     const qiResult = await getQueryIndexPaths(matchingRegion.prefix, isLcp);
     const qiResolved = qiResult.resolved !== false;
     const qiAvailable = qiResult.available;
-    // For testing on pages without queryIndex setup:
-    // const qiAvailable = false;
-    const rocPathname = new URL(rocPath).pathname;
-    const rocInIndex = qiResult.paths?.length > 0 && qiResult.paths.includes(rocPathname);
+    const mepLingoPathname = new URL(mepLingoPath).pathname;
+    const mepLingoInIndex = qiResult.paths?.length > 0 && qiResult.paths.includes(mepLingoPathname);
 
     if (isBlockSwap) {
-      const shouldTryRoc = !qiAvailable || rocInIndex;
-      if (!shouldTryRoc) { a.parentElement.remove(); return; }
+      const shouldTryMepLingo = !qiAvailable || mepLingoInIndex;
+      if (!shouldTryMepLingo) { a.parentElement.remove(); return; }
 
-      const rocResp = await fetchFragment(rocPath);
-      if (!rocResp?.ok) { a.parentElement.remove(); return; }
+      const mepLingoResp = await fetchFragment(mepLingoPath);
+      if (!mepLingoResp?.ok) { a.parentElement.remove(); return; }
 
-      resp = rocResp;
-      usedRoc = true;
-      relHref = await localizeLinkAsync(rocPath);
+      resp = mepLingoResp;
+      usedMepLingo = true;
+      relHref = await localizeLinkAsync(mepLingoPath);
 
       if (a.dataset.mepLingoSectionMetadata) {
         const sectionEl = a.closest('.section');
         if (sectionEl) {
-          a.parentElement.dataset.mepRocSectionContent = true;
+          a.parentElement.dataset.mepLingoSectionContent = true;
           sectionEl.style = '';
           [...sectionEl.children].forEach((child) => {
-            if (!child.dataset.mepRocSectionContent) child.remove();
+            if (!child.dataset.mepLingoSectionContent) child.remove();
           });
         }
       } else {
@@ -257,31 +260,31 @@ export default async function init(a) {
       let result;
       const useQueryIndex = qiResolved && qiAvailable;
 
-      if (useQueryIndex && rocInIndex) {
-        result = await fetchRocThenFallback(rocPath, resourcePath);
-      } else if (useQueryIndex && !rocInIndex) {
+      if (useQueryIndex && mepLingoInIndex) {
+        result = await fetchMepLingoThenFallback(mepLingoPath, resourcePath);
+      } else if (useQueryIndex && !mepLingoInIndex) {
         const fallbackResp = await fetchFragment(resourcePath);
         if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
       } else {
-        result = await fetchRocParallel(rocPath, resourcePath);
+        result = await fetchMepLingoParallel(mepLingoPath, resourcePath);
       }
 
       if (result?.resp) {
         resp = result.resp;
-        usedRoc = result.usedRoc || false;
+        usedMepLingo = result.usedMepLingo || false;
         usedFallback = result.usedFallback || false;
-        if (usedRoc) relHref = await localizeLinkAsync(rocPath);
+        if (usedMepLingo) relHref = await localizeLinkAsync(mepLingoPath);
       }
     }
-  } else if (!rocEnabled && isBlockSwap) {
+  } else if (!mepLingoEnabled && isBlockSwap) {
     a.parentElement.remove();
   } else {
     resp = await fetchFragment(resourcePath);
   }
 
   if (!resp?.ok) {
-    const message = rocEnabled
-      ? `Could not get ROC fragments: ${rocPath}.plain.html or ${resourcePath}.plain.html`
+    const message = mepLingoEnabled
+      ? `Could not get mep-lingo fragments: ${mepLingoPath}.plain.html or ${resourcePath}.plain.html`
       : `Could not get fragment: ${resourcePath}.plain.html`;
     window.lana?.log(message);
     return;
@@ -299,7 +302,7 @@ export default async function init(a) {
   }
 
   const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
-  if (usedRoc) {
+  if (usedMepLingo) {
     fragmentAttrs['data-mep-lingo-roc'] = relHref;
   } else if (usedFallback) {
     fragmentAttrs['data-mep-lingo-fallback'] = relHref;
@@ -321,12 +324,12 @@ export default async function init(a) {
     if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
   if (inline) {
-    await insertInlineFrag(sections, a, relHref, mep);
+    await insertInlineFrag(sections, a, relHref, fragment);
   } else {
     a.parentElement.replaceChild(fragment, a);
 
     if (a.dataset.removeOriginalBlock && a.dataset.originalBlockId) {
-      const originalBlock = document.querySelector(`[data-roc-original-block="${a.dataset.originalBlockId}"]`);
+      const originalBlock = document.querySelector(`[data-mep-lingo-original-block="${a.dataset.originalBlockId}"]`);
       if (originalBlock) originalBlock.remove();
     }
 

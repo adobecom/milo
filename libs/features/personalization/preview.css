@@ -388,20 +388,17 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   content: attr(data-manifest-id);
 }
 
-/* Show link icon for fragments with paths */
 body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before {
   content: '🔗 ' attr(data-manifest-display);
   cursor: pointer !important;
 }
 
-/* Disable pointer events for manifest badges without fragments */
 body[data-mep-highlight='true'] [data-manifest-id]:not([data-fragment-path])::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   pointer-events: none !important;
 }
 
-/* Common styles for all highlight badges */
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
@@ -424,30 +421,28 @@ body[data-mep-fragments='true'] [data-fragment-default]::before {
   box-shadow: 0 3px 8px 1px #808080;
 }
 
-/* Green theme for manifest badges */
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   background-color: #d4edda !important;
   border: 1px solid #28a745;
 }
 
-/* Green theme for lingo ROC */
 body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {
-  content: '🔗 roc: ' attr(data-mep-lingo-roc);
+  content: '🔗 mep-lingo: ' attr(data-mep-lingo-roc);
   cursor: pointer !important;
   background-color: #d4edda !important;
   border: 1px solid #28a745;
+  text-align: left !important;
 }
 
-/* Yellow theme for lingo fallback */
 body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
-  content: '🔗 roc: ' attr(data-mep-lingo-fallback);
+  content: '🔗 fallback: ' attr(data-mep-lingo-fallback);
   cursor: pointer !important;
   background-color: #fff3cd !important;
   border: 1px solid #ffc107;
+  text-align: left !important;
 }
 
-/* Gray theme for default fragments */
 body[data-mep-fragments='true'] [data-fragment-default]::before {
   content: '🔗 fragment: ' attr(data-fragment-display);
   cursor: pointer !important;

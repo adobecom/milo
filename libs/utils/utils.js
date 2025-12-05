@@ -1089,8 +1089,8 @@ export function decorateAutoBlock(a) {
       }
 
       // Modals (exclude special fragment hashes)
-      const isRocFrag = url.hash.includes('#_roc');
-      if (url.hash !== '' && !isInlineFrag && !isRocFrag && !url.hash.includes('#_replacecell')) {
+      const isMepLingoFrag = url.hash.includes('#_mep-lingo');
+      if (url.hash !== '' && !isInlineFrag && !isMepLingoFrag && !url.hash.includes('#_replacecell')) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
@@ -1233,15 +1233,17 @@ export async function decorateLinksAsync(el) {
         linkCell = linkCell.parentElement;
       }
       const previousCell = linkCell?.previousElementSibling;
-      const isRocRow = previousCell?.textContent?.toLowerCase().trim() === 'roc';
+      const cellText = previousCell?.textContent?.toLowerCase().trim();
+      const isRocRow = cellText === 'roc' || cellText === 'mep-lingo';
+
       if (isRocRow) {
         const swapBlock = a.closest('[class]');
         if (swapBlock) {
           const blockName = swapBlock.classList[0];
 
-          if (blockName === 'roc-fragment') {
+          if (blockName === 'mep-lingo' || blockName === 'roc-fragment') {
             const p = createTag('p', null, a);
-            a.dataset.roc = true;
+            a.dataset.mepLingo = true;
             swapBlock.insertAdjacentElement('afterend', p);
             swapBlock.remove();
           } else {
@@ -1253,24 +1255,24 @@ export async function decorateLinksAsync(el) {
               a.dataset.mepLingoSectionMetadata = true;
               a.dataset.removeOriginalBlock = true;
               a.dataset.originalBlockId = `block-${Math.random().toString(36).substring(2, 11)}`;
-              swapBlock.dataset.rocOriginalBlock = a.dataset.originalBlockId;
+              swapBlock.dataset.mepLingoOriginalBlock = a.dataset.originalBlockId;
               swapBlock.insertAdjacentElement('afterend', p);
             } else {
               a.dataset.removeOriginalBlock = true;
               a.dataset.originalBlockId = `block-${Math.random().toString(36).substring(2, 11)}`;
-              swapBlock.dataset.rocOriginalBlock = a.dataset.originalBlockId;
+              swapBlock.dataset.mepLingoOriginalBlock = a.dataset.originalBlockId;
               swapBlock.insertAdjacentElement('afterend', p);
             }
-            if (a.href.includes('#_roc')) a.href = a.href.replace('#_roc', '');
+            if (a.href.includes('#_mep-lingo')) a.href = a.href.replace('#_mep-lingo', '');
             a.dataset.mepLingoBlockFragment = a.href;
-            a.dataset.roc = true;
+            a.dataset.mepLingo = true;
           }
         }
       }
 
-      if (a.href.includes('#_roc') && !isRocBlockSwap) {
-        a.dataset.roc = true;
-        a.href = a.href.replace('#_roc', '');
+      if (a.href.includes('#_mep-lingo') && !isRocBlockSwap) {
+        a.dataset.mepLingo = true;
+        a.href = a.href.replace('#_mep-lingo', '');
       }
     });
   }
