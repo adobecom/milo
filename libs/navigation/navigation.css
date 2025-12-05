@@ -69,12 +69,6 @@ header.global-navigation + .feds-localnav {
   display: none;
 }
 
-.feds-client-view-plans {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 @media (min-width: 900px) {
   .feds-promo-link {
     color: var(--navigation-link-color);
