@@ -164,6 +164,11 @@
   -moz-appearance: none;
 }
 
+.email-collection select:not(:disabled) {
+  -webkit-text-fill-color: #000;
+  background: #fff;
+}
+
 .email-collection .select-wrapper::after {
   content: '';
   background: url('./icons/chevron-down.svg') no-repeat center #E9E9E9;
