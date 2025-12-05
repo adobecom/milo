@@ -1,0 +1,124 @@
+{
+    "description": "",
+    "fields": {
+        "cards": [
+            "bebecafebabe"
+        ],
+        "collections": [],
+        "icon": "https://main--milo--adobecom.hlx.page/drafts/astatescu/icons/camera.svg",
+        "label": "PZN PHOTO"
+      },
+    "path": "/content/dam/mas/sandbox/en_US/individual-plans-photo",
+    "title": "PZN PHOTO",
+    "id": "cafe-babe",
+    "model": {
+        "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+    },
+    "name": "",
+    "references": {
+      "bebecafebabe": {
+          "type": "content-fragment",
+          "value": {
+              "description": "PZN CARD",
+              "fields": {
+                  "badge": {
+                      "mimeType": "text/html"
+                  },
+                  "callout": {
+                      "mimeType": "text/html"
+                  },
+                  "cardTitle": "Photography  (1TB)",
+                  "ctas": {
+                      "mimeType": "text/html",
+                      "value": "<a class=\"accent\" data-wcs-osi=\"BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c\" data-template=\"checkoutUrl\" target=\"_self\" data-analytics-id=\"buy-now\">buy-now</a>"
+                  },
+                  "description": {
+                      "mimeType": "text/html",
+                      "value": "<p>Edit and organize photos for Fred. Save&nbsp;25% for the first 6 months.&nbsp;Ends Feb 26.&nbsp;<a href=\"https://www.adobe.com/offer-terms/ccpp-1tb-terms.html\" target=\"_blank\">See terms.</a><br><a href=\"https://www.adobe.com/creativecloud/photography/compare-plans.html\">Compare photography plans</a><br><a class=\"modal-Link\" href=\"https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/photography1tb/master.html\" target=\"_blank\">See all plans &amp; pricing details</a></p>"
+                  },
+                  "mnemonicAlt": ["Lightroom", "Illustrator"],
+                  "mnemonicIcon": [
+                      "https://www.adobe.com/content/dam/shared/images/product-icons/svg/lightroom.svg",
+                      "https://www.adobe.com/content/dam/shared/images/product-icons/svg/photoshop.svg"
+                  ],
+                  "mnemonicLink": [
+                      "https://www.adobe.com/products/catalog.html",
+                      "https://www.adobe.com"
+                  ],
+                  "prices": {
+                      "mimeType": "text/html"
+                  },
+                  "promoCode": "Save over 30% with an annual plan.",
+                  "shortDescription": {
+                      "mimeType": "text/html"
+                  },
+                  "showStockCheckbox": true,
+                  "tags": [
+                      "mas:offer_type/base",
+                      "mas:market_segments/com",
+                      "mas:customer_segment/individual",
+                      "mas:product/cc/photoshop",
+                      "mas:product/cc/lightroom"
+                  ],
+                  "variant": "plans"
+              },
+              "id": "bebecafebabe",
+              "model": {
+                  "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+              },
+              "name": "",
+              "path": "/content/dam/mas/sandbox/en_US/ilyas-test-placeholders",
+              "title": "PZN CARD"
+          }
+      },
+    "mas:commitment/access_pass": {
+          "type": "tag",
+          "value": {
+              "description": "",
+              "i18n": [],
+              "id": "mas:commitment/access_pass",
+              "name": "access_pass",
+              "path": "/content/cq:tags/mas/commitment/access_pass",
+              "title": "ACCESS_PASS",
+              "titlePath": "Merch at Scale : Commitment / ACCESS_PASS"
+          }
+      },
+      "mas:offer_type/base": {
+          "type": "tag",
+          "value": {
+              "description": null,
+              "i18n": [],
+              "id": "mas:offer_type/base",
+              "name": "base",
+              "path": "/content/cq:tags/mas/offer_type/base",
+              "title": "Base",
+              "titlePath": "Merch at Scale : Offer type / Base"
+          }
+      },
+      "mas:plan_type/abm": {
+          "type": "tag",
+          "value": {
+              "description": "",
+              "i18n": [],
+              "id": "mas:plan_type/abm",
+              "name": "abm",
+              "path": "/content/cq:tags/mas/plan_type/abm",
+              "title": "ABM",
+              "titlePath": "Merch at Scale : Plan type / ABM"
+          }
+      }
+    },
+    "referencesTree": [      
+        {
+            "fieldName": "cards",
+            "identifier": "bebecafebabe",
+            "referencesTree": [
+                {
+                    "fieldName": "tags",
+                    "identifier": "mas:offer_type/base",
+                    "referencesTree": []
+                }
+            ]
+        }
+    ]
+}

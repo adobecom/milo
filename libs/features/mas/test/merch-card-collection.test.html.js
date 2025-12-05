@@ -9,7 +9,6 @@ import { pushState } from '../src/deeplink.js';
 import {
     appendMiloStyles,
     delay,
-    oneEvent,
     toggleDesktop,
     toggleLargeDesktop,
     toggleMobile,
@@ -298,18 +297,32 @@ runTests(async () => {
             expect(visibleCards().length).to.equal(28);
             expect(showMoreButton.isConnected).to.be.false;
         });
-    })
+    });
+    describe('merch-card-collection plans features', () => {
+        it('handles wide card minification on small desktop', async () => {
+            await toggleDesktop();
+            [merchCards, render] = prepareTemplate('plansWideReflow', false);
+            render();
+            await merchCards.checkReady();
+            const sidenav = document.querySelector('merch-sidenav');
+            merchCards.attachSidenav(sidenav, false);
+            await delay(100);
+            const secondCard = merchCards.querySelector('merch-card:nth-child(2)');
+            expect(secondCard.getAttribute('data-size')).to.equal('wide');
+        });
+    });
 
     describe('merch-card-collection override feature', () => {
       let collectionElement;
 
       beforeEach(async () => {
-          document.location.hash = '';
-          [collectionElement, render] = prepareTemplate('override', false);
+          document.location.hash = '';          
       });
 
       it('should hydrate from child aem-fragment, with overriden ids', async () => {
+        [collectionElement, render] = prepareTemplate('override', false);
         render();
+  
         const aemFragment = customElements.get('aem-fragment');
         await collectionElement.checkReady();
         const fragment1 = collectionElement.querySelector('aem-fragment[fragment="cafe-bebebe"]');
@@ -325,21 +338,20 @@ runTests(async () => {
         expect(collectionElement.querySelector('merch-card > aem-fragment[fragment="e58f8f75-b882-409a-9ff8-8826b36a8368"]')).to.not.exist;
         expect(collectionElement.querySelector('merch-card > aem-fragment[fragment="e58f8f75-b882-409a-9ff8-8826b36a8368"]')).to.not.exist;
         aemFragment.cache.clear();
-    });
+      });
 
-    describe('merch-card-collection plans features', () => {
-        it('handles wide card minification on small desktop', async () => {
-            await toggleDesktop();
-            [merchCards, render] = prepareTemplate('plansWideReflow', false);
-            render();
-            await merchCards.checkReady();
-            const sidenav = document.querySelector('merch-sidenav');
-            merchCards.attachSidenav(sidenav, false);
-            await delay(100);
-            const secondCard = merchCards.querySelector('merch-card:nth-child(2)');
-            expect(secondCard.getAttribute('data-size')).to.equal('wide');
-        });
-    });
+      it('should hydrate from child aem-fragment, with overriden child collection', async () => {
+          const fragment = document.createElement('aem-fragment');
+          fragment.setAttribute('fragment', 'cafe-babe');          
+          document.body.appendChild(fragment);
+          await delay(100);
+          [collectionElement, render] = prepareTemplate('override-child', false);
+          render();        
+          const aemFragment = customElements.get('aem-fragment');
+          await collectionElement.checkReady();
+          expect(collectionElement.querySelector('merch-card[id="bebecafebabe"]')).to.exist;
+          aemFragment.cache.clear();
+      });
   })
 });
 
