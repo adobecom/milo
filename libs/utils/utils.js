@@ -802,7 +802,7 @@ export function appendHtmlToLink(link) {
   const { useDotHtml } = getConfig();
   if (!useDotHtml) return;
   const href = link.getAttribute('href');
-  if (!href?.length) return;
+  if (!href?.length || href.includes('#_nohtml')) return;
 
   const { autoBlocks = [], htmlExclude = [] } = getConfig();
 
@@ -1169,6 +1169,9 @@ function decorateLinkElement(a, config, hasDnt) {
   if (a.href.includes('#_nofollow')) {
     a.setAttribute('rel', 'nofollow');
     a.href = a.href.replace('#_nofollow', '');
+  }
+  if (a.href.includes('#_nohtml')) {
+    a.href = a.href.replace('#_nohtml', '');
   }
   // Custom action links
   const loginEvent = '#_evt-login';
@@ -1552,7 +1555,7 @@ export async function loadIms() {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
-    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
+    const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
@@ -1569,6 +1572,11 @@ export async function loadIms() {
         clearTimeout(timeout);
       },
       onError: reject,
+      ...(imsGuest === 'on' && {
+        api_parameters: { check_token: { guest_allowed: true } },
+        enableGuestAccounts: true,
+        enableGuestTokenForceRefresh: true,
+      }),
       ...adobeid,
     };
     const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
@@ -1885,9 +1893,7 @@ export async function loadDeferred(area, blocks, config) {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    const { getPreflightResults } = await import('../blocks/preflight/checks/preflightApi.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
-    getPreflightResults(window.location.href, document);
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {

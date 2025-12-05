@@ -1,6 +1,7 @@
 .email-collection {
   --form-error-color: #D7373F;
   --form-padding: 56px;
+  --focus-outline-margin: 5px;
 }
 
 .email-collection .foreground {
@@ -12,10 +13,18 @@
   box-sizing: border-box;
 }
 
+.email-collection.no-image .foreground {
+  min-height: unset;
+}
+
 .email-collection .text {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.email-collection :not(.message) .text {
+  flex: 1;
 }
 
 .email-collection .image picture {
@@ -70,7 +79,6 @@
 .email-collection .icon-area {
   margin-top: 0;
   margin-bottom: 12px;
-  height: 44px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -79,6 +87,17 @@
   font-weight: 700;
 }
 
+.email-collection .icon-area picture {
+  display: flex;
+  align-items: center;
+}
+
+.email-collection .icon-area picture img {
+  max-width: 200px;
+  max-height: 45px;
+}
+
+.email-collection.mailing-list .icon-area,
 .email-collection .message .icon-area {
   margin-bottom: 24px;
 }
@@ -87,15 +106,14 @@
   margin-bottom: 16px;
 }
 
-.email-collection .icon-area :is(picture, img) {
-  height: 44px;
-  width: 45px;
-}
-
 .email-collection form {
   display: flex;
   flex-direction: column;
   margin-top: 12px;
+}
+
+.email-collection.mailing-list form {
+  margin-top: 24px;
 }
 
 .email-collection .input-container {
@@ -175,7 +193,7 @@
   margin-top: 24px;
 }
 
-.email-collection .message .button-container {
+.email-collection:not(.no-image.mailing-list) .message .button-container {
   justify-content: unset;
 }
 
@@ -206,14 +224,19 @@
   .email-collection {
     width: 80vw;
   }
+
+  .email-collection.no-image {
+    max-width: 700px;
+  }
 }
 
 @media (min-width: 700px) {
   .email-collection .foreground {
     padding: var(--form-padding);
+    padding-bottom: calc(var(--form-padding) - var(--focus-outline-margin));
     display: flex;
     flex-direction: row;
-    gap: 40px;
+    gap: 35px;
     height: inherit;
   }
 
@@ -226,6 +249,10 @@
     display: flex;
     align-items: unset;
     min-width: 0;
+  }
+
+  .email-collection:not(.large-image) .image {
+    margin-bottom: var(--focus-outline-margin);
   }
 
   .email-collection .message .image img {
@@ -254,21 +281,29 @@
     padding: unset;
   }
 
-  .email-collection.large-image .text > * {
-    margin-right: var(--form-padding);
-  }
-
   .email-collection > :not(.message) {
     padding-right: 0;
   }
 
-  .email-collection :not(.message) .text {
+  .email-collection > :not(.message) .text > div {
     overflow-y: auto;
-    justify-content: unset;
+    padding-right: var(--form-padding);
   }
 
-  .email-collection:not(.large-image) :not(.message) .text {
-    padding-right: var(--form-padding);
+  .email-collection.no-image .foreground {
+    padding-left: calc(var(--form-padding) - var(--focus-outline-margin));
+  }
+
+  .email-collection .text > div > * {
+    margin-left: var(--focus-outline-margin);
+  }
+
+  .email-collection .button-container {
+    margin-bottom: var(--focus-outline-margin);
+  }
+
+  .email-collection.large-image .text {
+    padding-bottom: calc(var(--form-padding) - var(--focus-outline-margin));
   }
 }
 
