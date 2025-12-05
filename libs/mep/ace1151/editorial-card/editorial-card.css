@@ -691,12 +691,6 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 }
 
 /* overrides for homepage spacing */
-@media screen and (min-width: 600px) {
-  :root .editorial-card.s2a-editorial-separate-mobile > .foreground {
-    padding-top: 46px !important;
-  }
-}
-
 @media screen and (min-width: 1200px) {
   .section.s2a-full-width-mobile:has(.editorial-card.s2a-editorial-separate-mobile) {
     row-gap: 84px;
@@ -710,4 +704,24 @@ body .editorial-card .s2a-card-overlay:not(.active) button.s2a-card-overlay-btn 
 /* homepage lockup size override */
 :root .editorial-card.s2a-editorial-separate-mobile .lockup-area img {
   --icon-size-xs: 20px;
+}
+
+/* clickable area feature */
+:root .editorial-card.s2a-click.s2a-click-area:hover {
+  cursor: pointer;
+}
+
+:root .editorial-card.s2a-click > .card-footer:hover {
+  cursor: default;
+}
+
+@media screen and (min-width: 600px) {
+  :root .editorial-card.s2a-editorial-separate-mobile > .foreground {
+    padding-top: 46px !important;
+    padding-bottom: calc(var(--spacing-s) / 2);
+  }
+
+  :root .editorial-card.s2a-editorial-separate-mobile > .card-footer {
+    padding-top: calc(var(--spacing-s) / 2);
+  }
 }
