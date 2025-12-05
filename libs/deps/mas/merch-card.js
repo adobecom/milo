@@ -2710,7 +2710,7 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
             font-weight: 400;
             box-sizing: border-box;
             --consonant-merch-card-plans-v2-font-family: 'adobe-clean-display', 'Adobe Clean', sans-serif;
-            --merch-card-plans-v2-min-width: 244px;
+            --merch-card-plans-v2-min-width: 220px;
             --merch-card-plans-v2-padding: 24px 24px;
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
@@ -2731,10 +2731,11 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
             flex: 0 0 auto;
             gap: 12px;
             min-height: var(--merch-card-plans-v2-body-min-height, auto);
+            width: 220px;
         }
 
         :host([variant='plans-v2'][size]) .body {
-            max-width: none;
+            width: auto;
         }
 
         :host([variant='plans-v2']) footer {
@@ -3122,6 +3123,11 @@ merch-card[variant="plans-v2"][size="wide"] footer [slot="heading-m"] {
 
             :host([variant='plans-v2'][size='wide']) .body {
                 padding: 16px;
+                width: auto;
+            }
+
+            :host([variant='plans-v2']) .body {
+                width: auto;
             }
         }
 
