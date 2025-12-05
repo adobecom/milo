@@ -465,7 +465,7 @@ function setupStickyHeader(el) {
 
   const observer = new IntersectionObserver(
     ([entry]) => {
-      if (!el.offsetHeight) return;
+      if (!el.offsetHeight || entry.boundingClientRect.top > window.innerHeight * 0.5) return;
 
       if (!entry.isIntersecting && !isSticky) {
         const firstChild = headerContent.querySelector('.sub-header-item-container:first-child');
