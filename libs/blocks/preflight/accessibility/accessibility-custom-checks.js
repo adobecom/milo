@@ -6,7 +6,7 @@ import checkColorContrast from './check-color-contrast.js';
 const checkFunctions = [
   checkImageAltText,
   checkKeyboardNavigation,
-  checkColorContrast,
+  // checkColorContrast,
 ];
 
 /**
