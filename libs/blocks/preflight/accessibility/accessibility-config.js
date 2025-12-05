@@ -10,6 +10,10 @@ export const AXE_CORE_CONFIG = {
     ['.mep-preview-overlay'],
     ['.preflight-decoration'],
     ['.asset-meta-entry'],
+    ['.milo-preflight-overlay'],
+    ['#preflight'],
+    ['.block-label-container'],
+    ['.adbMsgClientWrapper'],
   ],
   runOnly: {
     type: 'tag',
@@ -30,5 +34,9 @@ export const CUSTOM_CHECKS_CONFIG = {
     ['.mep-preview-overlay'],
     ['.preflight-decoration'],
     ['.asset-meta-entry'],
+    ['.milo-preflight-overlay'],
+    ['#preflight'],
+    ['.block-label-container'],
+    ['.adbMsgClientWrapper'],
   ],
 };
