@@ -358,6 +358,27 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.entitlements = handleEntitlements;
       config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
+
+      // TODO test only - remove for prod and real PR
+      if (window.location.href.startsWith('https://main--da-bacom--adobecom.aem.live/ar') || window.location.href.startsWith('https://main--da-bacom--adobecom.aem.page/ar')) {
+        config.locale.base = 'es';
+        config.queryIndexPath = '/query-index.json';
+        config.uniqueSiteId = 'da-bacom';
+        const lingoMeta = document.createElement('meta');
+        lingoMeta.setAttribute('content', 'on');
+        lingoMeta.setAttribute('name', 'lingo');
+        document.head.append(lingoMeta);
+      }
+      if (window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de') || window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de')) {
+        config.locale.base = 'de';
+        config.queryIndexPath = '/assets/query-index.json';
+        config.uniqueSiteId = 'cc';
+        const lingoMeta = document.createElement('meta');
+        lingoMeta.setAttribute('content', 'on');
+        lingoMeta.setAttribute('name', 'lingo');
+        document.head.append(lingoMeta);
+      }
+
       return config;
     },
     (conf) => (config = conf),
@@ -633,7 +654,7 @@ async function loadQueryIndexes(prefix) {
 
   lingoSiteMapping = (async () => {
     try {
-      const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
+      const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const configJson = await response.json();
 
