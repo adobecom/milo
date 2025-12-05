@@ -108,13 +108,22 @@ async function getQueryIndexPaths(prefix, checkImmediate = false) {
 
     if (checkImmediate) {
       const resolved = allIndexes.filter((idx) => idx.requestResolved);
+      const allMatchingPaths = [];
       for (const index of resolved) {
         const paths = await index.pathsRequest;
         if (paths?.some((p) => p.startsWith(prefix))) {
-          return { resolved: true, paths, available: true };
+          allMatchingPaths.push(...paths);
         }
       }
-      return resolved.length ? { resolved: true, paths: [], available: true } : unavailable;
+      let result;
+      if (allMatchingPaths.length) {
+        result = { resolved: true, paths: allMatchingPaths, available: true };
+      } else if (resolved.length) {
+        result = { resolved: true, paths: [], available: true };
+      } else {
+        result = unavailable;
+      }
+      return result;
     }
 
     const results = await Promise.all(
@@ -124,9 +133,14 @@ async function getQueryIndexPaths(prefix, checkImmediate = false) {
       }),
     );
 
-    const match = results.find((r) => r.hasMatch);
+    // Merge all paths from all indexes that have matching paths
+    const allMatchingPaths = results
+      .filter((r) => r.hasMatch)
+      .flatMap((r) => r.paths || []);
     const anyLoaded = results.some((r) => Array.isArray(r.paths));
-    return match ? { paths: match.paths, available: true } : { paths: [], available: anyLoaded };
+    return allMatchingPaths.length
+      ? { paths: allMatchingPaths, available: true }
+      : { paths: [], available: anyLoaded };
   } catch (e) {
     window.lana?.log(`Query index error for ${prefix}:`, e);
     return checkImmediate ? unavailable : { paths: [], available: false };
@@ -139,6 +153,11 @@ function getMepLingoContext(locale) {
     || sessionStorage.getItem('akamai')
     || window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
       ?.find((t) => t?.name === 'geo')?.description?.toLowerCase();
+
+  const config = getConfig();
+  const mapping = config.mepLingoCountryToRegion;
+  const hasMapping = mapping && mapping[country] !== undefined;
+  const regionalCountry = hasMapping ? mapping[country] : country;
 
   const prefixParts = locale.prefix.split('/').filter(Boolean);
   const [firstPart, secondPart] = prefixParts;
@@ -153,11 +172,11 @@ function getMepLingoContext(locale) {
     localeCode = firstPart;
   }
 
-  let regionKey = `${country}_${localeCode}`;
+  let regionKey = `${regionalCountry}_${localeCode}`;
   let matchingRegion = locale?.regions?.[regionKey];
-  if (!matchingRegion && locale?.regions?.[country]) {
-    regionKey = country;
-    matchingRegion = locale.regions[country];
+  if (!matchingRegion && locale?.regions?.[regionalCountry]) {
+    regionKey = regionalCountry;
+    matchingRegion = locale.regions[regionalCountry];
   }
 
   return { country, localeCode, regionKey, matchingRegion };
