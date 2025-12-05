@@ -271,6 +271,8 @@ const init = async (el) => {
   if (el.classList.contains('s2a-overlay')) decorateHoverText(el);
   if (el.classList.contains('s2a-editorial-accordion')) decorateAccordion(el);
   if (el.classList.contains('s2a-click')) addClickableAreas(el);
+
+  // rebase check
 };
 
 export default init;
