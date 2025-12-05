@@ -200,7 +200,7 @@ const addVideoIcons = (el, metaData) => {
   });
 };
 
-const addClickablAreas = (el) => {
+const addClickableAreas = (el) => {
   const cardButtons = el.querySelectorAll('.card-footer a');
   if (!cardButtons) return;
   const areaUrl = cardButtons[1].href ? cardButtons[1].href : cardButtons[0].href;
@@ -270,7 +270,7 @@ const init = async (el) => {
   handleClickableCard(el);
   if (el.classList.contains('s2a-overlay')) decorateHoverText(el);
   if (el.classList.contains('s2a-editorial-accordion')) decorateAccordion(el);
-  if (el.classList.contains('s2a-click')) addClickablAreas(el);
+  if (el.classList.contains('s2a-click')) addClickableAreas(el);
 };
 
 export default init;
