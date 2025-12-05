@@ -844,6 +844,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
   .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-slides.is-ready {
     flex-wrap: wrap;
+    flex-direction: row;
     align-items: stretch;
     transform: none;
     left: initial;
