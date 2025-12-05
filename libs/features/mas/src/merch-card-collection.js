@@ -368,7 +368,7 @@ export class MerchCardCollection extends LitElement {
                 placeholders: fragment.placeholders,
                 sidenavSettings: prepareSideNavSettings(fragment),
             };
-            
+
             function traverseReferencesTree(root, references) {
                 for (const reference of references) {
                     if (reference.fieldName === 'variations') continue;
