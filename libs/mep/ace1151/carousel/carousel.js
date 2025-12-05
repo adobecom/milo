@@ -859,7 +859,7 @@ export default function init(el) {
   slides[activeSlideIndex - 1]?.classList.add('previous-slide');
   slides[activeSlideIndex].classList.add('active');
   if (menuItems) menuItems[0].classList.add('active');
-  if (slideDescriptions) slideDescriptions[0].classList.add('active');
+  if (slideDescriptions) slideDescriptions[activeSlideIndex].classList.add('active');
   if (isHovering(el)) slides[activeSlideIndex].querySelector('a')?.setAttribute('tabindex', 0);
   slides[activeSlideIndex + 1]?.classList.add('next-slide');
   handleChangingSlides(carouselElements);

@@ -125,3 +125,13 @@
     grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   }
 }
+
+@media screen and (min-width: 2220px) {
+  :root:has(meta[name="theme"][content="s2a"]) .columns.s2a-center .col-1 {
+    text-align: right;
+  }
+
+  :root:has(meta[name="theme"][content="s2a"]) .columns.s2a-center .col-1 > * {
+    display: inline-block;
+  }
+}
