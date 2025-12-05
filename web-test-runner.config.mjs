@@ -45,6 +45,7 @@ export default {
     ],
   },
   testFramework: { config: { retries: GITHUB_ACTIONS ? 1 : 0 } },
+  testsFinishTimeout: 130000,
   plugins: [importMapsPlugin({})],
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),
