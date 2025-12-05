@@ -19,8 +19,9 @@ function updatePreviewButton(popup, pageId) {
 
   selectedInputs.forEach((selected) => {
     const isHidden = selected.closest('select')?.disabled;
+    const isMepLingoSelect = selected.closest('select')?.id?.startsWith('mepLingoRegionSelect');
 
-    if (!selected.value || isHidden) return;
+    if (!selected.value || isHidden || isMepLingoSelect) return;
 
     let { value } = selected;
 
@@ -72,6 +73,18 @@ function updatePreviewButton(popup, pageId) {
     simulateHref.searchParams.set('mepButton', 'off');
   } else {
     simulateHref.searchParams.delete('mepButton');
+  }
+
+  const mepLingoRegionSelect = popup.querySelector(
+    `select#mepLingoRegionSelect${pageId}`,
+  );
+  if (mepLingoRegionSelect) {
+    const selectedRegion = mepLingoRegionSelect.value;
+    if (selectedRegion) {
+      simulateHref.searchParams.set('akamaiLocale', selectedRegion);
+    } else {
+      simulateHref.searchParams.delete('akamaiLocale');
+    }
   }
 
   popup
@@ -429,6 +442,33 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
       </div>`
     : '';
+
+  // Check if MEP Lingo is active and has regions
+  const lingoActive = urlParams.has('lingoLocale') || urlParams.has('lingo');
+  const regions = config?.locale?.regions || {};
+  const regionKeys = Object.keys(regions);
+  const showRegionDropdown = lingoActive && regionKeys.length > 0;
+
+  // Build region dropdown HTML if applicable
+  let regionDropdownHTML = '';
+  if (showRegionDropdown) {
+    const regionOptions = regionKeys.map((key) => {
+      const country = key.split('_')[0];
+      const currentAkamaiLocale = urlParams.get('akamaiLocale');
+      const selected = currentAkamaiLocale === country ? ' selected' : '';
+      return `<option value="${country}"${selected}>${key}</option>`;
+    }).join('');
+
+    regionDropdownHTML = `
+      <div class="mep-experience-dropdown">
+        <label for="mepLingoRegionSelect${pageId}">MEP Lingo Region</label>
+        <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
+          <option value="">-- Select Region --</option>
+          ${regionOptions}
+        </select>
+      </div>`;
+  }
+
   mepOptions.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Options</h6>
     <div class="mep-manifest-variants">
@@ -449,6 +489,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <label for="mepPreviewButtonCheckbox${pageId}">Add mepButton=off to preview link</label>
       </div>
     </div>
+    ${regionDropdownHTML}
     <div>New manifest location or path*</div>
     <input type="text" name="new-manifest${pageId}" class="new-manifest">`;
 
