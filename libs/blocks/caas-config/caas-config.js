@@ -610,8 +610,8 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
-    ${state.filterBuildPanel === 'automatic' && categoriesMappingFile}
-    `;
+    <${Input} label="Categories mapping file (optional)" prop="categoriesMappingFile" type="text" value=${context.state.categoriesMappingFile}/>
+  `;
 
 
   const FilterBuildPanel = html`
@@ -624,6 +624,7 @@ const FilterPanel = ({ tagsData }) => {
       subTitle=""
     >
       <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${FormInput} label="Use Category Mappings" name="useCategoryMappings" type="checkbox" />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
       <${FormInput} label="Icon Path" name="icon" />
       <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
@@ -641,7 +642,6 @@ const FilterPanel = ({ tagsData }) => {
       subTitle=""
     >
       <${FormInput} label="Group Name" name="group" />
-
       <!-- nested multifield  -->
       <${MultiField}
         className="filtersCustomItems"
@@ -657,6 +657,7 @@ const FilterPanel = ({ tagsData }) => {
       <//>
       <!-- End nested multifield -->
 
+      <${FormInput} label="Use Category Mappings" name="useCategoryMappings" type="checkbox" />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
     <//>
   `;
