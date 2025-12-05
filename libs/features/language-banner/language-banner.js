@@ -1,17 +1,10 @@
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import getAkamaiCode from '../../utils/geo.js';
 
-const COOKIE_NAME = 'lingo-banner-dismissed';
-
 const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
-
-const setCookie = (name, value) => {
-  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
-  document.cookie = `${name}=${value};path=/;${domain}`;
-};
 
 /**
  * Gets the user's preferred language, falling back from cookie to browser language.
@@ -33,9 +26,9 @@ function getPreferredLanguage(locales) {
 
 /**
  * Verifies if the translated version of the current page exists.
- * @param {string} marketPrefix - The market prefix from the supported markets config.
- * @param {object} config - The Milo config object.
- * @returns {Promise<string|null>} The URL of the page if it exists, otherwise null.
+ * @param {string} marketPrefix
+ * @param {object} config
+ * @returns {Promise<string|null>}
  */
 async function getTranslatedPage(marketPrefix, config) {
   const { pathname } = window.location;
@@ -52,7 +45,7 @@ async function getTranslatedPage(marketPrefix, config) {
       return translatedUrl;
     }
   } catch (e) {
-    console.warn(`Failed to check for translated page at ${translatedUrl}`, e);
+    console.warn(`Failed to check translated page: ${translatedUrl}`, e);
   }
   return null;
 }
@@ -76,8 +69,7 @@ async function showBanner(market, config) {
   const banner = buildBanner(market, translatedUrl);
   document.body.prepend(banner);
   const { codeRoot, miloLibs } = config;
-  const base = miloLibs || codeRoot;
-  loadStyle(`${base}/features/language-banner/language-banner.css`);
+  loadStyle(`${miloLibs || codeRoot}/features/language-banner/language-banner.css`);
 
   banner.querySelector('.language-banner-link').addEventListener('click', async (e) => {
     e.preventDefault();
@@ -87,10 +79,9 @@ async function showBanner(market, config) {
   });
 
   banner.querySelector('.language-banner-close').addEventListener('click', () => {
-    const pageLangPrefix = config.locale.prefix?.replace('/', '') || '';
+    const pageLangPrefix = config.locale.prefix?.replace('/', '') || 'us';
     const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
     document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
-    setCookie(COOKIE_NAME, config.locale.ietf.split('-')[0]);
     banner.remove();
   });
 }
@@ -101,9 +92,11 @@ async function showBanner(market, config) {
  */
 export default async function init(jsonPromise) {
   const config = getConfig();
+  const internationalCookie = getCookie('international');
+  const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
+  if (internationalCookie === pagePrefix) return;
 
   const pageLang = config.locale.ietf.split('-')[0];
-  if (getCookie(COOKIE_NAME) === pageLang) return;
 
   const prefLang = getPreferredLanguage(config.locales);
 
@@ -111,14 +104,14 @@ export default async function init(jsonPromise) {
     .then((res) => (res.ok ? res.json() : null))
     .catch(() => null);
 
-  const [akamaiCode, marketsConfig] = await Promise.all([
+  let [geoIp, marketsConfig] = await Promise.all([
     getAkamaiCode(),
     marketsConfigPromise,
   ]);
 
-  if (!akamaiCode || !marketsConfig) return;
+  if (!geoIp || !marketsConfig) return;
 
-  let geoIp = akamaiCode.toLowerCase();
+  geoIp = geoIp.toLowerCase();
   if (geoIp === 'gb') geoIp = 'uk';
 
   marketsConfig.data.forEach((market) => {
