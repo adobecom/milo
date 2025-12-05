@@ -1051,7 +1051,7 @@ class Gnav {
   };
 
   decorateToggle = () => {
-    if ((!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu()))) return '';
+    if (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu())) return '';
 
     const isLocalNav = this.isLocalNav();
 
