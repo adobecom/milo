@@ -337,12 +337,9 @@ function setupDropdownEvents({
   let hasDragged = false;
   let isDropdownOpen = false;
   let documentClickHandler = null;
-  let languageSelected = false;
 
   const closeDropdown = () => {
-    if (!languageSelected) {
-      sendAnalyticsEvent('language-selector:dismissed', 'dismissal');
-    }
+    sendAnalyticsEvent('language-selector:dismissed', 'dismissal');
     isDropdownOpen = false;
     dropdown.style.display = 'none';
     selectedLangButton.setAttribute('aria-expanded', 'false');
@@ -411,7 +408,6 @@ function setupDropdownEvents({
 
   async function openDropdown() {
     sendAnalyticsEvent('language-selector:opened');
-    languageSelected = false;
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
@@ -466,12 +462,6 @@ function setupDropdownEvents({
         toFocus.focus();
         languageList.setAttribute('aria-activedescendant', toFocus.parentElement.id);
       }
-    }
-  });
-
-  languageList.addEventListener('click', (e) => {
-    if (e.target.closest('a.language-link')) {
-      languageSelected = true;
     }
   });
 
