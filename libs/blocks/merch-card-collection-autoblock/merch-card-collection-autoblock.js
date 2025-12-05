@@ -273,7 +273,7 @@ function enableAnalytics(el) {
 export const enableModalOpeningOnPageLoad = () => {
   window.addEventListener('mas:ready', ({ target }) => {
     target.querySelectorAll('[is="checkout-link"][data-modal-id]').forEach((cta) => {
-      if (!cta.closest('.tabpanel[hidden]')) updateModalState({ cta });
+      if (!cta.closest('[role="tabpanel"][hidden]')) updateModalState({ cta });
     });
   });
 };
