@@ -509,7 +509,7 @@ main > .section[class*='-up'] > .content {
     position: unset;
     left: unset;
     transform: unset;
-    justify-content: unset;
+    justify-content: center;
     padding-inline: unset;
   }
 }
