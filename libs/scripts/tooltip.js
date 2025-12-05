@@ -70,25 +70,22 @@ function setTooltipPosition(tooltips) {
   });
 }
 
-export default function addTooltipListeners(ownerElement) {
-  ownerElement?.addEventListener('click', () => {
-    ownerElement.classList.add('hide-tooltip');
-  });
+export default function addTooltipListeners() {
   ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
     document.addEventListener(eventType, (event) => {
-      if (ownerElement && !ownerElement.classList.contains('hide-tooltip')
-        && eventType === 'keydown' && event.key === 'Escape') {
-        ownerElement.classList.add('hide-tooltip');
-      }
-
       const isTooltip = event.target?.matches?.('.milo-tooltip');
-      if (!isTooltip) return;
+      if (!isTooltip && eventType !== 'keydown') return;
 
       if (['mouseenter', 'focus'].includes(eventType)) {
         event.target.classList.remove('hide-tooltip');
         setTooltipPosition([event.target]);
       } else if (['mouseleave', 'blur'].includes(eventType)) {
         event.target.classList.add('hide-tooltip');
+        event.target.blur();
+      } else if (eventType === 'keydown' && event.key === 'Escape') {
+        const tooltip = document.querySelector('.milo-tooltip:not(.hide-tooltip)');
+        tooltip?.classList.add('hide-tooltip');
+        tooltip?.blur();
       }
     }, true);
   });
