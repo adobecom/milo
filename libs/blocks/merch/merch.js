@@ -444,8 +444,8 @@ const loadingPromises = new Map();
  */
 function isMasDepsFlagEnabled() {
   const metaFlag = getMetadata('mas-ff-mas-deps');
-  if (metaFlag === 'on' || metaFlag === 'true') return true;
-  return false;
+  if (metaFlag === 'off' || metaFlag === 'false') return false;
+  return true;
 }
 
 /**
