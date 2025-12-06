@@ -79,6 +79,7 @@ const MILO_BLOCKS = [
   'slideshare',
   'preflight',
   'promo',
+  'quick-facts',
   'quiz',
   'quiz-entry',
   'quiz-marquee',

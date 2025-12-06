@@ -5,6 +5,11 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 */
 
 .quote {
+  /* border-radius sizes */
+  --s-rounded-corners: 4px;
+  --m-rounded-corners: 8px;
+  --l-rounded-corners: 16px;
+
   text-align: center;
   margin: 0 auto;
 }
@@ -136,6 +141,20 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 
 .quote.align-right .quote-image > div {
   justify-content: end;
+}
+
+/* rounded corners */
+.s-rounded-corners {
+  border-radius: var(--s-rounded-corners);
+}
+
+.m-rounded-corners {
+  border-radius: var(--m-rounded-corners);
+}
+
+.rounded-corners,
+.l-rounded-corners {
+  border-radius: var(--l-rounded-corners);
 }
 
 /* Tablet */
