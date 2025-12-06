@@ -11,7 +11,7 @@ env:
 
 jobs:
   link-to-jira:
-    if: github.repository_owner == 'adobecom'
+    if: github.repository_owner == 'antonio-rmrz'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
