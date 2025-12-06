@@ -5,9 +5,9 @@ on:
     types: [opened]
 
 env:
-  JIRA_BASE_URL: https://jira.corp.adobe.com
-  JIRA_USER_EMAIL: ${{ secrets.JIRA_SYNC_USER_EMAIL }}
-  JIRA_API_TOKEN: ${{ secrets.JIRA_SYNC_API_TOKEN }}
+  JIRA_SYNC_BASE_URL: https://jira.corp.adobe.com
+  JIRA_SYNC_USER_EMAIL: ${{ secrets.JIRA_SYNC_USER_EMAIL }}
+  JIRA_SYNC_API_TOKEN: ${{ secrets.JIRA_SYNC_API_TOKEN }}
 
 jobs:
   link-to-jira:
