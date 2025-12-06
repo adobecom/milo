@@ -25,9 +25,9 @@ const extractTicketIds = (title, branch) => {
  * @returns {Promise<boolean>}
  */
 const verifyTicketExists = async (ticketId) => {
-  const jiraBaseUrl = process.env.JIRA_BASE_URL;
-  const email = process.env.JIRA_USER_EMAIL;
-  const apiToken = process.env.JIRA_API_TOKEN;
+  const jiraBaseUrl = process.env.JIRA_SYNC_BASE_URL;
+  const email = process.env.JIRA_SYNC_USER_EMAIL;
+  const apiToken = process.env.JIRA_SYNC_API_TOKEN;
 
   const auth = Buffer.from(`${email}:${apiToken}`).toString('base64');
 
@@ -53,9 +53,9 @@ const verifyTicketExists = async (ticketId) => {
  */
 const createRemoteLink = async (ticketId, prData) => {
   const { html_url: htmlUrl, number, title } = prData;
-  const jiraBaseUrl = process.env.JIRA_BASE_URL;
-  const email = process.env.JIRA_USER_EMAIL;
-  const apiToken = process.env.JIRA_API_TOKEN;
+  const jiraBaseUrl = process.env.JIRA_SYNC_BASE_URL;
+  const email = process.env.JIRA_SYNC_USER_EMAIL;
+  const apiToken = process.env.JIRA_SYNC_API_TOKEN;
 
   const auth = Buffer.from(`${email}:${apiToken}`).toString('base64');
 
