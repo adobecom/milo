@@ -148,6 +148,10 @@ async function getQueryIndexPaths(prefix, checkImmediate = false) {
 }
 
 function getMepLingoContext(locale) {
+  if (!locale?.prefix) {
+    return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('akamaiLocale')?.toLowerCase()
     || sessionStorage.getItem('akamai')
