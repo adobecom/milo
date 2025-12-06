@@ -103,10 +103,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
     }, {});
   }
 
-  self.incremental = async () => {
-    // Filter preview roots by requested regions
-    const siteRegionPaths = SITE_REGION_PATHS?.split(',')
-      .map((path) => path.trim()).filter(Boolean);
+  self.incremental = async (siteRegionPaths = []) => {
     const previewRoots = config.filterPreviewRoots(siteRegionPaths);
 
     // Validate configuration
@@ -148,7 +145,6 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
         continue;
       }
       console.log(`Processing root: ${rootPath}`);
-      console.log(previewRoot.paths)
       const currentData = await getJsonFromDa(siteOrg, siteRepo, previewRoot.indexPath || unpreviewRoot.indexPath);
       let previewIndex = { ...previewJsonTemplate };
       if (currentData?.data?.length) {
@@ -221,6 +217,17 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
     }
   };
 
+  self.normalizeRegionPaths = (csRegionPaths) => {
+    const regionPaths = csRegionPaths ? csRegionPaths.split(',') : [];
+    return regionPaths.map((path) => {
+      const trimmed = path.trim();
+      if (!trimmed) return '';
+      let normalized = trimmed;
+      if (!normalized.startsWith('/')) normalized = '/' + normalized;
+      if (!normalized.endsWith('/')) normalized = normalized + '/';
+      return normalized;
+    }).filter(Boolean);
+  }
   return self;
 };
 
