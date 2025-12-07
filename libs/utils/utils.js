@@ -1588,16 +1588,16 @@ async function loadPostLCP(config) {
 
   const languageBanner = getMetadata('language-banner') || config.languageBanner;
   const georouting = getMetadata('georouting') || config.geoRouting;
+  config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
   if (languageBanner === 'on') {
-    // TODO: Replace with contentRoot path
-    //const jsonPromise = fetch(`${config.contentRoot ?? ''}/supported-markets.json`);
-    const jsonPromise = fetch('https://main--da-bacom--adobecom.aem.page/drafts/snehal/supported-markets.json');
+    const marketsSource = config.marketsSource ? `-${config.marketsSource}` : '';
+    const fileName = `supported-markets${marketsSource}.json`;
+    const jsonPromise = fetch(`${getFederatedContentRoot()}/federal/supported-markets/${fileName}`);
     const { default: init } = await import('../features/language-banner/language-banner.js');
-    await init(jsonPromise);
+    await init(jsonPromise, config);
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    config.georouting = { loadedPromise: Promise.resolve() };
     config.georouting.loadedPromise = (async () => {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);

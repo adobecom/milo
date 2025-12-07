@@ -95,9 +95,7 @@ export default async function init(jsonPromise) {
   const internationalCookie = getCookie('international');
   const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
   if (internationalCookie === pagePrefix) return;
-
   const pageLang = config.locale.ietf.split('-')[0];
-
   const prefLang = getPreferredLanguage(config.locales);
 
   const marketsConfigPromise = jsonPromise
@@ -110,10 +108,7 @@ export default async function init(jsonPromise) {
   ]);
 
   if (!geoIp || !marketsConfig) return;
-
   geoIp = geoIp.toLowerCase();
-  if (geoIp === 'gb') geoIp = 'uk';
-
   marketsConfig.data.forEach((market) => {
     market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   });
@@ -123,7 +118,6 @@ export default async function init(jsonPromise) {
 
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-
     const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp));
     if (prefMarket) {
       await showBanner(prefMarket, config);
