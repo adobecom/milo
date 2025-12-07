@@ -218,6 +218,31 @@
   gap: 8px;
 }
 
+.mep-popup .mep-column .mep-upstream-page a,
+.mep-popup .mep-column .mep-downstream-pages a {
+  position: static;
+}
+
+.mep-downstream-toggle {
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.mep-downstream-toggle:hover {
+  opacity: 0.7;
+}
+
+.mep-downstream-more {
+  margin-top: 4px;
+}
+
+.mep-lingo-section {
+  border-top: 1px solid #909090;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
 .mep-popup select.mep-manifest-variants {
   width: 100%;
   overflow: hidden;

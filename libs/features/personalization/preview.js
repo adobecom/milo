@@ -2,6 +2,175 @@ import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
+const UPSTREAM_CHECK_TIMEOUT = 5000; // 5 seconds
+
+export async function checkPageExists(
+  url,
+  treatAuthAsExists = true,
+  timeout = UPSTREAM_CHECK_TIMEOUT,
+) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) return true;
+    if (response.status === 404) return false;
+    if ((response.status === 401 || response.status === 403) && treatAuthAsExists) return true;
+    return null;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    return null;
+  }
+}
+
+export function getUpstreamUrl(config, location = window.location) {
+  const { locale } = config;
+
+  if (locale?.base === undefined) {
+    return null;
+  }
+
+  const { pathname, origin } = location;
+  const currentPrefix = locale.prefix || '';
+
+  const upstreamPrefix = locale.base === '' ? '' : `/${locale.base}`;
+
+  let upstreamPath;
+  if (currentPrefix && pathname.startsWith(currentPrefix)) {
+    upstreamPath = pathname.replace(currentPrefix, upstreamPrefix);
+  } else {
+    upstreamPath = `${upstreamPrefix}${pathname}`;
+  }
+
+  return `${origin}${upstreamPath}`;
+}
+
+export async function updateUpstreamPageElement(elementId, config) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  const upstreamUrl = getUpstreamUrl(config);
+  if (!upstreamUrl) {
+    element.textContent = 'None';
+    return;
+  }
+
+  const exists = await checkPageExists(upstreamUrl, true);
+
+  if (exists === true) {
+    const localeBase = config?.locale?.base;
+    const linkText = localeBase === '' ? 'US' : localeBase;
+    const link = createTag('a', {
+      href: upstreamUrl,
+      target: '_blank',
+    });
+    link.textContent = linkText;
+    element.textContent = '';
+    element.appendChild(link);
+  } else if (exists === false) {
+    element.textContent = 'None';
+  } else {
+    element.textContent = 'Unable to verify';
+  }
+}
+
+export function getDownstreamUrls(config, location = window.location) {
+  const { locale } = config;
+  const regions = locale?.regions || {};
+  const regionKeys = Object.keys(regions);
+
+  if (!regionKeys.length) return [];
+
+  const { pathname, origin } = location;
+  const currentPrefix = locale.prefix || '';
+
+  return regionKeys.map((regionKey) => {
+    const region = regions[regionKey];
+    const regionPrefix = region.prefix || `/${regionKey}`;
+
+    let downstreamPath;
+    if (currentPrefix && pathname.startsWith(currentPrefix)) {
+      downstreamPath = pathname.replace(currentPrefix, regionPrefix);
+    } else {
+      downstreamPath = `${regionPrefix}${pathname}`;
+    }
+
+    return {
+      regionKey,
+      url: `${origin}${downstreamPath}`,
+    };
+  });
+}
+
+export async function updateDownstreamPagesElement(elementId, config) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  const downstreamUrls = getDownstreamUrls(config);
+  if (!downstreamUrls.length) {
+    element.textContent = 'None';
+    return;
+  }
+
+  // Check all downstream pages in parallel (200, 401, 403 count as exists)
+  const results = await Promise.all(
+    downstreamUrls.map(async ({ regionKey, url }) => {
+      const exists = await checkPageExists(url, true);
+      return { regionKey, url, exists };
+    }),
+  );
+
+  // Filter to only pages that exist (200, 401, 403)
+  const existingPages = results.filter((r) => r.exists === true);
+
+  if (!existingPages.length) {
+    element.textContent = 'None';
+    return;
+  }
+
+  // Create links for existing pages
+  element.textContent = '';
+
+  // Always show first link
+  const firstPage = existingPages[0];
+  const firstLink = createTag('a', {
+    href: firstPage.url,
+    target: '_blank',
+  });
+  firstLink.textContent = firstPage.regionKey;
+  element.appendChild(firstLink);
+
+  // If more than one, add expand/collapse functionality
+  if (existingPages.length > 1) {
+    const toggleBtn = createTag('span', { class: 'mep-downstream-toggle' });
+    toggleBtn.textContent = ` (+${existingPages.length - 1})`;
+    element.appendChild(toggleBtn);
+
+    const moreContainer = createTag('div', { class: 'mep-downstream-more', style: 'display: none;' });
+    existingPages.slice(1).forEach((page) => {
+      const link = createTag('a', {
+        href: page.url,
+        target: '_blank',
+      });
+      link.textContent = page.regionKey;
+      moreContainer.appendChild(link);
+      moreContainer.appendChild(document.createElement('br'));
+    });
+    element.appendChild(moreContainer);
+
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = moreContainer.style.display === 'none';
+      moreContainer.style.display = isHidden ? 'block' : 'none';
+      toggleBtn.textContent = isHidden ? ' (−)' : ` (+${existingPages.length - 1})`;
+    });
+  }
+}
 
 export const API_URLS = {
   pageList: `${API_DOMAIN}/get-pages`,
@@ -443,29 +612,51 @@ export function getMepPopup(mepConfig, isMmm = false) {
       </div>`
     : '';
 
-  // Check if MEP Lingo is active and has regions
   const lingoActive = urlParams.has('lingoLocale') || urlParams.has('lingo');
   const regions = config?.locale?.regions || {};
   const regionKeys = Object.keys(regions);
   const showRegionDropdown = lingoActive && regionKeys.length > 0;
 
-  // Build region dropdown HTML if applicable
-  let regionDropdownHTML = '';
-  if (showRegionDropdown) {
-    const regionOptions = regionKeys.map((key) => {
-      const country = key.split('_')[0];
-      const currentAkamaiLocale = urlParams.get('akamaiLocale');
-      const selected = currentAkamaiLocale === country ? ' selected' : '';
-      return `<option value="${country}"${selected}>${key}</option>`;
-    }).join('');
+  let mepLingoSectionHTML = '';
+  if (lingoActive) {
+    const localeBase = config?.locale?.base;
+    const hasUpstream = localeBase !== undefined;
 
-    regionDropdownHTML = `
-      <div class="mep-experience-dropdown">
-        <label for="mepLingoRegionSelect${pageId}">MEP Lingo Region</label>
-        <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
-          <option value="">-- Select Region --</option>
-          ${regionOptions}
-        </select>
+    let regionDropdownHTML = '';
+    if (showRegionDropdown) {
+      const regionOptions = regionKeys.map((key) => {
+        const country = key.split('_')[0];
+        const currentAkamaiLocale = urlParams.get('akamaiLocale');
+        const selected = currentAkamaiLocale === country ? ' selected' : '';
+        return `<option value="${country}"${selected}>${key}</option>`;
+      }).join('');
+
+      regionDropdownHTML = `
+        <div class="mep-experience-dropdown">
+          <label for="mepLingoRegionSelect${pageId}">Spoof Region</label>
+          <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
+            <option value="">-- Select Region --</option>
+            ${regionOptions}
+          </select>
+        </div>`;
+    }
+
+    const hasDownstream = regionKeys.length > 0;
+
+    mepLingoSectionHTML = `
+      <div class="mep-section mep-lingo-section">
+        <h6 class="mep-manifest-page-info-title">MEP Lingo</h6>
+        <div class="mep-columns">
+          <div class="mep-column">
+            <div>Upstream Page</div>
+            <div>Downstream Pages</div>
+          </div>
+          <div class="mep-column">
+            <div class="mep-upstream-page" id="mepUpstreamPage${pageId}">${hasUpstream ? 'Checking...' : 'None'}</div>
+            <div class="mep-downstream-pages" id="mepDownstreamPages${pageId}">${hasDownstream ? 'Checking...' : 'None'}</div>
+          </div>
+        </div>
+        ${regionDropdownHTML}
       </div>`;
   }
 
@@ -489,9 +680,9 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <label for="mepPreviewButtonCheckbox${pageId}">Add mepButton=off to preview link</label>
       </div>
     </div>
-    ${regionDropdownHTML}
     <div>New manifest location or path*</div>
-    <input type="text" name="new-manifest${pageId}" class="new-manifest">`;
+    <input type="text" name="new-manifest${pageId}" class="new-manifest">
+    ${mepLingoSectionHTML}`;
 
   const mepPopupFooter = createTag('div', { class: `mep-popup-footer${isMmm ? '' : ' dark'}` });
   mepPopupFooter.innerHTML += `
@@ -525,6 +716,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
 
 function createPreviewPill() {
   const mepConfig = parseMepConfig();
+  const config = getConfig();
   const { activities } = mepConfig;
   const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   const pill = document.createElement('div');
@@ -536,6 +728,18 @@ function createPreviewPill() {
   overlay.append(pill);
   document.body.append(overlay);
   addPillEventListeners(pill);
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const lingoActive = urlParams.has('lingoLocale') || urlParams.has('lingo');
+  if (lingoActive) {
+    if (config?.locale?.base !== undefined) {
+      updateUpstreamPageElement('mepUpstreamPage', config);
+    }
+    const regions = config?.locale?.regions || {};
+    if (Object.keys(regions).length > 0) {
+      updateDownstreamPagesElement('mepDownstreamPages', config);
+    }
+  }
 }
 function addHighlightData(manifests) {
   manifests.forEach(({ selectedVariant, manifest }) => {
@@ -552,11 +756,9 @@ function addHighlightData(manifests) {
 
     selectedVariant?.replacefragment?.forEach(
       ({ val }) => {
-        // Store both manifest ID and fragment path for replacefragment
         document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
           el.dataset.manifestId = manifestName;
           el.dataset.fragmentPath = val;
-          // Combined display for badge - use path if available
           el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path || val}`;
         });
       },
@@ -603,7 +805,6 @@ function markDefaultFragments() {
 
 function addLingoFragmentClickHandlers() {
   document.body.addEventListener('click', (e) => {
-    // Check for lingo fragments
     const lingoFragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
     if (lingoFragment) {
       const rect = lingoFragment.getBoundingClientRect();
