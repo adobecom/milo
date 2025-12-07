@@ -20,25 +20,65 @@ const extractTicketIds = (title, branch) => {
 };
 
 /**
+ * Fetch IMS access token for iPaaS authentication
+ * @returns {Promise<string>} - IMS access token
+ */
+const getImsToken = async () => {
+  const imsUrl = process.env.JIRA_SYNC_IMS_URL;
+  const clientId = process.env.JIRA_SYNC_IMS_CLIENT_ID;
+  const clientSecret = process.env.JIRA_SYNC_IMS_CLIENT_SECRET;
+  const authCode = process.env.JIRA_SYNC_IMS_AUTH_CODE;
+
+  const formData = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: 'authorization_code',
+    code: authCode,
+  });
+
+  const response = await fetch(imsUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`IMS token request failed: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.access_token;
+};
+
+/**
+ * Get headers for iPaaS Jira API requests
+ * @param {string} imsToken - IMS access token
+ * @returns {object} - Headers object
+ */
+const getJiraHeaders = (imsToken) => ({
+  Authorization: imsToken,
+  Username: process.env.JIRA_SYNC_USERNAME,
+  Password: process.env.JIRA_SYNC_PASSWORD,
+  api_key: process.env.JIRA_SYNC_IPAAS_KEY,
+  Accept: 'application/json',
+  'Content-Type': 'application/json',
+});
+
+/**
  * Verify that a Jira ticket exists
  * @param {string} ticketId - Jira ticket ID
+ * @param {string} imsToken - IMS access token
  * @returns {Promise<boolean>}
  */
-const verifyTicketExists = async (ticketId) => {
-  const jiraBaseUrl = process.env.JIRA_SYNC_BASE_URL;
-  const email = process.env.JIRA_SYNC_USER_EMAIL;
-  const apiToken = process.env.JIRA_SYNC_API_TOKEN;
-
-  const auth = Buffer.from(`${email}:${apiToken}`).toString('base64');
+const verifyTicketExists = async (ticketId, imsToken) => {
+  const ipaasUrl = process.env.JIRA_SYNC_IPAAS_URL;
 
   const response = await fetch(
-    `${jiraBaseUrl}/rest/api/2/issue/${ticketId}?fields=key`,
+    `${ipaasUrl}/issue/${ticketId}?fields=key`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Basic ${auth}`,
-        Accept: 'application/json',
-      },
+      headers: getJiraHeaders(imsToken),
     }
   );
 
@@ -49,25 +89,18 @@ const verifyTicketExists = async (ticketId) => {
  * Create a remote link in Jira for the PR
  * @param {string} ticketId - Jira ticket ID (e.g., MWPW-123456)
  * @param {object} prData - PR data from GitHub
+ * @param {string} imsToken - IMS access token
  * @returns {Promise<Response>}
  */
-const createRemoteLink = async (ticketId, prData) => {
+const createRemoteLink = async (ticketId, prData, imsToken) => {
   const { html_url: htmlUrl, number, title } = prData;
-  const jiraBaseUrl = process.env.JIRA_SYNC_BASE_URL;
-  const email = process.env.JIRA_SYNC_USER_EMAIL;
-  const apiToken = process.env.JIRA_SYNC_API_TOKEN;
-
-  const auth = Buffer.from(`${email}:${apiToken}`).toString('base64');
+  const ipaasUrl = process.env.JIRA_SYNC_IPAAS_URL;
 
   const response = await fetch(
-    `${jiraBaseUrl}/rest/api/2/issue/${ticketId}/remotelink`,
+    `${ipaasUrl}/issue/${ticketId}/remotelink`,
     {
       method: 'POST',
-      headers: {
-        Authorization: `Basic ${auth}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers: getJiraHeaders(imsToken),
       body: JSON.stringify({
         globalId: `github-pr-${number}`,
         application: {
@@ -115,9 +148,13 @@ const main = async ({ context }) => {
 
     console.log(`Found ticket IDs: ${ticketIds.join(', ')}`);
 
+    console.log('Fetching IMS token...');
+    const imsToken = await getImsToken();
+    console.log('IMS token obtained successfully.');
+
     for (const ticketId of ticketIds) {
       try {
-        const exists = await verifyTicketExists(ticketId);
+        const exists = await verifyTicketExists(ticketId, imsToken);
         if (!exists) {
           console.log(
             `Ticket ${ticketId} not found or not accessible. Skipping.`
@@ -125,7 +162,7 @@ const main = async ({ context }) => {
           continue;
         }
 
-        const response = await createRemoteLink(ticketId, pullRequest);
+        const response = await createRemoteLink(ticketId, pullRequest, imsToken);
 
         if (response.ok) {
           console.log(`Successfully linked PR #${number} to ${ticketId}`);
