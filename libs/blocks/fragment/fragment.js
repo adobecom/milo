@@ -147,7 +147,7 @@ async function getQueryIndexPaths(prefix, checkImmediate = false) {
   }
 }
 
-function getMepLingoContext(locale) {
+export function getMepLingoContext(locale) {
   if (!locale?.prefix) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
   }

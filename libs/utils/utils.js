@@ -519,6 +519,15 @@ function lingoActive() {
   return getMetadata('lingo') === 'on' || PAGE_URL.searchParams.get('lingo') === 'on';
 }
 
+let mepLingoPreprocessingPromise = null;
+function getMepLingoPreprocessing() {
+  if (!mepLingoPreprocessingPromise && lingoActive()) {
+    mepLingoPreprocessingPromise = import('../features/mep-lingo/preprocessing.js');
+  }
+  return mepLingoPreprocessingPromise;
+}
+getMepLingoPreprocessing();
+
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
@@ -1226,58 +1235,13 @@ function setupLinksDecoration(el) {
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
-  // ROC preprocessing - must happen before async processing
+  // Mep-lingo preprocessing - must happen before async processing
   if (lingoActive()) {
-    [...anchors].forEach((a) => {
-      let isRocBlockSwap = false;
-      let linkCell = a.parentElement;
-      const parentTag = linkCell?.tagName?.toLowerCase();
-      if (parentTag === 'strong' || parentTag === 'em') {
-        linkCell = linkCell.parentElement;
-      }
-      const previousCell = linkCell?.previousElementSibling;
-      const cellText = previousCell?.textContent?.toLowerCase().trim();
-      const isRocRow = cellText === 'roc' || cellText === 'mep-lingo';
-
-      if (isRocRow) {
-        const swapBlock = a.closest('[class]');
-        if (swapBlock) {
-          const blockName = swapBlock.classList[0];
-
-          if (blockName === 'mep-lingo' || blockName === 'roc-fragment') {
-            const p = createTag('p', null, a);
-            a.dataset.mepLingo = true;
-            swapBlock.insertAdjacentElement('afterend', p);
-            swapBlock.remove();
-          } else {
-            isRocBlockSwap = true;
-            const row = linkCell.parentElement;
-            row.remove();
-            const p = createTag('p', null, a);
-            if (blockName === 'section-metadata') {
-              a.dataset.mepLingoSectionMetadata = true;
-              a.dataset.removeOriginalBlock = true;
-              a.dataset.originalBlockId = `block-${Math.random().toString(36).substring(2, 11)}`;
-              swapBlock.dataset.mepLingoOriginalBlock = a.dataset.originalBlockId;
-              swapBlock.insertAdjacentElement('afterend', p);
-            } else {
-              a.dataset.removeOriginalBlock = true;
-              a.dataset.originalBlockId = `block-${Math.random().toString(36).substring(2, 11)}`;
-              swapBlock.dataset.mepLingoOriginalBlock = a.dataset.originalBlockId;
-              swapBlock.insertAdjacentElement('afterend', p);
-            }
-            if (a.href.includes('#_mep-lingo')) a.href = a.href.replace('#_mep-lingo', '');
-            a.dataset.mepLingoBlockFragment = a.href;
-            a.dataset.mepLingo = true;
-          }
-        }
-      }
-
-      if (a.href.includes('#_mep-lingo') && !isRocBlockSwap) {
-        a.dataset.mepLingo = true;
-        a.href = a.href.replace('#_mep-lingo', '');
-      }
-    });
+    const mepLingoModule = getMepLingoPreprocessing();
+    if (mepLingoModule) {
+      const { default: processMepLingoAnchors } = await mepLingoModule;
+      processMepLingoAnchors(anchors, createTag);
+    }
   }
 
   const linksPromises = [...anchors].map(async (a) => {
