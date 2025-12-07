@@ -118,7 +118,6 @@ export async function updateDownstreamPagesElement(elementId, config) {
     return;
   }
 
-  // Check all downstream pages in parallel (200, 401, 403 count as exists)
   const results = await Promise.all(
     downstreamUrls.map(async ({ regionKey, url }) => {
       const exists = await checkPageExists(url, true);
@@ -126,7 +125,6 @@ export async function updateDownstreamPagesElement(elementId, config) {
     }),
   );
 
-  // Filter to only pages that exist (200, 401, 403)
   const existingPages = results.filter((r) => r.exists === true);
 
   if (!existingPages.length) {
@@ -134,10 +132,8 @@ export async function updateDownstreamPagesElement(elementId, config) {
     return;
   }
 
-  // Create links for existing pages
   element.textContent = '';
 
-  // Always show first link
   const firstPage = existingPages[0];
   const firstLink = createTag('a', {
     href: firstPage.url,
@@ -146,7 +142,6 @@ export async function updateDownstreamPagesElement(elementId, config) {
   firstLink.textContent = firstPage.regionKey;
   element.appendChild(firstLink);
 
-  // If more than one, add expand/collapse functionality
   if (existingPages.length > 1) {
     const toggleBtn = createTag('span', { class: 'mep-downstream-toggle' });
     toggleBtn.textContent = ` (+${existingPages.length - 1})`;
@@ -803,6 +798,29 @@ function markDefaultFragments() {
   });
 }
 
+function adjustBadgePositions() {
+  const badgeSelectors = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
+  document.querySelectorAll(badgeSelectors).forEach((el) => {
+    const elWidth = el.offsetWidth;
+    // Create a temporary element to measure the badge width
+    const tempBadge = document.createElement('span');
+    tempBadge.style.cssText = 'position: absolute; visibility: hidden; font-size: 14px; padding: 5px 10px; white-space: nowrap;';
+    const badgeText = el.dataset.mepLingoRoc
+      || el.dataset.mepLingoFallback
+      || el.dataset.fragmentDisplay
+      || '';
+    tempBadge.textContent = `🔗 ${badgeText}`;
+    document.body.appendChild(tempBadge);
+    const badgeWidth = tempBadge.offsetWidth;
+    document.body.removeChild(tempBadge);
+
+    // If badge is wider than element, shift it right by element width
+    if (badgeWidth > elWidth) {
+      el.style.setProperty('--badge-margin-left', `${elWidth}px`);
+    }
+  });
+}
+
 function addLingoFragmentClickHandlers() {
   document.body.addEventListener('click', (e) => {
     const lingoFragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
@@ -859,4 +877,6 @@ export default async function decoratePreviewMode() {
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addLingoFragmentClickHandlers();
+  // Adjust badge positions after a short delay to allow rendering
+  setTimeout(adjustBadgePositions, 100);
 }

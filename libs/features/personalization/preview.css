@@ -458,6 +458,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {
   background-color: #d4edda !important;
   border: 1px solid #28a745;
   text-align: left !important;
+  margin-left: var(--badge-margin-left, 0);
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
@@ -466,6 +467,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
   background-color: #fff3cd !important;
   border: 1px solid #ffc107;
   text-align: left !important;
+  margin-left: var(--badge-margin-left, 0);
 }
 
 body[data-mep-fragments='true'] [data-fragment-default]::before {
