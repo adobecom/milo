@@ -520,19 +520,22 @@ const getFilterArray = async (state, country, lang, strs) => {
 };
 
 const getCategoryMappings = async (state) => {
-  if (!state.categoriesMappingFile) return [];
+  if (!state.categoriesMappingFile) return {};
   console.log('[DEBUG] state.categoriesMappingFile', state.categoriesMappingFile);
   const mappings = await fetch(state.categoriesMappingFile);
   if (mappings.ok) {
     const json = await mappings.json();
     const data = json.data || [];
-    // Convert comma-separated items into arrays
-    return data.map((entry) => ({
-      ...entry,
-      items: entry.items ? entry.items.split(',').map((item) => item.trim()) : [],
-    }));
+    // Convert array to object keyed by id
+    return data.reduce((mappings, entry) => {
+      mappings[entry.id] = {
+        label: entry.label,
+        items: entry.items ? entry.items.split(',').map((item) => item.trim()) : [],
+      };
+      return mappings;
+    }, {});
   }
-  return [];
+  return {};
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
