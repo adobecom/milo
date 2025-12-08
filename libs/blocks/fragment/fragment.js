@@ -130,15 +130,6 @@ async function getQueryIndexPaths(prefix, checkImmediate = false, isFederal = fa
 
     const targetIndex = queryIndexes?.[siteId];
 
-    // eslint-disable-next-line no-console
-    console.log('[mep-lingo] Query Index Lookup:', {
-      isFederal,
-      siteId: siteId || '(empty)',
-      availableKeys: Object.keys(queryIndexes || {}),
-      hasIndex: !!targetIndex,
-      resolved: targetIndex?.requestResolved,
-    });
-
     if (!targetIndex) {
       return checkImmediate ? unavailable : { paths: [], available: false };
     }
