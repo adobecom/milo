@@ -4,6 +4,7 @@ const ORG_MAP = {
   'da-cc-sandbox': 'DA BACOM',
   'da-gwp-playground': 'DA GWP PLAYGROUND',
   'da-dx-partners': 'DA DX PARTNERS',
+  'da-dc': 'DA DC',
 };
 
 (async function init() {
