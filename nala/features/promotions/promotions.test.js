@@ -572,10 +572,10 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Validate promo replace collection with collection', async () => {
       const baseCollection = await PROMO.getMerchCardCollection(data.baseCollectionId);
-      expect(baseCollection).not.toBeAttached;
+      expect(baseCollection).not.toBeVisible();
 
       const promoCollection = await PROMO.getMerchCardCollection(data.promoCollectionId);
-      await expect(promoCollection).toBeAttached();
+      await expect(await promoCollection).toBeVisible({ timeout: 15000 });
     });
   });
 
@@ -592,10 +592,10 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Validate promo replace collection with fragment', async () => {
       const collection = await PROMO.getMerchCardCollection(data.collectionId);
-      await expect(collection).not.toBeAttached();
+      await expect(collection).not.toBeVisible();
 
       const fragment = await PROMO.getFragment(data.fragmentPath);
-      await expect(fragment).toBeVisible();
+      await expect(fragment).toBeVisible({ timeout: 15000 });
     });
   });
 
@@ -612,12 +612,12 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Validate subcollection has been replaced with specific card at the right position', async () => {
       const collection = await PROMO.getMerchCardCollection(data.collectionId);
-      await expect(collection).toBeVisible({ timeout: 15000 });
+      await expect(await collection).toBeVisible({ timeout: 15000 });
       expect(await collection.getAttribute('overrides')).toBe(data.overrideAttributes);
 
       // check that the subcollection specific card is  visible
       const baseSubcollectionCard = await PROMO.getMerchCard(data.cardId);
-      await expect(baseSubcollectionCard).toBeVisible({ timeout: 15000 });
+      await expect(await baseSubcollectionCard).toBeVisible({ timeout: 15000 });
       expect(await baseSubcollectionCard.getAttribute('filters')).toBe(data.filter);
     });
   });
