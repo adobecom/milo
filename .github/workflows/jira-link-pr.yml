@@ -5,14 +5,13 @@ on:
     types: [opened]
 
 env:
-  JIRA_SYNC_IPAAS_URL: https://ipaasapi.adobe-services.com/rest/api/2
+  JIRA_SYNC_IPAAS_URL: https://ipaasapi.adobe-services.com/jira/rest/api/2
   JIRA_SYNC_IMS_URL: https://ims-na1.adobelogin.com/ims/token
   JIRA_SYNC_IMS_CLIENT_ID: ${{ secrets.JIRA_SYNC_IMS_CLIENT_ID }}
   JIRA_SYNC_IMS_CLIENT_SECRET: ${{ secrets.JIRA_SYNC_IMS_CLIENT_SECRET }}
   JIRA_SYNC_IMS_AUTH_CODE: ${{ secrets.JIRA_SYNC_IMS_AUTH_CODE }}
   JIRA_SYNC_IPAAS_KEY: ${{ secrets.JIRA_SYNC_IPAAS_KEY }}
-  JIRA_SYNC_USERNAME: ${{ secrets.JIRA_SYNC_USERNAME }}
-  JIRA_SYNC_PASSWORD: ${{ secrets.JIRA_SYNC_PASSWORD }}
+  JIRA_SYNC_PAT: ${{ secrets.JIRA_SYNC_PAT }}
 
 jobs:
   link-to-jira:

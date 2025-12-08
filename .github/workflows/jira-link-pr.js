@@ -52,14 +52,13 @@ const getImsToken = async () => {
 };
 
 /**
- * Get headers for iPaaS Jira API requests
+ * Get headers for iPaaS Jira API requests (JiraProxyV2 with PAT auth)
  * @param {string} imsToken - IMS access token
  * @returns {object} - Headers object
  */
 const getJiraHeaders = (imsToken) => ({
   Authorization: imsToken,
-  Username: process.env.JIRA_SYNC_USERNAME,
-  Password: process.env.JIRA_SYNC_PASSWORD,
+  'x-authorization': `Bearer ${process.env.JIRA_SYNC_PAT}`,
   api_key: process.env.JIRA_SYNC_IPAAS_KEY,
   Accept: 'application/json',
   'Content-Type': 'application/json',
