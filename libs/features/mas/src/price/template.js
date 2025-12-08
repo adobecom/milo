@@ -41,6 +41,7 @@ export const cssClassNames = {
     container: 'price',
     containerOptical: 'price-optical',
     containerStrikethrough: 'price-strikethrough',
+    containerPromoStrikethrough: 'price-promo-strikethrough',
     containerAlternative: 'price-alternative',
     containerAnnual: 'price-annual',
     containerAnnualPrefix: 'price-annual-prefix',
@@ -209,6 +210,7 @@ const createPriceTemplate =
         isAlternativePrice = false,
         displayOptical = false,
         displayStrikethrough = false,
+        displayPromoStrikethrough = false,
         displayAnnual = false,
         instant = undefined,
     } = {}) =>
@@ -263,7 +265,7 @@ const createPriceTemplate =
         let displayPrice;
         
         if (promotion && !isPromoApplied && priceWithoutDiscount) {
-            displayPrice = isAlternativePrice ? price : priceWithoutDiscount;
+            displayPrice = isAlternativePrice || displayPromoStrikethrough ? price : priceWithoutDiscount;
         } else if (displayStrikethrough && priceWithoutDiscount) {
             displayPrice = priceWithoutDiscount;
         } else {
@@ -361,6 +363,9 @@ const createPriceTemplate =
         }
         if (displayStrikethrough) {
             cssClass += ' ' + cssClassNames.containerStrikethrough;
+        }
+        if (displayPromoStrikethrough) {
+            cssClass += ' ' + cssClassNames.containerPromoStrikethrough;
         }
         if (isAlternativePrice) {
             cssClass += ' ' + cssClassNames.containerAlternative;

@@ -4,6 +4,7 @@ import {
     pricePromo,
     priceOptical,
     priceStrikethrough,
+    pricePromoStrikethrough,
     priceAnnual,
     priceWithAnnual,
     pricePromoWithAnnual,
@@ -90,6 +91,9 @@ export function Price({ literals, providers, settings }) {
                 break;
             case 'strikethrough':
                 method = priceStrikethrough;
+                break;
+            case 'promo-strikethrough':
+                method = pricePromoStrikethrough;
                 break;
             case 'annual':
                 method = priceAnnual;
