@@ -31,6 +31,7 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', shouldHideSticky);
       } else if (target.matches('merch-card')) {
+        if (!el.querySelector('.button-full-width')) return;
         const section = target.closest('.section[daa-lh]');
         if (!section) return;
         const total = section.querySelectorAll('merch-card')?.length;
