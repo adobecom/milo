@@ -517,7 +517,7 @@ const getFilterArray = async (state, country, lang, strs) => {
   return filters;
 };
 
-export function getCountryAndLang({ autoCountryLang, country, language }) {
+export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
   const langFirst = getMetadata('langfirst');
   /* if it is a language first localized page don't use the milo locales.
@@ -526,7 +526,34 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
     const pathArr = pageConfigHelper()?.pathname?.split('/') || [];
     const langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
-    if (typeof countryStr === 'object') {
+
+    let fallbackCountry = countryStr;
+    if (typeof fallbackCountry === 'object') {
+      fallbackCountry = fallbackCountry.ietf?.split('-')[1] ?? 'xx';
+    }
+
+    const isNewsSource = Array.from([source].flat()).some((s) => s?.toLowerCase().includes('news'));
+
+    if (!isNewsSource) {
+      countryStr = fallbackCountry;
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        let geoCountry = urlParams.get('akamaiLocale')?.toLowerCase()
+          || sessionStorage.getItem('akamai')
+          || pageConfigHelper().mep?.countryIP;
+
+        if (!geoCountry) {
+          const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+          geoCountry = await getAkamaiCode(true);
+        }
+
+        if (geoCountry) countryStr = geoCountry.toLowerCase();
+      } catch (error) {
+        window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
+      }
+    }
+
+    if (isNewsSource && typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
 
@@ -688,7 +715,7 @@ export const getGrayboxExperienceId = (
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const { country, language, locales } = getCountryAndLang(state);
+  const { country, language, locales } = await getCountryAndLang(state);
   const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
