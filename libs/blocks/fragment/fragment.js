@@ -307,6 +307,10 @@ export default async function init(a) {
       } else {
         // No query-index available (including federal) → use parallel fetch
         result = await fetchMepLingoParallel(mepLingoPath, resourcePath);
+        if (isLcp && !isFederalFragment) {
+          const opts = { tags: 'mep-lingo,lcp-no-qi', sampleRate: 10 };
+          window.lana?.log(`mep-lingo: LCP parallel fetch (QI not ready): ${mepLingoPathname}`, opts);
+        }
       }
 
       if (result?.resp) {
@@ -314,6 +318,16 @@ export default async function init(a) {
         usedMepLingo = result.usedMepLingo || false;
         usedFallback = result.usedFallback || false;
         if (usedMepLingo) relHref = await localizeLinkAsync(mepLingoPath);
+      }
+
+      // Log QI mismatches for monitoring
+      if (mepLingoInIndex && usedFallback) {
+        const opts = { tags: 'mep-lingo,qi-stale' };
+        window.lana?.log(`mep-lingo: path in QI but fetch failed: ${mepLingoPathname}`, opts);
+      }
+      if (!mepLingoInIndex && usedMepLingo) {
+        const opts = { tags: 'mep-lingo,qi-lag', sampleRate: 10 };
+        window.lana?.log(`mep-lingo: path not in QI but exists: ${mepLingoPathname}`, opts);
       }
     }
   } else if (!mepLingoEnabled && isBlockSwap) {
