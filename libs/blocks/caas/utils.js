@@ -415,7 +415,7 @@ const getLocalTitle = (tag, country, lang) => {
 };
 
 const getFilterObj = (
-  { excludeTags, filterTag, icon, openedOnLoad, useCategoryMappings },
+  { excludeTags, filterTag, icon, openedOnLoad },
   tags,
   state,
   country,
@@ -440,7 +440,6 @@ const getFilterObj = (
   const filterObj = {
     id: tagId,
     openedOnLoad: !!openedOnLoad,
-    useCategoryMappings: !!useCategoryMappings,
     items,
     group: getLocalTitle(tag, country, lang),
   };
@@ -452,7 +451,7 @@ const getFilterObj = (
   return filterObj;
 };
 
-const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad, useCategoryMappings }, strs = {}) => {
+const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = {}) => {
   if (!group) return null;
 
   const IN_BRACKETS_RE = /^{.*}$/;
@@ -467,7 +466,6 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad, useCatego
   const filterObj = {
     id: group,
     openedOnLoad: !!openedOnLoad,
-    useCategoryMappings: !!useCategoryMappings,
     items,
     group: group?.match(IN_BRACKETS_RE)
       ? strs[group.replace(/{|}/g, '')]
@@ -490,7 +488,7 @@ const getCategoryArray = async (state, country, lang) => {
       title: value.title,
       icon: value.icon || '',
       items: Object.entries(value.tags)
-        .map((tag) => getFilterObj({ excludeTags: [], filterTag: [tag[1].tagID], icon: '', openedOnLoad: false, useCategoryMappings: false}, tags, state, country, lang))
+        .map((tag) => getFilterObj({ excludeTags: [], filterTag: [tag[1].tagID], icon: '', openedOnLoad: false}, tags, state, country, lang))
         .filter((tag) => tag !== null),
     }));
 

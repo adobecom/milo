@@ -624,7 +624,6 @@ const FilterPanel = ({ tagsData }) => {
       subTitle=""
     >
       <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
-      <${FormInput} label="Use Category Mappings" name="useCategoryMappings" type="checkbox" />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
       <${FormInput} label="Icon Path" name="icon" />
       <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
@@ -657,7 +656,6 @@ const FilterPanel = ({ tagsData }) => {
       <//>
       <!-- End nested multifield -->
 
-      <${FormInput} label="Use Category Mappings" name="useCategoryMappings" type="checkbox" />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
     <//>
   `;
