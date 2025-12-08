@@ -756,8 +756,6 @@ export function localizeLink(
   return localizeLinkCore(href, originHostName, overrideDomain, false);
 }
 
-window.localizeLink = localizeLink;
-
 export function loadLink(href, {
   id, as, callback, crossorigin, rel, fetchpriority,
 } = {}) {
