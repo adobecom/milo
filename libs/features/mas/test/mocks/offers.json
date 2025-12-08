@@ -1284,7 +1284,7 @@
                 "id": "55555555-e40c-432a-b0cc-2c769488c930",
                 "promotionCode": "CCI2AAUSQ22440CD",
                 "start": "2024-02-23T04:36:11.000Z",
-                "end": "2025-12-06T04:31:00.000Z",
+                "end": "2035-12-06T04:31:00.000Z",
                 "displaySummary": {
                     "outcomeType": "FIXED_DISCOUNT",
                     "duration": "P12M",
@@ -1337,7 +1337,7 @@
                 "id": "55555555-e40c-432a-b0cc-2c769488c930",
                 "promotionCode": "CCI2AACAQ22440CD",
                 "start": "2024-02-23T04:36:11.000Z",
-                "end": "2025-12-06T04:31:00.000Z",
+                "end": "2035-12-06T04:31:00.000Z",
                 "displaySummary": {
                     "outcomeType": "FIXED_DISCOUNT",
                     "duration": "P2M",
@@ -1419,7 +1419,7 @@
                 "id": "55555555-e40c-432a-b0cc-2c769488c930",
                 "promotionCode": "CCI2AAFRQ22440CD",
                 "start": "2024-02-23T04:36:11.000Z",
-                "end": "2025-12-06T04:31:00.000Z",
+                "end": "2035-12-06T04:31:00.000Z",
                 "displaySummary": {
                     "outcomeType": "FIXED_DISCOUNT",
                     "duration": "P12M",
@@ -1499,7 +1499,7 @@
                 "id": "55555555-950f-4cbb-b9a7-3bed484843c6",
                 "promotionCode": "CCI2AAAUQ22440CD",
                 "start": "2024-02-23T17:47:03.000Z",
-                "end": "2025-12-06T13:45:00.000Z",
+                "end": "2035-12-06T13:45:00.000Z",
                 "displaySummary": {
                     "outcomeType": "PERCENTAGE_DISCOUNT",
                     "duration": "P12M",
