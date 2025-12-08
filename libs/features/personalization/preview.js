@@ -120,7 +120,9 @@ export async function updateDownstreamPagesElement(elementId, config) {
 
   const results = await Promise.all(
     downstreamUrls.map(async ({ regionKey, url }) => {
-      const exists = await checkPageExists(url, true);
+      // Check .live version for reliable 200/404 (draft pages return 401 for everything)
+      const liveUrl = url.replace('.aem.page', '.aem.live');
+      const exists = await checkPageExists(liveUrl, false);
       return { regionKey, url, exists };
     }),
   );
