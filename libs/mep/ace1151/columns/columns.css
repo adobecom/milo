@@ -108,11 +108,15 @@
   padding-left: 1.5rem;
 }
 /* For desktop only */ 
-@media(min-width:900px) {
+@media(min-width:1200px) {
 
   .columns > .row {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
+
+}
+@media(min-width:900px) {
+
   .columns.s2a-checklist .row div:nth-child(2) h3 {
     font-size: 32px;
   }
