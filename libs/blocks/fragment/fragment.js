@@ -254,7 +254,13 @@ export default async function init(a) {
 
     const section = a.closest('.section[data-idx]');
     const isLcp = section?.dataset.idx === '0';
-    const qiResult = await getQueryIndexPaths(matchingRegion.prefix, isLcp, isFederalFragment);
+
+    // TODO: Enable federal query-index once it's implemented and tested
+    // For now, force parallel fetch for federal fragments to avoid issues
+    const skipQueryIndex = isFederalFragment;
+    const qiResult = skipQueryIndex
+      ? { resolved: false, paths: [], available: false }
+      : await getQueryIndexPaths(matchingRegion.prefix, isLcp);
     const qiResolved = qiResult.resolved !== false;
     const qiAvailable = qiResult.available;
     const mepLingoPathname = new URL(mepLingoPath).pathname;
