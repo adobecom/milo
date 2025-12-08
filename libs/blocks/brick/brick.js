@@ -46,6 +46,17 @@ function decorateSupplementalText(el) {
   supplementalEl.className = 'body-xs supplemental-text';
 }
 
+function decorateHeadingRoles(el) {
+  const headings = el.querySelector('.brick-text')?.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (!headings) return;
+  const headingWithPicture = [...headings].find((h) => h.querySelector('picture'));
+  if (!headingWithPicture) return;
+  headings.forEach((h) => {
+    if (h === headingWithPicture) return;
+    h.setAttribute('role', 'paragraph');
+  });
+}
+
 function decorateForeground(el, foreground) {
   const fgtext = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div') || foreground;
   fgtext.closest('div').classList.add('brick-text');
@@ -128,6 +139,7 @@ function decorateBricks(el) {
   if (el.classList.contains('button-fill')) decorateFillButtons(foreground.querySelector('.action-area'));
   el.querySelector('.icon-area')?.classList.remove('detail-l');
   decorateBrickIconStack(el);
+  decorateHeadingRoles(el);
   handleSupplementalText(foreground);
   handleClickableBrick(el, foreground);
   return foreground;
