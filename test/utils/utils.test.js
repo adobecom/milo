@@ -1617,7 +1617,7 @@ describe('Utils', () => {
       lingoUtils.setConfig(defaultTestConfig);
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('content', 'on');
-      lingoMeta.setAttribute('name', 'lingo');
+      lingoMeta.setAttribute('name', 'langFirst');
       document.head.append(lingoMeta);
     });
 
@@ -1628,7 +1628,7 @@ describe('Utils', () => {
       } else {
         delete window.lana;
       }
-      const meta = document.querySelector('meta[name="lingo"]');
+      const meta = document.querySelector('meta[name="langFirst"]');
       document.head.removeChild(meta);
     });
 
