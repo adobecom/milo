@@ -1775,7 +1775,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button {
   border: none;
   white-space: normal;
-  font-weight: 700;
+  font-weight: 800;
   text-align: unset;
   color: var(--feds-navLink-inactive);
   font-family: var(--body-font-family);
@@ -1786,10 +1786,9 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 header.test-nav .feds-nav > .feds-navItem > .feds-popup .feds-menu-column .feds-navLink {
   border: none;
   white-space: normal;
-  font-weight: 700;
+  font-weight: 900;
   text-align: unset;
   color: var(--feds-color-white-v2);;
-  font-family: var(--body-font-family);
   font-size: 24px;
   padding-bottom: 24px;
 }
@@ -2024,7 +2023,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink-title {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 20px;
   white-space: break-spaces;
   padding-bottom: 10px;
