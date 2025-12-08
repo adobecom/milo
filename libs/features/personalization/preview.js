@@ -2,7 +2,7 @@ import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
-const UPSTREAM_CHECK_TIMEOUT = 5000; // 5 seconds
+const UPSTREAM_CHECK_TIMEOUT = 5000;
 
 export async function checkPageExists(
   url,
