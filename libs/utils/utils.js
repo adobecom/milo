@@ -358,6 +358,25 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.entitlements = handleEntitlements;
       config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
+
+      // TODO test only - remove for prod and real PR
+      // Enables mep-lingo testing on da-bacom /fr pages without updating da-bacom's locales.js
+      // prefix (e.g., /lu_fr/) when akamaiLocale is set, ensuring the index contains the
+      // regional paths that mep-lingo needs to find.
+      if (window.location.href.includes('main--da-bacom--adobecom.aem.')
+        && window.location.pathname.startsWith('/fr/')) {
+        config.locale.regions = {
+          be_fr: { prefix: '/be_fr', ietf: 'fr-BE', base: 'fr' },
+          ca_fr: { prefix: '/ca_fr', ietf: 'fr-CA', base: 'fr' },
+          ch_fr: { prefix: '/ch_fr', ietf: 'fr-CH', base: 'fr' },
+          lu_fr: { prefix: '/lu_fr', ietf: 'fr-LU', base: 'fr' },
+        };
+        const lingoMeta = document.createElement('meta');
+        lingoMeta.setAttribute('content', 'on');
+        lingoMeta.setAttribute('name', 'lingo');
+        document.head.append(lingoMeta);
+      }
+
       return config;
     },
     (conf) => (config = conf),
