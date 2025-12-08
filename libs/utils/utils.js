@@ -1591,9 +1591,11 @@ async function loadPostLCP(config) {
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
   if (languageBanner === 'on') {
-    const marketsSource = config.marketsSource ? `-${config.marketsSource}` : '';
-    const fileName = `supported-markets${marketsSource}.json`;
-    const jsonPromise = fetch(`${getFederatedContentRoot()}/federal/supported-markets/${fileName}`);
+    const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
+    const jsonPromise = fetch(
+      supportedMarketsPath
+        || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
+    );
     const { default: init } = await import('../features/language-banner/language-banner.js');
     await init(jsonPromise, config);
   } else if (georouting === 'on') {
