@@ -910,9 +910,7 @@ describe('Query Index siteId derivation', () => {
       prefix: '/test/blocks/fragment/mocks/de',
       region: 'de',
       ietf: 'de-DE',
-      regions: {
-        ch_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' },
-      },
+      regions: { ch_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
     };
 
     window.sessionStorage.setItem('akamai', 'ch');
