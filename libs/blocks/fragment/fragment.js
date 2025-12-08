@@ -100,47 +100,61 @@ const fetchMepLingoParallel = async (mepLingoPath, fallbackPath) => {
   return {};
 };
 
-async function getQueryIndexPaths(prefix, checkImmediate = false) {
+/**
+ * Get paths from the appropriate query index for mep-lingo regional content lookup.
+ *
+ * Each repo checks one of two query-indexes:
+ * 1. Consumer's own index for regular fragments (derived from hostname or uniqueSiteId)
+ * 2. Federal query-index ('federal') for federal fragments
+ *
+ * @param {string} prefix - The locale prefix to filter paths by (e.g., '/lu_fr')
+ * @param {boolean} checkImmediate - If true, only check if index is already resolved (for LCP)
+ * @param {boolean} isFederal - If true, check federal index instead of consumer index
+ */
+async function getQueryIndexPaths(prefix, checkImmediate = false, isFederal = false) {
   const unavailable = { resolved: false, paths: [], available: false };
   try {
-    const allIndexes = Object.values(queryIndexes || {});
-    if (!allIndexes.length) return checkImmediate ? unavailable : { paths: [], available: false };
+    let siteId;
 
-    if (checkImmediate) {
-      const resolved = allIndexes.filter((idx) => idx.requestResolved);
-      const allMatchingPaths = [];
-      for (const index of resolved) {
-        const paths = await index.pathsRequest;
-        if (paths?.some((p) => p.startsWith(prefix))) {
-          allMatchingPaths.push(...paths);
-        }
+    if (isFederal) {
+      siteId = 'federal';
+    } else {
+      const { uniqueSiteId } = getConfig();
+      siteId = uniqueSiteId ?? '';
+      if (!siteId) {
+        const hostMatch = window.location.hostname.match(/^[^-]+--(.+)--[^.]+\.aem\.(page|live)$/);
+        if (hostMatch) [, siteId] = hostMatch;
+        // If no match (e.g., localhost, prod domain), keep siteId as '' (milo default)
       }
-      let result;
-      if (allMatchingPaths.length) {
-        result = { resolved: true, paths: allMatchingPaths, available: true };
-      } else if (resolved.length) {
-        result = { resolved: true, paths: [], available: true };
-      } else {
-        result = unavailable;
-      }
-      return result;
     }
 
-    const results = await Promise.all(
-      allIndexes.map(async (index) => {
-        const paths = await index.pathsRequest;
-        return { paths, hasMatch: paths?.some((p) => p.startsWith(prefix)) };
-      }),
-    );
+    const targetIndex = queryIndexes?.[siteId];
 
-    // Merge all paths from all indexes that have matching paths
-    const allMatchingPaths = results
-      .filter((r) => r.hasMatch)
-      .flatMap((r) => r.paths || []);
-    const anyLoaded = results.some((r) => Array.isArray(r.paths));
-    return allMatchingPaths.length
-      ? { paths: allMatchingPaths, available: true }
-      : { paths: [], available: anyLoaded };
+    // eslint-disable-next-line no-console
+    console.log('[mep-lingo] Query Index Lookup:', {
+      isFederal,
+      siteId: siteId || '(empty)',
+      availableKeys: Object.keys(queryIndexes || {}),
+      hasIndex: !!targetIndex,
+      resolved: targetIndex?.requestResolved,
+    });
+
+    if (!targetIndex) {
+      return checkImmediate ? unavailable : { paths: [], available: false };
+    }
+
+    if (checkImmediate) {
+      // For LCP: only use index if already resolved
+      if (!targetIndex.requestResolved) return unavailable;
+      const paths = await targetIndex.pathsRequest;
+      const matchingPaths = paths?.filter((p) => p.startsWith(prefix)) || [];
+      return { resolved: true, paths: matchingPaths, available: true };
+    }
+
+    // For non-LCP: wait for index to load
+    const paths = await targetIndex.pathsRequest;
+    const matchingPaths = paths?.filter((p) => p.startsWith(prefix)) || [];
+    return { resolved: true, paths: matchingPaths, available: Array.isArray(paths) };
   } catch (e) {
     window.lana?.log(`Query index error for ${prefix}:`, e);
     return checkImmediate ? unavailable : { paths: [], available: false };
@@ -225,7 +239,8 @@ export default async function init(a) {
   }
 
   let resourcePath = a.href;
-  if (a.href.includes('/federal/')) {
+  const isFederalFragment = a.href.includes('/federal/');
+  if (isFederalFragment) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
@@ -248,13 +263,14 @@ export default async function init(a) {
 
     const section = a.closest('.section[data-idx]');
     const isLcp = section?.dataset.idx === '0';
-    const qiResult = await getQueryIndexPaths(matchingRegion.prefix, isLcp);
+    const qiResult = await getQueryIndexPaths(matchingRegion.prefix, isLcp, isFederalFragment);
     const qiResolved = qiResult.resolved !== false;
     const qiAvailable = qiResult.available;
     const mepLingoPathname = new URL(mepLingoPath).pathname;
     const mepLingoInIndex = qiResult.paths?.length > 0 && qiResult.paths.includes(mepLingoPathname);
 
     if (isBlockSwap) {
+      // If query-index unavailable (including federal with no index yet), try anyway
       const shouldTryMepLingo = !qiAvailable || mepLingoInIndex;
       if (!shouldTryMepLingo) { a.parentElement.remove(); return; }
 
@@ -289,6 +305,7 @@ export default async function init(a) {
         const fallbackResp = await fetchFragment(resourcePath);
         if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
       } else {
+        // No query-index available (including federal) → use parallel fetch
         result = await fetchMepLingoParallel(mepLingoPath, resourcePath);
       }
 
