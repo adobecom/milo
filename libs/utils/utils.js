@@ -366,7 +366,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         config.uniqueSiteId = 'da-bacom';
         const lingoMeta = document.createElement('meta');
         lingoMeta.setAttribute('content', 'on');
-        lingoMeta.setAttribute('name', 'lingo');
+        lingoMeta.setAttribute('name', 'langFirst');
         document.head.append(lingoMeta);
       }
       if (window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de') || window.location.href.startsWith('https://main--cc--adobecom.aem.page/ch_de')) {
@@ -375,7 +375,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         config.uniqueSiteId = 'cc';
         const lingoMeta = document.createElement('meta');
         lingoMeta.setAttribute('content', 'on');
-        lingoMeta.setAttribute('name', 'lingo');
+        lingoMeta.setAttribute('name', 'langFirst');
         document.head.append(lingoMeta);
       }
 
