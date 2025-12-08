@@ -539,7 +539,8 @@ export function isInTextNode(node) {
 }
 
 function lingoActive() {
-  return getMetadata('lingo') === 'on' || PAGE_URL.searchParams.get('lingo') === 'on';
+  const langFirst = (getMetadata('langFirst') || PAGE_URL.searchParams.get('langFirst'))?.toLowerCase();
+  return ['true', 'on'].includes(langFirst);
 }
 
 export function createTag(tag, attributes, html, options = {}) {
