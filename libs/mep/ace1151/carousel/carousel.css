@@ -1106,9 +1106,6 @@ html[dir="rtl"] .carousel .move-indicators {
     display: none;
   }
 
-  main:has(.carousel.s2a-tabs) {
-    overflow: hidden;
-  }
 }
 
 @media (min-width: 900px) and (max-width: 1199px) {
