@@ -17,8 +17,9 @@ export class VariantLayout {
     }
 
     insertVariantStyle() {
-        if (!VariantLayout.styleMap[this.card.variant]) {
-            VariantLayout.styleMap[this.card.variant] = true;
+        const styleKey = this.constructor.name;
+        if (!VariantLayout.styleMap[styleKey]) {
+            VariantLayout.styleMap[styleKey] = true;
             const styles = document.createElement('style');
             styles.innerHTML = this.getGlobalCSS();
             document.head.appendChild(styles);
