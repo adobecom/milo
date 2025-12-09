@@ -53,9 +53,16 @@ async function getTranslatedPage(marketPrefix, config) {
 function buildBanner(market, translatedUrl) {
   const banner = createTag('div', { class: 'language-banner' });
   const messageContainer = createTag('div', { class: 'language-banner-content' });
-  const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} `);
-  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.languageName);
+  const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} ${market.languageName}.`);
+  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.continue || 'Continue');
   const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close' });
+  closeButton.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 0.5C15.2467 0.5 19.5 4.75329 19.5 10C19.5 15.2467 15.2467 19.5 10 19.5C4.75329 19.5 0.5 15.2467 0.5 10C0.5 4.75329 4.75329 0.5 10 0.5Z" stroke="white"/>
+      <path d="M6 14.0002L14 6.00024" stroke="white" stroke-width="2"/>
+      <path d="M14 14.0002L6 6.00024" stroke="white" stroke-width="2"/>
+    </svg>
+  `;
 
   messageContainer.append(messageText, link);
   banner.append(messageContainer, closeButton);
