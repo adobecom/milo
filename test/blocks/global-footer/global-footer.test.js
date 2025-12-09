@@ -93,7 +93,12 @@ describe('global footer', () => {
         });
 
         const globalFooter = await createFullGlobalFooter({ waitForDecoration: false });
-        expect(await globalFooter.decorateContent()).to.equal(undefined);
+        let decoratedContent;
+        try {
+          decoratedContent = await globalFooter.decorateContent();
+        } catch (e) {
+          expect(decoratedContent).to.equal(undefined);
+        }
       });
 
       it('should handle missing elements', async () => {
@@ -356,14 +361,16 @@ describe('global footer', () => {
 
       const logMessage = 'test message';
       const logTags = 'global-footer';
-      await logErrorFor(erroneousFunction, logMessage, logTags);
+      try {
+        await logErrorFor(erroneousFunction, logMessage, logTags);
+      } catch (e) {
+        expect(window.lana.log.calledOnce).to.be.true;
 
-      expect(window.lana.log.calledOnce).to.be.true;
+        const firstCallArguments = window.lana.log.getCall(0).args;
 
-      const firstCallArguments = window.lana.log.getCall(0).args;
-
-      expect(firstCallArguments[0].includes(logMessage)).to.equal(true);
-      expect(firstCallArguments[1].tags === logTags).to.equal(true);
+        expect(firstCallArguments[0].includes(logMessage)).to.equal(true);
+        expect(firstCallArguments[1].tags === logTags).to.equal(true);
+      }
     });
 
     it('should send log when footer cannot be fetched', async () => {

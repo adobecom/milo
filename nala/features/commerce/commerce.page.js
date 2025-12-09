@@ -5,6 +5,7 @@ export default class CommercePage {
     this.price = page.locator('//span[@data-template="price"]');
     this.priceOptical = page.locator('//span[@data-template="optical"]');
     this.priceStrikethrough = page.locator('//span[@data-template="strikethrough"]');
+    this.checkoutCTA = page.locator('//a[@is="checkout-link"]');
     this.buyNowCta = page.locator('//a[contains(@daa-ll, "Buy now")]');
     this.freeTrialCta = page.locator('//a[contains(@daa-ll, "Free trial")]');
     this.merchCard = page.locator('merch-card');

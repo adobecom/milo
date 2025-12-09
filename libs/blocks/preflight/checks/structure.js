@@ -1,5 +1,5 @@
-import { STATUS, STRUCTURE_IDS, STRUCTURE_TITLES } from './constants.js';
-import { getMetadata, isLocalNav } from '../../../utils/utils.js';
+import { STATUS, STRUCTURE_IDS, STRUCTURE_TITLES, STRUCTURE_SEVERITIES } from './constants.js';
+import { getConfig, getMetadata, isLocalNav } from '../../../utils/utils.js';
 
 function getElementStatus({ area, metaKey, selector }) {
   const metaValue = getMetadata(metaKey, area);
@@ -18,6 +18,7 @@ function getStructureResult(key, status, description, details) {
     title: STRUCTURE_TITLES[key],
     status,
     description,
+    severity: STRUCTURE_SEVERITIES[key],
     details: details || {},
   };
 }
@@ -99,14 +100,25 @@ function checkFooter(area) {
 }
 
 function checkRegionSelector(area) {
-  const { element: footerEl, enabled, loaded } = getElementStatus({ area, metaKey: 'footer', selector: 'footer' });
+  const { element: footerEl, enabled: footerEnabled } = getElementStatus({ area, metaKey: 'footer', selector: 'footer' });
 
+  // If footer is disabled, region selector is not critical
+  if (!footerEnabled) {
+    return getStructureResult(
+      'regionSelector',
+      STATUS.EMPTY,
+      'Region selector is off.',
+      { loaded: false, enabled: false, footerEnabled },
+    );
+  }
+
+  // If footer is enabled but not found, this is a failure
   if (!footerEl) {
     return getStructureResult(
       'regionSelector',
-      enabled ? STATUS.FAIL : STATUS.EMPTY,
-      enabled ? 'Footer element not found.' : 'Region selector is off.',
-      { loaded, enabled },
+      STATUS.FAIL,
+      'Footer element not found.',
+      { loaded: false, enabled: footerEnabled, footerEnabled },
     );
   }
 
@@ -115,20 +127,21 @@ function checkRegionSelector(area) {
   const isDropdownConfigured = regionAnchor?.closest('.region-selector')?.querySelector('.fragment, [data-path]');
   const regSelectorLoaded = !!(isModalConfigured || isDropdownConfigured);
 
+  // If footer is enabled and region selector is not available -> fail
   return getStructureResult(
     'regionSelector',
     regSelectorLoaded ? STATUS.PASS : STATUS.FAIL,
     regSelectorLoaded ? 'Region selector is loaded.' : 'Region selector is not loaded.',
-    { loaded: regSelectorLoaded },
+    { loaded: regSelectorLoaded, enabled: footerEnabled, footerEnabled },
   );
 }
 
 function checkGeorouting(area) {
+  const config = getConfig();
   const meta = getMetadata('georouting', area)?.toLowerCase();
   const param = new URL(window.location.href).searchParams.get('georouting')?.toLowerCase();
-  const isOff = meta === 'off' || param === 'off';
-
-  return getStructureResult('georouting', STATUS.EMPTY, `Georouting is ${isOff ? 'off' : 'on'}.`);
+  const isOff = [meta, param, config.georouting.enabled].includes('off') || !(meta || param || config.georouting.enabled);
+  return getStructureResult('georouting', isOff ? STATUS.EMPTY : STATUS.PASS, `Georouting is ${isOff ? 'off' : 'on'}.`);
 }
 
 function checkBreadcrumbs(area) {

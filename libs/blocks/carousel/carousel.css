@@ -844,6 +844,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
   .carousel[class*='show-'].ups-desktop:has(.editorial-card) .carousel-slides.is-ready {
     flex-wrap: wrap;
+    flex-direction: row;
     align-items: stretch;
     transform: none;
     left: initial;
@@ -867,4 +868,12 @@ html[dir="rtl"] .carousel .move-indicators {
   width: 0;
   height: 0;
   overflow: hidden;
+}
+
+:root:has(meta[name="theme"][content="max25"]) {
+  @media (min-width: 900px) {
+    .carousel.show-2.ups-desktop.m-gap .carousel-slides {
+      gap: 44px var(--spacing-s);
+    }
+  }
 }

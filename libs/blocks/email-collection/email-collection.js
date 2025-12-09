@@ -3,7 +3,6 @@ import { decorateButtons } from '../../utils/decorate.js';
 import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
 import { closeModal } from '../modal/modal.js';
 import {
-  getIMS,
   getIMSProfile,
   getApiEndpoint,
   createAriaLive,
@@ -13,11 +12,15 @@ import {
   getAEPData,
   disableForm,
   runtimePost,
+  redirectToSignIn,
+  isUserGuest,
   FORM_FIELDS,
 } from './utils.js';
 
 const miloConfig = getConfig();
 const FORM_ID = 'email-collection-form';
+let dialog;
+let signIn = true;
 
 function showHideSubscribedMessage(el, subscribed, email) {
   el.querySelector('.button-container')?.classList.toggle('hidden', subscribed);
@@ -53,7 +56,7 @@ export const [showHideMessage, setMessageEls] = (() => {
       const foreground = children[0];
       elsObject = {
         foreground,
-        form: foreground.children[1],
+        form: foreground.children[1] ?? foreground.children[0],
         success: children[1].firstElementChild,
         error: children[2].firstElementChild,
       };
@@ -61,6 +64,28 @@ export const [showHideMessage, setMessageEls] = (() => {
     },
   ];
 })();
+
+export function overrideForegroundContent() {
+  const params = new URLSearchParams(window.location.search);
+  const show = params.get('email-collection-show');
+  if (!show) return;
+  switch (show) {
+    case 'form':
+      showHideMessage({ hideMessage: true });
+      break;
+    case 'success':
+      showHideMessage({});
+      break;
+    case 'error':
+      showHideMessage({ errorMsg: 'Testing' });
+      break;
+    case 'subscribed':
+      showHideMessage({ subscribed: true, email: 'test@test.com' });
+      break;
+    default:
+      break;
+  }
+}
 
 async function insertProgress(el, size = 'm') {
   if (!el) return;
@@ -101,7 +126,7 @@ async function insertProgress(el, size = 'm') {
   el.replaceChildren(theme);
 }
 
-function decorateSelect(data, id, placeholder) {
+function decorateSelect({ data, id, placeholder, selectValue }) {
   const selectWrapper = createTag('div', { class: 'select-wrapper' });
   const select = createTag('select', { id, name: id });
   const optionPlaceholder = createTag('option', { value: '' }, placeholder?.trim());
@@ -112,13 +137,14 @@ function decorateSelect(data, id, placeholder) {
     select.appendChild(option);
   });
 
+  select.value = selectValue ?? '';
   selectWrapper.appendChild(select);
   return selectWrapper;
 }
 
 async function decorateInput(key, value) {
   const profile = await getIMSProfile();
-  let inputValue = profile[key];
+  const inputValue = profile[key];
   const { tag, attributes } = FORM_FIELDS[key];
   const [labelText, placeholder] = value.split('|');
   let input;
@@ -131,8 +157,12 @@ async function decorateInput(key, value) {
 
   if (key === 'country') {
     const { country: countries } = await getFormData('config');
-    inputValue = countries?.[inputValue];
-    if (!inputValue) return null;
+    input = decorateSelect({
+      data: Object.entries(countries).map((country) => ({ key: country[0], value: country[1] })),
+      id: key,
+      placeholder: placeholder ?? labelText,
+      ...(countries[inputValue] && { selectValue: inputValue }),
+    });
   }
 
   if (key === 'state') {
@@ -140,7 +170,11 @@ async function decorateInput(key, value) {
     const fields = getFormData('fields');
     const { country } = profile;
     if (!fields.country || !states?.[country]) return null;
-    input = decorateSelect(states[country], key, placeholder ?? labelText);
+    input = decorateSelect({
+      data: states[country],
+      id: key,
+      placeholder: placeholder ?? labelText,
+    });
   }
 
   input = input ?? createTag(
@@ -153,16 +187,17 @@ async function decorateInput(key, value) {
     },
   );
 
+  const tempInput = input.querySelector('select') ?? input;
   Object.entries(attributes).forEach(([attrKey, attrValue]) => {
-    const tempInput = input.querySelector('select') ?? input;
+    if (attrKey === 'disabled' && !tempInput.value) return;
     tempInput?.setAttribute(attrKey, attrValue);
   });
 
-  label.classList.toggle('required', !!attributes.required);
+  label.classList.toggle('required', tempInput.getAttribute('required'));
   const container = createTag('div', { class: 'input-container' });
   container.append(label, input);
 
-  if (input.getAttribute('readonly') === null) {
+  if (tempInput.getAttribute('disabled') === null) {
     const error = createTag('div', { id: `error-${key}`, class: 'body-xs hidden' });
     container.append(error);
   }
@@ -171,12 +206,24 @@ async function decorateInput(key, value) {
 }
 
 async function submitForm(form) {
+  const isGuest = await isUserGuest();
+  if (signIn && isGuest) {
+    await redirectToSignIn(dialog);
+    return;
+  }
+
   const messageParams = {
     errorMsg: '',
     subscribed: false,
     email: '',
   };
-  const { email, occupation, organization, state } = Object.fromEntries(new FormData(form));
+  const {
+    email,
+    occupation,
+    organization,
+    state,
+    country,
+  } = Object.fromEntries(new FormData(form));
   const button = form.querySelector('button[type="submit"]');
   const buttonContent = button.textContent;
   updateAriaLive('Form loading');
@@ -187,32 +234,35 @@ async function submitForm(form) {
     const { imsClientId } = miloConfig;
     const { mpsSname } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
-    const { country } = await getIMSProfile();
+    const { country: countryField } = getFormData('fields');
+    const { country: profileCountry, userId: guid } = await getIMSProfile();
 
-    const date = new Date();
-    const { guid, ecid } = await getAEPData();
+    const { ecid, aepCmp, aepOtherConsents } = await getAEPData();
     const bodyData = {
       ecid,
       guid,
       occupation,
       organization,
       email,
-      countryCode: country,
       state,
       consentId,
       mpsSname,
       appClientId: imsClientId,
-      eventDts: date.toISOString(),
-      timezoneOffset: -date.getTimezoneOffset(),
+      aepCmp,
+      aepOtherConsents,
+      isGuest,
+      ...(countryField && { countryCode: profileCountry ?? country }),
     };
 
-    const { error, data } = await runtimePost(
+    const { error, data, status } = await runtimePost(
       getApiEndpoint(),
       bodyData,
-      ['occupation', 'organization', 'state'],
     );
 
-    if (error) messageParams.errorMsg = error;
+    if (error) {
+      if (status === 401) await redirectToSignIn(dialog);
+      messageParams.errorMsg = error;
+    }
 
     messageParams.email = email;
     const { subscribed } = data;
@@ -231,7 +281,7 @@ function setMaxHeightToForm(formContainer, restore) {
     formContainer.style.maxHeight = '';
     return;
   }
-  const { height } = window.getComputedStyle(formContainer);
+  const { height } = window.getComputedStyle(formContainer.parentElement);
   const mq = window.matchMedia('(min-width: 700px)');
   if (!height) return;
 
@@ -255,14 +305,14 @@ function showInputError(form, input, placeholders) {
   const label = form.querySelector(`label[for=${id}]`);
   const error = form.querySelector(`div[id$=${id}]`);
   const errorType = validateInput(input);
-  error.textContent = placeholders[errorType];
+  if (error) error.textContent = placeholders[errorType];
 
   if (errorType) input.setAttribute('aria-describedby', error.id);
   else input.removeAttribute('aria-describedby');
 
   input.classList.toggle('invalid', errorType);
   label.classList.toggle('invalid', errorType);
-  error.classList.toggle('hidden', !errorType);
+  error?.classList.toggle('hidden', !errorType);
 
   return !!errorType;
 }
@@ -311,9 +361,10 @@ async function decorateConsentString() {
 
 async function decorateForm(el, foreground) {
   const fields = getFormData('fields');
-  const text = foreground.querySelector('.text');
+  const text = foreground.querySelector('.text > div');
+  const isMailingList = el.classList.contains('mailing-list');
 
-  const shouldSplitFirstRow = !el.classList.contains('large-image');
+  const shouldSplitFirstRow = !el.classList.contains('large-image') && !isMailingList && Object.keys(fields).length > 1;
   const form = createTag('form', { id: FORM_ID, novalidate: true });
   const inputs = [];
   for (const [key, value] of Object.entries(fields)) {
@@ -367,11 +418,7 @@ function transformCtaToBtn(el) {
     link.innerHTML,
   );
 
-  if (type === 'close-form') {
-    button.addEventListener('click', function closeForm() {
-      closeModal(this.closest('.dialog-modal'));
-    });
-  }
+  if (type === 'close-form') button.addEventListener('click', () => closeModal(dialog));
 
   const buttonContainer = createTag('div', { class: 'button-container' });
   buttonContainer.appendChild(button);
@@ -417,6 +464,7 @@ function decorateText(elChildren) {
     const isForeground = child === foreground;
     const text = isForeground ? child.lastElementChild : child.firstElementChild;
     text.classList.add('text');
+    const contentContainer = createTag('div');
     decorateButtons(child);
     [...text.children].forEach((textEl) => {
       if (textEl.classList.contains('action-area')) {
@@ -430,59 +478,57 @@ function decorateText(elChildren) {
       }
     });
 
+    contentContainer.append(...text.children);
+
+    text.append(contentContainer);
+    foreground.appendChild(text);
     if (isForeground) return;
 
     text.classList.add('hidden');
-    text.parentElement.remove();
-    foreground.appendChild(text);
-    if (childIndex === 1) decorateSubscribedMessage(text);
+    if (childIndex === 1) decorateSubscribedMessage(contentContainer);
   });
 }
 
 async function checkIsSubscribed() {
+  const isGuest = await isUserGuest();
+  if (isGuest) return false;
   const { mpsSname } = getFormData('metadata');
   const { email } = await getIMSProfile();
 
-  const { data, error } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname });
+  const { data, error, status } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname, isGuest });
   const { subscribed } = data;
 
   if (subscribed) showHideMessage({ subscribed, email });
-  else if (error) showHideMessage({ errorMsg: error });
+
+  if (error) {
+    if (status === 401) await redirectToSignIn(dialog);
+    showHideMessage({ errorMsg: error });
+  }
+
   return subscribed;
 }
 
-function waitForModal() {
-  return new Promise((resolve) => {
-    const timeout = setTimeout(() => resolve(), 3000);
-    window.addEventListener('milo:modal:loaded', () => {
-      clearTimeout(timeout);
-      resolve();
-    }, { once: true });
-  });
-}
-
 async function decorate(el, blockChildren) {
-  const ims = await getIMS();
-  if (!ims.isSignedInUser()) {
-    const dialog = el.closest('.dialog-modal');
-    if (!document.body.contains(dialog)) await waitForModal();
-    await ims.signIn();
-    closeModal(dialog);
+  const isGuest = await isUserGuest();
+  if (signIn && isGuest) {
+    await redirectToSignIn(dialog);
     return false;
   }
 
   blockChildren[0].classList.add('foreground');
   blockChildren[1].classList.add('hidden');
   blockChildren[2].classList.add('hidden');
-  blockChildren[0].querySelector(':scope > div:not([class])').classList.add('image');
 
   decorateText(blockChildren);
+  blockChildren[0].querySelector(':scope > div:not([class])')?.classList.add('image');
 
   const isSubscribed = await checkIsSubscribed();
   try {
     await decorateForm(el, blockChildren[0]);
     decorateDefaultLinkAnalytics(blockChildren[0], miloConfig);
     if (!isSubscribed) updateAriaLive(blockChildren[0]);
+    const { env } = miloConfig;
+    if (env.name !== 'prod') overrideForegroundContent();
     return true;
   } catch (e) {
     showHideMessage({ errorMsg: e });
@@ -492,11 +538,14 @@ async function decorate(el, blockChildren) {
 
 export default async function init(el) {
   el.classList.add('hidden');
+
   const blockChildren = [...el.children];
+  if (blockChildren[0].childElementCount === 1) el.classList.add('no-image');
+
   await insertProgress(el, 'l');
 
   el.classList.remove('hidden');
-  const dialog = el.closest('.dialog-modal');
+  dialog = el.closest('.dialog-modal');
   dialog?.setAttribute('aria-label', 'Form loading');
   createAriaLive(el);
 
@@ -504,6 +553,7 @@ export default async function init(el) {
   if (configErrMessage) throw new Error(configErrMessage);
   const correctMessageEls = setMessageEls(blockChildren);
   if (!correctMessageEls) throw new Error('Missing success/error message');
+  signIn = getFormData('metadata')?.signIn !== 'off';
 
   decorate(el, blockChildren).then((isDecorated) => {
     if (!isDecorated) return;

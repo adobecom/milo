@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'carousel',
   'chart',
   'columns',
+  'comparison-table',
   'editorial-card',
   'email-collection',
   'faas',
@@ -50,6 +51,7 @@ const MILO_BLOCKS = [
   'locui-create',
   'm7',
   'marketo',
+  'marketo-config',
   'marquee',
   'marquee-anchors',
   'martech-metadata',
@@ -195,24 +197,56 @@ export function getEnv(conf) {
   /* c8 ignore stop */
 }
 
-export function getLocale(locales, pathname = window.location.pathname) {
-  if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+function hydrateLocale(locales, key) {
+  const locale = locales[key];
+
+  const buildExpandedLocale = (localeData, localeKey) => ({
+    ...localeData,
+    prefix: localeKey ? `/${localeKey}` : '',
+    region: localeData.region || localeKey.split('_')[0] || 'us',
+  });
+
+  const isBaseLocale = !('base' in locale);
+  if (isBaseLocale) {
+    const childLocaleEntries = Object.entries(locales)
+      .filter(([, childLocale]) => childLocale.base === key);
+
+    const hydratedChildren = childLocaleEntries.reduce((acc, [childKey, childLocale]) => {
+      const mergedLocale = { ...locale, ...childLocale, base: childLocale.base };
+      acc[childKey] = buildExpandedLocale(mergedLocale, childKey);
+      return acc;
+    }, {});
+
+    const hydratedBase = buildExpandedLocale(locale, key);
+    return { ...hydratedBase, regions: hydratedChildren };
   }
+
+  const hasValidBase = (locale.base || locale.base === '') && locales[locale.base];
+  if (hasValidBase) {
+    const baseLocale = locales[locale.base];
+    const mergedLocale = { ...baseLocale, ...locale };
+    return buildExpandedLocale(mergedLocale, key);
+  }
+
+  return { ...locale };
+}
+
+export function getLocale(locales, pathname = window.location.pathname) {
+  if (!locales) return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+
   const split = pathname.split('/');
   const localeString = split[1];
-  let locale = locales[localeString] || locales[''];
-  if ([LANGSTORE, PREVIEW].includes(localeString)) {
-    const ietf = Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(split[2]));
-    if (ietf) locale = locales[ietf];
-    const pathSegment = split[2] ? `/${split[2]}` : '';
-    locale.prefix = `/${localeString}${pathSegment}`;
-    return locale;
-  }
-  const isUS = locale.ietf === 'en-US';
-  const localePathPrefix = localeString ? `/${localeString}` : '';
-  locale.prefix = isUS ? '' : localePathPrefix;
-  locale.region = isUS ? 'us' : localeString.split('_')[0];
+  const specialPrefix = [LANGSTORE, PREVIEW].includes(localeString) ? localeString : '';
+  const ietfSegment = split[2];
+
+  const matchedKeys = specialPrefix
+    ? [Object.keys(locales).find((loc) => locales[loc]?.ietf?.startsWith(ietfSegment))]
+    : Object.keys(locales)
+      .filter((k) => k === localeString);
+
+  const matchedKey = matchedKeys[0] ?? '';
+  const locale = hydrateLocale(locales, matchedKey);
+  if (specialPrefix) locale.prefix = `/${specialPrefix}${ietfSegment ? `/${ietfSegment}` : ''}`;
   return locale;
 }
 
@@ -223,7 +257,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   const region = split[locOffset + 2];
   let regionPath = '';
 
-  const language = languages[languageString];
+  const language = languages?.[languageString];
   if (language && region && language.regions) {
     const [matchingRegion] = language.regions.filter((r) => r.region === region);
     if (matchingRegion?.region) language.region = matchingRegion.region;
@@ -236,7 +270,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
     || (language.languageBased === false && !language.region);
   if (isLegacyLocaleRoutingMode) {
     const locale = getLocale(locales, pathname);
-    const englishLang = languages.en;
+    const englishLang = languages?.en;
     if (locale.prefix === '' && englishLang) {
       locale.language = DEFAULT_LANG;
       if (englishLang.region) locale.region = englishLang.region;
@@ -250,6 +284,13 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   language.language = languageString;
   language.prefix = `${languageString === DEFAULT_LANG && !regionPath ? '' : '/'}${languageString}${regionPath}`;
   return language;
+}
+
+export function setInternational(prefix) {
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+  const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
+  document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
+  sessionStorage.setItem('international', prefix);
 }
 
 export function getMetadata(name, doc = document) {
@@ -625,7 +666,7 @@ export function appendHtmlToLink(link) {
   const { useDotHtml } = getConfig();
   if (!useDotHtml) return;
   const href = link.getAttribute('href');
-  if (!href?.length) return;
+  if (!href?.length || href.includes('#_nohtml')) return;
 
   const { autoBlocks = [], htmlExclude = [] } = getConfig();
 
@@ -801,6 +842,11 @@ export function decorateSVG(a) {
 
     const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
+
+    if (altText) {
+      const parentHeading = a.parentElement.closest('h1, h2, h3, h4, h5, h6');
+      parentHeading?.appendChild(createTag('span', { class: 'hidden' }, altText));
+    }
 
     if (authoredUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
@@ -995,6 +1041,9 @@ export function decorateLinks(el) {
       a.setAttribute('rel', 'nofollow');
       a.href = a.href.replace('#_nofollow', '');
     }
+    if (a.href.includes('#_nohtml')) {
+      a.href = a.href.replace('#_nohtml', '');
+    }
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
     } else {
@@ -1127,12 +1176,19 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const icons = area.querySelectorAll('span.icon');
+  let icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
-    const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
-    if (excludedIconsCount === icons.length) return;
+    if (getMetadata('theme') === 'max25') {
+      // TODO: Remove after correcting core logic
+      const includeIcons = [...icons].filter((icon) => !iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`)));
+      if (!includeIcons.length) return;
+      icons = includeIcons;
+    } else {
+      const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
+      if (excludedIconsCount === icons.length) return;
+    }
   }
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
@@ -1339,7 +1395,7 @@ export async function loadIms() {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
-    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
+    const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
@@ -1356,6 +1412,11 @@ export async function loadIms() {
         clearTimeout(timeout);
       },
       onError: reject,
+      ...(imsGuest === 'on' && {
+        api_parameters: { check_token: { guest_allowed: true } },
+        enableGuestAccounts: true,
+        enableGuestTokenForceRefresh: true,
+      }),
       ...adobeid,
     };
     const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
@@ -1547,7 +1608,7 @@ async function loadPostLCP(config) {
   } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
-  config.georouting = { loadedPromise: Promise.resolve() };
+  config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
@@ -1640,9 +1701,7 @@ export async function loadDeferred(area, blocks, config) {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    const { getPreflightResults } = await import('../blocks/preflight/checks/preflightApi.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
-    getPreflightResults(window.location.href, document);
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {

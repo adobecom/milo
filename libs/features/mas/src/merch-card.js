@@ -25,11 +25,11 @@ import {
     SELECTOR_MAS_CHECKOUT_LINK,
     SELECTOR_MAS_ELEMENT,
     SELECTOR_MAS_INLINE_PRICE,
-    SELECTOR_MAS_SP_BUTTON,
     MARK_START_SUFFIX,
     MARK_DURATION_SUFFIX,
     EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
     EVENT_MERCH_CARD_QUANTITY_CHANGE,
+    FF_DEFAULTS,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
@@ -50,6 +50,9 @@ function priceOptionsProvider(element, options) {
     if (card.priceLiterals) {
       options.literals ??= {};
       Object.assign(options.literals, card.priceLiterals);
+    }
+    if (card.aemFragment) {
+      options[FF_DEFAULTS] = true;
     }
     card.variantLayout?.priceOptionsProvider?.(element, options);
 }
@@ -208,6 +211,7 @@ export class MerchCard extends LitElement {
 
     willUpdate(changedProperties) {
         if (changedProperties.has('variant') || !this.variantLayout) {
+            this.variantLayout?.disconnectedCallbackHook();
             this.variantLayout = getVariantLayout(this);
             this.variantLayout?.connectedCallbackHook();
         }
@@ -465,6 +469,10 @@ export class MerchCard extends LitElement {
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
         this.addEventListener('change', this.changeHandler);
+
+        if (this.variantLayout) {
+            this.variantLayout.connectedCallbackHook();
+        }
 
         if (!this.aemFragment) {
             setTimeout(() => this.checkReady(), 0);

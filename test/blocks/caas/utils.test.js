@@ -198,6 +198,7 @@ describe('getConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
@@ -470,6 +471,7 @@ describe('getConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
@@ -725,9 +727,9 @@ describe('getCountryAndLang', () => {
     },
   };
 
-  it('should use country and lang from CaaS Config', () => {
+  it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: false,
     });
@@ -738,9 +740,9 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use default country and lang from CaaS Config', () => {
+  it('should use default country and lang from CaaS Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({ autoCountryLang: false });
+    const expected = await getCountryAndLang({ autoCountryLang: false });
     expect(expected).to.deep.eq({
       country: 'US',
       language: 'en',
@@ -748,9 +750,9 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use country and lang from locale in Milo Config', () => {
+  it('should use country and lang from locale in Milo Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: true,
     });
@@ -761,12 +763,12 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use default country and lang from locale in Milo Config', () => {
+  it('should use default country and lang from locale in Milo Config', async () => {
     setConfig({
       ...cfg,
       pathname: '/whatever/blah.html',
     });
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: true,
     });
@@ -774,6 +776,75 @@ describe('getCountryAndLang', () => {
       country: 'US',
       language: 'en',
       locales: '',
+    });
+  });
+
+  describe('langFirst with GEO IP', () => {
+    let metaLangFirst;
+
+    beforeEach(() => {
+      metaLangFirst = document.createElement('meta');
+      metaLangFirst.setAttribute('name', 'langfirst');
+      metaLangFirst.setAttribute('content', 'true');
+      document.head.appendChild(metaLangFirst);
+    });
+
+    afterEach(() => {
+      if (metaLangFirst && metaLangFirst.parentNode) {
+        document.head.removeChild(metaLangFirst);
+      }
+    });
+
+    it('should use GEO IP for langFirst when not news source', async () => {
+      setConfig({
+        pathname: '/en/blah.html',
+        locales: { '': { ietf: 'en-US' } },
+      });
+
+      const expected = await getCountryAndLang({
+        autoCountryLang: true,
+        source: ['hawks'],
+      });
+
+      expect(expected.country).to.not.eq('xx');
+      expect(expected.language).to.eq('en');
+    });
+
+    it('should NOT use GEO IP for news source', async () => {
+      setConfig({
+        pathname: '/en/blah.html',
+        locales: { '': { ietf: 'en-US' } },
+      });
+
+      const expected = await getCountryAndLang({
+        autoCountryLang: true,
+        source: ['news'],
+      });
+
+      expect(expected.country).to.eq('xx');
+      expect(expected.language).to.eq('en');
+    });
+
+    it('should return valid country with fallback support', async () => {
+      setConfig({
+        pathname: '/en/be/blah.html',
+        locales: {
+          '': { ietf: 'en-US' },
+          be: { ietf: 'nl-BE' },
+        },
+      });
+
+      const expected = await getCountryAndLang({
+        autoCountryLang: true,
+        source: ['hawks'],
+      });
+
+      expect(expected).to.have.property('country');
+      expect(expected).to.have.property('language');
+      expect(expected.language).to.eq('en');
+      expect(expected.country).to.not.eq('xx');
+      expect(expected.country).to.be.a('string');
+      expect(expected.country.length).to.be.greaterThan(0);
     });
   });
 
@@ -838,6 +909,7 @@ describe('getFloodgateCaasConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
