@@ -43,6 +43,21 @@ const stageDomainsMap = {
   },
 };
 
+const supportedMarkets = {
+  data: [
+    { prefix: '', lang: 'en', supportedRegions: 'us, sg, ae_en, africa, ca, be_en, bg, cn, cz, dk, ee, fi, gr_en, hk_en, id_en, ie, il_en, lu_en, mena_en, my_en, nl, no, ph_en, pl, ro, ru, sa_en, se, si, nz, sk, th_en, tr, tw, ua, vn_en, in' },
+    { prefix: 'uk', lang: 'en', supportedRegions: 'uk' },
+    { prefix: 'au', lang: 'en', supportedRegions: 'au' },
+    { prefix: 'fr', lang: 'fr', supportedRegions: 'fr, lu, be, ch, ca' },
+    { prefix: 'de', lang: 'de', supportedRegions: 'de, lu, ch, at' },
+    { prefix: 'jp', lang: 'ja', supportedRegions: 'jp' },
+    { prefix: 'es', lang: 'es', supportedRegions: 'co, es, mx, ar, cl, la, pe' },
+    { prefix: 'kr', lang: 'ko', supportedRegions: 'kr' },
+    { prefix: 'it', lang: 'it', supportedRegions: 'it' },
+    { prefix: 'pt', lang: 'pt', supportedRegions: 'pt, br' },
+  ],
+};
+
 const config = {
   geoRouting: 'on',
   languageBanner: 'on',
@@ -53,6 +68,7 @@ const config = {
   locales,
   prodDomains,
   stageDomainsMap,
+  supportedMarkets,
   jarvis: {
     id: 'milo',
     version: '1.0',

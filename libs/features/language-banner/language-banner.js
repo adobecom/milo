@@ -1,26 +1,26 @@
-import { getConfig, createTag, loadStyle, getTargetMarket } from '../../utils/utils.js';
-
-const getCookie = (name) => document.cookie
-  .split('; ')
-  .find((row) => row.startsWith(`${name}=`))
-  ?.split('=')[1];
+import { getConfig, createTag, loadStyle, getTargetMarket, getFederatedContentRoot } from '../../utils/utils.js';
 
 /**
- * Gets the user's preferred language, falling back from cookie to browser language.
- * @param {object} locales - The locales object from the Milo config.
- * @returns {string|null} The two-letter language code.
+ * Fetches full market details (languageName and text) for a given market prefix.
+ * @param {string} prefix - The market prefix.
+ * @returns {Promise<object|null>} The full market details or null if not found.
  */
-function getPreferredLanguage(locales) {
-  const cookie = getCookie('international');
-  if (cookie && cookie !== 'us') {
-    const locale = locales[cookie];
-    const langFromCookie = locale?.ietf
-      ? locale.ietf.split('-')[0]
-      : cookie.split('_')[0];
-    return langFromCookie;
+async function getMarketDetails(prefix) {
+  const config = getConfig();
+  const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
+  try {
+    const response = await fetch(
+      supportedMarketsPath
+        || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return data.data.find((m) => m.prefix === prefix);
+    }
+  } catch (e) {
+    return null;
   }
-  const browserLang = navigator.language?.split('-')[0];
-  return browserLang || null;
+  return null;
 }
 
 /**
@@ -93,55 +93,14 @@ async function showBanner(market, config) {
 
 /**
  * Initializes the language banner feature.
- * @returns {Promise<boolean>} Returns true if the logic was handled, false if it should delegate.
  */
 export default async function init() {
   const targetMarket = getTargetMarket();
-  await showBanner(targetMarket, getConfig());
-  // const internationalCookie = getCookie('international');
-  // const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
-  // if (internationalCookie === pagePrefix) return;
-  // const pageLang = config.locale.ietf.split('-')[0];
-  // const prefLang = getPreferredLanguage(config.locales);
+  if (!targetMarket) return;
 
-  // const marketsConfigPromise = jsonPromise
-  //   .then((res) => (res.ok ? res.json() : null))
-  //   .catch(() => null);
+  const marketDetails = await getMarketDetails(targetMarket.prefix);
+  if (!marketDetails) return;
 
-  // let [geoIp, marketsConfig] = await Promise.all([
-  //   getAkamaiCode(),
-  //   marketsConfigPromise,
-  // ]);
-
-  // if (!geoIp || !marketsConfig) return;
-  // geoIp = geoIp.toLowerCase();
-  // marketsConfig.data.forEach((market) => {
-  //   market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
-  // });
-
-  // const pageMarket = marketsConfig.data.find((m) => m.prefix === (config.locale.prefix?.replace('/', '') || ''));
-  // const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
-
-  // if (isSupportedMarket) {
-  //   if (!prefLang || pageLang === prefLang) return;
-  //   const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp));
-  //   if (prefMarket) {
-  //     await showBanner(prefMarket, config);
-  //   }
-  //   return;
-  // }
-
-  // // Unsupported Market Path
-  // const marketsForGeo = marketsConfig.data.filter((m) => m.supportedRegions.includes(geoIp));
-  // if (!marketsForGeo.length) return;
-
-  // if (prefLang) {
-  //   const prefMarketForGeo = marketsForGeo.find((m) => m.lang === prefLang);
-  //   if (prefMarketForGeo) {
-  //     await showBanner(prefMarketForGeo, config);
-  //     return;
-  //   }
-  // }
-
-  // await showBanner(marketsForGeo[0], config);
+  const fullMarket = { ...targetMarket, ...marketDetails };
+  await showBanner(fullMarket, getConfig());
 }

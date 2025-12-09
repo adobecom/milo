@@ -1762,24 +1762,11 @@ async function decorateLanguageBanner() {
     const pageLang = config.locale.ietf.split('-')[0];
     const prefLang = getPreferredLanguage(config.locales);
 
-    const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
-    const jsonPromise = fetch(
-      supportedMarketsPath
-        || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
-    );
-
-    const marketsConfigPromise = jsonPromise
-      .then((res) => (res.ok ? res.json() : null))
-      .catch(() => null);
-
     const { default: getAkamaiCode } = await import('./geo.js');
+    const akamaiCode = await getAkamaiCode();
 
-    const [akamaiCode, marketsConfig] = await Promise.all([
-      getAkamaiCode(),
-      marketsConfigPromise,
-    ]);
-
-    if (!akamaiCode || !marketsConfig) return;
+    if (!akamaiCode || !config.supportedMarkets) return;
+    const marketsConfig = config.supportedMarkets;
     const geoIp = akamaiCode.toLowerCase();
     marketsConfig.data.forEach((market) => {
       market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
