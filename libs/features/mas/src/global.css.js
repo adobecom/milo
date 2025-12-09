@@ -1,16 +1,9 @@
 
 import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP } from './media.js';
 
-// Create a shared CSSStyleSheet that can be adopted by multiple components
-let globalStyleSheet = null;
+const styles = document.createElement('style');
 
-const getGlobalStyleSheet = () => {
-  if (globalStyleSheet) return globalStyleSheet;
-
-  // Only create the stylesheet once
-  if (!window.__masGlobalStyleSheet) {
-    globalStyleSheet = new CSSStyleSheet();
-    const cssContent = `
+styles.innerHTML = `
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
@@ -747,22 +740,4 @@ merch-card [slot='callout-content'] .icon-button::before {
 }
 
 `;
-
-    globalStyleSheet.replaceSync(cssContent);
-    window.__masGlobalStyleSheet = globalStyleSheet;
-
-    // Also inject into document for non-shadow DOM elements
-    if (!document.adoptedStyleSheets.includes(globalStyleSheet)) {
-      document.adoptedStyleSheets = [...document.adoptedStyleSheets, globalStyleSheet];
-    }
-  } else {
-    globalStyleSheet = window.__masGlobalStyleSheet;
-  }
-
-  return globalStyleSheet;
-};
-
-// Initialize on module load
-const globalStyles = getGlobalStyleSheet();
-
-export { globalStyles, getGlobalStyleSheet };
+document.head.appendChild(styles);
