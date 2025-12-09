@@ -515,18 +515,28 @@ export function isInTextNode(node) {
   return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
-function lingoActive() {
+export function lingoActive() {
   return getMetadata('lingo') === 'on' || PAGE_URL.searchParams.get('lingo') === 'on';
 }
 
-let mepLingoPreprocessingPromise = null;
-function getMepLingoPreprocessing() {
-  if (!mepLingoPreprocessingPromise && lingoActive()) {
-    mepLingoPreprocessingPromise = import('../features/mep-lingo/preprocessing.js');
-  }
-  return mepLingoPreprocessingPromise;
+/**
+ * Get user's country code for mep-lingo region detection.
+ * TODO: Finalize source of truth with Victor/Vivian. Current priority:
+ *   1. akamaiLocale URL param (for testing/override)
+ *   2. akamai sessionStorage
+ *   3. Server timing geo header
+ * Proposed priority (needs discussion):
+ *   1. param override
+ *   2. cookie (TBD if using cookie)
+ *   3. server info (with region object lookup)
+ */
+export function getUserCountry() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('akamaiLocale')?.toLowerCase()
+    || sessionStorage.getItem('akamai')
+    || window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+      ?.find((t) => t?.name === 'geo')?.description?.toLowerCase();
 }
-getMepLingoPreprocessing();
 
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
@@ -622,6 +632,7 @@ async function loadQueryIndexes(prefix) {
   const origin = config.origin || window.location.origin;
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
+  // TODO: Discuss -preview suffix with Victor - da-bacom only publishes query-index.json
   const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
   const siteId = config.uniqueSiteId ?? '';
 
@@ -1233,13 +1244,10 @@ function setupLinksDecoration(el) {
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
-  // Mep-lingo preprocessing - must happen before async processing
+  // Mep-lingo preprocessing for block swaps - must happen before async processing
   if (lingoActive()) {
-    const mepLingoModule = getMepLingoPreprocessing();
-    if (mepLingoModule) {
-      const { default: processMepLingoAnchors } = await mepLingoModule;
-      processMepLingoAnchors(anchors, createTag);
-    }
+    const { processMepLingoAnchors } = await import('../features/mep/lingo.js');
+    processMepLingoAnchors(anchors);
   }
 
   const linksPromises = [...anchors].map(async (a) => {
@@ -2063,6 +2071,11 @@ export async function loadArea(area = document) {
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
+
+  // Preload mep-lingo module if lingo is active (fire and forget for LCP performance)
+  if (lingoActive()) {
+    import('../features/mep/lingo.js');
+  }
 
   const areaBlocks = [];
   let lcpSectionId = null;

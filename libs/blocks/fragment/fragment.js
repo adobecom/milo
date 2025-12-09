@@ -1,7 +1,6 @@
 /* eslint-disable max-classes-per-file */
-import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, queryIndexes,
-} from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLinkAsync, customFetch } from '../../utils/utils.js';
+import { getMepLingoContext, getQueryIndexPaths, fetchMepLingoThenFallback, fetchMepLingoParallel } from '../../features/mep/lingo.js';
 
 const fragMap = {};
 
@@ -81,121 +80,6 @@ function replaceDotMedia(path, doc) {
 
 const fetchFragment = (path) => customFetch({ resource: `${path}.plain.html`, withCacheRules: true })
   .catch(() => ({}));
-
-const fetchMepLingoThenFallback = async (mepLingoPath, fallbackPath) => {
-  const mepLingoResp = await fetchFragment(mepLingoPath);
-  if (mepLingoResp?.ok) return { resp: mepLingoResp, usedMepLingo: true };
-  const fallbackResp = await fetchFragment(fallbackPath);
-  if (fallbackResp?.ok) return { resp: fallbackResp, usedFallback: true };
-  return {};
-};
-
-const fetchMepLingoParallel = async (mepLingoPath, fallbackPath) => {
-  const [mepLingoResp, fallbackResp] = await Promise.all([
-    fetchFragment(mepLingoPath),
-    fetchFragment(fallbackPath),
-  ]);
-  if (mepLingoResp?.ok) return { resp: mepLingoResp, usedMepLingo: true };
-  if (fallbackResp?.ok) return { resp: fallbackResp, usedFallback: true };
-  return {};
-};
-
-/**
- * Get paths from the appropriate query index for mep-lingo regional content lookup.
- *
- * Each repo checks one of two query-indexes:
- * 1. Consumer's own index for regular fragments (derived from hostname or uniqueSiteId)
- * 2. Federal query-index ('federal') for federal fragments
- *
- * @param {string} prefix - The locale prefix to filter paths by (e.g., '/lu_fr')
- * @param {boolean} checkImmediate - If true, only check if index is already resolved (for LCP)
- * @param {boolean} isFederal - If true, check federal index instead of consumer index
- */
-async function getQueryIndexPaths(prefix, checkImmediate = false, isFederal = false) {
-  const unavailable = { resolved: false, paths: [], available: false };
-  try {
-    let siteId;
-
-    if (isFederal) {
-      siteId = 'federal';
-    } else {
-      const { uniqueSiteId } = getConfig();
-      siteId = uniqueSiteId ?? '';
-      if (!siteId) {
-        const hostMatch = window.location.hostname.match(/^[^-]+--(.+)--[^.]+\.aem\.(page|live)$/);
-        if (hostMatch) [, siteId] = hostMatch;
-        // If no match (e.g., localhost, prod domain), keep siteId as '' (milo default)
-      }
-    }
-
-    const targetIndex = queryIndexes?.[siteId];
-
-    if (!targetIndex) {
-      return checkImmediate ? unavailable : { paths: [], available: false };
-    }
-
-    if (checkImmediate) {
-      // For LCP: only use index if already resolved
-      if (!targetIndex.requestResolved) return unavailable;
-      const paths = await targetIndex.pathsRequest;
-      const matchingPaths = paths?.filter((p) => p.startsWith(prefix)) || [];
-      return { resolved: true, paths: matchingPaths, available: true };
-    }
-
-    // For non-LCP: wait for index to load
-    const paths = await targetIndex.pathsRequest;
-    const matchingPaths = paths?.filter((p) => p.startsWith(prefix)) || [];
-    return { resolved: true, paths: matchingPaths, available: Array.isArray(paths) };
-  } catch (e) {
-    window.lana?.log(`Query index error for ${prefix}:`, e);
-    return checkImmediate ? unavailable : { paths: [], available: false };
-  }
-}
-
-export function getMepLingoContext(locale) {
-  if (!locale?.prefix) {
-    return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
-  }
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const country = urlParams.get('akamaiLocale')?.toLowerCase()
-    || sessionStorage.getItem('akamai')
-    || window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
-      ?.find((t) => t?.name === 'geo')?.description?.toLowerCase();
-
-  const config = getConfig();
-  const mapping = config.mepLingoCountryToRegion;
-  // mapping structure: { regionKey: ['country1', 'country2', ...] }
-  let regionalCountry = country;
-  if (mapping) {
-    const regionKey = Object.entries(mapping).find(
-      ([, countries]) => Array.isArray(countries) && countries.includes(country),
-    )?.[0];
-    if (regionKey) regionalCountry = regionKey;
-  }
-
-  const prefixParts = locale.prefix.split('/').filter(Boolean);
-  const [firstPart, secondPart] = prefixParts;
-  const hasSpecialPrefix = firstPart === 'langstore' || firstPart === 'target-preview';
-
-  let localeCode;
-  if (prefixParts.length === 0 || (hasSpecialPrefix && !secondPart)) {
-    localeCode = locale.region === 'us' ? 'en' : locale.language || 'en';
-  } else if (hasSpecialPrefix) {
-    localeCode = secondPart;
-  } else {
-    localeCode = firstPart;
-  }
-
-  let regionKey = `${regionalCountry}_${localeCode}`;
-  let matchingRegion = locale?.regions?.[regionKey];
-  if (!matchingRegion && locale?.regions?.[regionalCountry]) {
-    regionKey = regionalCountry;
-    matchingRegion = locale.regions[regionalCountry];
-  }
-
-  return { country, localeCode, regionKey, matchingRegion };
-}
 
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale } = getConfig();
@@ -302,13 +186,19 @@ export default async function init(a) {
       let result;
       const useQueryIndex = qiResolved && qiAvailable;
 
+      // NOTE: This optimization relies on query-index being available. Currently blocked by
+      // -preview suffix issue: da-bacom (and likely others) only publish query-index.json,
+      // not query-index-preview.json. See TODO in loadQueryIndexes. Until resolved,
+      // useQueryIndex may be false, falling through to parallel fetch.
       if (useQueryIndex && mepLingoInIndex) {
+        // Path confirmed in index → fetch mep-lingo first, fallback if needed
         result = await fetchMepLingoThenFallback(mepLingoPath, resourcePath);
       } else if (useQueryIndex && !mepLingoInIndex) {
+        // Path NOT in index → only fetch fallback (optimization: skip non-existent path)
         const fallbackResp = await fetchFragment(resourcePath);
         if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
       } else {
-        // No query-index available (including federal) → use parallel fetch
+        // No index available → parallel fetch (safety net)
         result = await fetchMepLingoParallel(mepLingoPath, resourcePath);
         if (isLcp && !isFederalFragment) {
           const opts = { tags: 'mep-lingo,lcp-no-qi', sampleRate: 10 };

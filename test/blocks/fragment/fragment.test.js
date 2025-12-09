@@ -4,7 +4,7 @@ import { stub } from 'sinon';
 import {
   getLocale, loadArea, setConfig, updateConfig, getConfig, queryIndexes,
 } from '../../../libs/utils/utils.js';
-import { getMepLingoContext } from '../../../libs/blocks/fragment/fragment.js';
+import { getMepLingoContext } from '../../../libs/features/mep/lingo.js';
 
 window.lana = { log: stub() };
 
@@ -419,7 +419,7 @@ describe('MEP Lingo with Query Index', () => {
   it('uses fallback when query index available but path not in index', async () => {
     queryIndexes[''] = {
       requestResolved: true,
-      pathsRequest: Promise.resolve(['/some/other/path']),
+      pathsRequest: Promise.resolve(['/some/other/path']), // Path NOT in index
     };
 
     window.sessionStorage.setItem('akamai', 'ch');
@@ -432,6 +432,7 @@ describe('MEP Lingo with Query Index', () => {
     const section = document.querySelector('.mep-lingo-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
+    // Optimization: if path not in index, only fetch fallback (skip non-existent mep-lingo path)
     expect(frag.dataset.mepLingoFallback).to.exist;
   });
 
@@ -890,7 +891,6 @@ describe('Query Index siteId derivation', () => {
       },
     });
 
-    // Create a federal fragment link
     const container = document.createElement('div');
     container.className = 'federal-test section';
     container.dataset.idx = '99';
@@ -910,9 +910,8 @@ describe('Query Index siteId derivation', () => {
     container.remove();
   });
 
-  it('falls back to empty string siteId when hostname does not match AEM pattern', async () => {
-    // In test environment, hostname is localhost which doesn't match aem.page/live pattern
-    // So siteId should fall back to '' (empty string)
+  it('uses empty string siteId when uniqueSiteId not configured', async () => {
+    // When config.uniqueSiteId is not set, siteId defaults to ''
     queryIndexes[''] = {
       requestResolved: true,
       pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']),
