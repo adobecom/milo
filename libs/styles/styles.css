@@ -9,6 +9,7 @@
   --global-height-navPromo: 72px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
   --feds-localnav-height: 40px;
+  --feds-language-banner-height: 44px;
 
   /* Colors */
   --link-color: rgb(39, 77, 234);
@@ -762,6 +763,12 @@ header.global-navigation + .feds-localnav {
   top: 0;
   z-index: 11;
   height: var(--global-height-navPromo);
+}
+
+.language-banner {
+  z-index: 11;
+  height: var(--feds-language-banner-height);
+  visibility: hidden;
 }
 
 sr-only, .feds-sr-only {

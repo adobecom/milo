@@ -1591,13 +1591,8 @@ async function loadPostLCP(config) {
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
   if (languageBanner === 'on') {
-    const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
-    const jsonPromise = fetch(
-      supportedMarketsPath
-        || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
-    );
     const { default: init } = await import('../features/language-banner/language-banner.js');
-    await init(jsonPromise, config);
+    await init();
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
@@ -1729,9 +1724,103 @@ function decorateMeta() {
   });
 }
 
+const getCookie = (name) => document.cookie
+  .split('; ')
+  .find((row) => row.startsWith(`${name}=`))
+  ?.split('=')[1];
+
+/**
+ * Gets the user's preferred language, falling back from cookie to browser language.
+ * @param {object} locales - The locales object from the Milo config.
+ * @returns {string|null} The two-letter language code.
+ */
+function getPreferredLanguage(locales) {
+  const cookie = getCookie('international');
+  if (cookie && cookie !== 'us') {
+    const locale = locales[cookie];
+    const langFromCookie = locale?.ietf
+      ? locale.ietf.split('-')[0]
+      : cookie.split('_')[0];
+    return langFromCookie;
+  }
+  const browserLang = navigator.language?.split('-')[0];
+  return browserLang || null;
+}
+
+let targetMarket = null;
+let langBannerPromise;
+export const getTargetMarket = () => targetMarket;
+
+async function decorateLanguageBanner() {
+  const config = getConfig();
+  const languageBanner = getMetadata('language-banner') || config.languageBanner;
+  const internationalCookie = getCookie('international');
+  let showBanner = false;
+  if (languageBanner === 'on') {
+    const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
+    if (internationalCookie === pagePrefix) return;
+    const pageLang = config.locale.ietf.split('-')[0];
+    const prefLang = getPreferredLanguage(config.locales);
+
+    const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
+    const jsonPromise = fetch(
+      supportedMarketsPath
+        || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
+    );
+
+    const marketsConfigPromise = jsonPromise
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null);
+
+    const { default: getAkamaiCode } = await import('./geo.js');
+
+    const [akamaiCode, marketsConfig] = await Promise.all([
+      getAkamaiCode(),
+      marketsConfigPromise,
+    ]);
+
+    if (!akamaiCode || !marketsConfig) return;
+    const geoIp = akamaiCode.toLowerCase();
+    marketsConfig.data.forEach((market) => {
+      market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
+    });
+
+    const pageMarket = marketsConfig.data.find((m) => m.prefix === (config.locale.prefix?.replace('/', '') || ''));
+    const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
+
+    if (isSupportedMarket) {
+      if (!prefLang || pageLang === prefLang) return;
+      const prefMarket = marketsConfig.data.find(
+        (m) => m.lang === prefLang && m.supportedRegions.includes(geoIp),
+      );
+      if (prefMarket) {
+        showBanner = true;
+        targetMarket = prefMarket;
+      }
+      return;
+    }
+
+    // Unsupported Market Path
+    const marketsForGeo = marketsConfig.data.filter((m) => m.supportedRegions.includes(geoIp));
+    if (!marketsForGeo.length) return;
+
+    if (prefLang) {
+      const prefMarketForGeo = marketsForGeo.find((m) => m.lang === prefLang);
+      if (prefMarketForGeo) {
+        showBanner = true;
+        targetMarket = prefMarketForGeo;
+      }
+    }
+    [showBanner, targetMarket] = [true, marketsForGeo[0]];
+    if (!showBanner) return;
+    document.body.prepend(createTag('div', { class: 'language-banner' }));
+  }
+}
+
 function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
+  langBannerPromise = decorateLanguageBanner();
 }
 
 async function documentPostSectionLoading(config) {
@@ -1819,6 +1908,7 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 
   section.blocks.forEach((block) => loadBlocks.push(loadBlock(block)));
 
+  if (isLcpSection && langBannerPromise) await langBannerPromise;
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
