@@ -698,8 +698,19 @@ function updateDisableButtonsHeights(carouselElements) {
   }
 }
 
+function wrapIfNeeded(el) {
+  if (!isHovering(el)) return;
+  const parent = el.parentElement;
+  if (parent && !parent.classList.contains('carousel-container')) {
+    const wrapper = createTag('div', { class: 'carousel-container' });
+    parent.replaceChild(wrapper, el);
+    wrapper.appendChild(el);
+  }
+}
+
 export default function init(el) {
   setIndexOffeset(el);
+  wrapIfNeeded(el);
   const activeSlideIndex = DEFAULT_INITIAL_ACTIVE_INDEX + (isMobile ? 0 : INDEX_OFFSET);
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
