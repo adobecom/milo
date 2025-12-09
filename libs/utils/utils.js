@@ -1611,18 +1611,37 @@ async function loadPostLCP(config) {
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
+    // This is used only in webapp-prompt.js
     config.georouting.loadedPromise = (async () => {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
     })();
-    // This is used only in webapp-prompt.js
   }
   const header = document.querySelector('header');
   if (header) {
-    header.classList.add('gnav-hide');
-    performance.mark('Gnav-Start');
-    loadBlock(header);
-    header.classList.remove('gnav-hide');
+    if (getMetadata('site-pivot-gnav') === 'on' || true) {
+      const federalDomain = (() => {
+        const env = getEnv(config);
+        switch (env.name) {
+          default: return 'http://localhost:3000';
+        }
+      })();
+      const { main } = await import(`${federalDomain}/global-navigation/dist/main.js`);
+      main({
+        gnavSource: new URL(await getGnavSource()),
+        asideSource: null,
+        isLocalNav: false,
+        mountpoint: header,
+        unavEnabled: false,
+      }).catch((error) => {
+        console.log(error);
+      });
+    } else {
+      header.classList.add('gnav-hide');
+      performance.mark('Gnav-Start');
+      loadBlock(header);
+      header.classList.remove('gnav-hide');
+    }
   }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
