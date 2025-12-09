@@ -1,7 +1,7 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateBlockText, decorateTextOverrides } from '../../utils/decorate.js';
 
-export default async function init(el) {
+export default function init(el) {
   el.classList.add('con-block');
   const foreground = createTag('div', { class: 'foreground' });
   const logo = el.querySelector(':scope > div');
