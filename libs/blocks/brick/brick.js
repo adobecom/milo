@@ -47,8 +47,8 @@ function decorateSupplementalText(el) {
 }
 
 function decorateHeadingRoles(brickText) {
-  const headings = brickText?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  if (!headings) return;
+  const headings = brickText.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (!headings.length) return;
   const headingWithPicture = [...headings].find((h) => h.querySelector('picture'));
   if (!headingWithPicture) return;
   headings.forEach((h) => {
