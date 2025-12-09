@@ -1,4 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import {
   initService,
@@ -131,7 +132,8 @@ function getSidenav(collection) {
   /* Filters */
   const spSidenav = createTag('sp-sidenav', { manageTabIndex: true });
   spSidenav.setAttribute('manageTabIndex', true);
-  const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
+  const deeplink = collection.variant === 'catalog' ? 'category' : 'filter';
+  const sidenavList = createTag('merch-sidenav-list', { deeplink }, spSidenav);
 
   let multilevel = false;
   function generateLevelItems(level, parent) {
@@ -204,8 +206,24 @@ function getSidenav(collection) {
   return sidenav;
 }
 
+function generateCardName(card) {
+  let name = card.querySelector('h3')?.textContent;
+  if (!name) return '';
+  name = name.toLowerCase().replace(/[^0-9a-z]/gi, ' ').trim().replaceAll(' ', '-');
+  while (name.includes('--')) {
+    name = name.replaceAll('--', '-');
+  }
+  return name;
+}
+
 function enableSidenavAnalytics(el) {
-  el.sidenav?.addEventListener('merch-sidenav:select', ({ target }) => {
+  if (!el.sidenav) return;
+  const snContainer = el.sidenav.closest('.collection-container');
+  if (snContainer && !snContainer.getAttribute('daa-lh')) {
+    const selectedValue = el.sidenav.querySelector('merch-sidenav-list')?.getAttribute('selected-value');
+    snContainer.setAttribute('daa-lh', `${selectedValue || 'all'}--cat`);
+  }
+  el.sidenav.addEventListener('merch-sidenav:select', ({ target }) => {
     if (!target || target.oldValue === target.selectedValue) return;
     const container = target.closest('.collection-container');
     const updated = container.getAttribute('daa-lh')?.includes('--cat');
@@ -217,10 +235,38 @@ function enableSidenavAnalytics(el) {
   });
 }
 
+function enableAnalytics(el) {
+  enableSidenavAnalytics(el);
+
+  const header = el.parentElement.querySelector('merch-card-collection-header');
+  header?.addEventListener('merch-card-collection:sort', ({ detail }) => {
+    handleCustomAnalyticsEvent(`${detail?.value === 'authored' ? 'popularity' : detail?.value}--sort`, el);
+  });
+
+  el.sidenav?.search?.addEventListener('merch-search:change', debounce((e) => {
+    handleCustomAnalyticsEvent(`${e.detail.value}--search`, el.sidenav.search);
+  }, 1000));
+
+  el.addEventListener('merch-card-collection:showmore', () => {
+    handleCustomAnalyticsEvent('showmore', el);
+  });
+
+  el.addEventListener('merch-card:action-menu-toggle', ({ detail }) => {
+    handleCustomAnalyticsEvent(`menu-toggle--${detail.card}`, el);
+  });
+
+  el.addEventListener('click', ({ target }) => {
+    if (target.tagName === 'MERCH-ICON') {
+      const card = target.closest('merch-card');
+      handleCustomAnalyticsEvent(`merch-icon-click--${card?.name || generateCardName(card)}`, el);
+    }
+  });
+}
+
 export const enableModalOpeningOnPageLoad = () => {
   window.addEventListener('mas:ready', ({ target }) => {
     target.querySelectorAll('[is="checkout-link"][data-modal-id]').forEach((cta) => {
-      if (!cta.closest('.tabpanel[hidden]')) updateModalState({ cta });
+      if (!cta.closest('[role="tabpanel"][hidden]')) updateModalState({ cta });
     });
   });
 };
@@ -274,7 +320,7 @@ export async function createCollection(el, options) {
   await postProcessAutoblock(collection, false);
   collection.requestUpdate();
   // card analytics is enabled in postProcessAutoblock
-  enableSidenavAnalytics(collection);
+  enableAnalytics(collection);
 }
 
 export default async function init(el) {

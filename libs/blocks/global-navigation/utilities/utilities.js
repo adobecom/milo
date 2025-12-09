@@ -698,7 +698,6 @@ export const transformTemplateToMobile = async ({
         <div
           id="${i}"
           role="tabpanel"
-          aria-labelledby="${i}"
           class="${links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/) !== null ? 'has-subheader' : ''}"
           ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden
