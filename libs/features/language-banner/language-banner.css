@@ -1,103 +1,72 @@
 .language-banner {
   display: flex;
-  padding: 16px 150px;
+  padding: 12px 20px;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   align-self: stretch;
-  position: relative;
   width: 100%;
-  min-height: 32px;
-  background-color: #000;
+  background-color: #3B63FB;
   box-sizing: border-box;
 }
 
 .language-banner-content {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
+  justify-content: flex-start;
   gap: 4px;
+  flex: 1 0 0;
 }
 
 .language-banner-text {
-  color: var(--S2A-Palette-gray-25, #FFF);
-  font-family: var(--Font-family-Sans-serif, "Adobe Clean Spectrum VF");
-  font-size: var(--Font-size-100, 14px);
+  color: #FFF;
+  font-family: var(--body-font-family);
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
-  line-height: var(--Line-height-100, 18px);
-  letter-spacing: var(--Letter-spacing, 0);
+  line-height: 18px;
 }
 
 .language-banner-link {
-  color: var(--S2A-Palette-gray-25, #FFF);
-  font-family: var(--Font-family-Sans-serif, "Adobe Clean Spectrum VF");
-  font-size: var(--Font-size-100, 14px);
+  color: #FFF;
+  font-family: var(--body-font-family);
+  font-size: 12px;
   font-style: normal;
   font-weight: 700;
-  line-height: var(--Line-height-100, 18px);
-  letter-spacing: var(--Letter-spacing, 0);
+  line-height: 18px;
   text-decoration: underline;
+  text-decoration-skip-ink: none;
+  text-underline-position: from-font;
   cursor: pointer;
-}
-
-.language-banner-link:hover {
-  opacity: 0.9;
 }
 
 .language-banner-close {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 24px;
-  background-color: #FFF;
+  width: 20px;
+  height: 20px;
   border: none;
-  border-radius: 50%;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0;
-  transition: opacity 0.2s;
+  background-color: transparent;
 }
 
-.language-banner-close:hover {
-  opacity: 0.8;
-}
-
-.language-banner-close::before,
-.language-banner-close::after {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 2px;
-  background-color: #000;
-}
-
-.language-banner-close::before {
-  transform: rotate(45deg);
-}
-
-.language-banner-close::after {
-  transform: rotate(-45deg);
-}
-
-@media (max-width: 1024px) {
+@media (min-width: 600px) {
   .language-banner {
-    padding: 16px 48px;
+    gap: 6px;
+    position: relative;
   }
-}
 
-@media (max-width: 768px) {
-  .language-banner {
-    padding: 16px 40px 16px 16px;
+  .language-banner-content {
+    justify-content: center;
   }
 
   .language-banner-close {
-    right: 12px;
+    position: absolute;
+    right: 0;
+    top: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 24px 0 0;
   }
 }
-
