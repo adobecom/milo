@@ -533,10 +533,11 @@ function lingoActive() {
  */
 export function getUserCountry() {
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('akamaiLocale')?.toLowerCase()
-    || sessionStorage.getItem('akamai')
-    || window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
-      ?.find((t) => t?.name === 'geo')?.description?.toLowerCase();
+  const akamaiParams = urlParams.get('akamaiLocale')?.toLowerCase();
+  const akamaiStored = sessionStorage.getItem('akamai');
+  const performanceGeo = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+    ?.find((t) => t?.name === 'geo')?.description?.toLowerCase();
+  return akamaiParams || akamaiStored || performanceGeo;
 }
 
 export function createTag(tag, attributes, html, options = {}) {
@@ -633,8 +634,7 @@ async function loadQueryIndexes(prefix) {
   const origin = config.origin || window.location.origin;
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
-  // TODO: Discuss -preview suffix with Victor - da-bacom only publishes query-index.json
-  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
+  const queryIndexSuffix = '';
   const siteId = config.uniqueSiteId ?? '';
 
   queryIndexes[siteId] = processQueryIndexMap(
