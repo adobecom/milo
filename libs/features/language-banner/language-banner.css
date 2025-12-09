@@ -3,6 +3,7 @@
   padding: 12px 20px;
   justify-content: center;
   align-items: center;
+  min-height: 44px;
   gap: 8px;
   align-self: stretch;
   width: 100%;
