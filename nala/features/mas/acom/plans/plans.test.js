@@ -164,9 +164,7 @@ test.describe('MAS Plans Page test suite', () => {
         await page.waitForSelector('merch-card:visible');
         await expect(page).toHaveURL(`${testPage}${categoryData.browserFilter}`);
         await expect(await masPlans.sidenav).toHaveAttribute('value', categoryData.sidenavValue);
-        await expect(await masPlans.sidenav).toHaveAttribute('role', '');
-        console.log("Antonio - ")
-        console.log(masPlans.sidenav)
+        await expect(await masPlans.sidenav).not.toHaveAttribute('role');
         await expect(await masPlans.collectionContainerIndividuals).toHaveAttribute('daa-lh', categoryData.daaLh);
 
         const visibleCards = page.locator('merch-card:visible');
