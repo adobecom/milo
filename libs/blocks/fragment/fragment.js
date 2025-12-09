@@ -1,6 +1,5 @@
 /* eslint-disable max-classes-per-file */
 import { createTag, getConfig, loadArea, localizeLinkAsync, customFetch } from '../../utils/utils.js';
-import { getMepLingoContext, getQueryIndexPaths, fetchMepLingoThenFallback, fetchMepLingoParallel } from '../../features/mep/lingo.js';
 
 const fragMap = {};
 
@@ -126,7 +125,12 @@ export default async function init(a) {
     resourcePath = getFederatedUrl(a.href);
   }
 
-  const { country, localeCode, matchingRegion } = getMepLingoContext(locale);
+  const lingoModule = a.dataset.mepLingo
+    ? await import('../../features/mep/lingo.js')
+    : null;
+
+  const { country, localeCode, matchingRegion } = lingoModule?.getMepLingoContext(locale)
+    ?? { country: null, localeCode: null, matchingRegion: null };
   const mepLingoEnabled = !!(
     a.dataset.mepLingo && matchingRegion && country && resourcePath && localeCode
   );
@@ -150,7 +154,7 @@ export default async function init(a) {
     const skipQueryIndex = isFederalFragment;
     const qiResult = skipQueryIndex
       ? { resolved: false, paths: [], available: false }
-      : await getQueryIndexPaths(matchingRegion.prefix, isLcp);
+      : await lingoModule.getQueryIndexPaths(matchingRegion.prefix, isLcp);
     const qiResolved = qiResult.resolved !== false;
     const qiAvailable = qiResult.available;
     const mepLingoPathname = new URL(mepLingoPath).pathname;
@@ -192,14 +196,14 @@ export default async function init(a) {
       // useQueryIndex may be false, falling through to parallel fetch.
       if (useQueryIndex && mepLingoInIndex) {
         // Path confirmed in index → fetch mep-lingo first, fallback if needed
-        result = await fetchMepLingoThenFallback(mepLingoPath, resourcePath);
+        result = await lingoModule.fetchMepLingoThenFallback(mepLingoPath, resourcePath);
       } else if (useQueryIndex && !mepLingoInIndex) {
         // Path NOT in index → only fetch fallback (optimization: skip non-existent path)
         const fallbackResp = await fetchFragment(resourcePath);
         if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
       } else {
         // No index available → parallel fetch (safety net)
-        result = await fetchMepLingoParallel(mepLingoPath, resourcePath);
+        result = await lingoModule.fetchMepLingoParallel(mepLingoPath, resourcePath);
         if (isLcp && !isFederalFragment) {
           const opts = { tags: 'mep-lingo,lcp-no-qi', sampleRate: 10 };
           window.lana?.log(`mep-lingo: LCP parallel fetch (QI not ready): ${mepLingoPathname}`, opts);
