@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle, lingoActive } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
@@ -611,13 +611,13 @@ export function getMepPopup(mepConfig, isMmm = false) {
       </div>`
     : '';
 
-  const lingoActive = urlParams.has('lingoLocale') || urlParams.has('lingo');
+  const isLingoActive = lingoActive();
   const regions = config?.locale?.regions || {};
   const regionKeys = Object.keys(regions);
-  const showRegionDropdown = lingoActive && regionKeys.length > 0;
+  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
 
   let mepLingoSectionHTML = '';
-  if (lingoActive) {
+  if (isLingoActive) {
     const localeBase = config?.locale?.base;
     const hasUpstream = localeBase !== undefined;
 
@@ -728,9 +728,7 @@ function createPreviewPill() {
   document.body.append(overlay);
   addPillEventListeners(pill);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const lingoActive = urlParams.has('lingoLocale') || urlParams.has('lingo');
-  if (lingoActive) {
+  if (lingoActive()) {
     if (config?.locale?.base !== undefined) {
       updateUpstreamPageElement('mepUpstreamPage', config);
     }
