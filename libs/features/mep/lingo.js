@@ -1,7 +1,27 @@
 /* MEP Lingo - Region-optimized content handling. See README.md for documentation. */
-import { getConfig, customFetch, queryIndexes, createTag, getUserCountry } from '../../utils/utils.js';
+import {
+  getConfig,
+  customFetch,
+  queryIndexes,
+  createTag,
+  getUserCountry,
+} from '../../utils/utils.js';
 
-/** Get mep-lingo context: country, localeCode, regionKey, matchingRegion */
+export function getLocaleCodeFromPrefix(prefix, region = 'us', language = 'en') {
+  const prefixParts = prefix.split('/').filter(Boolean);
+  const [firstPart, secondPart] = prefixParts;
+  const hasSpecialPrefix = firstPart === 'langstore' || firstPart === 'target-preview';
+
+  let localeCode = firstPart;
+  if (prefixParts.length === 0 || (hasSpecialPrefix && !secondPart)) {
+    localeCode = region === 'us' ? 'en' : language || 'en';
+  } else if (hasSpecialPrefix) {
+    localeCode = secondPart;
+  }
+
+  return localeCode;
+}
+
 export function getMepLingoContext(locale) {
   if (!locale?.prefix) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
@@ -20,21 +40,8 @@ export function getMepLingoContext(locale) {
     if (regionKey) regionalCountry = regionKey;
   }
 
-  // Derive locale code from prefix
-  const prefixParts = locale.prefix.split('/').filter(Boolean);
-  const [firstPart, secondPart] = prefixParts;
-  const hasSpecialPrefix = firstPart === 'langstore' || firstPart === 'target-preview';
+  const localeCode = getLocaleCodeFromPrefix(locale.prefix, locale.region, locale.language);
 
-  let localeCode;
-  if (prefixParts.length === 0 || (hasSpecialPrefix && !secondPart)) {
-    localeCode = locale.region === 'us' ? 'en' : locale.language || 'en';
-  } else if (hasSpecialPrefix) {
-    localeCode = secondPart;
-  } else {
-    localeCode = firstPart;
-  }
-
-  // Find matching region
   let regionKey = `${regionalCountry}_${localeCode}`;
   let matchingRegion = locale?.regions?.[regionKey];
   if (!matchingRegion && locale?.regions?.[regionalCountry]) {
@@ -48,7 +55,6 @@ export function getMepLingoContext(locale) {
 const fetchFragment = (path) => customFetch({ resource: `${path}.plain.html`, withCacheRules: true })
   .catch(() => ({}));
 
-/** Fetch ROC content, falling back to base if unavailable */
 export async function fetchMepLingoThenFallback(mepLingoPath, fallbackPath) {
   const mepLingoResp = await fetchFragment(mepLingoPath);
   if (mepLingoResp?.ok) return { resp: mepLingoResp, usedMepLingo: true };
@@ -57,7 +63,6 @@ export async function fetchMepLingoThenFallback(mepLingoPath, fallbackPath) {
   return {};
 }
 
-/** Fetch ROC and fallback in parallel, prefer ROC if available */
 export async function fetchMepLingoParallel(mepLingoPath, fallbackPath) {
   const [mepLingoResp, fallbackResp] = await Promise.all([
     fetchFragment(mepLingoPath),
@@ -68,11 +73,6 @@ export async function fetchMepLingoParallel(mepLingoPath, fallbackPath) {
   return {};
 }
 
-/**
- * Check query-index for regional paths. checkImmediate=true for LCP (non-blocking).
- * Uses same siteId logic as loadQueryIndexes() in utils.js for consistency.
- * Note: config.uniqueSiteId must be set in consumer's config for this to work on production.
- */
 export async function getQueryIndexPaths(prefix, checkImmediate = false, isFederal = false) {
   const unavailable = { resolved: false, paths: [], available: false };
   try {
@@ -100,7 +100,6 @@ export async function getQueryIndexPaths(prefix, checkImmediate = false, isFeder
   }
 }
 
-/** Process single anchor: set data-mep-lingo and remove hash */
 export function processAnchorForMepLingo(a) {
   if (a.href.includes('#_mep-lingo')) {
     a.dataset.mepLingo = 'true';
@@ -108,7 +107,6 @@ export function processAnchorForMepLingo(a) {
   }
 }
 
-/** Process anchors for block swaps and mep-lingo blocks */
 export function processMepLingoAnchors(anchors) {
   [...anchors].forEach((a) => {
     let isMLBlockSwap = false;
