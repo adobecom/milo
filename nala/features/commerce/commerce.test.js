@@ -316,6 +316,9 @@ test.describe('Commerce feature test suite', () => {
 
     // Validate there are no unresolved commerce placeholders
     await test.step('Validate wcs placeholders', async () => {
+      // Wait for at least one placeholder to be resolved
+      await page.waitForSelector('[data-wcs-osi].placeholder-resolved', { timeout: 10000 });
+
       const unresolvedPlaceholders = await page.evaluate(
         () => [...document.querySelectorAll('[data-wcs-osi]')].filter(
           (el) => !el.classList.contains('placeholder-resolved'),
@@ -410,6 +413,9 @@ test.describe('Commerce feature test suite', () => {
 
     // Validate there are no unresolved commerce placeholders
     await test.step('Validate wcs placeholders', async () => {
+      // Wait for at least one placeholder to be resolved
+      await page.waitForSelector('[data-wcs-osi].placeholder-resolved', { timeout: 10000 });
+
       const unresolvedPlaceholders = await page.evaluate(
         () => [...document.querySelectorAll('[data-wcs-osi]')].filter(
           (el) => !el.classList.contains('placeholder-resolved'),
@@ -473,6 +479,7 @@ test.describe('Commerce feature test suite', () => {
     });
   });
 
+  // @Commerce-Volume-Discount - Validate volume discount price
   test(`${features[10].name}, ${features[10].tags}`, async ({ page, baseURL }) => {
     const testPage = constructTestUrl(baseURL, features[10].path);
     console.info('[Test Page]: ', testPage);
@@ -524,6 +531,7 @@ test.describe('Commerce feature test suite', () => {
     });
   });
 
+  // @Commerce-Volume-Discount-Annual - Validate volume discount price with annual price
   test(`${features[11].name}, ${features[11].tags}`, async ({ page, baseURL }) => {
     const testPage = constructTestUrl(baseURL, features[11].path);
     console.info('[Test Page]: ', testPage);

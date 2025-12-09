@@ -152,6 +152,8 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
         && (child.childElementCount === 2 || child.textContent?.trim())) {
         handleFocalpoint(pic, child, true);
       }
+      const vid = child.querySelector('video');
+      vid?.setAttribute('disablepictureinpicture', 'true');
       if (!child.querySelector('img, video, a[href*=".mp4"]')) {
         child.style.background = child.textContent;
         child.classList.add('expand-background');

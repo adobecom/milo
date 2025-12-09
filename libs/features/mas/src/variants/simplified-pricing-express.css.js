@@ -215,14 +215,6 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child 
   text-decoration: line-through;
 }
 
-/* Apply indigo-800 color to optical price when preceded by strikethrough */
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'],
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='price'] .price-alternative,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='price'] .price-alternative .price-currency-symbol {
-  color: var(--spectrum-indigo-900);
-}
-
 /* Ensure non-first paragraph prices have normal font weight */
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-integer,
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:not(:first-child) span[is="inline-price"] .price-decimals-delimiter,

@@ -238,11 +238,7 @@ merch-card[variant="full-pricing-express"] [slot="price"] p {
 }
 
 merch-card[variant="full-pricing-express"] [slot="price"] > p span[is="inline-price"]:only-child {
-    color: var(--spectrum-gray-700);
-}
-
-merch-card[variant="full-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template="strikethrough"] + span[is="inline-price"] {
-    color: var(--spectrum-indigo-900);
+    color: var(--spectrum-gray-900);
 }
 
 /* Target inline prices in paragraphs that are not the first paragraph */
@@ -264,9 +260,6 @@ merch-card[variant="full-pricing-express"] [slot="price"] > p:not(:first-child) 
 }
 
 
-merch-card[variant="full-pricing-express"] [slot="price"] strong {
-    color: var(--spectrum-indigo-900);
-}
 merch-card[variant="full-pricing-express"] [slot="price"] p a {
     color: var(--spectrum-indigo-900);
     font-weight: 700;
@@ -288,6 +281,11 @@ merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template
     color: var(--spectrum-gray-700);
 }
 
+merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"],
+merch-card[variant="full-pricing-express"] [slot="price"] span[is="inline-price"][data-template='strikethrough'] ~ strong {
+    color: var(--spectrum-gray-900);
+}
+
 merch-card[variant="full-pricing-express"] [slot="price"] p .heading-xs,
 merch-card[variant="full-pricing-express"] [slot="price"] p .heading-s,
 merch-card[variant="full-pricing-express"] [slot="price"] p .heading-m,
@@ -306,14 +304,6 @@ merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template
 merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-strikethrough .price-decimals {
     text-decoration: line-through;
     text-decoration-thickness: 2px;
-}
-
-/* Apply indigo-800 color to optical price when preceded by strikethrough */
-merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'],
-merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol,
-merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-alternative,
-merch-card[variant="full-pricing-express"] span[is="inline-price"][data-template='price'] .price-alternative .price-currency-symbol {
-    color: var(--spectrum-indigo-900);
 }
 
 /* CTA button styling */

@@ -1,13 +1,6 @@
-import { getConfig, getLanguage, getLocale, loadLanguageConfig } from '../../utils/utils.js';
+import { getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational } from '../../utils/utils.js';
 
 const queriedPages = [];
-
-function setInternational(prefix) {
-  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
-  const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
-  document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
-  sessionStorage.setItem('international', prefix);
-}
 
 function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;

@@ -250,10 +250,16 @@ const Configurator = ({ title, panelsData, lsKey }) => {
   useEffect(() => {
     const contentEl = document.querySelector('.content-panel');
     const validatedState = validateState(state, panelsData);
-    const url = window.location.href.split(/#|\?/)[0];
-    const isPreview = window.location.href.includes('preview=1');
-    const iframe = createTag('iframe', { src: url + (isPreview ? '?preview=1' : '') });
-
+    const windowUrl = new URL(window.location.href);
+    const iframeUrl = new URL(windowUrl.origin + windowUrl.pathname);
+    const allowedParams = ['preview', 'milolibs', 'lang'];
+    const { searchParams } = windowUrl;
+    allowedParams.forEach((param) => {
+      if (searchParams.has(param)) {
+        iframeUrl.searchParams.set(param, searchParams.get(param));
+      }
+    });
+    const iframe = createTag('iframe', { src: iframeUrl.toString() });
     saveStateToLocalStorage(validatedState, lsKey);
     contentEl.replaceChildren(iframe);
   }, [state]);
