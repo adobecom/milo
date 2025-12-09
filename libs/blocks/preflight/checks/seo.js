@@ -9,20 +9,26 @@ const SPIDY_URL_FALLBACK = 'https://spidy.gwp.corp.adobe.com';
 
 const linksCache = new Map();
 
-// Wait for footer using onFooterReady callback
 function waitForFooter() {
   return new Promise((resolve) => {
     const config = getConfig();
-    if (config.footerReady) {
+    const footer = document.querySelector('footer');
+
+    if (config.footerReady || footer?.dataset.blockStatus === 'loaded') {
       resolve();
       return;
     }
+
+    const timeout = setTimeout(() => {
+      resolve();
+    }, 2000);
 
     const originalCallback = config.onFooterReady;
 
     config.onFooterReady = async () => {
       if (originalCallback) await originalCallback();
       await window.milo?.deferredPromise;
+      clearTimeout(timeout);
       config.footerReady = true;
       resolve();
     };
