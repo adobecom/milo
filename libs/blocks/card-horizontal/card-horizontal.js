@@ -32,6 +32,13 @@ function decorateImage(block) {
   return wrapper;
 }
 
+const adaptForTextExtension = (block) => {
+  const el = block.closest('.card-horizontal');
+  const { letterSpacing, wordSpacing } = getComputedStyle(el);
+  const isExtensionActive = letterSpacing !== 'normal' || wordSpacing !== '0px';
+  el.classList.toggle('no-clamp', isExtensionActive);
+};
+
 function decorateContent(block) {
   if (!block) return;
   const card = block.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
@@ -55,6 +62,11 @@ function decorateContent(block) {
     a.addEventListener('focus', () => card.classList.add('card-block-focus'));
     a.addEventListener('blur', () => card.classList.remove('card-block-focus'));
   }
+
+  adaptForTextExtension(block);
+  const observer = new ResizeObserver(() => { adaptForTextExtension(block); });
+  if (heading) observer.observe(heading);
+  if (paragraphs.length) observer.observe(paragraphs[0]);
 }
 
 export default function init(el) {

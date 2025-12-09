@@ -308,7 +308,7 @@ export class MerchCardCollection extends LitElement {
               composed: true,
           }),
       );
-  }
+    }
 
     async hydrate() {
         if (this.hydrating) return false;
@@ -324,9 +324,8 @@ export class MerchCardCollection extends LitElement {
         });
         const self = this;
 
-        function normalizePayload(fragment, overrideMap) {
-
-            // Support both checkboxGroups (direct format) and tagFilters (parsed format)
+        function prepareSideNavSettings(fragment) {
+                    // Support both checkboxGroups (direct format) and tagFilters (parsed format)
             let tagFilters;
             if (fragment.fields?.checkboxGroups) {
               // Use checkboxGroups directly if provided
@@ -344,37 +343,51 @@ export class MerchCardCollection extends LitElement {
                     // Example: "mas:types/web" -> "web"
                     // TODO: Get tag label from fragment instead of parsing the tag
                     const parsedTag = tag.split('/').pop();
-                    const tagLabel = fragment.placeholders.tags[parsedTag] || parsedTag;
+                    let tagLabel = fragment.settings?.tagLabels?.[parsedTag] || parsedTag;
+                    tagLabel = tagLabel.startsWith('coll-tag-filter') ? parsedTag.charAt(0).toUpperCase() + parsedTag.slice(1) : tagLabel;
                     return { name: parsedTag, label: tagLabel };
                   })
                 }
               ];
             }
 
-            const sidenavSettings = {
+            return {
               searchText: fragment.fields?.searchText,
               tagFilters: tagFilters,
               linksTitle: fragment.fields?.linksTitle,
               link: fragment.fields?.link,
               linkText: fragment.fields?.linkText,
               linkIcon: fragment.fields?.linkIcon,
-          };
+            };
+        }
 
+        function normalizePayload(fragment, overrideMap) {
             const payload = {
                 cards: [],
                 hierarchy: [],
                 placeholders: fragment.placeholders,
-                sidenavSettings: sidenavSettings
+                sidenavSettings: prepareSideNavSettings(fragment),
             };
 
             function traverseReferencesTree(root, references) {
                 for (const reference of references) {
+                    if (reference.fieldName === 'variations') continue;
                     if (reference.fieldName === 'cards') {
                         if (payload.cards.findIndex(card => card.id === reference.identifier) !== -1) continue;
                         payload.cards.push(fragment.references[reference.identifier].value);
                         continue;
                     }
-                    const value = fragment.references[reference.identifier]?.value;
+                    let value = fragment.references[reference.identifier]?.value;
+                    let tree = reference.referencesTree;
+                    const overrideId = overrideMap[reference.identifier];
+                    if (overrideId) {
+                        const data = document.querySelector(`aem-fragment[fragment="${overrideId}"]`)?.rawData;
+                        if (data?.fields) {
+                          value = data;
+                          tree = data.referencesTree;
+                          fragment.references = { ...fragment.references, ...data.references};
+                        }
+                    }                  
                     if (!value?.fields) continue;
                     const { fields } = value;
                     const collection = {
@@ -389,7 +402,7 @@ export class MerchCardCollection extends LitElement {
                         collection.defaultchild = overrideMap[fields.defaultchild] || fields.defaultchild;
                     }
                     root.push(collection);
-                    traverseReferencesTree(collection.collections, reference.referencesTree);
+                    traverseReferencesTree(collection.collections, tree);
                 }
             }
             traverseReferencesTree(
@@ -430,6 +443,11 @@ export class MerchCardCollection extends LitElement {
                 const fragmentId = this.#overrideMap[fragment.id] || fragment.id;
                 merchCard.setAttribute('consonant', '');
                 merchCard.setAttribute('style', '');
+
+                const typesTags = fragment.fields.tags?.filter((tag) => tag.startsWith('mas:types/'))
+                    .map((tag) => tag.split('/')[1])
+                    .join(',');
+                if (typesTags) merchCard.setAttribute('types', typesTags);
 
                 // Check if this variant supports default child through mapping
                 const variantMapping = getFragmentMapping(fragment.fields.variant);
