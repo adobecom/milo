@@ -515,8 +515,9 @@ export function isInTextNode(node) {
   return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
-export function lingoActive() {
-  return getMetadata('lingo') === 'on' || PAGE_URL.searchParams.get('lingo') === 'on';
+function lingoActive() {
+  const langFirst = (getMetadata('langFirst') || PAGE_URL.searchParams.get('langFirst'))?.toLowerCase();
+  return ['true', 'on'].includes(langFirst);
 }
 
 /**
