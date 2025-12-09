@@ -165,8 +165,14 @@ export function getMepLingoContext(locale) {
 
   const config = getConfig();
   const mapping = config.mepLingoCountryToRegion;
-  const hasMapping = mapping && mapping[country] !== undefined;
-  const regionalCountry = hasMapping ? mapping[country] : country;
+  // mapping structure: { regionKey: ['country1', 'country2', ...] }
+  let regionalCountry = country;
+  if (mapping) {
+    const regionKey = Object.entries(mapping).find(
+      ([, countries]) => Array.isArray(countries) && countries.includes(country),
+    )?.[0];
+    if (regionKey) regionalCountry = regionKey;
+  }
 
   const prefixParts = locale.prefix.split('/').filter(Boolean);
   const [firstPart, secondPart] = prefixParts;

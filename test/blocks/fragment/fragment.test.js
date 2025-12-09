@@ -40,6 +40,9 @@ setConfig(config);
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment } = await import('../../../libs/blocks/fragment/fragment.js');
 
+// Clear any queryIndexes populated during imports to prevent hanging on unresolved promises
+Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
+
 describe('Fragments', () => {
   let paramsGetStub;
 
@@ -156,6 +159,8 @@ describe('MEP Lingo Fragments', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     window.lana = { log: stub() };
+    // Clear queryIndexes to prevent hanging on unresolved promises
+    Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
   });
 
   afterEach(() => {
@@ -262,10 +267,17 @@ describe('MEP Lingo Fragments', () => {
   it('uses country mapping when configured', async () => {
     // Nigeria (ng) maps to regional content for Africa
     window.sessionStorage.setItem('akamai', 'ng');
+    // Mock queryIndexes with resolved promise to prevent hanging
+    queryIndexes[''] = {
+      pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']),
+      requestResolved: true,
+    };
     const localeWithAfrica = {
       ...mepLingoLocale,
       regions: {
         ...mepLingoLocale.regions,
+        // africa_test: Test region key (africa + 'test' from prefix /test/blocks/...)
+        // Real-world equivalent would be africa_en for English-speaking African regions
         africa_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'en-ZA' },
       },
     };
@@ -273,7 +285,7 @@ describe('MEP Lingo Fragments', () => {
     updateConfig({
       ...currentConfig,
       locale: localeWithAfrica,
-      mepLingoCountryToRegion: { ng: 'africa' },
+      mepLingoCountryToRegion: { africa: ['ng'] },
     });
     const a = document.querySelector('a.mep-lingo-mapping');
     await getFragment(a);
