@@ -18,3 +18,10 @@ libs/navigation/dist/
 /.claude/
 CLAUDE.md
 **/.CLAUDE.md
+
+# Font files should not be committed due to copyright & branding reasons. Use Typekit instead.
+*.otf
+*.ttf
+*.woff
+*.woff2
+*.eot
