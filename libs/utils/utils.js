@@ -2049,6 +2049,8 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
+  const isLingoActive = lingoActive();
+
   if (!langConfig && (config.languages || hasLanguageLinks(area))) {
     await loadLanguageConfig();
   }
@@ -2058,7 +2060,7 @@ export async function loadArea(area = document) {
     initModalEventListener();
   }
 
-  if (lingoActive()) {
+  if (isLingoActive) {
     const hasRegions = Object.keys(config.locale?.regions || {}).length > 0;
     if (hasRegions) {
       const country = getUserCountry();
@@ -2097,7 +2099,7 @@ export async function loadArea(area = document) {
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
 
   let mepLingoEnabled = false;
-  if (lingoActive()) {
+  if (isLingoActive) {
     // TODO: set a shared isLCPSection variable
     const lcpSection = htmlSections[0];
     const hasMepLingoContent = lcpSection?.textContent.toLowerCase().includes('mep-lingo')
