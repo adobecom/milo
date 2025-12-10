@@ -129,7 +129,7 @@ export const LANG_FIRST_LOCALES = {
   'pt': { ietf: 'pt-xx' },
   'br': { ietf: 'pt-br' },
   // arabic base site
-  'ar': { ietf: 'ar-xx' },
+  'arabic': { ietf: 'ar-xx' },
   'ae_ar': { ietf: 'ar-ae' },
   'kw_ar': { ietf: 'ar-kw' },
   'sa_ar': { ietf: 'ar-sa' },
