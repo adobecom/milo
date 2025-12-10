@@ -358,6 +358,24 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.entitlements = handleEntitlements;
       config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
+
+      // TODO test only - remove for prod and real PR
+      // Enables mep-lingo testing on da-bacom /fr pages without updating da-bacom's locales.js
+      // prefix (e.g., /lu_fr/) when akamaiLocale is set, ensuring the index contains the
+      // regional paths that mep-lingo needs to find.
+      if (window.location.href.includes('main--da-bacom--adobecom.aem.')
+        && window.location.pathname.startsWith('/fr/')) {
+        config.locale.regions = {
+          be_fr: { prefix: '/be_fr', ietf: 'fr-BE', base: 'fr' },
+          ca_fr: { prefix: '/ca_fr', ietf: 'fr-CA', base: 'fr' },
+          ch_fr: { prefix: '/ch_fr', ietf: 'fr-CH', base: 'fr' },
+          lu_fr: { prefix: '/lu_fr', ietf: 'fr-LU', base: 'fr' },
+        };
+        const lingoMeta = document.createElement('meta');
+        lingoMeta.setAttribute('content', 'on');
+        lingoMeta.setAttribute('name', 'lingo');
+        document.head.append(lingoMeta);
+      }
       return config;
     },
     (conf) => (config = conf),
@@ -1090,6 +1108,32 @@ export function decorateAutoBlock(a) {
         return false;
       }
 
+      // Check for mep-lingo block swap: | mep-lingo | <link> |
+      if (lingoActive()) {
+        const row = a.closest('.section > div > div');
+        const firstCell = row?.children[0];
+
+        console.log('MEP-LINGO CHECK:', {
+          href: a.href,
+          lingoActive: true,
+          row,
+          firstCell,
+          firstCellText: firstCell?.textContent?.toLowerCase().trim(),
+        });
+
+        if (firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo') {
+          const swapBlock = a.closest('.section > div[class]');
+          console.log('MEP-LINGO MATCH!', { swapBlock, blockName: swapBlock?.classList[0] });
+          if (swapBlock) {
+            const blockName = swapBlock.classList[0];
+            a.dataset.mepLingo = 'true';
+            a.dataset.mepLingoBlockSwap = blockName;
+            a.className = `${key} link-block`;
+            return true;
+          }
+        }
+      }
+
       const isInlineFrag = url.hash.includes('#_inline');
       if (url.hash === '' || isInlineFrag) {
         const { parentElement } = a;
@@ -1108,8 +1152,7 @@ export function decorateAutoBlock(a) {
       }
 
       // Modals (exclude special fragment hashes)
-      const isMepLingoFrag = url.hash.includes('#_mep-lingo');
-      if (url.hash !== '' && !isInlineFrag && !isMepLingoFrag && !url.hash.includes('#_replacecell')) {
+      if (url.hash !== '' && !isInlineFrag && !url.hash.includes('#_replacecell')) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
@@ -1193,6 +1236,10 @@ function decorateLinkElement(a, config, hasDnt) {
   if (a.href.includes('#_nohtml')) {
     a.href = a.href.replace('#_nohtml', '');
   }
+  if (a.href.includes('#_mep-lingo')) {
+    a.dataset.mepLingo = 'true';
+    a.href = a.href.replace('#_mep-lingo', '');
+  }
   // Custom action links
   const loginEvent = '#_evt-login';
   if (a.href.includes(loginEvent)) {
@@ -1244,21 +1291,6 @@ function setupLinksDecoration(el) {
 
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
-  // Mep-lingo preprocessing for block swaps - must happen before async processing
-  if (lingoActive()) {
-    let hasMepLingoContent = config.mep?.lingoEnabled;
-    if (!hasMepLingoContent) {
-      const section = el.closest?.('.section') || el;
-      hasMepLingoContent = section.textContent.toLowerCase().includes('mep-lingo')
-        || section.querySelector('a[href*="#_mep-lingo"]');
-    }
-    if (hasMepLingoContent) {
-      const { processMepLingoAnchors } = await import('../features/mep/lingo.js');
-      processMepLingoAnchors(anchors);
-      if (!config.mep) config.mep = {};
-      config.mep.lingoEnabled = true;
-    }
-  }
 
   const linksPromises = [...anchors].map(async (a) => {
     const hasDnt = a.href.includes('#_dnt');
@@ -1487,6 +1519,7 @@ export function filterDuplicatedLinkBlocks(blocks) {
 
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
+  section.dataset.idx = idx;
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -1519,7 +1552,6 @@ async function decorateSection(section, idx) {
 
   section.className = `${section.classList.contains('section') ? '' : 'section'} ${section.className}`;
   section.dataset.status = 'decorated';
-  section.dataset.idx = idx;
   return {
     blocks: [...links, ...blocks],
     el: section,
@@ -2001,19 +2033,32 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
-async function resolveInlineFrags(section) {
+async function resolveFragments(section) {
+  const swapAnchors = [...section.el.querySelectorAll('a[data-mep-lingo-block-swap]')];
+
+  if (swapAnchors.length) {
+    const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
+    await Promise.all(swapAnchors.map((anchor) => loadFragment(anchor)));
+  }
+
+  // Re-query inline frags AFTER block swaps (they might have been inside swapped blocks)
   const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
-  if (!inlineFrags.length) return;
-  const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
-  const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
-  await Promise.all(fragPromises);
-  const newlyDecoratedSection = await decorateSection(section.el, section.idx);
-  section.blocks = newlyDecoratedSection.blocks;
-  section.preloadLinks = newlyDecoratedSection.preloadLinks;
+
+  if (inlineFrags.length) {
+    const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
+    debugger;
+    await Promise.all(inlineFrags.map((link) => loadFragment(link)));
+  }
+
+  if (swapAnchors.length || inlineFrags.length) {
+    const newlyDecoratedSection = await decorateSection(section.el, section.idx);
+    section.blocks = newlyDecoratedSection.blocks;
+    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+  }
 }
 
 async function processSection(section, config, isDoc, lcpSectionId) {
-  await resolveInlineFrags(section);
+  await resolveFragments(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
@@ -2097,21 +2142,6 @@ export async function loadArea(area = document) {
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
-
-  let mepLingoEnabled = false;
-  if (isLingoActive) {
-    // TODO: set a shared isLCPSection variable
-    const lcpSection = htmlSections[0];
-    const hasMepLingoContent = lcpSection?.textContent.toLowerCase().includes('mep-lingo')
-      || lcpSection?.querySelector('a[href*="#_mep-lingo"]');
-    if (hasMepLingoContent) {
-      import('../features/mep/lingo.js');
-    }
-    mepLingoEnabled = hasMepLingoContent;
-  }
-
-  if (!config.mep) config.mep = {};
-  config.mep.lingoEnabled = mepLingoEnabled;
 
   const areaBlocks = [];
   let lcpSectionId = null;

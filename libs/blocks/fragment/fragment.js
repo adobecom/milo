@@ -131,7 +131,36 @@ export default async function init(a) {
   const shouldFetchMepLingo = !!(
     a.dataset.mepLingo && matchingRegion && country && resourcePath && localeCode
   );
-  const isBlockSwap = !!a.dataset.mepLingoBlockFragment;
+
+  console.log('FRAGMENT INIT:', {
+    href: a.href,
+    hasMepLingo: !!a.dataset.mepLingo,
+    country,
+    localeCode,
+    matchingRegion,
+    shouldFetchMepLingo,
+    resourcePath,
+  });
+
+  // Handle block swap (anchor is still inside block)
+  const isBlockSwap = !!a.dataset.mepLingoBlockSwap;
+  let originalBlock;
+
+  if (isBlockSwap) {
+    const blockName = a.dataset.mepLingoBlockSwap;
+    originalBlock = a.closest(`.${blockName}`);
+
+    if (originalBlock) {
+      // Special handling for section-metadata blocks
+      if (blockName === 'section-metadata') {
+        a.dataset.mepLingoSectionMetadata = 'true';
+      }
+
+      // Move anchor outside block so it doesn't get removed with block
+      const p = createTag('p', null, a);
+      originalBlock.insertAdjacentElement('afterend', p);
+    }
+  }
 
   let resp;
   let mepLingoPath;
@@ -160,17 +189,38 @@ export default async function init(a) {
     if (isBlockSwap) {
       // If query-index unavailable (including federal with no index yet), try anyway
       const shouldTryMepLingo = !qiAvailable || mepLingoInIndex;
-      if (!shouldTryMepLingo) { a.parentElement.remove(); return; }
+      if (!shouldTryMepLingo) {
+        // No regional content - keep original block but clean up mep-lingo row
+        a.parentElement?.remove();
+        const rows = originalBlock?.querySelectorAll(':scope > div');
+        const mepLingoRow = [...rows || []].find((row) => {
+          const firstCell = row.children[0];
+          return firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo';
+        });
+        mepLingoRow?.remove();
+        return;
+      }
 
       const mepLingoResp = await lingoModule.fetchFragment(mepLingoPath);
-      if (!mepLingoResp?.ok) { a.parentElement.remove(); return; }
+      if (!mepLingoResp?.ok) {
+        // Fetch failed - keep original block but clean up mep-lingo row
+        a.parentElement?.remove();
+        const rows = originalBlock?.querySelectorAll(':scope > div');
+        const mepLingoRow = [...rows || []].find((row) => {
+          const firstCell = row.children[0];
+          return firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo';
+        });
+        mepLingoRow?.remove();
+        return;
+      }
 
       resp = mepLingoResp;
       usedMepLingo = true;
       relHref = await localizeLinkAsync(mepLingoPath);
 
-      if (a.dataset.mepLingoSectionMetadata) {
-        const sectionEl = a.closest('.section');
+      // Handle section-metadata special case
+      if (a.dataset.mepLingoSectionMetadata && originalBlock) {
+        const sectionEl = originalBlock.closest('.section');
         if (sectionEl) {
           a.parentElement.dataset.mepLingoSectionContent = true;
           sectionEl.style = '';
@@ -178,8 +228,6 @@ export default async function init(a) {
             if (!child.dataset.mepLingoSectionContent) child.remove();
           });
         }
-      } else {
-        a.dataset.removeOriginalBlock = true;
       }
     }
 
@@ -267,10 +315,8 @@ export default async function init(a) {
   } else {
     a.parentElement.replaceChild(fragment, a);
 
-    if (a.dataset.removeOriginalBlock && a.dataset.originalBlockId) {
-      const originalBlock = document.querySelector(`[data-mep-lingo-original-block="${a.dataset.originalBlockId}"]`);
-      if (originalBlock) originalBlock.remove();
-    }
+    // Remove original block if this was a block swap
+    originalBlock?.remove();
 
     await loadArea(fragment);
   }
