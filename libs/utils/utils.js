@@ -287,6 +287,13 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   return language;
 }
 
+export function setInternational(prefix) {
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+  const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
+  document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
+  sessionStorage.setItem('international', prefix);
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -1619,6 +1626,7 @@ async function loadPostLCP(config) {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
     })();
+    // This is used only in webapp-prompt.js
   }
 
   const header = document.querySelector('header');
@@ -1935,10 +1943,3 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
-
-export function setInternational(prefix) {
-  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
-  const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
-  document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
-  sessionStorage.setItem('international', prefix);
-}

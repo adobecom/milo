@@ -45,7 +45,6 @@ const stageDomainsMap = {
 
 const config = {
   geoRouting: 'on',
-  languageBanner: 'on',
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
