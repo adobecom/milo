@@ -1139,10 +1139,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     padding: 0 12px;
   }
 
-  .feds-navItem--section.feds-navItem--active > .feds-navLink:before {
-    margin: 0 20px;
-  }
-
   .feds-topnav--overflowing .feds-navItem--section > .feds-navLink {
     padding: 0 12px;
   }
