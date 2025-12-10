@@ -397,7 +397,7 @@ describe('MEP Lingo with Query Index', () => {
     Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
   });
 
-  it('uses fetchMepLingoThenFallback when query index has matching path', async () => {
+  it('uses fetchMepLingo when query index has matching path', async () => {
     queryIndexes[''] = {
       requestResolved: true,
       pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']),
@@ -514,7 +514,7 @@ describe('MEP Lingo with Query Index', () => {
     container.remove();
   });
 
-  it('handles fetchMepLingoThenFallback when ROC fails', async () => {
+  it('handles fetchMepLingo when ROC fails', async () => {
     queryIndexes[''] = {
       requestResolved: true,
       pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/nonexistent-roc']),
@@ -626,7 +626,7 @@ describe('MEP Lingo with Query Index', () => {
     container.remove();
   });
 
-  it('triggers fetchMepLingoThenFallback fallback path when ROC fails', async () => {
+  it('triggers fetchMepLingo fallback path when ROC fails', async () => {
     queryIndexes[''] = {
       requestResolved: true,
       pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/fallback-only']),
@@ -738,7 +738,7 @@ describe('MEP Lingo with Query Index', () => {
     container.remove();
   });
 
-  it('returns empty when both ROC and fallback fail in fetchMepLingoThenFallback', async () => {
+  it('returns empty when both ROC and fallback fail in fetchMepLingo', async () => {
     queryIndexes[''] = {
       requestResolved: true,
       pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/both-fail']),

@@ -59,20 +59,12 @@ export const fetchFragment = (path) => {
     .catch(() => ({}));
 };
 
-export async function fetchMepLingoThenFallback(mepLingoPath, fallbackPath) {
-  const mepLingoResp = await fetchFragment(mepLingoPath);
+export async function fetchMepLingo(mepLingoPath, fallbackPath) {
+  const mepLingoPromise = fetchFragment(mepLingoPath);
+  const fallbackPromise = fetchFragment(fallbackPath);
+  const mepLingoResp = await mepLingoPromise;
   if (mepLingoResp?.ok) return { resp: mepLingoResp, usedMepLingo: true };
-  const fallbackResp = await fetchFragment(fallbackPath);
-  if (fallbackResp?.ok) return { resp: fallbackResp, usedFallback: true };
-  return {};
-}
-
-export async function fetchMepLingoParallel(mepLingoPath, fallbackPath) {
-  const [mepLingoResp, fallbackResp] = await Promise.all([
-    fetchFragment(mepLingoPath),
-    fetchFragment(fallbackPath),
-  ]);
-  if (mepLingoResp?.ok) return { resp: mepLingoResp, usedMepLingo: true };
+  const fallbackResp = await fallbackPromise;
   if (fallbackResp?.ok) return { resp: fallbackResp, usedFallback: true };
   return {};
 }

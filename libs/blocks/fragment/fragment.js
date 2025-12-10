@@ -187,13 +187,11 @@ export default async function init(a) {
       let result;
       const useQueryIndex = qiResolved && qiAvailable;
 
-      if (useQueryIndex && mepLingoInIndex) {
-        result = await lingoModule.fetchMepLingoThenFallback(mepLingoPath, resourcePath);
-      } else if (useQueryIndex && !mepLingoInIndex) {
+      if (useQueryIndex && !mepLingoInIndex) {
         const fallbackResp = await lingoModule.fetchFragment(resourcePath);
         if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
       } else {
-        result = await lingoModule.fetchMepLingoParallel(mepLingoPath, resourcePath);
+        result = await lingoModule.fetchMepLingo(mepLingoPath, resourcePath);
         if (isLcp && !isFederalFragment) {
           const opts = { tags: 'mep-lingo,lcp-no-qi', sampleRate: 10 };
           window.lana?.log(`mep-lingo: LCP parallel fetch (QI not ready): ${mepLingoPathname}`, opts);
