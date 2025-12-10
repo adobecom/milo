@@ -371,6 +371,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
           ch_fr: { prefix: '/ch_fr', ietf: 'fr-CH', base: 'fr' },
           lu_fr: { prefix: '/lu_fr', ietf: 'fr-LU', base: 'fr' },
         };
+        config.mepLingoCountryToRegion = { lu_fr: ['lu'] };
         const lingoMeta = document.createElement('meta');
         lingoMeta.setAttribute('content', 'on');
         lingoMeta.setAttribute('name', 'lingo');
@@ -2082,7 +2083,6 @@ function loadMepLingoIndexes() {
   const config = getConfig();
   const { regions } = config.locale || {};
   let prefix;
-
   if (regions && Object.keys(regions).length > 0) {
     const country = getUserCountry();
     const mapping = config.mepLingoCountryToRegion;
@@ -2121,7 +2121,6 @@ export async function loadArea(area = document) {
     await decorateDocumentExtras();
     initModalEventListener();
   }
-
   if (isLingoActive) loadMepLingoIndexes();
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
