@@ -304,11 +304,11 @@ const getLanguageFirstCountryAndLang = async (path, origin) => {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
   } else {
-    const localeStr = (LANG_FIRST_LOCALES[localeArr[1]] || LANG_FIRST_LOCALES['']).ietf ;
-    let [langStr = 'en', countryStr = 'us'] = localeStr;
+    const localeStr = (LANG_FIRST_LOCALES[localeArr[1]] || LANG_FIRST_LOCALES['']).ietf;
+    const [lang = 'en', country = 'xx'] = localeStr;
     return {
-      country: countryStr,
-      lang: langStr,
+      country,
+      lang,
     };
   }
   return {
