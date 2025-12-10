@@ -234,11 +234,12 @@ export default async function init(a) {
     if (!isBlockSwap) {
       let result;
       const useQueryIndex = qiResolved && qiAvailable;
-
       if (useQueryIndex && !mepLingoInIndex) {
         const fallbackResp = await lingoModule.fetchFragment(resourcePath);
         if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
       } else {
+        // TODO call the fragment first. It should pretty much always exist, so no need to fetch fallback
+        // unless this is a LCP fragment.
         result = await lingoModule.fetchMepLingo(mepLingoPath, resourcePath);
         if (isLcp && !isFederalFragment) {
           const opts = { tags: 'mep-lingo,lcp-no-qi', sampleRate: 10 };

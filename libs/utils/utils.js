@@ -550,12 +550,7 @@ export function lingoActive() {
  *   3. server info (with region object lookup)
  */
 export function getUserCountry() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const akamaiParams = urlParams.get('akamaiLocale')?.toLowerCase();
-  const akamaiStored = sessionStorage.getItem('akamai');
-  const performanceGeo = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
-    ?.find((t) => t?.name === 'geo')?.description?.toLowerCase();
-  return akamaiParams || akamaiStored || performanceGeo;
+  return PAGE_URL.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
 }
 
 export function createTag(tag, attributes, html, options = {}) {
@@ -2046,7 +2041,6 @@ async function resolveFragments(section) {
 
   if (inlineFrags.length) {
     const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
-    debugger;
     await Promise.all(inlineFrags.map((link) => loadFragment(link)));
   }
 
@@ -2084,6 +2078,30 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   return section.blocks;
 }
 
+function loadMepLingoIndexes() {
+  const config = getConfig();
+  const { regions } = config.locale || {};
+  let prefix;
+
+  if (regions && Object.keys(regions).length > 0) {
+    const country = getUserCountry();
+    const mapping = config.mepLingoCountryToRegion;
+
+    const regionKey = country && mapping
+      ? Object.entries(mapping).find(
+        ([key, countries]) => Array.isArray(countries)
+          && countries.includes(country)
+          && regions[key],
+      )?.[0]
+      : null;
+    if (regionKey) {
+      prefix = regions[regionKey].prefix;
+    }
+  }
+  else if (config.locale?.base) prefix = config.locale.prefix;
+  if (prefix) loadQueryIndexes(prefix);
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
@@ -2105,40 +2123,7 @@ export async function loadArea(area = document) {
     initModalEventListener();
   }
 
-  if (isLingoActive) {
-    const hasRegions = Object.keys(config.locale?.regions || {}).length > 0;
-    if (hasRegions) {
-      const country = getUserCountry();
-      const { getLocaleCodeFromPrefix } = await import('../features/mep/lingo.js');
-      const localeCode = getLocaleCodeFromPrefix(
-        config.locale.prefix,
-        config.locale.region,
-        config.locale.language,
-      );
-      let regionalCountry = country;
-      const mapping = config.mepLingoCountryToRegion;
-      if (mapping && country) {
-        const mappedRegion = Object.entries(mapping).find(
-          ([, countries]) => Array.isArray(countries) && countries.includes(country),
-        )?.[0];
-        if (mappedRegion) regionalCountry = mappedRegion;
-      }
-
-      let regionKey = `${regionalCountry}_${localeCode}`;
-      let userIsInRegion = regionalCountry && config.locale.regions[regionKey];
-      if (!userIsInRegion && regionalCountry) {
-        regionKey = regionalCountry;
-        userIsInRegion = config.locale.regions[regionKey];
-      }
-      if (userIsInRegion) {
-        const targetPrefix = config.locale.regions[regionKey].prefix;
-        loadQueryIndexes(targetPrefix);
-      }
-    } else if (config.locale?.base) {
-      const { prefix } = config.locale;
-      loadQueryIndexes(prefix);
-    }
-  }
+  if (isLingoActive) loadMepLingoIndexes();
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
