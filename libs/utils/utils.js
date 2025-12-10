@@ -1628,7 +1628,6 @@ async function loadPostLCP(config) {
     })();
     // This is used only in webapp-prompt.js
   }
-
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
