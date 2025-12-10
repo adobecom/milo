@@ -524,12 +524,12 @@ const getCategoryMappings = async (state) => {
     const json = await mappings.json();
     const data = json.data || [];
     // Convert array to object keyed by id
-    return data.reduce((mappings, entry) => {
-      mappings[entry.id] = {
+    return data.reduce((entries, entry) => {
+      entries[entry.id] = {
         label: entry.label,
         items: entry.items ? entry.items.split(',').map((item) => item.trim()) : [],
       };
-      return mappings;
+      return entries;
     }, {});
   }
   return {};

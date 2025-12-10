@@ -597,14 +597,6 @@ const FilterPanel = ({ tagsData }) => {
     });
   };
 
-  const categoriesMappingFile = html`
-    <${Input} 
-      label="Categories mapping file (optional)"
-      prop="categoriesMappingFile"
-      type="text"
-      value=${context.state.categoriesMappingFile}/>
-  `;
-
   const FilterOptions = html`
     <${Input} label="Show Empty Filters" prop="filtersShowEmpty" type="checkbox" />
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
