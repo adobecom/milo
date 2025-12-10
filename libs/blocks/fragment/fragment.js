@@ -128,7 +128,7 @@ export default async function init(a) {
 
   const { country, localeCode, matchingRegion } = lingoModule?.getMepLingoContext(locale)
     ?? { country: null, localeCode: null, matchingRegion: null };
-  const mepLingoEnabled = !!(
+  const shouldFetchMepLingo = !!(
     a.dataset.mepLingo && matchingRegion && country && resourcePath && localeCode
   );
   const isBlockSwap = !!a.dataset.mepLingoBlockFragment;
@@ -138,7 +138,7 @@ export default async function init(a) {
   let usedMepLingo = false;
   let usedFallback = false;
 
-  if (mepLingoEnabled && matchingRegion?.prefix) {
+  if (shouldFetchMepLingo && matchingRegion?.prefix) {
     mepLingoPath = locale.prefix
       ? resourcePath.replace(locale.prefix, matchingRegion.prefix)
       : resourcePath.replace(/^(https?:\/\/[^/]+)/, `$1${matchingRegion.prefix}`);
@@ -214,7 +214,7 @@ export default async function init(a) {
         window.lana?.log(`mep-lingo: path not in QI but exists: ${mepLingoPathname}`, opts);
       }
     }
-  } else if (!mepLingoEnabled && isBlockSwap) {
+  } else if (!shouldFetchMepLingo && isBlockSwap) {
     a.parentElement.remove();
   } else {
     resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
@@ -222,7 +222,7 @@ export default async function init(a) {
   }
 
   if (!resp?.ok) {
-    const message = mepLingoEnabled
+    const message = shouldFetchMepLingo
       ? `Could not get mep-lingo fragments: ${mepLingoPath}.plain.html or ${resourcePath}.plain.html`
       : `Could not get fragment: ${resourcePath}.plain.html`;
     window.lana?.log(message);

@@ -74,8 +74,7 @@ mepLingoCountryToRegion: {
 | `getLocaleCodeFromPrefix(prefix, region, language)` | Derive locale code from prefix, handling special cases like `langstore` and `target-preview` |
 | `getMepLingoContext(locale)` | Get full context including country, localeCode, regionKey, matchingRegion |
 | `getQueryIndexPaths(prefix, checkImmediate, isFederal)` | Check query-index for regional paths |
-| `fetchMepLingoThenFallback(mepLingoPath, fallbackPath)` | Sequential fetch: ROC then fallback |
-| `fetchMepLingoParallel(mepLingoPath, fallbackPath)` | Parallel fetch: race for fastest response |
+| `fetchMepLingo(mepLingoPath, fallbackPath)` | Fetch ROC and fallback in parallel, return ROC immediately if successful |
 | `processMepLingoAnchors(anchors)` | Process anchors for block swaps |
 | `processAnchorForMepLingo(a)` | Process single anchor's mep-lingo hash |
 

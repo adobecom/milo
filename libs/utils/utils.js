@@ -1244,11 +1244,20 @@ function setupLinksDecoration(el) {
 
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
-
   // Mep-lingo preprocessing for block swaps - must happen before async processing
   if (lingoActive()) {
-    const { processMepLingoAnchors } = await import('../features/mep/lingo.js');
-    processMepLingoAnchors(anchors);
+    let hasMepLingoContent = config.mep?.lingoEnabled;
+    if (!hasMepLingoContent) {
+      const section = el.closest?.('.section') || el;
+      hasMepLingoContent = section.textContent.toLowerCase().includes('mep-lingo')
+        || section.querySelector('a[href*="#_mep-lingo"]');
+    }
+    if (hasMepLingoContent) {
+      const { processMepLingoAnchors } = await import('../features/mep/lingo.js');
+      processMepLingoAnchors(anchors);
+      if (!config.mep) config.mep = {};
+      config.mep.lingoEnabled = true;
+    }
   }
 
   const linksPromises = [...anchors].map(async (a) => {
@@ -2087,10 +2096,20 @@ export async function loadArea(area = document) {
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
 
-  // Preload mep-lingo module if lingo is active (fire and forget for LCP performance)
+  let mepLingoEnabled = false;
   if (lingoActive()) {
-    import('../features/mep/lingo.js');
+    // TODO: set a shared isLCPSection variable
+    const lcpSection = htmlSections[0];
+    const hasMepLingoContent = lcpSection?.textContent.toLowerCase().includes('mep-lingo')
+      || lcpSection?.querySelector('a[href*="#_mep-lingo"]');
+    if (hasMepLingoContent) {
+      import('../features/mep/lingo.js');
+    }
+    mepLingoEnabled = hasMepLingoContent;
   }
+
+  if (!config.mep) config.mep = {};
+  config.mep.lingoEnabled = mepLingoEnabled;
 
   const areaBlocks = [];
   let lcpSectionId = null;
