@@ -79,6 +79,8 @@ styles.innerHTML = `
     /* colors */
     --consonant-merch-card-background-color: inherit;
     --consonant-merch-card-border-color: #eaeaea;
+    --link-color: rgb(39, 77, 234);
+    --link-hover-color: rgb(29, 62, 207);
     --color-accent: rgb(59, 99, 251);
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-10: #f6f6f6;
