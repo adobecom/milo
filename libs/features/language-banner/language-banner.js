@@ -13,6 +13,7 @@ const getCookie = (name) => document.cookie
  */
 function getPreferredLanguage(locales) {
   const cookie = getCookie('international');
+  console.log('language-banner cookie:', cookie);
   if (cookie && cookie !== 'us') {
     const locale = locales[cookie];
     const langFromCookie = locale?.ietf
@@ -21,6 +22,7 @@ function getPreferredLanguage(locales) {
     return langFromCookie;
   }
   const browserLang = navigator.language?.split('-')[0];
+  console.log('language-banner browserLang:', browserLang);
   return browserLang || null;
 }
 
@@ -54,7 +56,7 @@ function buildBanner(market, translatedUrl) {
   const banner = createTag('div', { class: 'language-banner' });
   const messageContainer = createTag('div', { class: 'language-banner-content' });
   const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} ${market.languageName}.`);
-  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.continue || 'Continue');
+  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.continueText || 'Continue');
   const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close' });
   closeButton.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -69,10 +71,8 @@ function buildBanner(market, translatedUrl) {
   return banner;
 }
 
-async function showBanner(market, config) {
-  const translatedUrl = await getTranslatedPage(market.prefix, config);
-  if (!translatedUrl) return;
-
+async function showBanner(market, config, translatedUrl) {
+  console.log('language-banner: showing banner for market:', market);
   const banner = buildBanner(market, translatedUrl);
   document.body.prepend(banner);
   const { codeRoot, miloLibs } = config;
@@ -104,6 +104,7 @@ export default async function init(jsonPromise) {
   if (internationalCookie === pagePrefix) return;
   const pageLang = config.locale.ietf.split('-')[0];
   const prefLang = getPreferredLanguage(config.locales);
+  console.log('language-banner preferredLanguage:', prefLang);
 
   const marketsConfigPromise = jsonPromise
     .then((res) => (res.ok ? res.json() : null))
@@ -116,6 +117,7 @@ export default async function init(jsonPromise) {
 
   if (!geoIp || !marketsConfig) return;
   geoIp = geoIp.toLowerCase();
+  console.log('language-banner geoIp:', geoIp);
   marketsConfig.data.forEach((market) => {
     market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   });
@@ -127,7 +129,8 @@ export default async function init(jsonPromise) {
     if (!prefLang || pageLang === prefLang) return;
     const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp));
     if (prefMarket) {
-      await showBanner(prefMarket, config);
+      const translatedUrl = await getTranslatedPage(prefMarket.prefix, config);
+      if (translatedUrl) await showBanner(prefMarket, config, translatedUrl);
     }
     return;
   }
@@ -139,10 +142,43 @@ export default async function init(jsonPromise) {
   if (prefLang) {
     const prefMarketForGeo = marketsForGeo.find((m) => m.lang === prefLang);
     if (prefMarketForGeo) {
-      await showBanner(prefMarketForGeo, config);
-      return;
+      const translatedUrl = await getTranslatedPage(prefMarketForGeo.prefix, config);
+      if (translatedUrl) {
+        await showBanner(prefMarketForGeo, config, translatedUrl);
+        return;
+      }
     }
   }
 
-  await showBanner(marketsForGeo[0], config);
+  const marketsWithPriority = [];
+  marketsForGeo.forEach((market) => {
+    if (market.regionPriorities) {
+      const priorityMap = new Map(
+        market.regionPriorities.split(',').map((p) => {
+          const [region, priority] = p.trim().split(':');
+          return [region.toLowerCase(), parseInt(priority, 10)];
+        }),
+      );
+      const priority = priorityMap.get(geoIp);
+      if (priority) {
+        marketsWithPriority.push({ market, priority });
+      }
+    }
+  });
+
+  let marketsToCheck = [];
+  if (marketsWithPriority.length) {
+    marketsWithPriority.sort((a, b) => a.priority - b.priority);
+    marketsToCheck = marketsWithPriority.map((item) => item.market);
+  } else if (marketsForGeo.length) {
+    marketsToCheck.push(marketsForGeo[0]);
+  }
+
+  for (const market of marketsToCheck) {
+    const translatedUrl = await getTranslatedPage(market.prefix, config);
+    if (translatedUrl) {
+      await showBanner(market, config, translatedUrl);
+      return; // Stop after finding the first valid page
+    }
+  }
 }
