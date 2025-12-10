@@ -2052,8 +2052,7 @@ export async function loadArea(area = document) {
   if (lingoActive()) {
     const hasRegions = Object.keys(config.locale?.regions || {}).length > 0;
     if (hasRegions) {
-      const country = new URLSearchParams(window.location.search).get('akamaiLocale')?.toLowerCase()
-        || sessionStorage.getItem('akamai');
+      const country = getUserCountry();
       const { getLocaleCodeFromPrefix } = await import('../features/mep/lingo.js');
       const localeCode = getLocaleCodeFromPrefix(
         config.locale.prefix,
