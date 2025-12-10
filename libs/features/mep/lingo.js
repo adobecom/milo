@@ -52,8 +52,12 @@ export function getMepLingoContext(locale) {
   return { country, localeCode, regionKey, matchingRegion };
 }
 
-const fetchFragment = (path) => customFetch({ resource: `${path}.plain.html`, withCacheRules: true })
-  .catch(() => ({}));
+export const fetchFragment = (path) => {
+  // Strip .html extension if present to avoid .html.plain.html
+  const pathNoExt = path.replace(/\.html$/, '');
+  return customFetch({ resource: `${pathNoExt}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
+};
 
 export async function fetchMepLingoThenFallback(mepLingoPath, fallbackPath) {
   const mepLingoResp = await fetchFragment(mepLingoPath);
@@ -85,7 +89,9 @@ export async function getQueryIndexPaths(prefix, checkImmediate = false, isFeder
     }
 
     if (checkImmediate) {
-      if (!targetIndex.requestResolved) return unavailable;
+      if (!targetIndex.requestResolved) {
+        return unavailable;
+      }
       const paths = await targetIndex.pathsRequest;
       const matchingPaths = paths?.filter((p) => p.startsWith(prefix)) || [];
       return { resolved: true, paths: matchingPaths, available: true };

@@ -634,7 +634,7 @@ async function loadQueryIndexes(prefix) {
   const origin = config.origin || window.location.origin;
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
-  const queryIndexSuffix = '';
+  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
   const siteId = config.uniqueSiteId ?? '';
 
   queryIndexes[siteId] = processQueryIndexMap(
@@ -2059,12 +2059,23 @@ export async function loadArea(area = document) {
         config.locale.region,
         config.locale.language,
       );
-      const regionKey = `${country}_${localeCode}`;
-      const userIsInRegion = country && config.locale.regions[regionKey];
+      let regionalCountry = country;
+      const mapping = config.mepLingoCountryToRegion;
+      if (mapping && country) {
+        const mappedRegion = Object.entries(mapping).find(
+          ([, countries]) => Array.isArray(countries) && countries.includes(country),
+        )?.[0];
+        if (mappedRegion) regionalCountry = mappedRegion;
+      }
+
+      let regionKey = `${regionalCountry}_${localeCode}`;
+      let userIsInRegion = regionalCountry && config.locale.regions[regionKey];
+      if (!userIsInRegion && regionalCountry) {
+        regionKey = regionalCountry;
+        userIsInRegion = config.locale.regions[regionKey];
+      }
       if (userIsInRegion) {
-        const targetPrefix = userIsInRegion
-          ? config.locale.regions[regionKey].prefix
-          : config.locale.prefix;
+        const targetPrefix = config.locale.regions[regionKey].prefix;
         loadQueryIndexes(targetPrefix);
       }
     } else if (config.locale?.base) {

@@ -77,9 +77,6 @@ function replaceDotMedia(path, doc) {
   resetAttributeBase('source', 'srcset');
 }
 
-const fetchFragment = (path) => customFetch({ resource: `${path}.plain.html`, withCacheRules: true })
-  .catch(() => ({}));
-
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href);
@@ -149,8 +146,6 @@ export default async function init(a) {
     const section = a.closest('.section[data-idx]');
     const isLcp = section?.dataset.idx === '0';
 
-    // TODO: Enable federal query-index once it's implemented and tested
-    // For now, force parallel fetch for federal fragments to avoid issues
     const skipQueryIndex = isFederalFragment;
     const qiResult = skipQueryIndex
       ? { resolved: false, paths: [], available: false }
@@ -158,14 +153,16 @@ export default async function init(a) {
     const qiResolved = qiResult.resolved !== false;
     const qiAvailable = qiResult.available;
     const mepLingoPathname = new URL(mepLingoPath).pathname;
-    const mepLingoInIndex = qiResult.paths?.length > 0 && qiResult.paths.includes(mepLingoPathname);
+    const mepLingoPathnameNoExt = mepLingoPathname.replace(/\.html$/, '');
+    const mepLingoInIndex = qiResult.paths?.length > 0
+      && qiResult.paths.includes(mepLingoPathnameNoExt);
 
     if (isBlockSwap) {
       // If query-index unavailable (including federal with no index yet), try anyway
       const shouldTryMepLingo = !qiAvailable || mepLingoInIndex;
       if (!shouldTryMepLingo) { a.parentElement.remove(); return; }
 
-      const mepLingoResp = await fetchFragment(mepLingoPath);
+      const mepLingoResp = await lingoModule.fetchFragment(mepLingoPath);
       if (!mepLingoResp?.ok) { a.parentElement.remove(); return; }
 
       resp = mepLingoResp;
@@ -190,19 +187,12 @@ export default async function init(a) {
       let result;
       const useQueryIndex = qiResolved && qiAvailable;
 
-      // NOTE: This optimization relies on query-index being available. Currently blocked by
-      // -preview suffix issue: da-bacom (and likely others) only publish query-index.json,
-      // not query-index-preview.json. See TODO in loadQueryIndexes. Until resolved,
-      // useQueryIndex may be false, falling through to parallel fetch.
       if (useQueryIndex && mepLingoInIndex) {
-        // Path confirmed in index → fetch mep-lingo first, fallback if needed
         result = await lingoModule.fetchMepLingoThenFallback(mepLingoPath, resourcePath);
       } else if (useQueryIndex && !mepLingoInIndex) {
-        // Path NOT in index → only fetch fallback (optimization: skip non-existent path)
-        const fallbackResp = await fetchFragment(resourcePath);
+        const fallbackResp = await lingoModule.fetchFragment(resourcePath);
         if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
       } else {
-        // No index available → parallel fetch (safety net)
         result = await lingoModule.fetchMepLingoParallel(mepLingoPath, resourcePath);
         if (isLcp && !isFederalFragment) {
           const opts = { tags: 'mep-lingo,lcp-no-qi', sampleRate: 10 };
@@ -217,7 +207,6 @@ export default async function init(a) {
         if (usedMepLingo) relHref = await localizeLinkAsync(mepLingoPath);
       }
 
-      // Log QI mismatches for monitoring
       if (mepLingoInIndex && usedFallback) {
         const opts = { tags: 'mep-lingo,qi-stale' };
         window.lana?.log(`mep-lingo: path in QI but fetch failed: ${mepLingoPathname}`, opts);
@@ -230,7 +219,8 @@ export default async function init(a) {
   } else if (!mepLingoEnabled && isBlockSwap) {
     a.parentElement.remove();
   } else {
-    resp = await fetchFragment(resourcePath);
+    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
   }
 
   if (!resp?.ok) {

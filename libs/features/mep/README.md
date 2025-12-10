@@ -4,7 +4,7 @@ MEP Lingo enables serving region-specific content variants for fragments without
 
 ## Usage
 
-When a page has lingo enabled (via `lingo=on` URL param or `<meta name="lingo" content="on">`), fragments with `#_mep-lingo` will attempt to load regional variants.
+When a page has lingo enabled (via `langFirst=on` URL param or `<meta name="langFirst" content="on">`), fragments with `#_mep-lingo` will attempt to load regional variants.
 
 ### Fragment Syntax
 
@@ -71,6 +71,7 @@ mepLingoCountryToRegion: {
 
 | Function | Description |
 |----------|-------------|
+| `getLocaleCodeFromPrefix(prefix, region, language)` | Derive locale code from prefix, handling special cases like `langstore` and `target-preview` |
 | `getMepLingoContext(locale)` | Get full context including country, localeCode, regionKey, matchingRegion |
 | `getQueryIndexPaths(prefix, checkImmediate, isFederal)` | Check query-index for regional paths |
 | `fetchMepLingoThenFallback(mepLingoPath, fallbackPath)` | Sequential fetch: ROC then fallback |
@@ -83,7 +84,30 @@ mepLingoCountryToRegion: {
 | Function | Description |
 |----------|-------------|
 | `getUserCountry()` | Get user's country code from akamaiLocale param, sessionStorage, or server timing |
-| `lingoActive()` | Check if lingo is enabled via URL param or meta tag |
+| `lingoActive()` | Check if lingo is enabled via `langFirst` URL param or meta tag |
+
+### `getLocaleCodeFromPrefix` Details
+
+Derives the locale code from a URL prefix, handling special cases for `langstore` and `target-preview` paths.
+
+**Parameters:**
+- `prefix` - The locale prefix (e.g., `/be_fr`, `/langstore/fr`, `/target-preview/en`)
+- `region` - The region code (e.g., `us`, `de`). Defaults to `us`
+- `language` - The language code (e.g., `en`, `fr`). Defaults to `en`
+
+**Returns:** String - The locale code
+
+**Examples:**
+- `/be_fr` → `be_fr`
+- `/langstore/fr` → `fr` (extracts second part)
+- `/target-preview/de` → `de` (extracts second part)
+- `/langstore` (no second part) → `en` (falls back to language)
+- `` (empty prefix, region=`us`) → `en`
+
+**Logic:**
+1. If prefix is empty or special prefix (`langstore`/`target-preview`) without second part, returns language (or `en` if region is `us`)
+2. If prefix starts with `langstore` or `target-preview`, returns the second path segment
+3. Otherwise, returns the first path segment
 
 ### `getQueryIndexPaths` Details
 
@@ -91,10 +115,18 @@ Checks the query-index for regional paths. Used to optimize fetching by avoiding
 
 **Parameters:**
 - `prefix` - The regional prefix to search for (e.g., `/ch_de`)
-- `checkImmediate` - If `true`, returns immediately if index not yet loaded (for LCP, non-blocking)
-- `isFederal` - If `true`, uses 'federal' as siteId
+- `checkImmediate` - If `true`, returns immediately if index not yet loaded. Set to `true` for LCP fragments (non-blocking). Defaults to `false`
+- `isFederal` - If `true`, uses `'federal'` as siteId. Defaults to `false`
 
-**Important:** Uses the same `siteId` logic as `loadQueryIndexes()` in utils.js. For production, `config.uniqueSiteId` must be set in the consumer's config for the index lookup to work correctly.
+**Returns:** Object with `{ resolved, paths, available }`
+- `resolved` - Whether query-index lookup completed
+- `paths` - Array of paths found in the index
+- `available` - Whether query-index is available
+
+**Important Notes:**
+- Uses the same `siteId` logic as `loadQueryIndexes()` in utils.js for consistency
+- For production, `config.uniqueSiteId` must be set in the consumer's config for the index lookup to work correctly
+- When `checkImmediate=true` (LCP), returns immediately without waiting for index to load to avoid blocking LCP
 
 ## Data Attributes
 
@@ -109,10 +141,10 @@ Checks the query-index for regional paths. Used to optimize fetching by avoiding
 
 ## Debugging
 
-Add `lingo=on` to URL to enable mep-lingo, then use `akamaiLocale=XX` to spoof country:
+Add `langFirst=on` to URL to enable mep-lingo, then use `akamaiLocale=XX` to spoof country:
 
 ```
-?lingo=on&akamaiLocale=ch
+?langFirst=on&akamaiLocale=ch
 ```
 
 The MEP preview panel shows:
