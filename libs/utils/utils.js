@@ -1104,22 +1104,12 @@ export function decorateAutoBlock(a) {
         return false;
       }
 
-      // Check for mep-lingo block swap: | mep-lingo | <link> |
       if (lingoActive()) {
         const row = a.closest('.section > div > div');
         const firstCell = row?.children[0];
 
-        console.log('MEP-LINGO CHECK:', {
-          href: a.href,
-          lingoActive: true,
-          row,
-          firstCell,
-          firstCellText: firstCell?.textContent?.toLowerCase().trim(),
-        });
-
         if (firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo') {
           const swapBlock = a.closest('.section > div[class]');
-          console.log('MEP-LINGO MATCH!', { swapBlock, blockName: swapBlock?.classList[0] });
           if (swapBlock) {
             const blockName = swapBlock.classList[0];
             a.dataset.mepLingo = 'true';
