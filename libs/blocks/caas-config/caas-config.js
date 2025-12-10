@@ -597,12 +597,23 @@ const FilterPanel = ({ tagsData }) => {
     });
   };
 
+  const categoriesMappingFile = html`
+    <${Input} 
+      label="Categories mapping file (optional)"
+      prop="categoriesMappingFile"
+      type="text"
+      value=${context.state.categoriesMappingFile}/>
+  `;
+
   const FilterOptions = html`
     <${Input} label="Show Empty Filters" prop="filtersShowEmpty" type="checkbox" />
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
-  `;
+    <${Input} label="Categories mapping file (optional)" type="text" 
+      prop="categoriesMappingFile"
+      value=${context.state.categoriesMappingFile}/>
+    `;
 
   const FilterBuildPanel = html`
     <${FilterOptions}>
