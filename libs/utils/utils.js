@@ -1109,11 +1109,18 @@ export function decorateAutoBlock(a) {
         const firstCell = row?.children[0];
 
         if (firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo') {
-          const swapBlock = a.closest('.section > div[class]');
-          if (swapBlock) {
-            const blockName = swapBlock.classList[0];
+          if (a.closest('.section-metadata')) {
+            a.dataset.mepLingoSectionSwap = 'true';
+          } else {
+            const swapBlock = a.closest('.section > div[class]');
+            if (swapBlock) {
+              const [blockName] = swapBlock.classList;
+              a.dataset.mepLingoBlockSwap = blockName;
+            }
+          }
+
+          if (a.dataset.mepLingoSectionSwap || a.dataset.mepLingoBlockSwap) {
             a.dataset.mepLingo = 'true';
-            a.dataset.mepLingoBlockSwap = blockName;
             a.className = `${key} link-block`;
             return true;
           }
@@ -2020,14 +2027,20 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
 }).filter(Boolean);
 
 async function resolveFragments(section) {
-  const swapAnchors = [...section.el.querySelectorAll('a[data-mep-lingo-block-swap]')];
+  const sectionSwapAnchors = [...section.el.querySelectorAll('a[data-mep-lingo-section-swap]')];
 
-  if (swapAnchors.length) {
+  if (sectionSwapAnchors.length) {
     const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
-    await Promise.all(swapAnchors.map((anchor) => loadFragment(anchor)));
+    await Promise.all(sectionSwapAnchors.map((anchor) => loadFragment(anchor)));
   }
 
-  // Re-query inline frags AFTER block swaps (they might have been inside swapped blocks)
+  const blockSwapAnchors = [...section.el.querySelectorAll('a[data-mep-lingo-block-swap]')];
+
+  if (blockSwapAnchors.length) {
+    const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
+    await Promise.all(blockSwapAnchors.map((anchor) => loadFragment(anchor)));
+  }
+
   const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
 
   if (inlineFrags.length) {
@@ -2035,7 +2048,7 @@ async function resolveFragments(section) {
     await Promise.all(inlineFrags.map((link) => loadFragment(link)));
   }
 
-  if (swapAnchors.length || inlineFrags.length) {
+  if (sectionSwapAnchors.length || blockSwapAnchors.length || inlineFrags.length) {
     const newlyDecoratedSection = await decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;
