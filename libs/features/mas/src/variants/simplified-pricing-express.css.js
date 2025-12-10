@@ -124,6 +124,12 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child 
   margin: 0;
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 15.6px;
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] {
   font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
   line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
@@ -162,7 +168,7 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] .price-currency-
   line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
 }
 
-merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence {
+merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] .price-unit-type {
   font-size: var(--merch-card-simplified-pricing-express-price-recurrence-font-size);
   font-weight: var(--merch-card-simplified-pricing-express-price-recurrence-font-weight);
   line-height: var(--merch-card-simplified-pricing-express-price-recurrence-line-height);
@@ -171,13 +177,16 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-
 /* Strikethrough price styling */
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price,
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-strikethrough,
-merch-card[variant="simplified-pricing-express"] span.placeholder-resolved[data-template='strikethrough'] {
+merch-card[variant="simplified-pricing-express"] span.placeholder-resolved[data-template='strikethrough'],
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='price'] .price-strikethrough {
   text-decoration: none;
   font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
   line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
 }
 
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price {
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='price'] .price-strikethrough,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='legal']  {
   color: var(--spectrum-gray-500);
 }
 
@@ -199,14 +208,11 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child 
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-integer,
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
-merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals {
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='strikethrough'] .price-decimals,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='price'] .price-strikethrough .price-integer,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='price'] .price-strikethrough .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child span[is="inline-price"][data-template='price'] .price-strikethrough .price-decimals {
   text-decoration: line-through;
-}
-
-/* Apply indigo-800 color to optical price when preceded by strikethrough */
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'],
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] + span[is="inline-price"][data-template='optical'] .price-currency-symbol {
-  color: var(--spectrum-indigo-900);
 }
 
 /* Ensure non-first paragraph prices have normal font weight */
