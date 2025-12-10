@@ -286,6 +286,13 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   return language;
 }
 
+export function setInternational(prefix) {
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+  const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
+  document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
+  sessionStorage.setItem('international', prefix);
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -659,7 +666,7 @@ export function appendHtmlToLink(link) {
   const { useDotHtml } = getConfig();
   if (!useDotHtml) return;
   const href = link.getAttribute('href');
-  if (!href?.length) return;
+  if (!href?.length || href.includes('#_nohtml')) return;
 
   const { autoBlocks = [], htmlExclude = [] } = getConfig();
 
@@ -1033,6 +1040,9 @@ export function decorateLinks(el) {
     if (a.href.includes('#_nofollow')) {
       a.setAttribute('rel', 'nofollow');
       a.href = a.href.replace('#_nofollow', '');
+    }
+    if (a.href.includes('#_nohtml')) {
+      a.href = a.href.replace('#_nohtml', '');
     }
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
@@ -1691,9 +1701,7 @@ export async function loadDeferred(area, blocks, config) {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    const { getPreflightResults } = await import('../blocks/preflight/checks/preflightApi.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
-    getPreflightResults(window.location.href, document);
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {

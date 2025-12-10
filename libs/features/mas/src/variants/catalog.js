@@ -5,6 +5,7 @@ import { EVENT_MERCH_CARD_ACTION_MENU_TOGGLE } from '../constants.js';
 import { CSS } from './catalog.css.js';
 
 export const CATALOG_AEM_FRAGMENT_MAPPING = {
+    cardName: { attribute: 'name' },
     badge: true,
     ctas: { slot: 'footer', size: 'm' },
     description: { tag: 'div', slot: 'body-xs' },
@@ -34,7 +35,7 @@ export class Catalog extends VariantLayout {
 
     setIconVisibility(visible) {
         if (isMobileOrTablet() && this.card.actionMenu) return;
-        this.actionMenu?.classList.toggle('hidden', !visible);
+        this.actionMenu?.classList.toggle('invisible', !visible);
         this.actionMenu?.classList.toggle('always-visible', visible);
     }
 
@@ -62,7 +63,7 @@ export class Catalog extends VariantLayout {
                         class="action-menu
                 ${isMobileOrTablet() && this.card.actionMenu
                             ? 'always-visible'
-                            : 'hidden'}"
+                            : 'invisible'}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         @focus="${this.showActionMenuOnHover}"

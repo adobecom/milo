@@ -1139,10 +1139,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     padding: 0 12px;
   }
 
-  .feds-navItem--section.feds-navItem--active > .feds-navLink:before {
-    margin: 0 20px;
-  }
-
   .feds-topnav--overflowing .feds-navItem--section > .feds-navLink {
     padding: 0 12px;
   }
@@ -1413,6 +1409,11 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > bu
   padding: 15px 20px;
 }
 
+header.new-nav .feds-nav-wrapper--expanded .feds-nav > .feds-navItem >  a.feds-navLink {
+  font-size: 20px;
+  font-weight: 400;
+}
+
 [dir = "rtl"] header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
   translate: 100px 0;
   animation: rtlslideleft 0.4s ease, fadein 0.2s ease;
@@ -1504,7 +1505,7 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .tab-panel {
-  height: calc(100vh - var(--feds-height-nav) - 120px)
+  height: calc(100vh - var(--feds-height-nav) - 120px);
 }
 
 header.test-nav .tab[role="tab"] {
@@ -1702,7 +1703,7 @@ header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .t
 
 header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button {
   min-height:48px;
-  width: 127px;
+  width: 128px;
   border: none;
   padding: 8px 20px;
   white-space: normal;
@@ -1720,10 +1721,51 @@ header.new-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .t
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs {
   grid-area: tabs;
+  height: calc(100vh - var(--feds-height-nav) - 76px);
   display: flex;
   flex-direction: column;
   background-color: #000;
   width: 238px;
+  overflow: auto;
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(90, 90, 90, 0.4) transparent;
+
+  /* Chrome, Edge, Safari */
+  &::-webkit-scrollbar {
+      width: 8px;
+      background: transparent; /* no gutter like mac */
+  }
+
+  &::-webkit-scrollbar-track {
+      background: transparent; /* no reserved track */
+  }
+
+  &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.35); /* soft gray like macOS */
+      border-radius: 10px;
+      border: 2px solid transparent; /* creates floating effect */
+      background-clip: padding-box;
+      transition: background-color 0.25s ease, opacity 0.25s ease;
+      opacity: 0; /* hidden until scroll */
+  }
+
+  &:hover::-webkit-scrollbar-thumb,
+  &::-webkit-scrollbar-thumb:active {
+      background: rgba(0, 0, 0, 0.55);
+      opacity: 1; /* shows on hover */
+  }
+
+  /* Show scrollbar only when scrolling */
+  &::-webkit-scrollbar-thumb {
+      opacity: 0;
+  }
+
+  &:active::-webkit-scrollbar-thumb,
+  &:focus::-webkit-scrollbar-thumb,
+  &:hover::-webkit-scrollbar-thumb {
+      opacity: 1; /* fade in */
+  }
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tabs button {
@@ -1842,6 +1884,46 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
   line-height: 16px;
   border-left: 1px solid var(--feds-test-borderColor);
   width: 340px;
+  overflow: auto;
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(90, 90, 90, 0.4) transparent;
+
+  /* Chrome, Edge, Safari */
+  &::-webkit-scrollbar {
+      width: 8px;
+      background: transparent; /* no gutter like mac */
+  }
+
+  &::-webkit-scrollbar-track {
+      background: transparent; /* no reserved track */
+  }
+
+  &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.35); /* soft gray like macOS */
+      border-radius: 10px;
+      border: 2px solid transparent; /* creates floating effect */
+      background-clip: padding-box;
+      transition: background-color 0.25s ease, opacity 0.25s ease;
+      opacity: 0; /* hidden until scroll */
+  }
+
+  &:hover::-webkit-scrollbar-thumb,
+  &::-webkit-scrollbar-thumb:active {
+      background: rgba(0, 0, 0, 0.55);
+      opacity: 1; /* shows on hover */
+  }
+
+  /* Show scrollbar only when scrolling */
+  &::-webkit-scrollbar-thumb {
+      opacity: 0;
+  }
+
+  &:active::-webkit-scrollbar-thumb,
+  &:focus::-webkit-scrollbar-thumb,
+  &:hover::-webkit-scrollbar-thumb {
+      opacity: 1; /* fade in */
+  }
 }
 
 header.test-nav.dropdown-active .feds-nav .feds-navLink--hoverCaret:after {
@@ -1977,11 +2059,14 @@ header.test-nav .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-p
   font-weight: 800;
   font-size: 24px;
   margin-top: 32px;
-  margin-left: 300px;
+  padding-left: 15%;
   width: 100%;
   max-width: var(--feds-maxWidth-nav);
 }
 
+header.test-nav .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-popup > .feds-menu-content .feds-menu-column .feds-navLink {
+  padding-left: 0;
+}
 
 /*up test*/
 
@@ -2234,6 +2319,10 @@ header.test-nav .feds-popup.loading.hide {
   }
 
   header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup {
+    padding-left: 5%;
+  }
+
+  header.test-nav .feds-nav > .feds-navItem:not(.feds-navItem--megaMenu) > .feds-popup > .feds-menu-content {
     padding-left: 5%;
   }
 }
