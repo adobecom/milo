@@ -550,7 +550,7 @@ export function lingoActive() {
  *   3. server info (with region object lookup)
  */
 export function getUserCountry() {
-  return PAGE_URL.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
 }
 
 export function createTag(tag, attributes, html, options = {}) {
@@ -2097,8 +2097,7 @@ function loadMepLingoIndexes() {
     if (regionKey) {
       prefix = regions[regionKey].prefix;
     }
-  }
-  else if (config.locale?.base) prefix = config.locale.prefix;
+  } else if (config.locale?.base) prefix = config.locale.prefix;
   if (prefix) loadQueryIndexes(prefix);
 }
 
