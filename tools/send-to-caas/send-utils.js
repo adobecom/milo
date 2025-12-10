@@ -1,6 +1,6 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { getMetadata } from '../../libs/utils/utils.js';
-import { LANGS, LOCALES, LANG_FIRST_LOCALES, getPageLocale, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+import { getMetadata, getFederatedContentRoot } from '../../libs/utils/utils.js';
+import { LANGS, LOCALES, getPageLocale, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -293,6 +293,58 @@ const isPagePublished = async () => {
   return false;
 };
 
+async function getLingoSiteLocale(host, path) {
+  let lingoSiteMapping = '';
+  const localeStr = path.split('/')[1];
+  try {
+    let siteId;
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+
+    const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+    const siteLocalesData = configJson['site-locales']?.data ?? [];
+    const getDomain = (p) => p?.split('/*')[0];
+
+    siteQueryIndexMap
+      .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
+        const domain = getDomain(queryIndexWebPath);
+        if (host === domain) {
+          siteId = uniqueSiteId;
+          return;
+        }
+      });
+    siteLocalesData
+      .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
+      .forEach(({ baseSite, regionalSites }) => {
+        if (localeStr === baseSite.split('/')[1]){
+          lingoSiteMapping = {
+            country: 'xx',
+            language: baseSite.split('/')[1],
+          };
+          return;
+        }
+        if (parseList(regionalSites).includes(localeStr)) {
+          if (baseSite === '/') {
+            lingoSiteMapping = {
+              country: localeStr,
+              language: 'en'
+            };
+          }
+          lingoSiteMapping = {
+            country: localeStr,
+            language: baseSite.split('/')[1],
+          };
+          return;
+        }
+      });
+    return lingoSiteMapping;
+  } catch (e) {
+    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+  }
+  return lingoSiteMapping;
+}
+
 const getLanguageFirstCountryAndLang = async (path, origin) => {
   const localeArr = path.split('/');
   let langStr = 'en';
@@ -304,12 +356,12 @@ const getLanguageFirstCountryAndLang = async (path, origin) => {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
   } else {
-    const localeStr = (LANG_FIRST_LOCALES[localeArr[1]] || LANG_FIRST_LOCALES['']).ietf;
-    const [lang = 'en', country = 'xx'] = localeStr;
-    return {
-      country,
-      lang,
-    };
+    const mapping = await getLingoSiteLocale(window.location.hostname, path);
+    countryStr = LOCALES[mapping.country] ?? 'xx';
+    if (typeof countryStr === 'object') {
+      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+    }
+    langStr = mapping.language ?? 'en';
   }
   return {
     country: countryStr,
