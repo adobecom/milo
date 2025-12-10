@@ -6,10 +6,12 @@ on:
     inputs:
       site:
         description: "Site name e.g da-bacom"
-        required: false
-        type: string
+        required: true
+        type: choice
+        options:
+          - da-bacom
       siteRegionPaths:
-        description: "Comma-separated regional paths e.g /au/,/de/"
+        description: "Comma-separated regional paths (e.g. ar,ro) or blank for all regions"
         required: false
         type: string
 

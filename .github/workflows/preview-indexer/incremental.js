@@ -7,6 +7,7 @@ const ORG = 'adobecom';
 const { env } = process;
 const {
   PREVIEW_INDEXER_REPOS,
+  SITE_REGION_PATHS,
   SITE,
 } = env;
 
@@ -20,7 +21,8 @@ for (const repo of filteredRepos) {
   await queue.add(async () => {
     console.log(`Initiating incremental index for ${ORG}/${repo}`);
     const indexer = await initIndexer(ORG, repo, lingoConfigMap);
-    return indexer.incremental();
+    const siteRegionPaths = indexer.normalizeRegionPaths(SITE_REGION_PATHS);
+    return indexer.incremental(siteRegionPaths);
   });
 }
 
