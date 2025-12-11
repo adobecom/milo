@@ -315,13 +315,12 @@ async function getLingoSiteLocale(host, path) {
         const domain = getDomain(queryIndexWebPath);
         if (host === domain) {
           siteId = uniqueSiteId;
-          return;
         }
       });
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
       .forEach(({ baseSite, regionalSites }) => {
-        if (localeStr === baseSite.split('/')[1]){
+        if (localeStr === baseSite.split('/')[1]) {
           lingoSiteMapping = {
             country: 'xx',
             language: baseSite.split('/')[1],
@@ -332,14 +331,13 @@ async function getLingoSiteLocale(host, path) {
           if (baseSite === '/') {
             lingoSiteMapping = {
               country: localeStr,
-              language: 'en'
+              language: 'en',
             };
           }
           lingoSiteMapping = {
             country: localeStr,
             language: baseSite.split('/')[1],
           };
-          return;
         }
       });
     return lingoSiteMapping;
