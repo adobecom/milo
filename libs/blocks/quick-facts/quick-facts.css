@@ -32,11 +32,11 @@
 
 .quick-facts :is(h1, h2, h3, h4, h5, h6) {
   border-inline-start: 2px solid #000;
-  padding-inline-start: 16px;
+  padding-inline-start: 14px;
 }
 
 .quick-facts p {
-  padding-inline-start: 16px;
+  padding-inline-start: 14px;
 }
 
 .quick-facts .fact-list :is(h1, h2, h3, h4, h5, h6) {
