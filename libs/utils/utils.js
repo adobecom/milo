@@ -371,10 +371,20 @@ export const [setConfig, updateConfig, getConfig] = (() => {
           ch_fr: { prefix: '/ch_fr', ietf: 'fr-CH', base: 'fr' },
           lu_fr: { prefix: '/lu_fr', ietf: 'fr-LU', base: 'fr' },
         };
-        config.mepLingoCountryToRegion = { lu_fr: ['lu'] };
+        config.mepLingoCountryToRegion = { lu_fr: ['lu'], ar: ['ae'] };
         const lingoMeta = document.createElement('meta');
         lingoMeta.setAttribute('content', 'on');
-        lingoMeta.setAttribute('name', 'lingo');
+        lingoMeta.setAttribute('name', 'langFirst');
+        document.head.append(lingoMeta);
+      }
+      if (window.location.href.includes('main--da-bacom--adobecom.aem.')
+        && window.location.pathname.startsWith('/es/')) {
+        config.locale.regions = {
+          ar: { prefix: '/ar', ietf: 'es', base: 'es' },
+        };
+        const lingoMeta = document.createElement('meta');
+        lingoMeta.setAttribute('content', 'on');
+        lingoMeta.setAttribute('name', 'langFirst');
         document.head.append(lingoMeta);
       }
       return config;
@@ -1526,7 +1536,8 @@ async function decorateSection(section, idx) {
           link.href = link.href.replace('#_replacecell', '');
         } else if (link.classList.contains('fragment')
           && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
-          && !doNotInline.includes(blockName)) {
+          && !doNotInline.includes(blockName)
+          && link.dataset.mepLingo !== 'true') {
           if (!link.href.includes('#_inline')) {
             link.href = `${link.href}#_inline`;
           }
@@ -1543,7 +1554,7 @@ async function decorateSection(section, idx) {
     links = links.filter((link) => !embeddedLinks.includes(link));
   }
 
-  section.className = `${section.classList.contains('section') ? '' : 'section'} ${section.className}`;
+  section.className = `${section.classList.contains('section') ? section.className : 'section'}`;
   section.dataset.status = 'decorated';
   return {
     blocks: [...links, ...blocks],
@@ -2084,23 +2095,27 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 
 function loadMepLingoIndexes() {
   const config = getConfig();
-  const { regions } = config.locale || {};
+  const { locale } = config || {};
+  const { regions } = locale || {};
   let prefix;
   if (regions && Object.keys(regions).length > 0) {
     const country = getUserCountry();
     const mapping = config.mepLingoCountryToRegion;
 
-    const regionKey = country && mapping
-      ? Object.entries(mapping).find(
-        ([key, countries]) => Array.isArray(countries)
-          && countries.includes(country)
-          && regions[key],
-      )?.[0]
-      : null;
+    let regionKey = Object.entries(regions).find(([key]) => key === country || key === `${country}_${locale.prefix.replace('/', '')}`)?.[0];
+    if (!regionKey) {
+      regionKey = country && mapping
+        ? Object.entries(mapping).find(
+          ([key, countries]) => Array.isArray(countries)
+            && countries.includes(country)
+            && regions[key],
+        )?.[0]
+        : null;
+    }
     if (regionKey) {
       prefix = regions[regionKey].prefix;
     }
-  } else if (config.locale?.base) prefix = config.locale.prefix;
+  } else if (locale?.base) prefix = config.locale.prefix;
   if (prefix) loadQueryIndexes(prefix);
 }
 
