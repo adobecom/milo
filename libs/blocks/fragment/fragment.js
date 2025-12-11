@@ -78,6 +78,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
+  if (!a?.href) return;
   const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href);
   let inline = false;
@@ -104,7 +105,7 @@ export default async function init(a) {
     if (!relHref) return;
   }
 
-  if (a.href.includes('#_inline')) {
+  if (a.href?.includes('#_inline')) {
     inline = true;
     a.href = a.href.replace('#_inline', '');
     relHref = relHref.replace('#_inline', '');
@@ -132,16 +133,6 @@ export default async function init(a) {
     a.dataset.mepLingo && matchingRegion && country && resourcePath && localeCode
   );
 
-  console.log('FRAGMENT INIT:', {
-    href: a.href,
-    hasMepLingo: !!a.dataset.mepLingo,
-    country,
-    localeCode,
-    matchingRegion,
-    shouldFetchMepLingo,
-    resourcePath,
-  });
-
   // Helper to remove mep-lingo row from a container
   const removeMepLingoRow = (container) => {
     const rows = container?.querySelectorAll(':scope > div');
@@ -166,9 +157,8 @@ export default async function init(a) {
     originalBlock = a.closest(`.${blockName}`);
 
     if (originalBlock) {
-      // Move anchor outside block so it doesn't get removed with block
-      const p = createTag('p', null, a);
-      originalBlock.insertAdjacentElement('afterend', p);
+      const wrapper = createTag('div', null, a);
+      originalBlock.insertAdjacentElement('afterend', wrapper);
       if (blockName === 'mep-lingo') originalBlock.remove();
     }
   }
@@ -279,11 +269,9 @@ export default async function init(a) {
   } else if (!shouldFetchMepLingo && isBlockSwap) {
     const blockName = a.dataset.mepLingoBlockSwap;
     if (blockName === 'mep-lingo') {
-      // mep-lingo block with no regional match: load base fragment
       resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
         .catch(() => ({}));
     } else {
-      // Other block swaps with no regional match: remove row, keep original block
       a.parentElement.remove();
       return;
     }
@@ -340,9 +328,9 @@ export default async function init(a) {
     originalSection.innerHTML = '';
     originalSection.append(createTag('div', null, fragment));
   } else {
-    a.parentElement.replaceChild(fragment, a);
+    const anchorParent = a.parentElement;
+    anchorParent.replaceChild(fragment, a);
 
-    // Remove original block if this was a block swap
     originalBlock?.remove();
 
     await loadArea(fragment);
