@@ -440,7 +440,7 @@ body[data-mep-fragments='true'] [data-fragment-default]::before {
   padding: 5px 10px !important;
   margin: 2px;
   color: #000 !important;
-  opacity: 0.7 !important;
+  opacity: 0.9 !important;
   border-radius: 5px;
   box-shadow: 0 3px 8px 1px #808080;
 }
