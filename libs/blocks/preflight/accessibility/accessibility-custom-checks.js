@@ -28,4 +28,5 @@ async function customAccessibilityChecks(config = {}) {
     return [];
   }
 }
+
 export default customAccessibilityChecks;
