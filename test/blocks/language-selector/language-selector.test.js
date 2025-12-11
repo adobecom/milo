@@ -1,8 +1,9 @@
+/* eslint-disable no-underscore-dangle */
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import init from '../../../libs/blocks/language-selector/language-selector.js';
+import init, { getInternationalCookieValue } from '../../../libs/blocks/language-selector/language-selector.js';
 
 const mockLanguageMapping = {
   data: [
@@ -640,6 +641,70 @@ describe('Language Selector Block', async () => {
     await new Promise((resolve) => { setTimeout(resolve, 250); });
     const languageLinks = Array.from(document.querySelectorAll('.language-link'));
     expect(languageLinks.length).to.equal(0);
+  });
+});
+
+describe('Language Selector Block – Analytics', () => {
+  let track;
+  let oldSatellite;
+  beforeEach(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/languages.html' });
+    setConfig({
+      languages: {
+        en: { ietf: 'en', regions: [{ region: 'gb' }] },
+        fr: { ietf: 'fr' },
+      },
+      locales: { '': { ietf: 'en-US' } },
+    });
+    await init(document.querySelector('.language-selector'));
+    oldSatellite = window._satellite;
+    track = sinon.spy();
+    window._satellite = { track };
+    document.querySelector('.feds-regionPicker').click();
+    await new Promise((r) => { setTimeout(r, 50); });
+  });
+  afterEach(() => {
+    window._satellite = oldSatellite;
+    sinon.restore();
+  });
+
+  it('tracks dismissal', async () => {
+    track.resetHistory();
+    document.body.click();
+    await Promise.resolve();
+    expect(track.calledOnce).to.be.true;
+    expect(track.firstCall.args[1].data.web.webInteraction.name)
+      .to.equal('language-selector:dismissed');
+  });
+
+  it('tracks language switch', async () => {
+    sinon.stub(window, 'fetch').resolves({ ok: true });
+    sinon.stub(window, 'open');
+    track.resetHistory();
+    [...document.querySelectorAll('.language-link')]
+      .find((l) => !l.closest('.selected'))
+      .click();
+    await Promise.resolve();
+    expect(track.calledOnce).to.be.true;
+    expect(track.firstCall.args[1].data.web.webInteraction.name).to.match(/^language-switch:/);
+  });
+});
+
+describe('getInternationalCookieValue', () => {
+  afterEach(() => {
+    setConfig({});
+  });
+
+  [
+    { prefix: '', expected: 'us' },
+    { prefix: 'de', expected: 'de' },
+    { prefix: 'en/gb', expected: 'uk' },
+    { prefix: 'ja', expected: 'jp', config: { languages: { ja: { region: 'jp' } } } },
+  ].forEach(({ prefix, expected, config = {} }) => {
+    it(`returns ${expected} for prefix ${prefix || 'empty'}`, () => {
+      setConfig(config);
+      expect(getInternationalCookieValue(prefix)).to.equal(expected);
+    });
   });
 });
 

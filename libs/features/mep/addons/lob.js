@@ -7,7 +7,7 @@ export async function getSpectraLOB(lastVisitedPage) {
   const [, ECID] = getECID.split('|');
   const domainPrefix = getConfig()?.env?.name === 'prod' ? '' : 'stage.';
   let url = `https://www.${domainPrefix}adobe.com/int/v1/aep/events/webpage?ecid=${ECID}`;
-  if (lastVisitedPage) url = `${url}&lastVisitedPage=${lastVisitedPage}`;
+  if (lastVisitedPage) url = `${url}&lastVisitedPage=${encodeURIComponent(lastVisitedPage)}`;
 
   try {
     const rawResponse = await fetch(url, {

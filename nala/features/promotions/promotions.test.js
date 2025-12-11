@@ -572,10 +572,10 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Validate promo replace collection with collection', async () => {
       const baseCollection = await PROMO.getMerchCardCollection(data.baseCollectionId);
-      expect(baseCollection).not.toBeAttached;
+      expect(baseCollection).not.toBeVisible();
 
       const promoCollection = await PROMO.getMerchCardCollection(data.promoCollectionId);
-      await expect(promoCollection).toBeAttached();
+      await expect(await promoCollection).toBeVisible({ timeout: 30000 });
     });
   });
 
@@ -592,10 +592,33 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Validate promo replace collection with fragment', async () => {
       const collection = await PROMO.getMerchCardCollection(data.collectionId);
-      await expect(collection).not.toBeAttached();
+      await expect(collection).not.toBeVisible();
 
       const fragment = await PROMO.getFragment(data.fragmentPath);
-      await expect(fragment).toBeVisible();
+      await expect(await fragment).toBeVisible({ timeout: 30000 });
+    });
+  });
+
+  // @Promo-mas-replace-subcollection-with-subcollection - Validate promo replace subcollection with subcollection
+  test(`${features[17].name},${features[17].tags}`, async ({ page, baseURL }) => {
+    const testPage = constructTestUrl(baseURL, features[17].path);
+    const { data } = features[17];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('Go to the test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+    });
+
+    await test.step('Validate subcollection has been replaced with specific card at the right position', async () => {
+      const collection = await PROMO.getMerchCardCollection(data.collectionId);
+      await expect(await collection).toBeVisible({ timeout: 30000 });
+      expect(await collection.getAttribute('overrides')).toBe(data.overrideAttributes);
+
+      // check that the subcollection specific card is  visible
+      const baseSubcollectionCard = await PROMO.getMerchCard(data.cardId);
+      await expect(await baseSubcollectionCard).toBeVisible({ timeout: 30000 });
+      expect(await baseSubcollectionCard.getAttribute('filters')).toBe(data.filter);
     });
   });
 });

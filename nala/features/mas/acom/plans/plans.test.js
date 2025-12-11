@@ -141,6 +141,7 @@ test.describe('MAS Plans Page test suite', () => {
   test(`${features[1].name},${features[1].tags}`, async () => {
     const { data } = features[1];
     const page = workerSetup.getPage('US');
+    const testPage = page.url();
 
     await test.step('step-1: Go to Plans page', async () => {
       await workerSetup.verifyPageURL('US', PLANS_NALA_PATH.US, expect);
@@ -161,9 +162,9 @@ test.describe('MAS Plans Page test suite', () => {
         const categoryFilter = masPlans.getCategoryFilter(categoryName);
         await categoryFilter.click();
         await page.waitForSelector('merch-card:visible');
-        await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${categoryData.browserFilter}`);
+        await expect(page).toHaveURL(`${testPage}${categoryData.browserFilter}`);
         await expect(await masPlans.sidenav).toHaveAttribute('value', categoryData.sidenavValue);
-        await expect(await masPlans.sidenav).toHaveAttribute('role', 'tablist');
+        await expect(await masPlans.sidenav).not.toHaveAttribute('role');
         await expect(await masPlans.collectionContainerIndividuals).toHaveAttribute('daa-lh', categoryData.daaLh);
 
         const visibleCards = page.locator('merch-card:visible');

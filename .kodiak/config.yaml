@@ -15,6 +15,9 @@ notifications:
       filters:
         include:
           risk_rating: R3 # Please do not change this unless instructed to do so.
+        exclude:
+          tool_type:
+            - "grype" # Exclude SBOM tickets which duplicate findings already created by snyk
       fields:
         assignee:
           name: sghimpos
