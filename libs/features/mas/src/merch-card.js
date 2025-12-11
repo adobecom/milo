@@ -211,6 +211,7 @@ export class MerchCard extends LitElement {
 
     willUpdate(changedProperties) {
         if (changedProperties.has('variant') || !this.variantLayout) {
+            this.variantLayout?.disconnectedCallbackHook();
             this.variantLayout = getVariantLayout(this);
             this.variantLayout?.connectedCallbackHook();
         }
@@ -468,6 +469,10 @@ export class MerchCard extends LitElement {
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
         this.addEventListener('change', this.changeHandler);
+
+        if (this.variantLayout) {
+            this.variantLayout.connectedCallbackHook();
+        }
 
         if (!this.aemFragment) {
             setTimeout(() => this.checkReady(), 0);
