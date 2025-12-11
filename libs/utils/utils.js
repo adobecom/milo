@@ -520,24 +520,8 @@ export function lingoActive() {
   return ['true', 'on'].includes(langFirst);
 }
 
-/**
- * Get user's country code for mep-lingo region detection.
- * TODO: Finalize source of truth with Victor/Vivian. Current priority:
- *   1. akamaiLocale URL param (for testing/override)
- *   2. akamai sessionStorage
- *   3. Server timing geo header
- * Proposed priority (needs discussion):
- *   1. param override
- *   2. cookie (TBD if using cookie)
- *   3. server info (with region object lookup)
- */
 export function getUserCountry() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const akamaiParams = urlParams.get('akamaiLocale')?.toLowerCase();
-  const akamaiStored = sessionStorage.getItem('akamai');
-  const performanceGeo = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
-    ?.find((t) => t?.name === 'geo')?.description?.toLowerCase();
-  return akamaiParams || akamaiStored || performanceGeo;
+  return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
 }
 
 export function createTag(tag, attributes, html, options = {}) {
