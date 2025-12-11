@@ -41,6 +41,10 @@
   cursor: pointer;
 }
 
+.language-banner-link:hover {
+  color: #FFF;
+}
+
 .language-banner-close {
   width: 20px;
   height: 20px;

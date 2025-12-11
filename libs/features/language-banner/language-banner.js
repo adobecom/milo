@@ -53,11 +53,11 @@ async function getTranslatedPage(marketPrefix, config) {
 }
 
 function buildBanner(market, translatedUrl) {
-  const banner = createTag('div', { class: 'language-banner' });
+  const banner = createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' });
   const messageContainer = createTag('div', { class: 'language-banner-content' });
   const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} ${market.languageName}.`);
-  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl }, market.continueText || 'Continue');
-  const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close' });
+  const link = createTag('a', { class: 'language-banner-link', href: translatedUrl, 'daa-ll': `${market.prefix || 'us'}|Continue` }, market.continueText || 'Continue');
+  const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close', 'daa-ll': 'Close' });
   closeButton.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path d="M10 0.5C15.2467 0.5 19.5 4.75329 19.5 10C19.5 15.2467 15.2467 19.5 10 19.5C4.75329 19.5 0.5 15.2467 0.5 10C0.5 4.75329 4.75329 0.5 10 0.5Z" stroke="white"/>
@@ -71,6 +71,25 @@ function buildBanner(market, translatedUrl) {
   return banner;
 }
 
+function fireAnalyticsEvent(event) {
+  const data = {
+    xdm: {},
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
+  window._satellite?.track('event', data);
+}
+
+export function sendAnalytics(event) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(event);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(event);
+    }, { once: true });
+  }
+}
+
 async function showBanner(market, config, translatedUrl) {
   console.log('language-banner: showing banner for market:', market);
   const banner = buildBanner(market, translatedUrl);
@@ -82,15 +101,17 @@ async function showBanner(market, config, translatedUrl) {
     e.preventDefault();
     const { setInternational } = await import('../../utils/utils.js');
     setInternational(market.prefix);
-    window.location.href = translatedUrl;
+    // window.location.href = translatedUrl;
   });
 
   banner.querySelector('.language-banner-close').addEventListener('click', () => {
-    const pageLangPrefix = config.locale.prefix?.replace('/', '') || 'us';
-    const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
-    document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
-    banner.remove();
+    // const pageLangPrefix = config.locale.prefix?.replace('/', '') || 'us';
+    // const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
+    // document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
+    // banner.remove();
   });
+  const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
+  sendAnalytics(new Event(`${market.prefix || 'us'}-${pagePrefix}|language-banner`),);
 }
 
 /**
