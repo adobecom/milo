@@ -75,6 +75,15 @@ describe('Modals', () => {
     expect(document.getElementById('milo')).not.to.exist;
   });
 
+  it('Closes a modal on manual hash chagne', async () => {
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+    expect(window.location.hash).to.be.empty;
+    expect(document.getElementById('milo')).not.to.exist;
+  });
+
   it('Opens an inherited modal', async () => {
     const meta = document.createElement('meta');
     meta.name = '-otis';
