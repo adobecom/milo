@@ -640,8 +640,16 @@ export function getMepPopup(mepConfig, isMmm = false) {
         </div>`;
     }
 
-    const hasDownstream = regionKeys.length > 0;
+    // TODO: Re-enable upstream/downstream feature after refinement
+    // const hasDownstream = regionKeys.length > 0;
 
+    mepLingoSectionHTML = `
+      <div class="mep-section mep-lingo-section">
+        <h6 class="mep-manifest-page-info-title">MEP Lingo</h6>
+        ${regionDropdownHTML}
+      </div>`;
+
+    /* Temporarily commented out - Upstream/Downstream Pages feature
     mepLingoSectionHTML = `
       <div class="mep-section mep-lingo-section">
         <h6 class="mep-manifest-page-info-title">MEP Lingo</h6>
@@ -657,6 +665,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
         </div>
         ${regionDropdownHTML}
       </div>`;
+    */
   }
 
   mepOptions.innerHTML = `
@@ -729,13 +738,14 @@ function createPreviewPill() {
   addPillEventListeners(pill);
 
   if (lingoActive()) {
-    if (config?.locale?.base !== undefined) {
-      updateUpstreamPageElement('mepUpstreamPage', config);
-    }
-    const regions = config?.locale?.regions || {};
-    if (Object.keys(regions).length > 0) {
-      updateDownstreamPagesElement('mepDownstreamPages', config);
-    }
+    // TODO: Re-enable upstream/downstream feature after refinement
+    // if (config?.locale?.base !== undefined) {
+    //   updateUpstreamPageElement('mepUpstreamPage', config);
+    // }
+    // const regions = config?.locale?.regions || {};
+    // if (Object.keys(regions).length > 0) {
+    //   updateDownstreamPagesElement('mepDownstreamPages', config);
+    // }
   }
 }
 function addHighlightData(manifests) {
