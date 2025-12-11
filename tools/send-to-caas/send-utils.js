@@ -324,7 +324,7 @@ async function getLingoSiteLocale(host, path) {
           };
           return;
         }
-        if (parseList(regionalSites).includes(localeStr)) {
+        if (regionalSites.includes(localeStr)) {
           if (baseSite === '/') {
             lingoSiteMapping = {
               country: localeStr,
@@ -364,8 +364,8 @@ const getLanguageFirstCountryAndLang = async (path, origin) => {
     langStr = mapping.language ?? 'en';
   }
   return {
-    country: countryStr,
-    lang: langStr,
+    country: countryStr.toLowerCase(),
+    lang: langStr.toLowerCase(),
   };
 };
 
