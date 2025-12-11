@@ -347,7 +347,7 @@ async function getLingoSiteLocale(host, path) {
   return lingoSiteMapping;
 }
 
-const getLanguageFirstCountryAndLang = async (path, origin) => {
+const getLanguageFirstCountryAndLang = async (path, origin, host) => {
   const localeArr = path.split('/');
   let langStr = 'en';
   let countryStr = 'xx';
@@ -358,7 +358,7 @@ const getLanguageFirstCountryAndLang = async (path, origin) => {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
   } else {
-    const mapping = await getLingoSiteLocale(window.location.hostname, path);
+    const mapping = await getLingoSiteLocale(host, path);
     countryStr = LOCALES[mapping.country] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
@@ -374,7 +374,7 @@ const getLanguageFirstCountryAndLang = async (path, origin) => {
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
   if (options.languageFirst) {
-    const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl, options.host);
+    const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl, options.repo, options.host)
     return `${lang}-${country}`;
   }
   if (!getLocale) {
@@ -390,7 +390,7 @@ const getBulkPublishLangAttr = async (options) => {
 const getCountryAndLang = async (options, origin) => {
   const langFirst = getMetadata('langfirst');
   if (langFirst) {
-    return getLanguageFirstCountryAndLang(window.location.pathname, origin);
+    return getLanguageFirstCountryAndLang(window.location.pathname, origin, window.location.hostname);
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
