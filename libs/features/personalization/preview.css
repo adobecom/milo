@@ -374,18 +374,21 @@ body[data-mep-highlight='true'] [data-mep-lingo-roc] {
   outline: 3px #28a745 dashed !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
+  position: relative !important;
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
   outline: 3px #ffc107 dashed !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
+  position: relative !important;
 }
 
 body[data-mep-fragments='true'] [data-fragment-default] {
   outline: 3px #6c757d dashed !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
+  position: relative !important;
 }
 
 body[data-mep-highlight='true'] [data-code-manifest-id] {
