@@ -309,6 +309,7 @@ async function getLingoSiteLocale(host, path) {
     const siteLocalesData = configJson['site-locales']?.data ?? [];
     const getDomain = (p) => p?.split('/*')[0];
 
+    // this works for bacom - but will need to be verified on other sites
     siteQueryIndexMap
       .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
         const domain = getDomain(queryIndexWebPath);
