@@ -374,7 +374,11 @@ const getLanguageFirstCountryAndLang = async (path, origin, host) => {
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
   if (options.languageFirst) {
-    const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl, options.repo, options.host)
+    const { country, lang } = await getLanguageFirstCountryAndLang(
+      options.prodUrl,
+      options.repo,
+      options.host,
+    );
     return `${lang}-${country}`;
   }
   if (!getLocale) {
@@ -390,7 +394,11 @@ const getBulkPublishLangAttr = async (options) => {
 const getCountryAndLang = async (options, origin) => {
   const langFirst = getMetadata('langfirst');
   if (langFirst) {
-    return getLanguageFirstCountryAndLang(window.location.pathname, origin, window.location.hostname);
+    return getLanguageFirstCountryAndLang(
+      window.location.pathname,
+      origin,
+      window.location.hostname,
+    );
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
