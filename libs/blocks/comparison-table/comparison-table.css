@@ -112,10 +112,6 @@
   margin: 0 auto;
 }
 
-.comparison-table .table-row-header a {
-  display: contents;
-}
-
 .comparison-table span[data-tooltip] .icon-milo:hover {
   cursor: pointer;
 }
@@ -142,6 +138,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  white-space: pre-wrap;
   word-break: break-word;
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
@@ -433,6 +430,7 @@
   }
 
   .comparison-table .table-row-header {
+    display: inline;
     text-align: start;
     padding: var(--spacing-s) var(--spacing-s) var(--spacing-s) 0;
     grid-column: auto;
