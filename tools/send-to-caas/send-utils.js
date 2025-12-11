@@ -294,7 +294,10 @@ const isPagePublished = async () => {
 };
 
 async function getLingoSiteLocale(host, path) {
-  let lingoSiteMapping = '';
+  let lingoSiteMapping = {
+    country: 'xx',
+    language: 'en',
+  };
   const localeStr = path.split('/')[1];
   try {
     let siteId;
