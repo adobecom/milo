@@ -67,7 +67,7 @@ export const getChecksSuite = () => {
   if (checksSuite) return checksSuite;
   return new Promise((resolve) => {
     const config = getConfig();
-    fetch(`${getFederatedContentRoot()}/federal/preflight/preflight-config.json`)
+    fetch(`${getFederatedContentRoot()}/federal/preflight/preflight-config.json?sheet=aso`)
       .then((r) => r.json())
       .then((consumersList) => {
         const isAsoEnabled = consumersList?.data?.find((item) => item.value === config.imsClientId);
