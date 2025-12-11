@@ -81,7 +81,6 @@ export default function addTooltipListeners() {
         setTooltipPosition([event.target]);
       } else if (['mouseleave', 'blur'].includes(eventType)) {
         event.target.classList.add('hide-tooltip');
-        event.target.blur();
       } else if (eventType === 'keydown' && event.key === 'Escape') {
         const tooltip = document.querySelector('.milo-tooltip:not(.hide-tooltip)');
         tooltip?.classList.add('hide-tooltip');
