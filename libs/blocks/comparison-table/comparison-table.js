@@ -277,9 +277,10 @@ function decorateTableToggleButton({
   });
   tableChild.classList.add('table-column-header');
   const firstChild = tableChild.children[0];
-  const isExpanded = expandMetadata
-    ? expandMetadata.includes(el.querySelectorAll('.table-container').length + 1)
-    : el.querySelectorAll('.table-container').length === 0;
+  const currentSectionIndex = el.querySelectorAll('.table-container').length + 1;
+  const isExpanded = expandMetadata === 'all'
+    || expandMetadata?.includes(currentSectionIndex)
+    || (!expandMetadata && currentSectionIndex === 1);
   tableElement.classList.toggle('hide', !isExpanded);
   const buttonElement = createTag('button', { 'aria-expanded': !!isExpanded });
 
@@ -317,7 +318,7 @@ function processCellWithSeparator(child, separatorIndex) {
 function processCellWithoutSeparator(child) {
   const cellDiv = createTag('div');
   if (child.children.length > 1 || !child.textContent.trim()) {
-    [...child.children].forEach((element) => cellDiv.appendChild(element));
+    cellDiv.append(...child.childNodes);
   } else {
     cellDiv.appendChild(createTag('p', {}, child.innerHTML));
   }
@@ -368,10 +369,10 @@ function decorateTable({ el, tableChildren, expandMetadata }) {
 }
 
 function decorateTables(el, children) {
-  const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
-  const expandMetadata = sectionMetadata
-    ? getSectionMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => parseInt(item.trim(), 10))
-    : null;
+  const expandText = getSectionMetadata(el.closest('.section')?.querySelector('.section-metadata'))?.expand?.text;
+  const expandMetadata = expandText === 'all'
+    ? expandText
+    : expandText?.split(',').map((item) => parseInt(item.trim(), 10));
 
   const tableGroups = [];
   let currentGroup = [];
