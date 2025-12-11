@@ -36,7 +36,7 @@
 }
 
 .quick-facts p {
-  padding-inline-start: 14px;
+  padding-inline-start: 16px;
 }
 
 .quick-facts .fact-list :is(h1, h2, h3, h4, h5, h6) {
