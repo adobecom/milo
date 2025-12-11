@@ -1031,10 +1031,10 @@ html[dir="rtl"] .carousel .move-indicators {
     align-self: stretch;
     box-shadow: 3px 0px 4px 0 rgba(0, 0, 0, 0.1);
   }
-.section:has(.carousel.s2a-tabs) {
-  max-width: 2000px;
-  margin: 0 auto;
-}
+  .carousel-container:has(.s2a-tabs) {
+    max-width: 2000px;
+    margin: 0 auto;
+  }
   .carousel.s2a-whatsnew .carousel-slides {
     left: 0 !important;
   }
