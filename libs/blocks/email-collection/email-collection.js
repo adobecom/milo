@@ -14,6 +14,7 @@ import {
   runtimePost,
   redirectToSignIn,
   isUserGuest,
+  validateImsToken,
   FORM_FIELDS,
 } from './utils.js';
 
@@ -206,6 +207,7 @@ async function decorateInput(key, value) {
 }
 
 async function submitForm(form) {
+  await validateImsToken();
   const isGuest = await isUserGuest();
   if (signIn && isGuest) {
     await redirectToSignIn(dialog);
@@ -509,6 +511,7 @@ async function checkIsSubscribed() {
 }
 
 async function decorate(el, blockChildren) {
+  await validateImsToken();
   const isGuest = await isUserGuest();
   if (signIn && isGuest) {
     await redirectToSignIn(dialog);
