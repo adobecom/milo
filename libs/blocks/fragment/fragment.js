@@ -277,7 +277,16 @@ export default async function init(a) {
       }
     }
   } else if (!shouldFetchMepLingo && isBlockSwap) {
-    a.parentElement.remove();
+    const blockName = a.dataset.mepLingoBlockSwap;
+    if (blockName === 'mep-lingo') {
+      // mep-lingo block with no regional match: load base fragment
+      resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+        .catch(() => ({}));
+    } else {
+      // Other block swaps with no regional match: remove row, keep original block
+      a.parentElement.remove();
+      return;
+    }
   } else {
     resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
       .catch(() => ({}));
