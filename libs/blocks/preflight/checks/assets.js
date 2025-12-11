@@ -19,10 +19,20 @@ function loadVideo(asset) {
     && asset.videoWidth > 0) return Promise.resolve();
 
   return new Promise((resolve) => {
-    if (!asset.querySelector('source')) {
-      asset.appendChild(createTag('source', { src: asset.getAttribute('data-video-source'), type: 'video/mp4' }));
+    const dataSource = asset.getAttribute('data-video-source');
+    const existingSource = asset.querySelector('source');
+
+    if (!existingSource && !dataSource) {
+      resolve();
+      return;
     }
-    ['loadedmetadata', 'error'].forEach((evt) => asset.addEventListener(evt, resolve, { once: true }));
+
+    if (!existingSource && dataSource) {
+      asset.appendChild(createTag('source', { src: dataSource, type: 'video/mp4' }));
+    }
+    ['loadedmetadata', 'error'].forEach((evt) => asset.addEventListener(evt, (event) => {
+      resolve(event);
+    }, { once: true }));
     asset.load();
   });
 }
