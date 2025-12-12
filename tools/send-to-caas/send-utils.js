@@ -293,7 +293,8 @@ const isPagePublished = async () => {
   return false;
 };
 
-async function getLingoSiteLocale(host, path) {
+async function getLingoSiteLocale(origin, path) {
+  const host = origin.toLowerCase();
   let lingoSiteMapping = {
     country: 'xx',
     language: 'en',
@@ -307,15 +308,14 @@ async function getLingoSiteLocale(host, path) {
 
     const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
     const siteLocalesData = configJson['site-locales']?.data ?? [];
-    const getDomain = (p) => p?.split('/*')[0];
 
     // this works for bacom - but will need to be verified on other sites
     siteQueryIndexMap
-      .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
-        const domain = getDomain(queryIndexWebPath);
-        if (host === domain) {
+      .forEach(({ uniqueSiteId, caasOrigin }) => {
+        if (host === caasOrigin) {
           siteId = uniqueSiteId;
-        }
+        };
+        return;
       });
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
@@ -347,7 +347,7 @@ async function getLingoSiteLocale(host, path) {
   return lingoSiteMapping;
 }
 
-const getLanguageFirstCountryAndLang = async (path, origin, host) => {
+export const getLanguageFirstCountryAndLang = async (path, origin) => {
   const localeArr = path.split('/');
   let langStr = 'en';
   let countryStr = 'xx';
@@ -358,7 +358,7 @@ const getLanguageFirstCountryAndLang = async (path, origin, host) => {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
   } else {
-    const mapping = await getLingoSiteLocale(host, path);
+    const mapping = await getLingoSiteLocale(origin, path);
     countryStr = LOCALES[mapping.country] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
@@ -377,7 +377,6 @@ const getBulkPublishLangAttr = async (options) => {
     const { country, lang } = await getLanguageFirstCountryAndLang(
       options.prodUrl,
       options.repo,
-      options.host,
     );
     return `${lang}-${country}`;
   }
@@ -397,7 +396,6 @@ const getCountryAndLang = async (options, origin) => {
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
       origin,
-      window.location.hostname,
     );
   }
   /* c8 ignore next */
