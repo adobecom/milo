@@ -18,6 +18,15 @@ export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 export const WCS_LANDSCAPE = 'PUBLISHED';
 export const WCS_LANDSCAPE_DRAFT = 'DRAFT';
 export const LANDSCAPE_URL_PARAM = 'commerce.landscape';
+export const DEFAULTS_URL_PARAM = 'commerce.defaults';
+
+function isMasDefaultsEnabled() {
+  const searchParameters = new URLSearchParams(window.location.search);
+  const defaults = searchParameters.get(DEFAULTS_URL_PARAM) || 'on';
+  return defaults === 'on';
+}
+
+const masDefaultsEnabled = isMasDefaultsEnabled();
 
 /**
  * Maps Franklin page metadata to OST properties.
@@ -35,8 +44,10 @@ const priceDefaultOptions = {
   exclusive: false,
 };
 
-const updateParams = (params, key, value) => {
-  if (value !== priceDefaultOptions[key]) {
+const updateParams = (params, key, value, cs) => {
+  let defaultValue = priceDefaultOptions[key];
+  if (key === 'seat') defaultValue = cs !== 'INDIVIDUAL';
+  if (value !== defaultValue) {
     params.set(key, value);
   }
 };
@@ -82,7 +93,7 @@ export const createLinkMarkup = (
         forceTaxExclusive,
       } = options;
       updateParams(params, 'term', displayRecurrence);
-      updateParams(params, 'seat', displayPerUnit);
+      updateParams(params, 'seat', displayPerUnit, masDefaultsEnabled ? offer.customer_segment : null);
       updateParams(params, 'tax', displayTax);
       updateParams(params, 'old', displayOldPrice);
       updateParams(params, 'exclusive', forceTaxExclusive);
@@ -117,7 +128,11 @@ export async function loadOstEnv() {
   }
   /* c8 ignore next */
   const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
-  await initService(true, { 'allow-override': 'true' });
+  const attributes = { 'allow-override': 'true' };
+  if (isMasDefaultsEnabled) {
+    attributes['data-mas-ff-defaults'] = 'on';
+  }
+  await initService(true, attributes);
   // Load commerce.js based on masLibs parameter
   await loadMasComponent(MAS_COMMERCE_SERVICE);
 
@@ -135,7 +150,7 @@ export async function loadOstEnv() {
 
   const defaultPlaceholderOptions = Object.fromEntries([
     ['term', 'displayRecurrence', 'true'],
-    ['seat', 'displayPerUnit', 'true'],
+    ['seat', 'displayPerUnit', masDefaultsEnabled ? null : 'true'],
     ['tax', 'displayTax'],
     ['old', 'displayOldPrice'],
   ].map(([key, targetKey, defaultValue = false]) => {
@@ -269,20 +284,35 @@ export async function loadOstEnv() {
   };
 }
 
-function addLandscapeToggle(el, ostEnv) {
-  const { base } = getConfig();
-  loadStyle(`${base}/blocks/graybox/switch.css`);
-  const toggleContainer = createTag('span', { class: 'landscape-toggle' }, null, { parent: el });
-  const switchDiv = createTag('div', { class: 'spectrum-Switch' }, null, { parent: toggleContainer });
+function addToggleSwitch(container, label, checked, onChange) {
+  const switchDiv = createTag('div', { class: 'spectrum-Switch' }, null, { parent: container });
   const input = createTag('input', { type: 'checkbox', class: 'spectrum-Switch-input', id: 'gb-overlay-toggle' }, null, { parent: switchDiv });
   createTag('span', { class: 'spectrum-Switch-switch' }, null, { parent: switchDiv });
-  createTag('label', { class: 'spectrum-Switch-label', for: 'gb-overlay-toggle' }, 'Draft landscape offer', { parent: switchDiv });
+  createTag('label', { class: 'spectrum-Switch-label', for: 'gb-overlay-toggle' }, label, { parent: switchDiv });
+  input.checked = checked;
+  input.addEventListener('change', onChange);
+}
 
-  input.checked = ostEnv.landscape === WCS_LANDSCAPE_DRAFT;
-  input.addEventListener('change', (e) => {
-    const landscape = e.target.checked ? WCS_LANDSCAPE_DRAFT : WCS_LANDSCAPE;
+function addToggleSwitches(el, ostEnv) {
+  const { base } = getConfig();
+  loadStyle(`${base}/blocks/graybox/switch.css`);
+  const toggleContainer = createTag('span', { class: 'toggle-switch' }, null, { parent: el });
+  addToggleSwitch(toggleContainer, 'Draft landscape offer', ostEnv.landscape === WCS_LANDSCAPE_DRAFT, (e) => {
     const url = new URL(window.location.href);
-    url.searchParams.set(LANDSCAPE_URL_PARAM, landscape);
+    if (e.target.checked) {
+      url.searchParams.set(LANDSCAPE_URL_PARAM, WCS_LANDSCAPE_DRAFT);
+    } else {
+      url.searchParams.delete(LANDSCAPE_URL_PARAM);
+    }
+    window.location.href = url.toString();
+  });
+  addToggleSwitch(toggleContainer, 'MAS defaults', masDefaultsEnabled, (e) => {
+    const url = new URL(window.location.href);
+    if (!e.target.checked) {
+      url.searchParams.set(DEFAULTS_URL_PARAM, 'off');
+    } else {
+      url.searchParams.delete(DEFAULTS_URL_PARAM);
+    }
     window.location.href = url.toString();
   });
 }
@@ -303,7 +333,7 @@ export default async function init(el) {
       ...ostEnv,
       rootElement: el.firstElementChild,
     });
-    addLandscapeToggle(el, ostEnv);
+    addToggleSwitches(el, ostEnv);
   }
 
   if (ostEnv.aosAccessToken) {

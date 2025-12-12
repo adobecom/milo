@@ -1,7 +1,11 @@
-.landscape-toggle {
+.toggle-switch {
   position: absolute;
   top: 15px;
   right: 25px;
+}
+
+.toggle-switch .spectrum-Switch:first-child {
+    margin-right: 15px;
 }
 
 /* Spectrum Switch */
