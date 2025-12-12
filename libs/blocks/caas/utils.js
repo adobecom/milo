@@ -611,7 +611,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
   }
   return {
     country: countryStr.toLowerCase(),
-    lang: langStr.toLowerCase(),
+    language: langStr.toLowerCase(),
   };
 };
 
