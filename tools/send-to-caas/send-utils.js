@@ -360,7 +360,7 @@ async function getLingoSiteLocale(origin, path) {
   return lingoSiteMapping;
 }
 
-const getLanguageFirstCountryAndLang = async (path, origin) => {
+export const getLanguageFirstCountryAndLang = async (path, origin) => {
   const localeArr = path.split('/');
   let langStr = 'en';
   let countryStr = 'xx';
