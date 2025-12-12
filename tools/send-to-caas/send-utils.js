@@ -1,6 +1,12 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata, getFederatedContentRoot } from '../../libs/utils/utils.js';
-import { LANGS, LOCALES, getPageLocale, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+import { LANGS,
+  LOCALES, 
+  getPageLocale,
+  getGrayboxExperienceId,
+  getLanguageFirstCountryAndLang,
+  getLingoSiteLocale,
+} from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -359,30 +365,6 @@ async function getLingoSiteLocale(origin, path) {
   }
   return lingoSiteMapping;
 }
-
-export const getLanguageFirstCountryAndLang = async (path, origin) => {
-  const localeArr = path.split('/');
-  let langStr = 'en';
-  let countryStr = 'xx';
-  if (origin.toLowerCase() === 'news') {
-    langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
-    countryStr = LOCALES[localeArr[2]] ?? 'xx';
-    if (typeof countryStr === 'object') {
-      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
-    }
-  } else {
-    const mapping = await getLingoSiteLocale(origin, path);
-    countryStr = LOCALES[mapping.country] ?? 'xx';
-    if (typeof countryStr === 'object') {
-      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
-    }
-    langStr = mapping.language ?? 'en';
-  }
-  return {
-    country: countryStr.toLowerCase(),
-    lang: langStr.toLowerCase(),
-  };
-};
 
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();

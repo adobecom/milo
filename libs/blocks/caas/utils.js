@@ -8,7 +8,6 @@ import {
   localizeLinkAsync,
 } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
-import { getLanguageFirstCountryAndLang } from '../../tools/send-to-caas/send-utils.js'; 
 import getUuid from '../../utils/getUuid.js';
 
 export const LANGS = {
@@ -517,6 +516,104 @@ const getFilterArray = async (state, country, lang, strs) => {
   }
 
   return filters;
+};
+
+async function getLingoSiteLocale(origin, path) {
+  const host = origin.toLowerCase();
+  let lingoSiteMapping = {
+    country: 'xx',
+    language: 'en',
+  };
+  
+  // Extract pathname from URL if path includes domain
+  let pathname = path;
+  if (path.includes('://') || !path.startsWith('/')) {
+    try {
+      const url = new URL(path.startsWith('http') ? path : `https://${path}`);
+      pathname = url.pathname;
+    } catch (e) {
+      console.warn('[getLingoSiteLocale] Could not parse as URL, using as-is:', path);
+      // If it doesn't start with /, try to extract pathname manually
+      if (!path.startsWith('/')) {
+        const pathParts = path.split('/');
+        // Remove domain part (first element)
+        pathname = '/' + pathParts.slice(1).join('/');
+      }
+    }
+  }
+  const localeStr = pathname.split('/')[1];
+
+  try {
+    let siteId;
+    const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+
+    const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+    const siteLocalesData = configJson['site-locales']?.data ?? [];
+
+    // Map origin (caasOrigin) to uniqueSiteId for locale lookup
+    siteQueryIndexMap
+      .forEach(({ uniqueSiteId, caasOrigin }) => {
+        if (host === caasOrigin) {
+          siteId = uniqueSiteId;
+        } else {
+          window.lana?.log('[getLingoSiteLocale] No match: host', ost, '!== caasOrigin', caasOrigin);
+        }
+      });
+
+    siteLocalesData
+      .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
+      .forEach(({ baseSite, regionalSites }) => {
+        if (localeStr === baseSite.split('/')[1]) {
+          lingoSiteMapping = {
+            country: 'xx',
+            language: baseSite.split('/')[1],
+          };
+          return;
+        }
+        if (regionalSites.includes(localeStr)) {
+          if (baseSite === '/') {
+            lingoSiteMapping = {
+              country: localeStr,
+              language: 'en',
+            };
+          }
+          lingoSiteMapping = {
+            country: localeStr,
+            language: baseSite.split('/')[1],
+          };
+        }
+      });
+    return lingoSiteMapping;
+  } catch (e) {
+    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+  }
+  return lingoSiteMapping;
+}
+
+export const getLanguageFirstCountryAndLang = async (path, origin) => {
+  const localeArr = path.split('/');
+  let langStr = 'en';
+  let countryStr = 'xx';
+  if (origin.toLowerCase() === 'news') {
+    langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
+    countryStr = LOCALES[localeArr[2]] ?? 'xx';
+    if (typeof countryStr === 'object') {
+      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+    }
+  } else {
+    const mapping = await getLingoSiteLocale(origin, path);
+    countryStr = LOCALES[mapping.country] ?? 'xx';
+    if (typeof countryStr === 'object') {
+      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+    }
+    langStr = mapping.language ?? 'en';
+  }
+  return {
+    country: countryStr.toLowerCase(),
+    lang: langStr.toLowerCase(),
+  };
 };
 
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
