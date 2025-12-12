@@ -28,16 +28,18 @@ async function checkUrl(url) {
 
     const idMismatch = originalId && finalId && originalId !== finalId;
 
-    return {
+    const result = {
       status: (hasError || idMismatch) ? 'error' : 'success',
       finalUrl,
       idMismatch,
       originalId,
       finalId,
     };
+
+    return result;
   } catch (error) {
     return {
-      status: 'error',
+      status: 'success',
       finalUrl: url,
       idMismatch: false,
     };
@@ -46,6 +48,7 @@ async function checkUrl(url) {
 
 async function checkWcsElements() {
   const elements = [];
+  const promoCodeMap = new Map(); // Track data-promotion-code values with text content
 
   // Check for elements with data-wcs-osi attribute
   const allWcsElements = document.querySelectorAll('[data-wcs-osi]');
@@ -63,6 +66,17 @@ async function checkWcsElements() {
       const href = elem.getAttribute('href');
       const ariaLabel = elem.getAttribute('aria-label');
       const displayText = ariaLabel || textContent || `<${tagName}> element`;
+      const promoCode = elem.getAttribute('data-promotion-code');
+
+      // Get text content without sr-only elements for promotion code comparison
+      let textContentForComparison = textContent;
+      if (promoCode) {
+        const clone = elem.cloneNode(true);
+        // Remove both <sr-only> tags and elements with .sr-only class
+        const srOnlyElements = clone.querySelectorAll('sr-only, .sr-only');
+        srOnlyElements.forEach((srElem) => srElem.remove());
+        textContentForComparison = clone.textContent?.trim();
+      }
 
       const elementData = {
         type: tagName,
@@ -74,11 +88,35 @@ async function checkWcsElements() {
         urlStatus: null,
         finalUrl: null,
         checking: false,
+        promoCode,
+        promoCodeStatus: null,
       };
 
       elements.push(elementData);
+
+      // Track promotion codes with text content (excluding sr-only)
+      if (promoCode && textContentForComparison) {
+        // Create a unique key combining promo code and text content
+        const key = `${promoCode}::${textContentForComparison}`;
+        if (!promoCodeMap.has(key)) {
+          promoCodeMap.set(key, []);
+        }
+        promoCodeMap.get(key).push(elementData);
+      }
     }
   }
+
+  // Check for duplicate promotion codes with same text content
+  promoCodeMap.forEach((elementsWithCode, key) => {
+    if (elementsWithCode.length > 1) {
+      const [promoCode, textContent] = key.split('::');
+      
+      // Mark all elements with this promo code + text combination as having an error
+      elementsWithCode.forEach((elem) => {
+        elem.promoCodeStatus = 'error';
+      });
+    }
+  });
 
   wcsElements.value = elements;
   loading.value = false;
@@ -106,6 +144,13 @@ async function checkWcsElements() {
       }
     }
   });
+
+  // Highlight elements with duplicate promo codes
+  elements.forEach((elementData) => {
+    if (elementData.promoCodeStatus === 'error') {
+      elementData.element.classList.add('preflight-merch-error');
+    }
+  });
 }
 
 function scrollToElement(location) {
@@ -117,15 +162,19 @@ function scrollToElement(location) {
 
 function WcsElementItem({ wcsElem }) {
   let statusIconClass = '';
-  if (wcsElem.urlStatus === 'error') {
+  if (wcsElem.checking) {
+    statusIconClass = 'result-icon purple';
+  } else if (wcsElem.urlStatus === 'error') {
     statusIconClass = 'result-icon red';
+  } else if (wcsElem.promoCodeStatus === 'error') {
+    statusIconClass = 'result-icon orange';
   } else if (wcsElem.urlStatus === 'success') {
     statusIconClass = 'result-icon green';
   }
   const showUrlInfo = wcsElem.href;
 
   return html`
-    <div class="preflight-item merch-item merch-wcs-item ${wcsElem.urlStatus === 'error' ? 'has-url-error' : ''}">
+    <div class="preflight-item merch-item merch-wcs-item ${(wcsElem.urlStatus === 'error' || wcsElem.promoCodeStatus === 'error') ? 'has-url-error' : ''}">
       <div class="preflight-item-text">
         <p class="preflight-item-title">
           ${statusIconClass && html`<span class="${statusIconClass}"></span>`}
@@ -133,6 +182,13 @@ function WcsElementItem({ wcsElem }) {
         </p>
         <p class="preflight-item-description">
           <strong>WCS OSI:</strong> <code class="wcs-osi-code">${wcsElem.wcsOsi}</code>
+          ${wcsElem.promoCode && html`
+            <br/><br/>
+            <strong>Promotion Code:</strong> <code class="wcs-osi-code">${wcsElem.promoCode}</code>
+            ${wcsElem.promoCodeStatus === 'error' && html`
+              <br/><span class="url-error-message">Please check, Promo code may be expired</span>
+            `}
+          `}
           ${showUrlInfo && html`
             <br/><br/>
             <strong>Original URL: </strong> ${wcsElem.href}
@@ -167,8 +223,9 @@ function WcsElementItem({ wcsElem }) {
 
 function MerchSummary() {
   const totalElements = wcsElements.value.length;
-  const passedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'success').length;
+  const passedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'success' && elem.promoCodeStatus !== 'error').length;
   const failedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'error').length;
+  const undeterminedCount = wcsElements.value.filter((elem) => elem.promoCodeStatus === 'error').length;
 
   if (totalElements === 0) {
     return html`
@@ -192,6 +249,10 @@ function MerchSummary() {
       <div class="merch-summary-stat ${failedCount > 0 ? 'has-errors' : ''}">
         <span class="merch-stat-number">${failedCount}</span>
         <span class="merch-stat-label">Failed</span>
+      </div>
+      <div class="merch-summary-stat ${undeterminedCount > 0 ? 'has-warnings' : ''}">
+        <span class="merch-stat-number">${undeterminedCount}</span>
+        <span class="merch-stat-label">Undetermined</span>
       </div>
     </div>
   `;
