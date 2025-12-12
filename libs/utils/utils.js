@@ -1762,7 +1762,7 @@ async function decorateLanguageBanner() {
     const pageLang = config.locale.ietf.split('-')[0];
     const prefLang = getPreferredLanguage(config.locales);
 
-    const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
+    const supportedMarketsPath = 'https://main--milo--adobecom.aem.page/drafts/nishantkaush/test/supported-markets-bacom.json';
     const jsonPromise = fetch(
       supportedMarketsPath
         || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
