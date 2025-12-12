@@ -82,9 +82,7 @@ export default function addTooltipListeners() {
       } else if (['mouseleave', 'blur'].includes(eventType)) {
         event.target.classList.add('hide-tooltip');
       } else if (eventType === 'keydown' && event.key === 'Escape') {
-        const tooltip = document.querySelector('.milo-tooltip:not(.hide-tooltip)');
-        tooltip?.classList.add('hide-tooltip');
-        tooltip?.blur();
+        document.querySelector('.milo-tooltip:not(.hide-tooltip)')?.classList.add('hide-tooltip');
       }
     }, true);
   });
