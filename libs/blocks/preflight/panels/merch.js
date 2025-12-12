@@ -47,7 +47,7 @@ async function checkUrl(url) {
 
 async function checkWcsElements() {
   const elements = [];
-  const promoCodeMap = new Map(); // Track data-promotion-code values with text content
+  const promoCodeMap = new Map(); 
 
   const allWcsElements = document.querySelectorAll('[data-wcs-osi]');
 
@@ -55,53 +55,50 @@ async function checkWcsElements() {
     const hasDisabledChild = elem.querySelector('[disabled], .disabled');
     const textContent = elem.textContent?.trim();
 
-    if (hasDisabledChild && !textContent) {
-    } else {
-      const wcsOsi = elem.getAttribute('data-wcs-osi');
-      const tagName = elem.tagName.toLowerCase();
-      const href = elem.getAttribute('href');
-      const ariaLabel = elem.getAttribute('aria-label');
-      const displayText = ariaLabel || textContent || `<${tagName}> element`;
-      const promoCode = elem.getAttribute('data-promotion-code');
+    if (hasDisabledChild && !textContent) continue;
 
-      let textContentForComparison = textContent;
-      if (promoCode) {
-        const clone = elem.cloneNode(true);
-        const srOnlyElements = clone.querySelectorAll('sr-only, .sr-only');
-        srOnlyElements.forEach((srElem) => srElem.remove());
-        textContentForComparison = clone.textContent?.trim();
+    const wcsOsi = elem.getAttribute('data-wcs-osi');
+    const tagName = elem.tagName.toLowerCase();
+    const href = elem.getAttribute('href');
+    const ariaLabel = elem.getAttribute('aria-label');
+    const displayText = ariaLabel || textContent || `<${tagName}> element`;
+    const promoCode = elem.getAttribute('data-promotion-code');
+
+    let textContentForComparison = textContent;
+    if (promoCode) {
+      const clone = elem.cloneNode(true);
+      const srOnlyElements = clone.querySelectorAll('sr-only, .sr-only');
+      srOnlyElements.forEach((srElem) => srElem.remove());
+      textContentForComparison = clone.textContent?.trim();
+    }
+
+    const elementData = {
+      type: tagName,
+      displayText,
+      element: elem,
+      wcsOsi,
+      location: getBlockLocation(elem),
+      href,
+      urlStatus: null,
+      finalUrl: null,
+      checking: false,
+      promoCode,
+      promoCodeStatus: null,
+    };
+
+    elements.push(elementData);
+
+    if (promoCode && textContentForComparison) {
+      const key = `${promoCode}::${textContentForComparison}`;
+      if (!promoCodeMap.has(key)) {
+        promoCodeMap.set(key, []);
       }
-
-      const elementData = {
-        type: tagName,
-        displayText,
-        element: elem,
-        wcsOsi,
-        location: getBlockLocation(elem),
-        href,
-        urlStatus: null,
-        finalUrl: null,
-        checking: false,
-        promoCode,
-        promoCodeStatus: null,
-      };
-
-      elements.push(elementData);
-
-      if (promoCode && textContentForComparison) {
-        // Create a unique key combining promo code and text content
-        const key = `${promoCode}::${textContentForComparison}`;
-        if (!promoCodeMap.has(key)) {
-          promoCodeMap.set(key, []);
-        }
-        promoCodeMap.get(key).push(elementData);
-      }
+      promoCodeMap.get(key).push(elementData);
     }
   }
 
   promoCodeMap.forEach((elementsWithCode) => {
     if (elementsWithCode.length > 1) {
-      // Mark all elements with this promo code + text combination as having an error
       elementsWithCode.forEach((elem) => {
         elem.promoCodeStatus = 'error';
       });
