@@ -2,6 +2,11 @@ import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata, getFederatedContentRoot } from '../../libs/utils/utils.js';
 import { LANGS, LOCALES, getPageLocale, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
 
+// Force immediate execution to test if file loads
+window.SEND_UTILS_LOADED = true;
+console.log('[send-utils.js] Module loaded at', new Date().toISOString());
+console.warn('SEND UTILS DEBUG: File has loaded!');
+
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
 const URL_POSTXDM = 'https://14257-milocaasproxy.adobeio-static.net/api/v1/web/milocaas/postXDM';
@@ -294,12 +299,46 @@ const isPagePublished = async () => {
 };
 
 async function getLingoSiteLocale(origin, path) {
+  // Force debugger to pause execution - this will DEFINITELY show if function is called
+  debugger;
+  
+  // Debug: Force a visible console log
+  console.log('=== DEBUG START ===');
+  console.log('[getLingoSiteLocale] Called with origin:', origin, 'path:', path);
+  console.log('=== DEBUG END ===');
+  console.warn('[getLingoSiteLocale] WARNING LEVEL LOG - origin:', origin, 'path:', path);
+  console.error('[getLingoSiteLocale] ERROR LEVEL LOG - origin:', origin, 'path:', path);
+  
   const host = origin.toLowerCase();
+  console.log('[getLingoSiteLocale] Host (lowercased):', host);
+  
   let lingoSiteMapping = {
     country: 'xx',
     language: 'en',
   };
-  const localeStr = path.split('/')[1];
+  
+  // Extract pathname from URL if path includes domain
+  let pathname = path;
+  if (path.includes('://') || !path.startsWith('/')) {
+    try {
+      const url = new URL(path.startsWith('http') ? path : `https://${path}`);
+      pathname = url.pathname;
+      console.log('[getLingoSiteLocale] Extracted pathname from URL:', pathname);
+    } catch (e) {
+      console.warn('[getLingoSiteLocale] Could not parse as URL, using as-is:', path);
+      // If it doesn't start with /, try to extract pathname manually
+      if (!path.startsWith('/')) {
+        const pathParts = path.split('/');
+        // Remove domain part (first element)
+        pathname = '/' + pathParts.slice(1).join('/');
+        console.log('[getLingoSiteLocale] Manually extracted pathname:', pathname);
+      }
+    }
+  }
+  
+  const localeStr = pathname.split('/')[1];
+  console.log('[getLingoSiteLocale] Extracted localeStr:', localeStr);
+  
   try {
     let siteId;
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
@@ -308,42 +347,65 @@ async function getLingoSiteLocale(origin, path) {
 
     const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
     const siteLocalesData = configJson['site-locales']?.data ?? [];
+    
+    console.log('[getLingoSiteLocale] siteQueryIndexMap:', siteQueryIndexMap);
+    console.log('[getLingoSiteLocale] siteLocalesData:', siteLocalesData);
 
     // this works for bacom - but will need to be verified on other sites
+    // Map origin (caasOrigin) to uniqueSiteId for locale lookup
     siteQueryIndexMap
       .forEach(({ uniqueSiteId, caasOrigin }) => {
+        console.log('[getLingoSiteLocale] Checking uniqueSiteId:', uniqueSiteId, 'caasOrigin:', caasOrigin);
+        
         if (host === caasOrigin) {
+          console.log('[getLingoSiteLocale]   MATCH: host matches caasOrigin');
           siteId = uniqueSiteId;
-        };
-        return;
+        } else {
+          console.log('[getLingoSiteLocale]   No match: host', host, '!== caasOrigin', caasOrigin);
+        }
       });
+    
+    console.log('[getLingoSiteLocale] Final siteId:', siteId);
+    
+    console.log('[getLingoSiteLocale] Filtering siteLocalesData for siteId:', siteId);
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
       .forEach(({ baseSite, regionalSites }) => {
+        console.log('[getLingoSiteLocale] Processing baseSite:', baseSite, 'regionalSites:', regionalSites);
+        
         if (localeStr === baseSite.split('/')[1]) {
+          console.log('[getLingoSiteLocale]   MATCH: localeStr equals baseSite');
           lingoSiteMapping = {
             country: 'xx',
             language: baseSite.split('/')[1],
           };
+          console.log('[getLingoSiteLocale]   Updated lingoSiteMapping:', lingoSiteMapping);
           return;
         }
         if (regionalSites.includes(localeStr)) {
+          console.log('[getLingoSiteLocale]   MATCH: regionalSites includes localeStr');
           if (baseSite === '/') {
+            console.log('[getLingoSiteLocale]   baseSite is root');
             lingoSiteMapping = {
               country: localeStr,
               language: 'en',
             };
+            console.log('[getLingoSiteLocale]   Updated lingoSiteMapping (root):', lingoSiteMapping);
           }
           lingoSiteMapping = {
             country: localeStr,
             language: baseSite.split('/')[1],
           };
+          console.log('[getLingoSiteLocale]   Updated lingoSiteMapping (regional):', lingoSiteMapping);
         }
       });
+    console.log('[getLingoSiteLocale] Returning lingoSiteMapping:', lingoSiteMapping);
     return lingoSiteMapping;
   } catch (e) {
+    console.error('[getLingoSiteLocale] Error:', e);
     window.lana?.log('Failed to load lingo-site-mapping.json:', e);
   }
+  console.log('[getLingoSiteLocale] Returning default lingoSiteMapping:', lingoSiteMapping);
   return lingoSiteMapping;
 }
 
