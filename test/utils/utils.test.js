@@ -4,7 +4,6 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch, mockRes } from '../helpers/generalHelpers.js';
-import { mockFetch, mockRes } from '../helpers/generalHelpers.js';
 import { createTag, customFetch } from '../../libs/utils/utils.js';
 
 const utils = {};
