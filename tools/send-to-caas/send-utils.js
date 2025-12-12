@@ -305,7 +305,6 @@ async function getLingoSiteLocale(origin, path) {
       const url = new URL(path.startsWith('http') ? path : `https://${path}`);
       pathname = url.pathname;
     } catch (e) {
-      window.lana?.log('[getLingoSiteLocale] Could not parse as URL, using as-is:', path);
       // If it doesn't start with /, try to extract pathname manually
       if (!path.startsWith('/')) {
         const pathParts = path.split('/');
