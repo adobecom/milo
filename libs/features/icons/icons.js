@@ -24,7 +24,7 @@ function decorateToolTip(icon, iconName) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 
   import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
-    addTooltipListeners(icon);
+    addTooltipListeners();
   });
 }
 
