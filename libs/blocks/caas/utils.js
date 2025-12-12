@@ -8,6 +8,7 @@ import {
   localizeLinkAsync,
 } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
+import { getLingoSiteLocale } from '../tools/send-to-caas/send-utils.js';
 import getUuid from '../../utils/getUuid.js';
 
 export const LANGS = {
@@ -536,7 +537,12 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     const isNewsSource = Array.from([source].flat()).some((s) => s?.toLowerCase().includes('news'));
 
     if (!isNewsSource) {
-      countryStr = fallbackCountry;
+      const primeSource = Array.from([source].flat())[0];
+      const mapping = await getLanguageFirstCountryAndLang(window.location.pathname, primeSource);
+
+      countryStr = mapping.country;
+      langStr = mapping.language;
+
       try {
         const urlParams = new URLSearchParams(window.location.search);
         let geoCountry = urlParams.get('akamaiLocale')?.toLowerCase()
