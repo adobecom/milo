@@ -1,7 +1,7 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { getMetadata, getFederatedContentRoot } from '../../libs/utils/utils.js';
-import { LANGS,
-  LOCALES, 
+import { getMetadata } from '../../libs/utils/utils.js';
+import {
+  LOCALES,
   getPageLocale,
   getGrayboxExperienceId,
   getLanguageFirstCountryAndLang,
