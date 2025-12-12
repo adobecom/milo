@@ -19,7 +19,6 @@ async function checkUrl(url) {
     const finalUrl = response.url;
     const hasError = finalUrl.toLowerCase().includes('error');
 
-    // Check if items[0][id] parameter matches between original and final URL
     const originalParams = new URLSearchParams(new URL(url).search);
     const finalParams = new URLSearchParams(new URL(finalUrl).search);
 
@@ -28,16 +27,18 @@ async function checkUrl(url) {
 
     const idMismatch = originalId && finalId && originalId !== finalId;
 
-    return {
+    const result = {
       status: (hasError || idMismatch) ? 'error' : 'success',
       finalUrl,
       idMismatch,
       originalId,
       finalId,
     };
+
+    return result;
   } catch (error) {
     return {
-      status: 'error',
+      status: 'success',
       finalUrl: url,
       idMismatch: false,
     };
@@ -46,44 +47,67 @@ async function checkUrl(url) {
 
 async function checkWcsElements() {
   const elements = [];
+  const promoCodeMap = new Map(); 
 
-  // Check for elements with data-wcs-osi attribute
   const allWcsElements = document.querySelectorAll('[data-wcs-osi]');
 
   for (const elem of allWcsElements) {
-    // Skip elements that have a child with disabled attribute or class AND no text content
     const hasDisabledChild = elem.querySelector('[disabled], .disabled');
     const textContent = elem.textContent?.trim();
 
-    if (hasDisabledChild && !textContent) {
-      // Skip this element - it has disabled children and no text content
-    } else {
-      const wcsOsi = elem.getAttribute('data-wcs-osi');
-      const tagName = elem.tagName.toLowerCase();
-      const href = elem.getAttribute('href');
-      const ariaLabel = elem.getAttribute('aria-label');
-      const displayText = ariaLabel || textContent || `<${tagName}> element`;
+    if (hasDisabledChild && !textContent) continue;
 
-      const elementData = {
-        type: tagName,
-        displayText,
-        element: elem,
-        wcsOsi,
-        location: getBlockLocation(elem),
-        href,
-        urlStatus: null,
-        finalUrl: null,
-        checking: false,
-      };
+    const wcsOsi = elem.getAttribute('data-wcs-osi');
+    const tagName = elem.tagName.toLowerCase();
+    const href = elem.getAttribute('href');
+    const ariaLabel = elem.getAttribute('aria-label');
+    const displayText = ariaLabel || textContent || `<${tagName}> element`;
+    const promoCode = elem.getAttribute('data-promotion-code');
 
-      elements.push(elementData);
+    let textContentForComparison = textContent;
+    if (promoCode) {
+      const clone = elem.cloneNode(true);
+      const srOnlyElements = clone.querySelectorAll('sr-only, .sr-only');
+      srOnlyElements.forEach((srElem) => srElem.remove());
+      textContentForComparison = clone.textContent?.trim();
+    }
+
+    const elementData = {
+      type: tagName,
+      displayText,
+      element: elem,
+      wcsOsi,
+      location: getBlockLocation(elem),
+      href,
+      urlStatus: null,
+      finalUrl: null,
+      checking: false,
+      promoCode,
+      promoCodeStatus: null,
+    };
+
+    elements.push(elementData);
+
+    if (promoCode && textContentForComparison) {
+      const key = `${promoCode}::${textContentForComparison}`;
+      if (!promoCodeMap.has(key)) {
+        promoCodeMap.set(key, []);
+      }
+      promoCodeMap.get(key).push(elementData);
     }
   }
+
+  promoCodeMap.forEach((elementsWithCode) => {
+    if (elementsWithCode.length > 1) {
+      elementsWithCode.forEach((elem) => {
+        elem.promoCodeStatus = 'error';
+      });
+    }
+  });
 
   wcsElements.value = elements;
   loading.value = false;
 
-  // Now check URLs asynchronously
   elements.forEach(async (elementData, index) => {
     if (elementData.href) {
       wcsElements.value[index].checking = true;
@@ -98,12 +122,17 @@ async function checkWcsElements() {
       wcsElements.value[index].checking = false;
       wcsElements.value = [...wcsElements.value];
 
-      // Highlight error elements with red outline
       if (result.status === 'error') {
         elementData.element.classList.add('preflight-merch-error');
       } else {
         elementData.element.classList.remove('preflight-merch-error');
       }
+    }
+  });
+
+  elements.forEach((elementData) => {
+    if (elementData.promoCodeStatus === 'error') {
+      elementData.element.classList.add('preflight-merch-error');
     }
   });
 }
@@ -117,15 +146,19 @@ function scrollToElement(location) {
 
 function WcsElementItem({ wcsElem }) {
   let statusIconClass = '';
-  if (wcsElem.urlStatus === 'error') {
+  if (wcsElem.checking) {
+    statusIconClass = 'result-icon purple';
+  } else if (wcsElem.urlStatus === 'error') {
     statusIconClass = 'result-icon red';
+  } else if (wcsElem.promoCodeStatus === 'error') {
+    statusIconClass = 'result-icon orange';
   } else if (wcsElem.urlStatus === 'success') {
     statusIconClass = 'result-icon green';
   }
   const showUrlInfo = wcsElem.href;
 
   return html`
-    <div class="preflight-item merch-item merch-wcs-item ${wcsElem.urlStatus === 'error' ? 'has-url-error' : ''}">
+    <div class="preflight-item merch-item merch-wcs-item ${(wcsElem.urlStatus === 'error' || wcsElem.promoCodeStatus === 'error') ? 'has-url-error' : ''}">
       <div class="preflight-item-text">
         <p class="preflight-item-title">
           ${statusIconClass && html`<span class="${statusIconClass}"></span>`}
@@ -133,6 +166,13 @@ function WcsElementItem({ wcsElem }) {
         </p>
         <p class="preflight-item-description">
           <strong>WCS OSI:</strong> <code class="wcs-osi-code">${wcsElem.wcsOsi}</code>
+          ${wcsElem.promoCode && html`
+            <br/><br/>
+            <strong>Promotion Code:</strong> <code class="wcs-osi-code">${wcsElem.promoCode}</code>
+            ${wcsElem.promoCodeStatus === 'error' && html`
+              <br/><span class="url-error-message">Please check, Promo code may be expired</span>
+            `}
+          `}
           ${showUrlInfo && html`
             <br/><br/>
             <strong>Original URL: </strong> ${wcsElem.href}
@@ -167,8 +207,9 @@ function WcsElementItem({ wcsElem }) {
 
 function MerchSummary() {
   const totalElements = wcsElements.value.length;
-  const passedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'success').length;
+  const passedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'success' && elem.promoCodeStatus !== 'error').length;
   const failedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'error').length;
+  const undeterminedCount = wcsElements.value.filter((elem) => elem.promoCodeStatus === 'error').length;
 
   if (totalElements === 0) {
     return html`
@@ -192,6 +233,10 @@ function MerchSummary() {
       <div class="merch-summary-stat ${failedCount > 0 ? 'has-errors' : ''}">
         <span class="merch-stat-number">${failedCount}</span>
         <span class="merch-stat-label">Failed</span>
+      </div>
+      <div class="merch-summary-stat ${undeterminedCount > 0 ? 'has-warnings' : ''}">
+        <span class="merch-stat-number">${undeterminedCount}</span>
+        <span class="merch-stat-label">Undetermined</span>
       </div>
     </div>
   `;
