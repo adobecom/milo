@@ -1626,7 +1626,7 @@ async function loadPostLCP(config) {
           default: return 'http://localhost:3000';
         }
       })();
-      const { main } = await import(`${federalDomain}/global-navigation/dist/main.js`);
+      const { main } = await import(`${federalDomain}/libs/global-navigation/dist/main.js`);
       main({
         gnavSource: new URL(await getGnavSource()),
         asideSource: null,
