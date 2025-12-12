@@ -1,6 +1,11 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { getMetadata } from '../../libs/utils/utils.js';
+import { getMetadata, getFederatedContentRoot } from '../../libs/utils/utils.js';
 import { LANGS, LOCALES, getPageLocale, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+
+// Force immediate execution to test if file loads
+window.SEND_UTILS_LOADED = true;
+console.log('[send-utils.js] Module loaded at', new Date().toISOString());
+console.warn('SEND UTILS DEBUG: File has loaded!');
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -293,23 +298,148 @@ const isPagePublished = async () => {
   return false;
 };
 
-const getLanguageFirstCountryAndLang = async (path) => {
+async function getLingoSiteLocale(origin, path) {
+  // Force debugger to pause execution - this will DEFINITELY show if function is called
+  debugger;
+  
+  // Debug: Force a visible console log
+  console.log('=== DEBUG START ===');
+  console.log('[getLingoSiteLocale] Called with origin:', origin, 'path:', path);
+  console.log('=== DEBUG END ===');
+  console.warn('[getLingoSiteLocale] WARNING LEVEL LOG - origin:', origin, 'path:', path);
+  console.error('[getLingoSiteLocale] ERROR LEVEL LOG - origin:', origin, 'path:', path);
+  
+  const host = origin.toLowerCase();
+  console.log('[getLingoSiteLocale] Host (lowercased):', host);
+  
+  let lingoSiteMapping = {
+    country: 'xx',
+    language: 'en',
+  };
+  
+  // Extract pathname from URL if path includes domain
+  let pathname = path;
+  if (path.includes('://') || !path.startsWith('/')) {
+    try {
+      const url = new URL(path.startsWith('http') ? path : `https://${path}`);
+      pathname = url.pathname;
+      console.log('[getLingoSiteLocale] Extracted pathname from URL:', pathname);
+    } catch (e) {
+      console.warn('[getLingoSiteLocale] Could not parse as URL, using as-is:', path);
+      // If it doesn't start with /, try to extract pathname manually
+      if (!path.startsWith('/')) {
+        const pathParts = path.split('/');
+        // Remove domain part (first element)
+        pathname = '/' + pathParts.slice(1).join('/');
+        console.log('[getLingoSiteLocale] Manually extracted pathname:', pathname);
+      }
+    }
+  }
+  
+  const localeStr = pathname.split('/')[1];
+  console.log('[getLingoSiteLocale] Extracted localeStr:', localeStr);
+  
+  try {
+    let siteId;
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+
+    const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+    const siteLocalesData = configJson['site-locales']?.data ?? [];
+    
+    console.log('[getLingoSiteLocale] siteQueryIndexMap:', siteQueryIndexMap);
+    console.log('[getLingoSiteLocale] siteLocalesData:', siteLocalesData);
+
+    // this works for bacom - but will need to be verified on other sites
+    // Map origin (caasOrigin) to uniqueSiteId for locale lookup
+    siteQueryIndexMap
+      .forEach(({ uniqueSiteId, caasOrigin }) => {
+        console.log('[getLingoSiteLocale] Checking uniqueSiteId:', uniqueSiteId, 'caasOrigin:', caasOrigin);
+        
+        if (host === caasOrigin) {
+          console.log('[getLingoSiteLocale]   MATCH: host matches caasOrigin');
+          siteId = uniqueSiteId;
+        } else {
+          console.log('[getLingoSiteLocale]   No match: host', host, '!== caasOrigin', caasOrigin);
+        }
+      });
+    
+    console.log('[getLingoSiteLocale] Final siteId:', siteId);
+    
+    console.log('[getLingoSiteLocale] Filtering siteLocalesData for siteId:', siteId);
+    siteLocalesData
+      .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
+      .forEach(({ baseSite, regionalSites }) => {
+        console.log('[getLingoSiteLocale] Processing baseSite:', baseSite, 'regionalSites:', regionalSites);
+        
+        if (localeStr === baseSite.split('/')[1]) {
+          console.log('[getLingoSiteLocale]   MATCH: localeStr equals baseSite');
+          lingoSiteMapping = {
+            country: 'xx',
+            language: baseSite.split('/')[1],
+          };
+          console.log('[getLingoSiteLocale]   Updated lingoSiteMapping:', lingoSiteMapping);
+          return;
+        }
+        if (regionalSites.includes(localeStr)) {
+          console.log('[getLingoSiteLocale]   MATCH: regionalSites includes localeStr');
+          if (baseSite === '/') {
+            console.log('[getLingoSiteLocale]   baseSite is root');
+            lingoSiteMapping = {
+              country: localeStr,
+              language: 'en',
+            };
+            console.log('[getLingoSiteLocale]   Updated lingoSiteMapping (root):', lingoSiteMapping);
+          }
+          lingoSiteMapping = {
+            country: localeStr,
+            language: baseSite.split('/')[1],
+          };
+          console.log('[getLingoSiteLocale]   Updated lingoSiteMapping (regional):', lingoSiteMapping);
+        }
+      });
+    console.log('[getLingoSiteLocale] Returning lingoSiteMapping:', lingoSiteMapping);
+    return lingoSiteMapping;
+  } catch (e) {
+    console.error('[getLingoSiteLocale] Error:', e);
+    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+  }
+  console.log('[getLingoSiteLocale] Returning default lingoSiteMapping:', lingoSiteMapping);
+  return lingoSiteMapping;
+}
+
+export const getLanguageFirstCountryAndLang = async (path, origin) => {
   const localeArr = path.split('/');
-  const langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
-  let countryStr = LOCALES[localeArr[2]] ?? 'xx';
-  if (typeof countryStr === 'object') {
-    countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+  let langStr = 'en';
+  let countryStr = 'xx';
+  if (origin.toLowerCase() === 'news') {
+    langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
+    countryStr = LOCALES[localeArr[2]] ?? 'xx';
+    if (typeof countryStr === 'object') {
+      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+    }
+  } else {
+    const mapping = await getLingoSiteLocale(origin, path);
+    countryStr = LOCALES[mapping.country] ?? 'xx';
+    if (typeof countryStr === 'object') {
+      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+    }
+    langStr = mapping.language ?? 'en';
   }
   return {
-    country: countryStr,
-    lang: langStr,
+    country: countryStr.toLowerCase(),
+    lang: langStr.toLowerCase(),
   };
 };
 
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
   if (options.languageFirst) {
-    const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl);
+    const { country, lang } = await getLanguageFirstCountryAndLang(
+      options.prodUrl,
+      options.repo,
+    );
     return `${lang}-${country}`;
   }
   if (!getLocale) {
@@ -322,10 +452,13 @@ const getBulkPublishLangAttr = async (options) => {
   return getLocale(LOCALES, options.prodUrl).ietf;
 };
 
-const getCountryAndLang = async (options) => {
+const getCountryAndLang = async (options, origin) => {
   const langFirst = getMetadata('langfirst');
   if (langFirst) {
-    return getLanguageFirstCountryAndLang(window.location.pathname);
+    return getLanguageFirstCountryAndLang(
+      window.location.pathname,
+      origin,
+    );
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
@@ -417,7 +550,9 @@ const props = {
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
-    const { country } = await getCountryAndLang(options);
+    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
+    const origin = getOrigin(fgColor);
+    const { country } = await getCountryAndLang(options, origin);
     return country;
   },
   created: (s) => {
@@ -459,7 +594,9 @@ const props = {
   floodgatecolor: (s, options) => s || options.floodgatecolor || getMetadata('floodgatecolor') || 'default',
   lang: async (s, options) => {
     if (s) return s;
-    const { lang } = await getCountryAndLang(options);
+    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
+    const origin = getOrigin(fgColor);
+    const { lang } = await getCountryAndLang(options, origin);
     return lang;
   },
   modified: (s) => {
