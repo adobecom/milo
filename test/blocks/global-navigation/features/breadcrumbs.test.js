@@ -96,6 +96,7 @@ describe('breadcrumbs', () => {
 
   it('should fail to load when list is empty', async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-base" content="https://mock.com/mock-isnt-called-anyway">';
+    window.fetch = stub().callsFake(() => mockRes({ payload: breadcrumbMock().outerHTML }));
     const breadcrumb = await breadcrumbs(breadcrumbWithEmptyList());
     expect(breadcrumb).to.be.null;
   });

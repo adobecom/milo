@@ -163,30 +163,30 @@ describe('tabs', () => {
       expect(url.pathname).to.equal('/testpage-1');
     });
 
-    it('does not save any data to linkedTabs object if invalid input', () => {
+    it('does not save any data to linkedTabs object if invalid input', async () => {
       const linkedTabsList = {};
-      assignLinkedTabs(linkedTabsList, {}, '', '');
+      await assignLinkedTabs(linkedTabsList, {}, '', '');
       expect(linkedTabsList).to.deep.equal({});
-      assignLinkedTabs(linkedTabsList, { link: '/testpage' }, '', '');
+      await assignLinkedTabs(linkedTabsList, { link: '/testpage' }, '', '');
       expect(linkedTabsList).to.deep.equal({});
-      assignLinkedTabs(linkedTabsList, { link: '/testpage' }, 'id', '');
+      await assignLinkedTabs(linkedTabsList, { link: '/testpage' }, 'id', '');
       expect(linkedTabsList).to.deep.equal({});
-      assignLinkedTabs(linkedTabsList, { link: 'invalid link' }, 'id', 'val');
+      await assignLinkedTabs(linkedTabsList, { link: 'invalid link' }, 'id', 'val');
       expect(linkedTabsList).to.deep.equal({});
     });
 
-    it('saves tab id and tab link into linkedTabs object with relative links', () => {
+    it('saves tab id and tab link into linkedTabs object with relative links', async () => {
       const linkedTabsList = {};
       const metaSettings = { link: '/testpage-1' };
       const id = '1';
       const val = 'demo';
-      assignLinkedTabs(linkedTabsList, metaSettings, id, val);
+      await assignLinkedTabs(linkedTabsList, metaSettings, id, val);
       expect(linkedTabsList).to.deep.equal({ 'tab-1-demo': '/testpage-1' });
     });
 
-    it('saves tab id and tab link into linkedTabs object with fully qualified URLs', () => {
+    it('saves tab id and tab link into linkedTabs object with fully qualified URLs', async () => {
       const linkedTabsList = {};
-      assignLinkedTabs(linkedTabsList, { link: 'https://example.com/testpage-1' }, '1', 'demo');
+      await assignLinkedTabs(linkedTabsList, { link: 'https://example.com/testpage-1' }, '1', 'demo');
       expect(linkedTabsList['tab-1-demo']).to.exist;
       expect(linkedTabsList['tab-1-demo']).to.be.a('string');
       expect(linkedTabsList['tab-1-demo']).to.include('/testpage-1');
@@ -197,7 +197,7 @@ describe('tabs', () => {
       });
 
       const linkedTabsListUK = {};
-      assignLinkedTabs(linkedTabsListUK, { link: 'https://example.com/testpage-uk' }, '2', 'uk-demo');
+      await assignLinkedTabs(linkedTabsListUK, { link: 'https://example.com/testpage-uk' }, '2', 'uk-demo');
       expect(linkedTabsListUK['tab-2-uk-demo']).to.exist;
       expect(linkedTabsListUK['tab-2-uk-demo']).to.be.a('string');
       expect(linkedTabsListUK['tab-2-uk-demo']).to.equal('/uk/testpage-uk');

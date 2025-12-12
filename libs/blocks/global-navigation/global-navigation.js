@@ -6,7 +6,7 @@ import {
   loadIms,
   loadStyle,
   loadLana,
-  decorateLinks,
+  decorateLinksAsync,
   loadScript,
   getGnavSource,
   getFederatedUrl,
@@ -1598,7 +1598,7 @@ class Gnav {
     if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
     const breadcrumbsElem = this.block.querySelector('.breadcrumbs');
     // Breadcrumbs are not initially part of the nav, need to decorate the links
-    if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
+    if (breadcrumbsElem) await decorateLinksAsync(breadcrumbsElem);
     if (!breadCrumbsJsPromise) return null;
     const { default: createBreadcrumbs } = await breadCrumbsJsPromise;
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);

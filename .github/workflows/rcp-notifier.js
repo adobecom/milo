@@ -30,8 +30,8 @@ const main = async () => {
     const stageOffset = Number(process.env.STAGE_RCP_OFFSET_DAYS) || 2;
     const slackText = (days) =>
       `Reminder RCP starts in ${days} days: from ${start.toUTCString()} to ${end.toUTCString()}. Merges to stage will be disabled beginning ${calculateDateOffset(start, stageOffset).toUTCString()}.`;
-    const stageFreezeText = () =>
-      `RCP starts in 4 days: from ${start.toUTCString()} to ${end.toUTCString()}. Merges to stage are now disabled until the end of the RCP to keep the stage branch clean for emergencies.`;
+    const stageFreezeText = (days) =>
+      `RCP starts in ${days} days: from ${start.toUTCString()} to ${end.toUTCString()}. Merges to stage are now disabled until the end of the RCP to keep the stage branch clean for emergencies.`;
     
     if (isWithin24Hours(firstNoticeOffset) && !isShort) {
       console.log('Is within 24 hours of 13 days before RCP');
@@ -46,9 +46,9 @@ const main = async () => {
     const daysUntil = getDaysUntilRCP(start);
     if (daysUntil <= 4 && daysUntil > 0 && !isShort && isWeekendOrMondayRCP(start)) {
       const today = new Date().getDay();
-      if (today === 4 || today === 5) {
+      if (today === 4) {
         console.log('Stage freeze active (RCP starts on weekend/Monday)');
-        await slackNotification(stageFreezeText(), process.env.MILO_DEV_HOOK);
+        await slackNotification(stageFreezeText(daysUntil), process.env.MILO_DEV_HOOK);
       }
     }
   }
