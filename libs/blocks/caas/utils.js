@@ -626,7 +626,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
 
     let fallbackCountry = countryStr;
-    let fallbackLang = langStr;
+    const fallbackLang = langStr;
     if (typeof fallbackCountry === 'object') {
       fallbackCountry = fallbackCountry.ietf?.split('-')[1] ?? 'xx';
     }
