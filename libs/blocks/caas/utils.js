@@ -611,7 +611,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
   }
   return {
     country: countryStr.toLowerCase(),
-    language: langStr.toLowerCase(),
+    lang: langStr.toLowerCase(),
   };
 };
 
@@ -638,7 +638,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       const mapping = await getLanguageFirstCountryAndLang(window.location.pathname, primeSource);
 
       countryStr = mapping.country || fallbackCountry;
-      langStr = mapping.language || fallbackLang;
+      langStr = mapping.lang || fallbackLang;
 
       try {
         const urlParams = new URLSearchParams(window.location.search);
