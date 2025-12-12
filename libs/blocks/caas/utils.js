@@ -8,7 +8,7 @@ import {
   localizeLinkAsync,
 } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
-import { getLingoSiteLocale } from '../tools/send-to-caas/send-utils.js';
+import { getLanguageFirstCountryAndLang } from '../tools/send-to-caas/send-utils.js';
 import getUuid from '../../utils/getUuid.js';
 
 export const LANGS = {
