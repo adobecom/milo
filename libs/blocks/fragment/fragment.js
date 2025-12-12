@@ -46,7 +46,7 @@ const updateFragMap = async (fragment, a, href) => {
   }
 };
 
-const insertInlineFrag = async (sections, a, relHref) => {
+const insertInlineFrag = async (sections, a, relHref, fragment) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
@@ -57,6 +57,11 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
+    if (fragment?.dataset?.mepLingoRoc) {
+      child.setAttribute('data-mep-lingo-roc', fragment.dataset.mepLingoRoc);
+    } else if (fragment?.dataset?.mepLingoFallback) {
+      child.setAttribute('data-mep-lingo-fallback', fragment.dataset.mepLingoFallback);
+    }
     if (child.querySelector('a[href*="/fragments/"]')) promises.push(loadArea(child));
   });
   await Promise.all(promises);
@@ -73,6 +78,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
+  if (!a?.href) return;
   const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href);
   let inline = false;
@@ -88,8 +94,8 @@ export default async function init(a) {
   let mepFrag;
   try {
     const path = !a.href.includes('/federal/') ? new URL(a.href).pathname
-      : a.href.replace('#_inline', '');
-    mepFrag = mep?.fragments?.[path] || mep?.fragments?.[path.replace(locale.prefix, '')];
+      : a.href.replace('#_inline', '').replace(locale.prefix, '');
+    mepFrag = mep?.fragments?.[path];
   } catch (e) {
     // do nothing
   }
@@ -99,7 +105,7 @@ export default async function init(a) {
     if (!relHref) return;
   }
 
-  if (a.href.includes('#_inline')) {
+  if (a.href?.includes('#_inline')) {
     inline = true;
     a.href = a.href.replace('#_inline', '');
     relHref = relHref.replace('#_inline', '');
@@ -111,15 +117,174 @@ export default async function init(a) {
   }
 
   let resourcePath = a.href;
-  if (a.href.includes('/federal/')) {
+  const isFederalFragment = a.href.includes('/federal/');
+  if (isFederalFragment) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
-  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
+
+  const lingoModule = a.dataset.mepLingo
+    ? await import('../../features/mep/lingo.js')
+    : null;
+
+  const { country, localeCode, matchingRegion } = lingoModule?.getMepLingoContext(locale)
+    ?? { country: null, localeCode: null, matchingRegion: null };
+  const shouldFetchMepLingo = !!(
+    a.dataset.mepLingo && matchingRegion && country && resourcePath && localeCode
+  );
+
+  // Helper to remove mep-lingo row from a container
+  const removeMepLingoRow = (container) => {
+    const rows = container?.querySelectorAll(':scope > div');
+    const mepLingoRow = [...rows || []].find((row) => {
+      const firstCell = row.children[0];
+      return firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo';
+    });
+    mepLingoRow?.remove();
+  };
+
+  // Handle section swap (anchor is inside section-metadata)
+  const isSectionSwap = !!a.dataset.mepLingoSectionSwap;
+
+  const originalSection = isSectionSwap ? a.closest('.section') : null;
+
+  // Handle block swap (anchor is still inside block)
+  const isBlockSwap = !!a.dataset.mepLingoBlockSwap;
+  let originalBlock;
+
+  if (isBlockSwap) {
+    const blockName = a.dataset.mepLingoBlockSwap;
+    originalBlock = a.closest(`.${blockName}`);
+
+    if (originalBlock) {
+      const wrapper = createTag('div', null, a);
+      originalBlock.insertAdjacentElement('afterend', wrapper);
+      if (blockName === 'mep-lingo') originalBlock.remove();
+    }
+  }
+
+  let resp;
+  let mepLingoPath;
+  let usedMepLingo = false;
+  let usedFallback = false;
+
+  if (shouldFetchMepLingo && matchingRegion?.prefix) {
+    mepLingoPath = locale.prefix
+      ? resourcePath.replace(locale.prefix, matchingRegion.prefix)
+      : resourcePath.replace(/^(https?:\/\/[^/]+)/, `$1${matchingRegion.prefix}`);
+
+    const section = a.closest('.section[data-idx]');
+    const isLcp = section?.dataset.idx === '0';
+
+    // const skipQueryIndex = isFederalFragment;
+    // TODO change this for PROD
+    const skipQueryIndex = true;
+    const qiResult = skipQueryIndex
+      ? { resolved: false, paths: [], available: false }
+      : await lingoModule.getQueryIndexPaths(matchingRegion.prefix, isLcp);
+    const qiResolved = qiResult.resolved !== false;
+    const qiAvailable = qiResult.available;
+    const mepLingoPathname = new URL(mepLingoPath).pathname;
+    const mepLingoPathnameNoExt = mepLingoPathname.replace(/\.html$/, '');
+    const mepLingoInIndex = qiResult.paths?.length > 0
+      && qiResult.paths.includes(mepLingoPathnameNoExt);
+
+    if (isSectionSwap) {
+      const shouldTryMepLingo = !qiAvailable || mepLingoInIndex;
+      if (!shouldTryMepLingo) {
+        // No regional content - keep original section but clean up mep-lingo row
+        a.parentElement?.remove();
+        removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
+        return;
+      }
+
+      const mepLingoResp = await lingoModule.fetchFragment(mepLingoPath);
+      if (!mepLingoResp?.ok) {
+        // Fetch failed - keep original section but clean up mep-lingo row
+        a.parentElement?.remove();
+        removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
+        return;
+      }
+
+      resp = mepLingoResp;
+      usedMepLingo = true;
+      relHref = await localizeLinkAsync(mepLingoPath);
+    }
+
+    if (isBlockSwap) {
+      // If query-index unavailable (including federal with no index yet), try anyway
+      const shouldTryMepLingo = !qiAvailable || mepLingoInIndex;
+      if (!shouldTryMepLingo) {
+        // No regional content - keep original block but clean up mep-lingo row
+        a.parentElement?.remove();
+        removeMepLingoRow(originalBlock);
+        return;
+      }
+
+      const mepLingoResp = await lingoModule.fetchFragment(mepLingoPath);
+      if (!mepLingoResp?.ok) {
+        // Fetch failed - keep original block but clean up mep-lingo row
+        a.parentElement?.remove();
+        removeMepLingoRow(originalBlock);
+        return;
+      }
+
+      resp = mepLingoResp;
+      usedMepLingo = true;
+      relHref = await localizeLinkAsync(mepLingoPath);
+    }
+
+    if (!isBlockSwap) {
+      let result;
+      const useQueryIndex = qiResolved && qiAvailable;
+      if (useQueryIndex && !mepLingoInIndex) {
+        const fallbackResp = await lingoModule.fetchFragment(resourcePath);
+        if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
+      } else {
+        // TODO call the fragment first. It should pretty much always exist,
+        // so no need to fetch fallback unless this is a LCP fragment.
+        result = await lingoModule.fetchMepLingo(mepLingoPath, resourcePath);
+        if (isLcp && !isFederalFragment) {
+          const opts = { tags: 'mep-lingo,lcp-no-qi', sampleRate: 10 };
+          window.lana?.log(`mep-lingo: LCP parallel fetch (QI not ready): ${mepLingoPathname}`, opts);
+        }
+      }
+
+      if (result?.resp) {
+        resp = result.resp;
+        usedMepLingo = result.usedMepLingo || false;
+        usedFallback = result.usedFallback || false;
+        if (usedMepLingo) relHref = await localizeLinkAsync(mepLingoPath);
+      }
+
+      if (mepLingoInIndex && usedFallback) {
+        const opts = { tags: 'mep-lingo,qi-stale' };
+        window.lana?.log(`mep-lingo: path in QI but fetch failed: ${mepLingoPathname}`, opts);
+      }
+      if (!mepLingoInIndex && usedMepLingo) {
+        const opts = { tags: 'mep-lingo,qi-lag', sampleRate: 10 };
+        window.lana?.log(`mep-lingo: path not in QI but exists: ${mepLingoPathname}`, opts);
+      }
+    }
+  } else if (!shouldFetchMepLingo && isBlockSwap) {
+    const blockName = a.dataset.mepLingoBlockSwap;
+    if (blockName === 'mep-lingo') {
+      resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+        .catch(() => ({}));
+    } else {
+      a.parentElement.remove();
+      return;
+    }
+  } else {
+    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
+  }
 
   if (!resp?.ok) {
-    window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
+    const message = shouldFetchMepLingo
+      ? `Could not get mep-lingo fragments: ${mepLingoPath}.plain.html or ${resourcePath}.plain.html`
+      : `Could not get fragment: ${resourcePath}.plain.html`;
+    window.lana?.log(message);
     return;
   }
 
@@ -129,13 +294,19 @@ export default async function init(a) {
   if (decorateArea) decorateArea(doc, { fragmentLink: a });
 
   const sections = doc.querySelectorAll('body > div');
-
   if (!sections.length) {
     window.lana?.log(`Could not make fragment: ${resourcePath}.plain.html`);
     return;
   }
 
-  const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
+  const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
+  if (usedMepLingo) {
+    fragmentAttrs['data-mep-lingo-roc'] = relHref;
+  } else if (usedFallback) {
+    fragmentAttrs['data-mep-lingo-fallback'] = relHref;
+  }
+
+  const fragment = createTag('div', fragmentAttrs);
   fragment.append(...sections);
 
   await updateFragMap(fragment, a, relHref);
@@ -151,9 +322,17 @@ export default async function init(a) {
     if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
   if (inline) {
-    await insertInlineFrag(sections, a, relHref, mep);
+    await insertInlineFrag(sections, a, relHref, fragment);
+  } else if (isSectionSwap && originalSection) {
+    await loadArea(fragment);
+    originalSection.innerHTML = '';
+    originalSection.append(createTag('div', null, fragment));
   } else {
-    a.parentElement.replaceChild(fragment, a);
+    const anchorParent = a.parentElement;
+    anchorParent.replaceChild(fragment, a);
+
+    originalBlock?.remove();
+
     await loadArea(fragment);
   }
 }
