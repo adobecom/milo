@@ -305,15 +305,16 @@ async function getLingoSiteLocale(origin, path) {
       const url = new URL(path.startsWith('http') ? path : `https://${path}`);
       pathname = url.pathname;
     } catch (e) {
+      window.lana?.log('[getLingoSiteLocale] Could not parse as URL, using as-is:', path);
       // If it doesn't start with /, try to extract pathname manually
       if (!path.startsWith('/')) {
         const pathParts = path.split('/');
         // Remove domain part (first element)
-        pathname = '/' + pathParts.slice(1).join('/');
+        pathname = `/${pathParts.slice(1).join('/')}`;
       }
     }
   }
-  const localeStr = path.split('/')[1];
+  const localeStr = pathname.split('/')[1];
   try {
     let siteId;
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
