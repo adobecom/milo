@@ -797,7 +797,7 @@ describe('getCountryAndLang', () => {
 
     it('should use GEO IP for langFirst when not news source', async () => {
       setConfig({
-        pathname: '/en/blah.html',
+        pathname: '/blah.html',
         locales: { '': { ietf: 'en-US' } },
       });
 
@@ -806,7 +806,7 @@ describe('getCountryAndLang', () => {
         source: ['hawks'],
       });
 
-      expect(expected.country).to.not.eq('xx');
+      expect(expected.country).to.eq('xx');
       expect(expected.language).to.eq('en');
     });
 

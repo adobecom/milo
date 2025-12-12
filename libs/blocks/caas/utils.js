@@ -626,6 +626,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
 
     let fallbackCountry = countryStr;
+    let fallbackLang = langStr;
     if (typeof fallbackCountry === 'object') {
       fallbackCountry = fallbackCountry.ietf?.split('-')[1] ?? 'xx';
     }
@@ -636,8 +637,8 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       const primeSource = Array.from([source].flat())[0];
       const mapping = await getLanguageFirstCountryAndLang(window.location.pathname, primeSource);
 
-      countryStr = mapping.country;
-      langStr = mapping.language;
+      countryStr = mapping.country || fallbackCountry;
+      langStr = mapping.language || fallbackLang;
 
       try {
         const urlParams = new URLSearchParams(window.location.search);
