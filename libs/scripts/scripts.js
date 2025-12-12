@@ -48,6 +48,7 @@ const config = {
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
+  uniqueSiteId: 'milo',
   codeRoot: '/libs',
   locales,
   prodDomains,
