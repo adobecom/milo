@@ -25,7 +25,9 @@ async function loadVideo(asset) {
 
   asset.load();
   await Promise.race(['loadedmetadata', 'error']
-    .map((event) => new Promise((resolve) => asset.addEventListener(event, resolve, { once: true }))));
+    .map((event) => new Promise((resolve) => {
+      asset.addEventListener(event, resolve, { once: true });
+    })));
 }
 
 function loadMpc(asset) {
