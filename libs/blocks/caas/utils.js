@@ -524,7 +524,7 @@ async function getLingoSiteLocale(origin, path) {
     country: 'xx',
     language: 'en',
   };
-  
+
   // Extract pathname from URL if path includes domain
   let pathname = path;
   if (path.includes('://') || !path.startsWith('/')) {
@@ -532,12 +532,11 @@ async function getLingoSiteLocale(origin, path) {
       const url = new URL(path.startsWith('http') ? path : `https://${path}`);
       pathname = url.pathname;
     } catch (e) {
-      console.warn('[getLingoSiteLocale] Could not parse as URL, using as-is:', path);
       // If it doesn't start with /, try to extract pathname manually
       if (!path.startsWith('/')) {
         const pathParts = path.split('/');
         // Remove domain part (first element)
-        pathname = '/' + pathParts.slice(1).join('/');
+        pathname = `/${pathParts.slice(1).join('/')}`;
       }
     }
   }
@@ -545,7 +544,7 @@ async function getLingoSiteLocale(origin, path) {
 
   try {
     let siteId;
-    const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json`);
+    const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
 
@@ -558,7 +557,7 @@ async function getLingoSiteLocale(origin, path) {
         if (host === caasOrigin) {
           siteId = uniqueSiteId;
         } else {
-          window.lana?.log('[getLingoSiteLocale] No match: host', ost, '!== caasOrigin', caasOrigin);
+          window.lana?.log('[getLingoSiteLocale] No match: host', host, '!== caasOrigin', caasOrigin);
         }
       });
 
@@ -623,7 +622,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
     const pathArr = pageConfigHelper()?.pathname?.split('/') || [];
-    const langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
+    let langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
 
     let fallbackCountry = countryStr;
