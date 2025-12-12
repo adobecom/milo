@@ -386,9 +386,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       }
       if (window.location.href.includes('main--da-bacom--adobecom.aem.')
         && window.location.pathname.startsWith('/es/')) {
-        config.locale.regions = {
-          ar: { prefix: '/ar', ietf: 'es', base: 'es' },
-        };
+        config.locale.regions = { ar: { prefix: '/ar', ietf: 'es', base: 'es' } };
+        config.uniqueSiteId = 'da-bacom';
         const lingoMeta = document.createElement('meta');
         lingoMeta.setAttribute('content', 'on');
         lingoMeta.setAttribute('name', 'langFirst');
@@ -639,7 +638,7 @@ function processQueryIndexMap(link, domain) {
       return [];
     })
     .finally(() => {
-      result.requestResolved = true;
+      result.requestResolved = false;
     });
 
   return result;
@@ -647,7 +646,7 @@ function processQueryIndexMap(link, domain) {
 
 async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   const config = getConfig();
-  
+
   if (lingoSiteMapping || isLoadingQueryIndexes) return;
   isLoadingQueryIndexes = true;
 
@@ -726,7 +725,15 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   import('./lingo.js');
 }
 
-function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
+function localizeLinkCore(
+  href,
+  originHostName,
+  overrideDomain,
+  useAsync,
+  aTag = null,
+  overridePrefix = null,
+  overrideBase = null,
+) {
   try {
     const url = new URL(href);
     const relative = url.hostname === originHostName;
@@ -745,7 +752,7 @@ function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
-    let prefix = getPrefixBySite(locale, url, relative);
+    let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
 
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
@@ -759,10 +766,12 @@ function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
         }
         const matchingIndexes = Object.values(queryIndexes)
           .filter((q) => q.domains.includes(url.hostname));
-        const basePrefix = locale.base === '' ? '' : `/${locale.base}`;
+        const base = overrideBase ?? locale.base;
+        const basePrefix = base === '' ? '' : `/${base}`;
         if (matchingIndexes.length) {
           const { default: urlInQueryIndex } = await import('./lingo.js');
-          const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex);
+          // pass if link in LCP
+          const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
           if (!useRegionalPrefix && locale.base) prefix = basePrefix;
         } else {
           prefix = basePrefix;
@@ -779,12 +788,70 @@ function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
   }
 }
 
+function getMepLingoPrefix() {
+  const config = getConfig();
+  const { locale } = config || {};
+  const { regions } = locale || {};
+
+  if (!regions || !Object.keys(regions).length) return null;
+
+  const country = getUserCountry();
+  const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
+
+  let regionKey = Object.entries(regions).find(
+    ([key]) => key === country || key === `${country}_${localeKey}`,
+  )?.[0];
+
+  if (!regionKey && country && config.mepLingoCountryToRegion) {
+    regionKey = Object.entries(config.mepLingoCountryToRegion).find(
+      ([key, countries]) => Array.isArray(countries) && countries.includes(country) && regions[key],
+    )?.[0];
+  }
+
+  return regionKey ? regions[regionKey].prefix : null;
+}
+
+function detectMepLingoSwap(a) {
+  if (!a) return;
+  if (a.href.includes('#_mep-lingo')) {
+    a.dataset.mepLingo = 'true';
+    a.href = a.href.replace('#_mep-lingo', '');
+  }
+  if (lingoActive()) {
+    const row = a.closest('.section > div > div');
+    const firstCell = row?.children[0];
+
+    if (firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo') {
+      if (a.closest('.section-metadata')) {
+        a.dataset.mepLingoSectionSwap = 'true';
+      } else {
+        const swapBlock = a.closest('.section > div[class]');
+        if (swapBlock) {
+          const [blockName] = swapBlock.classList;
+          a.dataset.mepLingoBlockSwap = blockName;
+        }
+      }
+    }
+  }
+}
+
 export async function localizeLinkAsync(
   href,
   originHostName = window.location.hostname,
   overrideDomain = false,
+  aTag = null,
 ) {
-  return localizeLinkCore(href, originHostName, overrideDomain, true);
+  detectMepLingoSwap(aTag);
+  const isMepLingoLink = aTag?.dataset?.mepLingo
+    || aTag?.dataset?.mepLingoSectionSwap
+    || aTag?.dataset?.mepLingoBlockSwap;
+
+  const prefix = lingoActive() && isMepLingoLink ? getMepLingoPrefix() : null;
+  const base = lingoActive() && isMepLingoLink
+    ? getConfig()?.locale?.prefix.replace('/', '')
+    : null;
+
+  return localizeLinkCore(href, originHostName, overrideDomain, true, aTag, prefix, base);
 }
 
 // this method is deprecated - use localizeLinkAsync instead
@@ -1118,27 +1185,10 @@ export function decorateAutoBlock(a) {
         return false;
       }
 
-      if (lingoActive()) {
-        const row = a.closest('.section > div > div');
-        const firstCell = row?.children[0];
-
-        if (firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo') {
-          if (a.closest('.section-metadata')) {
-            a.dataset.mepLingoSectionSwap = 'true';
-          } else {
-            const swapBlock = a.closest('.section > div[class]');
-            if (swapBlock) {
-              const [blockName] = swapBlock.classList;
-              a.dataset.mepLingoBlockSwap = blockName;
-            }
-          }
-
-          if (a.dataset.mepLingoSectionSwap || a.dataset.mepLingoBlockSwap) {
-            a.dataset.mepLingo = 'true';
-            a.className = `${key} link-block`;
-            return true;
-          }
-        }
+      if (a.dataset.mepLingoSectionSwap || a.dataset.mepLingoBlockSwap) {
+        a.dataset.mepLingo = 'true';
+        a.className = `${key} link-block`;
+        return true;
       }
 
       const isInlineFrag = url.hash.includes('#_inline');
@@ -1243,10 +1293,6 @@ function decorateLinkElement(a, config, hasDnt) {
   if (a.href.includes('#_nohtml')) {
     a.href = a.href.replace('#_nohtml', '');
   }
-  if (a.href.includes('#_mep-lingo')) {
-    a.dataset.mepLingo = 'true';
-    a.href = a.href.replace('#_mep-lingo', '');
-  }
   // Custom action links
   const loginEvent = '#_evt-login';
   if (a.href.includes(loginEvent)) {
@@ -1301,7 +1347,14 @@ export async function decorateLinksAsync(el) {
 
   const linksPromises = [...anchors].map(async (a) => {
     const hasDnt = a.href.includes('#_dnt');
-    if (!a.dataset.hasDnt) a.href = await localizeLinkAsync(a.href);
+    if (!a.dataset.hasDnt) {
+      a.href = await localizeLinkAsync(
+        a.href,
+        window.location.hostname,
+        false,
+        a,
+      );
+    }
     return processLinkDecoration(a, config, hasDnt);
   });
 
@@ -1888,6 +1941,7 @@ async function loadPostLCP(config) {
   if (header) {
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
+
     loadBlock(header);
     header.classList.remove('gnav-hide');
   }
@@ -2093,25 +2147,13 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 function loadMepLingoIndexes() {
   const config = getConfig();
   const { locale } = config || {};
-  const { regions } = locale || {};
-  if (regions && Object.keys(regions).length > 0) {
-    const country = getUserCountry();
-    const mapping = config.mepLingoCountryToRegion;
+  const prefix = getMepLingoPrefix();
 
-    let regionKey = Object.entries(regions).find(([key]) => key === country || key === `${country}_${locale.prefix === '' ? 'en' : locale.prefix.replace('/', '')}`)?.[0];
-    if (!regionKey) {
-      regionKey = country && mapping
-        ? Object.entries(mapping).find(
-          ([key, countries]) => Array.isArray(countries)
-            && countries.includes(country)
-            && regions[key],
-        )?.[0]
-        : null;
-    }
-    if (regionKey) {
-      loadQueryIndexes(regions[regionKey].prefix, true);
-    }
-  } else if (locale?.base) loadQueryIndexes(config.locale.prefix);
+  if (prefix) {
+    loadQueryIndexes(prefix, true);
+  } else if (locale?.base) {
+    loadQueryIndexes(config.locale.prefix);
+  }
 }
 
 export async function loadArea(area = document) {

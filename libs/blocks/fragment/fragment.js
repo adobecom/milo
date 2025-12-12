@@ -17,7 +17,8 @@ const isCircularRef = (href) => [...Object.values(fragMap)]
 const updateFragMap = async (fragment, a, href) => {
   const allLinks = [...fragment.querySelectorAll('a')];
   const linkLocalizations = await Promise.all(
-    allLinks.map((link) => localizeLinkAsync(removeHash(link.href))),
+    allLinks.map((link) => localizeLinkAsync(
+      removeHash(link.href), window.location.hostname, false, link)),
   );
   const fragLinksWithLocalizations = linkLocalizations
     .filter((localizedHref) => localizedHref.includes('/fragments/'));
