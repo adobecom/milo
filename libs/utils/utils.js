@@ -556,17 +556,6 @@ export function lingoActive() {
   return ['true', 'on'].includes(langFirst);
 }
 
-/**
- * Get user's country code for mep-lingo region detection.
- * TODO: Finalize source of truth with Victor/Vivian. Current priority:
- *   1. akamaiLocale URL param (for testing/override)
- *   2. akamai sessionStorage
- *   3. Server timing geo header
- * Proposed priority (needs discussion):
- *   1. param override
- *   2. cookie (TBD if using cookie)
- *   3. server info (with region object lookup)
- */
 export function getUserCountry() {
   return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
 }
@@ -656,22 +645,31 @@ function processQueryIndexMap(link, domain) {
   return result;
 }
 
-async function loadQueryIndexes(prefix) {
+async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   const config = getConfig();
-
+  
   if (lingoSiteMapping || isLoadingQueryIndexes) return;
   isLoadingQueryIndexes = true;
 
   const origin = config.origin || window.location.origin;
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
-  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
   const siteId = config.uniqueSiteId ?? '';
+  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
 
   queryIndexes[siteId] = processQueryIndexMap(
     `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
     window.location.hostname,
   );
+  queryIndexes.federal = processQueryIndexMap(
+    `${getFederatedContentRoot()}${prefix}/federal/assets/lingo/query-index${queryIndexSuffix}.json`,
+    getFederatedContentRoot().replace('https://', ''),
+  );
+
+  if (onlyCurrentSite) {
+    lingoSiteMapping = Promise.resolve(lingoSiteMappingLoaded = true);
+    return;
+  }
 
   if (config.queryIndexPath) {
     const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${contentRoot}`;
@@ -742,7 +740,7 @@ function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
     const { locale, locales, languages, prodDomains, uniqueSiteId } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
-        || overrideDomain;
+        || overrideDomain || getFederatedContentRoot().includes(url.hostname);
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
@@ -751,8 +749,7 @@ function localizeLinkCore(href, originHostName, overrideDomain, useAsync) {
 
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
-        && ((locale.base && !path.includes('/fragments/'))
-          || (!!locale.regions?.length && path.includes('/fragments/')))) {
+        && !(locale.base && !path.includes('/fragments/'))) {
       return (async () => {
         if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
           loadQueryIndexes(prefix);
@@ -2044,29 +2041,22 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
-async function resolveFragments(section) {
-  const sectionSwapAnchors = [...section.el.querySelectorAll('a[data-mep-lingo-section-swap]')];
+async function loadFragments(section, selector) {
+  const anchors = [...section.querySelectorAll(selector)];
+  if (!anchors.length) return false;
 
-  if (sectionSwapAnchors.length) {
-    const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
-    await Promise.all(sectionSwapAnchors.map((anchor) => loadFragment(anchor)));
-  }
+  const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
+  await Promise.all(anchors.map((anchor) => loadFragment(anchor)));
+  return true;
+}
 
-  const blockSwapAnchors = [...section.el.querySelectorAll('a[data-mep-lingo-block-swap]')];
+async function resolveHighPriorityFragments(section) {
+  // Load in cascading order: section swaps → block swaps → inline fragments
+  const hadSectionSwaps = await loadFragments(section.el, 'a[data-mep-lingo-section-swap]');
+  const hadBlockSwaps = await loadFragments(section.el, 'a[data-mep-lingo-block-swap]');
+  const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
-  if (blockSwapAnchors.length) {
-    const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
-    await Promise.all(blockSwapAnchors.map((anchor) => loadFragment(anchor)));
-  }
-
-  const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
-
-  if (inlineFrags.length) {
-    const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
-    await Promise.all(inlineFrags.map((link) => loadFragment(link)));
-  }
-
-  if (sectionSwapAnchors.length || blockSwapAnchors.length || inlineFrags.length) {
+  if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
     const newlyDecoratedSection = await decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;
@@ -2074,7 +2064,7 @@ async function resolveFragments(section) {
 }
 
 async function processSection(section, config, isDoc, lcpSectionId) {
-  await resolveFragments(section);
+  await resolveHighPriorityFragments(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
@@ -2104,12 +2094,11 @@ function loadMepLingoIndexes() {
   const config = getConfig();
   const { locale } = config || {};
   const { regions } = locale || {};
-  let prefix;
   if (regions && Object.keys(regions).length > 0) {
     const country = getUserCountry();
     const mapping = config.mepLingoCountryToRegion;
 
-    let regionKey = Object.entries(regions).find(([key]) => key === country || key === `${country}_${locale.prefix.replace('/', '')}`)?.[0];
+    let regionKey = Object.entries(regions).find(([key]) => key === country || key === `${country}_${locale.prefix === '' ? 'en' : locale.prefix.replace('/', '')}`)?.[0];
     if (!regionKey) {
       regionKey = country && mapping
         ? Object.entries(mapping).find(
@@ -2120,10 +2109,9 @@ function loadMepLingoIndexes() {
         : null;
     }
     if (regionKey) {
-      prefix = regions[regionKey].prefix;
+      loadQueryIndexes(regions[regionKey].prefix, true);
     }
-  } else if (locale?.base) prefix = config.locale.prefix;
-  if (prefix) loadQueryIndexes(prefix);
+  } else if (locale?.base) loadQueryIndexes(config.locale.prefix);
 }
 
 export async function loadArea(area = document) {
