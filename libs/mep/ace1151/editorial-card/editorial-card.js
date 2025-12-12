@@ -205,7 +205,7 @@ const addClickableAreas = (el) => {
   if (!cardButtons) return;
   const areaUrl = cardButtons[1].href ? cardButtons[1].href : cardButtons[0].href;
   el.classList.add('s2a-click-area');
-  el.addEventListener('click', () => window.open(areaUrl, '_blank'));
+  el.addEventListener('click', () => window.location.assign(areaUrl));
   el.querySelector('.card-footer').addEventListener('click', (e) => e.stopPropagation());
 };
 

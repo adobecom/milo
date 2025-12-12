@@ -444,8 +444,8 @@ const loadingPromises = new Map();
  */
 function isMasDepsFlagEnabled() {
   const metaFlag = getMetadata('mas-ff-mas-deps');
-  if (metaFlag === 'on' || metaFlag === 'true') return true;
-  return false;
+  if (metaFlag === 'off' || metaFlag === 'false') return false;
+  return true;
 }
 
 /**
@@ -1317,7 +1317,7 @@ export async function buildCta(el, params) {
     cta.classList.add(LOADING_ENTITLEMENTS);
     cta.onceSettled().finally(() => {
       cta.classList.remove(LOADING_ENTITLEMENTS);
-      updateModalState({ cta });
+      if (!cta.closest('[role="tabpanel"][hidden]')) updateModalState({ cta });
     });
   }
 

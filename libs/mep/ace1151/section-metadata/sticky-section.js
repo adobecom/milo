@@ -25,8 +25,8 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         el.classList.toggle('fill-sticky-section', isIntersecting);
       } else if (target === document.querySelector('.hide-at-intersection')) {
         const shouldHideSticky = isIntersecting
-        || entry.boundingClientRect.top < 0
-        || stickySectionEl?.getBoundingClientRect().y > 0;
+          || entry.boundingClientRect.top < 0
+          || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', shouldHideSticky);
       } else el.classList.toggle('hide-sticky-section', abovePromoStart);
     });
