@@ -5,7 +5,6 @@ import { LANGS,
   getPageLocale,
   getGrayboxExperienceId,
   getLanguageFirstCountryAndLang,
-  getLingoSiteLocale,
 } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
@@ -298,73 +297,6 @@ const isPagePublished = async () => {
   }
   return false;
 };
-
-async function getLingoSiteLocale(origin, path) {
-  const host = origin.toLowerCase();
-  let lingoSiteMapping = {
-    country: 'xx',
-    language: 'en',
-  };
-  let pathname = path;
-  if (path.includes('://') || !path.startsWith('/')) {
-    try {
-      const url = new URL(path.startsWith('http') ? path : `https://${path}`);
-      pathname = url.pathname;
-    } catch (e) {
-      window.lana?.log('[getLingoSiteLocale] Could not parse as URL, using as-is:', path);
-      // If it doesn't start with /, try to extract pathname manually
-      if (!path.startsWith('/')) {
-        const pathParts = path.split('/');
-        // Remove domain part (first element)
-        pathname = `/${pathParts.slice(1).join('/')}`;
-      }
-    }
-  }
-  const localeStr = pathname.split('/')[1];
-  try {
-    let siteId;
-    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const configJson = await response.json();
-
-    const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
-    const siteLocalesData = configJson['site-locales']?.data ?? [];
-
-    siteQueryIndexMap
-      .forEach(({ uniqueSiteId, caasOrigin }) => {
-        if (host === caasOrigin) {
-          siteId = uniqueSiteId;
-        }
-      });
-    siteLocalesData
-      .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
-      .forEach(({ baseSite, regionalSites }) => {
-        if (localeStr === baseSite.split('/')[1]) {
-          lingoSiteMapping = {
-            country: 'xx',
-            language: baseSite.split('/')[1],
-          };
-          return;
-        }
-        if (regionalSites.includes(localeStr)) {
-          if (baseSite === '/') {
-            lingoSiteMapping = {
-              country: localeStr,
-              language: 'en',
-            };
-          }
-          lingoSiteMapping = {
-            country: localeStr,
-            language: baseSite.split('/')[1],
-          };
-        }
-      });
-    return lingoSiteMapping;
-  } catch (e) {
-    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
-  }
-  return lingoSiteMapping;
-}
 
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
