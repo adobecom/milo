@@ -101,14 +101,14 @@ async function showBanner(market, config, translatedUrl) {
     e.preventDefault();
     const { setInternational } = await import('../../utils/utils.js');
     setInternational(market.prefix);
-    // window.location.href = translatedUrl;
+    window.location.href = translatedUrl;
   });
 
   banner.querySelector('.language-banner-close').addEventListener('click', () => {
-    // const pageLangPrefix = config.locale.prefix?.replace('/', '') || 'us';
-    // const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
-    // document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
-    // banner.remove();
+    const pageLangPrefix = config.locale.prefix?.replace('/', '') || 'us';
+    const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
+    document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
+    banner.remove();
   });
   const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
   sendAnalytics(new Event(`${market.prefix || 'us'}-${pagePrefix}|language-banner`),);
