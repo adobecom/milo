@@ -107,10 +107,8 @@ async function checkWcsElements() {
   }
 
   // Check for duplicate promotion codes with same text content
-  promoCodeMap.forEach((elementsWithCode, key) => {
+  promoCodeMap.forEach((elementsWithCode) => {
     if (elementsWithCode.length > 1) {
-      const [promoCode, textContent] = key.split('::');
-      
       // Mark all elements with this promo code + text combination as having an error
       elementsWithCode.forEach((elem) => {
         elem.promoCodeStatus = 'error';
