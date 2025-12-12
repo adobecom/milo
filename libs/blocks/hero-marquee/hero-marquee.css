@@ -811,6 +811,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   .hero-marquee.northstar [class*="heading-"] {
+    font-family: "Adobe Clean Black", var(--body-font-family);
     font-weight: 900;
   }
 
