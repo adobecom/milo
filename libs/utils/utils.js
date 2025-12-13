@@ -842,6 +842,8 @@ export async function localizeLinkAsync(
   aTag = null,
 ) {
   detectMepLingoSwap(aTag);
+  // Remove #_mep-lingo from href to match what detectMepLingoSwap did to aTag.href
+  const effectiveHref = href.includes('#_mep-lingo') ? href.replace('#_mep-lingo', '') : href;
   const isMepLingoLink = aTag?.dataset?.mepLingo
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
@@ -851,7 +853,7 @@ export async function localizeLinkAsync(
     ? getConfig()?.locale?.prefix.replace('/', '')
     : null;
 
-  return localizeLinkCore(href, originHostName, overrideDomain, true, aTag, prefix, base);
+  return localizeLinkCore(effectiveHref, originHostName, overrideDomain, true, aTag, prefix, base);
 }
 
 // this method is deprecated - use localizeLinkAsync instead

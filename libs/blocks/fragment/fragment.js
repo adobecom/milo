@@ -18,7 +18,11 @@ const updateFragMap = async (fragment, a, href) => {
   const allLinks = [...fragment.querySelectorAll('a')];
   const linkLocalizations = await Promise.all(
     allLinks.map((link) => localizeLinkAsync(
-      removeHash(link.href), window.location.hostname, false, link)),
+      removeHash(link.href),
+      window.location.hostname,
+      false,
+      link,
+    )),
   );
   const fragLinksWithLocalizations = linkLocalizations
     .filter((localizedHref) => localizedHref.includes('/fragments/'));
@@ -235,7 +239,7 @@ export default async function init(a) {
       relHref = await localizeLinkAsync(mepLingoPath);
     }
 
-    if (!isBlockSwap) {
+    if (!isBlockSwap && !isSectionSwap) {
       let result;
       const useQueryIndex = qiResolved && qiAvailable;
       if (useQueryIndex && !mepLingoInIndex) {
@@ -273,6 +277,11 @@ export default async function init(a) {
       resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
         .catch(() => ({}));
     } else {
+      // TODO: When on a regional page directly (e.g., /ar), shouldFetchMepLingo is false
+      // because locale.regions is undefined (regions are defined on base locales only).
+      // Current behavior: keeps original block but leaves mep-lingo row visible (bug).
+      // Options: 1) Call removeMepLingoRow(originalBlock) before returning
+      //          2) Add logic to swap in the regional fragment even when on regional page
       a.parentElement.remove();
       return;
     }
@@ -324,6 +333,7 @@ export default async function init(a) {
   }
   if (inline) {
     await insertInlineFrag(sections, a, relHref, fragment);
+    originalBlock?.remove(); // Remove original block for inline block swaps
   } else if (isSectionSwap && originalSection) {
     await loadArea(fragment);
     originalSection.innerHTML = '';
