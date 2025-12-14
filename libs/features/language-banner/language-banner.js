@@ -100,8 +100,8 @@ async function showBanner(market, config, translatedUrl) {
   banner.querySelector('.language-banner-link').addEventListener('click', async (e) => {
     e.preventDefault();
     const { setInternational } = await import('../../utils/utils.js');
-    setInternational(market.prefix);
-    window.location.href = translatedUrl;
+    setInternational(market.prefix || 'us');
+    window.open(translatedUrl, '_self');
   });
 
   banner.querySelector('.language-banner-close').addEventListener('click', () => {
