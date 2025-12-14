@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import getAkamaiCode from '../../utils/geo.js';
 
@@ -13,7 +14,6 @@ const getCookie = (name) => document.cookie
  */
 function getPreferredLanguage(locales) {
   const cookie = getCookie('international');
-  console.log('language-banner cookie:', cookie);
   if (cookie && cookie !== 'us') {
     const locale = locales[cookie];
     const langFromCookie = locale?.ietf
@@ -22,7 +22,6 @@ function getPreferredLanguage(locales) {
     return langFromCookie;
   }
   const browserLang = navigator.language?.split('-')[0];
-  console.log('language-banner browserLang:', browserLang);
   return browserLang || null;
 }
 
@@ -91,7 +90,6 @@ export function sendAnalytics(event) {
 }
 
 async function showBanner(market, config, translatedUrl) {
-  console.log('language-banner: showing banner for market:', market);
   const banner = buildBanner(market, translatedUrl);
   document.body.prepend(banner);
   const { codeRoot, miloLibs } = config;
@@ -114,10 +112,6 @@ async function showBanner(market, config, translatedUrl) {
   sendAnalytics(new Event(`${market.prefix || 'us'}-${pagePrefix}|language-banner`),);
 }
 
-/**
- * Initializes the language banner feature.
- * @returns {Promise<boolean>} Returns true if the logic was handled, false if it should delegate.
- */
 export default async function init(jsonPromise) {
   const config = getConfig();
   const internationalCookie = getCookie('international');
@@ -125,30 +119,31 @@ export default async function init(jsonPromise) {
   if (internationalCookie === pagePrefix) return;
   const pageLang = config.locale.ietf.split('-')[0];
   const prefLang = getPreferredLanguage(config.locales);
-  console.log('language-banner preferredLanguage:', prefLang);
 
   const marketsConfigPromise = jsonPromise
     .then((res) => (res.ok ? res.json() : null))
     .catch(() => null);
 
-  let [geoIp, marketsConfig] = await Promise.all([
+  const [geoIpCode, marketsConfig] = await Promise.all([
     getAkamaiCode(),
     marketsConfigPromise,
   ]);
 
-  if (!geoIp || !marketsConfig) return;
-  geoIp = geoIp.toLowerCase();
-  console.log('language-banner geoIp:', geoIp);
+  if (!geoIpCode || !marketsConfig) return;
+  const geoIp = geoIpCode.toLowerCase();
   marketsConfig.data.forEach((market) => {
     market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   });
 
-  const pageMarket = marketsConfig.data.find((m) => m.prefix === (config.locale.prefix?.replace('/', '') || ''));
+  const pageMarket = marketsConfig.data.find((market) => market.prefix === (config.locale.prefix?.replace('/', '') || ''));
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = marketsConfig.data.find((m) => m.lang === prefLang && m.supportedRegions.includes(geoIp));
+    const prefMarket = marketsConfig.data.find((market) => (
+      market.lang === prefLang
+      && market.supportedRegions.includes(geoIp)
+    ));
     if (prefMarket) {
       const translatedUrl = await getTranslatedPage(prefMarket.prefix, config);
       if (translatedUrl) await showBanner(prefMarket, config, translatedUrl);
@@ -157,11 +152,12 @@ export default async function init(jsonPromise) {
   }
 
   // Unsupported Market Path
-  const marketsForGeo = marketsConfig.data.filter((m) => m.supportedRegions.includes(geoIp));
+  const marketsForGeo = marketsConfig.data.filter((market) => (
+    market.supportedRegions.includes(geoIp)));
   if (!marketsForGeo.length) return;
 
   if (prefLang) {
-    const prefMarketForGeo = marketsForGeo.find((m) => m.lang === prefLang);
+    const prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
     if (prefMarketForGeo) {
       const translatedUrl = await getTranslatedPage(prefMarketForGeo.prefix, config);
       if (translatedUrl) {
@@ -199,7 +195,7 @@ export default async function init(jsonPromise) {
     const translatedUrl = await getTranslatedPage(market.prefix, config);
     if (translatedUrl) {
       await showBanner(market, config, translatedUrl);
-      return; // Stop after finding the first valid page
+      return;
     }
   }
 }
