@@ -817,19 +817,18 @@ function detectMepLingoSwap(a) {
     a.dataset.mepLingo = 'true';
     a.href = a.href.replace('#_mep-lingo', '');
   }
-  if (lingoActive()) {
-    const row = a.closest('.section > div > div');
-    const firstCell = row?.children[0];
+  // Always detect mep-lingo rows (even when lingoActive() is false) for fallback purposes
+  const row = a.closest('.section > div > div');
+  const firstCellText = row?.children[0]?.textContent?.toLowerCase().trim();
 
-    if (firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo') {
-      if (a.closest('.section-metadata')) {
-        a.dataset.mepLingoSectionSwap = 'true';
-      } else {
-        const swapBlock = a.closest('.section > div[class]');
-        if (swapBlock) {
-          const [blockName] = swapBlock.classList;
-          a.dataset.mepLingoBlockSwap = blockName;
-        }
+  if (firstCellText === 'mep-lingo') {
+    a.dataset.mepLingo = 'true';
+    if (a.closest('.section-metadata')) {
+      a.dataset.mepLingoSectionSwap = 'true';
+    } else {
+      const swapBlock = a.closest('.section > div[class]');
+      if (swapBlock) {
+        [a.dataset.mepLingoBlockSwap] = swapBlock.classList;
       }
     }
   }

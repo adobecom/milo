@@ -84,7 +84,7 @@ function replaceDotMedia(path, doc) {
 
 export default async function init(a) {
   if (!a?.href) return;
-  const { decorateArea, mep, placeholders, locale } = getConfig();
+  const { decorateArea, mep, placeholders, locale, env } = getConfig();
   let relHref = await localizeLinkAsync(a.href);
   let inline = false;
 
@@ -138,6 +138,10 @@ export default async function init(a) {
     a.dataset.mepLingo && matchingRegion && country && resourcePath && localeCode
   );
 
+  // Detect if mep-lingo is authored but shouldn't apply (e.g., on a regional page)
+  const isMepLingoInvalid = a.dataset.mepLingo && !shouldFetchMepLingo;
+  const isOnRegionalPage = a.dataset.mepLingo && !locale?.regions;
+
   // Helper to remove mep-lingo row from a container
   const removeMepLingoRow = (container) => {
     const rows = container?.querySelectorAll(':scope > div');
@@ -147,6 +151,11 @@ export default async function init(a) {
     });
     mepLingoRow?.remove();
   };
+
+  if (isMepLingoInvalid && isOnRegionalPage) {
+    lingoModule.handleInvalidOnRegionalPage(a, { env, relHref });
+    return;
+  }
 
   // Handle section swap (anchor is inside section-metadata)
   const isSectionSwap = !!a.dataset.mepLingoSectionSwap;

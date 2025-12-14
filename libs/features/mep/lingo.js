@@ -1,6 +1,7 @@
 /* MEP Lingo - Region-optimized content handling. See README.md for documentation. */
 import {
   getConfig,
+  createTag,
   customFetch,
   queryIndexes,
   getUserCountry,
@@ -95,4 +96,41 @@ export async function getQueryIndexPaths(prefix, checkImmediate = false, isFeder
     window.lana?.log(`Query index error for ${prefix}:`, e);
     return checkImmediate ? unavailable : { paths: [], available: false };
   }
+}
+
+export function handleInvalidOnRegionalPage(a, { env, relHref }) {
+  const { mepLingoSectionSwap, mepLingoBlockSwap } = a.dataset;
+  const isProd = env?.name === 'prod';
+
+  if (mepLingoSectionSwap) {
+    const section = a.closest('.section');
+    if (isProd) { section?.remove(); return; }
+    section.dataset.failed = 'true';
+    section.dataset.reason = 'mep-lingo: invalid on regional page (section swap)';
+    a.parentElement?.remove();
+    return;
+  }
+
+  if (mepLingoBlockSwap) {
+    const block = a.closest(`.${mepLingoBlockSwap}`);
+    if (isProd) { block?.remove(); return; }
+    const swapType = mepLingoBlockSwap === 'mep-lingo' ? 'block' : 'block swap';
+    block.dataset.failed = 'true';
+    block.dataset.reason = `mep-lingo: invalid on regional page (${swapType})`;
+    if (mepLingoBlockSwap !== 'mep-lingo') a.parentElement?.remove();
+    return;
+  }
+
+  if (isProd) {
+    const parent = a.parentElement;
+    a.remove();
+    if (!parent?.children.length && !parent?.textContent?.trim()) parent?.remove();
+    return;
+  }
+  const isInline = a.href?.includes('#_inline') || relHref?.includes('#_inline');
+  a.replaceWith(createTag('div', {
+    'data-failed': 'true',
+    'data-reason': `mep-lingo: ${isInline ? 'inline ' : ''}fragment invalid on regional page`,
+    style: 'min-height: 40px; margin: 8px 0;',
+  }));
 }
