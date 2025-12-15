@@ -800,7 +800,7 @@ export function getCountry() {
   return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
 }
 
-function getMepLingoPrefix() {
+export function getMepLingoPrefix() {
   const config = getConfig();
   const { locale } = config || {};
   const { regions } = locale || {};
@@ -835,12 +835,13 @@ function detectMepLingoSwap(a) {
 
   if (firstCellText === 'mep-lingo') {
     a.dataset.mepLingo = 'true';
+    a.dataset.originalHref = a.href;
     if (a.closest('.section-metadata')) {
       a.dataset.mepLingoSectionSwap = 'true';
     } else {
       const swapBlock = a.closest('.section > div[class]');
       if (swapBlock) {
-        [a.dataset.mepLingoBlockSwap] = swapBlock.classList;
+        a.dataset.mepLingoBlockSwap = swapBlock.classList;
       }
     }
   }
