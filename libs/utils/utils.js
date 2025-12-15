@@ -801,6 +801,7 @@ export function getCountry() {
 }
 
 export function getMepLingoPrefix() {
+  if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
   const { regions } = locale || {};
@@ -843,7 +844,6 @@ function detectMepLingoSwap(a) {
     } else {
       const swapBlock = a.closest('.section > div[class]');
       if (swapBlock) {
-        // Get the first class name (the block name) as a string
         const [blockName] = swapBlock.classList;
         a.dataset.mepLingoBlockSwap = blockName;
       }

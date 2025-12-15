@@ -128,7 +128,6 @@ export default async function init(a) {
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
   const isMepLingoInvalid = isMepLingoLink && !shouldFetchMepLingo;
-  const isOnRegionalPage = isMepLingoLink && !locale?.regions;
 
   // Helper to remove mep-lingo row from a container
   const removeMepLingoRow = (container) => {
@@ -140,9 +139,9 @@ export default async function init(a) {
     mepLingoRow?.remove();
   };
 
-  if (isMepLingoInvalid && isOnRegionalPage) {
-    const { handleInvalidOnRegionalPage } = await import('../../features/mep/lingo.js');
-    handleInvalidOnRegionalPage(a, { env, relHref });
+  if (isMepLingoInvalid) {
+    const { handleInvalidMepLingo } = await import('../../features/mep/lingo.js');
+    handleInvalidMepLingo(a, { env, relHref });
     return;
   }
 
@@ -206,6 +205,7 @@ export default async function init(a) {
 
   const isLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
   const needsFallback = (isMepLingoBlock || isLingoFragment) && !!a.dataset.originalHref;
+  let usedFallback = false;
 
   if (!resp?.ok && needsFallback && a.dataset.originalHref) {
     let fallbackPath = a.dataset.originalHref;
@@ -223,6 +223,7 @@ export default async function init(a) {
       .catch(() => ({}));
     if (resp?.ok) {
       relHref = fallbackPath;
+      usedFallback = true;
     }
   }
 
@@ -254,8 +255,13 @@ export default async function init(a) {
   }
 
   const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
-
   const fragment = createTag('div', fragmentAttrs);
+
+  // Add preview badges for mep-lingo fragments (only in non-prod)
+  if (isMepLingoLink && env?.name !== 'prod') {
+    const { addMepLingoPreviewAttrs } = await import('../../features/mep/lingo.js');
+    addMepLingoPreviewAttrs(fragment, { usedFallback, relHref });
+  }
   fragment.append(...sections);
 
   await updateFragMap(fragment, a, relHref);

@@ -98,7 +98,12 @@ export async function getQueryIndexPaths(prefix, checkImmediate = false, isFeder
   }
 }
 
-export function handleInvalidOnRegionalPage(a, { env, relHref }) {
+/**
+ * Handle invalid mep-lingo content (langFirst=off or no regional targeting).
+ * In prod: removes content silently.
+ * In non-prod: shows pink "failed to load" banner with reason.
+ */
+export function handleInvalidMepLingo(a, { env, relHref }) {
   const { mepLingoSectionSwap, mepLingoBlockSwap } = a.dataset;
   const isProd = env?.name === 'prod';
 
@@ -106,7 +111,7 @@ export function handleInvalidOnRegionalPage(a, { env, relHref }) {
     const section = a.closest('.section');
     if (isProd) { section?.remove(); return; }
     section.dataset.failed = 'true';
-    section.dataset.reason = 'mep-lingo: invalid on regional page (section swap)';
+    section.dataset.reason = 'mep-lingo: not available (section swap)';
     a.parentElement?.remove();
     return;
   }
@@ -116,11 +121,12 @@ export function handleInvalidOnRegionalPage(a, { env, relHref }) {
     if (isProd) { block?.remove(); return; }
     const swapType = mepLingoBlockSwap === 'mep-lingo' ? 'block' : 'block swap';
     block.dataset.failed = 'true';
-    block.dataset.reason = `mep-lingo: invalid on regional page (${swapType})`;
+    block.dataset.reason = `mep-lingo: not available (${swapType})`;
     if (mepLingoBlockSwap !== 'mep-lingo') a.parentElement?.remove();
     return;
   }
 
+  // Standalone fragment link
   if (isProd) {
     const parent = a.parentElement;
     a.remove();
@@ -130,7 +136,15 @@ export function handleInvalidOnRegionalPage(a, { env, relHref }) {
   const isInline = a.href?.includes('#_inline') || relHref?.includes('#_inline');
   a.replaceWith(createTag('div', {
     'data-failed': 'true',
-    'data-reason': `mep-lingo: ${isInline ? 'inline ' : ''}fragment invalid on regional page`,
+    'data-reason': `mep-lingo: ${isInline ? 'inline ' : ''}fragment not available`,
     style: 'min-height: 40px; margin: 8px 0;',
   }));
+}
+
+export function addMepLingoPreviewAttrs(fragment, { usedFallback, relHref }) {
+  if (usedFallback) {
+    fragment.dataset.mepLingoFallback = relHref;
+  } else {
+    fragment.dataset.mepLingoRoc = relHref;
+  }
 }
