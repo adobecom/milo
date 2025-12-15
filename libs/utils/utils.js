@@ -827,6 +827,8 @@ function detectMepLingoSwap(a) {
   if (!a) return;
   if (a.href.includes('#_mep-lingo')) {
     a.dataset.mepLingo = 'true';
+    // Store original href before transformation for fallback purposes
+    a.dataset.originalHref = a.href.replace('#_mep-lingo', '');
     a.href = a.href.replace('#_mep-lingo', '');
   }
   // Always detect mep-lingo rows (even when lingoActive() is false) for fallback purposes
@@ -841,7 +843,9 @@ function detectMepLingoSwap(a) {
     } else {
       const swapBlock = a.closest('.section > div[class]');
       if (swapBlock) {
-        a.dataset.mepLingoBlockSwap = swapBlock.classList;
+        // Get the first class name (the block name) as a string
+        const [blockName] = swapBlock.classList;
+        a.dataset.mepLingoBlockSwap = blockName;
       }
     }
   }

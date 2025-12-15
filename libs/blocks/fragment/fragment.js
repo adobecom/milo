@@ -125,11 +125,10 @@ export default async function init(a) {
     resourcePath = getFederatedUrl(a.href);
   }
 
-  const shouldFetchMepLingo = !!(
-    a.dataset.mepLingo && getMepLingoPrefix()
-  );
-  const isMepLingoInvalid = a.dataset.mepLingo && !shouldFetchMepLingo;
-  const isOnRegionalPage = a.dataset.mepLingo && !locale?.regions;
+  const isMepLingoLink = a.dataset.mepLingo === 'true';
+  const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
+  const isMepLingoInvalid = isMepLingoLink && !shouldFetchMepLingo;
+  const isOnRegionalPage = isMepLingoLink && !locale?.regions;
 
   // Helper to remove mep-lingo row from a container
   const removeMepLingoRow = (container) => {
@@ -142,56 +141,102 @@ export default async function init(a) {
   };
 
   if (isMepLingoInvalid && isOnRegionalPage) {
-    lingoModule.handleInvalidOnRegionalPage(a, { env, relHref });
+    const { handleInvalidOnRegionalPage } = await import('../../features/mep/lingo.js');
+    handleInvalidOnRegionalPage(a, { env, relHref });
     return;
   }
 
   let originalBlock;
-  let originalSection;
-  const isSectionSwap = !!a.dataset.mepLingoSectionSwap;
+  const isSectionSwap = a.dataset.mepLingoSectionSwap === 'true';
   const isBlockSwap = !!a.dataset.mepLingoBlockSwap;
-  
-  try { 
-    const originalUrl = new URL(a.dataset.originalHref);
-    const regionPrefixes = Object.values(locale?.regions)?.map((r) => r.prefix);
-    const regionalUrlOnBasePage = regionPrefixes?.length ? !!regionPrefixes?.some((prefix) => url?.pathname.startsWith(prefix)) : false;
-    const linkPrelocalizedWhileAuthoring = Object.keys(getConfig().locales)?.filter(Boolean)?.some((key) => originalUrl?.pathname.startsWith(key));
-    const regionalPage = locale?.regions;
-    const prod = env?.name === 'prod';
+  const originalSection = isSectionSwap ? a.closest('.section') : null;
+  const isMepLingoBlock = isBlockSwap && a.dataset.mepLingoBlockSwap === 'mep-lingo';
 
-    originalSection = isSectionSwap ? a.closest('.section') : null;
-    if (isSectionSwap && originalSection && !regionalUrlOnBasePage) { 
-      // is a regional page
-      if (prod && regionalPage) { originalSection?.remove(); return; }
-      // TODO set some type of class on the section so this can be marked as problematic but handled later
-      // link was prelocalized
-      if (prod && linkPrelocalizedWhileAuthoring) {
-        removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
-      }
-      // TODO set some type of class on the section so this can be marked as problematic but handled later
-    }
-
-    // Handle block swap (anchor is still inside block)
-    
+  // For block/section swaps (not mep-lingo blocks) when no regional targeting: keep authored
+  if (!shouldFetchMepLingo && (isBlockSwap || isSectionSwap) && !isMepLingoBlock) {
     if (isBlockSwap) {
-      const blockName = a.dataset.mepLingoBlockSwap;
-      originalBlock = a.closest(`.${blockName}`);
+      removeMepLingoRow(a.closest(`.${a.dataset.mepLingoBlockSwap}`));
+    } else if (isSectionSwap) {
+      removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
+    }
+    return;
+  }
 
-      if (originalBlock) {
-        const wrapper = createTag('div', null, a);
-        originalBlock.insertAdjacentElement('afterend', wrapper);
-        if (blockName === 'mep-lingo') originalBlock.remove();
+  // Handle prelocalized link detection (author used regional path instead of base path)
+  if (a.dataset.originalHref && locale?.regions) {
+    try {
+      const originalUrl = new URL(a.dataset.originalHref);
+      const regionPrefixes = Object.values(locale.regions).map((r) => r.prefix);
+      const isRegionalUrl = regionPrefixes
+        .some((prefix) => url?.pathname?.startsWith(prefix));
+      const isPrelocalizedLink = Object.keys(getConfig().locales)
+        .filter(Boolean)
+        .some((key) => originalUrl.pathname.startsWith(key));
+      const prod = env?.name === 'prod';
+
+      if (isSectionSwap && originalSection && !isRegionalUrl) {
+        if (prod && locale.regions) {
+          originalSection?.remove();
+          return;
+        }
+        // TODO: set class on section to mark as problematic for preview
+        if (prod && isPrelocalizedLink) {
+          removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
+        }
+        // TODO: set class on section to mark as problematic for preview
       }
+    } catch (e) {
+      window.lana?.log('MEP Lingo: Error processing originalHref', e);
     }
   }
-  catch (e) {
-    // TODO lana log error
+
+  if (isBlockSwap) {
+    const blockName = a.dataset.mepLingoBlockSwap;
+    originalBlock = a.closest(`.${blockName}`);
+
+    if (originalBlock) {
+      const wrapper = createTag('div', null, a);
+      originalBlock.insertAdjacentElement('afterend', wrapper);
+      if (blockName === 'mep-lingo') originalBlock.remove();
+    }
   }
 
-  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
+  const isLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
+  const needsFallback = (isMepLingoBlock || isLingoFragment) && !!a.dataset.originalHref;
+
+  if (!resp?.ok && needsFallback && a.dataset.originalHref) {
+    let fallbackPath = a.dataset.originalHref;
+    try {
+      const originalUrl = new URL(a.dataset.originalHref);
+      if (locale?.prefix && !originalUrl.pathname.startsWith(locale.prefix)) {
+        fallbackPath = `${originalUrl.origin}${locale.prefix}${originalUrl.pathname}`;
+      }
+    } catch (e) {
+      if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
+        fallbackPath = `${locale.prefix}${fallbackPath}`;
+      }
+    }
+    resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
+    if (resp?.ok) {
+      relHref = fallbackPath;
+    }
+  }
+
   if (!resp?.ok) {
+    if (isBlockSwap && !isMepLingoBlock && originalBlock) {
+      removeMepLingoRow(originalBlock);
+      a.parentElement?.remove();
+      return;
+    }
+    if (isSectionSwap && originalSection) {
+      removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
+      a.parentElement?.remove();
+      return;
+    }
     const message = `Could not get ${shouldFetchMepLingo ? 'mep-lingo ' : ''}fragment: ${resourcePath}.plain.html`;
     window.lana?.log(message);
     return;
