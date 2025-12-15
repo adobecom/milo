@@ -2,174 +2,6 @@ import { createTag, getConfig, getMetadata, loadStyle, lingoActive } from '../..
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
-const UPSTREAM_CHECK_TIMEOUT = 5000;
-
-export async function checkPageExists(
-  url,
-  treatAuthAsExists = true,
-  timeout = UPSTREAM_CHECK_TIMEOUT,
-) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const response = await fetch(url, {
-      method: 'HEAD',
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (response.ok) return true;
-    if (response.status === 404) return false;
-    if ((response.status === 401 || response.status === 403) && treatAuthAsExists) return true;
-    return null;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    return null;
-  }
-}
-
-export function getUpstreamUrl(config, location = window.location) {
-  const { locale } = config;
-
-  if (locale?.base === undefined) {
-    return null;
-  }
-
-  const { pathname, origin } = location;
-  const currentPrefix = locale.prefix || '';
-
-  const upstreamPrefix = locale.base === '' ? '' : `/${locale.base}`;
-
-  let upstreamPath;
-  if (currentPrefix && pathname.startsWith(currentPrefix)) {
-    upstreamPath = pathname.replace(currentPrefix, upstreamPrefix);
-  } else {
-    upstreamPath = `${upstreamPrefix}${pathname}`;
-  }
-
-  return `${origin}${upstreamPath}`;
-}
-
-export async function updateUpstreamPageElement(elementId, config) {
-  const element = document.getElementById(elementId);
-  if (!element) return;
-
-  const upstreamUrl = getUpstreamUrl(config);
-  if (!upstreamUrl) {
-    element.textContent = 'None';
-    return;
-  }
-
-  // Check .live version for reliable 200/404 (draft pages return 401 for everything)
-  const liveUrl = upstreamUrl.replace('.aem.page', '.aem.live');
-  const exists = await checkPageExists(liveUrl, false);
-
-  if (exists === true) {
-    const localeBase = config?.locale?.base;
-    const linkText = localeBase === '' ? 'US' : localeBase;
-    const link = createTag('a', {
-      href: upstreamUrl,
-      target: '_blank',
-    });
-    link.textContent = linkText;
-    element.textContent = '';
-    element.appendChild(link);
-  } else if (exists === false) {
-    element.textContent = 'None';
-  } else {
-    element.textContent = 'Unable to verify';
-  }
-}
-
-export function getDownstreamUrls(config, location = window.location) {
-  const { locale } = config;
-  const regions = locale?.regions || {};
-  const regionKeys = Object.keys(regions);
-
-  if (!regionKeys.length) return [];
-
-  const { pathname, origin } = location;
-  const currentPrefix = locale.prefix || '';
-
-  return regionKeys.map((regionKey) => {
-    const region = regions[regionKey];
-    const regionPrefix = region.prefix || `/${regionKey}`;
-
-    let downstreamPath;
-    if (currentPrefix && pathname.startsWith(currentPrefix)) {
-      downstreamPath = pathname.replace(currentPrefix, regionPrefix);
-    } else {
-      downstreamPath = `${regionPrefix}${pathname}`;
-    }
-
-    return {
-      regionKey,
-      url: `${origin}${downstreamPath}`,
-    };
-  });
-}
-
-export async function updateDownstreamPagesElement(elementId, config) {
-  const element = document.getElementById(elementId);
-  if (!element) return;
-
-  const downstreamUrls = getDownstreamUrls(config);
-  if (!downstreamUrls.length) {
-    element.textContent = 'None';
-    return;
-  }
-
-  const results = await Promise.all(
-    downstreamUrls.map(async ({ regionKey, url }) => {
-      // Check .live version for reliable 200/404 (draft pages return 401 for everything)
-      const liveUrl = url.replace('.aem.page', '.aem.live');
-      const exists = await checkPageExists(liveUrl, false);
-      return { regionKey, url, exists };
-    }),
-  );
-
-  const existingPages = results.filter((r) => r.exists === true);
-
-  if (!existingPages.length) {
-    element.textContent = 'None';
-    return;
-  }
-
-  element.textContent = '';
-
-  const firstPage = existingPages[0];
-  const firstLink = createTag('a', {
-    href: firstPage.url,
-    target: '_blank',
-  });
-  firstLink.textContent = firstPage.regionKey;
-  element.appendChild(firstLink);
-
-  if (existingPages.length > 1) {
-    const toggleBtn = createTag('span', { class: 'mep-downstream-toggle' });
-    toggleBtn.textContent = ` (+${existingPages.length - 1})`;
-    element.appendChild(toggleBtn);
-
-    const moreContainer = createTag('div', { class: 'mep-downstream-more', style: 'display: none;' });
-    existingPages.slice(1).forEach((page) => {
-      const link = createTag('a', {
-        href: page.url,
-        target: '_blank',
-      });
-      link.textContent = page.regionKey;
-      moreContainer.appendChild(link);
-      moreContainer.appendChild(document.createElement('br'));
-    });
-    element.appendChild(moreContainer);
-
-    toggleBtn.addEventListener('click', () => {
-      const isHidden = moreContainer.style.display === 'none';
-      moreContainer.style.display = isHidden ? 'block' : 'none';
-      toggleBtn.textContent = isHidden ? ' (−)' : ` (+${existingPages.length - 1})`;
-    });
-  }
-}
 
 export const API_URLS = {
   pageList: `${API_DOMAIN}/get-pages`,
@@ -618,9 +450,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
 
   let mepLingoSectionHTML = '';
   if (isLingoActive) {
-    const localeBase = config?.locale?.base;
-    const hasUpstream = localeBase !== undefined;
-
     let regionDropdownHTML = '';
     if (showRegionDropdown) {
       const regionOptions = regionKeys.map((key) => {
@@ -640,22 +469,9 @@ export function getMepPopup(mepConfig, isMmm = false) {
         </div>`;
     }
 
-    const hasDownstream = regionKeys.length > 0;
-
     mepLingoSectionHTML = `
       <div class="mep-section mep-lingo-section">
-        <h6 class="mep-manifest-page-info-title">MEP Lingo</h6>
-        <div class="mep-columns">
-          <div class="mep-column">
-            <div>Upstream Page</div>
-            <div>Downstream Pages</div>
-          </div>
-          <div class="mep-column">
-            <div class="mep-upstream-page" id="mepUpstreamPage${pageId}">${hasUpstream ? 'Checking...' : 'None'}</div>
-            <div class="mep-downstream-pages" id="mepDownstreamPages${pageId}">${hasDownstream ? 'Checking...' : 'None'}</div>
-          </div>
-        </div>
-        ${regionDropdownHTML}
+        <h6 class="mep-manifest-page-info-title">MEP Lingo</h6>       ${regionDropdownHTML}
       </div>`;
   }
 
@@ -715,7 +531,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
 
 function createPreviewPill() {
   const mepConfig = parseMepConfig();
-  const config = getConfig();
   const { activities } = mepConfig;
   const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   const pill = document.createElement('div');
@@ -727,16 +542,6 @@ function createPreviewPill() {
   overlay.append(pill);
   document.body.append(overlay);
   addPillEventListeners(pill);
-
-  if (lingoActive()) {
-    if (config?.locale?.base !== undefined) {
-      updateUpstreamPageElement('mepUpstreamPage', config);
-    }
-    const regions = config?.locale?.regions || {};
-    if (Object.keys(regions).length > 0) {
-      updateDownstreamPagesElement('mepDownstreamPages', config);
-    }
-  }
 }
 function addHighlightData(manifests) {
   manifests.forEach(({ selectedVariant, manifest }) => {
