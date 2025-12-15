@@ -758,7 +758,8 @@ function localizeLinkCore(
 
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
-        && !(locale.base && !path.includes('/fragments/'))) {
+        && ((locale.base && !path.includes('/fragments/'))
+          || (!!locale.regions?.length && path.includes('/fragments/')))) {
       return (async () => {
         if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
           loadQueryIndexes(prefix);
