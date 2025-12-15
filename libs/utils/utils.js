@@ -162,6 +162,7 @@ const TARGET_TIMEOUT_MS = 4000;
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
+// TODO remove LANGUAGE_BASED_PATHS once news.adobe.com is using new langFirst site structure
 const LANGUAGE_BASED_PATHS = [
   // don't add milo too. It's a special case because of tools, merch, etc.
   'news.adobe.com',
@@ -555,10 +556,6 @@ export function lingoActive() {
   return ['true', 'on'].includes(langFirst);
 }
 
-export function getUserCountry() {
-  return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-}
-
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
@@ -791,6 +788,18 @@ function localizeLinkCore(
   }
 }
 
+function setCountry() {
+  const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+    ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
+  if (!country) return;
+  sessionStorage.setItem('akamai', country);
+  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
+}
+
+export function getCountry() {
+  return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+}
+
 function getMepLingoPrefix() {
   const config = getConfig();
   const { locale } = config || {};
@@ -798,7 +807,7 @@ function getMepLingoPrefix() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = getUserCountry();
+  const country = getCountry();
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
 
   let regionKey = Object.entries(regions).find(
@@ -1877,14 +1886,6 @@ async function checkForPageMods() {
     mepMarketingDecrease,
     akamaiCode,
   });
-}
-
-function setCountry() {
-  const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
-    ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
-  if (!country) return;
-  sessionStorage.setItem('akamai', country);
-  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
 async function decorateMeta(ignoreNames = []) {

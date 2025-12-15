@@ -82,7 +82,7 @@ mepLingoCountryToRegion: {
 
 | Function | Description |
 |----------|-------------|
-| `getUserCountry()` | Get user's country code from akamaiLocale param, sessionStorage, or server timing |
+| `getCountry()` | Get user's country code from akamaiLocale param, sessionStorage, or server timing |
 | `lingoActive()` | Check if lingo is enabled via `langFirst` URL param or meta tag |
 
 ### `getLocaleCodeFromPrefix` Details

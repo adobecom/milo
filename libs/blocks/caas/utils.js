@@ -2,6 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 import {
   getConfig as pageConfigHelper,
+  getCountry,
   getMetadata,
   loadScript,
   loadStyle,
@@ -537,9 +538,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     if (!isNewsSource) {
       countryStr = fallbackCountry;
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        let geoCountry = urlParams.get('akamaiLocale')?.toLowerCase()
-          || sessionStorage.getItem('akamai')
+        let geoCountry = getCountry()
           || pageConfigHelper().mep?.countryIP;
 
         if (!geoCountry) {

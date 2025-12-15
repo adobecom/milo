@@ -10,6 +10,7 @@ import {
   localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
+  getCountry,
 } from '../../utils/utils.js';
 import {
   getConsentState,
@@ -961,7 +962,7 @@ function normCountry(country) {
 async function setMepCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  const akamaiCode = getCountry();
   config.mep = config.mep || {};
   if (country) {
     config.mep.countryChoice = normCountry(country);
