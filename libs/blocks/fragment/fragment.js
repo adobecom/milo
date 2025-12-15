@@ -226,26 +226,52 @@ export default async function init(a) {
     }
 
     if (isBlockSwap) {
-      // If query-index unavailable (including federal with no index yet), try anyway
+      const blockName = a.dataset.mepLingoBlockSwap;
+      const isMepLingoBlock = blockName === 'mep-lingo';
       const shouldTryMepLingo = !qiAvailable || mepLingoInIndex;
-      if (!shouldTryMepLingo) {
-        // No regional content - keep original block but clean up mep-lingo row
-        a.parentElement?.remove();
-        removeMepLingoRow(originalBlock);
-        return;
-      }
 
-      const mepLingoResp = await lingoModule.fetchFragment(mepLingoPath);
-      if (!mepLingoResp?.ok) {
-        // Fetch failed - keep original block but clean up mep-lingo row
-        a.parentElement?.remove();
-        removeMepLingoRow(originalBlock);
-        return;
-      }
+      if (isMepLingoBlock) {
+        const fallbackPath = resourcePath.replace(matchingRegion.prefix, locale.prefix || '');
+        let result;
+        if (!shouldTryMepLingo) {
+          const fallbackResp = await lingoModule.fetchFragment(fallbackPath);
+          if (fallbackResp?.ok) result = { resp: fallbackResp, usedFallback: true };
+        } else {
+          result = await lingoModule.fetchMepLingo(mepLingoPath, fallbackPath);
+        }
 
-      resp = mepLingoResp;
-      usedMepLingo = true;
-      relHref = await localizeLinkAsync(mepLingoPath);
+        if (result?.resp) {
+          resp = result.resp;
+          usedMepLingo = result.usedMepLingo || false;
+          usedFallback = result.usedFallback || false;
+          if (usedMepLingo) {
+            relHref = await localizeLinkAsync(mepLingoPath);
+          } else if (usedFallback) {
+            relHref = fallbackPath;
+          }
+        } else {
+          a.parentElement?.remove();
+          return;
+        }
+      } else {
+        // Other block swaps: no fallback, keep original block if regional fails
+        if (!shouldTryMepLingo) {
+          a.parentElement?.remove();
+          removeMepLingoRow(originalBlock);
+          return;
+        }
+
+        const mepLingoResp = await lingoModule.fetchFragment(mepLingoPath);
+        if (!mepLingoResp?.ok) {
+          a.parentElement?.remove();
+          removeMepLingoRow(originalBlock);
+          return;
+        }
+
+        resp = mepLingoResp;
+        usedMepLingo = true;
+        relHref = await localizeLinkAsync(mepLingoPath);
+      }
     }
 
     if (!isBlockSwap && !isSectionSwap) {
