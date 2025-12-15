@@ -840,6 +840,7 @@ export async function localizeLinkAsync(
   overrideDomain = false,
   aTag = null,
 ) {
+  if (!href) return href;
   detectMepLingoSwap(aTag);
   // Remove #_mep-lingo from href to match what detectMepLingoSwap did to aTag.href
   const effectiveHref = href.includes('#_mep-lingo') ? href.replace('#_mep-lingo', '') : href;
