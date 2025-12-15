@@ -55,7 +55,7 @@ async function checkUrl(url) {
 
 async function checkWcsElements() {
   const elements = [];
-  const promoCodeMap = new Map(); 
+  const promoCodeMap = new Map();
 
   const allWcsElements = document.querySelectorAll('[data-wcs-osi]');
 
@@ -63,45 +63,45 @@ async function checkWcsElements() {
     const hasDisabledChild = elem.querySelector('[disabled], .disabled');
     const textContent = elem.textContent?.trim();
 
-    if (hasDisabledChild && !textContent) continue;
+    if (!(hasDisabledChild && !textContent)) {
+      const wcsOsi = elem.getAttribute('data-wcs-osi');
+      const tagName = elem.tagName.toLowerCase();
+      const href = elem.getAttribute('href');
+      const ariaLabel = elem.getAttribute('aria-label');
+      const displayText = ariaLabel || textContent || `<${tagName}> element`;
+      const promoCode = elem.getAttribute('data-promotion-code');
 
-    const wcsOsi = elem.getAttribute('data-wcs-osi');
-    const tagName = elem.tagName.toLowerCase();
-    const href = elem.getAttribute('href');
-    const ariaLabel = elem.getAttribute('aria-label');
-    const displayText = ariaLabel || textContent || `<${tagName}> element`;
-    const promoCode = elem.getAttribute('data-promotion-code');
-
-    let textContentForComparison = textContent;
-    if (promoCode) {
-      const clone = elem.cloneNode(true);
-      const srOnlyElements = clone.querySelectorAll('sr-only, .sr-only');
-      srOnlyElements.forEach((srElem) => srElem.remove());
-      textContentForComparison = clone.textContent?.trim();
-    }
-
-    const elementData = {
-      type: tagName,
-      displayText,
-      element: elem,
-      wcsOsi,
-      location: getBlockLocation(elem),
-      href,
-      urlStatus: null,
-      finalUrl: null,
-      checking: false,
-      promoCode,
-      promoCodeStatus: null,
-    };
-
-    elements.push(elementData);
-
-    if (promoCode && textContentForComparison) {
-      const key = `${promoCode}::${textContentForComparison}`;
-      if (!promoCodeMap.has(key)) {
-        promoCodeMap.set(key, []);
+      let textContentForComparison = textContent;
+      if (promoCode) {
+        const clone = elem.cloneNode(true);
+        const srOnlyElements = clone.querySelectorAll('sr-only, .sr-only');
+        srOnlyElements.forEach((srElem) => srElem.remove());
+        textContentForComparison = clone.textContent?.trim();
       }
-      promoCodeMap.get(key).push(elementData);
+
+      const elementData = {
+        type: tagName,
+        displayText,
+        element: elem,
+        wcsOsi,
+        location: getBlockLocation(elem),
+        href,
+        urlStatus: null,
+        finalUrl: null,
+        checking: false,
+        promoCode,
+        promoCodeStatus: null,
+      };
+
+      elements.push(elementData);
+
+      if (promoCode && textContentForComparison) {
+        const key = `${promoCode}::${textContentForComparison}`;
+        if (!promoCodeMap.has(key)) {
+          promoCodeMap.set(key, []);
+        }
+        promoCodeMap.get(key).push(elementData);
+      }
     }
   }
 
