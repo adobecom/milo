@@ -535,27 +535,22 @@ describe('MEP Lingo upstream/downstream URLs', () => {
 });
 
 describe('MEP Lingo region select with lingo param', () => {
-  let originalSearch;
   let fetchStub;
-
-  before(() => {
-    originalSearch = window.location.search;
-  });
+  let lingoMeta;
 
   beforeEach(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('langFirst', 'on');
-    window.history.pushState({}, '', url.toString());
+    // Use meta tag instead of URL param because PAGE_URL is captured at module load time
+    lingoMeta = document.createElement('meta');
+    lingoMeta.setAttribute('name', 'langFirst');
+    lingoMeta.setAttribute('content', 'on');
+    document.head.appendChild(lingoMeta);
 
     // Stub fetch for page existence checks
     fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, status: 200 });
   });
 
   afterEach(() => {
-    const url = new URL(window.location.href);
-    url.search = originalSearch;
-    window.history.pushState({}, '', url.toString());
-
+    if (lingoMeta) lingoMeta.remove();
     if (fetchStub) fetchStub.restore();
 
     document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
