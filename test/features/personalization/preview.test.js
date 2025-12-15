@@ -543,9 +543,8 @@ describe('MEP Lingo region select with lingo param', () => {
   });
 
   beforeEach(() => {
-    // Add lingo=on to URL
     const url = new URL(window.location.href);
-    url.searchParams.set('lingo', 'on');
+    url.searchParams.set('langFirst', 'on');
     window.history.pushState({}, '', url.toString());
 
     // Stub fetch for page existence checks
