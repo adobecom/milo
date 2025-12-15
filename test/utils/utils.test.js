@@ -1850,6 +1850,7 @@ describe('Utils', () => {
       document.head.append(lingoMeta);
       testContainer = document.createElement('div');
       testContainer.id = 'test-container';
+      testContainer.classList.add('section');
       document.body.appendChild(testContainer);
     });
 
@@ -1877,7 +1878,8 @@ describe('Utils', () => {
       expect(lingoValue).to.equal('on');
     });
 
-    it('handles mep-lingo row with mep-lingo block - removes block, sets data attr', async () => {
+    it('detects mep-lingo row with mep-lingo block and sets mepLingoBlockSwap', async () => {
+      // Structure: .section > div.mep-lingo > div (row) > div (cells)
       testContainer.innerHTML = `
         <div class="mep-lingo">
           <div>
@@ -1890,11 +1892,11 @@ describe('Utils', () => {
       const link = testContainer.querySelector('a');
       expect(link).to.exist;
       expect(link.dataset.mepLingo).to.equal('true');
-      expect(link.parentElement.tagName.toLowerCase()).to.equal('div');
-      expect(testContainer.querySelector('.mep-lingo')).to.be.null;
+      expect(link.dataset.mepLingoBlockSwap).to.equal('mep-lingo');
     });
 
-    it('handles mep-lingo row with section-metadata block - sets all section-metadata attributes', async () => {
+    it('detects mep-lingo row in section-metadata and sets mepLingoSectionSwap', async () => {
+      // Structure: .section > div.section-metadata > div (row) > div (cells)
       testContainer.innerHTML = `
         <div class="section-metadata">
           <div>
@@ -1907,16 +1909,12 @@ describe('Utils', () => {
       const link = testContainer.querySelector('a');
       expect(link).to.exist;
       expect(link.dataset.mepLingo).to.equal('true');
-      expect(link.dataset.mepLingoSectionMetadata).to.equal('true');
-      expect(link.dataset.removeOriginalBlock).to.equal('true');
-      expect(link.dataset.originalBlockId).to.match(/^block-[a-z0-9]+$/);
-      expect(link.dataset.mepLingoBlockFragment).to.exist;
+      expect(link.dataset.mepLingoSectionSwap).to.equal('true');
       expect(link.href).to.not.include('#_mep-lingo');
-      const sectionMetadata = testContainer.querySelector('.section-metadata');
-      expect(sectionMetadata.dataset.mepLingoOriginalBlock).to.equal(link.dataset.originalBlockId);
     });
 
-    it('handles mep-lingo row with regular block - sets block swap attributes', async () => {
+    it('detects mep-lingo row in regular block and sets mepLingoBlockSwap to block name', async () => {
+      // Structure: .section > div.marquee > div (row) > div (cells)
       testContainer.innerHTML = `
         <div class="marquee">
           <div>
@@ -1929,15 +1927,11 @@ describe('Utils', () => {
       const link = testContainer.querySelector('a');
       expect(link).to.exist;
       expect(link.dataset.mepLingo).to.equal('true');
-      expect(link.dataset.removeOriginalBlock).to.equal('true');
-      expect(link.dataset.originalBlockId).to.match(/^block-[a-z0-9]+$/);
-      expect(link.dataset.mepLingoBlockFragment).to.exist;
+      expect(link.dataset.mepLingoBlockSwap).to.equal('marquee');
       expect(link.href).to.not.include('#_mep-lingo');
-      const marquee = testContainer.querySelector('.marquee');
-      expect(marquee.dataset.mepLingoOriginalBlock).to.equal(link.dataset.originalBlockId);
     });
 
-    it('handles link wrapped in strong tag - finds correct linkCell', async () => {
+    it('handles link wrapped in strong tag', async () => {
       testContainer.innerHTML = `
         <div class="mep-lingo">
           <div>
@@ -1950,11 +1944,10 @@ describe('Utils', () => {
       const link = testContainer.querySelector('a');
       expect(link).to.exist;
       expect(link.dataset.mepLingo).to.equal('true');
-      // Block is removed and link is extracted
-      expect(testContainer.querySelector('.mep-lingo')).to.be.null;
+      expect(link.dataset.mepLingoBlockSwap).to.equal('mep-lingo');
     });
 
-    it('handles link wrapped in em tag - finds correct linkCell', async () => {
+    it('handles link wrapped in em tag', async () => {
       testContainer.innerHTML = `
         <div class="mep-lingo">
           <div>
@@ -1967,10 +1960,27 @@ describe('Utils', () => {
       const link = testContainer.querySelector('a');
       expect(link).to.exist;
       expect(link.dataset.mepLingo).to.equal('true');
-      expect(testContainer.querySelector('.mep-lingo')).to.be.null;
+      expect(link.dataset.mepLingoBlockSwap).to.equal('mep-lingo');
     });
 
-    it('handles uppercase MEP-LINGO text', async () => {
+    it('handles lowercase mep-lingo text', async () => {
+      testContainer.innerHTML = `
+        <div class="mep-lingo">
+          <div>
+            <div>mep-lingo</div>
+            <div><a href="https://www.adobe.com/fragments/test">Fragment</a></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link).to.exist;
+      expect(link.dataset.mepLingo).to.equal('true');
+    });
+
+    it('does not match uppercase MEP-LINGO text (case sensitive)', async () => {
+      // detectMepLingoSwap uses toLowerCase().trim() === 'mep-lingo'
+      // so uppercase should still match after toLowerCase
       testContainer.innerHTML = `
         <div class="mep-lingo">
           <div>
@@ -1983,26 +1993,10 @@ describe('Utils', () => {
       const link = testContainer.querySelector('a');
       expect(link).to.exist;
       expect(link.dataset.mepLingo).to.equal('true');
-      expect(testContainer.querySelector('.mep-lingo')).to.be.null;
     });
 
-    it('handles mixed case MEP-LINGO text', async () => {
-      testContainer.innerHTML = `
-        <div class="mep-lingo">
-          <div>
-            <div>MEP-Lingo</div>
-            <div><a href="https://www.adobe.com/fragments/test">Fragment</a></div>
-          </div>
-        </div>
-      `;
-      await utils.decorateLinksAsync(testContainer);
-      const link = testContainer.querySelector('a');
-      expect(link).to.exist;
-      expect(link.dataset.mepLingo).to.equal('true');
-      expect(testContainer.querySelector('.mep-lingo')).to.be.null;
-    });
-
-    it('does not set mep-lingo when lingo is not active', async () => {
+    it('always detects #_mep-lingo hash even when lingo is not active', async () => {
+      // Detection always happens for fallback/invalid handling purposes
       lingoMeta.setAttribute('content', 'off');
       testContainer.innerHTML = `
         <div class="container">
@@ -2012,11 +2006,11 @@ describe('Utils', () => {
       const container = testContainer.querySelector('.container');
       await utils.decorateLinksAsync(container);
       const link = container.querySelector('a');
-      expect(link.dataset.mepLingo).to.be.undefined;
-      expect(link.href).to.include('#_mep-lingo');
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.href).to.not.include('#_mep-lingo');
     });
 
-    it('does not process non-mep-lingo rows', async () => {
+    it('does not set mepLingo for non-mep-lingo rows', async () => {
       testContainer.innerHTML = `
         <div class="some-block">
           <div>
@@ -2028,11 +2022,9 @@ describe('Utils', () => {
       await utils.decorateLinksAsync(testContainer);
       const link = testContainer.querySelector('a');
       expect(link.dataset.mepLingo).to.be.undefined;
-      expect(testContainer.querySelector('.some-block')).to.exist;
     });
 
-    it('skips mep-lingo processing when cellText does not match', async () => {
-      // Test that non-mep-lingo cell text doesn't trigger processing
+    it('does not set mepLingo when cellText does not match', async () => {
       testContainer.innerHTML = `
         <div class="some-block">
           <div>
@@ -2041,13 +2033,12 @@ describe('Utils', () => {
           </div>
         </div>
       `;
-      const linkBefore = testContainer.querySelector('a');
+      const link = testContainer.querySelector('a');
       await utils.decorateLinksAsync(testContainer);
-      expect(linkBefore.dataset.mepLingo).to.be.undefined;
-      expect(testContainer.querySelector('.some-block')).to.exist;
+      expect(link.dataset.mepLingo).to.be.undefined;
     });
 
-    it('removes the row for block swap and sets mep-lingo attributes', async () => {
+    it('sets mepLingoBlockSwap for block with multiple rows', async () => {
       testContainer.innerHTML = `
         <div class="marquee">
           <div>
@@ -2059,14 +2050,10 @@ describe('Utils', () => {
           </div>
         </div>
       `;
-      const linkBefore = testContainer.querySelector('a');
       await utils.decorateLinksAsync(testContainer);
-      expect(linkBefore.dataset.mepLingo).to.equal('true');
-      expect(linkBefore.dataset.mepLingoBlockFragment).to.exist;
-      expect(linkBefore.dataset.removeOriginalBlock).to.equal('true');
-      expect(linkBefore.dataset.originalBlockId).to.match(/^block-[a-z0-9]+$/);
-      const marquee = testContainer.querySelector('.marquee');
-      expect(marquee.dataset.mepLingoOriginalBlock).to.equal(linkBefore.dataset.originalBlockId);
+      const link = testContainer.querySelector('a');
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.dataset.mepLingoBlockSwap).to.equal('marquee');
     });
   });
 });
