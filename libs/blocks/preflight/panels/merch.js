@@ -37,10 +37,18 @@ async function checkUrl(url) {
 
     return result;
   } catch (error) {
+    if (error.message === 'Failed to fetch') {
+      return {
+        status: 'success',
+        finalUrl: url,
+        idMismatch: false,
+      };
+    }
     return {
-      status: 'success',
+      status: 'undetermined',
       finalUrl: url,
       idMismatch: false,
+      errorMessage: error.message,
     };
   }
 }
@@ -122,7 +130,7 @@ async function checkWcsElements() {
       wcsElements.value[index].checking = false;
       wcsElements.value = [...wcsElements.value];
 
-      if (result.status === 'error') {
+      if (result.status === 'error' || result.status === 'undetermined') {
         elementData.element.classList.add('preflight-merch-error');
       } else {
         elementData.element.classList.remove('preflight-merch-error');
@@ -150,7 +158,7 @@ function WcsElementItem({ wcsElem }) {
     statusIconClass = 'result-icon purple';
   } else if (wcsElem.urlStatus === 'error') {
     statusIconClass = 'result-icon red';
-  } else if (wcsElem.promoCodeStatus === 'error') {
+  } else if (wcsElem.urlStatus === 'undetermined' || wcsElem.promoCodeStatus === 'error') {
     statusIconClass = 'result-icon orange';
   } else if (wcsElem.urlStatus === 'success') {
     statusIconClass = 'result-icon green';
@@ -158,7 +166,7 @@ function WcsElementItem({ wcsElem }) {
   const showUrlInfo = wcsElem.href;
 
   return html`
-    <div class="preflight-item merch-item merch-wcs-item ${(wcsElem.urlStatus === 'error' || wcsElem.promoCodeStatus === 'error') ? 'has-url-error' : ''}">
+    <div class="preflight-item merch-item merch-wcs-item ${(wcsElem.urlStatus === 'error' || wcsElem.urlStatus === 'undetermined' || wcsElem.promoCodeStatus === 'error') ? 'has-url-error' : ''}">
       <div class="preflight-item-text">
         <p class="preflight-item-title">
           ${statusIconClass && html`<span class="${statusIconClass}"></span>`}
@@ -193,6 +201,9 @@ function WcsElementItem({ wcsElem }) {
             ${wcsElem.urlStatus === 'error' && !wcsElem.idMismatch && html`
               <br/><span class="url-error-message">URL contains "error" or failed to load</span>
             `}
+            ${wcsElem.urlStatus === 'undetermined' && html`
+              <br/><span class="url-error-message">Check URL, status is undetermined</span>
+            `}
           `}
         </p>
         <button
@@ -209,7 +220,7 @@ function MerchSummary() {
   const totalElements = wcsElements.value.length;
   const passedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'success' && elem.promoCodeStatus !== 'error').length;
   const failedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'error').length;
-  const undeterminedCount = wcsElements.value.filter((elem) => elem.promoCodeStatus === 'error').length;
+  const undeterminedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined' || elem.promoCodeStatus === 'error').length;
 
   if (totalElements === 0) {
     return html`
