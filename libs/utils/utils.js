@@ -746,8 +746,10 @@ function localizeLinkCore(
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, languages, prodDomains, uniqueSiteId } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
-    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
-        || overrideDomain || getFederatedContentRoot().includes(url.hostname);
+    const isLocalizable = relative
+        || (url.hostname && prodDomains && prodDomains.includes(url.hostname))
+        || overrideDomain
+        || (url.hostname && getFederatedContentRoot().includes(url.hostname));
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
