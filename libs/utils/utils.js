@@ -845,8 +845,9 @@ export async function localizeLinkAsync(
 ) {
   if (!href) return href;
   detectMepLingoSwap(aTag);
+  const hrefString = typeof href === 'string' ? href : href.href || href.toString();
   // Remove #_mep-lingo from href to match what detectMepLingoSwap did to aTag.href
-  const effectiveHref = href.includes('#_mep-lingo') ? href.replace('#_mep-lingo', '') : href;
+  const effectiveHref = hrefString.includes('#_mep-lingo') ? hrefString.replace('#_mep-lingo', '') : hrefString;
   const isMepLingoLink = aTag?.dataset?.mepLingo
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
