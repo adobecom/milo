@@ -638,7 +638,7 @@ function processQueryIndexMap(link, domain) {
       return [];
     })
     .finally(() => {
-      result.requestResolved = false;
+      result.requestResolved = true;
     });
 
   return result;
