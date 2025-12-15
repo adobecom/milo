@@ -1,29 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
-import getAkamaiCode from '../../utils/geo.js';
-
-const getCookie = (name) => document.cookie
-  .split('; ')
-  .find((row) => row.startsWith(`${name}=`))
-  ?.split('=')[1];
-
-/**
- * Gets the user's preferred language, falling back from cookie to browser language.
- * @param {object} locales - The locales object from the Milo config.
- * @returns {string|null} The two-letter language code.
- */
-function getPreferredLanguage(locales) {
-  const cookie = getCookie('international');
-  if (cookie && cookie !== 'us') {
-    const locale = locales[cookie];
-    const langFromCookie = locale?.ietf
-      ? locale.ietf.split('-')[0]
-      : cookie.split('_')[0];
-    return langFromCookie;
-  }
-  const browserLang = navigator.language?.split('-')[0];
-  return browserLang || null;
-}
+import { getConfig, createTag, loadStyle, getTargetMarkets } from '../../utils/utils.js';
 
 /**
  * Verifies if the translated version of the current page exists.
@@ -52,7 +28,8 @@ async function getTranslatedPage(marketPrefix, config) {
 }
 
 function buildBanner(market, translatedUrl) {
-  const banner = createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' });
+  const banner = document.body.querySelector('.language-banner');
+  if (!banner) return banner;
   const messageContainer = createTag('div', { class: 'language-banner-content' });
   const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} ${market.languageName}.`);
   const link = createTag('a', { class: 'language-banner-link', href: translatedUrl, 'daa-ll': `${market.prefix || 'us'}|Continue` }, market.continueText || 'Continue');
@@ -89,16 +66,28 @@ export function sendAnalytics(event) {
   }
 }
 
-async function showBanner(market, config, translatedUrl) {
-  const banner = buildBanner(market, translatedUrl);
-  document.body.prepend(banner);
+async function showBanner(markets, config) {
+  let translatedUrl = null;
+  let targetMarket = null;
+  for (const market of markets) {
+    translatedUrl = await getTranslatedPage(market.prefix, config);
+    if (translatedUrl) {
+      targetMarket = market;
+      break;
+    }
+  }
+
+  if (!targetMarket) return;
+
+  const banner = buildBanner(targetMarket, translatedUrl);
+  if (!banner) return;
   const { codeRoot, miloLibs } = config;
   loadStyle(`${miloLibs || codeRoot}/features/language-banner/language-banner.css`);
 
   banner.querySelector('.language-banner-link').addEventListener('click', async (e) => {
     e.preventDefault();
     const { setInternational } = await import('../../utils/utils.js');
-    setInternational(market.prefix || 'us');
+    setInternational(targetMarket.prefix || 'us');
     window.open(translatedUrl, '_self');
   });
 
@@ -109,93 +98,12 @@ async function showBanner(market, config, translatedUrl) {
     banner.remove();
   });
   const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
-  sendAnalytics(new Event(`${market.prefix || 'us'}-${pagePrefix}|language-banner`),);
+  sendAnalytics(new Event(`${targetMarket.prefix || 'us'}-${pagePrefix}|language-banner`),);
 }
 
-export default async function init(jsonPromise) {
-  const config = getConfig();
-  const internationalCookie = getCookie('international');
-  const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
-  if (internationalCookie === pagePrefix) return;
-  const pageLang = config.locale.ietf.split('-')[0];
-  const prefLang = getPreferredLanguage(config.locales);
-
-  const marketsConfigPromise = jsonPromise
-    .then((res) => (res.ok ? res.json() : null))
-    .catch(() => null);
-
-  const [geoIpCode, marketsConfig] = await Promise.all([
-    getAkamaiCode(),
-    marketsConfigPromise,
-  ]);
-
-  if (!geoIpCode || !marketsConfig) return;
-  const geoIp = geoIpCode.toLowerCase();
-  marketsConfig.data.forEach((market) => {
-    market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
-  });
-
-  const pageMarket = marketsConfig.data.find((market) => market.prefix === (config.locale.prefix?.replace('/', '') || ''));
-  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
-
-  if (isSupportedMarket) {
-    if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = marketsConfig.data.find((market) => (
-      market.lang === prefLang
-      && market.supportedRegions.includes(geoIp)
-    ));
-    if (prefMarket) {
-      const translatedUrl = await getTranslatedPage(prefMarket.prefix, config);
-      if (translatedUrl) await showBanner(prefMarket, config, translatedUrl);
-    }
-    return;
-  }
-
-  // Unsupported Market Path
-  const marketsForGeo = marketsConfig.data.filter((market) => (
-    market.supportedRegions.includes(geoIp)));
-  if (!marketsForGeo.length) return;
-
-  if (prefLang) {
-    const prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
-    if (prefMarketForGeo) {
-      const translatedUrl = await getTranslatedPage(prefMarketForGeo.prefix, config);
-      if (translatedUrl) {
-        await showBanner(prefMarketForGeo, config, translatedUrl);
-        return;
-      }
-    }
-  }
-
-  const marketsWithPriority = [];
-  marketsForGeo.forEach((market) => {
-    if (market.regionPriorities) {
-      const priorityMap = new Map(
-        market.regionPriorities.split(',').map((p) => {
-          const [region, priority] = p.trim().split(':');
-          return [region.toLowerCase(), parseInt(priority, 10)];
-        }),
-      );
-      const priority = priorityMap.get(geoIp);
-      if (priority) {
-        marketsWithPriority.push({ market, priority });
-      }
-    }
-  });
-
-  let marketsToCheck = [];
-  if (marketsWithPriority.length) {
-    marketsWithPriority.sort((a, b) => a.priority - b.priority);
-    marketsToCheck = marketsWithPriority.map((item) => item.market);
-  } else if (marketsForGeo.length) {
-    marketsToCheck.push(marketsForGeo[0]);
-  }
-
-  for (const market of marketsToCheck) {
-    const translatedUrl = await getTranslatedPage(market.prefix, config);
-    if (translatedUrl) {
-      await showBanner(market, config, translatedUrl);
-      return;
-    }
+export default async function init() {
+  const targetMarkets = getTargetMarkets();
+  if (targetMarkets.length) {
+    await showBanner(targetMarkets, getConfig());
   }
 }
