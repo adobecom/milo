@@ -176,8 +176,11 @@ async function setAriaLabelForIcons(el) {
   const expendableIcons = el.querySelectorAll('.icon.expand[role="button"]');
   const selectFilters = el.parentElement.querySelectorAll('.filters .filter');
   const ariaLabelElements = [...selectFilters, ...expendableIcons];
+  const firstEl = ariaLabelElements[0];
 
-  if (!ariaLabelElements.length) {
+  if (!ariaLabelElements.length
+    || (firstEl?.hasAttribute('aria-label') && firstEl?.hasAttribute('name'))
+  ) {
     return;
   }
 
@@ -186,6 +189,7 @@ async function setAriaLabelForIcons(el) {
   ariaLabelElements.forEach((element) => {
     const labelIndex = element.classList.contains('filter') ? 1 : 0;
     element.setAttribute('aria-label', ariaLabels[labelIndex]);
+    element.setAttribute('name', ariaLabels[labelIndex]);
   });
 }
 
@@ -691,6 +695,7 @@ export default function init(el) {
 
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
+      setAriaLabelForIcons(el);
       if (isStickyHeader(el)) handleScrollEffect(el);
     };
     handleResize();
@@ -705,9 +710,7 @@ export default function init(el) {
     });
 
     isDecorated = true;
-
     setExpandEvents(el);
-    setAriaLabelForIcons(el);
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {
