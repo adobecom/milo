@@ -369,7 +369,8 @@ function decorateTable({ el, tableChildren, expandMetadata }) {
 }
 
 function decorateTables(el, children) {
-  const expandText = getSectionMetadata(el.closest('.section')?.querySelector('.section-metadata'))?.expand?.text;
+  const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
+  const expandText = sectionMetadata ? getSectionMetadata(sectionMetadata)?.expand?.text : null;
   const expandMetadata = expandText === 'all'
     ? expandText
     : expandText?.split(',').map((item) => parseInt(item.trim(), 10));
