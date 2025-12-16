@@ -709,9 +709,9 @@ function localizeLinkCore(
   originHostName,
   overrideDomain,
   useAsync,
-  aTag = null,
   overridePrefix = null,
   overrideBase = null,
+  aTag = null,
 ) {
   try {
     const url = new URL(href);
@@ -734,11 +734,10 @@ function localizeLinkCore(
     if (isLocalizedLink) return processedHref;
 
     let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
-
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
         && ((locale.base && !path.includes('/fragments/'))
-          || (!!locale.regions?.length && path.includes('/fragments/')))) {
+          || (!!locale.regions && path.includes('/fragments/') && aTag.dataset.mepLingo === 'true'))) {
       return (async () => {
         if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
           loadQueryIndexes(prefix);
@@ -752,7 +751,6 @@ function localizeLinkCore(
         const basePrefix = base === '' ? '' : `/${base}`;
         if (matchingIndexes.length) {
           const { default: urlInQueryIndex } = await import('./lingo.js');
-          // pass if link in LCP
           const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
           if (!useRegionalPrefix && locale.base) prefix = basePrefix;
         } else {
@@ -851,7 +849,7 @@ export async function localizeLinkAsync(
     ? getConfig()?.locale?.prefix.replace('/', '')
     : null;
 
-  return localizeLinkCore(effectiveHref, originHostName, overrideDomain, true, aTag, prefix, base);
+  return localizeLinkCore(effectiveHref, originHostName, overrideDomain, true, prefix, base, aTag);
 }
 
 // this method is deprecated - use localizeLinkAsync instead
