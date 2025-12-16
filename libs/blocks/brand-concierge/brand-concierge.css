@@ -421,6 +421,7 @@
   margin-bottom: 40px;
 }
 
+.light .prompt-card-button,
 .hero .prompt-card-button,
 .pill-cards .prompt-card-button {
   box-shadow: 0 0 6px 0 rgba(0 0 0 / 25%);
@@ -693,8 +694,8 @@
   font-weight: 700;
   line-height: 14px;
   text-transform: uppercase;
-  color: #5258E4;
-  background: #E0E2FF;
+  color: #6338EE;
+  background: #EBEEFF;
   border-radius: 4px;
   height: 14px;
   width: 30px;
@@ -710,6 +711,7 @@
   .brand-concierge {
     padding: 56px 32px 12px;
   }
+
   /* Hero */
   .brand-concierge.hero {
     padding: 80px 32px 24px;
@@ -885,6 +887,10 @@
   .hero .bc-prompt-cards,
   .pill-cards .bc-prompt-cards {
     max-width: 932px;
+  }
+
+  #brand-concierge-modal.dialog-modal {
+    max-width: 960px;
   }
 }
 

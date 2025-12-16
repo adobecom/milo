@@ -1,4 +1,4 @@
-import { getMetadata, localizeLink } from '../../utils/utils.js';
+import { getMetadata, localizeLinkAsync } from '../../utils/utils.js';
 
 /**
  * decorates the header, mainly the nav
@@ -14,9 +14,9 @@ export default async function init(block) {
     const doc = parser.parseFromString(html, 'text/html');
 
     const anchors = doc.querySelectorAll('a');
-    anchors.forEach((a) => {
-      a.href = localizeLink(a.href);
-    });
+    await Promise.all([...anchors].map(async (a) => {
+      a.href = await localizeLinkAsync(a.href);
+    }));
 
     const nav = document.createElement('nav');
     nav.setAttribute('role', 'navigation');

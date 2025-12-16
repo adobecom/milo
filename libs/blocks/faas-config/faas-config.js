@@ -532,7 +532,9 @@ const Configurator = ({ rootEl }) => {
   useEffect(() => {
     if (isFaasLoaded) {
       saveStateToLocalStorage(state);
-      initFaas(JSON.parse(localStorage.getItem(LS_KEY)), document.getElementsByClassName('faas')[0]);
+      (async () => {
+        await initFaas(JSON.parse(localStorage.getItem(LS_KEY)), document.getElementsByClassName('faas')[0]);
+      })();
     }
   }, [isFaasLoaded, state]);
 

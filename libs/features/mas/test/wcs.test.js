@@ -30,7 +30,7 @@ describe('resolveOfferSelectors', () => {
         expect(context1).to.include({
             status: 200,
             statusText: undefined,
-            url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=no-offer&country=undefined&locale=undefined_undefined&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
+            url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=no-offer&country=US&locale=undefined_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
             serverTiming: 'cdn-cache|desc=MISS|edge|dur=12|origin|dur=427|sis|desc=0|ak_p|desc="1748272635433_390603879_647362112_45054_10750_42_0_219"|dur=1',
         });
         expect(results[2].status).to.equal('fulfilled');
@@ -41,7 +41,7 @@ describe('resolveOfferSelectors', () => {
         expect(/startTime:.+duration:/.test(context3.measure)).to.be.true;
         expect(context3).to.include({
             status: 404,
-            url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=void&country=undefined&locale=undefined_undefined&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
+            url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=void&country=US&locale=undefined_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
         });
     });
 
@@ -91,3 +91,64 @@ describe('prefillWcsCache', () => {
     });
 });
 
+describe('normalizeCountryLanguageAndLocale', () => {
+    it('returns MULT language for valid language and country when not GB and not perpetual', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('US', 'en', false);
+        expect(result).to.deep.equal({
+            validCountry: 'US',
+            validLanguage: 'MULT',
+            locale: 'en_US',
+        });
+    });
+
+    it('returns en language when perpetual is true', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('US', 'en', true);
+        expect(result).to.deep.equal({
+            validCountry: 'US',
+            validLanguage: 'en',
+            locale: 'en_US',
+        });
+    });
+
+    it('returns en language for GB country regardless of perpetual', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('GB', 'en', false);
+        expect(result).to.deep.equal({
+            validCountry: 'GB',
+            validLanguage: 'en',
+            locale: 'en_GB',
+        });
+    });
+
+    it('falls back to default country for invalid country', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+            },
+        });
+        const result = client.normalizeCountryLanguageAndLocale('XX', 'en', false);
+        expect(result).to.deep.equal({
+            validCountry: 'US',
+            validLanguage: 'MULT',
+            locale: 'en_US',
+        });
+    });
+});
