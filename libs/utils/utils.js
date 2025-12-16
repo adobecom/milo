@@ -367,33 +367,15 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
 
-      // TODO test only - remove for prod and real PR
-      // Enables mep-lingo testing on da-bacom /fr pages without updating da-bacom's locales.js
-      // prefix (e.g., /lu_fr/) when akamaiLocale is set, ensuring the index contains the
-      // regional paths that mep-lingo needs to find.
-      if (window.location.href.includes('main--da-bacom--adobecom.aem.')
-        && window.location.pathname.startsWith('/fr/')) {
-        config.locale.regions = {
-          be_fr: { prefix: '/be_fr', ietf: 'fr-BE', base: 'fr' },
-          ca_fr: { prefix: '/ca_fr', ietf: 'fr-CA', base: 'fr' },
-          ch_fr: { prefix: '/ch_fr', ietf: 'fr-CH', base: 'fr' },
-          lu_fr: { prefix: '/lu_fr', ietf: 'fr-LU', base: 'fr' },
-        };
-        config.mepLingoCountryToRegion = { lu_fr: ['lu'], ar: ['ae'] };
-        const lingoMeta = document.createElement('meta');
-        lingoMeta.setAttribute('content', 'on');
-        lingoMeta.setAttribute('name', 'langFirst');
-        document.head.append(lingoMeta);
-      }
-      if (window.location.href.includes('main--da-bacom--adobecom.aem.')
-        && window.location.pathname.startsWith('/es/')) {
-        config.locale.regions = { ar: { prefix: '/ar', ietf: 'es', base: 'es' } };
-        config.uniqueSiteId = 'da-bacom';
-        const lingoMeta = document.createElement('meta');
-        lingoMeta.setAttribute('content', 'on');
-        lingoMeta.setAttribute('name', 'langFirst');
-        document.head.append(lingoMeta);
-      }
+      // if (window.location.href.includes('main--da-bacom--adobecom.aem.')
+      //   && window.location.pathname.startsWith('/es/')) {
+      //   config.locale.regions = { ar: { prefix: '/ar', ietf: 'es', base: 'es' } };
+      //   config.uniqueSiteId = 'da-bacom';
+      //   const lingoMeta = document.createElement('meta');
+      //   lingoMeta.setAttribute('content', 'on');
+      //   lingoMeta.setAttribute('name', 'langFirst');
+      //   document.head.append(lingoMeta);
+      // }
       return config;
     },
     (conf) => (config = conf),

@@ -127,7 +127,7 @@ export default async function init(a) {
 
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
-  const isMepLingoInvalid = isMepLingoLink && !shouldFetchMepLingo;
+  const isOnRegionalPage = !!locale?.base;
 
   // Helper to remove mep-lingo row from a container
   const removeMepLingoRow = (container) => {
@@ -139,7 +139,7 @@ export default async function init(a) {
     mepLingoRow?.remove();
   };
 
-  if (isMepLingoInvalid) {
+  if (isMepLingoLink && isOnRegionalPage) {
     const { handleInvalidMepLingo } = await import('../../features/mep/lingo.js');
     handleInvalidMepLingo(a, { env, relHref });
     return;
@@ -159,34 +159,6 @@ export default async function init(a) {
       removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
     }
     return;
-  }
-
-  // Handle prelocalized link detection (author used regional path instead of base path)
-  if (a.dataset.originalHref && locale?.regions) {
-    try {
-      const originalUrl = new URL(a.dataset.originalHref);
-      const regionPrefixes = Object.values(locale.regions).map((r) => r.prefix);
-      const isRegionalUrl = regionPrefixes
-        .some((prefix) => url?.pathname?.startsWith(prefix));
-      const isPrelocalizedLink = Object.keys(getConfig().locales)
-        .filter(Boolean)
-        .some((key) => originalUrl.pathname.startsWith(key));
-      const prod = env?.name === 'prod';
-
-      if (isSectionSwap && originalSection && !isRegionalUrl) {
-        if (prod && locale.regions) {
-          originalSection?.remove();
-          return;
-        }
-        // TODO: set class on section to mark as problematic for preview
-        if (prod && isPrelocalizedLink) {
-          removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
-        }
-        // TODO: set class on section to mark as problematic for preview
-      }
-    } catch (e) {
-      window.lana?.log('MEP Lingo: Error processing originalHref', e);
-    }
   }
 
   if (isBlockSwap) {
@@ -257,7 +229,6 @@ export default async function init(a) {
   const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
   const fragment = createTag('div', fragmentAttrs);
 
-  // Add preview badges for mep-lingo fragments (only in non-prod)
   if (isMepLingoLink && env?.name !== 'prod') {
     const { addMepLingoPreviewAttrs } = await import('../../features/mep/lingo.js');
     addMepLingoPreviewAttrs(fragment, { usedFallback, relHref });
@@ -279,7 +250,7 @@ export default async function init(a) {
 
   if (inline) {
     await insertInlineFrag(sections, a, relHref);
-    originalBlock?.remove(); // Remove original block for inline block swaps
+    originalBlock?.remove();
   } else if (isSectionSwap && originalSection) {
     await loadArea(fragment);
     originalSection.innerHTML = '';
