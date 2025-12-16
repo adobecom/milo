@@ -2087,20 +2087,20 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
-async function loadFragments(section, selector) {
+async function loadFragments(section, selector, isLcp = true) {
   const anchors = [...section.querySelectorAll(selector)];
   if (!anchors.length) return false;
 
   const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
-  await Promise.all(anchors.map((anchor) => loadFragment(anchor)));
+  await Promise.all(anchors.map((anchor) => loadFragment(anchor, isLcp)));
   return true;
 }
 
-async function resolveHighPriorityFragments(section) {
+async function resolveHighPriorityFragments(section, isLcp = true) {
   // Load in cascading order: section swaps → block swaps → inline fragments
-  const hadSectionSwaps = await loadFragments(section.el, 'a[data-mep-lingo-section-swap]');
-  const hadBlockSwaps = await loadFragments(section.el, 'a[data-mep-lingo-block-swap]');
-  const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
+  const hadSectionSwaps = await loadFragments(section.el, 'a[data-mep-lingo-section-swap]', isLcp);
+  const hadBlockSwaps = await loadFragments(section.el, 'a[data-mep-lingo-block-swap]', isLcp);
+  const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]', isLcp);
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
     const newlyDecoratedSection = await decorateSection(section.el, section.idx);
@@ -2110,8 +2110,8 @@ async function resolveHighPriorityFragments(section) {
 }
 
 async function processSection(section, config, isDoc, lcpSectionId) {
-  await resolveHighPriorityFragments(section);
   const isLcpSection = lcpSectionId === section.idx;
+  await resolveHighPriorityFragments(section, isLcpSection);
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([

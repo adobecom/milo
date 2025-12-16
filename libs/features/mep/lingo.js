@@ -98,11 +98,6 @@ export async function getQueryIndexPaths(prefix, checkImmediate = false, isFeder
   }
 }
 
-/**
- * Handle invalid mep-lingo content (langFirst=off or no regional targeting).
- * In prod: removes content silently.
- * In non-prod: shows pink "failed to load" banner with reason.
- */
 export function handleInvalidMepLingo(a, { env, relHref }) {
   const { mepLingoSectionSwap, mepLingoBlockSwap } = a.dataset;
   const isProd = env?.name === 'prod';
@@ -139,12 +134,4 @@ export function handleInvalidMepLingo(a, { env, relHref }) {
     'data-reason': `mep-lingo: ${isInline ? 'inline ' : ''}fragment not available`,
     style: 'min-height: 40px; margin: 8px 0;',
   }));
-}
-
-export function addMepLingoPreviewAttrs(fragment, { usedFallback, relHref }) {
-  if (usedFallback) {
-    fragment.dataset.mepLingoFallback = relHref;
-  } else {
-    fragment.dataset.mepLingoRoc = relHref;
-  }
 }
