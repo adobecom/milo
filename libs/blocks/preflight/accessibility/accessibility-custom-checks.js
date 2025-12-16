@@ -2,11 +2,13 @@ import { getFilteredElements } from './helper.js';
 import checkImageAltText from './check-image-alt-text.js';
 import checkKeyboardNavigation from './check-keyboard-navigation.js';
 import checkLinkLocalization from './check-link-localization.js';
+// import checkColorContrast from './check-color-contrast.js';
 
 const checkFunctions = [
   checkImageAltText,
   checkKeyboardNavigation,
   checkLinkLocalization,
+  // checkColorContrast,
 ];
 
 /**

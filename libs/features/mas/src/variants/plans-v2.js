@@ -51,11 +51,20 @@ export class PlansV2 extends VariantLayout {
         this.adaptForMedia = this.adaptForMedia.bind(this);
         this.toggleShortDescription = this.toggleShortDescription.bind(this);
         this.shortDescriptionExpanded = false;
+        this.syncScheduled = false; // Track if sync is already scheduled
     }
 
     priceOptionsProvider(element, options) {
-        if (element.dataset.template !== TEMPLATE_PRICE_LEGAL) return;
-        options.displayPlanType = this.card?.settings?.displayPlanType ?? false;
+        if (element.dataset.template === TEMPLATE_PRICE_LEGAL) {
+            options.displayPlanType = this.card?.settings?.displayPlanType ?? false;
+            return;
+        }
+
+        // For main price display (strikethrough and regular price)
+        // Disable perUnit display - it will be shown in legal price only
+        if (element.dataset.template === 'strikethrough' || element.dataset.template === 'price') {
+            options.displayPerUnit = false;
+        }
     }
 
     getGlobalCSS() {
@@ -67,7 +76,7 @@ export class PlansV2 extends VariantLayout {
         const footer = shadowRoot.querySelector('footer');
         const body = shadowRoot.querySelector('.body');
         const size = this.card.getAttribute('size');
-        
+
         if (!size) return;
 
         const slotInFooter = shadowRoot.querySelector(`footer slot[name="${name}"]`);
@@ -107,10 +116,19 @@ export class PlansV2 extends VariantLayout {
     }
 
     adaptForMedia() {
-        if (!this.card.closest('merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards,.columns')) {
-            this.card.removeAttribute('size');
+        const isInCollection = this.card.closest('merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards,.columns');
+
+        // Only remove size if NOT in a collection AND size was not explicitly set from fragment
+        if (!isInCollection) {
+            // Don't remove size if it was set from fragment data (during hydration)
+            // This allows standalone cards with size="wide" or size="super-wide" to work correctly
+            if (!this.card.hasAttribute('size')) {
+                return;
+            }
+            // If size exists but card is standalone, keep it (it was set from fragment)
             return;
         }
+
         this.adjustSlotPlacement('heading-m', ['wide'], true);
         this.adjustSlotPlacement('addon', ['super-wide'], Media.isDesktopOrUp);
         this.adjustSlotPlacement('callout-content', ['super-wide'], Media.isDesktopOrUp);
@@ -148,13 +166,49 @@ export class PlansV2 extends VariantLayout {
     }
 
     async postCardUpdateHook() {
+        if (!this.card.isConnected) return;
+
         this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustAddon();
         this.adjustCallout();
         this.updateShortDescriptionVisibility();
+        // Track short-description presence for grid layout
+        if (this.hasShortDescription) {
+            this.card.setAttribute('has-short-description', '');
+        } else {
+            this.card.removeAttribute('has-short-description');
+        }
         if (!this.legalAdjusted) {
             await this.adjustLegal();
+        }
+
+        // Wait for card and prices to be ready
+        await this.card.updateComplete;
+        if (this.card.prices?.length > 0) {
+            await Promise.all(this.card.prices.map((price) => price.onceSettled?.() || Promise.resolve()));
+        }
+
+        // Sync heights after all adjustments complete (desktop only)
+        if (window.matchMedia('(min-width: 768px)').matches) {
+            const container = this.getContainer();
+            if (!container) return;
+
+            const prefix = `--consonant-merch-card-${this.card.variant}`;
+            const hasExistingVars = container.style.getPropertyValue(`${prefix}-body-height`);
+
+            if (!hasExistingVars) {
+                // First card: sync all cards in container
+                requestAnimationFrame(() => {
+                    const cards = container.querySelectorAll(`merch-card[variant="${this.card.variant}"]`);
+                    cards.forEach(card => card.variantLayout?.syncHeights?.());
+                });
+            } else {
+                // Subsequent cards: sync only this card
+                requestAnimationFrame(() => {
+                    this.syncHeights();
+                });
+            }
         }
     }
 
@@ -162,26 +216,40 @@ export class PlansV2 extends VariantLayout {
         return this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
     }
 
+    syncHeights() {
+
+        if (this.card.getBoundingClientRect().width <= 2) return;
+
+        const body = this.card.shadowRoot?.querySelector('.body');
+        if (body) this.updateCardElementMinHeight(body, 'body');
+
+        const footer = this.card.shadowRoot?.querySelector('footer');
+        if (footer) this.updateCardElementMinHeight(footer, 'footer');
+
+        const shortDescription = this.card.querySelector('[slot="short-description"]');
+        if (shortDescription) this.updateCardElementMinHeight(shortDescription, 'short-description');
+    }
+
     async adjustLegal() {
         if (this.legalAdjusted) return;
-        
+
         try {
             this.legalAdjusted = true;
             await this.card.updateComplete;
             await customElements.whenDefined('inline-price');
-            
+
             const headingPrice = this.mainPrice;
             if (!headingPrice) return;
 
             const legal = headingPrice.cloneNode(true);
             await headingPrice.onceSettled();
-            
+
             if (!headingPrice?.options) return;
 
             if (headingPrice.options.displayPerUnit) headingPrice.dataset.displayPerUnit = 'false';
             if (headingPrice.options.displayTax) headingPrice.dataset.displayTax = 'false';
             if (headingPrice.options.displayPlanType) headingPrice.dataset.displayPlanType = 'false';
-            
+
             legal.setAttribute('data-template', 'legal');
             headingPrice.parentNode.insertBefore(legal, headingPrice.nextSibling);
             await legal.onceSettled();
@@ -220,17 +288,17 @@ export class PlansV2 extends VariantLayout {
 
     get shortDescriptionLabel() {
         const shortDescElement = this.card.querySelector('[slot="short-description"]');
-        
+
         const boldElement = shortDescElement.querySelector('strong, b');
         if (boldElement?.textContent?.trim()) {
             return boldElement.textContent.trim();
         }
-        
+
         const headingOrPara = shortDescElement.querySelector('h1, h2, h3, h4, h5, h6, p');
         if (headingOrPara?.textContent?.trim()) {
             return headingOrPara.textContent.trim();
         }
-        
+
         const firstLine = shortDescElement.textContent?.trim().split('\n')[0].trim();
         return firstLine
     }
@@ -244,8 +312,8 @@ export class PlansV2 extends VariantLayout {
         if (!firstElement) return;
 
         // On mobile, hide the first element (it's shown in the toggle label)
-        // On desktop, show it (it's part of the content)
-        if (Media.isDesktopOrUp) {
+        // On tablet and up, show it (it's part of the content)
+        if (!Media.isMobile) {
             firstElement.style.display = '';
         } else {
             firstElement.style.display = 'none';
@@ -259,19 +327,20 @@ export class PlansV2 extends VariantLayout {
 
     get shortDescriptionToggle() {
         if (!this.hasShortDescription) return nothing;
-        
-        if (Media.isDesktopOrUp) {
+
+        // Show desktop version (no toggle) for tablet and up
+        if (!Media.isMobile) {
             return html`
-                <div class="short-description-divider"></div>
                 <div class="short-description-content desktop">
                     <slot name="short-description"></slot>
                 </div>
             `;
         }
-        
+
+        // Show toggle version only on mobile
         return html`
             <div class="short-description-divider"></div>
-            <div class="short-description-toggle" @click=${this.toggleShortDescription}>
+            <div class="short-description-toggle ${this.shortDescriptionExpanded ? 'expanded' : ''}" @click=${this.toggleShortDescription}>
                 <span class="toggle-label">${this.shortDescriptionLabel}</span>
                 <span class="toggle-icon ${this.shortDescriptionExpanded ? 'expanded' : ''}"></span>
             </div>
@@ -287,43 +356,85 @@ export class PlansV2 extends VariantLayout {
             : nothing;
     }
 
+    get secureLabelFooter() {
+        return html`<footer>${this.secureLabel}<slot name="quantity-select"></slot><slot name="footer"></slot></footer>`;
+    }
+
     connectedCallbackHook() {
         this.handleMediaChange = () => {
             this.adaptForMedia();
             this.updateShortDescriptionVisibility();
             this.card.requestUpdate();
+
+            // Sync heights on media change for tablet and up
+            if (window.matchMedia('(min-width: 768px)').matches) {
+                requestAnimationFrame(() => {
+                    this.syncHeights();
+                });
+            }
         };
 
         Media.matchMobile.addEventListener('change', this.handleMediaChange);
         Media.matchDesktopOrUp.addEventListener('change', this.handleMediaChange);
+
+        // Observe card visibility to trigger height sync when tab becomes visible
+        this.visibilityObserver = new IntersectionObserver(([entry]) => {
+            // Only sync when card has real dimensions (not hidden in tab)
+            if (entry.boundingClientRect.height === 0) return;
+            if (!entry.isIntersecting) return;
+
+            // Card is now visible, trigger height sync on desktop
+            if (window.matchMedia('(min-width: 768px)').matches) {
+                requestAnimationFrame(() => {
+                    this.syncHeights();
+                });
+            }
+
+            // Only need to observe once
+            this.visibilityObserver.disconnect();
+        });
+
+        this.visibilityObserver.observe(this.card);
     }
 
     disconnectedCallbackHook() {
         Media.matchMobile.removeEventListener('change', this.handleMediaChange);
         Media.matchDesktopOrUp.removeEventListener('change', this.handleMediaChange);
+        this.visibilityObserver?.disconnect();
     }
 
     renderLayout() {
+        const size = this.card.getAttribute('size');
+        const isWide = size === 'wide';
+
         return html` ${this.badge}
             <div class="body">
-                <div class="heading-wrapper">
-                    ${this.icons}
-                    <slot name="heading-xs"></slot>
-                </div>
-                <slot name="heading-m"></slot>
-                <slot name="subtitle"></slot>
-                <slot name="body-xs"></slot>
-                <div class="price-divider"></div>
-                <slot name="annualPrice"></slot>
-                <slot name="priceLabel"></slot>
-                <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="whats-included"></slot>
-                <slot name="callout-content"></slot>
-                <slot name="quantity-select"></slot>
-                ${this.stockCheckbox}
-                <slot name="addon"></slot>
-                <slot name="badge"></slot>
+                ${isWide ? html`
+                    <div class="heading-wrapper wide">
+                        ${this.icons}
+                        <slot name="heading-xs"></slot>
+                    </div>
+                    <slot name="subtitle"></slot>
+                    <slot name="body-xs"></slot>
+                    ${this.stockCheckbox}
+                    <slot name="addon"></slot>
+                    <slot name="badge"></slot>
+                    <div class="price-divider"></div>
+                    <slot name="heading-m"></slot>
+                ` : html`
+                    <div class="heading-wrapper">
+                        ${this.icons}
+                        <div class="heading-xs-wrapper">
+                          <slot name="heading-xs"></slot>
+                          <slot name="subtitle"></slot>
+                        </div>
+                    </div>
+                    <slot name="heading-m"></slot>
+                    <slot name="body-xs"></slot>
+                    ${this.stockCheckbox}
+                    <slot name="addon"></slot>
+                    <slot name="badge"></slot>
+                `}
             </div>
             ${this.secureLabelFooter}
             ${this.shortDescriptionToggle}
@@ -335,18 +446,18 @@ export class PlansV2 extends VariantLayout {
             display: flex;
             flex-direction: column;
             min-height: 273px;
-            width: 321px;
             position: relative;
             background-color: var(--spectrum-gray-50, #FFFFFF);
             border-radius: var(--consonant-merch-card-plans-v2-border-radius, 8px);
             overflow: hidden;
             font-weight: 400;
-            --merch-card-plans-v2-min-width: 244px;
-            --merch-card-plans-v2-padding: 26px 32px;
-            --merch-card-plans-v2-subtitle-display: contents;
-            --merch-card-plans-v2-heading-min-height: 23px;
+            box-sizing: border-box;
+            --consonant-merch-card-plans-v2-font-family: 'adobe-clean-display', 'Adobe Clean', sans-serif;
+            --merch-card-plans-v2-min-width: 220px;
+            --merch-card-plans-v2-padding: 24px 24px;
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
+            --list-checked-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' width='20' height='20'%3E%3Cpath fill='%23222222' d='M15.656,3.8625l-.7275-.5665a.5.5,0,0,0-.7.0875L7.411,12.1415,4.0875,8.8355a.5.5,0,0,0-.707,0L2.718,9.5a.5.5,0,0,0,0,.707l4.463,4.45a.5.5,0,0,0,.75-.0465L15.7435,4.564A.5.5,0,0,0,15.656,3.8625Z'%3E%3C/path%3E%3C/svg%3E");
         }
 
         :host([variant='plans-v2']) .slot-placeholder {
@@ -354,35 +465,47 @@ export class PlansV2 extends VariantLayout {
         }
 
         :host([variant='plans-v2']) .body {
+          --merch-card-plans-v2-body-min-height: calc( var(--consonant-merch-card-plans-v2-body-height, 0px) - (24px) );
             display: flex;
             flex-direction: column;
             min-width: var(--merch-card-plans-v2-min-width);
             padding: var(--merch-card-plans-v2-padding);
             padding-bottom: 0;
-            flex-grow: 1;
+            flex: 0 0 auto;
+            gap: 12px;
+            min-height: var(--merch-card-plans-v2-body-min-height, auto);
+            width: 220px;
         }
 
         :host([variant='plans-v2'][size]) .body {
-            max-width: none;
+            width: auto;
         }
 
         :host([variant='plans-v2']) footer {
             padding: var(--merch-card-plans-v2-padding);
-            padding-top: 1px;
-            justify-content: flex-start;
+            min-height: var(--consonant-merch-card-plans-v2-footer-height, auto);
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         :host([variant='plans-v2']) slot[name="subtitle"] {
             display: var(--merch-card-plans-v2-subtitle-display);
             min-height: 18px;
-            margin-top: 8px;
+            margin-top: 4px;
             margin-bottom: -8px;
+        }
+
+        :host([variant='plans-v2']) ::slotted([slot='subtitle']) {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--spectrum-gray-700, #505050);
+            line-height: 1.4;
         }
 
         :host([variant='plans-v2']) ::slotted([slot='heading-xs']) {
             font-size: 32px;
             font-weight: 900;
-            font-family: 'Adobe Clean Display', sans-serif;
+            font-family: var(--consonant-merch-card-plans-v2-font-family, 'Adobe Clean Display', sans-serif);
             line-height: 1.2;
             color: var(--spectrum-gray-800, #2C2C2C);
             margin: 0 0 16px 0;
@@ -391,19 +514,27 @@ export class PlansV2 extends VariantLayout {
         }
 
         :host([variant='plans-v2']) slot[name='icons'] {
-            gap: 3px;
+            gap: 3.5px;
             mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 12.5%, rgba(0, 0, 0, 0.8) 25%, rgba(0, 0, 0, 0.6) 37.5%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.2) 62.5%, rgba(0, 0, 0, 0.05) 75%, rgba(0, 0, 0, 0.03) 87.5%, rgba(0, 0, 0, 0) 100%);
             -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 12.5%, rgba(0, 0, 0, 0.8) 25%, rgba(0, 0, 0, 0.6) 37.5%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.2) 62.5%, rgba(0, 0, 0, 0.05) 75%, rgba(0, 0, 0, 0.03) 87.5%, rgba(0, 0, 0, 0) 100%);
         }
 
         :host([variant='plans-v2']) ::slotted([slot='icons']) {
             display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
         }
 
         :host([variant='plans-v2']) ::slotted([slot='heading-m']) {
             margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 800;
+            font-family: var(--consonant-merch-card-plans-v2-font-family, 'Adobe Clean Display', sans-serif);
+            line-height: 1.15;
+            color: var(--spectrum-gray-800, #2C2C2C);
+        }
+
+        :host([variant='plans-v2']) ::slotted([slot='heading-m']) span[data-template="legal"] {
+            font-size: 20px;
+            color: var(--spectrum-gray-700, #6B6B6B);
         }
 
         :host([variant='plans-v2']) ::slotted([slot='promo-text']) {
@@ -417,8 +548,9 @@ export class PlansV2 extends VariantLayout {
         :host([variant='plans-v2']) ::slotted([slot='body-xs']) {
             font-size: 18px;
             font-weight: 400;
-            color: var(--spectrum-gray-700, #4B4B4B);
-            line-height: 1.5;
+            font-family: 'Adobe Clean', sans-serif;
+            color: var(--spectrum-gray-700, #505050);
+            line-height: 1.4;
             margin: 0 0 16px 0;
         }
 
@@ -426,9 +558,13 @@ export class PlansV2 extends VariantLayout {
             margin: 0 0 16px 0;
         }
 
+        :host([variant='plans-v2']) .spacer {
+            flex: 1 1 auto;
+        }
+
         :host([variant='plans-v2']) ::slotted([slot='whats-included']) {
-            margin-top: 24px;
             padding-top: 24px;
+            padding-bottom: 24px;
             border-top: 1px solid #E8E8E8;
         }
 
@@ -479,7 +615,7 @@ export class PlansV2 extends VariantLayout {
 
         :host([variant='plans-v2']) .short-description-divider {
             height: 1px;
-            background-color: #E8E8E8;
+            background-color: var(--consonant-merch-card-plans-v2-divider-color, #E8E8E8);
             margin: 0;
         }
 
@@ -490,21 +626,20 @@ export class PlansV2 extends VariantLayout {
             gap: 16px;
             padding: 16px 32px;
             cursor: pointer;
-            background-color: var(--spectrum-gray-50, #FFFFFF);
+            background-color: var(--consonant-merch-card-plans-v2-toggle-background-color, #F8F8F8);
             transition: background-color 0.2s ease;
-        }
-
-        :host([variant='plans-v2']) .short-description-toggle:hover {
-            background-color: var(--spectrum-gray-75, #F8F8F8);
+            border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
         }
 
         :host([variant='plans-v2']) .short-description-toggle .toggle-label {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
-            color: var(--spectrum-gray-800, #2C2C2C);
+            font-family: 'Adobe Clean', sans-serif;
+            color: var(--consonant-merch-card-plans-v2-toggle-label-color, #292929);
             text-align: left;
             flex: 1;
-            line-height: 1.5;
+            line-height: 22px;
         }
 
         :host([variant='plans-v2']) .short-description-toggle .toggle-icon {
@@ -530,25 +665,35 @@ export class PlansV2 extends VariantLayout {
             overflow: hidden;
             transition: max-height 0.3s ease, padding 0.3s ease;
             padding: 0 32px;
+            background-color: #FFFFFF;
         }
 
         :host([variant='plans-v2']) .short-description-content.expanded {
             max-height: 500px;
             padding: 24px 32px;
+            border-bottom-right-radius: 16px;
+            border-bottom-left-radius: 16px;
         }
 
         :host([variant='plans-v2']) .short-description-content.desktop {
             max-height: none;
             overflow: visible;
-            padding: 24px 32px;
+            padding: 26px 24px;
             transition: none;
+            border-top: 1px solid #E9E9E9;
+            min-height: var(--consonant-merch-card-plans-v2-short-description-height, auto);
+            background-color: #FFFFFF;
+            border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            width: 226px;
         }
 
         :host([variant='plans-v2']) .short-description-content ::slotted([slot='short-description']) {
             font-size: 16px;
             font-weight: 400;
-            color: var(--spectrum-gray-700, #4B4B4B);
-            line-height: 1.5;
+            font-family: 'Adobe Clean', sans-serif;
+            color: #292929;
+            line-height: 1.4;
             margin: 0;
         }
 
@@ -566,6 +711,11 @@ export class PlansV2 extends VariantLayout {
 
         :host([variant='plans-v2'][border-color='spectrum-red-700-plans']) {
             border-color: #EB1000;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.16));
+        }
+
+        :host([variant='plans-v2']) ::slotted([slot='badge'].spectrum-red-700-plans) {
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.16));
         }
 
         :host([variant='plans-v2']) ::slotted([slot='badge'].spectrum-yellow-300-plans),
@@ -605,6 +755,7 @@ export class PlansV2 extends VariantLayout {
         :host([variant='plans-v2']) .heading-wrapper {
             display: flex;
             flex-direction: column;
+            gap: 12px;
         }
 
         :host([variant='plans-v2'][size='wide']) {
@@ -612,31 +763,52 @@ export class PlansV2 extends VariantLayout {
             max-width: 768px;
         }
 
-        :host([variant='plans-v2'][size='wide']) .heading-wrapper {
+        :host([variant='plans-v2'][size='wide']) .heading-wrapper.wide {
             flex-direction: row;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+            margin-bottom: 0;
         }
 
-        :host([variant='plans-v2'][size='wide']) .heading-wrapper slot[name='icons'] {
+        :host([variant='plans-v2'][size='wide']) .heading-wrapper.wide slot[name='icons'] {
             margin-bottom: 0;
             mask-image: none;
             -webkit-mask-image: none;
+            flex-shrink: 0;
         }
 
-        :host([variant='plans-v2'][size='wide']) .heading-wrapper ::slotted([slot='icons']) {
+        :host([variant='plans-v2'][size='wide']) .heading-wrapper.wide ::slotted([slot='icons']) {
             margin-bottom: 0;
         }
 
-        :host([variant='plans-v2'][size='wide']) .heading-wrapper ::slotted([slot='heading-xs']) {
+        :host([variant='plans-v2'][size='wide']) .heading-wrapper.wide ::slotted([slot='heading-xs']) {
             margin: 0;
+            font-size: 27px;
+            font-weight: 800;
+            line-height: 1.25;
+            white-space: nowrap;
+        }
+
+        :host([variant='plans-v2'][size='wide']) slot[name='subtitle'] {
+            display: block;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        :host([variant='plans-v2'][size='wide']) ::slotted([slot='subtitle']) {
+            font-family: var(--consonant-merch-card-plans-v2-font-family, 'Adobe Clean Display', 'Adobe Clean', sans-serif);
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--spectrum-gray-800, #2C2C2C);
         }
 
         :host([variant='plans-v2'][size='wide']) .price-divider {
             display: block;
-            height: 1px;
+            height: 4px;
             background-color: #E8E8E8;
-            margin: 16px 0;
+            margin: 24px 0;
+            width: 100%;
         }
 
         :host([variant='plans-v2'][size='wide']) ::slotted([slot='body-xs']) {
@@ -670,7 +842,7 @@ export class PlansV2 extends VariantLayout {
             margin-right: 0;
         }
 
-        @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)}, ${unsafeCSS(TABLET_DOWN)} {
+        @media ${unsafeCSS(MOBILE_LANDSCAPE)}, ${unsafeCSS(TABLET_DOWN)} {
             :host([variant='plans-v2']) {
                 --merch-card-plans-v2-padding: 26px 16px;
             }
@@ -679,13 +851,46 @@ export class PlansV2 extends VariantLayout {
                 padding: 16px;
             }
 
+            :host([variant='plans-v2']) .short-description-toggle.expanded {
+              background-color: var(--consonant-merch-card-plans-v2-toggle-expanded-background-color, #FFFFFF);
+            }
+
             :host([variant='plans-v2']) .short-description-content {
                 padding: 0 16px;
+                width: auto !important;
             }
 
             :host([variant='plans-v2']) .short-description-content.expanded {
                 padding: 24px 16px;
             }
+
+            :host([variant='plans-v2'][size='wide']) .body {
+                padding: 16px;
+                width: auto;
+            }
+
+            :host([variant='plans-v2']) .body {
+                width: auto;
+            }
+        }
+
+        /* Keep short-description section white in dark mode */
+        :host-context(.dark) :host([variant='plans-v2']) .short-description-content {
+            background-color: #FFFFFF;
+            border-bottom-left-radius: var(--consonant-merch-card-plans-v2-border-radius);
+            border-bottom-right-radius: var(--consonant-merch-card-plans-v2-border-radius);
+        }
+
+        :host-context(.dark) :host([variant='plans-v2']) .short-description-content ::slotted([slot='short-description']) {
+            color: #292929;
+        }
+
+        :host-context(.dark) :host([variant='plans-v2']) .short-description-toggle {
+            background-color: #FFFFFF;
+        }
+
+        :host-context(.dark) :host([variant='plans-v2']) .short-description-toggle .toggle-label {
+            color: #292929;
         }
     `;
 

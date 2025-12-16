@@ -91,7 +91,7 @@ module.exports = {
       browserParams: '?georouting=off&martech=off',
       path: '/drafts/nala/features/commerce/prices-volume-discount',
       data: { promotionCode: 'TDARCH_3LIC_7PT5' },
-      tags: '@commerce @smoke @regression',
+      tags: '@commerce @smoke @regression @nopr',
     },
     {
       tcid: '11',

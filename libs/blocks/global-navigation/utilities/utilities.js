@@ -5,8 +5,8 @@ import {
   loadStyle,
   loadLana,
   isLocalNav,
-  decorateLinks,
-  localizeLink,
+  decorateLinksAsync,
+  localizeLinkAsync,
   getFederatedContentRoot,
   getFederatedUrl,
   getFedsPlaceholderConfig,
@@ -531,13 +531,13 @@ export async function fetchAndProcessPlainHtml({
 
   if (commands?.length) {
     /* c8 ignore next 3 */
-    handleCommands(commands, body, true, true);
+    await handleCommands(commands, body, true, true);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
-    const fragPromises = inlineFrags.map((link) => {
-      link.href = getFederatedUrl(localizeLink(link.href));
+    const fragPromises = inlineFrags.map(async (link) => {
+      link.href = getFederatedUrl(await localizeLinkAsync(link.href));
       return loadInlineFrags(link);
     });
     await Promise.all(fragPromises);
@@ -545,7 +545,7 @@ export async function fetchAndProcessPlainHtml({
 
   // federatePictureSources should only be called after decorating the links.
   if (shouldDecorateLinks) {
-    decorateLinks(body);
+    await decorateLinksAsync(body);
     federatePictureSources({ section: body, forceFederate: path.includes('/federal/') });
   }
 
@@ -698,7 +698,6 @@ export const transformTemplateToMobile = async ({
         <div
           id="${i}"
           role="tabpanel"
-          aria-labelledby="${i}"
           class="${links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/) !== null ? 'has-subheader' : ''}"
           ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden

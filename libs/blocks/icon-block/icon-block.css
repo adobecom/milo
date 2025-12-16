@@ -244,10 +244,6 @@
   flex-direction: column;
 }
 
-.icon-block .foreground .text-content > * {
-  width: 100%;
-}
-
 .icon-block.bio .foreground .text-content .body-s {
   margin-bottom: var(--spacing-s);
 }

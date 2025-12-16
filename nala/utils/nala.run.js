@@ -22,6 +22,7 @@ function displayHelp() {
   \x1b[33m* project=<project-name>\x1b[0m             Project configuration (default: milo-live-chromium)
   \x1b[33m* milolibs=<local|prod|code|feature>\x1b[0m Milo library environment (default: none)
   \x1b[33m* owner=<repo-owner>\x1b[0m                 repo owner (default owner = adobecom)
+  \x1b[33m* maslibs=<local|prod|code|feature>\x1b[0m MAS library environment (default: none)
 
 \x1b[1mExamples:\x1b[0m
   | \x1b[36mCommand\x1b[0m                                                | \x1b[36mDescription\x1b[0m                                                                        |
@@ -55,6 +56,7 @@ function parseArgs(args) {
     config: '',
     project: '',
     milolibs: '',
+    maslibs: '',
     repo: 'milo',
     owner: 'adobecom',
   };
@@ -95,7 +97,7 @@ function parseArgs(args) {
   return parsedParams;
 }
 
-function getLocalTestLiveUrl(env, milolibs, repo = 'milo', owner = 'adobecom') {
+function getLocalTestLiveUrl(env, milolibs, maslibs, repo = 'milo', owner = 'adobecom') {
   if (env === 'main') {
     return 'https://milo.adobe.com';
   }
@@ -107,6 +109,9 @@ function getLocalTestLiveUrl(env, milolibs, repo = 'milo', owner = 'adobecom') {
       return 'http://localhost:6456';
     }
     return `https://${env}--${repo}--${owner}.aem.live`;
+  }
+  if (maslibs) {
+    process.env.MAS_LIBS = `?maslibs=${maslibs}`;
   }
   if (env === 'local') {
     return 'http://localhost:3000';
@@ -165,7 +170,7 @@ function runNalaTest() {
   }
 
   const parsedParams = parseArgs(args);
-  const localTestLiveUrl = getLocalTestLiveUrl(parsedParams.env, parsedParams.milolibs, parsedParams.repo, parsedParams.owner);
+  const localTestLiveUrl = getLocalTestLiveUrl(parsedParams.env, parsedParams.milolibs, parsedParams.maslibs, parsedParams.repo, parsedParams.owner);
   const { finalCommand, envVariables } = buildPlaywrightCommand(parsedParams, localTestLiveUrl);
 
   console.log(`\n Executing nala run command: ${finalCommand}`);
