@@ -3,6 +3,69 @@ import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 const wcsElements = signal([]);
 const loading = signal(true);
 
+function getService() {
+  return document.getElementsByTagName('mas-commerce-service')?.[0];
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  });
+}
+
+function selectOffers(offers, { country }) {
+  let selected;
+  if (offers.length < 2) {
+    selected = offers;
+  } else {
+    const language = country === 'GB' ? 'EN' : 'MULT';
+    offers.sort((a, b) => a.language === language ? -1 : b.language === language ? 1 : 0);
+    offers.sort((a, b) => {
+      if (!a.term && b.term) return -1;
+      if (a.term && !b.term) return 1;
+      return 0;
+    });
+    selected = [offers[0]];
+  }
+  return selected;
+}
+
+function isPromotionActive(promotion, instant, quantity = 1) {
+  if (!promotion) return false;
+  const {
+    start,
+    end,
+    displaySummary: {
+      amount,
+      duration,
+      minProductQuantity = 1,
+      outcomeType,
+    } = {},
+  } = promotion;
+  if (!(amount && duration && outcomeType)) {
+    return false;
+  }
+  if (quantity < minProductQuantity) {
+    return false;
+  }
+  const now = instant ? new Date(instant) : new Date();
+  if (!start || !end) {
+    return false;
+  }
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  return now >= startDate && now <= endDate;
+}
+
 function getBlockLocation(element) {
   const rect = element.getBoundingClientRect();
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -55,7 +118,6 @@ async function checkUrl(url) {
 
 async function checkWcsElements() {
   const elements = [];
-  const promoCodeMap = new Map();
 
   const allWcsElements = document.querySelectorAll('[data-wcs-osi]');
 
@@ -70,14 +132,6 @@ async function checkWcsElements() {
       const ariaLabel = elem.getAttribute('aria-label');
       const displayText = ariaLabel || textContent || `<${tagName}> element`;
       const promoCode = elem.getAttribute('data-promotion-code');
-
-      let textContentForComparison = textContent;
-      if (promoCode) {
-        const clone = elem.cloneNode(true);
-        const srOnlyElements = clone.querySelectorAll('sr-only, .sr-only');
-        srOnlyElements.forEach((srElem) => srElem.remove());
-        textContentForComparison = clone.textContent?.trim();
-      }
 
       const elementData = {
         type: tagName,
@@ -94,24 +148,8 @@ async function checkWcsElements() {
       };
 
       elements.push(elementData);
-
-      if (promoCode && textContentForComparison) {
-        const key = `${promoCode}::${textContentForComparison}`;
-        if (!promoCodeMap.has(key)) {
-          promoCodeMap.set(key, []);
-        }
-        promoCodeMap.get(key).push(elementData);
-      }
     }
   }
-
-  promoCodeMap.forEach((elementsWithCode) => {
-    if (elementsWithCode.length > 1) {
-      elementsWithCode.forEach((elem) => {
-        elem.promoCodeStatus = 'error';
-      });
-    }
-  });
 
   wcsElements.value = elements;
   loading.value = false;
@@ -138,11 +176,59 @@ async function checkWcsElements() {
     }
   });
 
-  elements.forEach((elementData) => {
-    if (elementData.promoCodeStatus === 'error') {
-      elementData.element.classList.add('preflight-merch-error');
-    }
-  });
+  const service = getService();
+  if (service) {
+    elements.forEach(async (elementData, index) => {
+      if (elementData.promoCode) {
+        try {
+          const quantity = parseInt(elementData.element.getAttribute('data-quantity')) || 1;
+          const country = elementData.element.getAttribute('data-ims-country') || service.settings.country;
+          const language = elementData.element.getAttribute('data-language') || service.settings.language;
+          
+          const options = {
+            country,
+            language,
+            promotionCode: elementData.promoCode,
+            wcsOsi: [elementData.wcsOsi],
+            quantity: [quantity],
+          };
+
+          const promises = service.resolveOfferSelectors(options);
+          let offers = await Promise.all(promises);
+          offers = offers.map((offer) => selectOffers(offer, options));
+          const offerWithPromo = offers.flat().find((offer) => offer.promotion);
+          
+          if (offerWithPromo?.promotion) {
+            const promotion = offerWithPromo.promotion;
+            const isActive = isPromotionActive(
+              promotion,
+              promotion?.displaySummary?.instant,
+              quantity
+            );
+            
+            wcsElements.value[index].promoCodeStatus = isActive ? 'valid' : 'expired';
+            wcsElements.value[index].promoStartDate = promotion.start;
+            wcsElements.value[index].promoEndDate = promotion.end;
+            if (!isActive) {
+              wcsElements.value[index].promoExpired = true;
+              elementData.element.classList.add('preflight-merch-error');
+            }
+          } else {
+            wcsElements.value[index].promoCodeStatus = 'not-found';
+            wcsElements.value[index].promoExpired = true;
+            elementData.element.classList.add('preflight-merch-error');
+          }
+          wcsElements.value = [...wcsElements.value];
+        } catch (error) {
+          console.error('Error validating promo code:', error);
+          wcsElements.value[index].promoCodeStatus = 'not-found';
+          wcsElements.value[index].promoExpired = true;
+          elementData.element.classList.add('preflight-merch-error');
+          wcsElements.value = [...wcsElements.value];
+        }
+      }
+    });
+  }
 }
 
 function scrollToElement(location) {
@@ -156,17 +242,17 @@ function WcsElementItem({ wcsElem }) {
   let statusIconClass = '';
   if (wcsElem.checking) {
     statusIconClass = 'result-icon purple';
-  } else if (wcsElem.urlStatus === 'error') {
+  } else if (wcsElem.urlStatus === 'error' || wcsElem.promoCodeStatus === 'expired' || wcsElem.promoCodeStatus === 'not-found') {
     statusIconClass = 'result-icon red';
-  } else if (wcsElem.urlStatus === 'undetermined' || wcsElem.promoCodeStatus === 'error') {
+  } else if (wcsElem.urlStatus === 'undetermined') {
     statusIconClass = 'result-icon orange';
-  } else if (wcsElem.urlStatus === 'success') {
+  } else if (wcsElem.urlStatus === 'success' || wcsElem.promoCodeStatus === 'valid') {
     statusIconClass = 'result-icon green';
   }
   const showUrlInfo = wcsElem.href;
 
   return html`
-    <div class="preflight-item merch-item merch-wcs-item ${(wcsElem.urlStatus === 'error' || wcsElem.urlStatus === 'undetermined' || wcsElem.promoCodeStatus === 'error') ? 'has-url-error' : ''}">
+    <div class="preflight-item merch-item merch-wcs-item ${(wcsElem.urlStatus === 'error' || wcsElem.urlStatus === 'undetermined' || wcsElem.promoCodeStatus === 'expired' || wcsElem.promoCodeStatus === 'not-found') ? 'has-url-error' : ''}">
       <div class="preflight-item-text">
         <p class="preflight-item-title">
           ${statusIconClass && html`<span class="${statusIconClass}"></span>`}
@@ -177,8 +263,23 @@ function WcsElementItem({ wcsElem }) {
           ${wcsElem.promoCode && html`
             <br/><br/>
             <strong>Promotion Code:</strong> <code class="wcs-osi-code">${wcsElem.promoCode}</code>
-            ${wcsElem.promoCodeStatus === 'error' && html`
-              <br/><span class="url-error-message">Please check, Promo code may be expired</span>
+            ${wcsElem.promoEndDate && html`
+              <br/><strong>Expires:</strong> ${formatDate(wcsElem.promoEndDate)}
+            `}
+            ${wcsElem.promoStartDate && html`
+              <br/><strong>Starts:</strong> ${formatDate(wcsElem.promoStartDate)}
+            `}
+            ${wcsElem.promoCodeStatus && !wcsElem.promoEndDate && html`
+              <br/><strong>Dates:</strong> <span class="url-error-message">No dates found</span>
+            `}
+            ${wcsElem.promoCodeStatus === 'expired' && html`
+              <br/><span class="url-error-message">Promotion is expired or not active</span>
+            `}
+            ${wcsElem.promoCodeStatus === 'not-found' && html`
+              <br/><span class="url-error-message">Promotion not found for this code</span>
+            `}
+            ${wcsElem.promoCodeStatus === 'valid' && html`
+              <br/><span class="url-success">Promotion is active</span>
             `}
           `}
           ${showUrlInfo && html`
@@ -218,9 +319,18 @@ function WcsElementItem({ wcsElem }) {
 
 function MerchSummary() {
   const totalElements = wcsElements.value.length;
-  const passedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'success' && elem.promoCodeStatus !== 'error').length;
-  const failedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'error').length;
-  const undeterminedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined' || elem.promoCodeStatus === 'error').length;
+  const passedCount = wcsElements.value.filter((elem) => 
+    (elem.urlStatus === 'success' || !elem.href) && 
+    (!elem.promoCode || elem.promoCodeStatus === 'valid')
+  ).length;
+  const failedCount = wcsElements.value.filter((elem) => 
+    elem.urlStatus === 'error' || 
+    elem.promoCodeStatus === 'expired' || 
+    elem.promoCodeStatus === 'not-found'
+  ).length;
+  const undeterminedCount = wcsElements.value.filter((elem) => 
+    elem.urlStatus === 'undetermined'
+  ).length;
 
   if (totalElements === 0) {
     return html`
@@ -257,7 +367,7 @@ export default function Merch() {
   useEffect(() => {
     setTimeout(() => {
       checkWcsElements();
-    }, 1000);
+    }, 3000);
   }, []);
 
   if (loading.value) {
