@@ -2,6 +2,7 @@ import ctaTextOption from './ctaTextOption.js';
 import {
   getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
 } from '../../utils/utils.js';
+import { resolvePriceTaxFlags } from '../../deps/mas/commerce.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -44,10 +45,8 @@ const priceDefaultOptions = {
   exclusive: false,
 };
 
-const updateParams = (params, key, value, cs) => {
-  let defaultValue = priceDefaultOptions[key];
-  if (key === 'seat') defaultValue = cs !== 'INDIVIDUAL';
-  if (value !== defaultValue) {
+const updateParams = (params, key, value, opts) => {
+  if (value !== opts[key]) {
     params.set(key, value);
   }
 };
@@ -57,15 +56,17 @@ document.body.classList.add('tool', 'tool-ost');
 /**
  * @param {Commerce.Defaults} defaults
  */
-export const createLinkMarkup = (
+export const createLinkMarkup = async (
   defaults,
   offerSelectorId,
   type,
   offer,
   options,
   promo,
+  country,
 ) => {
   const isCta = !!type?.startsWith('checkout');
+  const taxFlags = await resolvePriceTaxFlags(country, null, offer.customer_segment, offer.market_segments[0]);
 
   const createHref = () => {
     const params = new URLSearchParams([
@@ -92,11 +93,17 @@ export const createLinkMarkup = (
         displayOldPrice,
         forceTaxExclusive,
       } = options;
-      updateParams(params, 'term', displayRecurrence);
-      updateParams(params, 'seat', displayPerUnit, masDefaultsEnabled ? offer.customer_segment : null);
-      updateParams(params, 'tax', displayTax);
-      updateParams(params, 'old', displayOldPrice);
-      updateParams(params, 'exclusive', forceTaxExclusive);
+      const optsMasDefaults = masDefaultsEnabled ? {
+        ...priceDefaultOptions,
+        seat: offer.customer_segment !== 'INDIVIDUAL',
+        tax: taxFlags.displayTax || priceDefaultOptions.tax,
+        exclusive: taxFlags.forceTaxExclusive || priceDefaultOptions.exclusive,
+      } : priceDefaultOptions;
+      updateParams(params, 'term', displayRecurrence, optsMasDefaults);
+      updateParams(params, 'seat', displayPerUnit, optsMasDefaults);
+      updateParams(params, 'tax', displayTax, optsMasDefaults);
+      updateParams(params, 'old', displayOldPrice, optsMasDefaults);
+      updateParams(params, 'exclusive', forceTaxExclusive, optsMasDefaults);
     }
     return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
@@ -142,10 +149,10 @@ export async function loadOstEnv() {
   let resolvePriceTaxFlags;
   if (getMasLibs() && window.mas?.commerce) {
     // Loaded from external URL - check global scope
-    ({ Log, Defaults, resolvePriceTaxFlags } = window.mas.commerce);
+    ({ Log, Defaults } = window.mas.commerce);
   } else {
     // Loaded as module
-    ({ Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js'));
+    ({ Log, Defaults } = await import('../../deps/mas/commerce.js'));
   }
 
   const defaultPlaceholderOptions = Object.fromEntries([
@@ -245,6 +252,7 @@ export async function loadOstEnv() {
     offer,
     options,
     promoOverride,
+    country,
   ) => {
     log.debug(offerSelectorId, type, offer, options, promoOverride);
     const link = createLinkMarkup(
@@ -254,6 +262,7 @@ export async function loadOstEnv() {
       offer,
       options,
       promoOverride,
+      country,
     );
 
     log.debug(`Use Link: ${link.outerHTML}`);

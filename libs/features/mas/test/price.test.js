@@ -504,7 +504,7 @@ describe('class "InlinePrice"', () => {
           },
           {
             locale: 'SA_ar',
-            expected: [[true, false], [false, false], [false, false], [false, false]]
+            expected: [[true, false], [false, false], [true, false], [false, false]]
           },
           {
             locale: 'SA_en',

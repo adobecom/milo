@@ -75,7 +75,7 @@ const DISPLAY_TAX_MAP = {
         'KR_ko',
     ],
     [BUSINESS]: ['MU_en', 'LT_lt', 'LV_lv', 'NG_en', 'CO_es', 'KR_ko'],
-    [STUDENT]: ['LT_lt', 'LV_lv', 'SA_en', 'SG_en'],
+    [STUDENT]: ['LT_lt', 'LV_lv', 'SA_en', 'SA_ar', 'SG_en'],
     [UNIVERSITY]: ['SG_en', 'KR_ko'],
 };
 
@@ -105,15 +105,36 @@ const defaultTaxExcluded = (segment) => [BUSINESS, UNIVERSITY].includes(segment)
  * @returns {boolean} true if price will be displayed without tax, otherwise false (default)
  */
 const resolveTaxExclusive = (country, language, customerSegment, marketSegment) => {
-    const locale = `${country}_${language}`;
     const segment = `${customerSegment}_${marketSegment}`;
-    const val = TAX_EXCLUDED_MAP[locale];
+    const val = getFromMap(TAX_EXCLUDED_MAP, country, language, false);
     if (val) {
         const index = TAX_EXCLUDED_MAP_INDEX.indexOf(segment);
         return val[index];
     }
 
     return defaultTaxExcluded(segment);
+}
+
+const getFromMap = (map, country, language, isArray) => {
+    if (map[country]) return map[country];
+    const locale = `${country}_${language}`;
+    if (map[locale]) return map[locale];
+
+    let result;
+    if (isArray) {
+        map.forEach(item => {
+            if (!result && item.startsWith(`${country}_`)) {
+                result = item;
+            }
+        });
+    } else {
+        Object.keys(map).forEach(key => {
+            if (!result && key.startsWith(`${country}_`)) {
+                result = map[key];
+            }
+        });
+    }
+    return result;
 }
 
 /**
@@ -125,18 +146,14 @@ const resolveTaxExclusive = (country, language, customerSegment, marketSegment) 
  * @returns {boolean} true if tax label will be displayed, otherwise false (default)
  */
 const resolveDisplayTaxForGeoAndSegment = (country, language, customerSegment, marketSegment) => {
-    const locale = `${country}_${language}`;
-    if (DISPLAY_ALL_TAX_COUNTRIES.includes(country)
-        || DISPLAY_ALL_TAX_COUNTRIES.includes(locale)) {
-        return true;
-    }
+    if (getFromMap(DISPLAY_ALL_TAX_COUNTRIES, country, language, true)) return true;
 
     const segmentConfig = DISPLAY_TAX_MAP[`${customerSegment}_${marketSegment}`];
     if (!segmentConfig) {
         return Defaults.displayTax;
     }
 
-    if (segmentConfig.includes(country) || segmentConfig.includes(locale)) {
+    if (getFromMap(segmentConfig, country, language, true)) {
         return true;
     }
 
