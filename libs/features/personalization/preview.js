@@ -141,6 +141,7 @@ export function parsePageAndUrl(config, windowLocation, prefix) {
 function parseMepConfig() {
   const config = getConfig();
   const { mep, locale } = config;
+  if (!mep || !locale) return null;
   const { experiments, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
@@ -173,8 +174,8 @@ function parseMepConfig() {
       target: getMetadata('target') || 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
       geo: prefix === US_GEO ? '' : prefix,
-      locale: locale.ietf,
-      region: locale.region,
+      locale: locale?.ietf,
+      region: locale?.region,
       highlight,
     },
     activities,
@@ -292,6 +293,7 @@ function getPillText(manifestCount) {
 let sevenDayPageData;
 async function mmmToggleManifests(event, popup, pageId) {
   const mepConfig = parseMepConfig();
+  if (!mepConfig) return;
   const mmmManifestsElement = document.querySelector('.mep-manifest-list.mmm-list');
 
   if (!sevenDayPageData) {
@@ -531,6 +533,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
 
 function createPreviewPill() {
   const mepConfig = parseMepConfig();
+  if (!mepConfig) return;
   const { activities } = mepConfig;
   const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   const pill = document.createElement('div');
@@ -649,6 +652,7 @@ function addLingoFragmentClickHandlers() {
 
 export async function saveToMmm() {
   const data = parseMepConfig();
+  if (!data) return false;
   const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/'];
   if (excludedStrings.some((str) => data.page.url.includes(str))) return false;
   data.activities = data.activities.filter((activity) => {

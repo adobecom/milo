@@ -1386,11 +1386,13 @@ export async function applyPers({ manifests }) {
 
   const pznVariants = pznList.map((r) => {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-    const arr = val.split(':');
-    if (arr.length > 2 || arr[0]?.trim() === '' || arr[1]?.trim() === '') {
+    // Handle cases without colons or starting with colon (no nickname)
+    if (!val.includes(':') || val.startsWith(':')) return val === 'default' ? 'nopzn' : val;
+    // Validate nickname syntax: "nickname: audience"
+    const arr = val.split(':', 2);
+    if (arr[0]?.trim() === '' || arr[1]?.trim() === '') {
       log('MEP Error: When using (optional) column nicknames, please use the following syntax: "<nickname>: <original audience>"');
     }
-    if (!val.includes(':') || val.startsWith(':')) return val === 'default' ? 'nopzn' : val;
     return arr[0].trim();
   });
   const pznManifests = pznList.map((r) => r.experiment.analyticsTitle);
