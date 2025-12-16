@@ -79,6 +79,16 @@ function replaceDotMedia(path, doc) {
   resetAttributeBase('source', 'srcset');
 }
 
+// Helper to remove mep-lingo row from a container (exported for testing)
+export const removeMepLingoRow = (container) => {
+  const rows = container?.querySelectorAll(':scope > div');
+  const mepLingoRow = [...rows || []].find((row) => {
+    const firstCell = row.children[0];
+    return firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo';
+  });
+  mepLingoRow?.remove();
+};
+
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale, env } = getConfig();
   let relHref = await localizeLinkAsync(a.href);
@@ -128,16 +138,6 @@ export default async function init(a) {
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
   const isOnRegionalPage = !!locale?.base;
-
-  // Helper to remove mep-lingo row from a container
-  const removeMepLingoRow = (container) => {
-    const rows = container?.querySelectorAll(':scope > div');
-    const mepLingoRow = [...rows || []].find((row) => {
-      const firstCell = row.children[0];
-      return firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo';
-    });
-    mepLingoRow?.remove();
-  };
 
   if (isMepLingoLink && isOnRegionalPage) {
     const { handleInvalidMepLingo } = await import('../../features/mep/lingo.js');
