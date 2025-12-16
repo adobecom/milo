@@ -339,7 +339,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
 
         if (column.querySelector(selectors.columnBreak)) {
           wrapper.classList.add(`${wrapperClass}--group`);
-          
+
           const wideColumn = document.createElement('div');
           wideColumn.append(...column.childNodes);
           menuItems.append(wideColumn);
