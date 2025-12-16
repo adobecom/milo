@@ -209,7 +209,7 @@ function makeGroups(arr, n = 20) {
 export function connectionError(isVpnError = false) {
   const description = isVpnError
     ? 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.'
-    : 'Connection error: Unable to connect to the link check service. Please check your network connection and try again.';
+    : 'Connection error: Unable to connect to the link check service.';
   return {
     checkId: SEO_CHECK_IDS.links,
     id: SEO_IDS.links,
