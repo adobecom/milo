@@ -1,5 +1,7 @@
 /* eslint-disable max-classes-per-file */
-import { createTag, getConfig, loadArea, localizeLinkAsync, customFetch } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
+} from '../../utils/utils.js';
 
 const fragMap = {};
 
@@ -124,7 +126,7 @@ export default async function init(a) {
   }
 
   const isMepLingoLink = a.dataset.mepLingo === 'true';
-  const shouldFetchMepLingo = isMepLingoLink;
+  const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
   const isOnRegionalPage = !!locale?.base;
 
   // Helper to remove mep-lingo row from a container

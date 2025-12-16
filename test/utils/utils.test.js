@@ -1835,4 +1835,225 @@ describe('Utils', () => {
       expect(results[2]).to.equal('https://www.adobe.com/ch_de/creativecloud/features');
     });
   });
+
+  describe('MEP Lingo Preprocessing in decorateLinksAsync', () => {
+    let lingoMeta;
+    let testContainer;
+
+    beforeEach(() => {
+      document.head.innerHTML = '';
+      document.body.innerHTML = '';
+      document.body.className = '';
+      lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langFirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      testContainer = document.createElement('div');
+      testContainer.id = 'test-container';
+      testContainer.classList.add('section');
+      document.body.appendChild(testContainer);
+    });
+
+    afterEach(() => {
+      lingoMeta?.remove();
+      testContainer?.remove();
+    });
+
+    it('sets data-mep-lingo and removes #_mep-lingo hash from link', async () => {
+      testContainer.innerHTML = `
+        <div class="container">
+          <p><a href="https://www.adobe.com/fragments/test#_mep-lingo">Fragment Link</a></p>
+        </div>
+      `;
+      const container = testContainer.querySelector('.container');
+      await utils.decorateLinksAsync(container);
+      const link = container.querySelector('a');
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.href).to.not.include('#_mep-lingo');
+      expect(link.href).to.equal('https://www.adobe.com/fragments/test');
+    });
+
+    it('verifies lingoActive is true when langFirst meta is set', async () => {
+      const lingoValue = utils.getMetadata('langFirst');
+      expect(lingoValue).to.equal('on');
+    });
+
+    it('detects mep-lingo row with mep-lingo block and sets mepLingoBlockSwap', async () => {
+      // Structure: .section > div.mep-lingo > div (row) > div (cells)
+      testContainer.innerHTML = `
+        <div class="mep-lingo">
+          <div>
+            <div>mep-lingo</div>
+            <div><a href="https://www.adobe.com/fragments/test">Fragment</a></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link).to.exist;
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.dataset.mepLingoBlockSwap).to.equal('mep-lingo');
+    });
+
+    it('detects mep-lingo row in section-metadata and sets mepLingoSectionSwap', async () => {
+      // Structure: .section > div.section-metadata > div (row) > div (cells)
+      testContainer.innerHTML = `
+        <div class="section-metadata">
+          <div>
+            <div>mep-lingo</div>
+            <div><a href="https://www.adobe.com/fragments/test#_mep-lingo">Fragment</a></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link).to.exist;
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.dataset.mepLingoSectionSwap).to.equal('true');
+      expect(link.href).to.not.include('#_mep-lingo');
+    });
+
+    it('detects mep-lingo row in regular block and sets mepLingoBlockSwap to block name', async () => {
+      // Structure: .section > div.marquee > div (row) > div (cells)
+      testContainer.innerHTML = `
+        <div class="marquee">
+          <div>
+            <div>mep-lingo</div>
+            <div><a href="https://www.adobe.com/fragments/test#_mep-lingo">Fragment</a></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link).to.exist;
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.dataset.mepLingoBlockSwap).to.equal('marquee');
+      expect(link.href).to.not.include('#_mep-lingo');
+    });
+
+    it('handles link wrapped in strong tag', async () => {
+      testContainer.innerHTML = `
+        <div class="mep-lingo">
+          <div>
+            <div>mep-lingo</div>
+            <div><strong><a href="https://www.adobe.com/fragments/test">Fragment</a></strong></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link).to.exist;
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.dataset.mepLingoBlockSwap).to.equal('mep-lingo');
+    });
+
+    it('handles link wrapped in em tag', async () => {
+      testContainer.innerHTML = `
+        <div class="mep-lingo">
+          <div>
+            <div>mep-lingo</div>
+            <div><em><a href="https://www.adobe.com/fragments/test">Fragment</a></em></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link).to.exist;
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.dataset.mepLingoBlockSwap).to.equal('mep-lingo');
+    });
+
+    it('handles lowercase mep-lingo text', async () => {
+      testContainer.innerHTML = `
+        <div class="mep-lingo">
+          <div>
+            <div>mep-lingo</div>
+            <div><a href="https://www.adobe.com/fragments/test">Fragment</a></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link).to.exist;
+      expect(link.dataset.mepLingo).to.equal('true');
+    });
+
+    it('does not match uppercase MEP-LINGO text (case sensitive)', async () => {
+      // detectMepLingoSwap uses toLowerCase().trim() === 'mep-lingo'
+      // so uppercase should still match after toLowerCase
+      testContainer.innerHTML = `
+        <div class="mep-lingo">
+          <div>
+            <div>MEP-LINGO</div>
+            <div><a href="https://www.adobe.com/fragments/test">Fragment</a></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link).to.exist;
+      expect(link.dataset.mepLingo).to.equal('true');
+    });
+
+    it('always detects #_mep-lingo hash even when lingo is not active', async () => {
+      // Detection always happens for fallback/invalid handling purposes
+      lingoMeta.setAttribute('content', 'off');
+      testContainer.innerHTML = `
+        <div class="container">
+          <p><a href="https://www.adobe.com/fragments/test#_mep-lingo">Fragment Link</a></p>
+        </div>
+      `;
+      const container = testContainer.querySelector('.container');
+      await utils.decorateLinksAsync(container);
+      const link = container.querySelector('a');
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.href).to.not.include('#_mep-lingo');
+    });
+
+    it('does not set mepLingo for non-mep-lingo rows', async () => {
+      testContainer.innerHTML = `
+        <div class="some-block">
+          <div>
+            <div>not-mep-lingo</div>
+            <div><a href="https://www.adobe.com/test">Regular Link</a></div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link.dataset.mepLingo).to.be.undefined;
+    });
+
+    it('does not set mepLingo when cellText does not match', async () => {
+      testContainer.innerHTML = `
+        <div class="some-block">
+          <div>
+            <div>other-text</div>
+            <div><a href="https://www.adobe.com/page">Regular Page</a></div>
+          </div>
+        </div>
+      `;
+      const link = testContainer.querySelector('a');
+      await utils.decorateLinksAsync(testContainer);
+      expect(link.dataset.mepLingo).to.be.undefined;
+    });
+
+    it('sets mepLingoBlockSwap for block with multiple rows', async () => {
+      testContainer.innerHTML = `
+        <div class="marquee">
+          <div>
+            <div>mep-lingo</div>
+            <div><a href="https://www.adobe.com/fragments/test">Fragment</a></div>
+          </div>
+          <div>
+            <div>Other Content</div>
+          </div>
+        </div>
+      `;
+      await utils.decorateLinksAsync(testContainer);
+      const link = testContainer.querySelector('a');
+      expect(link.dataset.mepLingo).to.equal('true');
+      expect(link.dataset.mepLingoBlockSwap).to.equal('marquee');
+    });
+  });
 });
