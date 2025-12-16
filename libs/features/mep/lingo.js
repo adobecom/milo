@@ -69,40 +69,6 @@ export async function fetchMepLingo(mepLingoPath, fallbackPath) {
   return {};
 }
 
-export async function getQueryIndexPaths(prefix, checkImmediate = false, isFederal = false) {
-  const unavailable = { resolved: false, paths: [], available: false };
-  try {
-    // Same siteId logic as loadQueryIndexes() - must match for index lookup to work
-    const siteId = isFederal ? 'federal' : (getConfig().uniqueSiteId ?? '');
-    const targetIndex = queryIndexes?.[siteId];
-
-    if (!targetIndex) {
-      return checkImmediate ? unavailable : { paths: [], available: false };
-    }
-
-    if (checkImmediate) {
-      if (!targetIndex.requestResolved) {
-        return unavailable;
-      }
-      const paths = await targetIndex.pathsRequest;
-      const matchingPaths = paths?.filter((p) => p.startsWith(prefix)) || [];
-      return { resolved: true, paths: matchingPaths, available: true };
-    }
-
-    const paths = await targetIndex.pathsRequest;
-    const matchingPaths = paths?.filter((p) => p.startsWith(prefix)) || [];
-    return { resolved: true, paths: matchingPaths, available: Array.isArray(paths) };
-  } catch (e) {
-    window.lana?.log(`Query index error for ${prefix}:`, e);
-    return checkImmediate ? unavailable : { paths: [], available: false };
-  }
-}
-
-/**
- * Handle invalid mep-lingo content (langFirst=off or no regional targeting).
- * In prod: removes content silently.
- * In non-prod: shows pink "failed to load" banner with reason.
- */
 export function handleInvalidMepLingo(a, { env, relHref }) {
   const { mepLingoSectionSwap, mepLingoBlockSwap } = a.dataset;
   const isProd = env?.name === 'prod';
