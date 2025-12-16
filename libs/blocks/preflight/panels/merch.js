@@ -10,13 +10,13 @@ function getService() {
 function formatDate(dateString) {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZoneName: 'short'
+    timeZoneName: 'short',
   });
 }
 
@@ -26,7 +26,11 @@ function selectOffers(offers, { country }) {
     selected = offers;
   } else {
     const language = country === 'GB' ? 'EN' : 'MULT';
-    offers.sort((a, b) => a.language === language ? -1 : b.language === language ? 1 : 0);
+    offers.sort((a, b) => {
+      if (a.language === language) return -1;
+      if (b.language === language) return 1;
+      return 0;
+    });
     offers.sort((a, b) => {
       if (!a.term && b.term) return -1;
       if (a.term && !b.term) return 1;
@@ -181,10 +185,10 @@ async function checkWcsElements() {
     elements.forEach(async (elementData, index) => {
       if (elementData.promoCode) {
         try {
-          const quantity = parseInt(elementData.element.getAttribute('data-quantity')) || 1;
+          const quantity = parseInt(elementData.element.getAttribute('data-quantity'), 10) || 1;
           const country = elementData.element.getAttribute('data-ims-country') || service.settings.country;
           const language = elementData.element.getAttribute('data-language') || service.settings.language;
-          
+
           const options = {
             country,
             language,
@@ -197,15 +201,15 @@ async function checkWcsElements() {
           let offers = await Promise.all(promises);
           offers = offers.map((offer) => selectOffers(offer, options));
           const offerWithPromo = offers.flat().find((offer) => offer.promotion);
-          
+
           if (offerWithPromo?.promotion) {
-            const promotion = offerWithPromo.promotion;
+            const { promotion } = offerWithPromo;
             const isActive = isPromotionActive(
               promotion,
               promotion?.displaySummary?.instant,
-              quantity
+              quantity,
             );
-            
+
             wcsElements.value[index].promoCodeStatus = isActive ? 'valid' : 'expired';
             wcsElements.value[index].promoStartDate = promotion.start;
             wcsElements.value[index].promoEndDate = promotion.end;
@@ -219,8 +223,7 @@ async function checkWcsElements() {
             elementData.element.classList.add('preflight-merch-error');
           }
           wcsElements.value = [...wcsElements.value];
-        } catch (error) {
-          console.error('Error validating promo code:', error);
+        } catch {
           wcsElements.value[index].promoCodeStatus = 'not-found';
           wcsElements.value[index].promoExpired = true;
           elementData.element.classList.add('preflight-merch-error');
@@ -319,18 +322,12 @@ function WcsElementItem({ wcsElem }) {
 
 function MerchSummary() {
   const totalElements = wcsElements.value.length;
-  const passedCount = wcsElements.value.filter((elem) => 
-    (elem.urlStatus === 'success' || !elem.href) && 
-    (!elem.promoCode || elem.promoCodeStatus === 'valid')
-  ).length;
-  const failedCount = wcsElements.value.filter((elem) => 
-    elem.urlStatus === 'error' || 
-    elem.promoCodeStatus === 'expired' || 
-    elem.promoCodeStatus === 'not-found'
-  ).length;
-  const undeterminedCount = wcsElements.value.filter((elem) => 
-    elem.urlStatus === 'undetermined'
-  ).length;
+  const passedCount = wcsElements.value.filter((elem) => (elem.urlStatus === 'success' || !elem.href)
+    && (!elem.promoCode || elem.promoCodeStatus === 'valid')).length;
+  const failedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'error'
+    || elem.promoCodeStatus === 'expired'
+    || elem.promoCodeStatus === 'not-found').length;
+  const undeterminedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined').length;
 
   if (totalElements === 0) {
     return html`
