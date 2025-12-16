@@ -98,7 +98,7 @@ export default async function init(a) {
     url = new URL(a.href);
     const path = !a.href.includes('/federal/') ? url.pathname
       : a.href.replace('#_inline', '');
-    mepFrag = mep?.fragments?.[path];
+    mepFrag = mep?.fragments?.[path] || mep?.fragments?.[path.replace(locale.prefix, '')];
   } catch (e) {
     // do nothing
   }
