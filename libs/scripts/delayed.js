@@ -111,9 +111,9 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
 export const loadPreflightResults = async () => {
   const preflight = document.createElement('div');
   preflight.classList.add('preflight');
-  const { loadBlock } = await import(`http://main--milo--adobecom.aem.live/utils/utils.js`);
+  const { loadBlock } = await import(`https://main--milo--adobecom.aem.live/utils/utils.js`);
   const content = await loadBlock(preflight);
-  const { getModal } = await import(`http://main--milo--adobecom.aem.live/blocks/modal/modal.js`);
+  const { getModal } = await import(`https://main--milo--adobecom.aem.live/blocks/modal/modal.js`);
   getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
 };
 
