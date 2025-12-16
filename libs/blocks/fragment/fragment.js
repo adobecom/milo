@@ -1,7 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
-} from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLinkAsync, customFetch } from '../../utils/utils.js';
 
 const fragMap = {};
 
@@ -19,12 +17,7 @@ const isCircularRef = (href) => [...Object.values(fragMap)]
 const updateFragMap = async (fragment, a, href) => {
   const allLinks = [...fragment.querySelectorAll('a')];
   const linkLocalizations = await Promise.all(
-    allLinks.map((link) => localizeLinkAsync(
-      removeHash(link.href),
-      window.location.hostname,
-      false,
-      link,
-    )),
+    allLinks.map((link) => localizeLinkAsync(removeHash(link.href))),
   );
   const fragLinksWithLocalizations = linkLocalizations
     .filter((localizedHref) => localizedHref.includes('/fragments/'));
@@ -80,9 +73,8 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { decorateArea, mep, placeholders, locale, env } = getConfig();
+  const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href);
-  let url;
   let inline = false;
 
   if (a.parentElement?.nodeName === 'P') {
@@ -95,8 +87,7 @@ export default async function init(a) {
 
   let mepFrag;
   try {
-    url = new URL(a.href);
-    const path = !a.href.includes('/federal/') ? url.pathname
+    const path = !a.href.includes('/federal/') ? new URL(a.href).pathname
       : a.href.replace('#_inline', '');
     mepFrag = mep?.fragments?.[path] || mep?.fragments?.[path.replace(locale.prefix, '')];
   } catch (e) {
@@ -124,94 +115,11 @@ export default async function init(a) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
-
-  const isMepLingoLink = a.dataset.mepLingo === 'true';
-  const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
-  const isOnRegionalPage = !!locale?.base;
-
-  // Helper to remove mep-lingo row from a container
-  const removeMepLingoRow = (container) => {
-    const rows = container?.querySelectorAll(':scope > div');
-    const mepLingoRow = [...rows || []].find((row) => {
-      const firstCell = row.children[0];
-      return firstCell?.textContent?.toLowerCase().trim() === 'mep-lingo';
-    });
-    mepLingoRow?.remove();
-  };
-
-  if (isMepLingoLink && isOnRegionalPage) {
-    const { handleInvalidMepLingo } = await import('../../features/mep/lingo.js');
-    handleInvalidMepLingo(a, { env, relHref });
-    return;
-  }
-
-  let originalBlock;
-  const isSectionSwap = a.dataset.mepLingoSectionSwap === 'true';
-  const isBlockSwap = !!a.dataset.mepLingoBlockSwap;
-  const originalSection = isSectionSwap ? a.closest('.section') : null;
-  const isMepLingoBlock = isBlockSwap && a.dataset.mepLingoBlockSwap === 'mep-lingo';
-
-  // For block/section swaps (not mep-lingo blocks) when no regional targeting: keep authored
-  if (!shouldFetchMepLingo && (isBlockSwap || isSectionSwap) && !isMepLingoBlock) {
-    if (isBlockSwap) {
-      removeMepLingoRow(a.closest(`.${a.dataset.mepLingoBlockSwap}`));
-    } else if (isSectionSwap) {
-      removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
-    }
-    return;
-  }
-
-  if (isBlockSwap) {
-    const blockName = a.dataset.mepLingoBlockSwap;
-    originalBlock = a.closest(`.${blockName}`);
-
-    if (originalBlock) {
-      const wrapper = createTag('div', null, a);
-      originalBlock.insertAdjacentElement('afterend', wrapper);
-      if (blockName === 'mep-lingo') originalBlock.remove();
-    }
-  }
-
-  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
-  const isLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
-  const needsFallback = (isMepLingoBlock || isLingoFragment) && !!a.dataset.originalHref;
-  let usedFallback = false;
-
-  if (!resp?.ok && needsFallback && a.dataset.originalHref) {
-    let fallbackPath = a.dataset.originalHref;
-    try {
-      const originalUrl = new URL(a.dataset.originalHref);
-      if (locale?.prefix && !originalUrl.pathname.startsWith(locale.prefix)) {
-        fallbackPath = `${originalUrl.origin}${locale.prefix}${originalUrl.pathname}`;
-      }
-    } catch (e) {
-      if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
-        fallbackPath = `${locale.prefix}${fallbackPath}`;
-      }
-    }
-    resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
-      .catch(() => ({}));
-    if (resp?.ok) {
-      relHref = fallbackPath;
-      usedFallback = true;
-    }
-  }
-
   if (!resp?.ok) {
-    if (isBlockSwap && !isMepLingoBlock && originalBlock) {
-      removeMepLingoRow(originalBlock);
-      a.parentElement?.remove();
-      return;
-    }
-    if (isSectionSwap && originalSection) {
-      removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
-      a.parentElement?.remove();
-      return;
-    }
-    const message = `Could not get ${shouldFetchMepLingo ? 'mep-lingo ' : ''}fragment: ${resourcePath}.plain.html`;
-    window.lana?.log(message);
+    window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
     return;
   }
 
@@ -221,25 +129,20 @@ export default async function init(a) {
   if (decorateArea) decorateArea(doc, { fragmentLink: a });
 
   const sections = doc.querySelectorAll('body > div');
+
   if (!sections.length) {
     window.lana?.log(`Could not make fragment: ${resourcePath}.plain.html`);
     return;
   }
 
-  const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
-  const fragment = createTag('div', fragmentAttrs);
-
-  if (isMepLingoLink && env?.name !== 'prod') {
-    const { addMepLingoPreviewAttrs } = await import('../../features/mep/lingo.js');
-    addMepLingoPreviewAttrs(fragment, { usedFallback, relHref });
-  }
+  const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
   fragment.append(...sections);
 
   await updateFragMap(fragment, a, relHref);
   if (a.dataset.manifestId
-    || a.dataset.adobeTargetTestid
-    || mep?.commands?.length
-    || placeholders) {
+      || a.dataset.adobeTargetTestid
+      || mep?.commands?.length
+      || placeholders) {
     const { updateFragDataProps, handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
     if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
       updateFragDataProps(a, inline, sections, fragment);
@@ -247,20 +150,10 @@ export default async function init(a) {
     if (mep?.commands?.length) await handleCommands(mep?.commands, fragment, false, true);
     if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
-
   if (inline) {
-    await insertInlineFrag(sections, a, relHref);
-    originalBlock?.remove();
-  } else if (isSectionSwap && originalSection) {
-    await loadArea(fragment);
-    originalSection.innerHTML = '';
-    originalSection.append(createTag('div', null, fragment));
+    await insertInlineFrag(sections, a, relHref, mep);
   } else {
-    const anchorParent = a.parentElement;
-    anchorParent.replaceChild(fragment, a);
-
-    originalBlock?.remove();
-
+    a.parentElement.replaceChild(fragment, a);
     await loadArea(fragment);
   }
 }
