@@ -28,8 +28,7 @@
 
 .comparison-table :is(p, h1, h2, h3, h4, h5, h6) {
   margin: 0;
-  display: flex;
-  align-items: center;
+  display: inline;
 }
 
 .comparison-table .table-container {
@@ -393,6 +392,21 @@
   background-color: var(--color-white);
 }
 
+.dark .comparison-table .table-container *:not(a) {
+  color: var(--color-black);
+}
+
+.dark .comparison-table .header-content .description,
+.dark .comparison-table .header-content .description a {
+  color: var(--color-white);
+}
+
+.dark .comparison-table .action-area a {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  border-color: var(--color-white);
+}
+
 @media screen and (min-width: 600px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(100% - 160px);
@@ -436,6 +450,18 @@
     grid-column: auto;
     margin: 0;
     margin-inline-end: var(--comparison-table-spacing);
+  }
+
+  .comparison-table .table-row-header:has(.icon),
+  .comparison-table .table-row-header:not(:has(*)) {
+    display: flex;
+  }
+
+  .comparison-table .table-row-header:has(> p):not(:has(> :not(p))):not(:has(.icon)) {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    flex-direction: column;
   }
 
   .comparison-table .table-cell {
