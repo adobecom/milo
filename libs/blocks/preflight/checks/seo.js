@@ -206,14 +206,17 @@ function makeGroups(arr, n = 20) {
   return Array.from({ length: batchSize }, (v, i) => arr.slice(i * size, i * size + size));
 }
 
-export function connectionError() {
+export function connectionError(isVpnError = false) {
+  const description = isVpnError
+    ? 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.'
+    : 'Connection error: Unable to connect to the link check service. Please check your network connection and try again.';
   return {
     checkId: SEO_CHECK_IDS.links,
     id: SEO_IDS.links,
     severity: SEO_SEVERITIES.links,
     title: SEO_TITLES.links,
     status: STATUS.LIMBO,
-    description: 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.',
+    description,
     details: { badLinks: [] },
   };
 }
@@ -221,10 +224,11 @@ export function connectionError() {
 async function spidyCheck(url) {
   try {
     const resp = await fetch(url, { method: 'HEAD' });
-    return !!resp.ok;
+    if (resp.ok) return { success: true };
+    return { success: false, isVpnError: true };
   } catch (e) {
     window.lana.log(`There was a problem connecting to the link check API ${url}. ${e}`, { tags: 'preflight', errorType: 'i' });
-    return false;
+    return { success: false, isVpnError: false };
   }
 }
 
@@ -303,8 +307,8 @@ export async function checkLinks({ area, urlHash, envName }) {
 
   const { spidy } = await getServiceConfig(window.location.origin, envName);
   const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
-  const canSpidy = await spidyCheck(spidyUrl);
-  if (!canSpidy) return connectionError();
+  const spidyStatus = await spidyCheck(spidyUrl);
+  if (!spidyStatus.success) return connectionError(spidyStatus.isVpnError);
 
   /**
    * Find all links with an href.
