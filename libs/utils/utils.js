@@ -173,7 +173,7 @@ const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
 let langConfig;
-const queryIndexes = {};
+export const queryIndexes = {};
 let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
