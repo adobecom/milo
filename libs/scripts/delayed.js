@@ -109,17 +109,12 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
 };
 
 export const loadPreflightResults = async () => {
-  const run = async () => {
-    const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
-    await showPreflightNotification();
-  };
-
-  const sk = document.querySelector('aem-sidekick, helix-sidekick');
-  if (sk) {
-    await run();
-  } else {
-    document.addEventListener('sidekick-ready', run, { once: true });
-  }
+  const preflight = document.createElement('div');
+  preflight.classList.add('preflight');
+  const { loadBlock } = await import(`http://main--milo--adobecom.aem.live/utils/utils.js`);
+  const content = await loadBlock(preflight);
+  const { getModal } = await import(`http://main--milo--adobecom.aem.live/blocks/modal/modal.js`);
+  getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
 };
 
 /**
