@@ -743,7 +743,7 @@ function localizeLinkCore(
           loadQueryIndexes(prefix);
         }
         if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
-          await Promise.all([queryIndexes[siteId].pathsRequest, lingoSiteMapping]);
+          await Promise.all([queryIndexes[siteId]?.pathsRequest, lingoSiteMapping].filter(Boolean));
         }
         const matchingIndexes = Object.values(queryIndexes)
           .filter((q) => q.domains.includes(url.hostname));

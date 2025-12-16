@@ -161,6 +161,16 @@ describe('MEP Lingo Fragments', () => {
     window.lana = { log: stub() };
     // Clear queryIndexes to prevent hanging on unresolved promises
     Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
+    // Initialize queryIndexes with resolved promises to prevent hanging
+    const currentConfig = getConfig();
+    const siteId = currentConfig.uniqueSiteId ?? '';
+    const defaultQueryIndex = {
+      requestResolved: true,
+      pathsRequest: Promise.resolve([]),
+      domains: [],
+    };
+    queryIndexes[siteId] = { ...defaultQueryIndex };
+    queryIndexes.federal = { ...defaultQueryIndex };
   });
 
   afterEach(() => {
@@ -389,7 +399,18 @@ describe('MEP Lingo with Query Index', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     window.lana = { log: stub() };
+    // Clear queryIndexes to prevent hanging on unresolved promises
     Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
+    // Initialize queryIndexes with resolved promises to prevent hanging
+    const currentConfig = getConfig();
+    const siteId = currentConfig.uniqueSiteId ?? '';
+    const defaultQueryIndex = {
+      requestResolved: true,
+      pathsRequest: Promise.resolve([]),
+      domains: [],
+    };
+    queryIndexes[siteId] = { ...defaultQueryIndex };
+    queryIndexes.federal = { ...defaultQueryIndex };
   });
 
   afterEach(() => {
@@ -864,7 +885,18 @@ describe('Query Index siteId derivation', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     window.lana = { log: stub() };
+    // Clear queryIndexes to prevent hanging on unresolved promises
     Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
+    // Initialize queryIndexes with resolved promises to prevent hanging
+    const currentConfig = getConfig();
+    const siteId = currentConfig.uniqueSiteId ?? '';
+    const defaultQueryIndex = {
+      requestResolved: true,
+      pathsRequest: Promise.resolve([]),
+      domains: [],
+    };
+    queryIndexes[siteId] = { ...defaultQueryIndex };
+    queryIndexes.federal = { ...defaultQueryIndex };
   });
 
   afterEach(() => {
