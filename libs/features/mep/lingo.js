@@ -3,7 +3,6 @@ import {
   getConfig,
   createTag,
   customFetch,
-  queryIndexes,
   getCountry,
 } from '../../utils/utils.js';
 
