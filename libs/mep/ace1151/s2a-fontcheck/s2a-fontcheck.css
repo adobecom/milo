@@ -1,0 +1,239 @@
+.s2a-fontcheck {
+  display: none !important;
+}
+
+/* s2a theme overrides */
+:root:has(meta[name="theme"][content="s2a"]) {
+  /* s2a theme font overrides */
+  --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --s2a-heading-font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
+  --two-tone-heading-color-gray: #717171;
+  --two-tone-heading-color-gray-dark: var(--color-gray-300);
+  --two-tone-heading-color-red: #EB1000;
+
+  /* mobile and tablet heading overrides */
+  --type-heading-all-weight: 900 !important;
+  --type-heading-xxxxl-size: 48px;
+  --type-heading-xxxxl-lh: 110%;
+  --type-heading-xxxl-size: 40px;
+  --type-heading-xxxl-lh: 110%;
+  --type-heading-xxl-size: 32px;
+  --type-heading-xxl-lh: 110%;
+  --type-heading-xl-size: 28px;
+  --type-heading-xl-lh: 110%;
+  --type-heading-l-size: 24px;
+  --type-heading-l-lh: 110%;
+  --type-heading-m-size: 20px;
+  --type-heading-m-lh: 115%;
+  --type-heading-s-size: 18px;
+  --type-heading-s-lh: 115%;
+  --type-heading-xs-size: 16px;
+  --type-heading-xs-lh: 115%;
+
+  /* mobile and tablet body overrides */
+  --type-body-xxl-size: 24px;
+  --type-body-xxl-lh: 140%;
+  --type-body-xl-size: 20px;
+  --type-body-xl-lh: 140%;
+  --type-body-l-size: 18px;
+  --type-body-l-lh: 140%;
+  --type-body-m-size: 16px;
+  --type-body-m-lh: 140%;
+  --type-body-s-size: 14px;
+  --type-body-s-lh: 140%;
+  --type-body-xs-size: 14px;
+  --type-body-xs-lh: 140%;
+  --type-body-xxs-size: 12px;
+  --type-body-xxs-lh: 140%;
+}
+
+html:has(meta[name="theme"][content="s2a"]) {
+  /* heading overrides for hardcoded heading variables */
+  [class^="heading-xxxxl"] {
+    font-size: var(--type-heading-xxxxl-size);
+    line-height: var(--type-heading-xxxxl-lh);
+  }
+
+  [class^="heading-xxxl"] {
+    font-size: var(--type-heading-xxxl-size);
+    line-height: var(--type-heading-xxxl-lh);
+  }
+
+  [class^="heading-xxl"] {
+    font-size: var(--type-heading-xxl-size);
+    line-height: var(--type-heading-xxl-lh);
+  }
+
+  [class^="heading-xl"] {
+    font-size: var(--type-heading-xl-size);
+    line-height: var(--type-heading-xl-lh);
+  }
+
+  [class^="heading-l"] {
+    font-size: var(--type-heading-l-size);
+    line-height: var(--type-heading-l-lh);
+  }
+
+  [class^="heading-m"] {
+    font-size: var(--type-heading-m-size);
+    line-height: var(--type-heading-m-lh);
+  }
+
+  [class^="heading-s"] {
+    font-size: var(--type-heading-s-size);
+    line-height: var(--type-heading-s-lh);
+  }
+
+  [class^="heading-xs"] {
+    font-size: var(--type-heading-xs-size);
+    line-height: var(--type-heading-xs-lh);
+  }
+
+  body.mweb-enabled main [class^="heading-"], h1, h2, h3, h4, h5, h6 {
+    font-family: var(--s2a-heading-font-family);
+    font-weight: 900 !important;
+  }
+
+  body.mweb-enabled main .tabs.segmented-control [class^="heading-"] {
+    font-family: var(--body-font-family);
+    font-weight: 700 !important;
+  }
+
+  /* two tone heading color feature */
+  :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > strong > em,
+  :is(.s2a-twotone-red) :is(h1, h2, h3, h4, h5, h6) > em {
+    color: var(--two-tone-heading-color-red);
+    font-style: normal;
+  }
+
+  .section:not(:has(.s2a-twotone-red)) :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em), 
+  .section:not(:has(.s2a-twotone-red)) :is(h1, h2, h3, h4, h5, h6) > strong > em {
+    color: var(--two-tone-heading-color-gray);
+    font-style: normal;
+  }
+
+  .section:not(:has(.s2a-twotone-red)) > .dark :is(h1, h2, h3, h4, h5, h6) > :is(em, strong > em), 
+  .section:not(:has(.s2a-twotone-red)) > .dark :is(h1, h2, h3, h4, h5, h6) > strong > em {
+    color: var(--two-tone-heading-color-gray-dark);
+    font-style: normal;
+  }
+}
+
+/* base desktop heading and body font size overrides */
+@media screen and (min-width: 1200px) {
+  :root:has(meta[name="theme"][content="s2a"]) {
+    --type-heading-xxxxl-size: 73px;
+    --type-heading-xxxxl-lh: 110%;
+    --type-heading-xxxl-size: 52px;
+    --type-heading-xxxl-lh: 110%;
+    --type-heading-xxl-size: 44px;
+    --type-heading-xxl-lh: 110%;
+    --type-heading-xl-size: 36px;
+    --type-heading-xl-lh: 110%;
+    --type-heading-l-size: 28px;
+    --type-heading-l-lh: 110%;
+    --type-heading-m-size: 24px;
+    --type-heading-m-lh: 115%;
+    --type-heading-s-size: 20px;
+    --type-heading-s-lh: 115%;
+    --type-heading-xs-size: 18px;
+    --type-heading-xs-lh: 115%;
+
+    /* body - includes xl desktop body overrides */
+    --type-body-xxl-size: 28px;
+    --type-body-xxl-lh: 140%;
+    --type-body-xl-size: 22px;
+    --type-body-xl-lh: 140%;
+    --type-body-l-size: 20px;
+    --type-body-l-lh: 140%;
+    --type-body-m-size: 18px;
+    --type-body-m-lh: 140%;
+    --type-body-s-size: 16px;
+    --type-body-s-lh: 140%;
+    --type-body-xs-size: 14px;
+    --type-body-xs-lh: 140%;
+    --type-body-xxs-size: 12px;
+    --type-body-xxs-lh: 140%;
+  }
+}
+
+/* xl desktop heading, body, and button font size overrides */
+@media screen and (min-width: 1680px) {
+  :root:has(meta[name="theme"][content="s2a"]) {
+    --type-heading-xxxxl-size: 82px;
+    --type-heading-xxxxl-lh: 110%;
+    --type-heading-xxxl-size: 58px;
+    --type-heading-xxxl-lh: 110%;
+    --type-heading-xxl-size: 52px;
+    --type-heading-xxl-lh: 110%;
+    --type-heading-xl-size: 40px;
+    --type-heading-xl-lh: 110%;
+    --type-heading-l-size: 32px;
+    --type-heading-l-lh: 110%;
+    --type-heading-m-size: 28px;
+    --type-heading-m-lh: 115%;
+    --type-heading-s-size: 22px;
+    --type-heading-s-lh: 115%;
+    --type-heading-xs-size: 20px;
+    --type-heading-xs-lh: 115%;
+  }
+
+  /* biz pro desktop xl button */
+  :root:has(meta[name="theme"][content="s2a"]) .xl-button .con-button,
+  :root:has(meta[name="theme"][content="s2a"]) .con-button.button-xl {
+    font-size: 20px;
+    min-height: 56px;
+    border-radius: 50px;
+    padding: 14px 24px 8px;
+    box-sizing: border-box;
+  }
+
+  /* homepage m button */
+  :root:has(meta[name="theme"][content="s2a"]) .m-button .con-button,
+  :root:has(meta[name="theme"][content="s2a"]) .con-button.button-m {
+    font-size: 18px;
+    padding: 9px 14px 11px;
+    border-radius: 18px;
+  }
+}
+
+@media screen and (max-width: 599px) {
+  /* mobile s2a button overrides  */
+  :root:has(meta[name="theme"][content="s2a"]) .xl-button .con-button,
+  :root:has(meta[name="theme"][content="s2a"]) .con-button.button-xl {
+    font-size: 20px;
+    min-height: 56px;
+    border-radius: 50px;
+    padding: 14px 24px 8px;
+    box-sizing: border-box;
+  }
+
+  /* homepage m button */
+  :root:has(meta[name="theme"][content="s2a"]) .m-button .con-button,
+  :root:has(meta[name="theme"][content="s2a"]) .con-button.button-m {
+    font-size: 16px;
+    padding: 9px 14px 11px;
+    border-radius: 18px;
+  }
+}
+
+/* s2a 1920px content max width overrides */
+@media screen and (max-width: 599px) {
+  :root:has(meta[name="theme"][content="s2a"]) {
+    --grid-container-width: 93.33%;
+  }
+}
+@media screen and (min-width: 600px) and (max-width: 2119px) {
+  :root:has(meta[name="theme"][content="s2a"]) {  
+    --grid-container-width: 83.33%;
+  }
+}
+@media screen and (min-width: 2220px) {
+  :root:has(meta[name="theme"][content="s2a"]) {
+    --grid-container-width: 1920px;
+  }
+}
+
+/* s2a button overrides */
+
+

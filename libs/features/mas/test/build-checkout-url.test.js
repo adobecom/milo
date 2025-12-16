@@ -5,7 +5,8 @@ import {
   addParameters, 
   getHostName, 
   setItemsParameter, 
-  buildCheckoutUrl 
+  buildCheckoutUrl,
+  addParamsFromPageUrl
 } from '../src/buildCheckoutUrl.js';
 import { PROVIDER_ENVIRONMENT, CheckoutWorkflowStep } from '../src/constants.js';
 
@@ -51,6 +52,77 @@ describe('setItemsParameter', () => {
 
     expect(parameters.get('items[0][cs]')).to.equal('yes');
     expect(parameters.get('items[0][q]')).to.equal(2);
+  });
+});
+
+describe('addParamsFromPageUrl', () => {
+  let originalSearch;
+
+  beforeEach(() => {
+    originalSearch = window.location.search;
+  });
+
+  afterEach(() => {
+    if (originalSearch) {
+      window.history.replaceState({}, '', window.location.pathname + originalSearch);
+    } else {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  });
+
+  it('should add allowed parameters from page URL to checkout URL', () => {
+    window.history.replaceState({}, '', '?gid=123&gtoken=token&cohortid=c1&productname=photoshop&sdid=sd123&attimer=5&gcsrc=src&gcprog=prog&gcprogcat=cat&gcpagetype=type');
+    const url = new URL('https://commerce.adobe.com/store/checkout?cli=testClient&co=US');
+    addParamsFromPageUrl(url);
+    expect(url.searchParams.get('gid')).to.equal('123');
+    expect(url.searchParams.get('gtoken')).to.equal('token');
+    expect(url.searchParams.get('cohortid')).to.equal('c1');
+    expect(url.searchParams.get('productname')).to.equal('photoshop');
+    expect(url.searchParams.get('sdid')).to.equal('sd123');
+    expect(url.searchParams.get('attimer')).to.equal('5');
+    expect(url.searchParams.get('gcsrc')).to.equal('src');
+    expect(url.searchParams.get('gcprog')).to.equal('prog');
+    expect(url.searchParams.get('gcprogcat')).to.equal('cat');
+    expect(url.searchParams.get('gcpagetype')).to.equal('type');
+    expect(url.searchParams.get('cli')).to.equal('testClient');
+    expect(url.searchParams.get('co')).to.equal('US');
+  });
+
+
+  it('should add allowed parameters with empty value as well', () => {
+    window.history.replaceState({}, '', '?gid=&gtoken=&cohortid=&productname=&sdid=&attimer=&gcsrc=&gcprog=&gcprogcat=&gcpagetype=');
+    const url = new URL('https://commerce.adobe.com/store/checkout?cli=testClient&co=US');
+    addParamsFromPageUrl(url);
+    expect(url.searchParams.get('gid')).to.equal('');
+    expect(url.searchParams.get('gtoken')).to.equal('');
+    expect(url.searchParams.get('cohortid')).to.equal('');
+    expect(url.searchParams.get('productname')).to.equal('');
+    expect(url.searchParams.get('sdid')).to.equal('');
+    expect(url.searchParams.get('attimer')).to.equal('');
+    expect(url.searchParams.get('gcsrc')).to.equal('');
+    expect(url.searchParams.get('gcprog')).to.equal('');
+    expect(url.searchParams.get('gcprogcat')).to.equal('');
+    expect(url.searchParams.get('gcpagetype')).to.equal('');
+    expect(url.searchParams.get('cli')).to.equal('testClient');
+    expect(url.searchParams.get('co')).to.equal('US');
+  });
+
+  it('should not add parameters that are not in the allowed list', () => {
+    window.history.replaceState({}, '', '?gid=12345&notAllowed=value&anotherBad=test');
+
+    const url = new URL('https://commerce.adobe.com/store/checkout');
+    addParamsFromPageUrl(url);
+
+    expect(url.searchParams.get('gid')).to.equal('12345');
+    expect(url.searchParams.has('notAllowed')).to.be.false;
+    expect(url.searchParams.has('anotherBad')).to.be.false;
+  });
+
+  it('should handle empty page URL search params', () => {
+    window.history.replaceState({}, '', window.location.pathname);
+    const url = new URL('https://commerce.adobe.com/store/checkout');
+    addParamsFromPageUrl(url);
+    expect(url.search).to.equal('');
   });
 });
 
