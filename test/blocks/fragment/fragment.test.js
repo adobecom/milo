@@ -159,15 +159,12 @@ describe('MEP Lingo Fragments', () => {
 
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    // Activate MEP Lingo for these tests
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.set('langFirst', 'on');
     window.history.replaceState({}, '', `${window.location.pathname}?${searchParams}`);
 
     window.lana = { log: stub() };
-    // Clear queryIndexes to prevent hanging on unresolved promises
     Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
-    // Initialize queryIndexes with resolved promises to prevent hanging
     const currentConfig = getConfig();
     const siteId = currentConfig.uniqueSiteId ?? '';
     const defaultQueryIndex = {
@@ -181,7 +178,6 @@ describe('MEP Lingo Fragments', () => {
 
   afterEach(() => {
     window.sessionStorage.clear();
-    // Clean up langFirst param
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.delete('langFirst');
     window.history.replaceState({}, '', window.location.pathname + (searchParams.toString() ? `?${searchParams}` : ''));
@@ -208,8 +204,6 @@ describe('MEP Lingo Fragments', () => {
     const a = document.querySelector('a.mep-lingo-inline');
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-inline-section');
-    // Inline fragments unwrap and discard the wrapper, so attributes aren't copied to children
-    // Just verify the fragment content loaded
     expect(section.querySelector('[data-path]')).to.exist;
   });
 
@@ -222,8 +216,6 @@ describe('MEP Lingo Fragments', () => {
     const section = document.querySelector('.mep-lingo-fallback-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
-    // Fallback attribute setting depends on current implementation
-    // Just verify the fragment loaded successfully from fallback path
   });
 
   it('falls back inline fragment', async () => {
@@ -233,8 +225,6 @@ describe('MEP Lingo Fragments', () => {
     const a = document.querySelector('a.mep-lingo-fallback-inline');
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-fallback-inline-section');
-    // Inline fragments unwrap and discard the wrapper, so attributes aren't copied to children
-    // Just verify the fragment content loaded
     expect(section.querySelector('[data-path]')).to.exist;
   });
 
@@ -247,13 +237,10 @@ describe('MEP Lingo Fragments', () => {
     const section = document.querySelector('.mep-lingo-error-section');
     expect(section.querySelector('.fragment')).to.not.exist;
     expect(window.lana.log.called).to.be.true;
-    // Error message format may vary in current implementation
   });
 
   it('uses country mapping when configured', async () => {
-    // Nigeria (ng) maps to regional content for Africa
     window.sessionStorage.setItem('akamai', 'ng');
-    // Mock queryIndexes with resolved promise to prevent hanging
     queryIndexes[''] = {
       pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']),
       requestResolved: true,
@@ -262,8 +249,6 @@ describe('MEP Lingo Fragments', () => {
       ...mepLingoLocale,
       regions: {
         ...mepLingoLocale.regions,
-        // africa_test: Test region key (africa + 'test' from prefix /test/blocks/...)
-        // Real-world equivalent would be africa_en for English-speaking African regions
         africa_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'en-ZA' },
       },
     };
@@ -366,7 +351,9 @@ describe('MEP Lingo Fragments', () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
-    // Create test element with mep-lingo block swap pointing to non-existent file
+    const fetchStub = stub(window, 'fetch').callsFake(() => Promise.resolve(
+      new Response(null, { status: 404, statusText: 'Not Found' }),
+    ));
     const section = document.createElement('div');
     section.className = 'test-mep-block section';
     section.innerHTML = `
@@ -380,6 +367,7 @@ describe('MEP Lingo Fragments', () => {
     const a = section.querySelector('a');
     await getFragment(a);
     expect(section.querySelector('.mep-lingo')).to.not.exist;
+    fetchStub.restore();
   });
 
   it('keeps authored content when no regional targeting (lines 156-161)', async () => {
