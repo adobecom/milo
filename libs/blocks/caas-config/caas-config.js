@@ -159,10 +159,10 @@ const defaultOptions = {
     'over-background': 'Over Background',
   },
   paginationAnimationStyle: {
-    pagedModern: 'Paged (Modern)',
-    incrementalModern: 'Incremental (Modern)',
-    paged: 'Paged (Classic)',
-    incremental: 'Incremental (Classic)',
+    pagedModern: 'Modern (Paged)',
+    incrementalModern: 'Modern (Incremental)',
+    paged: 'Classic (Paged)',
+    incremental: 'Classic (Incremental)',
   },
   paginationType: {
     paginator: 'Paginator',
@@ -387,6 +387,7 @@ const UiPanel = () => {
         prop="paginationAnimationStyle"
         options=${defaultOptions.paginationAnimationStyle}
       />
+      <${Input} label="Light background (Modern only)" prop="useLightControls" type="checkbox" />
     </div>
   `;
 
