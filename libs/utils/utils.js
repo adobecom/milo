@@ -2134,15 +2134,17 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   return section.blocks;
 }
 
-function loadMepLingoIndexes() {
+function loadLingoIndexes() {
   const config = getConfig();
   const { locale } = config || {};
-  const prefix = getMepLingoPrefix();
 
+  if (locale?.base) {
+    loadQueryIndexes(config.locale.prefix);
+    return;
+  }
+  const prefix = getMepLingoPrefix();
   if (prefix) {
     loadQueryIndexes(prefix, true);
-  } else if (locale?.base) {
-    loadQueryIndexes(config.locale.prefix);
   }
 }
 
@@ -2166,7 +2168,7 @@ export async function loadArea(area = document) {
     await decorateDocumentExtras();
     initModalEventListener();
   }
-  if (isLingoActive) loadMepLingoIndexes();
+  if (isLingoActive) loadLingoIndexes();
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
