@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { getConfig, createTag, loadStyle, getTargetMarkets } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle, getTargetMarkets, getFederatedContentRoot } from '../../utils/utils.js';
 
 /**
  * Verifies if the translated version of the current page exists.
@@ -102,7 +102,24 @@ async function showBanner(markets, config) {
 }
 
 export default async function init() {
-  const targetMarkets = getTargetMarkets();
+  const config = getConfig();
+  const jsonPromise = fetch(
+    `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
+  );
+
+  const marketsConfigPromise = jsonPromise
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null);
+  const marketsConfig = await marketsConfigPromise;
+  if (!marketsConfig) return;
+  let targetMarkets = getTargetMarkets();
+  targetMarkets = targetMarkets.map((market) => {
+    const currentMarket = marketsConfig.data.find((m) => m.prefix === market.prefix);
+    return {
+      ...market,
+      ...currentMarket,
+    };
+  });
   if (targetMarkets.length) {
     await showBanner(targetMarkets, getConfig());
   }

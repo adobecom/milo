@@ -358,6 +358,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       config.entitlements = handleEntitlements;
       config.consumerEntitlements = conf.entitlements || [];
+      config.marketsConfig = conf.marketsConfig || {};
       setupMiloObj(config);
       return config;
     },
@@ -1777,22 +1778,12 @@ async function decorateLanguageBanner() {
   const pageLang = config.locale.ietf.split('-')[0];
   const prefLang = getPreferredLanguage(config.locales);
 
-  const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
-  const jsonPromise = fetch(
-    supportedMarketsPath
-      || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
-  );
-
-  const marketsConfigPromise = jsonPromise
-    .then((res) => (res.ok ? res.json() : null))
-    .catch(() => null);
-
   const { default: getAkamaiCode } = await import('./geo.js');
 
-  const [geoIpCode, marketsConfig] = await Promise.all([
+  const [geoIpCode] = await Promise.all([
     getAkamaiCode(),
-    marketsConfigPromise,
   ]);
+  const { marketsConfig } = config;
 
   if (!geoIpCode || !marketsConfig) return;
   const geoIp = geoIpCode.toLowerCase();
