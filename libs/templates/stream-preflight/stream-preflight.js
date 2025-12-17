@@ -1,5 +1,6 @@
 export default async function init() {
-  const iframe = document.querySelector('iframe').classList.add('preflight-iframe');
+  const iframe = document.querySelector('iframe');
+  iframe.classList.add('preflight-iframe');
   const url = new URL(window.location.href);
   const preflightUrl = url.searchParams.get('preflightUrl');
   if (preflightUrl) document.querySelector('iframe').src = preflightUrl;
