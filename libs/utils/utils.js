@@ -1856,6 +1856,11 @@ async function decorateLanguageBanner() {
 
   if (!showBanner) return;
   document.body.prepend(createTag('div', { class: 'language-banner' }));
+  const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
+  if (existingWrapper) {
+    existingWrapper.remove();
+    document.querySelector('.global-navigation').classList.remove('has-promo');
+  }
 }
 
 function decorateDocumentExtras() {
