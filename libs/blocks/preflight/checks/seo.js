@@ -225,10 +225,10 @@ async function spidyCheck(url) {
   try {
     const resp = await fetch(url, { method: 'HEAD' });
     if (resp.ok) return { success: true };
-    return { success: false, isVpnError: true };
+    return connectionError(true);
   } catch (e) {
     window.lana.log(`There was a problem connecting to the link check API ${url}. ${e}`, { tags: 'preflight', errorType: 'i' });
-    return { success: false, isVpnError: false };
+    return connectionError(false);
   }
 }
 
@@ -308,7 +308,7 @@ export async function checkLinks({ area, urlHash, envName }) {
   const { spidy } = await getServiceConfig(window.location.origin, envName);
   const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
   const spidyStatus = await spidyCheck(spidyUrl);
-  if (!spidyStatus.success) return connectionError(spidyStatus.isVpnError);
+  if (!spidyStatus.success) return spidyStatus;
 
   /**
    * Find all links with an href.
