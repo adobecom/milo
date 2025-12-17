@@ -10,6 +10,7 @@ export default async function init() {
     script.textContent = `
     console.log('⚠️ mathuria: Injected JS running inside iframe');
     `;
+    iframeDoc.head.appendChild(script);
   }, 1000);
 }
 
