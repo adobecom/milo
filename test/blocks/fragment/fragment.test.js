@@ -370,6 +370,28 @@ describe('MEP Lingo Fragments', () => {
     fetchStub.restore();
   });
 
+  it('removes mep-lingo content on regional page with empty string base', async () => {
+    const regionalLocale = {
+      ...mepLingoLocale,
+      base: '',
+    };
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: regionalLocale, env: { name: 'stage' } });
+    const section = document.createElement('div');
+    section.className = 'test-section section';
+    section.innerHTML = `
+      <div class="text">
+        <div><div><p>Authored content</p></div></div>
+        <div><div>mep-lingo</div><div><a href="/test/blocks/fragment/mocks/de/fragments/test" data-mep-lingo="true" data-mep-lingo-block-swap="text">Link</a></div></div>
+      </div>`;
+    const a = section.querySelector('a');
+    const textBlock = section.querySelector('.text');
+    document.body.appendChild(section);
+    await getFragment(a);
+    expect(textBlock.dataset.failed).to.equal('true');
+    expect(textBlock.dataset.reason).to.include('mep-lingo: not available');
+  });
+
   it('keeps authored content when no regional targeting (lines 156-161)', async () => {
     window.sessionStorage.removeItem('akamai');
     const currentConfig = getConfig();
