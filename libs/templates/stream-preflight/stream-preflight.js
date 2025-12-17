@@ -1,6 +1,8 @@
 export default async function init() {
   document.querySelector('iframe').classList.add('preflight-iframe');
-  document.querySelector('iframe').src = 'https://main--da-bacom--adobecom.aem.page/ai/agentic-ai';
+  const url = new URL(window.location.href);
+  const preflightUrl = url.searchParams.get('preflightUrl');
+  if (preflightUrl) document.querySelector('iframe').src = preflightUrl;
 }
 
 (async () => {
