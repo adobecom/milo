@@ -137,7 +137,7 @@ export default async function init(a) {
 
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
-  const isOnRegionalPage = !!locale?.base;
+  const isOnRegionalPage = locale?.base !== undefined;
 
   if (isMepLingoLink && isOnRegionalPage) {
     const { handleInvalidMepLingo } = await import('../../features/mep/lingo.js');
