@@ -1863,6 +1863,16 @@ async function decorateLanguageBanner() {
   }
 }
 
+function preloadMarketsConfig() {
+  const config = getConfig();
+  const languageBannerEnabled = getMetadata('language-banner') || config.languageBanner;
+  if (languageBannerEnabled !== 'on') return;
+  const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
+  const marketsUrl = supportedMarketsPath
+  || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`;
+  loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+}
+
 function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
@@ -1970,6 +1980,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
+    preloadMarketsConfig();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
