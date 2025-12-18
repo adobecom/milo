@@ -15,9 +15,9 @@ import {
   loadLana,
   setConfig,
   getMetadata,
-  loadLink,
 } from '../utils/utils.js';
 import locales from '../utils/locales.js';
+
 // Production Domain
 const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com', 'news.adobe.com'];
 
