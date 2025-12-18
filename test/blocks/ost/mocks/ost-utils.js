@@ -33,7 +33,7 @@ const createTag = (tag, attributes = {}) => {
 
 const loadArea = () => Promise.resolve();
 
-const localizeLink = () => Promise.resolve();
+const localizeLinkAsync = () => Promise.resolve();
 
 const loadLink = () => Promise.resolve();
 
@@ -141,7 +141,7 @@ export {
   loadArea,
   loadScript,
   loadStyle,
-  localizeLink,
+  localizeLinkAsync,
   loadLink,
   mockOstDeps,
   unmockOstDeps,

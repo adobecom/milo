@@ -563,6 +563,7 @@
   }
   
   .text-block [class*="heading-"] {
+    font-family: "Adobe Clean Black", var(--body-font-family);
     font-weight: 900;
   }
 
