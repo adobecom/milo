@@ -1808,7 +1808,7 @@ async function loadPostLCP(config) {
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
-  const languageBanner = getMetadata('language-banner') || config.languageBanner;
+  const languageBanner = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('language-banner') || config.languageBanner);
   const georouting = getMetadata('georouting') || config.geoRouting;
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 

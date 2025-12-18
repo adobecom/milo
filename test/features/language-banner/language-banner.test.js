@@ -1,33 +1,20 @@
 /* eslint-disable no-underscore-dangle */
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, getTargetMarkets } from '../../../libs/utils/utils.js';
 
-const { default: init } = await import('../../../libs/features/language-banner/language-banner.js');
+const { default: init, sendAnalytics } = await import('../../../libs/features/language-banner/language-banner.js');
 
 const mockMarkets = {
-  data: [
-    {
-      prefix: '', lang: 'en', languageName: 'English', text: 'This page is also available in', continueText: 'Continue', supportedRegions: 'us, gb',
-    },
-    {
-      prefix: 'de', lang: 'de', languageName: 'Deutsch', text: 'Diese Seite ist auch auf', continueText: 'Weiter', supportedRegions: 'de, at, ch, us', regionPriorities: 'ch:1, lu:2',
-    },
-    {
-      prefix: 'fr', lang: 'fr', languageName: 'Français', text: 'Cette page est également disponible en', continueText: 'Continuer', supportedRegions: 'fr, ch', regionPriorities: 'ch:2, lu:1',
-    },
-    {
-      prefix: 'it', lang: 'it', languageName: 'Italiano', text: 'Visualizza questa pagina in', continueText: 'Continuare', supportedRegions: 'it, ch', regionPriorities: 'ch:3',
-    },
-    {
-      prefix: 'jp', lang: 'ja', languageName: '日本語', text: 'このページは次の言語でもご覧いただけます', continueText: '続行', supportedRegions: 'jp',
-    },
-  ],
+  de: { prefix: 'de', lang: 'de', languageName: 'Deutsch', text: 'Diese Seite ist auch auf', continueText: 'Weiter' },
+  fr: { prefix: 'fr', lang: 'fr', languageName: 'Français', text: 'Cette page est également disponible en', continueText: 'Continuer' },
+  it: { prefix: 'it', lang: 'it', languageName: 'Italiano', text: 'Visualizza questa pagina in', continueText: 'Continuare' },
 };
 
 describe('Language Banner', () => {
   let fetchStub;
   const sandbox = sinon.createSandbox();
+  const targetMarkets = getTargetMarkets();
 
   const setConfigForTest = (pathname = '/') => {
     const config = {
@@ -35,11 +22,11 @@ describe('Language Banner', () => {
       codeRoot: '/libs',
       contentRoot: window.location.origin,
       locales: {
-        '': { ietf: 'en-US' },
-        de: { ietf: 'de-DE' },
-        fr: { ietf: 'fr-FR' },
-        it: { ietf: 'it-IT' },
-        jp: { ietf: 'ja-JP' },
+        '': { ietf: 'en-US', prefix: '' },
+        de: { ietf: 'de-DE', prefix: '/de' },
+        fr: { ietf: 'fr-FR', prefix: '/fr' },
+        it: { ietf: 'it-IT', prefix: '/it' },
+        jp: { ietf: 'ja-JP', prefix: '/jp' },
       },
       pathname,
     };
@@ -51,7 +38,7 @@ describe('Language Banner', () => {
     sandbox.stub(console, 'warn');
     window._satellite = { track: sandbox.stub() };
     document.head.innerHTML = '';
-    document.body.innerHTML = '';
+    document.body.innerHTML = '<div class="language-banner"></div>';
   });
 
   afterEach(() => {
@@ -59,180 +46,98 @@ describe('Language Banner', () => {
     document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     sessionStorage.clear();
     delete window._satellite;
-    if (navigator.language) delete navigator.language;
+    targetMarkets.length = 0;
   });
 
-  // Helper to mock geo2.adobe.com fetch call
-  const mockGeo = (country = 'us') => {
-    fetchStub.withArgs('https://geo2.adobe.com/json/', sinon.match.any).resolves({
-      ok: true,
-      json: () => Promise.resolve({ country }),
-    });
-  };
-
-  const getFreshMarkets = () => JSON.parse(JSON.stringify(mockMarkets));
-
-  describe('Banner Suppression Logic', () => {
-    it('does not show banner if international cookie is already set to the page locale', async () => {
-      document.cookie = 'international=de; path=/';
-      setConfigForTest('/de/page');
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-      expect(document.querySelector('.language-banner')).to.be.null;
-    });
-
-    it('does not show banner if preferred language is the same as page language', async () => {
-      setConfigForTest('/de/page');
-      mockGeo('de');
-      Object.defineProperty(navigator, 'language', { value: 'de-DE', configurable: true });
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-      expect(document.querySelector('.language-banner')).to.be.null;
-    });
-
-    it('does not show banner if geo location cannot be determined', async () => {
-      setConfigForTest('/');
-      fetchStub.withArgs('https://geo2.adobe.com/json/', sinon.match.any).resolves({ ok: false, statusText: 'Not Found' });
-      try {
-        await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-        expect.fail('The init promise should have been rejected');
-      } catch (e) {
-        expect(e.message).to.include('Something went wrong getting the akamai Code');
-      }
-    });
-
-    it('does not show banner if markets config is not available', async () => {
-      setConfigForTest('/');
-      mockGeo('de');
-      await init(Promise.resolve({ ok: false }));
-      expect(document.querySelector('.language-banner')).to.be.null;
-    });
-
-    it('does not show banner if translated page does not exist', async () => {
-      setConfigForTest('/');
-      document.cookie = 'international=de; path=/';
-      mockGeo('us');
-      fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: false });
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-      expect(document.querySelector('.language-banner')).to.be.null;
-    });
-
-    it('does not show banner if markets config fetch fails', async () => {
-      setConfigForTest('/');
-      document.cookie = 'international=de; path=/';
-      mockGeo('us');
-      await init(Promise.resolve({ ok: true, json: () => Promise.reject(new Error('Fetch failed')) }));
-      expect(document.querySelector('.language-banner')).to.be.null;
-    });
-
-    it('does not show banner for supported market if no preferred market is available', async () => {
-      setConfigForTest('/');
-      // Geo is US, browser lang is French, but there is no French market for US
-      mockGeo('us');
-      Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
-      fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: true });
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-      expect(document.querySelector('.language-banner')).to.be.null;
-    });
-
-    it('does not show banner for unsupported market if no preferred market is available', async () => {
-      setConfigForTest('/jp/page');
-      // Geo is JP, browser lang is French, but there is no French market for JP
-      mockGeo('jp');
-      Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
-      fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: true });
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-      expect(document.querySelector('.language-banner')).to.be.null;
-    });
+  it('does not show banner if no target markets are provided', async () => {
+    setConfigForTest('/');
+    await init();
+    expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
   });
 
-  describe('Banner Display Logic', () => {
-    const originalSearch = window.location.search;
+  it('does not show banner if translated page does not exist', async () => {
+    setConfigForTest('/');
+    targetMarkets.push(mockMarkets.de);
+    fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: false });
+    await init();
+    expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
+  });
 
-    afterEach(() => {
-      window.history.replaceState({}, '', `/${originalSearch}`);
+  it('handles fetch error when checking for translated page', async () => {
+    setConfigForTest('/');
+    targetMarkets.push(mockMarkets.de);
+    fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).rejects(new Error('Network error'));
+    await init();
+    expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
+    expect(console.warn.calledOnce).to.be.true;
+  });
+
+  it('does not build banner if the placeholder element is missing', async () => {
+    document.body.innerHTML = ''; // remove the banner placeholder
+    setConfigForTest('/');
+    targetMarkets.push(mockMarkets.de);
+    fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: true });
+    await init();
+    expect(document.querySelector('.language-banner')).to.be.null;
+  });
+
+  it('shows banner for the first available translated page', async () => {
+    setConfigForTest('/');
+    targetMarkets.push(mockMarkets.de, mockMarkets.fr);
+    fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: true });
+    fetchStub.withArgs(sinon.match('/fr/'), { method: 'HEAD' }).resolves({ ok: false });
+
+    await init();
+
+    const banner = document.querySelector('.language-banner');
+    expect(banner.childElementCount).to.be.greaterThan(0);
+    expect(banner.querySelector('.language-banner-text').textContent).to.contain('Deutsch');
+    expect(banner.querySelector('.language-banner-link').href).to.include('/de/');
+  });
+
+  it('falls back to the next market if the first one has no translated page', async () => {
+    setConfigForTest('/');
+    targetMarkets.push(mockMarkets.de, mockMarkets.fr, mockMarkets.it);
+
+    fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: false });
+    fetchStub.withArgs(sinon.match('/fr/'), { method: 'HEAD' }).resolves({ ok: true });
+    fetchStub.withArgs(sinon.match('/it/'), { method: 'HEAD' }).resolves({ ok: true });
+
+    await init();
+
+    const banner = document.querySelector('.language-banner');
+    expect(banner.childElementCount).to.be.greaterThan(0);
+    expect(banner.querySelector('.language-banner-text').textContent).to.contain('Français');
+  });
+
+  describe('sendAnalytics', () => {
+    it('should fire analytics event if satellite is available', () => {
+      sendAnalytics(new Event('test-event'));
+      expect(window._satellite.track.calledOnce).to.be.true;
     });
 
-    it('shows banner using akamaiLocale param over geo', async () => {
-      setConfigForTest('/');
-      window.history.replaceState({}, '', '?akamaiLocale=de');
-      mockGeo('us'); // This should be ignored
-      fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: true });
-
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-
-      const banner = document.querySelector('.language-banner');
-      expect(banner).to.exist;
-      expect(banner.querySelector('.language-banner-text').textContent).to.contain('Deutsch');
+    it('should include digitalData if event.data is present', () => {
+      const event = new Event('test-event-with-data');
+      event.data = { some: 'data' };
+      sendAnalytics(event);
+      expect(window._satellite.track.calledOnce).to.be.true;
+      const [, payload] = window._satellite.track.firstCall.args;
+      expect(payload.data._adobe_corpnew.digitalData).to.deep.equal({ some: 'data' });
     });
 
-    it('shows banner for supported market with different preferred language from cookie', async () => {
-      setConfigForTest('/');
-      document.cookie = 'international=de; path=/';
-      mockGeo('us');
-      fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: true });
+    it('should wait for alloy_sendEvent if satellite is not available', (done) => {
+      delete window._satellite;
+      sendAnalytics(new Event('test-event-delayed'));
 
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
+      window._satellite = { track: sinon.stub() };
+      window.dispatchEvent(new CustomEvent('alloy_sendEvent'));
 
-      const banner = document.querySelector('.language-banner');
-      expect(banner).to.exist;
-      expect(banner.querySelector('.language-banner-text').textContent).to.contain('Deutsch');
-      expect(banner.querySelector('.language-banner-link').href).to.include('/de/');
-    });
-
-    it('shows banner for supported market with different preferred language from browser', async () => {
-      setConfigForTest('/');
-      Object.defineProperty(navigator, 'language', { value: 'de-DE', configurable: true });
-      mockGeo('us');
-      fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: true });
-
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-
-      const banner = document.querySelector('.language-banner');
-      expect(banner).to.exist;
-      expect(banner.querySelector('.language-banner-text').textContent).to.contain('Deutsch');
-    });
-
-    it('shows banner for unsupported market with a preferred language', async () => {
-      setConfigForTest('/jp/page');
-      document.cookie = 'international=de; path=/';
-      mockGeo('de');
-      fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: true });
-
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-
-      const banner = document.querySelector('.language-banner');
-      expect(banner).to.exist;
-      expect(banner.querySelector('.language-banner-text').textContent).to.contain('Deutsch');
-    });
-
-    it('shows banner for unsupported market based on region priority', async () => {
-      setConfigForTest('/');
-      mockGeo('ch');
-      fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: true });
-      fetchStub.withArgs(sinon.match('/fr/'), { method: 'HEAD' }).resolves({ ok: true });
-      fetchStub.withArgs(sinon.match('/it/'), { method: 'HEAD' }).resolves({ ok: true });
-
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-
-      const banner = document.querySelector('.language-banner');
-      expect(banner).to.exist;
-      // de has higher priority (1) than fr (2) for ch
-      expect(banner.querySelector('.language-banner-text').textContent).to.contain('Deutsch');
-    });
-
-    it('falls back to the next priority if the first one has no translated page', async () => {
-      setConfigForTest('/');
-      mockGeo('ch');
-      // German page (priority 1) does not exist, French one (priority 2) does,
-      // Italian one (priority 3) also exists
-      fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: false });
-      fetchStub.withArgs(sinon.match('/fr/'), { method: 'HEAD' }).resolves({ ok: true });
-      fetchStub.withArgs(sinon.match('/it/'), { method: 'HEAD' }).resolves({ ok: true });
-
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
-
-      const banner = document.querySelector('.language-banner');
-      expect(banner).to.exist;
-      expect(banner.querySelector('.language-banner-text').textContent).to.contain('Français');
+      setTimeout(() => {
+        expect(window._satellite.track.calledOnce).to.be.true;
+        const [, payload] = window._satellite.track.firstCall.args;
+        expect(payload.data.web.webInteraction.name).to.equal('test-event-delayed');
+        done();
+      }, 0);
     });
   });
 
@@ -243,9 +148,8 @@ describe('Language Banner', () => {
       openStub = sandbox.stub(window, 'open');
       fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: true });
       setConfigForTest('/');
-      document.cookie = 'international=de; path=/';
-      mockGeo('us');
-      await init(Promise.resolve({ ok: true, json: () => Promise.resolve(getFreshMarkets()) }));
+      targetMarkets.push(mockMarkets.de);
+      await init();
     });
 
     it('fires an analytics event when the banner is shown', () => {
@@ -260,7 +164,6 @@ describe('Language Banner', () => {
 
       continueLink.click();
 
-      // allow async import of setInternational to resolve
       await new Promise((resolve) => { setTimeout(resolve, 10); });
       expect(document.cookie).to.include('international=de');
       expect(openStub.calledOnceWith(continueLink.href, '_self')).to.be.true;

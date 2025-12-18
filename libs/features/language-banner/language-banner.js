@@ -98,7 +98,7 @@ async function showBanner(markets, config) {
     banner.remove();
   });
   const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
-  sendAnalytics(new Event(`${targetMarket.prefix || 'us'}-${pagePrefix}|language-banner`),);
+  sendAnalytics(new Event(`${targetMarket.prefix || 'us'}-${pagePrefix}|language-banner`));
 }
 
 export default async function init() {
