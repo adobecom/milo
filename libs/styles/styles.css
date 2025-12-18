@@ -766,7 +766,6 @@ header.global-navigation + .feds-localnav {
 }
 
 .language-banner {
-  z-index: 11;
   height: var(--feds-language-banner-height);
   visibility: hidden;
 }

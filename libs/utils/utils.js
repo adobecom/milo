@@ -2154,7 +2154,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
-    preloadMarketsConfig();
+    if (lingoActive()) preloadMarketsConfig();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
