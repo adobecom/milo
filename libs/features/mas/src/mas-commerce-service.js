@@ -10,6 +10,7 @@ import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
 import { printMeasure } from './utils.js';
+import { resolvePriceTaxFlags } from './inline-price.js';
 import { getParameter } from '@dexter/tacocat-core';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
@@ -124,6 +125,7 @@ export class MasCommerceService extends HTMLElement {
                 ...Constants,
                 // Defined serviceweb  component API
                 Log,
+                resolvePriceTaxFlags,
                 get defaults() {
                     return Defaults;
                 },

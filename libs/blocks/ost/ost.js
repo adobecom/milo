@@ -246,7 +246,7 @@ export async function loadOstEnv() {
     }
   }
 
-  const onSelect = (
+  const onSelect = async (
     offerSelectorId,
     type,
     offer,
@@ -255,7 +255,7 @@ export async function loadOstEnv() {
     country,
   ) => {
     log.debug(offerSelectorId, type, offer, options, promoOverride);
-    const link = createLinkMarkup(
+    const link = await createLinkMarkup(
       Defaults,
       offerSelectorId,
       type,

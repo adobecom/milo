@@ -15,7 +15,7 @@
         "trialBadge": { "mimeType": "text/html" },
         "cardTitle": "CCD Apps: Photography no CTA",
         "prices": {
-            "value": "<span is=\"inline-price\" data-display-per-unit=\"false\" data-tax-exclusive=\"true\" data-template=\"price\" data-wcs-osi=\"mini-photo\"></span>",
+            "value": "<span is=\"inline-price\" data-display-per-unit=\"false\" data-force-tax-exclusive=\"true\" data-template=\"price\" data-wcs-osi=\"mini-photo\"></span>",
             "mimeType": "text/html"
         },
         "shortDescription": { "mimeType": "text/html" },
