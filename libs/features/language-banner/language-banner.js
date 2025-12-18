@@ -22,7 +22,7 @@ async function getTranslatedPage(marketPrefix, config) {
       return translatedUrl;
     }
   } catch (e) {
-    console.warn(`Failed to check translated page: ${translatedUrl}`, e);
+    window.lana?.log(`Failed to check translated page: ${translatedUrl}`, e);
   }
   return null;
 }

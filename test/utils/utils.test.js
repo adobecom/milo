@@ -1842,14 +1842,14 @@ describe('Utils', () => {
       it: { ietf: 'it-IT', prefix: '/it' },
       jp: { ietf: 'ja-JP', prefix: '/jp' },
     }) => {
-      const config = {
+      const bannerConfig = {
         imsClientId: 'milo',
         codeRoot: '/libs',
         contentRoot: window.location.origin,
         locales,
         pathname,
       };
-      utils.setConfig(config);
+      utils.setConfig(bannerConfig);
     };
 
     const mockMarkets = {
@@ -1895,10 +1895,10 @@ describe('Utils', () => {
       fetchStub.withArgs(sinon.match('geo2.adobe.com')).resolves(res);
     };
 
-    const mockMarketsConfig = (config = mockMarkets) => {
+    const mockMarketsConfig = (marketConfig = mockMarkets) => {
       fetchStub.withArgs(sinon.match('supported-markets')).resolves({
         ok: true,
-        json: () => Promise.resolve(JSON.parse(JSON.stringify(config))),
+        json: () => Promise.resolve(JSON.parse(JSON.stringify(marketConfig))),
       });
     };
 
