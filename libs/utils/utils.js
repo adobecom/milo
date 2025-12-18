@@ -367,15 +367,6 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
 
-      // if (window.location.href.includes('main--da-bacom--adobecom.aem.')
-      //   && window.location.pathname.startsWith('/es/')) {
-      //   config.locale.regions = { ar: { prefix: '/ar', ietf: 'es', base: 'es' } };
-      //   config.uniqueSiteId = 'da-bacom';
-      //   const lingoMeta = document.createElement('meta');
-      //   lingoMeta.setAttribute('content', 'on');
-      //   lingoMeta.setAttribute('name', 'langFirst');
-      //   document.head.append(lingoMeta);
-      // }
       return config;
     },
     (conf) => (config = conf),
