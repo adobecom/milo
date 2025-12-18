@@ -44,6 +44,7 @@ const setBreadcrumbSEO = (breadcrumbs) => {
 const createBreadcrumbs = (element) => {
   if (!element) return null;
   const ul = element.querySelector('ul');
+  if (!ul) return null;
   const pageTitle = getMetadata(metadata.pageTitle);
   if (pageTitle || getMetadata(metadata.showCurrent) === 'on') {
     ul.append(toFragment`

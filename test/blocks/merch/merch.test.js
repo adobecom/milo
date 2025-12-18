@@ -583,6 +583,14 @@ describe('Merch Block', () => {
 
       expect(classList.contains('con-button')).to.be.true;
     });
+
+    it('sets target _blank if target is _blank', async () => {
+      const el = await merch(document.querySelector(
+        '.merch.cta.blank',
+      ));
+      await el.onceSettled();
+      expect(el.getAttribute('target')).to.equal('_blank');
+    });
   });
 
   describe('function "getCheckoutContext"', () => {
@@ -1134,8 +1142,8 @@ describe('Merch Block', () => {
       expect(getOptions(a).fragment).to.be.undefined;
     });
   });
-  describe('Localize preview links', () => {
-    it('check if only preview URL is relative', () => {
+  describe('Localize preview links', async () => {
+    it('check if only preview URL is relative', async () => {
       const div = document.createElement('div');
 
       const a1 = document.createElement('a');
@@ -1156,7 +1164,7 @@ describe('Merch Block', () => {
       const aNoHref = document.createElement('a');
       div.append(aNoHref);
 
-      localizePreviewLinks(div);
+      await localizePreviewLinks(div);
 
       expect(div.querySelector('.link1').getAttribute('href')).to.equal('/test/milo/path');
       expect(div.querySelector('.link2').getAttribute('href')).to.equal('/test/cc/path');
