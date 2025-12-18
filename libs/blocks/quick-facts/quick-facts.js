@@ -4,7 +4,8 @@ import { decorateBlockText, decorateTextOverrides } from '../../utils/decorate.j
 export default function init(el) {
   el.classList.add('con-block');
   const foreground = createTag('div', { class: 'foreground' });
-  const logo = el.querySelector(':scope > div');
+  el.append(foreground);
+  const logo = el.querySelector(':scope > div:not([class])');
   if (logo.querySelector('picture')) {
     logo.classList.add('logo');
     foreground.append(logo);
@@ -17,7 +18,6 @@ export default function init(el) {
   const productList = rows[rows.length - 1];
   productList.classList.add('product-list');
   foreground.append(facts, productList);
-  el.append(foreground);
   decorateBlockText(el, ['m', 's'], 'merch');
   const subheading = el.querySelector('.product-list :is(h1, h2, h3, h4, h5, h6)');
   subheading?.classList.remove('heading-m');
