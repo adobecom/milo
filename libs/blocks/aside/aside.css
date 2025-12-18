@@ -1350,4 +1350,16 @@
   .aside.container-mobile.media-top-mobile.rounded-corners .foreground.container > .image {
     padding-top: var(--spacing-xs);
   }
+
+/* =================================
+   full-bleed-mobile variant
+   ================================= */
+
+  .aside.full-bleed-mobile .foreground.container > .image {
+    width: 100vw;
+  }
+
+  .aside.full-bleed-mobile.inline .foreground.container > .text {
+    margin-inline: var(--spacing-m);
+  }
 }
