@@ -1763,15 +1763,9 @@ function preloadLanguageBanner() {
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
 }
 
-function decorateDocumentExtras(config) {
+function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
-  const languageBannerEnabled = getMetadata('language-banner') || config.languageBanner;
-  if (languageBannerEnabled === 'on') {
-    import('./language-banner-utils.js').then(({ initLanguageBanner }) => {
-      initLanguageBanner();
-    });
-  }
 }
 
 async function documentPostSectionLoading(config) {

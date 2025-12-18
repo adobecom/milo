@@ -122,8 +122,4 @@ async function decorateLanguageBanner() {
   }
 }
 
-export function initLanguageBanner() {
-  if (!langBannerPromise) {
-    langBannerPromise = decorateLanguageBanner();
-  }
-}
+langBannerPromise = decorateLanguageBanner();
