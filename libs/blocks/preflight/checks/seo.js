@@ -262,7 +262,6 @@ function compareResults(result, link) {
   return true;
 }
 
-//helper functions for SEO checks
 export function getElementPosition(element) {
   if (element.closest('header nav')) return 'NAV';
   if (element.closest('footer')) return 'FOOTER';
