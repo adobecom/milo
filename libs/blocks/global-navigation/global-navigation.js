@@ -1178,7 +1178,7 @@ class Gnav {
     const promoPath = getMetadata('gnav-promo-source');
     const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
 
-    if (!promoPath || !asideJsPromise) {
+    if (!promoPath || !asideJsPromise || !fedsPromoWrapper) {
       fedsPromoWrapper?.remove();
       this.block.classList.remove('has-promo');
       return this.elements.aside;

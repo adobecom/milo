@@ -3,12 +3,13 @@
   padding: 12px 20px;
   justify-content: center;
   align-items: center;
-  min-height: 44px;
+  min-height: var(--feds-language-banner-height);
   gap: 8px;
   align-self: stretch;
   width: 100%;
   background-color: #3B63FB;
   box-sizing: border-box;
+  visibility: visible;
 }
 
 .language-banner-content {
