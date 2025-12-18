@@ -43,9 +43,9 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
     urlObj.searchParams.set('ecid', ecid);
   }
   const loc = getLocale(locale);
-  if (loc) urlObj.searchParams.append('~tags', `locale=${loc}`);
+  if (loc) urlObj.searchParams.append('~sub_site_name', loc);
   const blockName = a.closest('[data-block-status="loaded"]')?.classList[0];
-  if (blockName) urlObj.searchParams.append('~tags', `placement=${blockName}`);
+  if (blockName) urlObj.searchParams.append('~placement', blockName);
   a.href = urlObj.href;
   if (isNewTab) window.open(a.href, '_blank', 'noopener');
   else window.location.href = a.href;
