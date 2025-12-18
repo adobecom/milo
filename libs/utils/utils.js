@@ -1943,7 +1943,7 @@ function getPreferredLanguage(locales) {
 
 async function decorateLanguageBanner() {
   const config = getConfig();
-  const languageBannerEnabled = getMetadata('language-banner') || config.languageBanner;
+  const languageBannerEnabled = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('language-banner') || config.languageBanner);
   if (languageBannerEnabled !== 'on') return;
   const internationalCookie = getCookie('international');
   let showBanner = false;
@@ -2039,7 +2039,7 @@ async function decorateLanguageBanner() {
 
 function preloadMarketsConfig() {
   const config = getConfig();
-  const languageBannerEnabled = getMetadata('language-banner') || config.languageBanner;
+  const languageBannerEnabled = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('language-banner') || config.languageBanner);
   if (languageBannerEnabled !== 'on') return;
   const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
   const marketsUrl = supportedMarketsPath
