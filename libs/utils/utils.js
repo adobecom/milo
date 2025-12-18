@@ -1812,8 +1812,7 @@ async function decorateLanguageBanner() {
     if (prefMarket) {
       showBanner = true;
       targetMarkets.push(prefMarket);
-    }
-    return;
+    } else return;
   }
 
   // Unsupported Market Path
