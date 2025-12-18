@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
-import { getConfig, createTag, loadStyle, getTargetMarkets } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
+import { getTargetMarkets } from '../../utils/language-banner-utils.js';
 
 /**
  * Verifies if the translated version of the current page exists.
