@@ -320,6 +320,7 @@ export async function validLinkFilter(area = document, envName = null) {
       link.visibility = isElementVisible(link);
       return link; 
     });
+    return links;
 }
 
 export async function checkLinks({ area, urlHash, envName }) {
