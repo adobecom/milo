@@ -1,28 +1,37 @@
-name: Generate/Updates Preview Index For DA Tenants
+name: Preview Indexer (Incremental)
+description: This workflow updates the preview index for the given site and region(s)
 
 on:
+  schedule:
+    - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       site:
         description: "Site name e.g da-bacom"
-        required: false
-        type: string
+        required: true
+        type: choice
+        options:
+          - da-bacom
       siteRegionPaths:
-        description: "Comma-separated regional paths e.g /au/,/de/"
+        description: "Comma-separated regional paths (e.g. ar,ro) or blank for all regions"
         required: false
         type: string
       lastRunISOFrom:
-        description: "Last ISO From timestamp"
+        description: "Last ISO From timestamp (GMT: 2025-11-19T18:51:41.007Z)"
         required: false
         type: string
       lastRunISOTo:
-        description: "Last ISO To timestamp"
+        description: "Last ISO To timestamp (GMT: 2025-11-20T18:51:41.007Z)"
         required: false
         type: string
 
 permissions:
   actions: read # required to access workflow runs
   contents: write # required to access the repository, for the dispatch event
+
+concurrency:
+  group: preview-indexer-run
+  cancel-in-progress: false
 
 env:
   ROLLING_IMPORT_IMS_URL: ${{ secrets.ROLLING_IMPORT_IMS_URL }}
@@ -45,32 +54,6 @@ jobs:
     if: github.repository_owner == 'adobecom'
     runs-on: ubuntu-latest
     steps:
-      - name: Check if previous run is in progress
-        id: check-run
-        run: |
-          # If MOCK_GH_RUNNING is set, skip immediately
-          if [ "${MOCK_GH_RUNNING}" = "true" ]; then
-            echo "Mock mode: pretending another run is active. Skipping..."
-            exit 78
-          elif [ "${MOCK_GH_RUNNING}" = "false" ]; then
-            echo "Mock mode: pretending another run is not active. Skipping..."
-            exit 0
-          fi
-
-          # Otherwise check real GitHub runs (only works in actual Actions)
-          running=$(gh run list \
-            --workflow="${{ github.workflow }}" \
-            --branch="${{ github.ref_name }}" \
-            --status=in_progress \
-            --limit 1 \
-            --json status \
-            --jq 'length' || echo "0")
-
-          if [ "$running" -gt 0 ]; then
-            echo "Another run is in progress. Exiting..."
-            exit 78
-          fi
-
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
@@ -105,10 +88,6 @@ jobs:
           LAST_RUN_ISO_FROM: ${{ github.event.inputs.lastRunISOFrom }}
           SITE: ${{ github.event.inputs.site }}
           SITE_REGION_PATHS: ${{ github.event.inputs.siteRegionPaths }}
-
-      - name: Remove lock file
-        if: always()
-        run: rm -f preview-indexer/state/job.lock
 
       - name: Save updated cache
         if: always()

@@ -1,11 +1,11 @@
 import {
   createTag,
   decorateSVG,
-  decorateLinks,
+  decorateLinksAsync,
   getConfig,
   getMetadata,
   loadIms,
-  localizeLink,
+  localizeLinkAsync,
 } from '../../utils/utils.js';
 
 import {
@@ -44,7 +44,7 @@ class Gnav {
     this.desktop = window.matchMedia('(min-width: 1200px)');
   }
 
-  init = () => {
+  init = async () => {
     this.state = {};
     this.curtain = createTag('div', { class: 'gnav-curtain' });
     const nav = createTag('nav', { class: 'gnav', 'aria-label': 'Main' });
@@ -56,7 +56,7 @@ class Gnav {
 
     const scrollWrapper = createTag('div', { class: 'mainnav-wrapper' });
 
-    const mainNav = this.decorateMainNav();
+    const mainNav = await this.decorateMainNav();
     if (mainNav && mainNav.childElementCount) {
       const mobileToggle = this.decorateToggle();
       nav.prepend(mobileToggle);
@@ -89,7 +89,7 @@ class Gnav {
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
     }
-    decorateLinks(wrapper);
+    await decorateLinksAsync(wrapper);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -178,23 +178,23 @@ class Gnav {
     return logo;
   };
 
-  decorateMainNav = () => {
+  decorateMainNav = async () => {
     const mainNav = createTag('div', { class: 'gnav-mainnav' });
     const mainLinks = this.body.querySelectorAll('h2 > a, strong a');
     if (mainLinks.length > 0) {
-      this.buildMainNav(mainNav, mainLinks);
+      await this.buildMainNav(mainNav, mainLinks);
     }
     return mainNav;
   };
 
-  buildMainNav = (mainNav, navLinks) => {
-    navLinks.forEach((navLink, idx) => {
+  buildMainNav = async (mainNav, navLinks) => {
+    await Promise.all([...navLinks].map(async (navLink, idx) => {
       if (navLink.parentElement.nodeName === 'STRONG') {
         const cta = Gnav.decorateCta(navLink);
         mainNav.append(cta);
         return;
       }
-      navLink.href = localizeLink(navLink.href);
+      navLink.href = await localizeLinkAsync(navLink.href);
       const navItem = createTag('div', { class: 'gnav-navitem' });
       const navBlock = navLink.closest('.large-menu');
       const menu = navLink.closest('div');
@@ -211,7 +211,7 @@ class Gnav {
       }
       // Small and medium menu types
       if (menu.childElementCount > 0) {
-        const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
+        const decoratedMenu = await this.decorateMenu(navItem, navLink, menu);
         navItem.appendChild(decoratedMenu);
       }
       // Large Menus & Section Nav
@@ -220,10 +220,10 @@ class Gnav {
         if (navBlock.classList.contains('section')) {
           navItem.classList.add('section-menu');
         }
-        this.decorateLargeMenu(navLink, navItem, menu);
+        await this.decorateLargeMenu(navLink, navItem, menu);
       }
       mainNav.appendChild(navItem);
-    });
+    }));
     return mainNav;
   };
 
@@ -235,16 +235,16 @@ class Gnav {
     navLink.setAttribute('daa-lh', 'header|Open');
   };
 
-  static decorateLinkGroups = (menu) => {
+  static decorateLinkGroups = async (menu) => {
     const linkGroups = menu.querySelectorAll('.link-group');
-    linkGroups.forEach((linkGroup) => {
+    await Promise.all([...linkGroups].map(async (linkGroup) => {
       const image = linkGroup.querySelector('picture');
       const anchor = linkGroup.querySelector('a');
       const title = anchor?.textContent;
       const subtitle = linkGroup.querySelector('p:last-of-type') || '';
       const titleWrapper = createTag('div');
       titleWrapper.className = 'link-group-title';
-      anchor.href = localizeLink(anchor.href);
+      anchor.href = await localizeLinkAsync(anchor.href);
       const link = createTag('a', { class: 'link-block', href: anchor.href });
 
       linkGroup.replaceChildren();
@@ -252,7 +252,7 @@ class Gnav {
       const contents = image ? [image, titleWrapper] : [titleWrapper];
       link.append(...contents);
       linkGroup.appendChild(link);
-    });
+    }));
   };
 
   setMenuAnalytics = (el) => {
@@ -291,7 +291,7 @@ class Gnav {
     });
   };
 
-  decorateMenu = (navItem, navLink, menu) => {
+  decorateMenu = async (navItem, navLink, menu) => {
     menu.className = 'gnav-navitem-menu';
     menu.setAttribute('daa-lh', `header|${navLink.textContent}`);
     const childCount = menu.childElementCount;
@@ -303,10 +303,10 @@ class Gnav {
       menu.classList.add('large-Variant');
       const container = createTag('div', { class: 'gnav-menu-container' });
       container.append(...Array.from(menu.children));
-      decorateLinks(container);
+      await decorateLinksAsync(container);
       menu.append(container);
     }
-    Gnav.decorateLinkGroups(menu);
+    await Gnav.decorateLinkGroups(menu);
     this.decorateAnalytics(menu);
     navLink.addEventListener('focus', () => {
       window.addEventListener('keydown', this.toggleOnSpace);
@@ -322,9 +322,9 @@ class Gnav {
     return menu;
   };
 
-  decorateLargeMenu = (navLink, navItem, menu) => {
+  decorateLargeMenu = async (navLink, navItem, menu) => {
     let path = navLink.href;
-    path = localizeLink(path);
+    path = await localizeLinkAsync(path);
     const promise = fetch(`${path}.plain.html`);
     promise.then(async (resp) => {
       if (resp.status === 200) {
@@ -334,7 +334,7 @@ class Gnav {
         links.forEach((link) => {
           decorateSVG(link);
         });
-        const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
+        const decoratedMenu = await this.decorateMenu(navItem, navLink, menu);
         const menuSections = decoratedMenu.querySelectorAll('.gnav-menu-container > div');
         menuSections.forEach((sec) => { sec.classList.add('section'); });
         const sectionMetas = decoratedMenu.querySelectorAll('.section-metadata');
@@ -484,16 +484,16 @@ class Gnav {
         profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
         this.getAppLauncher(profileEl);
       } else {
-        this.decorateSignIn(blockEl, profileEl);
+        await this.decorateSignIn(blockEl, profileEl);
       }
     } else {
-      this.decorateSignIn(blockEl, profileEl);
+      await this.decorateSignIn(blockEl, profileEl);
     }
   };
 
-  decorateSignIn = (blockEl, profileEl) => {
+  decorateSignIn = async (blockEl, profileEl) => {
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
-    decorateLinks(blockEl);
+    await decorateLinksAsync(blockEl);
     const signIn = blockEl.querySelector('a');
 
     signIn.classList.add('gnav-signin');
@@ -508,7 +508,7 @@ class Gnav {
       profileEl.classList.add('gnav-navitem');
       profileEl.insertAdjacentElement('beforeend', dropDown);
 
-      this.decorateMenu(profileEl, signIn, dropDown);
+      await this.decorateMenu(profileEl, signIn, dropDown);
       Gnav.setNavLinkAttributes(id, signIn);
     }
     signInEl.addEventListener('click', (e) => {
@@ -667,7 +667,7 @@ export default async function init(header) {
     const parser = new DOMParser();
     const gnavDoc = parser.parseFromString(html, 'text/html');
     const gnav = new Gnav(gnavDoc.body, header);
-    gnav.init();
+    await gnav.init();
     header.dispatchEvent(initEvent);
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav${name}`);

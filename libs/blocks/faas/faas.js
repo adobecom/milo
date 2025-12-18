@@ -87,7 +87,7 @@ function focusModalInput(modal, faas, faasForm) {
 const loadFaas = async (a) => {
   await loadFaasFiles();
   const encodedConfig = a.href.split('#')[1];
-  const faas = initFaas(parseEncodedConfig(encodedConfig), a);
+  const faas = await initFaas(parseEncodedConfig(encodedConfig), a);
   const modal = faas.closest('.dialog-modal');
 
   // if FaaS is in Modal, make it column2 style.
