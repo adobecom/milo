@@ -262,7 +262,34 @@ function compareResults(result, link) {
   return true;
 }
 
-export async function validLinkFilter(area = document, envName = null) {
+//helper functions for SEO checks
+export function getElementPosition(element) {
+  if (element.closest('header nav')) return 'NAV';
+  if (element.closest('footer')) return 'FOOTER';
+  if (element.closest('main')) return 'CONTENT';
+  return 'OTHER';
+}
+
+export function getTagType(element) {
+  if (element.tagName === 'A') return 'Anchor';
+  if (element.tagName === 'IMG') return 'Image';
+  if (element.tagName === 'IFRAME') return 'IFrame';
+  return element.tagName;
+}
+
+export function isElementVisible(element) {
+  const style = window.getComputedStyle(element);
+  return style.display !== 'none' && 
+         style.visibility !== 'hidden' && 
+         style.opacity !== '0';
+}
+
+export function extractLocaleFromUrl(url) {
+  const match = url.match(/\/([a-z]{2}_[a-z]{2})\//i);
+  return match ? match[1] : 'en_us';
+}
+
+/*export async function validLinkFilter(area = document, envName = null) {
   const { preflight } = await getServiceConfig(window.location.origin, envName);
   const knownBadUrls = preflight?.ignoreDomains
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
@@ -289,6 +316,53 @@ export async function validLinkFilter(area = document, envName = null) {
       }
       return false;
     });
+  return links;
+}*/
+export async function validLinkFilter(area = document, envName = null) {
+  const { preflight } = await getServiceConfig(window.location.origin, envName);
+  const knownBadUrls = preflight?.ignoreDomains
+    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
+    : KNOWN_BAD_URLS;
+  
+  const sourceUrl = window.location.href;
+  const locale = extractLocaleFromUrl(sourceUrl);
+  
+  const links = [...area.querySelectorAll('a')]
+    .filter((link) => {
+      if (
+        link.href
+        // Added extra checks because Spidy misidentifies these URL schemes as faulty.
+        // Can be removed once we stop using Spidy.
+        && !link.href.includes('tel:')
+        && !link.href.includes('mailto:')
+        && !link.href.startsWith('#')
+        && !link.href.startsWith('https://#')
+        && !link.href.includes('bookmark://')
+        && !link.href.includes('local')
+        && !link.closest('.preflight')
+        && !knownBadUrls.some((url) => url === link.hostname)
+      ) {
+        link.liveHref = link.href;
+        if (link.href.includes('hlx.page')) link.liveHref = link.href.replace('hlx.page', 'hlx.live');
+        if (link.href.includes('aem.page')) link.liveHref = link.href.replace('aem.page', 'aem.live');
+        return true;
+      }
+      return false;
+    })
+    .map((link) => {
+      // Add broken link report metadata to each link
+      return {
+        ...link,
+        sourceUrl,
+        locale,
+        brokenLink: link.liveHref || link.href,
+        tagType: getTagType(link),
+        position: getElementPosition(link),
+        linkTextOrImgAlt: link.textContent?.trim() || link.alt || link.title || '',
+        visibility: isElementVisible(link),
+      };
+    });
+  
   return links;
 }
 
