@@ -284,48 +284,12 @@ export function isElementVisible(element) {
          style.opacity !== '0';
 }
 
-export function extractLocaleFromUrl(url) {
-  const match = url.match(/\/([a-z]{2}_[a-z]{2})\//i);
-  return match ? match[1] : 'en_us';
-}
 
-/*export async function validLinkFilter(area = document, envName = null) {
-  const { preflight } = await getServiceConfig(window.location.origin, envName);
-  const knownBadUrls = preflight?.ignoreDomains
-    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
-    : KNOWN_BAD_URLS;
-  const links = [...area.querySelectorAll('a')]
-    .filter((link) => {
-      if (
-        link.href
-        // Added extra checks because Spidy misidentifies these URL schemes as faulty.
-        // Can be removed once we stop using Spidy.
-        && !link.href.includes('tel:')
-        && !link.href.includes('mailto:')
-        && !link.href.startsWith('#')
-        && !link.href.startsWith('https://#')
-        && !link.href.includes('bookmark://')
-        && !link.href.includes('local')
-        && !link.closest('.preflight')
-        && !knownBadUrls.some((url) => url === link.hostname)
-      ) {
-        link.liveHref = link.href;
-        if (link.href.includes('hlx.page')) link.liveHref = link.href.replace('hlx.page', 'hlx.live');
-        if (link.href.includes('aem.page')) link.liveHref = link.href.replace('aem.page', 'aem.live');
-        return true;
-      }
-      return false;
-    });
-  return links;
-}*/
 export async function validLinkFilter(area = document, envName = null) {
   const { preflight } = await getServiceConfig(window.location.origin, envName);
   const knownBadUrls = preflight?.ignoreDomains
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
     : KNOWN_BAD_URLS;
-  
-  const sourceUrl = window.location.href;
-  const locale = extractLocaleFromUrl(sourceUrl);
   
   const links = [...area.querySelectorAll('a')]
     .filter((link) => {
@@ -350,20 +314,12 @@ export async function validLinkFilter(area = document, envName = null) {
       return false;
     })
     .map((link) => {
-      // Add broken link report metadata to each link
-      return {
-        ...link,
-        sourceUrl,
-        locale,
-        brokenLink: link.liveHref || link.href,
-        tagType: getTagType(link),
-        position: getElementPosition(link),
-        linkTextOrImgAlt: link.textContent?.trim() || link.alt || link.title || '',
-        visibility: isElementVisible(link),
-      };
+      link.tagType = getTagType(link);
+      link.position = getElementPosition(link);
+      link.linkTextOrImgAlt = link.textContent?.trim() || link.alt || link.title || '';
+      link.visibility = isElementVisible(link);
+      return link; 
     });
-  
-  return links;
 }
 
 export async function checkLinks({ area, urlHash, envName }) {
