@@ -374,7 +374,7 @@
 
   .brick .foreground .brick-media video,
   .brick.split.row .foreground .brick-media video {
-    object-fit: cover;
+    object-fit: fill;
     display: flex;
     margin: 0;
   }
@@ -476,7 +476,7 @@
 
   .brick.media-visible-mobile-tablet .foreground .brick-media video,
   .brick.media-visible-mobile-tablet.split.row .foreground .brick-media video {
-    object-fit: cover;
+    object-fit: fill;
     display: flex;
     margin: 0;
   }
