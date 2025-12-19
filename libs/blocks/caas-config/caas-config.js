@@ -698,11 +698,6 @@ const PaginationPanel = () => {
       prop="paginationType"
       options=${defaultOptions.paginationType}
     />
-    <!-- ${Select}
-      label="Carousel Animation Style"
-      prop="paginationAnimationStyle"
-      options=${defaultOptions.paginationAnimationStyle}
-    / -->
     <${Input} label="Use Theme 3" prop="paginationUseTheme3" type="checkbox" />
   `;
 
