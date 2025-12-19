@@ -278,18 +278,17 @@ export function getTagType(element) {
 
 export function isElementVisible(element) {
   const style = window.getComputedStyle(element);
-  return style.display !== 'none' && 
-         style.visibility !== 'hidden' && 
-         style.opacity !== '0';
+  return style.display !== 'none'
+    && style.visibility !== 'hidden'
+    && style.opacity !== '0';
 }
-
 
 export async function validLinkFilter(area = document, envName = null) {
   const { preflight } = await getServiceConfig(window.location.origin, envName);
   const knownBadUrls = preflight?.ignoreDomains
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
     : KNOWN_BAD_URLS;
-  
+
   const links = [...area.querySelectorAll('a')]
     .filter((link) => {
       if (
@@ -317,9 +316,9 @@ export async function validLinkFilter(area = document, envName = null) {
       link.position = getElementPosition(link);
       link.linkTextOrImgAlt = link.textContent?.trim() || link.alt || link.title || '';
       link.visibility = isElementVisible(link);
-      return link; 
+      return link;
     });
-    return links;
+  return links;
 }
 
 export async function checkLinks({ area, urlHash, envName }) {
