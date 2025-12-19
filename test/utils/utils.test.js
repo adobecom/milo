@@ -1874,6 +1874,10 @@ describe('Utils', () => {
 
     beforeEach(() => {
       fetchStub = sandbox.stub(window, 'fetch');
+      fetchStub.withArgs(sinon.match('/federal/assets/data/lingo-site-mapping.json')).resolves({
+        ok: true,
+        json: () => Promise.resolve({ data: [] }),
+      });
       sandbox.stub(console, 'warn');
       document.head.innerHTML = '';
       document.body.innerHTML = '';

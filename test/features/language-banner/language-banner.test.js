@@ -66,10 +66,11 @@ describe('Language Banner', () => {
   it('handles fetch error when checking for translated page', async () => {
     setConfigForTest('/');
     targetMarkets.push(mockMarkets.de);
+    window.lana = { log: sandbox.stub() };
     fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).rejects(new Error('Network error'));
     await init();
     expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
-    expect(console.warn.calledOnce).to.be.true;
+    expect(window.lana.log.calledOnce).to.be.true;
   });
 
   it('does not build banner if the placeholder element is missing', async () => {

@@ -1941,6 +1941,22 @@ function getPreferredLanguage(locales) {
   return browserLang || null;
 }
 
+function getMarketsUrl() {
+  const config = getConfig();
+  let { marketsSource } = config;
+  if (config.env.name !== 'prod') {
+    const sourceFromUrl = new URLSearchParams(window.location.search).get('marketsSource');
+    if (sourceFromUrl) {
+      if (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl)) {
+        marketsSource = sourceFromUrl;
+      } else {
+        window.lana?.log(`Invalid marketsSource parameter rejected: ${sourceFromUrl}`);
+      }
+    }
+  }
+  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSource ? `-${marketsSource}` : ''}.json`;
+}
+
 async function decorateLanguageBanner() {
   const config = getConfig();
   const languageBannerEnabled = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('language-banner') || config.languageBanner);
@@ -1952,11 +1968,7 @@ async function decorateLanguageBanner() {
   const pageLang = config.locale.ietf.split('-')[0];
   const prefLang = getPreferredLanguage(config.locales);
 
-  const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
-  const jsonPromise = fetch(
-    supportedMarketsPath
-      || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`,
-  );
+  const jsonPromise = fetch(getMarketsUrl());
 
   const marketsConfigPromise = jsonPromise
     .then((res) => (res.ok ? res.json() : null))
@@ -2041,9 +2053,7 @@ function preloadMarketsConfig() {
   const config = getConfig();
   const languageBannerEnabled = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('language-banner') || config.languageBanner);
   if (languageBannerEnabled !== 'on') return;
-  const supportedMarketsPath = new URLSearchParams(window.location.search).get('supportedMarketsPath');
-  const marketsUrl = supportedMarketsPath
-  || `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${config.marketsSource ? `-${config.marketsSource}` : ''}.json`;
+  const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
 }
 
