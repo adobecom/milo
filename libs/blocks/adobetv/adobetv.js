@@ -84,7 +84,7 @@ const createIframeWithCaptions = (a, url, geo) => {
 
 export default function init(a) {
   a.classList.add('hide-video');
-  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
+  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form', 'brick'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
     if (!a.parentNode) return;
