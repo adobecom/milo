@@ -189,11 +189,11 @@ describe('addHash', async () => {
       selector: 'h1',
     }];
     const rootEl = document.createElement('div');
-    handleCommands(config.mep.commands, rootEl, true, true);
+    await handleCommands(config.mep.commands, rootEl, true, true);
     console.log(config.mep.commands[0].content);
     expect(config.mep.commands[0].content).to.equal('/new-fragment#_inline');
     config.mep.commands[0].content = 'https://main--cc--adobecom.hlx.page/cc/fragments/new-fragment';
-    handleCommands(config.mep.commands, rootEl, true, true);
+    await handleCommands(config.mep.commands, rootEl, true, true);
     console.log(config.mep.commands[0].content);
     expect(config.mep.commands[0].content).to.equal('https://main--cc--adobecom.hlx.page/cc/fragments/new-fragment#_inline');
   });

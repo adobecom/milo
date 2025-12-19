@@ -108,7 +108,7 @@ describe('Modals', () => {
   it('Gets the modal when explicitly init-ed', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
-    init(document.getElementById('milo-modal-link'));
+    await init(document.getElementById('milo-modal-link'));
     const modal = document.getElementById('milo');
     expect(modal).to.exist;
     expect(modal.getAttribute('daa-lh')).to.equal('milo-modal');
@@ -260,7 +260,7 @@ describe('Modals', () => {
     window.location.hash = '#category=pdf-esignatures&search=acro&types=desktop%2Cmobile';
     window.location.hash = '#milo';
     await waitForElement('#milo');
-    init(document.getElementById('milo-modal-link'));
+    await init(document.getElementById('milo-modal-link'));
     const modal = document.getElementById('milo');
     expect(modal).to.exist;
     expect(window.location.hash).to.equal('#milo');
@@ -286,7 +286,7 @@ describe('Modals', () => {
   it('never create modal when removed by MEP', async () => {
     const config = getConfig();
     config.mep = { fragments: { '/milo': { action: 'remove' } } };
-    const modal = init(document.getElementById('milo-modal-link'));
+    const modal = await init(document.getElementById('milo-modal-link'));
     expect(modal).to.be.null;
   });
 

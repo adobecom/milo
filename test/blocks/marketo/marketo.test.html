@@ -90,11 +90,11 @@
 
     runTests(() => {
       describe('marketo', () => {
-        before(() => {
+        before(async () => {
           setConfig({ codeRoot: '/test/blocks/marketo/mocks' });
           const marketoElement = document.querySelector('.marketo');
 
-          init(marketoElement);
+          await init(marketoElement);
         });
 
         it('initializes block', async () => {

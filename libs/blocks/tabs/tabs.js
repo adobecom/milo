@@ -2,7 +2,7 @@
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
-import { createTag, MILO_EVENTS, getConfig, localizeLink } from '../../utils/utils.js';
+import { createTag, MILO_EVENTS, getConfig, localizeLinkAsync } from '../../utils/utils.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 
 const PADDLE = '<svg aria-hidden="true" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
@@ -306,13 +306,13 @@ const handlePillSize = (pill) => {
   return `${sizes[size]?.[0] ?? sizes[1]}-pill`;
 };
 
-export function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
+export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
   if (!metaSettings.link || !id || !val || !linkedTabsList) return;
   const { link } = metaSettings;
 
   try {
     const url = new URL(link);
-    linkedTabsList[`tab-${id}-${val}`] = localizeLink(link, url.hostname);
+    linkedTabsList[`tab-${id}-${val}`] = await localizeLinkAsync(link, url.hostname);
   } catch {
     // @see https://jira.corp.adobe.com/browse/MWPW-170787
     // TODO support for relative links to be removed after authoring makes full switch
@@ -321,7 +321,7 @@ export function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
   }
 }
 
-const init = (block) => {
+const init = async (block) => {
   const rootElem = block.closest('.fragment') || document;
   const rows = block.querySelectorAll(':scope > div');
   const parentSection = block.closest('.section');
@@ -421,7 +421,7 @@ const init = (block) => {
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
-  allSections.forEach((e) => {
+  await Promise.all(allSections.map(async (e) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
     const metaSettings = {};
@@ -448,7 +448,7 @@ const init = (block) => {
       if (metaSettings['tab-background']) {
         tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
       }
-      assignLinkedTabs(linkedTabs, metaSettings, id, val);
+      await assignLinkedTabs(linkedTabs, metaSettings, id, val);
       const tabLabel = tabListItems[val - 1]?.innerText;
       if (tabLabel) {
         assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
@@ -456,7 +456,7 @@ const init = (block) => {
       const section = sectionMetadata.closest('.section');
       assocTabItem.append(section);
     }
-  });
+  }));
   handleDeferredImages(block);
   initTabs(block, config, rootElem);
 };

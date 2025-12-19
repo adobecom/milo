@@ -43,10 +43,10 @@ test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
   const highlightCSSContentTextBox = await page.evaluate("window.getComputedStyle(document.querySelector('#text-intro'), '::before').getPropertyValue('content')");
   const highlightCSSContentMerchCard = await page.evaluate("window.getComputedStyle(document.querySelector('.merch-card'), '::before').getPropertyValue('content')");
   const highlightCSSContentMarquee = await page.evaluate("window.getComputedStyle(document.querySelector('.marquee h2'), '::before').getPropertyValue('content')");
-  // please note: the nala server sometimes replaces "mep-button.json" with "attr(data-manifest-id)", so the test will only check for this: "content updated by:"
-  await expect(highlightCSSContentTextBox).toContain('content updated by:');
-  await expect(highlightCSSContentMerchCard).toContain('content updated by:');
-  await expect(highlightCSSContentMarquee).toContain('content updated by: ');
+  // Check for either resolved value (e.g., "mep-button.json: html") or CSS attr() function (Nala server quirk)
+  expect(highlightCSSContentTextBox).toMatch(/mep-button\.json|attr\(data-manifest/);
+  expect(highlightCSSContentMerchCard).toMatch(/mep-button\.json|attr\(data-manifest/);
+  expect(highlightCSSContentMarquee).toMatch(/mep-button\.json|attr\(data-manifest/);
 });
 
 // Test 3: there should be 3 manifests listed in the manifest button
