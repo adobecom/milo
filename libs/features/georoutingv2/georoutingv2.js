@@ -1,4 +1,5 @@
 import { getFederatedContentRoot } from '../../utils/utils.js';
+import getAkamaiCode from '../../utils/geo.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -74,32 +75,6 @@ export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
-
-export const getAkamaiCode = (checkedParams = false) => new Promise((resolve, reject) => {
-  let akamaiLocale = null;
-  if (!checkedParams) {
-    const urlParams = new URLSearchParams(window.location.search);
-    akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
-  }
-  if (akamaiLocale !== null) {
-    resolve(akamaiLocale.toLowerCase());
-  } else {
-    /* c8 ignore next 5 */
-    fetch('https://geo2.adobe.com/json/', { cache: 'no-cache' }).then((resp) => {
-      if (resp.ok) {
-        resp.json().then((data) => {
-          const code = data.country.toLowerCase();
-          sessionStorage.setItem('akamai', code);
-          resolve(code);
-        });
-      } else {
-        reject(new Error(`Something went wrong getting the akamai Code. Response status text: ${resp.statusText}`));
-      }
-    }).catch((error) => {
-      reject(new Error(`Something went wrong getting the akamai Code. ${error.message}`));
-    });
-  }
-});
 
 // Determine if any of the locales can be linked to.
 async function getAvailableLocales(locales) {
