@@ -3,6 +3,7 @@
 
   background: white;
   border-radius: 16px;
+  container-type: inline-size; /* stylelint-disable-line property-no-unknown */
 }
 
 .quick-facts .foreground {
@@ -89,8 +90,8 @@
   line-height: var(--type-heading-m-lh);
 }
 
-/* Tablet - Portrait */
-@media screen and (min-width: 600px) {
+/* stylelint-disable-next-line at-rule-no-unknown */
+@container (min-width: 499px) {
   .quick-facts .foreground {
     flex-flow: row wrap;
   }
@@ -105,14 +106,3 @@
   }
 }
 
-/* Tablet - Landscape */
-@media screen and (min-width: 900px) {
-  .quick-facts .foreground {
-    flex-direction: column;
-  }
-
-  .quick-facts .fact-list,
-  .quick-facts .product-list {
-    width: 100%;
-  }
-}
