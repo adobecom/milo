@@ -446,9 +446,9 @@ export default async function loadGeoRouting(
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         handleOverflow(await showModal(details));
-        sendAnalyticsFunc(
-          new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
-        );
+        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`;
+        sendAnalyticsFunc(new Event(eventString));
+        if (config.lingoProjectSuccessLogging === 'on') window.lana.log(eventString);
       }
     }
     return;
