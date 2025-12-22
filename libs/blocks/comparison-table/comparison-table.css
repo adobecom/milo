@@ -457,7 +457,8 @@
 
   .comparison-table .header-content-wrapper .header-item:first-child,
   .comparison-table .table-row-header:has(.icon),
-  .comparison-table .table-row-header:not(:has(*)) {
+  .comparison-table .table-row-header:not(:has(*)),
+  .comparison-table .table-row-header:not(:has(*:not(wbr))) {
     display: flex;
   }
 
@@ -468,10 +469,6 @@
     grid-column: auto;
     margin: 0;
     margin-inline-end: var(--comparison-table-spacing);
-  }
-
-  .comparison-table .table-row-header:not(:has(*:not(wbr))) {
-    display: flex;
   }
 
   .comparison-table .table-row-header:has(> p):not(:has(> :not(p))):not(:has(.icon)) {
