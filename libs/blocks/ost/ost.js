@@ -2,7 +2,6 @@ import ctaTextOption from './ctaTextOption.js';
 import {
   getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
 } from '../../utils/utils.js';
-import { resolvePriceTaxFlags } from '../../deps/mas/commerce.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -27,6 +26,7 @@ function isMasDefaultsEnabled() {
   return defaults === 'on';
 }
 
+let masCommerceService;
 const masDefaultsEnabled = isMasDefaultsEnabled();
 
 /**
@@ -100,7 +100,7 @@ export const createLinkMarkup = async (
   const isCta = !!type?.startsWith('checkout');
   const cs = offer.customer_segment;
   const ms = offer.market_segments[0];
-  const taxFlags = masDefaultsEnabled ? await resolvePriceTaxFlags(country, null, cs, ms) : {};
+  const taxFlags = masDefaultsEnabled && masCommerceService ? await masCommerceService.resolvePriceTaxFlags(country, null, cs, ms) : {};
 
   const createHref = () => {
     const params = new URLSearchParams([
@@ -175,7 +175,7 @@ export async function loadOstEnv() {
   }
   await initService(true, attributes);
   // Load commerce.js based on masLibs parameter
-  await loadMasComponent(MAS_COMMERCE_SERVICE);
+  masCommerceService = await loadMasComponent(MAS_COMMERCE_SERVICE);
 
   // Get the exports - they might be in different places depending on how it was loaded
   let Log;
@@ -321,7 +321,7 @@ export async function loadOstEnv() {
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
-    resolvePriceTaxFlags,
+    resolvePriceTaxFlags: masCommerceService?.resolvePriceTaxFlags,
     modalsAndEntitlements: true,
   };
 }
