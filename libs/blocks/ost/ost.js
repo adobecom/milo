@@ -98,7 +98,9 @@ export const createLinkMarkup = async (
   country,
 ) => {
   const isCta = !!type?.startsWith('checkout');
-  const taxFlags = await resolvePriceTaxFlags(country, null, offer.customer_segment, offer.market_segments[0]);
+  const cs = offer.customer_segment;
+  const ms = offer.market_segments[0];
+  const taxFlags = masDefaultsEnabled ? await resolvePriceTaxFlags(country, null, cs, ms) : {};
 
   const createHref = () => {
     const params = new URLSearchParams([
@@ -283,7 +285,7 @@ export async function loadOstEnv() {
     offer,
     options,
     promoOverride,
-    country,
+    co,
   ) => {
     log.debug(offerSelectorId, type, offer, options, promoOverride);
     const link = await createLinkMarkup(
@@ -293,7 +295,7 @@ export async function loadOstEnv() {
       offer,
       options,
       promoOverride,
-      country,
+      co,
     );
 
     log.debug(`Use Link: ${link.outerHTML}`);
