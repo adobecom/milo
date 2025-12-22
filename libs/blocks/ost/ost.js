@@ -170,7 +170,7 @@ export async function loadOstEnv() {
   /* c8 ignore next */
   const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
   const attributes = { 'allow-override': 'true' };
-  if (isMasDefaultsEnabled) {
+  if (masDefaultsEnabled) {
     attributes['data-mas-ff-defaults'] = 'on';
   }
   await initService(true, attributes);
