@@ -100,7 +100,9 @@ export const createLinkMarkup = async (
   const isCta = !!type?.startsWith('checkout');
   const cs = offer.customer_segment;
   const ms = offer.market_segments[0];
-  const taxFlags = masDefaultsEnabled && masCommerceService ? await masCommerceService.resolvePriceTaxFlags(country, null, cs, ms) : {};
+  const taxFlags = masDefaultsEnabled && masCommerceService
+    ? await masCommerceService.resolvePriceTaxFlags(country, null, cs, ms)
+    : {};
 
   const createHref = () => {
     const params = new URLSearchParams([
