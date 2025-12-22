@@ -176,18 +176,15 @@ function createSubHeaderContainer({
   headerItemsCount = 0,
 }) {
   const container = createTag('div', { class: 'sub-header-item-container' });
-  const decoratePromises = [];
   const isLast = containerIndex === 2;
+  const elementsToDecorate = [];
 
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
       const strongOrEm = childrenArray[i].querySelector('strong, em');
       if (isLast && !hasTextNode(strongOrEm?.parentElement?.childNodes, strongOrEm?.childNodes)) {
-        const promise = import('../../utils/decorate.js').then(({ decorateButtons }) => {
-          decorateButtons(childrenArray[i]);
-        });
-        decoratePromises.push(promise);
+        elementsToDecorate.push(childrenArray[i]);
       }
     }
   }
@@ -197,7 +194,17 @@ function createSubHeaderContainer({
     container.appendChild(select);
   }
   if (!isLast) return container;
-  Promise.all(decoratePromises).then(() => addLastContainerElements(container));
+
+  if (!elementsToDecorate.length) {
+    addLastContainerElements(container);
+    return container;
+  }
+
+  import('../../utils/decorate.js').then(({ decorateButtons }) => {
+    elementsToDecorate.forEach((element) => decorateButtons(element));
+    addLastContainerElements(container);
+  });
+
   return container;
 }
 
