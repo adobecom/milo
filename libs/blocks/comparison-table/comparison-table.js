@@ -176,8 +176,8 @@ function createSubHeaderContainer({
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
-      const parentNodes = childrenArray[i].querySelector('strong, em')?.parentElement?.childNodes;
-      const hasTextNode = parentNodes && [...parentNodes].some(
+      const parentChildNodes = childrenArray[i].querySelector('strong, em')?.parentElement?.childNodes;
+      const hasTextNode = parentChildNodes && [...parentChildNodes].some(
         (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
       );
       if (isLast && !hasTextNode) {
