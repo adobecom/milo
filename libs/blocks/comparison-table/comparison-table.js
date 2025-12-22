@@ -176,8 +176,10 @@ function createSubHeaderContainer({
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
-      const hasTextNode = [...childrenArray[i].querySelector('strong, em')?.parentElement?.childNodes
-        || []].some((child) => child.nodeType === Node.TEXT_NODE && child.textContent.trim());
+      const parentNodes = childrenArray[i].querySelector('strong, em')?.parentElement?.childNodes;
+      const hasTextNode = parentNodes && [...parentNodes].some(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
+      );
       if (isLast && !hasTextNode) {
         const promise = import('../../utils/decorate.js').then(({ decorateButtons }) => {
           decorateButtons(childrenArray[i]);
