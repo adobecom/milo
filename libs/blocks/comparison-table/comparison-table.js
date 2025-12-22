@@ -268,20 +268,20 @@ function createAccessibilityHeaderRow(el) {
   });
   return headerRow;
 }
-function isExpandedSection(expandMetadata, sectionIndex) {
+function isExpandedSection(expandMetadata, tableIndex) {
   if (expandMetadata === 'all') return true;
   if (expandMetadata) {
     const indices = expandMetadata.split(',').map((item) => parseInt(item.trim(), 10));
-    return indices.includes(sectionIndex);
+    return indices.includes(tableIndex + 1);
   }
-  return sectionIndex === 1;
+  return tableIndex + 1 === 1;
 }
 
 function decorateTableToggleButton({
   tableChild,
   arePrimaryColumns,
   tableElement,
-  el,
+  tableIndex,
   expandMetadata,
 }) {
   [...tableChild.children].forEach((child, childIndex) => {
@@ -291,7 +291,7 @@ function decorateTableToggleButton({
   });
   tableChild.classList.add('table-column-header');
   const firstChild = tableChild.children[0];
-  const isExpanded = isExpandedSection(expandMetadata, [...el.children].filter((child) => child.classList.contains('table-container')).length + 1);
+  const isExpanded = isExpandedSection(expandMetadata, tableIndex);
   tableElement.classList.toggle('hide', !isExpanded);
   const buttonElement = createTag('button', { 'aria-expanded': !!isExpanded });
 
@@ -356,7 +356,7 @@ function decorateTableCells({ tableChild, arePrimaryColumns, el }) {
   return tableChild;
 }
 
-function decorateTable({ el, tableChildren, expandMetadata }) {
+function decorateTable({ el, tableChildren, expandMetadata, tableIndex }) {
   const tableContainer = createTag('div', { class: 'table-container' });
   const tableElement = createTag('div', { class: 'table-body', role: 'table' });
   const arePrimaryColumns = [];
@@ -368,7 +368,7 @@ function decorateTable({ el, tableChildren, expandMetadata }) {
         arePrimaryColumns,
         tableElement,
         expandMetadata,
-        el,
+        tableIndex,
       }));
       return;
     }
@@ -398,8 +398,8 @@ function decorateTables(el, children) {
 
   if (currentGroup.length) tableGroups.push(currentGroup);
 
-  tableGroups.forEach((tableChildren) => {
-    el.appendChild(decorateTable({ el, tableChildren, expandMetadata }));
+  tableGroups.forEach((tableChildren, tableIndex) => {
+    el.appendChild(decorateTable({ el, tableChildren, expandMetadata, tableIndex }));
   });
 }
 
