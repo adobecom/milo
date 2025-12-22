@@ -463,9 +463,9 @@ export default async function loadGeoRouting(
       if (details) {
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
-        sendAnalyticsFunc(
-          new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
-        );
+        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`;
+        sendAnalyticsFunc(new Event(eventString));
+        if (config.lingoProjectSuccessLogging === 'on') window.lana.log(eventString);
       }
     }
   } catch (e) {
