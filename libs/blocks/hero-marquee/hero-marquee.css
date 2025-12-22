@@ -811,6 +811,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
   }
 
   .hero-marquee.northstar [class*="heading-"] {
+    font-family: "Adobe Clean Black", var(--body-font-family);
     font-weight: 900;
   }
 
@@ -858,6 +859,10 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     .hero-marquee.northstar.left-mobile.center {
       text-align: center;
       align-items: center;
+    }
+
+    .hero-marquee.northstar.left-mobile.center .action-area {
+      justify-content: center;
     }
 
     .hero-marquee.northstar .heading-xxl {

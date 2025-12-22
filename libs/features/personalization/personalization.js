@@ -7,9 +7,10 @@ import {
   getConfig,
   loadLink,
   loadScript,
-  localizeLink,
+  localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
+  getCountry,
 } from '../../utils/utils.js';
 import {
   getConsentState,
@@ -193,7 +194,7 @@ const getUpdatedHref = (el, content, action) => {
   return newContent;
 };
 
-const createFrag = (el, action, content, manifestId, targetManifestId) => {
+const createFrag = async (el, action, content, manifestId, targetManifestId) => {
   if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   let href = content;
   try {
@@ -210,12 +211,15 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   const isDelayedModalAnchor = /#.*delay=/.test(href);
   if (isDelayedModalAnchor) frag.classList.add('hide-block');
   if (isInLcpSection(el)) {
-    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    loadLink(`${await localizeLinkAsync(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
   return frag;
 };
 
-export const createContent = (el, { content, manifestId, targetManifestId, action, modifiers }) => {
+export const createContent = async (
+  el,
+  { content, manifestId, targetManifestId, action, modifiers },
+) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
   }
@@ -238,7 +242,7 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
     return container;
   }
 
-  const frag = createFrag(el, action, content, manifestId, targetManifestId);
+  const frag = await createFrag(el, action, content, manifestId, targetManifestId);
   addIds(frag, manifestId, targetManifestId);
   if (el?.parentElement.nodeName !== 'MAIN') return frag;
   return createTag('div', undefined, frag);
@@ -262,11 +266,11 @@ const COMMANDS = {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
     handleTwpButtons(el, selector);
   },
-  [COMMANDS_KEYS.replace]: (el, cmd) => {
+  [COMMANDS_KEYS.replace]: async (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement(
       'beforebegin',
-      createContent(el, cmd),
+      await createContent(el, cmd),
     );
   },
   [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
@@ -661,7 +665,7 @@ export function addSectionAnchors(rootEl = document) {
   });
 }
 
-export function handleCommands(
+export async function handleCommands(
   commands,
   rootEl = document,
   forceInline = false,
@@ -669,7 +673,7 @@ export function handleCommands(
 ) {
   const section1 = document.querySelector('main > div');
   addSectionAnchors(rootEl);
-  commands.forEach((cmd) => {
+  for (const cmd of commands) {
     const { action, content, selector } = cmd;
     cmd.content = forceInline && getSelectorType(content) === SELECTOR_TYPES.fragment
       ? addHash(content, INLINE_HASH)
@@ -677,39 +681,39 @@ export function handleCommands(
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd);
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
-      return;
-    }
-    const {
-      els,
-      modifiers,
-      attribute,
-    } = getSelectedElements(selector, rootEl, forceRootEl, action);
+    } else {
+      const {
+        els,
+        modifiers,
+        attribute,
+      } = getSelectedElements(selector, rootEl, forceRootEl, action);
 
-    Object.assign(cmd, { modifiers, attribute });
+      Object.assign(cmd, { modifiers, attribute });
 
-    els?.forEach((el) => {
-      if (!el
-        || (!(action in COMMANDS) && !(action in CREATE_CMDS))
-        || (rootEl && !rootEl.contains(el))
-        || (isPostLCP && section1?.contains(el))) return;
-
-      if (action in COMMANDS) {
-        COMMANDS[action](el, cmd);
-        return;
+      for (const el of els || []) {
+        if (el
+          && (action in COMMANDS || action in CREATE_CMDS)
+          && (!rootEl || rootEl.contains(el))
+          && (!isPostLCP || !section1?.contains(el))) {
+          if (action in COMMANDS) {
+            await COMMANDS[action](el, cmd);
+          } else {
+            const insertAnchor = getSelectorType(selector) === SELECTOR_TYPES.fragment
+              ? el.parentElement
+              : el;
+            insertAnchor?.insertAdjacentElement(
+              CREATE_CMDS[action],
+              await createContent(insertAnchor, cmd),
+            );
+          }
+        }
       }
-      const insertAnchor = getSelectorType(selector) === SELECTOR_TYPES.fragment
-        ? el.parentElement
-        : el;
-      insertAnchor?.insertAdjacentElement(
-        CREATE_CMDS[action],
-        createContent(insertAnchor, cmd),
-      );
-    });
-    if ((els.length && !cmd.modifiers.includes(FLAGS.all))
-      || !cmd.modifiers.includes(FLAGS.includeFragments)) {
-      cmd.completed = true;
+      if ((els.length && !cmd.modifiers.includes(FLAGS.all))
+        || !cmd.modifiers.includes(FLAGS.includeFragments)) {
+        cmd.completed = true;
+      }
     }
-  });
+  }
   deleteMarkedEls(rootEl);
   return commands.filter((cmd) => !cmd.completed
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
@@ -958,7 +962,7 @@ function normCountry(country) {
 async function setMepCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  const akamaiCode = getCountry();
   config.mep = config.mep || {};
   if (country) {
     config.mep.countryChoice = normCountry(country);
@@ -1375,18 +1379,20 @@ export async function applyPers({ manifests }) {
     addIds(main, manifestId, targetManifestId);
   }
 
-  config.mep.commands = handleCommands(config.mep.commands);
+  config.mep.commands = await handleCommands(config.mep.commands);
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
 
   const pznVariants = pznList.map((r) => {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-    const arr = val.split(':');
-    if (arr.length > 2 || arr[0]?.trim() === '' || arr[1]?.trim() === '') {
+    // Handle cases without colons or starting with colon (no nickname)
+    if (!val.includes(':') || val.startsWith(':')) return val === 'default' ? 'nopzn' : val;
+    // Validate nickname syntax: "nickname: audience"
+    const arr = val.split(':', 2);
+    if (arr[0]?.trim() === '' || arr[1]?.trim() === '') {
       log('MEP Error: When using (optional) column nicknames, please use the following syntax: "<nickname>: <original audience>"');
     }
-    if (!val.includes(':') || val.startsWith(':')) return val === 'default' ? 'nopzn' : val;
     return arr[0].trim();
   });
   const pznManifests = pznList.map((r) => r.experiment.analyticsTitle);
