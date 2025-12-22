@@ -843,11 +843,11 @@ export const getConfig = async (originalState, strs = {}) => {
 
   const langFirst = state.langFirst ? `&langFirst=${state.langFirst}` : '';
 
-  const navigationStyle = state.container === 'carousel' 
-    && state.paginationAnimationStyle.includes('Modern') 
-    && state.useLightControls 
-      ? `${state.paginationAnimationStyle}-light` 
-      : state.paginationAnimationStyle;
+  const navigationStyle = state.container === 'carousel'
+    && state.paginationAnimationStyle.includes('Modern')
+    && state.useLightControls
+    ? `${state.paginationAnimationStyle}-light`
+    : state.paginationAnimationStyle;
 
   const config = {
     collection: {
@@ -855,7 +855,7 @@ export const getConfig = async (originalState, strs = {}) => {
       layout: {
         type: state.layoutType,
         gutter: state.gutter,
-        container:  state.container,
+        container: state.container,
       },
       button: { style: state.collectionBtnStyle },
       resultsPerPage: state.resultsPerPage,
