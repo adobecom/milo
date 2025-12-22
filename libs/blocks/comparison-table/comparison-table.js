@@ -262,13 +262,21 @@ function createAccessibilityHeaderRow(el) {
   });
   return headerRow;
 }
+function isExpandedSection(expandMetadata, sectionIndex) {
+  if (expandMetadata === 'all') return true;
+  if (expandMetadata) {
+    const indices = expandMetadata.split(',').map((item) => parseInt(item.trim(), 10));
+    return indices.includes(sectionIndex);
+  }
+  return sectionIndex === 1;
+}
 
 function decorateTableToggleButton({
   tableChild,
   arePrimaryColumns,
   tableElement,
-  expandMetadata,
   el,
+  expandMetadata,
 }) {
   [...tableChild.children].forEach((child, childIndex) => {
     const isPrimary = childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY;
@@ -277,10 +285,7 @@ function decorateTableToggleButton({
   });
   tableChild.classList.add('table-column-header');
   const firstChild = tableChild.children[0];
-  const currentSectionIndex = el.querySelectorAll('.table-container').length + 1;
-  const isExpanded = expandMetadata === 'all'
-    || expandMetadata?.includes(currentSectionIndex)
-    || (!expandMetadata && currentSectionIndex === 1);
+  const isExpanded = isExpandedSection(expandMetadata, [...el.children].filter((child) => child.classList.contains('table-container')).length + 1);
   tableElement.classList.toggle('hide', !isExpanded);
   const buttonElement = createTag('button', { 'aria-expanded': !!isExpanded });
 
@@ -370,10 +375,7 @@ function decorateTable({ el, tableChildren, expandMetadata }) {
 
 function decorateTables(el, children) {
   const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
-  const expandText = sectionMetadata ? getSectionMetadata(sectionMetadata)?.expand?.text : null;
-  const expandMetadata = expandText === 'all'
-    ? expandText
-    : expandText?.split(',').map((item) => parseInt(item.trim(), 10));
+  const expandMetadata = sectionMetadata ? getSectionMetadata(sectionMetadata)?.expand?.text : null;
 
   const tableGroups = [];
   let currentGroup = [];
