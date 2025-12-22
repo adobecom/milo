@@ -275,6 +275,7 @@ function createAccessibilityHeaderRow(el) {
   });
   return headerRow;
 }
+
 function isExpandedSection(expandMetadata, tableIndex) {
   if (expandMetadata === 'all') return true;
   if (expandMetadata) {
