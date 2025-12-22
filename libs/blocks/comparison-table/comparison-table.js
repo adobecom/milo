@@ -160,23 +160,25 @@ function addLastContainerElements(container) {
 }
 
 function createSubHeaderContainer({
+  containerIndex,
   childrenArray,
   startIndex,
   endIndex,
   el,
-  isLast = false,
-  isFirst = false,
   headerTitles = [],
   headerItemIndex = 0,
   headerItemsCount = 0,
 }) {
   const container = createTag('div', { class: 'sub-header-item-container' });
   const decoratePromises = [];
+  const isLast = containerIndex === 2;
 
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
-      if (isLast && childrenArray[i].querySelector('strong, em')) {
+      const hasTextNode = [...childrenArray[i].querySelector('strong, em')?.parentElement?.childNodes
+        || []].some((child) => child.nodeType === Node.TEXT_NODE && child.textContent.trim());
+      if (isLast && !hasTextNode) {
         const promise = import('../../utils/decorate.js').then(({ decorateButtons }) => {
           decorateButtons(childrenArray[i]);
         });
@@ -184,7 +186,8 @@ function createSubHeaderContainer({
       }
     }
   }
-  if (isFirst && headerItemsCount > 3) {
+
+  if (containerIndex === 0 && headerItemsCount > 3) {
     const select = createMobileFilterSelect({ headerTitles, headerItemIndex, el });
     container.appendChild(select);
   }
@@ -203,14 +206,12 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
   childrenArray.forEach((child, index) => {
     if (child.textContent.trim() !== '-' && index !== childrenArray.length - 1) return;
     const separatorIndex = child.textContent.trim() === '-' ? index : childrenArray.length;
-    const isLast = separatorIndex === childrenArray.length;
     const container = createSubHeaderContainer({
       childrenArray,
       startIndex: lastIndex + 1,
       endIndex: separatorIndex,
       el,
-      isLast,
-      isFirst: containerIndex === 0,
+      containerIndex,
       headerTitles,
       headerItemIndex,
       headerItemsCount,
