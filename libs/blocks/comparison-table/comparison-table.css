@@ -470,6 +470,10 @@
     margin-inline-end: var(--comparison-table-spacing);
   }
 
+  .comparison-table .table-row-header:not(:has(*:not(wbr))) {
+    display: flex;
+  }
+
   .comparison-table .table-row-header:has(> p):not(:has(> :not(p))):not(:has(.icon)) {
     display: flex;
     align-items: start;

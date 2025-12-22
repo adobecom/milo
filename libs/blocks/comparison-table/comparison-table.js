@@ -3,6 +3,12 @@ import { getMetadata as getSectionMetadata } from '../section-metadata/section-m
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
+const hasTextNode = (...nodeLists) => nodeLists.some(
+  (nodes) => nodes && [...nodes].some(
+    (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
+  ),
+);
+
 function setEqualHeight(el) {
   const calculateMaxHeight = (elements) => Math.max(...elements.map((p) => {
     const styles = window.getComputedStyle(p);
@@ -176,11 +182,8 @@ function createSubHeaderContainer({
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
-      const parentChildNodes = childrenArray[i].querySelector('strong, em')?.parentElement?.childNodes;
-      const hasTextNode = parentChildNodes && [...parentChildNodes].some(
-        (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
-      );
-      if (isLast && !hasTextNode) {
+      const strongOrEm = childrenArray[i].querySelector('strong, em');
+      if (isLast && !hasTextNode(strongOrEm?.parentElement?.childNodes, strongOrEm?.childNodes)) {
         const promise = import('../../utils/decorate.js').then(({ decorateButtons }) => {
           decorateButtons(childrenArray[i]);
         });
