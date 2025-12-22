@@ -8,8 +8,8 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://mas.adobe.com/studio/ost/index.js';
-const OST_STYLE_URL = 'https://mas.adobe.com/studio/ost/index.css';
+const OST_SCRIPT_URL = '/studio/ost/index.js';
+const OST_STYLE_URL = '/studio/ost/index.css';
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
@@ -38,6 +38,38 @@ const updateParams = (params, key, value) => {
 };
 
 document.body.classList.add('tool', 'tool-ost');
+
+/**
+ * Gets the base URL for loading Tacocat OST build file based on maslibs parameter
+ * @returns {string|null} Base URL for OST index.js or null if maslibs not present
+ */
+export function getMasLibsBase() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const masLibs = urlParams.get('maslibs');
+
+  if (!masLibs || masLibs.trim() === '') return 'https://mas.adobe.com';
+
+  const sanitizedMasLibs = masLibs.trim().toLowerCase();
+
+  if (sanitizedMasLibs === 'local') {
+    return 'http://localhost:3030';
+  }
+  if (sanitizedMasLibs === 'main') {
+    return 'https://mas.adobe.com';
+  }
+
+  // Detect current domain extension (.page or .live)
+  const { hostname } = window.location;
+  const extension = hostname.endsWith('.page') ? 'page' : 'live';
+
+  if (sanitizedMasLibs.includes('--mas--')) {
+    return `https://${sanitizedMasLibs}.aem.${extension}`;
+  }
+  if (sanitizedMasLibs.includes('--')) {
+    return `https://${sanitizedMasLibs}.aem.${extension}`;
+  }
+  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}`;
+}
 
 /**
  * @param {Commerce.Defaults} defaults
@@ -268,12 +300,12 @@ export async function loadOstEnv() {
 export default async function init(el) {
   el.innerHTML = '<div />';
 
-  loadStyle(OST_STYLE_URL);
+  loadStyle(`${getMasLibsBase()}${OST_STYLE_URL}`);
   loadStyle('https://use.typekit.net/pps7abe.css');
 
   const [ostEnv] = await Promise.all([
     loadOstEnv(),
-    loadScript(OST_SCRIPT_URL),
+    loadScript(`${getMasLibsBase()}${OST_SCRIPT_URL}`),
   ]);
 
   function openOst() {
