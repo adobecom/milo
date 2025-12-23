@@ -151,6 +151,7 @@ export default async function loadBlock(configs, customLib) {
           await bootstrapBlock(init, {
             ...block,
             gnavSource,
+            standaloneGnav: configBlock.standaloneGnav || true,
             unavComponents: configBlock.selfIntegrateUnav ? [] : configBlock.unav?.unavComponents,
             redirect: configBlock.redirect,
             layout: configBlock.layout,
