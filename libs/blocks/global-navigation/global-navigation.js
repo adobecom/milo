@@ -175,6 +175,77 @@ const getMessageEventListener = () => {
   };
 };
 
+const handleSignIn = async () => {
+  const { getModal } = await import('../modal/modal.js');
+  const details = document.createElement('div');
+  details.className = 'feds-signin-modal-content';
+
+  const { env } = getConfig();
+  const lib = `https://auth-light.identity${env.name === 'prod' ? '' : '-stage'}.adobe.com/sentry/wrapper.js`;
+  await loadScript(lib);
+
+  const sentry = document.createElement('susi-sentry-light');
+  if (env.name !== 'prod') sentry.stage = true;
+  sentry.variant = 'standard';
+
+  // Map to SUSI authParams cleanly
+  const { locale, imsClientId, imsScope } = getConfig();
+
+  let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
+  try {
+    const url = new URL(redirectUri);
+    url.searchParams.set('from_ims', 'true');
+    redirectUri = url.toString();
+  } catch (e) {
+    // Fallback if URL parsing fails
+  }
+
+  sentry.authParams = {
+    client_id: imsClientId || SIGNIN_CONTEXT.client_id,
+    scope: imsScope || SIGNIN_CONTEXT.scope || 'AdobeID,openid,gnav',
+    response_type: 'code',
+    redirect_uri: redirectUri,
+    locale: locale?.ietf || 'en-US',
+  };
+
+  const dctxId = getMetadata('susi-light-dctx-id');
+  if (dctxId) sentry.authParams.dctx_id = dctxId;
+
+  sentry.config = { consentProfile: 'free' };
+
+  sentry.addEventListener('redirect', (e) => {
+    // Open in new tab as requested
+    window.open(e.detail, '_blank');
+    // Optionally close the modal in the current tab so it doesn't stay open
+    const modal = document.getElementById('signin-modal');
+    modal?.dispatchEvent(new Event('closeModal'));
+  });
+
+  sentry.addEventListener('on-error', (e) => {
+    window.lana?.log('GNav Sign-In Modal: SUSI Light Error: ', e);
+  });
+
+  // Basic styling to ensure it fits in modal
+  details.innerHTML = `
+    <style>
+      .feds-signin-modal-content {
+        min-height: 500px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      susi-sentry-light {
+        width: 100%;
+        max-width: 400px; /* Standard width for the sign-in block */
+      }
+    </style>
+  `;
+
+  details.append(sentry);
+
+  return getModal(null, { content: details, id: 'signin-modal' });
+};
+
 const getSignInCtaStyle = () => {
   const isPrimary = (
     getMetadata('signin-cta-style') === 'primary'
@@ -226,7 +297,14 @@ export const CONFIG = {
           signInCtaStyle: getSignInCtaStyle(),
           isSignUpRequired: false,
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
+            onSignIn: () => {
+              const { standaloneGnav } = getConfig();
+              if (standaloneGnav) {
+                handleSignIn();
+              } else {
+                window.adobeIMS?.signIn(SIGNIN_CONTEXT);
+              }
+            },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
@@ -1638,6 +1716,13 @@ class Gnav {
 }
 
 export default async function init(block) {
+  // Check for IMS Popup flow return
+  if (window.opener && (window.location.hash.includes('from_ims=true') || window.location.search.includes('from_ims=true'))) {
+    window.opener.location.reload();
+    window.close();
+    return; // Stop execution to prevent flashing content
+  }
+
   const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
@@ -1671,5 +1756,4 @@ export default async function init(block) {
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
   performance.mark('Gnav-Init-End');
   logPerformance('Gnav-Init-Function-Time', 'Gnav-Start', 'Gnav-Init-End');
-  return gnav;
 }
