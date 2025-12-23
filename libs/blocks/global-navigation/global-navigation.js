@@ -1756,4 +1756,5 @@ export default async function init(block) {
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
   performance.mark('Gnav-Init-End');
   logPerformance('Gnav-Init-Function-Time', 'Gnav-Start', 'Gnav-Init-End');
+  return gnav;
 }
