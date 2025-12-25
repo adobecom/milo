@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 
 import { mockOstDeps, unmockOstDeps } from './mocks/ost-utils.js';
-import { DEFAULT_CTA_TEXT, createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
+import { DEFAULT_CTA_TEXT, createLinkMarkup, getMasLibsBase } from '../../../libs/blocks/ost/ost.js';
 
 const perpM2M = {
   offer_id: 'aeb0bf53517d46e89a1b039f859cf573',
@@ -304,5 +304,26 @@ describe('OST: merch link creation', () => {
         type,
       });
     });
+  });
+});
+describe('OST: getMasLibsBase', () => {
+  it('test different mas libs bases', () => {
+    const windowObj = {
+      location: {
+        search: '?maslibs=TEST',
+        hostname: 'main--milo--adobecom.aem.page',
+      },
+    };
+    expect(getMasLibsBase(windowObj)).to.equal('https://test--mas--adobecom.aem.page');
+    windowObj.location.search = null;
+    expect(getMasLibsBase(windowObj)).to.equal('https://mas.adobe.com');
+    windowObj.location.search = '?maslibs=local';
+    expect(getMasLibsBase(windowObj)).to.equal('http://localhost:3030');
+    windowObj.location.search = '?maslibs=main';
+    expect(getMasLibsBase(windowObj)).to.equal('https://mas.adobe.com');
+    windowObj.location.search = '?maslibs=TEST--mas--adobecom';
+    expect(getMasLibsBase(windowObj)).to.equal('https://test--mas--adobecom.aem.page');
+    windowObj.location.search = '?maslibs=TEST--sam--adobecom';
+    expect(getMasLibsBase(windowObj)).to.equal('https://test--sam--adobecom.aem.page');
   });
 });
