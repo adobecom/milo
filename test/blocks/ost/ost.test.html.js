@@ -325,5 +325,9 @@ describe('OST: getMasLibsBase', () => {
     expect(getMasLibsBase(windowObj)).to.equal('https://test--mas--adobecom.aem.page');
     windowObj.location.search = '?maslibs=TEST--sam--adobecom';
     expect(getMasLibsBase(windowObj)).to.equal('https://test--sam--adobecom.aem.page');
+    windowObj.location.search = '?maslibs=TEST--mas--user1';
+    expect(getMasLibsBase(windowObj)).to.equal('https://test--mas--user1.aem.page');
+    windowObj.location.search = '?maslibs=TEST--sam--user1';
+    expect(getMasLibsBase(windowObj)).to.equal('https://test--sam--user1.aem.page');
   });
 });
