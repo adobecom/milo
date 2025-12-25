@@ -22,6 +22,7 @@ export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
+export const PRICE_TEMPLATE_PROMO_STRIKETHROUGH = 'promo-strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
 export const PRICE_TEMPLATE_LEGAL = 'legal';
 
@@ -35,6 +36,7 @@ const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_LEGAL, PRICE_TEMPLATE_LEGAL],
+  [PRICE_TEMPLATE_PROMO_STRIKETHROUGH, PRICE_TEMPLATE_PROMO_STRIKETHROUGH],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
