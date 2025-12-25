@@ -24,10 +24,6 @@
   opacity: 0.5;
 }
 
-/* .gb-toggle-disabled .spectrum-Switch {
-  pointer-events: none;
-} */
-
 .spectrum-Switch-input {
     margin: 0;
     box-sizing: border-box;
