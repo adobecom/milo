@@ -309,12 +309,8 @@ describe('OST: merch link creation', () => {
 describe('OST: toggle switches', () => {
   it('change toggle switch landscape from PUBLISHED to DRAFT', async () => {
     const el = document.createElement('div');
-    const ostEnv = {
-      landscape: 'PUBLISHED'
-    };
-    const windowObj = {
-      location: {}
-    }
+    const ostEnv = { landscape: 'PUBLISHED' };
+    const windowObj = { location: {} };
     const cbs = addToggleSwitches(el, ostEnv, true, windowObj);
     const cbLandscape = cbs[0];
     const cbLDefaults = cbs[1];
@@ -332,12 +328,8 @@ describe('OST: toggle switches', () => {
   });
   it('change toggle switch defaults on to off', async () => {
     const el = document.createElement('div');
-    const ostEnv = {
-      landscape: 'PUBLISHED'
-    };
-    const windowObj = {
-      location: {}
-    }
+    const ostEnv = { landscape: 'PUBLISHED' };
+    const windowObj = { location: {} };
     const cbs = addToggleSwitches(el, ostEnv, true, windowObj);
     const cbLandscape = cbs[0];
     const cbLDefaults = cbs[1];
@@ -351,18 +343,14 @@ describe('OST: toggle switches', () => {
 
     const url = new URL(windowObj.location.href);
     expect(url.searchParams.get('commerce.landscape')).to.be.null;
-    expect(url.searchParams.get('commerce.defaults')).to.equal('off')
-  });  
+    expect(url.searchParams.get('commerce.defaults')).to.equal('off');
+  });
   it('change toggle switch landscape from DRAFT to PUBLISHED', async () => {
     const originalSearch = window.location.search;
     window.history.replaceState({}, null, `${window.location.pathname}?commerce.landscape=DRAFT&commerce.defaults=off`);
     const el = document.createElement('div');
-    const ostEnv = {
-      landscape: 'DRAFT'
-    };
-    const windowObj = {
-      location: {}
-    }
+    const ostEnv = { landscape: 'DRAFT' };
+    const windowObj = { location: {} };
     const cbs = addToggleSwitches(el, ostEnv, false, windowObj);
     const cbLandscape = cbs[0];
     const cbLDefaults = cbs[1];
@@ -376,7 +364,7 @@ describe('OST: toggle switches', () => {
 
     const url = new URL(windowObj.location.href);
     expect(url.searchParams.get('commerce.landscape')).to.be.null;
-    expect(url.searchParams.get('commerce.defaults')).to.equal('off')
+    expect(url.searchParams.get('commerce.defaults')).to.equal('off');
 
     window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
   });
@@ -384,12 +372,8 @@ describe('OST: toggle switches', () => {
     const originalSearch = window.location.search;
     window.history.replaceState({}, null, `${window.location.pathname}?commerce.landscape=DRAFT&commerce.defaults=off`);
     const el = document.createElement('div');
-    const ostEnv = {
-      landscape: 'DRAFT'
-    };
-    const windowObj = {
-      location: {}
-    }
+    const ostEnv = { landscape: 'DRAFT' };
+    const windowObj = { location: {} };
     const cbs = addToggleSwitches(el, ostEnv, false, windowObj);
     const cbLandscape = cbs[0];
     const cbLDefaults = cbs[1];
@@ -402,7 +386,7 @@ describe('OST: toggle switches', () => {
     await delay(100);
 
     const url = new URL(windowObj.location.href);
-    expect(url.searchParams.get('commerce.landscape')).to.equal('DRAFT')
+    expect(url.searchParams.get('commerce.landscape')).to.equal('DRAFT');
     expect(url.searchParams.get('commerce.defaults')).to.be.null;
 
     window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
