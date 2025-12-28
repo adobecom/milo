@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
-import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
+import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
 const LOCALE_MODAL_ID = 'locale-modal-v2';
@@ -18,10 +18,10 @@ let prevHash = '';
 let isDeepLink = false;
 const dialogLoadingSet = new Set();
 
-export function findDetails(hash, el) {
+export async function findDetails(hash, el) {
   const id = hash.replace('#', '');
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
-  const path = a?.dataset.modalPath || localizeLink(getMetadata(`-${id}`));
+  const path = a?.dataset.modalPath || await localizeLinkAsync(getMetadata(`-${id}`));
   const ariaLabel = a?.getAttribute('aria-label') || document.querySelector(`a[data-modal-id="${id}"]`)?.getAttribute('aria-label');
   return {
     id,
@@ -201,7 +201,9 @@ export async function getModal(details, custom) {
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
   const loadedEvent = new Event('milo:modal:loaded');
 
-  if (custom && !custom?.title) custom.title = findDetails(window.location.hash, null)?.title;
+  if (custom && !custom?.title) {
+    custom.title = (await findDetails(window.location.hash, null))?.title;
+  }
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
   if (delayedModalId === id) {
@@ -369,18 +371,18 @@ export function delayedModal(el) {
 }
 
 // Deep link-based
-export default function init(el) {
+export default async function init(el) {
   const { modalHash, modalPath } = el.dataset;
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
-  const details = findDetails(window.location.hash, el);
+  const details = await findDetails(window.location.hash, el);
   details.deepLink = true;
   return details ? getModal(details) : null;
 }
 
 // Click-based modal
-window.addEventListener('hashchange', (e) => {
+window.addEventListener('hashchange', async (e) => {
   if (!window.location.hash) {
     try {
       const url = new URL(e.oldURL);
@@ -391,7 +393,7 @@ window.addEventListener('hashchange', (e) => {
     }
   } else {
     if (isDeepLink) return;
-    const details = findDetails(window.location.hash, null);
+    const details = await findDetails(window.location.hash, null);
     if (details) getModal(details);
     const { hash } = new URL(e.oldURL);
     const isFromIms = hash.includes(`old_hash=${details.id}`) || hash.includes('from_ims=true');

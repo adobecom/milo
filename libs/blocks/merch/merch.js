@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, SLD, getMetadata,
   shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
@@ -697,7 +697,7 @@ export async function getDownloadAction(
     checkoutLinkConfig.DOWNLOAD_TEXT || PLACEHOLDER_KEY_DOWNLOAD,
     config,
   );
-  const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
+  const url = await localizeLinkAsync(checkoutLinkConfig.DOWNLOAD_URL);
   const type = offerType?.toLowerCase() ?? '';
   return { text, className: `download ${type}`, url };
 }
@@ -1008,7 +1008,7 @@ export async function getModalAction(offers, options, el) {
   let url = checkoutLinkConfig[columnName];
   if (!url && !el?.isOpen3in1Modal) return undefined;
   url = isInternalModal(url) || isProdModal(url)
-    ? localizeLink(checkoutLinkConfig[columnName])
+    ? await localizeLinkAsync(checkoutLinkConfig[columnName])
     : checkoutLinkConfig[columnName];
   return {
     url,
