@@ -277,12 +277,11 @@ function createAccessibilityHeaderRow(el) {
 }
 
 function isExpandedSection(expandMetadata, tableIndex) {
+  if (!expandMetadata) return tableIndex === 0;
   if (expandMetadata === 'all') return true;
-  if (expandMetadata) {
-    const indices = expandMetadata.split(',').map((item) => parseInt(item.trim(), 10));
-    return indices.includes(tableIndex + 1);
-  }
-  return tableIndex + 1 === 1;
+  return expandMetadata.split(',').map(
+    (item) => parseInt(item.trim(), 10),
+  ).includes(tableIndex + 1);
 }
 
 function decorateTableToggleButton({
