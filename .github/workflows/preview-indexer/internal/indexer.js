@@ -145,25 +145,27 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
         continue;
       }
       console.log(`Processing root: ${rootPath}`);
-      const currentData = await getJsonFromDa(siteOrg, siteRepo, previewRoot.indexPath || unpreviewRoot.indexPath);
+      const previewIndexPath = previewRoot?.indexPath || unpreviewRoot?.indexPath;
+      const previewIndexPreviewPath = previewRoot?.indexPreviewPath || unpreviewRoot?.indexPreviewPath;
+      const currentData = await getJsonFromDa(siteOrg, siteRepo, previewIndexPath);
       let previewIndex = { ...previewJsonTemplate };
       if (currentData?.data?.length) {
         const filteredCurrentData = currentData.data.filter((item) => !unpreviewPathsPerRoot[rootPath]?.paths?.includes(item.Path));
         const mergedSet = new Set(filteredCurrentData.map((item) => item.Path));
-        previewRoot.paths?.forEach((path) => {
+        previewRoot?.paths?.forEach((path) => {
           mergedSet.add(path);
         });
         const mergedData = [...mergedSet].map((path) => ({ Path: path }));
         const { length } = mergedData;
         previewIndex = { ...previewIndex, total: length, limit: length, data: mergedData };
-      } else if (previewRoot.paths) {
+      } else if (previewRoot?.paths) {
         const pathData = previewRoot.paths.map((path) => ({ Path: path }));
         const { length } = previewRoot.paths;
         previewIndex = { ...previewIndex, total: length, limit: length, data: pathData };
       }
-      const result = await saveJsonToDa(siteOrg, siteRepo, previewRoot.indexPath, previewIndex);
+      const result = await saveJsonToDa(siteOrg, siteRepo, previewIndexPath, previewIndex);
       console.log(`Preview index saved to DA at ${result.daHref}`);
-      const previewResult = await triggerPreview(siteOrg, siteRepo, previewRoot.indexPreviewPath);
+      const previewResult = await triggerPreview(siteOrg, siteRepo, previewIndexPreviewPath);
       console.log(`Preview result: ${previewResult?.preview?.url}`);
     }
 
