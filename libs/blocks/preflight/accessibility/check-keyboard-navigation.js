@@ -14,7 +14,7 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
   const focusableSelectors = [
     'a[href]',
     'button:not([disabled])',
-    'input:not([disabled])',
+    'input:not([disabled]):not(.hide)',
     'textarea:not([disabled])',
     'select:not([disabled])',
     '[tabindex]:not([tabindex="-1"])',
@@ -32,15 +32,29 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
     });
     return violations;
   }
-  const isVisiblyRendered = (el) => {
-    const styles = window.getComputedStyle(el);
-    if (styles.display === 'none' || styles.visibility === 'hidden' || parseFloat(styles.opacity) === 0) return false;
+  const isHiddenByStyle = (node) => {
+    const styles = window.getComputedStyle(node);
+    return styles.display === 'none'
+      || styles.visibility === 'hidden'
+      || parseFloat(styles.opacity) === 0;
+  };
+  const isHiddenByAncestors = (node) => {
+    let current = node?.parentElement;
+    while (current) {
+      if (isHiddenByStyle(current)) return true;
+      current = current.parentElement;
+    }
+    return false;
+  };
+  const isSelfHidden = (el) => {
+    if (isHiddenByStyle(el)) return true;
     const elBox = el.getBoundingClientRect();
-    if (elBox.width <= 0 || elBox.height <= 0) return false;
-    return true;
+    if (elBox.width <= 0 || elBox.height <= 0) return !isHiddenByAncestors(el);
+    return false;
   };
   focusableElements.forEach((el) => {
-    if (isVisiblyRendered(el)) return;
+    if (isHiddenByAncestors(el)) return;
+    if (!isSelfHidden(el)) return;
     violations.push({
       description: 'Element is not visibly rendered; keyboard focus may not be perceivable.',
       impact: 'critical',
