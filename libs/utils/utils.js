@@ -2143,7 +2143,7 @@ async function decorateLanguageBanner() {
   }
 
   if (!showBanner) return;
-  document.body.prepend(createTag('div', { class: 'language-banner' }));
+  document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
   const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
   if (existingWrapper) {
     existingWrapper.remove();
