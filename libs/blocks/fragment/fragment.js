@@ -238,10 +238,14 @@ export default async function init(a) {
   await updateFragMap(fragment, a, relHref);
   if (a.dataset.manifestId
     || a.dataset.adobeTargetTestid
+    || fragment.dataset.mepLingoRoc
+    || fragment.dataset.mepLingoFallback
     || mep?.commands?.length
     || placeholders) {
     const { updateFragDataProps, handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
-    if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
+    const hasManifestId = a.dataset.manifestId || a.dataset.adobeTargetTestid;
+    const hasLingoAttrs = fragment.dataset.mepLingoRoc || fragment.dataset.mepLingoFallback;
+    if (hasManifestId || hasLingoAttrs) {
       updateFragDataProps(a, inline, sections, fragment);
     }
     if (mep?.commands?.length) await handleCommands(mep?.commands, fragment, false, true);
