@@ -119,7 +119,7 @@
   color: var(--hover-border-color);
 }
 
-.comparison-table .table-container .primary-cell .icon-checkmark path {
+.comparison-table .primary-cell .icon-checkmark path {
   color: var(--primary-cell-path-color);
 }
 
