@@ -34,7 +34,7 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
   }
   const isVisiblyRendered = (el) => {
     const styles = window.getComputedStyle(el);
-    if (styles.visibility === 'hidden' || parseFloat(styles.opacity) === 0) return false;
+    if (styles.display === 'none' || styles.visibility === 'hidden' || parseFloat(styles.opacity) === 0) return false;
     const elBox = el.getBoundingClientRect();
     if (elBox.width <= 0 || elBox.height <= 0) return false;
     return true;
