@@ -47,6 +47,9 @@
 }
 
 .language-banner-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
   height: 20px;
   border: none;
@@ -67,13 +70,10 @@
 
   .language-banner-close {
     position: absolute;
-    right: 0;
-    top: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
     flex-direction: column;
-    padding: 0 24px 0 0;
     width: auto;
   }
 }
