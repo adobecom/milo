@@ -1909,7 +1909,7 @@ async function loadPostLCP(config) {
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
-  const languageBanner = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('language-banner') || config.languageBanner);
+  const languageBanner = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
   const georouting = getMetadata('georouting') || config.geoRouting;
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
@@ -2032,23 +2032,18 @@ const getCookie = (name) => document.cookie
 
 function getMarketsUrl() {
   const config = getConfig();
-  let { marketsSource } = config;
-  if (config.env.name !== 'prod') {
-    const sourceFromUrl = new URLSearchParams(window.location.search).get('marketsSource');
-    if (sourceFromUrl) {
-      if (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl)) {
-        marketsSource = sourceFromUrl;
-      } else {
-        window.lana?.log(`Invalid marketsSource parameter rejected: ${sourceFromUrl}`);
-      }
-    }
-  }
+  const sourceFromUrl = new URLSearchParams(window.location.search).get('marketsSource');
+
+  const marketsSource = (config.env.name !== 'prod' && /^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && sourceFromUrl)
+    || getMetadata('marketssource')
+    || config.marketsSource;
+
   return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSource ? `-${marketsSource}` : ''}.json`;
 }
 
 async function decorateLanguageBanner() {
   const { locale, locales, languageBanner } = getConfig();
-  const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('language-banner') || languageBanner);
+  const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || languageBanner);
   if (languageBannerEnabled !== 'on') return;
   const internationalCookie = getCookie('international');
   let showBanner = false;
@@ -2137,7 +2132,7 @@ async function decorateLanguageBanner() {
 
 function preloadMarketsConfig() {
   const config = getConfig();
-  const languageBannerEnabled = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('language-banner') || config.languageBanner);
+  const languageBannerEnabled = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
   if (languageBannerEnabled !== 'on') return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
