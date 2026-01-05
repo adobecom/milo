@@ -229,7 +229,7 @@ export default async function init(a) {
   const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
   const fragment = createTag('div', fragmentAttrs);
 
-  if (isMepLingoLink && env?.name !== 'prod') {
+  if (isMepLingoLink && mep?.preview) {
     const { addMepLingoPreviewAttrs } = await import('../../features/mep/lingo.js');
     addMepLingoPreviewAttrs(fragment, { usedFallback, relHref });
   }
