@@ -1,3 +1,4 @@
+import { getCountry } from './utils.js';
 /* eslint-disable no-console */
 
 /**
@@ -5,11 +6,10 @@
  * @param {boolean} [checkParams=false] - If true, checks URL parameters and session storage first.
  * @returns {Promise<string|null>} A promise that resolves to the lowercase Akamai country code.
  */
-const getAkamaiCode = (checkedParams = false) => new Promise((resolve, reject) => {
+export const getAkamaiCode = (checkedParams = false) => new Promise((resolve, reject) => {
   let akamaiLocale = null;
   if (!checkedParams) {
-    const urlParams = new URLSearchParams(window.location.search);
-    akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+    akamaiLocale = getCountry();
   }
   if (akamaiLocale !== null) {
     resolve(akamaiLocale.toLowerCase());

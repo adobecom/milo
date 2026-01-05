@@ -1,5 +1,5 @@
 import { getFederatedContentRoot } from '../../utils/utils.js';
-import getAkamaiCode from '../../utils/geo.js';
+import { getAkamaiCode } from '../../utils/geo.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
