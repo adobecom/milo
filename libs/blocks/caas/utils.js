@@ -2,6 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 import {
   getConfig as pageConfigHelper,
+  getCountry,
   getMetadata,
   loadScript,
   loadStyle,
@@ -641,9 +642,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       langStr = mapping.lang || fallbackLang;
 
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        let geoCountry = urlParams.get('akamaiLocale')?.toLowerCase()
-          || sessionStorage.getItem('akamai')
+        let geoCountry = getCountry()
           || pageConfigHelper().mep?.countryIP;
 
         if (!geoCountry) {
@@ -744,8 +743,7 @@ const fetchUuidForCard = async (card) => {
     return card.contentId;
   }
   try {
-    const url = new URL(card.contentId);
-    const localizedLink = await localizeLinkAsync(url, null, true);
+    const localizedLink = await localizeLinkAsync(card.contentId, null, true);
     const substr = String(localizedLink).split('https://').pop();
     return await getUuid(substr);
   } catch (error) {

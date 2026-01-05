@@ -1,4 +1,4 @@
-import { getFederatedContentRoot } from '../../utils/utils.js';
+import { getFederatedContentRoot, getCountry } from '../../utils/utils.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -78,8 +78,7 @@ export const getCookie = (name) => document.cookie
 export const getAkamaiCode = (checkedParams = false) => new Promise((resolve, reject) => {
   let akamaiLocale = null;
   if (!checkedParams) {
-    const urlParams = new URLSearchParams(window.location.search);
-    akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+    akamaiLocale = getCountry();
   }
   if (akamaiLocale !== null) {
     resolve(akamaiLocale.toLowerCase());
