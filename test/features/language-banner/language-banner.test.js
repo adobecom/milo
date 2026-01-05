@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, getTargetMarkets } from '../../../libs/utils/utils.js';
+import { setConfig, setTargetMarket } from '../../../libs/utils/utils.js';
 
 const { default: init, sendAnalytics } = await import('../../../libs/features/language-banner/language-banner.js');
 
@@ -14,7 +14,6 @@ const mockMarkets = {
 describe('Language Banner', () => {
   let fetchStub;
   const sandbox = sinon.createSandbox();
-  const targetMarkets = getTargetMarkets();
 
   const setConfigForTest = (pathname = '/') => {
     const config = {
@@ -46,7 +45,7 @@ describe('Language Banner', () => {
     document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     sessionStorage.clear();
     delete window._satellite;
-    targetMarkets.length = 0;
+    setTargetMarket(null);
   });
 
   it('does not show banner if no target markets are provided', async () => {
@@ -55,38 +54,31 @@ describe('Language Banner', () => {
     expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
   });
 
-  it('does not show banner if translated page does not exist', async () => {
+  it('does not show banner if no target market is set', async () => {
     setConfigForTest('/');
-    targetMarkets.push(mockMarkets.de);
-    fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: false });
+    setTargetMarket(null);
     await init();
     expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
   });
 
-  it('handles fetch error when checking for translated page', async () => {
+  it('shows banner when target market is set', async () => {
     setConfigForTest('/');
-    targetMarkets.push(mockMarkets.de);
-    window.lana = { log: sandbox.stub() };
-    fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).rejects(new Error('Network error'));
+    setTargetMarket(mockMarkets.de);
     await init();
-    expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
-    expect(window.lana.log.calledOnce).to.be.true;
+    expect(document.querySelector('.language-banner').childElementCount).to.be.greaterThan(0);
   });
 
   it('does not build banner if the placeholder element is missing', async () => {
     document.body.innerHTML = ''; // remove the banner placeholder
     setConfigForTest('/');
-    targetMarkets.push(mockMarkets.de);
-    fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: true });
+    setTargetMarket(mockMarkets.de);
     await init();
     expect(document.querySelector('.language-banner')).to.be.null;
   });
 
-  it('shows banner for the first available translated page', async () => {
+  it('shows banner with correct market information', async () => {
     setConfigForTest('/');
-    targetMarkets.push(mockMarkets.de, mockMarkets.fr);
-    fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: true });
-    fetchStub.withArgs(sinon.match('/fr/'), { method: 'HEAD' }).resolves({ ok: false });
+    setTargetMarket(mockMarkets.de);
 
     await init();
 
@@ -96,13 +88,9 @@ describe('Language Banner', () => {
     expect(banner.querySelector('.language-banner-link').href).to.include('/de/');
   });
 
-  it('falls back to the next market if the first one has no translated page', async () => {
+  it('shows banner for French market', async () => {
     setConfigForTest('/');
-    targetMarkets.push(mockMarkets.de, mockMarkets.fr, mockMarkets.it);
-
-    fetchStub.withArgs(sinon.match('/de/'), { method: 'HEAD' }).resolves({ ok: false });
-    fetchStub.withArgs(sinon.match('/fr/'), { method: 'HEAD' }).resolves({ ok: true });
-    fetchStub.withArgs(sinon.match('/it/'), { method: 'HEAD' }).resolves({ ok: true });
+    setTargetMarket(mockMarkets.fr);
 
     await init();
 
@@ -147,9 +135,8 @@ describe('Language Banner', () => {
 
     beforeEach(async () => {
       openStub = sandbox.stub(window, 'open');
-      fetchStub.withArgs(sinon.match.any, { method: 'HEAD' }).resolves({ ok: true });
       setConfigForTest('/');
-      targetMarkets.push(mockMarkets.de);
+      setTargetMarket(mockMarkets.de);
       await init();
     });
 

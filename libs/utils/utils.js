@@ -2021,9 +2021,10 @@ function initSidekick() {
   }
 }
 
-const targetMarkets = [];
+let targetMarket = null;
 let langBannerPromise;
-export const getTargetMarkets = () => targetMarkets;
+export const getTargetMarket = () => targetMarket;
+export const setTargetMarket = (market) => { targetMarket = market; };
 
 const getCookie = (name) => document.cookie
   .split('; ')
@@ -2071,6 +2072,7 @@ async function decorateLanguageBanner() {
   const pageMarket = marketsConfig.data.find((m) => m.prefix === (locale.prefix?.replace('/', '') || ''));
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
+  const candidateMarkets = [];
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
     const prefMarket = marketsConfig.data.find((market) => (
@@ -2079,49 +2081,65 @@ async function decorateLanguageBanner() {
     ));
     if (prefMarket) {
       showBanner = true;
-      targetMarkets.push(prefMarket);
+      candidateMarkets.push(prefMarket);
     } else return;
-  }
+  } else {
+    // Unsupported Market Path
+    const marketsForGeo = marketsConfig.data.filter((market) => (
+      market.supportedRegions.includes(geoIp)));
+    if (!marketsForGeo.length) return;
 
-  // Unsupported Market Path
-  const marketsForGeo = marketsConfig.data.filter((market) => (
-    market.supportedRegions.includes(geoIp)));
-  if (!marketsForGeo.length) return;
-
-  if (prefLang) {
-    const prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
-    if (prefMarketForGeo) {
-      showBanner = true;
-      targetMarkets.push(prefMarketForGeo);
-    }
-  }
-
-  const marketsWithPriority = [];
-  marketsForGeo.forEach((market) => {
-    if (market.regionPriorities) {
-      const priorityMap = new Map(
-        market.regionPriorities.split(',').map((p) => {
-          const [region, priority] = p.trim().split(':');
-          return [region.toLowerCase(), parseInt(priority, 10)];
-        }),
-      );
-      const priority = priorityMap.get(geoIp);
-      if (priority) {
-        marketsWithPriority.push({ market, priority });
+    let prefMarketForGeo;
+    if (prefLang) {
+      prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+      if (prefMarketForGeo) {
+        showBanner = true;
+        candidateMarkets.push(prefMarketForGeo);
       }
     }
-  });
 
-  if (marketsWithPriority.length) {
-    marketsWithPriority.sort((a, b) => a.priority - b.priority);
-    showBanner = true;
-    targetMarkets.push(...marketsWithPriority.map((item) => item.market));
-  } else if (marketsForGeo.length) {
-    showBanner = true;
-    targetMarkets.push(marketsForGeo[0]);
+    if (!prefMarketForGeo) {
+      const marketsWithPriority = [];
+      marketsForGeo.forEach((market) => {
+        if (market.regionPriorities) {
+          const priorityMap = new Map(
+            market.regionPriorities.split(',').map((p) => {
+              const [region, priority] = p.trim().split(':');
+              return [region.toLowerCase(), parseInt(priority, 10)];
+            }),
+          );
+          const priority = priorityMap.get(geoIp);
+          if (priority) {
+            marketsWithPriority.push({ market, priority });
+          }
+        }
+      });
+
+      if (marketsWithPriority.length) {
+        marketsWithPriority.sort((a, b) => a.priority - b.priority);
+        showBanner = true;
+        candidateMarkets.push(...marketsWithPriority.map((item) => item.market));
+      } else if (marketsForGeo.length) {
+        showBanner = true;
+        candidateMarkets.push(marketsForGeo[0]);
+      }
+    }
   }
 
   if (!showBanner) return;
+
+  const { pathname, origin } = window.location;
+  const pagePath = locale.prefix ? pathname.replace(locale.prefix, '') : pathname;
+  for (const market of candidateMarkets) {
+    const url = `${origin}${market.prefix ? `/${market.prefix}` : ''}${pagePath}`;
+    try {
+      if ((await fetch(url, { method: 'HEAD' })).ok) { targetMarket = market; break; }
+    } catch (e) {
+      window.lana?.log(`Failed to check translated page: ${url}`, e);
+    }
+  }
+  if (!targetMarket) return;
+
   document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
   const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
   if (existingWrapper) {

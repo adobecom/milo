@@ -1,31 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { getConfig, createTag, loadStyle, getTargetMarkets } from '../../utils/utils.js';
-
-/**
- * Verifies if the translated version of the current page exists.
- * @param {string} marketPrefix
- * @param {object} config
- * @returns {Promise<string|null>}
- */
-async function getTranslatedPage(marketPrefix, config) {
-  const { pathname } = window.location;
-  const currentPrefix = config.locale.prefix;
-
-  const pagePath = currentPrefix ? pathname.replace(currentPrefix, '') : pathname;
-  const translatedUrl = marketPrefix
-    ? `${window.location.origin}/${marketPrefix}${pagePath}`
-    : `${window.location.origin}${pagePath}`;
-
-  try {
-    const response = await fetch(translatedUrl, { method: 'HEAD' });
-    if (response.ok) {
-      return translatedUrl;
-    }
-  } catch (e) {
-    window.lana?.log(`Failed to check translated page: ${translatedUrl}`, e);
-  }
-  return null;
-}
+import { getConfig, createTag, loadStyle, getTargetMarket } from '../../utils/utils.js';
 
 function buildBanner(market, translatedUrl) {
   const banner = document.body.querySelector('.language-banner');
@@ -66,20 +40,17 @@ export function sendAnalytics(event) {
   }
 }
 
-async function showBanner(markets, config) {
-  let translatedUrl = null;
-  let targetMarket = null;
-  for (const market of markets) {
-    translatedUrl = await getTranslatedPage(market.prefix, config);
-    if (translatedUrl) {
-      targetMarket = market;
-      break;
-    }
-  }
+async function showBanner(market, config) {
+  if (!market) return;
 
-  if (!targetMarket) return;
+  const { pathname } = window.location;
+  const currentPrefix = config.locale.prefix;
+  const pagePath = currentPrefix ? pathname.replace(currentPrefix, '') : pathname;
+  const translatedUrl = market.prefix
+    ? `${window.location.origin}/${market.prefix}${pagePath}`
+    : `${window.location.origin}${pagePath}`;
 
-  const banner = buildBanner(targetMarket, translatedUrl);
+  const banner = buildBanner(market, translatedUrl);
   if (!banner) return;
   const { codeRoot, miloLibs } = config;
   loadStyle(`${miloLibs || codeRoot}/features/language-banner/language-banner.css`);
@@ -87,7 +58,7 @@ async function showBanner(markets, config) {
   banner.querySelector('.language-banner-link').addEventListener('click', async (e) => {
     e.preventDefault();
     const { setInternational } = await import('../../utils/utils.js');
-    setInternational(targetMarket.prefix || 'us');
+    setInternational(market.prefix || 'us');
     window.open(translatedUrl, '_self');
   });
 
@@ -98,12 +69,12 @@ async function showBanner(markets, config) {
     banner.remove();
   });
   const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
-  sendAnalytics(new Event(`${targetMarket.prefix || 'us'}-${pagePrefix}|language-banner`));
+  sendAnalytics(new Event(`${market.prefix || 'us'}-${pagePrefix}|language-banner`));
 }
 
 export default async function init() {
-  const targetMarkets = getTargetMarkets();
-  if (targetMarkets.length) {
-    await showBanner(targetMarkets, getConfig());
+  const market = getTargetMarket();
+  if (market) {
+    await showBanner(market, getConfig());
   }
 }

@@ -1885,7 +1885,6 @@ describe('Utils', () => {
       sandbox.stub(console, 'warn');
       document.head.innerHTML = '';
       document.body.innerHTML = '';
-      utils.getTargetMarkets().length = 0;
     });
 
     afterEach(() => {
