@@ -12,7 +12,6 @@ const mockMarkets = {
 };
 
 describe('Language Banner', () => {
-  let fetchStub;
   const sandbox = sinon.createSandbox();
 
   const setConfigForTest = (pathname = '/') => {
@@ -33,7 +32,6 @@ describe('Language Banner', () => {
   };
 
   beforeEach(() => {
-    fetchStub = sandbox.stub(window, 'fetch');
     sandbox.stub(console, 'warn');
     window._satellite = { track: sandbox.stub() };
     document.head.innerHTML = '';
