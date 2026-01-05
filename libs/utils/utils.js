@@ -2093,40 +2093,67 @@ async function decorateLanguageBanner() {
     market.supportedRegions.includes(geoIp)));
   if (!marketsForGeo.length) return;
 
+  // Check if preferred language market exists
+  let usePriorityLogic = true;
   if (prefLang) {
     const prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
     if (prefMarketForGeo) {
       showBanner = true;
       targetMarkets.push(prefMarketForGeo);
+      usePriorityLogic = false; // Skip priority logic if preferred language found
     }
   }
 
-  const marketsWithPriority = [];
-  marketsForGeo.forEach((market) => {
-    if (market.regionPriorities) {
-      const priorityMap = new Map(
-        market.regionPriorities.split(',').map((p) => {
-          const [region, priority] = p.trim().split(':');
-          return [region.toLowerCase(), parseInt(priority, 10)];
-        }),
-      );
-      const priority = priorityMap.get(geoIp);
-      if (priority) {
-        marketsWithPriority.push({ market, priority });
+  // Fall back to priority-based selection if no preferred language match
+  if (usePriorityLogic) {
+    const marketsWithPriority = [];
+    marketsForGeo.forEach((market) => {
+      if (market.regionPriorities) {
+        const priorityMap = new Map(
+          market.regionPriorities.split(',').map((p) => {
+            const [region, priority] = p.trim().split(':');
+            return [region.toLowerCase(), parseInt(priority, 10)];
+          }),
+        );
+        const priority = priorityMap.get(geoIp);
+        if (priority) {
+          marketsWithPriority.push({ market, priority });
+        }
       }
-    }
-  });
+    });
 
-  if (marketsWithPriority.length) {
-    marketsWithPriority.sort((a, b) => a.priority - b.priority);
-    showBanner = true;
-    targetMarkets.push(...marketsWithPriority.map((item) => item.market));
-  } else if (marketsForGeo.length) {
-    showBanner = true;
-    targetMarkets.push(marketsForGeo[0]);
+    if (marketsWithPriority.length) {
+      marketsWithPriority.sort((a, b) => a.priority - b.priority);
+      showBanner = true;
+      targetMarkets.push(...marketsWithPriority.map((item) => item.market));
+    } else if (marketsForGeo.length) {
+      showBanner = true;
+      targetMarkets.push(marketsForGeo[0]);
+    }
   }
 
   if (!showBanner) return;
+
+  // Check if translated page exists for any target market before reserving space
+  const { pathname } = window.location;
+  const currentPrefix = locale.prefix;
+  const pagePath = currentPrefix ? pathname.replace(currentPrefix, '') : pathname;
+
+  let validMarket = null;
+  for (const market of targetMarkets) {
+    const translatedUrl = `${window.location.origin}${market.prefix ? `/${market.prefix}` : ''}${pagePath}`;
+    try {
+      const response = await fetch(translatedUrl, { method: 'HEAD' });
+      if (response.ok) {
+        validMarket = market;
+        break;
+      }
+    } catch (e) {
+      window.lana?.log(`Failed to check translated page: ${translatedUrl}`, e);
+    }
+  }
+  if (!validMarket) return;
+
   document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
   const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
   if (existingWrapper) {
