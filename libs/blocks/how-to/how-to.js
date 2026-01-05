@@ -97,12 +97,6 @@ const getHowToSteps = (el) => {
 
   const steps = [...list.children].reduce(
     (stepInfo, step, idx) => {
-      const s = step.querySelector('strong');
-      if (s) {
-        const h3 = createTag('h3');
-        h3.textContent = s.textContent;
-        s.replaceWith(h3);
-      }
       step.append(createTag('div', {}, [...step.childNodes]));
       stepInfo.steps.push(step);
       const img = getImage(step);
