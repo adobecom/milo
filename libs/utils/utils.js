@@ -2030,19 +2030,6 @@ const getCookie = (name) => document.cookie
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-function getPreferredLanguage(locales) {
-  const cookie = getCookie('international');
-  if (cookie && cookie !== 'us') {
-    const locale = locales[cookie];
-    const langFromCookie = locale?.ietf
-      ? locale.ietf.split('-')[0]
-      : cookie.split('_')[0];
-    return langFromCookie;
-  }
-  const browserLang = navigator.language?.split('-')[0];
-  return browserLang || null;
-}
-
 function getMarketsUrl() {
   const config = getConfig();
   let { marketsSource } = config;
@@ -2060,27 +2047,24 @@ function getMarketsUrl() {
 }
 
 async function decorateLanguageBanner() {
-  const config = getConfig();
-  const languageBannerEnabled = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('language-banner') || config.languageBanner);
+  const { locale, locales, languageBanner } = getConfig();
+  const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('language-banner') || languageBanner);
   if (languageBannerEnabled !== 'on') return;
   const internationalCookie = getCookie('international');
   let showBanner = false;
-  const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
+  const pagePrefix = locale.prefix?.replace('/', '') || 'us';
   if (internationalCookie === pagePrefix) return;
-  const pageLang = config.locale.ietf.split('-')[0];
-  const prefLang = getPreferredLanguage(config.locales);
-
-  const jsonPromise = fetch(getMarketsUrl());
-
-  const marketsConfigPromise = jsonPromise
-    .then((res) => (res.ok ? res.json() : null))
-    .catch(() => null);
-
-  const { default: getAkamaiCode } = await import('./geo.js');
+  const pageLang = locale.ietf.split('-')[0];
+  const cookie = getCookie('international');
+  const prefLang = cookie
+    ? (locales[cookie === 'us' ? '' : cookie]?.ietf?.split('-')[0] || cookie.split('_')[0])
+    : navigator.language?.split('-')[0] || null;
 
   const [geoIpCode, marketsConfig] = await Promise.all([
-    getAkamaiCode(),
-    marketsConfigPromise,
+    getCountry() || import('./geo.js').then((m) => m.default(true)),
+    fetch(getMarketsUrl())
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null),
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
@@ -2089,7 +2073,7 @@ async function decorateLanguageBanner() {
     market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   });
 
-  const pageMarket = marketsConfig.data.find((m) => m.prefix === (config.locale.prefix?.replace('/', '') || ''));
+  const pageMarket = marketsConfig.data.find((m) => m.prefix === (locale.prefix?.replace('/', '') || ''));
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   if (isSupportedMarket) {
