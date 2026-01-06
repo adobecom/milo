@@ -624,7 +624,7 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
   const siteId = config.uniqueSiteId ?? '';
-  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
+  const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
 
   queryIndexes[siteId] = processQueryIndexMap(
     `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
