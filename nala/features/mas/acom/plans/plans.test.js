@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { createWorkerPageSetup, addUrlQueryParams, PLANS_NALA_PATH } from '@adobe/mas-platform/web-components/dist/commerce.js';
 import { features } from './plans.spec.js';
 import MasPlans from './plans.page.js';
-import { createWorkerPageSetup, addUrlQueryParams, PLANS_NALA_PATH } from '../../../../libs/commerce.js';
 
 test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 

@@ -112,10 +112,10 @@ export async function loadOstEnv() {
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
   /* c8 ignore next */
-  const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
+  const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, COMMERCE_LIBRARY } = await import('../merch/merch.js');
   await initService(true, { 'allow-override': 'true' });
   // Load commerce.js based on masLibs parameter
-  await loadMasComponent(MAS_COMMERCE_SERVICE);
+  await loadMasComponent(COMMERCE_LIBRARY);
 
   // Get the exports - they might be in different places depending on how it was loaded
   let Log;
@@ -126,7 +126,7 @@ export async function loadOstEnv() {
     ({ Log, Defaults, resolvePriceTaxFlags } = window.mas.commerce);
   } else {
     // Loaded as module
-    ({ Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js'));
+    ({ Log, Defaults, resolvePriceTaxFlags } = await import('https://www.adobe.com/mas/libs/commerce.js'));
   }
 
   const defaultPlaceholderOptions = Object.fromEntries([

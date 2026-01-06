@@ -1,7 +1,6 @@
 import { expect } from '@esm-bundle/chai';
+import { CheckoutWorkflowStep, Defaults, Log } from '@adobe/mas-platform/web-components/dist/commerce.js';
 import { delay } from '../../helpers/waitfor.js';
-
-import { CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,

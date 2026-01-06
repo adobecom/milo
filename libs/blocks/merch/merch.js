@@ -5,7 +5,7 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 
 // MAS Component Names
-export const MAS_COMMERCE_SERVICE = 'commerce';
+export const COMMERCE_LIBRARY = 'commerce';
 export const MAS_MERCH_CARD = 'merch-card';
 export const MAS_MERCH_CARD_COLLECTION = 'merch-card-collection';
 export const MAS_MERCH_MNEMONIC_LIST = 'merch-mnemonic-list';
@@ -439,58 +439,40 @@ const failedExternalLoads = new Set();
 const loadingPromises = new Map();
 
 /**
- * Checks if mas-ff-mas-deps feature flag is enabled
- * @returns {boolean} true if flag is on
- */
-function isMasDepsFlagEnabled() {
-  const metaFlag = getMetadata('mas-ff-mas-deps');
-  if (metaFlag === 'off' || metaFlag === 'false') return false;
-  return true;
-}
-
-/**
- * Loads a MAS component either from external URL (if masLibs present) or local deps
+ * Loads a MAS component either from external URL (if masLibs present) or from production CDN
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
  */
 export async function loadMasComponent(componentName) {
+  // Return existing loading promise if already in progress
   if (loadingPromises.has(componentName)) {
     return loadingPromises.get(componentName);
   }
 
+  // Component already loaded, return immediately
   if (customElements.get(componentName)) {
     return Promise.resolve();
   }
 
   const loadPromise = (async () => {
     const masLibsBase = getMasLibs();
+    const productionUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
+    const targetUrl = masLibsBase ? `${masLibsBase}/${componentName}.js` : productionUrl;
 
-    if (masLibsBase) {
-      const externalUrl = `${masLibsBase}/${componentName}.js`;
+    // Fail fast if this URL has already failed before
+    if (failedExternalLoads.has(targetUrl)) {
+      throw new Error(`Previously failed to load component from ${targetUrl}`);
+    }
 
-      if (failedExternalLoads.has(externalUrl)) {
-        throw new Error(`Failed to load component from ${externalUrl}`);
-      }
-
-      try {
-        return await import(externalUrl);
-      } catch (error) {
-        failedExternalLoads.add(externalUrl);
-        throw error;
-      }
-    } else if (isMasDepsFlagEnabled()) {
-      const masUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
-      try {
-        return await import(masUrl);
-      } catch (error) {
-        console.warn(`Failed to load from MAS repository, falling back to Milo deps: ${error.message}`);
-        return import(`../../deps/mas/${componentName}.js`);
-      }
-    } else {
-      return import(`../../deps/mas/${componentName}.js`);
+    try {
+      return await import(targetUrl);
+    } catch (error) {
+      failedExternalLoads.add(targetUrl);
+      throw error;
     }
   })();
 
+  // Cache the promise and clean up when done
   loadingPromises.set(componentName, loadPromise);
   loadPromise.finally(() => loadingPromises.delete(componentName));
 
@@ -1072,7 +1054,7 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise
     ?? polyfills().then(async () => {
-      await loadMasComponent(MAS_COMMERCE_SERVICE);
+      await loadMasComponent(COMMERCE_LIBRARY);
 
       // Load fragment-client.js when maslibs is present
       const fragmentClientUrl = getFragmentClientUrl();
