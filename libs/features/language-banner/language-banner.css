@@ -10,6 +10,8 @@
   background-color: #3B63FB;
   box-sizing: border-box;
   visibility: visible;
+  position: relative;
+  z-index: 11;
 }
 
 .language-banner-content {
@@ -61,8 +63,6 @@
 @media (min-width: 600px) {
   .language-banner {
     gap: 6px;
-    position: relative;
-    z-index: 11;
   }
 
   .language-banner-content {
