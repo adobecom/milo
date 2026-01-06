@@ -170,7 +170,7 @@ function isAboveFold(asset) {
   const main = asset.closest('main');
   const sections = main?.querySelectorAll(':scope > div.section');
 
-  return !sections.length
+  return !sections?.length
     || sections[0]?.contains(asset)
     || sections[1]?.contains(asset);
 }
