@@ -79,7 +79,6 @@ function replaceDotMedia(path, doc) {
   resetAttributeBase('source', 'srcset');
 }
 
-// Helper to remove mep-lingo row from a container (exported for testing)
 export const removeMepLingoRow = (container) => {
   const rows = container?.querySelectorAll(':scope > div');
   const mepLingoRow = [...rows || []].find((row) => {
