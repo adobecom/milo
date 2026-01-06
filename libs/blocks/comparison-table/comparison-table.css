@@ -392,7 +392,7 @@
   background-color: var(--color-white);
 }
 
-.dark .comparison-table .table-container *:not(a) {
+.dark .comparison-table .table-container :not(a) {
   color: var(--color-black);
 }
 
@@ -406,7 +406,7 @@
   color: var(--text-color);
 }
 
-.dark .comparison-table .header-content.sticky .action-area a:not(.blue):is(:hover) {
+.dark .comparison-table .header-content.sticky .action-area a:not(.blue):hover {
   background-color: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
