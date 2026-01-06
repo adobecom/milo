@@ -21,8 +21,8 @@ describe('test different values for parseNestedPlaceholders', () => {
 });
 describe('test createContent', () => {
   const el = document.createElement('div');
-  it('append action', () => {
-    const newContent = createContent(el, {
+  it('append action', async () => {
+    const newContent = await createContent(el, {
       content: '{{promo-discount}}',
       manifestId: false,
       targetManifestId: false,
@@ -31,9 +31,9 @@ describe('test createContent', () => {
     });
     expect(newContent.innerHTML).to.equal('50');
   });
-  it('replace action', () => {
+  it('replace action', async () => {
     el.innerHTML = 'Hello World';
-    const newContent = createContent(el, {
+    const newContent = await createContent(el, {
       content: '{{promo-discount}}',
       manifestId: false,
       targetManifestId: false,
