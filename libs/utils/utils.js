@@ -1909,7 +1909,7 @@ async function loadPostLCP(config) {
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
-  const languageBanner = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
+  const languageBanner = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
   const georouting = getMetadata('georouting') || config.geoRouting;
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
@@ -2033,7 +2033,7 @@ const getCookie = (name) => document.cookie
 
 function getMarketsUrl() {
   const config = getConfig();
-  const sourceFromUrl = new URLSearchParams(window.location.search).get('marketsSource');
+  const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
 
   const marketsSource = (config.env.name !== 'prod' && /^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && sourceFromUrl)
     || getMetadata('marketssource')
@@ -2048,12 +2048,10 @@ async function decorateLanguageBanner() {
   if (languageBannerEnabled !== 'on') return;
   const internationalCookie = getCookie('international');
   let showBanner = false;
-  const pagePrefix = locale.prefix?.replace('/', '') || 'us';
-  if (internationalCookie === pagePrefix) return;
+  if (internationalCookie === (locale.prefix?.replace('/', '') || 'us')) return;
   const pageLang = locale.ietf.split('-')[0];
-  const cookie = getCookie('international');
-  const prefLang = cookie
-    ? (locales[cookie === 'us' ? '' : cookie]?.ietf?.split('-')[0] || cookie.split('_')[0])
+  const prefLang = internationalCookie
+    ? (locales[internationalCookie === 'us' ? '' : internationalCookie]?.ietf?.split('-')[0] || internationalCookie.split('_')[0])
     : navigator.language?.split('-')[0] || null;
 
   const [geoIpCode, marketsConfig] = await Promise.all([
@@ -2073,16 +2071,19 @@ async function decorateLanguageBanner() {
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
+  const addAndShow = (...ms) => {
+    showBanner = true;
+    candidateMarkets.push(...ms);
+  };
+
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
     const prefMarket = marketsConfig.data.find((market) => (
       market.lang === prefLang
       && market.supportedRegions.includes(geoIp)
     ));
-    if (prefMarket) {
-      showBanner = true;
-      candidateMarkets.push(prefMarket);
-    } else return;
+    if (prefMarket) addAndShow(prefMarket);
+    else return;
   } else {
     // Unsupported Market Path
     const marketsForGeo = marketsConfig.data.filter((market) => (
@@ -2092,10 +2093,7 @@ async function decorateLanguageBanner() {
     let prefMarketForGeo;
     if (prefLang) {
       prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
-      if (prefMarketForGeo) {
-        showBanner = true;
-        candidateMarkets.push(prefMarketForGeo);
-      }
+      if (prefMarketForGeo) addAndShow(prefMarketForGeo);
     }
 
     if (!prefMarketForGeo) {
@@ -2117,12 +2115,10 @@ async function decorateLanguageBanner() {
 
       if (marketsWithPriority.length) {
         marketsWithPriority.sort((a, b) => a.priority - b.priority);
-        showBanner = true;
-        candidateMarkets.push(...marketsWithPriority.map((item) => item.market));
-      } else if (marketsForGeo.length) {
-        showBanner = true;
-        candidateMarkets.push(marketsForGeo[0]);
       }
+      addAndShow(...(marketsWithPriority.length
+        ? marketsWithPriority.map((item) => item.market)
+        : [marketsForGeo[0]]));
     }
   }
 
@@ -2150,7 +2146,7 @@ async function decorateLanguageBanner() {
 
 function preloadMarketsConfig() {
   const config = getConfig();
-  const languageBannerEnabled = new URLSearchParams(window.location.search).get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
+  const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
   if (languageBannerEnabled !== 'on') return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
