@@ -126,6 +126,7 @@ export async function loadOstEnv() {
     ({ Log, Defaults, resolvePriceTaxFlags } = window.mas.commerce);
   } else {
     // Loaded as module
+    // eslint-disable-next-line import/no-unresolved
     ({ Log, Defaults, resolvePriceTaxFlags } = await import('https://www.adobe.com/mas/libs/commerce.js'));
   }
 
