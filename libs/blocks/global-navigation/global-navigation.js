@@ -1274,13 +1274,19 @@ class Gnav {
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
+    const languageBanner = document.querySelector('.language-banner');
+    const languageBannerHeight = languageBanner?.offsetHeight || 0;
 
     const isLocalNav = this.isLocalNav();
-    if (!isLocalNav && hasPromo) {
-      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+
+    // Handle initial positioning for non-local nav (promo + visible language banner)
+    if (!isLocalNav && (hasPromo || languageBanner)) {
+      const langBannerNewHeight = languageBanner ? Math.max(0, languageBannerHeight - yOffset) : 0;
+      const totalOffsetHeight = (hasPromo ? promoHeight : 0) + langBannerNewHeight;
+      popup.style.top = `calc(0px - var(--feds-height-nav) - ${totalOffsetHeight}px)`;
       if (isSmallScreen) return;
     }
-    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     if (isLocalNav) {
@@ -1296,12 +1302,13 @@ class Gnav {
         popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
       }
     }
-    // Adjust top and height to account for language banner
-    const languageBanner = document.querySelector('.language-banner');
+    // Adjust height to account for language banner scroll state
     if (languageBanner) {
-      const languageBannerHeight = languageBanner.offsetHeight;
       const delta = yOffset - languageBannerHeight;
-      popup.style.top = `calc(0px - var(--feds-height-nav) + ${!isLocalNav ? 0 : Math.max(delta, 0)}px - 2px)`;
+      // For local nav, also adjust top position
+      if (isLocalNav) {
+        popup.style.top = `calc(0px - var(--feds-height-nav) + ${Math.max(delta, 0)}px - 2px)`;
+      }
       popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
     }
   };
