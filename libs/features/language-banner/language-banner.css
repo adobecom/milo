@@ -62,6 +62,7 @@
   .language-banner {
     gap: 6px;
     position: relative;
+    z-index: 11;
   }
 
   .language-banner-content {

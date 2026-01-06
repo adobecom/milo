@@ -1296,6 +1296,14 @@ class Gnav {
         popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
       }
     }
+    // Adjust top and height to account for language banner
+    const languageBanner = document.querySelector('.language-banner');
+    if (languageBanner) {
+      const languageBannerHeight = languageBanner.offsetHeight;
+      const delta = yOffset - languageBannerHeight;
+      popup.style.top = `calc(0px - var(--feds-height-nav) + ${!isLocalNav ? 0 : Math.max(delta, 0)}px - 2px)`;
+      popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
+    }
   };
 
   decorateMainNavItem = async (item, index) => {
