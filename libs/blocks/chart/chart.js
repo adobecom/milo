@@ -461,6 +461,7 @@ export const getChartOptions = ({
       }),
       trigger: isBar || isPie || isDonut ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
+      enterable: true,
     },
     grid: { bottom: bottomGrid },
     xAxis: {
