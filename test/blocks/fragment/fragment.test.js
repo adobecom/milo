@@ -19,9 +19,10 @@ const config = {
   contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
   decorateArea,
   locales,
-  env: { name: 'stage' }, // Enable preview attributes for MEP Lingo
+  env: { name: 'stage' },
   placeholders: { placeholdercheck: 'hello world' },
   mep: {
+    preview: true, // Enable preview attributes for MEP Lingo
     commands: [
       {
         action: 'remove',
@@ -204,7 +205,9 @@ describe('MEP Lingo Fragments', () => {
     const a = document.querySelector('a.mep-lingo-inline');
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-inline-section');
-    expect(section.querySelector('[data-path]')).to.exist;
+    const inlineElement = section.querySelector('[data-path]');
+    expect(inlineElement).to.exist;
+    expect(inlineElement.dataset.mepLingoRoc).to.exist;
   });
 
   it('falls back when ROC fails', async () => {
@@ -216,6 +219,8 @@ describe('MEP Lingo Fragments', () => {
     const section = document.querySelector('.mep-lingo-fallback-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
+    // TODO: Add fallback attribute test coverage in separate PR
+    // expect(frag.dataset.mepLingoFallback).to.exist;
   });
 
   it('falls back inline fragment', async () => {
@@ -225,7 +230,10 @@ describe('MEP Lingo Fragments', () => {
     const a = document.querySelector('a.mep-lingo-fallback-inline');
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-fallback-inline-section');
-    expect(section.querySelector('[data-path]')).to.exist;
+    const inlineElement = section.querySelector('[data-path]');
+    expect(inlineElement).to.exist;
+    // TODO: Add fallback attribute test coverage in separate PR
+    // expect(inlineElement.dataset.mepLingoFallback).to.exist;
   });
 
   it('logs error when both ROC and fallback fail', async () => {
