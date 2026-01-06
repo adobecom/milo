@@ -1621,7 +1621,7 @@ describe('Utils', () => {
       lingoUtils.setConfig(defaultTestConfig);
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('content', 'on');
-      lingoMeta.setAttribute('name', 'langFirst');
+      lingoMeta.setAttribute('name', 'langfirst');
       document.head.append(lingoMeta);
     });
 
@@ -1632,7 +1632,7 @@ describe('Utils', () => {
       } else {
         delete window.lana;
       }
-      const meta = document.querySelector('meta[name="langFirst"]');
+      const meta = document.querySelector('meta[name="langfirst"]');
       if (meta) document.head.removeChild(meta);
     });
 
@@ -1845,7 +1845,7 @@ describe('Utils', () => {
       document.body.innerHTML = '';
       document.body.className = '';
       lingoMeta = document.createElement('meta');
-      lingoMeta.setAttribute('name', 'langFirst');
+      lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
       document.head.append(lingoMeta);
       testContainer = document.createElement('div');
@@ -1873,8 +1873,8 @@ describe('Utils', () => {
       expect(link.href).to.equal('https://www.adobe.com/fragments/test');
     });
 
-    it('verifies lingoActive is true when langFirst meta is set', async () => {
-      const lingoValue = utils.getMetadata('langFirst');
+    it('verifies lingoActive is true when langfirst meta is set', async () => {
+      const lingoValue = utils.getMetadata('langfirst');
       expect(lingoValue).to.equal('on');
     });
 
