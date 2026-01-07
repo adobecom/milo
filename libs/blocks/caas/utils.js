@@ -680,8 +680,8 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     }
 
     return {
-      country: countryStr,
-      language: langStr,
+      country: countryStr.toLowerCase(),
+      language: langStr.toLowerCase(),
       locales,
     };
   }

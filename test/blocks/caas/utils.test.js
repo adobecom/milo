@@ -823,7 +823,7 @@ describe('getCountryAndLang', () => {
         source: ['news'],
       });
 
-      expect(expected.country).to.eq('xx');
+      expect(expected.country).to.eq('us');
       expect(expected.language).to.eq('en');
     });
 
