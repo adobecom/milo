@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
+import * as utilsModule from '../../../libs/utils/utils.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 import {
   defaultState,
@@ -11,6 +12,16 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
+
+/**
+ * Note: lingoActive() is mocked using sinon stubs in the tests.
+ * 
+ * Usage patterns:
+ * 1. Import the module: import * as utilsModule from '../../../libs/utils/utils.js';
+ * 2. Create stub: const lingoActiveStub = stub(utilsModule, 'lingoActive').returns(false);
+ * 3. Change return value in tests: lingoActiveStub.returns(true);
+ * 4. Restore in afterEach: lingoActiveStub.restore();
+ */
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
@@ -728,6 +739,18 @@ describe('getCountryAndLang', () => {
       be_fr: { ietf: 'fr-BE' },
     },
   };
+  let lingoActiveStub;
+
+  beforeEach(() => {
+    // Default: lingoActive returns false for non-langFirst tests
+    lingoActiveStub = stub(utilsModule, 'lingoActive').returns(false);
+  });
+
+  afterEach(() => {
+    if (lingoActiveStub) {
+      lingoActiveStub.restore();
+    }
+  });
 
   it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);
@@ -787,14 +810,20 @@ describe('getCountryAndLang', () => {
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
-      metaLangFirst.setAttribute('content', 'on');
+      metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
+      
+      // Override parent stub to return true for langFirst tests
+      lingoActiveStub.returns(true);
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
+      
+      // Reset to false for other tests in parent describe block
+      lingoActiveStub.returns(false);
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {

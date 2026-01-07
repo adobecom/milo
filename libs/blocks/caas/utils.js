@@ -676,6 +676,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     }
 
     if (isNewsSource && typeof countryStr === 'object') {
+      console.log(countryStr);
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
 
