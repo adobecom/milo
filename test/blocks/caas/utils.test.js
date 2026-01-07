@@ -747,7 +747,7 @@ describe('getConfig', () => {
 });
 
 describe('getCountryAndLang', () => {
-  const lingoMock = new LingoActiveMock();  
+  const lingoMock = new LingoActiveMock();
   const caasCfg = {
     country: 'caas:country/ec',
     language: 'caas:laguange/es',
