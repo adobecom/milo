@@ -9,8 +9,7 @@ export default function init() {
   const sections = document.querySelectorAll('body > main > div.section');
   if (!sections.length > i + 1) return;
   const section = sections[i];
-  let hasSectionMetadata = false;
-  if (section.querySelector('.section-metadata')) hasSectionMetadata = true;
+  const hasSectionMetadata = section.querySelector('.section-metadata') !== null;
   const nextSection = section.nextElementSibling;
   if (!nextSection) return;
   section.classList.add('section-1');

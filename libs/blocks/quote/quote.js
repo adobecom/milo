@@ -29,8 +29,8 @@ export default function init(el) {
   const lastRow = allRows[allRows.length - 1];
   const lastDiv = lastRow.querySelector('div');
   if (!lastDiv.firstElementChild && lastDiv.textContent) lastDiv.append(createTag('p', null, lastDiv.textContent));
-  const imageRow = allRows.length > 1 && allRows[allRows.length - 2].querySelector('picture')
-    ? allRows[allRows.length - 2] : false;
+  const secondToLastRow = allRows[allRows.length - 2];
+  const imageRow = allRows.length > 1 && secondToLastRow.querySelector('picture') ? secondToLastRow : false;
   const copyNodes = lastDiv.querySelectorAll(':scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > p, :scope > em, :scope > strong, :scope > blockquote p');
   const blockquote = createTag('blockquote', {}, copyNodes[0]);
   const figcaption = createTag('figcaption', {}, copyNodes[1]);

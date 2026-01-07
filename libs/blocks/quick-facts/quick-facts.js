@@ -12,9 +12,7 @@ export default function init(el) {
   }
   const rows = el.querySelectorAll(':scope > div:not([class])');
   const facts = createTag('div', { class: 'fact-list' });
-  for (let i = 0; i < rows.length - 1; i += 1) {
-    facts.append(rows[i]);
-  }
+  rows.forEach((row) => facts.append(row));
   const productList = rows[rows.length - 1];
   productList.classList.add('product-list');
   foreground.append(facts, productList);
