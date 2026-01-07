@@ -22,7 +22,7 @@ const config = {
   env: { name: 'stage' },
   placeholders: { placeholdercheck: 'hello world' },
   mep: {
-    preview: true, // Enable preview attributes for MEP Lingo
+    preview: true,
     commands: [
       {
         action: 'remove',
@@ -190,8 +190,8 @@ describe('MEP Lingo Fragments', () => {
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
     const a = document.querySelector('a.mep-lingo-frag');
     expect(a).to.exist;
-    expect(a.dataset.mepLingo).to.equal('true');
     await getFragment(a);
+    expect(a.dataset.mepLingo).to.equal('true');
     const section = document.querySelector('.mep-lingo-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
@@ -219,7 +219,7 @@ describe('MEP Lingo Fragments', () => {
     const section = document.querySelector('.mep-lingo-fallback-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
-    // TODO: Add fallback attribute test coverage in separate PR
+    // TODO: Debug why fallback attribute isn't set - fallback logic works but attribute not populated
     // expect(frag.dataset.mepLingoFallback).to.exist;
   });
 
@@ -232,7 +232,7 @@ describe('MEP Lingo Fragments', () => {
     const section = document.querySelector('.mep-lingo-fallback-inline-section');
     const inlineElement = section.querySelector('[data-path]');
     expect(inlineElement).to.exist;
-    // TODO: Add fallback attribute test coverage in separate PR
+    // TODO: Debug why fallback attribute isn't set - fallback logic works but attribute not populated
     // expect(inlineElement.dataset.mepLingoFallback).to.exist;
   });
 
@@ -245,6 +245,18 @@ describe('MEP Lingo Fragments', () => {
     const section = document.querySelector('.mep-lingo-error-section');
     expect(section.querySelector('.fragment')).to.not.exist;
     expect(window.lana.log.called).to.be.true;
+  });
+
+  it('sets originalHref for MEP Lingo links (query-index optimization)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+    const a = document.querySelector('a.mep-lingo-frag');
+    expect(a.dataset.originalHref).to.not.exist; // Not set yet
+    await getFragment(a);
+    // originalHref should now be set on the link element for fallback purposes
+    expect(a.dataset.originalHref).to.exist;
+    expect(a.dataset.originalHref).to.include('/de/fragments/');
   });
 
   it('uses country mapping when configured', async () => {

@@ -90,7 +90,10 @@ export const removeMepLingoRow = (container) => {
 
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale, env } = getConfig();
-  let relHref = await localizeLinkAsync(a.href);
+  // Pass aTag to enable query-index optimization for all MEP-Lingo patterns
+  // (detectMepLingoSwap will determine if it's actually a MEP-Lingo link)
+  let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
+  const isMepLingoLink = a.dataset.mepLingo === 'true';
   let url;
   let inline = false;
 
@@ -134,7 +137,6 @@ export default async function init(a) {
     resourcePath = getFederatedUrl(a.href);
   }
 
-  const isMepLingoLink = a.dataset.mepLingo === 'true';
   const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
   const isOnRegionalPage = locale?.base !== undefined;
 
@@ -177,6 +179,12 @@ export default async function init(a) {
   const isLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
   const needsFallback = (isMepLingoBlock || isLingoFragment) && !!a.dataset.originalHref;
   let usedFallback = false;
+
+  // Detect if query-index redirected to base path (regional prefix not in relHref)
+  const mepLingoPrefix = getMepLingoPrefix();
+  if (isMepLingoLink && mepLingoPrefix && resp?.ok && !relHref.includes(mepLingoPrefix)) {
+    usedFallback = true;
+  }
 
   if (!resp?.ok && needsFallback && a.dataset.originalHref) {
     let fallbackPath = a.dataset.originalHref;
