@@ -4,9 +4,10 @@ function initializeIframe() {
   iframe.setAttribute('id', 'preflight-iframe')
   const preflightUrl = new URL(window.location.href).searchParams.get('url');
   document.querySelector('iframe').src = preflightUrl;
+  return iframe.contentDocument || iframe.contentWindow.document;
 }
 
-async function triggerPreflight() {
+async function triggerPreflight(iframe) {
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     const script = iframeDoc.createElement('script');
     script.textContent = `
@@ -24,9 +25,9 @@ async function triggerPreflight() {
 }
 
 export default async function init() {
-  const preflightUrl = initializeIframe();
+  const iframe = initializeIframe();
   setTimeout(() => {
-    await triggerPreflight();
+    await triggerPreflight(iframe);
   }, 20000);
 }
 
