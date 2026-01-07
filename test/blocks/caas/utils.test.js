@@ -12,35 +12,6 @@ import {
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
-/**
- * Helper to control lingoActive() behavior without stubbing ES modules.
- */
-class LingoActiveMock {
-  constructor() {
-    this.metaTag = null;
-  }
-
-  enable() {
-    this.disable(); // Remove any existing tag first
-    this.metaTag = document.createElement('meta');
-    this.metaTag.setAttribute('name', 'langFirst');
-    this.metaTag.setAttribute('content', 'true');
-    document.head.appendChild(this.metaTag);
-  }
-
-  disable() {
-    const existingMeta = document.querySelector('meta[name="langFirst"]');
-    if (existingMeta) {
-      existingMeta.remove();
-    }
-    this.metaTag = null;
-  }
-
-  cleanup() {
-    this.disable();
-  }
-}
-
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
   'mt', 'mena_en', 'nl', 'no', 'pl', 'pt', 'ro', 'sa_en', 'ch_de', 'si', 'sk', 'ch_fr', 'fi', 'se', 'ch_it', 'tr',
@@ -746,7 +717,6 @@ describe('getConfig', () => {
 });
 
 describe('getCountryAndLang', () => {
-  const lingoMock = new LingoActiveMock();
   const caasCfg = {
     country: 'caas:country/ec',
     language: 'caas:laguange/es',
@@ -758,14 +728,6 @@ describe('getCountryAndLang', () => {
       be_fr: { ietf: 'fr-BE' },
     },
   };
-
-  beforeEach(() => {
-    lingoMock.disable(); // Ensure lingoActive() returns false by default
-  });
-
-  afterEach(() => {
-    lingoMock.cleanup(); // Clean up any lingering state
-  });
 
   it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);
@@ -820,12 +782,19 @@ describe('getCountryAndLang', () => {
   });
 
   describe('langFirst with GEO IP', () => {
+    let metaLangFirst;
+
     beforeEach(() => {
-      lingoMock.enable();
+      metaLangFirst = document.createElement('meta');
+      metaLangFirst.setAttribute('name', 'langFirst');
+      metaLangFirst.setAttribute('content', 'true');
+      document.head.appendChild(metaLangFirst);
     });
 
     afterEach(() => {
-      lingoMock.disable();
+      if (metaLangFirst && metaLangFirst.parentNode) {
+        document.head.removeChild(metaLangFirst);
+      }
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
