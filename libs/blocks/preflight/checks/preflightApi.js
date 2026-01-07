@@ -125,7 +125,8 @@ export async function getPreflightResults(options = {}) {
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
 
-  await captureMetrics(res);
+  const metricsResult = await captureMetrics(res);
+  console.log('captureMetrics result:', metricsResult);
 
   if (useCache) globalPreflightCache.set(cacheKey, result);
 

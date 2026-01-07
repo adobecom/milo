@@ -121,7 +121,7 @@ const capture = async (results) => {
 };
 
 const sendMetrics = async (metricsData) => {
-  if (!metricsData) return;
+  if (!metricsData) return { success: false, error: 'No metrics data to send' };
 
   const { results, contextData, token, imsClientId } = metricsData;
   const endpoint = getLogsEndpoint();
@@ -140,19 +140,21 @@ const sendMetrics = async (metricsData) => {
     });
 
     if (!response.ok) {
-      return;
+      return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
     }
+    return { success: true, status: response.status };
   } catch (error) {
-    console.warn('Failed to send metrics:', error.message);
+    return { success: false, error: error.message };
   }
 };
 
 const captureMetrics = async (results) => {
   try {
     const metrics = await capture(results);
-    await sendMetrics(metrics);
+    const response = await sendMetrics(metrics);
+    return response;
   } catch (error) {
-    console.error('Failed to send metrics:', error);
+    return { success: false, error: error.message };
   }
 };
 
