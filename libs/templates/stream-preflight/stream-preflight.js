@@ -27,7 +27,7 @@ export default async function init() {
   const preflightUrl = initializeIframe();
   setTimeout(() => {
     await triggerPreflight();
-  }, 6000);
+  }, 20000);
 }
 
 (async () => {
