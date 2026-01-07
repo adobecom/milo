@@ -108,15 +108,6 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
   });
 };
 
-export const loadPreflightResults = async () => {
-  const preflight = document.createElement('div');
-  preflight.classList.add('preflight');
-  const { loadBlock } = await import(`https://main--milo--adobecom.aem.live/libs/utils/utils.js`);
-  const content = await loadBlock(preflight);
-  const { getModal } = await import(`https://main--milo--adobecom.aem.live/libs/blocks/modal/modal.js`);
-  getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
-};
-
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -141,7 +132,6 @@ const loadDelayed = ([
     } else {
       resolve(null);
     }
-    loadPreflightResults();
     import('../utils/samplerum.js').then(({ sampleRUM }) => {
       sampleRUM();
       addRUMCampaignTrackingParameters({ sampleRUM });
