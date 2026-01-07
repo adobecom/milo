@@ -12,6 +12,36 @@ import {
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
+/**
+ * Helper to control lingoActive() behavior without stubbing ES modules.
+ * lingoActive() checks for meta[name="langfirst"] tag, so we manipulate the DOM.
+ */
+class LingoActiveMock {
+  constructor() {
+    this.metaTag = null;
+  }
+
+  enable() {
+    this.disable(); // Remove any existing tag first
+    this.metaTag = document.createElement('meta');
+    this.metaTag.setAttribute('name', 'langfirst');
+    this.metaTag.setAttribute('content', 'true');
+    document.head.appendChild(this.metaTag);
+  }
+
+  disable() {
+    const existingMeta = document.querySelector('meta[name="langfirst"]');
+    if (existingMeta) {
+      existingMeta.remove();
+    }
+    this.metaTag = null;
+  }
+
+  cleanup() {
+    this.disable();
+  }
+}
+
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
   'mt', 'mena_en', 'nl', 'no', 'pl', 'pt', 'ro', 'sa_en', 'ch_de', 'si', 'sk', 'ch_fr', 'fi', 'se', 'ch_it', 'tr',
@@ -717,6 +747,8 @@ describe('getConfig', () => {
 });
 
 describe('getCountryAndLang', () => {
+  const lingoMock = new LingoActiveMock();
+  
   const caasCfg = {
     country: 'caas:country/ec',
     language: 'caas:laguange/es',
@@ -730,18 +762,11 @@ describe('getCountryAndLang', () => {
   };
 
   beforeEach(() => {
-    const existingMeta = document.querySelector('meta[name="langfirst"]');
-    if (existingMeta) {
-      existingMeta.remove();
-    }
+    lingoMock.disable(); // Ensure lingoActive() returns false by default
   });
 
   afterEach(() => {
-    // Clean up any langfirst meta tag
-    const existingMeta = document.querySelector('meta[name="langfirst"]');
-    if (existingMeta) {
-      existingMeta.remove();
-    }
+    lingoMock.cleanup(); // Clean up any lingering state
   });
 
   it('should use country and lang from CaaS Config', async () => {
@@ -797,19 +822,12 @@ describe('getCountryAndLang', () => {
   });
 
   describe('langFirst with GEO IP', () => {
-    let metaLangFirst;
-
     beforeEach(() => {
-      metaLangFirst = document.createElement('meta');
-      metaLangFirst.setAttribute('name', 'langfirst');
-      metaLangFirst.setAttribute('content', 'true');
-      document.head.appendChild(metaLangFirst);
+      lingoMock.enable(); // Enable langFirst mode
     });
 
     afterEach(() => {
-      if (metaLangFirst && metaLangFirst.parentNode) {
-        document.head.removeChild(metaLangFirst);
-      }
+      lingoMock.disable(); // Reset to non-langFirst mode
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
