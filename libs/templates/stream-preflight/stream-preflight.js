@@ -7,7 +7,7 @@ function initializeIframe() {
   return iframe.contentDocument || iframe.contentWindow.document;
 }
 
-async function triggerPreflight(iframe) {
+async function triggerPreflight() {
     const iframe = document.querySelector('iframe');
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     const script = iframeDoc.createElement('script');
