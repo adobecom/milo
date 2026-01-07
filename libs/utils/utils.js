@@ -2086,6 +2086,12 @@ async function loadFragments(section, selector) {
 }
 
 async function resolveHighPriorityFragments(section) {
+  section.el.querySelectorAll('[data-mep-lingo-block-swap], a[href*="#_inline"]').forEach((a) => {
+    const bName = a.dataset.mepLingoBlockSwap;
+    const block = bName ? a.closest(`.${bName}`) : a.closest('.section > div[class]');
+    if (block?.classList.contains('hide-block')) block.remove();
+  });
+
   // Load in cascading order: section swaps → block swaps → inline fragments
   const hadSectionSwaps = await loadFragments(section.el, 'a[data-mep-lingo-section-swap]');
   const hadBlockSwaps = await loadFragments(section.el, 'a[data-mep-lingo-block-swap]');
