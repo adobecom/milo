@@ -1,5 +1,5 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { getMetadata } from '../../libs/utils/utils.js';
+import { getMetadata, lingoActive } from '../../libs/utils/utils.js';
 import {
   LOCALES,
   getPageLocale,
