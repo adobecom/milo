@@ -8,6 +8,7 @@ function initializeIframe() {
 }
 
 async function triggerPreflight(iframe) {
+    const iframe = document.querySelector('iframe');
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     const script = iframeDoc.createElement('script');
     script.textContent = `
@@ -25,9 +26,9 @@ async function triggerPreflight(iframe) {
 }
 
 export default async function init() {
-  const iframe = initializeIframe();
+  initializeIframe();
   setTimeout(async () => {
-    await triggerPreflight(iframe);
+    await triggerPreflight();
   }, 20000);
 }
 
