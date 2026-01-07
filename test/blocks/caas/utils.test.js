@@ -1,6 +1,5 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import * as utilsModule from '../../../libs/utils/utils.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 import {
   defaultState,
@@ -729,16 +728,20 @@ describe('getCountryAndLang', () => {
       be_fr: { ietf: 'fr-BE' },
     },
   };
-  let lingoActiveStub;
 
   beforeEach(() => {
-    // Default: lingoActive returns false for non-langFirst tests
-    lingoActiveStub = stub(utilsModule, 'lingoActive').returns(false);
+    // Ensure no langfirst meta tag exists (lingoActive will return false)
+    const existingMeta = document.querySelector('meta[name="langfirst"]');
+    if (existingMeta) {
+      existingMeta.remove();
+    }
   });
 
   afterEach(() => {
-    if (lingoActiveStub) {
-      lingoActiveStub.restore();
+    // Clean up any langfirst meta tag
+    const existingMeta = document.querySelector('meta[name="langfirst"]');
+    if (existingMeta) {
+      existingMeta.remove();
     }
   });
 
@@ -802,18 +805,12 @@ describe('getCountryAndLang', () => {
       metaLangFirst.setAttribute('name', 'langfirst');
       metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
-      
-      // Override parent stub to return true for langFirst tests
-      lingoActiveStub.returns(true);
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
-      
-      // Reset to false for other tests in parent describe block
-      lingoActiveStub.returns(false);
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
