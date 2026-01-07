@@ -630,8 +630,8 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
     langStr = mapping.language ?? 'en';
   }
   return {
-    country: countryStr,
-    lang: langStr,
+    country: countryStr.toLowerCase(),
+    lang: langStr.toLowerCase(),
   };
 };
 
