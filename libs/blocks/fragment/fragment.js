@@ -88,10 +88,47 @@ export const removeMepLingoRow = (container) => {
   mepLingoRow?.remove();
 };
 
+async function fetchFragmentWithFallback({
+  resourcePath, relHref: inputRelHref, a, locale, isMepLingoLink, needsFallback,
+}) {
+  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
+
+  let usedFallback = false;
+  let relHref = inputRelHref;
+
+  // Detect if query-index redirected to base path
+  const mepLingoPrefix = getMepLingoPrefix();
+  if (isMepLingoLink && mepLingoPrefix && resp?.ok && !relHref.includes(mepLingoPrefix)) {
+    usedFallback = true;
+  }
+
+  // Try fallback if regional fetch failed
+  if (!resp?.ok && needsFallback && a.dataset.originalHref) {
+    let fallbackPath = a.dataset.originalHref;
+    try {
+      const originalUrl = new URL(a.dataset.originalHref);
+      if (locale?.prefix && !originalUrl.pathname.startsWith(locale.prefix)) {
+        fallbackPath = `${originalUrl.origin}${locale.prefix}${originalUrl.pathname}`;
+      }
+    } catch (e) {
+      if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
+        fallbackPath = `${locale.prefix}${fallbackPath}`;
+      }
+    }
+    resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
+    if (resp?.ok) {
+      relHref = fallbackPath;
+      usedFallback = true;
+    }
+  }
+
+  return { resp, usedFallback, relHref };
+}
+
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale, env } = getConfig();
-  // Pass aTag to enable query-index optimization for all MEP-Lingo patterns
-  // (detectMepLingoSwap will determine if it's actually a MEP-Lingo link)
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   let url;
@@ -173,38 +210,14 @@ export default async function init(a) {
     }
   }
 
-  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
-
   const isLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
   const needsFallback = (isMepLingoBlock || isLingoFragment) && !!a.dataset.originalHref;
-  let usedFallback = false;
 
-  // Detect if query-index redirected to base path (regional prefix not in relHref)
-  const mepLingoPrefix = getMepLingoPrefix();
-  if (isMepLingoLink && mepLingoPrefix && resp?.ok && !relHref.includes(mepLingoPrefix)) {
-    usedFallback = true;
-  }
-
-  if (!resp?.ok && needsFallback && a.dataset.originalHref) {
-    let fallbackPath = a.dataset.originalHref;
-    try {
-      const originalUrl = new URL(a.dataset.originalHref);
-      if (locale?.prefix && !originalUrl.pathname.startsWith(locale.prefix)) {
-        fallbackPath = `${originalUrl.origin}${locale.prefix}${originalUrl.pathname}`;
-      }
-    } catch (e) {
-      if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
-        fallbackPath = `${locale.prefix}${fallbackPath}`;
-      }
-    }
-    resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
-      .catch(() => ({}));
-    if (resp?.ok) {
-      relHref = fallbackPath;
-      usedFallback = true;
-    }
-  }
+  const fetchResult = await fetchFragmentWithFallback({
+    resourcePath, relHref, a, locale, isMepLingoLink, needsFallback,
+  });
+  const { resp, usedFallback } = fetchResult;
+  relHref = fetchResult.relHref;
 
   if (!resp?.ok) {
     if (isBlockSwap && !isMepLingoBlock && originalBlock) {
@@ -243,15 +256,10 @@ export default async function init(a) {
   fragment.append(...sections);
 
   await updateFragMap(fragment, a, relHref);
-  if (a.dataset.manifestId
-    || a.dataset.adobeTargetTestid
-    || fragment.dataset.mepLingoRoc
-    || fragment.dataset.mepLingoFallback
-    || mep?.commands?.length
-    || placeholders) {
+  const hasManifestId = a.dataset.manifestId || a.dataset.adobeTargetTestid;
+  const hasLingoAttrs = fragment.dataset.mepLingoRoc || fragment.dataset.mepLingoFallback;
+  if (hasManifestId || hasLingoAttrs || mep?.commands?.length || placeholders) {
     const { updateFragDataProps, handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
-    const hasManifestId = a.dataset.manifestId || a.dataset.adobeTargetTestid;
-    const hasLingoAttrs = fragment.dataset.mepLingoRoc || fragment.dataset.mepLingoFallback;
     if (hasManifestId || hasLingoAttrs) {
       updateFragDataProps(a, inline, sections, fragment);
     }
