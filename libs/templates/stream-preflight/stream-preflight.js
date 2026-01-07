@@ -29,7 +29,7 @@ export default async function init() {
   initializeIframe();
   setTimeout(async () => {
     await triggerPreflight();
-  }, 20000);
+  }, 10000);
 }
 
 (async () => {
