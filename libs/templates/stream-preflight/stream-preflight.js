@@ -26,7 +26,7 @@ async function triggerPreflight(iframe) {
 
 export default async function init() {
   const iframe = initializeIframe();
-  setTimeout(() => {
+  setTimeout(async () => {
     await triggerPreflight(iframe);
   }, 20000);
 }
