@@ -10,7 +10,6 @@ import {
   getCountryAndLang,
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
-  lingoActiveStub
 } from '../../../libs/blocks/caas/utils.js';
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
