@@ -13,14 +13,13 @@ async function triggerPreflight() {
     const script = iframeDoc.createElement('script');
     const { host } = window.location;
     const BRANCH = host.split('--')[0];
-    const SLD = host.includes('.aem.live') ? 'aem.live' : 'aem.page';
     script.textContent = `
       console.log('⚠️ mathuria: Injected JS running inside iframe');
       (async () => {
-        const { getConfig, createTag, loadBlock } = await import('https://${BRANCH}--milo--adobecom.${SLD}/libs/utils/utils.js');
+        const { getConfig, createTag, loadBlock } = await import('https://${BRANCH}--milo--adobecom.aem.live/libs/utils/utils.js');
         const preflight = createTag('div', {class: 'preflight'});
         const content = await loadBlock(preflight);
-        const { getModal } = await import('https://${BRANCH}--milo--adobecom..${SLD}/libs/blocks/modal/modal.js');
+        const { getModal } = await import('https://${BRANCH}--milo--adobecom.aem.live/libs/blocks/modal/modal.js');
         getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
       })();
     `;
