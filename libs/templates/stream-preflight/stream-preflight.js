@@ -15,7 +15,7 @@ async function triggerPreflight() {
       console.log('⚠️ mathuria: Injected JS running inside iframe');
       const { host } = window.location;
       const BRANCH = host.split('--')[0];
-      const SLD = host.includes('.aem.live') ? 'aem.live' || 'aem.page';
+      const SLD = host.includes('.aem.live') ? 'aem.live' : 'aem.page';
       const { getConfig, createTag, loadBlock } = await import(\`https://${BRANCH}--milo--adobecom.${SLD}/libs/utils/utils.js\`);
       const preflight = createTag('div', {class: 'preflight'});
       const content = await loadBlock(preflight);
