@@ -1290,7 +1290,8 @@ class Gnav {
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     if (isLocalNav) {
-      popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+      const langBannerOffset = languageBanner ? languageBannerHeight : 0;
+      popup.style.top = `calc(${yOffset}px - ${navOffset} - ${langBannerOffset}px - 2px)`;
     }
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent) {
@@ -1301,15 +1302,6 @@ class Gnav {
         popup.style.top = `calc(0px - var(--feds-height-nav) + ${!isLocalNav ? 0 : Math.max(delta, 0)}px - 2px)`;
         popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
       }
-    }
-    // Adjust height to account for language banner scroll state
-    if (languageBanner) {
-      const delta = yOffset - languageBannerHeight;
-      // For local nav, also adjust top position
-      if (isLocalNav) {
-        popup.style.top = `calc(0px - var(--feds-height-nav) + ${Math.max(delta, 0)}px - 2px)`;
-      }
-      popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
     }
   };
 

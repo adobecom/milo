@@ -59,6 +59,7 @@ async function showBanner(market, config) {
     e.preventDefault();
     const { setInternational } = await import('../../utils/utils.js');
     setInternational(market.prefix || 'us');
+    if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Click: ${market.prefix || 'us'}|language-banner`);
     window.open(translatedUrl, '_self');
   });
 
@@ -66,10 +67,13 @@ async function showBanner(market, config) {
     const pageLangPrefix = config.locale.prefix?.replace('/', '') || 'us';
     const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
     document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
+    if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Close: ${market.prefix || 'us'}|language-banner`);
     banner.remove();
   });
   const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
-  sendAnalytics(new Event(`${market.prefix || 'us'}-${pagePrefix}|language-banner`));
+  const eventName = `${market.prefix || 'us'}-${pagePrefix}|language-banner`;
+  sendAnalytics(new Event(eventName));
+  if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Load: ${eventName}`);
 }
 
 export default async function init() {

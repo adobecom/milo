@@ -2126,14 +2126,19 @@ async function decorateLanguageBanner() {
 
   const { pathname, origin } = window.location;
   const pagePath = locale.prefix ? pathname.replace(locale.prefix, '') : pathname;
-  for (const market of candidateMarkets) {
+
+  const fetchPromises = candidateMarkets.map((market) => {
     const url = `${origin}${market.prefix ? `/${market.prefix}` : ''}${pagePath}`;
-    try {
-      if ((await fetch(url, { method: 'HEAD' })).ok) { targetMarket = market; break; }
-    } catch (e) {
-      window.lana?.log(`Failed to check translated page: ${url}`, e);
-    }
+    return fetch(url, { method: 'HEAD' })
+      .then((res) => ({ market, ok: res.ok }))
+      .catch(() => ({ market, ok: false }));
+  });
+
+  for (const promise of fetchPromises) {
+    const { market, ok } = await promise;
+    if (ok) { targetMarket = market; break; }
   }
+
   if (!targetMarket) return;
 
   document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
