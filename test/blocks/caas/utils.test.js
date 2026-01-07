@@ -1,6 +1,5 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import * as utilsModule from '../../../libs/utils/utils.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 import {
   defaultState,
@@ -11,6 +10,7 @@ import {
   getCountryAndLang,
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
+  lingoActiveStub
 } from '../../../libs/blocks/caas/utils.js';
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
@@ -733,7 +733,7 @@ describe('getCountryAndLang', () => {
 
   beforeEach(() => {
     // Default: lingoActive returns false for non-langFirst tests
-    lingoActiveStub = stub(utilsModule, 'lingoActive').returns(false);
+    lingoActiveStub = stub('lingoActive', 'lingoActive').returns(false);
   });
 
   afterEach(() => {
