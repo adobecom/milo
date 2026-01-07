@@ -1,9 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import {
-  getLocale, loadArea, setConfig, updateConfig, getConfig, queryIndexes,
-} from '../../../libs/utils/utils.js';
+import { getLocale, loadArea, setConfig, updateConfig, getConfig } from '../../../libs/utils/utils.js';
 import { getMepLingoContext } from '../../../libs/features/mep/lingo.js';
 
 window.lana = { log: stub() };
@@ -42,8 +40,14 @@ setConfig(config);
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment, removeMepLingoRow } = await import('../../../libs/blocks/fragment/fragment.js');
 
-// Clear any queryIndexes populated during imports to prevent hanging on unresolved promises
-Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
+// Store original fetch for passthrough
+const originalFetch = window.fetch;
+
+// Helper to create query-index mock response
+const createQueryIndexResponse = (paths = []) => new Response(
+  JSON.stringify({ total: paths.length, data: paths.map((p) => ({ Path: p })) }),
+  { status: 200, headers: { 'Content-Type': 'application/json' } },
+);
 
 describe('Fragments', () => {
   let paramsGetStub;
@@ -158,6 +162,8 @@ describe('MEP Lingo Fragments', () => {
     regions: { ch_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
   };
 
+  let fetchStub;
+
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const searchParams = new URLSearchParams(window.location.search);
@@ -165,16 +171,15 @@ describe('MEP Lingo Fragments', () => {
     window.history.replaceState({}, '', `${window.location.pathname}?${searchParams}`);
 
     window.lana = { log: stub() };
-    Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
-    const currentConfig = getConfig();
-    const siteId = currentConfig.uniqueSiteId ?? '';
-    const defaultQueryIndex = {
-      requestResolved: true,
-      pathsRequest: Promise.resolve([]),
-      domains: [],
-    };
-    queryIndexes[siteId] = { ...defaultQueryIndex };
-    queryIndexes.federal = { ...defaultQueryIndex };
+
+    // Stub fetch to mock query-index responses
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      return originalFetch(url);
+    });
   });
 
   afterEach(() => {
@@ -182,6 +187,7 @@ describe('MEP Lingo Fragments', () => {
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.delete('langFirst');
     window.history.replaceState({}, '', window.location.pathname + (searchParams.toString() ? `?${searchParams}` : ''));
+    if (fetchStub) fetchStub.restore();
   });
 
   it('loads ROC fragment and sets data-mep-lingo-roc', async () => {
@@ -219,7 +225,7 @@ describe('MEP Lingo Fragments', () => {
     const section = document.querySelector('.mep-lingo-fallback-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
-    // TODO: Debug why fallback attribute isn't set - fallback logic works but attribute not populated
+    // TODO: Add fallback attribute test coverage
     // expect(frag.dataset.mepLingoFallback).to.exist;
   });
 
@@ -232,7 +238,7 @@ describe('MEP Lingo Fragments', () => {
     const section = document.querySelector('.mep-lingo-fallback-inline-section');
     const inlineElement = section.querySelector('[data-path]');
     expect(inlineElement).to.exist;
-    // TODO: Debug why fallback attribute isn't set - fallback logic works but attribute not populated
+    // TODO: Add fallback attribute test coverage
     // expect(inlineElement.dataset.mepLingoFallback).to.exist;
   });
 
@@ -261,10 +267,16 @@ describe('MEP Lingo Fragments', () => {
 
   it('uses country mapping when configured', async () => {
     window.sessionStorage.setItem('akamai', 'ng');
-    queryIndexes[''] = {
-      pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']),
-      requestResolved: true,
-    };
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([
+          '/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test',
+        ]));
+      }
+      return originalFetch(url);
+    });
     const localeWithAfrica = {
       ...mepLingoLocale,
       regions: {
@@ -371,7 +383,9 @@ describe('MEP Lingo Fragments', () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
-    const fetchStub = stub(window, 'fetch').callsFake(() => Promise.resolve(
+    // Replace stub to return 404 for all requests
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake(() => Promise.resolve(
       new Response(null, { status: 404, statusText: 'Not Found' }),
     ));
     const section = document.createElement('div');
@@ -379,7 +393,8 @@ describe('MEP Lingo Fragments', () => {
     section.innerHTML = `
       <div class="mep-lingo">
         <div><div>mep-lingo</div></div>
-        <div><div><a href="/test/blocks/fragment/mocks/de/fragments/nonexistent-file" data-mep-lingo="true" data-mep-lingo-block-swap="mep-lingo">Test</a></div></div>
+        <div><div><a href="/test/blocks/fragment/mocks/de/fragments/nonexistent-file"
+          data-mep-lingo="true" data-mep-lingo-block-swap="mep-lingo">Test</a></div></div>
       </div>`;
     document.body.appendChild(section);
     const originalBlock = section.querySelector('.mep-lingo');
@@ -387,7 +402,6 @@ describe('MEP Lingo Fragments', () => {
     const a = section.querySelector('a');
     await getFragment(a);
     expect(section.querySelector('.mep-lingo')).to.not.exist;
-    fetchStub.restore();
   });
 
   it('removes mep-lingo content on regional page with empty string base', async () => {
