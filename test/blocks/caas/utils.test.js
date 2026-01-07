@@ -747,8 +747,7 @@ describe('getConfig', () => {
 });
 
 describe('getCountryAndLang', () => {
-  const lingoMock = new LingoActiveMock();
-  
+  const lingoMock = new LingoActiveMock();  
   const caasCfg = {
     country: 'caas:country/ec',
     language: 'caas:laguange/es',
@@ -823,11 +822,11 @@ describe('getCountryAndLang', () => {
 
   describe('langFirst with GEO IP', () => {
     beforeEach(() => {
-      lingoMock.enable(); // Enable langFirst mode
+      lingoMock.enable();
     });
 
     afterEach(() => {
-      lingoMock.disable(); // Reset to non-langFirst mode
+      lingoMock.disable();
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
