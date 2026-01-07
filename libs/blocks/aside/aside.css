@@ -1351,10 +1351,7 @@
     padding-top: var(--spacing-xs);
   }
 
-/* =================================
-   full-bleed-mobile variant
-   ================================= */
-
+/* =====  full-bleed-mobile variant ===== */
   .aside.full-bleed-mobile .foreground.container > .image {
     width: 100vw;
   }
