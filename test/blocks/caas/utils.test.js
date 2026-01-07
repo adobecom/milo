@@ -13,16 +13,6 @@ import {
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
-/**
- * Note: lingoActive() is mocked using sinon stubs in the tests.
- * 
- * Usage patterns:
- * 1. Import the module: import * as utilsModule from '../../../libs/utils/utils.js';
- * 2. Create stub: const lingoActiveStub = stub(utilsModule, 'lingoActive').returns(false);
- * 3. Change return value in tests: lingoActiveStub.returns(true);
- * 4. Restore in afterEach: lingoActiveStub.restore();
- */
-
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
   'mt', 'mena_en', 'nl', 'no', 'pl', 'pt', 'ro', 'sa_en', 'ch_de', 'si', 'sk', 'ch_fr', 'fi', 'se', 'ch_it', 'tr',
