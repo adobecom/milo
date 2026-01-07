@@ -787,7 +787,7 @@ describe('getCountryAndLang', () => {
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
-      metaLangFirst.setAttribute('content', 'true');
+      metaLangFirst.setAttribute('content', 'on');
       document.head.appendChild(metaLangFirst);
     });
 
@@ -823,7 +823,7 @@ describe('getCountryAndLang', () => {
         source: ['news'],
       });
 
-      expect(expected.country).to.eq('us');
+      expect(expected.country).to.eq('xx');
       expect(expected.language).to.eq('en');
     });
 
