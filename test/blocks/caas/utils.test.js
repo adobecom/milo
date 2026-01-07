@@ -14,7 +14,6 @@ import {
 
 /**
  * Helper to control lingoActive() behavior without stubbing ES modules.
- * lingoActive() checks for meta[name="langfirst"] tag, so we manipulate the DOM.
  */
 class LingoActiveMock {
   constructor() {
@@ -24,13 +23,13 @@ class LingoActiveMock {
   enable() {
     this.disable(); // Remove any existing tag first
     this.metaTag = document.createElement('meta');
-    this.metaTag.setAttribute('name', 'langfirst');
+    this.metaTag.setAttribute('name', 'langFirst');
     this.metaTag.setAttribute('content', 'true');
     document.head.appendChild(this.metaTag);
   }
 
   disable() {
-    const existingMeta = document.querySelector('meta[name="langfirst"]');
+    const existingMeta = document.querySelector('meta[name="langFirst"]');
     if (existingMeta) {
       existingMeta.remove();
     }
