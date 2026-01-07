@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import * as lingoUtils from '../../../libs/utils/utils.js';
 import {
   defaultState,
   getConfig,
@@ -728,18 +729,6 @@ describe('getCountryAndLang', () => {
       be_fr: { ietf: 'fr-BE' },
     },
   };
-  let lingoActiveStub;
-
-  beforeEach(() => {
-    // Default: lingoActive returns false for non-langFirst tests
-    lingoActiveStub = stub('lingoActive', 'lingoActive').returns(false);
-  });
-
-  afterEach(() => {
-    if (lingoActiveStub) {
-      lingoActiveStub.restore();
-    }
-  });
 
   it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);
