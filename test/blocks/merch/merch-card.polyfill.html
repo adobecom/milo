@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <!-- the import map to use in our test -->
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "../../blocks/merch/mocks/embed-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import sinon from 'sinon';
+    import { loadScript, setConfig } from '../../../libs/utils/utils.js';
+    import { polyfills } from "../../../libs/blocks/merch/merch.js"
+
+    runTests(() => {
+      before(async () => {
+        setConfig({
+          base: 'localhost',
+        });
+      });
+
+      describe('Polyfills', () => {
+        let originalPromise;
+        before(() => {
+          originalPromise = polyfills.promise;
+        });
+        after(() => {
+          polyfills.promise = originalPromise;
+        });
+
+        it('returns polyfills.promise', async () => {
+          polyfills();
+          expect(polyfills.promise).to.be.a('promise');
+        });
+
+        it('assign and return Promise.resolve()', async () => {
+          polyfills.promise = undefined;
+          polyfills();
+          expect(polyfills.promise).to.be.a('promise');
+        });
+
+        it('loads custom elements', async () => {
+          const createOriginal = document.createElement;
+          document.createElement = sinon.stub();
+          polyfills.promise = undefined;
+          polyfills();
+          expect(loadScript.calledOnceWith('localhost/deps/custom-elements.js')).to.be.true;
+          expect(document.createElement.calledOnce).to.be.true;
+          document.createElement = createOriginal;
+        });
+      });
+    });
+  </script>
+</html>
