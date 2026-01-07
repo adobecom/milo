@@ -65,18 +65,23 @@ const TARGET_METADATA_OPTIONS = {
   },
   dc: {
     name: 'DC',
-    metadata: 'https://main--dc--adobecom.aem.live/metadata-optimization.json',
-    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B8F5A8CD0-7979-41CE-894A-CC465B293C1A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+    metadata: 'https://main--da-dc--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BF94970F8-5FBE-4D85-B6AD-DEE21447C14F%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
   },
   express: {
     name: 'Express',
-    metadata: 'https://main--express-milo--adobecom.aem.live/metadata-optimization.json',
-    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEC96D2B9-9F25-48AF-B88A-A6926A340D3A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
+    metadata: 'https://main--da-express-milo--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B42937BE0-0371-4A56-92AA-378A3609323A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
   },
   bacom: {
     name: 'BACOM',
-    metadata: 'https://main--bacom--adobecom.aem.live/metadata-optimization.json',
-    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEE70634D-C16E-45E7-B16E-718C5022413E%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+    metadata: 'https://main--da-bacom--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B781743A9-2657-4156-A19E-11092DF9DB0D%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
+  },
+  upp: {
+    name: 'UPP',
+    metadata: 'https://main--upp--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BFBA89F1B-F17B-4DCE-9665-67EA361D779B%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
   },
 };
 let isReport = false;
