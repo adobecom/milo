@@ -449,11 +449,7 @@ export default async function loadGeoRouting(
         const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`;
         sendAnalyticsFunc(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
-          window.lana.log(eventString, {
-            clientId: config.uniqueSiteId,
-            sampleRate: 100,
-            tags: 'lingo,lingo-georouting-load',
-          });
+          window.lana.log(eventString, { sampleRate: 100, tags: 'lingo,lingo-georouting-load' });
         }
       }
     }
@@ -472,11 +468,7 @@ export default async function loadGeoRouting(
         const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`;
         sendAnalyticsFunc(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
-          window.lana.log(eventString, {
-            clientId: config.uniqueSiteId,
-            sampleRate: 100,
-            tags: 'lingo,lingo-georouting-load',
-          });
+          window.lana.log(eventString, { sampleRate: 100, tags: 'lingo,lingo-georouting-load' });
         }
       }
     }
