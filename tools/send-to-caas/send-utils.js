@@ -5,6 +5,7 @@ import {
   getPageLocale,
   getGrayboxExperienceId,
   getLanguageFirstCountryAndLang,
+  getLangFirst,
 } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
@@ -318,7 +319,7 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options, origin) => {
-  const langFirst = getMetadata('langfirst');
+  const langFirst = getLangFirst(getMetadata('langfirst'));
   if (langFirst) {
     return getLanguageFirstCountryAndLang(
       window.location.pathname,

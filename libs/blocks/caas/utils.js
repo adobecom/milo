@@ -634,9 +634,16 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
   };
 };
 
+export const getLangFirst = (langFirst) => {
+  if (langFirst === 'on' || langFirst === 'true') {
+    return true;
+  }
+  return false;
+};
+
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
-  const langFirst = getMetadata('langfirst');
+  const langFirst = getLangFirst(getMetadata('langfirst'));
   /* if it is a language first localized page don't use the milo locales.
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
@@ -857,7 +864,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
-  const langFirst = state.langFirst ? `&langFirst=${state.langFirst}` : '';
+  const langFirst = state.langFirst ? `&langFirst=${getLangFirst(state.langFirst)}` : '';
 
   const config = {
     collection: {
