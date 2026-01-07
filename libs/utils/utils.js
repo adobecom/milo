@@ -614,9 +614,17 @@ function processQueryIndexMap(link, domain) {
   return result;
 }
 
-async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
+async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   const config = getConfig();
+  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
 
+  if (links.length && links.some((link) => link.includes('/federal/')) && !queryIndexes.federal) {
+    queryIndexes.federal = processQueryIndexMap(
+      `${getFederatedContentRoot()}${prefix}/federal/assets/lingo/query-index${queryIndexSuffix}.json`,
+      getFederatedContentRoot().replace('https://', ''),
+    );
+    queryIndexes.federal.domains.push(window.location.hostname);
+  }
   if (lingoSiteMapping || isLoadingQueryIndexes) return;
   isLoadingQueryIndexes = true;
 
@@ -624,15 +632,10 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
   const siteId = config.uniqueSiteId ?? '';
-  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
 
   queryIndexes[siteId] = processQueryIndexMap(
     `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
     window.location.hostname,
-  );
-  queryIndexes.federal = processQueryIndexMap(
-    `${getFederatedContentRoot()}${prefix}/federal/assets/lingo/query-index${queryIndexSuffix}.json`,
-    getFederatedContentRoot().replace('https://', ''),
   );
 
   if (onlyCurrentSite) {
@@ -730,9 +733,7 @@ function localizeLinkCore(
         && ((locale.base && !path.includes('/fragments/'))
           || (!!locale.regions && path.includes('/fragments/') && aTag.dataset.mepLingo === 'true'))) {
       return (async () => {
-        if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
-          loadQueryIndexes(prefix);
-        }
+        loadQueryIndexes(prefix, false, [href]);
         if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
           await Promise.all([queryIndexes[siteId]?.pathsRequest, lingoSiteMapping].filter(Boolean));
         }
@@ -2125,17 +2126,16 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   return section.blocks;
 }
 
-function loadLingoIndexes() {
+function loadLingoIndexes(area = document) {
   const config = getConfig();
   const { locale } = config || {};
-
   if (locale?.base) {
-    loadQueryIndexes(config.locale.prefix);
+    loadQueryIndexes(config.locale.prefix, false, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
   const prefix = getMepLingoPrefix();
   if (prefix) {
-    loadQueryIndexes(prefix, true);
+    loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
   }
 }
 
@@ -2159,10 +2159,11 @@ export async function loadArea(area = document) {
     await decorateDocumentExtras();
     initModalEventListener();
   }
-  if (isLingoActive) loadLingoIndexes();
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
+
+  if (isLingoActive) loadLingoIndexes(area);
 
   const areaBlocks = [];
   let lcpSectionId = null;
