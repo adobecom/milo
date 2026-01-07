@@ -2,9 +2,9 @@ export default async function init() {
   const iframe = document.querySelector('iframe');
   iframe.classList.add('preflight-iframe');
   iframe.setAttribute('id', 'preflight-iframe')
-  const url = new URL(window.location.href);
-  const preflightUrl = url.searchParams.get('url');
-  if (preflightUrl) document.querySelector('iframe').src = preflightUrl;
+  const preflightUrl = new URL(window.location.href).searchParams.get('url');
+  if (!preflightUrl) return;
+  document.querySelector('iframe').src = preflightUrl;
   setTimeout(() => {
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     const script = iframeDoc.createElement('script');
