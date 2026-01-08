@@ -6,7 +6,7 @@ function initializeIframe() {
   document.querySelector('iframe').src = preflightUrl;
 }
 
-function getMiloBranch() {
+function getMiloBranchURL() {
   const url = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
   const urlConfig = new URL(url);
   const miloLib = new URL(urlConfig.searchParams.get('milolibs'));
