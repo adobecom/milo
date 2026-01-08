@@ -23,6 +23,7 @@ const KEY_CODES = {
   HOME: 'Home',
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
+  ESCAPE: 'Escape',
 };
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
@@ -175,18 +176,26 @@ function removeEqualHeight(slides, slideContainer) {
 
 function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   const curtain = createTag('div', { class: 'carousel-curtain' });
+  const header = document.querySelector('header');
+  const headerZIndex = header.style.zIndex;
+
+  const closeLightbox = () => {
+    header.style.zIndex = headerZIndex;
+    el.classList.remove('lightbox-active');
+    curtain.remove();
+  };
 
   [...lightboxBtns].forEach((button) => {
     button.addEventListener('click', (event) => {
       event.preventDefault();
       if (button.classList.contains('carousel-expand')) {
+        header.style.zIndex = '-1';
         el.classList.add('lightbox-active');
         slideWrapper.append(curtain);
       }
 
       if (button.classList.contains('carousel-close')) {
-        el.classList.remove('lightbox-active');
-        curtain.remove();
+        closeLightbox();
       }
     }, true);
   });
@@ -194,9 +203,13 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   // Handle click outside of Carousel
   curtain.addEventListener('click', (event) => {
     event.preventDefault();
-    el.classList.remove('lightbox-active');
-    curtain.remove();
+    closeLightbox();
   }, true);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== KEY_CODES.ESCAPE || !el.classList.contains('lightbox-active')) return;
+    closeLightbox();
+  });
 }
 
 function checkSlideForVideo(activeSlide) {
