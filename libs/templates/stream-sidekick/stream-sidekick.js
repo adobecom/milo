@@ -1,5 +1,5 @@
-function notifyParent() {
-  if (!parentRedir) return;
+function notifyParent(redirRef) {
+  if (!redirRef) return;
   if (window.opener) {
     window.opener.postMessage(
       {
@@ -7,7 +7,7 @@ function notifyParent() {
         status: 'success',
         data: 'Sidekick login successful!!',
       },
-      decodeURIComponent(parentRedir)
+      redirRef
     );
   }
   setTimeout( () => {
