@@ -7,27 +7,6 @@ function handleTopHeight(section) {
   section.style.top = `${topHeight}px`;
 }
 
-let visibleMerchCards;
-
-function handleMerchCardIntersection(el, target, isIntersecting) {
-  if (!el.querySelector('.button-full-width')) return;
-
-  const section = target.closest('.section[daa-lh]');
-  if (!section) return;
-
-  const total = section.querySelectorAll('merch-card')?.length;
-
-  if (visibleMerchCards === undefined && isIntersecting) {
-    visibleMerchCards = 0;
-  } else if (visibleMerchCards === undefined) {
-    return;
-  }
-  visibleMerchCards += isIntersecting ? 1 : -1;
-  visibleMerchCards = Math.min(Math.max(visibleMerchCards, 0), total);
-
-  el.classList.toggle('hide-sticky-section', visibleMerchCards > 0);
-}
-
 function promoIntersectObserve(el, stickySectionEl, options = {}) {
   return new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
@@ -49,9 +28,13 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
           || entry.boundingClientRect.top < 0
           || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', shouldHideSticky);
-      } else if (target.matches('merch-card')) {
-        handleMerchCardIntersection(el, target, isIntersecting);
-      } else el.classList.toggle('hide-sticky-section', abovePromoStart);
+      } else if (target.classList && target.classList.contains('hide-at-intersection-start')) {
+        el.classList.toggle('hide-sticky-section', isIntersecting || entry.boundingClientRect.top <= 0);
+      } else if (target.classList && target.classList.contains('hide-at-intersection-end')) {
+        el.classList.toggle('hide-sticky-section', isIntersecting || entry.boundingClientRect.top >= 0);
+      } else {
+        el.classList.toggle('hide-sticky-section', abovePromoStart);
+      }
     });
   }, options);
 }
@@ -89,21 +72,13 @@ function handleStickyPromobar(section, delay) {
   const selector = metadata?.['custom-hide']?.text?.trim();
   const targetElement = selector ? document.querySelector(selector) : null;
   if (targetElement) {
-    stickySectionEl = createTag('div', { class: 'hide-at-intersection' });
-    targetElement.parentElement.insertBefore(stickySectionEl, targetElement);
-    io.observe(stickySectionEl);
+    const hideAtStart = createTag('div', { class: 'hide-at-intersection-start' });
+    const hideAtEnd = createTag('div', { class: 'hide-at-intersection-end' });
+    targetElement.parentElement.insertBefore(hideAtStart, targetElement);
+    targetElement.parentElement.insertBefore(hideAtEnd, targetElement.nextSibling);
+    io.observe(hideAtStart);
+    io.observe(hideAtEnd);
   }
-
-  const mutationObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeName === 'MERCH-CARD') {
-          io.observe(node);
-        }
-      });
-    });
-  });
-  mutationObserver.observe(main, { childList: true, subtree: true });
 }
 
 export default async function handleStickySection(sticky, section) {
