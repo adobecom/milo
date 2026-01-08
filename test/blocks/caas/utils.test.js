@@ -12,14 +12,6 @@ import {
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
-before(() => {
-  window.fetch = stub().returns(htmlResponse());
-});
-
-after(() => {
-  delete window.lana;
-});
-
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
   'mt', 'mena_en', 'nl', 'no', 'pl', 'pt', 'ro', 'sa_en', 'ch_de', 'si', 'sk', 'ch_fr', 'fi', 'se', 'ch_it', 'tr',
@@ -88,16 +80,7 @@ describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
   beforeEach(() => {
-    window.fetch = stub().callsFake((url) => {
-      // Mock query index files
-      if (url.includes('/assets/lingo/query-index')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ data: [] }),
-        });
-      }
-      return htmlResponse();
-    });
+    window.fetch = stub().returns(htmlResponse());
   });
 
   afterEach(() => {
@@ -800,50 +783,18 @@ describe('getCountryAndLang', () => {
 
   describe('langFirst with GEO IP', () => {
     let metaLangFirst;
-    const ogFetch = window.fetch;
 
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
       metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
-
-      // Mock external fetches
-      window.fetch = stub().callsFake((url, options) => {
-        // Mock the lingo-site-mapping.json fetch
-        if (url === 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json') {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({
-              'site-query-index-map': {
-                data: [
-                  { uniqueSiteId: 'hawks', caasOrigin: 'hawks' },
-                ],
-              },
-              'site-locales': {
-                data: [
-                  { uniqueSiteId: 'hawks', baseSite: '/fr', regionalSites: ['fr_ch'] },
-                ],
-              },
-            }),
-          });
-        }
-        // Mock the GEO IP lookup
-        if (url === 'https://geo2.adobe.com/json/') {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ country: 'US' }),
-          });
-        }
-        return ogFetch(url, options);
-      });
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
-      window.fetch = ogFetch;
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
