@@ -143,8 +143,8 @@ export default async function loadBlock(configs, customLib) {
 
     if (configBlock) {
       const config = getConfig();
-      const gnavSource = `${config?.locale?.contentRoot}/gnav`;
-      const footerSource = `${config?.locale?.contentRoot}/footer`;
+      const gnavSource = configBlock.gnavSource || `${config?.locale?.contentRoot}/gnav`;
+      const footerSource = configBlock.footerSource || `${config?.locale?.contentRoot}/footer`;
       if (block.key === 'header') {
         try {
           const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
