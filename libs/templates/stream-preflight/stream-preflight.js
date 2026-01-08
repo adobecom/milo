@@ -1,16 +1,15 @@
 function initializeIframe() {
   const iframeEl = document.querySelector('iframe');
   iframeEl.classList.add('preflight-iframe');
-  iframeEl.setAttribute('id', 'preflight-iframe')
+  iframeEl.setAttribute('id', 'preflight-iframe');
   const preflightUrl = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
   document.querySelector('iframe').src = preflightUrl;
-  return {
-    url: preflightUrl,
-    iframeDoc: iframeEl.contentDocument || iframeEl.contentWindow.document,
-  };
 }
 
 function getMiloBranch(url) {
+  const iframeEl = document.querySelector('iframe');
+  const iframeDoc = iframeEl.contentDocument || iframeEl.contentWindow.document,
+  const url = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
   const urlConfig = new URL(url);
   const miloLib = new URL(urlConfig.searchParams.get('milolibs'));
   if (miloLib && miloLib.includes('--')) return `https:\\${miloLib}.aem.live`;
@@ -32,7 +31,6 @@ function preflightScript(miloHost) {
 }
 
 async function triggerPreflight() {
-    const { url, iframeDoc } = document.querySelector('iframe');
     const script = iframeDoc.createElement('script');
     const { host } = window.location;
     const miloHost = getMiloBranchURL(url);
