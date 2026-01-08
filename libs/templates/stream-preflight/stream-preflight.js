@@ -1,19 +1,17 @@
 function initializeIframe() {
-  const iframe = document.querySelector('iframe');
-  iframe.classList.add('preflight-iframe');
-  iframe.setAttribute('id', 'preflight-iframe')
+  const iframeEl = document.querySelector('iframe');
+  iframeEl.classList.add('preflight-iframe');
+  iframeEl.setAttribute('id', 'preflight-iframe')
   const preflightUrl = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
   document.querySelector('iframe').src = preflightUrl;
-  return iframe.contentDocument || iframe.contentWindow.document;
+  return {
+    url: preflightUrl,
+    iframeDoc: iframeEl.contentDocument || iframeEl.contentWindow.document,
+  };
 }
 
-async function triggerPreflight() {
-    const iframe = document.querySelector('iframe');
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    const script = iframeDoc.createElement('script');
-    const { host } = window.location;
-    const BRANCH = host.split('--')[0];
-    script.textContent = `
+function preflightScript(BRANCH) {
+  return `
       console.log('Started preflight execution');
       (async () => {
         const { getConfig, createTag, loadBlock } = await import('https://${BRANCH}--milo--adobecom.aem.live/libs/utils/utils.js');
@@ -23,6 +21,14 @@ async function triggerPreflight() {
         getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
       })();
     `;
+}
+
+async function triggerPreflight() {
+    const { url, iframeDoc } = document.querySelector('iframe');
+    const script = iframeDoc.createElement('script');
+    const { host } = window.location;
+    const BRANCH = host.split('--')[0];
+    script.textContent = preflightScript(BRANCH);
     iframeDoc.head.appendChild(script);
 }
 
