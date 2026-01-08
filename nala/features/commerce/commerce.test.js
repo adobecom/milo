@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { PRICE_PATTERN, constructTestUrl } from '@adobe/mas-platform/web-components/dist/commerce.js';
+import { PRICE_PATTERN, constructTestUrl } from '../../libs/commerce.js';
 import WebUtil from '../../libs/webutil.js';
 import { features } from './commerce.spec.js';
 import CommercePage from './commerce.page.js';

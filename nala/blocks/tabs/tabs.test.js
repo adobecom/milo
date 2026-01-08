@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { constructTestUrl } from '@adobe/mas-platform/web-components/dist/commerce.js';
+import { constructTestUrl } from '../../libs/commerce.js';
 import { features } from './tabs.spec.js';
 import TabBlock from './tabs.page.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
