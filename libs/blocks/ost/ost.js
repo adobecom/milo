@@ -2,6 +2,7 @@ import ctaTextOption from './ctaTextOption.js';
 import {
   getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
 } from '../../utils/utils.js';
+import { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } from '../merch/merch.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -61,28 +62,9 @@ export function getMasLibsBase(windowObj) {
   const urlParams = new URLSearchParams(windowObj.location.search);
   const masLibs = urlParams.get('maslibs');
 
-  if (!masLibs || masLibs.trim() === '') return 'https://mas.adobe.com';
+  if (!masLibs || masLibs.trim() === '' || masLibs.trim() === 'main') return 'https://mas.adobe.com';
 
-  const sanitizedMasLibs = masLibs.trim().toLowerCase();
-
-  if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3030';
-  }
-  if (sanitizedMasLibs === 'main') {
-    return 'https://mas.adobe.com';
-  }
-
-  // Detect current domain extension (.page or .live)
-  const { hostname } = windowObj.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
-
-  if (sanitizedMasLibs.includes('--mas--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}`;
-  }
-  if (sanitizedMasLibs.includes('--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}`;
-  }
-  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}`;
+  return getMasLibs().replace('/web-components/dist', '');
 }
 
 /**
@@ -170,7 +152,6 @@ export async function loadOstEnv() {
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
   /* c8 ignore next */
-  const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
   const attributes = { 'allow-override': 'true' };
   if (masDefaultsEnabled) {
     attributes['data-mas-ff-defaults'] = 'on';
