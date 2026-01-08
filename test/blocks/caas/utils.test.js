@@ -13,11 +13,7 @@ import {
 } from '../../../libs/blocks/caas/utils.js';
 
 before(() => {
-  window.lana = {
-    log: () => {},
-    debug: false,
-    options: { clientId: 'test-client-id' },
-  };
+  window.fetch = stub().returns(htmlResponse());
 });
 
 after(() => {
