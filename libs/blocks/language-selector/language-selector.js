@@ -276,6 +276,9 @@ function renderLanguages({
         `;
         langLink.addEventListener('click', (e) => {
           sendAnalyticsEvent(`language-switch:${lang.prefix || 'us'}`);
+          const destination = `lingo-language-selector-destination-locale=${lang.name}`;
+          const startingPoint = `lingo-language-selector-starting-locale=${currentLang.name}`;
+          window.lana.log('Click: Language_Selector', { sampleRate: 100, tags: `lingo,lingo-language-selector-click,${destination},${startingPoint}` });
           e.preventDefault();
           const cookieValue = getInternationalCookieValue(lang.prefix);
           setInternational(cookieValue);
