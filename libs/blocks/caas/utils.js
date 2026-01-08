@@ -519,6 +519,24 @@ const getFilterArray = async (state, country, lang, strs) => {
   return filters;
 };
 
+const getCategoryMappings = async (state) => {
+  if (!state.categoriesMappingFile) return {};
+  const mappings = await fetch(state.categoriesMappingFile);
+  if (mappings.ok) {
+    const json = await mappings.json();
+    const data = json.data || [];
+    // Convert array to object keyed by id
+    return data.reduce((entries, entry) => {
+      entries[entry.id] = {
+        label: entry.label,
+        items: entry.items ? entry.items.split(',').map((item) => item.trim()) : [],
+      };
+      return entries;
+    }, {});
+  }
+  return {};
+};
+
 async function getLingoSiteLocale(origin, path) {
   const host = origin.toLowerCase();
   let lingoSiteMapping = {
@@ -941,6 +959,7 @@ export const getConfig = async (originalState, strs = {}) => {
       filters: await getFilterArray(state, country, language, strs),
       categories: await getCategoryArray(state, country, language),
       filterLogic: state.filterLogic,
+      categoryMappings: await getCategoryMappings(state) || {},
       i18n: {
         leftPanel: {
           header: strs.filterLeftPanel || 'Refine Your Results',
@@ -1106,6 +1125,7 @@ export const defaultState = {
   filterBuildPanel: 'automatic',
   filterLocation: 'left',
   filterLogic: 'or',
+  categoriesMappingFile: '',
   filters: [],
   filtersCustom: [],
   filtersShowEmpty: false,

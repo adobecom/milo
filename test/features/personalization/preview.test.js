@@ -169,11 +169,10 @@ describe('MEP Lingo region select with lingo param', () => {
   beforeEach(() => {
     // Use meta tag instead of URL param because PAGE_URL is captured at module load time
     lingoMeta = document.createElement('meta');
-    lingoMeta.setAttribute('name', 'langFirst');
+    lingoMeta.setAttribute('name', 'langfirst');
     lingoMeta.setAttribute('content', 'on');
     document.head.appendChild(lingoMeta);
 
-    // Stub fetch for page existence checks
     fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, status: 200 });
   });
 
@@ -286,15 +285,30 @@ describe('MEP Lingo region select with lingo param', () => {
 describe('Lingo fragment click handlers', () => {
   let windowOpenStub;
   let testFragment;
+  let getComputedStyleStub;
 
   beforeEach(async () => {
     windowOpenStub = sinon.stub(window, 'open');
+    // Mock getComputedStyle to return badge styles
+    const originalGetComputedStyle = window.getComputedStyle;
+    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((element, pseudoElt) => {
+      if (pseudoElt === '::before') {
+        return {
+          display: 'block',
+          content: '"test badge"',
+          width: '400px',
+        };
+      }
+      return originalGetComputedStyle(element, pseudoElt);
+    });
     setConfig(config);
     await decoratePreviewMode();
   });
 
   afterEach(() => {
     windowOpenStub.restore();
+    getComputedStyleStub.restore();
+    delete document.body.dataset.mepHighlight;
     if (testFragment) {
       testFragment.remove();
       testFragment = null;
