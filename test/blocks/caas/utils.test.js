@@ -12,6 +12,20 @@ import {
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
+before(() => {
+  window.lana = {
+    log: () => {},
+    debug: false,
+    options: {
+      clientId: 'test-client-id',
+    },
+  };
+});
+
+after(() => {
+  delete window.lana;
+});
+
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
   'mt', 'mena_en', 'nl', 'no', 'pl', 'pt', 'ro', 'sa_en', 'ch_de', 'si', 'sk', 'ch_fr', 'fi', 'se', 'ch_it', 'tr',
