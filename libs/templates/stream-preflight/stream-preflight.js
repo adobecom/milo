@@ -14,7 +14,7 @@ async function triggerPreflight() {
     const { host } = window.location;
     const BRANCH = host.split('--')[0];
     script.textContent = `
-      console.log('⚠️ mathuria: Injected JS running inside iframe');
+      console.log('Started preflight execution');
       (async () => {
         const { getConfig, createTag, loadBlock } = await import('https://${BRANCH}--milo--adobecom.aem.live/libs/utils/utils.js');
         const preflight = createTag('div', {class: 'preflight'});
