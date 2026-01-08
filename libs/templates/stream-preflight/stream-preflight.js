@@ -6,9 +6,7 @@ function initializeIframe() {
   document.querySelector('iframe').src = preflightUrl;
 }
 
-function getMiloBranch(url) {
-  const iframeEl = document.querySelector('iframe');
-  const iframeDoc = iframeEl.contentDocument || iframeEl.contentWindow.document;
+function getMiloBranch() {
   const url = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
   const urlConfig = new URL(url);
   const miloLib = new URL(urlConfig.searchParams.get('milolibs'));
@@ -31,9 +29,11 @@ function preflightScript(miloHost) {
 }
 
 async function triggerPreflight() {
+    const iframeEl = document.querySelector('iframe');
+    const iframeDoc = iframeEl.contentDocument || iframeEl.contentWindow.document;
     const script = iframeDoc.createElement('script');
     const { host } = window.location;
-    const miloHost = getMiloBranchURL(url);
+    const miloHost = getMiloBranchURL();
     script.textContent = preflightScript(miloHost);
     iframeDoc.head.appendChild(script);
 }
