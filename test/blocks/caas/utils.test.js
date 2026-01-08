@@ -805,7 +805,7 @@ describe('getCountryAndLang', () => {
               },
               'site-locales': {
                 data: [
-                  { uniqueSiteId: 'hawks', baseSite: '/en', regionalSites: ['be'] },
+                  { uniqueSiteId: 'hawks', baseSite: '/fr', regionalSites: ['fr_ch'] },
                 ],
               },
             }),
