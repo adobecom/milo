@@ -11,7 +11,7 @@
 /libs/features/icons/ @adobecom/milo-core
 /libs/features/mas/ @adobecom/tacocat
 /libs/features/personalization/ @adobecom/mep-squad
-/libs/features/seotech/ @adobecom/milo-core
+/libs/features/seotech/ @hparra
 /libs/features/spectrum-web-components/ @adobecom/tacocat
 /libs/features/webapp-prompt/ @adobecom/feds
 /libs/features/footer-promo.js @meganthecoder @JasonHowellSlavin @Brandon32
@@ -130,7 +130,7 @@
 /libs/blocks/twitter/ @adobecom/milo-core
 /libs/blocks/utils/ @adobecom/milo-core
 /libs/blocks/version-history/ @bandana147
-/libs/blocks/video-metadata/ @adobecom/milo-core
+/libs/blocks/video-metadata/ @hparra
 /libs/blocks/video/ @adobecom/milo-core
 /libs/blocks/vimeo/ @adobecom/milo-core
 /libs/blocks/walls-io/ @adobecom/milo-core
