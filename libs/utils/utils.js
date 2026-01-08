@@ -2086,7 +2086,7 @@ async function loadFragments(section, selector) {
 }
 
 async function resolveHighPriorityFragments(section) {
-  section.el.querySelectorAll('[data-mep-lingo-block-swap], a[href*="#_inline"]').forEach((a) => {
+  section.el.querySelectorAll('a[data-mep-lingo-block-swap], a[href*="#_inline"][data-mep-lingo]').forEach((a) => {
     const bName = a.dataset.mepLingoBlockSwap;
     const block = bName ? a.closest(`.${bName}`) : a.closest('.section > div[class]');
     if (block?.classList.contains('hide-block')) block.remove();
