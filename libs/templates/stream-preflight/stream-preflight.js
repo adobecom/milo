@@ -12,18 +12,20 @@ function initializeIframe() {
 
 function getMiloBranch(url) {
   const urlConfig = new URL(url);
-  const miloLib = new URL(urlConfig.searchParams.get('milolibs'))
-  return miloLib ? miloLib : urlConfig.host.split('--')[0]
+  const miloLib = new URL(urlConfig.searchParams.get('milolibs'));
+  if (miloLib && miloLib.includes('--')) return `https:\\${miloLib}.aem.live`;
+  if (miloLib) return `https:\\${miloLib}--milo--adobecom.aem.live`;
+  return `https://${urlConfig.host.split('--')[0]}--milo--adobecom.aem.live`;
 }
 
-function preflightScript(branch) {
+function preflightScript(miloHost) {
   return `
       console.log('Started preflight execution');
       (async () => {
-        const { getConfig, createTag, loadBlock } = await import('https://${BRANCH}--milo--adobecom.aem.live/libs/utils/utils.js');
+        const { getConfig, createTag, loadBlock } = await import('${miloHost}/libs/utils/utils.js');
         const preflight = createTag('div', {class: 'preflight'});
         const content = await loadBlock(preflight);
-        const { getModal } = await import('https://${BRANCH}--milo--adobecom.aem.live/libs/blocks/modal/modal.js');
+        const { getModal } = await import('${miloHost}/libs/blocks/modal/modal.js');
         getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
       })();
     `;
@@ -33,8 +35,8 @@ async function triggerPreflight() {
     const { url, iframeDoc } = document.querySelector('iframe');
     const script = iframeDoc.createElement('script');
     const { host } = window.location;
-    const branch = getMiloBranch(url);
-    script.textContent = preflightScript(branch);
+    const miloHost = getMiloBranchURL(url);
+    script.textContent = preflightScript(miloHost);
     iframeDoc.head.appendChild(script);
 }
 
