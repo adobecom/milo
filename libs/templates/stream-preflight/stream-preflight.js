@@ -10,7 +10,13 @@ function initializeIframe() {
   };
 }
 
-function preflightScript(BRANCH) {
+function getMiloBranch(url) {
+  const urlConfig = new URL(url);
+  const miloLib = new URL(urlConfig.searchParams.get('milolibs'))
+  return miloLib ? miloLib : urlConfig.host.split('--')[0]
+}
+
+function preflightScript(branch) {
   return `
       console.log('Started preflight execution');
       (async () => {
@@ -27,8 +33,8 @@ async function triggerPreflight() {
     const { url, iframeDoc } = document.querySelector('iframe');
     const script = iframeDoc.createElement('script');
     const { host } = window.location;
-    const BRANCH = host.split('--')[0];
-    script.textContent = preflightScript(BRANCH);
+    const branch = getMiloBranch(url);
+    script.textContent = preflightScript(branch);
     iframeDoc.head.appendChild(script);
 }
 
