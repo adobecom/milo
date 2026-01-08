@@ -7,16 +7,16 @@ function notifyParent(redirRef) {
         status: 'success',
         data: 'Sidekick login successful!!',
       },
-      redirRef
+      redirRef,
     );
   }
-  setTimeout( () => {
-    window.close()
+  setTimeout(() => {
+    window.close();
   }, 1000);
 }
 
 export default async function init() {
-  const redirRef = new URLSearchParams(window.location.search).get("redirectRef");
+  const redirRef = new URLSearchParams(window.location.search).get('redirectRef');
   if (!redirRef) return;
   notifyParent(redirRef);
 }

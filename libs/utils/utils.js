@@ -3,7 +3,7 @@ const MILO_TEMPLATES = [
   '404',
   'featured-story',
   'stream-preflight',
-  'stream-sidekick'
+  'stream-sidekick',
 ];
 const MILO_BLOCKS = [
   'accordion',

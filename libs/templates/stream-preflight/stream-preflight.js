@@ -3,7 +3,8 @@ function initializeIframe() {
   iframeEl.classList.add('preflight-iframe');
   iframeEl.setAttribute('id', 'preflight-iframe');
   const preflightUrl = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
-  document.querySelector('iframe').src = preflightUrl;
+  const targetUrl = new URL(preflightUrl)
+  if (targetUrl.host === window.location.host) document.querySelector('iframe').src = preflightUrl;
 }
 
 function getMiloBranchURL() {
@@ -29,13 +30,12 @@ function preflightScript(miloHost) {
 }
 
 async function triggerPreflight() {
-    const iframeEl = document.querySelector('iframe');
-    const iframeDoc = iframeEl.contentDocument || iframeEl.contentWindow.document;
-    const script = iframeDoc.createElement('script');
-    const { host } = window.location;
-    const miloHost = getMiloBranchURL();
-    script.textContent = preflightScript(miloHost);
-    iframeDoc.head.appendChild(script);
+  const iframeEl = document.querySelector('iframe');
+  const iframeDoc = iframeEl.contentDocument || iframeEl.contentWindow.document;
+  const script = iframeDoc.createElement('script');
+  const miloHost = getMiloBranchURL();
+  script.textContent = preflightScript(miloHost);
+  iframeDoc.head.appendChild(script);
 }
 
 export default async function init() {
