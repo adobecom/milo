@@ -581,6 +581,15 @@ async function getLingoSiteLocale(origin, path) {
         }
       });
 
+    // check if the localeStr is in the baseSite or regioanlSites.
+    // if not, use the og country/language logic
+    if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || regionalSites.includes(localeStr)))) {
+      return {
+        country: localeStr,
+        language: 'en',
+      };
+    }
+
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
       .forEach(({ baseSite, regionalSites }) => {
@@ -638,7 +647,6 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
   const langFirst = getMetadata('langfirst');
-  console.log('langFirst', langFirst);
   /* if it is a language first localized page don't use the milo locales.
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
