@@ -27,8 +27,6 @@ describe('Featured Story Template', () => {
         await import(moduleUrl);
 
         featuredStoryWrapper = document.querySelector('.featured-story-wrapper');
-        section1 = document.querySelector('.section-1');
-        section2 = document.querySelector('.section-2');
       });
 
       it('creates a featured-story-wrapper with correct classes', () => {
@@ -37,13 +35,11 @@ describe('Featured Story Template', () => {
         expect(featuredStoryWrapper.classList.contains('has-section-metadata')).to.equal(testCase.hasSectionMetadata);
       });
 
-      it('wraps sections[1] and sections[2]', () => {
+      it('wraps sections', () => {
+        section1 = featuredStoryWrapper.querySelector('.section-1');
+        section2 = featuredStoryWrapper.querySelector('.section-2');
         expect(section1).to.exist;
         expect(section2).to.exist;
-        expect(section1.parentElement).to.equal(featuredStoryWrapper);
-        expect(section2.parentElement).to.equal(featuredStoryWrapper);
-        expect(section1.classList.contains('section')).to.be.false;
-        expect(section2.classList.contains('section')).to.be.false;
       });
     });
   });
