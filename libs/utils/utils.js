@@ -525,7 +525,7 @@ export function isInTextNode(node) {
 }
 
 export function lingoActive() {
-  const langFirst = (getMetadata('langFirst') || PAGE_URL.searchParams.get('langFirst'))?.toLowerCase();
+  const langFirst = (getMetadata('langfirst') || PAGE_URL.searchParams.get('langfirst'))?.toLowerCase();
   return ['true', 'on'].includes(langFirst);
 }
 
@@ -624,7 +624,7 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
   const siteId = config.uniqueSiteId ?? '';
-  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
+  const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
 
   queryIndexes[siteId] = processQueryIndexMap(
     `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
@@ -727,7 +727,7 @@ function localizeLinkCore(
     let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
-        && ((locale.base && !path.includes('/fragments/'))
+        && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
           || (!!locale.regions && path.includes('/fragments/') && aTag.dataset.mepLingo === 'true'))) {
       return (async () => {
         if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
@@ -743,7 +743,7 @@ function localizeLinkCore(
         if (matchingIndexes.length) {
           const { default: urlInQueryIndex } = await import('./lingo.js');
           const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
-          if (!useRegionalPrefix && locale.base) prefix = basePrefix;
+          if (!useRegionalPrefix && (locale.base || locale.base === '')) prefix = basePrefix;
         } else {
           prefix = basePrefix;
         }
@@ -2086,6 +2086,12 @@ async function loadFragments(section, selector) {
 }
 
 async function resolveHighPriorityFragments(section) {
+  section.el.querySelectorAll('a[data-mep-lingo-block-swap], a[href*="#_inline"][data-mep-lingo]').forEach((a) => {
+    const bName = a.dataset.mepLingoBlockSwap;
+    const block = bName ? a.closest(`.${bName}`) : a.closest('.section > div[class]');
+    if (block?.classList.contains('hide-block')) block.remove();
+  });
+
   // Load in cascading order: section swaps → block swaps → inline fragments
   const hadSectionSwaps = await loadFragments(section.el, 'a[data-mep-lingo-section-swap]');
   const hadBlockSwaps = await loadFragments(section.el, 'a[data-mep-lingo-block-swap]');
@@ -2129,7 +2135,7 @@ function loadLingoIndexes() {
   const config = getConfig();
   const { locale } = config || {};
 
-  if (locale?.base) {
+  if (locale?.base || locale?.base === '') {
     loadQueryIndexes(config.locale.prefix);
     return;
   }

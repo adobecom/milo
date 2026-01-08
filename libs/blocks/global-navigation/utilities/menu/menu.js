@@ -156,7 +156,7 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
     // Decorate link group
     if (link.matches('.link-group')) {
       const anchorElement = link.querySelector('a');
-      if (anchorElement.classList.contains('merch')) {
+      if (anchorElement?.classList.contains('merch')) {
         const clonedElement = anchorElement.cloneNode(true);
         const merchElement = await merch.default(clonedElement);
         const decoratedElement = decorateLinkGroup(link, itemIndex.position);
