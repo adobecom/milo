@@ -411,7 +411,7 @@ function setupDropdownEvents({
 
   async function openDropdown() {
     sendAnalyticsEvent('language-selector:opened');
-    window?.lana?.log('Load: Language_Selector', { sampleRate: 100, tags: 'lingo,lingo-language-selector-load' });
+    window?.lana?.log('Open: Language_Selector', { sampleRate: 100, tags: 'lingo,lingo-language-selector-open' });
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
