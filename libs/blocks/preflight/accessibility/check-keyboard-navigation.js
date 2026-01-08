@@ -14,7 +14,7 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
   const focusableSelectors = [
     'a[href]',
     'button:not([disabled])',
-    'input:not([disabled]):not(.hide)',
+    'input:not([disabled], .hide)',
     'textarea:not([disabled])',
     'select:not([disabled])',
     '[tabindex]:not([tabindex="-1"])',
@@ -49,12 +49,10 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
   const isSelfHidden = (el) => {
     if (isHiddenByStyle(el)) return true;
     const elBox = el.getBoundingClientRect();
-    if (elBox.width <= 0 || elBox.height <= 0) return !isHiddenByAncestors(el);
-    return false;
+    return !elBox.width || !elBox.height;
   };
   focusableElements.forEach((el) => {
-    if (isHiddenByAncestors(el)) return;
-    if (!isSelfHidden(el)) return;
+    if (isHiddenByAncestors(el) || !isSelfHidden(el)) return;
     violations.push({
       description: 'Element is not visibly rendered; keyboard focus may not be perceivable.',
       impact: 'critical',
