@@ -4,8 +4,7 @@ export default async function init() {
       {
         status: "success",
         data: "Sidekick login successful"
-      },
-      window.location.origin,
+      }
     );
   }
   setTimeout( () => {
