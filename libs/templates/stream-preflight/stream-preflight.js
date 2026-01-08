@@ -2,9 +2,23 @@ function initializeIframe() {
   const iframeEl = document.querySelector('iframe');
   iframeEl.classList.add('preflight-iframe');
   iframeEl.setAttribute('id', 'preflight-iframe');
-  const preflightUrl = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
-  const targetUrl = new URL(preflightUrl)
-  if (targetUrl.host === window.location.host) document.querySelector('iframe').src = preflightUrl;
+  const rawUrlParam = new URL(window.location.href).searchParams.get('url');
+  if (!rawUrlParam) {
+    return;
+  }
+  let targetUrl;
+  try {
+    const decodedUrl = decodeURIComponent(rawUrlParam);
+    targetUrl = new URL(decodedUrl, window.location.origin);
+  } catch (e) {
+    // Invalid URL, do not update iframe src
+    return;
+  }
+  const isSameHost = targetUrl.host === window.location.host;
+  const isHttpProtocol = targetUrl.protocol === 'http:' || targetUrl.protocol === 'https:';
+  if (isSameHost && isHttpProtocol) {
+    iframeEl.src = targetUrl.toString();
+  }
 }
 
 function getMiloBranchURL() {
