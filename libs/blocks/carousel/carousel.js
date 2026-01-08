@@ -24,6 +24,7 @@ const KEY_CODES = {
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
   ESCAPE: 'Escape',
+  TAB: 'Tab',
 };
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
@@ -182,6 +183,8 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   const closeLightbox = () => {
     header.style.zIndex = headerZIndex;
     el.classList.remove('lightbox-active');
+    el.removeAttribute('role');
+    el.removeAttribute('aria-modal');
     curtain.remove();
   };
 
@@ -191,7 +194,11 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
       if (button.classList.contains('carousel-expand')) {
         header.style.zIndex = '-1';
         el.classList.add('lightbox-active');
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-modal', 'true');
         slideWrapper.append(curtain);
+        const firstFocusable = el.querySelector('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        firstFocusable?.focus({ focusVisible: true });
       }
 
       if (button.classList.contains('carousel-close')) {
@@ -207,8 +214,29 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   }, true);
 
   document.addEventListener('keydown', (event) => {
-    if (event.key !== KEY_CODES.ESCAPE || !el.classList.contains('lightbox-active')) return;
-    closeLightbox();
+    if (!el.classList.contains('lightbox-active')) return;
+
+    if (event.key === KEY_CODES.ESCAPE) {
+      closeLightbox();
+      return;
+    }
+
+    if (event.key === KEY_CODES.TAB) {
+      const focusableElements = el.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable.focus();
+        return;
+      }
+
+      if (!event.shiftKey && document.activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable.focus();
+      }
+    }
   });
 }
 
