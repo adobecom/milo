@@ -278,7 +278,7 @@ function renderLanguages({
           sendAnalyticsEvent(`language-switch:${lang.prefix || 'us'}`);
           const startingPoint = `lingo-language-selector-starting-locale=${currentLang.name}`;
           const destination = `lingo-language-selector-destination-locale=${lang.name}`;
-          window.lana.log('Click: Language_Selector', { sampleRate: 100, tags: `lingo,lingo-language-selector-click,${startingPoint},${destination}` });
+          window?.lana?.log('Click: Language_Selector', { sampleRate: 100, tags: `lingo,lingo-language-selector-click,${startingPoint},${destination}` });
           e.preventDefault();
           const cookieValue = getInternationalCookieValue(lang.prefix);
           setInternational(cookieValue);
@@ -411,7 +411,7 @@ function setupDropdownEvents({
 
   async function openDropdown() {
     sendAnalyticsEvent('language-selector:opened');
-    window.lana.log('Load: Language_Selector', { sampleRate: 100, tags: 'lingo,lingo-language-selector-load' });
+    window?.lana?.log('Load: Language_Selector', { sampleRate: 100, tags: 'lingo,lingo-language-selector-load' });
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
