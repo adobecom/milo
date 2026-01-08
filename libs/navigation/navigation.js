@@ -62,13 +62,13 @@ function getParamsConfigs(configs) {
   }, {});
 }
 
-function setMetaTags(metaTags, blockConfig, createTag) {
+function setMetaTags(metaTags, configs, createTag) {
   metaTags.forEach((tag) => {
     const { key } = tag;
-    if (blockConfig[key]) {
+    if (configs[key]) {
       const metaTag = createTag('meta', {
         name: tag.name,
-        content: blockConfig[key],
+        content: configs[key],
       });
       document.head.append(metaTag);
     }
@@ -158,7 +158,7 @@ export default async function loadBlock(configs, customLib) {
       const config = getConfig();
       if (block.key === 'header') {
         const gnavSource = configBlock.gnavSource || `${config?.locale?.contentRoot}/gnav`;
-        
+
         try {
           const gnavConfigs = {
             ...block,
@@ -171,7 +171,7 @@ export default async function loadBlock(configs, customLib) {
             isLocalNav: configBlock.isLocalNav,
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
-          }
+          };
           const metaTags = [
             { key: 'gnavSource', name: 'gnav-source' },
             { key: 'unavComponents', name: 'universal-nav' },
