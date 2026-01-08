@@ -9,7 +9,7 @@ function initializeIframe() {
 function getMiloBranchURL() {
   const url = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
   const urlConfig = new URL(url);
-  const miloLib = new URL(urlConfig.searchParams.get('milolibs'));
+  const miloLib = urlConfig.searchParams.get('milolibs');
   if (miloLib && miloLib.includes('--')) return `https:\\${miloLib}.aem.live`;
   if (miloLib) return `https:\\${miloLib}--milo--adobecom.aem.live`;
   return `https://${urlConfig.host.split('--')[0]}--milo--adobecom.aem.live`;
