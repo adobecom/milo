@@ -8,7 +8,7 @@ function initializeIframe() {
 
 function getMiloBranch(url) {
   const iframeEl = document.querySelector('iframe');
-  const iframeDoc = iframeEl.contentDocument || iframeEl.contentWindow.document,
+  const iframeDoc = iframeEl.contentDocument || iframeEl.contentWindow.document;
   const url = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
   const urlConfig = new URL(url);
   const miloLib = new URL(urlConfig.searchParams.get('milolibs'));
