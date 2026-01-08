@@ -22,12 +22,20 @@ function initializeIframe() {
 }
 
 function getMiloBranchURL() {
-  const url = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
-  const urlConfig = new URL(url);
-  const miloLib = urlConfig.searchParams.get('milolibs');
-  if (miloLib && miloLib.includes('--')) return `https:\\${miloLib}.aem.live`;
-  if (miloLib) return `https:\\${miloLib}--milo--adobecom.aem.live`;
-  return `https://${urlConfig.host.split('--')[0]}--milo--adobecom.aem.live`;
+  try {
+    const currentUrl = new URL(window.location.href);
+    const urlParam = currentUrl.searchParams.get('url');
+    if (!urlParam) return window.location.origin;
+    const url = decodeURIComponent(urlParam);
+    const urlConfig = new URL(url, window.location.href);
+    const miloLib = urlConfig.searchParams.get('milolibs');
+    if (miloLib && miloLib.includes('--')) return `https:\\${miloLib}.aem.live`;
+    if (miloLib) return `https:\\${miloLib}--milo--adobecom.aem.live`;
+    return `https://${urlConfig.host.split('--')[0]}--milo--adobecom.aem.live`;
+  } catch (e) {
+    // Fallback to current origin if the URL parameter is invalid.
+    return window.location.origin;
+  }
 }
 
 function preflightScript(miloHost) {
