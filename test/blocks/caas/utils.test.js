@@ -815,9 +815,7 @@ describe('getCountryAndLang', () => {
         if (url === 'https://geo2.adobe.com/json/') {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({
-              country: 'US',
-            }),
+            json: () => Promise.resolve({ country: 'US', }),
           });
         }
         return ogFetch(url, options);
