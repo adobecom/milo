@@ -200,6 +200,7 @@ export default async function loadBlock(configs, customLib) {
           ];
           const footerConfigs = {
             ...block,
+            footerSource,
             isContainerResponsive: configBlock.isContainerResponsive,
           };
 
