@@ -92,7 +92,16 @@ describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
   beforeEach(() => {
-    window.fetch = stub().returns(htmlResponse());
+    window.fetch = stub().callsFake((url) => {
+      // Mock query index files
+      if (url.includes('/assets/lingo/query-index')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ data: [] }),
+        });
+      }
+      return htmlResponse();
+    });
   });
 
   afterEach(() => {
