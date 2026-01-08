@@ -16,9 +16,7 @@ before(() => {
   window.lana = {
     log: () => {},
     debug: false,
-    options: {
-      clientId: 'test-client-id',
-    },
+    options: { clientId: 'test-client-id' },
   };
 });
 
