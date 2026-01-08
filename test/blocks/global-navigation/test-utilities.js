@@ -14,7 +14,6 @@ import globalNavigationMock from './mocks/global-navigation.plain.js';
 import correctPromoFragmentMock from './mocks/correctPromoFragment.plain.js';
 import { isElementVisible, selectors as keyboardSelectors } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
 import { selectors as baseSelectors, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
-import initGnav from '../../../libs/blocks/global-navigation/global-navigation.js';
 
 export { isElementVisible };
 
@@ -215,6 +214,8 @@ export const createFullGlobalNavigation = async ({
   // After optimizing the gnav load, certain operations (e.g. getGnavSource) on load of
   // the js file rather than on init. The queryparamenter supports this by reloading
   // the module each time we get here.
+  const url = `../../../libs/blocks/global-navigation/global-navigation.js?reimport=${crypto.randomUUID()}`;
+  const { default: initGnav } = await import(url);
   const instancePromise = initGnav(document.body.querySelector('header'));
   await clock.runToLastAsync();
   clock.tick(1000);

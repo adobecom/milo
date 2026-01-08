@@ -42,7 +42,6 @@ async function initGnav(block) {
 describe('global navigation', () => {
   before(() => {
     document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
-    <meta name="gnav-source" content="/test/blocks/gnav/mocks/gnav">
     <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
     <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
@@ -608,10 +607,7 @@ describe('global navigation', () => {
       sinon.restore();
       document.head.replaceChildren();
       document.body.replaceChildren();
-      document.head.innerHTML = `
-      <meta name="gnav-source" content="/test/blocks/gnav/mocks/gnav">
-      <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-      `;
+      document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
     });
 
     it('fetches default global navigation based on metadata', async () => {
