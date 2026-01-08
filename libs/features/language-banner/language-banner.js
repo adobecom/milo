@@ -55,25 +55,33 @@ async function showBanner(market, config) {
   const { codeRoot, miloLibs } = config;
   loadStyle(`${miloLibs || codeRoot}/features/language-banner/language-banner.css`);
 
+  const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
+  // eventName = "suggestedSite-currentSite|language-banner"
+  const eventName = `${market.prefix || 'us'}-${pagePrefix}|language-banner`;
+
   banner.querySelector('.language-banner-link').addEventListener('click', async (e) => {
     e.preventDefault();
     const { setInternational } = await import('../../utils/utils.js');
     setInternational(market.prefix || 'us');
-    if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Click: ${market.prefix || 'us'}|language-banner`);
+    if (config.lingoProjectSuccessLogging === 'on') {
+      window.lana.log(`Click: ${eventName}`, { sampleRate: 100, tags: 'lingo, lingo-language-banner-click' });
+    }
     window.open(translatedUrl, '_self');
   });
 
   banner.querySelector('.language-banner-close').addEventListener('click', () => {
-    const pageLangPrefix = config.locale.prefix?.replace('/', '') || 'us';
     const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
-    document.cookie = `international=${pageLangPrefix};path=/;${domain}`;
-    if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Close: ${market.prefix || 'us'}|language-banner`);
+    document.cookie = `international=${pagePrefix};path=/;${domain}`;
+    if (config.lingoProjectSuccessLogging === 'on') {
+      window.lana.log(`Close: ${eventName}`, { sampleRate: 100, tags: 'lingo, lingo-language-banner-close' });
+    }
     banner.remove();
   });
-  const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
-  const eventName = `${market.prefix || 'us'}-${pagePrefix}|language-banner`;
+
   sendAnalytics(new Event(eventName));
-  if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Load: ${eventName}`);
+  if (config.lingoProjectSuccessLogging === 'on') {
+    window.lana.log(`Load: ${eventName}`, { sampleRate: 100, tags: 'lingo, lingo-language-banner-load' });
+  }
 }
 
 export default async function init() {
