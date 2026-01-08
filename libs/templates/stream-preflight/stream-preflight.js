@@ -2,7 +2,7 @@ function initializeIframe() {
   const iframe = document.querySelector('iframe');
   iframe.classList.add('preflight-iframe');
   iframe.setAttribute('id', 'preflight-iframe')
-  const preflightUrl = new URL(window.location.href).searchParams.get('url');
+  const preflightUrl = decodeURIComponent(new URL(window.location.href).searchParams.get('url'));
   document.querySelector('iframe').src = preflightUrl;
   return iframe.contentDocument || iframe.contentWindow.document;
 }
