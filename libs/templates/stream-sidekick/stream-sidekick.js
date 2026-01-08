@@ -16,7 +16,7 @@ function notifyParent() {
 }
 
 export default async function init() {
-  const parentRedir = new URL(window.location.href).searchParams('redirectRef');
+  const parentRedir = new URLSearchParams(window.location.search).get("redirectRefs");
   notifyParent(parentRedir);
 }
 
