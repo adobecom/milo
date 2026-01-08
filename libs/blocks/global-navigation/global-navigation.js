@@ -58,6 +58,7 @@ const breadCrumbsJsPromise = document.querySelector('header')?.classList.contain
 const [utilities, placeholders, merch, { processTrackingLabels }] = await Promise.all([
   import('./utilities/utilities.js'),
   import('../../features/placeholders.js'),
+  import('../merch/merch.js'),
   import('../../martech/attributes.js'),
 ]);
 
