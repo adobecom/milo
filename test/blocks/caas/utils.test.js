@@ -783,18 +783,52 @@ describe('getCountryAndLang', () => {
 
   describe('langFirst with GEO IP', () => {
     let metaLangFirst;
+    const ogFetch = window.fetch;
 
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
       metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
+
+      // Mock external fetches
+      window.fetch = stub().callsFake((url, options) => {
+        // Mock the lingo-site-mapping.json fetch
+        if (url === 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json') {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              'site-query-index-map': {
+                data: [
+                  { uniqueSiteId: 'hawks', caasOrigin: 'hawks' },
+                ],
+              },
+              'site-locales': {
+                data: [
+                  { uniqueSiteId: 'hawks', baseSite: '/en', regionalSites: ['be'] },
+                ],
+              },
+            }),
+          });
+        }
+        // Mock the GEO IP lookup
+        if (url === 'https://geo2.adobe.com/json/') {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              country: 'US',
+            }),
+          });
+        }
+        return ogFetch(url, options);
+      });
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
+      window.fetch = ogFetch;
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
