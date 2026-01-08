@@ -1,11 +1,16 @@
+function checkUrlCorrectness(targetUrl) {
+  const isSameHost = targetUrl.host === window.location.host;
+  const isHttpsProtocol = targetUrl.protocol === 'https:';
+  const isAdobecom = targetUrl.host.endsWith('--adobecom.aem.live') || targetUrl.host.includes('--adobecom.aem.page');
+  return isSameHost && isHttpsProtocol && isAdobecom;
+}
+
 function initializeIframe() {
   const iframeEl = document.querySelector('iframe');
   iframeEl.classList.add('preflight-iframe');
   iframeEl.setAttribute('id', 'preflight-iframe');
   const rawUrlParam = new URL(window.location.href).searchParams.get('url');
-  if (!rawUrlParam) {
-    return;
-  }
+  if (!rawUrlParam) return;
   let targetUrl;
   try {
     const decodedUrl = decodeURIComponent(rawUrlParam);
@@ -14,9 +19,7 @@ function initializeIframe() {
     // Invalid URL, do not update iframe src
     return;
   }
-  const isSameHost = targetUrl.host === window.location.host;
-  const isHttpProtocol = targetUrl.protocol === 'http:' || targetUrl.protocol === 'https:';
-  if (isSameHost && isHttpProtocol) {
+  if (checkUrlCorrectness(targetUrl)) {
     iframeEl.src = targetUrl.toString();
   }
 }

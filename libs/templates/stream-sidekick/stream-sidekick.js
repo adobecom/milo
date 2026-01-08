@@ -6,6 +6,7 @@ function notifyParent(redirRef) {
         source: 'stream-preflight',
         status: 'success',
         data: 'Sidekick login successful!!',
+        code: new URLSearchParams(window.location.search).get('ackcode'),
       },
       redirRef,
     );
