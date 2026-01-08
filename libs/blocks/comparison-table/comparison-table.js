@@ -312,10 +312,23 @@ function decorateTableToggleButton({
   return tableChild;
 }
 
+function hasMinimalContent(el) {
+  return el.querySelector('.icon') || [...el.children].every((c) => c.tagName === 'WBR');
+}
+
+function hasOnlyParagraphs(el) {
+  const children = [...el.children];
+  return children.length > 0
+    && children.every((c) => c.tagName === 'P')
+    && !el.querySelector('.icon');
+}
+
 function setupCellAttributes(child, childIndex, arePrimaryColumns) {
   child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
   if (childIndex === 0) {
     child.setAttribute('role', 'rowheader');
+    if (hasMinimalContent(child)) child.classList.add('minimal-content');
+    if (hasOnlyParagraphs(child)) child.classList.add('text-only');
   } else {
     child.setAttribute('data-column-index', childIndex);
     child.setAttribute('role', 'cell');

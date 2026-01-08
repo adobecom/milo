@@ -28,7 +28,6 @@
 
 .comparison-table :is(p, h1, h2, h3, h4, h5, h6) {
   margin: 0;
-  display: inline;
 }
 
 .comparison-table .table-container {
@@ -456,9 +455,7 @@
   }
 
   .comparison-table .header-content-wrapper .header-item:first-child,
-  .comparison-table .table-row-header:has(.icon),
-  .comparison-table .table-row-header:not(:has(*)),
-  .comparison-table .table-row-header:not(:has(*:not(wbr))) {
+  .comparison-table .table-row-header.minimal-content {
     display: flex;
   }
 
@@ -471,7 +468,7 @@
     margin-inline-end: var(--comparison-table-spacing);
   }
 
-  .comparison-table .table-row-header:has(> p):not(:has(> :not(p))):not(:has(.icon)) {
+  .comparison-table .table-row-header.text-only {
     display: flex;
     align-items: start;
     justify-content: center;
