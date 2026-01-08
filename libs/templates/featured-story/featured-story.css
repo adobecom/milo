@@ -13,11 +13,11 @@ Template: Featured Story
     gap: var(--spacing-xl);
   }
 
-  .featured-story-wrapper:not(.has-section-metadata) .section-1 {
+  .featured-story-wrapper:not(.has-section-metadata) .col-1 {
     width: 30%;
   }
 
-  .featured-story-wrapper:not(.has-section-metadata) .section-2 {
+  .featured-story-wrapper:not(.has-section-metadata) .col-2 {
     width: 70%;
   }
 }

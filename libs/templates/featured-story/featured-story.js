@@ -2,9 +2,18 @@
 Templates - featured story
 */
 
-import { createTag } from '../../utils/utils.js';
+import { createTag, loadBlock } from '../../utils/utils.js';
 
-export default function init() {
+async function loadSectionMetadata(sectionMetadata, featuredSection) {
+  sectionMetadata.hidden = true;
+  featuredSection.append(sectionMetadata);
+  if (sectionMetadata.getAttribute('data-block-status') !== 'loaded') {
+    await loadBlock(sectionMetadata);
+  }
+  sectionMetadata.hidden = false;
+}
+
+export default async function init() {
   const i = 1;
   const sections = document.querySelectorAll('body > main > div.section');
   if (!sections.length > i + 1) return;
@@ -19,9 +28,12 @@ export default function init() {
     template: 'featured-story',
   });
   section.insertAdjacentElement('afterend', featuredSection);
-  featuredSection.insertAdjacentElement('afterbegin', section);
-  featuredSection.insertAdjacentElement('beforeend', nextSection);
-  if (sectionMetadata) featuredSection.append(sectionMetadata);
+  const col1 = createTag('div', { class: 'col-1' }, section);
+  const col2 = createTag('div', { class: 'col-2' }, nextSection);
+  featuredSection.insertAdjacentElement('afterbegin', col1);
+  featuredSection.insertAdjacentElement('beforeend', col2);
+  if (!sectionMetadata) return;
+  await loadSectionMetadata(sectionMetadata, featuredSection);
 }
 
 init();
