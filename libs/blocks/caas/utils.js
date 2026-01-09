@@ -1,6 +1,5 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
-import { lingoActive } from '../../utils/utils.js';
 import {
   getConfig as pageConfigHelper,
   getCountry,
@@ -8,8 +7,9 @@ import {
   loadScript,
   loadStyle,
   localizeLinkAsync,
+  lingoActive,
+  fetchWithTimeout,
 } from '../../utils/utils.js';
-import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
 // Local copy of lingoActive to avoid potential import issues
