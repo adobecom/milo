@@ -58,8 +58,8 @@ document.body.classList.add('tool', 'tool-ost');
  * Gets the base URL for loading Tacocat OST build file based on maslibs parameter
  * @returns {string} Base URL for OST index.js
  */
-export function getMasLibsBase(windowObj) {
-  const urlParams = new URLSearchParams(windowObj.location.search);
+export function getMasLibsBase() {
+  const urlParams = new URLSearchParams(window.location.search);
   const masLibs = urlParams.get('maslibs');
 
   if (!masLibs || masLibs.trim() === '' || masLibs.trim() === 'main') return 'https://mas.adobe.com';
@@ -345,12 +345,12 @@ function addToggleSwitches(el, ostEnv) {
 export default async function init(el) {
   el.innerHTML = '<div />';
 
-  loadStyle(`${getMasLibsBase(window)}${OST_STYLE_URL}`);
+  loadStyle(`${getMasLibsBase()}${OST_STYLE_URL}`);
   loadStyle('https://use.typekit.net/pps7abe.css');
 
   const [ostEnv] = await Promise.all([
     loadOstEnv(),
-    loadScript(`${getMasLibsBase(window)}${OST_SCRIPT_URL}`),
+    loadScript(`${getMasLibsBase()}${OST_SCRIPT_URL}`),
   ]);
 
   function openOst() {
