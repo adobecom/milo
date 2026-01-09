@@ -7,10 +7,16 @@ import {
   loadScript,
   loadStyle,
   localizeLinkAsync,
-  lingoActive
 } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
+
+// Local copy of lingoActive to avoid potential import issues
+const PAGE_URL = new URL(window.location.href);
+function lingoActive() {
+  const langFirst = (getMetadata('langfirst') || PAGE_URL.searchParams.get('langfirst'))?.toLowerCase();
+  return ['true', 'on'].includes(langFirst);
+}
 
 export const LANGS = {
   en: 'en',
@@ -615,7 +621,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
   const localeArr = path.split('/');
   let langStr = 'en';
   let countryStr = 'xx';
-  if (origin?.toLowerCase() === 'news') {
+  if (origin.toLowerCase() === 'news') {
     langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
     countryStr = LOCALES[localeArr[2]] ?? 'xx';
     if (typeof countryStr === 'object') {
