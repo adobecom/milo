@@ -23,11 +23,6 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
 
       if (target === document.querySelector('footer')) {
         el.classList.toggle('fill-sticky-section', isIntersecting);
-      } else if (target === document.querySelector('.hide-at-intersection')) {
-        const shouldHideSticky = isIntersecting
-          || entry.boundingClientRect.top < 0
-          || stickySectionEl?.getBoundingClientRect().y > 0;
-        el.classList.toggle('hide-sticky-section', shouldHideSticky);
       } else if (target.classList && target.classList.contains('hide-at-intersection-start')) {
         el.classList.toggle('hide-sticky-section', isIntersecting || entry.boundingClientRect.top <= 0);
       } else if (target.classList && target.classList.contains('hide-at-intersection-end')) {
