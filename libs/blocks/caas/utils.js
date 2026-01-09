@@ -1,5 +1,6 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
+import { lingoActive } from '../../utils/utils.js';
 import {
   getConfig as pageConfigHelper,
   getCountry,
@@ -12,11 +13,11 @@ import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
 // Local copy of lingoActive to avoid potential import issues
-const PAGE_URL = new URL(window.location.href);
-function lingoActive() {
-  const langFirst = (getMetadata('langfirst') || PAGE_URL.searchParams.get('langfirst'))?.toLowerCase();
-  return ['true', 'on'].includes(langFirst);
-}
+// const PAGE_URL = new URL(window.location.href);
+// function lingoActive() {
+//   const langFirst = (getMetadata('langfirst') || PAGE_URL.searchParams.get('langfirst'))?.toLowerCase();
+//   return ['true', 'on'].includes(langFirst);
+// }
 
 export const LANGS = {
   en: 'en',
