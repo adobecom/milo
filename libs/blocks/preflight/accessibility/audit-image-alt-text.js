@@ -61,7 +61,11 @@ export async function checkAlt() {
       pictureMetaElem = picture.querySelector('.asset-meta');
       if (!pictureMetaElem) {
         pictureMetaElem = createTag('div', { class: 'asset-meta preflight-decoration' });
-        picture.insertBefore(pictureMetaElem, img.nextSibling);
+        if (img.nextSibling && img.nextSibling.parentNode === picture) {
+          picture.insertBefore(pictureMetaElem, img.nextSibling);
+        } else {
+          picture.appendChild(pictureMetaElem);
+        }
       }
     } else {
       pictureMetaElem = createTag('div', { class: 'asset-meta preflight-decoration no-picture-tag' });
