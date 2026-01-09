@@ -10,13 +10,7 @@ import {
 } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
-
-// Local copy of lingoActive to avoid potential import issues
-// const PAGE_URL = new URL(window.location.href);
-// function lingoActive() {
-//   const langFirst = (getMetadata('langfirst') || PAGE_URL.searchParams.get('langfirst'))?.toLowerCase();
-//   return ['true', 'on'].includes(langFirst);
-// }
+import { getLingoActive } from '../../utils/lingo-active.js';
 
 export const LANGS = {
   en: 'en',
@@ -642,10 +636,8 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
 };
 
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
-  const { lingoActive } = await import('../../utils/utils.js');
-
   const locales = getMetadata('caas-locales') || '';
-  const langFirst = lingoActive();
+  const langFirst = await getLingoActive();
   /* if it is a language first localized page don't use the milo locales.
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
