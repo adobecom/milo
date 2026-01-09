@@ -1174,7 +1174,7 @@ class Gnav {
     const promoPath = getMetadata('gnav-promo-source');
     const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
 
-    if (!promoPath || !asideJsPromise) {
+    if (!promoPath || !asideJsPromise || !fedsPromoWrapper) {
       fedsPromoWrapper?.remove();
       this.block.classList.remove('has-promo');
       return this.elements.aside;
@@ -1270,17 +1270,24 @@ class Gnav {
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
+    const languageBanner = document.querySelector('.language-banner');
+    const languageBannerHeight = languageBanner?.offsetHeight || 0;
 
     const isLocalNav = this.isLocalNav();
-    if (!isLocalNav && hasPromo) {
-      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+
+    // Handle initial positioning for non-local nav (promo + visible language banner)
+    if (!isLocalNav && (hasPromo || languageBanner)) {
+      const langBannerNewHeight = languageBanner ? Math.max(0, languageBannerHeight - yOffset) : 0;
+      const totalOffsetHeight = (hasPromo ? promoHeight : 0) + langBannerNewHeight;
+      popup.style.top = `calc(0px - var(--feds-height-nav) - ${totalOffsetHeight}px)`;
       if (isSmallScreen) return;
     }
-    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     if (isLocalNav) {
-      popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+      const langBannerOffset = languageBanner ? languageBannerHeight : 0;
+      popup.style.top = `calc(${yOffset}px - ${navOffset} - ${langBannerOffset}px - 2px)`;
     }
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent) {
