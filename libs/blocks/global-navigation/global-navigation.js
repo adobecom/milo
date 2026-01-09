@@ -1534,14 +1534,14 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
           let linkElem = item.querySelector('a');
           if (linkElem.classList.contains('merch')) {
-            linkElem = await merch.default(linkElem);
+            linkElem = await (await import('../merch/merch.js')).default(linkElem);
           }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
@@ -1577,7 +1577,7 @@ class Gnav {
         }
         case 'text':
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
+              ${item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item.textContent}
             </div>`, item);
         default:
           /* c8 ignore next 3 */
