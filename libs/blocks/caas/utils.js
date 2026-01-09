@@ -7,8 +7,9 @@ import {
   loadScript,
   loadStyle,
   localizeLinkAsync,
+  lingoActive,
 } from '../../utils/utils.js';
-import { fetchWithTimeout, lingoActive } from '../utils/utils.js';
+import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
 // Local copy of lingoActive to avoid potential import issues

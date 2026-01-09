@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, lingoActive as exportedLingoActive } from '../../../libs/utils/utils.js';
 import {
   defaultState,
   getConfig,
@@ -11,6 +11,18 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
+
+describe('utils.js export sanity', () => {
+  it('exports lingoActive as a function', () => {
+    // If CI ever serves a different utils.js (missing export or partial init),
+    // this will fail with a clear, actionable signal.
+    if (typeof exportedLingoActive !== 'function') {
+      // Keep logging minimal; only emit when it's wrong.
+      console.log('typeof exportedLingoActive:', typeof exportedLingoActive);
+    }
+    expect(exportedLingoActive).to.be.a('function');
+  });
+});
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
