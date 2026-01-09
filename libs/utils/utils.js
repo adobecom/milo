@@ -2051,7 +2051,7 @@ async function decorateLanguageBanner() {
   if (internationalCookie === (locale.prefix?.replace('/', '') || 'us')) return;
   const pageLang = locale.ietf.split('-')[0];
   const prefLang = internationalCookie
-    ? (locales[internationalCookie === 'us' ? '' : internationalCookie]?.ietf?.split('-')[0] || internationalCookie.split('_')[0])
+    ? (locales[internationalCookie === 'us' ? '' : internationalCookie]?.ietf?.split('-')[0] || internationalCookie.split('_').pop())
     : navigator.language?.split('-')[0] || null;
 
   const [geoIpCode, marketsConfig] = await Promise.all([
