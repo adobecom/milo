@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig, lingoActive as exportedLingoActive } from '../../../libs/utils/utils.js';
+import { setConfig, lingoActive } from '../../../libs/utils/utils.js';
 import {
   defaultState,
   getConfig,
@@ -16,11 +16,11 @@ describe('utils.js export sanity', () => {
   it('exports lingoActive as a function', () => {
     // If CI ever serves a different utils.js (missing export or partial init),
     // this will fail with a clear, actionable signal.
-    if (typeof exportedLingoActive !== 'function') {
+    if (typeof lingoActive !== 'function') {
       // Keep logging minimal; only emit when it's wrong.
-      console.log('typeof exportedLingoActive:', typeof exportedLingoActive);
+      console.log('typeof exportedLingoActive:', typeof lingoActive);
     }
-    expect(exportedLingoActive).to.be.a('function');
+    expect(lingoActive).to.be.a('function');
   });
 });
 
