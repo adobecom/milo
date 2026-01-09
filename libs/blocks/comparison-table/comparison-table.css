@@ -28,8 +28,6 @@
 
 .comparison-table :is(p, h1, h2, h3, h4, h5, h6) {
   margin: 0;
-  display: flex;
-  align-items: center;
 }
 
 .comparison-table .table-container {
@@ -112,10 +110,6 @@
   margin: 0 auto;
 }
 
-.comparison-table .table-row-header a {
-  display: contents;
-}
-
 .comparison-table span[data-tooltip] .icon-milo:hover {
   cursor: pointer;
 }
@@ -124,7 +118,7 @@
   color: var(--hover-border-color);
 }
 
-.comparison-table .icon-checkmark path {
+.comparison-table .table-container .primary-cell .icon-checkmark path {
   color: var(--primary-cell-path-color);
 }
 
@@ -142,6 +136,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  white-space: pre-wrap;
   word-break: break-word;
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
@@ -396,6 +391,37 @@
   background-color: var(--color-white);
 }
 
+.dark .comparison-table .table-container :not(a) {
+  color: var(--color-black);
+}
+
+.dark .comparison-table .header-content .description,
+.dark .comparison-table .header-content .description a {
+  color: var(--color-white);
+}
+
+.dark .comparison-table .header-content.sticky .action-area a:not(.blue) {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
+.dark .comparison-table .header-content.sticky .action-area a:not(.blue):hover {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.dark .comparison-table .header-content.sticky .action-area .fill {
+  background: var(--text-color);
+  border-color: var(--text-color);
+  color: var(--color-white);
+}
+
+.dark .comparison-table .header-content.sticky .action-area .fill:hover {
+  background: var(--color-black);
+  border-color: var(--color-black);
+}
+
 @media screen and (min-width: 600px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(100% - 160px);
@@ -428,16 +454,25 @@
     grid-template-columns: minmax(192px, 1fr) repeat(auto-fit, minmax(100px, 1fr));
   }
 
-  .comparison-table .header-content-wrapper .header-item:first-child {
+  .comparison-table .header-content-wrapper .header-item:first-child,
+  .comparison-table .table-row-header.minimal-content {
     display: flex;
   }
 
   .comparison-table .table-row-header {
+    display: inline;
     text-align: start;
     padding: var(--spacing-s) var(--spacing-s) var(--spacing-s) 0;
     grid-column: auto;
     margin: 0;
     margin-inline-end: var(--comparison-table-spacing);
+  }
+
+  .comparison-table .table-row-header.text-only {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    flex-direction: column;
   }
 
   .comparison-table .table-cell {
