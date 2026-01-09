@@ -220,6 +220,7 @@ describe('getConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',
@@ -493,6 +494,7 @@ describe('getConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',
@@ -931,6 +933,7 @@ describe('getFloodgateCaasConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',
