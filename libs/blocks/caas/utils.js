@@ -580,6 +580,15 @@ async function getLingoSiteLocale(origin, path) {
         }
       });
 
+    // check if the localeStr is in the baseSite or regionalSites.
+    // if not, use the og country/language logic
+    if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || regionalSites.includes(localeStr)))) {
+      return {
+        country: localeStr,
+        language: 'en',
+      };
+    }
+
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
       .forEach(({ baseSite, regionalSites }) => {
