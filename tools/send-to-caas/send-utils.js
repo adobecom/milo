@@ -1,5 +1,5 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { getMetadata } from '../../libs/utils/utils.js';
+import { getMetadata, lingoActive } from '../../libs/utils/utils.js';
 import {
   LOCALES,
   getPageLocale,
@@ -319,7 +319,7 @@ const getBulkPublishLangAttr = async (options) => {
 
 const getCountryAndLang = async (options, origin) => {
   // testing
-  const langFirst = getMetadata('langfirst');
+  const langFirst = lingoActive
   if (langFirst) {
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
