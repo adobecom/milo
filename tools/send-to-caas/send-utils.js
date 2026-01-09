@@ -318,6 +318,7 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options, origin) => {
+  // testing
   const langFirst = getMetadata('langfirst');
   if (langFirst) {
     return getLanguageFirstCountryAndLang(
