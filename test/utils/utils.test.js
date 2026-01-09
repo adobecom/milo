@@ -478,6 +478,14 @@ describe('Utils', () => {
       expect(dntLink.dataset.hasDnt).to.equal('true');
     });
 
+    it('Should transform invalid anchor link to valid', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><a href="https://#test">Test</a></p>';
+      await utils.decorateLinksAsync(container);
+      const link = container.querySelector('a');
+      expect(link.href).to.equal(`${window.location.href}#test`);
+    });
+
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
