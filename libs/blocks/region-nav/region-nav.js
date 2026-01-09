@@ -91,4 +91,7 @@ export default async function init(block) {
   const hasPrefix = location.pathname.startsWith(`${prefix}/`);
   const path = location.href.replace(location.origin + (hasPrefix ? prefix : ''), '').replace('#langnav', '');
   links.forEach((link) => decorateLink(link, path, localeToLanguageMap));
+  if (config.lingoProjectSuccessLogging === 'on') {
+    window.lana.log('Load: Region_Nav_Modal', { sampleRate: 100, tags: 'lingo,lingo-region-nav-load' });
+  }
 }
