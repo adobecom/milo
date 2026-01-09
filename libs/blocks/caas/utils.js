@@ -7,7 +7,6 @@ import {
   loadScript,
   loadStyle,
   localizeLinkAsync,
-  lingoActive,
 } from '../../utils/utils.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
@@ -637,7 +636,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
 
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
-  const langFirst = lingoActive();
+  const langFirst = getMetadata('langfirst');
   /* if it is a language first localized page don't use the milo locales.
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
