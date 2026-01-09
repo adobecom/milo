@@ -82,8 +82,8 @@ export const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promis
   const response = {
     status,
     ok,
-    json: () => payload,
-    text: () => payload,
+    json: () => Promise.resolve(payload),
+    text: () => Promise.resolve(payload),
   };
   response.clone = () => response; // eslint-disable-line
   resolve(response);
