@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { applyPlanType } from '../../../../libs/deps/mas/commerce.js';
+import { applyPlanType } from '@adobe/mas-platform/web-components/dist/commerce.js';
 
 const { fetch } = window;
 

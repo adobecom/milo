@@ -12,7 +12,6 @@ const isLocal = !isCI;
 
 // MAS tests
 const masFeatures = [
-  'features/mas/**/*.test.js',
   'features/commerce/**/*.test.js',
   'features/promotions/**/*.test.js',
   'features/osttools/**/*.test.js',
