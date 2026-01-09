@@ -729,6 +729,14 @@ describe('getCountryAndLang', () => {
     },
   };
 
+  beforeEach(() => {
+    // Ensure no langfirst metadata exists for tests that don't explicitly set it
+    const existingLangFirst = document.querySelector('meta[name="langfirst"]');
+    if (existingLangFirst) {
+      existingLangFirst.remove();
+    }
+  });
+
   it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);
     const expected = await getCountryAndLang({

@@ -615,7 +615,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
   const localeArr = path.split('/');
   let langStr = 'en';
   let countryStr = 'xx';
-  if (origin.toLowerCase() === 'news') {
+  if (origin?.toLowerCase() === 'news') {
     langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
     countryStr = LOCALES[localeArr[2]] ?? 'xx';
     if (typeof countryStr === 'object') {
