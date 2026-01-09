@@ -1,0 +1,44 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+:root[data-theme="dark"] {
+  --s2a-color-background-utility-error-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-utility-highlight: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-utility-highlight-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-utility-info: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-utility-info-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-utility-success: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-utility-success-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-utility-warning: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-utility-warning-knockout: #fff; /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-brand-adobe-red: #eb1000;
+  --s2a-color-brand-cc-3dar: #99e83f;
+  --s2a-color-brand-cc-il: #ff9a00;
+  --s2a-color-brand-cc-ppafx: #99f;
+  --s2a-color-brand-cc-ps: #3a18ff;
+  --s2a-color-background-utility-error: var(--s2a-color-red-900);
+  --s2a-color-background-default: var(--s2a-color-gray-25);
+  --s2a-color-background-default-hover: var(--s2a-color-gray-25);
+  --s2a-color-background-subtle: var(--s2a-color-gray-50);
+  --s2a-color-background-subtle-hover: var(--s2a-color-gray-50); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-knockout: var(--s2a-color-gray-25); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-background-brand: var(--s2a-color-brand-adobe-red); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-border-utility-error: var(--s2a-color-red-900); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-border-default: var(--s2a-color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-border-default-hover: var(--s2a-color-gray-900); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-border-subtle: var(--s2a-color-gray-300); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-border-subtle-hover: var(--s2a-color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-border-knockout: var(--s2a-color-gray-1000); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-border-brand: var(--s2a-color-brand-adobe-red); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-border-disabled: var(--s2a-color-gray-400); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-content-utility-error: var(--s2a-color-red-900);
+  --s2a-color-content-default: var(--s2a-color-gray-800); /** Placeholder token: awaiting design definition for final value */
+  --s2a-color-content-default-hover: var(--s2a-color-gray-900);
+  --s2a-color-content-subtle: var(--s2a-color-gray-50);
+  --s2a-color-content-subtle-hover: var(--s2a-color-gray-75);
+  --s2a-color-content-strong: var(--s2a-color-gray-900);
+  --s2a-color-content-knockout: var(--s2a-color-gray-1000);
+  --s2a-color-content-brand: var(--s2a-color-brand-adobe-red);
+  --s2a-color-content-disabled: var(--s2a-color-gray-400);
+}

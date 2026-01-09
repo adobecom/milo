@@ -1,0 +1,72 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+:root {
+  --s2a-border-radius-none: var(--s2a-border-radius-0);
+  --s2a-border-radius-2xs: var(--s2a-border-radius-2);
+  --s2a-border-radius-xs: var(--s2a-border-radius-4);
+  --s2a-border-radius-sm: var(--s2a-border-radius-8);
+  --s2a-border-radius-md: var(--s2a-border-radius-16);
+  --s2a-border-radius-lg: var(--s2a-border-radius-32);
+  --s2a-border-radius-full: var(--s2a-border-radius-round);
+  --s2a-border-width-sm: var(--s2a-border-width-1);
+  --s2a-border-width-md: var(--s2a-border-width-2);
+  --s2a-border-width-lg: var(--s2a-border-width-4);
+  --s2a-border-width-xl: var(--s2a-border-width-8);
+  --s2a-opacity-disabled: var(--s2a-opacity-48);
+  --s2a-spacing-none: var(--s2a-spacing-0);
+  --s2a-spacing-3xs: var(--s2a-spacing-2);
+  --s2a-spacing-2xs: var(--s2a-spacing-4);
+  --s2a-spacing-xs: var(--s2a-spacing-8);
+  --s2a-spacing-sm: var(--s2a-spacing-12);
+  --s2a-spacing-md: var(--s2a-spacing-16);
+  --s2a-spacing-lg: var(--s2a-spacing-24);
+  --s2a-spacing-xl: var(--s2a-spacing-32);
+  --s2a-spacing-2xl: var(--s2a-spacing-40);
+  --s2a-spacing-3xl: var(--s2a-spacing-48);
+  --s2a-spacing-4xl: var(--s2a-spacing-64);
+  --s2a-spacing-5xl: var(--s2a-spacing-80);
+  --s2a-spacing-6xl: var(--s2a-spacing-96);
+  --s2a-spacing-7xl: var(--s2a-spacing-104);
+  --s2a-typography-font-size-3xs: var(--s2a-typography-font-size-10);
+  --s2a-typography-font-size-2xs: var(--s2a-typography-font-size-11);
+  --s2a-typography-font-size-xs: var(--s2a-typography-font-size-12);
+  --s2a-typography-font-size-sm: var(--s2a-typography-font-size-14);
+  --s2a-typography-font-size-md: var(--s2a-typography-font-size-16);
+  --s2a-typography-font-size-lg: var(--s2a-typography-font-size-18);
+  --s2a-typography-font-size-xl: var(--s2a-typography-font-size-20);
+  --s2a-typography-font-size-2xl: var(--s2a-typography-font-size-22);
+  --s2a-typography-font-size-3xl: var(--s2a-typography-font-size-25);
+  --s2a-typography-font-size-4xl: var(--s2a-typography-font-size-28);
+  --s2a-typography-font-size-5xl: var(--s2a-typography-font-size-32);
+  --s2a-typography-font-size-6xl: var(--s2a-typography-font-size-36);
+  --s2a-typography-font-size-7xl: var(--s2a-typography-font-size-40);
+  --s2a-typography-font-size-8xl: var(--s2a-typography-font-size-45);
+  --s2a-typography-font-size-9xl: var(--s2a-typography-font-size-48);
+  --s2a-typography-font-size-10xl: var(--s2a-typography-font-size-51);
+  --s2a-typography-font-size-11xl: var(--s2a-typography-font-size-58);
+  --s2a-typography-font-size-12xl: var(--s2a-typography-font-size-65);
+  --s2a-typography-font-size-13xl: var(--s2a-typography-font-size-73);
+  --s2a-typography-font-size-14xl: var(--s2a-typography-font-size-82);
+  --s2a-typography-line-height-3xs: var(--s2a-typography-line-height-12);
+  --s2a-typography-line-height-2xs: var(--s2a-typography-line-height-14);
+  --s2a-typography-line-height-xs: var(--s2a-typography-line-height-16);
+  --s2a-typography-line-height-sm: var(--s2a-typography-line-height-18);
+  --s2a-typography-line-height-md: var(--s2a-typography-line-height-20);
+  --s2a-typography-line-height-lg: var(--s2a-typography-line-height-22);
+  --s2a-typography-line-height-xl: var(--s2a-typography-line-height-24);
+  --s2a-typography-line-height-2xl: var(--s2a-typography-line-height-26);
+  --s2a-typography-line-height-3xl: var(--s2a-typography-line-height-30);
+  --s2a-typography-line-height-4xl: var(--s2a-typography-line-height-32);
+  --s2a-typography-line-height-5xl: var(--s2a-typography-line-height-36);
+  --s2a-typography-line-height-6xl: var(--s2a-typography-line-height-42);
+  --s2a-typography-line-height-7xl: var(--s2a-typography-line-height-46);
+  --s2a-typography-line-height-8xl: var(--s2a-typography-line-height-52);
+  --s2a-typography-line-height-9xl: var(--s2a-typography-line-height-54);
+  --s2a-typography-line-height-10xl: var(--s2a-typography-line-height-58);
+  --s2a-typography-line-height-11xl: var(--s2a-typography-line-height-66);
+  --s2a-typography-line-height-12xl: var(--s2a-typography-line-height-74);
+  --s2a-typography-line-height-13xl: var(--s2a-typography-line-height-84);
+  --s2a-typography-line-height-14xl: var(--s2a-typography-line-height-95);
+}
