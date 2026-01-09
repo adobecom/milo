@@ -206,10 +206,10 @@ function makeGroups(arr, n = 20) {
   return Array.from({ length: batchSize }, (v, i) => arr.slice(i * size, i * size + size));
 }
 
-export function connectionError(isVpnError = false) {
+export function connectionError({ isVpnError = false }) {
   const description = isVpnError
     ? 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.'
-    : 'Connection error: Unable to connect to the link check service.';
+    : 'Unable to connect to the link check service.';
   return {
     checkId: SEO_CHECK_IDS.links,
     id: SEO_IDS.links,
@@ -225,10 +225,11 @@ async function spidyCheck(url) {
   try {
     const resp = await fetch(url, { method: 'HEAD' });
     if (resp.ok) return { success: true };
-    return connectionError(true);
+    return connectionError({ isVpnError: true });
   } catch (e) {
-    window.lana.log(`There was a problem connecting to the link check API ${url}. ${e}`, { tags: 'preflight', errorType: 'i' });
-    return connectionError(false);
+    const errorMessage = 'Unable to connect to the link check service.';
+    window.lana.log(`${errorMessage} ${url}. ${e}`, { tags: 'preflight', errorType: 'i' });
+    return connectionError({ isVpnError: false });
   }
 }
 
