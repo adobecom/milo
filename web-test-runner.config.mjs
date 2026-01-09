@@ -46,9 +46,7 @@ export default {
   },
   testFramework: { config: { retries: GITHUB_ACTIONS ? 1 : 0 } },
   testsFinishTimeout: 130000,
-  plugins: [
-    importMapsPlugin({ inject: { importMap: { imports: { 'https://www.adobe.com/mas/libs/': '/node_modules/@adobe/mas-platform/web-components/dist/' } } } }),
-  ],
+  plugins: [importMapsPlugin({})],
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),
     customReporter(),
