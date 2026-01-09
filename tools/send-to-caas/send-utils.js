@@ -318,8 +318,7 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options, origin) => {
-  // testing
-  const langFirst = lingoActive
+  const langFirst = lingoActive();
   if (langFirst) {
     return getLanguageFirstCountryAndLang(
       window.location.pathname,

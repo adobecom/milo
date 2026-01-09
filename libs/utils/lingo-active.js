@@ -29,4 +29,4 @@ export async function getLingoActive() {
   const langFirst = (metaValue || paramValue || '').toLowerCase();
   return ['true', 'on'].includes(langFirst);
 }
-
+export default getLingoActive;
