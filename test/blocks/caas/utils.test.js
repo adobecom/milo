@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { getLingoActive} from '../../../libs/utils/lingo-active.js'
+import { getLingoActive } from '../../../libs/utils/lingo-active.js';
 import {
   defaultState,
   getConfig,
