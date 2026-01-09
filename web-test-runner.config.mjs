@@ -1,4 +1,3 @@
-import { importMapsPlugin } from '@web/dev-server-import-maps';
 import { defaultReporter, summaryReporter } from '@web/test-runner';
 import { playwrightLauncher } from '@web/test-runner-playwright';
 
@@ -46,7 +45,7 @@ export default {
   },
   testFramework: { config: { retries: GITHUB_ACTIONS ? 1 : 0 } },
   testsFinishTimeout: 130000,
-  plugins: [importMapsPlugin({})],
+  plugins: [],
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),
     customReporter(),
@@ -54,6 +53,13 @@ export default {
   testRunnerHtml: (testFramework) => `
     <html>
       <head>
+        <script type="importmap">
+          {
+            "imports": {
+              "https://www.adobe.com/mas/libs/": "/node_modules/@adobe/mas-platform/web-components/dist/"
+            }
+          }
+        </script>
         <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
         <script type='module'>
           const oldFetch = window.fetch;
