@@ -1,5 +1,6 @@
 import ctaTextOption from './ctaTextOption.js';
 import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
+import { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } from '../merch/merch.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -8,8 +9,8 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://mas.adobe.com/studio/ost/index.js';
-const OST_STYLE_URL = 'https://mas.adobe.com/studio/ost/index.css';
+const OST_SCRIPT_URL = '/studio/ost/index.js';
+const OST_STYLE_URL = '/studio/ost/index.css';
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
@@ -38,6 +39,19 @@ const updateParams = (params, key, value) => {
 };
 
 document.body.classList.add('tool', 'tool-ost');
+
+/**
+ * Gets the base URL for loading Tacocat OST build file based on maslibs parameter
+ * @returns {string} Base URL for OST index.js
+ */
+export function getMasLibsBase() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const masLibs = urlParams.get('maslibs');
+
+  if (!masLibs || masLibs.trim() === '' || masLibs.trim() === 'main') return 'https://mas.adobe.com';
+
+  return getMasLibs().replace('/web-components/dist', '');
+}
 
 /**
  * @param {Commerce.Defaults} defaults
@@ -111,8 +125,6 @@ export async function loadOstEnv() {
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
-  /* c8 ignore next */
-  const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
   await initService(true, { 'allow-override': 'true' });
   // Load commerce.js based on masLibs parameter
   await loadMasComponent(MAS_COMMERCE_SERVICE);
@@ -268,12 +280,12 @@ export async function loadOstEnv() {
 export default async function init(el) {
   el.innerHTML = '<div />';
 
-  loadStyle(OST_STYLE_URL);
+  loadStyle(`${getMasLibsBase()}${OST_STYLE_URL}`);
   loadStyle('https://use.typekit.net/pps7abe.css');
 
   const [ostEnv] = await Promise.all([
     loadOstEnv(),
-    loadScript(OST_SCRIPT_URL),
+    loadScript(`${getMasLibsBase()}${OST_SCRIPT_URL}`),
   ]);
 
   function openOst() {
