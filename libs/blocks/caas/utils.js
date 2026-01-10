@@ -858,7 +858,8 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
-  const langFirst = state.langFirst ? `&langFirst=${state.langFirst}` : '';
+  const isLingoActive = await getLingoActive();
+  const langFirst = state.langFirst ? `&langFirst=${isLingoActive}` : '';
 
   const config = {
     collection: {
