@@ -1575,10 +1575,23 @@ class Gnav {
             </div>`;
           return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
         }
-        case 'text':
+        case 'text': {
+          let isBlack = false;
+          // Check for (black) in text content
+          if (item.textContent.match(/\(black\)$/i) || item.innerText.match(/\(black\)$/i)) {
+            isBlack = true;
+            // Remove (black) from the text content so merch.default sees the clean text
+            item.textContent = item.textContent.replace(/\s*\(black\)$/i, '');
+          }
+          const content = item.classList.contains('merch') ? await merch.default(item) : item.textContent;
+          if (isBlack && content instanceof HTMLElement) {
+            content.classList.add('feds-navLink--black');
+          }
+
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
+              ${content}
             </div>`, item);
+        }
         default:
           /* c8 ignore next 3 */
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
