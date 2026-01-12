@@ -39,9 +39,9 @@ export default async function urlInQueryIndex(
   urlHostname,
   matchingIndexes,
   baseQueryIndex,
+  aTag,
 ) {
   const sanitizedPath = regionalPath.replace(/\.html$/, '');
-
   if (matchingIndexes.every((m) => m.requestResolved)) {
     return urlInMatchingIndex(matchingIndexes, sanitizedPath);
   }
@@ -53,6 +53,12 @@ export default async function urlInQueryIndex(
   }
 
   const sanitizedBasePath = basePath.replace(/\.html$/, '');
+
+  if (regionalPath.includes('/fragments/') && aTag?.closest('.section')?.dataset.idx === '0') {
+    fetch(sanitizedPath);
+    fetch(sanitizedBasePath);
+  }
+
   const earlyDecision = await tryEarlyDecisionUsingBaseIndex(
     matchingIndexes,
     sanitizedPath,

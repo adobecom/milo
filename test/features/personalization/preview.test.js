@@ -1,10 +1,14 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import experiments from './mocks/preview.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/postPersonalization.html' });
-const { default: decoratePreviewMode, parsePageAndUrl } = await import('../../../libs/features/personalization/preview.js');
-const { setConfig, MILO_EVENTS } = await import('../../../libs/utils/utils.js');
+const {
+  default: decoratePreviewMode,
+  parsePageAndUrl,
+} = await import('../../../libs/features/personalization/preview.js');
+const { setConfig, updateConfig, MILO_EVENTS, createTag } = await import('../../../libs/utils/utils.js');
 
 const config = {
   miloLibs: 'https://main--milo--adobecom.hlx.live/libs',
@@ -155,5 +159,293 @@ describe('preview feature', () => {
   });
   it('opens manifest', () => {
     document.querySelector('a.mep-edit-manifest').click();
+  });
+});
+
+describe('MEP Lingo region select with lingo param', () => {
+  let fetchStub;
+  let lingoMeta;
+
+  beforeEach(() => {
+    // Use meta tag instead of URL param because PAGE_URL is captured at module load time
+    lingoMeta = document.createElement('meta');
+    lingoMeta.setAttribute('name', 'langfirst');
+    lingoMeta.setAttribute('content', 'on');
+    document.head.appendChild(lingoMeta);
+
+    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, status: 200 });
+  });
+
+  afterEach(() => {
+    if (lingoMeta) lingoMeta.remove();
+    if (fetchStub) fetchStub.restore();
+
+    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
+  });
+
+  it('creates MEP Lingo section with region dropdown when lingo is active', async () => {
+    const lingoConfig = {
+      ...config,
+      mep: {
+        ...config.mep,
+        akamaiCode: 'de',
+        consentState: { performance: true, advertising: true },
+      },
+      locale: {
+        ...config.locale,
+        prefix: '/de',
+        base: '',
+        regions: {
+          ch_de: { prefix: '/ch_de' },
+          at_de: { prefix: '/at_de' },
+        },
+      },
+    };
+    updateConfig(lingoConfig);
+    await decoratePreviewMode();
+
+    const popups = document.querySelectorAll('.mep-popup');
+    const popup = popups[popups.length - 1];
+    expect(popup).to.exist;
+
+    const lingoSection = popup?.querySelector('.mep-lingo-section');
+    expect(lingoSection).to.exist;
+
+    const regionSelect = popup?.querySelector('select[id^="mepLingoRegionSelect"]');
+    expect(regionSelect).to.exist;
+  });
+
+  it('sets akamaiLocale param when region is selected', async () => {
+    const lingoConfig = {
+      ...config,
+      mep: {
+        ...config.mep,
+        akamaiCode: 'de',
+        consentState: { performance: true, advertising: true },
+      },
+      locale: {
+        ...config.locale,
+        prefix: '/de',
+        base: '',
+        regions: {
+          ch_de: { prefix: '/ch_de' },
+          at_de: { prefix: '/at_de' },
+        },
+      },
+    };
+    updateConfig(lingoConfig);
+    await decoratePreviewMode();
+
+    const popups = document.querySelectorAll('.mep-popup');
+    const popup = popups[popups.length - 1];
+    const regionSelect = popup?.querySelector('select[id^="mepLingoRegionSelect"]');
+    expect(regionSelect).to.exist;
+
+    regionSelect.value = 'ch';
+    regionSelect.dispatchEvent(new Event('change'));
+
+    const previewLink = popup.querySelector('a[title="Preview above choices"]');
+    expect(previewLink.getAttribute('href')).to.include('akamaiLocale=ch');
+  });
+
+  it('removes akamaiLocale param when no region is selected', async () => {
+    const lingoConfig = {
+      ...config,
+      mep: {
+        ...config.mep,
+        akamaiCode: 'de',
+        consentState: { performance: true, advertising: true },
+      },
+      locale: {
+        ...config.locale,
+        prefix: '/de',
+        base: '',
+        regions: { ch_de: { prefix: '/ch_de' } },
+      },
+    };
+    updateConfig(lingoConfig);
+    await decoratePreviewMode();
+
+    const popups = document.querySelectorAll('.mep-popup');
+    const popup = popups[popups.length - 1];
+    const regionSelect = popup?.querySelector('select[id^="mepLingoRegionSelect"]');
+    expect(regionSelect).to.exist;
+
+    regionSelect.value = 'ch';
+    regionSelect.dispatchEvent(new Event('change'));
+
+    regionSelect.value = '';
+    regionSelect.dispatchEvent(new Event('change'));
+
+    const previewLink = popup.querySelector('a[title="Preview above choices"]');
+    expect(previewLink.getAttribute('href')).to.not.include('akamaiLocale');
+  });
+});
+
+describe('Lingo fragment click handlers', () => {
+  let windowOpenStub;
+  let testFragment;
+  let getComputedStyleStub;
+
+  beforeEach(async () => {
+    windowOpenStub = sinon.stub(window, 'open');
+    // Mock getComputedStyle to return badge styles
+    const originalGetComputedStyle = window.getComputedStyle;
+    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((element, pseudoElt) => {
+      if (pseudoElt === '::before') {
+        return {
+          display: 'block',
+          content: '"test badge"',
+          width: '400px',
+        };
+      }
+      return originalGetComputedStyle(element, pseudoElt);
+    });
+    setConfig(config);
+    await decoratePreviewMode();
+  });
+
+  afterEach(() => {
+    windowOpenStub.restore();
+    getComputedStyleStub.restore();
+    delete document.body.dataset.mepHighlight;
+    if (testFragment) {
+      testFragment.remove();
+      testFragment = null;
+    }
+  });
+
+  it('opens fragment path when clicking in badge area of mep-lingo-roc element', async () => {
+    testFragment = createTag('div', {
+      'data-mep-lingo-roc': 'roc: /lu_fr/fragments/test',
+      'data-path': '/fr/fragments/test',
+    });
+    document.body.appendChild(testFragment);
+
+    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 50,
+      clientY: 10,
+    });
+    testFragment.dispatchEvent(clickEvent);
+
+    expect(windowOpenStub.called, 'window.open should have been called').to.be.true;
+  });
+
+  it('opens fragment path when clicking in badge area of mep-lingo-fallback element', async () => {
+    testFragment = createTag('div', {
+      'data-mep-lingo-fallback': 'fallback: /fr/fragments/test',
+      'data-path': '/fr/fragments/fallback',
+    });
+    document.body.appendChild(testFragment);
+
+    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 200,
+      clientY: 20,
+    });
+    testFragment.dispatchEvent(clickEvent);
+
+    expect(windowOpenStub.called, 'window.open should have been called').to.be.true;
+  });
+
+  it('opens fragment path when clicking on data-manifest-id element with data-path', async () => {
+    testFragment = createTag('div', {
+      'data-manifest-id': 'test-manifest',
+      'data-path': '/fragments/manifest-test',
+    });
+    document.body.appendChild(testFragment);
+
+    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 100,
+      clientY: 15,
+    });
+    testFragment.dispatchEvent(clickEvent);
+
+    expect(windowOpenStub.called, 'window.open should have been called').to.be.true;
+  });
+
+  it('does not open when click is outside badge area (too far right)', async () => {
+    testFragment = createTag('div', {
+      'data-mep-lingo-roc': 'roc: /lu_fr/fragments/test',
+      'data-path': '/fr/fragments/test',
+    });
+    document.body.appendChild(testFragment);
+
+    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 450,
+      clientY: 10,
+    });
+    testFragment.dispatchEvent(clickEvent);
+
+    expect(windowOpenStub.called).to.be.false;
+  });
+
+  it('does not open when click is outside badge area (too far down)', async () => {
+    testFragment = createTag('div', {
+      'data-mep-lingo-roc': 'roc: /lu_fr/fragments/test',
+      'data-path': '/fr/fragments/test',
+    });
+    document.body.appendChild(testFragment);
+
+    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 50,
+      clientY: 50,
+    });
+    testFragment.dispatchEvent(clickEvent);
+
+    expect(windowOpenStub.called).to.be.false;
+  });
+
+  it('does not open when element has no data-path', async () => {
+    testFragment = createTag('div', { 'data-mep-lingo-roc': 'roc: /lu_fr/fragments/test' });
+    document.body.appendChild(testFragment);
+
+    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 50,
+      clientY: 10,
+    });
+    testFragment.dispatchEvent(clickEvent);
+
+    expect(windowOpenStub.called).to.be.false;
+  });
+
+  it('does not trigger for elements without lingo attributes', async () => {
+    testFragment = createTag('div', { 'data-path': '/fr/fragments/test' });
+    document.body.appendChild(testFragment);
+
+    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 50,
+      clientY: 10,
+    });
+    testFragment.dispatchEvent(clickEvent);
+
+    expect(windowOpenStub.called).to.be.false;
   });
 });
