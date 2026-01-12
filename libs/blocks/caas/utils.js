@@ -664,7 +664,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
           || pageConfigHelper().mep?.countryIP;
 
         if (!geoCountry) {
-          const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+          const { default: getAkamaiCode } = await import('../../utils/geo.js');
           geoCountry = await getAkamaiCode(true);
         }
 
