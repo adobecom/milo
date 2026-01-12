@@ -15,7 +15,13 @@ const ARROW_PREVIOUS_IMG = `<svg xmlns="http://www.w3.org/2000/svg" width="21" h
 <path d="M19.2214 10.8918C19.3516 10.5773 19.3516 10.2226 19.2214 9.90808C19.1562 9.75098 19.0621 9.60895 18.9435 9.49041L12.9241 3.47092C12.4226 2.96819 11.6076 2.96819 11.1061 3.47092C10.604 3.97239 10.604 4.78743 11.1061 5.2889L14.9312 9.11399H2.4314C1.72109 9.11399 1.146 9.69036 1.146 10.4C1.146 11.1097 1.72109 11.6861 2.4314 11.6861H14.9312L11.1061 15.5112C10.604 16.0126 10.604 16.8277 11.1061 17.3291C11.3568 17.5805 11.6863 17.7062 12.0151 17.7062C12.3439 17.7062 12.6733 17.5805 12.9241 17.3291L18.9436 11.3097C19.0622 11.1911 19.1562 11.0491 19.2214 10.8918Z"/>
 </svg>`;
 const LIGHTBOX_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/expand.svg" height="14" width="20">`;
-const CLOSE_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/close.svg" height="20" width="20">`;
+const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <g transform="translate(-10500 3403)">
+    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)"/>
+    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/>
+    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/>
+  </g>
+</svg>`;
 
 const KEY_CODES = {
   SPACE: 'Space',
@@ -185,6 +191,7 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
     el.classList.remove('lightbox-active');
     el.removeAttribute('role');
     el.removeAttribute('aria-modal');
+    el.removeAttribute('name');
     curtain.remove();
   };
 
@@ -196,9 +203,11 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
         el.classList.add('lightbox-active');
         el.setAttribute('role', 'dialog');
         el.setAttribute('aria-modal', 'true');
+        el.setAttribute('name', el.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim() || 'Carousel modal');
         slideWrapper.append(curtain);
         const firstFocusable = el.querySelector('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        firstFocusable?.focus({ focusVisible: true });
+        console.log(firstFocusable);
+        firstFocusable?.focus();
       }
 
       if (button.classList.contains('carousel-close')) {
@@ -592,10 +601,10 @@ export default function init(el) {
     currentActiveIndex: 0,
   };
 
+  let lightboxBtns;
   if (el.classList.contains('lightbox')) {
-    const lightboxBtns = decorateLightboxButtons();
-    slideWrapper.append(slideContainer, ...lightboxBtns);
-    handleLightboxButtons(lightboxBtns, el, slideWrapper);
+    lightboxBtns = decorateLightboxButtons();
+    slideWrapper.append(lightboxBtns[0], slideContainer);
   } else {
     slideWrapper.append(slideContainer);
   }
@@ -617,6 +626,11 @@ export default function init(el) {
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
   el.append(nextPreviousContainer);
+
+  if (lightboxBtns) {
+    el.append(lightboxBtns[1]);
+    handleLightboxButtons(lightboxBtns, el, slideWrapper);
+  }
 
   function normalizeVideoHeights() {
     const videos = el.querySelectorAll('video');
