@@ -415,7 +415,7 @@ function setupDropdownEvents({
   async function openDropdown() {
     sendAnalyticsEvent('language-selector:opened');
     const config = getConfig();
-    if (config.lingoProjectSuccessLogging === 'on') {
+    if (config?.lingoProjectSuccessLogging === 'on') {
       window?.lana?.log('Open: Language_Selector', { sampleRate: 100, tags: 'lingo,lingo-language-selector-open' });
     }
     isDropdownOpen = true;
