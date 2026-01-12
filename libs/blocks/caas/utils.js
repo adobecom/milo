@@ -672,18 +672,20 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       countryStr = mapping.country || fallbackCountry;
       langStr = mapping.lang || fallbackLang;
 
-      try {
-        let geoCountry = getCountry()
-          || pageConfigHelper().mep?.countryIP;
+      if (countryStr === fallbackCountry) {
+        try {
+          let geoCountry = getCountry()
+            || pageConfigHelper().mep?.countryIP;
 
-        if (!geoCountry) {
-          const { default: getAkamaiCode } = await import('../../utils/geo.js');
-          geoCountry = await getAkamaiCode(true);
+          if (!geoCountry) {
+            const { default: getAkamaiCode } = await import('../../utils/geo.js');
+            geoCountry = await getAkamaiCode(true);
+          }
+
+          if (geoCountry) countryStr = geoCountry.toLowerCase();
+        } catch (error) {
+          window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
         }
-
-        if (geoCountry) countryStr = geoCountry.toLowerCase();
-      } catch (error) {
-        window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
       }
     }
 
