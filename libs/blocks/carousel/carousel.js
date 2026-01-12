@@ -205,8 +205,7 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
         el.setAttribute('aria-modal', 'true');
         el.setAttribute('name', el.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim() || 'Carousel modal');
         slideWrapper.append(curtain);
-        const firstFocusable = el.querySelector('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        console.log(firstFocusable);
+        const firstFocusable = el.querySelector('button:not(.carousel-expand), a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
         firstFocusable?.focus();
       }
 
@@ -231,7 +230,7 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
     }
 
     if (event.key === KEY_CODES.TAB) {
-      const focusableElements = el.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      const focusableElements = el.querySelectorAll('button:not(.carousel-expand), a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
       const firstFocusable = focusableElements[0];
       const lastFocusable = focusableElements[focusableElements.length - 1];
 
