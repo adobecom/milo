@@ -584,7 +584,7 @@ async function getLingoSiteLocale(origin, path) {
     // check if the localeStr is in the baseSite or regionalSites.
     // if not, use the og country/language logic
     if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || regionalSites.includes(localeStr)))) {
-      const locale = LOCALES[prefix]?.ietf || 'en-US';
+      const locale = LOCALES[localeStr]?.ietf || 'en-US';
       /* eslint-disable-next-line prefer-const */
       let [currLang, currCountry] = locale.split('-');
       return {
