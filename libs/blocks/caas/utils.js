@@ -672,7 +672,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       countryStr = mapping.country || fallbackCountry;
       langStr = mapping.lang || fallbackLang;
 
-      if (countryStr === fallbackCountry) {
+      if (countryStr === 'xx') {
         try {
           let geoCountry = getCountry()
             || pageConfigHelper().mep?.countryIP;
