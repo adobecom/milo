@@ -587,10 +587,10 @@ async function getLingoSiteLocale(origin, path) {
       const locale = LOCALES[prefix]?.ietf || 'en-US';
       /* eslint-disable-next-line prefer-const */
       let [currLang, currCountry] = locale.split('-');
-        return {
-          country: currCountry,
-          language: currLang,
-        };
+      return {
+        country: currCountry,
+        language: currLang,
+      };
     }
 
     siteLocalesData
