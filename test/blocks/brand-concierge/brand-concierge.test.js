@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
@@ -68,10 +68,18 @@ describe('Brand Concierge', () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 
-    // Mock window._satellite.track before init
-    const oldSatellite = window._satellite;
-    const trackStub = sinon.stub();
-    window._satellite = { track: trackStub };
+    // Mock window.adobe.concierge.bootstrap
+    window.adobe = window.adobe || {};
+    window.adobe.concierge = { bootstrap: sinon.spy() };
+
+    // Pre-load script to bypass loadScript await
+    const { env } = getConfig();
+    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
+    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+    const script = document.createElement('script');
+    script.src = src;
+    script.dataset.loaded = 'true';
+    document.head.append(script);
 
     await init(block);
 
@@ -101,21 +109,35 @@ describe('Brand Concierge', () => {
     expect(block.querySelector('#bc-input-field').value).to.equal('');
 
     // Verify bootstrapConversationalExperience was called
-    expect(trackStub.calledOnce).to.be.true;
-    expect(trackStub.firstCall.args[0]).to.equal('bootstrapConversationalExperience');
-    expect(trackStub.firstCall.args[1]).to.deep.include({
+    expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
+    expect(window.adobe.concierge.bootstrap.firstCall.args[0]).to.deep.include({
       selector: '#brand-concierge-mount',
-      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+      instanceName: 'alloy',
       stylingConfigurations: chatUIConfig,
     });
 
     // Clean up
-    window._satellite = oldSatellite;
+    script.remove();
+    delete window.adobe.concierge;
   });
 
   it('clicking a prompt card fills input and opens modal with card text', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
+
+    // Mock window.adobe.concierge.bootstrap
+    window.adobe = window.adobe || {};
+    window.adobe.concierge = { bootstrap: sinon.spy() };
+
+    // Pre-load script
+    const { env } = getConfig();
+    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
+    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+    const script = document.createElement('script');
+    script.src = src;
+    script.dataset.loaded = 'true';
+    document.head.append(script);
+
     await init(block);
 
     const buttons = block.querySelectorAll('.prompt-card-button');
@@ -125,6 +147,67 @@ describe('Brand Concierge', () => {
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
     expect(mount.dataset.initialMessage).to.contain('Prompt two');
+
+    // Clean up
+    script.remove();
+    delete window.adobe.concierge;
+  });
+
+  it('loads prod script when env is prod', async () => {
+    // Setup prod config
+    setConfig({ env: { name: 'prod' } });
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+
+    window.adobe = window.adobe || {};
+    window.adobe.concierge = { bootstrap: sinon.spy() };
+
+    await init(block);
+
+    const input = block.querySelector('#bc-input-field');
+    input.value = 'Hello world';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    // Wait for script to appear
+    await new Promise((resolve) => { setTimeout(resolve, 100); });
+
+    const script = document.querySelector('script[src="https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js"]');
+    expect(script).to.exist;
+
+    // Simulate load so the flow finishes (and doesn't leave hanging promises)
+    if (script) script.dispatchEvent(new Event('load'));
+
+    // Clean up
+    if (script) script.remove();
+    delete window.adobe.concierge;
+  });
+
+  it('loads stage script when env is stage', async () => {
+    // Setup stage config
+    setConfig({ env: { name: 'stage' } });
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+
+    window.adobe = window.adobe || {};
+    window.adobe.concierge = { bootstrap: sinon.spy() };
+
+    await init(block);
+
+    const input = block.querySelector('#bc-input-field');
+    input.value = 'Hello world';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    await new Promise((resolve) => { setTimeout(resolve, 100); });
+
+    const script = document.querySelector('script[src="https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js"]');
+    expect(script).to.exist;
+
+    if (script) script.dispatchEvent(new Event('load'));
+
+    if (script) script.remove();
+    delete window.adobe.concierge;
   });
 
   describe('Privacy Consent Handling', () => {
