@@ -659,7 +659,7 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const configJson = await response.json();
 
-      siteQueryIndexMapLingo = configJson['site-query-index-map']?.data;
+      siteQueryIndexMapLingo = configJson['site-query-index-map']?.data ?? [];
       const siteLocalesData = configJson['site-locales']?.data ?? [];
 
       const existingIndex = siteQueryIndexMapLingo.find((d) => d.uniqueSiteId === siteId);
