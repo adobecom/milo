@@ -479,7 +479,8 @@ function setAccessibilityLabels(el) {
         const content = cellDiv.textContent.trim();
         const hasEmptyContent = /^-+$/.test(content);
         if (content && !hasEmptyContent) return;
-        cellDiv.setAttribute('aria-label', emptyText);
+        const srOnly = createTag('sr-only', {}, emptyText);
+        cellDiv.appendChild(srOnly);
         if (hasEmptyContent) cellDiv.children[0].setAttribute('aria-hidden', 'true');
       });
     });
