@@ -391,6 +391,13 @@
   background-color: var(--color-white);
 }
 
+.comparison-table .table-row-header.text-only {
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  flex-direction: column;
+}
+
 .dark .comparison-table .table-container :not(a) {
   color: var(--color-black);
 }
@@ -466,13 +473,6 @@
     grid-column: auto;
     margin: 0;
     margin-inline-end: var(--comparison-table-spacing);
-  }
-
-  .comparison-table .table-row-header.text-only {
-    display: flex;
-    align-items: start;
-    justify-content: center;
-    flex-direction: column;
   }
 
   .comparison-table .table-cell {
