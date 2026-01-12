@@ -180,6 +180,7 @@ let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 let isLoadingQueryIndexes = false;
+let siteQueryIndexMapLingo = [];
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -616,6 +617,7 @@ function processQueryIndexMap(link, domain) {
 
   return result;
 }
+const getDomainLingo = (path) => path?.split('/*')[0];
 
 async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   const config = getConfig();
@@ -657,12 +659,11 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const configJson = await response.json();
 
-      const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+      siteQueryIndexMapLingo = configJson['site-query-index-map']?.data;
       const siteLocalesData = configJson['site-locales']?.data ?? [];
-      const getDomain = (path) => path?.split('/*')[0];
 
-      const existingIndex = siteQueryIndexMap.find((d) => d.uniqueSiteId === siteId);
-      const existingDomain = getDomain(existingIndex?.queryIndexWebPath);
+      const existingIndex = siteQueryIndexMapLingo.find((d) => d.uniqueSiteId === siteId);
+      const existingDomain = getDomainLingo(existingIndex?.queryIndexWebPath);
 
       if (existingDomain) {
         [queryIndexes[siteId], baseQueryIndex].forEach((queryIndex) => {
@@ -673,18 +674,18 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
       }
 
       const domainInProdDomains = (d) => d.uniqueSiteId !== siteId
-        && config.prodDomains?.includes(getDomain(d.queryIndexWebPath));
+        && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath));
 
       const hasRegionalQueryIndex = (locale) => parseList(locale.regionalSites).includes(prefix);
 
-      siteQueryIndexMap
+      siteQueryIndexMapLingo
         .filter(domainInProdDomains)
         .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
           const hasRegionalSite = siteLocalesData
             .some((s) => s.uniqueSiteId === uniqueSiteId && hasRegionalQueryIndex(s));
 
           if (!hasRegionalSite) return;
-          const domain = getDomain(queryIndexWebPath);
+          const domain = getDomainLingo(queryIndexWebPath);
           const indexPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
           queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
         });
@@ -747,7 +748,11 @@ function localizeLinkCore(
           const { default: urlInQueryIndex } = await import('./lingo.js');
           const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
           if (!useRegionalPrefix && (locale.base || locale.base === '')) prefix = basePrefix;
-        } else {
+        } else if (
+          siteQueryIndexMapLingo
+            ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
+            ?.length
+        ) {
           prefix = basePrefix;
         }
         const urlPath = `${prefix}${path}${url.search}${hash}`;
