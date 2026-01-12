@@ -635,7 +635,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
     }
   } else {
     const mapping = await getLingoSiteLocale(origin, path);
-    countryStr = LOCALES[mapping.country] ?? 'xx';
+    countryStr = LOCALES[mapping.country.toLowerCase()] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
