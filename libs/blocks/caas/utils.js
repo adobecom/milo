@@ -646,7 +646,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
 
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
-  const langFirst = getMetadata('langfirst');
+  const langFirst = await getLingoActive();
   /* if it is a language first localized page don't use the milo locales.
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
