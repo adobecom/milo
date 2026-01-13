@@ -57,7 +57,12 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    if (child.querySelector('a[href*="/fragments/"]')) promises.push(loadArea(child));
+    // Load area if it contains nested fragments OR blocks (divs with classes)
+    const hasNestedFragments = child.querySelector('a[href*="/fragments/"]');
+    const hasBlocks = child.querySelector(':scope > div[class]:not(.content)');
+    if (hasNestedFragments || hasBlocks) {
+      promises.push(loadArea(child));
+    }
   });
   await Promise.all(promises);
 };
