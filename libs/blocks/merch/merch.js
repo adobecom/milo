@@ -1042,6 +1042,12 @@ export function setPreview(attributes) {
     attributes.preview = 'on';
   }
 }
+
+function isAnnualPriceEnabled(params) {
+  const annualEnabled = getMetadata('mas-ff-annual-price');
+  return (annualEnabled === 'true' || annualEnabled === 'on') && params?.get('annual') !== 'false';
+}
+
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -1243,11 +1249,6 @@ export async function getCheckoutContext(el, params) {
     fallbackStep,
     extraOptions: JSON.stringify(extraOptions),
   };
-}
-
-function isAnnualPriceEnabled(params) {
-  const annualEnabled = getMetadata('mas-ff-annual-price');
-  return (annualEnabled === 'true' || annualEnabled === 'on') && params?.get('annual') !== 'false';
 }
 
 export async function getPriceContext(el, params) {
