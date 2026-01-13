@@ -169,7 +169,7 @@ const LANGUAGE_BASED_PATHS = [
   'news.adobe.com',
 ];
 const DEFAULT_LANG = 'en';
-export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+export const SLD = PAGE_URL.hostname.includes('.hlx.') ? 'hlx' : 'aem';
 
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
