@@ -28,7 +28,6 @@ test.describe('Editorial Card Block test suite', () => {
 
     await test.step('step-2: Verify Editorial Card block specs', async () => {
       await expect(editorialCard.EditorialCard).toBeVisible();
-
       await expect(await editorialCard.cardLockup).toBeVisible();
       await expect(await editorialCard.cardLockupImg).toHaveCount(2);
       await expect(await editorialCard.cardLockupLabel).toContainText(data.lockupLabelText);
