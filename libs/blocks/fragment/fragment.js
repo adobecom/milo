@@ -88,42 +88,25 @@ export const removeMepLingoRow = (container) => {
   mepLingoRow?.remove();
 };
 
-async function fetchFragmentWithFallback({
-  resourcePath, relHref: inputRelHref, a, locale, isMepLingoLink, needsFallback,
-}) {
-  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath) {
+  window.lana?.log(`MEP Lingo: Query-index indicated regional content exists but fetch failed for ${resourcePath}. Falling back to authored locale.`);
+
+  let fallbackPath = originalHref;
+  try {
+    const originalUrl = new URL(originalHref);
+    if (locale?.prefix && !originalUrl.pathname.startsWith(locale.prefix)) {
+      fallbackPath = `${originalUrl.origin}${locale.prefix}${originalUrl.pathname}`;
+    }
+  } catch (e) {
+    if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
+      fallbackPath = `${locale.prefix}${fallbackPath}`;
+    }
+  }
+
+  const resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
-  let usedFallback = false;
-  let relHref = inputRelHref;
-
-  const mepLingoPrefix = getMepLingoPrefix();
-  if (isMepLingoLink && mepLingoPrefix && resp?.ok && !relHref.includes(mepLingoPrefix)) {
-    usedFallback = true;
-  }
-
-  if (!resp?.ok && needsFallback && a.dataset.originalHref) {
-    window.lana?.log(`MEP Lingo: Query-index indicated regional content exists but fetch failed for ${resourcePath}. Falling back to authored locale.`);
-    let fallbackPath = a.dataset.originalHref;
-    try {
-      const originalUrl = new URL(a.dataset.originalHref);
-      if (locale?.prefix && !originalUrl.pathname.startsWith(locale.prefix)) {
-        fallbackPath = `${originalUrl.origin}${locale.prefix}${originalUrl.pathname}`;
-      }
-    } catch (e) {
-      if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
-        fallbackPath = `${locale.prefix}${fallbackPath}`;
-      }
-    }
-    resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
-      .catch(() => ({}));
-    if (resp?.ok) {
-      relHref = fallbackPath;
-      usedFallback = true;
-    }
-  }
-
-  return { resp, usedFallback, relHref };
+  return { resp, fallbackPath };
 }
 
 export default async function init(a) {
@@ -212,11 +195,29 @@ export default async function init(a) {
   const isLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
   const needsFallback = (isMepLingoBlock || isLingoFragment) && !!a.dataset.originalHref;
 
-  const fetchResult = await fetchFragmentWithFallback({
-    resourcePath, relHref, a, locale, isMepLingoLink, needsFallback,
-  });
-  const { resp, usedFallback } = fetchResult;
-  relHref = fetchResult.relHref;
+  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
+
+  let usedFallback = false;
+
+  const mepLingoPrefix = getMepLingoPrefix();
+  if (isMepLingoLink && mepLingoPrefix && resp?.ok && !relHref.includes(mepLingoPrefix)) {
+    usedFallback = true;
+  }
+
+  // MEP Lingo: Handle stale query-index edge case
+  if (!resp?.ok && needsFallback && a.dataset.originalHref) {
+    const fallback = await tryMepLingoFallbackForStaleIndex(
+      a.dataset.originalHref,
+      locale,
+      resourcePath,
+    );
+    if (fallback.resp?.ok) {
+      resp = fallback.resp;
+      relHref = fallback.fallbackPath;
+      usedFallback = true;
+    }
+  }
 
   if (!resp?.ok) {
     if (isBlockSwap && !isMepLingoBlock && originalBlock) {

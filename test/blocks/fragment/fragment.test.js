@@ -281,6 +281,52 @@ describe('MEP Lingo Fragments', () => {
     expect(window.lana.log.called).to.be.true;
   });
 
+  it('handles fallback when regional fetch fails (covers tryMepLingoFallbackForStaleIndex path)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+    const a = document.querySelector('a.mep-lingo-fallback');
+    await simulateDecorateLinks(a);
+    expect(a.dataset.originalHref).to.exist;
+    await getFragment(a);
+    const section = document.querySelector('.mep-lingo-fallback-section');
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoFallback).to.exist;
+  });
+
+  it('removes section-metadata mep-lingo row when section swap has no regional targeting', async () => {
+    window.sessionStorage.setItem('akamai', 'us');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    section.className = 'section test-section-swap';
+    const sectionMetadata = document.createElement('div');
+    sectionMetadata.className = 'section-metadata';
+
+    const mepLingoRow = document.createElement('div');
+    const cell1 = document.createElement('div');
+    cell1.textContent = 'mep-lingo';
+    const cell2 = document.createElement('div');
+    cell2.innerHTML = '<a href="/fragments/sectionswap#_mep-lingo">swap</a>';
+    mepLingoRow.appendChild(cell1);
+    mepLingoRow.appendChild(cell2);
+    sectionMetadata.appendChild(mepLingoRow);
+
+    section.appendChild(sectionMetadata);
+    document.body.appendChild(section);
+
+    const a = sectionMetadata.querySelector('a');
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+
+    const remainingRows = sectionMetadata.querySelectorAll(':scope > div');
+    expect(remainingRows.length).to.equal(0);
+
+    section.remove();
+  });
+
   it('sets originalHref for MEP Lingo links (query-index optimization)', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
