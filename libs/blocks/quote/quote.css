@@ -144,16 +144,16 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 }
 
 /* rounded corners */
-.s-rounded-corners {
+.quote.s-rounded-corners {
   border-radius: var(--s-rounded-corners);
 }
 
-.m-rounded-corners {
+.quote.m-rounded-corners {
   border-radius: var(--m-rounded-corners);
 }
 
-.rounded-corners,
-.l-rounded-corners {
+.quote.rounded-corners,
+.quote.l-rounded-corners {
   border-radius: var(--l-rounded-corners);
 }
 

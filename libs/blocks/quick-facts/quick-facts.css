@@ -1,7 +1,7 @@
 .quick-facts {
   --gap: var(--spacing-m);
 
-  background: white;
+  background: #fff;
   border-radius: 16px;
   container-type: inline-size; /* stylelint-disable-line property-no-unknown */
 }
@@ -97,7 +97,7 @@
   }
 
   .quick-facts .logo {
-    justify-content: left;
+    justify-content: flex-start;
   }
 
   .quick-facts .fact-list,
