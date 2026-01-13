@@ -97,14 +97,13 @@ async function fetchFragmentWithFallback({
   let usedFallback = false;
   let relHref = inputRelHref;
 
-  // Detect if query-index redirected to base path
   const mepLingoPrefix = getMepLingoPrefix();
   if (isMepLingoLink && mepLingoPrefix && resp?.ok && !relHref.includes(mepLingoPrefix)) {
     usedFallback = true;
   }
 
-  // Try fallback if regional fetch failed
   if (!resp?.ok && needsFallback && a.dataset.originalHref) {
+    window.lana?.log(`MEP Lingo: Query-index indicated regional content exists but fetch failed for ${resourcePath}. Falling back to authored locale.`);
     let fallbackPath = a.dataset.originalHref;
     try {
       const originalUrl = new URL(a.dataset.originalHref);

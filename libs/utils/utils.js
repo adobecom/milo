@@ -747,7 +747,11 @@ function localizeLinkCore(
         if (matchingIndexes.length) {
           const { default: urlInQueryIndex } = await import('./lingo.js');
           const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
-          if (!useRegionalPrefix && (locale.base || locale.base === '')) prefix = basePrefix;
+          const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
+          const shouldFallbackToBase = isMepLingoFragment
+            ? locale?.regions
+            : (locale.base || locale.base === '');
+          if (!useRegionalPrefix && shouldFallbackToBase) prefix = basePrefix;
         } else if (
           siteQueryIndexMapLingo
             ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
