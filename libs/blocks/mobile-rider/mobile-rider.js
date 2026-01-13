@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { createTag, getEventConfig } from '../../utils/utils.js';
+import { createTag, getEventConfig, createIntersectionObserver, isInTextNode } from '../../utils/utils.js';
 
 const DRAWER_CSS_URL = new URL('./drawer.css', import.meta.url).href;
 
@@ -405,9 +405,84 @@ class MobileRider {
   }
 }
 
+function parseConfigFromLink(a) {
+  const url = new URL(a.href);
+  const config = {};
+  
+  // Extract video ID from URL path or params
+  const pathParts = url.pathname.split('/').filter(Boolean);
+  const videoId = url.searchParams.get('videoid') 
+    || url.searchParams.get('id')
+    || url.searchParams.get('v')
+    || pathParts[pathParts.length - 1]; // Last path segment
+  
+  if (videoId) {
+    config.videoid = videoId;
+  }
+  
+  // Extract other params
+  const skinId = url.searchParams.get('skinid') || url.searchParams.get('skin');
+  if (skinId) config.skinid = skinId;
+  
+  const aslId = url.searchParams.get('aslid') || url.searchParams.get('asl');
+  if (aslId) config.aslid = aslId;
+  
+  // Check data attributes on the link
+  if (a.dataset.videoid) config.videoid = a.dataset.videoid;
+  if (a.dataset.skinid) config.skinid = a.dataset.skinid;
+  if (a.dataset.aslid) config.aslid = a.dataset.aslid;
+  
+  return config;
+}
+
+function createBlockFromLink(a) {
+  // Create container div structure
+  const container = createTag('div', { class: 'mobile-rider link-block-container' });
+  
+  // Parse config from link
+  const config = parseConfigFromLink(a);
+  
+  // Create structure with config if we have a video ID
+  if (config.videoid) {
+    const configDiv = createTag('div');
+    Object.entries(config).forEach(([key, value]) => {
+      const keyDiv = createTag('div', {}, key);
+      const valueDiv = createTag('div', {}, value);
+      configDiv.appendChild(keyDiv);
+      configDiv.appendChild(valueDiv);
+    });
+    container.appendChild(configDiv);
+  }
+  
+  // Insert container after link and remove link
+  a.insertAdjacentElement('afterend', container);
+  a.remove();
+  
+  return container;
+}
+
 export default function init(el) {
   try {
-    return new MobileRider(el);
+    // Check if it's a link element (auto block) or block element (manual)
+    const isLink = el.tagName === 'A' && el.classList.contains('mobile-rider') && el.classList.contains('link-block');
+    
+    if (isLink) {
+      // Handle auto block - link element (like YouTube/AdobeTV)
+      el.classList.add('hide-video');
+      if (isInTextNode(el)) return null;
+      
+      const embedPlayer = () => {
+        const container = createBlockFromLink(el);
+        return new MobileRider(container);
+      };
+      
+      // Use intersection observer for lazy loading (like YouTube)
+      createIntersectionObserver({ el, callback: embedPlayer });
+      return null;
+    } else {
+      // Handle manual block - block element with config
+      return new MobileRider(el);
+    }
   } catch (e) {
     window.lana?.log(`Mobile Rider init failed: ${e.message}`);
     return null;
