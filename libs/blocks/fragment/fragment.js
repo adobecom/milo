@@ -130,7 +130,6 @@ async function fetchFragmentWithFallback({
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale, env } = getConfig();
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
-  const isMepLingoLink = a.dataset.mepLingo === 'true';
   let url;
   let inline = false;
 
@@ -174,6 +173,7 @@ export default async function init(a) {
     resourcePath = getFederatedUrl(a.href);
   }
 
+  const isMepLingoLink = a.dataset.mepLingo === 'true';
   const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
   const isOnRegionalPage = locale?.base !== undefined;
 
