@@ -4,7 +4,15 @@ export default async function checkVideoCaptions(elements = [], config = {}) {
   if (!config?.checks?.includes('video-captions')) return [];
   const violations = [];
   // Select Adobe MPC video embeds only
-  const mpcIframes = elements.filter((el) => el.tagName.toLowerCase() === 'iframe' && el.src.includes('video.tv.adobe.com'));
+  const mpcIframes = elements.filter((el) => {
+    if (el.tagName.toLowerCase() !== 'iframe') return false;
+    try {
+      const parsed = new URL(el.src);
+      return parsed.hostname === 'video.tv.adobe.com';
+    } catch (e) {
+      return false;
+    }
+  });
   // Determine user geo from locale prefix
   const federalRoot = getFederatedContentRoot();
   const { locale } = getConfig();
