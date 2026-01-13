@@ -77,7 +77,6 @@ test.describe('Editorial Card Block test suite', () => {
       await expect(await editorialCard.blueButton).toContainText(data.blueButtonText);
       await expect(await editorialCard.linkBtn).toContainText(data.linkBtnText);
 
-      console.log(1, editorialCard.cardMedia1);
       expect(await webUtil.verifyAttributes(editorialCard.mediaMobile, editorialCard.attributes['editorialCard.media-area.mobile'].cardImg2)).toBeTruthy();
       expect(await webUtil.verifyAttributes(editorialCard.mediaTablet, editorialCard.attributes['editorialCard.media-area.tablet'].cardImg2)).toBeTruthy();
       expect(await webUtil.verifyAttributes(editorialCard.mediaDesktop, editorialCard.attributes['editorialCard.media-area.desktop'].cardImg2)).toBeTruthy();
