@@ -2068,8 +2068,9 @@ async function decorateLanguageBanner() {
   marketsConfig.data.forEach((market) => {
     market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   });
-
-  const pageMarket = marketsConfig.data.find((m) => m.prefix === (locale.prefix?.replace('/', '') || ''));
+  const pagePrefix = locale.prefix?.replace('/', '') || '';
+  const pageMarket = marketsConfig.data.find((m) => m.prefix === pagePrefix)
+    ?? marketsConfig.data.find((m) => m.prefix === locale.base);
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
