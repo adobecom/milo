@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { getLingoActive } from '../../../libs/utils/lingo-active.js';
 import {
   defaultState,
   getConfig,
@@ -11,6 +12,13 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
+
+describe('utils.js export sanity', () => {
+  it('getLingoActive() is callable and returns a boolean', async () => {
+    const val = await getLingoActive();
+    expect(val).to.be.a('boolean');
+  });
+});
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
@@ -728,6 +736,14 @@ describe('getCountryAndLang', () => {
       be_fr: { ietf: 'fr-BE' },
     },
   };
+
+  beforeEach(() => {
+    // Ensure no langfirst metadata exists for tests that don't explicitly set it
+    const existingLangFirst = document.querySelector('meta[name="langfirst"]');
+    if (existingLangFirst) {
+      existingLangFirst.remove();
+    }
+  });
 
   it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);

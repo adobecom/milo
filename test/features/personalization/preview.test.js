@@ -169,7 +169,7 @@ describe('MEP Lingo region select with lingo param', () => {
   beforeEach(() => {
     // Use meta tag instead of URL param because PAGE_URL is captured at module load time
     lingoMeta = document.createElement('meta');
-    lingoMeta.setAttribute('name', 'langFirst');
+    lingoMeta.setAttribute('name', 'langfirst');
     lingoMeta.setAttribute('content', 'on');
     document.head.appendChild(lingoMeta);
 

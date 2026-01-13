@@ -79,9 +79,29 @@ export const FORM_FIELDS = {
 
 export async function getIMS() {
   if (window.adobeIMS) return window.adobeIMS;
-
-  await loadIms();
+  try {
+    await loadIms();
+  } catch (e) {
+    return null;
+  }
   return window.adobeIMS;
+}
+
+async function refreshIMSToken(ims) {
+  try {
+    await ims?.refreshToken();
+  } catch (e) {
+    window.lana?.log('Refreshing IMS token failed');
+  }
+}
+
+export async function validateImsToken() {
+  const ims = await getIMS();
+  try {
+    await ims?.validateToken();
+  } catch (e) {
+    await refreshIMSToken(ims);
+  }
 }
 
 export async function getIMSAccessToken() {
@@ -330,7 +350,7 @@ function waitForModal() {
 export async function redirectToSignIn(dialog) {
   const ims = await getIMS();
   if (!document.body.contains(dialog)) await waitForModal();
-  await ims.signIn();
+  await ims?.signIn();
   if (dialog) closeModal(dialog);
 }
 
@@ -359,5 +379,5 @@ export async function runtimePost(url, data) {
 
 export async function isUserGuest() {
   const ims = await getIMS();
-  return !ims.isSignedInUser();
+  return !ims?.isSignedInUser();
 }
