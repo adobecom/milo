@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 
-const { PRICE_PATTERN, PLANS_NALA_PATH } = require('@adobe/mas-platform/web-components/dist/commerce.js');
+const { PRICE_PATTERN, PLANS_NALA_PATH } = require('@adobecom/mas-platform/web-components/dist/commerce.js');
 
 module.exports = {
   FeatureName: 'Merch Plans Cards Feature',
