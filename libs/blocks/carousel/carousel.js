@@ -230,9 +230,9 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
     }
 
     if (event.key === KEY_CODES.TAB) {
-      const focusableElements = el.querySelectorAll('button:not(.carousel-expand), a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      const focusableElements = [...el.querySelectorAll('button:not(.carousel-expand), a, input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((elem) => !elem.closest('[aria-hidden="true"]'));
       const firstFocusable = focusableElements[0];
-      const lastFocusable = focusableElements[focusableElements.length - 1];
+      const lastFocusable = focusableElements.at(-1);
 
       if (event.shiftKey && document.activeElement === firstFocusable) {
         event.preventDefault();
