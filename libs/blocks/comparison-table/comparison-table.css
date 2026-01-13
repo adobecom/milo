@@ -110,7 +110,7 @@
   margin: 0 auto;
 }
 
-.comparison-table .table-row-header:has(wbr) {
+.comparison-table .table-row-header:has(wbr):has(a) {
   display: inline;
 }
 
