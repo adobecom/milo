@@ -1633,6 +1633,7 @@ async function loadPostLCP(config) {
         isLocalNav: false,
         mountpoint: header,
         unavEnabled: false,
+        miloConfig: getConfig(),
       }).catch((error) => {
         console.log(error);
       });
