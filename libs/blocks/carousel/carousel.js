@@ -199,7 +199,7 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
     button.addEventListener('click', (event) => {
       event.preventDefault();
       if (button.classList.contains('carousel-expand')) {
-        header.style.zIndex = '-1';
+        header.style.zIndex = '0';
         el.classList.add('lightbox-active');
         el.setAttribute('role', 'dialog');
         el.setAttribute('aria-modal', 'true');
