@@ -184,10 +184,10 @@ function removeEqualHeight(slides, slideContainer) {
 function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   const curtain = createTag('div', { class: 'carousel-curtain' });
   const header = document.querySelector('header');
-  const headerZIndex = header.style.zIndex;
+  const headerZIndex = header?.style.zIndex;
 
   const closeLightbox = () => {
-    header.style.zIndex = headerZIndex;
+    if (header) header.style.zIndex = headerZIndex;
     el.classList.remove('lightbox-active');
     el.removeAttribute('role');
     el.removeAttribute('aria-modal');
@@ -199,7 +199,7 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
     button.addEventListener('click', (event) => {
       event.preventDefault();
       if (button.classList.contains('carousel-expand')) {
-        header.style.zIndex = '0';
+        if (header) header.style.zIndex = '0';
         el.classList.add('lightbox-active');
         el.setAttribute('role', 'dialog');
         el.setAttribute('aria-modal', 'true');
