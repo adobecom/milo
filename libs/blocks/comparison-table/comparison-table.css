@@ -102,9 +102,7 @@
   font-weight: var(--type-detail-all-weight);
   line-height: 1.3;
   padding: var(--spacing-xs) 0 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  display: inline;
   margin-inline-end: var(--comparison-table-spacing);
   grid-column: 1 / -1;
   margin: 0 auto;
@@ -468,6 +466,8 @@
   .comparison-table .header-content-wrapper .header-item:first-child,
   .comparison-table .table-row-header.minimal-content {
     display: flex;
+    align-items: center;
+    justify-content: flex-start;
   }
 
   .comparison-table .table-row-header {
