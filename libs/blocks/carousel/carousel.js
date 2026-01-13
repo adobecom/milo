@@ -600,8 +600,6 @@ export default function init(el) {
     currentActiveIndex: 0,
   };
 
-  let lightboxBtns;
-
   /*
    * Hinting center variant - Set slides order
    * before moveSlides is called for centering to work.
@@ -622,7 +620,7 @@ export default function init(el) {
   el.append(nextPreviousContainer);
 
   if (el.classList.contains('lightbox')) {
-    lightboxBtns = decorateLightboxButtons();
+    const lightboxBtns = decorateLightboxButtons();
     el.append(lightboxBtns[1]);
     slideWrapper.append(lightboxBtns[0], slideContainer);
     handleLightboxButtons(lightboxBtns, el, slideWrapper);
