@@ -601,12 +601,7 @@ export default function init(el) {
   };
 
   let lightboxBtns;
-  if (el.classList.contains('lightbox')) {
-    lightboxBtns = decorateLightboxButtons();
-    slideWrapper.append(lightboxBtns[0], slideContainer);
-  } else {
-    slideWrapper.append(slideContainer);
-  }
+
   /*
    * Hinting center variant - Set slides order
    * before moveSlides is called for centering to work.
@@ -626,9 +621,13 @@ export default function init(el) {
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
   el.append(nextPreviousContainer);
 
-  if (lightboxBtns) {
+  if (el.classList.contains('lightbox')) {
+    lightboxBtns = decorateLightboxButtons();
     el.append(lightboxBtns[1]);
+    slideWrapper.append(lightboxBtns[0], slideContainer);
     handleLightboxButtons(lightboxBtns, el, slideWrapper);
+  } else {
+    slideWrapper.append(slideContainer);
   }
 
   function normalizeVideoHeights() {
