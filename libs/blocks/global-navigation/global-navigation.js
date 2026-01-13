@@ -225,14 +225,25 @@ const handleSignIn = async () => {
   details.innerHTML = `
     <style>
       .feds-signin-modal-content {
-        min-height: 500px;
         display: flex;
         justify-content: center;
         align-items: center;
+        padding: 48px 32px;
+      }
+      #signin-modal {
+        width: 400px;
+        border-radius: 16px;
+      }
+      #signin-modal .dialog-close {
+        display: block;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background-color: transparent;
       }
       susi-sentry-light {
         width: 100%;
-        max-width: 400px; /* Standard width for the sign-in block */
       }
     </style>
   `;
