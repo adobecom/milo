@@ -316,6 +316,9 @@ test.describe('Commerce feature test suite', () => {
 
     // Validate there are no unresolved commerce placeholders
     await test.step('Validate wcs placeholders', async () => {
+      // Wait for at least one placeholder to be resolved
+      await page.waitForSelector('[data-wcs-osi].placeholder-resolved', { timeout: 10000 });
+
       const unresolvedPlaceholders = await page.evaluate(
         () => [...document.querySelectorAll('[data-wcs-osi]')].filter(
           (el) => !el.classList.contains('placeholder-resolved'),
@@ -325,20 +328,20 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate Buy now CTA', async () => {
-      await COMM.buyNowCta.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(COMM.buyNowCta).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.promo}`));
-      await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.CO}`));
-      await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.lang}`));
+      await COMM.checkoutCTA.nth(0).waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.checkoutCTA.nth(0)).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.checkoutCTA.nth(0)).toHaveAttribute('href', new RegExp(`${data.promo}`));
+      await expect(COMM.checkoutCTA.nth(0)).toHaveAttribute('href', new RegExp(`${data.CO}`));
+      await expect(COMM.checkoutCTA.nth(0)).toHaveAttribute('href', new RegExp(`${data.lang}`));
     });
 
     await test.step('Validate Free Trial CTA', async () => {
-      await COMM.freeTrialCta.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(COMM.freeTrialCta).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.freeTrialCta).toHaveAttribute('href', new RegExp(`${data.promo}`));
-      await expect(COMM.freeTrialCta).toHaveAttribute('href', new RegExp(`${data.CO}`));
-      await expect(COMM.freeTrialCta).toHaveAttribute('href', new RegExp(`${data.lang}`));
-      await expect(COMM.freeTrialCta).toHaveAttribute('href', new RegExp(`${data.workflow}`));
+      await COMM.checkoutCTA.nth(1).waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('href', new RegExp(`${data.promo}`));
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('href', new RegExp(`${data.CO}`));
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('href', new RegExp(`${data.lang}`));
+      await expect(COMM.checkoutCTA.nth(1)).toHaveAttribute('href', new RegExp(`${data.workflow}`));
     });
 
     await test.step('Validate regular price display', async () => {
@@ -410,6 +413,9 @@ test.describe('Commerce feature test suite', () => {
 
     // Validate there are no unresolved commerce placeholders
     await test.step('Validate wcs placeholders', async () => {
+      // Wait for at least one placeholder to be resolved
+      await page.waitForSelector('[data-wcs-osi].placeholder-resolved', { timeout: 10000 });
+
       const unresolvedPlaceholders = await page.evaluate(
         () => [...document.querySelectorAll('[data-wcs-osi]')].filter(
           (el) => !el.classList.contains('placeholder-resolved'),
@@ -470,6 +476,103 @@ test.describe('Commerce feature test suite', () => {
       );
       expect(await priceStyle).toContain('line-through');
       await expect(COMM.priceStrikethrough).toHaveAttribute('data-promotion-code', data.promo);
+    });
+  });
+
+  // @Commerce-Volume-Discount - Validate volume discount price
+  test(`${features[10].name}, ${features[10].tags}`, async ({ page, baseURL }) => {
+    const testPage = constructTestUrl(baseURL, features[10].path);
+    console.info('[Test Page]: ', testPage);
+    const { data } = features[10];
+
+    await test.step('Go to the test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+    });
+
+    let regularPrice;
+
+    await test.step('Validate the regular price is displayed if quantity is less than the minimum promotion quantity', async () => {
+      await COMM.volumeDiscountWithoutQuantity.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.volumeDiscountWithoutQuantity).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.volumeDiscountWithoutQuantity).toHaveAttribute('data-quantity', '1');
+      regularPrice = `${await COMM.volumeDiscountWithoutQuantityInteger.innerText()}.${await COMM.volumeDiscountWithoutQuantityDecimals.innerText()}`;
+      expect(regularPrice).not.toBe('');
+      await expect(COMM.volumeDiscountWithoutQuantityStrikethrough).not.toBeVisible();
+      await expect(COMM.volumeDiscountWithoutQuantityAlternative).not.toBeVisible();
+    });
+
+    await test.step('Validate the strikethrough price is the same as the regular price', async () => {
+      await COMM.volumeDiscountWithQuantity.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '3');
+      const priceStrikedThrough = `${await COMM.volumeDiscountWithQuantityStrikeThroughInteger.innerText()}.${await COMM.volumeDiscountWithQuantityStrikeThroughDecimals.innerText()}`;
+      expect(priceStrikedThrough).toBe(regularPrice);
+    });
+
+    await test.step('Validate the volume discount price is displayed if quantity is greater than the minimum promotion quantity', async () => {
+      await COMM.volumeDiscountWithQuantity.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '3');
+      const volumeDiscountPrice = `${await COMM.volumeDiscountWithQuantityAlternativeInteger.innerText()}.${await COMM.volumeDiscountWithQuantityAlternativeDecimals.innerText()}`;
+      expect(regularPrice > volumeDiscountPrice).toBe(true);
+    });
+
+    await test.step('Validate the alternative price next to the regular strikethrough price', async () => {
+      await COMM.strikethroughPrice.waitFor({ state: 'visible', timeout: 10000 });
+      expect(COMM.strikethroughPrice).toBeVisible();
+      await COMM.alternativePrice.waitFor({ state: 'visible', timeout: 10000 });
+      expect(COMM.alternativePrice).toBeVisible();
+      const strikethroughRegularPrice = Number(`${await COMM.strikethroughPriceInteger.innerText()}.${await COMM.strikethroughPriceDecimals.innerText()}`);
+      const promoPrice = Number(`${await COMM.alternativePriceInteger.innerText()}.${await COMM.alternativePriceDecimals.innerText()}`);
+      expect(promoPrice).not.toBeNull();
+      expect(strikethroughRegularPrice).not.toBeNull();
+      expect(promoPrice).toBeLessThan(strikethroughRegularPrice);
+    });
+  });
+
+  // @Commerce-Volume-Discount-Annual - Validate volume discount price with annual price
+  test(`${features[11].name}, ${features[11].tags}`, async ({ page, baseURL }) => {
+    const testPage = constructTestUrl(baseURL, features[11].path);
+    console.info('[Test Page]: ', testPage);
+    const { data } = features[11];
+
+    await test.step('Go to the test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+    });
+
+    let regularPrice;
+    let regularAnnualPrice;
+
+    await test.step('Validate the regular price and annual price are displayed if quantity is less than the minimum promotion quantity', async () => {
+      await COMM.volumeDiscountWithoutQuantity.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.volumeDiscountWithoutQuantity).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.volumeDiscountWithoutQuantity).toHaveAttribute('data-quantity', '1');
+      regularPrice = `${await COMM.volumeDiscountWithoutQuantityInteger.innerText()}.${await COMM.volumeDiscountWithoutQuantityDecimals.innerText()}`;
+      regularAnnualPrice = `${await COMM.volumeDiscountWithoutQuantityAnnualInteger.innerText()}.${await COMM.volumeDiscountWithoutQuantityAnnualDecimals.innerText()}`;
+      expect(regularPrice).not.toBe('');
+      expect(regularAnnualPrice).not.toBe('');
+      await expect(COMM.volumeDiscountWithoutQuantityStrikethrough).not.toBeVisible();
+      await expect(COMM.volumeDiscountWithoutQuantityAlternative).not.toBeVisible();
+    });
+
+    await test.step('Validate the strikethrough price is the same as the regular price', async () => {
+      await COMM.volumeDiscountWithQuantity.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '3');
+      const priceStrikedThrough = `${await COMM.volumeDiscountWithQuantityStrikeThroughInteger.innerText()}.${await COMM.volumeDiscountWithQuantityStrikeThroughDecimals.innerText()}`;
+      expect(priceStrikedThrough).toBe(regularPrice);
+    });
+
+    await test.step('Validate the volume discount price is displayed if quantity is greater than the minimum promotion quantity, and annual price is based on the promo price', async () => {
+      await COMM.volumeDiscountWithQuantity.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '3');
+      const volumeDiscountPrice = `${await COMM.volumeDiscountWithQuantityAlternativeInteger.innerText()}.${await COMM.volumeDiscountWithQuantityAlternativeDecimals.innerText()}`;
+      expect(regularPrice > volumeDiscountPrice).toBe(true);
+      const volumeDiscountAnnualPrice = `${await COMM.volumeDiscountWithQuantityAnnualInteger.innerText()}.${await COMM.volumeDiscountWithQuantityAnnualDecimals.innerText()}`;
+      expect(Number(volumeDiscountAnnualPrice.replace(',', '')) < Number(regularAnnualPrice.replace(',', ''))).toBe(true);
     });
   });
 });

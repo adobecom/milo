@@ -107,6 +107,7 @@ describe('Functional Test', () => {
       targetEnabled: false,
       experiments: [],
       promises: {},
+      consentState: { performance: true, advertising: true },
     };
     const promoMepSettings = [
       {
@@ -415,7 +416,7 @@ describe('matchGlob function', () => {
     const parent = document.createElement('div');
     const el = document.createElement('div');
     parent.appendChild(el);
-    const wrapper = createContent(
+    const wrapper = await createContent(
       el,
       {
         content: '/fragments/promos/path-to-promo/#modal-hash:delay=1',

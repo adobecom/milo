@@ -2572,7 +2572,13 @@
         </div>
     </template>
     <template id="catalogCollectionWithHeader" title="Catalog collection with header">
-        <merch-card-collection-header class="catalog"></merch-card-collection-header>
+        <merch-card-collection-header class="catalog">
+            <p slot="searchText">Search all products</p>
+            <p slot="filtersText">Filters</p>
+            <p slot="sortText">Sort</p>
+            <p slot="popularityText">Popularity</p>
+            <p slot="alphabeticallyText">Alphabetically</p>
+        </merch-card-collection-header>
         <merch-card-collection class="four-merch-cards catalog">
             <merch-card variant="catalog" data-key="catalog-fragments_cards_additional_adobe-connect_master"
                 tabindex="-1" filters="all:1,eLearning:1" types="desktop,mobile">
@@ -2742,6 +2748,11 @@
             </merch-card>
         </merch-card-collection>
     </template>
+    <template id="plansWideReflow">
+        <merch-card-collection>
+            <aem-fragment fragment="fragment-individual-plans-wide-reflow" />
+        </merch-card-collection>
+    </template>
     <template id="collectionAutoblock" title="Collection autoblock">
         <merch-card-collection>
             <aem-fragment fragment="fragment-individual-plans-collection" />
@@ -2752,6 +2763,11 @@
           <aem-fragment fragment="fragment-individual-plans-collection" />
       </merch-card-collection>
     </template>
+    <template id="override-child" title="Collection child override">
+      <merch-card-collection overrides="1c0b2890-567a-4771-933c-84b032c8e51d:cafe-babe">
+          <aem-fragment fragment="fragment-individual-plans-collection" />
+      </merch-card-collection>
+    </template>    
 </body>
 
 </html>

@@ -6,7 +6,7 @@ import {
   loadIms,
   loadStyle,
   loadLana,
-  decorateLinks,
+  decorateLinksAsync,
   loadScript,
   getGnavSource,
   getFederatedUrl,
@@ -68,6 +68,7 @@ const { getMiloLocaleSettings } = merch;
 
 const {
   closeAllDropdowns,
+  createErrorPopup,
   fetchAndProcessPlainHtml,
   getActiveLink,
   getExperienceName,
@@ -130,11 +131,7 @@ export function getAnalyticsValue(str, index) {
 }
 
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  if (shouldBlockFreeTrialLinks({
-    button: elem,
-    localePrefix: getConfig()?.locale?.prefix,
-    parent: elem.parentElement,
-  })) return null;
+  if (shouldBlockFreeTrialLinks(elem)) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
   const clone = elem.cloneNode(true);
@@ -1177,7 +1174,7 @@ class Gnav {
     const promoPath = getMetadata('gnav-promo-source');
     const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
 
-    if (!promoPath || !asideJsPromise) {
+    if (!promoPath || !asideJsPromise || !fedsPromoWrapper) {
       fedsPromoWrapper?.remove();
       this.block.classList.remove('has-promo');
       return this.elements.aside;
@@ -1273,17 +1270,24 @@ class Gnav {
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
+    const languageBanner = document.querySelector('.language-banner');
+    const languageBannerHeight = languageBanner?.offsetHeight || 0;
 
     const isLocalNav = this.isLocalNav();
-    if (!isLocalNav && hasPromo) {
-      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+
+    // Handle initial positioning for non-local nav (promo + visible language banner)
+    if (!isLocalNav && (hasPromo || languageBanner)) {
+      const langBannerNewHeight = languageBanner ? Math.max(0, languageBannerHeight - yOffset) : 0;
+      const totalOffsetHeight = (hasPromo ? promoHeight : 0) + langBannerNewHeight;
+      popup.style.top = `calc(0px - var(--feds-height-nav) - ${totalOffsetHeight}px)`;
       if (isSmallScreen) return;
     }
-    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     if (isLocalNav) {
-      popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+      const langBannerOffset = languageBanner ? languageBannerHeight : 0;
+      popup.style.top = `calc(${yOffset}px - ${navOffset} - ${langBannerOffset}px - 2px)`;
     }
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent) {
@@ -1414,6 +1418,14 @@ class Gnav {
               updatePopupPosition: this.updatePopupPosition,
             });
             if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
+          } catch (e) {
+            const errorDiv = await createErrorPopup();
+            const loadingElement = template.querySelector('.feds-popup');
+            const topBar = loadingElement.querySelector('.top-bar');
+            const closeIcon = document.querySelector('.feds-popup .close-icon');
+            if (loadingElement) loadingElement.replaceWith(errorDiv);
+            if (closeIcon) errorDiv.append(closeIcon);
+            if (topBar) errorDiv.prepend(topBar);
           } finally {
             if (this.isLocalNav()) {
               decorateLocalNavItems(item, template);
@@ -1440,6 +1452,10 @@ class Gnav {
             enableMobileScroll();
             if (isDesktop.matches) {
               newPopup.innerHTML = desktopMegaMenuHTML ?? loadingDesktopMegaMenuHTML;
+              if (newPopup.classList.contains('error')) {
+                const errorDiv = await createErrorPopup();
+                if (newPopup) newPopup.replaceWith(errorDiv);
+              }
               this.block.classList.remove('new-nav');
               disableAriaHidden();
               removeA11YMobileDropdowns();
@@ -1473,6 +1489,7 @@ class Gnav {
       switch (itemType) {
         case 'syncDropdownTrigger':
         case 'asyncDropdownTrigger': {
+          if (shouldBlockFreeTrialLinks(item)) return null;
           const dropdownTrigger = toFragment`<button
             class="feds-navLink feds-navLink--hoverCaret"
             aria-expanded="false"
@@ -1529,6 +1546,7 @@ class Gnav {
           let customLinkModifier = '';
           let removeCustomLink = false;
           let linkElem = item.querySelector('a');
+          if (shouldBlockFreeTrialLinks(linkElem)) return null;
           if (linkElem.classList.contains('merch')) {
             linkElem = await merch.default(linkElem);
           }
@@ -1585,7 +1603,7 @@ class Gnav {
     if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
     const breadcrumbsElem = this.block.querySelector('.breadcrumbs');
     // Breadcrumbs are not initially part of the nav, need to decorate the links
-    if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
+    if (breadcrumbsElem) await decorateLinksAsync(breadcrumbsElem);
     if (!breadCrumbsJsPromise) return null;
     const { default: createBreadcrumbs } = await breadCrumbsJsPromise;
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);

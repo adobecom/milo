@@ -70,12 +70,19 @@
         <a href="http://adobe.com/test"></a>
         <a href="http://adobe.com/test/"></a>
       </div>
+      <div id="nohtml-links">
+        <a href="/test/link#_nohtml"></a>
+        <a href="http://localhost:2000/test/absolute#_nohtml"></a>
+        <a href="/test/with/qp?foo=bar#_nohtml"></a>
+        <a href="/test/with/hash#_nohtml#section"></a>
+        <a href="/test/regular/link"></a>
+      </div>
     </main>
   </body>
   <script type="module">
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
-    import { decorateLinks, appendHtmlToLink, setConfig, loadArea } from './../../libs/utils/utils.js';
+    import { decorateLinksAsync, appendHtmlToLink, setConfig, loadArea } from './../../libs/utils/utils.js';
     setConfig({
       htmlExclude: [
         /localhost:2000\/exclude\/.*/,
@@ -157,12 +164,27 @@
           'http://localhost:2000/this/link/not/excluded.html',
           ])
         });
+
+        it('links with #_nohtml hash should not have .html appended', async () => {
+            const links = document.getElementById('nohtml-links');
+            const hrefs = [...links.querySelectorAll('a')].map((a) => {
+              appendHtmlToLink(a);
+              return a.getAttribute('href');
+            });
+            expect(hrefs).to.eql([
+              '/test/link#_nohtml',
+              'http://localhost:2000/test/absolute#_nohtml',
+              '/test/with/qp?foo=bar#_nohtml',
+              '/test/with/hash#_nohtml#section',
+              '/test/regular/link.html',
+            ])
+          });
       });
 
       describe('Decorate Links', () => {
-        it('calls the method to append .html extension if needed', () => {
+        it('calls the method to append .html extension if needed', async () => {
           const links = document.getElementById('linkstodecorate');
-          decorateLinks(links);
+          await decorateLinksAsync(links);
           const hrefs = [...links.querySelectorAll('a')].map((a) => a.href);
           expect(hrefs).to.eql([
           'http://localhost:2000/testA.html',

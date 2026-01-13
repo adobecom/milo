@@ -5,60 +5,52 @@ const repo = process.env.REPO_NAME || ''; // example repo name: milo
 const auth = process.env.GH_TOKEN || ''; // https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 const RCPDates = [
   {
-    start: new Date('2024-12-12T11:00:00-08:00'),
-    end: new Date('2024-12-12T14:00:00-08:00'),
+    start: new Date('2026-02-22T00:00:00-08:00'),
+    end: new Date('2026-03-01T00:00:00-08:00'),
   },
   {
-    start: new Date('2024-12-15T00:00:00-08:00'),
-    end: new Date('2025-01-02T00:00:00-08:00'),
+    start: new Date('2026-03-12T11:00:00-07:00'),
+    end: new Date('2026-03-12T14:00:00-07:00'),
   },
   {
-    start: new Date('2025-02-23T00:00:00-08:00'),
-    end: new Date('2025-03-01T00:00:00-08:00'),
+    start: new Date('2026-04-19T00:00:00-07:00'),
+    end: new Date('2026-04-22T00:00:00-07:00'),
   },
   {
-    start: new Date('2025-03-12T11:00:00-07:00'),
-    end: new Date('2025-03-12T14:00:00-07:00'),
+    start: new Date('2026-05-24T11:00:00-07:00'),
+    end: new Date('2026-05-30T00:00:00-07:00'),
   },
   {
-    start: new Date('2025-03-17T00:00:00-07:00'),
-    end: new Date('2025-03-20T17:00:00-07:00'),
+    start: new Date('2026-06-11T11:00:00-07:00'),
+    end: new Date('2026-06-11T14:00:00-07:00'),
   },
   {
-    start: new Date('2025-05-25T00:00:00-07:00'),
-    end: new Date('2025-05-31T00:00:00-07:00'),
+    start: new Date('2026-06-29T00:00:00-07:00'),
+    end: new Date('2026-07-05T00:00:00-07:00'),
   },
   {
-    start: new Date('2025-06-12T11:00:00-07:00'),
-    end: new Date('2025-06-12T14:00:00-07:00'),
+    start: new Date('2026-08-23T00:00:00-07:00'),
+    end: new Date('2026-08-30T00:00:00-07:00'),
   },
   {
-    start: new Date('2025-06-29T00:00:00-07:00'),
-    end: new Date('2025-07-05T00:00:00-07:00'),
+    start: new Date('2026-09-10T11:00:00-07:00'),
+    end: new Date('2026-09-10T14:00:00-07:00'),
   },
   {
-    start: new Date('2025-08-24T00:00:00-07:00'),
-    end: new Date('2025-08-30T00:00:00-07:00'),
+    start: new Date('2026-11-10T00:00:00-08:00'),
+    end: new Date('2026-11-12T23:59:59-08:00'),
   },
   {
-    start: new Date('2025-09-11T11:00:00-07:00'),
-    end: new Date('2025-09-11T14:00:00-07:00'),
+    start: new Date('2026-11-22T00:00:00-08:00'),
+    end: new Date('2026-11-29T00:00:00-08:00'),
   },
   {
-    start: new Date('2025-10-20T00:00:00-07:00'),
-    end: new Date('2025-10-30T23:59:59-07:00'),
+    start: new Date('2026-12-09T11:00:00-08:00'),
+    end: new Date('2026-12-09T14:00:00-08:00'),
   },
   {
-    start: new Date('2025-11-16T00:00:00-08:00'),
-    end: new Date('2025-11-29T00:00:00-08:00'),
-  },
-  {
-    start: new Date('2025-12-10T11:00:00-08:00'),
-    end: new Date('2025-12-10T14:00:00-08:00'),
-  },
-  {
-    start: new Date('2025-12-14T00:00:00-08:00'),
-    end: new Date('2026-01-04T00:00:00-08:00'),
+    start: new Date('2026-12-14T00:00:00-08:00'),
+    end: new Date('2027-01-02T00:00:00-08:00'),
   },
 ];
 
@@ -184,6 +176,32 @@ const getReviews = ({ pr, github, owner, repo }) =>
       return pr;
     });
 
+const isWeekendOrMondayRCP = (start) => {
+  const day = new Date(start).getDay();
+  return day === 0 || day === 1 || day === 6;
+};
+
+const getDaysUntilRCP = (start, now = new Date()) => {
+  const rcpStart = new Date(start);
+  rcpStart.setHours(0, 0, 0, 0);
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  return Math.floor((rcpStart - today) / (1000 * 60 * 60 * 24));
+};
+
+const isStageFreezeActive = (now = new Date()) => {
+  return RCPDates.some(({ start, end }) => {
+    if (isShortRCP(start, end)) return false;
+    if (!isWeekendOrMondayRCP(start)) return false;
+    const days = getDaysUntilRCP(start, now);
+    const currentDay = new Date(now).getDay();
+    // Monday(1) RCP: Thu(4 days) -> Freeze
+    // Sunday(0) RCP: Wed(4 days) -> Skip, Thu(3 days) -> Freeze
+    const isThuFriSatSun = currentDay >= 4 || currentDay === 0;
+    return days > 0 && days <= 4 && isThuFriSatSun;
+  });
+};
+
 module.exports = {
   getLocalConfigs,
   slackNotification,
@@ -193,4 +211,7 @@ module.exports = {
   isWithinPrePostRCP,
   RCPDates,
   ZERO_IMPACT_PREFIX: '[ZERO IMPACT]',
+  isWeekendOrMondayRCP,
+  getDaysUntilRCP,
+  isStageFreezeActive,
 };

@@ -39,7 +39,7 @@ function dropdownOptions(props) {
   `;
 }
 
-async function checkAlt() {
+export async function checkAlt() {
   if (altResult.value.checked) return;
   // If images are not scoped, tracking pixel/images are picked up.
   const images = document.querySelectorAll(':is(header, main, footer) img:not(.accessibility-control)');
@@ -61,7 +61,11 @@ async function checkAlt() {
       pictureMetaElem = picture.querySelector('.asset-meta');
       if (!pictureMetaElem) {
         pictureMetaElem = createTag('div', { class: 'asset-meta preflight-decoration' });
-        picture.insertBefore(pictureMetaElem, img.nextSibling);
+        if (img.nextSibling && img.nextSibling.parentNode === picture) {
+          picture.insertBefore(pictureMetaElem, img.nextSibling);
+        } else {
+          picture.appendChild(pictureMetaElem);
+        }
       }
     } else {
       pictureMetaElem = createTag('div', { class: 'asset-meta preflight-decoration no-picture-tag' });
@@ -106,6 +110,11 @@ async function checkAlt() {
   });
   result.description = 'All images from the page are listed below. Please ensure each image has appropriate alt text. Decorative images are highlighted in yellow on the page';
   altResult.value = { ...result, checked: true };
+  // eslint-disable-next-line consistent-return
+  return {
+    decorativeImages: decorativeImages.value,
+    altTextImages: altTextImages.value,
+  };
 }
 
 function AccessibilityItem({ title, description }) {

@@ -35,6 +35,7 @@ const defaultConfig = {
     setCardBorders: false,
     showCardBadges: false,
     showFooterDivider: false,
+    useCenterVideoPlay: false,
     useOverlayLinks: false,
     banner: {
       register: { description: 'Sign Up', url: '#registration' },
@@ -128,6 +129,7 @@ const defaultConfig = {
     showEmptyFilters: false,
     filters: [],
     filterLogic: 'or',
+    categoryMappings: {},
     i18n: {
       leftPanel: {
         header: 'Refine Your Results',

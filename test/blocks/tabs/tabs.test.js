@@ -163,30 +163,30 @@ describe('tabs', () => {
       expect(url.pathname).to.equal('/testpage-1');
     });
 
-    it('does not save any data to linkedTabs object if invalid input', () => {
+    it('does not save any data to linkedTabs object if invalid input', async () => {
       const linkedTabsList = {};
-      assignLinkedTabs(linkedTabsList, {}, '', '');
+      await assignLinkedTabs(linkedTabsList, {}, '', '');
       expect(linkedTabsList).to.deep.equal({});
-      assignLinkedTabs(linkedTabsList, { link: '/testpage' }, '', '');
+      await assignLinkedTabs(linkedTabsList, { link: '/testpage' }, '', '');
       expect(linkedTabsList).to.deep.equal({});
-      assignLinkedTabs(linkedTabsList, { link: '/testpage' }, 'id', '');
+      await assignLinkedTabs(linkedTabsList, { link: '/testpage' }, 'id', '');
       expect(linkedTabsList).to.deep.equal({});
-      assignLinkedTabs(linkedTabsList, { link: 'invalid link' }, 'id', 'val');
+      await assignLinkedTabs(linkedTabsList, { link: 'invalid link' }, 'id', 'val');
       expect(linkedTabsList).to.deep.equal({});
     });
 
-    it('saves tab id and tab link into linkedTabs object with relative links', () => {
+    it('saves tab id and tab link into linkedTabs object with relative links', async () => {
       const linkedTabsList = {};
       const metaSettings = { link: '/testpage-1' };
       const id = '1';
       const val = 'demo';
-      assignLinkedTabs(linkedTabsList, metaSettings, id, val);
+      await assignLinkedTabs(linkedTabsList, metaSettings, id, val);
       expect(linkedTabsList).to.deep.equal({ 'tab-1-demo': '/testpage-1' });
     });
 
-    it('saves tab id and tab link into linkedTabs object with fully qualified URLs', () => {
+    it('saves tab id and tab link into linkedTabs object with fully qualified URLs', async () => {
       const linkedTabsList = {};
-      assignLinkedTabs(linkedTabsList, { link: 'https://example.com/testpage-1' }, '1', 'demo');
+      await assignLinkedTabs(linkedTabsList, { link: 'https://example.com/testpage-1' }, '1', 'demo');
       expect(linkedTabsList['tab-1-demo']).to.exist;
       expect(linkedTabsList['tab-1-demo']).to.be.a('string');
       expect(linkedTabsList['tab-1-demo']).to.include('/testpage-1');
@@ -197,7 +197,7 @@ describe('tabs', () => {
       });
 
       const linkedTabsListUK = {};
-      assignLinkedTabs(linkedTabsListUK, { link: 'https://example.com/testpage-uk' }, '2', 'uk-demo');
+      await assignLinkedTabs(linkedTabsListUK, { link: 'https://example.com/testpage-uk' }, '2', 'uk-demo');
       expect(linkedTabsListUK['tab-2-uk-demo']).to.exist;
       expect(linkedTabsListUK['tab-2-uk-demo']).to.be.a('string');
       expect(linkedTabsListUK['tab-2-uk-demo']).to.equal('/uk/testpage-uk');
@@ -219,6 +219,60 @@ describe('tabs', () => {
       const tabs = document.querySelector('#tabs-demo');
       expect(tabs.querySelector('button[id="tab-demo-1"]')?.dataset.deeplink).to.equal('custom-deeplink-1');
       expect(tabs.querySelector('button[id="tab-demo-2"]')?.dataset.deeplink).to.equal('custom-deeplink-2');
+    });
+  });
+
+  describe('Accessibility: tabindex management', () => {
+    it('sets tabindex="0" only on the active tab', () => {
+      const buttons = allTabs[1].querySelectorAll('button[role="tab"]');
+      const activeTab = Array.from(buttons).find((btn) => btn.getAttribute('aria-selected') === 'true');
+      const inactiveTabs = Array.from(buttons).filter((btn) => btn.getAttribute('aria-selected') === 'false');
+
+      expect(activeTab.getAttribute('tabindex')).to.equal('0');
+      inactiveTabs.forEach((tab) => {
+        expect(tab.getAttribute('tabindex')).to.equal('-1');
+      });
+    });
+
+    it('moves tabindex="0" to clicked tab', async () => {
+      const buttons = allTabs[1].querySelectorAll('button[role="tab"]');
+      const initialActiveIndex = Array.from(buttons).findIndex((btn) => btn.getAttribute('aria-selected') === 'true');
+      const targetIndex = (initialActiveIndex + 1) % buttons.length;
+
+      buttons[targetIndex].click();
+      await delay(50);
+
+      buttons.forEach((btn, index) => {
+        if (index === targetIndex) {
+          expect(btn.getAttribute('tabindex')).to.equal('0');
+        } else {
+          expect(btn.getAttribute('tabindex')).to.equal('-1');
+        }
+      });
+    });
+
+    it('arrow key navigation updates tabindex correctly', async () => {
+      const tabsContainer = allTabs[3];
+      const buttons = tabsContainer.querySelectorAll('button[role="tab"]');
+
+      buttons[0].focus();
+      await delay(50);
+      await sendKeys({ down: 'ArrowRight' });
+      await delay(100);
+
+      const hasOnlyOneTabindex0 = Array.from(buttons).filter((btn) => btn.getAttribute('tabindex') === '0').length === 1;
+      expect(hasOnlyOneTabindex0).to.be.true;
+    });
+
+    it('only one tab has tabindex="0" at any time', async () => {
+      const buttons = allTabs[2].querySelectorAll('button[role="tab"]');
+      const targetIndex = buttons.length > 2 ? 2 : 1;
+
+      buttons[targetIndex].click();
+      await delay(50);
+      const tabsWithTabindex0 = Array.from(buttons).filter((btn) => btn.getAttribute('tabindex') === '0');
+      expect(tabsWithTabindex0.length).to.equal(1);
+      expect(tabsWithTabindex0[0]).to.equal(buttons[targetIndex]);
     });
   });
 });

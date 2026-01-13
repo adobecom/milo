@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { getLingoActive } from '../../../libs/utils/lingo-active.js';
 import {
   defaultState,
   getConfig,
@@ -11,6 +12,13 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
+
+describe('utils.js export sanity', () => {
+  it('getLingoActive() is callable and returns a boolean', async () => {
+    const val = await getLingoActive();
+    expect(val).to.be.a('boolean');
+  });
+});
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
@@ -198,6 +206,7 @@ describe('getConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
@@ -219,6 +228,7 @@ describe('getConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',
@@ -470,6 +480,7 @@ describe('getConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
@@ -491,6 +502,7 @@ describe('getConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',
@@ -725,9 +737,17 @@ describe('getCountryAndLang', () => {
     },
   };
 
-  it('should use country and lang from CaaS Config', () => {
+  beforeEach(() => {
+    // Ensure no langfirst metadata exists for tests that don't explicitly set it
+    const existingLangFirst = document.querySelector('meta[name="langfirst"]');
+    if (existingLangFirst) {
+      existingLangFirst.remove();
+    }
+  });
+
+  it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: false,
     });
@@ -738,9 +758,9 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use default country and lang from CaaS Config', () => {
+  it('should use default country and lang from CaaS Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({ autoCountryLang: false });
+    const expected = await getCountryAndLang({ autoCountryLang: false });
     expect(expected).to.deep.eq({
       country: 'US',
       language: 'en',
@@ -748,9 +768,9 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use country and lang from locale in Milo Config', () => {
+  it('should use country and lang from locale in Milo Config', async () => {
     setConfig(cfg);
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: true,
     });
@@ -761,12 +781,12 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should use default country and lang from locale in Milo Config', () => {
+  it('should use default country and lang from locale in Milo Config', async () => {
     setConfig({
       ...cfg,
       pathname: '/whatever/blah.html',
     });
-    const expected = getCountryAndLang({
+    const expected = await getCountryAndLang({
       ...caasCfg,
       autoCountryLang: true,
     });
@@ -774,6 +794,75 @@ describe('getCountryAndLang', () => {
       country: 'US',
       language: 'en',
       locales: '',
+    });
+  });
+
+  describe('langFirst with GEO IP', () => {
+    let metaLangFirst;
+
+    beforeEach(() => {
+      metaLangFirst = document.createElement('meta');
+      metaLangFirst.setAttribute('name', 'langfirst');
+      metaLangFirst.setAttribute('content', 'true');
+      document.head.appendChild(metaLangFirst);
+    });
+
+    afterEach(() => {
+      if (metaLangFirst && metaLangFirst.parentNode) {
+        document.head.removeChild(metaLangFirst);
+      }
+    });
+
+    it('should use GEO IP for langFirst when not news source', async () => {
+      setConfig({
+        pathname: '/en/blah.html',
+        locales: { '': { ietf: 'en-US' } },
+      });
+
+      const expected = await getCountryAndLang({
+        autoCountryLang: true,
+        source: ['hawks'],
+      });
+
+      expect(expected.country).to.not.eq('xx');
+      expect(expected.language).to.eq('en');
+    });
+
+    it('should NOT use GEO IP for news source', async () => {
+      setConfig({
+        pathname: '/en/blah.html',
+        locales: { '': { ietf: 'en-US' } },
+      });
+
+      const expected = await getCountryAndLang({
+        autoCountryLang: true,
+        source: ['news'],
+      });
+
+      expect(expected.country).to.eq('xx');
+      expect(expected.language).to.eq('en');
+    });
+
+    it('should return valid country with fallback support', async () => {
+      setConfig({
+        pathname: '/en/be/blah.html',
+        locales: {
+          '': { ietf: 'en-US' },
+          be: { ietf: 'nl-BE' },
+        },
+      });
+
+      const expected = await getCountryAndLang({
+        autoCountryLang: true,
+        source: ['hawks'],
+      });
+
+      expect(expected).to.have.property('country');
+      expect(expected).to.have.property('language');
+      expect(expected.language).to.eq('en');
+      expect(expected.country).to.not.eq('xx');
+      expect(expected.country).to.be.a('string');
+      expect(expected.country.length).to.be.greaterThan(0);
     });
   });
 
@@ -838,6 +927,7 @@ describe('getFloodgateCaasConfig', () => {
         showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
+        useCenterVideoPlay: false,
         additionalRequestParams: {},
         dynamicCTAForLiveEvents: false,
         banner: {
@@ -859,6 +949,7 @@ describe('getFloodgateCaasConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',

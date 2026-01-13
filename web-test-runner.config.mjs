@@ -45,6 +45,7 @@ export default {
     ],
   },
   testFramework: { config: { retries: GITHUB_ACTIONS ? 1 : 0 } },
+  testsFinishTimeout: 130000,
   plugins: [importMapsPlugin({})],
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),
@@ -67,9 +68,9 @@ export default {
           };
 
           const oldXHROpen = XMLHttpRequest.prototype.open;
-          XMLHttpRequest.prototype.open = async function (...args) {
+          XMLHttpRequest.prototype.open = function (...args) {
             let [method, url, asyn] = args;
-            if (!resource.startsWith('/') && url.startsWith('http://localhost')) {
+            if (!url.startsWith('/') && !url.startsWith('http://localhost')) {
               console.error(
                 '** XMLHttpRequest request for an external resource is disallowed in unit tests, please find a way to mock! https://github.com/orgs/adobecom/discussions/814#discussioncomment-6060759 provides guidance on how to fix the issue.',
                 url

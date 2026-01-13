@@ -37,7 +37,7 @@ export const loadBlockNotifications = async (getConfig, loadStyle) => {
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
-  const { privacyId, env } = getConfig();
+  const { privacyId, env, holdPrivacyBanner } = getConfig();
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
     'hlx.page': 'f5b9e81a-54b5-40cb-afc3-84ca26e7dbaf-test',
@@ -54,7 +54,9 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     privacy: { otDomainId },
     documentLanguage: true,
   };
-
+  if (holdPrivacyBanner === true) {
+    window.fedsConfig.privacy.holdBanner = 'hold-banner';
+  }
   // Load the privacy script
   let privacyEnv = '';
   if (env?.name !== 'prod') {
@@ -106,6 +108,20 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
   });
 };
 
+export const loadPreflightResults = async () => {
+  const run = async () => {
+    const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
+    await showPreflightNotification();
+  };
+
+  const sk = document.querySelector('aem-sidekick, helix-sidekick');
+  if (sk) {
+    await run();
+  } else {
+    document.addEventListener('sidekick-ready', run, { once: true });
+  }
+};
+
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -130,6 +146,7 @@ const loadDelayed = ([
     } else {
       resolve(null);
     }
+    loadPreflightResults();
     import('../utils/samplerum.js').then(({ sampleRUM }) => {
       sampleRUM();
       addRUMCampaignTrackingParameters({ sampleRUM });

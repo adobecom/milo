@@ -108,7 +108,7 @@ describe('Modals', () => {
   it('Gets the modal when explicitly init-ed', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
-    init(document.getElementById('milo-modal-link'));
+    await init(document.getElementById('milo-modal-link'));
     const modal = document.getElementById('milo');
     expect(modal).to.exist;
     expect(modal.getAttribute('daa-lh')).to.equal('milo-modal');
@@ -260,7 +260,7 @@ describe('Modals', () => {
     window.location.hash = '#category=pdf-esignatures&search=acro&types=desktop%2Cmobile';
     window.location.hash = '#milo';
     await waitForElement('#milo');
-    init(document.getElementById('milo-modal-link'));
+    await init(document.getElementById('milo-modal-link'));
     const modal = document.getElementById('milo');
     expect(modal).to.exist;
     expect(window.location.hash).to.equal('#milo');
@@ -270,10 +270,23 @@ describe('Modals', () => {
     window.location.hash = '';
   });
 
+  it('doesn\'t restore the hash when hash is from IMS and the modal gets closed', async () => {
+    window.location.hash = '#old_hash=ims-hash-modal&from_ims=true';
+    window.location.hash = '#ims-hash-modal';
+    await waitForElement('#ims-hash-modal');
+    const modal = document.getElementById('ims-hash-modal');
+    expect(modal).to.exist;
+    expect(window.location.hash).to.equal('#ims-hash-modal');
+    const close = modal.querySelector('.dialog-close');
+    close.click();
+    expect(window.location.hash).to.equal('');
+    window.location.hash = '';
+  });
+
   it('never create modal when removed by MEP', async () => {
     const config = getConfig();
     config.mep = { fragments: { '/milo': { action: 'remove' } } };
-    const modal = init(document.getElementById('milo-modal-link'));
+    const modal = await init(document.getElementById('milo-modal-link'));
     expect(modal).to.be.null;
   });
 
@@ -330,6 +343,28 @@ describe('Modals', () => {
     const modalIframe = modal.querySelector('iframe');
     expect(modalIframe).to.exist;
     expect(modalIframe.getAttribute('title')).to.equal('Modal: Auto Title from CTA');
+  });
+
+  it('executes closeCallback for custom modal', async () => {
+    const closeCallbackSpy = sinon.spy();
+    const customContent = createTag('div', {}, 'Test Modal Content');
+
+    const custom = {
+      id: 'closeCallback-test',
+      content: customContent,
+      closeCallback: closeCallbackSpy,
+    };
+
+    const modal = await getModal(null, custom);
+    expect(modal).to.exist;
+    expect(closeCallbackSpy.called).to.be.false;
+
+    const closeButton = modal.querySelector('.dialog-close');
+    closeButton.click();
+
+    await waitForRemoval('#closeCallback-test');
+    expect(closeCallbackSpy.calledOnce).to.be.true;
+    expect(closeCallbackSpy.calledWith(modal)).to.be.true;
   });
 });
 

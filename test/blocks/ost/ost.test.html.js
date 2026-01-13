@@ -81,6 +81,7 @@ describe('OST: loadOstEnv', async () => {
       environment: WCS_ENV,
       language,
       wcsApiKey: WCS_API_KEY,
+      modalsAndEntitlements: true,
     });
   });
 
@@ -252,6 +253,15 @@ describe('OST: merch link creation', () => {
       const ctaText = texts.try;
       const link = createLink({ ctaText, promo, type });
       assertLink(link, perpM2M, { osi, promo, type }, ctaText);
+    });
+
+    it('with custom options', async () => {
+      const ctaText = texts.try;
+      const modal = 'd2p';
+      const entitlement = 'true';
+      const upgrade = 'false';
+      const link = createLink({ ctaText, modal, entitlement, upgrade, type });
+      assertLink(link, perpM2M, { osi, modal, entitlement, upgrade, type }, ctaText);
     });
   });
 

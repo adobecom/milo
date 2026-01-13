@@ -49,6 +49,7 @@ export const styles = css`
         padding-inline-start: 12px;
         box-sizing: border-box;
         -moz-appearance: textfield;
+        z-index: 1;
     }
 
     .text-field-input::-webkit-inner-spin-button,
@@ -68,6 +69,7 @@ export const styles = css`
         position: absolute;
         inset-inline-end: 0;
         border: var(--border-width) solid var(--border-color);
+        border-left: var(--picker-button-border-left, var(--border-width) solid var(--border-color));
         border-top-right-radius: var(--radius);
         border-bottom-right-radius: var(--radius);
         background-color: var(--background-color);
@@ -100,7 +102,7 @@ export const styles = css`
         border-radius: var(--radius);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        z-index: 100;
+        z-index: 1000;
         transition: var(--qs-transition);
         visibility: hidden;
         box-sizing: border-box;
@@ -142,7 +144,7 @@ export const styles = css`
     }
 
     .item.highlighted {
-        background-color: var(--background-color);
+        background-color: var(--qs-background-color-highlighted, #e8e8e8);
     }
     
     .item.selected {

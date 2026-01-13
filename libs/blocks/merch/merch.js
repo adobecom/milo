@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, SLD, getMetadata,
   shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
@@ -57,7 +57,8 @@ export const CC_SINGLE_APPS = [
   ['PHOTOSHOP', 'PHOTOSHOP_STOCK_BUNDLE'],
   ['PREMIERE', 'PREMIERE_STOCK_BUNDLE'],
   ['RUSH'],
-  ['XD'],
+  ['XD'], ['FIREFLY'],
+  ['CC_PRO_APPS'], ['NIMBUS_LIGHTROOM'], ['NIMBUS_LIGHTROOM_PHOTOSHOP'],
 ];
 
 const LanguageMap = {
@@ -226,7 +227,7 @@ export async function getGeoLocaleSettings(miloLocale) {
     || sessionStorage.getItem('akamai');
   if (!country) {
     try {
-      const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+      const { getAkamaiCode } = await import('../../utils/geo.js');
       country = await getAkamaiCode(true);
     } catch (error) {
       window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
@@ -329,7 +330,6 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
 let log;
 let upgradeOffer = null;
-let litPromise;
 
 /**
  * Given a url, calculates the hostname of MAS platform.
@@ -383,7 +383,7 @@ export function getMasLibs() {
     return 'http://localhost:3030/web-components/dist';
   }
   if (sanitizedMasLibs === 'main') {
-    return 'https://mas.adobe.com/web-components/dist';
+    return 'http://www.adobe.com/mas/libs';
   }
 
   // Detect current domain extension (.page or .live)
@@ -439,20 +439,13 @@ const failedExternalLoads = new Set();
 const loadingPromises = new Map();
 
 /**
- * Loads lit dependency dynamically when needed
- * @returns {Promise} Promise that resolves when lit is loaded
+ * Checks if mas-ff-mas-deps feature flag is enabled
+ * @returns {boolean} true if flag is on
  */
-export async function loadLitDependency() {
-  if (litPromise) return litPromise;
-
-  if (window.customElements?.get('lit-element')) {
-    return Promise.resolve();
-  }
-
-  const { base } = getConfig();
-  litPromise = import(`${base}/deps/lit-all.min.js`);
-
-  return litPromise;
+function isMasDepsFlagEnabled() {
+  const metaFlag = getMetadata('mas-ff-mas-deps');
+  if (metaFlag === 'off' || metaFlag === 'false') return false;
+  return true;
 }
 
 /**
@@ -484,6 +477,14 @@ export async function loadMasComponent(componentName) {
       } catch (error) {
         failedExternalLoads.add(externalUrl);
         throw error;
+      }
+    } else if (isMasDepsFlagEnabled()) {
+      const masUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
+      try {
+        return await import(masUrl);
+      } catch (error) {
+        console.warn(`Failed to load from MAS repository, falling back to Milo deps: ${error.message}`);
+        return import(`../../deps/mas/${componentName}.js`);
       }
     } else {
       return import(`../../deps/mas/${componentName}.js`);
@@ -638,6 +639,21 @@ export async function getCheckoutLinkConfig(
   return finalConfig;
 }
 
+/**
+ * If user has entitlement :
+ * for Acrobat Studio, the download CTA should be displayed for both Acrobat Studio and Pro,
+ * for all other Acrobat cards the download CTA will be displayed only for cards with
+ * matching product code.
+ */
+const DOWNLOAD_FAMILY_CODE = { ACROBAT: { ARCH: ['ARCH', 'APCC'] } };
+
+function showDownloadForCode(familySubscr, codeSubscr, codeCta) {
+  const family = DOWNLOAD_FAMILY_CODE[familySubscr];
+  if (!family) return true;
+
+  return family[codeSubscr]?.includes(codeCta) || codeSubscr === codeCta;
+}
+
 export async function getDownloadAction(
   options,
   imsSignedInPromise,
@@ -662,7 +678,8 @@ export async function getDownloadAction(
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
-    ({ offer: { product_arrangement_v2: { family: subscriptionFamily } } }) => {
+    // eslint-disable-next-line max-len
+    ({ offer: { product_code: subscrCode, product_arrangement_v2: { family: subscriptionFamily } } }) => {
       if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
       if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
       const singleAppFamily = CC_SINGLE_APPS.find(
@@ -670,7 +687,8 @@ export async function getDownloadAction(
           singleAppFamilies, // has single and and cta is single app
         ) => singleAppFamilies.includes(offerFamily),
       );
-      return singleAppFamily?.includes(subscriptionFamily);
+      return singleAppFamily?.includes(subscriptionFamily)
+      && showDownloadForCode(subscriptionFamily, subscrCode, productCode);
     },
   );
   if (!offer) return undefined;
@@ -679,7 +697,7 @@ export async function getDownloadAction(
     checkoutLinkConfig.DOWNLOAD_TEXT || PLACEHOLDER_KEY_DOWNLOAD,
     config,
   );
-  const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
+  const url = await localizeLinkAsync(checkoutLinkConfig.DOWNLOAD_URL);
   const type = offerType?.toLowerCase() ?? '';
   return { text, className: `download ${type}`, url };
 }
@@ -763,6 +781,18 @@ function appendExtraOptions(url, extraOptions) {
   return url;
 }
 
+export function applyPromo(url) {
+  const { mep } = getConfig();
+  const promoModal = mep?.inBlock?.merch?.fragments?.[url.pathname];
+  try {
+    const promoUrl = new URL(promoModal?.content);
+    return promoUrl;
+  } catch (e) {
+    log?.error('Failed to apply promo to external modal', e);
+  }
+  return url;
+}
+
 // TODO this should migrate to checkout.js buildCheckoutURL
 export function appendDexterParameters(url, extraOptions, el) {
   const isRelativePath = url.startsWith('/');
@@ -775,6 +805,7 @@ export function appendDexterParameters(url, extraOptions, el) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
+  absoluteUrl = applyPromo(absoluteUrl);
   absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
   absoluteUrl = appendTabName(absoluteUrl, el);
   return isRelativePath
@@ -977,7 +1008,7 @@ export async function getModalAction(offers, options, el) {
   let url = checkoutLinkConfig[columnName];
   if (!url && !el?.isOpen3in1Modal) return undefined;
   url = isInternalModal(url) || isProdModal(url)
-    ? localizeLink(checkoutLinkConfig[columnName])
+    ? await localizeLinkAsync(checkoutLinkConfig[columnName])
     : checkoutLinkConfig[columnName];
   return {
     url,
@@ -1124,6 +1155,11 @@ function getHardcodedFallbackStep(wcsOsi, checkoutClientId) {
     '8Lr09qx_PHqAJUwvUNiof4FFFEKjsR1TTbvBUncV2b0': 'email',
     lI5NvdLBWJUJEHkP9CAx787kt0uCc3WnoCFVVIjECiA: 'email',
     'OQ1oCm1tZG35Gj7LCrkGeOOdUMfVlC7xx-7ml-CTWIE': 'commitment',
+    'VQpXGYJh-MBOcGPvokz_INgE88dj3KIyMJaU-iIQxlY': 'commitment',
+    'b-xXdWqVkpll0yBirom1c4bI3FwdXvNCy1HtHZV2yfU': 'commitment',
+    ZfP6XPHxvTFnOS_Hd4q9taPkKHinmf6PCozeJEmzqNI: 'email',
+    'NNe0xkjqasLN3Q0ASuv3ZB4zSQW-iVN4TBoHOkQBEOA': 'commitment',
+    zX46r0tn5frbNvEMCdBg5WhZnq2hfl0qamka1iZGKTY: 'commitment',
   };
   return osiToStepMap[wcsOsi];
 }
@@ -1221,6 +1257,7 @@ export async function getPriceContext(el, params) {
   const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
+  const quantity = params.get('quantity');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -1234,6 +1271,7 @@ export async function getPriceContext(el, params) {
     forceTaxExclusive,
     alternativePrice,
     template,
+    quantity,
   };
 }
 
@@ -1271,6 +1309,10 @@ export async function buildCta(el, params) {
     cta.classList.toggle('blue', strong);
   }
 
+  if (params.get('target') === '_blank') {
+    cta.setAttribute('target', '_blank');
+  }
+
   const customClasses = el.href.matchAll(/#_button-([a-zA-Z-]+)/g);
   for (const match of customClasses) {
     cta.classList.add(match[1]);
@@ -1280,7 +1322,7 @@ export async function buildCta(el, params) {
     cta.classList.add(LOADING_ENTITLEMENTS);
     cta.onceSettled().finally(() => {
       cta.classList.remove(LOADING_ENTITLEMENTS);
-      updateModalState({ cta });
+      if (!cta.closest('[role="tabpanel"][hidden]')) updateModalState({ cta });
     });
   }
 

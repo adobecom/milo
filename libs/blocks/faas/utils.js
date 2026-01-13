@@ -5,7 +5,7 @@ import {
   loadScript,
   getConfig,
   createTag,
-  localizeLink,
+  localizeLinkAsync,
 } from '../../utils/utils.js';
 
 const { env, miloLibs, codeRoot } = getConfig();
@@ -280,7 +280,7 @@ export const afterSubmitCallback = (e) => {
   }, { passive: true, once: true });
 };
 
-export const makeFaasConfig = (targetState) => {
+export const makeFaasConfig = async (targetState) => {
   if (!targetState) {
     state = defaultState;
     return state;
@@ -291,7 +291,7 @@ export const makeFaasConfig = (targetState) => {
     hidePrepopulated: targetState.hidePrepopulated ?? false,
     id: targetState.id,
     l: targetState.l,
-    d: localizeLink(targetState.d),
+    d: await localizeLinkAsync(targetState.d),
     as: targetState.as,
     ar: targetState.ar,
     pc: {
@@ -346,6 +346,11 @@ export const makeFaasConfig = (targetState) => {
     Object.assign(config.q, { 103: { c: targetState.q103 } });
   }
 
+  // Primary Product Interest Subset (Question 51)
+  if (targetState.q51) {
+    Object.assign(config.q, { 51: { c: targetState.q51 } });
+  }
+
   if (targetState.qjs69) {
     Object.assign(config.q, { 69: { c: { ...targetState.qjs69 } } });
   }
@@ -353,7 +358,7 @@ export const makeFaasConfig = (targetState) => {
   return config;
 };
 
-export const initFaas = (config, targetEl) => {
+export const initFaas = async (config, targetEl) => {
   if (!targetEl || !config) return null;
   state = config;
   const appEl = targetEl.parentElement;
@@ -382,20 +387,20 @@ export const initFaas = (config, targetEl) => {
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
   if (state.complete) {
     if (state.js) {
-      Object.keys(state.js).forEach((key) => {
+      await Promise.all(Object.keys(state.js).map(async (key) => {
         if (key === 'd') {
-          state[key] = localizeLink(state.js[key]);
+          state[key] = await localizeLinkAsync(state.js[key]);
         } else {
           state[key] = state.js[key];
         }
-      });
+      }));
       delete state.js;
     }
     state.complete = false;
     state.e = { afterYiiLoadedCallback, beforeSubmitCallback };
     $(formEl).faas(state);
   } else {
-    state = makeFaasConfig(state);
+    state = await makeFaasConfig(state);
     $(formEl).faas(state);
   }
 

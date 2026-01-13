@@ -309,7 +309,8 @@
 
 .aside.rounded-corners .foreground .image img,
 .aside.rounded-corners .foreground .image:not(:has(.video-container)) .pause-play-wrapper,
-.aside.rounded-corners .foreground .image video {
+.aside.rounded-corners .foreground .image video,
+.aside.rounded-corners .foreground.container .image .milo-video iframe {
   border-radius: 16px;
 }
 
@@ -1086,6 +1087,10 @@
     flex: 1 0 calc(var(--grid-column-width) * 6);
   }
 
+  .two-up.grid-width-12 .aside:not(.notification) .foreground.container .text {
+    flex: 1 0 100%;
+  }
+
   .aside:not(.notification) .foreground.container .image {
     flex: 1 0 calc(var(--grid-column-width) * 5);
   }
@@ -1332,16 +1337,26 @@
     padding-top: 0;
   }
 
-  .aside.container-mobile.media-top-mobile .foreground.container .image {
+  .aside.container-mobile.media-top-mobile .foreground.container > .image {
     padding-bottom: var(--spacing-xs);
   }
 
-  .aside.container-mobile.rounded-corners .foreground.container .image {
+  .aside.container-mobile.rounded-corners .foreground.container > .image {
     padding: 0 var(--spacing-xs) var(--spacing-xs);
-    width: auto;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .aside.container-mobile.media-top-mobile.rounded-corners .foreground.container .image {
+  .aside.container-mobile.media-top-mobile.rounded-corners .foreground.container > .image {
     padding-top: var(--spacing-xs);
+  }
+
+/* =====  full-bleed-mobile variant ===== */
+  .aside.full-bleed-mobile .foreground.container > .image {
+    width: 100vw;
+  }
+
+  .aside.full-bleed-mobile.inline .foreground.container > .text {
+    margin-inline: var(--spacing-m);
   }
 }

@@ -64,6 +64,7 @@ const CHECKOUT_LINK_CONFIGS = {
     LOCALE: 'fr',
   },
   { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' },
+  { PRODUCT_FAMILY: 'ACROBAT', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' },
   {
     PRODUCT_FAMILY: 'PREMIERE',
     DOWNLOAD_TEXT: 'Download',
@@ -138,6 +139,20 @@ const SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE = [
   {
     change_plan_available: true,
     offer: { product_arrangement_v2: { family: 'CC_ALL_APPS' } },
+  },
+];
+
+const SUBSCRIPTION_DATA_ARCH_RAW_ELIGIBLE = [
+  {
+    change_plan_available: true,
+    offer: { product_code: 'ARCH', product_arrangement_v2: { family: 'ACROBAT' } },
+  },
+];
+
+const SUBSCRIPTION_DATA_ACRO_RAW_ELIGIBLE = [
+  {
+    change_plan_available: true,
+    offer: { product_code: 'ACRO', product_arrangement_v2: { family: 'ACROBAT' } },
   },
 ];
 
@@ -568,6 +583,14 @@ describe('Merch Block', () => {
 
       expect(classList.contains('con-button')).to.be.true;
     });
+
+    it('sets target _blank if target is _blank', async () => {
+      const el = await merch(document.querySelector(
+        '.merch.cta.blank',
+      ));
+      await el.onceSettled();
+      expect(el.getAttribute('target')).to.equal('_blank');
+    });
   });
 
   describe('function "getCheckoutContext"', () => {
@@ -687,6 +710,46 @@ describe('Merch Block', () => {
       setSubscriptionsData(SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE);
       const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }]);
       expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getDownloadAction: returns download action for ACRO', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ACRO_RAW_ELIGIBLE);
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productCode: 'ACRO', productFamily: 'ACROBAT' } }]);
+      expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getDownloadAction: returns download action for ARCH - ARCH', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ARCH_RAW_ELIGIBLE);
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productCode: 'ARCH', productFamily: 'ACROBAT' } }]);
+      expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getDownloadAction: returns download action for ARCH - APCC', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ARCH_RAW_ELIGIBLE);
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productCode: 'APCC', productFamily: 'ACROBAT' } }]);
+      expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
+    });
+
+    it('getDownloadAction: returns download action for ARCH - ACRO', async () => {
+      fetchEntitlements.promise = undefined;
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_ARCH_RAW_ELIGIBLE);
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productCode: 'ACRO', productFamily: 'ACROBAT' } }]);
+      expect(checkoutLinkConfig).to.be.undefined;
     });
 
     it('getCheckoutAction: handles errors gracefully', async () => {
@@ -893,6 +956,17 @@ describe('Merch Block', () => {
       expect(setCtaHash()).to.be.undefined;
     });
 
+    it('applyDexterPromo: applies promo to external modal', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/all-apps/master.modal.html';
+      const promoUrl = 'https://www.adobe.com/plans-fragments/modals/all-apps/black-friday.modal.html';
+      setConfig({
+        ...config,
+        mep: { inBlock: { merch: { fragments: { '/plans-fragments/modals/all-apps/master.modal.html': { content: promoUrl } } } } },
+      });
+      const resultUrl = appendDexterParameters(url);
+      expect(resultUrl).to.equal(promoUrl);
+    });
+
     const MODAL_URLS = [
       {
         url: 'https://www.adobe.com/mini-plans/illustrator1.html?mid=ft&web=1',
@@ -1068,8 +1142,8 @@ describe('Merch Block', () => {
       expect(getOptions(a).fragment).to.be.undefined;
     });
   });
-  describe('Localize preview links', () => {
-    it('check if only preview URL is relative', () => {
+  describe('Localize preview links', async () => {
+    it('check if only preview URL is relative', async () => {
       const div = document.createElement('div');
 
       const a1 = document.createElement('a');
@@ -1090,7 +1164,7 @@ describe('Merch Block', () => {
       const aNoHref = document.createElement('a');
       div.append(aNoHref);
 
-      localizePreviewLinks(div);
+      await localizePreviewLinks(div);
 
       expect(div.querySelector('.link1').getAttribute('href')).to.equal('/test/milo/path');
       expect(div.querySelector('.link2').getAttribute('href')).to.equal('/test/cc/path');
