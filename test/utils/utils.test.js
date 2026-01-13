@@ -1669,6 +1669,9 @@ describe('Utils', () => {
           ccBaseResolved = true;
           return mockRes({ payload: ccBaseQueryIndex });
         }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
+        }
         if (url.includes('dc-shared') && url.includes('/ch_de/')) {
           // DC Regional index is slow - simulating other subsites
           return new Promise((resolve) => {
@@ -1752,6 +1755,9 @@ describe('Utils', () => {
       fetchStub.callsFake((url) => {
         if (url.includes('query-index')) {
           return mockRes({ payload: null, ok: false, status: 404 });
+        }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
         }
         return mockRes({ payload: { data: [] } });
       });
