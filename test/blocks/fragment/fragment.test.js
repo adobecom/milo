@@ -6,12 +6,12 @@ import {
 } from '../../../libs/utils/utils.js';
 import {
   getLocaleCodeFromPrefix,
-  getMepLingoContext,
   handleInvalidMepLingo,
   addMepLingoPreviewAttrs,
   fetchFragment,
   fetchMepLingo,
 } from '../../../libs/features/mep/lingo.js';
+import { getMepLingoContext } from '../../features/mep/lingo-helpers.js';
 
 window.lana = { log: stub() };
 
