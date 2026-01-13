@@ -302,8 +302,8 @@ export const CONFIG = {
           isSignUpRequired: false,
           callbacks: {
             onSignIn: () => {
-              const { standaloneGnav } = getConfig();
-              if (standaloneGnav) {
+              const { useSusiModal } = getConfig();
+              if (useSusiModal) {
                 handleSignIn();
               } else {
                 window.adobeIMS?.signIn(SIGNIN_CONTEXT);

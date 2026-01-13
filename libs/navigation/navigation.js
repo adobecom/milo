@@ -6,7 +6,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta', 'useSusiModal'],
   },
   {
     key: 'footer',
@@ -125,7 +125,7 @@ export default async function loadBlock(configs, customLib) {
     theme,
     prodDomains,
     clientEnv: env,
-    standaloneGnav: true,
+    useSusiModal: true,
     pathname: `/${locale}`,
     miloLibs: `${miloLibs}/libs`,
     locales: configs.locales || locales,
@@ -151,7 +151,7 @@ export default async function loadBlock(configs, customLib) {
           await bootstrapBlock(init, {
             ...block,
             gnavSource,
-            standaloneGnav: configBlock.standaloneGnav || true,
+            useSusiModal: configBlock.useSusiModal || true,
             unavComponents: configBlock.selfIntegrateUnav ? [] : configBlock.unav?.unavComponents,
             redirect: configBlock.redirect,
             layout: configBlock.layout,
