@@ -9,16 +9,19 @@ import { getLocaleCodeFromPrefix } from '../../../libs/features/mep/lingo.js';
 /**
  * Get MEP Lingo context including country, locale code, region key, and matching region.
  * This helper is primarily used for testing the complex country/locale/region mapping logic.
- * 
  * @param {Object} locale - Locale configuration object
  * @returns {Object} Context object with country, localeCode, regionKey, and matchingRegion
  */
-export function getMepLingoContext(locale) {
+export default function getMepLingoContext(locale) {
   if (!locale?.prefix) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
   }
 
   const country = getCountry();
+  if (!country) {
+    return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
+  }
+
   const config = getConfig();
   const mapping = config.mepLingoCountryToRegion;
 
@@ -42,4 +45,3 @@ export function getMepLingoContext(locale) {
 
   return { country, localeCode, regionKey, matchingRegion };
 }
-

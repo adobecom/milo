@@ -788,13 +788,15 @@ export function getMepLingoPrefix() {
   if (!regions || !Object.keys(regions).length) return null;
 
   const country = getCountry();
+  if (!country) return null;
+
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
 
   let regionKey = Object.entries(regions).find(
     ([key]) => key === country || key === `${country}_${localeKey}`,
   )?.[0];
 
-  if (!regionKey && country && config.mepLingoCountryToRegion) {
+  if (!regionKey && config.mepLingoCountryToRegion) {
     regionKey = Object.entries(config.mepLingoCountryToRegion).find(
       ([key, countries]) => Array.isArray(countries) && countries.includes(country) && regions[key],
     )?.[0];
