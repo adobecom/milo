@@ -38,11 +38,7 @@ function getAnalyticsValue(str, index) {
 }
 
 function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  if (shouldBlockFreeTrialLinks({
-    button: elem,
-    localePrefix: getConfig()?.locale?.prefix,
-    parent: elem.parentElement,
-  })) return null;
+  if (shouldBlockFreeTrialLinks(elem)) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
   const clone = elem.cloneNode(true);
@@ -150,6 +146,7 @@ const decorateLinkGroup = (elem, index) => {
 
 const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = { position: 0 } } = {}) => {
   const decorateLink = async (link) => {
+    if (shouldBlockFreeTrialLinks(link)) return null;
     // Increase analytics index every time a link is decorated
     itemIndex.position += 1;
 
@@ -339,7 +336,6 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
 
         if (column.querySelector(selectors.columnBreak)) {
           wrapper.classList.add(`${wrapperClass}--group`);
-          if (column.querySelectorAll(selectors.columnBreak).length > 1) wrapper.classList.add(`${wrapperClass}--wide`);
 
           const wideColumn = document.createElement('div');
           wideColumn.append(...column.childNodes);
