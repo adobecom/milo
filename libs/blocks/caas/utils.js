@@ -861,6 +861,12 @@ export const getConfig = async (originalState, strs = {}) => {
   const isLingoActive = await getLingoActive();
   const langFirst = state.langFirst ? `&langFirst=${isLingoActive}` : '';
 
+  const navigationStyle = state.container === 'carousel'
+    && state.paginationAnimationStyle.includes('Modern')
+    && state.useLightControls
+    ? `${state.paginationAnimationStyle}-light`
+    : state.paginationAnimationStyle;
+
   const config = {
     collection: {
       mode: state.theme,
@@ -1004,7 +1010,7 @@ export const getConfig = async (originalState, strs = {}) => {
       options: getSortOptions(state, strs),
     },
     pagination: {
-      animationStyle: state.paginationAnimationStyle,
+      animationStyle: navigationStyle,
       enabled: state.paginationEnabled,
       resultsQuantityShown: state.paginationQuantityShown,
       loadMoreButton: {
@@ -1069,7 +1075,6 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
-
   return config;
 };
 
