@@ -101,6 +101,7 @@ const MILO_BLOCKS = [
   'share',
   'susi-light-login',
   'reading-time',
+  'mobile-rider',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
