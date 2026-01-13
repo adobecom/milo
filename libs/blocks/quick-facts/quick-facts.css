@@ -37,15 +37,15 @@
 }
 
 .quick-facts p {
-  padding-inline-start: 16px;
+  padding-inline-start: var(--spacing-xs);
 }
 
 .quick-facts .fact-list :is(h1, h2, h3, h4, h5, h6) {
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-xxs);
 }
 
 .quick-facts .product-list :is(h1, h2, h3, h4, h5, h6) {
-  margin: 0 0 16px;
+  margin: 0 0 var(--spacing-xs);
 }
 
 .quick-facts .product-list a {
@@ -55,15 +55,15 @@
 .quick-facts .icon-stack-area {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-xs);
   list-style-type: none;
-  padding-inline-start: 16px;
+  padding-inline-start: var(--spacing-xs);
 }
 
 .quick-facts .icon-stack-area li {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-xs);
   line-height: 24px;
 }
 
