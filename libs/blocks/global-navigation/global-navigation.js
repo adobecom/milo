@@ -212,9 +212,6 @@ const handleSignIn = async () => {
   sentry.addEventListener('redirect', (e) => {
     // Open in new tab as requested
     window.open(e.detail, '_blank');
-    // Optionally close the modal in the current tab so it doesn't stay open
-    const modal = document.getElementById('signin-modal');
-    modal?.dispatchEvent(new Event('closeModal'));
   });
 
   sentry.addEventListener('on-error', (e) => {
