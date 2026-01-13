@@ -36,7 +36,7 @@
     "preact": "^10.11.0"
   },
   "devDependencies": {
-    "@adobe/mas-platform": "github:adobecom/mas",
+    "@adobecom/mas-platform": "github:adobecom/mas",
     "@axe-core/playwright": "^4.10.0",
     "@babel/core": "7.17.7",
     "@babel/eslint-parser": "7.17.0",

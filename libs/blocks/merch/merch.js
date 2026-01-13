@@ -380,7 +380,7 @@ export function getMasLibs() {
   const sanitizedMasLibs = masLibs.trim().toLowerCase();
 
   if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3030/web-components/dist';
+    return 'http://localhost:3000/web-components/dist';
   }
   if (sanitizedMasLibs === 'main') {
     return 'http://www.adobe.com/mas/libs';
@@ -412,7 +412,7 @@ function getFragmentClientUrl() {
   const sanitizedMasLibs = masLibs.trim().toLowerCase();
 
   if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3030/studio/libs/fragment-client.js';
+    return 'http://localhost:3000/studio/libs/fragment-client.js';
   }
   if (sanitizedMasLibs === 'main') {
     return 'https://mas.adobe.com/studio/libs/fragment-client.js';
