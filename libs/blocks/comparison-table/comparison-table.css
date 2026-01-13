@@ -110,6 +110,10 @@
   margin: 0 auto;
 }
 
+.comparison-table .table-row-header:has(wbr) {
+  display: inline;
+}
+
 .comparison-table span[data-tooltip] .icon-milo:hover {
   cursor: pointer;
 }
