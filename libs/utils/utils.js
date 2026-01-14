@@ -2036,9 +2036,8 @@ const getCookie = (name) => document.cookie
 function getMarketsUrl() {
   const { env, marketsSource } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
-  const allowlist = ['bacom'];
-
-  const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowlist.includes(sourceFromUrl)) && sourceFromUrl)
+  const allowedMarkets = ['bacom'];
+  const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
     || getMetadata('marketssource')
     || marketsSource;
 
