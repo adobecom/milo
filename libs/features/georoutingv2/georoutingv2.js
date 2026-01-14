@@ -422,9 +422,11 @@ export default async function loadGeoRouting(
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         handleOverflow(await showModal(details));
-        sendAnalyticsFunc(
-          new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
-        );
+        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`;
+        sendAnalyticsFunc(new Event(eventString));
+        if (config.lingoProjectSuccessLogging === 'on') {
+          window.lana.log(eventString, { sampleRate: 100, tags: 'lingo,lingo-georouting-load' });
+        }
       }
     }
     return;
@@ -439,9 +441,11 @@ export default async function loadGeoRouting(
       if (details) {
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
-        sendAnalyticsFunc(
-          new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
-        );
+        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`;
+        sendAnalyticsFunc(new Event(eventString));
+        if (config.lingoProjectSuccessLogging === 'on') {
+          window.lana.log(eventString, { sampleRate: 100, tags: 'lingo,lingo-georouting-load' });
+        }
       }
     }
   } catch (e) {

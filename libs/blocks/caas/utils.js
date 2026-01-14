@@ -581,6 +581,18 @@ async function getLingoSiteLocale(origin, path) {
         }
       });
 
+    // check if the localeStr is in the baseSite or regionalSites.
+    // if not, use the og country/language logic
+    if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || regionalSites.includes(localeStr)))) {
+      const locale = LOCALES[localeStr]?.ietf || 'en-US';
+      /* eslint-disable-next-line prefer-const */
+      let [currLang, currCountry] = locale.split('-');
+      return {
+        country: currCountry,
+        language: currLang,
+      };
+    }
+
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
       .forEach(({ baseSite, regionalSites }) => {
@@ -623,7 +635,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
     }
   } else {
     const mapping = await getLingoSiteLocale(origin, path);
-    countryStr = LOCALES[mapping.country] ?? 'xx';
+    countryStr = LOCALES[mapping.country.toLowerCase()] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
@@ -660,18 +672,20 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       countryStr = mapping.country || fallbackCountry;
       langStr = mapping.lang || fallbackLang;
 
-      try {
-        let geoCountry = getCountry()
-          || pageConfigHelper().mep?.countryIP;
+      if (countryStr === 'xx') {
+        try {
+          let geoCountry = getCountry()
+            || pageConfigHelper().mep?.countryIP;
 
-        if (!geoCountry) {
-          const { default: getAkamaiCode } = await import('../../utils/geo.js');
-          geoCountry = await getAkamaiCode(true);
+          if (!geoCountry) {
+            const { default: getAkamaiCode } = await import('../../utils/geo.js');
+            geoCountry = await getAkamaiCode(true);
+          }
+
+          if (geoCountry) countryStr = geoCountry.toLowerCase();
+        } catch (error) {
+          window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
         }
-
-        if (geoCountry) countryStr = geoCountry.toLowerCase();
-      } catch (error) {
-        window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
       }
     }
 
@@ -861,6 +875,12 @@ export const getConfig = async (originalState, strs = {}) => {
   const isLingoActive = await getLingoActive();
   const langFirst = state.langFirst ? `&langFirst=${isLingoActive}` : '';
 
+  const navigationStyle = state.container === 'carousel'
+    && state.paginationAnimationStyle.includes('Modern')
+    && state.useLightControls
+    ? `${state.paginationAnimationStyle}-light`
+    : state.paginationAnimationStyle;
+
   const config = {
     collection: {
       mode: state.theme,
@@ -1004,7 +1024,7 @@ export const getConfig = async (originalState, strs = {}) => {
       options: getSortOptions(state, strs),
     },
     pagination: {
-      animationStyle: state.paginationAnimationStyle,
+      animationStyle: navigationStyle,
       enabled: state.paginationEnabled,
       resultsQuantityShown: state.paginationQuantityShown,
       loadMoreButton: {
@@ -1069,7 +1089,6 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
-
   return config;
 };
 
