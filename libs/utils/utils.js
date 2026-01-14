@@ -1271,7 +1271,6 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
 
 function decorateLinkElement(a, config, hasDnt) {
   if (hasDnt) a.dataset.hasDnt = true;
-  appendHtmlToLink(a);
   if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
   decorateSVG(a);
   if (a.href.includes('#_blank')) {
@@ -1343,6 +1342,7 @@ export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
+    appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset.hasDnt) {
       a.href = await localizeLinkAsync(
@@ -1365,6 +1365,7 @@ export function decorateLinks(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const links = [...anchors].reduce((rdx, a) => {
+    appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
     const result = processLinkDecoration(a, config, hasDnt);
