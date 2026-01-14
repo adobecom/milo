@@ -29,5 +29,12 @@ module.exports = {
       tags: '@carousel @carousel-container @smoke @regression @milo',
       envs: '@milo-live milo-prod',
     },
+    {
+      tcid: '4',
+      name: '@Carousel A11Y - WCAG 2.1 A/AA Compliance',
+      path: '/drafts/nala/blocks/carousel/lightbox',
+      tags: '@carousel @a11y @wcag @smoke @regression @milo',
+      envs: '@milo-live @milo-prod',
+    },
   ],
 };
