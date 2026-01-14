@@ -47,6 +47,7 @@ const MILO_BLOCKS = [
   'iframe',
   'instagram',
   'language-selector',
+  'language-banner',
   'locui',
   'locui-create',
   'm7',
@@ -168,7 +169,7 @@ const LANGUAGE_BASED_PATHS = [
   'news.adobe.com',
 ];
 const DEFAULT_LANG = 'en';
-export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+export const SLD = PAGE_URL.hostname.includes('.hlx.') ? 'hlx' : 'aem';
 
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
@@ -179,6 +180,7 @@ let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 let isLoadingQueryIndexes = false;
+let siteQueryIndexMapLingo = [];
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -486,13 +488,13 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
  * @see https://jira.corp.adobe.com/browse/MWPW-174411
 */
-export const shouldAllowKrTrial = (button, localePrefix) => {
+export const shouldAllowKrTrial = (link, localePrefix) => {
   const allowKrTrialHash = '#_allow-kr-trial';
-  const hasAllowKrTrial = button.href?.includes(allowKrTrialHash);
+  const hasAllowKrTrial = link.href?.includes(allowKrTrialHash);
   if (hasAllowKrTrial) {
-    button.href = button.href.replace(allowKrTrialHash, '');
-    const modalHash = button.getAttribute('data-modal-hash');
-    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
+    link.href = link.href.replace(allowKrTrialHash, '');
+    const modalHash = link.getAttribute('data-modal-hash');
+    if (modalHash) link.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
   }
   return localePrefix === '/kr' && hasAllowKrTrial;
 };
@@ -502,20 +504,22 @@ export const shouldAllowKrTrial = (button, localePrefix) => {
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
  * @see https://jira.corp.adobe.com/browse/MWPW-174411
 */
-export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
-  if (shouldAllowKrTrial(button, localePrefix) || localePrefix !== '/kr'
-      || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
-         .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+export const shouldBlockFreeTrialLinks = (link) => {
+  const localePrefix = getConfig()?.locale?.prefix;
+  if (shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
+      || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
+         .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
   }
 
-  if (button.dataset.wcsOsi) {
-    button.classList.add('hidden-osi-trial-link');
+  if (link.dataset.wcsOsi) {
+    link.classList.add('hidden-osi-trial-link');
     return false;
   }
 
-  const elementToRemove = (parent?.tagName === 'STRONG' || parent?.tagName === 'EM') && parent?.children?.length === 1 ? parent : button;
+  const parent = link.parentElement;
+  const elementToRemove = (parent?.tagName === 'STRONG' || parent?.tagName === 'EM') && parent?.children?.length === 1 ? parent : link;
   elementToRemove.remove();
   return true;
 };
@@ -613,6 +617,7 @@ function processQueryIndexMap(link, domain) {
 
   return result;
 }
+const getDomainLingo = (path) => path?.split('/*')[0];
 
 async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   const config = getConfig();
@@ -654,12 +659,11 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const configJson = await response.json();
 
-      const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+      siteQueryIndexMapLingo = configJson['site-query-index-map']?.data ?? [];
       const siteLocalesData = configJson['site-locales']?.data ?? [];
-      const getDomain = (path) => path?.split('/*')[0];
 
-      const existingIndex = siteQueryIndexMap.find((d) => d.uniqueSiteId === siteId);
-      const existingDomain = getDomain(existingIndex?.queryIndexWebPath);
+      const existingIndex = siteQueryIndexMapLingo.find((d) => d.uniqueSiteId === siteId);
+      const existingDomain = getDomainLingo(existingIndex?.queryIndexWebPath);
 
       if (existingDomain) {
         [queryIndexes[siteId], baseQueryIndex].forEach((queryIndex) => {
@@ -670,18 +674,18 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
       }
 
       const domainInProdDomains = (d) => d.uniqueSiteId !== siteId
-        && config.prodDomains?.includes(getDomain(d.queryIndexWebPath));
+        && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath));
 
       const hasRegionalQueryIndex = (locale) => parseList(locale.regionalSites).includes(prefix);
 
-      siteQueryIndexMap
+      siteQueryIndexMapLingo
         .filter(domainInProdDomains)
         .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
           const hasRegionalSite = siteLocalesData
             .some((s) => s.uniqueSiteId === uniqueSiteId && hasRegionalQueryIndex(s));
 
           if (!hasRegionalSite) return;
-          const domain = getDomain(queryIndexWebPath);
+          const domain = getDomainLingo(queryIndexWebPath);
           const indexPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
           queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
         });
@@ -744,7 +748,11 @@ function localizeLinkCore(
           const { default: urlInQueryIndex } = await import('./lingo.js');
           const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
           if (!useRegionalPrefix && (locale.base || locale.base === '')) prefix = basePrefix;
-        } else {
+        } else if (
+          siteQueryIndexMapLingo
+            ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
+            ?.length
+        ) {
           prefix = basePrefix;
         }
         const urlPath = `${prefix}${path}${url.search}${hash}`;
@@ -1809,7 +1817,7 @@ async function checkForPageMods() {
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
   if (mepgeolocation && !akamaiCode) {
-    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    const { default: getAkamaiCode } = await import('./geo.js');
     countryIPPromise = getAkamaiCode(true);
   }
   const enablePersV2 = enablePersonalizationV2();
@@ -1908,9 +1916,14 @@ async function loadPostLCP(config) {
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
+  const languageBanner = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
   const georouting = getMetadata('georouting') || config.geoRouting;
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
-  if (georouting === 'on') {
+
+  if (languageBanner === 'on') {
+    const { default: init } = await import('../features/language-banner/language-banner.js');
+    await init();
+  } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
@@ -2015,9 +2028,146 @@ function initSidekick() {
   }
 }
 
+let targetMarket = null;
+let langBannerPromise;
+export const getTargetMarket = () => targetMarket;
+export const setTargetMarket = (market) => { targetMarket = market; };
+
+const getCookie = (name) => document.cookie
+  .split('; ')
+  .find((row) => row.startsWith(`${name}=`))
+  ?.split('=')[1];
+
+function getMarketsUrl() {
+  const config = getConfig();
+  const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
+
+  const marketsSource = (config.env.name !== 'prod' && /^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && sourceFromUrl)
+    || getMetadata('marketssource')
+    || config.marketsSource;
+
+  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSource ? `-${marketsSource}` : ''}.json`;
+}
+
+async function decorateLanguageBanner() {
+  const { locale, locales, languageBanner } = getConfig();
+  const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || languageBanner);
+  if (languageBannerEnabled !== 'on') return;
+  const internationalCookie = getCookie('international');
+  let showBanner = false;
+  if (internationalCookie === (locale.prefix?.replace('/', '') || 'us')) return;
+  const pageLang = locale.ietf.split('-')[0];
+  const prefLang = internationalCookie
+    ? (locales[internationalCookie === 'us' ? '' : internationalCookie]?.ietf?.split('-')[0] || internationalCookie.split('_').pop())
+    : navigator.language?.split('-')[0] || null;
+
+  const [geoIpCode, marketsConfig] = await Promise.all([
+    getCountry() || import('./geo.js').then((m) => m.default(true)),
+    fetch(getMarketsUrl())
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null),
+  ]);
+
+  if (!geoIpCode || !marketsConfig) return;
+  const geoIp = geoIpCode.toLowerCase();
+  marketsConfig.data.forEach((market) => {
+    market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
+  });
+
+  const pageMarket = marketsConfig.data.find((m) => m.prefix === (locale.prefix?.replace('/', '') || ''));
+  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
+
+  const candidateMarkets = [];
+  const addAndShow = (...ms) => {
+    showBanner = true;
+    candidateMarkets.push(...ms);
+  };
+
+  if (isSupportedMarket) {
+    if (!prefLang || pageLang === prefLang) return;
+    const prefMarket = marketsConfig.data.find((market) => (
+      market.lang === prefLang
+      && market.supportedRegions.includes(geoIp)
+    ));
+    if (prefMarket) addAndShow(prefMarket);
+    else return;
+  } else {
+    // Unsupported Market Path
+    const marketsForGeo = marketsConfig.data.filter((market) => (
+      market.supportedRegions.includes(geoIp)));
+    if (!marketsForGeo.length) return;
+
+    let prefMarketForGeo;
+    if (prefLang) {
+      prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+      if (prefMarketForGeo) addAndShow(prefMarketForGeo);
+    }
+
+    if (!prefMarketForGeo) {
+      const marketsWithPriority = [];
+      marketsForGeo.forEach((market) => {
+        if (market.regionPriorities) {
+          const priorityMap = new Map(
+            market.regionPriorities.split(',').map((p) => {
+              const [region, priority] = p.trim().split(':');
+              return [region.toLowerCase(), parseInt(priority, 10)];
+            }),
+          );
+          const priority = priorityMap.get(geoIp);
+          if (priority) {
+            marketsWithPriority.push({ market, priority });
+          }
+        }
+      });
+
+      if (marketsWithPriority.length) {
+        marketsWithPriority.sort((a, b) => a.priority - b.priority);
+      }
+      addAndShow(...(marketsWithPriority.length
+        ? marketsWithPriority.map((item) => item.market)
+        : [marketsForGeo[0]]));
+    }
+  }
+
+  if (!showBanner) return;
+
+  const { pathname, origin } = window.location;
+  const pagePath = locale.prefix ? pathname.replace(locale.prefix, '') : pathname;
+
+  const fetchPromises = candidateMarkets.map((market) => {
+    const url = `${origin}${market.prefix ? `/${market.prefix}` : ''}${pagePath}`;
+    return fetch(url, { method: 'HEAD' })
+      .then((res) => ({ market, ok: res.ok }))
+      .catch(() => ({ market, ok: false }));
+  });
+
+  for (const promise of fetchPromises) {
+    const { market, ok } = await promise;
+    if (ok) { targetMarket = market; break; }
+  }
+
+  if (!targetMarket) return;
+
+  document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
+  const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
+  if (existingWrapper) {
+    existingWrapper.remove();
+    document.querySelector('.global-navigation').classList.remove('has-promo');
+  }
+}
+
+function preloadMarketsConfig() {
+  const config = getConfig();
+  const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
+  if (languageBannerEnabled !== 'on') return;
+  const marketsUrl = getMarketsUrl();
+  loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+}
+
 async function decorateDocumentExtras() {
   await decorateMeta(['footer-promo-tag', 'footer-source', 'gnav-source']);
   await decorateHeader();
+  langBannerPromise = decorateLanguageBanner();
 }
 
 async function documentPostSectionLoading(config) {
@@ -2122,6 +2272,8 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 
   section.blocks.forEach((block) => loadBlocks.push(loadBlock(block)));
 
+  if (isLcpSection && langBannerPromise) await langBannerPromise;
+
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
@@ -2150,6 +2302,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
+    if (lingoActive()) preloadMarketsConfig();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();

@@ -130,11 +130,7 @@ export function getAnalyticsValue(str, index) {
 }
 
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  if (shouldBlockFreeTrialLinks({
-    button: elem,
-    localePrefix: getConfig()?.locale?.prefix,
-    parent: elem.parentElement,
-  })) return null;
+  if (shouldBlockFreeTrialLinks(elem)) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
   const clone = elem.cloneNode(true);
@@ -1495,6 +1491,7 @@ class Gnav {
       switch (itemType) {
         case 'syncDropdownTrigger':
         case 'asyncDropdownTrigger': {
+          if (shouldBlockFreeTrialLinks(item)) return null;
           const dropdownTrigger = toFragment`<button
             class="feds-navLink feds-navLink--hoverCaret"
             aria-expanded="false"
@@ -1553,6 +1550,7 @@ class Gnav {
           let customLinkModifier = '';
           let removeCustomLink = false;
           let linkElem = item.querySelector('a');
+          if (shouldBlockFreeTrialLinks(linkElem)) return null;
           if (linkElem.classList.contains('merch')) {
             linkElem = await merch.default(linkElem);
           }
