@@ -644,6 +644,10 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   if (inline) {
     if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
+    if (fragment.dataset.mepLingoRoc) setDataIdOnChildren(sections, 'mepLingoRoc', fragment.dataset.mepLingoRoc);
+    if (fragment.dataset.mepLingoFallback) {
+      setDataIdOnChildren(sections, 'mepLingoFallback', fragment.dataset.mepLingoFallback);
+    }
   } else {
     addIds(fragment, manifestId, adobeTargetTestid);
   }

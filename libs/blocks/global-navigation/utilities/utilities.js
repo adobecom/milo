@@ -954,6 +954,10 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 // Optional: Disconnect the observer if you no longer need to track it
                 observer.disconnect();
               }
+              if (node.classList?.contains('language-banner')) {
+                // Update the popup position when the language banner is removed
+                updatePopupPosition();
+              }
             });
           }
         });
