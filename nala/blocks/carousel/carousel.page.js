@@ -138,6 +138,8 @@ export default class Carousel {
   async expandLightboxModal() {
     // Use JavaScript click to bypass pointer interception while preserving event handlers
     await this.lightboxExpandButton.evaluate((button) => button.click());
+    // Wait for modal to actually open
+    await this.lightboxCloseButton.waitFor({ state: 'visible', timeout: 5000 });
   }
 
   /**

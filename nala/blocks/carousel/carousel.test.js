@@ -98,8 +98,7 @@ test.describe('Milo Carousel Block test suite', () => {
 
       // verify expand and close lightbox
       expect(await carousel.isLightboxExpandButtonVisible()).toBeTruthy();
-      await carousel.expandLightboxModal();
-      await page.waitForTimeout(300); // Wait for modal transition
+      await carousel.expandLightboxModal(); // This now waits for modal to open
 
       expect(await carousel.isLightboxCloseButtonVisible()).toBeTruthy();
       await carousel.closeLightboxModal();
@@ -294,10 +293,8 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
         await page.waitForLoadState('networkidle');
         
-        await carousel.expandLightboxModal();
+        await carousel.expandLightboxModal(); // Now waits for modal to be open
         
-        // Wait for lightbox to become active
-        await page.locator('.carousel.lightbox-active').waitFor({ state: 'visible', timeout: 5000 });
         const isLightboxActive = await page.locator('.carousel.lightbox-active').isVisible();
         expect(isLightboxActive).toBeTruthy();
         
@@ -312,8 +309,7 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
         await page.waitForLoadState('networkidle');
         
-        await carousel.expandLightboxModal();
-        await page.locator('.carousel.lightbox-active').waitFor({ state: 'visible', timeout: 5000 });
+        await carousel.expandLightboxModal(); // Now waits for modal to be open
         
         const focusableElements = await page.locator('.carousel.lightbox-active button:not(.carousel-expand), .carousel.lightbox-active a').all();
         expect(focusableElements.length).toBeGreaterThan(0);
@@ -333,8 +329,7 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
         await page.waitForLoadState('networkidle');
         
-        await carousel.expandLightboxModal();
-        await page.locator('.carousel.lightbox-active').waitFor({ state: 'visible', timeout: 5000 });
+        await carousel.expandLightboxModal(); // Now waits for modal to be open
         
         const lightbox = page.locator('.carousel.lightbox-active');
         const role = await lightbox.getAttribute('role');
@@ -472,8 +467,7 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
         await page.waitForLoadState('networkidle');
         
-        await carousel.expandLightboxModal();
-        await page.locator('.carousel.lightbox-active').waitFor({ state: 'visible', timeout: 5000 });
+        await carousel.expandLightboxModal(); // Now waits for modal to be open
         
         await runAccessibilityTest({
           page,
