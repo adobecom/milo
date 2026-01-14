@@ -295,13 +295,14 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.waitForLoadState('networkidle');
         
         await carousel.expandLightboxModal();
-        await page.waitForTimeout(300);
         
+        // Wait for lightbox to become active
+        await page.locator('.carousel.lightbox-active').waitFor({ state: 'visible', timeout: 5000 });
         const isLightboxActive = await page.locator('.carousel.lightbox-active').isVisible();
         expect(isLightboxActive).toBeTruthy();
         
         await page.keyboard.press('Escape');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
         
         const isLightboxClosed = await page.locator('.carousel.lightbox-active').isVisible().catch(() => false);
         expect(isLightboxClosed).toBeFalsy();
@@ -312,7 +313,7 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.waitForLoadState('networkidle');
         
         await carousel.expandLightboxModal();
-        await page.waitForTimeout(300);
+        await page.locator('.carousel.lightbox-active').waitFor({ state: 'visible', timeout: 5000 });
         
         const focusableElements = await page.locator('.carousel.lightbox-active button:not(.carousel-expand), .carousel.lightbox-active a').all();
         expect(focusableElements.length).toBeGreaterThan(0);
@@ -333,7 +334,7 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.waitForLoadState('networkidle');
         
         await carousel.expandLightboxModal();
-        await page.waitForTimeout(300);
+        await page.locator('.carousel.lightbox-active').waitFor({ state: 'visible', timeout: 5000 });
         
         const lightbox = page.locator('.carousel.lightbox-active');
         const role = await lightbox.getAttribute('role');
@@ -472,7 +473,7 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.waitForLoadState('networkidle');
         
         await carousel.expandLightboxModal();
-        await page.waitForTimeout(300);
+        await page.locator('.carousel.lightbox-active').waitFor({ state: 'visible', timeout: 5000 });
         
         await runAccessibilityTest({
           page,
