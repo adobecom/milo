@@ -38,8 +38,34 @@
   padding-left: 15px;
 }
 
+.mep-popup-tabs {
+  display: flex;
+  gap: 24px;
+  padding: 0 12px;
+  background-color: #222;
+}
+
+.mep-popup-tabs .mep-tab {
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border-bottom: 2px solid #fff;
+}
+
+.mep-popup-tabs .mep-tab:not(.active) {
+  color: rgba(255, 255, 255, 0.7);
+  border-bottom: none;
+}
+
 .mep-popup, .mep-badge {
   direction: ltr;
+}
+
+.mep-popup .mep-popup-body:not(.active) {
+  display: none;
 }
 
 .mep-popup .mep-popup-body,
@@ -281,7 +307,7 @@
 .mep-popup.in-page .mep-popup-body {
   padding: 12px;
   overflow-y: auto;
-  max-height: calc(100vh - 234px);
+  height: calc(100vh - 274px);
 }
 
 .mep-popup.in-page .mep-manifest-list {

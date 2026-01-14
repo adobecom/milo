@@ -91,6 +91,17 @@ function updatePreviewButton(popup, pageId) {
     .querySelector('a.con-button')
     .setAttribute('href', simulateHref.href);
 }
+
+function changeTab(event) {
+  const tabs = event.target.closest('.mep-popup-tabs').querySelectorAll('.mep-tab');
+  const index = Array.from(tabs).indexOf(event.target);
+
+  tabs.forEach((tab, i) => {
+    tab.classList.toggle('active', i === index);
+    event.target.closest('.mep-popup').querySelectorAll('.mep-popup-body')[i]?.classList.toggle('active', i === index);
+  });
+}
+
 function addDividers(node, selector) {
   node.querySelectorAll(selector).forEach((section) => {
     const mepDivider = createTag('div', { class: 'mep-divider' });
@@ -356,6 +367,10 @@ function addMepPopupListeners(popup, pageId) {
     input.addEventListener('change', (event) => mmmToggleManifests.bind(null, event, popup, pageId)());
     input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
+  popup.querySelectorAll('.mep-popup-tabs .mep-tab').forEach((input) => {
+    input.addEventListener('click', (event) => changeTab.bind(null, event)());
+    input.addEventListener('click', updatePreviewButton.bind(null, popup, pageId));
+  });
 }
 function setTargetOnText(target, page) {
   if (target === undefined) return page.target;
@@ -388,9 +403,9 @@ export function getMepPopup(mepConfig, isMmm = false) {
     'data-url': pageUrl,
   });
   const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
+  const mepPopupTabs = createTag('div', { class: 'mep-popup-tabs' });
   const mepPageInfo = createTag('div', { class: 'mep-section' });
   const mepOptions = createTag('div', { class: 'mep-section' });
-  const mepPopupBody = createTag('div', { class: 'mep-popup-body' });
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
   const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
 
@@ -406,7 +421,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const { akamaiCode, consentState } = config.mep;
 
   mepPageInfo.innerHTML = `
-    <h6 class="mep-manifest-page-info-title">Page Info</h6>
+    <h6 class="mep-manifest-page-info-title">Page</h6>
     <div class="mep-columns">
       <div class="mep-column">
         <div>Target Integration</div>
@@ -423,7 +438,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
         ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
       </div>
     </div>
-    <h6 class="mep-manifest-page-info-title">User Info</h6>
+    <h6 class="mep-manifest-page-info-title">User</h6>
     <div class="mep-columns">
       <div class="mep-column">
         <div>Country</div>
@@ -512,16 +527,23 @@ export function getMepPopup(mepConfig, isMmm = false) {
   mepPopupHeader.innerHTML = `
     ${mmmLink}
     <span class="mep-close"></span>`;
-  mepManifestList.innerHTML = `<h6>Page Manifests</h6>${manifestList}`;
 
-  if (mepPageInfo) mepPopupBody.append(mepPageInfo);
-  if (mepManifestList) mepPopupBody.append(mepManifestList);
-  if (mepManifestListMMM && config.env?.name === 'prod') mepPopupBody.append(mepManifestListMMM);
-  if (mepOptions) mepPopupBody.append(mepOptions);
+  const tabs = ['Summary', 'Options'];
+  const mepPopupBody = tabs.map((tab, index) => {
+    const mepTab = createTag('div', { class: `mep-tab ${index === 0 ? ' active' : ''}` });
+    mepTab.textContent = tab;
+    mepPopupTabs.append(mepTab);
+    return createTag('div', { class: `mep-popup-body ${index === 0 ? ' active' : ''}` });
+  });
 
-  mepPopup.append(mepPopupHeader);
-  mepPopup.append(mepPopupBody);
-  mepPopup.append(mepPopupFooter);
+  mepManifestList.innerHTML = `<h6>Manifests</h6>${manifestList}`;
+
+  mepPopupBody[0].append(mepPageInfo);
+  mepPopupBody[1].append(mepManifestList);
+  if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
+  mepPopupBody[1].append(mepOptions);
+
+  mepPopup.append(mepPopupHeader, mepPopupTabs, ...mepPopupBody, mepPopupFooter);
 
   addDividers(mepPopup, '.mep-popup-body > .mep-section:not(:last-child), .mep-manifest-list > .mep-section');
 
