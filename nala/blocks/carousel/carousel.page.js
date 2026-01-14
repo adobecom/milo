@@ -42,6 +42,23 @@ export default class Carousel {
   }
 
   /**
+ * Wait for carousel to transition to a specific slide index.
+ * @param {string} expectedIndex - The expected slide index to wait for.
+ * @param {number} timeout - Maximum time to wait in ms (default: 3000).
+ * @return {Promise<void>}.
+ */
+  async waitForSlideTransition(expectedIndex, timeout = 3000) {
+    await this.page.waitForFunction(
+      (index) => {
+        const activeSlide = document.querySelector('.carousel-slide.active');
+        return activeSlide?.getAttribute('data-index') === index;
+      },
+      expectedIndex,
+      { timeout }
+    );
+  }
+
+  /**
  * Move to next slide .
  */
   async moveToNextSlide() {

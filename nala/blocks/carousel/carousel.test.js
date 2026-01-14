@@ -202,13 +202,13 @@ test.describe('Milo Carousel Block test suite', () => {
         expect(initialIndex).toBe('0');
 
         await page.keyboard.press('ArrowRight');
-        await page.waitForTimeout(500);
+        await carousel.waitForSlideTransition('1');
         
         const secondSlideIndex = await carousel.getCurrentSlideIndex();
         expect(secondSlideIndex).toBe('1');
 
         await page.keyboard.press('ArrowLeft');
-        await page.waitForTimeout(500);
+        await carousel.waitForSlideTransition('0');
         
         const backToFirstIndex = await carousel.getCurrentSlideIndex();
         expect(backToFirstIndex).toBe('0');
@@ -239,7 +239,7 @@ test.describe('Milo Carousel Block test suite', () => {
         const initialIndex = await carousel.getCurrentSlideIndex();
         
         await page.keyboard.press('Space');
-        await page.waitForTimeout(300);
+        await carousel.waitForSlideTransition('1'); // Space on next button moves to slide 1
         
         const newIndex = await carousel.getCurrentSlideIndex();
         expect(parseInt(newIndex)).toBeGreaterThan(parseInt(initialIndex));
@@ -280,7 +280,7 @@ test.describe('Milo Carousel Block test suite', () => {
         await page.waitForLoadState('networkidle');
         
         await carousel.moveToNextSlide();
-        await page.waitForTimeout(300);
+        await carousel.waitForSlideTransition('1'); // Wait for slide to change
         expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
         expect(await carousel.validateAriaHidden()).toBeTruthy();
       });
@@ -299,7 +299,8 @@ test.describe('Milo Carousel Block test suite', () => {
         expect(isLightboxActive).toBeTruthy();
         
         await page.keyboard.press('Escape');
-        await page.waitForTimeout(500);
+        // Wait for lightbox-active class to be removed
+        await page.locator('.carousel.lightbox-active').waitFor({ state: 'hidden', timeout: 3000 });
         
         const isLightboxClosed = await page.locator('.carousel.lightbox-active').isVisible().catch(() => false);
         expect(isLightboxClosed).toBeFalsy();
@@ -362,7 +363,17 @@ test.describe('Milo Carousel Block test suite', () => {
         const initialContent = await liveRegion.textContent();
         
         await carousel.moveToNextSlide();
-        await page.waitForTimeout(500);
+        await carousel.waitForSlideTransition('1'); // Wait for slide to change
+        
+        // Wait for live region content to update (aria-live is async)
+        await page.waitForFunction(
+          (initial) => {
+            const liveEl = document.querySelector('.aria-live-container');
+            return liveEl && liveEl.textContent !== initial && liveEl.textContent.includes('Slide');
+          },
+          initialContent,
+          { timeout: 3000 }
+        );
         
         const updatedContent = await liveRegion.textContent();
         expect(updatedContent).not.toBe(initialContent);
