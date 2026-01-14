@@ -328,6 +328,91 @@ describe('MEP Lingo Fragments', () => {
     expect(staleIndexLog).to.exist;
   });
 
+  it('handles block swap failure (regional content 404s)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    // Stub fetch to return 404 for nonexistent fragments
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('/fragments/nonexistent') || urlStr.includes('/fragments%2Fnonexistent')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      return originalFetch(url);
+    });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const marquee = document.createElement('div');
+    marquee.className = 'marquee';
+    const mepLingoRow = document.createElement('div');
+    const cell1 = document.createElement('div');
+    cell1.textContent = 'mep-lingo';
+    const cell2 = document.createElement('div');
+    cell2.innerHTML = '<a href="/fragments/nonexistent#_mep-lingo">swap</a>';
+    mepLingoRow.appendChild(cell1);
+    mepLingoRow.appendChild(cell2);
+    marquee.appendChild(mepLingoRow);
+    section.appendChild(marquee);
+    document.body.appendChild(section);
+    const a = marquee.querySelector('a');
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+    // The mep-lingo row should be removed from the marquee
+    const remainingRows = marquee.querySelectorAll(':scope > div');
+    expect(remainingRows.length).to.equal(0);
+    section.remove();
+  });
+
+  it('handles section swap failure (regional content 404s)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    // Stub fetch to return 404 for nonexistent fragments
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('/fragments/nonexistent') || urlStr.includes('/fragments%2Fnonexistent')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      return originalFetch(url);
+    });
+
+    // Create a section with section-metadata containing mep-lingo row
+    const section = document.createElement('div');
+    section.className = 'section test-section-swap';
+    const sectionMetadata = document.createElement('div');
+    sectionMetadata.className = 'section-metadata';
+
+    const mepLingoRow = document.createElement('div');
+    const cell1 = document.createElement('div');
+    cell1.textContent = 'mep-lingo';
+    const cell2 = document.createElement('div');
+    cell2.innerHTML = '<a href="/fragments/nonexistent#_mep-lingo">swap</a>';
+    mepLingoRow.appendChild(cell1);
+    mepLingoRow.appendChild(cell2);
+    sectionMetadata.appendChild(mepLingoRow);
+    section.appendChild(sectionMetadata);
+    document.body.appendChild(section);
+
+    const a = sectionMetadata.querySelector('a');
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+    // The mep-lingo row should be removed from section-metadata
+    const remainingRows = sectionMetadata.querySelectorAll(':scope > div');
+    expect(remainingRows.length).to.equal(0);
+    section.remove();
+  });
+
   it('removes section-metadata mep-lingo row when section swap has no regional targeting', async () => {
     window.sessionStorage.setItem('akamai', 'us');
     const currentConfig = getConfig();
