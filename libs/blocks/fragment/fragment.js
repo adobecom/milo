@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { createTag, getConfig, loadArea, localizeLinkAsync, customFetch } from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, loadBlock, localizeLinkAsync, customFetch } from '../../utils/utils.js';
 
 const fragMap = {};
 
@@ -57,14 +57,17 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    // Load area if:
-    // 1. Child itself is a block (has a class and is a div)
-    // 2. OR contains nested fragments
-    // 3. OR contains child blocks (divs with classes)
-    const isBlock = child.nodeName === 'DIV' && child.className && child.className.trim() !== '';
+    // Check if child itself is a block (first class name matches known block)
+    const blockName = child.nodeName === 'DIV' && child.classList[0];
     const hasNestedFragments = child.querySelector('a[href*="/fragments/"]');
     const hasChildBlocks = child.querySelector(':scope > div[class]:not(.content)');
-    if (isBlock || hasNestedFragments || hasChildBlocks) {
+    
+    // If child is a block itself, load it directly
+    if (blockName) {
+      promises.push(loadBlock(child));
+    }
+    // If child contains nested fragments or child blocks, load area
+    if (hasNestedFragments || hasChildBlocks) {
       promises.push(loadArea(child));
     }
   });
