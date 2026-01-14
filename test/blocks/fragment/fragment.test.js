@@ -295,6 +295,39 @@ describe('MEP Lingo Fragments', () => {
     expect(frag.dataset.mepLingoFallback).to.exist;
   });
 
+  it('handles stale query-index fallback (query-index says regional exists but 404s)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']);
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']));
+      }
+      if (urlStr.includes('/ch_de/fragments/mep-lingo-test.plain.html')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      return originalFetch(url);
+    });
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+    const a = document.querySelector('a.mep-lingo-frag');
+    expect(a.dataset.originalHref).to.not.exist;
+    await simulateDecorateLinks(a);
+    expect(a.dataset.originalHref).to.exist;
+    await getFragment(a);
+    const section = document.querySelector('.mep-lingo-section');
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoFallback).to.exist;
+    expect(window.lana.log.called).to.be.true;
+    const logCalls = window.lana.log.getCalls();
+    const staleIndexLog = logCalls.find((call) => (
+      call.args[0]?.includes('Query-index indicated regional content exists but fetch failed')
+    ));
+    expect(staleIndexLog).to.exist;
+  });
+
   it('removes section-metadata mep-lingo row when section swap has no regional targeting', async () => {
     window.sessionStorage.setItem('akamai', 'us');
     const currentConfig = getConfig();
