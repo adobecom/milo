@@ -101,7 +101,6 @@ const MILO_BLOCKS = [
   'share',
   'susi-light-login',
   'reading-time',
-  'mobile-rider',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
@@ -110,7 +109,6 @@ const AUTO_BLOCKS = [
   { faas: '/tools/faas' },
   { fragment: '/fragments/', styles: false },
   { instagram: 'instagram.com' },
-  { 'mobile-rider': 'mobile-rider' },
   { slideshare: 'slideshare.net', styles: false },
   { tiktok: 'tiktok.com', styles: false },
   { twitter: 'twitter.com' },
