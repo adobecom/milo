@@ -90,6 +90,13 @@ const getLanguages = (links, languages, locales) => Array.from(links).map((link)
 });
 
 const getCurrentLanguage = (languagesList, path) => {
+  const config = getConfig();
+  const { languages, locale } = config;
+
+  if (!languages && locale?.base) {
+    const found = languagesList.find((lang) => lang.prefix === locale.base);
+    if (found) return found;
+  }
   const currentPath = path || window.location.pathname;
   const found = languagesList.find((lang) => {
     if (!lang.prefix) {
@@ -98,6 +105,25 @@ const getCurrentLanguage = (languagesList, path) => {
     return new RegExp(`^/${lang.prefix}(/|$)`).test(currentPath);
   });
   return found || languagesList[0];
+};
+
+const getCurrentPrefix = (filteredLanguages) => {
+  const config = getConfig();
+  if (!config.languages && config.locale?.prefix) {
+    const [localeKey] = config.locale.prefix.replace(/^\//, '').split('/');
+    return localeKey ? `/${localeKey}` : '';
+  }
+  const currentLangForPath = getCurrentLanguage(filteredLanguages);
+  return currentLangForPath?.prefix ? `/${currentLangForPath.prefix}` : '';
+};
+
+const buildLanguageSwitchUrl = (targetLang, filteredLanguages) => {
+  const { pathname, href, origin } = window.location;
+  const currentPrefix = getCurrentPrefix(filteredLanguages);
+  const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
+  const path = href.replace(origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
+  const newPath = targetLang.prefix ? `/${targetLang.prefix}${path}` : path;
+  return `${origin}${newPath}`;
 };
 
 const scrollSelectedIntoView = (selectedLangItem, languageList) => {
@@ -264,7 +290,7 @@ function renderLanguages({
           if (activeIndexRef.current === -1) activeIndexRef.current = idx;
         }
         const langLink = createTag('a', {
-          href: `${window.location.origin}${lang.prefix ? `/${lang.prefix}${window.location.pathname.replace(/^\/[a-zA-Z-]+/, '')}` : window.location.pathname.replace(/^\/[a-zA-Z-]+/, '')}`,
+          href: `${window.location.origin}${lang.prefix ? `/${lang.prefix}${window.location.pathname.replace(/^\/[a-zA-Z_-]+/, '')}` : window.location.pathname.replace(/^\/[a-zA-Z_-]+/, '')}`,
           class: 'language-link',
           role: 'option',
           'aria-selected': lang.name === currentLang.name ? 'true' : 'false',
@@ -285,13 +311,7 @@ function renderLanguages({
           e.preventDefault();
           const cookieValue = getInternationalCookieValue(lang.prefix);
           setInternational(cookieValue);
-          const { pathname, href } = window.location;
-          const currentLangForPath = getCurrentLanguage(filteredLanguages);
-          const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
-          const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
-          const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
-          const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
-          const fullUrl = `${window.location.origin}${newPath}`;
+          const fullUrl = buildLanguageSwitchUrl(lang, filteredLanguages);
           handleEvent({
             prefix: lang.prefix,
             link: { href: fullUrl },
@@ -503,13 +523,7 @@ function setupDropdownEvents({
     if (li) {
       const idx = Array.from(languageList.children).indexOf(li);
       const lang = filteredLanguages[idx];
-      const { pathname, href } = window.location;
-      const currentLangForPath = getCurrentLanguage(filteredLanguages);
-      const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
-      const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
-      const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
-      const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
-      const fullUrl = `${window.location.origin}${newPath}`;
+      const fullUrl = buildLanguageSwitchUrl(lang, filteredLanguages);
       const langLink = li.querySelector('a.language-link');
       if (langLink) langLink.href = fullUrl;
       handleEvent({
