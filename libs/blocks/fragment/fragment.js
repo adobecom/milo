@@ -46,6 +46,34 @@ const updateFragMap = async (fragment, a, href) => {
   }
 };
 
+// const insertInlineFrag = async (sections, a, relHref) => {
+//   // Inline fragments only support one section, other sections are ignored
+//   const fragChildren = [...sections[0].children];
+//   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
+//     a.parentElement.replaceWith(...fragChildren);
+//   } else {
+//     a.replaceWith(...fragChildren);
+//   }
+//   const promises = [];
+//   fragChildren.forEach((child) => {
+//     child.setAttribute('data-path', relHref);
+//     // Check if child itself is a block (first class name matches known block)
+//     const blockName = child.nodeName === 'DIV' && child.classList[0];
+//     const hasNestedFragments = child.querySelector('a[href*="/fragments/"]');
+//     const hasChildBlocks = child.querySelector(':scope > div[class]:not(.content)');
+    
+//     // If child is a block itself, load it directly
+//     if (blockName) {
+//       promises.push(loadBlock(child));
+//     }
+//     // If child contains nested fragments or child blocks, load area
+//     if (hasNestedFragments || hasChildBlocks) {
+//       promises.push(loadArea(child));
+//     }
+//   });
+//   await Promise.all(promises);
+// };
+
 const insertInlineFrag = async (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
@@ -57,19 +85,7 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    // Check if child itself is a block (first class name matches known block)
-    const blockName = child.nodeName === 'DIV' && child.classList[0];
-    const hasNestedFragments = child.querySelector('a[href*="/fragments/"]');
-    const hasChildBlocks = child.querySelector(':scope > div[class]:not(.content)');
-    
-    // If child is a block itself, load it directly
-    if (blockName) {
-      promises.push(loadBlock(child));
-    }
-    // If child contains nested fragments or child blocks, load area
-    if (hasNestedFragments || hasChildBlocks) {
-      promises.push(loadArea(child));
-    }
+    if (child.querySelector('a[href*="/fragments/"]')) promises.push(loadArea(child));
   });
   await Promise.all(promises);
 };

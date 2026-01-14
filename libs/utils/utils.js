@@ -124,6 +124,7 @@ const AUTO_BLOCKS = [
   { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
   { m7: '/creativecloud/business-plans', styles: false },
   { m7: '/creativecloud/education-plans', styles: false },
+  {'mobile-rider': 'mobile-rider.com'},
 ];
 const DO_NOT_INLINE = [
   'accordion',
