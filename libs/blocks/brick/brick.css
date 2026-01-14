@@ -48,6 +48,10 @@
   display: none;
 }
 
+.brick.contain .foreground .brick-media img {
+  object-fit: contain !important;
+}
+
 .brick.rounded-corners,
 .brick.rounded-corners .background,
 .brick.rounded-corners .foreground {

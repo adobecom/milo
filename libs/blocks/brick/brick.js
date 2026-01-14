@@ -69,6 +69,7 @@ function decorateForeground(el, foreground) {
     }
     const mediaEl = foreground.querySelector('div:not([class])');
     mediaEl.classList.add('brick-media');
+    if (el.classList.contains('contain')) mediaEl.classList.add('contain');
     el.classList.add((foreground.firstElementChild === mediaEl) ? 'media-left' : 'media-right');
   }
   const hasIconArea = fgtext.querySelector('p')?.querySelector('img');
