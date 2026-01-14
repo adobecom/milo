@@ -14,13 +14,13 @@
   padding: var(--spacing-m);
 }
 
-.quick-facts .logo {
+.quick-facts .quick-facts-logo {
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
-.quick-facts .logo img {
+.quick-facts .quick-facts-logo img {
   max-height: 80px;
   width: auto;
 }
@@ -96,7 +96,7 @@
     flex-flow: row wrap;
   }
 
-  .quick-facts .logo {
+  .quick-facts .quick-facts-logo {
     justify-content: flex-start;
   }
 

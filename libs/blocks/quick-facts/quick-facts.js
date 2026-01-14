@@ -7,7 +7,7 @@ export default function init(el) {
   el.append(foreground);
   const logo = el.querySelector(':scope > div:not([class])');
   if (logo.querySelector('picture')) {
-    logo.classList.add('logo');
+    logo.classList.add('quick-facts-logo');
     foreground.append(logo);
   }
   const rows = el.querySelectorAll(':scope > div:not([class])');
