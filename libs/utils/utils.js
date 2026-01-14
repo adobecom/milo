@@ -728,11 +728,12 @@ function localizeLinkCore(
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
+    const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
     let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
-          || (!!locale.regions && path.includes('/fragments/') && aTag.dataset.mepLingo === 'true'))) {
+          || (!!locale.regions && isMepLingoFragment))) {
       return (async () => {
         if (!(lingoSiteMapping || isLoadingQueryIndexes)) {
           loadQueryIndexes(prefix);
@@ -747,7 +748,6 @@ function localizeLinkCore(
         if (matchingIndexes.length) {
           const { default: urlInQueryIndex } = await import('./lingo.js');
           const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
-          const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
           const shouldFallbackToBase = isMepLingoFragment
             ? locale?.regions
             : (locale.base || locale.base === '');
