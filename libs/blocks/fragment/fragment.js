@@ -93,9 +93,10 @@ async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePa
 
   let fallbackPath = originalHref;
   try {
+    const resourceUrl = new URL(resourcePath);
     const originalUrl = new URL(originalHref);
     if (locale?.prefix && !originalUrl.pathname.startsWith(locale.prefix)) {
-      fallbackPath = `${originalUrl.origin}${locale.prefix}${originalUrl.pathname}`;
+      fallbackPath = `${resourceUrl.origin}${locale.prefix}${originalUrl.pathname}`;
     }
   } catch (e) {
     if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
