@@ -193,8 +193,8 @@ export default async function init(a) {
     }
   }
 
-  const isLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
-  const needsFallback = (isMepLingoBlock || isLingoFragment) && !!a.dataset.originalHref;
+  const isMepLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
+  const needsFallback = (isMepLingoBlock || isMepLingoFragment) && !!a.dataset.originalHref;
 
   let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
@@ -206,8 +206,10 @@ export default async function init(a) {
     usedFallback = true;
   }
 
-  // MEP Lingo: Handle stale query-index edge case
-  if (!resp?.ok && needsFallback && a.dataset.originalHref) {
+  const attemptedRegionalFetch = relHref.includes(mepLingoPrefix);
+  const canTryFallback = needsFallback && mepLingoPrefix && a.dataset.originalHref;
+
+  if (!resp?.ok && attemptedRegionalFetch && canTryFallback) {
     const fallback = await tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
