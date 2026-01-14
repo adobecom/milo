@@ -2034,14 +2034,14 @@ const getCookie = (name) => document.cookie
   ?.split('=')[1];
 
 function getMarketsUrl() {
-  const config = getConfig();
+  const { env, marketsSource } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
+  const allowedMarkets = ['bacom'];
+  const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
+      || getMetadata('marketssource')
+      || marketsSource;
 
-  const marketsSource = (config.env.name !== 'prod' && /^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && sourceFromUrl)
-    || getMetadata('marketssource')
-    || config.marketsSource;
-
-  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSource ? `-${marketsSource}` : ''}.json`;
+  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSourceKey ? `-${marketsSourceKey}` : ''}.json`;
 }
 
 async function decorateLanguageBanner() {
