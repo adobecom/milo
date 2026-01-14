@@ -262,11 +262,33 @@ function compareResults(result, link) {
   return true;
 }
 
+export function getElementPosition(element) {
+  if (element.closest('header nav')) return 'NAV';
+  if (element.closest('footer')) return 'FOOTER';
+  if (element.closest('main')) return 'CONTENT';
+  return 'OTHER';
+}
+
+export function getTagType(element) {
+  if (element.tagName === 'A') return 'Anchor';
+  if (element.tagName === 'IMG') return 'Image';
+  if (element.tagName === 'IFRAME') return 'IFrame';
+  return element.tagName;
+}
+
+export function isElementVisible(element) {
+  const style = window.getComputedStyle(element);
+  return style.display !== 'none'
+    && style.visibility !== 'hidden'
+    && style.opacity !== '0';
+}
+
 export async function validLinkFilter(area = document, envName = null) {
   const { preflight } = await getServiceConfig(window.location.origin, envName);
   const knownBadUrls = preflight?.ignoreDomains
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
     : KNOWN_BAD_URLS;
+
   const links = [...area.querySelectorAll('a')]
     .filter((link) => {
       if (
@@ -288,6 +310,13 @@ export async function validLinkFilter(area = document, envName = null) {
         return true;
       }
       return false;
+    })
+    .map((link) => {
+      link.tagType = getTagType(link);
+      link.position = getElementPosition(link);
+      link.linkTextOrImgAlt = link.textContent?.trim() || link.alt || link.title || '';
+      link.visibility = isElementVisible(link);
+      return link;
     });
   return links;
 }
