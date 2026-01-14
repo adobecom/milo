@@ -99,6 +99,7 @@ test.describe('Milo Carousel Block test suite', () => {
       // verify expand and close lightbox
       expect(await carousel.isLightboxExpandButtonVisible()).toBeTruthy();
       await carousel.expandLightboxModal();
+      await page.waitForTimeout(300); // Wait for modal transition
 
       expect(await carousel.isLightboxCloseButtonVisible()).toBeTruthy();
       await carousel.closeLightboxModal();
