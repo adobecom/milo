@@ -136,12 +136,8 @@ export default class Carousel {
  * Click carousel <lightbox expand> button
  */
   async expandLightboxModal() {
-    // Scroll into view and wait for stable state
-    await this.lightboxExpandButton.scrollIntoViewIfNeeded();
-    await this.lightboxExpandButton.waitFor({ state: 'visible' });
-    // Wait a moment for any animations/overlays to settle
-    await this.lightboxExpandButton.page().waitForTimeout(500);
-    await this.lightboxExpandButton.click();
+    // Use JavaScript click to bypass pointer interception while preserving event handlers
+    await this.lightboxExpandButton.evaluate((button) => button.click());
   }
 
   /**
