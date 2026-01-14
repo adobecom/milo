@@ -1360,6 +1360,7 @@ export function decorateLinks(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const links = [...anchors].reduce((rdx, a) => {
+    appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
     const result = processLinkDecoration(a, config, hasDnt);
