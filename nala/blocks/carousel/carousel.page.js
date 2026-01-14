@@ -136,7 +136,7 @@ export default class Carousel {
  * Click carousel <lightbox expand> button
  */
   async expandLightboxModal() {
-    await this.lightboxExpandButton.click();
+    await this.lightboxExpandButton.click({ force: true });
   }
 
   /**
