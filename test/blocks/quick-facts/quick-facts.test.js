@@ -20,7 +20,7 @@ describe('quick-facts', () => {
     before(() => init(block));
 
     it('has a logo', () => {
-      const logo = quickFactsBlocks[0].querySelector('.logo');
+      const logo = quickFactsBlocks[0].querySelector('.quick-facts-logo');
       expect(logo).to.exist;
     });
 
@@ -58,7 +58,7 @@ describe('quick-facts', () => {
     before(() => init(block));
 
     it('does not have a logo ', () => {
-      const logo = block.querySelector('.logo');
+      const logo = block.querySelector('.quick-facts-logo');
       expect(logo).to.not.exist;
     });
 
