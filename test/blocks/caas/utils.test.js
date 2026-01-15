@@ -1209,7 +1209,7 @@ describe('isLocaleInRegionalSites helper function tests', () => {
     if (!regionalSites) return false;
     return regionalSites
       .split(',')
-      .map(site => site.trim().replace(/^\//, ''))
+      .map((site) => site.trim().replace(/^\//, ''))
       .includes(localeStr);
   };
 
@@ -1218,7 +1218,7 @@ describe('isLocaleInRegionalSites helper function tests', () => {
       const result = isLocaleInRegionalSites('/ca_fr, /ch_fr, /be_f', 'ca_fr');
       expect(result).to.be.true;
     });
-  
+
     it('should NOT match "ca" in "/africa" (was a substring bug)', () => {
       const result = isLocaleInRegionalSites('/africa', 'ca');
       expect(result).to.be.false;
