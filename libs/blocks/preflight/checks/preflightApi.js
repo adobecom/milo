@@ -82,6 +82,22 @@ export const getChecksSuite = () => {
   });
 };
 
+const isUrlExcluded = (url, exclusionPatterns = {}) => {
+  if (!exclusionPatterns.data) return false;
+
+  return exclusionPatterns.data.some((item) => {
+    const pattern = item.path;
+    if (!pattern) return false;
+
+    const regexPattern = pattern
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/\\\*\\\*/g, '.*')
+      .replace(/\\\*/g, '[^/]*');
+    const regex = new RegExp(regexPattern);
+    return regex.test(url);
+  });
+};
+
 const runChecks = async (url, area, injectVisualMetadata = false) => {
   const isASO = (await getChecksSuite()) === 'ASO';
   const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
@@ -102,6 +118,12 @@ export async function getPreflightResults(options = {}) {
     useCache = true,
     injectVisualMetadata = false,
   } = options;
+
+  const excludedURLS = await fetch(`${getFederatedContentRoot()}/federal/preflight/preflight-config.json?sheet=preflight-exclusions`)
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null);
+
+  if (isUrlExcluded(url, excludedURLS)) return null;
 
   const isASO = (await getChecksSuite()) === 'ASO';
   const asoAuthed = isASO ? !!asoCache.sessionToken : false;
