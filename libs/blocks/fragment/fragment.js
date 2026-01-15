@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix, lingoActive,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -160,7 +160,7 @@ export default async function init(a) {
   const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
   const isOnRegionalPage = locale?.base !== undefined;
 
-  if (isMepLingoLink && isOnRegionalPage) {
+  if (isMepLingoLink && (isOnRegionalPage || !lingoActive())) {
     const { handleInvalidMepLingo } = await import('../../features/mep/lingo.js');
     handleInvalidMepLingo(a, { env, relHref });
     return;
