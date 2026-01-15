@@ -11,6 +11,7 @@ import {
 import { getLingoActive } from '../../utils/lingo-active.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
+import { getLingoActive } from '../../utils/lingo-active.js';
 
 export const LANGS = {
   en: 'en',
