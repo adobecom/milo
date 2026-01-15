@@ -621,7 +621,7 @@ const getDomainLingo = (path) => path?.split('/*')[0];
 
 async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   const config = getConfig();
-  const queryIndexSuffix = window.location.host.includes(`${SLD}.page`) ? '-preview' : '';
+  const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
 
   if (links.length && links.some((link) => link.includes('/federal/')) && !queryIndexes.federal) {
     queryIndexes.federal = processQueryIndexMap(
@@ -637,7 +637,6 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
   const siteId = config.uniqueSiteId ?? '';
-  const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
 
   queryIndexes[siteId] = processQueryIndexMap(
     `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
