@@ -408,10 +408,15 @@ export function getMepPopup(mepConfig, isMmm = false) {
     true: 'on',
     false: 'off',
   };
+
   const targetEnabled = targetMapping[config.mep?.targetEnabled];
   const mepTarget = isMmm ? page.target : targetEnabled;
   const targetOnText = setTargetOnText(mepTarget, page);
   const { akamaiCode, consentState } = config.mep;
+  const isLingoActive = lingoActive();
+  const regions = config?.locale?.regions || {};
+  const regionKeys = Object.keys(regions);
+  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
 
   // Build Header
   const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
@@ -441,7 +446,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div>Manifests Found</div>
         <div>Target Integration</div>
         <div>Personalization</div>
-        <div>Geo Folder</div>
         <div>Locale</div>
         ${page.lastSeen ? '<div>Last Seen</div>' : ''}
       </div>
@@ -449,7 +453,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div>${mepConfig.activities?.length || 0}</div>
         <div>${targetOnText}</div>
         <div>${page.personalization}</div>
-        <div>${page.geo || 'Nothing (US)'}</div>
         <div>${page.locale?.toLowerCase()}</div>
         ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
       </div>
@@ -486,14 +489,15 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div>Country</div>
       </div>
       <div class="mep-column">
-        <div>Data</div>
+        <div>${page.geo || 'US (None)'}</div>
         <div>Data</div>
         <div>Data</div>
         <div>${akamaiCode || 'none'}</div>
       </div>
     </div>
   `;
-  mepPopupBody[0].append(mepLingoSummary);
+
+  if (regionKeys.length) mepPopupBody[0].append(mepLingoSummary);
 
   // Build Options : Manifest List
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
@@ -513,11 +517,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
       </div>`
     : '';
-
-  const isLingoActive = lingoActive();
-  const regions = config?.locale?.regions || {};
-  const regionKeys = Object.keys(regions);
-  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
 
   let mepLingoSectionHTML = '';
   if (isLingoActive) {
