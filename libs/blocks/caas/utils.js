@@ -581,8 +581,6 @@ async function getLingoSiteLocale(origin, path) {
         }
       });
 
-    // check if the localeStr is in the baseSite or regionalSites.
-    // if not, use the og country/language logic
     const isLocaleInRegionalSites = (regionalSites, localeStr) => {
       if (!regionalSites) return false;
       return regionalSites
