@@ -202,7 +202,7 @@ export default async function init(a) {
   let usedFallback = false;
 
   const mepLingoPrefix = getMepLingoPrefix();
-  if (isMepLingoLink && mepLingoPrefix && resp?.ok && !relHref.includes(mepLingoPrefix)) {
+  if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
     usedFallback = true;
   }
 
