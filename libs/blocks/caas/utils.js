@@ -600,7 +600,7 @@ async function getLingoSiteLocale(origin, path) {
         language: currLang,
       };
     }
-    
+
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
       .forEach(({ baseSite, regionalSites }) => {
