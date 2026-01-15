@@ -328,6 +328,47 @@ describe('MEP Lingo Fragments', () => {
     expect(staleIndexLog).to.exist;
   });
 
+  it('preserves stage domain in stale query-index fallback for US pages', async () => {
+    window.sessionStorage.setItem('akamai', 'us');
+    const usLocale = {
+      ietf: 'en-US',
+      prefix: '',
+      regions: { ca: { prefix: '/ca', ietf: 'en-CA' } },
+    };
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: usLocale, contentRoot: 'https://stage.adobe.com' });
+
+    // Create a link with adobe.com domain that will be converted to stage.adobe.com
+    const section = document.createElement('div');
+    section.className = 'test-domain-section';
+    section.innerHTML = '<a href="https://adobe.com/fragments/test#_mep-lingo" class="test-domain-link">Test</a>';
+    document.body.appendChild(section);
+
+    const a = section.querySelector('a');
+    await simulateDecorateLinks(a);
+
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('stage.adobe.com') && urlStr.includes('/fragments/test.plain.html') && !urlStr.includes('fallback')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      if (urlStr.includes('stage.adobe.com') && urlStr.includes('/fragments/test.plain.html')) {
+        expect(urlStr).to.include('stage.adobe.com');
+        expect(urlStr).to.not.include('adobe.com/');
+        return originalFetch('/test/blocks/fragment/mocks/fragments/mep-lingo-test.plain.html');
+      }
+
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      return originalFetch(url);
+    });
+
+    await getFragment(a);
+    section.remove();
+  });
+
   it('handles block swap failure (regional content 404s)', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
