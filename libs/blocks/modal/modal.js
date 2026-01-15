@@ -388,12 +388,20 @@ export default async function init(el) {
   return details ? getModal(details) : null;
 }
 
+function safeQuerySelector(selector) {
+  try {
+    return document.querySelector(selector);
+  } catch (e) {
+    return null;
+  }
+}
+
 // Click-based modal
 window.addEventListener('hashchange', async (e) => {
   if (!window.location.hash) {
     try {
       const url = new URL(e.oldURL);
-      const dialog = document.querySelector(`.dialog-modal${url.hash}`);
+      const dialog = safeQuerySelector(`.dialog-modal${url.hash}`);
       if (dialog) closeModal(dialog);
     } catch (error) {
       /* do nothing */
@@ -405,9 +413,9 @@ window.addEventListener('hashchange', async (e) => {
     const isFromIms = hash.includes(`old_hash=${details.id}`) || hash.includes('from_ims=true');
 
     const { path: oldDialogPath } = await findDetails(oldUrl.hash, null);
-    const oldDialog = !isFromIms && oldDialogPath ? document.querySelector(`.dialog-modal${oldUrl.hash}`) : null;
+    const oldDialog = !isFromIms && oldDialogPath ? safeQuerySelector(`.dialog-modal${oldUrl.hash}`) : null;
     if (oldDialog) {
-      const potentialScrollTarget = !!document.querySelector(window.location.hash);
+      const potentialScrollTarget = !!safeQuerySelector(window.location.hash);
       const persistPrevHash = prevHash;
       closeModal(oldDialog, !potentialScrollTarget);
       prevHash = potentialScrollTarget ? '' : persistPrevHash;
@@ -418,7 +426,8 @@ window.addEventListener('hashchange', async (e) => {
     isDeepLink = isFromIms;
     if (!hash || isFromIms || oldDialog) return;
 
-    if (hash.includes('=') || !document.querySelector(`${hash}:not(.dialog-modal)`)) {
+    const hashElement = safeQuerySelector(`${hash}:not(.dialog-modal)`);
+    if (hash.includes('=') || !hashElement) {
       prevHash = hash;
     }
   }
