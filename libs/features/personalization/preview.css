@@ -145,6 +145,10 @@
   text-transform: capitalize;
 }
 
+.mep-popup .mep-columns .mep-column {
+  flex: 0 50%;
+}
+
 .mep-popup .mep-columns .mep-selected-variant {
   text-transform: initial;
 }
@@ -329,7 +333,7 @@
 }
 
 .mep-popup.in-page .mep-section {
-  flex: 1 1 auto;
+  flex: 0 auto;
 }
 
 .mep-popup.in-page::before {
