@@ -1621,7 +1621,7 @@ describe('Utils', () => {
       lingoUtils.setConfig(defaultTestConfig);
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('content', 'on');
-      lingoMeta.setAttribute('name', 'langFirst');
+      lingoMeta.setAttribute('name', 'langfirst');
       document.head.append(lingoMeta);
     });
 
@@ -1632,7 +1632,7 @@ describe('Utils', () => {
       } else {
         delete window.lana;
       }
-      const meta = document.querySelector('meta[name="langFirst"]');
+      const meta = document.querySelector('meta[name="langfirst"]');
       if (meta) document.head.removeChild(meta);
     });
 
@@ -1668,6 +1668,9 @@ describe('Utils', () => {
         if (url.includes('cc-shared') && url.includes('/de/')) {
           ccBaseResolved = true;
           return mockRes({ payload: ccBaseQueryIndex });
+        }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
         }
         if (url.includes('dc-shared') && url.includes('/ch_de/')) {
           // DC Regional index is slow - simulating other subsites
@@ -1753,6 +1756,9 @@ describe('Utils', () => {
         if (url.includes('query-index')) {
           return mockRes({ payload: null, ok: false, status: 404 });
         }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
+        }
         return mockRes({ payload: { data: [] } });
       });
 
@@ -1836,6 +1842,127 @@ describe('Utils', () => {
     });
   });
 
+  describe('Language Banner in Utils', () => {
+    let fetchStub;
+    const sandbox = sinon.createSandbox();
+    const setConfigForTest = (pathname = '/', locales = {
+      '': { ietf: 'en-US', prefix: '' },
+      de: { ietf: 'de-DE', prefix: '/de' },
+      fr: { ietf: 'fr-FR', prefix: '/fr' },
+      it: { ietf: 'it-IT', prefix: '/it' },
+      jp: { ietf: 'ja-JP', prefix: '/jp' },
+    }) => {
+      const bannerConfig = {
+        imsClientId: 'milo',
+        codeRoot: '/libs',
+        contentRoot: window.location.origin,
+        locales,
+        pathname,
+      };
+      utils.setConfig(bannerConfig);
+    };
+
+    const mockMarkets = {
+      data: [
+        {
+          prefix: '', lang: 'en', languageName: 'English', text: 'This page is also available in', continueText: 'Continue', supportedRegions: 'us, gb',
+        },
+        {
+          prefix: 'de', lang: 'de', languageName: 'Deutsch', text: 'Diese Seite ist auch auf', continueText: 'Weiter', supportedRegions: 'de, at, ch, us', regionPriorities: 'ch:1, lu:2',
+        },
+        {
+          prefix: 'fr', lang: 'fr', languageName: 'Français', text: 'Cette page est également disponible en', continueText: 'Continuer', supportedRegions: 'fr, ch', regionPriorities: 'ch:2, lu:1',
+        },
+        {
+          prefix: 'it', lang: 'it', languageName: 'Italiano', text: 'Visualizza questa pagina in', continueText: 'Continuare', supportedRegions: 'it, ch', regionPriorities: 'ch:3',
+        },
+        {
+          prefix: 'jp', lang: 'ja', languageName: '日本語', text: 'このページは次の言語でもご覧いただけます', continueText: '続行', supportedRegions: 'jp',
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      fetchStub = sandbox.stub(window, 'fetch');
+      fetchStub.withArgs(sinon.match('/federal/assets/data/lingo-site-mapping.json')).resolves({
+        ok: true,
+        json: () => Promise.resolve({ data: [] }),
+      });
+      sandbox.stub(console, 'warn');
+      document.head.innerHTML = '';
+      document.body.innerHTML = '';
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+      document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      sessionStorage.clear();
+      if (navigator.language) delete navigator.language;
+    });
+
+    const mockGeo = (country = 'us') => {
+      const res = new Response(JSON.stringify({ country }), {
+        status: 200,
+        headers: { 'Content-type': 'application/json' },
+      });
+      fetchStub.withArgs(sinon.match('geo2.adobe.com')).resolves(res);
+    };
+
+    const mockMarketsConfig = (marketConfig = mockMarkets) => {
+      fetchStub.withArgs(sinon.match('supported-markets')).resolves({
+        ok: true,
+        json: () => Promise.resolve(JSON.parse(JSON.stringify(marketConfig))),
+      });
+    };
+
+    it('does not show banner if disabled via metadata', async () => {
+      document.head.innerHTML = '<meta name="language-banner" content="off">';
+      setConfigForTest('/');
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+
+    it('does not show banner if international cookie is already set to the page locale', async () => {
+      document.cookie = 'international=de; path=/';
+      setConfigForTest('/de/page');
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+    it('does not show banner if preferred language is the same as page language', async () => {
+      setConfigForTest('/de/page');
+      mockGeo('de');
+      mockMarketsConfig();
+      Object.defineProperty(navigator, 'language', { value: 'de-DE', configurable: true });
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+
+    it('does not show banner if geo location cannot be determined', async () => {
+      setConfigForTest('/');
+      fetchStub.withArgs(sinon.match('geo2.adobe.com')).resolves({ ok: false, statusText: 'Not Found' });
+      mockMarketsConfig();
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+
+    it('does not show banner if markets config is not available', async () => {
+      setConfigForTest('/');
+      mockGeo('de');
+      fetchStub.withArgs(sinon.match('supported-markets')).resolves({ ok: false });
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+
+    it('does not show banner for supported market if no preferred market is available', async () => {
+      setConfigForTest('/');
+      mockGeo('us');
+      mockMarketsConfig();
+      Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+  });
+
   describe('MEP Lingo Preprocessing in decorateLinksAsync', () => {
     let lingoMeta;
     let testContainer;
@@ -1845,7 +1972,7 @@ describe('Utils', () => {
       document.body.innerHTML = '';
       document.body.className = '';
       lingoMeta = document.createElement('meta');
-      lingoMeta.setAttribute('name', 'langFirst');
+      lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
       document.head.append(lingoMeta);
       testContainer = document.createElement('div');
@@ -1873,8 +2000,8 @@ describe('Utils', () => {
       expect(link.href).to.equal('https://www.adobe.com/fragments/test');
     });
 
-    it('verifies lingoActive is true when langFirst meta is set', async () => {
-      const lingoValue = utils.getMetadata('langFirst');
+    it('verifies lingoActive is true when langfirst meta is set', async () => {
+      const lingoValue = utils.getMetadata('langfirst');
       expect(lingoValue).to.equal('on');
     });
 
