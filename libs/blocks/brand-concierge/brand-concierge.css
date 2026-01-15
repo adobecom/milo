@@ -888,6 +888,10 @@
   .pill-cards .bc-prompt-cards {
     max-width: 932px;
   }
+
+  #brand-concierge-modal.dialog-modal {
+    max-width: 960px;
+  }
 }
 
 /* desktop up */

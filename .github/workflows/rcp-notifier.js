@@ -3,6 +3,8 @@ const {
   getLocalConfigs,
   RCPDates,
   isShortRCP,
+  getDaysUntilRCP,
+  isWeekendOrMondayRCP,
 } = require('./helpers.js');
 
 const isWithin24Hours = (targetDate) => {
@@ -28,6 +30,9 @@ const main = async () => {
     const stageOffset = Number(process.env.STAGE_RCP_OFFSET_DAYS) || 2;
     const slackText = (days) =>
       `Reminder RCP starts in ${days} days: from ${start.toUTCString()} to ${end.toUTCString()}. Merges to stage will be disabled beginning ${calculateDateOffset(start, stageOffset).toUTCString()}.`;
+    const stageFreezeText = (days) =>
+      `RCP starts in ${days} days: from ${start.toUTCString()} to ${end.toUTCString()}. Merges to stage are now disabled until the end of the RCP to keep the stage branch clean for emergencies.`;
+    
     if (isWithin24Hours(firstNoticeOffset) && !isShort) {
       console.log('Is within 24 hours of 13 days before RCP');
       await slackNotification(slackText(13), process.env.MILO_DEV_HOOK);
@@ -36,6 +41,15 @@ const main = async () => {
     if (isWithin24Hours(lastNoticeOffset) && !isShort) {
       console.log('Is within 24 hours of 6 days before RCP');
       await slackNotification(slackText(6), process.env.MILO_DEV_HOOK);
+    }
+
+    const daysUntil = getDaysUntilRCP(start);
+    if (daysUntil <= 4 && daysUntil > 0 && !isShort && isWeekendOrMondayRCP(start)) {
+      const today = new Date().getDay();
+      if (today === 4) {
+        console.log('Stage freeze active (RCP starts on weekend/Monday)');
+        await slackNotification(stageFreezeText(daysUntil), process.env.MILO_DEV_HOOK);
+      }
     }
   }
 

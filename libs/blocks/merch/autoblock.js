@@ -1,14 +1,14 @@
-import { decorateLinks, loadBlock, localizeLink } from '../../utils/utils.js';
+import { decorateLinksAsync, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
 import { addAriaLabelToCta } from './merch.js';
 
-export function localizePreviewLinks(el) {
+export async function localizePreviewLinks(el) {
   const anchors = el.getElementsByTagName('a');
   for (const a of anchors) {
     const { href } = a;
     if (href?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
       try {
         const url = new URL(href);
-        a.href = localizeLink(href, url.hostname);
+        a.href = await localizeLinkAsync(href, url.hostname);
       } catch (e) {
         window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`);
       }
@@ -98,8 +98,8 @@ export async function postProcessAutoblock(autoblockEl, isCard = false) {
   const processPromises = cards.map(async (card) => {
     try {
       await card.checkReady();
-      decorateLinks(card);
-      localizePreviewLinks(card);
+      await decorateLinksAsync(card);
+      await localizePreviewLinks(card);
       card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
       decorateCardCtasWithA11y(card);
       enableAnalytics(card);

@@ -2,10 +2,10 @@
 import {
   loadBlock,
   decorateAutoBlock,
-  decorateLinks,
+  decorateLinksAsync,
   getMetadata,
   getConfig,
-  localizeLink,
+  localizeLinkAsync,
   loadStyle,
   loadScript,
   getFederatedUrl,
@@ -186,7 +186,7 @@ class Footer {
     // they don't get decorated twice
     [regionParent, socialParent].forEach((parent) => parent?.replaceChildren());
 
-    decorateLinks(this.body);
+    await decorateLinksAsync(this.body);
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
@@ -392,7 +392,7 @@ class Footer {
       // No hash -> region selector expands a dropdown
       regionPickerElem.setAttribute('aria-haspopup', 'true');
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
-      regionSelector.href = localizeLink(regionSelector.href);
+      regionSelector.href = await localizeLinkAsync(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       const { default: initFragment } = await import('../fragment/fragment.js');

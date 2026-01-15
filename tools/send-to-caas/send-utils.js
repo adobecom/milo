@@ -1,6 +1,11 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { getMetadata } from '../../libs/utils/utils.js';
-import { LANGS, LOCALES, getPageLocale, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+import { getMetadata, lingoActive } from '../../libs/utils/utils.js';
+import {
+  LOCALES,
+  getPageLocale,
+  getGrayboxExperienceId,
+  getLanguageFirstCountryAndLang,
+} from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -293,23 +298,13 @@ const isPagePublished = async () => {
   return false;
 };
 
-const getLanguageFirstCountryAndLang = async (path) => {
-  const localeArr = path.split('/');
-  const langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
-  let countryStr = LOCALES[localeArr[2]] ?? 'xx';
-  if (typeof countryStr === 'object') {
-    countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
-  }
-  return {
-    country: countryStr,
-    lang: langStr,
-  };
-};
-
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
   if (options.languageFirst) {
-    const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl);
+    const { country, lang } = await getLanguageFirstCountryAndLang(
+      options.prodUrl,
+      options.repo,
+    );
     return `${lang}-${country}`;
   }
   if (!getLocale) {
@@ -322,10 +317,13 @@ const getBulkPublishLangAttr = async (options) => {
   return getLocale(LOCALES, options.prodUrl).ietf;
 };
 
-const getCountryAndLang = async (options) => {
-  const langFirst = getMetadata('langfirst');
+const getCountryAndLang = async (options, origin) => {
+  const langFirst = lingoActive();
   if (langFirst) {
-    return getLanguageFirstCountryAndLang(window.location.pathname);
+    return getLanguageFirstCountryAndLang(
+      window.location.pathname,
+      origin,
+    );
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
@@ -417,7 +415,9 @@ const props = {
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
-    const { country } = await getCountryAndLang(options);
+    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
+    const origin = getOrigin(fgColor);
+    const { country } = await getCountryAndLang(options, origin);
     return country;
   },
   created: (s) => {
@@ -459,7 +459,9 @@ const props = {
   floodgatecolor: (s, options) => s || options.floodgatecolor || getMetadata('floodgatecolor') || 'default',
   lang: async (s, options) => {
     if (s) return s;
-    const { lang } = await getCountryAndLang(options);
+    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
+    const origin = getOrigin(fgColor);
+    const { lang } = await getCountryAndLang(options, origin);
     return lang;
   },
   modified: (s) => {

@@ -1,4 +1,4 @@
-import { createTag, getConfig, getFederatedUrl, localizeLink, loadIms } from '../../utils/utils.js';
+import { createTag, getConfig, getFederatedUrl, localizeLinkAsync, loadIms } from '../../utils/utils.js';
 import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
@@ -14,13 +14,14 @@ const FORM_METADATA = {
   'runtime-endpoint': 'runtimeEndpoint',
 };
 
-export function localizeFederatedUrl(url) {
-  return localizeLink(getFederatedUrl(url), '', true);
+export async function localizeFederatedUrl(url) {
+  const link = await localizeLinkAsync(getFederatedUrl(url), '', true);
+  return link;
 }
 
 const FEDERAL_ROOT = '/federal/email-collection';
-const CONSENT_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/consents/cs4.plain.html`);
-const PLACEHOLDER_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=placeholders`);
+const CONSENT_URL_PROMISE = localizeFederatedUrl(`${FEDERAL_ROOT}/consents/cs4.plain.html`);
+const PLACEHOLDER_URL_PROMISE = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=placeholders`);
 
 export const FORM_FIELDS = {
   email: {
@@ -78,9 +79,29 @@ export const FORM_FIELDS = {
 
 export async function getIMS() {
   if (window.adobeIMS) return window.adobeIMS;
-
-  await loadIms();
+  try {
+    await loadIms();
+  } catch (e) {
+    return null;
+  }
   return window.adobeIMS;
+}
+
+async function refreshIMSToken(ims) {
+  try {
+    await ims?.refreshToken();
+  } catch (e) {
+    window.lana?.log('Refreshing IMS token failed');
+  }
+}
+
+export async function validateImsToken() {
+  const ims = await getIMS();
+  try {
+    await ims?.validateToken();
+  } catch (e) {
+    await refreshIMSToken(ims);
+  }
 }
 
 export async function getIMSAccessToken() {
@@ -165,9 +186,10 @@ function defaultFormatData(data) {
 
 async function fetchSheet(sheetData) {
   const formatData = { state: formatStateData };
-  const { id, url } = sheetData;
+  const { id, url: urlOrPromise } = sheetData;
   try {
-    const sheetReq = await fetch(url);
+    const resolvedUrl = await urlOrPromise;
+    const sheetReq = await fetch(resolvedUrl);
     if (!sheetReq.ok) return { [id]: {} };
     const { data } = await sheetReq.json();
 
@@ -180,8 +202,8 @@ async function fetchSheet(sheetData) {
 }
 
 async function fetchFormConfig(sheets) {
-  const sheetPromises = [{ url: PLACEHOLDER_URL, id: 'placeholders' }, ...sheets]
-    .map((sheet) => (fetchSheet(sheet)));
+  const sheetPromises = [{ url: PLACEHOLDER_URL_PROMISE, id: 'placeholders' }, ...sheets]
+    .map((sheet) => fetchSheet(sheet));
 
   const resolved = await Promise.all(sheetPromises);
   let config = {};
@@ -191,7 +213,8 @@ async function fetchFormConfig(sheets) {
 
 export async function fetchConsentString() {
   try {
-    const stringReq = await fetch(CONSENT_URL);
+    const consentUrl = await CONSENT_URL_PROMISE;
+    const stringReq = await fetch(consentUrl);
     if (!stringReq.ok) return {};
 
     const string = await stringReq.text();
@@ -327,7 +350,7 @@ function waitForModal() {
 export async function redirectToSignIn(dialog) {
   const ims = await getIMS();
   if (!document.body.contains(dialog)) await waitForModal();
-  await ims.signIn();
+  await ims?.signIn();
   if (dialog) closeModal(dialog);
 }
 
@@ -356,5 +379,5 @@ export async function runtimePost(url, data) {
 
 export async function isUserGuest() {
   const ims = await getIMS();
-  return !ims.isSignedInUser();
+  return !ims?.isSignedInUser();
 }

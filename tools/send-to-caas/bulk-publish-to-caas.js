@@ -214,6 +214,8 @@ const processData = async (data, accessToken) => {
       setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
       const { caasMetadata, errors } = await getCardMetadata({
         prodUrl,
+        host,
+        repo,
         floodgatecolor: publishToFloodgate,
         languageFirst,
       });

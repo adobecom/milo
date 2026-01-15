@@ -46,9 +46,22 @@ function decorateSupplementalText(el) {
   supplementalEl.className = 'body-xs supplemental-text';
 }
 
+function decorateHeadingRoles(brickText) {
+  const headings = brickText.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (!headings.length) return;
+  const headingWithPicture = [...headings].find((h) => h.querySelector('picture'));
+  if (!headingWithPicture) return;
+  headings.forEach((h) => {
+    if (h === headingWithPicture) return;
+    h.setAttribute('role', 'paragraph');
+  });
+}
+
 function decorateForeground(el, foreground) {
   const fgtext = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div') || foreground;
-  fgtext.closest('div').classList.add('brick-text');
+  const brickText = fgtext.closest('div');
+  brickText.classList.add('brick-text');
+  decorateHeadingRoles(brickText);
   if (foreground.querySelectorAll(':scope > div').length > 1) {
     if (!el.classList.contains('stack')) {
       foreground.closest('.brick').classList.add('split');
