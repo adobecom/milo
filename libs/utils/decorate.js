@@ -21,16 +21,24 @@ let videoLabels = {
 const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
+function getButtonType(buttonParent) {
+  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
+  let { nodeName } = buttonParent;
+  if (nodeName === 'STRONG') {
+    nodeName = buttonParent.parentElement?.nodeName === 'EM' ? 'EM' : nodeName;
+  }
+  return buttonTypeMap[nodeName] || 'outline';
+}
+
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
-  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
 
   buttons.forEach((button) => {
     const parent = button.parentElement;
     if (shouldBlockFreeTrialLinks(button)) return;
     let target = button;
-    const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
+    const buttonType = getButtonType(parent);
     if (button.nodeName === 'STRONG') {
       target = parent;
     } else {
