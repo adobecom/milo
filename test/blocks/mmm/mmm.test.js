@@ -121,7 +121,7 @@ describe('MMM', () => {
     const radios = mepPopupBody.querySelectorAll('select');
     expect(radios.length).to.equal(3);
     const checkboxes = mepPopupBody.querySelectorAll('input[type="checkbox"]');
-    expect(checkboxes.length).to.equal(2);
+    expect(checkboxes.length).to.equal(3);
     const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
     const manifestColumnOne = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(1)');

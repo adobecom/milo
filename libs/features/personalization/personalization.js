@@ -10,6 +10,7 @@ import {
   localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
+  getCountry,
 } from '../../utils/utils.js';
 import {
   getConsentState,
@@ -643,6 +644,10 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   if (inline) {
     if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
+    if (fragment.dataset.mepLingoRoc) setDataIdOnChildren(sections, 'mepLingoRoc', fragment.dataset.mepLingoRoc);
+    if (fragment.dataset.mepLingoFallback) {
+      setDataIdOnChildren(sections, 'mepLingoFallback', fragment.dataset.mepLingoFallback);
+    }
   } else {
     addIds(fragment, manifestId, adobeTargetTestid);
   }
@@ -961,7 +966,7 @@ function normCountry(country) {
 async function setMepCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  const akamaiCode = getCountry();
   config.mep = config.mep || {};
   if (country) {
     config.mep.countryChoice = normCountry(country);
@@ -1385,11 +1390,13 @@ export async function applyPers({ manifests }) {
 
   const pznVariants = pznList.map((r) => {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-    const arr = val.split(':');
-    if (arr.length > 2 || arr[0]?.trim() === '' || arr[1]?.trim() === '') {
+    // Handle cases without colons or starting with colon (no nickname)
+    if (!val.includes(':') || val.startsWith(':')) return val === 'default' ? 'nopzn' : val;
+    // Validate nickname syntax: "nickname: audience"
+    const arr = val.split(':', 2);
+    if (arr[0]?.trim() === '' || arr[1]?.trim() === '') {
       log('MEP Error: When using (optional) column nicknames, please use the following syntax: "<nickname>: <original audience>"');
     }
-    if (!val.includes(':') || val.startsWith(':')) return val === 'default' ? 'nopzn' : val;
     return arr[0].trim();
   });
   const pznManifests = pznList.map((r) => r.experiment.analyticsTitle);

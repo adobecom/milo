@@ -537,7 +537,7 @@ export async function fetchAndProcessPlainHtml({
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map(async (link) => {
-      link.href = getFederatedUrl(await localizeLinkAsync(link.href));
+      link.href = await localizeLinkAsync(getFederatedUrl(link.href));
       return loadInlineFrags(link);
     });
     await Promise.all(fragPromises);
@@ -953,6 +953,10 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 updatePopupPosition();
                 // Optional: Disconnect the observer if you no longer need to track it
                 observer.disconnect();
+              }
+              if (node.classList?.contains('language-banner')) {
+                // Update the popup position when the language banner is removed
+                updatePopupPosition();
               }
             });
           }
