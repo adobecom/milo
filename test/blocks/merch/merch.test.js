@@ -3,7 +3,6 @@ import { CheckoutWorkflowStep, Defaults, Log } from '@adobecom/mas-platform/web-
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
-
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
