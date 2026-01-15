@@ -82,6 +82,21 @@ export const getChecksSuite = () => {
   });
 };
 
+const isUrlExcluded = (url, exclusionPatterns) => {
+  if (!exclusionPatterns || !exclusionPatterns.data) return false;
+
+  return exclusionPatterns.data.some((item) => {
+    const pattern = item.path || item.Pattern || item.pattern;
+    if (!pattern) return false;
+
+    const regexPattern = pattern
+      .replace(/\*\*/g, '.*')
+      .replace(/\*/g, '[^/]*');
+    const regex = new RegExp(regexPattern);
+    return regex.test(url);
+  });
+};
+
 const runChecks = async (url, area, injectVisualMetadata = false) => {
   const isASO = (await getChecksSuite()) === 'ASO';
   const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
@@ -102,6 +117,21 @@ export async function getPreflightResults(options = {}) {
     useCache = true,
     injectVisualMetadata = false,
   } = options;
+
+  const excludedPaths = `${getFederatedContentRoot()}/federal/preflight/preflight-config.json?sheet=preflight-exclusions`;
+
+  try {
+    const excludedURLS = await fetch(excludedPaths).then((res) => {
+      if (!res.ok) return null;
+      return res.json();
+    });
+
+    if (isUrlExcluded(url, excludedURLS)) {
+      return null;
+    }
+  } catch (error) {
+    console.log('Error checking preflight exclusions:', error);
+  }
 
   const isASO = (await getChecksSuite()) === 'ASO';
   const cacheKey = generateCacheKey(url, injectVisualMetadata, isASO);
