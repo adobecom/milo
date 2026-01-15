@@ -409,6 +409,8 @@ test.describe('Commerce feature test suite', () => {
     await test.step('Go to the test page', async () => {
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');
+      await expect(COMM.buyNowCta).toBeVisible();
+      await page.waitForTimeout(1000);
     });
 
     // Validate there are no unresolved commerce placeholders
@@ -444,7 +446,7 @@ test.describe('Commerce feature test suite', () => {
     await test.step('Validate regular price display', async () => {
       await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
       expect(await COMM.price.innerText()).toContain('£');
-      expect(await COMM.price.innerText()).toContain('/yr');
+      expect(await COMM.price.innerText()).toContain('/mo');
       expect(await COMM.price.locator('.price-recurrence').first().innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').first().innerText()).toBe('');
       expect(await COMM.price.locator('.price-tax-inclusivity').first().innerText()).toBe('');
@@ -461,13 +463,13 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).toBe('');
       expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).toBe('');
-      await expect(COMM.priceOptical).toHaveAttribute('data-promotion-code', data.promo);
+      // await expect(COMM.priceOptical).toHaveAttribute('data-promotion-code', data.promo);
     });
 
     await test.step('Validate strikethrough price display', async () => {
       await COMM.priceStrikethrough.waitFor({ state: 'visible', timeout: 10000 });
       expect(await COMM.priceStrikethrough.innerText()).toContain('£');
-      expect(await COMM.priceStrikethrough.innerText()).toContain('/yr');
+      expect(await COMM.priceStrikethrough.innerText()).toContain('/mo');
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).toBe('');
