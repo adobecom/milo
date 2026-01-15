@@ -152,7 +152,14 @@ const getTag = (tagName, errors) => {
 const getTags = (s) => {
   let rawTags = [];
   if (s) {
-    rawTags = s.toLowerCase().split(/,|(\s+)|(\\n)|;/g).filter((t) => t && t.trim() && t !== '\n');
+    // Tags are expected to be separated by commas/semicolons/newlines.
+    // Do NOT split on generic whitespace because many tag names contain spaces.
+    rawTags = s
+      .replaceAll('\\n', '\n') // tolerate literal "\n" sequences (e.g. pasted/escaped input)
+      .split(/[,\n;\r]+/g)
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .map((t) => t.toLowerCase());
   }
 
   const errors = [];
