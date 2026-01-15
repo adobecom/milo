@@ -529,7 +529,7 @@ export function isInTextNode(node) {
 }
 
 export function lingoActive() {
-  const langFirst = (getMetadata('langfirst') || PAGE_URL.searchParams.get('langfirst'))?.toLowerCase();
+  const langFirst = (PAGE_URL.searchParams.get('langfirst') || getMetadata('langfirst'))?.toLowerCase();
   return ['true', 'on'].includes(langFirst);
 }
 
