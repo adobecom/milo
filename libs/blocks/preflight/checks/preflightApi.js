@@ -118,8 +118,8 @@ export async function getPreflightResults(options = {}) {
     injectVisualMetadata = false,
   } = options;
 
-  const excludedPaths = `${getFederatedContentRoot()}/federal/preflight/preflight-config.json?sheet=preflight-exclusions`;
-
+  const excludedPaths = 'https://main--federal--adobecom.aem.page/federal/preflight/preflight-config.json?sheet=preflight-exclusions';
+  console.log('page is excluded from the preflight');
   try {
     const excludedURLS = await fetch(excludedPaths).then((res) => {
       if (!res.ok) return null;
