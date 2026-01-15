@@ -152,10 +152,8 @@ const getTag = (tagName, errors) => {
 const getTags = (s) => {
   let rawTags = [];
   if (s) {
-    // Tags are expected to be separated by commas/semicolons/newlines.
-    // Do NOT split on generic whitespace because many tag names contain spaces.
     rawTags = s
-      .replaceAll('\\n', '\n') // tolerate literal "\n" sequences (e.g. pasted/escaped input)
+      .replaceAll('\\n', '\n')
       .split(/[,\n;\r]+/g)
       .map((t) => t.trim())
       .filter(Boolean)
