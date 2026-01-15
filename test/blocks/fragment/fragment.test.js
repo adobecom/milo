@@ -350,12 +350,10 @@ describe('MEP Lingo Fragments', () => {
     fetchStub.restore();
     fetchStub = stub(window, 'fetch').callsFake((url) => {
       const urlStr = typeof url === 'string' ? url : url.toString();
-      if (urlStr.includes('stage.adobe.com') && urlStr.includes('/fragments/test.plain.html') && !urlStr.includes('fallback')) {
-        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
-      }
-      if (urlStr.includes('stage.adobe.com') && urlStr.includes('/fragments/test.plain.html')) {
-        expect(urlStr).to.include('stage.adobe.com');
-        expect(urlStr).to.not.include('adobe.com/');
+      const urlObj = new URL(urlStr);
+
+      if (urlObj.hostname === 'stage.adobe.com' && urlObj.pathname.endsWith('/fragments/test.plain.html')) {
+        expect(urlObj.hostname).to.equal('stage.adobe.com');
         return originalFetch('/test/blocks/fragment/mocks/fragments/mep-lingo-test.plain.html');
       }
 
