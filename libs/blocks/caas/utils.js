@@ -581,12 +581,12 @@ async function getLingoSiteLocale(origin, path) {
         }
       });
 
-    const isLocaleInRegionalSites = (regionalSites, localeStr) => {
+    const isLocaleInRegionalSites = (regionalSites, locStr) => {
       if (!regionalSites) return false;
       return regionalSites
         .split(',')
-        .map(site => site.trim().replace(/^\//, ''))
-        .includes(localeStr);
+        .map((site) => site.trim().replace(/^\//, ''))
+        .includes(locStr);
     };
 
     // check if the localeStr is in the baseSite or regionalSites.
