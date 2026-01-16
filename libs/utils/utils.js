@@ -773,12 +773,7 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
-export function getCountry(skipFallback = false) {
-  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
-  return country?.toLowerCase();
-}
-
-export async function getCountryAsync(skipFallback = false) {
+export async function getCountry(skipFallback = false) {
   const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
@@ -799,7 +794,7 @@ export async function getMepLingoPrefix() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = await getCountryAsync();
+  const country = await getCountry();
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
 
   let regionKey = Object.entries(regions).find(
@@ -1827,9 +1822,9 @@ async function checkForPageMods() {
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  const akamaiCode = getMepEnablement('akamaiLocale') || await getCountryAsync(true);
+  const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
   if (mepgeolocation && !akamaiCode) {
-    countryIPPromise = getCountryAsync();
+    countryIPPromise = getCountry();
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -2072,7 +2067,7 @@ async function decorateLanguageBanner() {
     : navigator.language?.split('-')[0] || null;
 
   const [geoIpCode, marketsConfig] = await Promise.all([
-    getCountryAsync(),
+    getCountry(),
     fetch(getMarketsUrl())
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null),

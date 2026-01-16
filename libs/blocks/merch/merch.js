@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, getCountryAsync, loadArea, loadScript, loadStyle, localizeLinkAsync, SLD,
+  createTag, getConfig, getCountry, loadArea, loadScript, loadStyle, localizeLinkAsync, SLD,
   getMetadata, shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
@@ -223,7 +223,7 @@ export function getMiloLocaleSettings(miloLocale) {
 
 export async function getGeoLocaleSettings(miloLocale) {
   const settings = getMiloLocaleSettings(miloLocale);
-  let country = await getCountryAsync();
+  let country = await getCountry();
   if (country) {
     country = country.toUpperCase();
     settings.country = country;

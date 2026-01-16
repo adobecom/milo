@@ -1,4 +1,4 @@
-import { getCountryAsync, lingoActive } from '../utils/utils.js';
+import { getCountry, lingoActive } from '../utils/utils.js';
 
 let chatInitialized = false;
 let loadScript;
@@ -216,7 +216,7 @@ const startInitialization = async (config, event, onDemand) => {
   let region;
   if (lingoActive()) {
     [language] = config.locale.ietf.split('-');
-    const country = await getCountryAsync();
+    const country = await getCountry();
     region = country?.toUpperCase() || '';
   } else if (config.locale.ietf.includes('-')) {
     [language, region] = config.locale.ietf.split('-');

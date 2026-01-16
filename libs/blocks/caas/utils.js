@@ -2,7 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 import {
   getConfig as pageConfigHelper,
-  getCountryAsync,
+  getCountry,
   getMetadata,
   loadScript,
   loadStyle,
@@ -674,11 +674,11 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
       if (countryStr === 'xx') {
         try {
-          let geoCountry = await getCountryAsync(true)
+          let geoCountry = await getCountry(true)
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
-            geoCountry = await getCountryAsync();
+            geoCountry = await getCountry();
           }
 
           if (geoCountry) countryStr = geoCountry.toLowerCase();
