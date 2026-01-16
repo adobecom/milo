@@ -58,12 +58,14 @@ function stripQueryAndHash(url) {
 
 function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;
+  const { baseSitePath } = getConfig();
+  const fallbackUrl = `${prefix ? `/${prefix}` : ''}${baseSitePath || ''}/`;
   const urlForCheck = stripQueryAndHash(link.href);
   const existingPage = queriedPages.find((page) => page.href === urlForCheck);
   if (existingPage) {
     callback(existingPage.ok
       ? link.href
-      : `${prefix ? `/${prefix}` : ''}/`);
+      : fallbackUrl);
     return;
   }
   fetch(urlForCheck, { method: 'HEAD' }).then((resp) => {
@@ -71,7 +73,7 @@ function handleEvent({ prefix, link, callback } = {}) {
     if (!resp.ok) throw new Error('request failed');
     callback(link.href);
   }).catch(() => {
-    callback(`${prefix ? `/${prefix}` : ''}/`);
+    callback(fallbackUrl);
   });
 }
 
