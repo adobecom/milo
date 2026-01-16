@@ -229,7 +229,7 @@ export async function getGeoLocaleSettings(miloLocale) {
     || sessionStorage.getItem('akamai');
   if (!country) {
     try {
-      const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+      const { getAkamaiCode } = await import('../../utils/geo.js');
       country = await getAkamaiCode(true);
     } catch (error) {
       window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);

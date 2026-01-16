@@ -1,5 +1,7 @@
 import ctaTextOption from './ctaTextOption.js';
-import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
+import {
+  getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
+} from '../../utils/utils.js';
 import { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } from '../merch/merch.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
@@ -15,6 +17,17 @@ const OST_STYLE_URL = '/studio/ost/index.css';
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 export const WCS_LANDSCAPE = 'PUBLISHED';
+export const WCS_LANDSCAPE_DRAFT = 'DRAFT';
+export const LANDSCAPE_URL_PARAM = 'commerce.landscape';
+export const DEFAULTS_URL_PARAM = 'commerce.defaults';
+
+function isMasDefaultsEnabled() {
+  const searchParameters = new URLSearchParams(window.location.search);
+  const defaults = searchParameters.get(DEFAULTS_URL_PARAM) || 'on';
+  return defaults === 'on';
+}
+
+const masDefaultsEnabled = isMasDefaultsEnabled();
 
 /**
  * Maps Franklin page metadata to OST properties.
@@ -32,8 +45,10 @@ const priceDefaultOptions = {
   exclusive: false,
 };
 
-const updateParams = (params, key, value) => {
-  if (value !== priceDefaultOptions[key]) {
+const updateParams = (params, key, value, cs) => {
+  let defaultValue = priceDefaultOptions[key];
+  if (key === 'seat') defaultValue = cs !== 'INDIVIDUAL';
+  if (value !== defaultValue) {
     params.set(key, value);
   }
 };
@@ -92,7 +107,7 @@ export const createLinkMarkup = (
         forceTaxExclusive,
       } = options;
       updateParams(params, 'term', displayRecurrence);
-      updateParams(params, 'seat', displayPerUnit);
+      updateParams(params, 'seat', displayPerUnit, masDefaultsEnabled ? offer.customer_segment : null);
       updateParams(params, 'tax', displayTax);
       updateParams(params, 'old', displayOldPrice);
       updateParams(params, 'exclusive', forceTaxExclusive);
@@ -116,16 +131,22 @@ export async function loadOstEnv() {
   const commerceEnv = searchParameters.get('commerce.env');
   if (wcsLandscape || commerceEnv) {
     if (wcsLandscape) {
-      searchParameters.set('commerce.landscape', wcsLandscape);
+      searchParameters.set(LANDSCAPE_URL_PARAM, wcsLandscape);
       searchParameters.delete('wcsLandscape');
     }
     if (commerceEnv?.toLowerCase() === 'stage') {
-      searchParameters.set('commerce.landscape', 'DRAFT');
+      searchParameters.set(LANDSCAPE_URL_PARAM, WCS_LANDSCAPE_DRAFT);
       searchParameters.delete('commerce.env');
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
-  await initService(true, { 'allow-override': 'true' });
+
+  const attributes = { 'allow-override': 'true' };
+  if (isMasDefaultsEnabled) {
+    attributes['data-mas-ff-defaults'] = 'on';
+  }
+  await initService(true, attributes);
+
   // Load commerce.js based on masLibs parameter
   await loadMasComponent(MAS_COMMERCE_SERVICE);
 
@@ -143,7 +164,7 @@ export async function loadOstEnv() {
 
   const defaultPlaceholderOptions = Object.fromEntries([
     ['term', 'displayRecurrence', 'true'],
-    ['seat', 'displayPerUnit', 'true'],
+    ['seat', 'displayPerUnit', masDefaultsEnabled ? null : 'true'],
     ['tax', 'displayTax'],
     ['old', 'displayOldPrice'],
   ].map(([key, targetKey, defaultValue = false]) => {
@@ -190,7 +211,7 @@ export async function loadOstEnv() {
   window.history.replaceState({}, null, newURL);
 
   const environment = searchParameters.get('env') ?? WCS_ENV;
-  const landscape = searchParameters.get('commerce.landscape') ?? WCS_LANDSCAPE;
+  const landscape = searchParameters.get(LANDSCAPE_URL_PARAM) ?? WCS_LANDSCAPE;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
@@ -277,6 +298,41 @@ export async function loadOstEnv() {
   };
 }
 
+function addToggleSwitch(container, label, checked, onChange) {
+  const switchDiv = createTag('div', { class: 'spectrum-Switch' }, null, { parent: container });
+  const input = createTag('input', { type: 'checkbox', class: 'spectrum-Switch-input', id: 'gb-overlay-toggle' }, null, { parent: switchDiv });
+  createTag('span', { class: 'spectrum-Switch-switch' }, null, { parent: switchDiv });
+  createTag('label', { class: 'spectrum-Switch-label', for: 'gb-overlay-toggle' }, label, { parent: switchDiv });
+  input.checked = checked;
+  input.addEventListener('change', onChange);
+  return input;
+}
+
+export function addToggleSwitches(el, ostEnv, masDefEnabled, windowObj) {
+  const { base } = getConfig();
+  loadStyle(`${base}/blocks/graybox/switch.css`);
+  const toggleContainer = createTag('span', { class: 'toggle-switch' }, null, { parent: el });
+  const inputLandscape = addToggleSwitch(toggleContainer, 'Draft landscape offer', ostEnv.landscape === WCS_LANDSCAPE_DRAFT, (e) => {
+    const url = new URL(window.location.href);
+    if (e.target.checked) {
+      url.searchParams.set(LANDSCAPE_URL_PARAM, WCS_LANDSCAPE_DRAFT);
+    } else {
+      url.searchParams.delete(LANDSCAPE_URL_PARAM);
+    }
+    windowObj.location.href = url.toString();
+  });
+  const inputDefaults = addToggleSwitch(toggleContainer, 'MAS defaults', masDefEnabled, (e) => {
+    const url = new URL(window.location.href);
+    if (!e.target.checked) {
+      url.searchParams.set(DEFAULTS_URL_PARAM, 'off');
+    } else {
+      url.searchParams.delete(DEFAULTS_URL_PARAM);
+    }
+    windowObj.location.href = url.toString();
+  });
+  return [inputLandscape, inputDefaults];
+}
+
 export default async function init(el) {
   el.innerHTML = '<div />';
 
@@ -293,6 +349,7 @@ export default async function init(el) {
       ...ostEnv,
       rootElement: el.firstElementChild,
     });
+    addToggleSwitches(el, ostEnv, masDefaultsEnabled, window);
   }
 
   if (ostEnv.aosAccessToken) {
