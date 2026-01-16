@@ -46,8 +46,10 @@ const priceDefaultOptions = {
   exclusive: false,
 };
 
-const updateParams = (params, key, value, opts) => {
-  if (value !== opts[key]) {
+const updateParams = (params, key, value, opts, cs) => {
+  let defaultValue = opts[key];
+  if (key === 'seat') defaultValue = cs !== 'INDIVIDUAL';
+  if (value !== defaultValue) {
     params.set(key, value);
   }
 };
@@ -118,7 +120,7 @@ export const createLinkMarkup = async (
         exclusive: taxFlags.forceTaxExclusive || priceDefaultOptions.exclusive,
       } : priceDefaultOptions;
       updateParams(params, 'term', displayRecurrence, optsMasDefaults);
-      updateParams(params, 'seat', displayPerUnit, optsMasDefaults);
+      updateParams(params, 'seat', displayPerUnit, optsMasDefaults, masDefaultsEnabled ? offer.customer_segment : null);
       updateParams(params, 'tax', displayTax, optsMasDefaults);
       updateParams(params, 'old', displayOldPrice, optsMasDefaults);
       updateParams(params, 'exclusive', forceTaxExclusive, optsMasDefaults);
@@ -151,7 +153,6 @@ export async function loadOstEnv() {
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
-  /* c8 ignore next */
   const attributes = { 'allow-override': 'true' };
   if (masDefaultsEnabled) {
     attributes['data-mas-ff-defaults'] = 'on';
@@ -316,30 +317,32 @@ function addToggleSwitch(container, label, checked, onChange) {
   createTag('label', { class: 'spectrum-Switch-label', for: 'gb-overlay-toggle' }, label, { parent: switchDiv });
   input.checked = checked;
   input.addEventListener('change', onChange);
+  return input;
 }
 
-function addToggleSwitches(el, ostEnv) {
+export function addToggleSwitches(el, ostEnv, masDefEnabled, windowObj) {
   const { base } = getConfig();
   loadStyle(`${base}/blocks/graybox/switch.css`);
   const toggleContainer = createTag('span', { class: 'toggle-switch' }, null, { parent: el });
-  addToggleSwitch(toggleContainer, 'Draft landscape offer', ostEnv.landscape === WCS_LANDSCAPE_DRAFT, (e) => {
+  const inputLandscape = addToggleSwitch(toggleContainer, 'Draft landscape offer', ostEnv.landscape === WCS_LANDSCAPE_DRAFT, (e) => {
     const url = new URL(window.location.href);
     if (e.target.checked) {
       url.searchParams.set(LANDSCAPE_URL_PARAM, WCS_LANDSCAPE_DRAFT);
     } else {
       url.searchParams.delete(LANDSCAPE_URL_PARAM);
     }
-    window.location.href = url.toString();
+    windowObj.location.href = url.toString();
   });
-  addToggleSwitch(toggleContainer, 'MAS defaults', masDefaultsEnabled, (e) => {
+  const inputDefaults = addToggleSwitch(toggleContainer, 'MAS defaults', masDefEnabled, (e) => {
     const url = new URL(window.location.href);
     if (!e.target.checked) {
       url.searchParams.set(DEFAULTS_URL_PARAM, 'off');
     } else {
       url.searchParams.delete(DEFAULTS_URL_PARAM);
     }
-    window.location.href = url.toString();
+    windowObj.location.href = url.toString();
   });
+  return [inputLandscape, inputDefaults];
 }
 
 export default async function init(el) {
@@ -358,7 +361,7 @@ export default async function init(el) {
       ...ostEnv,
       rootElement: el.firstElementChild,
     });
-    addToggleSwitches(el, ostEnv);
+    addToggleSwitches(el, ostEnv, masDefaultsEnabled, window);
   }
 
   if (ostEnv.aosAccessToken) {

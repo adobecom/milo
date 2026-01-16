@@ -1,4 +1,5 @@
-import { getFederatedContentRoot, getCountry } from '../../utils/utils.js';
+import { getFederatedContentRoot } from '../../utils/utils.js';
+import { getAkamaiCode } from '../../utils/geo.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -74,31 +75,6 @@ export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
-
-export const getAkamaiCode = (checkedParams = false) => new Promise((resolve, reject) => {
-  let akamaiLocale = null;
-  if (!checkedParams) {
-    akamaiLocale = getCountry();
-  }
-  if (akamaiLocale !== null) {
-    resolve(akamaiLocale.toLowerCase());
-  } else {
-    /* c8 ignore next 5 */
-    fetch('https://geo2.adobe.com/json/', { cache: 'no-cache' }).then((resp) => {
-      if (resp.ok) {
-        resp.json().then((data) => {
-          const code = data.country.toLowerCase();
-          sessionStorage.setItem('akamai', code);
-          resolve(code);
-        });
-      } else {
-        reject(new Error(`Something went wrong getting the akamai Code. Response status text: ${resp.statusText}`));
-      }
-    }).catch((error) => {
-      reject(new Error(`Something went wrong getting the akamai Code. ${error.message}`));
-    });
-  }
-});
 
 // Determine if any of the locales can be linked to.
 async function getAvailableLocales(locales) {
@@ -446,9 +422,11 @@ export default async function loadGeoRouting(
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         handleOverflow(await showModal(details));
-        sendAnalyticsFunc(
-          new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
-        );
+        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`;
+        sendAnalyticsFunc(new Event(eventString));
+        if (config.lingoProjectSuccessLogging === 'on') {
+          window.lana.log(eventString, { sampleRate: 100, tags: 'lingo,lingo-georouting-load' });
+        }
       }
     }
     return;
@@ -463,9 +441,11 @@ export default async function loadGeoRouting(
       if (details) {
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
-        sendAnalyticsFunc(
-          new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
-        );
+        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`;
+        sendAnalyticsFunc(new Event(eventString));
+        if (config.lingoProjectSuccessLogging === 'on') {
+          window.lana.log(eventString, { sampleRate: 100, tags: 'lingo,lingo-georouting-load' });
+        }
       }
     }
   } catch (e) {
