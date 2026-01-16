@@ -27,6 +27,7 @@ function isMasDefaultsEnabled() {
   return defaults === 'on';
 }
 
+let masCommerceService;
 const masDefaultsEnabled = isMasDefaultsEnabled();
 
 /**
@@ -45,8 +46,8 @@ const priceDefaultOptions = {
   exclusive: false,
 };
 
-const updateParams = (params, key, value, cs) => {
-  let defaultValue = priceDefaultOptions[key];
+const updateParams = (params, key, value, opts, cs) => {
+  let defaultValue = opts[key];
   if (key === 'seat') defaultValue = cs !== 'INDIVIDUAL';
   if (value !== defaultValue) {
     params.set(key, value);
@@ -71,15 +72,21 @@ export function getMasLibsBase() {
 /**
  * @param {Commerce.Defaults} defaults
  */
-export const createLinkMarkup = (
+export const createLinkMarkup = async (
   defaults,
   offerSelectorId,
   type,
   offer,
   options,
   promo,
+  country,
 ) => {
   const isCta = !!type?.startsWith('checkout');
+  const cs = offer.customer_segment;
+  const ms = offer.market_segments[0];
+  const taxFlags = masDefaultsEnabled && masCommerceService
+    ? await masCommerceService.resolvePriceTaxFlags(country, null, cs, ms)
+    : {};
 
   const createHref = () => {
     const params = new URLSearchParams([
@@ -106,11 +113,17 @@ export const createLinkMarkup = (
         displayOldPrice,
         forceTaxExclusive,
       } = options;
-      updateParams(params, 'term', displayRecurrence);
-      updateParams(params, 'seat', displayPerUnit, masDefaultsEnabled ? offer.customer_segment : null);
-      updateParams(params, 'tax', displayTax);
-      updateParams(params, 'old', displayOldPrice);
-      updateParams(params, 'exclusive', forceTaxExclusive);
+      const optsMasDefaults = masDefaultsEnabled ? {
+        ...priceDefaultOptions,
+        seat: offer.customer_segment !== 'INDIVIDUAL',
+        tax: taxFlags.displayTax || priceDefaultOptions.tax,
+        exclusive: taxFlags.forceTaxExclusive || priceDefaultOptions.exclusive,
+      } : priceDefaultOptions;
+      updateParams(params, 'term', displayRecurrence, optsMasDefaults);
+      updateParams(params, 'seat', displayPerUnit, optsMasDefaults, masDefaultsEnabled ? offer.customer_segment : null);
+      updateParams(params, 'tax', displayTax, optsMasDefaults);
+      updateParams(params, 'old', displayOldPrice, optsMasDefaults);
+      updateParams(params, 'exclusive', forceTaxExclusive, optsMasDefaults);
     }
     return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
@@ -140,26 +153,23 @@ export async function loadOstEnv() {
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
-
   const attributes = { 'allow-override': 'true' };
-  if (isMasDefaultsEnabled) {
+  if (masDefaultsEnabled) {
     attributes['data-mas-ff-defaults'] = 'on';
   }
   await initService(true, attributes);
-
   // Load commerce.js based on masLibs parameter
-  await loadMasComponent(MAS_COMMERCE_SERVICE);
+  masCommerceService = await loadMasComponent(MAS_COMMERCE_SERVICE);
 
   // Get the exports - they might be in different places depending on how it was loaded
   let Log;
   let Defaults;
-  let resolvePriceTaxFlags;
   if (getMasLibs() && window.mas?.commerce) {
     // Loaded from external URL - check global scope
-    ({ Log, Defaults, resolvePriceTaxFlags } = window.mas.commerce);
+    ({ Log, Defaults } = window.mas.commerce);
   } else {
     // Loaded as module
-    ({ Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js'));
+    ({ Log, Defaults } = await import('../../deps/mas/commerce.js'));
   }
 
   const defaultPlaceholderOptions = Object.fromEntries([
@@ -253,21 +263,23 @@ export async function loadOstEnv() {
     }
   }
 
-  const onSelect = (
+  const onSelect = async (
     offerSelectorId,
     type,
     offer,
     options,
     promoOverride,
+    co,
   ) => {
     log.debug(offerSelectorId, type, offer, options, promoOverride);
-    const link = createLinkMarkup(
+    const link = await createLinkMarkup(
       Defaults,
       offerSelectorId,
       type,
       offer,
       options,
       promoOverride,
+      co,
     );
 
     log.debug(`Use Link: ${link.outerHTML}`);
@@ -293,7 +305,7 @@ export async function loadOstEnv() {
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
-    resolvePriceTaxFlags,
+    resolvePriceTaxFlags: masCommerceService?.resolvePriceTaxFlags,
     modalsAndEntitlements: true,
   };
 }
@@ -349,7 +361,7 @@ export default async function init(el) {
       ...ostEnv,
       rootElement: el.firstElementChild,
     });
-    addToggleSwitches(el, ostEnv, masDefaultsEnabled, window);
+    addToggleSwitches(el.firstElementChild, ostEnv, masDefaultsEnabled, window);
   }
 
   if (ostEnv.aosAccessToken) {
