@@ -175,7 +175,7 @@ const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
 let langConfig;
-export const queryIndexes = {};
+const queryIndexes = {};
 let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
@@ -529,7 +529,7 @@ export function isInTextNode(node) {
 }
 
 export function lingoActive() {
-  const langFirst = (getMetadata('langfirst') || PAGE_URL.searchParams.get('langfirst'))?.toLowerCase();
+  const langFirst = (PAGE_URL.searchParams.get('langfirst') || getMetadata('langfirst'))?.toLowerCase();
   return ['true', 'on'].includes(langFirst);
 }
 
@@ -731,11 +731,12 @@ function localizeLinkCore(
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
+    const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
     let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
-          || (!!locale.regions && path.includes('/fragments/') && aTag.dataset.mepLingo === 'true'))) {
+          || (!!locale.regions && isMepLingoFragment))) {
       return (async () => {
         loadQueryIndexes(prefix, false, [href]);
         if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
@@ -748,7 +749,10 @@ function localizeLinkCore(
         if (matchingIndexes.length) {
           const { default: urlInQueryIndex } = await import('./lingo.js');
           const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
-          if (!useRegionalPrefix && (locale.base || locale.base === '')) prefix = basePrefix;
+          const shouldFallbackToBase = isMepLingoFragment
+            ? locale?.regions
+            : (locale.base || locale.base === '');
+          if (!useRegionalPrefix && shouldFallbackToBase) prefix = basePrefix;
         } else if (
           siteQueryIndexMapLingo
             ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
@@ -789,13 +793,15 @@ export function getMepLingoPrefix() {
   if (!regions || !Object.keys(regions).length) return null;
 
   const country = getCountry();
+  if (!country) return null;
+
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
 
   let regionKey = Object.entries(regions).find(
     ([key]) => key === country || key === `${country}_${localeKey}`,
   )?.[0];
 
-  if (!regionKey && country && config.mepLingoCountryToRegion) {
+  if (!regionKey && config.mepLingoCountryToRegion) {
     regionKey = Object.entries(config.mepLingoCountryToRegion).find(
       ([key, countries]) => Array.isArray(countries) && countries.includes(country) && regions[key],
     )?.[0];
