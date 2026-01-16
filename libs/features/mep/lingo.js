@@ -3,7 +3,7 @@ import {
   getConfig,
   createTag,
   customFetch,
-  getCountry,
+  getCountryAsync,
 } from '../../utils/utils.js';
 
 export function getLocaleCodeFromPrefix(prefix, region = 'us', language = 'en') {
@@ -26,7 +26,7 @@ export async function getMepLingoContext(locale) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
   }
 
-  const country = getCountry();
+  const country = await getCountryAsync();
   const config = getConfig();
   const mapping = config.mepLingoCountryToRegion;
 

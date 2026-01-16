@@ -8,7 +8,7 @@ export const loadScript = stub();
 
 export const localizeLinkAsync = (e) => e;
 
-export const getCountry = stub();
+export const getCountryAsync = stub().resolves('us');
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 

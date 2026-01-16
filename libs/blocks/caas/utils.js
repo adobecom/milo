@@ -2,7 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 import {
   getConfig as pageConfigHelper,
-  getCountry,
+  getCountryAsync,
   getMetadata,
   loadScript,
   loadStyle,
@@ -674,12 +674,11 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
       if (countryStr === 'xx') {
         try {
-          let geoCountry = getCountry()
+          let geoCountry = await getCountryAsync(true)
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
-            const { default: getAkamaiCode } = await import('../../utils/geo.js');
-            geoCountry = await getAkamaiCode(true);
+            geoCountry = await getCountryAsync();
           }
 
           if (geoCountry) countryStr = geoCountry.toLowerCase();

@@ -46,7 +46,7 @@ export const loadLink = stub();
 
 export const reloadPage = stub();
 
-export const getCountryAsync = stub();
+export const getCountryAsync = stub().resolves('us');
 
 /**
  * TODO: This method will be deprecated and removed in a future version.
