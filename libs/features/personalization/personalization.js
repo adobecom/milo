@@ -1296,6 +1296,7 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
 
         if (targetManifestWinsOverServerManifest) {
           freshManifest.variants = fullManifest.variants;
+          freshManifest.variantNames = fullManifest.variantNames;
           freshManifest.placeholderData = fullManifest.placeholderData;
         }
 

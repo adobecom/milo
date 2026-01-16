@@ -2,9 +2,16 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import {
-  getLocale, loadArea, setConfig, updateConfig, getConfig, queryIndexes,
+  getLocale, loadArea, setConfig, updateConfig, getConfig, localizeLinkAsync,
 } from '../../../libs/utils/utils.js';
-import { getMepLingoContext } from '../../../libs/features/mep/lingo.js';
+import {
+  getLocaleCodeFromPrefix,
+  handleInvalidMepLingo,
+  addMepLingoPreviewAttrs,
+  fetchFragment,
+  fetchMepLingo,
+} from '../../../libs/features/mep/lingo.js';
+import getMepLingoContext from '../../features/mep/lingo-helpers.js';
 
 window.lana = { log: stub() };
 
@@ -22,7 +29,7 @@ const config = {
   env: { name: 'stage' },
   placeholders: { placeholdercheck: 'hello world' },
   mep: {
-    preview: true, // Enable preview attributes for MEP Lingo
+    preview: true,
     commands: [
       {
         action: 'remove',
@@ -42,8 +49,14 @@ setConfig(config);
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment, removeMepLingoRow } = await import('../../../libs/blocks/fragment/fragment.js');
 
-// Clear any queryIndexes populated during imports to prevent hanging on unresolved promises
-Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
+// Store original fetch for passthrough
+const originalFetch = window.fetch;
+
+// Helper to create query-index mock response
+const createQueryIndexResponse = (paths = []) => new Response(
+  JSON.stringify({ total: paths.length, data: paths.map((p) => ({ Path: p })) }),
+  { status: 200, headers: { 'Content-Type': 'application/json' } },
+);
 
 describe('Fragments', () => {
   let paramsGetStub;
@@ -155,43 +168,61 @@ describe('MEP Lingo Fragments', () => {
     region: 'de',
     language: 'de',
     ietf: 'de-DE',
-    regions: { ch_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
+    regions: { ch: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
+  };
+
+  let fetchStub;
+  const defaultRegionalPath = '/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test';
+
+  const stubQueryIndex = (paths = [defaultRegionalPath]) => {
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse(paths));
+      }
+      return originalFetch(url);
+    });
+  };
+
+  const simulateDecorateLinks = async (a) => {
+    a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   };
 
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    const searchParams = new URLSearchParams(window.location.search);
-    searchParams.set('langFirst', 'on');
-    window.history.replaceState({}, '', `${window.location.pathname}?${searchParams}`);
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'langfirst');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
 
     window.lana = { log: stub() };
-    Object.keys(queryIndexes).forEach((key) => delete queryIndexes[key]);
-    const currentConfig = getConfig();
-    const siteId = currentConfig.uniqueSiteId ?? '';
-    const defaultQueryIndex = {
-      requestResolved: true,
-      pathsRequest: Promise.resolve([]),
-      domains: [],
-    };
-    queryIndexes[siteId] = { ...defaultQueryIndex };
-    queryIndexes.federal = { ...defaultQueryIndex };
+
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      return originalFetch(url);
+    });
   });
 
   afterEach(() => {
     window.sessionStorage.clear();
-    const searchParams = new URLSearchParams(window.location.search);
-    searchParams.delete('langFirst');
-    window.history.replaceState({}, '', window.location.pathname + (searchParams.toString() ? `?${searchParams}` : ''));
+    document.head.querySelector('meta[name="langfirst"]')?.remove();
+    if (fetchStub) fetchStub.restore();
   });
 
   it('loads ROC fragment and sets data-mep-lingo-roc', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
     const a = document.querySelector('a.mep-lingo-frag');
     expect(a).to.exist;
-    expect(a.dataset.mepLingo).to.equal('true');
+    await simulateDecorateLinks(a);
     await getFragment(a);
+    expect(a.dataset.mepLingo).to.equal('true');
     const section = document.querySelector('.mep-lingo-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
@@ -200,9 +231,11 @@ describe('MEP Lingo Fragments', () => {
 
   it('loads ROC inline fragment', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
     const a = document.querySelector('a.mep-lingo-inline');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-inline-section');
     const inlineElement = section.querySelector('[data-path]');
@@ -215,12 +248,12 @@ describe('MEP Lingo Fragments', () => {
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
     const a = document.querySelector('a.mep-lingo-fallback');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-fallback-section');
     const frag = section.querySelector('.fragment');
     expect(frag).to.exist;
-    // TODO: Add fallback attribute test coverage in separate PR
-    // expect(frag.dataset.mepLingoFallback).to.exist;
+    expect(frag.dataset.mepLingoFallback).to.exist;
   });
 
   it('falls back inline fragment', async () => {
@@ -228,12 +261,12 @@ describe('MEP Lingo Fragments', () => {
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
     const a = document.querySelector('a.mep-lingo-fallback-inline');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-fallback-inline-section');
     const inlineElement = section.querySelector('[data-path]');
     expect(inlineElement).to.exist;
-    // TODO: Add fallback attribute test coverage in separate PR
-    // expect(inlineElement.dataset.mepLingoFallback).to.exist;
+    expect(inlineElement.dataset.mepLingoFallback).to.exist;
   });
 
   it('logs error when both ROC and fallback fail', async () => {
@@ -241,23 +274,236 @@ describe('MEP Lingo Fragments', () => {
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
     const a = document.querySelector('a.mep-lingo-error');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-error-section');
     expect(section.querySelector('.fragment')).to.not.exist;
     expect(window.lana.log.called).to.be.true;
   });
 
+  it('handles fallback when regional fetch fails (covers tryMepLingoFallbackForStaleIndex path)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+    const a = document.querySelector('a.mep-lingo-fallback');
+    await simulateDecorateLinks(a);
+    expect(a.dataset.originalHref).to.exist;
+    await getFragment(a);
+    const section = document.querySelector('.mep-lingo-fallback-section');
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoFallback).to.exist;
+  });
+
+  it('handles stale query-index fallback (query-index says regional exists but 404s)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']);
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']));
+      }
+      if (urlStr.includes('/ch_de/fragments/mep-lingo-test.plain.html')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      return originalFetch(url);
+    });
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+    const a = document.querySelector('a.mep-lingo-frag');
+    expect(a.dataset.originalHref).to.not.exist;
+    await simulateDecorateLinks(a);
+    expect(a.dataset.originalHref).to.exist;
+    await getFragment(a);
+    const section = document.querySelector('.mep-lingo-section');
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoFallback).to.exist;
+    expect(window.lana.log.called).to.be.true;
+    const logCalls = window.lana.log.getCalls();
+    const staleIndexLog = logCalls.find((call) => (
+      call.args[0]?.includes('Query-index indicated regional content exists but fetch failed')
+    ));
+    expect(staleIndexLog).to.exist;
+  });
+
+  it('preserves stage domain in stale query-index fallback for US pages', async () => {
+    window.sessionStorage.setItem('akamai', 'us');
+    const usLocale = {
+      ietf: 'en-US',
+      prefix: '',
+      regions: { ca: { prefix: '/ca', ietf: 'en-CA' } },
+    };
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: usLocale, contentRoot: 'https://stage.adobe.com' });
+
+    // Create a link with adobe.com domain that will be converted to stage.adobe.com
+    const section = document.createElement('div');
+    section.className = 'test-domain-section';
+    section.innerHTML = '<a href="https://adobe.com/fragments/test#_mep-lingo" class="test-domain-link">Test</a>';
+    document.body.appendChild(section);
+
+    const a = section.querySelector('a');
+    await simulateDecorateLinks(a);
+
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      const urlObj = new URL(urlStr);
+
+      if (urlObj.hostname === 'stage.adobe.com' && urlObj.pathname.endsWith('/fragments/test.plain.html')) {
+        expect(urlObj.hostname).to.equal('stage.adobe.com');
+        return originalFetch('/test/blocks/fragment/mocks/fragments/mep-lingo-test.plain.html');
+      }
+
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      return originalFetch(url);
+    });
+
+    await getFragment(a);
+    section.remove();
+  });
+
+  it('handles block swap failure (regional content 404s)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    // Stub fetch to return 404 for nonexistent fragments
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('/fragments/nonexistent') || urlStr.includes('/fragments%2Fnonexistent')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      return originalFetch(url);
+    });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const marquee = document.createElement('div');
+    marquee.className = 'marquee';
+    const mepLingoRow = document.createElement('div');
+    const cell1 = document.createElement('div');
+    cell1.textContent = 'mep-lingo';
+    const cell2 = document.createElement('div');
+    cell2.innerHTML = '<a href="/fragments/nonexistent#_mep-lingo">swap</a>';
+    mepLingoRow.appendChild(cell1);
+    mepLingoRow.appendChild(cell2);
+    marquee.appendChild(mepLingoRow);
+    section.appendChild(marquee);
+    document.body.appendChild(section);
+    const a = marquee.querySelector('a');
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+    // The mep-lingo row should be removed from the marquee
+    const remainingRows = marquee.querySelectorAll(':scope > div');
+    expect(remainingRows.length).to.equal(0);
+    section.remove();
+  });
+
+  it('handles section swap failure (regional content 404s)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    // Stub fetch to return 404 for nonexistent fragments
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('/fragments/nonexistent') || urlStr.includes('/fragments%2Fnonexistent')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      if (urlStr.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      return originalFetch(url);
+    });
+
+    // Create a section with section-metadata containing mep-lingo row
+    const section = document.createElement('div');
+    section.className = 'section test-section-swap';
+    const sectionMetadata = document.createElement('div');
+    sectionMetadata.className = 'section-metadata';
+
+    const mepLingoRow = document.createElement('div');
+    const cell1 = document.createElement('div');
+    cell1.textContent = 'mep-lingo';
+    const cell2 = document.createElement('div');
+    cell2.innerHTML = '<a href="/fragments/nonexistent#_mep-lingo">swap</a>';
+    mepLingoRow.appendChild(cell1);
+    mepLingoRow.appendChild(cell2);
+    sectionMetadata.appendChild(mepLingoRow);
+    section.appendChild(sectionMetadata);
+    document.body.appendChild(section);
+
+    const a = sectionMetadata.querySelector('a');
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+    // The mep-lingo row should be removed from section-metadata
+    const remainingRows = sectionMetadata.querySelectorAll(':scope > div');
+    expect(remainingRows.length).to.equal(0);
+    section.remove();
+  });
+
+  it('removes section-metadata mep-lingo row when section swap has no regional targeting', async () => {
+    window.sessionStorage.setItem('akamai', 'us');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    section.className = 'section test-section-swap';
+    const sectionMetadata = document.createElement('div');
+    sectionMetadata.className = 'section-metadata';
+
+    const mepLingoRow = document.createElement('div');
+    const cell1 = document.createElement('div');
+    cell1.textContent = 'mep-lingo';
+    const cell2 = document.createElement('div');
+    cell2.innerHTML = '<a href="/fragments/sectionswap#_mep-lingo">swap</a>';
+    mepLingoRow.appendChild(cell1);
+    mepLingoRow.appendChild(cell2);
+    sectionMetadata.appendChild(mepLingoRow);
+
+    section.appendChild(sectionMetadata);
+    document.body.appendChild(section);
+
+    const a = sectionMetadata.querySelector('a');
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+
+    const remainingRows = sectionMetadata.querySelectorAll(':scope > div');
+    expect(remainingRows.length).to.equal(0);
+
+    section.remove();
+  });
+
+  it('sets originalHref for MEP Lingo links (query-index optimization)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+    const a = document.querySelector('a.mep-lingo-frag');
+    expect(a.dataset.originalHref).to.not.exist; // Not set yet
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+    expect(a.dataset.originalHref).to.exist;
+    expect(a.dataset.originalHref).to.include('/fragments/mep-lingo-test');
+  });
+
   it('uses country mapping when configured', async () => {
     window.sessionStorage.setItem('akamai', 'ng');
-    queryIndexes[''] = {
-      pathsRequest: Promise.resolve(['/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test']),
-      requestResolved: true,
-    };
+    stubQueryIndex();
     const localeWithAfrica = {
       ...mepLingoLocale,
       regions: {
         ...mepLingoLocale.regions,
-        africa_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'en-ZA' },
+        africa: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'en-ZA' },
       },
     };
     const currentConfig = getConfig();
@@ -267,6 +513,7 @@ describe('MEP Lingo Fragments', () => {
       mepLingoCountryToRegion: { africa: ['ng'] },
     });
     const a = document.querySelector('a.mep-lingo-mapping');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-mapping-section');
     const frag = section.querySelector('.fragment');
@@ -279,6 +526,7 @@ describe('MEP Lingo Fragments', () => {
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
     const a = document.querySelector('a.mep-lingo-lcp');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-lcp-section');
     const frag = section.querySelector('.fragment');
@@ -291,9 +539,11 @@ describe('MEP Lingo Fragments', () => {
       regions: { ch: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
     };
     window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: localeWithDirectRegion });
     const a = document.querySelector('a.mep-lingo-frag');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-section');
     const frag = section.querySelector('.fragment');
@@ -307,12 +557,14 @@ describe('MEP Lingo Fragments', () => {
       region: 'us',
       language: 'en',
       ietf: 'en-US',
-      regions: { ch_en: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'en-CH' } },
+      regions: { ch: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'en-CH' } },
     };
     window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: localeWithEmptyPrefix });
     const a = document.querySelector('a.mep-lingo-frag');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-section');
     const frag = section.querySelector('.fragment');
@@ -325,12 +577,14 @@ describe('MEP Lingo Fragments', () => {
       region: 'de',
       language: 'de',
       ietf: 'de-DE',
-      regions: { ch_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
+      regions: { ch: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
     };
     window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: langstoreLocale });
     const a = document.querySelector('a.mep-lingo-frag');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-section');
     const frag = section.querySelector('.fragment');
@@ -343,12 +597,14 @@ describe('MEP Lingo Fragments', () => {
       region: 'de',
       language: 'de',
       ietf: 'de-DE',
-      regions: { ch_test: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
+      regions: { ch: { prefix: '/test/blocks/fragment/mocks/ch_de', ietf: 'de-CH' } },
     };
     window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: targetPreviewLocale });
     const a = document.querySelector('a.mep-lingo-frag');
+    await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-section');
     const frag = section.querySelector('.fragment');
@@ -359,7 +615,9 @@ describe('MEP Lingo Fragments', () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
-    const fetchStub = stub(window, 'fetch').callsFake(() => Promise.resolve(
+    // Replace stub to return 404 for all requests
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake(() => Promise.resolve(
       new Response(null, { status: 404, statusText: 'Not Found' }),
     ));
     const section = document.createElement('div');
@@ -367,7 +625,8 @@ describe('MEP Lingo Fragments', () => {
     section.innerHTML = `
       <div class="mep-lingo">
         <div><div>mep-lingo</div></div>
-        <div><div><a href="/test/blocks/fragment/mocks/de/fragments/nonexistent-file" data-mep-lingo="true" data-mep-lingo-block-swap="mep-lingo">Test</a></div></div>
+        <div><div><a href="/test/blocks/fragment/mocks/de/fragments/nonexistent-file"
+          data-mep-lingo="true" data-mep-lingo-block-swap="mep-lingo">Test</a></div></div>
       </div>`;
     document.body.appendChild(section);
     const originalBlock = section.querySelector('.mep-lingo');
@@ -375,7 +634,6 @@ describe('MEP Lingo Fragments', () => {
     const a = section.querySelector('a');
     await getFragment(a);
     expect(section.querySelector('.mep-lingo')).to.not.exist;
-    fetchStub.restore();
   });
 
   it('removes mep-lingo content on regional page with empty string base', async () => {
@@ -476,9 +734,85 @@ describe('removeMepLingoRow helper (covers lines 203-206, 208-211 logic)', () =>
   });
 });
 
+describe('getLocaleCodeFromPrefix', () => {
+  it('returns en for empty prefix with us region', () => {
+    expect(getLocaleCodeFromPrefix('', 'us', 'en')).to.equal('en');
+  });
+
+  it('returns language for empty prefix with non-us region', () => {
+    expect(getLocaleCodeFromPrefix('', 'de', 'de')).to.equal('de');
+  });
+
+  it('returns en as fallback when language is undefined for non-us region', () => {
+    expect(getLocaleCodeFromPrefix('', 'de', undefined)).to.equal('en');
+  });
+
+  it('returns secondPart for langstore prefix', () => {
+    expect(getLocaleCodeFromPrefix('/langstore/fr', 'fr', 'fr')).to.equal('fr');
+  });
+
+  it('returns secondPart for target-preview prefix', () => {
+    expect(getLocaleCodeFromPrefix('/target-preview/de', 'de', 'de')).to.equal('de');
+  });
+
+  it('returns language when langstore has no secondPart', () => {
+    expect(getLocaleCodeFromPrefix('/langstore', 'de', 'de')).to.equal('de');
+  });
+
+  it('returns en when langstore has no secondPart and region is us', () => {
+    expect(getLocaleCodeFromPrefix('/langstore', 'us', 'en')).to.equal('en');
+  });
+
+  it('returns firstPart for simple prefix', () => {
+    expect(getLocaleCodeFromPrefix('/de', 'de', 'de')).to.equal('de');
+  });
+});
+
 describe('getMepLingoContext with realistic prefixes', () => {
   afterEach(() => {
     window.sessionStorage.clear();
+  });
+
+  it('uses country-to-region mapping when configured', () => {
+    const localeWithMapping = {
+      prefix: '/de',
+      region: 'de',
+      language: 'de',
+      ietf: 'de-DE',
+      regions: { africa_de: { prefix: '/africa_de', ietf: 'de-ZA' } },
+    };
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, mepLingoCountryToRegion: { africa: ['ng', 'za'] } });
+
+    window.sessionStorage.setItem('akamai', 'ng');
+
+    const context = getMepLingoContext(localeWithMapping);
+
+    expect(context.country).to.equal('ng');
+    expect(context.regionKey).to.equal('africa_de');
+    expect(context.matchingRegion).to.exist;
+
+    // Clean up
+    updateConfig({ ...currentConfig, mepLingoCountryToRegion: undefined });
+  });
+
+  it('falls back to regionalCountry key when compound key not found', () => {
+    const localeWithDirectRegion = {
+      prefix: '/de',
+      region: 'de',
+      language: 'de',
+      ietf: 'de-DE',
+      regions: { ch: { prefix: '/ch', ietf: 'de-CH' } }, // Note: 'ch' not 'ch_de'
+    };
+
+    window.sessionStorage.setItem('akamai', 'ch');
+
+    const context = getMepLingoContext(localeWithDirectRegion);
+
+    expect(context.country).to.equal('ch');
+    expect(context.regionKey).to.equal('ch'); // Falls back to just 'ch'
+    expect(context.matchingRegion).to.exist;
+    expect(context.matchingRegion.prefix).to.equal('/ch');
   });
 
   it('correctly parses locale code from simple prefix like /de', () => {
@@ -565,5 +899,195 @@ describe('getMepLingoContext with realistic prefixes', () => {
     expect(context.localeCode).to.equal('de');
     expect(context.country).to.equal('fr');
     expect(context.matchingRegion).to.be.undefined;
+  });
+});
+
+describe('handleInvalidMepLingo', () => {
+  it('removes section on prod when mepLingoSectionSwap is set', () => {
+    const section = document.createElement('div');
+    section.className = 'section';
+    const a = document.createElement('a');
+    a.dataset.mepLingoSectionSwap = 'true';
+    section.appendChild(a);
+    document.body.appendChild(section);
+
+    handleInvalidMepLingo(a, { env: { name: 'prod' }, relHref: '/test' });
+
+    expect(document.body.contains(section)).to.be.false;
+  });
+
+  it('marks section as failed on non-prod when mepLingoSectionSwap is set', () => {
+    const section = document.createElement('div');
+    section.className = 'section';
+    const wrapper = document.createElement('div');
+    const a = document.createElement('a');
+    a.dataset.mepLingoSectionSwap = 'true';
+    wrapper.appendChild(a);
+    section.appendChild(wrapper);
+    document.body.appendChild(section);
+
+    handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
+
+    expect(section.dataset.failed).to.equal('true');
+    expect(section.dataset.reason).to.include('section swap');
+    section.remove();
+  });
+
+  it('removes block on prod when mepLingoBlockSwap is set', () => {
+    const block = document.createElement('div');
+    block.className = 'marquee';
+    const a = document.createElement('a');
+    a.dataset.mepLingoBlockSwap = 'marquee';
+    block.appendChild(a);
+    document.body.appendChild(block);
+
+    handleInvalidMepLingo(a, { env: { name: 'prod' }, relHref: '/test' });
+
+    expect(document.body.contains(block)).to.be.false;
+  });
+
+  it('marks block as failed on non-prod when mepLingoBlockSwap is set', () => {
+    const block = document.createElement('div');
+    block.className = 'marquee';
+    const wrapper = document.createElement('div');
+    const a = document.createElement('a');
+    a.dataset.mepLingoBlockSwap = 'marquee';
+    wrapper.appendChild(a);
+    block.appendChild(wrapper);
+    document.body.appendChild(block);
+
+    handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
+
+    expect(block.dataset.failed).to.equal('true');
+    expect(block.dataset.reason).to.include('block swap');
+    block.remove();
+  });
+
+  it('marks mep-lingo block as failed without removing parent', () => {
+    const block = document.createElement('div');
+    block.className = 'mep-lingo';
+    const a = document.createElement('a');
+    a.dataset.mepLingoBlockSwap = 'mep-lingo';
+    block.appendChild(a);
+    document.body.appendChild(block);
+
+    handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
+
+    expect(block.dataset.failed).to.equal('true');
+    expect(block.dataset.reason).to.include('block');
+    expect(block.contains(a)).to.be.true; // parent not removed for mep-lingo block
+    block.remove();
+  });
+
+  it('removes standalone fragment link on prod', () => {
+    const parent = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/fragments/test';
+    parent.appendChild(a);
+    document.body.appendChild(parent);
+
+    handleInvalidMepLingo(a, { env: { name: 'prod' }, relHref: '/test' });
+
+    expect(parent.contains(a)).to.be.false;
+    parent.remove();
+  });
+
+  it('replaces standalone fragment with failed div on non-prod', () => {
+    const parent = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/fragments/test';
+    parent.appendChild(a);
+    document.body.appendChild(parent);
+
+    handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
+
+    const failedDiv = parent.querySelector('[data-failed="true"]');
+    expect(failedDiv).to.exist;
+    expect(failedDiv.dataset.reason).to.include('fragment not available');
+    parent.remove();
+  });
+
+  it('includes inline in reason for inline fragments on non-prod', () => {
+    const parent = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/fragments/test#_inline';
+    parent.appendChild(a);
+    document.body.appendChild(parent);
+
+    handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test#_inline' });
+
+    const failedDiv = parent.querySelector('[data-failed="true"]');
+    expect(failedDiv.dataset.reason).to.include('inline');
+    parent.remove();
+  });
+});
+
+describe('addMepLingoPreviewAttrs', () => {
+  it('sets mepLingoFallback when usedFallback is true', () => {
+    const fragment = document.createElement('div');
+    addMepLingoPreviewAttrs(fragment, { usedFallback: true, relHref: '/de/fragments/test' });
+    expect(fragment.dataset.mepLingoFallback).to.equal('/de/fragments/test');
+    expect(fragment.dataset.mepLingoRoc).to.be.undefined;
+  });
+
+  it('sets mepLingoRoc when usedFallback is false', () => {
+    const fragment = document.createElement('div');
+    addMepLingoPreviewAttrs(fragment, { usedFallback: false, relHref: '/ch_de/fragments/test' });
+    expect(fragment.dataset.mepLingoRoc).to.equal('/ch_de/fragments/test');
+    expect(fragment.dataset.mepLingoFallback).to.be.undefined;
+  });
+});
+
+describe('fetchFragment and fetchMepLingo', () => {
+  let fetchStub;
+
+  const mockResponse = (ok, html = '<div>content</div>') => Promise.resolve({
+    ok,
+    status: ok ? 200 : 404,
+    text: () => Promise.resolve(html),
+  });
+
+  beforeEach(() => {
+    fetchStub = stub(window, 'fetch');
+  });
+
+  afterEach(() => {
+    fetchStub.restore();
+  });
+
+  it('fetchFragment strips .html extension and fetches .plain.html', async () => {
+    fetchStub.resolves(mockResponse(true));
+    await fetchFragment('/fragments/test.html');
+    expect(fetchStub.calledOnce).to.be.true;
+    const calledUrl = fetchStub.firstCall.args[0]?.resource || fetchStub.firstCall.args[0];
+    expect(calledUrl).to.include('/fragments/test.plain.html');
+    expect(calledUrl).to.not.include('.html.plain.html');
+  });
+
+  it('fetchFragment returns empty object on fetch error', async () => {
+    fetchStub.rejects(new Error('Network error'));
+    const resp = await fetchFragment('/fragments/test');
+    expect(resp).to.deep.equal({});
+  });
+
+  it('fetchMepLingo returns usedMepLingo when first path succeeds', async () => {
+    fetchStub.resolves(mockResponse(true));
+    const result = await fetchMepLingo('/ch_de/fragments/test', '/de/fragments/test');
+    expect(result.usedMepLingo).to.be.true;
+    expect(result.resp.ok).to.be.true;
+  });
+
+  it('fetchMepLingo returns usedFallback when first fails but fallback succeeds', async () => {
+    fetchStub.onFirstCall().resolves(mockResponse(false));
+    fetchStub.onSecondCall().resolves(mockResponse(true));
+    const result = await fetchMepLingo('/ch_de/fragments/missing', '/de/fragments/test');
+    expect(result.usedFallback).to.be.true;
+    expect(result.resp.ok).to.be.true;
+  });
+
+  it('fetchMepLingo returns empty object when both fail', async () => {
+    fetchStub.resolves(mockResponse(false));
+    const result = await fetchMepLingo('/missing1', '/missing2');
+    expect(result).to.deep.equal({});
   });
 });
