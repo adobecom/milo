@@ -38,6 +38,10 @@
   overflow: hidden;
 }
 
+.carousel .carousel-expand {
+  z-index: 2;
+}
+
 .carousel .carousel-expand img {
   background-color: var(--carousel-expand-background-color);
   box-sizing: content-box;
@@ -398,6 +402,26 @@ html[dir="rtl"] .carousel .move-indicators {
 .carousel.lightbox .carousel-close {
   background-color: transparent;
   border: none;
+}
+
+.carousel.lightbox .carousel-close circle {
+  fill: var(--modal-close-accent-color);
+}
+
+.carousel.lightbox .carousel-close line {
+  stroke: var(--color-white);
+}
+
+.carousel.lightbox .carousel-close:focus-visible {
+  outline: 2px solid var(--modal-focus-color);
+}
+
+.carousel.lightbox .carousel-close:focus-visible circle {
+  fill: var(--color-white);
+}
+
+.carousel.lightbox .carousel-close:focus-visible line {
+  stroke: var(--modal-close-accent-color);
 }
 
 .carousel.lightbox .carousel-close:focus-visible {
