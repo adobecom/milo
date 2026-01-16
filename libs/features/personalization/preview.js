@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle, lingoActive } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle, lingoActive, getCountry } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
@@ -378,7 +378,6 @@ function setTargetOnText(target, page) {
 export function getMepPopup(mepConfig, isMmm = false) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
-  const { manifestList } = getManifestListDomAndParameter(mepConfig);
 
   // Check URL parameters for highlight and fragments
   const urlParams = new URLSearchParams(window.location.search);
@@ -411,8 +410,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
 
   const targetEnabled = targetMapping[config.mep?.targetEnabled];
   const mepTarget = isMmm ? page.target : targetEnabled;
-  const targetOnText = setTargetOnText(mepTarget, page);
-  const { akamaiCode, consentState } = config.mep;
   const isLingoActive = lingoActive();
   const regions = config?.locale?.regions || {};
   const regionKeys = Object.keys(regions);
@@ -438,6 +435,14 @@ export function getMepPopup(mepConfig, isMmm = false) {
   });
 
   // Build Summary : Page
+  const pageData = {
+    manifestsFound: mepConfig.activities?.length || 0,
+    targetIntegration: setTargetOnText(mepTarget, page),
+    personalization: page.personalization,
+    locale: page.locale?.toLowerCase(),
+    lastSeen: formatDate(new Date(page.lastSeen)),
+  };
+
   const mepPageSummary = createTag('div', { class: 'mep-section' });
   mepPageSummary.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Page</h6>
@@ -450,17 +455,23 @@ export function getMepPopup(mepConfig, isMmm = false) {
         ${page.lastSeen ? '<div>Last Seen</div>' : ''}
       </div>
       <div class="mep-column">
-        <div>${mepConfig.activities?.length || 0}</div>
-        <div>${targetOnText}</div>
-        <div>${page.personalization}</div>
-        <div>${page.locale?.toLowerCase()}</div>
-        ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
+        <div>${pageData.manifestsFound}</div>
+        <div>${pageData.targetIntegration}</div>
+        <div>${pageData.personalization}</div>
+        <div>${pageData.locale}</div>
+        ${page.lastSeen ? `<div>${pageData.lastSeen}</div>` : ''}
       </div>
     </div>
     `;
   mepPopupBody[0].append(mepPageSummary);
 
   // Build Summary : Consent
+  const { consentState } = config.mep;
+  const consentData = {
+    functional: consentState?.functional ? 'on' : 'off',
+    advertising: consentState?.advertising ? 'on' : 'off',
+  };
+
   const mepConsentSummary = createTag('div', { class: 'mep-section' });
   mepConsentSummary.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Consent</h6>
@@ -470,14 +481,19 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div>Advertising</div>
       </div>
       <div class="mep-column">
-        <div>${consentState.performance ? 'on' : 'off'}</div>
-        <div>${consentState.advertising ? 'on' : 'off'}</div>
+        <div>${consentData.functional}</div>
+        <div>${consentData.advertising}</div>
       </div>
     </div>
   `;
   mepPopupBody[0].append(mepConsentSummary);
 
   // Build Summary : Lingo
+  const lingoData = {
+    geoFolder: page.geo || 'US (None)',
+    country: getCountry(),
+  };
+
   const mepLingoSummary = createTag('div', { class: 'mep-section' });
   mepLingoSummary.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Lingo</h6>
@@ -489,10 +505,10 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div>Country</div>
       </div>
       <div class="mep-column">
-        <div>${page.geo || 'US (None)'}</div>
+        <div>${lingoData.geoFolder}</div>
         <div>Data</div>
         <div>Data</div>
-        <div>${akamaiCode || 'none'}</div>
+        <div>${lingoData.country}</div>
       </div>
     </div>
   `;
@@ -500,6 +516,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   if (regionKeys.length) mepPopupBody[0].append(mepLingoSummary);
 
   // Build Options : Manifest List
+  const { manifestList } = getManifestListDomAndParameter(mepConfig);
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
   mepManifestList.innerHTML = `<h6>Manifests</h6>${manifestList}`;
   mepPopupBody[1].append(mepManifestList);
@@ -567,7 +584,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
     </div>
     <div>New manifest location or path*</div>
     <input type="text" name="new-manifest${pageId}" class="new-manifest">
-    ${mepLingoSectionHTML}`;
+    ${mepLingoSectionHTML}
+  `;
   mepPopupBody[1].append(mepToggleOptions);
 
   // Build Footer
