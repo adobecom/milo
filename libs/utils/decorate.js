@@ -21,7 +21,7 @@ let videoLabels = {
 const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
-function getButtonType(buttonParent) {
+export function getButtonType(buttonParent) {
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   let { nodeName } = buttonParent;
   if (nodeName === 'STRONG') {
