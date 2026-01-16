@@ -73,6 +73,13 @@
     },
     {
       "containerId": "tools",
+      "title": "Animate",
+      "id": "animate",
+      "environments": ["dev", "preview", "live"],
+      "event": "milo-animate"
+    },
+    {
+      "containerId": "tools",
       "title": "Check Schema",
       "id": "checkschema",
       "environments": ["prod"],
@@ -134,6 +141,13 @@
       "environments": ["live", "prod"],
       "event": "send-to-caas",
       "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
+    },
+    {
+      "containerId": "tools",
+      "title": "Animate",
+      "id": "animate",
+      "environments": ["live"],
+      "event": "milo-animate"
     },
     {
       "containerId": "tools",
