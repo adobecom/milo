@@ -1349,6 +1349,7 @@ export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
+    if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset.hasDnt) {
@@ -1372,6 +1373,7 @@ export function decorateLinks(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const links = [...anchors].reduce((rdx, a) => {
+    if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
