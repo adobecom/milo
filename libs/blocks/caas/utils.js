@@ -581,9 +581,17 @@ async function getLingoSiteLocale(origin, path) {
         }
       });
 
+    const isLocaleInRegionalSites = (regionalSites, locStr) => {
+      if (!regionalSites) return false;
+      return regionalSites
+        .split(',')
+        .map((site) => site.trim().replace(/^\//, ''))
+        .includes(locStr);
+    };
+
     // check if the localeStr is in the baseSite or regionalSites.
     // if not, use the og country/language logic
-    if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || regionalSites.includes(localeStr)))) {
+    if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || isLocaleInRegionalSites(regionalSites, localeStr)))) {
       const locale = LOCALES[localeStr]?.ietf || 'en-US';
       /* eslint-disable-next-line prefer-const */
       let [currLang, currCountry] = locale.split('-');
@@ -603,7 +611,7 @@ async function getLingoSiteLocale(origin, path) {
           };
           return;
         }
-        if (regionalSites.includes(localeStr)) {
+        if (isLocaleInRegionalSites(regionalSites, localeStr)) {
           if (baseSite === '/') {
             lingoSiteMapping = {
               country: localeStr,

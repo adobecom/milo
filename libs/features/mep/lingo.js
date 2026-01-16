@@ -1,9 +1,7 @@
 /* MEP Lingo - Region-optimized content handling. See README.md for documentation. */
 import {
-  getConfig,
   createTag,
   customFetch,
-  getCountry,
 } from '../../utils/utils.js';
 
 export function getLocaleCodeFromPrefix(prefix, region = 'us', language = 'en') {
@@ -19,36 +17,6 @@ export function getLocaleCodeFromPrefix(prefix, region = 'us', language = 'en') 
   }
 
   return localeCode;
-}
-
-export async function getMepLingoContext(locale) {
-  if (!locale?.prefix) {
-    return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
-  }
-
-  const country = await getCountry();
-  const config = getConfig();
-  const mapping = config.mepLingoCountryToRegion;
-
-  // Map country to region if configured (e.g., ng -> africa)
-  let regionalCountry = country;
-  if (mapping) {
-    const regionKey = Object.entries(mapping).find(
-      ([, countries]) => Array.isArray(countries) && countries.includes(country),
-    )?.[0];
-    if (regionKey) regionalCountry = regionKey;
-  }
-
-  const localeCode = getLocaleCodeFromPrefix(locale.prefix, locale.region, locale.language);
-
-  let regionKey = `${regionalCountry}_${localeCode}`;
-  let matchingRegion = locale?.regions?.[regionKey];
-  if (!matchingRegion && locale?.regions?.[regionalCountry]) {
-    regionKey = regionalCountry;
-    matchingRegion = locale.regions[regionalCountry];
-  }
-
-  return { country, localeCode, regionKey, matchingRegion };
 }
 
 export const fetchFragment = (path) => {
