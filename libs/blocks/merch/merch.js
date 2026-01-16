@@ -372,8 +372,8 @@ export function getMasBase(hostname, maslibs) {
  * @returns {string|null} Base URL for web components or null if maslibs not present
  */
 export function getMasLibs() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('maslibs');
+  // const urlParams = new URLSearchParams(window.location.search);
+  const masLibs = "MWPW-180318";
 
   if (!masLibs || masLibs.trim() === '') return null;
 
