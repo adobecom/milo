@@ -542,10 +542,20 @@ async function decorateArticleFeed(
     articleFeedEl.append(articleCards);
   }
 
-  const container = createTag('div', { class: 'article-cards-empty' });
+  const container = createTag('div', {
+    class: 'article-cards-empty',
+    role: 'status',
+    'aria-live': 'polite',
+    'aria-atomic': 'true',
+  });
 
   // display spinner
-  const spinner = createTag('div', { class: 'spinner' });
+  const spinner = createTag('div', {
+    class: 'spinner',
+    role: 'status',
+    'aria-live': 'polite',
+  });
+  spinner.textContent = 'loading';
   container.append(spinner);
   articleCards.append(container);
 
@@ -560,6 +570,7 @@ async function decorateArticleFeed(
     // no user filtered results were found
     spinner.remove();
     const noMatches = document.createElement('p');
+    noMatches.setAttribute('role', 'alert');
     noMatches.innerHTML = `<strong>${await replacePlaceholder('no-matches')}</strong>`;
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
