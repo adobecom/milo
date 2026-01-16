@@ -625,6 +625,7 @@
 
   .notification.ribbon .action-area {
     inline-size: auto;
+    margin-block-end: 0;
   }
 
   .notification.ribbon .copy-wrap {
