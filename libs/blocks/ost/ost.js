@@ -361,7 +361,7 @@ export default async function init(el) {
       ...ostEnv,
       rootElement: el.firstElementChild,
     });
-    addToggleSwitches(el, ostEnv, masDefaultsEnabled, window);
+    addToggleSwitches(el.firstElementChild, ostEnv, masDefaultsEnabled, window);
   }
 
   if (ostEnv.aosAccessToken) {
