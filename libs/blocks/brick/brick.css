@@ -48,8 +48,9 @@
   display: none;
 }
 
-.brick.contain .foreground .brick-media img {
-  object-fit: contain !important;
+.brick.contain .foreground .brick-media img,
+.brick.contain.split.row .foreground .brick-media img {
+  object-fit: contain;
 }
 
 .brick.rounded-corners,
