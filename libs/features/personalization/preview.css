@@ -55,7 +55,7 @@
   border-bottom: 2px solid #fff;
 }
 
-.mep-popup-tabs .mep-tab:not(.active) {
+.mep-popup-tabs .mep-tab:not([active]) {
   color: rgba(255, 255, 255, 0.7);
   border-bottom: none;
 }
@@ -64,7 +64,7 @@
   direction: ltr;
 }
 
-.mep-popup .mep-popup-body:not(.active) {
+.mep-popup .mep-popup-body:not([active]) {
   display: none;
 }
 
@@ -234,6 +234,27 @@
 
 .mep-popup .target-activity-name {
   font-style: italic;
+}
+
+.mep-manifest-title {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mep-manifest-title .mep-manifest-toggle {
+  cursor: pointer;
+}
+
+.mep-manifest-title .mep-manifest-toggle[active] svg.mep-toggle-expand {
+  display: none;
+}
+
+.mep-manifest-title .mep-manifest-toggle:not([active]) svg.mep-toggle-collapse {
+  display: none;
+}
+
+.mep-manifest-info:not([active]) {
+  display: none;
 }
 
 .mep-manifest-info,

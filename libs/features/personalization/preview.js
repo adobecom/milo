@@ -97,16 +97,23 @@ function changeTab(event) {
   const index = Array.from(tabs).indexOf(event.target);
 
   tabs.forEach((tab, i) => {
-    tab.classList.toggle('active', i === index);
-    event.target.closest('.mep-popup').querySelectorAll('.mep-popup-body')[i]?.classList.toggle('active', i === index);
+    tab.toggleAttribute('active', i === index);
+    event.target.closest('.mep-popup').querySelectorAll('.mep-popup-body')[i]?.toggleAttribute('active', i === index);
   });
 }
+
+function expandManifest(event) {
+  event.target.closest('.mep-manifest-toggle').toggleAttribute('active');
+  event.target.closest('.mep-section').querySelector('.mep-manifest-info')?.toggleAttribute('active');
+}
+
 function addDividers(node, selector) {
   node.querySelectorAll(selector).forEach((section) => {
     const mepDivider = createTag('div', { class: 'mep-divider' });
     section.insertAdjacentElement('afterend', mepDivider);
   });
 }
+
 function addPillEventListeners(div) {
   div.querySelector('.mep-manifest.mep-badge').addEventListener('click', () => {
     div.classList.toggle('mep-hidden');
@@ -115,6 +122,7 @@ function addPillEventListeners(div) {
     document.body.removeChild(document.querySelector('.mep-preview-overlay'));
   });
 }
+
 export function parsePageAndUrl(config, windowLocation, prefix) {
   const { stageDomainsMap, env } = config;
   const { pathname, origin } = windowLocation;
@@ -246,11 +254,22 @@ function getManifestListDomAndParameter(mepConfig) {
       options += `<option name="${editPath}${pageId}" value="${variant}" 
       id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected} title="${variant}">${variant}</option>`;
     });
+    const expandSVG = `
+    <svg xmlns="<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff" class="mep-toggle-expand">
+      <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+    </svg>`;
+    const collapseSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff" class="mep-toggle-collapse">
+      <path d="M200-440v-80h560v80H200Z"/>
+    </svg>`;
     manifestList += `<div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
-      <div class="mep-manifest-info">  
-          <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
-          ${mIdx + 1}. ${getFileName(manifestPath)}
-          </a>
+    <div class="mep-manifest-title">
+      <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
+        ${mIdx + 1}. ${getFileName(manifestPath)}
+      </a>
+      <div class="mep-manifest-toggle">${expandSVG}${collapseSVG}</div>
+    </div>   
+    <div class="mep-manifest-info">
           ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
           <div class="mep-columns">
             <div class="mep-column">
@@ -281,10 +300,9 @@ function getManifestListDomAndParameter(mepConfig) {
             </div>
           </div>
         </div>` : ''}
-        <div class="mep-experience-dropdown">
-          <label for="experiences">Experience</label>
-          <select name="experiences" class="mep-manifest-variants">${options}</select>
-        </div>
+      </div>
+      <div class="mep-experience-dropdown">
+        <select name="experiences" class="mep-manifest-variants">${options}</select>
       </div>
     </div>`;
   });
@@ -370,6 +388,9 @@ function addMepPopupListeners(popup, pageId) {
     input.addEventListener('click', (event) => changeTab.bind(null, event)());
     input.addEventListener('click', updatePreviewButton.bind(null, popup, pageId));
   });
+  popup.querySelectorAll('.mep-manifest-title .mep-manifest-toggle').forEach((input) => {
+    input.addEventListener('click', (event) => expandManifest.bind(null, event)());
+  });
 }
 function setTargetOnText(target, page) {
   if (target === undefined) return page.target;
@@ -402,18 +423,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
   });
 
   const config = getConfig();
-  const targetMapping = {
-    postlcp: 'postlcp',
-    true: 'on',
-    false: 'off',
-  };
-
-  const targetEnabled = targetMapping[config.mep?.targetEnabled];
-  const mepTarget = isMmm ? page.target : targetEnabled;
-  const isLingoActive = lingoActive();
-  const regions = config?.locale?.regions || {};
-  const regionKeys = Object.keys(regions);
-  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
 
   // Build Header
   const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
@@ -428,13 +437,18 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const mepPopupTabs = createTag('div', { class: 'mep-popup-tabs' });
   const tabs = ['Summary', 'Options'];
   const mepPopupBody = tabs.map((tab, index) => {
-    const mepTab = createTag('div', { class: `mep-tab ${index === 0 ? ' active' : ''}` });
+    const mepTab = createTag('div', { class: 'mep-tab' });
+    if (index === 0) mepTab.setAttribute('active', '');
     mepTab.textContent = tab;
     mepPopupTabs.append(mepTab);
-    return createTag('div', { class: `mep-popup-body ${index === 0 ? ' active' : ''}` });
+    const bodyDiv = createTag('div', { class: 'mep-popup-body' });
+    if (index === 0) bodyDiv.setAttribute('active', '');
+    return bodyDiv;
   });
 
   // Build Summary : Page
+  const mepTarget = isMmm ? page.target : ({ postlcp: 'postlcp', true: 'on', false: 'off' }[config.mep?.targetEnabled]);
+
   const pageData = {
     manifestsFound: mepConfig.activities?.length || 0,
     targetIntegration: setTargetOnText(mepTarget, page),
@@ -489,6 +503,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
   mepPopupBody[0].append(mepConsentSummary);
 
   // Build Summary : Lingo
+  const regionKeys = Object.keys(config?.locale?.regions || {});
+
   const lingoData = {
     geoFolder: page.geo || 'US (None)',
     country: getCountry(),
@@ -519,24 +535,19 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const { manifestList } = getManifestListDomAndParameter(mepConfig);
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
   mepManifestList.innerHTML = `<h6>Manifests</h6>${manifestList}`;
-  mepPopupBody[1].append(mepManifestList);
+  if (mepConfig.activities?.length) mepPopupBody[1].append(mepManifestList);
 
   // Build Options : MMM Manifest List
   const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
   if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
 
-  // Build Options : Toggles
-  const mepToggleOptions = createTag('div', { class: 'mep-section' });
-  const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
-    ? `<div>
-        <input type="checkbox" name="mepHighlight${pageId}"
-        id="mepManifestsCheckbox" value="false">
-        <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
-      </div>`
-    : '';
+  // Build Options : Lingo Select
+  const isLingoActive = lingoActive();
+  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
 
-  let mepLingoSectionHTML = '';
   if (isLingoActive) {
+    const mepLingoSelect = createTag('div', { class: 'mep-section' });
+
     let regionDropdownHTML = '';
     if (showRegionDropdown) {
       const regionOptions = regionKeys.map((key) => {
@@ -554,14 +565,26 @@ export function getMepPopup(mepConfig, isMmm = false) {
             ${regionOptions}
           </select>
         </div>`;
-    }
+    } else regionDropdownHTML = '<div>(No regions spoof available.)</div>';
 
-    mepLingoSectionHTML = `
-      <div class="mep-section mep-lingo-section">
-        <h6 class="mep-manifest-page-info-title">MEP Lingo</h6>       ${regionDropdownHTML}
+    const mepLingoSectionHTML = `
+      <div class="mep-section ">
+        <h6 class="mep-manifest-page-info-title">Lingo</h6>       
+        ${regionDropdownHTML}
       </div>`;
+    mepLingoSelect.innerHTML = mepLingoSectionHTML;
+    mepPopupBody[1].append(mepLingoSelect);
   }
 
+  // Build Options : Toggles
+  const mepToggleOptions = createTag('div', { class: 'mep-section' });
+  const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
+    ? `<div>
+        <input type="checkbox" name="mepHighlight${pageId}"
+        id="mepManifestsCheckbox" value="false">
+        <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
+      </div>`
+    : '';
   mepToggleOptions.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Toggles</h6>
     <div class="mep-manifest-variants">
@@ -584,7 +607,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
     </div>
     <div>New manifest location or path*</div>
     <input type="text" name="new-manifest${pageId}" class="new-manifest">
-    ${mepLingoSectionHTML}
   `;
   mepPopupBody[1].append(mepToggleOptions);
 
