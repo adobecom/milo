@@ -7,7 +7,7 @@ import {
   logErrorFor,
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
-import { getConfig, getFedsPlaceholderConfig, getCountry } from '../../../../utils/utils.js';
+import { getConfig, getFedsPlaceholderConfig } from '../../../../utils/utils.js';
 import { debounce } from '../../../../utils/action.js';
 
 const CONFIG = {
@@ -22,7 +22,7 @@ const CONFIG = {
 };
 
 const { locale } = getConfig();
-const country = getCountry().toUpperCase();
+const [, country = 'US'] = locale.ietf.split('-');
 
 class Search {
   constructor(config) {

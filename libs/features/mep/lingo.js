@@ -21,7 +21,7 @@ export function getLocaleCodeFromPrefix(prefix, region = 'us', language = 'en') 
   return localeCode;
 }
 
-export function getMepLingoContext(locale) {
+export async function getMepLingoContext(locale) {
   if (!locale?.prefix) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
   }

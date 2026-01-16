@@ -3,7 +3,6 @@ import { getCountry } from './utils.js';
 
 /**
  * Gets the Akamai country code from the geo2.adobe.com service.
- * @param {boolean} [checkParams=false] - If true, checks URL parameters and session storage first.
  * @returns {Promise<string|null>} A promise that resolves to the lowercase Akamai country code.
  */
 export const getAkamaiCode = (checkedParams = false) => new Promise((resolve, reject) => {

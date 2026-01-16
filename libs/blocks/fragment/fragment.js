@@ -136,7 +136,7 @@ export default async function init(a) {
   }
 
   const isMepLingoLink = a.dataset.mepLingo === 'true';
-  const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
+  const shouldFetchMepLingo = isMepLingoLink && !!(await getMepLingoPrefix());
   const isOnRegionalPage = locale?.base !== undefined;
 
   if (isMepLingoLink && isOnRegionalPage) {

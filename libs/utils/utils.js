@@ -620,11 +620,9 @@ function processQueryIndexMap(link, domain) {
 const getDomainLingo = (path) => path?.split('/*')[0];
 
 async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
-  const config = getConfig();
-
   if (lingoSiteMapping || isLoadingQueryIndexes) return;
   isLoadingQueryIndexes = true;
-
+  const config = getConfig();
   const origin = config.origin || window.location.origin;
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
@@ -775,11 +773,25 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
-export function getCountry() {
-  return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+export function getCountry(skipFallback = false) {
+  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  return country?.toLowerCase();
 }
 
-export function getMepLingoPrefix() {
+export async function getCountryAsync(skipFallback = false) {
+  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  if (country || skipFallback) return country?.toLowerCase();
+
+  try {
+    const { getAkamaiCode } = await import('./geo.js');
+    return await getAkamaiCode();
+  } catch (error) {
+    window.lana?.log(`Error getting Akamai code: ${error}`);
+    return null;
+  }
+}
+
+export async function getMepLingoPrefix() {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -787,7 +799,7 @@ export function getMepLingoPrefix() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = getCountry();
+  const country = await getCountryAsync();
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
 
   let regionKey = Object.entries(regions).find(
@@ -843,7 +855,7 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
 
-  const prefix = lingoActive() && isMepLingoLink ? getMepLingoPrefix() : null;
+  const prefix = lingoActive() && isMepLingoLink ? await getMepLingoPrefix() : null;
   const base = lingoActive() && isMepLingoLink
     ? getConfig()?.locale?.prefix.replace('/', '')
     : null;
@@ -1815,10 +1827,9 @@ async function checkForPageMods() {
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  const akamaiCode = getMepEnablement('akamaiLocale') || await getCountryAsync(true);
   if (mepgeolocation && !akamaiCode) {
-    const { default: getAkamaiCode } = await import('./geo.js');
-    countryIPPromise = getAkamaiCode(true);
+    countryIPPromise = getCountryAsync();
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1868,7 +1879,6 @@ async function checkForPageMods() {
     enablePersV2,
     promises,
     mepMarketingDecrease,
-    akamaiCode,
   });
 }
 
@@ -2062,7 +2072,7 @@ async function decorateLanguageBanner() {
     : navigator.language?.split('-')[0] || null;
 
   const [geoIpCode, marketsConfig] = await Promise.all([
-    getCountry() || import('./geo.js').then((m) => m.default(true)),
+    getCountryAsync(),
     fetch(getMarketsUrl())
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null),
@@ -2291,10 +2301,11 @@ function loadLingoIndexes() {
     loadQueryIndexes(config.locale.prefix);
     return;
   }
-  const prefix = getMepLingoPrefix();
-  if (prefix) {
-    loadQueryIndexes(prefix, true);
-  }
+  getMepLingoPrefix().then((prefix) => {
+    if (prefix) {
+      loadQueryIndexes(prefix, true);
+    }
+  });
 }
 
 export async function loadArea(area = document) {

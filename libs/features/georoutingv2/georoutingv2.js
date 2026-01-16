@@ -1,5 +1,4 @@
-import { getFederatedContentRoot } from '../../utils/utils.js';
-import { getAkamaiCode } from '../../utils/geo.js';
+import { getFederatedContentRoot, getCountryAsync } from '../../utils/utils.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -434,7 +433,7 @@ export default async function loadGeoRouting(
 
   // Show modal when derived countries from url locale and akamai disagree
   try {
-    let akamaiCode = await getAkamaiCode();
+    let akamaiCode = await getCountryAsync();
     if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
       const localeMatches = getMatches(json.georouting.data, akamaiCode);
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
