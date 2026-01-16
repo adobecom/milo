@@ -66,7 +66,7 @@ describe('marketo', () => {
 describe('marketo decorateURL', () => {
   it('decorates absolute URL with local base URL', async () => {
     const baseURL = new URL('http://localhost:6456/marketo-block');
-    const result = await decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    const result = await decorateURL('https://main--milo--adobecom.aem.page/marketo-block/thank-you', baseURL);
     expect(result).to.equal('http://localhost:6456/marketo-block/thank-you');
   });
 
@@ -84,7 +84,7 @@ describe('marketo decorateURL', () => {
 
   it('decorates absolute URL with .html base URL', async () => {
     const baseURL = new URL('https://business.adobe.com/marketo-block.html');
-    const result = await decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    const result = await decorateURL('https://main--milo--adobecom.aem.page/marketo-block/thank-you', baseURL);
     expect(result).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
   });
 

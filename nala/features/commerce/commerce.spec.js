@@ -78,7 +78,7 @@ module.exports = {
       name: '@Commerce-GB',
       path: '/uk/drafts/nala/features/commerce/promo-placeholders',
       data: {
-        promo: 'UPWORK_CCSN_A23',
+        promo: 'CCI_AA_3MO_UK',
         CO: 'co=GB',
         lang: 'lang=en',
         workflow: 'recommendation',

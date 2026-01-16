@@ -169,7 +169,7 @@ const LANGUAGE_BASED_PATHS = [
   'news.adobe.com',
 ];
 const DEFAULT_LANG = 'en';
-export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+export const SLD = PAGE_URL.hostname.includes('.hlx.') ? 'hlx' : 'aem';
 
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
@@ -180,6 +180,7 @@ let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 let isLoadingQueryIndexes = false;
+let siteQueryIndexMapLingo = [];
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -616,6 +617,7 @@ function processQueryIndexMap(link, domain) {
 
   return result;
 }
+const getDomainLingo = (path) => path?.split('/*')[0];
 
 async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
   const config = getConfig();
@@ -657,12 +659,11 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const configJson = await response.json();
 
-      const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+      siteQueryIndexMapLingo = configJson['site-query-index-map']?.data ?? [];
       const siteLocalesData = configJson['site-locales']?.data ?? [];
-      const getDomain = (path) => path?.split('/*')[0];
 
-      const existingIndex = siteQueryIndexMap.find((d) => d.uniqueSiteId === siteId);
-      const existingDomain = getDomain(existingIndex?.queryIndexWebPath);
+      const existingIndex = siteQueryIndexMapLingo.find((d) => d.uniqueSiteId === siteId);
+      const existingDomain = getDomainLingo(existingIndex?.queryIndexWebPath);
 
       if (existingDomain) {
         [queryIndexes[siteId], baseQueryIndex].forEach((queryIndex) => {
@@ -673,18 +674,18 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false) {
       }
 
       const domainInProdDomains = (d) => d.uniqueSiteId !== siteId
-        && config.prodDomains?.includes(getDomain(d.queryIndexWebPath));
+        && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath));
 
       const hasRegionalQueryIndex = (locale) => parseList(locale.regionalSites).includes(prefix);
 
-      siteQueryIndexMap
+      siteQueryIndexMapLingo
         .filter(domainInProdDomains)
         .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
           const hasRegionalSite = siteLocalesData
             .some((s) => s.uniqueSiteId === uniqueSiteId && hasRegionalQueryIndex(s));
 
           if (!hasRegionalSite) return;
-          const domain = getDomain(queryIndexWebPath);
+          const domain = getDomainLingo(queryIndexWebPath);
           const indexPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
           queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
         });
@@ -747,7 +748,11 @@ function localizeLinkCore(
           const { default: urlInQueryIndex } = await import('./lingo.js');
           const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
           if (!useRegionalPrefix && (locale.base || locale.base === '')) prefix = basePrefix;
-        } else {
+        } else if (
+          siteQueryIndexMapLingo
+            ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
+            ?.length
+        ) {
           prefix = basePrefix;
         }
         const urlPath = `${prefix}${path}${url.search}${hash}`;
@@ -1266,7 +1271,6 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
 
 function decorateLinkElement(a, config, hasDnt) {
   if (hasDnt) a.dataset.hasDnt = true;
-  appendHtmlToLink(a);
   if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
   decorateSVG(a);
   if (a.href.includes('#_blank')) {
@@ -1338,6 +1342,7 @@ export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
+    appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset.hasDnt) {
       a.href = await localizeLinkAsync(
@@ -1360,6 +1365,7 @@ export function decorateLinks(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const links = [...anchors].reduce((rdx, a) => {
+    appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
     const result = processLinkDecoration(a, config, hasDnt);
