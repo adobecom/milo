@@ -13,23 +13,21 @@ export function loadImage(asset) {
   });
 }
 
-function loadVideo(asset) {
-  if (asset.querySelector('source')
-    && asset.readyState > 1
-    && asset.videoWidth > 0) return Promise.resolve();
+async function loadVideo(asset) {
+  const source = asset.querySelector('source');
 
-  return new Promise((resolve) => {
-    if (!asset.querySelector('source')) {
-      const videoSource = asset.getAttribute('data-video-source');
-      if (!videoSource) {
-        resolve();
-        return;
-      }
-      asset.appendChild(createTag('source', { src: videoSource, type: 'video/mp4' }));
-    }
-    ['loadedmetadata', 'error'].forEach((evt) => asset.addEventListener(evt, resolve, { once: true }));
-    asset.load();
-  });
+  if (source && asset.readyState > 1 && asset.videoWidth > 0) return;
+
+  const dataSource = asset.getAttribute('data-video-source');
+  if (!source && !dataSource) return;
+
+  if (!source) asset.appendChild(createTag('source', { src: dataSource, type: 'video/mp4' }));
+
+  asset.load();
+  await Promise.race(['loadedmetadata', 'error']
+    .map((event) => new Promise((resolve) => {
+      asset.addEventListener(event, resolve, { once: true });
+    })));
 }
 
 function loadMpc(asset) {
