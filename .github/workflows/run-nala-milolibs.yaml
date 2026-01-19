@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Provide the live branch url. ex: https://main--cc--adobecom.hlx.live'
+        description: 'Provide the live branch url. ex: https://main--cc--adobecom.aem.live'
         required: false
         type: string
       milolibs:

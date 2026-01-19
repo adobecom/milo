@@ -11,7 +11,7 @@ describe('sendHelixData Util', () => {
       comment: 'comment',
       lang: 'en-us',
       rating: '2',
-      postUrl: 'https://main--helixdemo--nkthakur48.hlx.page/data/review',
+      postUrl: 'https://main--helixdemo--nkthakur48.aem.page/data/review',
       visitorId: 'abcd',
     };
     sendHelixData(input);

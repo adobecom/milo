@@ -7,7 +7,7 @@
                       "action": "appendtosection",
                       "selector": "section1",
                       "pageFilter": "",
-                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
+                      "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
                       "selectorType": "css"
                   }
               ],
@@ -19,7 +19,7 @@
                       "action": "append",
                       "selector": "section1",
                       "pageFilter": "",
-                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test1",
+                      "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test1",
                       "selectorType": "css"
                   }
               ],
@@ -41,7 +41,7 @@
                   "action": "append",
                   "selector": "section1",
                   "pageFilter": "",
-                  "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
+                  "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
                   "selectorType": "css"
               }
           ],
@@ -49,8 +49,8 @@
       },
       "source": ["target"],
       "name": "MILO0013 - manifest order",
-      "manifest": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
-      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
+      "manifest": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
+      "manifestUrl": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
       "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
       "placeholderData": {
           "marquee-title": "Value in Target"
@@ -64,7 +64,7 @@
                       "action": "appendtosection",
                       "selector": "section1",
                       "pageFilter": "",
-                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
+                      "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
                       "selectorType": "css"
                   }
               ],
@@ -76,7 +76,7 @@
                       "action": "appendtosection",
                       "selector": "section1",
                       "pageFilter": "",
-                      "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test1",
+                      "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test1",
                       "selectorType": "css"
                   }
               ],
@@ -98,15 +98,15 @@
                   "action": "appendtosection",
                   "selector": "section1",
                   "pageFilter": "",
-                  "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
+                  "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",
                   "selectorType": "css"
               }
           ],
           "fragments": []
       },
       "source": ["pzn"],
-      "manifest": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
-      "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
+      "manifest": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
+      "manifestUrl": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
       "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
       "placeholderData": {
           "marquee-title": "Value in Pzn"

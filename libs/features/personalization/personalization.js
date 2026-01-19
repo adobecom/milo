@@ -112,7 +112,6 @@ export const normalizePath = (p, localize = true) => {
     const mepHash = '#_dnt';
 
     if (path.startsWith(config.codeRoot)
-      || path.includes('.hlx.')
       || path.includes('.aem.')
       || path.includes('.adobe.')
       || path.includes('localhost:')) {

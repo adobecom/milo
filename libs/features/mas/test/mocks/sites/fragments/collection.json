@@ -39,7 +39,7 @@
                 "fields": {
                     "originalId": "enUS82d1-0acb-4a6d-8155-e5b002acffdf",
                     "label": "All",
-                    "icon": "https://main--milo--adobecom.hlx.page/drafts/astatescu/icons/apps.svg",
+                    "icon": "https://main--milo--adobecom.aem.page/drafts/astatescu/icons/apps.svg",
                     "cards": [
                         "ca835d11-fe6b-40f8-96d1-50ac800c9f70",
                         "d9998fc3-578e-44be-be4f-d8be1c45c75b",
@@ -250,7 +250,7 @@
                 "fields": {
                     "originalId": "enUSb2de-4963-42f2-a0d0-d158bd78e404",
                     "label": "Photo",
-                    "icon": "https://main--milo--adobecom.hlx.page/drafts/astatescu/icons/camera.svg",
+                    "icon": "https://main--milo--adobecom.aem.page/drafts/astatescu/icons/camera.svg",
                     "cards": ["8391265d-2542-4533-8089-b75fb19d28d8"],
                     "collections": []
                 }
@@ -270,7 +270,7 @@
                 "fields": {
                     "originalId": "enUSc155-8081-4d9b-8215-a4fb0b8418dd",
                     "label": "Cloud",
-                    "icon": "https://main--milo--adobecom.hlx.page/drafts/astatescu/icons/cloud.svg",
+                    "icon": "https://main--milo--adobecom.aem.page/drafts/astatescu/icons/cloud.svg",
                     "cards": [
                         "0fea0932-c802-49e4-8589-f8bcf6bfe98c",
                         "ee0f3a5c-b4a4-4305-bda5-92be2662fbab",

@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 
 const { getContainers, getSearchTags, getHtml } = await import('../../../libs/blocks/library-config/lists/blocks.js');
 const { isMatching } = await import('../../../libs/blocks/library-config/library-utils.js');
-const BLOCK_PAGE_URL = 'https://main--milo--adobecom.hlx.page/path/to/block/page';
+const BLOCK_PAGE_URL = 'https://main--milo--adobecom.aem.page/path/to/block/page';
 
 function verifyContainer(container, elementsLength, hasLibraryMetadata) {
   expect(container).to.exist;
