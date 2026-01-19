@@ -361,7 +361,7 @@ export default async function checkColorContrast(elements = [], config = {}) {
   const fullCanvas = await captureDocumentCanvas();
 
   // Step 6: per character from each text node, sample background from textless canvas,
-  // calculate text contrast, keep the worst ratio per node
+  // calculate color contrast, keep the worst ratio per node
   applyContrastSampling(textElements, backgroundCanvas, fullCanvas);
 
   // Step 7: create violation entries for low-contrast text nodes
