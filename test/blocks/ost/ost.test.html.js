@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
-
+import { delay } from '../../helpers/waitfor.js';
 import { mockOstDeps, unmockOstDeps } from './mocks/ost-utils.js';
-import { DEFAULT_CTA_TEXT, createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
+import { DEFAULT_CTA_TEXT, createLinkMarkup, addToggleSwitches } from '../../../libs/blocks/ost/ost.js';
 
 const perpM2M = {
   offer_id: 'aeb0bf53517d46e89a1b039f859cf573',
@@ -304,5 +304,91 @@ describe('OST: merch link creation', () => {
         type,
       });
     });
+  });
+});
+describe('OST: toggle switches', () => {
+  it('change toggle switch landscape from PUBLISHED to DRAFT', async () => {
+    const el = document.createElement('div');
+    const ostEnv = { landscape: 'PUBLISHED' };
+    const windowObj = { location: {} };
+    const cbs = addToggleSwitches(el, ostEnv, true, windowObj);
+    const cbLandscape = cbs[0];
+    const cbLDefaults = cbs[1];
+
+    expect(cbLandscape.checked).to.be.false;
+    expect(cbLDefaults.checked).to.be.true;
+
+    cbLandscape.checked = true;
+    cbLandscape.dispatchEvent(new Event('change'));
+    await delay(100);
+
+    const url = new URL(windowObj.location.href);
+    expect(url.searchParams.get('commerce.landscape')).to.equal('DRAFT');
+    expect(url.searchParams.get('commerce.defaults')).to.be.null;
+  });
+  it('change toggle switch defaults on to off', async () => {
+    const el = document.createElement('div');
+    const ostEnv = { landscape: 'PUBLISHED' };
+    const windowObj = { location: {} };
+    const cbs = addToggleSwitches(el, ostEnv, true, windowObj);
+    const cbLandscape = cbs[0];
+    const cbLDefaults = cbs[1];
+
+    expect(cbLandscape.checked).to.be.false;
+    expect(cbLDefaults.checked).to.be.true;
+
+    cbLDefaults.checked = false;
+    cbLDefaults.dispatchEvent(new Event('change'));
+    await delay(100);
+
+    const url = new URL(windowObj.location.href);
+    expect(url.searchParams.get('commerce.landscape')).to.be.null;
+    expect(url.searchParams.get('commerce.defaults')).to.equal('off');
+  });
+  it('change toggle switch landscape from DRAFT to PUBLISHED', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, null, `${window.location.pathname}?commerce.landscape=DRAFT&commerce.defaults=off`);
+    const el = document.createElement('div');
+    const ostEnv = { landscape: 'DRAFT' };
+    const windowObj = { location: {} };
+    const cbs = addToggleSwitches(el, ostEnv, false, windowObj);
+    const cbLandscape = cbs[0];
+    const cbLDefaults = cbs[1];
+
+    expect(cbLandscape.checked).to.be.true;
+    expect(cbLDefaults.checked).to.be.false;
+
+    cbLandscape.checked = false;
+    cbLandscape.dispatchEvent(new Event('change'));
+    await delay(100);
+
+    const url = new URL(windowObj.location.href);
+    expect(url.searchParams.get('commerce.landscape')).to.be.null;
+    expect(url.searchParams.get('commerce.defaults')).to.equal('off');
+
+    window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
+  });
+  it('change toggle switch defaults off to on', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, null, `${window.location.pathname}?commerce.landscape=DRAFT&commerce.defaults=off`);
+    const el = document.createElement('div');
+    const ostEnv = { landscape: 'DRAFT' };
+    const windowObj = { location: {} };
+    const cbs = addToggleSwitches(el, ostEnv, false, windowObj);
+    const cbLandscape = cbs[0];
+    const cbLDefaults = cbs[1];
+
+    expect(cbLandscape.checked).to.be.true;
+    expect(cbLDefaults.checked).to.be.false;
+
+    cbLDefaults.checked = true;
+    cbLDefaults.dispatchEvent(new Event('change'));
+    await delay(100);
+
+    const url = new URL(windowObj.location.href);
+    expect(url.searchParams.get('commerce.landscape')).to.equal('DRAFT');
+    expect(url.searchParams.get('commerce.defaults')).to.be.null;
+
+    window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
   });
 });

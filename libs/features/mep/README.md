@@ -4,7 +4,7 @@ MEP Lingo enables serving region-specific content variants for fragments without
 
 ## Usage
 
-When a page has lingo enabled (via `langFirst=on` URL param or `<meta name="langFirst" content="on">`), fragments with `#_mep-lingo` will attempt to load regional variants.
+When a page has lingo enabled (via `langfirst=on` URL param or `<meta name="langfirst" content="on">`), fragments with `#_mep-lingo` will attempt to load regional variants.
 
 ### Fragment Syntax
 
@@ -73,17 +73,18 @@ mepLingoCountryToRegion: {
 |----------|-------------|
 | `getLocaleCodeFromPrefix(prefix, region, language)` | Derive locale code from prefix, handling special cases like `langstore` and `target-preview` |
 | `getMepLingoContext(locale)` | Get full context including country, localeCode, regionKey, matchingRegion |
-| `getQueryIndexPaths(prefix, checkImmediate, isFederal)` | Check query-index for regional paths |
-| `fetchMepLingo(mepLingoPath, fallbackPath)` | Fetch ROC and fallback in parallel, return ROC immediately if successful |
-| `processMepLingoAnchors(anchors)` | Process anchors for block swaps |
-| `processAnchorForMepLingo(a)` | Process single anchor's mep-lingo hash |
+| `fetchFragment(path)` | Fetch a fragment, stripping `.html` extension to avoid `.html.plain.html` |
+| `fetchMepLingo(mepLingoPath, fallbackPath)` | Fetch ROC and fallback in parallel, return ROC if successful, else fallback |
+| `handleInvalidMepLingo(a, { env, relHref })` | Handle mep-lingo links on regional pages (removes on prod, marks failed on non-prod) |
+| `addMepLingoPreviewAttrs(fragment, { usedFallback, relHref })` | Set `data-mep-lingo-roc` or `data-mep-lingo-fallback` attributes for preview |
 
 ### `utils.js`
 
 | Function | Description |
 |----------|-------------|
 | `getCountry()` | Get user's country code from akamaiLocale param, sessionStorage, or server timing |
-| `lingoActive()` | Check if lingo is enabled via `langFirst` URL param or meta tag |
+| `lingoActive()` | Check if lingo is enabled via `langfirst` URL param or meta tag |
+| `getMepLingoPrefix()` | Get the regional prefix for the current user's country |
 
 ### `getLocaleCodeFromPrefix` Details
 
@@ -108,25 +109,6 @@ Derives the locale code from a URL prefix, handling special cases for `langstore
 2. If prefix starts with `langstore` or `target-preview`, returns the second path segment
 3. Otherwise, returns the first path segment
 
-### `getQueryIndexPaths` Details
-
-Checks the query-index for regional paths. Used to optimize fetching by avoiding requests for paths that don't exist.
-
-**Parameters:**
-- `prefix` - The regional prefix to search for (e.g., `/ch_de`)
-- `checkImmediate` - If `true`, returns immediately if index not yet loaded. Set to `true` for LCP fragments (non-blocking). Defaults to `false`
-- `isFederal` - If `true`, uses `'federal'` as siteId. Defaults to `false`
-
-**Returns:** Object with `{ resolved, paths, available }`
-- `resolved` - Whether query-index lookup completed
-- `paths` - Array of paths found in the index
-- `available` - Whether query-index is available
-
-**Important Notes:**
-- Uses the same `siteId` logic as `loadQueryIndexes()` in utils.js for consistency
-- For production, `config.uniqueSiteId` must be set in the consumer's config for the index lookup to work correctly
-- When `checkImmediate=true` (LCP), returns immediately without waiting for index to load to avoid blocking LCP
-
 ## Data Attributes
 
 | Attribute | Description |
@@ -140,14 +122,13 @@ Checks the query-index for regional paths. Used to optimize fetching by avoiding
 
 ## Debugging
 
-Add `langFirst=on` to URL to enable mep-lingo, then use `akamaiLocale=XX` to spoof country:
+Add `langfirst=on` to URL to enable mep-lingo, then use `akamaiLocale=XX` to spoof country:
 
 ```
-?langFirst=on&akamaiLocale=ch
+?langfirst=on&akamaiLocale=ch
 ```
 
-The MEP preview panel shows:
-- Current spoofed region
-- Upstream page link
-- Downstream pages links
+When the MEP panel's "Highlight changes" checkbox is enabled (or `mepHighlight=true` URL param), fragments show preview badges:
+- **Green badge**: Regional content loaded (`data-mep-lingo-roc`)
+- **Yellow badge**: Fallback content loaded (`data-mep-lingo-fallback`)
 
