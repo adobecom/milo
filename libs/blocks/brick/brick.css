@@ -48,6 +48,11 @@
   display: none;
 }
 
+.brick.media-contain .foreground .brick-media img,
+.brick.media-contain.split.row .foreground .brick-media img {
+  object-fit: contain;
+}
+
 .brick.rounded-corners,
 .brick.rounded-corners .background,
 .brick.rounded-corners .foreground {
