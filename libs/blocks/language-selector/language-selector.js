@@ -1,5 +1,7 @@
 /* eslint-disable no-underscore-dangle */
-import { createTag, getConfig, getLanguage, loadLanguageConfig, setInternational, getMetadata } from '../../utils/utils.js';
+import {
+  createTag, getConfig, getLanguage, loadLanguageConfig, setInternational, getMetadata,
+} from '../../utils/utils.js';
 
 function sendAnalyticsEvent(eventName, type = 'click') {
   if (window._satellite?.track) {
