@@ -7,7 +7,7 @@ const { default: init } = await import('../../../libs/blocks/rollout/rollout.js'
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 const createTestParams = (
-  referrer = 'https://main--bacom--adobecom.hlx.page/langstore/de/customer-success',
+  referrer = 'https://main--bacom--adobecom.aem.page/langstore/de/customer-success',
   host = 'milo.adobe.com',
   project = 'Milo',
   overrideBranch = null,
@@ -58,7 +58,7 @@ describe('Rollout', () => {
     expect(windowOpenStub.called).to.be.true;
 
     const lastUrl = new URL(windowOpenStub.firstCall.args[0]);
-    expect(lastUrl.hostname).to.equal('main--bacom--adobecom.hlx.page');
+    expect(lastUrl.hostname).to.equal('main--bacom--adobecom.aem.page');
     expect(lastUrl.searchParams.get('language')).to.equal('de');
     expect(lastUrl.searchParams.get('milolibs')).to.equal('milostudio-stage');
     // Restore original window.open
@@ -81,7 +81,7 @@ describe('Rollout', () => {
 
   it('should handle overrideBranch parameter', async () => {
     const el = document.querySelector('div');
-    const searchParams = createTestParams('https://main--milo--adobecom.hlx.page/langstore/de/customer-success', 'milo.adobe.com', 'Milo', 'milostudio');
+    const searchParams = createTestParams('https://main--milo--adobecom.aem.page/langstore/de/customer-success', 'milo.adobe.com', 'Milo', 'milostudio');
     const windowOpenStub = sinon.stub(window, 'open');
 
     const result = await init(el, `?${searchParams.toString()}`);
@@ -94,7 +94,7 @@ describe('Rollout', () => {
     expect(windowOpenStub.called).to.be.true;
 
     const lastUrl = new URL(windowOpenStub.firstCall.args[0]);
-    expect(lastUrl.hostname).to.equal('milostudio--milo--adobecom.hlx.page');
+    expect(lastUrl.hostname).to.equal('milostudio--milo--adobecom.aem.page');
     expect(lastUrl.searchParams.get('milolibs')).to.equal('milostudio');
 
     // Restore original window.open
@@ -103,7 +103,7 @@ describe('Rollout', () => {
 
   it('should handle overrideBranch parameter for stage', async () => {
     const el = document.querySelector('div');
-    const searchParams = createTestParams('https://main--milo--adobecom.hlx.page/langstore/de/customer-success', 'milo.adobe.com', 'Milo', 'milostudio');
+    const searchParams = createTestParams('https://main--milo--adobecom.aem.page/langstore/de/customer-success', 'milo.adobe.com', 'Milo', 'milostudio');
     const windowOpenStub = sinon.stub(window, 'open');
 
     const result = await init(el, `?${searchParams.toString()}`);
@@ -120,7 +120,7 @@ describe('Rollout', () => {
     expect(windowOpenStub.called).to.be.true;
 
     const lastUrl = new URL(windowOpenStub.firstCall.args[0]);
-    expect(lastUrl.hostname).to.equal('milostudio-stage--milo--adobecom.hlx.page');
+    expect(lastUrl.hostname).to.equal('milostudio-stage--milo--adobecom.aem.page');
     expect(lastUrl.searchParams.get('milolibs')).to.equal('milostudio-stage');
 
     // Restore original window.open

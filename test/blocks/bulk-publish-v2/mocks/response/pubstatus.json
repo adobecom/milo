@@ -27,8 +27,8 @@
       "notmodified": 0
   },
   "links": {
-      "list": "https://admin.hlx.page/job/adobecom/milo/main/publish",
-      "job": "https://admin.hlx.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z",
-      "self": "https://admin.hlx.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z/details"
+      "list": "https://admin.aem.page/job/adobecom/milo/main/publish",
+      "job": "https://admin.aem.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z",
+      "self": "https://admin.aem.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z/details"
   }
 }

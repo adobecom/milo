@@ -937,7 +937,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
     return;
   }
   if (isInternalModal(url)) {
-    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
+    const fragmentPath = url.split(/(aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
     modal = await openExternalModal(url, getModal, extraOptions, el);

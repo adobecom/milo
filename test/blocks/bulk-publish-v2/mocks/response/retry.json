@@ -6,9 +6,9 @@
       "status": 200
     },
     "links": {
-      "status": "https://admin.hlx.page/status/adobecom/milo/main/tools/bulk-publish-v2-test",
-      "preview": "https://admin.hlx.page/preview/adobecom/milo/main/tools/bulk-publish-v2-test",
-      "live": "https://admin.hlx.page/live/adobecom/milo/main/tools/bulk-publish-v2-test",
-      "code": "https://admin.hlx.page/code/adobecom/milo/main/tools/bulk-publish-v2-test"
+      "status": "https://admin.aem.page/status/adobecom/milo/main/tools/bulk-publish-v2-test",
+      "preview": "https://admin.aem.page/preview/adobecom/milo/main/tools/bulk-publish-v2-test",
+      "live": "https://admin.aem.page/live/adobecom/milo/main/tools/bulk-publish-v2-test",
+      "code": "https://admin.aem.page/code/adobecom/milo/main/tools/bulk-publish-v2-test"
     }
 }

@@ -1,5 +1,5 @@
 const DA_ORIGIN = 'https://admin.da.live';
-const AEM_ORIGIN = 'https://admin.hlx.page';
+const AEM_ORIGIN = 'https://admin.aem.page';
 
 const SUPPORTED_FILES = {
   html: 'text/html',

@@ -71,15 +71,15 @@ describe('marketo decorateURL', () => {
   });
 
   it('decorates relative URL with absolute base URL', async () => {
-    const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
+    const baseURL = new URL('https://main--milo--adobecom.aem.page/marketo-block');
     const result = await decorateURL('/marketo-block/thank-you', baseURL);
-    expect(result).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
+    expect(result).to.equal('https://main--milo--adobecom.aem.page/marketo-block/thank-you');
   });
 
   it('decorates absolute URL with matching base URL', async () => {
-    const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
-    const result = await decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
-    expect(result).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
+    const baseURL = new URL('https://main--milo--adobecom.aem.page/marketo-block');
+    const result = await decorateURL('https://main--milo--adobecom.aem.page/marketo-block/thank-you', baseURL);
+    expect(result).to.equal('https://main--milo--adobecom.aem.page/marketo-block/thank-you');
   });
 
   it('decorates absolute URL with .html base URL', async () => {
