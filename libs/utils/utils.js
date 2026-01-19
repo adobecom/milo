@@ -1637,8 +1637,8 @@ async function loadPostLCP(config) {
         isLocalNav: false,
         mountpoint: header,
         unavEnabled: false,
-        miloConfig: { locale: config.locale },
         placeholders: placeholdersPromise,
+        miloConfig: getConfig(),
       }).catch((error) => {
         console.log(error);
       });
