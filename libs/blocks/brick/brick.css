@@ -48,8 +48,8 @@
   display: none;
 }
 
-.brick.media-contain .foreground .brick-media img,
-.brick.media-contain.split.row .foreground .brick-media img {
+.brick.media-contain.split.row .foreground .brick-media img,
+.brick.media-contain.split.row .foreground .brick-media video {
   object-fit: contain;
 }
 
