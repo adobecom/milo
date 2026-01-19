@@ -1,3 +1,5 @@
+import { fetchPlaceholders } from '../features/placeholders.js';
+
 /* eslint-disable no-console */
 const MILO_TEMPLATES = [
   '404',
@@ -1626,6 +1628,8 @@ async function loadPostLCP(config) {
           default: return 'http://localhost:3000';
         }
       })();
+      const placeholdersPromise = fetchPlaceholders({ config })
+        .then((placeholders) => new Map(Object.entries(placeholders)));
       const { main } = await import(`${federalDomain}/libs/global-navigation/dist/main.js`);
       main({
         gnavSource: new URL(await getGnavSource()),
@@ -1633,6 +1637,8 @@ async function loadPostLCP(config) {
         isLocalNav: false,
         mountpoint: header,
         unavEnabled: false,
+        miloConfig: { locale: config.locale },
+        placeholders: placeholdersPromise,
       }).catch((error) => {
         console.log(error);
       });
