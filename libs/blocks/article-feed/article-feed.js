@@ -555,6 +555,8 @@ async function decorateArticleFeed(
     role: 'status',
     'aria-live': 'polite',
   });
+  const loadingText = createTag('span', { class: 'sr-only' }, 'loading');
+  spinner.append(loadingText);
   container.append(spinner);
   articleCards.append(container);
 
