@@ -158,7 +158,7 @@ export default async function loadBlock(configs, customLib) {
       const config = getConfig();
       if (block.key === 'header') {
         let gnavSource = configBlock.gnavSource || `${config?.locale?.contentRoot}/gnav`;
-        if (configBlock.disableActiveLink && !gnavSource.includes('_noActiveItem')) {
+        if (String(configBlock.disableActiveLink) === 'true' && !gnavSource.includes('_noActiveItem')) {
           gnavSource += '#_noActiveItem';
         }
         try {
