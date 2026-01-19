@@ -176,7 +176,7 @@ function getSharepointConfig(config, fgColor) {
 }
 
 function getHelixAdminConfig() {
-  const adminServerURL = 'https://admin.hlx.page';
+  const adminServerURL = 'https://admin.aem.page';
   return {
     api: {
       status: { baseURI: `${adminServerURL}/status` },

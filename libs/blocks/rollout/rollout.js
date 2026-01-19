@@ -45,10 +45,8 @@ const setUrlData = (url, allowEmptyPaths = false) => {
       return null;
     }
 
-    const hlxPageIndex = urlParts[2].indexOf('.hlx.page');
-    const aemPageIndex = urlParts[2].indexOf('.aem.page');
-    const pageIndex = hlxPageIndex >= 0 ? hlxPageIndex : aemPageIndex;
-    const sld = hlxPageIndex >= 0 ? '.hlx.page' : '.aem.page';
+    const pageIndex = urlParts[2].indexOf('.aem.page');
+    const sld = '.aem.page';
 
     const pathLengthCheck = allowEmptyPaths ? sld.length - 1 : sld.length;
     if (pageIndex < 0 || pageIndex + pathLengthCheck >= urlParts[2].length) {

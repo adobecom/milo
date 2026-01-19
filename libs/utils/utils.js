@@ -169,7 +169,7 @@ const LANGUAGE_BASED_PATHS = [
   'news.adobe.com',
 ];
 const DEFAULT_LANG = 'en';
-export const SLD = PAGE_URL.hostname.includes('.hlx.') ? 'hlx' : 'aem';
+export const SLD = 'aem';
 
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
@@ -1090,7 +1090,7 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = (authoredUrl.hostname.includes('.hlx.') || authoredUrl.hostname.includes('.aem.'))
+    const src = authoredUrl.hostname.includes('.aem.')
       ? authoredUrl.pathname
       : authoredUrl;
 
@@ -1128,7 +1128,7 @@ export function decorateImageLinks(el) {
     try {
       if (!isValidHtmlUrl(source.trim())) return;
       const url = new URL(source.trim());
-      const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
+      const href = url.hostname.includes('.aem.') ? `${url.pathname}${url.search}${url.hash}` : url.href;
       img.alt = alt?.trim() || '';
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
@@ -1159,7 +1159,7 @@ export function isTrustedAutoBlock(autoBlock, url) {
     || urlHostname.endsWith('.adobe.com')
     || urlHostname === 'adobe.com'
     || urlHostname === autoBlock
-    || !!urlHostname.match(/\.(hlx|aem)\.(page|live)$/)
+    || !!urlHostname.match(/\.(aem)\.(page|live)$/)
     || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
 }
 
@@ -1884,10 +1884,10 @@ async function checkForPageMods() {
 
 async function decorateMeta(ignoreNames = []) {
   const { origin } = window.location;
-  const contents = document.head.querySelectorAll('[content*=".hlx."]:not([data-localized]), [content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
+  const contents = document.head.querySelectorAll('[content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
   await Promise.all(Array.from(contents).map(async (meta) => {
     const name = meta.getAttribute('name') || meta.getAttribute('property');
-    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule')) return;
+    if (name?.endsWith('schedule')) return;
     if (ignoreNames.includes(name)) return;
     try {
       const url = new URL(meta.content);

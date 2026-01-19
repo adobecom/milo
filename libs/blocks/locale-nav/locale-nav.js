@@ -22,8 +22,8 @@ const formatJson = (json) => {
 
 const getDetails = async (path) => {
   const url = path
-    ? `https://admin.hlx.page/status/${owner}/${repo}/main${path}?editUrl=auto`
-    : `https://admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`;
+    ? `https://admin.aem.page/status/${owner}/${repo}/main${path}?editUrl=auto`
+    : `https://admin.aem.page/status/${owner}/${repo}/main?editUrl=${referrer}`;
   try {
     const res = await fetch(url);
     const json = await res.json();

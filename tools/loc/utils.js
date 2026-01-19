@@ -100,7 +100,7 @@ export async function simulatePreview(path, retryAttempt = 1, isFloodgate, fgCol
   try {
     getUrlInfo();
     const repo = isFloodgate ? `${urlInfo.repo}-${fgColor}` : urlInfo.repo;
-    const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${repo}/${urlInfo.ref}${path}`;
+    const previewUrl = `https://admin.aem.page/preview/${urlInfo.owner}/${repo}/${urlInfo.ref}${path}`;
     const response = await fetch(
       `${previewUrl}`,
       { method: 'POST' },

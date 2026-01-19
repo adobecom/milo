@@ -67,7 +67,7 @@ describe('BulkAction', () => {
     sinon.assert.callCount(daFetchStub, paths.length);
 
     const args = [
-      'https://admin.hlx.page/delete/testOrg/testRepo/main/content/test1',
+      'https://admin.aem.page/delete/testOrg/testRepo/main/content/test1',
       { method: 'DELETE' },
     ];
     sinon.assert.calledWithMatch(daFetchStub.firstCall, args[0], args[1]);

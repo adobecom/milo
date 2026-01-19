@@ -8,7 +8,7 @@
           "eventStart": null,
           "source": "target",
           "manifestId": 6,
-          "url": "https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json",
+          "url": "https://main--homepage--adobecom.aem.page/homepage/fragments/mep/hp-11-15-black-friday.json",
           "pathname": "/homepage/fragments/mep/hp-11-15-black-friday.json"
       },
       {
@@ -19,7 +19,7 @@
           "eventStart": null,
           "source": "pzn",
           "manifestId": 15,
-          "url": "https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-12-09-24-cybr-tkdwn-ste.json",
+          "url": "https://main--homepage--adobecom.aem.page/homepage/fragments/mep/hp-12-09-24-cybr-tkdwn-ste.json",
           "pathname": "/homepage/fragments/mep/hp-12-09-24-cybr-tkdwn-ste.json"
       },
       {
@@ -30,7 +30,7 @@
           "eventStart": "2024-11-15T15:45:00.000Z",
           "source": "promo",
           "manifestId": 7,
-          "url": "https://main--homepage--adobecom.hlx.page/homepage/fragments/loggedout/promos/2024/bfcm/global/bfcm-cct-row-133146.json",
+          "url": "https://main--homepage--adobecom.aem.page/homepage/fragments/loggedout/promos/2024/bfcm/global/bfcm-cct-row-133146.json",
           "pathname": "/homepage/fragments/loggedout/promos/2024/bfcm/global/bfcm-cct-row-133146.json"
       }
   ],

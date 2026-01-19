@@ -6,8 +6,6 @@ const API_SOURCE_URL = 'https://acrobatservices.adobe.com/view-sdk/viewer.js';
 const PDF_RENDER_DIV_ID = 'adobe-dc-view';
 export const CLIENT_ID_PAGE = '762c730cf6184796bcd02ff8b79ce6fc';
 export const CLIENT_ID_LIVE = 'cf650e2632384d8fb33d82d2997804d8';
-export const CLIENT_ID_HLX_PAGE = '600a4521c23d4c7eb9c7b039bee534a0';
-export const CLIENT_ID_HLX_LIVE = '96e41871f28349e08b3562747a72dc75';
 const PDF_EMBED_MODE_CONFIG = {
   'full-window': { defaultViewMode: 'FIT_WIDTH' },
   default: { embedMode: 'IN_LINE' },
@@ -16,7 +14,7 @@ const PDF_CONTAINER_MIN_HEIGHT = '620px';
 
 export const getPdfConfig = (location) => {
   const { host } = location;
-  const { env, page, live, hlxPage, hlxLive } = getConfig();
+  const { env, page, live } = getConfig();
   let clientId = env.consumer?.pdfViewerClientId || env.pdfViewerClientId;
   let reportSuiteId = env.consumer?.pdfViewerReportSuite || env.pdfViewerReportSuite;
 
@@ -28,20 +26,6 @@ export const getPdfConfig = (location) => {
   if (host.includes('.aem.live')) {
     clientId = live?.pdfViewerClientId || CLIENT_ID_LIVE;
     reportSuiteId = live?.pdfViewerReportSuite || env.pdfViewerReportSuite;
-  }
-
-  if (host.includes('.hlx.page')) {
-    clientId = hlxPage?.pdfViewerClientId || env.consumer?.pdfViewerClientId || CLIENT_ID_HLX_PAGE;
-    reportSuiteId = hlxPage?.pdfViewerReportSuite
-      || env.consumer?.pdfViewerReportSuite
-      || env.pdfViewerReportSuite;
-  }
-
-  if (host.includes('.hlx.live')) {
-    clientId = hlxLive?.pdfViewerClientId || live?.pdfViewerClientId || CLIENT_ID_HLX_LIVE;
-    reportSuiteId = hlxLive?.pdfViewerReportSuite
-      || live?.pdfViewerReportSuite
-      || env.pdfViewerReportSuite;
   }
 
   return { clientId, reportSuiteId };

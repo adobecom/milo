@@ -58,7 +58,7 @@
                           "id": "901343",
                           "format": "application/json",
                           "content": {
-                              "manifestLocation": "https://main--cc--adobecom.hlx.page/drafts/mepdev/fragments/2024/q3/meppostlcp/manifest.json",
+                              "manifestLocation": "https://main--cc--adobecom.aem.page/drafts/mepdev/fragments/2024/q3/meppostlcp/manifest.json",
                               "manifestContent": {
                                   "info": {
                                       "total": 3,
@@ -162,7 +162,7 @@
                           "id": "901343",
                           "format": "application/json",
                           "content": {
-                              "manifestLocation": "https://main--cc--adobecom.hlx.page/drafts/mepdev/fragments/2024/q3/meppostlcp/manifest.json",
+                              "manifestLocation": "https://main--cc--adobecom.aem.page/drafts/mepdev/fragments/2024/q3/meppostlcp/manifest.json",
                               "manifestContent": {
                                   "info": {
                                       "total": 3,
@@ -230,12 +230,12 @@
           "eventMergeId": "",
           "web": {
               "webPageDetails": {
-                  "URL": "https://main--cc--adobecom.hlx.page/drafts/mepdev/fragments/2024/q3/meppostlcp/?milolibs=meppostlcp&target=postlcp",
-                  "siteSection": "main--cc--adobecom.hlx.page",
-                  "server": "main--cc--adobecom.hlx.page",
+                  "URL": "https://main--cc--adobecom.aem.page/drafts/mepdev/fragments/2024/q3/meppostlcp/?milolibs=meppostlcp&target=postlcp",
+                  "siteSection": "main--cc--adobecom.aem.page",
+                  "server": "main--cc--adobecom.aem.page",
                   "isErrorPage": false,
                   "isHomePage": false,
-                  "name": "main--cc--adobecom.hlx.page:drafts:mepdev:fragments:2024:q3:meppostlcp",
+                  "name": "main--cc--adobecom.aem.page:drafts:mepdev:fragments:2024:q3:meppostlcp",
                   "pageViews": {
                       "value": 1
                   }
@@ -249,15 +249,15 @@
                   "page": {
                       "pageInfo": {
                           "language": "en-US",
-                          "siteSection": "main--cc--adobecom.hlx.page",
-                          "pageName": "main--cc--adobecom.hlx.page:drafts:mepdev:fragments:2024:q3:meppostlcp",
-                          "processedPageName": "main--cc--adobecom.hlx.page:drafts:mepdev:fragments:2024:q3:meppostlcp",
+                          "siteSection": "main--cc--adobecom.aem.page",
+                          "pageName": "main--cc--adobecom.aem.page:drafts:mepdev:fragments:2024:q3:meppostlcp",
+                          "processedPageName": "main--cc--adobecom.aem.page:drafts:mepdev:fragments:2024:q3:meppostlcp",
                           "location": {
-                              "href": "https://main--cc--adobecom.hlx.page/drafts/mepdev/fragments/2024/q3/meppostlcp/?milolibs=meppostlcp&target=postlcp",
-                              "origin": "https://main--cc--adobecom.hlx.page",
+                              "href": "https://main--cc--adobecom.aem.page/drafts/mepdev/fragments/2024/q3/meppostlcp/?milolibs=meppostlcp&target=postlcp",
+                              "origin": "https://main--cc--adobecom.aem.page",
                               "protocol": "https:",
-                              "host": "main--cc--adobecom.hlx.page",
-                              "hostname": "main--cc--adobecom.hlx.page",
+                              "host": "main--cc--adobecom.aem.page",
+                              "hostname": "main--cc--adobecom.aem.page",
                               "port": "",
                               "pathname": "/drafts/mepdev/fragments/2024/q3/meppostlcp/",
                               "search": "?milolibs=meppostlcp&target=postlcp",
@@ -284,7 +284,7 @@
                   },
                   "previousPage": {
                       "pageInfo": {
-                          "pageName": "main--cc--adobecom.hlx.page:drafts:mepdev:fragments:2024:q3:meppostlcp"
+                          "pageName": "main--cc--adobecom.aem.page:drafts:mepdev:fragments:2024:q3:meppostlcp"
                       }
                   },
                   "primaryUser": {
@@ -328,12 +328,12 @@
           "eventMergeId": "5256835b-764b-41fd-82bc-0825a7896332",
           "web": {
               "webPageDetails": {
-                  "URL": "https://main--cc--adobecom.hlx.page/drafts/mepdev/fragments/2024/q3/meppostlcp/?milolibs=meppostlcp&target=postlcp",
-                  "siteSection": "main--cc--adobecom.hlx.page",
-                  "server": "main--cc--adobecom.hlx.page",
+                  "URL": "https://main--cc--adobecom.aem.page/drafts/mepdev/fragments/2024/q3/meppostlcp/?milolibs=meppostlcp&target=postlcp",
+                  "siteSection": "main--cc--adobecom.aem.page",
+                  "server": "main--cc--adobecom.aem.page",
                   "isErrorPage": false,
                   "isHomePage": false,
-                  "name": "main--cc--adobecom.hlx.page:drafts:mepdev:fragments:2024:q3:meppostlcp",
+                  "name": "main--cc--adobecom.aem.page:drafts:mepdev:fragments:2024:q3:meppostlcp",
                   "pageViews": {
                       "value": 1
                   }
@@ -431,7 +431,7 @@
                               "id": "901343",
                               "format": "application/json",
                               "content": {
-                                  "manifestLocation": "https://main--cc--adobecom.hlx.page/drafts/mepdev/fragments/2024/q3/meppostlcp/manifest.json",
+                                  "manifestLocation": "https://main--cc--adobecom.aem.page/drafts/mepdev/fragments/2024/q3/meppostlcp/manifest.json",
                                   "manifestContent": {
                                       "info": {
                                           "total": 3,
@@ -535,7 +535,7 @@
                               "id": "901343",
                               "format": "application/json",
                               "content": {
-                                  "manifestLocation": "https://main--cc--adobecom.hlx.page/drafts/mepdev/fragments/2024/q3/meppostlcp/manifest.json",
+                                  "manifestLocation": "https://main--cc--adobecom.aem.page/drafts/mepdev/fragments/2024/q3/meppostlcp/manifest.json",
                                   "manifestContent": {
                                       "info": {
                                           "total": 3,
