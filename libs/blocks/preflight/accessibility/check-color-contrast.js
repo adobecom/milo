@@ -1,226 +1,369 @@
-import { getConfig, loadScript } from '../../../utils/utils.js';
-import { loadImage } from '../checks/assets.js';
+import { loadScript, getConfig } from '../../../utils/utils.js';
+import { getUniqueSelector } from './helper.js';
 
-// Calculates the relative luminance of an RGB color.
-function luminance(r, g, b) {
-  const [R, G, B] = [r, g, b].map((channel) => {
-    const c = channel / 255;
-    return (c <= 0.03928) ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+
+const parseCssColorToRgb = (cssColor) => {
+  if (!cssColor) return [0, 0, 0];
+  const match = cssColor.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?\s*\)/i);
+  if (!match) return [0, 0, 0];
+  const r = Math.round(parseFloat(match[1]));
+  const g = Math.round(parseFloat(match[2]));
+  const b = Math.round(parseFloat(match[3]));
+  return [r, g, b];
+};
+
+// FYI: all scary numbers below are from the WCAG formulas: https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
+
+// Converts RGB values to linear light for luminance math
+// because raw RGB values are not reliable for color contrast calculations
+const srgbToLinear = (channel) => {
+  const normalized = channel / 255;
+  return normalized <= 0.03928
+    ? normalized / 12.92
+    : ((normalized + 0.055) / 1.055) ** 2.4;
+};
+
+const relativeLuminance = ([r, g, b]) => (
+  0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b)
+);
+
+const contrastRatio = (fg, bg) => {
+  const L1 = relativeLuminance(fg);
+  const L2 = relativeLuminance(bg);
+  const light = Math.max(L1, L2);
+  const dark = Math.min(L1, L2);
+  return (light + 0.05) / (dark + 0.05);
+};
+
+const averageBackgroundColor = (ctx, x, y, w, h) => {
+  if (w <= 0 || h <= 0) return [255, 255, 255];
+  const { data } = ctx.getImageData(x, y, w, h);
+  let sumR = 0;
+  let sumG = 0;
+  let sumB = 0;
+  let sumA = 0;
+  // loop through every pixel
+  for (let i = 0; i < data.length; i += 4) {
+    const a = data[i + 3] / 255;
+    sumR += data[i] * a;
+    sumG += data[i + 1] * a;
+    sumB += data[i + 2] * a;
+    sumA += a;
+  }
+  if (sumA === 0) return [255, 255, 255];
+  const r = Math.round(sumR / sumA);
+  const g = Math.round(sumG / sumA);
+  const b = Math.round(sumB / sumA);
+  return [clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255)];
+};
+
+const captureDocumentCanvas = async () => {
+  const docEl = document.documentElement;
+  const { body } = document;
+  const width = Math.max(docEl.scrollWidth, body.scrollWidth, docEl.clientWidth);
+  const height = Math.max(docEl.scrollHeight, body.scrollHeight, docEl.clientHeight);
+  return window.html2canvas(docEl, {
+    useCORS: true,
+    backgroundColor: null,
+    windowWidth: width,
+    windowHeight: height,
+    scrollX: 0,
+    scrollY: 0,
+    scale: 1,
+    logging: false,
+    onclone: (clonedDoc) => {
+      ['.milo-preflight-overlay', '#preflight', '.modal-curtain.is-open', '.preflight-decoration']
+        .forEach((selector) => {
+          clonedDoc
+            .querySelectorAll(selector)
+            .forEach((el) => el.remove());
+        });
+    },
   });
-  return (0.2126 * R) + (0.7152 * G) + (0.0722 * B);
-}
+};
 
-// Calculates contrast ratio between two luminance values.
-function contrastRatio(rgb1, rgb2) {
-  const lum1 = luminance(...rgb1);
-  const lum2 = luminance(...rgb2);
-  const lighter = Math.max(lum1, lum2);
-  const darker = Math.min(lum1, lum2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-// Parses an RGB color string into an array of RGB values.
-function parseCssRgb(rgbStr) {
-  if (!rgbStr) return null;
-  const match = rgbStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-  return match ? match.slice(1, 4).map(Number) : null;
-}
-
-// Checks if an alpha value is fully transparent (zero).
-function isZeroAlpha(alpha) {
-  return alpha === '0' || alpha === '0%' || parseFloat(alpha) === 0;
-}
-
-// Checks if an RGBA color string is fully transparent.
-function isTransparent(rgbStr) {
-  if (!rgbStr) return false;
-  const str = rgbStr.trim().toLowerCase();
-  if (str === 'transparent') return true;
-  if (str.startsWith('rgba(0, 0, 0, 0)')) return true;
-  if (str.includes('/ 0')) return true; // CSS4 format like rgb(0 0 0 / 0)
-  const modernMatch = str.match(/rgb[a]?\([^)]*\/\s*([\d.]+%?)\s*\)/);
-  if (modernMatch) return isZeroAlpha(modernMatch[1]);
-  const legacyMatch = str.match(/rgba?\([^)]*,\s*([\d.]+)\s*\)$/);
-  if (legacyMatch) return isZeroAlpha(legacyMatch[1]);
-  return false;
-}
-
-function extractBgImageUrl(bgImageCss) {
-  if (!bgImageCss || bgImageCss === 'none') return null;
-  const match = bgImageCss.match(/url\(["']?([^"')]+)["']?\)/);
-  return match ? match[1] : null;
-}
-
-async function loadColorThief() {
-  if (window.ColorThief) return window.ColorThief;
-  try {
-    const { base } = getConfig();
-    await loadScript(`${base}/deps/colorThief.js`);
-    return window.ColorThief;
-  } catch {
-    return null;
-  }
-}
-
-async function getAverageColorFromUrl(url) {
-  try {
-    const img = document.createElement('img');
-    img.crossOrigin = 'anonymous';
-    img.src = url;
-    await loadImage(img);
-    const thief = new window.ColorThief();
-    const color = thief.getColor(img);
-    return Array.isArray(color) ? color : null;
-  } catch (e) {
-    return null;
-  }
-}
-
-async function getAverageColorFromNearestImg(element) {
-  const candidates = [...element.querySelectorAll('img')];
-  let el = element.parentElement;
-  const maxHops = 5;
-  let hops = 0;
-  while (el && hops < maxHops) {
-    candidates.push(...el.querySelectorAll('img'));
-    el = el.parentElement;
-    hops += 1;
-  }
-  if (!candidates.length) return null;
-  for (let i = 0; i < candidates.length; i += 1) {
-    const img = candidates[i];
+const getWorstContrast = ({
+  textNode,
+  text,
+  fgRgb,
+  ctx,
+  canvasWidth,
+  canvasHeight,
+  scrollX,
+  scrollY,
+}) => {
+  let minRatio = Infinity;
+  const updateWorstContrast = (charIndex) => {
     try {
-      await loadImage(img);
-      const thief = new window.ColorThief();
-      const color = thief.getColor(img);
-      if (Array.isArray(color)) return color;
+      const range = document.createRange();
+      range.setStart(textNode, charIndex);
+      range.setEnd(textNode, charIndex + 1);
+      const rects = Array.from(range.getClientRects());
+      if (!rects.length) return;
+
+      const left = Math.min(...rects.map((r) => r.left));
+      const top = Math.min(...rects.map((r) => r.top));
+      const right = Math.max(...rects.map((r) => r.right));
+      const bottom = Math.max(...rects.map((r) => r.bottom));
+      const w = Math.max(0, Math.floor(right - left));
+      const h = Math.max(0, Math.floor(bottom - top));
+      if (w === 0 || h === 0) return;
+
+      const x = clamp(Math.floor(left + scrollX), 0, canvasWidth);
+      const y = clamp(Math.floor(top + scrollY), 0, canvasHeight);
+      const safeW = clamp(w, 0, canvasWidth - x);
+      const safeH = clamp(h, 0, canvasHeight - y);
+      if (safeW <= 0 || safeH <= 0) return;
+
+      const bgRgb = averageBackgroundColor(ctx, x, y, safeW, safeH);
+      const ratio = contrastRatio(fgRgb, bgRgb);
+      if (ratio < minRatio) {
+        minRatio = ratio;
+      }
     } catch (e) {
-      // continue
+      // ignore per-letter measurement failures
+    }
+  };
+
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    if (ch && !/\s/.test(ch)) {
+      updateWorstContrast(i);
     }
   }
-  return null;
-}
 
-// Traverses the DOM to find the effective background color.
-function getEffectiveBackgroundColor(element) {
-  let el = element;
-  while (el) {
-    const bgColor = window.getComputedStyle(el).backgroundColor;
-    const parsedColor = parseCssRgb(bgColor);
-    if (parsedColor && !isTransparent(bgColor)) return parsedColor;
-    el = el.parentElement;
+  return minRatio;
+};
+
+const collectTextElements = (elements) => elements
+  .filter((element) => {
+    const { width, height } = element.getBoundingClientRect();
+    return width > 0 && height > 0;
+  })
+  .flatMap((element) => {
+    // collect only direct text child nodes to avoid duplicates while iterating all elements
+    const directTextNodes = Array
+      .from(element.childNodes)
+      .filter((node) => (
+        node.nodeType === Node.TEXT_NODE
+        && node.textContent
+        && node.textContent.trim().length > 0
+      ));
+
+    const collected = directTextNodes.map((textNode) => {
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(textNode);
+        const rects = Array.from(range.getClientRects());
+
+        if (!rects.length) return null;
+        const left = Math.min(...rects.map((r) => r.left));
+        const top = Math.min(...rects.map((r) => r.top));
+        const right = Math.max(...rects.map((r) => r.right));
+        const bottom = Math.max(...rects.map((r) => r.bottom));
+        const width = Math.max(0, right - left);
+        const height = Math.max(0, bottom - top);
+        if (width === 0 || height === 0) return null;
+
+        const { parentElement } = textNode;
+        const computed = parentElement ? window.getComputedStyle(parentElement) : null;
+        const color = computed ? computed.color : '';
+
+        return {
+          element: textNode,
+          boxCoordinates: { x: left, y: top, width, height },
+          color,
+        };
+      } catch (e) {
+        return null;
+      }
+    }).filter(Boolean);
+
+    return collected;
+  });
+
+const hideTextElements = (textElements) => {
+  textElements.forEach((item) => {
+    const textNode = item.element;
+    const parent = textNode && textNode.parentNode;
+    if (!parent) return;
+    // avoid double-wrapping if already hidden by this step
+    if (
+      textNode.parentElement
+      && textNode.parentElement.dataset
+      && textNode.parentElement.dataset.preflightHiddenText === 'true'
+    ) return;
+
+    const wrapper = document.createElement('span');
+    wrapper.style.visibility = 'hidden';
+    wrapper.dataset.preflightHiddenText = 'true';
+    parent.insertBefore(wrapper, textNode);
+    wrapper.appendChild(textNode);
+  });
+};
+
+const restoreHiddenText = () => {
+  document.querySelectorAll('span[data-preflight-hidden-text="true"]').forEach((wrapper) => {
+    const parent = wrapper.parentNode;
+    const child = wrapper.firstChild;
+    if (!parent || !child) return;
+    parent.insertBefore(child, wrapper);
+    wrapper.remove();
+  });
+};
+
+const buildThumbnail = (item, canvasWidth, canvasHeight, scrollX, scrollY, canvasSource) => {
+  let thumbX = 0;
+  let thumbY = 0;
+  let thumbWsrc = 0;
+  let thumbHsrc = 0;
+  if (item.boxCoordinates) {
+    const nodeLeft = Math.floor(item.boxCoordinates.x || 0);
+    const nodeTop = Math.floor(item.boxCoordinates.y || 0);
+    const nodeW = Math.floor(item.boxCoordinates.width || 0);
+    const nodeH = Math.floor(item.boxCoordinates.height || 0);
+    const nx = clamp(Math.floor(nodeLeft + scrollX), 0, canvasWidth);
+    const ny = clamp(Math.floor(nodeTop + scrollY), 0, canvasHeight);
+    const nw = clamp(nodeW, 0, canvasWidth - nx);
+    const nh = clamp(nodeH, 0, canvasHeight - ny);
+    if (nw > 0 && nh > 0) {
+      thumbX = nx;
+      thumbY = ny;
+      thumbWsrc = nw;
+      thumbHsrc = nh;
+    }
   }
-  return [255, 255, 255];
-}
+  if (!(thumbWsrc > 0 && thumbHsrc > 0)) return null;
+  const thumbMax = 320;
+  const scale = Math.min(1, thumbMax / Math.max(thumbWsrc, thumbHsrc));
+  const thumbW = Math.max(1, Math.floor(thumbWsrc * scale));
+  const thumbH = Math.max(1, Math.floor(thumbHsrc * scale));
+  const thumb = document.createElement('canvas');
+  thumb.width = thumbW;
+  thumb.height = thumbH;
+  const tctx = thumb.getContext('2d');
+  if (!tctx) return null;
+  tctx.drawImage(
+    canvasSource,
+    thumbX,
+    thumbY,
+    thumbWsrc,
+    thumbHsrc,
+    0,
+    0,
+    thumbW,
+    thumbH,
+  );
+  return thumb.toDataURL('image/png');
+};
 
-// get the computed foreground and background colors.
-function getComputedColors(element) {
-  const styles = window.getComputedStyle(element);
-  const fgColor = parseCssRgb(styles.color);
-  const bgColor = getEffectiveBackgroundColor(element);
-  return { fgColor, bgColor };
-}
+const applyContrastSampling = (textElements, backgroundCanvas, fullCanvas) => {
+  if (!backgroundCanvas) return;
+  const ctx = backgroundCanvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return;
 
-/**
- * Checks color contrast as per WCAG 2.1 criteria.
- * @param {HTMLElement[]} elements - Elements to evaluate.
- * @param {Object} config - Config containing checks and minContrast.
- * @returns {Array} - List of violations.
- */
+  const { width: canvasWidth, height: canvasHeight } = backgroundCanvas;
+  const scrollX = Math.round(window.scrollX || window.pageXOffset || 0);
+  const scrollY = Math.round(window.scrollY || window.pageYOffset || 0);
+
+  textElements.forEach((item) => {
+    const { element: textNode, color } = item;
+    const text = textNode?.textContent || '';
+    if (!textNode || !text.length) return;
+
+    const fgRgb = parseCssColorToRgb(color);
+    const minRatio = getWorstContrast({
+      textNode,
+      text,
+      fgRgb,
+      ctx,
+      canvasWidth,
+      canvasHeight,
+      scrollX,
+      scrollY,
+    });
+
+    if (minRatio === Infinity) return;
+    item.contrastRatio = minRatio;
+    const thumbnail = buildThumbnail(
+      item,
+      canvasWidth,
+      canvasHeight,
+      scrollX,
+      scrollY,
+      fullCanvas || backgroundCanvas,
+    );
+    if (!thumbnail) return;
+    item.thumbnail = thumbnail;
+  });
+};
+
+const buildViolations = (textElements, minContrast) => {
+  const violations = [];
+  textElements.forEach((item) => {
+    const el = item.element?.parentElement;
+    if (!el) return;
+    const styles = window.getComputedStyle(el);
+    const fontSize = parseFloat(styles.fontSize) || 0;
+    const weightStr = styles.fontWeight || '400';
+    const parsedWeight = parseInt(weightStr, 10);
+    let fontWeight;
+    if (Number.isNaN(parsedWeight)) {
+      fontWeight = weightStr.toLowerCase() === 'bold' ? 700 : 400;
+    } else {
+      fontWeight = parsedWeight;
+    }
+    const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
+    const requiredContrast = isLargeText ? 3.0 : minContrast;
+    const baseContrast = item.contrastRatio;
+    if (typeof baseContrast !== 'number' || baseContrast >= requiredContrast) return;
+
+    const target = getUniqueSelector(el);
+    const preview = (el.textContent || '').trim().slice(0, 30);
+    const nodeTarget = preview ? `${target}: "${preview}"` : target;
+
+    violations.push({
+      description: `Color contrast below minimum (current: ${baseContrast.toFixed(2)}:1, required: ${requiredContrast}:1).`,
+      impact: 'serious',
+      id: 'color-contrast-ratio',
+      help: `Ensure contrast ratio is at least ${requiredContrast}:1.`,
+      helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html',
+      nodes: [{
+        target: [nodeTarget],
+        html: el.outerHTML,
+        thumbnail: item.thumbnail,
+      }],
+    });
+  });
+  return violations;
+};
+
 export default async function checkColorContrast(elements = [], config = {}) {
   const { checks = [], minContrast = 4.5 } = config;
   if (!checks.includes('color-contrast')) return [];
-  const violations = [];
-  const validElements = elements.filter((el) => {
-    const styles = window.getComputedStyle(el);
-    const isVisible = styles.display !== 'none' && styles.visibility !== 'hidden' && parseFloat(styles.opacity) > 0;
-    const hasText = el.textContent.trim().length > 0;
-    const tagWhitelist = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'button'];
-    return isVisible && hasText && tagWhitelist.includes(el.tagName.toLowerCase());
-  });
-  for (const el of validElements) {
-    const colorThief = await loadColorThief();
-    if (!colorThief) return null;
-    const { fgColor, bgColor } = getComputedColors(el);
-    // eslint-disable-next-line no-continue
-    if (!fgColor || !bgColor) continue;
-    const styles = window.getComputedStyle(el);
-    const fontSize = parseFloat(styles.fontSize) || 0;
-    const fontWeight = parseInt(styles.fontWeight, 10) || 400;
-    const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
-    const requiredContrast = isLargeText ? 3.0 : minContrast;
-    const baseContrast = contrastRatio(fgColor, bgColor);
 
-    let effectiveBg = bgColor;
-    let usedImageSampling = false;
-    let ancestor = el;
+  // Step 1: collect visible text nodes, their bounding boxes, and color.
+  const textElements = collectTextElements(elements);
 
-    while (ancestor) {
-      const bgImage = window.getComputedStyle(ancestor).backgroundImage;
-      const url = extractBgImageUrl(bgImage);
-      if (url) {
-        // eslint-disable-next-line
-        const avg = await getAverageColorFromUrl(url);
-        if (avg) {
-          effectiveBg = avg;
-          usedImageSampling = true;
-          break;
-        }
-      }
-      ancestor = ancestor.parentElement;
-    }
+  // Step 2: add visibility hidden to all the text elements, to have a clean DOM for the canvas
+  hideTextElements(textElements);
 
-    if (!usedImageSampling) {
-      // eslint-disable-next-line
-      const avgFromImg = await getAverageColorFromNearestImg(el);
-      if (avgFromImg) {
-        effectiveBg = avgFromImg;
-        usedImageSampling = true;
-      }
-    }
+  // Step 3: capture DOM on canvas
+  const { base } = getConfig();
+  await loadScript(`${base}/deps/html2canvas.js`);
+  const backgroundCanvas = await captureDocumentCanvas();
 
-    const contrast = contrastRatio(fgColor, effectiveBg);
-    if (usedImageSampling && contrast < requiredContrast) {
-      const description = `Low contrast text over image (ratio: ${contrast.toFixed(2)}:1) - `
-        + `WCAG AA Minimum is ${requiredContrast}:1`;
-      violations.push({
-        description,
-        impact: 'serious',
-        id: 'color-contrast-image',
-        help: `Ensure contrast ratio is at least ${requiredContrast}:1.`,
-        helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html',
-        nodes: [{
-          target: [`${el.tagName.toLowerCase()}${el.className ? `.${el.className.replace(/\s+/g, '.')}` : ''}: "${el.textContent.trim().slice(0, 30)}"`],
-          html: el.outerHTML,
-          contrastRatio: contrast.toFixed(2),
-          foreground: `rgb(${fgColor.join(', ')})`,
-          background: `rgb(${effectiveBg.join(', ')})`,
-          baseBackground: `rgb(${bgColor.join(', ')})`,
-        }],
-      });
-      // eslint-disable-next-line no-continue
-      continue;
-    }
-    if (baseContrast < requiredContrast) {
-      const descriptionBase = 'Low contrast text over color background (ratio: '
-        + `${baseContrast.toFixed(2)}:1) - WCAG AA Minimum is ${requiredContrast}:1`;
-      violations.push({
-        description: descriptionBase,
-        impact: 'serious',
-        id: 'color-contrast',
-        help: `Ensure contrast ratio is at least ${requiredContrast}:1.`,
-        helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html',
-        nodes: [{
-          target: [`${el.tagName.toLowerCase()}${el.className ? `.${el.className.replace(/\s+/g, '.')}` : ''}: "${el.textContent.trim().slice(0, 30)}"`],
-          html: el.outerHTML,
-          contrastRatio: baseContrast.toFixed(2),
-          foreground: `rgb(${fgColor.join(', ')})`,
-          background: `rgb(${bgColor.join(', ')})`,
-        }],
-      });
-      // eslint-disable-next-line no-continue
-      continue;
-    }
-  }
-  return violations;
+  // Step 4: restore the visibility of the text elements
+  restoreHiddenText();
+
+  // Step 5: Capture a full snapshot, with text visible, for thumbnails
+  const fullCanvas = await captureDocumentCanvas();
+
+  // Step 6: per character from each text node, sample background from textless canvas,
+  // calculate text contrast, keep the worst ratio per node
+  applyContrastSampling(textElements, backgroundCanvas, fullCanvas);
+
+  // Step 7: create violation entries for low-contrast text nodes
+  return buildViolations(textElements, minContrast);
 }

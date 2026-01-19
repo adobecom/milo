@@ -944,6 +944,12 @@ img:hover ~ .asset-meta,
   border-radius: 4px;
 }
 
+.violation-thumb {
+  min-height: 20px;
+  border: 1px solid #e0e0e0;
+  display: block;
+}
+
 /* Toggle Arrow */
 .violation-expand {
   height: 18px;

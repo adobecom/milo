@@ -131,9 +131,12 @@ export default function Accessibility() {
           </div>
 
           <div class="violation-list">
-            ${violations.map((violation, index) => {
-    const isExpanded = expandedViolations.includes(index);
-    return html`
+            ${violations
+    // removing axe core color contrast violations to avoid duplicates with custom checks
+    .filter((v) => v.id !== 'color-contrast')
+    .map((violation, index) => {
+      const isExpanded = expandedViolations.includes(index);
+      return html`
                 <div class="violation-item">
                   <div
                     class="violation-summary ${isExpanded ? 'expanded' : ''}"
@@ -160,7 +163,12 @@ export default function Accessibility() {
                         </li>
                         <li><strong>Affected Elements:</strong>
                           <ul class="affected-elements">
-                            ${violation.nodes.map((node) => html`<li><code>${node.html}</code></li>`)}
+                            ${violation.nodes.map((node) => html`
+                              <li>
+                                  ${node.thumbnail && html`<img src="${node.thumbnail}" class="violation-thumb" />`}
+                                  <code>${node.html}</code>
+                              </li>
+                            `)}
                           </ul>
                         </li>
                       </ul>
@@ -168,7 +176,7 @@ export default function Accessibility() {
                   `}
                 </div>
               `;
-  })}
+    })}
           </div>
         </div>
       </div>
