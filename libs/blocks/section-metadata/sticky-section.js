@@ -23,10 +23,13 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
 
       if (target === document.querySelector('footer')) {
         el.classList.toggle('fill-sticky-section', isIntersecting);
-      } else if (target.classList && target.classList.contains('hide-at-intersection-start')) {
+      } else if (target?.classList?.contains('hide-at-intersection-start')) {
         el.classList.toggle('hide-sticky-section', isIntersecting || entry.boundingClientRect.top <= 0);
-      } else if (target.classList && target.classList.contains('hide-at-intersection-end')) {
-        el.classList.toggle('hide-sticky-section', isIntersecting || entry.boundingClientRect.top >= 0);
+      } else if (target?.classList?.contains('hide-at-intersection-end')) {
+        el.classList.toggle(
+          'hide-sticky-section',
+          isIntersecting || entry.boundingClientRect.top >= 0,
+        );
       } else {
         el.classList.toggle('hide-sticky-section', abovePromoStart);
       }
@@ -40,8 +43,10 @@ function handleStickyPromobar(section, delay) {
   if (section.querySelector('.popup:is(.promobar)')) section.classList.add('popup');
   let stickySectionEl = null;
   let hasScrollControl;
-  if ((section.querySelector(':is(.promobar, .notification)').classList.contains('no-delay'))
-    || (delay && section.classList.contains('popup'))) {
+  if (
+    section.querySelector(':is(.promobar, .notification)')?.classList.contains('no-delay')
+    || (delay && section.classList.contains('popup'))
+  ) {
     hasScrollControl = true;
     section.classList.remove('hide-sticky-section');
   }
@@ -55,7 +60,7 @@ function handleStickyPromobar(section, delay) {
       stickySectionEl?.classList.add('show-sticky-section');
     } else {
       stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
-      section.parentElement.insertBefore(stickySectionEl, section);
+      section.parentElement?.insertBefore(stickySectionEl, section);
     }
   }
   const io = promoIntersectObserve(section, stickySectionEl);
@@ -66,14 +71,19 @@ function handleStickyPromobar(section, delay) {
 
   const selector = metadata?.['custom-hide']?.text?.trim();
   const targetElement = selector ? document.querySelector(selector) : null;
-  if (targetElement) {
+  let intersectionElements = {};
+  if (targetElement && targetElement.parentElement) {
     const hideAtStart = createTag('div', { class: 'hide-at-intersection-start' });
     const hideAtEnd = createTag('div', { class: 'hide-at-intersection-end' });
-    targetElement.parentElement.insertBefore(hideAtStart, targetElement);
-    targetElement.parentElement.insertBefore(hideAtEnd, targetElement.nextSibling);
+    const parent = targetElement.parentElement;
+    parent.insertBefore(hideAtStart, targetElement);
+    parent.insertBefore(hideAtEnd, targetElement.nextSibling);
+
     io.observe(hideAtStart);
     io.observe(hideAtEnd);
+    intersectionElements = { start: hideAtStart, end: hideAtEnd };
   }
+  return intersectionElements;
 }
 
 export default async function handleStickySection(sticky, section) {
