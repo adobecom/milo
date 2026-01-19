@@ -89,7 +89,7 @@ const slackNotification = (text) => {
 /**
  * Fetches logs for a specific site and saves them to a file.
  * @param {string} siteName - The name of the site (e.g., 'da-bacom', 'bacom'). Used for the filename.
- * @param {string} baseUrl - The base URL for the log endpoint (e.g., 'https://admin.hlx.page/log/adobecom/da-bacom/main').
+ * @param {string} baseUrl - The base URL for the log endpoint (e.g., 'https://admin.aem.page/log/adobecom/da-bacom/main').
  */
 async function fetchLogsForSite(siteName, baseUrl, fromParam, toParam) {
   if (LOCAL_DEBUG_ENTRIES.length && USE_LOCAL_DEBUG_ENTRIES) {
@@ -212,11 +212,11 @@ async function main() {
   if (localPathsToImport.length) console.log("Importing paths from local environment");
   const entries = localPathsToImport.length ? localPathsToImport : await fetchLogsForSite(
     ROLLING_IMPORT_POLL_LOGS_FROM_REPO,
-    `https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}`,
+    `https://admin.aem.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}`,
     FROM_PARAM,
     TO_PARAM
   );
-  const logLink = `Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}&to=${TO_PARAM}`;
+  const logLink = `Log Link: https://admin.aem.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}&to=${TO_PARAM}`;
   if(!entries?.length) {
     console.log(`No entries found in the logs, exiting. ${logLink}`);
     await slackNotification(`No entries found, exiting ${logLink}`);

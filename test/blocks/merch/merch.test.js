@@ -1259,7 +1259,7 @@ describe('Merch Block', () => {
 
       const a2 = document.createElement('a');
       a2.classList.add('link2');
-      a2.setAttribute('href', 'https://main--cc--adobecom.hlx.live/test/cc/path');
+      a2.setAttribute('href', 'https://main--cc--adobecom.aem.live/test/cc/path');
       div.append(a2);
 
       const a3 = document.createElement('a');

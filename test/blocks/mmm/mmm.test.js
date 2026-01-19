@@ -135,7 +135,7 @@ describe('MMM', () => {
     expect(manifestColumnTwo.querySelector('div:nth-child(3)').textContent).to.include('undefined');
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
     expect(editButton).to.exist;
-    expect(editButton.href).to.equal('https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json');
+    expect(editButton.href).to.equal('https://main--homepage--adobecom.aem.page/homepage/fragments/mep/hp-11-15-black-friday.json');
     const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
     expect(previewButton).to.exist;
   });
@@ -149,7 +149,7 @@ describe('MMM', () => {
     const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
     expect(previewButton).to.exist;
     expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
-    const option = mmmPopup.querySelector('option[name="https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
+    const option = mmmPopup.querySelector('option[name="https://main--homepage--adobecom.aem.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
     expect(option).to.exist;
     option.click();
     expect(previewButton.href).to.include('https://www.adobe.com/?mep=');

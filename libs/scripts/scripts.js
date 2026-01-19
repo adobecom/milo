@@ -26,19 +26,19 @@ const stageDomainsMap = {
     'www.adobe.com': 'origin',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
   },
-  '--bacom--adobecom.hlx.live': {
+  '--bacom--adobecom.aem.live': {
     'business.adobe.com': 'origin',
-    'news.adobe.com': 'main--news--adobecom.hlx.live',
+    'news.adobe.com': 'main--news--adobecom.aem.live',
   },
-  '--blog--adobecom.hlx.page': {
+  '--blog--adobecom.aem.page': {
     'blog.adobe.com': 'origin',
-    'business.adobe.com': 'main--bacom--adobecom.hlx.page',
+    'business.adobe.com': 'main--bacom--adobecom.aem.page',
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
-  '^https://.*--milo--.*.(hlx|aem).page': {
-    '^https://www.adobe.com/acrobat': 'https://main--dc--adobecom.hlx.page',
+  '^https://.*--milo--.*.(aem).page': {
+    '^https://www.adobe.com/acrobat': 'https://main--dc--adobecom.aem.page',
     '^https://business.adobe.com(?!/blog)': 'https://business.stage.adobe.com',
-    '^https://business.adobe.com/blog': 'https://main--bacom-blog--adobecom.hlx.page',
+    '^https://business.adobe.com/blog': 'https://main--bacom-blog--adobecom.aem.page',
     '^https://www.adobe.com': 'origin',
   },
 };
