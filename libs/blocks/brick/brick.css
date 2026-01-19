@@ -48,8 +48,7 @@
   display: none;
 }
 
-.brick.media-contain.split.row .foreground .brick-media img,
-.brick.media-contain.split.row .foreground .brick-media video {
+.brick.media-contain.split.row .foreground .brick-media :is(img, video) {
   object-fit: contain;
 }
 
