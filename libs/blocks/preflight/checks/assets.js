@@ -16,31 +16,10 @@ export function loadImage(asset) {
 async function loadVideo(asset) {
   const source = asset.querySelector('source');
 
-<<<<<<< HEAD
-  return new Promise((resolve) => {
-<<<<<<< HEAD
-    if (!asset.querySelector('source')) {
-      const videoSource = asset.getAttribute('data-video-source');
-      if (!videoSource) {
-        resolve();
-        return;
-      }
-      asset.appendChild(createTag('source', { src: videoSource, type: 'video/mp4' }));
-=======
-    const dataSource = asset.getAttribute('data-video-source');
-    const existingSource = asset.querySelector('source');
-
-    if (!existingSource && !dataSource) {
-      resolve();
-      return;
->>>>>>> 62ed19b6e (loadVideo now resolves if the tag does not have data-video-source and source)
-    }
-=======
   if (source && asset.readyState > 1 && asset.videoWidth > 0) return;
 
   const dataSource = asset.getAttribute('data-video-source');
   if (!source && !dataSource) return;
->>>>>>> 647878776 (implemented the review)
 
   if (!source) asset.appendChild(createTag('source', { src: dataSource, type: 'video/mp4' }));
 
