@@ -10,8 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "form-data": "^4.0.4",
+    "@azure/msal-node": "^3.8.4",
     "axios": "^1.10.0",
     "axios-retry": "^4.5.0",
+    "exceljs": "^4.4.0",
     "p-queue": "^8.1.0"
   },
   "type": "module"

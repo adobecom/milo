@@ -68,7 +68,7 @@ export async function saveJsonToDa(org, repo, pathname, data) {
   }
 
   const daPath = `/${org}/${repo}${pathname}`;
-  const daHref = `https://da.live/edit#${daPath}`;
+  const href = `https://da.live/edit#${daPath}`;
 
   const body = JSON.stringify(data);
   const formData = new FormData();
@@ -87,7 +87,7 @@ export async function saveJsonToDa(org, repo, pathname, data) {
     console.debug(`Saving to ${url}`);
     console.debug(`PUT request with FormData to ${url}`);
     const daResp = await daFetch(`${url}`, opts);
-    return { daHref, daStatus: daResp.status, daResp, ok: daResp.ok };
+    return { href, status: daResp.status, response: daResp, ok: daResp.ok };
   } catch (e) {
     console.log(`Couldn't save to ${daPath}`, e);
     throw e;

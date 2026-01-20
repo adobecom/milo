@@ -1,0 +1,96 @@
+name: Preview Indexer - SharePoint (Incremental)
+description: This workflow updates the preview index for the given sharepoint site and region(s)
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Site name e.g cc"
+        required: true
+        type: choice
+        options:
+          - cc
+      siteRegionPaths:
+        description: "Comma-separated regional paths (e.g. ch_fr) or blank for all regions"
+        required: false
+        type: string
+      lastRunISOFrom:
+        description: "Last ISO From timestamp (GMT: 2025-11-19T18:51:41.007Z)"
+        required: false
+        type: string
+      lastRunISOTo:
+        description: "Last ISO To timestamp (GMT: 2025-11-20T18:51:41.007Z)"
+        required: false
+        type: string
+
+permissions:
+  actions: read # required to access workflow runs
+  contents: write # required to access the repository, for the dispatch event
+
+concurrency:
+  group: preview-indexer-sp-run
+  cancel-in-progress: false
+
+env:
+  ROLLING_IMPORT_IMS_URL: ${{ secrets.ROLLING_IMPORT_IMS_URL }}
+  ROLLING_IMPORT_CLIENT_ID: ${{ secrets.ROLLING_IMPORT_CLIENT_ID }}
+  ROLLING_IMPORT_CLIENT_SECRET: ${{ secrets.ROLLING_IMPORT_CLIENT_SECRET }}
+  ROLLING_IMPORT_CODE: ${{ secrets.ROLLING_IMPORT_CODE }}
+  ROLLING_IMPORT_GRANT_TYPE: ${{ secrets.ROLLING_IMPORT_GRANT_TYPE }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  LINGO_CONFIG: ${{ vars.LINGO_CONFIG }}
+  PREVIEW_INDEXER_REPOS: ${{ vars.PREVIEW_INDEXER_REPOS }}
+  PREVIEW_INDEX_FILE: ${{ vars.PREVIEW_INDEX_FILE }}
+  AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM }}
+  EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM: ${{ vars.EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM }}
+  PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEXER_LOG_LEVEL: ${{ vars.PREVIEW_INDEXER_LOG_LEVEL }}
+
+jobs:
+  preview-indexer-sp:
+    if: github.repository_owner == 'adobecom'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Restore cached state
+        id: cache-restore
+        uses: actions/cache@v4
+        with:
+          path: preview-indexer/state/last-runs-sp.json
+          key: preview-indexer-last-runs-sp-${{ github.run_id }}
+          restore-keys: |
+            preview-indexer-last-runs-sp-
+
+      - name: Initialize file if missing
+        run: |
+          mkdir -p preview-indexer/state
+          if [ ! -f preview-indexer/state/last-runs-sp.json ]; then
+            echo "{}" > preview-indexer/state/last-runs-sp.json
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 21
+
+      - name: Install dependencies
+        run: cd ./.github/workflows/preview-indexer/ && npm install
+
+      - name: Run preview-indexer/incremental-sp.js
+        run: node ./.github/workflows/preview-indexer/incremental-sp.js
+        env:
+          LAST_RUN_ISO_TO: ${{ github.event.inputs.lastRunISOTo }}
+          LAST_RUN_ISO_FROM: ${{ github.event.inputs.lastRunISOFrom }}
+          SITE: ${{ github.event.inputs.site }}
+          SITE_REGION_PATHS: ${{ github.event.inputs.siteRegionPaths }}
+
+      - name: Save updated cache
+        if: always()
+        uses: actions/cache@v4
+        with:
+          path: preview-indexer/state/last-runs-sp.json
+          key: preview-indexer-last-runs-sp-${{ github.run_id }}

@@ -1,9 +1,25 @@
+import { createAxiosWithRetry } from './utils.js';
+
+const axiosWithRetry = createAxiosWithRetry();
+
+const axiosWithRetryError = async (request) => {
+  try {
+    return await axiosWithRetry(request);
+  } catch (error) {
+    const message = `Request failed: ${error.message} (${error.response?.status || 'unknown'})`;
+    const enhancedError = new Error(message);
+    enhancedError.status = error.status;
+    enhancedError.response = error.response;
+    throw enhancedError;
+  }
+};
+
 const {
   AEM_LIVE_ADMIN_TOKEN = '',
   LOCAL_RUN = '',
 } = process.env;
-const JOB_STATUS_POLL_INTERVAL = Number(process.env.JOB_STATUS_POLL_INTERVAL || '10');
-const JOB_STATUS_TIMEOUT = Number(process.env.JOB_STATUS_TIMEOUT || '180');
+const JOB_STATUS_POLL_INTERVAL = Number(process.env.JOB_STATUS_POLL_INTERVAL || '15');
+const JOB_STATUS_TIMEOUT = Number(process.env.JOB_STATUS_TIMEOUT || '2700');
 const LOG_FETCH_MAX_REQUESTS = Number(process.env.LOG_FETCH_MAX_REQUESTS || '10');
 
 if (!LOCAL_RUN) {
@@ -51,8 +67,9 @@ async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
       const json = await request.json();
 
       if (json.entries && json.entries.length > 0) {
-        lastFetchedISO = json.to;
-        json.entries?.forEach((entry) => {
+        const maxTimestamp = Math.max(...json.entries.map((e) => e.timestamp));
+        lastFetchedISO = maxTimestamp ? new Date(maxTimestamp).toISOString() : lastFetchedISO;
+        json.entries.forEach((entry) => {
           entriesSet.add(JSON.stringify(entry));
         });
         totalFetched += json.entries.length;
@@ -92,30 +109,30 @@ async function triggerPreview(owner, repo, path) {
   const adminToken = process.env[adminTokenKey];
   const url = `https://admin.hlx.page/preview/${owner}/${repo}/main${path}`;
   console.log(`previewing path: ${url}`);
-  const response = await fetch(url, {
+  const response = await axiosWithRetryError({
     method: 'POST',
+    url,
     headers: { Authorization: `token ${adminToken}` },
   });
-  if (!response.ok) {
-    console.error(`Failed to preview path: ${owner}/${repo}/main${path}`);
-    const errorMsg = `Failed to preview path: ${owner}/${repo}/main${path}`;
-    throw new Error(`${errorMsg}: ${response.status} ${response.statusText}`);
-  }
-  return response.json();
+  return response.data;
 }
 
 async function awaitBulkJobStatus(jobStatusUrl, options, startedAt = Date.now()) {
   console.log(`Awaiting bulk job status: ${jobStatusUrl}`);
   const { adminToken } = options;
-  const response = await fetch(jobStatusUrl, {
-    method: 'GET',
-    headers: { Authorization: `token ${adminToken}` },
-  });
-  if (!response.ok) {
-    console.error(`Failed to fetch job status: ${jobStatusUrl}`);
+  let response;
+  try {
+    response = await axiosWithRetryError({
+      method: 'GET',
+      url: jobStatusUrl,
+      headers: { Authorization: `token ${adminToken}` }
+    });
+  } catch (error) {
+    console.error(`Error fetching job status: ${jobStatusUrl}`);
     return null;
   }
-  const json = await response.json();
+
+  const json = response.data || {};
   if (json.state === 'stopped') {
     console.log(`Job completed for : ${jobStatusUrl}`);
     return json.links?.details;
@@ -141,33 +158,25 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
   const initialUrl = `https://admin.hlx.page/status/${siteOrg}/${siteRepo}/main/*`;
   const bodyJson = JSON.stringify(body);
   console.debug(`Fetching preview for site: ${siteOrg}/${siteRepo} with jobs url ${bodyJson}`);
-  const response = await fetch(initialUrl, {
+  const response = await axiosWithRetryError({
     method: 'POST',
+    url: initialUrl,
     headers: {
       Authorization: `token ${adminToken}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(body),
+    data: JSON.stringify(body)
   });
-  if (!response.ok) {
-    console.error(`Failed to fetch preview paths for ${siteOrg}/${siteRepo}: ${regionPath}`);
-    const errorMsg = `Failed to fetch preview paths for ${siteOrg}/${siteRepo}: ${regionPath}`;
-    throw new Error(`${errorMsg}: ${response.status} ${response.statusText}`);
-  }
-  const job = await response.json();
+  const job = response.data;
   const detailsUrl = await awaitBulkJobStatus(job.links.self, { adminToken });
   if (detailsUrl) {
     console.debug(`Fetching job details: ${detailsUrl}`);
-    const detailsResponse = await fetch(detailsUrl, {
+    const detailsResponse = await axiosWithRetryError({
       method: 'GET',
-      headers: { Authorization: `token ${adminToken}` },
+      url: detailsUrl,
+      headers: { Authorization: `token ${adminToken}` }
     });
-    if (!detailsResponse.ok) {
-      console.error(`Failed to fetch job details: ${detailsUrl}`);
-      const errorMsg = `Failed to fetch job details: ${detailsUrl}`;
-      throw new Error(`${errorMsg}: ${detailsResponse.status} ${detailsResponse.statusText}`);
-    }
-    const detailsJson = await detailsResponse.json();
+    const detailsJson = detailsResponse.data;
     const isCompleted = detailsJson?.data?.phase === 'completed';
     return isCompleted ? detailsJson?.data?.resources?.preview || [] : [];
   }
