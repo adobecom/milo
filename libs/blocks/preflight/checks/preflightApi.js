@@ -119,7 +119,6 @@ export async function getPreflightResults(options = {}) {
   } = options;
 
   const excludedPaths = 'https://main--federal--adobecom.aem.page/federal/preflight/preflight-config.json?sheet=preflight-exclusions';
-  console.log('page is excluded from the preflight');
   try {
     const excludedURLS = await fetch(excludedPaths).then((res) => {
       if (!res.ok) return null;
@@ -127,10 +126,11 @@ export async function getPreflightResults(options = {}) {
     });
 
     if (isUrlExcluded(url, excludedURLS)) {
+      console.log('Page excluded from preflight checks:', url);
       return null;
     }
   } catch (error) {
-    console.log('Error checking preflight exclusions:', error);
+    console.error('Error checking preflight exclusions:', error);
   }
 
   const isASO = (await getChecksSuite()) === 'ASO';
