@@ -403,7 +403,7 @@ export const getFederatedContentRoot = () => {
   federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
-    federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
+    federatedContentRoot = `https://main--da-federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
   }
 
   return federatedContentRoot;
