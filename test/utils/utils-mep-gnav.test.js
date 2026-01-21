@@ -16,11 +16,11 @@ describe('Utils - MEP GNav', () => {
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
     });
-    window.hlx = { rum: { isSelected: false } };
+    window.aem = { rum: { isSelected: false } };
   });
 
   after(() => {
-    delete window.hlx;
+    delete window.aem;
   });
 
   describe('target set to gnav', async () => {

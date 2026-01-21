@@ -12,7 +12,7 @@ describe('Service Config', () => {
   before(async () => {
     const { setConfig } = await import('../../libs/utils/utils.js');
     setConfig(config);
-    window.hlx = { rum: { isSelected: false } };
+    window.aem = { rum: { isSelected: false } };
   });
 
   it('Should have a local value', async () => {

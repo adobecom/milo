@@ -2,11 +2,11 @@
 // eslint-disable-next-line import/prefer-default-export
 export function sampleRUM(checkpoint, data) {
   // eslint-disable-next-line max-len
-  const timeShift = () => (window.performance ? window.performance.now() : Date.now() - window.hlx.rum.firstReadTime);
+  const timeShift = () => (window.performance ? window.performance.now() : Date.now() - window.aem.rum.firstReadTime);
   try {
-    window.hlx = window.hlx || {};
+    window.aem = window.aem || {};
     sampleRUM.enhance = () => {};
-    if (!window.hlx.rum) {
+    if (!window.aem.rum) {
       const param = new URLSearchParams(window.location.search).get('rum');
       const weight = (window.SAMPLE_PAGEVIEWS_AT_RATE === 'high' && 10)
         || (window.SAMPLE_PAGEVIEWS_AT_RATE === 'low' && 1000)
@@ -15,7 +15,7 @@ export function sampleRUM(checkpoint, data) {
       const id = Math.random().toString(36).slice(-4);
       const isSelected = (param !== 'off') && (Math.random() * weight < 1);
       // eslint-disable-next-line object-curly-newline, max-len
-      window.hlx.rum = { weight, id, isSelected, firstReadTime: window.performance ? window.performance.timeOrigin : Date.now(), sampleRUM, queue: [], collector: (...args) => window.hlx.rum.queue.push(args) };
+      window.aem.rum = { weight, id, isSelected, firstReadTime: window.performance ? window.performance.timeOrigin : Date.now(), sampleRUM, queue: [], collector: (...args) => window.aem.rum.queue.push(args) };
       if (isSelected) {
         const dataFromErrorObj = (error) => {
           const errData = { source: 'undefined error' };
@@ -46,7 +46,7 @@ export function sampleRUM(checkpoint, data) {
           sampleRUM('error', errData);
         });
 
-        sampleRUM.baseURL = sampleRUM.baseURL || new URL(window.RUM_BASE || '/', new URL('https://rum.hlx.page'));
+        sampleRUM.baseURL = sampleRUM.baseURL || new URL(window.RUM_BASE || '/', new URL('https://rum.aem.page'));
         sampleRUM.collectBaseURL = sampleRUM.collectBaseURL || sampleRUM.baseURL;
         sampleRUM.sendPing = (ck, time, pingData = {}) => {
           // eslint-disable-next-line max-len, object-curly-newline
@@ -68,13 +68,13 @@ export function sampleRUM(checkpoint, data) {
           script.src = new URL('.rum/@adobe/helix-rum-enhancer@^2/src/index.js', sampleRUM.baseURL).href;
           document.head.appendChild(script);
         };
-        if (!window.hlx.RUM_MANUAL_ENHANCE) {
+        if (!window.aem.RUM_MANUAL_ENHANCE) {
           sampleRUM.enhance();
         }
       }
     }
-    if (window.hlx.rum && window.hlx.rum.isSelected && checkpoint) {
-      window.hlx.rum.collector(checkpoint, data, timeShift());
+    if (window.aem.rum && window.aem.rum.isSelected && checkpoint) {
+      window.aem.rum.collector(checkpoint, data, timeShift());
     }
     document.dispatchEvent(new CustomEvent('rum', { detail: { checkpoint, data } }));
   } catch (error) {

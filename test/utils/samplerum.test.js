@@ -17,16 +17,16 @@ describe('SampleRUM', () => {
     sendBeacon.resetHistory();
 
     // sends cwv beacon
-    window.hlx.rum.collector = sinon.stub();
+    window.aem.rum.collector = sinon.stub();
     sampleRUM('cwv', { foo: 'bar' });
-    expect(window.hlx.rum.collector.called).to.be.true;
+    expect(window.aem.rum.collector.called).to.be.true;
 
     // // test error handling
-    window.hlx.rum.collector.resetHistory();
+    window.aem.rum.collector.resetHistory();
     sampleRUM('error', { foo: 'bar' });
-    expect(window.hlx.rum.collector.called).to.be.true;
+    expect(window.aem.rum.collector.called).to.be.true;
 
-    delete window.hlx;
+    delete window.aem;
     sendBeacon.restore();
   });
 });
