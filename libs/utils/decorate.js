@@ -142,9 +142,11 @@ export function setBackgroundFocus(pic) {
   const img = pic?.querySelector('img');
   if (!img) return;
   const { title } = img.dataset;
-  if (!title?.includes('data-focal')) return;
+  if (!title?.startsWith('data-focal:')) return;
+  const coords = title.split(':')[1]?.split(',');
+  if (coords?.length !== 2) return;
+  const [x, y] = coords;
   delete img.dataset.title;
-  const [x, y] = title.split(':')[1].split(',');
   img.style.objectPosition = `${x}% ${y}%`;
 }
 
