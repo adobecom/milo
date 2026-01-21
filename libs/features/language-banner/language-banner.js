@@ -64,7 +64,7 @@ async function showBanner(market, config) {
     const { setInternational } = await import('../../utils/utils.js');
     setInternational(market.prefix || 'us');
     if (config.lingoProjectSuccessLogging === 'on') {
-      window.lana.log(`LocaleClick: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo, lingo-language-banner-click' });
+      window.lana.log(`Click: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo, lingo-language-banner-click' });
     }
     window.open(translatedUrl, '_self');
   });
