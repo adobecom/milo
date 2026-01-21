@@ -656,3 +656,9 @@
     }
   }
 }
+
+.link-spacer a:not(:only-child) {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
