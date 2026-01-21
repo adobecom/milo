@@ -1577,13 +1577,14 @@ class Gnav {
         }
         case 'text': {
           let isBlack = false;
+          const isMerch = item.classList.contains('merch');
           // Check for (black) in text content
-          if (item.textContent.match(/\(black\)$/i) || item.innerText.match(/\(black\)$/i)) {
+          if (isMerch && (item.textContent.match(/\(black\)$/i) || item.innerText.match(/\(black\)$/i))) {
             isBlack = true;
             // Remove (black) from the text content so merch.default sees the clean text
             item.textContent = item.textContent.replace(/\s*\(black\)$/i, '');
           }
-          const content = item.classList.contains('merch') ? await merch.default(item) : item.textContent;
+          const content = isMerch ? await merch.default(item) : item.textContent;
           if (isBlack && content instanceof HTMLElement) {
             content.classList.add('feds-navLink--black');
           }
