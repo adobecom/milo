@@ -925,6 +925,18 @@ describe('Merch Block', () => {
       expect(action.url).to.equal('https://www.adobe.com/fr/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
     });
 
+    it('getModalAction: rewrites host to www.stage.adobe.com if on Stage or aem.page', async () => {
+      setConfig({
+        ...config,
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: true }, undefined, true);
+      expect(action.url).to.equal('https://www.stage.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
+    });
+
     it('getModalAction: skip modal url localization if url is invalid', async () => {
       setConfig({
         ...config,
