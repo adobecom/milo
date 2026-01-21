@@ -61,11 +61,11 @@ describe('Utils', () => {
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
     });
-    window.hlx = { rum: { isSelected: false } };
+    window.aem = { rum: { isSelected: false } };
   });
 
   after(() => {
-    delete window.hlx;
+    delete window.aem;
   });
 
   it('fetches with cache param', async () => {
