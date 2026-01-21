@@ -131,6 +131,7 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
+    if (config.lingoProjectSuccessLogging === 'on') window.lana?.log(`Click:${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo,lingo-georouting-click' });
     removeOverflow();
   });
 }
