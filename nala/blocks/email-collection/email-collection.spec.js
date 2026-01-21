@@ -37,5 +37,29 @@ module.exports = {
       },
       tags: '@emailCollection @smoke @regression @milo @nopr',
     },
+    {
+      tcid: '1',
+      name: 'Mailing list',
+      path: '/drafts/nala/blocks/email-collection/email-collection-mailing-list',
+      data: {
+        marquee: {
+          h2Text: 'Heading XL Marquee standard small light',
+          bodyText: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.',
+          outlineButtonText: 'Mailing list',
+          blueButtonText: 'Mailing list no image',
+        },
+        mailingListForm: {
+          countryLabel: 'Country',
+          bodyXS: 'This field is required.',
+          blueButtonText: 'Submit',
+        },
+        mailingSubmitedMessage: {
+          h2Text: 'We’ve received your response.',
+          bodyText: 'Thank you for your interest in Generative Video (beta) powered by Adobe Firefly.',
+          outlineButtonText: 'Back to the website',
+        },
+      },
+      tags: '@emailCollection @smoke @regression @milo',
+    },
   ],
 };
