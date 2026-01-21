@@ -23,6 +23,7 @@ if (siteToProcess) {
     siteToProcess,
     lingoConfigMap,
     {
+      isSp: true,
       savePreviewIndexJson: async (_, __, pathname, data) => {
         return spClient.uploadPreviewIndex(pathname, data)
       },

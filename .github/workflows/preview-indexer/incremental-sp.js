@@ -28,6 +28,7 @@ for (const repo of filteredRepos) {
       repo,
       lingoConfigMap,
       {
+        isSp: true,
         savePreviewIndexJson: async (_, __, pathname, data) => {
           return spClient.uploadPreviewIndex(pathname, data)
         },

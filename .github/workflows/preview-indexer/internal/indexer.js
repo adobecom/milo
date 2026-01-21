@@ -111,7 +111,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
       await slackNotification(validationError || `No preview roots to process for ${siteOrg}/${siteRepo}`);
       return;
     }
-    const lastRunInfo = await getLastRunInfo(orgWithRepo);
+    const lastRunInfo = await getLastRunInfo(orgWithRepo, datalayer.isSp);
     const fromParam = LAST_RUN_ISO_FROM || lastRunInfo?.lastRunISO || getISOSinceXDaysAgo(1);
     console.log(`Last run used: ${fromParam}. Last run from cache: ${lastRunInfo?.lastRunISO}`);
     const toParam = LAST_RUN_ISO_TO || new Date().toISOString();
@@ -170,7 +170,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
 
     // Save the checkpoint for the next run only if its not a manual trigger.
     if (!LAST_RUN_ISO_TO) {
-      await saveLastRuns(orgWithRepo, { lastRunISO });
+      await saveLastRuns(orgWithRepo, { lastRunISO }, datalayer.isSp);
     }
 
     await slackNotification(
