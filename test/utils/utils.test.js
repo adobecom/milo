@@ -386,7 +386,7 @@ describe('Utils', () => {
     });
 
     it('Decorates meta helix url', () => {
-      const meta = document.head.querySelector('[name="hlx-url"]');
+      const meta = document.head.querySelector('[name="aem-url"]');
       expect(meta.content).to.equal('http://localhost:2000/otis');
     });
 
