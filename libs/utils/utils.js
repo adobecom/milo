@@ -1358,6 +1358,7 @@ export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
+    if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset.hasDnt) {
@@ -1381,6 +1382,7 @@ export function decorateLinks(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const links = [...anchors].reduce((rdx, a) => {
+    if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset?.hasDnt) a.href = localizeLink(a.href);
@@ -2054,14 +2056,14 @@ const getCookie = (name) => document.cookie
   ?.split('=')[1];
 
 function getMarketsUrl() {
-  const config = getConfig();
+  const { env, marketsSource } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
+  const allowedMarkets = ['bacom'];
+  const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
+      || getMetadata('marketssource')
+      || marketsSource;
 
-  const marketsSource = (config.env.name !== 'prod' && /^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && sourceFromUrl)
-    || getMetadata('marketssource')
-    || config.marketsSource;
-
-  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSource ? `-${marketsSource}` : ''}.json`;
+  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSourceKey ? `-${marketsSourceKey}` : ''}.json`;
 }
 
 async function decorateLanguageBanner() {
@@ -2088,8 +2090,9 @@ async function decorateLanguageBanner() {
   marketsConfig.data.forEach((market) => {
     market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   });
-
-  const pageMarket = marketsConfig.data.find((m) => m.prefix === (locale.prefix?.replace('/', '') || ''));
+  const pagePrefix = locale.prefix?.replace('/', '') || '';
+  const pageMarket = marketsConfig.data.find((m) => m.prefix === pagePrefix)
+    ?? marketsConfig.data.find((m) => m.prefix === locale.base);
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
