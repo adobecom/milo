@@ -34,7 +34,7 @@
   margin-right: 16px;
 }
 
-.mep-popup-header > div > div:not(.mep-manifest-page-info-title) {
+.mep-popup-header > div > div:not(.mep-section-header) {
   padding-left: 15px;
 }
 
@@ -80,7 +80,7 @@
 }
 
 .mep-popup .mep-section {
-  gap: 8px;
+  gap: 12px;
   max-width: 444px;
   display: flex;
   flex-direction: column;
@@ -145,7 +145,18 @@
   text-transform: capitalize;
 }
 
-.mep-popup .mep-columns .mep-column {
+.mep-popup .mep-section-data {
+  display:flex;
+  flex-direction: column;
+  text-transform: capitalize;
+}
+
+.mep-popup .mep-section-data .mep-row {
+  display:flex;
+  gap: 16px;
+}
+
+.mep-popup .mep-section-data .mep-row span {
   flex: 0 50%;
 }
 

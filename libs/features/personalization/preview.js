@@ -262,44 +262,46 @@ function getManifestListDomAndParameter(mepConfig) {
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff" class="mep-toggle-collapse">
       <path d="M200-440v-80h560v80H200Z"/>
     </svg>`;
-    manifestList += `<div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
-    <div class="mep-manifest-title">
-      <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
-        ${mIdx + 1}. ${getFileName(manifestPath)}
-      </a>
-      <div class="mep-manifest-toggle">${expandSVG}${collapseSVG}</div>
-    </div>   
-    <div class="mep-manifest-info">
-          ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
-          <div class="mep-columns">
-            <div class="mep-column">
-              <div class="mep-active">Experience</div>
-              <div>Source</div>
-              <div>Mktg action</div>
-              ${geoRestriction ? '<div>Geos</div>' : ''}
-              ${(eventStart && eventEnd) || disabled ? '<div>Active?</div>' : ''}
-              ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
+    manifestList += `
+    <div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
+      <div class="mep-manifest-title">
+        <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
+          ${mIdx + 1}. ${getFileName(manifestPath)}
+        </a>
+        <div class="mep-manifest-toggle">${expandSVG}${collapseSVG}</div>
+      </div>   
+      <div class="mep-manifest-info">
+            ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
+            <div class="mep-columns">
+              <div class="mep-column">
+                <div class="mep-active">Experience</div>
+                <div>Source</div>
+                <div>Mktg action</div>
+                ${geoRestriction ? '<div>Geos</div>' : ''}
+                ${(eventStart && eventEnd) || disabled ? '<div>Active?</div>' : ''}
+                ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
+              </div>
+              <div class="mep-column">
+                ${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}
+                <div>${source}</div>
+                <div>${mktgAction}</div>
+                ${geoRestriction ? `<div>${geoRestriction?.toUpperCase()}</div>` : ''}
+                ${(eventStart && eventEnd) || disabled ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
+                ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
+              </div>
             </div>
-            <div class="mep-column">
-              ${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}
-              <div>${source}</div>
-              <div>${mktgAction}</div>
-              ${geoRestriction ? `<div>${geoRestriction?.toUpperCase()}</div>` : ''}
-              ${(eventStart && eventEnd) || disabled ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
-              ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
+            ${eventStart && eventEnd ? `<div class="mep-columns">
+              <div class="mep-column">
+                <div>On</div>
+                <div>Off</div>
+              </div>
+              <div class="mep-column">
+                <div>${formatDate(eventStart)} <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a></div>
+                <div>${formatDate(eventEnd)}</div>
+              </div>
             </div>
-          </div>
-          ${eventStart && eventEnd ? `<div class="mep-columns">
-            <div class="mep-column">
-              <div>On</div>
-              <div>Off</div>
-            </div>
-            <div class="mep-column">
-              <div>${formatDate(eventStart)} <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a></div>
-              <div>${formatDate(eventEnd)}</div>
-            </div>
-          </div>
-        </div>` : ''}
+          </div>` : ''}
+        </div>
       </div>
       <div class="mep-experience-dropdown">
         <select name="experiences" class="mep-manifest-variants">${options}</select>
@@ -457,79 +459,92 @@ export function getMepPopup(mepConfig, isMmm = false) {
     lastSeen: formatDate(new Date(page.lastSeen)),
   };
 
-  const mepPageSummary = createTag('div', { class: 'mep-section' });
-  mepPageSummary.innerHTML = `
-    <h6 class="mep-manifest-page-info-title">Page</h6>
-    <div class="mep-columns">
-      <div class="mep-column">
-        <div>Manifests Found</div>
-        <div>Target Integration</div>
-        <div>Personalization</div>
-        <div>Locale</div>
-        ${page.lastSeen ? '<div>Last Seen</div>' : ''}
+  const pageHTML = `
+    <h6 class="mep-section-header">Page</h6>
+    <div class="mep-section-data">
+      <div class="mep-row">
+        <span>Manifests Found</span>
+        <span>${pageData.manifestsFound}</span>
       </div>
-      <div class="mep-column">
-        <div>${pageData.manifestsFound}</div>
-        <div>${pageData.targetIntegration}</div>
-        <div>${pageData.personalization}</div>
-        <div>${pageData.locale}</div>
-        ${page.lastSeen ? `<div>${pageData.lastSeen}</div>` : ''}
+      <div class="mep-row">
+        <span>Target Integration</span>
+        <span>${pageData.targetIntegration}</span>
       </div>
+      <div class="mep-row">
+        <span>Personalization</span>
+        <span>${pageData.personalization}</span>
+      </div>
+      ${page.lastSeen ? `
+        <div class="mep-row">
+          <span>Locale</span>
+          <span>${pageData.locale}</span>
+        </div>` : ''}
     </div>
     `;
-  mepPopupBody[0].append(mepPageSummary);
+
+  mepPopupBody[0].append(createTag('div', { class: 'mep-section' }, pageHTML));
 
   // Build Summary : Consent
   const { consentState } = config.mep;
+
   const consentData = {
     functional: consentState?.functional ? 'on' : 'off',
     advertising: consentState?.advertising ? 'on' : 'off',
   };
 
-  const mepConsentSummary = createTag('div', { class: 'mep-section' });
-  mepConsentSummary.innerHTML = `
-    <h6 class="mep-manifest-page-info-title">Consent</h6>
-    <div class="mep-columns">
-      <div class="mep-column">
-        <div>Functional</div>
-        <div>Advertising</div>
+  const consentHTML = `
+    <h6 class="mep-section-header">Consent</h6>
+    <div class="mep-section-data">
+      <div class="mep-row">
+        <span>Functional</span>
+        <span>${consentData.functional}</span>
       </div>
-      <div class="mep-column">
-        <div>${consentData.functional}</div>
-        <div>${consentData.advertising}</div>
+      <div class="mep-row">
+        <span>Advertising</span>
+        <span>${consentData.advertising}</span>
       </div>
     </div>
   `;
-  mepPopupBody[0].append(mepConsentSummary);
+  mepPopupBody[0].append(createTag('div', { class: 'mep-section' }, consentHTML));
 
   // Build Summary : Lingo
   const regionKeys = Object.keys(config?.locale?.regions || {});
 
   const lingoData = {
-    geoFolder: page.geo || 'US (None)',
-    country: getCountry(),
+    langFirst: 'Data',
+    geoFolder: page.geo || 'Us (None)',
+    userCountry: getCountry(),
+    geoUser: 'Supported',
+    updates: '0 out of 0',
   };
 
-  const mepLingoSummary = createTag('div', { class: 'mep-section' });
-  mepLingoSummary.innerHTML = `
-    <h6 class="mep-manifest-page-info-title">Lingo</h6>
-    <div class="mep-columns">
-      <div class="mep-column">
-        <div>Geo Folder</div>
-        <div>Applied Folder</div>
-        <div>Updates</div>
-        <div>Country</div>
+  const lingoHTML = `
+    <h6 class="mep-section-header">Lingo</h6>
+    <div class="mep-section-data">
+    <div class="mep-row">
+        <span>Lang First</span>
+        <span>${lingoData.langFirst}</span>
       </div>
-      <div class="mep-column">
-        <div>${lingoData.geoFolder}</div>
-        <div>Data</div>
-        <div>Data</div>
-        <div>${lingoData.country}</div>
+      <div class="mep-row">
+        <span>Geo Folder</span>
+        <span>${lingoData.geoFolder}</span>
+      </div>
+      <div class="mep-row">
+        <span>User Country</span>
+        <span>${lingoData.userCountry}</span>
+      </div>
+      <div class="mep-row">
+        <span>Geo + User</span>
+        <span>${lingoData.geoUser}</span>
+      </div>
+      <div class="mep-row">
+        <span>Updates</span>
+        <span>${lingoData.updates}</span>
       </div>
     </div>
   `;
 
-  if (regionKeys.length) mepPopupBody[0].append(mepLingoSummary);
+  mepPopupBody[0].append(createTag('div', { class: 'mep-section' }, lingoHTML));
 
   // Build Options : Manifest List
   const { manifestList } = getManifestListDomAndParameter(mepConfig);
@@ -568,8 +583,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
     } else regionDropdownHTML = '<div>(No regions spoof available.)</div>';
 
     const mepLingoSectionHTML = `
-      <div class="mep-section ">
-        <h6 class="mep-manifest-page-info-title">Lingo</h6>       
+      <div>
+        <h6 class="mep-section-header">Lingo</h6>       
         ${regionDropdownHTML}
       </div>`;
     mepLingoSelect.innerHTML = mepLingoSectionHTML;
@@ -586,7 +601,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
       </div>`
     : '';
   mepToggleOptions.innerHTML = `
-    <h6 class="mep-manifest-page-info-title">Toggles</h6>
+    <h6 class="mep-section-header">Toggles</h6>
     <div class="mep-manifest-variants">
       <div>
         <input type="checkbox" name="mepHighlight${pageId}"
