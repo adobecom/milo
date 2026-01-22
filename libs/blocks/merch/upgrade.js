@@ -14,11 +14,17 @@ const MANAGE_PLAN_MSG_SUBTYPE = {
 // Ignore Adobe Firefly Premium for upgrade flow
 const IGNORE_PRODUCT_CODES = ['FFPU'];
 
+// Document Cloud product families for upgrade flow
+export const DC_SINGLE_PRODUCTS = ['APRO', 'ACOM', 'ADBE']; // Acrobat Pro, Standard, etc.
+export const DC_STUDIO_PRODUCTS = ['ARCH']; // Acrobat Studio
+
 const isProductCodeIgnored = (offer) => offer?.offer?.product_code
   && IGNORE_PRODUCT_CODES.includes(offer.offer.product_code);
 
 const isProductFamily = (offer, pfs) => {
-  const productFamily = offer?.offer?.product_arrangement_v2?.family;
+  
+  const productFamily = offer?.offer?.product_arrangement_v2?.code;
+  
   return productFamily && pfs.includes(productFamily) && !isProductCodeIgnored(offer);
 };
 export const LANA_OPTIONS = {
@@ -114,10 +120,19 @@ export default async function handleUpgradeOffer(
   if (!TARGET_PF.includes(ctaPF)) return undefined;
 
   const hasUpgradeTarget = entitlements?.find((offer) => isProductFamily(offer, TARGET_PF));
+  
   if (hasUpgradeTarget) return undefined;
 
   const changePlanOffers = entitlements?.filter((offer) => offer.change_plan_available === true);
-  const upgradable = changePlanOffers?.find((offer) => isProductFamily(offer, SOURCE_PF));
+
+  const upgradable = changePlanOffers?.find((offer) => {
+    const productCode = offer?.offer?.product_code;
+    if (isProductFamily(offer, SOURCE_PF)) return true;
+    else if (productCode && SOURCE_PF.includes(productCode)) return true;
+    
+    return false;
+  });
+  
   if (!upgradable) return undefined;
 
   const { env, base } = getConfig();
@@ -157,7 +172,7 @@ export default async function handleUpgradeOffer(
       return getModal(null, { id: 'switch-modal', content, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
     };
     const text = await replaceKey('upgrade-now', getConfig());
-    return { text, className: 'upgrade', url: upgradeUrl, handler: showModal };
+    return { text, className: 'upgrade blue', url: upgradeUrl, handler: showModal };
   }
   return undefined;
 }
