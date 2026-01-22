@@ -273,48 +273,32 @@ function getManifestListDomAndParameter(mepConfig) {
       </div>   
       <div class="mep-manifest-info">
             ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
-
               <div class="mep-section-data">
-                <div class="mep-row mep-active">
-                  <span>Experience</span>
-                  <span>${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}</span>
-                </div>
-                <div class="mep-row">
+                  <span class="mep-active">Experience</span>
+                ${!variantNames.includes(selectedVariantName) ? `
+                  <span class="mep-active">default (control)</span>` : `
+                  <span class='mep-active mep-selected-variant'>${selectedVariantName}</span>`}
                   <span>Source</span>
                   <span>${source}</span>
-                </div>
-                <div class="mep-row">
                   <span>Mktg action</span>
                   <span>${mktgAction}</span>
-                </div>
                 ${geoRestriction ? `
-                  <div class="mep-row">
-                    <span>Geo</span>
-                    <span>${geoRestriction ? `<div>${geoRestriction?.toUpperCase()}</div>` : ''}</span>
-                  </div>` : ''}
+                  <span>Geo</span>
+                  <span>${geoRestriction ? `${geoRestriction?.toUpperCase()}` : ''}</span>` : ''}
                 ${(eventStart && eventEnd) || disabled ? `
-                  <div class="mep-row">
-                    <span>Active</span>
-                    <span>${(eventStart && eventEnd) || disabled ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}</span>
-                  </div>` : ''}
-                  ${manifest.lastSeen ? `
-                  <div class="mep-row">
-                    <span>Last Seen</span>
-                    <span></span>
-                  </div>` : ''}
-              </div>
-
-            ${eventStart && eventEnd ? `
-              <div class="mep-section-data">
-                <div class="mep-row">
+                  <span>Active?</span>
+                  <span>${(eventStart && eventEnd) || disabled ? `${disabled ? 'inactive' : 'active'}` : ''}` : ''}</span>
+                ${manifest.lastSeen ? `
+                  <span>Last Seen</span>
+                  <span>${formatDate(new Date(manifest.lastSeen))}</span>` : ''}  
+                ${eventStart && eventEnd ? `
                   <span>On</span>
-                  <span>${formatDate(eventStart)} <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a></span>
-                </div>
-                <div class="mep-row">
+                  <span>${formatDate(eventStart)} 
+                  <br><a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a>
+                  </span>
                   <span>Off</span>
-                  <span>${formatDate(eventEnd)}</span>
-                </div>
-              </div>` : ''}
+                  <span>${formatDate(eventEnd)}</span>` : ''}
+              </div>
       </div>
       <div class="mep-experience-dropdown">
         <select name="experiences" class="mep-manifest-variants">${options}</select>
@@ -556,23 +540,16 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const pageHTML = `
     <h6 class="mep-section-header">Page</h6>
     <div class="mep-section-data">
-      <div class="mep-row">
         <span>Manifests Found</span>
         <span>${pageData.manifestsFound}</span>
-      </div>
-      <div class="mep-row">
         <span>Target Integration</span>
         <span>${pageData.targetIntegration}</span>
-      </div>
-      <div class="mep-row">
         <span>Personalization</span>
         <span>${pageData.personalization}</span>
-      </div>
-      ${page.lastSeen ? `
-        <div class="mep-row">
-          <span>Locale</span>
-          <span>${pageData.locale}</span>
-        </div>` : ''}
+    ${page.lastSeen ? `
+        <span>Locale</span>
+        <span>${pageData.locale}</span>`
+    : ''}
     </div>
     `;
 
@@ -589,14 +566,10 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const consentHTML = `
     <h6 class="mep-section-header">Consent</h6>
     <div class="mep-section-data">
-      <div class="mep-row">
         <span>Functional</span>
         <span>${consentData.functional}</span>
-      </div>
-      <div class="mep-row">
         <span>Advertising</span>
         <span>${consentData.advertising}</span>
-      </div>
     </div>
   `;
   mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, consentHTML));
@@ -613,26 +586,16 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const lingoHTML = `
     <h6 class="mep-section-header">Lingo</h6>
     <div class="mep-section-data">
-    <div class="mep-row">
         <span>Lang First</span>
         <span>${lingoData.langFirst}</span>
-      </div>
-      <div class="mep-row">
         <span>Geo Folder</span>
         <span>${lingoData.geoFolder}</span>
-      </div>
-      <div class="mep-row">
         <span>User Country</span>
         <span>${lingoData.userCountry}</span>
-      </div>
-      <div class="mep-row">
         <span>Geo + User</span>
         <span>${lingoData.geoUser}</span>
-      </div>
-      <div class="mep-row">
         <span>Updates</span>
         <span>${lingoData.updates}</span>
-      </div>
     </div>
   `;
 

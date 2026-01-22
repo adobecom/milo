@@ -139,34 +139,19 @@
   font-size: 16px;
 }
 
-.mep-popup .mep-columns {
-  display:flex;
-  gap: 16px;
-  text-transform: capitalize;
-}
-
 .mep-popup .mep-section-data {
-  display:flex;
-  flex-direction: column;
+  gap: 0 16px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   text-transform: capitalize;
 }
 
-.mep-popup .mep-section-data .mep-row {
-  display:flex;
-  gap: 16px;
-}
+/* .mep-popup .mep-summary-body .mep-section-data {
+  grid-template-columns: repeat(2, 1fr);
+} */
 
-.mep-popup .mep-section-data .mep-row span {
-  flex: 0 50%;
-}
-
-.mep-popup .mep-columns .mep-selected-variant {
+.mep-popup .mep-section-data .mep-selected-variant {
   text-transform: initial;
-}
-
-.mep-popup .mep-column a {
-  position: absolute;
-  right: 0;
 }
 
 .mep-popup a.mep-edit-manifest {
@@ -286,11 +271,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.mep-popup .mep-column .mep-upstream-page a,
-.mep-popup .mep-column .mep-downstream-pages a {
-  position: static;
 }
 
 .mep-downstream-toggle {
