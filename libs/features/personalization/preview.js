@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle, lingoActive, getCountry } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle, lingoActive, getCountry, getMepLingoPrefix } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
@@ -459,20 +459,16 @@ export function getMepPopup(mepConfig, isMmm = false) {
   if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
 
   // Build Options : Lingo Select
-  const isLingoActive = lingoActive();
-  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
-
   let regionDropdownHTML = '';
-  if (isLingoActive) {
-    if (showRegionDropdown) {
-      const regionOptions = regionKeys.map((key) => {
-        const country = key.split('_')[0];
-        const currentAkamaiLocale = urlParams.get('akamaiLocale');
-        const selected = currentAkamaiLocale === country ? ' selected' : '';
-        return `<option value="${country}"${selected}>${key}</option>`;
-      }).join('');
+  if (lingoActive() && regionKeys.length > 0) {
+    const regionOptions = regionKeys.map((key) => {
+      const country = key.split('_')[0];
+      const currentAkamaiLocale = urlParams.get('akamaiLocale');
+      const selected = currentAkamaiLocale === country ? ' selected' : '';
+      return `<option value="${country}"${selected}>${key}</option>`;
+    }).join('');
 
-      regionDropdownHTML = `
+    regionDropdownHTML = `
         <div class="mep-experience-dropdown">
           <label for="mepLingoRegionSelect${pageId}">Supported Lingo Geos</label>
           <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
@@ -480,8 +476,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
             ${regionOptions}
           </select>
         </div>`;
-    } else regionDropdownHTML = '<div>(No regions to spoof available.)</div>';
-  }
+  } else regionDropdownHTML = '<div>(No regions to spoof available.)</div>';
 
   // Build Options : Toggles
   const mepToggleOptions = createTag('div', { class: 'mep-section' });
@@ -575,11 +570,17 @@ export function getMepPopup(mepConfig, isMmm = false) {
   mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, consentHTML));
 
   // Build Summary : Lingo
+  function getGeoUserSupport() {
+    if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
+    if (getMepLingoPrefix()) return 'Supported';
+    return 'Not Supported';
+  }
+
   const lingoData = {
-    langFirst: 'Data',
+    langFirst: lingoActive() ? 'on' : 'off',
     geoFolder: page.geo || 'Us (None)',
     userCountry: getCountry(),
-    geoUser: 'Data',
+    geoUser: getGeoUserSupport(),
     updates: 'Data',
   };
 
