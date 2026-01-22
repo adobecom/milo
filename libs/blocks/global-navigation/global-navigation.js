@@ -225,11 +225,13 @@ const handleSignIn = async () => {
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 48px 32px;
+        padding: 48px 0px;
       }
       #signin-modal {
         width: 400px;
         border-radius: 16px;
+        display: flex;
+        justify-content: center;
       }
       #signin-modal .dialog-close {
         display: block;
@@ -303,7 +305,7 @@ export const CONFIG = {
           callbacks: {
             onSignIn: () => {
               const { useSusiModal } = getConfig();
-              if (useSusiModal) {
+              if (!useSusiModal) {
                 handleSignIn();
               } else {
                 window.adobeIMS?.signIn(SIGNIN_CONTEXT);
