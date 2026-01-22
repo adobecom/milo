@@ -159,7 +159,7 @@ export default async function init(a) {
   }
 
   const isMepLingoLink = a.dataset.mepLingo === 'true';
-  const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
+  const shouldFetchMepLingo = isMepLingoLink && !!(await getMepLingoPrefix());
   const isOnRegionalPage = locale?.base !== undefined;
 
   if (isMepLingoLink && (isOnRegionalPage || !lingoActive())) {
@@ -203,7 +203,7 @@ export default async function init(a) {
 
   let usedFallback = false;
 
-  const mepLingoPrefix = getMepLingoPrefix();
+  const mepLingoPrefix = await getMepLingoPrefix();
   if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
     usedFallback = true;
   }

@@ -12,12 +12,12 @@ import { getLocaleCodeFromPrefix } from '../../../libs/features/mep/lingo.js';
  * @param {Object} locale - Locale configuration object
  * @returns {Object} Context object with country, localeCode, regionKey, and matchingRegion
  */
-export default function getMepLingoContext(locale) {
+export default async function getMepLingoContext(locale) {
   if (!locale?.prefix) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
   }
 
-  const country = getCountry();
+  const country = await getCountry(true);
   if (!country) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
   }
