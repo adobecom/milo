@@ -260,6 +260,10 @@ main > .section[class*='-up'] > .content {
   align-items: center;
 }
 
+.section.vertical-center {
+  align-items: center;
+}
+
 /* mobile only */
 @media (max-width: 600px) {
   .section.two-up.reverse-mobile > div:nth-child(1) {
