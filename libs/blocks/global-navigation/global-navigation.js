@@ -312,7 +312,7 @@ export const CONFIG = {
           callbacks: {
             onSignIn: () => {
               const { useSusiModal } = getConfig();
-              if (!useSusiModal) {
+              if (useSusiModal) {
                 handleSignIn();
               } else {
                 window.adobeIMS?.signIn(SIGNIN_CONTEXT);
