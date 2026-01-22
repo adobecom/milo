@@ -203,6 +203,9 @@ export const loadStrings = async (
   try {
     const locale = getPageLocale(pathname, locales);
     const localizedURL = new URL(url);
+    if (localizedURL.hostname.includes('.hlx.')) {
+      localizedURL.hostname = localizedURL.hostname.replace('.hlx.', '.aem.');
+    }
     if (localizedURL.hostname.endsWith('.page')) {
       localizedURL.hostname = localizedURL.hostname.replace(/.page$/, '.live');
     }
