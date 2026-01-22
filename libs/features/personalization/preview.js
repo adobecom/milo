@@ -108,7 +108,8 @@ function expandManifest(event) {
 }
 
 function addDividers(node, selector) {
-  node.querySelectorAll(selector).forEach((section) => {
+  node.querySelectorAll(selector).forEach((section, index) => {
+    if (index === node.querySelectorAll(selector).length - 1) return;
     const mepDivider = createTag('div', { class: 'mep-divider' });
     section.insertAdjacentElement('afterend', mepDivider);
   });
@@ -640,7 +641,9 @@ export function getMepPopup(mepConfig, isMmm = false) {
   // Inject Overlay
   mepPopup.append(mepPopupHeader, mepPopupTabs, ...mepPopupBody);
 
-  addDividers(mepPopup, '.mep-popup-body > .mep-section:not(:last-child), .mep-manifest-list > .mep-section');
+  mepPopupBody.forEach((body) => {
+    addDividers(body, '.mep-section');
+  });
   addMepPopupListeners(mepPopup, pageId);
 
   const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
