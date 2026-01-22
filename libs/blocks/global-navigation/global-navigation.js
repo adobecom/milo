@@ -210,8 +210,17 @@ const handleSignIn = async () => {
   sentry.config = { consentProfile: 'free' };
 
   sentry.addEventListener('redirect', (e) => {
-    // Open in new tab as requested
-    window.open(e.detail, '_blank');
+    if (e.preventDefault) e.preventDefault();
+    // Open in new window popup
+    const width = 600;
+    const height = 700;
+    const top = Math.max(0, (window.screen.height - height) / 2);
+    const left = Math.max(0, (window.screen.width - width) / 2);
+    // Explicitly define all features to force a popup window
+    const features = `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,resizable=yes,toolbar=no,menubar=no,location=no,directories=no`;
+    /* eslint-disable-next-line no-console */
+    console.log('GNav: Opening popup with features:', features);
+    window.open(e.detail, 'AdobeID', features);
   });
 
   sentry.addEventListener('on-error', (e) => {
