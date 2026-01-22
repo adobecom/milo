@@ -218,8 +218,6 @@ const handleSignIn = async () => {
     const left = Math.max(0, (window.screen.width - width) / 2);
     // Explicitly define all features to force a popup window
     const features = `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,resizable=yes,toolbar=no,menubar=no,location=no,directories=no`;
-    /* eslint-disable-next-line no-console */
-    console.log('GNav: Opening popup with features:', features);
     window.open(e.detail, 'AdobeID', features);
   });
 
