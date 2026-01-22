@@ -237,10 +237,18 @@
 }
 
 .mep-popup .mep-popup-footer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: right;
   padding: 12px;
+}
+
+.mep-popup .mep-popup-footer a:not([active]) {
+  display: none;
 }
 
 .mep-popup .target-activity-name {
@@ -343,7 +351,12 @@
 .mep-popup.in-page .mep-popup-body {
   padding: 12px;
   overflow-y: auto;
+  height: calc(100vh - 210px);
+}
+
+.mep-popup.in-page .mep-options-body {
   height: calc(100vh - 274px);
+  margin-bottom: 64px;
 }
 
 .mep-popup.in-page .mep-manifest-list {

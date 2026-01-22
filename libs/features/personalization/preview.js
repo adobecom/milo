@@ -272,36 +272,48 @@ function getManifestListDomAndParameter(mepConfig) {
       </div>   
       <div class="mep-manifest-info">
             ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
-            <div class="mep-columns">
-              <div class="mep-column">
-                <div class="mep-active">Experience</div>
-                <div>Source</div>
-                <div>Mktg action</div>
-                ${geoRestriction ? '<div>Geos</div>' : ''}
-                ${(eventStart && eventEnd) || disabled ? '<div>Active?</div>' : ''}
-                ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
+
+              <div class="mep-section-data">
+                <div class="mep-row mep-active">
+                  <span>Experience</span>
+                  <span>${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}</span>
+                </div>
+                <div class="mep-row">
+                  <span>Source</span>
+                  <span>${source}</span>
+                </div>
+                <div class="mep-row">
+                  <span>Mktg action</span>
+                  <span>${mktgAction}</span>
+                </div>
+                ${geoRestriction ? `
+                  <div class="mep-row">
+                    <span>Geo</span>
+                    <span>${geoRestriction ? `<div>${geoRestriction?.toUpperCase()}</div>` : ''}</span>
+                  </div>` : ''}
+                ${(eventStart && eventEnd) || disabled ? `
+                  <div class="mep-row">
+                    <span>Active</span>
+                    <span>${(eventStart && eventEnd) || disabled ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}</span>
+                  </div>` : ''}
+                  ${manifest.lastSeen ? `
+                  <div class="mep-row">
+                    <span>Last Seen</span>
+                    <span></span>
+                  </div>` : ''}
               </div>
-              <div class="mep-column">
-                ${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}
-                <div>${source}</div>
-                <div>${mktgAction}</div>
-                ${geoRestriction ? `<div>${geoRestriction?.toUpperCase()}</div>` : ''}
-                ${(eventStart && eventEnd) || disabled ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
-                ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
-              </div>
-            </div>
-            ${eventStart && eventEnd ? `<div class="mep-columns">
-              <div class="mep-column">
-                <div>On</div>
-                <div>Off</div>
-              </div>
-              <div class="mep-column">
-                <div>${formatDate(eventStart)} <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a></div>
-                <div>${formatDate(eventEnd)}</div>
-              </div>
-            </div>
-          </div>` : ''}
-        </div>
+
+            ${eventStart && eventEnd ? `
+              <div class="mep-section-data">
+                <div class="mep-row">
+                  <span>On</span>
+                  <span>${formatDate(eventStart)} <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a></span>
+                </div>
+                <div class="mep-row">
+                  <span>Off</span>
+                  <span>${formatDate(eventEnd)}</span>
+                </div>
+              </div>` : ''}
       </div>
       <div class="mep-experience-dropdown">
         <select name="experiences" class="mep-manifest-variants">${options}</select>
@@ -437,16 +449,97 @@ export function getMepPopup(mepConfig, isMmm = false) {
 
   // Build Tabs & Containers
   const mepPopupTabs = createTag('div', { class: 'mep-popup-tabs' });
-  const tabs = ['Summary', 'Options'];
+  const tabs = ['Options', 'Summary'];
   const mepPopupBody = tabs.map((tab, index) => {
     const mepTab = createTag('div', { class: 'mep-tab' });
     if (index === 0) mepTab.setAttribute('active', '');
     mepTab.textContent = tab;
     mepPopupTabs.append(mepTab);
-    const bodyDiv = createTag('div', { class: 'mep-popup-body' });
+    const bodyDiv = createTag('div', { class: `mep-popup-body mep-${tabs[index].toLocaleLowerCase()}-body` });
     if (index === 0) bodyDiv.setAttribute('active', '');
     return bodyDiv;
   });
+
+  // Build Options : Manifest List
+  const regionKeys = Object.keys(config?.locale?.regions || {});
+
+  const { manifestList } = getManifestListDomAndParameter(mepConfig);
+  const manifestTag = createTag('div', { class: 'mep-manifest-list' });
+  manifestTag.innerHTML = `<h6>Manifests</h6>
+    ${mepConfig.activities?.length ? manifestList : '<div class="mep-section">(No manifests found.)</div>'}
+  `;
+  mepPopupBody[0].append(manifestTag);
+  // Build Options : MMM Manifest List
+  const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
+  if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
+
+  // Build Options : Lingo Select
+  const isLingoActive = lingoActive();
+  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
+
+  let regionDropdownHTML = '';
+  if (isLingoActive) {
+    if (showRegionDropdown) {
+      const regionOptions = regionKeys.map((key) => {
+        const country = key.split('_')[0];
+        const currentAkamaiLocale = urlParams.get('akamaiLocale');
+        const selected = currentAkamaiLocale === country ? ' selected' : '';
+        return `<option value="${country}"${selected}>${key}</option>`;
+      }).join('');
+
+      regionDropdownHTML = `
+        <div class="mep-experience-dropdown">
+          <label for="mepLingoRegionSelect${pageId}">Supported Lingo Geos</label>
+          <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
+            <option value="">-- Select Region --</option>
+            ${regionOptions}
+          </select>
+        </div>`;
+    } else regionDropdownHTML = '<div>(No regions to spoof available.)</div>';
+  }
+
+  // Build Options : Toggles
+  const mepToggleOptions = createTag('div', { class: 'mep-section' });
+  const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
+    ? `<div>
+        <input type="checkbox" name="mepHighlight${pageId}"
+        id="mepManifestsCheckbox" value="false">
+        <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
+      </div>`
+    : '';
+  mepToggleOptions.innerHTML = `
+    <h6 class="mep-section-header">Toggles</h6>
+    <div class="mep-manifest-variants">
+      <div>
+        <input type="checkbox" name="mepHighlight${pageId}"
+        id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
+        <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
+      </div>
+      <div>
+        <input type="checkbox" name="mepFragments${pageId}"
+        id="mepFragmentsCheckbox${pageId}" ${mepFragmentsChecked} value="true">
+        <label for="mepFragmentsCheckbox${pageId}">Highlight fragments</label>
+      </div>
+      ${showManifestsCheckbox}
+      <div>
+        <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
+        id="mepPreviewButtonCheckbox${pageId}" value="off">
+        <label for="mepPreviewButtonCheckbox${pageId}">Add mepButton=off to preview link</label>
+      </div>
+    </div>
+    ${regionDropdownHTML}
+    <div>New manifest location or path*</div>
+    <input type="text" name="new-manifest${pageId}" class="new-manifest">
+  `;
+  mepPopupBody[0].append(mepToggleOptions);
+
+  // Build Options : Footer
+  const mepFooterHTML = `
+    <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''} active>
+      Preview
+    </a>`;
+
+  mepPopupBody[0].append(createTag('div', { class: `mep-popup-footer${isMmm ? '' : ' dark'}` }, mepFooterHTML));
 
   // Build Summary : Page
   const mepTarget = isMmm ? page.target : ({ postlcp: 'postlcp', true: 'on', false: 'off' }[config.mep?.targetEnabled]);
@@ -482,7 +575,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
     </div>
     `;
 
-  mepPopupBody[0].append(createTag('div', { class: 'mep-section' }, pageHTML));
+  mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, pageHTML));
 
   // Build Summary : Consent
   const { consentState } = config.mep;
@@ -505,17 +598,15 @@ export function getMepPopup(mepConfig, isMmm = false) {
       </div>
     </div>
   `;
-  mepPopupBody[0].append(createTag('div', { class: 'mep-section' }, consentHTML));
+  mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, consentHTML));
 
   // Build Summary : Lingo
-  const regionKeys = Object.keys(config?.locale?.regions || {});
-
   const lingoData = {
     langFirst: 'Data',
     geoFolder: page.geo || 'Us (None)',
     userCountry: getCountry(),
-    geoUser: 'Supported',
-    updates: '0 out of 0',
+    geoUser: 'Data',
+    updates: 'Data',
   };
 
   const lingoHTML = `
@@ -544,96 +635,10 @@ export function getMepPopup(mepConfig, isMmm = false) {
     </div>
   `;
 
-  mepPopupBody[0].append(createTag('div', { class: 'mep-section' }, lingoHTML));
-
-  // Build Options : Manifest List
-  const { manifestList } = getManifestListDomAndParameter(mepConfig);
-  const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
-  mepManifestList.innerHTML = `<h6>Manifests</h6>${manifestList}`;
-  if (mepConfig.activities?.length) mepPopupBody[1].append(mepManifestList);
-
-  // Build Options : MMM Manifest List
-  const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
-  if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
-
-  // Build Options : Lingo Select
-  const isLingoActive = lingoActive();
-  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
-
-  if (isLingoActive) {
-    const mepLingoSelect = createTag('div', { class: 'mep-section' });
-
-    let regionDropdownHTML = '';
-    if (showRegionDropdown) {
-      const regionOptions = regionKeys.map((key) => {
-        const country = key.split('_')[0];
-        const currentAkamaiLocale = urlParams.get('akamaiLocale');
-        const selected = currentAkamaiLocale === country ? ' selected' : '';
-        return `<option value="${country}"${selected}>${key}</option>`;
-      }).join('');
-
-      regionDropdownHTML = `
-        <div class="mep-experience-dropdown">
-          <label for="mepLingoRegionSelect${pageId}">Spoof Region</label>
-          <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
-            <option value="">-- Select Region --</option>
-            ${regionOptions}
-          </select>
-        </div>`;
-    } else regionDropdownHTML = '<div>(No regions spoof available.)</div>';
-
-    const mepLingoSectionHTML = `
-      <div>
-        <h6 class="mep-section-header">Lingo</h6>       
-        ${regionDropdownHTML}
-      </div>`;
-    mepLingoSelect.innerHTML = mepLingoSectionHTML;
-    mepPopupBody[1].append(mepLingoSelect);
-  }
-
-  // Build Options : Toggles
-  const mepToggleOptions = createTag('div', { class: 'mep-section' });
-  const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
-    ? `<div>
-        <input type="checkbox" name="mepHighlight${pageId}"
-        id="mepManifestsCheckbox" value="false">
-        <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
-      </div>`
-    : '';
-  mepToggleOptions.innerHTML = `
-    <h6 class="mep-section-header">Toggles</h6>
-    <div class="mep-manifest-variants">
-      <div>
-        <input type="checkbox" name="mepHighlight${pageId}"
-        id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
-        <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
-      </div>
-      <div>
-        <input type="checkbox" name="mepFragments${pageId}"
-        id="mepFragmentsCheckbox${pageId}" ${mepFragmentsChecked} value="true">
-        <label for="mepFragmentsCheckbox${pageId}">Highlight fragments</label>
-      </div>
-      ${showManifestsCheckbox}
-      <div>
-        <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
-        id="mepPreviewButtonCheckbox${pageId}" value="off">
-        <label for="mepPreviewButtonCheckbox${pageId}">Add mepButton=off to preview link</label>
-      </div>
-    </div>
-    <div>New manifest location or path*</div>
-    <input type="text" name="new-manifest${pageId}" class="new-manifest">
-  `;
-  mepPopupBody[1].append(mepToggleOptions);
-
-  // Build Footer
-  const mepPopupFooter = createTag('div', { class: `mep-popup-footer${isMmm ? '' : ' dark'}` });
-  mepPopupFooter.innerHTML += `
-    <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''}>
-    Preview
-    </a>`;
+  mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, lingoHTML));
 
   // Inject Overlay
-  mepPopup.append(mepPopupHeader, mepPopupTabs, ...mepPopupBody, mepPopupFooter);
+  mepPopup.append(mepPopupHeader, mepPopupTabs, ...mepPopupBody);
 
   addDividers(mepPopup, '.mep-popup-body > .mep-section:not(:last-child), .mep-manifest-list > .mep-section');
   addMepPopupListeners(mepPopup, pageId);
