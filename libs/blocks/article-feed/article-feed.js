@@ -555,6 +555,7 @@ async function decorateArticleFeed(
     role: 'status',
     'aria-live': 'polite',
     'aria-label': 'loading',
+    'aria-atomic': 'true',
   });
   container.append(spinner);
   articleCards.append(container);
