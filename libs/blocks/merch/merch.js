@@ -703,8 +703,8 @@ export async function getUpgradeAction(
   el,
 ) {
   if (!options.upgrade) return undefined;
-  let SOURCE_PF = undefined;
-  let TARGET_PF = undefined;
+  let SOURCE_PF;
+  let TARGET_PF;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -717,14 +717,12 @@ export async function getUpgradeAction(
   }
 
   if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
-      SOURCE_PF =   ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
-      TARGET_PF = ['ACROBAT'];
+    SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
+    TARGET_PF = ['ACROBAT'];
   } else {
-      SOURCE_PF = CC_SINGLE_APPS_ALL;
-      TARGET_PF = CC_ALL_APPS;
+    SOURCE_PF = CC_SINGLE_APPS_ALL;
+    TARGET_PF = CC_ALL_APPS;
   }
-
-
   await upgradeOffer?.onceSettled();
   if (upgradeOffer && entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
