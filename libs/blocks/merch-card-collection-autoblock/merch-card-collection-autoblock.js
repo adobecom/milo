@@ -130,7 +130,7 @@ function getSidenav(collection) {
   }
 
   /* Filters */
-  const spSidenav = createTag('sp-sidenav', { manageTabIndex: true });
+  const spSidenav = createTag('sp-sidenav', { manageTabIndex: true, label: placeholders?.sidenavFilterCategories || '' });
   spSidenav.setAttribute('manageTabIndex', true);
   const deeplink = collection.variant === 'catalog' ? 'category' : 'filter';
   const sidenavList = createTag('merch-sidenav-list', { deeplink }, spSidenav);
@@ -174,7 +174,7 @@ function getSidenav(collection) {
 
   /* Resources List */
   if (sidenavSettings?.linksTitle && sidenavSettings?.link) {
-    const resourcesSpSidenav = createTag('sp-sidenav', { manageTabIndex: true });
+    const resourcesSpSidenav = createTag('sp-sidenav', { manageTabIndex: true, label: placeholders?.sidenavResources || '' });
     resourcesSpSidenav.classList.add('resources');
 
     const resourcesList = createTag('merch-sidenav-list', {
