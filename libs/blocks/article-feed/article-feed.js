@@ -544,8 +544,8 @@ async function decorateArticleFeed(
 
   const container = createTag('div', {
     class: 'article-cards-empty',
-    role: 'status',
-    'aria-live': 'polite',
+    role: 'alert',
+    'aria-live': 'assertive',
     'aria-atomic': 'true',
   });
 
@@ -570,9 +570,11 @@ async function decorateArticleFeed(
   } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
     // no user filtered results were founds
     spinner.remove();
-    const alertWrapper = document.createElement('div');
-    alertWrapper.setAttribute('role', 'alert');
-    alertWrapper.setAttribute('aria-atomic', 'true');
+    const alertWrapper = createTag('div', {
+      role: 'alert',
+      'aria-live': 'assertive',
+      'aria-atomic': 'true',
+    });
     const noMatches = document.createElement('p');
     noMatches.innerHTML = `<strong>${await replacePlaceholder('no-matches')}</strong>`;
     const userHelp = document.createElement('p');
