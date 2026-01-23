@@ -157,8 +157,10 @@ export default async function loadBlock(configs, customLib) {
     if (configBlock) {
       const config = getConfig();
       if (block.key === 'header') {
-        const gnavSource = configBlock.gnavSource || `${config?.locale?.contentRoot}/gnav`;
-
+        let gnavSource = configBlock.gnavSource || `${config?.locale?.contentRoot}/gnav`;
+        if (String(configBlock.disableActiveLink) === 'true' && !gnavSource.includes('_noActiveItem')) {
+          gnavSource += '#_noActiveItem';
+        }
         try {
           const gnavConfigs = {
             ...block,
@@ -171,12 +173,14 @@ export default async function loadBlock(configs, customLib) {
             isLocalNav: configBlock.isLocalNav,
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
+            productEntryCta: configBlock.productEntryCta || 'off',
           };
           const metaTags = [
             { key: 'gnavSource', name: 'gnav-source' },
             { key: 'unavComponents', name: 'universal-nav' },
             { key: 'redirect', name: 'adobe-home-redirect' },
             { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
+            { key: 'productEntryCta', name: 'product-entry-cta' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
           const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
