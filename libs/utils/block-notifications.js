@@ -41,6 +41,8 @@ function decorateNotificationControls(element) {
   let isVisible = true;
   notificationControlsContainer.appendChild(toggle);
   notificationControlsContainer.classList.add('notification-controls-container');
+  notificationControlsContainer.setAttribute('role', 'region');
+  notificationControlsContainer.setAttribute('aria-label', 'Block notifications');
   element.appendChild(notificationControlsContainer);
 
   toggle.addEventListener('click', () => {
