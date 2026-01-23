@@ -8,6 +8,8 @@ const perpM2M = {
   commitment: 'PERPETUAL',
   name: 'Stock',
   planType: 'M2M',
+  customer_segment: 'INDIVIDUAL',
+  market_segments: ['COM'],
 };
 const defaults = {
   checkoutWorkflow: 'UCv3',
@@ -46,6 +48,7 @@ function createLink(params = {}) {
     perpM2M,
     params,
     params.promo,
+    'US',
   );
 }
 
@@ -244,14 +247,14 @@ describe('OST: merch link creation', () => {
     const type = types.checkoutUrl;
 
     it('with default params', async () => {
-      const link = createLink({ type });
+      const link = await createLink({ type });
       assertLink(link, perpM2M, { osi, type });
       expect({ ...link.dataset }).to.eql({});
     });
 
     it('with promo and custom text', async () => {
       const ctaText = texts.try;
-      const link = createLink({ ctaText, promo, type });
+      const link = await createLink({ ctaText, promo, type });
       assertLink(link, perpM2M, { osi, promo, type }, ctaText);
     });
 
@@ -260,7 +263,7 @@ describe('OST: merch link creation', () => {
       const modal = 'd2p';
       const entitlement = 'true';
       const upgrade = 'false';
-      const link = createLink({ ctaText, modal, entitlement, upgrade, type });
+      const link = await createLink({ ctaText, modal, entitlement, upgrade, type });
       assertLink(link, perpM2M, { osi, modal, entitlement, upgrade, type }, ctaText);
     });
   });
@@ -269,15 +272,15 @@ describe('OST: merch link creation', () => {
     const type = types.price;
 
     it('with default params', async () => {
-      const link = createLink({ type });
+      const link = await createLink({ type });
       assertLink(link, perpM2M, { osi, type });
     });
 
     it('with default params from OST', async () => {
-      const link = createLink({
+      const link = await createLink({
         type,
         displayRecurrence: true,
-        displayPerUnit: true,
+        displayPerUnit: false,
         displayTax: false,
         displayOldPrice: false,
         forceTaxExclusive: false,
@@ -290,7 +293,7 @@ describe('OST: merch link creation', () => {
       const displayPerUnit = true;
       const displayTax = true;
       const forceTaxExclusive = true;
-      const link = createLink({
+      const link = await createLink({
         displayRecurrence,
         displayPerUnit,
         displayTax,
