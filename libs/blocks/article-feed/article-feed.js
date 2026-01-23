@@ -542,12 +542,24 @@ async function decorateArticleFeed(
     articleFeedEl.append(articleCards);
   }
 
-  const container = createTag('div', { class: 'article-cards-empty' });
+  const container = createTag('div', {
+    class: 'article-cards-empty',
+    role: 'status',
+    'aria-live': 'polite',
+    'aria-atomic': 'true',
+  });
 
   // display spinner
-  const spinner = createTag('div', { class: 'spinner' });
+  const spinner = createTag('div', {
+    class: 'spinner',
+    role: 'status',
+    'aria-live': 'polite',
+  });
   container.append(spinner);
   articleCards.append(container);
+  // Add loading text after spinner is in DOM so screen readers announce it
+  const loadingText = createTag('span', { class: 'sr-only' }, 'loading');
+  spinner.append(loadingText);
 
   const pageEnd = offset + limit;
   await filterArticles(feed, limit, offset);
@@ -559,16 +571,22 @@ async function decorateArticleFeed(
   } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
     // no user filtered results were found
     spinner.remove();
+    const alertWrapper = document.createElement('div');
+    alertWrapper.setAttribute('role', 'alert');
+    alertWrapper.setAttribute('aria-atomic', 'true');
     const noMatches = document.createElement('p');
     noMatches.innerHTML = `<strong>${await replacePlaceholder('no-matches')}</strong>`;
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
     userHelp.textContent = await replacePlaceholder('user-help');
-    container.append(noMatches, userHelp);
+    alertWrapper.append(noMatches, userHelp);
+    container.append(alertWrapper);
   } else {
     // no results were found
     spinner.remove();
     const noResults = document.createElement('p');
+    noResults.setAttribute('role', 'alert');
+    noResults.setAttribute('aria-atomic', 'true');
     noResults.innerHTML = `<strong>${await replacePlaceholder('no-results')}</strong>`;
     container.append(noResults);
   }
