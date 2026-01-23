@@ -554,12 +554,10 @@ async function decorateArticleFeed(
     class: 'spinner',
     role: 'status',
     'aria-live': 'polite',
+    'aria-label': 'loading',
   });
   container.append(spinner);
   articleCards.append(container);
-  // Add loading text after spinner is in DOM so screen readers announce it
-  const loadingText = createTag('span', { class: 'sr-only' }, 'loading');
-  spinner.append(loadingText);
 
   const pageEnd = offset + limit;
   await filterArticles(feed, limit, offset);
