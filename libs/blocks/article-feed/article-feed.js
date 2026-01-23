@@ -552,8 +552,8 @@ async function decorateArticleFeed(
   // display spinner
   const spinner = createTag('div', {
     class: 'spinner',
-    role: 'status',
-    'aria-live': 'polite',
+    role: 'alert',
+    'aria-live': 'assertive',
     'aria-label': 'loading',
     'aria-atomic': 'true',
   });
