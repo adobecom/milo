@@ -36,7 +36,7 @@ export async function fetchMepLingo(mepLingoPath, fallbackPath) {
   return {};
 }
 
-export function handleInvalidMepLingo(a, { env, relHref }) {
+export function handleInvalidMepLingo(a, { env }) {
   const { mepLingoSectionSwap, mepLingoBlockSwap } = a.dataset;
   const isProd = env?.name === 'prod';
 
@@ -66,7 +66,7 @@ export function handleInvalidMepLingo(a, { env, relHref }) {
     if (!parent?.children.length && !parent?.textContent?.trim()) parent?.remove();
     return;
   }
-  const isInline = a.href?.includes('#_inline') || relHref?.includes('#_inline');
+  const isInline = a.dataset.originalHref?.includes('#_inline');
   a.replaceWith(createTag('div', {
     'data-failed': 'true',
     'data-reason': `mep-lingo: ${isInline ? 'inline ' : ''}fragment not available`,
@@ -74,10 +74,17 @@ export function handleInvalidMepLingo(a, { env, relHref }) {
   }));
 }
 
-export function addMepLingoPreviewAttrs(fragment, { usedFallback, relHref }) {
+export function addMepLingoPreviewAttrs(fragment, {
+  usedFallback,
+  relHref,
+  isInsert = false,
+  isRemove = false,
+}) {
   if (usedFallback) {
     fragment.dataset.mepLingoFallback = relHref;
   } else {
     fragment.dataset.mepLingoRoc = relHref;
   }
+  if (isInsert) fragment.dataset.mepLingoInsert = 'true';
+  if (isRemove) fragment.dataset.mepLingoRemove = 'true';
 }

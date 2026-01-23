@@ -813,11 +813,21 @@ export function getMepLingoPrefix() {
 
 function detectMepLingoSwap(a) {
   if (!a) return;
-  if (a.href.includes('#_mep-lingo')) {
+  const isInsertHash = a.href.includes('#_mep-lingo-insert');
+  const isRemoveHash = !isInsertHash && a.href.includes('#_mep-lingo-remove');
+  const isRegularHash = !isInsertHash && !isRemoveHash && a.href.includes('#_mep-lingo');
+
+  if (isInsertHash || isRemoveHash || isRegularHash) {
+    let hashToRemove = '#_mep-lingo';
+    if (isInsertHash) hashToRemove = '#_mep-lingo-insert';
+    if (isRemoveHash) hashToRemove = '#_mep-lingo-remove';
+
     a.dataset.mepLingo = 'true';
-    // Store original href before transformation for fallback purposes
-    a.dataset.originalHref = a.href.replace('#_mep-lingo', '');
-    a.href = a.href.replace('#_mep-lingo', '');
+    if (isInsertHash) a.dataset.mepLingoInsert = 'true';
+    if (isRemoveHash) a.dataset.mepLingoRemove = 'true';
+    a.dataset.originalHref = a.href.replace(hashToRemove, '');
+    a.href = a.href.replace(hashToRemove, '');
+    if (isInsertHash || isRemoveHash) return; // Insert/remove hash doesn't need row detection
   }
   // Always detect mep-lingo rows (even when lingoActive() is false) for fallback purposes
   const row = a.closest('.section > div > div');
@@ -826,13 +836,19 @@ function detectMepLingoSwap(a) {
   if (firstCellText === 'mep-lingo') {
     a.dataset.mepLingo = 'true';
     a.dataset.originalHref = a.href;
+    const swapBlock = a.closest('.section > div[class]');
     if (a.closest('.section-metadata')) {
       a.dataset.mepLingoSectionSwap = 'true';
-    } else {
-      const swapBlock = a.closest('.section > div[class]');
-      if (swapBlock) {
-        const [blockName] = swapBlock.classList;
-        a.dataset.mepLingoBlockSwap = blockName;
+    } else if (swapBlock) {
+      const [blockName] = swapBlock.classList;
+      a.dataset.mepLingoBlockSwap = blockName;
+
+      if (blockName === 'mep-lingo') {
+        if (swapBlock.classList.contains('insert')) {
+          a.dataset.mepLingoInsert = 'true';
+        } else if (swapBlock.classList.contains('remove')) {
+          a.dataset.mepLingoRemove = 'true';
+        }
       }
     }
   }
@@ -846,7 +862,7 @@ export async function localizeLinkAsync(
 ) {
   if (!href) return href;
   detectMepLingoSwap(aTag);
-  const effectiveHref = href.replace('#_mep-lingo', '');
+  const effectiveHref = href.replace('#_mep-lingo-insert', '').replace('#_mep-lingo', '');
   const isMepLingoLink = aTag?.dataset?.mepLingo
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
