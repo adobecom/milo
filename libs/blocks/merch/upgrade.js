@@ -123,9 +123,7 @@ export default async function handleUpgradeOffer(
   if (hasUpgradeTargetFamily && hasUpgradeTargetCode) return undefined;
 
   const changePlanOffers = entitlements?.filter((offer) => offer.change_plan_available === true);
-  const upgradable = changePlanOffers?.find((offer) => 
-    isProductFamily(offer, SOURCE_PF) || isProductCode(offer, SOURCE_PF)
-  );
+  const upgradable = changePlanOffers?.find((offer) => isProductFamily(offer, SOURCE_PF) || isProductCode(offer, SOURCE_PF));
   if (!upgradable) return undefined;
 
   const { env, base } = getConfig();

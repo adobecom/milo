@@ -476,6 +476,7 @@ export async function loadMasComponent(componentName) {
       try {
         return await import(masUrl);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn(`Failed to load from MAS repository, falling back to Milo deps: ${error.message}`);
         return import(`../../deps/mas/${componentName}.js`);
       }
