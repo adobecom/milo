@@ -1,13 +1,15 @@
 import { expect } from '@esm-bundle/chai';
-
+import { delay } from '../../helpers/waitfor.js';
 import { mockOstDeps, unmockOstDeps } from './mocks/ost-utils.js';
-import { DEFAULT_CTA_TEXT, createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
+import { DEFAULT_CTA_TEXT, createLinkMarkup, addToggleSwitches } from '../../../libs/blocks/ost/ost.js';
 
 const perpM2M = {
   offer_id: 'aeb0bf53517d46e89a1b039f859cf573',
   commitment: 'PERPETUAL',
   name: 'Stock',
   planType: 'M2M',
+  customer_segment: 'INDIVIDUAL',
+  market_segments: ['COM'],
 };
 const defaults = {
   checkoutWorkflow: 'UCv3',
@@ -46,6 +48,7 @@ function createLink(params = {}) {
     perpM2M,
     params,
     params.promo,
+    'US',
   );
 }
 
@@ -244,14 +247,14 @@ describe('OST: merch link creation', () => {
     const type = types.checkoutUrl;
 
     it('with default params', async () => {
-      const link = createLink({ type });
+      const link = await createLink({ type });
       assertLink(link, perpM2M, { osi, type });
       expect({ ...link.dataset }).to.eql({});
     });
 
     it('with promo and custom text', async () => {
       const ctaText = texts.try;
-      const link = createLink({ ctaText, promo, type });
+      const link = await createLink({ ctaText, promo, type });
       assertLink(link, perpM2M, { osi, promo, type }, ctaText);
     });
 
@@ -260,7 +263,7 @@ describe('OST: merch link creation', () => {
       const modal = 'd2p';
       const entitlement = 'true';
       const upgrade = 'false';
-      const link = createLink({ ctaText, modal, entitlement, upgrade, type });
+      const link = await createLink({ ctaText, modal, entitlement, upgrade, type });
       assertLink(link, perpM2M, { osi, modal, entitlement, upgrade, type }, ctaText);
     });
   });
@@ -269,15 +272,15 @@ describe('OST: merch link creation', () => {
     const type = types.price;
 
     it('with default params', async () => {
-      const link = createLink({ type });
+      const link = await createLink({ type });
       assertLink(link, perpM2M, { osi, type });
     });
 
     it('with default params from OST', async () => {
-      const link = createLink({
+      const link = await createLink({
         type,
         displayRecurrence: true,
-        displayPerUnit: true,
+        displayPerUnit: false,
         displayTax: false,
         displayOldPrice: false,
         forceTaxExclusive: false,
@@ -290,7 +293,7 @@ describe('OST: merch link creation', () => {
       const displayPerUnit = true;
       const displayTax = true;
       const forceTaxExclusive = true;
-      const link = createLink({
+      const link = await createLink({
         displayRecurrence,
         displayPerUnit,
         displayTax,
@@ -304,5 +307,91 @@ describe('OST: merch link creation', () => {
         type,
       });
     });
+  });
+});
+describe('OST: toggle switches', () => {
+  it('change toggle switch landscape from PUBLISHED to DRAFT', async () => {
+    const el = document.createElement('div');
+    const ostEnv = { landscape: 'PUBLISHED' };
+    const windowObj = { location: {} };
+    const cbs = addToggleSwitches(el, ostEnv, true, windowObj);
+    const cbLandscape = cbs[0];
+    const cbLDefaults = cbs[1];
+
+    expect(cbLandscape.checked).to.be.false;
+    expect(cbLDefaults.checked).to.be.true;
+
+    cbLandscape.checked = true;
+    cbLandscape.dispatchEvent(new Event('change'));
+    await delay(100);
+
+    const url = new URL(windowObj.location.href);
+    expect(url.searchParams.get('commerce.landscape')).to.equal('DRAFT');
+    expect(url.searchParams.get('commerce.defaults')).to.be.null;
+  });
+  it('change toggle switch defaults on to off', async () => {
+    const el = document.createElement('div');
+    const ostEnv = { landscape: 'PUBLISHED' };
+    const windowObj = { location: {} };
+    const cbs = addToggleSwitches(el, ostEnv, true, windowObj);
+    const cbLandscape = cbs[0];
+    const cbLDefaults = cbs[1];
+
+    expect(cbLandscape.checked).to.be.false;
+    expect(cbLDefaults.checked).to.be.true;
+
+    cbLDefaults.checked = false;
+    cbLDefaults.dispatchEvent(new Event('change'));
+    await delay(100);
+
+    const url = new URL(windowObj.location.href);
+    expect(url.searchParams.get('commerce.landscape')).to.be.null;
+    expect(url.searchParams.get('commerce.defaults')).to.equal('off');
+  });
+  it('change toggle switch landscape from DRAFT to PUBLISHED', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, null, `${window.location.pathname}?commerce.landscape=DRAFT&commerce.defaults=off`);
+    const el = document.createElement('div');
+    const ostEnv = { landscape: 'DRAFT' };
+    const windowObj = { location: {} };
+    const cbs = addToggleSwitches(el, ostEnv, false, windowObj);
+    const cbLandscape = cbs[0];
+    const cbLDefaults = cbs[1];
+
+    expect(cbLandscape.checked).to.be.true;
+    expect(cbLDefaults.checked).to.be.false;
+
+    cbLandscape.checked = false;
+    cbLandscape.dispatchEvent(new Event('change'));
+    await delay(100);
+
+    const url = new URL(windowObj.location.href);
+    expect(url.searchParams.get('commerce.landscape')).to.be.null;
+    expect(url.searchParams.get('commerce.defaults')).to.equal('off');
+
+    window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
+  });
+  it('change toggle switch defaults off to on', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, null, `${window.location.pathname}?commerce.landscape=DRAFT&commerce.defaults=off`);
+    const el = document.createElement('div');
+    const ostEnv = { landscape: 'DRAFT' };
+    const windowObj = { location: {} };
+    const cbs = addToggleSwitches(el, ostEnv, false, windowObj);
+    const cbLandscape = cbs[0];
+    const cbLDefaults = cbs[1];
+
+    expect(cbLandscape.checked).to.be.true;
+    expect(cbLDefaults.checked).to.be.false;
+
+    cbLDefaults.checked = true;
+    cbLDefaults.dispatchEvent(new Event('change'));
+    await delay(100);
+
+    const url = new URL(windowObj.location.href);
+    expect(url.searchParams.get('commerce.landscape')).to.equal('DRAFT');
+    expect(url.searchParams.get('commerce.defaults')).to.be.null;
+
+    window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
   });
 });

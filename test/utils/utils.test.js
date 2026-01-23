@@ -478,6 +478,14 @@ describe('Utils', () => {
       expect(dntLink.dataset.hasDnt).to.equal('true');
     });
 
+    it('Should transform invalid anchor link to valid', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><a href="https://#test">Test</a></p>';
+      await utils.decorateLinksAsync(container);
+      const link = container.querySelector('a');
+      expect(link.href).to.equal(`${window.location.href}#test`);
+    });
+
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
@@ -1669,6 +1677,9 @@ describe('Utils', () => {
           ccBaseResolved = true;
           return mockRes({ payload: ccBaseQueryIndex });
         }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
+        }
         if (url.includes('dc-shared') && url.includes('/ch_de/')) {
           // DC Regional index is slow - simulating other subsites
           return new Promise((resolve) => {
@@ -1752,6 +1763,9 @@ describe('Utils', () => {
       fetchStub.callsFake((url) => {
         if (url.includes('query-index')) {
           return mockRes({ payload: null, ok: false, status: 404 });
+        }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
         }
         return mockRes({ payload: { data: [] } });
       });

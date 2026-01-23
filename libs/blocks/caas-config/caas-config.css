@@ -149,3 +149,14 @@ dd.content .sort-options > .field {
   transform: rotate(180deg);
   display: inline-block;
 }
+
+/* Indent carousel options */
+dd.content .carousel-options .field {
+  padding-left: 20px;
+  max-width: calc(var(--field-max-size) - 20px);
+} 
+
+.caas-config .consonant-Wrapper--carousel {
+  width: 100%;
+  margin: 0;
+}
