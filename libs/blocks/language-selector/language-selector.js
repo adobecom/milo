@@ -310,7 +310,7 @@ function renderLanguages({
           if (config?.lingoProjectSuccessLogging === 'on') {
             const startingPoint = `lingo-language-selector-starting-locale=${currentLang.name}`;
             const destination = `lingo-language-selector-destination-locale=${lang.name}`;
-            window?.lana?.log(`Click: Language_Selector|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: `lingo,lingo-language-selector-click,${startingPoint},${destination}` });
+            window?.lana?.log(`Click: Language_Selector,${startingPoint},${destination}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo,lingo-language-selector-click' });
           }
           e.preventDefault();
           const cookieValue = getInternationalCookieValue(lang.prefix);
