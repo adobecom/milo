@@ -358,7 +358,7 @@
 /* mepHighlight */
 body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem),
 body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > * {
-  outline: 3px #28a745 dashed !important;
+  outline: 3px #17a2b8 dashed !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
 }
@@ -375,6 +375,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-roc] {
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
   position: relative !important;
+  pointer-events: none !important;
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
@@ -382,6 +383,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
   position: relative !important;
+  pointer-events: none !important;
 }
 
 body[data-mep-fragments='true'] [data-fragment-default] {
@@ -444,12 +446,13 @@ body[data-mep-fragments='true'] [data-fragment-default]::before {
   opacity: 0.9 !important;
   border-radius: 5px;
   box-shadow: 0 3px 8px 1px #808080;
+  pointer-events: auto !important;
 }
 
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
-  background-color: #d4edda !important;
-  border: 1px solid #28a745;
+  background-color: #d1ecf1 !important;
+  border: 1px solid #17a2b8;
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {

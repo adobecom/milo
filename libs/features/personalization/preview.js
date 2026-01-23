@@ -626,6 +626,37 @@ function addFragmentBadgeClickHandlers() {
     const isFragmentsEnabled = document.body.dataset.mepFragments === 'true';
     if (!isHighlightEnabled && !isFragmentsEnabled) return;
 
+    // Ignore clicks from within the MEP popup
+    if (e.target.closest('.mep-preview-overlay')) return;
+
+    const allFragments = document.querySelectorAll('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
+    for (const frag of allFragments) {
+      const beforeStyles = window.getComputedStyle(frag, '::before');
+      const badgeIsVisible = beforeStyles.display !== 'none' && beforeStyles.content !== 'none';
+      if (!badgeIsVisible) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      const rect = frag.getBoundingClientRect();
+      const badgeWidth = parseFloat(beforeStyles.width) + 30;
+      const badgeHeight = parseFloat(beforeStyles.height)
+        || parseFloat(beforeStyles.minHeight)
+        || 35;
+      const badgeLeft = rect.left + 5;
+      const badgeTop = rect.top;
+      const tolerance = 16;
+
+      if (e.clientX >= badgeLeft - tolerance && e.clientX < badgeLeft + badgeWidth + tolerance
+          && e.clientY >= badgeTop - tolerance && e.clientY < badgeTop + badgeHeight + tolerance) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (frag.dataset.path) window.open(frag.dataset.path, '_blank');
+        return;
+      }
+    }
+
+    // Fallback to old logic for edge cases
     const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
     if (!fragment) return;
 

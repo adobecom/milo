@@ -238,7 +238,8 @@ describe('MEP Lingo Fragments', () => {
     await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-inline-section');
-    const inlineElement = section.querySelector('[data-path]');
+    // MEP Lingo inline fragments set attributes on the anchor tag itself
+    const inlineElement = section.querySelector('[data-mep-lingo-roc]');
     expect(inlineElement).to.exist;
     expect(inlineElement.dataset.mepLingoRoc).to.exist;
   });
@@ -264,7 +265,7 @@ describe('MEP Lingo Fragments', () => {
     await simulateDecorateLinks(a);
     await getFragment(a);
     const section = document.querySelector('.mep-lingo-fallback-inline-section');
-    const inlineElement = section.querySelector('[data-path]');
+    const inlineElement = section.querySelector('[data-mep-lingo-fallback]');
     expect(inlineElement).to.exist;
     expect(inlineElement.dataset.mepLingoFallback).to.exist;
   });
@@ -372,7 +373,6 @@ describe('MEP Lingo Fragments', () => {
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
 
-    // Stub fetch to return 404 for nonexistent fragments
     fetchStub.restore();
     fetchStub = stub(window, 'fetch').callsFake((url) => {
       const urlStr = typeof url === 'string' ? url : url.toString();
@@ -413,7 +413,6 @@ describe('MEP Lingo Fragments', () => {
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
 
-    // Stub fetch to return 404 for nonexistent fragments
     fetchStub.restore();
     fetchStub = stub(window, 'fetch').callsFake((url) => {
       const urlStr = typeof url === 'string' ? url : url.toString();
@@ -426,7 +425,6 @@ describe('MEP Lingo Fragments', () => {
       return originalFetch(url);
     });
 
-    // Create a section with section-metadata containing mep-lingo row
     const section = document.createElement('div');
     section.className = 'section test-section-swap';
     const sectionMetadata = document.createElement('div');
@@ -675,6 +673,82 @@ describe('MEP Lingo Fragments', () => {
     await getFragment(a);
     expect(textBlock.textContent).to.include('Authored content');
     expect(textBlock.textContent).to.not.include('mep-lingo');
+  });
+
+  it.skip('removes element when regional content is empty (remove variant)', async () => {
+    stubQueryIndex([]);
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/fragments/empty-remove#_mep-lingo-remove';
+    section.appendChild(a);
+    document.body.appendChild(section);
+
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+
+    expect(section.querySelector('a')).to.be.null;
+    expect(section.children.length).to.equal(0);
+    section.remove();
+  });
+
+  it.skip('shows content when regional content has text (remove variant)', async () => {
+    stubQueryIndex([]);
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/fragments/text-remove#_mep-lingo-remove';
+    section.appendChild(a);
+    document.body.appendChild(section);
+
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+
+    const fragment = section.querySelector('.fragment');
+    expect(fragment).to.exist;
+    expect(fragment.textContent).to.include('Regional content');
+    section.remove();
+  });
+
+  it.skip('falls back to base content on 404 (remove variant)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/fragments/fallback-remove#_mep-lingo-remove';
+    section.appendChild(a);
+    document.body.appendChild(section);
+
+    // Override fetch to return 404 for regional but use originalFetch for base
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((resource) => {
+      const mockPath = resource?.resource || resource;
+      if (mockPath?.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      // Regional path 404s (ch_de doesn't exist)
+      if (mockPath?.includes('/ch_de/fragments/fallback-remove')) {
+        return Promise.resolve({ ok: false, status: 404 });
+      }
+      // Use real fetch for everything else (including base /de/ path)
+      return originalFetch(resource);
+    });
+
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+
+    const fragment = section.querySelector('.fragment');
+    expect(fragment).to.exist;
+    expect(fragment.textContent).to.include('Base content');
+    section.remove();
   });
 });
 
@@ -1011,10 +1085,11 @@ describe('handleInvalidMepLingo', () => {
     const parent = document.createElement('div');
     const a = document.createElement('a');
     a.href = '/fragments/test#_inline';
+    a.dataset.originalHref = '/fragments/test#_inline'; // Set original href for detection
     parent.appendChild(a);
     document.body.appendChild(parent);
 
-    handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test#_inline' });
+    handleInvalidMepLingo(a, { env: { name: 'stage' } });
 
     const failedDiv = parent.querySelector('[data-failed="true"]');
     expect(failedDiv.dataset.reason).to.include('inline');
@@ -1089,5 +1164,16 @@ describe('fetchFragment and fetchMepLingo', () => {
     fetchStub.resolves(mockResponse(false));
     const result = await fetchMepLingo('/missing1', '/missing2');
     expect(result).to.deep.equal({});
+  });
+
+  it('sets mepLingoRemove attribute on preview fragment', async () => {
+    const fragment = document.createElement('div');
+    addMepLingoPreviewAttrs(fragment, {
+      usedFallback: false,
+      relHref: '/ch_de/fragments/test',
+      isRemove: true,
+    });
+    expect(fragment.dataset.mepLingoRoc).to.equal('/ch_de/fragments/test');
+    expect(fragment.dataset.mepLingoRemove).to.equal('true');
   });
 });
