@@ -1,4 +1,8 @@
-import { getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational } from '../../utils/utils.js';
+import {
+  getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational, getCountry,
+} from '../../utils/utils.js';
+
+let config;
 
 const queriedPages = [];
 
@@ -57,6 +61,7 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
           prefix,
           link,
           callback: (newHref) => {
+            if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Click: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo,lingo-region-nav-click' });
             link.href = newHref;
             hrefAdapted = true;
           },
@@ -73,6 +78,7 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
       prefix,
       link,
       callback: (newHref) => {
+        if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Click: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo,lingo-region-nav-click' });
         window.open(newHref, e.ctrlKey || e.metaKey ? '_blank' : '_self');
       },
     });
@@ -81,7 +87,7 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
 
 export default async function init(block) {
   const { localeToLanguageMap } = await loadLanguageConfig();
-  const config = getConfig();
+  config = getConfig();
   const divs = block.querySelectorAll(':scope > div');
   if (divs.length < 2) return;
   const links = divs[1].querySelectorAll('a');
@@ -92,6 +98,6 @@ export default async function init(block) {
   const path = location.href.replace(location.origin + (hasPrefix ? prefix : ''), '').replace('#langnav', '');
   links.forEach((link) => decorateLink(link, path, localeToLanguageMap));
   if (config.lingoProjectSuccessLogging === 'on') {
-    window.lana.log('Load: Region_Nav_Modal', { sampleRate: 100, tags: 'lingo,lingo-region-nav-load' });
+    window.lana.log(`Load: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo,lingo-region-nav-load' });
   }
 }
