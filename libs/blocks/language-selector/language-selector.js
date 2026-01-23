@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import {
-  createTag, getConfig, getLanguage, loadLanguageConfig, setInternational, getCountry,
+  createTag, getConfig, getLanguage, loadLanguageConfig, setInternational, getMetadata, getCountry,
 } from '../../utils/utils.js';
 
 function sendAnalyticsEvent(eventName, type = 'click') {
@@ -60,12 +60,14 @@ function stripQueryAndHash(url) {
 
 function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;
+  const { baseSitePath } = getConfig();
+  const fallbackUrl = `${prefix ? `/${prefix}` : ''}${getMetadata('base-site-path') || baseSitePath || ''}/`;
   const urlForCheck = stripQueryAndHash(link.href);
   const existingPage = queriedPages.find((page) => page.href === urlForCheck);
   if (existingPage) {
     callback(existingPage.ok
       ? link.href
-      : `${prefix ? `/${prefix}` : ''}/`);
+      : fallbackUrl);
     return;
   }
   fetch(urlForCheck, { method: 'HEAD' }).then((resp) => {
@@ -73,7 +75,7 @@ function handleEvent({ prefix, link, callback } = {}) {
     if (!resp.ok) throw new Error('request failed');
     callback(link.href);
   }).catch(() => {
-    callback(`${prefix ? `/${prefix}` : ''}/`);
+    callback(fallbackUrl);
   });
 }
 
