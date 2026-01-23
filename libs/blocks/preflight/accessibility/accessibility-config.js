@@ -22,7 +22,7 @@ export const AXE_CORE_CONFIG = {
 };
 
 export const CUSTOM_CHECKS_CONFIG = {
-  checks: ['altText', 'color-contrast'],
+  checks: ['altText', 'color-contrast', 'video-captions'],
   include: [['body']],
   exclude: [
     ['.preflight'],

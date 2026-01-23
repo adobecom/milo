@@ -1,5 +1,7 @@
 /* eslint-disable no-underscore-dangle */
-import { createTag, getConfig, getLanguage, loadLanguageConfig, setInternational } from '../../utils/utils.js';
+import {
+  createTag, getConfig, getLanguage, loadLanguageConfig, setInternational, getMetadata, getCountry,
+} from '../../utils/utils.js';
 
 function sendAnalyticsEvent(eventName, type = 'click') {
   if (window._satellite?.track) {
@@ -58,12 +60,14 @@ function stripQueryAndHash(url) {
 
 function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;
+  const { baseSitePath } = getConfig();
+  const fallbackUrl = `${prefix ? `/${prefix}` : ''}${getMetadata('base-site-path') || baseSitePath || ''}/`;
   const urlForCheck = stripQueryAndHash(link.href);
   const existingPage = queriedPages.find((page) => page.href === urlForCheck);
   if (existingPage) {
     callback(existingPage.ok
       ? link.href
-      : `${prefix ? `/${prefix}` : ''}/`);
+      : fallbackUrl);
     return;
   }
   fetch(urlForCheck, { method: 'HEAD' }).then((resp) => {
@@ -71,7 +75,7 @@ function handleEvent({ prefix, link, callback } = {}) {
     if (!resp.ok) throw new Error('request failed');
     callback(link.href);
   }).catch(() => {
-    callback(`${prefix ? `/${prefix}` : ''}/`);
+    callback(fallbackUrl);
   });
 }
 
@@ -302,6 +306,12 @@ function renderLanguages({
         `;
         langLink.addEventListener('click', (e) => {
           sendAnalyticsEvent(`language-switch:${lang.prefix || 'us'}`);
+          const config = getConfig();
+          if (config?.lingoProjectSuccessLogging === 'on') {
+            const startingPoint = `lingo-language-selector-starting-locale=${currentLang.name}`;
+            const destination = `lingo-language-selector-destination-locale=${lang.name}`;
+            window?.lana?.log(`Click: Language_Selector|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: `lingo,lingo-language-selector-click,${startingPoint},${destination}` });
+          }
           e.preventDefault();
           const cookieValue = getInternationalCookieValue(lang.prefix);
           setInternational(cookieValue);
@@ -428,6 +438,10 @@ function setupDropdownEvents({
 
   async function openDropdown() {
     sendAnalyticsEvent('language-selector:opened');
+    const config = getConfig();
+    if (config?.lingoProjectSuccessLogging === 'on') {
+      window?.lana?.log(`Open: Language_Selector|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo,lingo-language-selector-open' });
+    }
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
