@@ -1,5 +1,8 @@
 import ctaTextOption from './ctaTextOption.js';
-import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
+import {
+  getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
+} from '../../utils/utils.js';
+import { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } from '../merch/merch.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -8,12 +11,24 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://mas.adobe.com/studio/ost/index.js';
-const OST_STYLE_URL = 'https://mas.adobe.com/studio/ost/index.css';
+const OST_SCRIPT_URL = '/studio/ost/index.js';
+const OST_STYLE_URL = '/studio/ost/index.css';
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 export const WCS_LANDSCAPE = 'PUBLISHED';
+export const WCS_LANDSCAPE_DRAFT = 'DRAFT';
+export const LANDSCAPE_URL_PARAM = 'commerce.landscape';
+export const DEFAULTS_URL_PARAM = 'commerce.defaults';
+
+function isMasDefaultsEnabled() {
+  const searchParameters = new URLSearchParams(window.location.search);
+  const defaults = searchParameters.get(DEFAULTS_URL_PARAM) || 'on';
+  return defaults === 'on';
+}
+
+let masCommerceService;
+const masDefaultsEnabled = isMasDefaultsEnabled();
 
 /**
  * Maps Franklin page metadata to OST properties.
@@ -31,8 +46,10 @@ const priceDefaultOptions = {
   exclusive: false,
 };
 
-const updateParams = (params, key, value) => {
-  if (value !== priceDefaultOptions[key]) {
+const updateParams = (params, key, value, opts, cs) => {
+  let defaultValue = opts[key];
+  if (key === 'seat') defaultValue = cs !== 'INDIVIDUAL';
+  if (value !== defaultValue) {
     params.set(key, value);
   }
 };
@@ -40,17 +57,36 @@ const updateParams = (params, key, value) => {
 document.body.classList.add('tool', 'tool-ost');
 
 /**
+ * Gets the base URL for loading Tacocat OST build file based on maslibs parameter
+ * @returns {string} Base URL for OST index.js
+ */
+export function getMasLibsBase() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const masLibs = urlParams.get('maslibs');
+
+  if (!masLibs || masLibs.trim() === '' || masLibs.trim() === 'main') return 'https://mas.adobe.com';
+
+  return getMasLibs().replace('/web-components/dist', '');
+}
+
+/**
  * @param {Commerce.Defaults} defaults
  */
-export const createLinkMarkup = (
+export const createLinkMarkup = async (
   defaults,
   offerSelectorId,
   type,
   offer,
   options,
   promo,
+  country,
 ) => {
   const isCta = !!type?.startsWith('checkout');
+  const cs = offer.customer_segment;
+  const ms = offer.market_segments[0];
+  const taxFlags = masDefaultsEnabled && masCommerceService
+    ? await masCommerceService.resolvePriceTaxFlags(country, null, cs, ms)
+    : {};
 
   const createHref = () => {
     const params = new URLSearchParams([
@@ -77,11 +113,17 @@ export const createLinkMarkup = (
         displayOldPrice,
         forceTaxExclusive,
       } = options;
-      updateParams(params, 'term', displayRecurrence);
-      updateParams(params, 'seat', displayPerUnit);
-      updateParams(params, 'tax', displayTax);
-      updateParams(params, 'old', displayOldPrice);
-      updateParams(params, 'exclusive', forceTaxExclusive);
+      const optsMasDefaults = masDefaultsEnabled ? {
+        ...priceDefaultOptions,
+        seat: offer.customer_segment !== 'INDIVIDUAL',
+        tax: taxFlags.displayTax || priceDefaultOptions.tax,
+        exclusive: taxFlags.forceTaxExclusive || priceDefaultOptions.exclusive,
+      } : priceDefaultOptions;
+      updateParams(params, 'term', displayRecurrence, optsMasDefaults);
+      updateParams(params, 'seat', displayPerUnit, optsMasDefaults, masDefaultsEnabled ? offer.customer_segment : null);
+      updateParams(params, 'tax', displayTax, optsMasDefaults);
+      updateParams(params, 'old', displayOldPrice, optsMasDefaults);
+      updateParams(params, 'exclusive', forceTaxExclusive, optsMasDefaults);
     }
     return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
@@ -102,36 +144,37 @@ export async function loadOstEnv() {
   const commerceEnv = searchParameters.get('commerce.env');
   if (wcsLandscape || commerceEnv) {
     if (wcsLandscape) {
-      searchParameters.set('commerce.landscape', wcsLandscape);
+      searchParameters.set(LANDSCAPE_URL_PARAM, wcsLandscape);
       searchParameters.delete('wcsLandscape');
     }
     if (commerceEnv?.toLowerCase() === 'stage') {
-      searchParameters.set('commerce.landscape', 'DRAFT');
+      searchParameters.set(LANDSCAPE_URL_PARAM, WCS_LANDSCAPE_DRAFT);
       searchParameters.delete('commerce.env');
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
-  /* c8 ignore next */
-  const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
-  await initService(true, { 'allow-override': 'true' });
+  const attributes = { 'allow-override': 'true' };
+  if (masDefaultsEnabled) {
+    attributes['data-mas-ff-defaults'] = 'on';
+  }
+  await initService(true, attributes);
   // Load commerce.js based on masLibs parameter
-  await loadMasComponent(MAS_COMMERCE_SERVICE);
+  masCommerceService = await loadMasComponent(MAS_COMMERCE_SERVICE);
 
   // Get the exports - they might be in different places depending on how it was loaded
   let Log;
   let Defaults;
-  let resolvePriceTaxFlags;
   if (getMasLibs() && window.mas?.commerce) {
     // Loaded from external URL - check global scope
-    ({ Log, Defaults, resolvePriceTaxFlags } = window.mas.commerce);
+    ({ Log, Defaults } = window.mas.commerce);
   } else {
     // Loaded as module
-    ({ Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js'));
+    ({ Log, Defaults } = await import('../../deps/mas/commerce.js'));
   }
 
   const defaultPlaceholderOptions = Object.fromEntries([
     ['term', 'displayRecurrence', 'true'],
-    ['seat', 'displayPerUnit', 'true'],
+    ['seat', 'displayPerUnit', masDefaultsEnabled ? null : 'true'],
     ['tax', 'displayTax'],
     ['old', 'displayOldPrice'],
   ].map(([key, targetKey, defaultValue = false]) => {
@@ -178,7 +221,7 @@ export async function loadOstEnv() {
   window.history.replaceState({}, null, newURL);
 
   const environment = searchParameters.get('env') ?? WCS_ENV;
-  const landscape = searchParameters.get('commerce.landscape') ?? WCS_LANDSCAPE;
+  const landscape = searchParameters.get(LANDSCAPE_URL_PARAM) ?? WCS_LANDSCAPE;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
@@ -220,21 +263,23 @@ export async function loadOstEnv() {
     }
   }
 
-  const onSelect = (
+  const onSelect = async (
     offerSelectorId,
     type,
     offer,
     options,
     promoOverride,
+    co,
   ) => {
     log.debug(offerSelectorId, type, offer, options, promoOverride);
-    const link = createLinkMarkup(
+    const link = await createLinkMarkup(
       Defaults,
       offerSelectorId,
       type,
       offer,
       options,
       promoOverride,
+      co,
     );
 
     log.debug(`Use Link: ${link.outerHTML}`);
@@ -260,20 +305,55 @@ export async function loadOstEnv() {
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
-    resolvePriceTaxFlags,
+    resolvePriceTaxFlags: masCommerceService?.resolvePriceTaxFlags,
     modalsAndEntitlements: true,
   };
+}
+
+function addToggleSwitch(container, label, checked, onChange) {
+  const switchDiv = createTag('div', { class: 'spectrum-Switch' }, null, { parent: container });
+  const input = createTag('input', { type: 'checkbox', class: 'spectrum-Switch-input', id: 'gb-overlay-toggle' }, null, { parent: switchDiv });
+  createTag('span', { class: 'spectrum-Switch-switch' }, null, { parent: switchDiv });
+  createTag('label', { class: 'spectrum-Switch-label', for: 'gb-overlay-toggle' }, label, { parent: switchDiv });
+  input.checked = checked;
+  input.addEventListener('change', onChange);
+  return input;
+}
+
+export function addToggleSwitches(el, ostEnv, masDefEnabled, windowObj) {
+  const { base } = getConfig();
+  loadStyle(`${base}/blocks/graybox/switch.css`);
+  const toggleContainer = createTag('span', { class: 'toggle-switch' }, null, { parent: el });
+  const inputLandscape = addToggleSwitch(toggleContainer, 'Draft landscape offer', ostEnv.landscape === WCS_LANDSCAPE_DRAFT, (e) => {
+    const url = new URL(window.location.href);
+    if (e.target.checked) {
+      url.searchParams.set(LANDSCAPE_URL_PARAM, WCS_LANDSCAPE_DRAFT);
+    } else {
+      url.searchParams.delete(LANDSCAPE_URL_PARAM);
+    }
+    windowObj.location.href = url.toString();
+  });
+  const inputDefaults = addToggleSwitch(toggleContainer, 'MAS defaults', masDefEnabled, (e) => {
+    const url = new URL(window.location.href);
+    if (!e.target.checked) {
+      url.searchParams.set(DEFAULTS_URL_PARAM, 'off');
+    } else {
+      url.searchParams.delete(DEFAULTS_URL_PARAM);
+    }
+    windowObj.location.href = url.toString();
+  });
+  return [inputLandscape, inputDefaults];
 }
 
 export default async function init(el) {
   el.innerHTML = '<div />';
 
-  loadStyle(OST_STYLE_URL);
+  loadStyle(`${getMasLibsBase()}${OST_STYLE_URL}`);
   loadStyle('https://use.typekit.net/pps7abe.css');
 
   const [ostEnv] = await Promise.all([
     loadOstEnv(),
-    loadScript(OST_SCRIPT_URL),
+    loadScript(`${getMasLibsBase()}${OST_SCRIPT_URL}`),
   ]);
 
   function openOst() {
@@ -281,6 +361,7 @@ export default async function init(el) {
       ...ostEnv,
       rootElement: el.firstElementChild,
     });
+    addToggleSwitches(el.firstElementChild, ostEnv, masDefaultsEnabled, window);
   }
 
   if (ostEnv.aosAccessToken) {

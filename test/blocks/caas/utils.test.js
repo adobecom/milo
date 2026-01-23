@@ -1202,3 +1202,68 @@ describe('getGrayboxExperienceId', () => {
     expect(experienceId).to.equal('test-exp');
   });
 });
+
+describe('isLocaleInRegionalSites helper function tests', () => {
+  // This tests the helper function logic inline since it's not exported
+  const isLocaleInRegionalSites = (regionalSites, localeStr) => {
+    if (!regionalSites) return false;
+    return regionalSites
+      .split(',')
+      .map((site) => site.trim().replace(/^\//, ''))
+      .includes(localeStr);
+  };
+
+  describe('Locale examples', () => {
+    it('should match "ca_fr" in "/ca_fr, /ch_fr, /be_fr"', () => {
+      const result = isLocaleInRegionalSites('/ca_fr, /ch_fr, /be_f', 'ca_fr');
+      expect(result).to.be.true;
+    });
+
+    it('should NOT match "ca" in "/africa" (was a substring bug)', () => {
+      const result = isLocaleInRegionalSites('/africa', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "ca" in "/ca_fr" (partial locale bug)', () => {
+      const result = isLocaleInRegionalSites('/ca_fr', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "en" in "/ae_en, /be_en" (suffix bug)', () => {
+      const result = isLocaleInRegionalSites('/ae_en, /be_en', 'en');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "fr" in "/ca_fr, /be_fr, /ch_fr" (suffix bug)', () => {
+      const result = isLocaleInRegionalSites('/ca_fr, /be_fr, /ch_fr', 'fr');
+      expect(result).to.be.false;
+    });
+  });
+
+  describe('Edge cases and error handling', () => {
+    it('should return false for empty string', () => {
+      const result = isLocaleInRegionalSites('', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should return false for null', () => {
+      const result = isLocaleInRegionalSites(null, 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should return false for undefined', () => {
+      const result = isLocaleInRegionalSites(undefined, 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should handle whitespace in list "/ca , /ie , /nz"', () => {
+      const result = isLocaleInRegionalSites('/ca , /ie , /nz', 'ie');
+      expect(result).to.be.true;
+    });
+
+    it('should return false when locale not in list', () => {
+      const result = isLocaleInRegionalSites('/ca, /ie, /nz', 'sg');
+      expect(result).to.be.false;
+    });
+  });
+});

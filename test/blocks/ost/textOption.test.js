@@ -24,6 +24,7 @@ describe('test ctaTextOption', () => {
       { id: 'upgrade-now', name: 'Upgrade now' },
       { id: 'save-today', name: 'Save today' },
       { id: 'select', name: 'Select' },
+      { id: 'get-for-free', name: 'Get for free' },
     ];
     const texts = ctaTextOption.getTexts();
     expect(EXPECTED_TEXTS).to.deep.equal(texts);

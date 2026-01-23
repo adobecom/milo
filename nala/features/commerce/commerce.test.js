@@ -153,21 +153,35 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate regular price has promo', async () => {
-      await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(COMM.price).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.price).toHaveAttribute('data-display-old-price', 'true');
-      await COMM.price.locator('.price').first().waitFor({ state: 'visible', timeout: 10000 });
-      await COMM.price.locator('.price-strikethrough').waitFor({ state: 'visible', timeout: 10000 });
+      const regularPrice = page.locator('p:has-text("Regular price:")');
+      const price = regularPrice.locator(COMM.price);
+      const strikethroughPrice = regularPrice.locator(COMM.priceStrikethrough).first();
+      await strikethroughPrice.waitFor({ state: 'visible', timeout: 10000 });
+      await price.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(price).toHaveAttribute('data-promotion-code', data.price_promo);
+      await expect(price).toHaveAttribute('data-display-old-price', 'true');
+      await expect(price).toContainText(data.price);
+      await expect(strikethroughPrice).toContainText(data.priceOld);
+      const priceOldStyle = await strikethroughPrice.evaluate(
+        (e) => window.getComputedStyle(e).getPropertyValue('text-decoration'),
+      );
+      expect(priceOldStyle).toContain('line-through');
     });
 
     await test.step('Validate optical price has promo', async () => {
       await COMM.priceOptical.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(COMM.priceOptical).toHaveAttribute('data-promotion-code', data.promo);
+      await expect(COMM.priceOptical).toHaveAttribute('data-promotion-code', data.price_promo);
+      await expect(COMM.priceOptical).toContainText(data.priceOptical);
     });
 
     await test.step('Validate strikethrough price has promo', async () => {
-      await COMM.priceStrikethrough.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(COMM.priceStrikethrough).toHaveAttribute('data-promotion-code', data.promo);
+      await COMM.priceStrikethrough.last().waitFor({ state: 'visible', timeout: 10000 });
+      await expect(COMM.priceStrikethrough.last()).toHaveAttribute('data-promotion-code', data.price_promo);
+      await expect(COMM.priceStrikethrough.last()).toContainText(data.priceStrikethrough);
+      const priceStyle = await COMM.priceStrikethrough.last().evaluate(
+        (e) => window.getComputedStyle(e).getPropertyValue('text-decoration'),
+      );
+      expect(priceStyle).toContain('line-through');
     });
 
     await test.step('Validate Buy now CTA has promo', async () => {
