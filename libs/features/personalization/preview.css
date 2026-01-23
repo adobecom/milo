@@ -34,6 +34,13 @@
   margin-right: 16px;
 }
 
+.mep-section-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .mep-popup-header > div > div:not(.mep-section-header) {
   padding-left: 15px;
 }
@@ -146,10 +153,6 @@
   text-transform: capitalize;
 }
 
-/* .mep-popup .mep-summary-body .mep-section-data {
-  grid-template-columns: repeat(2, 1fr);
-} */
-
 .mep-popup .mep-section-data .mep-selected-variant {
   text-transform: initial;
 }
@@ -173,6 +176,29 @@
 
 .mep-popup .mep-popup-header > div {
   margin: 8px 0;
+}
+
+.mep-popup .mep-info-icon {
+  cursor: pointer;
+}
+
+.mep-popup .mep-info-icon:hover + .mep-info-tooltip {
+  display: flex;
+}
+
+.mep-popup .mep-info-tooltip {
+  display: none;
+  font-weight: initial;
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  top: 30px;
+  background-color: #444;
+   /* background-color: #222; */
+  border: 1px solid #fff;
+  box-shadow: 0 0 10px #000;
+  border-radius: 4px;
+  padding: 12px;
 }
 
 .mep-popup h6 {
