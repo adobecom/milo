@@ -489,14 +489,14 @@ export function getMepPopup(mepConfig, isMmm = false) {
     <div class="mep-info-tooltip mep-section">
       <h6 class="mep-section-header">Color Key</h6>
       <div class="mep-section-data">
-        <span>Grey</span>
-        <span>Not a MEP swap</span>
-        <span>Green</span>
-        <span>MEP Lingo Swap</span>
-        <span>Yellow</span>
-        <span>MEP Lingo Fallback</span>
-        <span>Aqua</span>
-        <span>MEP Manifest Swap</span>
+        <span class="D1ECF1 color-swatch"></span>
+        <span class="plain-label">Plain</span>
+        <span class="E9ECEF color-swatch"></span>
+        <span class="manifest-label">Manifiest</span>
+        <span class="D4EDDA color-swatch"></span> 
+        <span class="regional-label">Lingo Regional</span>
+        <span class="FFF3CD color-swatch"></span>
+        <span class="fallback-label">Lingo Fallback</span>
       </div>
     </div>
     `;
@@ -600,12 +600,15 @@ export function getMepPopup(mepConfig, isMmm = false) {
     return 'Not Supported';
   }
 
+  const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
+  const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
+
   const lingoData = {
     langFirst: lingoActive() ? 'on' : 'off',
     geoFolder: page.geo || 'Us (None)',
     userCountry: getCountry(),
     geoUser: getGeoUserSupport(),
-    updates: 'Data',
+    updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
   };
 
   const lingoHTML = `

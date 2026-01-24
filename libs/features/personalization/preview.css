@@ -149,6 +149,7 @@
 .mep-popup .mep-section-data {
   gap: 0 16px;
   display: grid;
+  align-items: center;
   grid-template-columns: auto minmax(0, 1fr);
   text-transform: capitalize;
 }
@@ -194,11 +195,57 @@
   right: 0;
   top: 30px;
   background-color: #444;
-   /* background-color: #222; */
   border: 1px solid #fff;
   box-shadow: 0 0 10px #000;
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 12px;
+}
+
+.mep-popup .mep-info-tooltip .mep-section-data {
+  gap: 8px 8px;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.mep-popup .mep-info-tooltip .plain-label {
+  color: #17A2B8;
+}
+
+.mep-popup .mep-info-tooltip .manifest-label {
+  color: #6C757D;
+}
+
+.mep-popup .mep-info-tooltip .regional-label {
+  color: #28A745;
+}
+
+.mep-popup .mep-info-tooltip .fallback-label { 
+  color: #FFC107;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch.D1ECF1 {
+  border: 2px solid #17A2B8;
+  background-color: #D1ECF1;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch.E9ECEF {  
+  border: 2px solid #6C757D;
+  background-color: #E9ECEF;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch.D4EDDA {
+  border: 2px solid #28A745;
+  background-color: #D4EDDA;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch.FFF3CD {
+  border: 2px solid #FFC107;
+  background-color: #FFF3CD;
 }
 
 .mep-popup h6 {
