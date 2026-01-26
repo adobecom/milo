@@ -235,7 +235,7 @@ export async function loadOstEnv() {
 
   if (owner && referrer && repo) {
     try {
-      const res = await fetch(`//admin.aem.page/status/${owner}/${repo}/main?editUrl=${referrer}`);
+      const res = await fetch(`//admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`);
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const json = await res.json();
       url = new URL(json.preview.url);
