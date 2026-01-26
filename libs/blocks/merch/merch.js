@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, SLD, getMetadata,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
@@ -22,9 +22,11 @@ export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
+export const PRICE_TEMPLATE_PROMO_STRIKETHROUGH = 'promo-strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
 export const PRICE_TEMPLATE_LEGAL = 'legal';
 
+const isPreview = window.location.host.includes('aem.page') || window.location.host === 'www.stage.adobe.com';
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
   [PRICE_TEMPLATE_DISCOUNT, PRICE_TEMPLATE_DISCOUNT],
@@ -35,6 +37,7 @@ const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_LEGAL, PRICE_TEMPLATE_LEGAL],
+  [PRICE_TEMPLATE_PROMO_STRIKETHROUGH, PRICE_TEMPLATE_PROMO_STRIKETHROUGH],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
@@ -347,18 +350,8 @@ export function getMasBase(hostname, maslibs) {
     } else if (maslibs === 'local') {
       baseUrl = 'http://localhost:9001';
     } else if (maslibs) {
-      // Extract SLD (Second Level Domain) from hostname
-      const hostnameParts = hostname.split('.');
-      let sld = 'hlx'; // default
-      if (hostnameParts.length >= 2) {
-        // Get the second-to-last part (before .page or .live)
-        const extensionIndex = hostname.endsWith('.page') ? hostnameParts.length - 1 : hostnameParts.length;
-        if (extensionIndex >= 2) {
-          sld = hostnameParts[extensionIndex - 2];
-        }
-      }
       const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.${sld}.${extension}`;
+      baseUrl = `https://${maslibs}.aem.${extension}`;
     } else {
       baseUrl = 'https://www.adobe.com/mas';
     }
@@ -955,7 +948,7 @@ const isProdModal = (url) => {
   }
 };
 
-export async function getModalAction(offers, options, el) {
+export async function getModalAction(offers, options, el, isMiloPreview = isPreview) {
   if (!options.modal) return undefined;
 
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
@@ -989,9 +982,11 @@ export async function getModalAction(offers, options, el) {
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
   if (!url && !el?.isOpen3in1Modal) return undefined;
-  url = isInternalModal(url) || isProdModal(url)
+  const prodModalUrl = isProdModal(url);
+  url = isInternalModal(url) || prodModalUrl
     ? await localizeLinkAsync(checkoutLinkConfig[columnName])
     : checkoutLinkConfig[columnName];
+  url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
@@ -1019,8 +1014,7 @@ export async function getCheckoutAction(
 }
 
 export function setPreview(attributes) {
-  const { host } = window.location;
-  if (host.includes(`${SLD}.page`) || host === 'www.stage.adobe.com') {
+  if (isPreview) {
     attributes.preview = 'on';
   }
 }

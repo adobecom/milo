@@ -62,6 +62,19 @@ function getParamsConfigs(configs) {
   }, {});
 }
 
+function setMetaTags(metaTags, configs, createTag) {
+  metaTags.forEach((tag) => {
+    const { key } = tag;
+    if (configs[key]) {
+      const metaTag = createTag('meta', {
+        name: tag.name,
+        content: configs[key],
+      });
+      document.head.append(metaTag);
+    }
+  });
+}
+
 /* eslint import/no-relative-packages: 0 */
 export default async function loadBlock(configs, customLib) {
   const {
@@ -108,7 +121,7 @@ export default async function loadBlock(configs, customLib) {
   const [
     { default: bootstrapBlock },
     { default: locales },
-    { setConfig, getConfig }] = await Promise.all([
+    { setConfig, getConfig, createTag }] = await Promise.all([
     import('./bootstrapper.js'),
     import('../utils/locales.js'),
     import('../utils/utils.js'),
@@ -143,12 +156,13 @@ export default async function loadBlock(configs, customLib) {
 
     if (configBlock) {
       const config = getConfig();
-      const gnavSource = `${config?.locale?.contentRoot}/gnav`;
-      const footerSource = `${config?.locale?.contentRoot}/footer`;
       if (block.key === 'header') {
+        let gnavSource = configBlock.gnavSource || `${config?.locale?.contentRoot}/gnav`;
+        if (String(configBlock.disableActiveLink) === 'true' && !gnavSource.includes('_noActiveItem')) {
+          gnavSource += '#_noActiveItem';
+        }
         try {
-          const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
-          await bootstrapBlock(init, {
+          const gnavConfigs = {
             ...block,
             gnavSource,
             unavComponents: configBlock.selfIntegrateUnav ? [] : configBlock.unav?.unavComponents,
@@ -159,7 +173,18 @@ export default async function loadBlock(configs, customLib) {
             isLocalNav: configBlock.isLocalNav,
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
-          });
+            productEntryCta: configBlock.productEntryCta || 'off',
+          };
+          const metaTags = [
+            { key: 'gnavSource', name: 'gnav-source' },
+            { key: 'unavComponents', name: 'universal-nav' },
+            { key: 'redirect', name: 'adobe-home-redirect' },
+            { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
+            { key: 'productEntryCta', name: 'product-entry-cta' },
+          ];
+          setMetaTags(metaTags, gnavConfigs, createTag);
+          const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
+          await bootstrapBlock(init, gnavConfigs);
           window.closeGnav = closeGnavOptions;
           configBlock.onReady?.();
         } catch (e) {
@@ -172,14 +197,21 @@ export default async function loadBlock(configs, customLib) {
         }
       }
       if (block.key === 'footer') {
+        const footerSource = configBlock.footerSource || `${config?.locale?.contentRoot}/footer`;
         try {
-          import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
-          const { default: init } = await import('../blocks/global-footer/global-footer.js');
-          await bootstrapBlock(init, {
+          const metaTags = [
+            { key: 'footerSource', name: 'footer-source' },
+          ];
+          const footerConfigs = {
             ...block,
             footerSource,
             isContainerResponsive: configBlock.isContainerResponsive,
-          });
+          };
+
+          setMetaTags(metaTags, footerConfigs, createTag);
+          import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
+          const { default: init } = await import('../blocks/global-footer/global-footer.js');
+          await bootstrapBlock(init, footerConfigs);
         } catch (e) {
           configBlock.onError?.(e);
           window.lana.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {
