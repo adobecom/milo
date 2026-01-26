@@ -10,7 +10,7 @@ import {
   getHost,
 } from './utils.js';
 
-const BASE_URL = 'https://admin.aem.page';
+const BASE_URL = 'https://admin.hlx.page';
 const headers = { 'Content-Type': 'application/json' };
 
 const isLive = (type) => ['publish', 'unpublish'].includes(type);
