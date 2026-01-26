@@ -35,7 +35,7 @@ const stageDomainsMap = {
     'business.adobe.com': 'main--bacom--adobecom.aem.page',
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
-  '^https://.*--milo--.*.(aem).page': {
+  '^https://.*--milo--.*.(hlx|aem).page': {
     '^https://www.adobe.com/acrobat': 'https://main--dc--adobecom.aem.page',
     '^https://business.adobe.com(?!/blog)': 'https://business.stage.adobe.com',
     '^https://business.adobe.com/blog': 'https://main--bacom-blog--adobecom.aem.page',
