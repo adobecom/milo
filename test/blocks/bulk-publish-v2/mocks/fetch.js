@@ -3,18 +3,18 @@ import { stub } from 'sinon';
 
 const [SHARE, TOPIC] = ['testshare', 'preview'];
 const requests = {
-  error: 'https://admin.aem.page/preview/adobecom/milo/error/*',
-  preview: 'https://admin.aem.page/preview/adobecom/milo/main/*',
-  prevstatus: 'https://admin.aem.page/job/adobecom/milo/main/preview/job-2024-01-22t21-59-57-639z/details',
-  publish: 'https://admin.aem.page/live/adobecom/milo/main/*',
-  pubstatus: 'https://admin.aem.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z/details',
-  delete: 'https://admin.aem.page/preview/adobecom/milo/main/*',
-  delstatus: 'https://admin.aem.page/job/adobecom/milo/main/preview-remove/job-2024-01-24t23-16-20-377z/details',
-  retry: 'https://admin.aem.page/preview/adobecom/milo/main/tools/bulk-publish-v2-test',
-  index: 'https://admin.aem.page/index/adobecom/milo/main/tools/bulk-publish-v2-test',
+  error: 'https://admin.hlx.page/preview/adobecom/milo/error/*',
+  preview: 'https://admin.hlx.page/preview/adobecom/milo/main/*',
+  prevstatus: 'https://admin.hlx.page/job/adobecom/milo/main/preview/job-2024-01-22t21-59-57-639z/details',
+  publish: 'https://admin.hlx.page/live/adobecom/milo/main/*',
+  pubstatus: 'https://admin.hlx.page/job/adobecom/milo/main/publish/job-2024-01-22t21-59-57-639z/details',
+  delete: 'https://admin.hlx.page/preview/adobecom/milo/main/*',
+  delstatus: 'https://admin.hlx.page/job/adobecom/milo/main/preview-remove/job-2024-01-24t23-16-20-377z/details',
+  retry: 'https://admin.hlx.page/preview/adobecom/milo/main/tools/bulk-publish-v2-test',
+  index: 'https://admin.hlx.page/index/adobecom/milo/main/tools/bulk-publish-v2-test',
   permissions: 'https://main--milo--adobecom.aem.page/.milo/publish-permissions-config.json?limit=50000',
   permissionserror: 'https://error--milo--adobecom.aem.page/.milo/publish-permissions-config.json?limit=50000',
-  sharestatus: 'https://admin.aem.page/job/adobecom/milo/main/preview/testshare/details',
+  sharestatus: 'https://admin.hlx.page/job/adobecom/milo/main/preview/testshare/details',
 };
 
 let shareQuery;
