@@ -74,7 +74,7 @@ async function loadDependencies(options) {
 }
 
 function localizeIconPath(iconPath) {
-  if (window.location.hostname.endsWith('.adobe.com') && iconPath?.match(/http[s]?:\/\/\S*\.(aem).(page|live)\//)) {
+  if (window.location.hostname.endsWith('.adobe.com') && iconPath?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
     try {
       const url = new URL(iconPath);
       return `https://www.adobe.com${url.pathname}`;

@@ -1128,7 +1128,7 @@ export function decorateImageLinks(el) {
     try {
       if (!isValidHtmlUrl(source.trim())) return;
       const url = new URL(source.trim());
-      const href = url.hostname.includes('.aem.') ? `${url.pathname}${url.search}${url.hash}` : url.href;
+      const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
       img.alt = alt?.trim() || '';
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
@@ -1159,7 +1159,7 @@ export function isTrustedAutoBlock(autoBlock, url) {
     || urlHostname.endsWith('.adobe.com')
     || urlHostname === 'adobe.com'
     || urlHostname === autoBlock
-    || !!urlHostname.match(/\.(aem)\.(page|live)$/)
+    || !!urlHostname.match(/\.(hlx|aem)\.(page|live)$/)
     || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
 }
 
