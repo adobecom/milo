@@ -22,7 +22,7 @@ export default async function iconList(content, list, query) {
         const formatted = `:${key}:`;
         const blob = new Blob([formatted], { type: 'text/plain' });
         createCopy(blob);
-        window.aem?.rum.sampleRUM('click', { source: e.target });
+        window.hlx?.rum.sampleRUM('click', { source: e.target });
       });
       title.append(copy);
 
