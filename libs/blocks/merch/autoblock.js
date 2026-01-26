@@ -5,7 +5,7 @@ export async function localizePreviewLinks(el) {
   const anchors = el.getElementsByTagName('a');
   for (const a of anchors) {
     const { href } = a;
-    if (href?.match(/http[s]?:\/\/\S*\.(aem).(page|live)\//)) {
+    if (href?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
       try {
         const url = new URL(href);
         a.href = await localizeLinkAsync(href, url.hostname);

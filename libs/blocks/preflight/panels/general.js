@@ -57,7 +57,7 @@ async function getStructureResults() {
 }
 
 function getAdminUrl(url, type) {
-  if (!(/adobecom\.(aem)./.test(url.hostname))) return false;
+  if (!(/adobecom\.(hlx|aem)./.test(url.hostname))) return false;
   const project = url.hostname === 'localhost' ? 'main--milo--adobecom' : url.hostname.split('.')[0];
   const [branch, repo, owner] = project.split('--');
   const base = `https://admin.hlx.page/${type}/${owner}/${repo}/${branch}${url.pathname}`;
