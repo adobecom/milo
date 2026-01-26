@@ -73,7 +73,7 @@ const captureDocumentCanvas = async () => {
     scale: 1,
     logging: false,
     onclone: (clonedDoc) => {
-      ['.milo-preflight-overlay', '#preflight', '.modal-curtain.is-open', '.preflight-decoration']
+      ['.milo-preflight-overlay', '#preflight', '.modal-curtain.is-open', '.preflight-decoration', '.notification-controls-container']
         .forEach((selector) => {
           clonedDoc
             .querySelectorAll(selector)

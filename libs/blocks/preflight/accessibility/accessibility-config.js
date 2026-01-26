@@ -38,5 +38,6 @@ export const CUSTOM_CHECKS_CONFIG = {
     ['#preflight'],
     ['.block-label-container'],
     ['.adbMsgClientWrapper'],
+    ['.notification-controls-container'],
   ],
 };
