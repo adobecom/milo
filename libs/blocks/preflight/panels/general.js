@@ -1,5 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { STATUS, STRUCTURE_TITLES } from '../checks/constants.js';
+import { STATUS_TO_ICON_MAP, STRUCTURE_TITLES } from '../checks/constants.js';
 import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
@@ -35,16 +35,9 @@ async function getStructureResults() {
   ];
   const checks = runStructureChecks({ area: document });
 
-  const statusToIconMap = {
-    [STATUS.PASS]: 'green',
-    [STATUS.FAIL]: 'red',
-    [STATUS.LIMBO]: 'orange',
-    [STATUS.EMPTY]: 'empty',
-  };
-
   await Promise.all(checks.map((result, index) => Promise.resolve(result)
     .then((res) => {
-      const icon = statusToIconMap[res.status] || 'orange';
+      const icon = STATUS_TO_ICON_MAP[res.status] || 'orange';
       signals[index].value = {
         icon,
         title: res.title,
@@ -63,14 +56,8 @@ async function getStructureResults() {
 async function getLocalizationResults() {
   try {
     const [res] = await runLocalizationChecks({ area: document });
-    const statusToIconMap = {
-      [STATUS.PASS]: 'green',
-      [STATUS.FAIL]: 'red',
-      [STATUS.LIMBO]: 'orange',
-      [STATUS.EMPTY]: 'empty',
-    };
     localizationResult.value = {
-      icon: statusToIconMap[res.status] || 'orange',
+      icon: STATUS_TO_ICON_MAP[res.status] || 'orange',
       title: res.title,
       description: res.description,
     };

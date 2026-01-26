@@ -8,10 +8,6 @@ async function getStatus(url) {
   return res?.status || 0;
 }
 
-function isAllowedHost(hostname) {
-  return ['adobe.com', 'aem.page', 'aem.live'].some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
-}
-
 function removeLocale(pathname, locales) {
   const { prefix } = getLocale(locales, pathname);
   if (!prefix) return pathname;
@@ -41,7 +37,6 @@ export async function runChecks({ area = document } = {}) {
     const href = linkEl.getAttribute('href');
     if (!href || href.startsWith('#')) return null;
     const url = new URL(href, window.location.origin);
-    if (!isAllowedHost(url.hostname)) return null;
     const basePath = removeLocale(url.pathname, locales);
     if (url.hash && normalizePath(basePath) === '/') return null;
     const key = `${url.origin}${normalizePath(url.pathname)}`;
