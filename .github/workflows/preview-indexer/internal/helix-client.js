@@ -38,7 +38,7 @@ async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
   const adminTokenKey = getSiteEnvKey(siteOrg, siteRepo, 'AEM_ADMIN_TOKEN_');
   const adminToken = process.env[adminTokenKey];
   console.log(`Fetching logs for site: ${siteOrg}/${siteRepo}...`);
-  const initialUrl = `https://admin.aem.page/log/${siteOrg}/${siteRepo}/main?from=${fromParam}&to=${toParam}`;
+  const initialUrl = `https://admin.hlx.page/log/${siteOrg}/${siteRepo}/main?from=${fromParam}&to=${toParam}`;
   const entriesSet = new Set();
   let totalFetched = 0;
 
@@ -107,7 +107,7 @@ async function fetchLogsForSite(siteOrg, siteRepo, fromParam, toParam) {
 async function triggerPreview(owner, repo, path) {
   const adminTokenKey = getSiteEnvKey(owner, repo, 'AEM_ADMIN_TOKEN_');
   const adminToken = process.env[adminTokenKey];
-  const url = `https://admin.aem.page/preview/${owner}/${repo}/main${path}`;
+  const url = `https://admin.hlx.page/preview/${owner}/${repo}/main${path}`;
   console.log(`previewing path: ${url}`);
   const response = await axiosWithRetryError({
     method: 'POST',
@@ -155,7 +155,7 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
     pathsOnly: true,
     forceAsync: true,
   };
-  const initialUrl = `https://admin.aem.page/status/${siteOrg}/${siteRepo}/main/*`;
+  const initialUrl = `https://admin.hlx.page/status/${siteOrg}/${siteRepo}/main/*`;
   const bodyJson = JSON.stringify(body);
   console.debug(`Fetching preview for site: ${siteOrg}/${siteRepo} with jobs url ${bodyJson}`);
   const response = await axiosWithRetryError({

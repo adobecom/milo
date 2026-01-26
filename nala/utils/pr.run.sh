@@ -52,7 +52,7 @@ echo "PR Branch live URL: $PR_BRANCH_LIVE_URL_GH"
 
 # Purge the PR branch before running tests.
 # echo "Purging branch: $FEATURE_BRANCH"
-# PURGE_URL="https://admin.aem.page/code/$prOrg/$prRepo/$FEATURE_BRANCH/*"
+# PURGE_URL="https://admin.hlx.page/code/$prOrg/$prRepo/$FEATURE_BRANCH/*"
 
 # echo "Executing: curl -si -X POST \"$PURGE_URL\""
 #PURGE_RESPONSE=$(curl -si -X POST "$PURGE_URL" || true)
