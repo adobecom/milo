@@ -1,4 +1,6 @@
-import { createTag, getConfig, getMetadata, loadStyle, lingoActive, getCountry, getMepLingoPrefix } from '../../utils/utils.js';
+import {
+  createTag, getConfig, getMetadata, loadStyle, lingoActive, getCountry, getMepLingoPrefix,
+} from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
