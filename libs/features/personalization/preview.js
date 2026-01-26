@@ -639,19 +639,26 @@ function addFragmentBadgeClickHandlers() {
       }
 
       const rect = frag.getBoundingClientRect();
-      const badgeWidth = parseFloat(beforeStyles.width) + 30;
+      const badgeWidth = parseFloat(beforeStyles.width);
       const badgeHeight = parseFloat(beforeStyles.height)
         || parseFloat(beforeStyles.minHeight)
         || 35;
-      const badgeLeft = rect.left + 5;
+      const badgeLeft = rect.left + 10;
       const badgeTop = rect.top;
-      const tolerance = 16;
+      const toleranceX = 15;
+      const toleranceY = 5;
 
-      if (e.clientX >= badgeLeft - tolerance && e.clientX < badgeLeft + badgeWidth + tolerance
-          && e.clientY >= badgeTop - tolerance && e.clientY < badgeTop + badgeHeight + tolerance) {
+      const inBadgeX = e.clientX >= badgeLeft - toleranceX
+        && e.clientX < badgeLeft + badgeWidth + toleranceX;
+      const inBadgeY = e.clientY >= badgeTop - toleranceY
+        && e.clientY < badgeTop + badgeHeight + toleranceY;
+
+      if (inBadgeX && inBadgeY) {
         e.preventDefault();
         e.stopPropagation();
-        if (frag.dataset.path) window.open(frag.dataset.path, '_blank');
+        if (frag.dataset.path) {
+          window.open(frag.dataset.path, '_blank');
+        }
         return;
       }
     }
