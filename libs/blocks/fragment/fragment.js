@@ -88,41 +88,6 @@ export const removeMepLingoRow = (container) => {
   mepLingoRow?.remove();
 };
 
-function removeMepLingoElement(a, isMepLingoBlock, originalBlock) {
-  if (isMepLingoBlock && originalBlock) {
-    originalBlock.remove();
-    a.parentElement?.remove();
-  } else {
-    const parent = a.parentElement;
-    a.remove();
-    if (!parent?.children.length && !parent?.textContent?.trim()) parent?.remove();
-  }
-}
-
-async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath) {
-  window.lana?.log(`MEP Lingo: Query-index indicated regional content exists but fetch failed for ${resourcePath}. Falling back to authored locale.`);
-
-  let fallbackPath = originalHref;
-  try {
-    const resourceUrl = new URL(resourcePath);
-    const originalUrl = new URL(originalHref);
-    if (locale?.prefix !== undefined && !originalUrl.pathname.startsWith(locale.prefix)) {
-      fallbackPath = `${resourceUrl.origin}${locale.prefix}${originalUrl.pathname}`;
-    } else {
-      fallbackPath = `${resourceUrl.origin}${originalUrl.pathname}`;
-    }
-  } catch (e) {
-    if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
-      fallbackPath = `${locale.prefix}${fallbackPath}`;
-    }
-  }
-
-  const resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
-
-  return { resp, fallbackPath };
-}
-
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale, env } = getConfig();
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
@@ -193,6 +158,7 @@ export default async function init(a) {
       block?.remove();
       return;
     }
+    const { removeMepLingoElement } = await import('../../features/mep/lingo.js');
     removeMepLingoElement(a, false);
     return;
   }
@@ -249,6 +215,7 @@ export default async function init(a) {
   };
 
   if (!resp?.ok && attemptedRegionalFetch && canTryFallback) {
+    const { tryMepLingoFallbackForStaleIndex } = await import('../../features/mep/lingo.js');
     const fallback = await tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
@@ -258,6 +225,7 @@ export default async function init(a) {
   }
 
   if (!resp?.ok && isMepLingoRemove && attemptedRegionalFetch && a.dataset.originalHref) {
+    const { tryMepLingoFallbackForStaleIndex } = await import('../../features/mep/lingo.js');
     const fallback = await tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
@@ -268,6 +236,7 @@ export default async function init(a) {
 
   if (!resp?.ok) {
     if (isMepLingoInsert) {
+      const { removeMepLingoElement } = await import('../../features/mep/lingo.js');
       removeMepLingoElement(a, isMepLingoBlock, originalBlock);
       return;
     }
@@ -307,6 +276,7 @@ export default async function init(a) {
   if (isMepLingoRemove && !usedFallback) {
     const hasText = [...sections].some((section) => section.textContent.trim());
     if (!hasText) {
+      const { removeMepLingoElement } = await import('../../features/mep/lingo.js');
       removeMepLingoElement(a, isMepLingoBlock, originalBlock);
       return;
     }
