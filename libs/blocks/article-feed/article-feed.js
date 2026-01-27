@@ -557,9 +557,6 @@ async function decorateArticleFeed(
     'aria-label': 'loading',
     'aria-atomic': 'true',
   });
-  const loadingText = createTag('span', { class: 'visually-hidden' });
-  loadingText.textContent = await replacePlaceholder('loading');
-  spinner.append(loadingText);
   container.append(spinner);
   articleCards.append(container);
 
