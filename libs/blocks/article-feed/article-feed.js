@@ -544,19 +544,19 @@ async function decorateArticleFeed(
 
   const container = createTag('div', {
     class: 'article-cards-empty',
-    role: 'status',
-    'aria-live': 'polite',
+    role: 'alert',
+    'aria-live': 'assertive',
     'aria-atomic': 'true',
   });
 
   // display spinner
   const spinner = createTag('div', {
     class: 'spinner',
-    role: 'status',
-    'aria-live': 'polite',
+    role: 'alert',
+    'aria-live': 'assertive',
+    'aria-label': 'loading',
+    'aria-atomic': 'true',
   });
-  const loadingText = createTag('span', { class: 'sr-only' }, 'loading');
-  spinner.append(loadingText);
   container.append(spinner);
   articleCards.append(container);
 
@@ -568,19 +568,26 @@ async function decorateArticleFeed(
     // results were found
     container.remove();
   } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
-    // no user filtered results were found
+    // no user filtered results were founds
     spinner.remove();
+    const alertWrapper = createTag('div', {
+      role: 'alert',
+      'aria-live': 'assertive',
+      'aria-atomic': 'true',
+    });
     const noMatches = document.createElement('p');
-    noMatches.setAttribute('role', 'alert');
     noMatches.innerHTML = `<strong>${await replacePlaceholder('no-matches')}</strong>`;
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
     userHelp.textContent = await replacePlaceholder('user-help');
-    container.append(noMatches, userHelp);
+    alertWrapper.append(noMatches, userHelp);
+    container.append(alertWrapper);
   } else {
     // no results were found
     spinner.remove();
     const noResults = document.createElement('p');
+    noResults.setAttribute('role', 'alert');
+    noResults.setAttribute('aria-atomic', 'true');
     noResults.innerHTML = `<strong>${await replacePlaceholder('no-results')}</strong>`;
     container.append(noResults);
   }
