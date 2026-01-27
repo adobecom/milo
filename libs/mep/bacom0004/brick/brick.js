@@ -5,8 +5,8 @@ import {
   decorateTextOverrides,
   decorateButtons,
   handleObjectFit,
-} from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+} from '../../../utils/decorate.js';
+import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 
 const blockTypeSizes = {
   large: ['xxl', 'm', 'l'],

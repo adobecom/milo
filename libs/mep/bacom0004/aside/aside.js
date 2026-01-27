@@ -14,8 +14,8 @@
 * Aside - v5.1
 */
 
-import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg, decorateTextOverrides } from '../../../utils/decorate.js';
+import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
 const variants = ['split', 'inline', 'notification', 'container-mobile', 'full-bleed-mobile'];
@@ -143,7 +143,7 @@ async function addTooltip(foreground) {
 
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
-  const { default: loadIcons } = await import('../../features/icons/icons.js');
+  const { default: loadIcons } = await import('../../../features/icons/icons.js');
   loadStyle(`${base}/features/icons/icons.css`);
   loadIcons(toolTipIcons, config);
 }
