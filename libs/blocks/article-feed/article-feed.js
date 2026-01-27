@@ -568,7 +568,7 @@ async function decorateArticleFeed(
     // results were found
     container.remove();
   } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
-    // no user filtered results were founds
+    // no user filtered results were found
     spinner.remove();
     const alertWrapper = createTag('div', {
       role: 'alert',
