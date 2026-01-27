@@ -21,16 +21,24 @@ let videoLabels = {
 const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
+export function getButtonType(buttonParent) {
+  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
+  let { nodeName } = buttonParent;
+  if (nodeName === 'STRONG') {
+    nodeName = buttonParent.parentElement?.nodeName === 'EM' ? 'EM' : nodeName;
+  }
+  return buttonTypeMap[nodeName] || 'outline';
+}
+
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
-  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
 
   buttons.forEach((button) => {
     const parent = button.parentElement;
     if (shouldBlockFreeTrialLinks(button)) return;
     let target = button;
-    const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
+    const buttonType = getButtonType(parent);
     if (button.nodeName === 'STRONG') {
       target = parent;
     } else {
@@ -137,6 +145,19 @@ export function handleFocalpoint(pic, child, removeChild) {
   image.style.objectPosition = `${x} ${y}`;
 }
 
+// Used in DA focal point feature
+export function setBackgroundFocus(pic) {
+  const img = pic?.querySelector('img');
+  if (!img) return;
+  const { title } = img.dataset;
+  if (!title?.startsWith('data-focal:')) return;
+  const coords = title.split(':')[1]?.split(',');
+  if (coords?.length !== 2) return;
+  const [x, y] = coords;
+  delete img.dataset.title;
+  img.style.objectPosition = `${x}% ${y}%`;
+}
+
 export async function decorateBlockBg(block, node, { useHandleFocalpoint = false, className = 'background' } = {}) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
@@ -147,6 +168,7 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
     [...node.children].forEach((child, i) => {
       if (childCount > 1 && i < viewports.length) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
+      setBackgroundFocus(pic); // Used in DA focal point feature
       if (useHandleFocalpoint && pic
         && (child.childElementCount === 2 || child.textContent?.trim())) {
         handleFocalpoint(pic, child, true);
