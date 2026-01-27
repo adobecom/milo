@@ -1741,7 +1741,7 @@ export default async function init(block) {
   if (window.opener && (window.location.hash.includes('from_ims=true') || window.location.search.includes('from_ims=true'))) {
     window.opener.location.reload();
     window.close();
-    return; // Stop execution to prevent flashing content
+    return null; // Stop execution to prevent flashing content
   }
 
   const { mep, miniGnav = false } = getConfig();
