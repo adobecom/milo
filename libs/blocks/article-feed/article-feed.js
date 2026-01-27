@@ -557,6 +557,9 @@ async function decorateArticleFeed(
     'aria-label': 'loading',
     'aria-atomic': 'true',
   });
+  const loadingText = createTag('span', { class: 'visually-hidden' });
+  loadingText.textContent = await replacePlaceholder('loading');
+  spinner.append(loadingText);
   container.append(spinner);
   articleCards.append(container);
 
@@ -568,7 +571,7 @@ async function decorateArticleFeed(
     // results were found
     container.remove();
   } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
-    // no user filtered results were founds
+    // no user filtered results were found
     spinner.remove();
     const alertWrapper = createTag('div', {
       role: 'alert',
