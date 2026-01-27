@@ -75,7 +75,7 @@ describe('Modals', () => {
     expect(document.getElementById('milo')).not.to.exist;
   });
 
-  it('Closes a modal on manual hash chagne', async () => {
+  it('Closes a modal on manual hash change', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
     window.location.hash = '';
