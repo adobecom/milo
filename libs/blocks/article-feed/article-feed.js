@@ -572,14 +572,12 @@ async function decorateArticleFeed(
   } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
     // no user filtered results were found
     spinner.remove();
-    const alertWrapper = createTag('div');
     const noMatches = document.createElement('p');
     noMatches.innerHTML = `<strong>${await replacePlaceholder('no-matches')}</strong>`;
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
     userHelp.textContent = await replacePlaceholder('user-help');
-    alertWrapper.append(noMatches, userHelp);
-    container.append(alertWrapper);
+    container.append(noMatches, userHelp);
   } else {
     // no results were found
     spinner.remove();
