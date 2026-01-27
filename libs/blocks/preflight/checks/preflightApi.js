@@ -122,7 +122,6 @@ export async function getPreflightResults(options = {}) {
     .then((res) => (res.ok ? res.json() : null))
     .catch(() => null);
 
-  console.log('excludedURLS', excludedURLS);
   if (isUrlExcluded(url, excludedURLS)) return null;
 
   const isASO = (await getChecksSuite()) === 'ASO';
