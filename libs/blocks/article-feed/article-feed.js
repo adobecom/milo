@@ -254,6 +254,7 @@ function buildSelectedFilter(name) {
   a.classList.add('selected-filter');
   a.setAttribute('tabindex', 0);
   a.textContent = name;
+  a.setAttribute('aria-label', `Remove ${name} filter`);
   return a;
 }
 
