@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -121,7 +121,7 @@ export default function init(el) {
     handleBtnState(items, buttons);
     if (!items.querySelectorAll('a').length) items.setAttribute('tabindex', 0);
     allActionScrollers.push({ scroller: items, buttons });
-    import('../../utils/action.js').then(({ debounce }) => {
+    import('../../../utils/action.js').then(({ debounce }) => {
       items.addEventListener('scroll', debounce(() => handleBtnState(items, buttons), 50));
       if (attachedResize) return;
       attachedResize = true;
