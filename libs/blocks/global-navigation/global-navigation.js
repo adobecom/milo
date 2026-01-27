@@ -311,8 +311,7 @@ export const CONFIG = {
           isSignUpRequired: false,
           callbacks: {
             onSignIn: () => {
-              const { useSusiModal } = getConfig();
-              if (useSusiModal) {
+              if (getConfig().useSusiModal) {
                 handleSignIn();
               } else {
                 window.adobeIMS?.signIn(SIGNIN_CONTEXT);
