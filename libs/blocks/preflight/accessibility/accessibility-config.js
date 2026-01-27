@@ -14,6 +14,7 @@ export const AXE_CORE_CONFIG = {
     ['#preflight'],
     ['.block-label-container'],
     ['.adbMsgClientWrapper'],
+    ['#onetrust-consent-sdk'],
   ],
   runOnly: {
     type: 'tag',
