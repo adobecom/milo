@@ -1,0 +1,45 @@
+{
+  "$schema": "./baseline.schema.json",
+  "description": "Performance baseline thresholds for Milo. Values are in milliseconds unless noted.",
+  "thresholds": {
+    "lcp": {
+      "budget": 2500,
+      "description": "Largest Contentful Paint - should be under 2.5s for good UX"
+    },
+    "cls": {
+      "budget": 0.1,
+      "description": "Cumulative Layout Shift - should be under 0.1 for good UX (unitless score)"
+    },
+    "tbt": {
+      "budget": 200,
+      "description": "Total Blocking Time - proxy for long-running tasks, should be under 200ms"
+    },
+    "jsSize": {
+      "budget": 300000,
+      "description": "Total JavaScript size in bytes (300KB budget)"
+    },
+    "totalSize": {
+      "budget": 1500000,
+      "description": "Total page weight in bytes (1.5MB budget)"
+    }
+  },
+  "testUrls": {
+    "milo": [],
+    "consumer": [
+      {
+        "name": "Homepage",
+        "url": "https://main--homepage--adobecom.aem.live/homepage/index-loggedout"
+      },
+      {
+        "name": "CC UK",
+        "url": "https://main--cc--adobecom.aem.live/uk/creativecloud"
+      },
+      {
+        "name": "Acrobat Sign PDF",
+        "url": "https://main--dc--adobecom.aem.live/acrobat/online/sign-pdf"
+      }
+    ]
+  },
+  "runs": 3,
+  "formFactor": "desktop"
+}

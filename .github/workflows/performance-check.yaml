@@ -1,0 +1,274 @@
+name: Performance Check
+
+on:
+  pull_request:
+    branches: ["**"]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      test_url:
+        description: 'Custom URL to test (optional)'
+        required: false
+        type: string
+
+concurrency:
+  group: perf-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  performance-check:
+    name: Performance Metrics Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Determine Test URL
+        id: url
+        run: |
+          if [[ -n "${{ github.event.inputs.test_url }}" ]]; then
+            echo "test_url=${{ github.event.inputs.test_url }}" >> $GITHUB_OUTPUT
+            echo "Using custom URL: ${{ github.event.inputs.test_url }}"
+          else
+            # For PRs to stage, use the preview URL
+            BRANCH="${{ github.head_ref }}"
+            BRANCH_CLEAN=$(echo "$BRANCH" | sed 's/\//-/g')
+            PR_ORG="${{ github.event.pull_request.head.repo.owner.login }}"
+            PR_REPO="${{ github.event.pull_request.head.repo.name }}"
+            URL="https://${BRANCH_CLEAN}--${PR_REPO}--${PR_ORG}.aem.live"
+            echo "test_url=$URL" >> $GITHUB_OUTPUT
+            echo "Using PR preview URL: $URL"
+          fi
+          
+          # Stage branch preview (for comparison)
+          BASE_ORG="${{ github.event.pull_request.base.repo.owner.login || github.repository_owner }}"
+          BASE_REPO="${{ github.event.pull_request.base.repo.name || github.event.repository.name }}"
+          STAGE_URL="https://stage--${BASE_REPO}--${BASE_ORG}.aem.live"
+          echo "stage_url=$STAGE_URL" >> $GITHUB_OUTPUT
+          echo "Stage comparison URL: $STAGE_URL"
+
+      - name: Wait for deployment
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          echo "Waiting for AEM deployment to be ready..."
+          URL="${{ steps.url.outputs.test_url }}"
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Deployment ready (HTTP $HTTP_STATUS)"
+              break
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: HTTP $HTTP_STATUS - waiting 10s..."
+            sleep 10
+          done
+          
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "⚠️ Warning: Deployment may not be ready, proceeding anyway..."
+          fi
+
+      - name: Run Performance Check (PR)
+        id: perf
+        env:
+          TEST_URL: ${{ steps.url.outputs.test_url }}
+          PR_BRANCH: ${{ github.head_ref }}
+          PR_ORG: ${{ github.event.pull_request.head.repo.owner.login }}
+          PR_REPO: ${{ github.event.pull_request.head.repo.name }}
+          RESULTS_PATH: .github/performance/results-pr.json
+          VARIANT_NAME: PR
+        run: |
+          node .github/performance/measure-performance.js "$TEST_URL"
+
+      - name: Run Performance Check (Stage)
+        if: github.event_name == 'pull_request'
+        env:
+          TEST_URL: ${{ steps.url.outputs.stage_url }}
+          PR_BRANCH: stage
+          PR_ORG: ${{ github.event.pull_request.base.repo.owner.login || github.repository_owner }}
+          PR_REPO: ${{ github.event.pull_request.base.repo.name || github.event.repository.name }}
+          RESULTS_PATH: .github/performance/results-stage.json
+          VARIANT_NAME: Stage
+        run: |
+          node .github/performance/measure-performance.js "$TEST_URL"
+
+      - name: Upload Performance Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: |
+            .github/performance/results.json
+            .github/performance/results-*.json
+          if-no-files-found: ignore
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const prResultsPath = '.github/performance/results-pr.json';
+            const stageResultsPath = '.github/performance/results-stage.json';
+            const fallbackPath = '.github/performance/results.json';
+            
+            let comment = '## 📊 Performance Check Results\n\n';
+            
+            const loadResults = (p) => fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf-8')) : null;
+            const prData = loadResults(prResultsPath) || loadResults(fallbackPath);
+            const stageData = loadResults(stageResultsPath);
+            
+            if (!prData) {
+              comment += '⚠️ Performance results not available.\n';
+            } else {
+              const { results: prResults, thresholds, passed } = prData;
+              
+              comment += `**Test URL:** ${{ steps.url.outputs.test_url }}\n\n`;
+              
+              if (passed) {
+                comment += '### ✅ All metrics within budget!\n\n';
+              } else {
+                comment += '### ❌ Some metrics exceed budgets\n\n';
+              }
+              
+              const hasStage = !!stageData;
+              
+              if (hasStage) {
+                comment += '| Page (URL) | LCP (PR / Stage / Δ) | CLS (PR / Stage / Δ) | TBT (PR / Stage / Δ) | JS Size KB (PR / Stage / Δ) |\n';
+                comment += '|------------|----------------------|----------------------|----------------------|------------------------------|\n';
+              } else {
+                comment += '| Page (URL) | LCP | CLS | TBT | JS Size |\n';
+                comment += '|------------|-----|-----|-----|---------|\n';
+              }
+              
+              const stageResults = hasStage ? stageData.results : [];
+              
+              const byName = new Map();
+              for (const r of prResults) {
+                const key = r.name || new URL(r.url).pathname || '/';
+                byName.set(key, { pr: r });
+              }
+              for (const r of stageResults) {
+                const key = r.name || new URL(r.url).pathname || '/';
+                const entry = byName.get(key) || {};
+                entry.stage = r;
+                byName.set(key, entry);
+              }
+              
+              const formatDelta = (prVal, stVal, fmt) => {
+                if (prVal == null && stVal == null) return 'N/A';
+                const prStr = prVal == null ? 'N/A' : fmt(prVal);
+                const stStr = stVal == null ? 'N/A' : fmt(stVal);
+                if (prVal == null || stVal == null) return `${prStr} / ${stStr} / N/A`;
+                const delta = prVal - stVal;
+                const sign = delta > 0 ? '+' : '';
+                return `${prStr} / ${stStr} / ${sign}${fmt(delta)}`;
+              };
+              
+              for (const [pageName, { pr: result, stage: base }] of byName) {
+                const fmtMs = (v) => `${Math.round(v)}ms`;
+                const fmtCls = (v) => v.toFixed(3);
+                const fmtKb = (v) => `${(v).toFixed(1)}KB`;
+                
+                const lcpCell = hasStage
+                  ? `${formatDelta(result?.lcp, base?.lcp, fmtMs)}`
+                  : `${result?.lcp ? Math.round(result.lcp) : 'N/A'}ms`;
+                const clsCell = hasStage
+                  ? `${formatDelta(result?.cls, base?.cls, fmtCls)}`
+                  : `${result?.cls ?? 'N/A'}`;
+                const tbtCell = hasStage
+                  ? `${formatDelta(result?.tbt, base?.tbt, fmtMs)}`
+                  : `${result?.tbt ? Math.round(result.tbt) : 'N/A'}ms`;
+                const jsCell = hasStage
+                  ? `${formatDelta(result?.jsSize, base?.jsSize, fmtKb)}`
+                  : `${result?.jsSize}KB`;
+                
+                const urlVal = result?.url || base?.url || '';
+                const pageCell = urlVal ? `${pageName} (${urlVal})` : pageName;
+                
+                comment += `| ${pageCell} | ${lcpCell} | ${clsCell} | ${tbtCell} | ${jsCell} |\n`;
+              }
+              
+              comment += '\n<details>\n<summary>📦 Heaviest resources (top 5 per page)</summary>\n\n';
+              const variants = [
+                { label: 'PR', data: prResults },
+              ];
+              if (hasStage) {
+                variants.push({ label: 'Stage', data: stageResults });
+              }
+              
+              for (const variant of variants) {
+                comment += `**${variant.label}**\n`;
+                for (const result of variant.data) {
+                  const pageName = result.name || new URL(result.url).pathname || '/';
+                  comment += `- ${pageName}\n`;
+                  if (result.topResources && result.topResources.length) {
+                    for (const res of result.topResources) {
+                      const sizeKb = res.size ? (res.size / 1024).toFixed(1) : '0.0';
+                      comment += `  - ${sizeKb}KB — ${res.name}\n`;
+                    }
+                  } else {
+                    comment += '  - No resource data collected\n';
+                  }
+                }
+                comment += '\n';
+              }
+              comment += '</details>\n';
+              
+              comment += '\n<details>\n<summary>📋 Budget Thresholds</summary>\n\n';
+              comment += '| Metric | Budget | Description |\n';
+              comment += '|--------|--------|-------------|\n';
+              comment += `| LCP | ${thresholds.lcp.budget}ms | ${thresholds.lcp.description} |\n`;
+              comment += `| CLS | ${thresholds.cls.budget} | ${thresholds.cls.description} |\n`;
+              comment += `| TBT | ${thresholds.tbt.budget}ms | ${thresholds.tbt.description} |\n`;
+              comment += `| JS Size | ${(thresholds.jsSize.budget / 1024).toFixed(0)}KB | ${thresholds.jsSize.description} |\n`;
+              comment += '\n</details>\n';
+            }
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(c => 
+              c.user.type === 'Bot' && c.body.includes('📊 Performance Check Results')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment,
+              });
+            }
+
