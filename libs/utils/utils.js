@@ -1957,7 +1957,7 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
-  setTimeout(() => { console.log('Delayed'), 3000 });
+  setTimeout(() => console.log('Delayed'), 3000);
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
   if (!quickLink || window.adobePrivacy) return;
