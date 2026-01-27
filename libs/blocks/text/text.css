@@ -657,7 +657,7 @@
   }
 }
 
-.link-spacer a:not(:only-child) {
+.link-list a {
   display: inline-block;
   margin-left: 10px;
   margin-right: 10px;
