@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, SLD, getMetadata,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
@@ -22,9 +22,11 @@ export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
+export const PRICE_TEMPLATE_PROMO_STRIKETHROUGH = 'promo-strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
 export const PRICE_TEMPLATE_LEGAL = 'legal';
 
+const isPreview = window.location.host.includes('aem.page') || window.location.host === 'www.stage.adobe.com';
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
   [PRICE_TEMPLATE_DISCOUNT, PRICE_TEMPLATE_DISCOUNT],
@@ -35,6 +37,7 @@ const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_LEGAL, PRICE_TEMPLATE_LEGAL],
+  [PRICE_TEMPLATE_PROMO_STRIKETHROUGH, PRICE_TEMPLATE_PROMO_STRIKETHROUGH],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
@@ -227,7 +230,7 @@ export async function getGeoLocaleSettings(miloLocale) {
     || sessionStorage.getItem('akamai');
   if (!country) {
     try {
-      const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+      const { getAkamaiCode } = await import('../../utils/geo.js');
       country = await getAkamaiCode(true);
     } catch (error) {
       window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
@@ -347,18 +350,8 @@ export function getMasBase(hostname, maslibs) {
     } else if (maslibs === 'local') {
       baseUrl = 'http://localhost:9001';
     } else if (maslibs) {
-      // Extract SLD (Second Level Domain) from hostname
-      const hostnameParts = hostname.split('.');
-      let sld = 'hlx'; // default
-      if (hostnameParts.length >= 2) {
-        // Get the second-to-last part (before .page or .live)
-        const extensionIndex = hostname.endsWith('.page') ? hostnameParts.length - 1 : hostnameParts.length;
-        if (extensionIndex >= 2) {
-          sld = hostnameParts[extensionIndex - 2];
-        }
-      }
       const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.${sld}.${extension}`;
+      baseUrl = `https://${maslibs}.aem.${extension}`;
     } else {
       baseUrl = 'https://www.adobe.com/mas';
     }
@@ -483,6 +476,7 @@ export async function loadMasComponent(componentName) {
       try {
         return await import(masUrl);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn(`Failed to load from MAS repository, falling back to Milo deps: ${error.message}`);
         return import(`../../deps/mas/${componentName}.js`);
       }
@@ -709,6 +703,8 @@ export async function getUpgradeAction(
   el,
 ) {
   if (!options.upgrade) return undefined;
+  let SOURCE_PF;
+  let TARGET_PF;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -719,6 +715,14 @@ export async function getUpgradeAction(
       '.merch-offers.upgrade [data-wcs-osi]',
     );
   }
+
+  if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
+    SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
+    TARGET_PF = ['ACROBAT'];
+  } else {
+    SOURCE_PF = CC_SINGLE_APPS_ALL;
+    TARGET_PF = CC_ALL_APPS;
+  }
   await upgradeOffer?.onceSettled();
   if (upgradeOffer && entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
@@ -726,10 +730,16 @@ export async function getUpgradeAction(
       offerFamily,
       upgradeOffer,
       entitlements,
-      CC_SINGLE_APPS_ALL,
-      CC_ALL_APPS,
+      SOURCE_PF,
+      TARGET_PF,
     );
-    el?.closest('merch-card')?.querySelector('merch-addon')?.remove();
+    if (upgradeAction) {
+      const merchCard = el?.closest('merch-card');
+      merchCard?.querySelector('merch-addon')?.remove();
+      merchCard?.querySelectorAll('[is="checkout-link"]').forEach((link) => {
+        if (link !== el) link.remove();
+      });
+    }
     return upgradeAction;
   }
   return undefined;
@@ -973,7 +983,7 @@ const isProdModal = (url) => {
   }
 };
 
-export async function getModalAction(offers, options, el) {
+export async function getModalAction(offers, options, el, isMiloPreview = isPreview) {
   if (!options.modal) return undefined;
 
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
@@ -1007,9 +1017,11 @@ export async function getModalAction(offers, options, el) {
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
   if (!url && !el?.isOpen3in1Modal) return undefined;
-  url = isInternalModal(url) || isProdModal(url)
+  const prodModalUrl = isProdModal(url);
+  url = isInternalModal(url) || prodModalUrl
     ? await localizeLinkAsync(checkoutLinkConfig[columnName])
     : checkoutLinkConfig[columnName];
+  url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
   return {
     url,
     handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
@@ -1037,8 +1049,7 @@ export async function getCheckoutAction(
 }
 
 export function setPreview(attributes) {
-  const { host } = window.location;
-  if (host.includes(`${SLD}.page`) || host === 'www.stage.adobe.com') {
+  if (isPreview) {
     attributes.preview = 'on';
   }
 }
@@ -1155,6 +1166,11 @@ function getHardcodedFallbackStep(wcsOsi, checkoutClientId) {
     '8Lr09qx_PHqAJUwvUNiof4FFFEKjsR1TTbvBUncV2b0': 'email',
     lI5NvdLBWJUJEHkP9CAx787kt0uCc3WnoCFVVIjECiA: 'email',
     'OQ1oCm1tZG35Gj7LCrkGeOOdUMfVlC7xx-7ml-CTWIE': 'commitment',
+    'VQpXGYJh-MBOcGPvokz_INgE88dj3KIyMJaU-iIQxlY': 'commitment',
+    'b-xXdWqVkpll0yBirom1c4bI3FwdXvNCy1HtHZV2yfU': 'commitment',
+    ZfP6XPHxvTFnOS_Hd4q9taPkKHinmf6PCozeJEmzqNI: 'email',
+    'NNe0xkjqasLN3Q0ASuv3ZB4zSQW-iVN4TBoHOkQBEOA': 'commitment',
+    zX46r0tn5frbNvEMCdBg5WhZnq2hfl0qamka1iZGKTY: 'commitment',
   };
   return osiToStepMap[wcsOsi];
 }

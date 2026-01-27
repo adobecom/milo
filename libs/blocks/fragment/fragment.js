@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix, lingoActive,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -79,7 +79,6 @@ function replaceDotMedia(path, doc) {
   resetAttributeBase('source', 'srcset');
 }
 
-// Helper to remove mep-lingo row from a container (exported for testing)
 export const removeMepLingoRow = (container) => {
   const rows = container?.querySelectorAll(':scope > div');
   const mepLingoRow = [...rows || []].find((row) => {
@@ -89,9 +88,33 @@ export const removeMepLingoRow = (container) => {
   mepLingoRow?.remove();
 };
 
+async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath) {
+  window.lana?.log(`MEP Lingo: Query-index indicated regional content exists but fetch failed for ${resourcePath}. Falling back to authored locale.`);
+
+  let fallbackPath = originalHref;
+  try {
+    const resourceUrl = new URL(resourcePath);
+    const originalUrl = new URL(originalHref);
+    if (locale?.prefix !== undefined && !originalUrl.pathname.startsWith(locale.prefix)) {
+      fallbackPath = `${resourceUrl.origin}${locale.prefix}${originalUrl.pathname}`;
+    } else {
+      fallbackPath = `${resourceUrl.origin}${originalUrl.pathname}`;
+    }
+  } catch (e) {
+    if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
+      fallbackPath = `${locale.prefix}${fallbackPath}`;
+    }
+  }
+
+  const resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
+
+  return { resp, fallbackPath };
+}
+
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale, env } = getConfig();
-  let relHref = await localizeLinkAsync(a.href);
+  let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   let url;
   let inline = false;
 
@@ -139,7 +162,7 @@ export default async function init(a) {
   const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
   const isOnRegionalPage = locale?.base !== undefined;
 
-  if (isMepLingoLink && isOnRegionalPage) {
+  if (isMepLingoLink && (isOnRegionalPage || !lingoActive())) {
     const { handleInvalidMepLingo } = await import('../../features/mep/lingo.js');
     handleInvalidMepLingo(a, { env, relHref });
     return;
@@ -172,29 +195,31 @@ export default async function init(a) {
     }
   }
 
+  const isMepLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
+  const needsFallback = (isMepLingoBlock || isMepLingoFragment) && !!a.dataset.originalHref;
+
   let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
-  const isLingoFragment = !isBlockSwap && !isSectionSwap && isMepLingoLink;
-  const needsFallback = (isMepLingoBlock || isLingoFragment) && !!a.dataset.originalHref;
   let usedFallback = false;
 
-  if (!resp?.ok && needsFallback && a.dataset.originalHref) {
-    let fallbackPath = a.dataset.originalHref;
-    try {
-      const originalUrl = new URL(a.dataset.originalHref);
-      if (locale?.prefix && !originalUrl.pathname.startsWith(locale.prefix)) {
-        fallbackPath = `${originalUrl.origin}${locale.prefix}${originalUrl.pathname}`;
-      }
-    } catch (e) {
-      if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
-        fallbackPath = `${locale.prefix}${fallbackPath}`;
-      }
-    }
-    resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
-      .catch(() => ({}));
-    if (resp?.ok) {
-      relHref = fallbackPath;
+  const mepLingoPrefix = getMepLingoPrefix();
+  if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
+    usedFallback = true;
+  }
+
+  const attemptedRegionalFetch = relHref.includes(mepLingoPrefix);
+  const canTryFallback = needsFallback && mepLingoPrefix && a.dataset.originalHref;
+
+  if (!resp?.ok && attemptedRegionalFetch && canTryFallback) {
+    const fallback = await tryMepLingoFallbackForStaleIndex(
+      a.dataset.originalHref,
+      locale,
+      resourcePath,
+    );
+    if (fallback.resp?.ok) {
+      resp = fallback.resp;
+      relHref = fallback.fallbackPath;
       usedFallback = true;
     }
   }
@@ -229,19 +254,18 @@ export default async function init(a) {
   const fragmentAttrs = { class: 'fragment', 'data-path': relHref };
   const fragment = createTag('div', fragmentAttrs);
 
-  if (isMepLingoLink && env?.name !== 'prod') {
+  if (isMepLingoLink && mep?.preview) {
     const { addMepLingoPreviewAttrs } = await import('../../features/mep/lingo.js');
     addMepLingoPreviewAttrs(fragment, { usedFallback, relHref });
   }
   fragment.append(...sections);
 
   await updateFragMap(fragment, a, relHref);
-  if (a.dataset.manifestId
-    || a.dataset.adobeTargetTestid
-    || mep?.commands?.length
-    || placeholders) {
+  const hasManifestId = a.dataset.manifestId || a.dataset.adobeTargetTestid;
+  const hasLingoAttrs = fragment.dataset.mepLingoRoc || fragment.dataset.mepLingoFallback;
+  if (hasManifestId || hasLingoAttrs || mep?.commands?.length || placeholders) {
     const { updateFragDataProps, handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
-    if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
+    if (hasManifestId || hasLingoAttrs) {
       updateFragDataProps(a, inline, sections, fragment);
     }
     if (mep?.commands?.length) await handleCommands(mep?.commands, fragment, false, true);

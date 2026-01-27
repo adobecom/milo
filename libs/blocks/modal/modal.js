@@ -410,7 +410,7 @@ window.addEventListener('hashchange', async (e) => {
     const details = await findDetails(window.location.hash, null);
     const oldUrl = new URL(e.oldURL);
     const { hash } = oldUrl;
-    const isFromIms = hash.includes(`old_hash=${details.id}`) || hash.includes('from_ims=true');
+    const isFromIms = hash.includes(`old_hash=${details.id}`) && hash.includes('from_ims=true');
 
     const { path: oldDialogPath } = await findDetails(oldUrl.hash, null);
     const oldDialog = !isFromIms && oldDialogPath ? safeQuerySelector(`.dialog-modal${oldUrl.hash}`) : null;
@@ -423,7 +423,7 @@ window.addEventListener('hashchange', async (e) => {
 
     if (isDeepLink) return;
     if (details) getModal(details);
-    isDeepLink = isFromIms;
+    isDeepLink = details?.path && details?.id && isFromIms;
     if (!hash || isFromIms || oldDialog) return;
 
     const hashElement = safeQuerySelector(`${hash}:not(.dialog-modal)`);
