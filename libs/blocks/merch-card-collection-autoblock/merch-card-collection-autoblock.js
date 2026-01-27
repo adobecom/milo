@@ -135,6 +135,13 @@ function getSidenav(collection) {
   const deeplink = collection.variant === 'catalog' ? 'category' : 'filter';
   const sidenavList = createTag('merch-sidenav-list', { deeplink }, spSidenav);
 
+  // Filter items change page content rather than navigate, so button role fits better.
+  sidenavList.updateComplete.then(() => {
+    sidenavList.querySelectorAll('sp-sidenav-item:not([href])').forEach((item) => {
+      item.shadowRoot?.querySelector('a')?.setAttribute('role', 'button');
+    });
+  });
+
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
