@@ -254,6 +254,7 @@ function buildSelectedFilter(name) {
   a.classList.add('selected-filter');
   a.setAttribute('tabindex', 0);
   a.textContent = name;
+  a.setAttribute('aria-label', `Remove ${name} filter`);
   return a;
 }
 
@@ -371,7 +372,6 @@ async function buildFilter(type, tax, block, config) {
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-controls', `${type}-filter-panel`);
   button.textContent = tax.getCategoryTitle(type);
-  button.setAttribute('aria-label', `Remove ${tax.getCategoryTitle(type)} filter`);
   button.addEventListener('click', toggleMenu);
   button.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
