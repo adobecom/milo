@@ -797,7 +797,6 @@ describe('Merch Block', () => {
       ];
       setSubscriptionsData(ACROBAT_ENTITLEMENT);
 
-      // Create upgrade offer element in the merch-offers section
       const upgradeOfferContainer = document.createElement('div');
       upgradeOfferContainer.classList.add('merch-offers', 'upgrade');
       const upgradeOfferLink = document.createElement('a');
@@ -806,7 +805,6 @@ describe('Merch Block', () => {
       upgradeOfferContainer.appendChild(upgradeOfferLink);
       document.body.appendChild(upgradeOfferContainer);
 
-      // Create the CTA that will get upgraded
       const merchCard = document.createElement('merch-card');
       merchCard.setAttribute('name', 'acrobat');
       const upgradeEl = document.createElement('a');
@@ -816,18 +814,13 @@ describe('Merch Block', () => {
       merchCard.appendChild(upgradeEl);
       document.body.appendChild(merchCard);
 
-      // Process the upgrade offer first
       await merch(upgradeOfferLink);
 
-      // Process the CTA and verify it becomes an upgrade
       const cta = await merch(upgradeEl);
       await cta.onceSettled();
 
-      // The CTA text should change to "Upgrade Now" if upgrade logic is applied
-      // Note: The actual text change depends on the full upgrade flow execution
       expect(cta).to.exist;
 
-      // Cleanup
       document.body.removeChild(merchCard);
       document.body.removeChild(upgradeOfferContainer);
     });
@@ -838,7 +831,6 @@ describe('Merch Block', () => {
       mockIms('US');
       setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
 
-      // Create upgrade offer element
       const upgradeOfferContainer = document.createElement('div');
       upgradeOfferContainer.classList.add('merch-offers', 'upgrade');
       const upgradeOfferLink = document.createElement('a');
@@ -850,13 +842,11 @@ describe('Merch Block', () => {
       const merchCard = document.createElement('merch-card');
       merchCard.setAttribute('name', 'photoshop');
 
-      // Create target upgrade link
       const upgradeLink = document.createElement('a');
       upgradeLink.classList.add('merch', 'cta');
       upgradeLink.setAttribute('href', '/tools/ost?osi=632B3ADD940A7FBB7864AA5AD19B8D28&type=checkoutUrl&upgrade=true');
       upgradeLink.textContent = 'Upgrade';
 
-      // Create other checkout links
       const otherLink1 = document.createElement('a');
       otherLink1.setAttribute('is', 'checkout-link');
       otherLink1.setAttribute('href', '/tools/ost?osi=other1&type=checkoutUrl');
@@ -872,21 +862,15 @@ describe('Merch Block', () => {
       merchCard.appendChild(otherLink2);
       document.body.appendChild(merchCard);
 
-      // Verify initial state
       expect(merchCard.querySelectorAll('a').length).to.equal(3);
 
-      // Process the upgrade offer
       await merch(upgradeOfferLink);
 
-      // Process the upgrade link - this should trigger the cleanup logic
       const cta = await merch(upgradeLink);
       await cta?.onceSettled();
 
-      // After upgrade processing, other links should be removed
-      // Note: The actual removal happens in getUpgradeAction when upgradeAction is returned
       expect(merchCard.querySelector('a')).to.exist;
 
-      // Cleanup
       document.body.removeChild(merchCard);
       document.body.removeChild(upgradeOfferContainer);
     });
