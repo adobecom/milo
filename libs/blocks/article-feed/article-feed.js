@@ -239,7 +239,6 @@ function toggleMenu(e) {
   const button = e.currentTarget;
   const expanded = button.getAttribute('aria-expanded') === 'true';
   if (expanded) {
-    button.setAttribute('aria-label', `Removed ${button.textContent}`);
     closeMenu(button);
     disableSearch(button.id);
     closeCurtain();
@@ -372,7 +371,7 @@ async function buildFilter(type, tax, block, config) {
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-controls', `${type}-filter-panel`);
   button.textContent = tax.getCategoryTitle(type);
-  // button.setAttribute('aria-label', `Remove ${tax.getCategoryTitle(type)}`);
+  button.setAttribute('aria-label', `Remove ${tax.getCategoryTitle(type)} filter`);
   button.addEventListener('click', toggleMenu);
   button.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
