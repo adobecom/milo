@@ -86,7 +86,7 @@ const isUrlExcluded = (url, exclusionPatterns) => {
   if (!exclusionPatterns || !exclusionPatterns.data) return false;
 
   return exclusionPatterns.data.some((item) => {
-    const pattern = item.path || item.Pattern || item.pattern;
+    const pattern = item.path;
     if (!pattern) return false;
 
     const regexPattern = pattern
@@ -118,20 +118,12 @@ export async function getPreflightResults(options = {}) {
     injectVisualMetadata = false,
   } = options;
 
-  const excludedPaths = 'https://main--federal--adobecom.aem.page/federal/preflight/preflight-config.json?sheet=preflight-exclusions';
-  try {
-    const excludedURLS = await fetch(excludedPaths).then((res) => {
-      if (!res.ok) return null;
-      return res.json();
-    });
+  const excludedURLS = await fetch(`${getFederatedContentRoot()}/federal/preflight/preflight-config.json?sheet=preflight-exclusions`)
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null);
 
-    if (isUrlExcluded(url, excludedURLS)) {
-      console.log('Page excluded from preflight checks:', url);
-      return null;
-    }
-  } catch (error) {
-    console.error('Error checking preflight exclusions:', error);
-  }
+  console.log('excludedURLS', excludedURLS);
+  if (isUrlExcluded(url, excludedURLS)) return null;
 
   const isASO = (await getChecksSuite()) === 'ASO';
   const cacheKey = generateCacheKey(url, injectVisualMetadata, isASO);
