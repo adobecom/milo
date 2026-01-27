@@ -488,7 +488,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
     </svg>`;
   const mepToggleInfo = `
     ${infoSVG}
-    <div class="mep-info-tooltip mep-section">
+    <div class="mep-info-tooltip">
       <h6 class="mep-section-header">Color Key</h6>
       <div class="mep-section-data">
         <span class="D1ECF1 color-swatch"></span>
@@ -637,6 +637,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   mepPopupBody.forEach((body) => {
     addDividers(body, '.mep-section');
   });
+
   addMepPopupListeners(mepPopup, pageId);
 
   const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
