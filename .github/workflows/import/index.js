@@ -177,6 +177,9 @@ const projectExclude = {
   'events-milo': [
     '.json',
   ],
+  'upp': [
+    '.json',
+  ],
 };
 const redirectsUrls = {
   'da-express-milo': `${importFrom}/redirects.json?limit=99999`,
