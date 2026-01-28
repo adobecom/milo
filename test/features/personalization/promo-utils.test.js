@@ -70,7 +70,7 @@ describe('getPromoManifests', () => {
   it('should return an array of promo manifests', async () => {
     const expectedManifests = [
       {
-        manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/bf-us.json',
+        manifestPath: 'https://main--milo--adobecom.aem.page/promos/2023/black-friday/bf-us.json',
         disabled: false,
         event: {
           name: 'bf-us',
@@ -84,7 +84,7 @@ describe('getPromoManifests', () => {
         ],
       },
       {
-        manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/pre-black-friday/manifest-global.json',
+        manifestPath: 'https://main--milo--adobecom.aem.page/promos/2023/black-friday/pre-black-friday/manifest-global.json',
         disabled: false,
         event: {
           name: 'pre-black-friday-global',
@@ -98,7 +98,7 @@ describe('getPromoManifests', () => {
         ],
       },
       {
-        manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/black-friday/manifest-global.json',
+        manifestPath: 'https://main--milo--adobecom.aem.page/promos/2023/black-friday/black-friday/manifest-global.json',
         disabled: true,
         event: {
           name: 'black-friday-global',

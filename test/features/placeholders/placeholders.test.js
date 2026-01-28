@@ -58,7 +58,7 @@ describe('Placeholders', () => {
   });
 
   it('Replaces attributes with placeholders', async () => {
-    const placeholderPath = 'https://main--cc--adobecom.hlx.page/cc-shared/placeholders.json';
+    const placeholderPath = 'https://main--cc--adobecom.aem.page/cc-shared/placeholders.json';
     const placeholderRequest = customFetch({ resource: placeholderPath, withCacheRules: true })
       .catch(() => ({}));
 
