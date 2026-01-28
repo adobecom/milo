@@ -278,7 +278,6 @@ async function setupMasRequestLogger(masRequestErrors) {
 function createWorkerPageSetup(config = {}) {
   const {
     pages = [],
-    extraHTTPHeaders = { 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' },
     loadTimeout = 5000,
     setupTimeout = 60000, // Default 60 second timeout for worker setup
   } = config;
