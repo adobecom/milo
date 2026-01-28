@@ -144,4 +144,12 @@ export default async function init(el) {
   if (el.classList.contains('l-title')) {
     el.querySelectorAll('[class*="detail-"]')?.forEach((detail) => detail.classList.add('title-l'));
   }
+  if (el.classList.contains('link-spacer')) {
+    el.querySelectorAll('[class^="body-"]').forEach((bodyElem) => {
+      if ([...bodyElem.childNodes].every((n) => (n.nodeType === 1 && n.tagName === 'A' && !n.className)
+        || (n.nodeType === 3 && n.textContent.trim() === ''))) {
+        bodyElem.classList.add('link-list');
+      }
+    });
+  }
 }
