@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { constructTestUrl } from '../../libs/commerce.js';
 import { features } from './three-in-one.spec.js';
 import ThreeInOne from './three-in-one.page.js';
-import { constructTestUrl } from '../../libs/commerce.js';
 
 async function openModal(cta) {
   await expect(cta).not.toHaveClass(/loading-entitlements|placeholder-pending|placeholder-failed/);
