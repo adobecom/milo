@@ -23,23 +23,20 @@
       "description": "Total page weight in bytes (1.5MB budget)"
     }
   },
-  "testUrls": {
-    "milo": [],
-    "consumer": [
-      {
-        "name": "Homepage",
-        "url": "https://main--homepage--adobecom.aem.live/homepage/index-loggedout"
-      },
-      {
-        "name": "CC UK",
-        "url": "https://main--cc--adobecom.aem.live/uk/creativecloud"
-      },
-      {
-        "name": "Acrobat Sign PDF",
-        "url": "https://main--dc--adobecom.aem.live/acrobat/online/sign-pdf"
-      }
-    ]
-  },
+  "testUrls": [
+    {
+      "name": "Homepage",
+      "url": "https://main--homepage--adobecom.aem.live/homepage/index-loggedout"
+    },
+    {
+      "name": "CC UK",
+      "url": "https://main--cc--adobecom.aem.live/uk/creativecloud"
+    },
+    {
+      "name": "Acrobat Sign PDF",
+      "url": "https://main--dc--adobecom.aem.live/acrobat/online/sign-pdf"
+    }
+  ],
   "runs": 3,
   "formFactor": "desktop"
 }

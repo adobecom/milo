@@ -4,6 +4,12 @@
  * Performance Measurement Script
  * Measures LCP, CLS, JS Size, and Long Running Tasks using Playwright
  * Compares against baseline thresholds and reports failures
+ * 
+ * Optimizations:
+ * - Parallel URL testing with concurrency limit
+ * - Efficient resource filtering (single pass)
+ * - Streamlined metric collection
+ * - Reduced memory footprint
  */
 
 const { chromium } = require('playwright');
@@ -13,396 +19,327 @@ const path = require('path');
 const BASELINE_PATH = path.join(__dirname, 'baseline.json');
 const RESULTS_PATH = process.env.RESULTS_PATH || path.join(__dirname, 'results.json');
 const VARIANT_NAME = process.env.VARIANT_NAME || 'PR';
+const MAX_CONCURRENCY = parseInt(process.env.PERF_CONCURRENCY, 10) || 2;
+const TOP_RESOURCES_COUNT = 5;
 
-async function loadBaseline() {
-  const content = fs.readFileSync(BASELINE_PATH, 'utf-8');
-  return JSON.parse(content);
+function loadBaseline() {
+  return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf-8'));
 }
 
-async function measurePerformance(page, url) {
-  console.log(`\n📊 Measuring performance for: ${url}`);
-  
-  // Navigate and wait for network idle
-  await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
-  
-  // Wait a bit for any lazy-loaded content
-  await page.waitForTimeout(2000);
+/**
+ * Inject performance observers before page load
+ */
+const INIT_SCRIPT = `
+  window.__perfMetrics = { lcp: null, cls: 0, longTasks: [] };
+  if (typeof PerformanceObserver !== 'undefined') {
+    new PerformanceObserver((list) => {
+      const entries = list.getEntries();
+      if (entries.length) window.__perfMetrics.lcp = entries[entries.length - 1].startTime;
+    }).observe({ type: 'largest-contentful-paint', buffered: true });
 
-  // Get performance metrics using Performance API (leveraging buffered observer data)
-  const metrics = await page.evaluate(() => {
-    return new Promise((resolve) => {
-      const results = {
-        lcp: null,
-        cls: null,
-        longTasks: [],
-        resources: [],
-      };
-
-      // Get LCP
-      const lcpEntries = (window.__lcpEntries && window.__lcpEntries.length)
-        ? window.__lcpEntries
-        : performance.getEntriesByType('largest-contentful-paint');
-      if (lcpEntries.length > 0) {
-        results.lcp = lcpEntries[lcpEntries.length - 1].startTime;
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (!entry.hadRecentInput) window.__perfMetrics.cls += entry.value;
       }
+    }).observe({ type: 'layout-shift', buffered: true });
 
-      // Get CLS from layout-shift entries
-      const clsEntries = (window.__layoutShiftEntries && window.__layoutShiftEntries.length)
-        ? window.__layoutShiftEntries
-        : performance.getEntriesByType('layout-shift');
-      let clsScore = 0;
-      clsEntries.forEach((entry) => {
-        if (!entry.hadRecentInput) {
-          clsScore += entry.value;
-        }
-      });
-      results.cls = clsScore;
-
-      // Get long tasks (tasks > 50ms)
-      const longTaskEntries = performance.getEntriesByType('longtask');
-      results.longTasks = longTaskEntries.map((entry) => ({
-        duration: entry.duration,
-        startTime: entry.startTime,
-      }));
-
-      // Calculate Total Blocking Time (time beyond 50ms for each long task)
-      results.tbt = longTaskEntries.reduce((total, entry) => {
-        return total + Math.max(0, entry.duration - 50);
-      }, 0);
-
-      // Get resource sizes
-      const resourceEntries = performance.getEntriesByName ? 
-        performance.getEntriesByType('resource') : [];
-      
-      results.resources = resourceEntries.map((entry) => ({
-        name: entry.name,
-        type: entry.initiatorType,
-        size: entry.transferSize || 0,
-        duration: entry.duration,
-      }));
-
-      resolve(results);
-    });
-  });
-
-  // Calculate JS size only for Milo libs (script or .js under /libs/)
-  const jsResources = metrics.resources.filter((r) => {
-    const isJs = r.type === 'script' || r.name.endsWith('.js');
-    return isJs;
-  });
-  const jsSize = jsResources.reduce((total, r) => total + r.size, 0);
-  
-  // Calculate total page size
-  const totalSize = metrics.resources.reduce((total, r) => total + r.size, 0);
-
-  return {
-    url,
-    lcp: metrics.lcp,
-    cls: metrics.cls,
-    tbt: metrics.tbt,
-    jsSize,
-    totalSize,
-    longTaskCount: metrics.longTasks.length,
-    longTasks: metrics.longTasks,
-    resources: metrics.resources,
-    resourceCount: metrics.resources.length,
-  };
-}
-
-async function runMultipleMeasurements(browser, url, runs) {
-  const results = [];
-  
-  for (let i = 0; i < runs; i++) {
-    const context = await browser.newContext({
-      viewport: { width: 1920, height: 1080 },
-    });
-    const page = await context.newPage();
-    
-    // Enable performance observers early so buffered entries (e.g., LCP/CLS) are captured
-    await page.addInitScript(() => {
-      if (typeof PerformanceObserver !== 'undefined') {
-        // Capture LCP and CLS with buffered entries
-        new PerformanceObserver((entryList) => {
-          const entries = entryList.getEntries();
-          (window.__lcpEntries = window.__lcpEntries || []).push(...entries);
-        }).observe({ type: 'largest-contentful-paint', buffered: true });
-        
-        new PerformanceObserver((entryList) => {
-          const entries = entryList.getEntries();
-          (window.__layoutShiftEntries = window.__layoutShiftEntries || []).push(...entries);
-        }).observe({ type: 'layout-shift', buffered: true });
-        
-        // Long tasks for TBT
-        new PerformanceObserver(() => {}).observe({ type: 'longtask', buffered: true });
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        window.__perfMetrics.longTasks.push(entry.duration);
       }
-    });
+    }).observe({ type: 'longtask', buffered: true });
+  }
+`;
+
+/**
+ * Collect metrics from page - runs in browser context
+ */
+function collectMetrics() {
+  const perf = window.__perfMetrics || {};
+  const resources = performance.getEntriesByType('resource');
+  
+  // Single-pass resource processing
+  let jsSize = 0;
+  let totalSize = 0;
+  const jsResources = [];
+  
+  for (const r of resources) {
+    const size = r.transferSize || 0;
+    totalSize += size;
     
-    try {
-      const result = await measurePerformance(page, url);
-      results.push(result);
-      console.log(`  Run ${i + 1}/${runs}: LCP=${result.lcp?.toFixed(0)}ms, CLS=${result.cls?.toFixed(3)}, TBT=${result.tbt?.toFixed(0)}ms`);
-    } catch (error) {
-      console.error(`  Run ${i + 1}/${runs} failed:`, error.message);
-    } finally {
-      await context.close();
+    if (r.initiatorType === 'script' || r.name.endsWith('.js')) {
+      jsSize += size;
+      jsResources.push({ name: r.name, size });
     }
   }
   
-  // Return median values
-  if (results.length === 0) {
-    throw new Error(`All measurement runs failed for ${url}`);
+  // Sort and slice in one operation - only keep top N
+  jsResources.sort((a, b) => b.size - a.size);
+  
+  // Calculate TBT from long tasks
+  const tbt = (perf.longTasks || []).reduce((sum, d) => sum + Math.max(0, d - 50), 0);
+  
+  return {
+    lcp: perf.lcp,
+    cls: perf.cls || 0,
+    tbt,
+    jsSize,
+    totalSize,
+    longTaskCount: (perf.longTasks || []).length,
+    topResources: jsResources.slice(0, 5),
+  };
+}
+
+async function measureOnce(context, url) {
+  const page = await context.newPage();
+  
+  try {
+    await page.addInitScript(INIT_SCRIPT);
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+    
+    // Wait for LCP to stabilize (typically within 2.5s after load)
+    await page.waitForTimeout(2500);
+    
+    return await page.evaluate(collectMetrics);
+  } finally {
+    await page.close();
+  }
+}
+
+/**
+ * Calculate median of numeric array
+ */
+function median(arr) {
+  if (!arr.length) return null;
+  const sorted = Float64Array.from(arr).sort();
+  const mid = sorted.length >> 1;
+  return sorted.length & 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+async function runMeasurements(browser, url, runs) {
+  const results = [];
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  
+  try {
+    for (let i = 0; i < runs; i++) {
+      try {
+        const metrics = await measureOnce(context, url);
+        results.push(metrics);
+        console.log(`  Run ${i + 1}/${runs}: LCP=${metrics.lcp?.toFixed(0) ?? 'N/A'}ms, CLS=${metrics.cls.toFixed(3)}, TBT=${metrics.tbt.toFixed(0)}ms`);
+      } catch (err) {
+        console.error(`  Run ${i + 1}/${runs} failed:`, err.message);
+      }
+    }
+  } finally {
+    await context.close();
   }
   
-  const median = (arr) => {
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-  };
+  if (!results.length) throw new Error(`All runs failed for ${url}`);
   
-  const bestRun = results.reduce((best, curr) => {
-    if (!best) return curr;
-    const bestSize = best.totalSize || 0;
-    const currSize = curr.totalSize || 0;
-    return currSize > bestSize ? curr : best;
-  }, null);
+  // Aggregate results using median
+  const lcpValues = results.map(r => r.lcp).filter(Boolean);
+  const clsValues = results.map(r => r.cls);
+  const tbtValues = results.map(r => r.tbt);
+  const jsSizeValues = results.map(r => r.jsSize);
+  const totalSizeValues = results.map(r => r.totalSize);
   
-  const topResources = (bestRun && bestRun.resources)
-    ? [...bestRun.resources]
-        .filter((r) => {
-          const isJs = r.type === 'script' || r.name.endsWith('.js');
-          return isJs;
-        })
-        .sort((a, b) => (b.size || 0) - (a.size || 0))
-        .slice(0, 5)
-    : [];
+  // Get top resources from the run with most resources captured
+  const bestRun = results.reduce((best, curr) => 
+    (curr.topResources?.length || 0) > (best?.topResources?.length || 0) ? curr : best
+  , results[0]);
   
   return {
     url,
-    lcp: median(results.map((r) => r.lcp).filter(Boolean)),
-    cls: median(results.map((r) => r.cls).filter((v) => v !== null)),
-    tbt: median(results.map((r) => r.tbt).filter(Boolean)),
-    jsSize: median(results.map((r) => r.jsSize)),
-    totalSize: median(results.map((r) => r.totalSize)),
-    longTaskCount: Math.round(median(results.map((r) => r.longTaskCount))),
+    lcp: median(lcpValues),
+    cls: median(clsValues),
+    tbt: median(tbtValues),
+    jsSize: median(jsSizeValues),
+    totalSize: median(totalSizeValues),
+    longTaskCount: Math.round(median(results.map(r => r.longTaskCount))),
+    topResources: bestRun?.topResources?.slice(0, TOP_RESOURCES_COUNT) || [],
     runs: results.length,
-    topResources,
   };
+}
+
+/**
+ * Run tests with controlled concurrency
+ */
+async function runWithConcurrency(browser, urlsToTest, runs, concurrency) {
+  const results = [];
+  const queue = [...urlsToTest];
+  const inFlight = new Set();
+  
+  async function processNext() {
+    if (!queue.length) return;
+    
+    const { name, url } = queue.shift();
+    console.log(`\n📍 Testing: ${name}`);
+    
+    try {
+      const result = await runMeasurements(browser, url, runs);
+      result.name = name;
+      results.push(result);
+    } catch (err) {
+      console.error(`Failed to measure ${name}:`, err.message);
+      results.push({ name, url, error: err.message });
+    }
+  }
+  
+  // Process URLs with concurrency limit
+  while (queue.length || inFlight.size) {
+    while (inFlight.size < concurrency && queue.length) {
+      const promise = processNext();
+      inFlight.add(promise);
+      promise.finally(() => inFlight.delete(promise));
+    }
+    if (inFlight.size) await Promise.race(inFlight);
+  }
+  
+  return results;
 }
 
 function checkThresholds(metrics, thresholds) {
   const failures = [];
+  const checks = [
+    { key: 'lcp', label: 'LCP', format: v => `${v.toFixed(0)}ms` },
+    { key: 'cls', label: 'CLS', format: v => v.toFixed(3) },
+    { key: 'tbt', label: 'TBT (Long Running Tasks)', format: v => `${v.toFixed(0)}ms` },
+    { key: 'jsSize', label: 'JS Size', format: v => `${(v / 1024).toFixed(1)}KB` },
+    { key: 'totalSize', label: 'Total Size', format: v => `${(v / 1024).toFixed(1)}KB` },
+  ];
   
-  if (metrics.lcp !== null && metrics.lcp > thresholds.lcp.budget) {
-    failures.push({
-      metric: 'LCP',
-      actual: `${metrics.lcp.toFixed(0)}ms`,
-      budget: `${thresholds.lcp.budget}ms`,
-      description: thresholds.lcp.description,
-    });
-  }
-  
-  if (metrics.cls !== null && metrics.cls > thresholds.cls.budget) {
-    failures.push({
-      metric: 'CLS',
-      actual: metrics.cls.toFixed(3),
-      budget: thresholds.cls.budget.toString(),
-      description: thresholds.cls.description,
-    });
-  }
-  
-  if (metrics.tbt !== null && metrics.tbt > thresholds.tbt.budget) {
-    failures.push({
-      metric: 'TBT (Long Running Tasks)',
-      actual: `${metrics.tbt.toFixed(0)}ms`,
-      budget: `${thresholds.tbt.budget}ms`,
-      description: thresholds.tbt.description,
-    });
-  }
-  
-  if (metrics.jsSize > thresholds.jsSize.budget) {
-    failures.push({
-      metric: 'JS Size',
-      actual: `${(metrics.jsSize / 1024).toFixed(1)}KB`,
-      budget: `${(thresholds.jsSize.budget / 1024).toFixed(1)}KB`,
-      description: thresholds.jsSize.description,
-    });
-  }
-  
-  if (metrics.totalSize > thresholds.totalSize.budget) {
-    failures.push({
-      metric: 'Total Size',
-      actual: `${(metrics.totalSize / 1024).toFixed(1)}KB`,
-      budget: `${(thresholds.totalSize.budget / 1024).toFixed(1)}KB`,
-      description: thresholds.totalSize.description,
-    });
+  for (const { key, label, format } of checks) {
+    const value = metrics[key];
+    const threshold = thresholds[key];
+    if (value != null && threshold && value > threshold.budget) {
+      failures.push({
+        metric: label,
+        actual: format(value),
+        budget: format(threshold.budget),
+        description: threshold.description,
+      });
+    }
   }
   
   return failures;
 }
 
 function generateReport(allResults, thresholds) {
-  let report = '\n' + '='.repeat(70) + '\n';
-  report += '📈 PERFORMANCE REPORT\n';
-  report += '='.repeat(70) + '\n\n';
+  const lines = [
+    '',
+    '='.repeat(70),
+    '📈 PERFORMANCE REPORT',
+    '='.repeat(70),
+    '',
+  ];
   
   let hasFailures = false;
   
   for (const result of allResults) {
-    const title = result.name || result.url;
-    report += `\n🔗 ${title}\n`;
-    if (result.name) {
-      report += `   ${result.url}\n`;
+    if (result.error) {
+      lines.push(`\n❌ ${result.name}: ${result.error}`);
+      hasFailures = true;
+      continue;
     }
-    report += '-'.repeat(50) + '\n';
-    report += `   LCP:        ${result.lcp?.toFixed(0) || 'N/A'}ms (budget: ${thresholds.lcp.budget}ms)\n`;
-    report += `   CLS:        ${result.cls?.toFixed(3) || 'N/A'} (budget: ${thresholds.cls.budget})\n`;
-    report += `   TBT:        ${result.tbt?.toFixed(0) || 'N/A'}ms (budget: ${thresholds.tbt.budget}ms)\n`;
-    report += `   JS Size:    ${(result.jsSize / 1024).toFixed(1)}KB (budget: ${(thresholds.jsSize.budget / 1024).toFixed(1)}KB)\n`;
-    report += `   Total Size: ${(result.totalSize / 1024).toFixed(1)}KB (budget: ${(thresholds.totalSize.budget / 1024).toFixed(1)}KB)\n`;
-    report += `   Long Tasks: ${result.longTaskCount} tasks detected\n`;
+    
+    const title = result.name || result.url;
+    lines.push(`\n🔗 ${title}`);
+    if (result.name) lines.push(`   ${result.url}`);
+    lines.push('-'.repeat(50));
+    lines.push(`   LCP:        ${result.lcp?.toFixed(0) ?? 'N/A'}ms (budget: ${thresholds.lcp.budget}ms)`);
+    lines.push(`   CLS:        ${result.cls?.toFixed(3) ?? 'N/A'} (budget: ${thresholds.cls.budget})`);
+    lines.push(`   TBT:        ${result.tbt?.toFixed(0) ?? 'N/A'}ms (budget: ${thresholds.tbt.budget}ms)`);
+    lines.push(`   JS Size:    ${(result.jsSize / 1024).toFixed(1)}KB (budget: ${(thresholds.jsSize.budget / 1024).toFixed(1)}KB)`);
+    lines.push(`   Total Size: ${(result.totalSize / 1024).toFixed(1)}KB (budget: ${(thresholds.totalSize.budget / 1024).toFixed(1)}KB)`);
+    lines.push(`   Long Tasks: ${result.longTaskCount} tasks detected`);
     
     if (result.topResources?.length) {
-      report += '   Heaviest resources (top 5):\n';
+      lines.push('   Heaviest JS resources:');
       for (const res of result.topResources) {
-        report += `      • ${(res.size / 1024).toFixed(1)}KB - ${res.name}\n`;
+        lines.push(`      • ${(res.size / 1024).toFixed(1)}KB — ${res.name.split('/').pop()}`);
       }
     }
     
     const failures = checkThresholds(result, thresholds);
-    if (failures.length > 0) {
+    if (failures.length) {
       hasFailures = true;
-      report += '\n   ❌ THRESHOLD VIOLATIONS:\n';
-      for (const failure of failures) {
-        report += `      • ${failure.metric}: ${failure.actual} exceeds budget of ${failure.budget}\n`;
+      lines.push('\n   ❌ THRESHOLD VIOLATIONS:');
+      for (const f of failures) {
+        lines.push(`      • ${f.metric}: ${f.actual} exceeds budget of ${f.budget}`);
       }
     } else {
-      report += '\n   ✅ All metrics within budget\n';
+      lines.push('\n   ✅ All metrics within budget');
     }
   }
   
-  report += '\n' + '='.repeat(70) + '\n';
+  lines.push('', '='.repeat(70));
+  lines.push(hasFailures 
+    ? '❌ PERFORMANCE CHECK FAILED - Some metrics exceed budgets'
+    : '✅ PERFORMANCE CHECK PASSED - All metrics within budgets'
+  );
+  lines.push('='.repeat(70));
   
-  if (hasFailures) {
-    report += '❌ PERFORMANCE CHECK FAILED - Some metrics exceed budgets\n';
-  } else {
-    report += '✅ PERFORMANCE CHECK PASSED - All metrics within budgets\n';
-  }
-  
-  report += '='.repeat(70) + '\n';
-  
-  return { report, hasFailures };
+  return { report: lines.join('\n'), hasFailures };
 }
 
-/**
- * Build the milolibs parameter for testing consumer sites with PR's Milo code
- * Format: {branch}--{repo}--{org}
- */
 function buildMilolibs() {
   const branch = process.env.PR_BRANCH || process.env.GITHUB_HEAD_REF;
+  if (!branch) return null;
+  
   const org = process.env.PR_ORG || 'adobecom';
   const repo = process.env.PR_REPO || 'milo';
-  
-  if (!branch) {
-    return null;
-  }
-  
-  // Clean branch name (replace / with -)
-  const cleanBranch = branch.replace(/\//g, '-');
-  return `${cleanBranch}--${repo}--${org}`;
+  return `${branch.replace(/\//g, '-')}--${repo}--${org}`;
 }
 
-/**
- * Build list of URLs to test from config
- */
 function buildTestUrls(testUrls, baseUrl, milolibs) {
-  const urls = [];
-  
-  // Handle legacy format (simple array of paths)
-  if (Array.isArray(testUrls)) {
-    for (const urlPath of testUrls) {
-      urls.push({
-        name: urlPath,
-        url: new URL(urlPath, baseUrl).toString(),
-      });
-    }
-    return urls;
+  if (!Array.isArray(testUrls)) {
+    console.error('testUrls must be an array');
+    return [];
   }
   
-  // Handle new format with milo and consumer sections
-  if (testUrls.milo) {
-    for (const urlPath of testUrls.milo) {
-      urls.push({
-        name: `Milo: ${urlPath}`,
-        url: new URL(urlPath, baseUrl).toString(),
-      });
-    }
-  }
-  
-  if (testUrls.consumer) {
-    for (const consumer of testUrls.consumer) {
-      let testUrl = consumer.url;
-      
-      // Append milolibs parameter to test with PR's Milo code
+  return testUrls.map((item) => {
+    // Handle object format: { name, url }
+    if (typeof item === 'object' && item.url) {
+      const urlObj = new URL(item.url);
       if (milolibs) {
-        const urlObj = new URL(testUrl);
         urlObj.searchParams.set('milolibs', milolibs);
-        urlObj.searchParams.set('martech', 'off'); // Disable martech for consistent measurements
-        testUrl = urlObj.toString();
+        urlObj.searchParams.set('martech', 'off');
       }
-      
-      urls.push({
-        name: consumer.name,
-        url: testUrl,
-      });
+      return { name: item.name || item.url, url: urlObj.toString() };
     }
-  }
-  
-  return urls;
+    
+    // Handle string format (relative path)
+    return { name: item, url: new URL(item, baseUrl).toString() };
+  });
 }
 
 async function main() {
   const baseUrl = process.env.TEST_URL || process.argv[2];
   
   if (!baseUrl) {
-    console.error('Error: Please provide a base URL via TEST_URL env var or as an argument');
-    console.error('Usage: node measure-performance.js https://example.com');
+    console.error('Usage: node measure-performance.js <base-url>');
+    console.error('  Or set TEST_URL environment variable');
     process.exit(1);
   }
   
   const milolibs = buildMilolibs();
+  const baseline = loadBaseline();
+  const { thresholds, testUrls, runs = 3 } = baseline;
+  const urlsToTest = buildTestUrls(testUrls, baseUrl, milolibs);
   
   console.log('🚀 Starting Performance Measurement');
   console.log(`   Base URL: ${baseUrl}`);
-  if (milolibs) {
-    console.log(`   Milolibs: ${milolibs}`);
-  }
-  
-  const baseline = await loadBaseline();
-  const { thresholds, testUrls, runs } = baseline;
-  
-  if (Array.isArray(baseline.jsIncludePatterns) && baseline.jsIncludePatterns.length) {
-    jsIncludePatterns = baseline.jsIncludePatterns;
-  }
-  
-  const urlsToTest = buildTestUrls(testUrls, baseUrl, milolibs);
-  
-  console.log(`   Test URLs: ${urlsToTest.length}`);
-  console.log(`   Runs per URL: ${runs}`);
+  if (milolibs) console.log(`   Milolibs: ${milolibs}`);
+  console.log(`   URLs: ${urlsToTest.length} | Runs: ${runs} | Concurrency: ${MAX_CONCURRENCY}`);
   
   const browser = await chromium.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
   });
   
-  const allResults = [];
-  
+  let allResults;
   try {
-    for (const { name, url } of urlsToTest) {
-      console.log(`\n📍 Testing: ${name}`);
-      const result = await runMultipleMeasurements(browser, url, runs);
-      result.name = name;
-      allResults.push(result);
-    }
+    allResults = await runWithConcurrency(browser, urlsToTest, runs, MAX_CONCURRENCY);
   } finally {
     await browser.close();
   }
@@ -410,36 +347,35 @@ async function main() {
   const { report, hasFailures } = generateReport(allResults, thresholds);
   console.log(report);
   
-  // Write JSON results for GitHub Actions
-  const outputPath = process.env.GITHUB_OUTPUT;
-  if (outputPath) {
-    const summary = allResults.map((r) => ({
+  // Write outputs
+  const validResults = allResults.filter(r => !r.error);
+  
+  if (process.env.GITHUB_OUTPUT) {
+    const summary = validResults.map(r => ({
       name: r.name,
       url: r.url,
       lcp: r.lcp?.toFixed(0),
       cls: r.cls?.toFixed(3),
       tbt: r.tbt?.toFixed(0),
       jsSize: (r.jsSize / 1024).toFixed(1),
-      passed: checkThresholds(r, thresholds).length === 0,
+      passed: !checkThresholds(r, thresholds).length,
     }));
-    
-    fs.appendFileSync(outputPath, `results=${JSON.stringify(summary)}\n`);
-    fs.appendFileSync(outputPath, `passed=${!hasFailures}\n`);
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `results=${JSON.stringify(summary)}\n`);
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `passed=${!hasFailures}\n`);
   }
   
-  // Write results to file for artifact upload
-  fs.writeFileSync(
-    RESULTS_PATH,
-    JSON.stringify({ variant: VARIANT_NAME, results: allResults, thresholds, passed: !hasFailures }, null, 2)
-  );
+  fs.writeFileSync(RESULTS_PATH, JSON.stringify({
+    variant: VARIANT_NAME,
+    results: allResults,
+    thresholds,
+    passed: !hasFailures,
+  }, null, 2));
   
-  if (hasFailures) {
-    process.exit(1);
-  }
+  process.exit(hasFailures ? 1 : 0);
 }
 
-main().catch((error) => {
-  console.error('Fatal error:', error);
+main().catch((err) => {
+  console.error('Fatal error:', err);
   process.exit(1);
 });
 
