@@ -1,13 +1,13 @@
 import { getFilteredElements } from './helper.js';
 import checkImageAltText from './check-image-alt-text.js';
 import checkKeyboardNavigation from './check-keyboard-navigation.js';
+import checkColorContrast from './check-color-contrast.js';
 import checkVideoCaptions from './check-video-captions.js';
-// import checkColorContrast from './check-color-contrast.js';
 
 const checkFunctions = [
   checkImageAltText,
   checkKeyboardNavigation,
-  // checkColorContrast,
+  checkColorContrast,
   checkVideoCaptions,
 ];
 
