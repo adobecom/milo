@@ -81,6 +81,7 @@ const config = {
       use: {
         ...devices['Desktop Chrome'],
         userAgent: USER_AGENT_DESKTOP,
+        channel: 'chrome',
       },
     },
 
@@ -105,7 +106,11 @@ const config = {
     {
       name: 'mas-chromium',
       testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
-      use: { ...devices['Desktop Chrome'], userAgent: USER_AGENT_DESKTOP },
+      use: {
+        ...devices['Desktop Chrome'],
+        userAgent: USER_AGENT_DESKTOP,
+        channel: 'chrome',
+      },
     },
     {
       name: 'mas-firefox',
@@ -123,6 +128,7 @@ const config = {
       use: {
         ...devices['Pixel 5'],
         userAgent: USER_AGENT_MOBILE_CHROME,
+        channel: 'chrome',
       },
     },
     {
