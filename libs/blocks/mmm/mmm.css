@@ -774,7 +774,7 @@ p.copySuccess:after {
 .mmm-report-header > div:nth-child(4), 
 .mmm-report-row > div:nth-child(4) {
   display:flex; 
-  flex: 1 1 12%;
+  flex: 1 1 16%;
 }
 .mmm-report-header > div:nth-child(5), 
 .mmm-report-row > div:nth-child(5) {
