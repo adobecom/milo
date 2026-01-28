@@ -254,6 +254,7 @@ function buildSelectedFilter(name) {
   a.classList.add('selected-filter');
   a.setAttribute('tabindex', 0);
   a.textContent = name;
+  a.setAttribute('aria-label', `Remove ${name} filter`);
   return a;
 }
 
@@ -262,6 +263,7 @@ function clearFilter(e, block) {
   const checked = document
     .querySelector(`input[name='${target.textContent}']`);
   if (checked) { checked.checked = false; }
+  checked.setAttribute('aria-label', `Removed ${target.textContent} filter`);
   delete blogIndex.config.selectedProducts;
   delete blogIndex.config.selectedIndustries;
   // eslint-disable-next-line no-use-before-define
@@ -542,10 +544,21 @@ async function decorateArticleFeed(
     articleFeedEl.append(articleCards);
   }
 
-  const container = createTag('div', { class: 'article-cards-empty' });
+  const container = createTag('div', {
+    class: 'article-cards-empty',
+    role: 'alert',
+    'aria-live': 'assertive',
+    'aria-atomic': 'true',
+  });
 
   // display spinner
-  const spinner = createTag('div', { class: 'spinner' });
+  const spinner = createTag('div', {
+    class: 'spinner',
+    role: 'alert',
+    'aria-live': 'assertive',
+    'aria-label': 'loading',
+    'aria-atomic': 'true',
+  });
   container.append(spinner);
   articleCards.append(container);
 
@@ -569,6 +582,8 @@ async function decorateArticleFeed(
     // no results were found
     spinner.remove();
     const noResults = document.createElement('p');
+    noResults.setAttribute('role', 'alert');
+    noResults.setAttribute('aria-atomic', 'true');
     noResults.innerHTML = `<strong>${await replacePlaceholder('no-results')}</strong>`;
     container.append(noResults);
   }
