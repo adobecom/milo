@@ -270,7 +270,6 @@ async function setupMasRequestLogger(masRequestErrors) {
  * Creates a worker-scoped page setup utility
  * @param {Object} config - Configuration object
  * @param {Array} config.pages - Array of page configurations [{ name: 'US', url: '/path' }, ...]
- * @param {Object} config.extraHTTPHeaders - HTTP headers to set on the context
  * @param {number} config.loadTimeout - Timeout after networkidle (default: 5000ms)
  * @param {number} config.setupTimeout - Timeout for beforeAll hook setup (default: 60000ms)
  * @returns {Object} - Setup object with pages, setup/cleanup methods, and error arrays
@@ -299,7 +298,7 @@ function createWorkerPageSetup(config = {}) {
     // Set timeout for the current test (beforeAll hook)
     test.setTimeout(setupTimeout);
 
-    workerContext = await browser.newContext({ extraHTTPHeaders });
+    workerContext = await browser.newContext();
 
     consoleErrors = [];
     masRequestErrors = [];
