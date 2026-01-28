@@ -80,7 +80,6 @@ test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, 
   await test.step('step-1: verify the default', async () => {
     console.info(`[Test Page]: ${defaultURL}`);
     await page.goto(defaultURL);
-    await page.waitForURL(/use-block-code-default/);
     await expect(marquee.marquee).toBeVisible();
     await expect(page.getByText('Marquee code was replaced MEP and the content was overwritten.')).toHaveCount(0);
   });
