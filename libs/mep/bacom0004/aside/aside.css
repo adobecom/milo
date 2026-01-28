@@ -1305,6 +1305,13 @@
   .aside.mobile-editorial-card .foreground.container > *:not(.image) { 
     padding: 1rem;
   }
+  .aside.mobile-editorial-card .foreground.container a.con-button {
+    padding: 9px 18px 10px 18px;
+    border-radius: 24px;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 21px;
+  }
   .aside.mobile-editorial-card .foreground.container blockquote p {
     margin: 0;
     font-size: 20px;
