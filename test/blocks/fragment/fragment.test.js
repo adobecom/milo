@@ -10,6 +10,7 @@ import {
   addMepLingoPreviewAttrs,
   fetchFragment,
   fetchMepLingo,
+  removeMepLingoElement,
 } from '../../../libs/features/mep/lingo.js';
 import getMepLingoContext from '../../features/mep/lingo-helpers.js';
 
@@ -805,6 +806,68 @@ describe('removeMepLingoRow helper (covers lines 203-206, 208-211 logic)', () =>
   it('handles null/undefined container', () => {
     expect(() => removeMepLingoRow(null)).to.not.throw();
     expect(() => removeMepLingoRow(undefined)).to.not.throw();
+  });
+});
+
+describe('removeMepLingoElement', () => {
+  it('removes mep-lingo block and anchor parent when isMepLingoBlock is true', () => {
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <div class="mep-lingo">
+        <div>
+          <div>mep-lingo</div>
+          <div><a href="/fragment">Link</a></div>
+        </div>
+      </div>`;
+    const originalBlock = container.querySelector('.mep-lingo');
+    const a = container.querySelector('a');
+
+    removeMepLingoElement(a, true, originalBlock);
+
+    expect(container.querySelector('.mep-lingo')).to.be.null;
+    expect(container.querySelector('a')).to.be.null;
+  });
+
+  it('removes only anchor and empty parent when isMepLingoBlock is false', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<div class="parent"><a href="/fragment">Link</a></div>';
+    const a = container.querySelector('a');
+
+    removeMepLingoElement(a, false, null);
+
+    expect(container.querySelector('a')).to.be.null;
+    expect(container.querySelector('.parent')).to.be.null; // Parent removed because empty
+  });
+
+  it('keeps parent when it has other children after anchor removal', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<div class="parent"><a href="/fragment">Link</a><span>Sibling</span></div>';
+    const a = container.querySelector('a');
+
+    removeMepLingoElement(a, false, null);
+
+    expect(container.querySelector('a')).to.be.null;
+    expect(container.querySelector('.parent')).to.exist; // Parent kept because has sibling
+    expect(container.querySelector('span').textContent).to.equal('Sibling');
+  });
+
+  it('keeps parent when it has text content after anchor removal', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<div class="parent"><a href="/fragment">Link</a> Some text</div>';
+    const a = container.querySelector('a');
+
+    removeMepLingoElement(a, false, null);
+
+    expect(container.querySelector('a')).to.be.null;
+    expect(container.querySelector('.parent')).to.exist; // Parent kept because has text
+    expect(container.querySelector('.parent').textContent.trim()).to.equal('Some text');
+  });
+
+  it('handles anchor with no parent gracefully', () => {
+    const a = document.createElement('a');
+    a.href = '/fragment';
+    // Anchor has no parent - should not throw
+    expect(() => removeMepLingoElement(a, false, null)).to.not.throw();
   });
 });
 
