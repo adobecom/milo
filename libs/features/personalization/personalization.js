@@ -679,8 +679,6 @@ export async function handleCommands(
   addSectionAnchors(rootEl);
   for (const cmd of commands) {
     const { action, selector } = cmd;
-    // Add #_inline if needed and not already present
-    // Skip updateAttribute to avoid fragment loading when just updating href
     if (forceInline
       && action !== 'updateattribute'
       && getSelectorType(cmd.content) === SELECTOR_TYPES.fragment
