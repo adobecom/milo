@@ -2,6 +2,8 @@ name: Preview Indexer - SharePoint (Incremental)
 description: This workflow updates the preview index for the given sharepoint site and region(s)
 
 on:
+  repository_dispatch:
+    types: [preview-indexer-sp-incremental]
   workflow_dispatch:
     inputs:
       site:
