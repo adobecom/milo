@@ -87,9 +87,6 @@ export function addMepLingoPreviewAttrs(fragment, {
 
 export function detectMepLingoSwap(a) {
   if (!a) return;
-  if (a.href.includes('#_inline') && a.href.includes('#_mep-lingo')) {
-    a.href = `${a.href.replace('#_inline', '')} + #_inline`;
-  }
   const isInsertHash = a.href.includes('#_mep-lingo-insert');
   const isRemoveHash = !isInsertHash && a.href.includes('#_mep-lingo-remove');
   const isRegularHash = !isInsertHash && !isRemoveHash && a.href.includes('#_mep-lingo');
