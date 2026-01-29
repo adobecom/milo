@@ -8,3 +8,5 @@ import '@spectrum-web-components/icons-workflow/icons/sp-icon-user-group.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-book.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-download.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-open-in.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-star.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-ribbon.js';
