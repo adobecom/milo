@@ -701,7 +701,6 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   })();
 
   import('./lingo.js');
-  import('../features/mep/lingo.js');
 }
 
 function localizeLinkCore(
@@ -2291,7 +2290,10 @@ export async function loadArea(area = document) {
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
-    if (lingoActive()) preloadMarketsConfig();
+    if (lingoActive()) {
+      preloadMarketsConfig();
+      import('../features/mep/lingo.js');
+    }
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
