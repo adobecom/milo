@@ -92,12 +92,12 @@
   line-height: var(--type-heading-m-lh);
 }
 
-.quick-facts .bold-xl {
+.quick-facts .titlebody-xl {
   font-size: var(--type-body-xl-size);
   line-height: var(--type-body-xl-lh);
 }
 
-.quick-facts .bold-xxl {
+.quick-facts .titlebody-xxl {
   font-size: var(--type-body-xxl-size);
   line-height: var(--type-body-xxl-lh);
 }

@@ -18,7 +18,7 @@ export default function init(el) {
     heading?.classList.add('fact-title');
     if (isInset) heading?.classList.add('inset');
     const boldEl = row.querySelector('strong');
-    boldEl?.parentElement.classList.add('bold-xl', 'fact-title');
+    boldEl?.parentElement.classList.add('titlebody-xl', 'fact-title');
     if (isInset) boldEl?.parentElement.classList.add('inset');
     facts.append(row);
   });
@@ -30,5 +30,5 @@ export default function init(el) {
   subheading?.classList.remove('heading-m');
   subheading?.classList.add('subheading-xs', 'product-title');
   if (isInset) subheading?.classList.add('inset');
-  decorateTextOverrides(el, ['-heading', '-body', '-subheading', '-bold']);
+  decorateTextOverrides(el, ['-heading', '-body', '-subheading', '-titlebody']);
 }
