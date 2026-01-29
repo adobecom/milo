@@ -824,7 +824,7 @@ export async function localizeLinkAsync(
     const { detectMepLingoSwap } = await import('../features/mep/lingo.js');
     detectMepLingoSwap(aTag);
   }
-  const effectiveHref = href.replace('#_mep-lingo-insert', '').replace('#_mep-lingo', '');
+  const effectiveHref = href.replace(/#_mep-lingo(-insert|-remove)?/g, '');
   const isMepLingoLink = aTag?.dataset?.mepLingo
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
