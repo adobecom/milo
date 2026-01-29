@@ -89,7 +89,7 @@ describe('updateAttribute action', async () => {
     config.placeholders = { 'my-aria-test': 'Hello world!' };
     await handleCommands(manifestJson.data, undefined, true, true);
     expect(document.querySelector('.marquee h2').getAttribute('class')).to.equal('added-class');
-    expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('https://www.google.com/?osi=new-parameter#_inline');
+    expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('https://www.google.com/?osi=new-parameter');
     expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
     expect(document.querySelector('#placeholder-replace').getAttribute('aria-label')).to.equal('Hello world!');
   });
