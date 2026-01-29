@@ -3,6 +3,10 @@ a[href^="/tools/ost"] {
   visibility: hidden; 
 }
 
+span[is='inline-price'].price-summed {
+  visibility:visible;
+}
+
 span[data-wcs-osi] {
   display: inline-block;
 }
