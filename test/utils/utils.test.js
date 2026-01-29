@@ -32,6 +32,7 @@ const stageDomainsMap = {
     'news.adobe.com': 'main--news--adobecom.hlx.page',
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
+  'dev6-nest.creativecloud.adobe.com': { 'creativecloud.adobe.com': 'stage.creativecloud.adobe.com' },
 };
 const stageDomainsMapWRegex = {
   hostname: 'stage--milo--owner.hlx.page',
@@ -667,6 +668,32 @@ describe('Utils', () => {
   });
 
   describe('stageDomainsMap', () => {
+    it('should not corrupt hostnames when removing locale', async () => {
+      const localePrefix = '/de';
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+        locale: { prefix: localePrefix },
+      };
+      const localeString = localePrefix.replace(/^\//, '');
+      const [hostname] = Object.entries(stageDomainsMap)
+        .find(([h]) => h.includes(localeString));
+      const a = utils.createTag('a', { href: `https://${hostname}${localePrefix}/some/path` });
+
+      utils.convertStageLinks({
+        anchors: [a],
+        config: stageConfig,
+        hostname,
+        href: `https://${hostname}`,
+      });
+
+      const converted = new URL(a.href);
+      expect(converted.hostname).to.contain(localeString);
+      expect(converted.pathname).to.equal(`${localePrefix}/some/path`);
+      expect(converted.pathname).to.not.contain(`${localePrefix}${localePrefix}/`);
+    });
+
     it('should convert links when stageDomainsMap provided without regex', async () => {
       const stageConfig = {
         ...config,
