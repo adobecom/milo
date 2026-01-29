@@ -10,3 +10,8 @@ import '@spectrum-web-components/icons-workflow/icons/sp-icon-download.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-open-in.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-star.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-ribbon.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-data-correlated.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-learn.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-page-rule.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-upload-to-cloud.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-upload-to-cloud-outline.js';
