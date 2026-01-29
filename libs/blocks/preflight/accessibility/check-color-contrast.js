@@ -118,9 +118,7 @@ const getWorstContrast = ({
 
       const bgRgb = averageBackgroundColor(ctx, x, y, safeW, safeH);
       const ratio = contrastRatio(fgRgb, bgRgb);
-      if (ratio < minRatio) {
-        minRatio = ratio;
-      }
+      if (ratio < minRatio) minRatio = ratio;
     } catch (e) {
       // ignore per-letter measurement failures
     }
@@ -147,8 +145,7 @@ const collectTextElements = (elements) => elements
       .from(element.childNodes)
       .filter((node) => (
         node.nodeType === Node.TEXT_NODE
-        && node.textContent
-        && node.textContent.trim().length > 0
+        && node.textContent?.trim()
       ));
 
     const collected = directTextNodes.map((textNode) => {
@@ -167,8 +164,7 @@ const collectTextElements = (elements) => elements
         if (width === 0 || height === 0) return null;
 
         const { parentElement } = textNode;
-        const computed = parentElement ? window.getComputedStyle(parentElement) : null;
-        const color = computed ? computed.color : '';
+        const { color = '' } = parentElement ? window.getComputedStyle(parentElement) : {};
 
         return {
           element: textNode,
@@ -186,13 +182,13 @@ const collectTextElements = (elements) => elements
 const hideTextElements = (textElements) => {
   textElements.forEach((item) => {
     const textNode = item.element;
-    const parent = textNode && textNode.parentNode;
-    if (!parent) return;
-    // avoid double-wrapping if already hidden by this step
-    if (
-      textNode.parentElement
+    const parent = textNode?.parentNode;
+
+    if (!parent
+      // avoid double-wrapping if already hidden by this step
+      || (textNode.parentElement
       && textNode.parentElement.dataset
-      && textNode.parentElement.dataset.preflightHiddenText === 'true'
+      && textNode.parentElement.dataset.preflightHiddenText === 'true')
     ) return;
 
     const wrapper = document.createElement('span');
