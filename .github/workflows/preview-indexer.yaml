@@ -53,7 +53,7 @@ env:
 
 jobs:
   preview-indexer:
-    if: github.repository_owner == 'adobecom'
+    if: github.repository == 'adobecom/milo'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
