@@ -731,13 +731,14 @@ function localizeLinkCore(
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
-    const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
-    let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
+    const isMepLingoFragment = (path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true') || (overrideBase !== null && overridePrefix !== null);
+    let prefix = getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
           || (!!locale.regions && isMepLingoFragment))) {
       return (async () => {
+        if (overridePrefix) prefix = overridePrefix;
         loadQueryIndexes(prefix, false, [href]);
         if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
           await Promise.all([queryIndexes[siteId]?.pathsRequest, lingoSiteMapping].filter(Boolean));
@@ -759,12 +760,13 @@ function localizeLinkCore(
             ?.length
         ) {
           prefix = basePrefix;
+        } else {
+          prefix = getPrefixBySite(locale, url, relative);
         }
         const urlPath = `${prefix}${path}${url.search}${hash}`;
         return relative ? urlPath : `${url.origin}${urlPath}`;
       })();
     }
-
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
@@ -850,8 +852,9 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
 
-  const prefix = lingoActive() && isMepLingoLink ? getMepLingoPrefix() : null;
-  const base = lingoActive() && isMepLingoLink
+  const config = getConfig();
+  const prefix = lingoActive() && (isMepLingoLink || config.locale.base === undefined) ? getMepLingoPrefix() : null;
+  const base = lingoActive() && (isMepLingoLink || config.locale.base === undefined)
     ? getConfig()?.locale?.prefix.replace('/', '')
     : null;
 
@@ -2303,7 +2306,7 @@ function loadLingoIndexes(area = document) {
   }
   const prefix = getMepLingoPrefix();
   if (prefix) {
-    loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
+    loadQueryIndexes(prefix, false, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
   }
 }
 
