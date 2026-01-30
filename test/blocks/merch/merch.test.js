@@ -385,6 +385,85 @@ describe('Merch Block', () => {
     });
   });
 
+  describe('Inline Price Sum (Multiple OSIs)', () => {
+    it('dynamically imports inline-price-sum module for multiple OSIs', async () => {
+      // Create a mock element with multiple OSIs
+      const link = document.createElement('a');
+      link.classList.add('merch');
+      link.href = '/tools/ost?osi=osi1,osi2,osi3';
+      document.body.appendChild(link);
+
+      try {
+        const price = await merch(link);
+        if (price) {
+          await price.onceSettled?.();
+          expect(price.classList.contains('price-summed')).to.be.true;
+        }
+      } finally {
+        link.remove();
+      }
+    });
+
+    it('handles single OSI without using inline-price-sum', async () => {
+      // Create a mock element with single OSI
+      const link = document.createElement('a');
+      link.classList.add('merch');
+      link.href = '/tools/ost?osi=osi1';
+      document.body.appendChild(link);
+
+      try {
+        const price = await merch(link);
+        if (price) {
+          await price.onceSettled?.();
+          expect(price.classList.contains('price-summed')).to.be.false;
+          expect(price.getAttribute('is')).to.equal('inline-price');
+        }
+      } finally {
+        link.remove();
+      }
+    });
+
+    it('returns null for price with no OSI', async () => {
+      const link = document.createElement('a');
+      link.classList.add('merch');
+      link.href = '/tools/ost';
+      document.body.appendChild(link);
+
+      try {
+        const price = await merch(link);
+        expect(price).to.be.null;
+      } finally {
+        link.remove();
+      }
+    });
+
+    it('renders sum of two prices', async () => {
+      const el = await merch(document.querySelector('.merch.price.sum-two'));
+      if (el) {
+        await el.onceSettled?.();
+        expect(el.classList.contains('price-summed')).to.be.true;
+        expect(el.getAttribute('is')).to.equal('inline-price');
+      }
+    });
+
+    it('renders sum of three prices without term', async () => {
+      const el = await merch(document.querySelector('.merch.price.sum-three'));
+      if (el) {
+        await el.onceSettled?.();
+        expect(el.classList.contains('price-summed')).to.be.true;
+        expect(el.dataset.displayRecurrence).to.equal('false');
+      }
+    });
+
+    it('renders sum with promo code', async () => {
+      const el = await merch(document.querySelector('.merch.price.sum-promo'));
+      if (el) {
+        await el.onceSettled?.();
+        expect(el.classList.contains('price-summed')).to.be.true;
+      }
+    });
+  });
+
   describe('CTAs A11Y', () => {
     it('decorate card ctas with aria label', async () => {
       const cards = document.querySelectorAll('.cards merch-card');

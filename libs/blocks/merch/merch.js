@@ -3,7 +3,6 @@ import {
   shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { createInlinePriceSum } from './inline-price-sum.js';
 
 // MAS Component Names
 export const MAS_COMMERCE_SERVICE = 'commerce';
@@ -1379,11 +1378,12 @@ async function buildPrice(el, params) {
   const service = await initService();
 
   const hasMultipleOsis = context.wcsOsi && context.wcsOsi.includes(',');
-  const price = hasMultipleOsis
-    ? await createInlinePriceSum(service, context)
-    : service.createInlinePrice(context);
+  if (hasMultipleOsis) {
+    const { createInlinePriceSum } = await import('./inline-price-sum.js');
+    return createInlinePriceSum(service, context);
+  }
 
-  return price;
+  return service.createInlinePrice(context);
 }
 
 export const MEP_SELECTOR = 'mas';
