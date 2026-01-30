@@ -103,5 +103,10 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
       const previewPathExtensionKey = `PREVIEW_PATH_EXTN_${key}`;
       return process.env[previewPathExtensionKey] || '';
     },
+
+    getPreviewFileExtension() {
+      const previewPathExtensionKey = `PREVIEW_FILE_EXTN_${key}`;
+      return process.env[previewPathExtensionKey] || '';
+    },
   };
 }
