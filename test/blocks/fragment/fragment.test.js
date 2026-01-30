@@ -751,6 +751,48 @@ describe('MEP Lingo Fragments', () => {
     expect(fragment.textContent).to.include('Base content');
     section.remove();
   });
+
+  it('removes insert variant when regional content does not exist (no fallback to base)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex([]);
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    // Override fetch: regional 404s, base exists
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((resource) => {
+      const mockPath = resource?.resource || resource;
+      if (mockPath?.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      // Regional path 404s
+      if (mockPath?.includes('/ch_de/')) {
+        return Promise.resolve({ ok: false, status: 404 });
+      }
+      // Base content exists
+      if (mockPath?.includes('/de/fragments/insert-test')) {
+        return Promise.resolve(new Response('<div>Base content</div>', { status: 200 }));
+      }
+      return originalFetch(resource);
+    });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const wrapper = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/fragments/insert-test#_mep-lingo-insert';
+    wrapper.appendChild(a);
+    section.appendChild(wrapper);
+    document.body.appendChild(section);
+
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+
+    // Insert variant should be removed, NOT show base fallback
+    expect(section.querySelector('a')).to.be.null;
+    expect(section.querySelector('.fragment')).to.be.null;
+    section.remove();
+  });
 });
 
 describe('removeMepLingoRow helper (covers lines 203-206, 208-211 logic)', () => {

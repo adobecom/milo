@@ -201,6 +201,13 @@ export default async function init(a) {
     usedFallback = true;
   }
 
+  // Insert variants should not show fallback content - remove if no regional content
+  if (isMepLingoInsert && usedFallback) {
+    const { removeMepLingoElement } = await import('../../features/mep/lingo.js');
+    removeMepLingoElement(a, isMepLingoBlock, originalBlock);
+    return;
+  }
+
   const attemptedRegionalFetch = relHref.includes(mepLingoPrefix);
   const canTryFallback = needsFallback && mepLingoPrefix
     && a.dataset.originalHref && !isMepLingoInsert && !isMepLingoRemove;
