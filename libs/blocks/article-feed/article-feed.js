@@ -258,14 +258,25 @@ function buildSelectedFilter(name) {
   return a;
 }
 
+function announceFilterChange(message) {
+  const ariaLive = document.querySelector('.article-feed-live-container');
+  if (ariaLive) {
+    ariaLive.textContent = '';
+    requestAnimationFrame(() => {
+      ariaLive.textContent = message;
+    });
+  }
+}
+
 function clearFilter(e, block) {
   const { target } = e;
+  const filterName = target.textContent;
   const checked = document
-    .querySelector(`input[name='${target.textContent}']`);
+    .querySelector(`input[name='${filterName}']`);
   if (checked) { checked.checked = false; }
-  checked.setAttribute('aria-label', `Removed ${target.textContent} filter`);
   delete blogIndex.config.selectedProducts;
   delete blogIndex.config.selectedIndustries;
+  announceFilterChange(`Removed ${filterName} filter`);
   // eslint-disable-next-line no-use-before-define
   applyCurrentFilters(block);
 }
@@ -328,19 +339,25 @@ function applyCurrentFilters(block, close) {
   }
 }
 
-function clearFilters(e, block) {
+async function clearFilters(e, block) {
   const type = e.target.classList[e.target.classList.length - 1];
   let target = document;
   if (type === 'reset') {
     target = e.target.parentNode.parentNode;
+    announceFilterChange(`${await replacePlaceholder('reset')} ${target.getAttribute('id')}`);
   }
   const dropdowns = target.querySelectorAll('.filter-options');
+  let hadFilters = false;
   dropdowns.forEach((dropdown) => {
     const checked = dropdown.querySelectorAll('input:checked');
+    if (checked.length) hadFilters = true;
     checked.forEach((box) => { box.checked = false; });
   });
   delete blogIndex.config.selectedProducts;
   delete blogIndex.config.selectedIndustries;
+  if (hadFilters && type === 'clear') {
+    announceFilterChange('All filters cleared');
+  }
   applyCurrentFilters(block);
 }
 
@@ -658,9 +675,15 @@ async function decorateFeedFilter(articleFeedEl) {
     }
   });
 
+  const ariaLive = createTag('div', {
+    class: 'article-feed-live-container',
+    'aria-live': 'polite',
+  });
+
   selectedWrapper.append(selectedText, selectedCategories, clearBtn);
   selectedContainer.append(selectedWrapper);
   parent.parentElement.insertBefore(selectedContainer, parent);
+  parent.parentElement.insertBefore(ariaLive, parent);
 }
 
 export default async function init(el) {
