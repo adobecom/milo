@@ -5,7 +5,7 @@ const ORG_MAP = {
   'da-gwp-playground': 'DA GWP PLAYGROUND',
   'da-dx-partners': 'DA DX PARTNERS',
   'da-dc': 'DA DC',
-  'da-express-milo': 'DA EXPRESS MILO',
+  'da-express-milo': 'DA EXPRESS',
   'da-events': 'DA EVENTS',
 };
 
