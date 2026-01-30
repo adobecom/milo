@@ -348,25 +348,70 @@ function buildMilolibs() {
   return `${branch.replace(/\//g, '-')}--${repo}--${org}`;
 }
 
-function buildTestUrls(testUrls, baseUrl, milolibs) {
+/**
+ * Get the PR branch name (cleaned for URL use)
+ */
+function getPrBranch() {
+  const branch = process.env.PR_BRANCH || process.env.GITHUB_HEAD_REF;
+  return branch ? branch.replace(/\//g, '-') : null;
+}
+
+/**
+ * Replace the branch in an AEM cloud URL
+ * URL format: https://{branch}--{repo}--{org}.aem.live/...
+ */
+function replaceBranchInUrl(url, newBranch) {
+  const urlObj = new URL(url);
+  const hostParts = urlObj.hostname.split('.');
+  
+  // Expected format: branch--repo--org.aem.live
+  if (hostParts.length >= 2 && hostParts[1] === 'aem') {
+    const subdomain = hostParts[0];
+    const parts = subdomain.split('--');
+    if (parts.length >= 3) {
+      // Replace the branch (first part), keep repo and org
+      parts[0] = newBranch;
+      hostParts[0] = parts.join('--');
+      urlObj.hostname = hostParts.join('.');
+    }
+  }
+  
+  return urlObj.toString();
+}
+
+/**
+ * Build test URLs with appropriate transformations based on type
+ * - "milolibs": Add milolibs query parameter (default)
+ * - "cloud": Replace branch in URL hostname
+ */
+function buildTestUrls(testUrls, baseUrl, milolibs, prBranch) {
   if (!Array.isArray(testUrls)) {
     console.error('testUrls must be an array');
     return [];
   }
   
   return testUrls.map((item) => {
-    // Handle object format: { name, url }
+    // Handle object format: { name, url, type }
     if (typeof item === 'object' && item.url) {
-      const urlObj = new URL(item.url);
-      if (milolibs) {
+      const urlType = item.type || 'milolibs';
+      let finalUrl = item.url;
+      
+      if (urlType === 'cloud' && prBranch) {
+        // Replace branch in the cloud URL
+        finalUrl = replaceBranchInUrl(item.url, prBranch);
+      } else if (urlType === 'milolibs' && milolibs) {
+        // Add milolibs parameter
+        const urlObj = new URL(item.url);
         urlObj.searchParams.set('milolibs', milolibs);
         urlObj.searchParams.set('martech', 'off');
+        finalUrl = urlObj.toString();
       }
-      return { name: item.name || item.url, url: urlObj.toString() };
+      
+      return { name: item.name || item.url, url: finalUrl, type: urlType };
     }
     
     // Handle string format (relative path)
-    return { name: item, url: new URL(item, baseUrl).toString() };
+    return { name: item, url: new URL(item, baseUrl).toString(), type: 'milolibs' };
   });
 }
 
@@ -380,9 +425,31 @@ async function main() {
   }
   
   const milolibs = buildMilolibs();
+  const prBranch = getPrBranch();
   const baseline = loadBaseline();
   const { thresholds, testUrls, runs = 3, throttle = 'none' } = baseline;
-  const urlsToTest = buildTestUrls(testUrls, baseUrl, milolibs);
+  
+  // Parse PR-specific test URLs from environment variable
+  let prTestUrls = [];
+  if (process.env.PR_TEST_URLS) {
+    try {
+      prTestUrls = JSON.parse(process.env.PR_TEST_URLS);
+      if (prTestUrls.length) {
+        console.log(`📋 Found ${prTestUrls.length} PR-specific test URLs`);
+      }
+    } catch (e) {
+      console.warn('Warning: Failed to parse PR_TEST_URLS:', e.message);
+    }
+  }
+  
+  // Merge baseline URLs with PR-specific URLs
+  const allTestUrls = [...testUrls, ...prTestUrls];
+  const urlsToTest = buildTestUrls(allTestUrls, baseUrl, milolibs, prBranch);
+  
+  // Count URL types
+  const cloudUrls = urlsToTest.filter(u => u.type === 'cloud');
+  const milolibsUrls = urlsToTest.filter(u => u.type === 'milolibs');
+  const prUrlCount = prTestUrls.length;
   
   // Environment variable can override baseline throttle setting
   const throttlePreset = (process.env.THROTTLE_PRESET || throttle).toLowerCase();
@@ -390,8 +457,9 @@ async function main() {
   
   console.log('🚀 Starting Performance Measurement');
   console.log(`   Base URL: ${baseUrl}`);
+  if (prBranch) console.log(`   PR Branch: ${prBranch}`);
   if (milolibs) console.log(`   Milolibs: ${milolibs}`);
-  console.log(`   URLs: ${urlsToTest.length} | Runs: ${runs} | Concurrency: ${MAX_CONCURRENCY}`);
+  console.log(`   URLs: ${urlsToTest.length} total (${cloudUrls.length} cloud, ${milolibsUrls.length} milolibs${prUrlCount ? `, ${prUrlCount} from PR` : ''}) | Runs: ${runs} | Concurrency: ${MAX_CONCURRENCY}`);
   if (throttlePreset !== 'none' && throttleConfig) {
     console.log(`   Throttle: ${throttlePreset} (CPU: ${throttleConfig.cpuSlowdown}x slowdown, Latency: ${throttleConfig.network.latency}ms)`);
   } else {

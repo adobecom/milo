@@ -27,15 +27,18 @@
   "testUrls": [
     {
       "name": "Homepage",
-      "url": "https://main--homepage--adobecom.aem.live/homepage/index-loggedout"
+      "url": "https://main--homepage--adobecom.aem.live/homepage/index-loggedout",
+      "type": "cloud"
     },
     {
       "name": "CC UK",
-      "url": "https://main--cc--adobecom.aem.live/uk/creativecloud"
+      "url": "https://main--cc--adobecom.aem.live/uk/creativecloud",
+      "type": "cloud"
     },
     {
       "name": "Acrobat Sign PDF",
-      "url": "https://main--dc--adobecom.aem.live/acrobat/online/sign-pdf"
+      "url": "https://main--dc--adobecom.aem.live/acrobat/online/sign-pdf",
+      "type": "cloud"
     }
   ],
   "runs": 3,
