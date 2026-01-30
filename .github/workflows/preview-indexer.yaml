@@ -2,6 +2,8 @@ name: Preview Indexer (Incremental)
 description: This workflow updates the preview index for the given site and region(s)
 
 on:
+  repository_dispatch:
+    types: [preview-indexer-incremental]
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
@@ -51,7 +53,7 @@ env:
 
 jobs:
   preview-indexer:
-    if: github.repository_owner == 'adobecom'
+    if: github.repository == 'adobecom/milo'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

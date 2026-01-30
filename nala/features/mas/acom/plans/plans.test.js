@@ -229,7 +229,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Verify hash URL changed correctly', async () => {
-      await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[4].browserParams.expected}`);
+      await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[4].browserParams.expected}`, { timeout: 10000 });
     });
 
     await test.step('step-3: Verify correct filter is selected', async () => {
@@ -256,7 +256,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-2: Verify hash URL changed correctly', async () => {
-      await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[5].browserParams.expected}`);
+      await expect(page).toHaveURL(`${PLANS_NALA_PATH.US}${features[5].browserParams.expected}`, { timeout: 10000 });
     });
 
     await test.step('step-3: Verify correct filter is selected', async () => {

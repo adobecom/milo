@@ -32,6 +32,7 @@ const stageDomainsMap = {
     'news.adobe.com': 'main--news--adobecom.hlx.page',
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
+  'dev6-nest.creativecloud.adobe.com': { 'creativecloud.adobe.com': 'stage.creativecloud.adobe.com' },
 };
 const stageDomainsMapWRegex = {
   hostname: 'stage--milo--owner.hlx.page',
@@ -478,6 +479,14 @@ describe('Utils', () => {
       expect(dntLink.dataset.hasDnt).to.equal('true');
     });
 
+    it('Should transform invalid anchor link to valid', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><a href="https://#test">Test</a></p>';
+      await utils.decorateLinksAsync(container);
+      const link = container.querySelector('a');
+      expect(link.href).to.equal(`${window.location.href}#test`);
+    });
+
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
@@ -659,6 +668,32 @@ describe('Utils', () => {
   });
 
   describe('stageDomainsMap', () => {
+    it('should not corrupt hostnames when removing locale', async () => {
+      const localePrefix = '/de';
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+        locale: { prefix: localePrefix },
+      };
+      const localeString = localePrefix.replace(/^\//, '');
+      const [hostname] = Object.entries(stageDomainsMap)
+        .find(([h]) => h.includes(localeString));
+      const a = utils.createTag('a', { href: `https://${hostname}${localePrefix}/some/path` });
+
+      utils.convertStageLinks({
+        anchors: [a],
+        config: stageConfig,
+        hostname,
+        href: `https://${hostname}`,
+      });
+
+      const converted = new URL(a.href);
+      expect(converted.hostname).to.contain(localeString);
+      expect(converted.pathname).to.equal(`${localePrefix}/some/path`);
+      expect(converted.pathname).to.not.contain(`${localePrefix}${localePrefix}/`);
+    });
+
     it('should convert links when stageDomainsMap provided without regex', async () => {
       const stageConfig = {
         ...config,
@@ -1669,6 +1704,9 @@ describe('Utils', () => {
           ccBaseResolved = true;
           return mockRes({ payload: ccBaseQueryIndex });
         }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
+        }
         if (url.includes('dc-shared') && url.includes('/ch_de/')) {
           // DC Regional index is slow - simulating other subsites
           return new Promise((resolve) => {
@@ -1752,6 +1790,9 @@ describe('Utils', () => {
       fetchStub.callsFake((url) => {
         if (url.includes('query-index')) {
           return mockRes({ payload: null, ok: false, status: 404 });
+        }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
         }
         return mockRes({ payload: { data: [] } });
       });
