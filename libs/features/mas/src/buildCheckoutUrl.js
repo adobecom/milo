@@ -87,7 +87,9 @@ const ALLOWED_URL_PARAMS = new Set([
   'gcsrc',
   'gcprog',
   'gcprogcat',
-  'gcpagetype'
+  'gcpagetype',
+  'mv',
+  'mv2',
 ]);
 
 /**
