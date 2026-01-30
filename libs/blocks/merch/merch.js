@@ -1056,7 +1056,10 @@ export function setPreview(attributes) {
 
 function isAnnualPriceEnabled(params) {
   const annualEnabled = getMetadata('mas-ff-annual-price');
-  return (annualEnabled === 'true' || annualEnabled === 'on') && params?.get('annual') !== 'false';
+  if (annualEnabled === 'true' || annualEnabled === 'on') {
+      return params?.get('annual') !== 'false';
+  }
+  return undefined;
 }
 
 /**
@@ -1270,7 +1273,7 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const displayPlanType = params.get('planType');
-  const displayAnnual = isAnnualPriceEnabled(params) || undefined;
+  const displayAnnual = isAnnualPriceEnabled(params);
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   const quantity = params.get('quantity');
