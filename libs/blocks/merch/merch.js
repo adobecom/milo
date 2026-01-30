@@ -1057,7 +1057,7 @@ export function setPreview(attributes) {
 function isAnnualPriceEnabled(params) {
   const annualEnabled = getMetadata('mas-ff-annual-price');
   if (annualEnabled === 'true' || annualEnabled === 'on') {
-      return params?.get('annual') !== 'false';
+    return params?.get('annual') !== 'false';
   }
   return undefined;
 }
