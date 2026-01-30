@@ -10,6 +10,16 @@ on:
         description: 'Custom URL to test (optional)'
         required: false
         type: string
+      throttle:
+        description: 'Network/CPU throttling preset (overrides baseline.json)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - none
+          - slow3g
+          - fast3g
+          - 4g
 
 concurrency:
   group: perf-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -97,6 +107,7 @@ jobs:
           PR_REPO: ${{ github.event.pull_request.head.repo.name }}
           RESULTS_PATH: .github/performance/results-pr.json
           VARIANT_NAME: PR
+          THROTTLE_PRESET: ${{ github.event.inputs.throttle }}
         run: |
           node .github/performance/measure-performance.js "$TEST_URL"
 
@@ -109,6 +120,7 @@ jobs:
           PR_REPO: ${{ github.event.pull_request.base.repo.name || github.event.repository.name }}
           RESULTS_PATH: .github/performance/results-stage.json
           VARIANT_NAME: Stage
+          THROTTLE_PRESET: ${{ github.event.inputs.throttle }}
         run: |
           node .github/performance/measure-performance.js "$TEST_URL"
 

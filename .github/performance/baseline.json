@@ -1,6 +1,7 @@
 {
   "$schema": "./baseline.schema.json",
   "description": "Performance baseline thresholds for Milo. Values are in milliseconds unless noted.",
+  "throttle": "none",
   "thresholds": {
     "lcp": {
       "budget": 2500,

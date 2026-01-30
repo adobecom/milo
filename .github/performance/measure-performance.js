@@ -22,6 +22,57 @@ const VARIANT_NAME = process.env.VARIANT_NAME || 'PR';
 const MAX_CONCURRENCY = parseInt(process.env.PERF_CONCURRENCY, 10) || 2;
 const TOP_RESOURCES_COUNT = 5;
 
+/**
+ * Throttle presets for network and CPU simulation
+ * Network values: latency (ms), downloadThroughput (bytes/s), uploadThroughput (bytes/s)
+ * CPU slowdown is a multiplier (e.g., 4 = 4x slower)
+ */
+const THROTTLE_PRESETS = {
+  none: null,
+  slow3g: {
+    network: {
+      offline: false,
+      latency: 400,
+      downloadThroughput: (40 * 1024) / 8, // 40 Kbps
+      uploadThroughput: (40 * 1024) / 8,
+    },
+    cpuSlowdown: 6,
+  },
+  fast3g: {
+    network: {
+      offline: false,
+      latency: 150,
+      downloadThroughput: (1.5 * 1024 * 1024) / 8, // 1.5 Mbps
+      uploadThroughput: (750 * 1024) / 8, // 750 Kbps
+    },
+    cpuSlowdown: 4,
+  },
+  '4g': {
+    network: {
+      offline: false,
+      latency: 50,
+      downloadThroughput: (9 * 1024 * 1024) / 8, // 9 Mbps
+      uploadThroughput: (1.5 * 1024 * 1024) / 8, // 1.5 Mbps
+    },
+    cpuSlowdown: 2,
+  },
+};
+
+/**
+ * Apply throttling to a CDP session
+ */
+async function applyThrottle(cdpSession, preset) {
+  const config = THROTTLE_PRESETS[preset];
+  if (!config) return;
+
+  if (config.network) {
+    await cdpSession.send('Network.emulateNetworkConditions', config.network);
+  }
+  if (config.cpuSlowdown) {
+    await cdpSession.send('Emulation.setCPUThrottlingRate', { rate: config.cpuSlowdown });
+  }
+}
+
 function loadBaseline() {
   return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf-8'));
 }
@@ -90,10 +141,16 @@ function collectMetrics() {
   };
 }
 
-async function measureOnce(context, url) {
+async function measureOnce(context, url, throttlePreset) {
   const page = await context.newPage();
   
   try {
+    // Apply throttling via CDP if preset is specified
+    if (throttlePreset && throttlePreset !== 'none') {
+      const cdpSession = await context.newCDPSession(page);
+      await applyThrottle(cdpSession, throttlePreset);
+    }
+    
     await page.addInitScript(INIT_SCRIPT);
     await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
     
@@ -116,14 +173,14 @@ function median(arr) {
   return sorted.length & 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
-async function runMeasurements(browser, url, runs) {
+async function runMeasurements(browser, url, runs, throttlePreset) {
   const results = [];
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
   
   try {
     for (let i = 0; i < runs; i++) {
       try {
-        const metrics = await measureOnce(context, url);
+        const metrics = await measureOnce(context, url, throttlePreset);
         results.push(metrics);
         console.log(`  Run ${i + 1}/${runs}: LCP=${metrics.lcp?.toFixed(0) ?? 'N/A'}ms, CLS=${metrics.cls.toFixed(3)}, TBT=${metrics.tbt.toFixed(0)}ms`);
       } catch (err) {
@@ -164,7 +221,7 @@ async function runMeasurements(browser, url, runs) {
 /**
  * Run tests with controlled concurrency
  */
-async function runWithConcurrency(browser, urlsToTest, runs, concurrency) {
+async function runWithConcurrency(browser, urlsToTest, runs, concurrency, throttlePreset) {
   const results = [];
   const queue = [...urlsToTest];
   const inFlight = new Set();
@@ -176,7 +233,7 @@ async function runWithConcurrency(browser, urlsToTest, runs, concurrency) {
     console.log(`\n📍 Testing: ${name}`);
     
     try {
-      const result = await runMeasurements(browser, url, runs);
+      const result = await runMeasurements(browser, url, runs, throttlePreset);
       result.name = name;
       results.push(result);
     } catch (err) {
@@ -324,13 +381,22 @@ async function main() {
   
   const milolibs = buildMilolibs();
   const baseline = loadBaseline();
-  const { thresholds, testUrls, runs = 3 } = baseline;
+  const { thresholds, testUrls, runs = 3, throttle = 'none' } = baseline;
   const urlsToTest = buildTestUrls(testUrls, baseUrl, milolibs);
+  
+  // Environment variable can override baseline throttle setting
+  const throttlePreset = (process.env.THROTTLE_PRESET || throttle).toLowerCase();
+  const throttleConfig = THROTTLE_PRESETS[throttlePreset];
   
   console.log('🚀 Starting Performance Measurement');
   console.log(`   Base URL: ${baseUrl}`);
   if (milolibs) console.log(`   Milolibs: ${milolibs}`);
   console.log(`   URLs: ${urlsToTest.length} | Runs: ${runs} | Concurrency: ${MAX_CONCURRENCY}`);
+  if (throttlePreset !== 'none' && throttleConfig) {
+    console.log(`   Throttle: ${throttlePreset} (CPU: ${throttleConfig.cpuSlowdown}x slowdown, Latency: ${throttleConfig.network.latency}ms)`);
+  } else {
+    console.log('   Throttle: none');
+  }
   
   const browser = await chromium.launch({
     headless: true,
@@ -339,7 +405,7 @@ async function main() {
   
   let allResults;
   try {
-    allResults = await runWithConcurrency(browser, urlsToTest, runs, MAX_CONCURRENCY);
+    allResults = await runWithConcurrency(browser, urlsToTest, runs, MAX_CONCURRENCY, throttlePreset);
   } finally {
     await browser.close();
   }
@@ -366,6 +432,7 @@ async function main() {
   
   fs.writeFileSync(RESULTS_PATH, JSON.stringify({
     variant: VARIANT_NAME,
+    throttle: throttlePreset,
     results: allResults,
     thresholds,
     passed: !hasFailures,
