@@ -621,7 +621,7 @@ const getDomainLingo = (path) => path?.split('/*')[0];
 
 async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   const config = getConfig();
-  const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
+  const queryIndexSuffix = config.env?.name === 'prod' || window.location.host.includes(`${SLD}.live`) ? '' : '-preview';
 
   if (links.length && links.some((link) => link.includes('/federal/')) && !queryIndexes.federal) {
     queryIndexes.federal = processQueryIndexMap(
