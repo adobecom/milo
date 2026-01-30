@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import '../../../libs/deps/mas/commerce.js';
+import '@adobecom/mas-platform/web-components/dist/commerce.js';
 
 document.head.appendChild(document.createElement('mas-commerce-service'));
 

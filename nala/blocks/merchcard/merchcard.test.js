@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { constructTestUrl } from '../../libs/commerce.js';
 import { features } from './merchcard.spec.js';
 import MerchCard from './merchcard.pages.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
-import { constructTestUrl } from '../../libs/commerce.js';
 
 let merchCard;
 
