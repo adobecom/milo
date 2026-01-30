@@ -93,16 +93,8 @@ describe('Inline Price Sum', () => {
 
     it('handles offers with missing price properties', () => {
       const offers = [
-        {
-          priceDetails: {
-            price: 100,
-          },
-        },
-        {
-          priceDetails: {
-            price: 50,
-          },
-        },
+        { priceDetails: { price: 100 } },
+        { priceDetails: { price: 50 } },
       ];
 
       const result = computeSummedOffer(offers);
@@ -150,9 +142,7 @@ describe('Inline Price Sum', () => {
           currency: 'EUR',
           locale: 'de-DE',
           customProperty: 'value2',
-          priceDetails: {
-            price: 50,
-          },
+          priceDetails: { price: 50 },
         },
       ];
 
