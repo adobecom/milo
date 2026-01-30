@@ -160,7 +160,7 @@
 .section.sticky-top {
   position: sticky;
   top: 57px;
-  z-index: 1;
+  z-index: 4;
   background-color: var(--color-white);
 }
 
