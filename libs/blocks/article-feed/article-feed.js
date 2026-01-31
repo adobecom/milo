@@ -589,20 +589,23 @@ async function decorateArticleFeed(
   } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
     // no user filtered results were found
     spinner.remove();
+    const noMatchesText = await replacePlaceholder('no-matches');
     const noMatches = document.createElement('p');
-    noMatches.innerHTML = `<strong>${await replacePlaceholder('no-matches')}</strong>`;
+    noMatches.innerHTML = `<strong>${noMatchesText}</strong>`;
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
     userHelp.textContent = await replacePlaceholder('user-help');
     container.append(noMatches, userHelp);
+    announceFilterChange(noMatchesText);
   } else {
     // no results were found
     spinner.remove();
+    const noResultsText = await replacePlaceholder('no-results');
     const noResults = document.createElement('p');
-    noResults.setAttribute('role', 'alert');
-    noResults.setAttribute('aria-atomic', 'true');
-    noResults.innerHTML = `<strong>${await replacePlaceholder('no-results')}</strong>`;
+    noResults.innerHTML = `<strong>${noResultsText}</strong>`;
     container.append(noResults);
+    // Use the live region to ensure VoiceOver re-announces on repeated filter changes
+    announceFilterChange(noResultsText);
   }
   const max = pageEnd > articles.length ? articles.length : pageEnd;
   for (let i = offset; i < max; i += 1) {
