@@ -85,49 +85,6 @@ export function addMepLingoPreviewAttrs(fragment, {
   if (isRemove) fragment.dataset.mepLingoRemove = 'true';
 }
 
-export function detectMepLingoSwap(a) {
-  if (!a) return;
-  const isInsertHash = a.href.includes('#_mep-lingo-insert');
-  const isRemoveHash = !isInsertHash && a.href.includes('#_mep-lingo-remove');
-  const isRegularHash = !isInsertHash && !isRemoveHash && a.href.includes('#_mep-lingo');
-
-  if (isInsertHash || isRemoveHash || isRegularHash) {
-    let hashToRemove = '#_mep-lingo';
-    if (isInsertHash) hashToRemove = '#_mep-lingo-insert';
-    if (isRemoveHash) hashToRemove = '#_mep-lingo-remove';
-
-    a.dataset.mepLingo = 'true';
-    if (isInsertHash) a.dataset.mepLingoInsert = 'true';
-    if (isRemoveHash) a.dataset.mepLingoRemove = 'true';
-    a.dataset.originalHref = a.href.replace(hashToRemove, '');
-    a.href = a.href.replace(hashToRemove, '');
-    if (isInsertHash || isRemoveHash) return; // Insert/remove hash doesn't need row detection
-  }
-  // Always detect mep-lingo rows (even when lingoActive() is false) for fallback purposes
-  const row = a.closest('.section > div > div');
-  const firstCellText = row?.children[0]?.textContent?.toLowerCase().trim();
-
-  if (firstCellText === 'mep-lingo') {
-    a.dataset.mepLingo = 'true';
-    a.dataset.originalHref = a.href;
-    const swapBlock = a.closest('.section > div[class]');
-    if (a.closest('.section-metadata')) {
-      a.dataset.mepLingoSectionSwap = 'true';
-    } else if (swapBlock) {
-      const [blockName] = swapBlock.classList;
-      a.dataset.mepLingoBlockSwap = blockName;
-
-      if (blockName === 'mep-lingo') {
-        if (swapBlock.classList.contains('insert')) {
-          a.dataset.mepLingoInsert = 'true';
-        } else if (swapBlock.classList.contains('remove')) {
-          a.dataset.mepLingoRemove = 'true';
-        }
-      }
-    }
-  }
-}
-
 export function removeMepLingoElement(a, isMepLingoBlock, originalBlock) {
   if (isMepLingoBlock && originalBlock) {
     originalBlock.remove();
