@@ -325,8 +325,10 @@ export const CC_ALL_APPS = [
 const NAME_LOCALE = 'LOCALE';
 const NAME_PRODUCT_FAMILY = 'PRODUCT_FAMILY';
 const FREE_TRIAL_PATH = 'FREE_TRIAL_PATH';
+const CRM_PATH = 'CRM_PATH';
 const BUY_NOW_PATH = 'BUY_NOW_PATH';
 const FREE_TRIAL_HASH = 'FREE_TRIAL_HASH';
+const CRM_HASH = 'CRM_HASH';
 const BUY_NOW_HASH = 'BUY_NOW_HASH';
 const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
@@ -947,9 +949,13 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
-  const hash = checkoutLinkConfig[
-    `${offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH}`
-  ];
+  let columnName;
+  if (el?.getAttribute('data-modal') === 'crm') {
+    columnName = CRM_HASH;
+  } else {
+    columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH;
+  }
+  const hash = checkoutLinkConfig[columnName];
   if (hash) {
     el.setAttribute('data-modal-id', hash);
   }
@@ -994,7 +1000,12 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
     options,
   );
   if (!checkoutLinkConfig) return undefined;
-  const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  let columnName;
+  if (el?.getAttribute('data-modal') === 'crm') {
+    columnName = CRM_PATH;
+  } else {
+    columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  }
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
   if (!url && !el?.isOpen3in1Modal) return undefined;
