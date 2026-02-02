@@ -55,7 +55,7 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html',
     LOCALE: '',
     CRM_HASH: 'crm-buy-illustrator',
-    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm/illustrator/master.modal.html'
+    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm/illustrator/master.modal.html',
   },
   {
     PRODUCT_FAMILY: 'PHOTOSHOP',
@@ -91,7 +91,7 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: 'www.adobe.com/will/not/be/localized.html',
     LOCALE: '',
     CRM_HASH: 'crm-buy-audition',
-    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm/audition/master.modal.html'
+    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm/audition/master.modal.html',
   },
   {
     PRODUCT_FAMILY: 'ILLUSTRATOR+abc',
@@ -101,7 +101,7 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: 'https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1',
     LOCALE: '',
     CRM_HASH: 'crm-buy-illustrator-abc',
-    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm_abc/illustrator/master.modal.html'
+    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm_abc/illustrator/master.modal.html',
   },
   ],
 };
@@ -1067,7 +1067,7 @@ describe('Merch Block', () => {
       el.setAttribute('data-modal', 'crm');
       const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: true }, el, true);
       expect(action.url).to.equal('https://www.stage.adobe.com/plans-fragments/modals/individual/crm/illustrator/master.modal.html');
-    });    
+    });
 
     it('getModalAction: skip modal url localization if url is invalid', async () => {
       setConfig({
