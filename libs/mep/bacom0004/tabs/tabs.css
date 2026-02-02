@@ -693,6 +693,7 @@
   }
   .tabs.mobile-accordion .tab-content-container .tabpanel {
     display: block !important;
+    scroll-margin-top: 70px;
   }
 
   .tabs.mobile-accordion .tab-content-container .tabpanel[hidden] div:not(:has(.tab-mobile-accordion)){

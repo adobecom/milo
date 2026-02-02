@@ -325,10 +325,13 @@ export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
 // mWeb specific
 
 const toggleMobileTab = (button) => () => {
-  const panel = button.closest('.tabpanel');
-  const isHidden = panel.getAttribute('hidden');
-  if (isHidden) panel.removeAttribute('hidden');
-  else panel.setAttribute('hidden', true);
+  [...document.querySelectorAll('.tab-content-container .tabpanel:not(:has([hidden]))')]
+    .forEach((panel) => panel.setAttribute('hidden', true));
+  const currentPanel = button.closest('.tabpanel');
+  currentPanel.removeAttribute('hidden');
+  setTimeout(() => {
+    currentPanel.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+  }, 250);
 };
 
 const createMobileAccordionItem = (button) => {
