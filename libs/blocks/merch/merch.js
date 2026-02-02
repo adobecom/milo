@@ -950,7 +950,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
   let columnName;
-  if (el?.getAttribute('data-modal') === 'crm') {
+  if (el?.dataset.modal === 'crm') {
     columnName = CRM_HASH;
   } else {
     columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH;
@@ -1001,7 +1001,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   );
   if (!checkoutLinkConfig) return undefined;
   let columnName;
-  if (el?.getAttribute('data-modal') === 'crm') {
+  if (el?.dataset.modal === 'crm') {
     columnName = CRM_PATH;
   } else {
     columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
