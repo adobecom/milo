@@ -426,6 +426,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const config = getConfig();
   const regionKeys = Object.keys(config?.locale?.regions || {});
 
+  // Build Header
   function buildHeader() {
     const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
     const mmmSVG = `<svg width="33" height="21" viewBox="0 0 33 21" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -434,8 +435,9 @@ export function getMepPopup(mepConfig, isMmm = false) {
       </svg>`;
     const mmmLink = isMmm ? mmmSVG : `<a href="https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/" title="Open Mep Manifest Manager" target="_blank">${mmmSVG}</a>`;
     mepPopupHeader.innerHTML = `${mmmLink}<span class="mep-close"></span>`;
+    return mepPopupHeader;
   }
-  buildHeader();
+  const mepPopupHeader = buildHeader();
 
   function buildTabsAndContainers() {
     const mepPopupTabs = createTag('div', { class: 'mep-popup-tabs' });
