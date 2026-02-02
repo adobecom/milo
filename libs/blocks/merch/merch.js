@@ -1157,7 +1157,7 @@ function getHardcodedFallbackStep(wcsOsi, checkoutClientId) {
     V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0: 'recommendation',
     x0LkInr7lGkqK8dcTFS_Pc6oHauo_g7N_4yWT_gLn20: 'recommendation',
     SfkorgyrBAsqBVpyKddQQEn6jR0ItBohpXc74sZcKHg: 'recommendation',
-    'PVhDPYXq4fsy15OdlEE-XyIlvcxaPMxGs73pw39Cx-s': 'recommendation', 
+    'PVhDPYXq4fsy15OdlEE-XyIlvcxaPMxGs73pw39Cx-s': 'recommendation',
   };
   return osiToStepMap[wcsOsi];
 }
