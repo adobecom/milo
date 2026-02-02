@@ -49,6 +49,11 @@
   display: flex;
   gap: 24px;
   padding: 0 12px;
+  border-left: 2px solid #274dea;
+  background-color: #fafafa;
+}
+
+.mep-popup.in-page .mep-popup-tabs {
   background-color: #222;
 }
 
@@ -58,13 +63,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border-bottom: 2px solid #274dea;
+}
+
+.mep-popup.in-page .mep-popup-tabs .mep-tab {
   color: #fff;
   border-bottom: 2px solid #fff;
 }
 
 .mep-popup .mep-popup-tabs .mep-tab:not([active]) {
-  color: rgba(255, 255, 255, 0.7);
   border-bottom: none;
+}
+
+.mep-popup.in-page .mep-popup-tabs .mep-tab:not([active]) {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .mep-popup, .mep-badge {
@@ -150,7 +162,7 @@
 .mep-popup .mep-section-data {
   gap: 0 16px;
   display: grid;
-  align-items: center;
+  /* align-items: center; */
   grid-template-columns: auto minmax(0, 1fr);
   text-transform: capitalize;
 }
@@ -213,7 +225,7 @@
   border: 2px solid #fff;
 }
 
-.mep-popup .mep-info-tooltip .plain-label {
+.mep-popup .mep-info-tooltip .mep-manifest-label {
   color: #17A2B8;
 }
 
@@ -323,6 +335,14 @@
   cursor: pointer;
 }
 
+.mep-manifest-title .mep-manifest-toggle svg{
+  fill: rgb(44, 44, 44);
+}
+
+.mep-popup.in-page .mep-manifest-title .mep-manifest-toggle svg{
+  fill: #ffffff;
+}
+
 .mep-manifest-title .mep-manifest-toggle[active] svg.mep-toggle-expand {
   display: none;
 }
@@ -400,6 +420,10 @@
   min-width: 300px;
   border-radius: 16px;
   box-shadow: 0 0 10px #000;
+}
+
+.mep-popup-body {
+  padding: var(--spacing-xs);
 }
 
 .mep-popup.in-page .mep-popup-body {

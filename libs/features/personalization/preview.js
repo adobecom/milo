@@ -258,11 +258,11 @@ function getManifestListDomAndParameter(mepConfig) {
       id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected} title="${variant}">${variant}</option>`;
     });
     const expandSVG = `
-    <svg xmlns="<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff" class="mep-toggle-expand">
+    <svg xmlns="<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-expand">
       <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
     </svg>`;
     const collapseSVG = `
-    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff" class="mep-toggle-collapse">
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-collapse">
       <path d="M200-440v-80h560v80H200Z"/>
     </svg>`;
     manifestList += `
@@ -424,53 +424,61 @@ export function getMepPopup(mepConfig, isMmm = false) {
   });
 
   const config = getConfig();
-
-  // Build Header
-  const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
-  const mmmSVG = `<svg width="33" height="21" viewBox="0 0 33 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M22.8359 20.9998H18.0635C17.8561 21.0036 17.6523 20.9458 17.478 20.8338C17.3037 20.7219 17.1669 20.5607 17.0849 20.371L11.9039 8.30626C11.8958 8.27747 11.8821 8.25055 11.8636 8.22704C11.845 8.20353 11.822 8.18389 11.7958 8.16924C11.7696 8.1546 11.7408 8.14523 11.711 8.14167C11.6812 8.13812 11.651 8.14044 11.6221 8.14852L11.617 8.15001C11.5806 8.1604 11.5475 8.17958 11.5204 8.20585C11.4934 8.23212 11.4733 8.26466 11.462 8.30055L8.23347 15.9607C8.20525 16.0273 8.20475 16.1023 8.23207 16.1692C8.25939 16.2362 8.31229 16.2896 8.37914 16.3177L8.37983 16.318C8.41348 16.3319 8.44957 16.339 8.486 16.3389H12.035C12.1425 16.3389 12.2477 16.3704 12.3373 16.4295C12.427 16.4887 12.4972 16.5728 12.5391 16.6715L14.0926 20.1157C14.1588 20.2708 14.1603 20.4457 14.097 20.602C14.0336 20.7583 13.9105 20.8831 13.7548 20.949L13.754 20.9493C13.6753 20.9826 13.5907 20.9998 13.5053 20.9998H0.58545C0.488275 20.9993 0.392732 20.9749 0.307356 20.9287C0.22198 20.8824 0.149429 20.8159 0.0961835 20.7349C0.0429379 20.6539 0.0106559 20.5611 0.00222085 20.4647C-0.00621415 20.3683 0.00946049 20.2713 0.0478448 20.1824L8.26598 0.690892C8.35033 0.483823 8.49562 0.307024 8.68274 0.183739C8.86987 0.0604533 9.09007 -0.00354744 9.31441 0.000151769H14.0543C14.2779 -0.0028459 14.4972 0.0615004 14.6834 0.184758C14.8697 0.308015 15.0142 0.484433 15.098 0.690892L23.3726 20.1824C23.4107 20.2712 23.4263 20.3681 23.4178 20.4644C23.4094 20.5606 23.3771 20.6533 23.324 20.7342C23.2709 20.8151 23.1986 20.8817 23.1134 20.928C23.0283 20.9744 22.933 20.999 22.8359 20.9998Z" fill="white"/>
-    <path d="M27.6434 20.9998H32.4159C32.5129 20.999 32.6082 20.9744 32.6934 20.928C32.7785 20.8817 32.8509 20.8151 32.904 20.7342C32.9571 20.6533 32.9893 20.5606 32.9978 20.4644C33.0062 20.3681 32.9907 20.2712 32.9525 20.1824L24.6779 0.690892C24.5941 0.484433 24.4496 0.308015 24.2634 0.184758C24.0771 0.0615004 23.8579 -0.0028459 23.6343 0.000151769H18.8943C18.67 -0.00354743 18.4498 0.0604533 18.2627 0.183739C18.0756 0.307024 17.38 1.16222 17.2956 1.36928L20.4916 8.97894C20.503 8.94305 21.0733 8.23212 21.1004 8.20585C21.1274 8.17958 21.1606 8.1604 21.1969 8.15001L21.202 8.14852C21.2309 8.14044 21.2611 8.13812 21.2909 8.14167C21.3207 8.14523 21.3496 8.1546 21.3757 8.16924C21.4019 8.18389 21.4249 8.20353 21.4435 8.22704C21.462 8.25055 21.4758 8.27747 21.4839 8.30626L26.6648 20.371C26.7468 20.5607 26.8837 20.7219 27.058 20.8338C27.2322 20.9458 27.436 21.0036 27.6434 20.9998Z" fill="white"/>
-    </svg>`;
-  const mmmLink = isMmm ? mmmSVG : `<a href="https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/" title="Open Mep Manifest Manager" target="_blank">${mmmSVG}</a>`;
-  mepPopupHeader.innerHTML = `${mmmLink}<span class="mep-close"></span>`;
-
-  // Build Tabs & Containers
-  const mepPopupTabs = createTag('div', { class: 'mep-popup-tabs' });
-  const tabs = ['Options', 'Summary'];
-  const mepPopupBody = tabs.map((tab, index) => {
-    const mepTab = createTag('div', { class: 'mep-tab' });
-    if (index === 0) mepTab.setAttribute('active', '');
-    mepTab.textContent = tab;
-    mepPopupTabs.append(mepTab);
-    const bodyDiv = createTag('div', { class: `mep-popup-body mep-${tabs[index].toLocaleLowerCase()}-body` });
-    if (index === 0) bodyDiv.setAttribute('active', '');
-    return bodyDiv;
-  });
-
-  // Build Options : Manifest List
   const regionKeys = Object.keys(config?.locale?.regions || {});
 
-  const { manifestList } = getManifestListDomAndParameter(mepConfig);
-  const manifestTag = createTag('div', { class: 'mep-manifest-list' });
-  manifestTag.innerHTML = `<h6>Manifests</h6>
-    ${mepConfig.activities?.length ? manifestList : '<div class="mep-section">(No manifests found.)</div>'}
-  `;
-  mepPopupBody[0].append(manifestTag);
-  // Build Options : MMM Manifest List
-  const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
-  if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
+  function buildHeader() {
+    const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
+    const mmmSVG = `<svg width="33" height="21" viewBox="0 0 33 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.8359 20.9998H18.0635C17.8561 21.0036 17.6523 20.9458 17.478 20.8338C17.3037 20.7219 17.1669 20.5607 17.0849 20.371L11.9039 8.30626C11.8958 8.27747 11.8821 8.25055 11.8636 8.22704C11.845 8.20353 11.822 8.18389 11.7958 8.16924C11.7696 8.1546 11.7408 8.14523 11.711 8.14167C11.6812 8.13812 11.651 8.14044 11.6221 8.14852L11.617 8.15001C11.5806 8.1604 11.5475 8.17958 11.5204 8.20585C11.4934 8.23212 11.4733 8.26466 11.462 8.30055L8.23347 15.9607C8.20525 16.0273 8.20475 16.1023 8.23207 16.1692C8.25939 16.2362 8.31229 16.2896 8.37914 16.3177L8.37983 16.318C8.41348 16.3319 8.44957 16.339 8.486 16.3389H12.035C12.1425 16.3389 12.2477 16.3704 12.3373 16.4295C12.427 16.4887 12.4972 16.5728 12.5391 16.6715L14.0926 20.1157C14.1588 20.2708 14.1603 20.4457 14.097 20.602C14.0336 20.7583 13.9105 20.8831 13.7548 20.949L13.754 20.9493C13.6753 20.9826 13.5907 20.9998 13.5053 20.9998H0.58545C0.488275 20.9993 0.392732 20.9749 0.307356 20.9287C0.22198 20.8824 0.149429 20.8159 0.0961835 20.7349C0.0429379 20.6539 0.0106559 20.5611 0.00222085 20.4647C-0.00621415 20.3683 0.00946049 20.2713 0.0478448 20.1824L8.26598 0.690892C8.35033 0.483823 8.49562 0.307024 8.68274 0.183739C8.86987 0.0604533 9.09007 -0.00354744 9.31441 0.000151769H14.0543C14.2779 -0.0028459 14.4972 0.0615004 14.6834 0.184758C14.8697 0.308015 15.0142 0.484433 15.098 0.690892L23.3726 20.1824C23.4107 20.2712 23.4263 20.3681 23.4178 20.4644C23.4094 20.5606 23.3771 20.6533 23.324 20.7342C23.2709 20.8151 23.1986 20.8817 23.1134 20.928C23.0283 20.9744 22.933 20.999 22.8359 20.9998Z" fill="white"/>
+      <path d="M27.6434 20.9998H32.4159C32.5129 20.999 32.6082 20.9744 32.6934 20.928C32.7785 20.8817 32.8509 20.8151 32.904 20.7342C32.9571 20.6533 32.9893 20.5606 32.9978 20.4644C33.0062 20.3681 32.9907 20.2712 32.9525 20.1824L24.6779 0.690892C24.5941 0.484433 24.4496 0.308015 24.2634 0.184758C24.0771 0.0615004 23.8579 -0.0028459 23.6343 0.000151769H18.8943C18.67 -0.00354743 18.4498 0.0604533 18.2627 0.183739C18.0756 0.307024 17.38 1.16222 17.2956 1.36928L20.4916 8.97894C20.503 8.94305 21.0733 8.23212 21.1004 8.20585C21.1274 8.17958 21.1606 8.1604 21.1969 8.15001L21.202 8.14852C21.2309 8.14044 21.2611 8.13812 21.2909 8.14167C21.3207 8.14523 21.3496 8.1546 21.3757 8.16924C21.4019 8.18389 21.4249 8.20353 21.4435 8.22704C21.462 8.25055 21.4758 8.27747 21.4839 8.30626L26.6648 20.371C26.7468 20.5607 26.8837 20.7219 27.058 20.8338C27.2322 20.9458 27.436 21.0036 27.6434 20.9998Z" fill="white"/>
+      </svg>`;
+    const mmmLink = isMmm ? mmmSVG : `<a href="https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/" title="Open Mep Manifest Manager" target="_blank">${mmmSVG}</a>`;
+    mepPopupHeader.innerHTML = `${mmmLink}<span class="mep-close"></span>`;
+  }
+  buildHeader();
 
-  // Build Options : Lingo Select
-  let regionDropdownHTML = '';
-  if (lingoActive() && regionKeys.length > 0) {
-    const regionOptions = regionKeys.map((key) => {
-      const country = key.split('_')[0];
-      const currentAkamaiLocale = urlParams.get('akamaiLocale');
-      const selected = currentAkamaiLocale === country ? ' selected' : '';
-      return `<option value="${country}"${selected}>${key}</option>`;
-    }).join('');
+  function buildTabsAndContainers() {
+    const mepPopupTabs = createTag('div', { class: 'mep-popup-tabs' });
+    const tabs = ['Options', 'Summary'];
+    const mepPopupBody = tabs.map((tab, index) => {
+      const mepTab = createTag('div', { class: 'mep-tab' });
+      if (index === 0) mepTab.setAttribute('active', '');
+      mepTab.textContent = tab;
+      mepPopupTabs.append(mepTab);
+      const bodyDiv = createTag('div', { class: `mep-popup-body mep-${tabs[index].toLocaleLowerCase()}-body` });
+      if (index === 0) bodyDiv.setAttribute('active', '');
+      return bodyDiv;
+    });
+    return { mepPopupTabs, mepPopupBody };
+  }
+  const { mepPopupTabs, mepPopupBody } = buildTabsAndContainers();
 
-    regionDropdownHTML = `
+  function BuildOptionsManifestList() {
+    const { manifestList } = getManifestListDomAndParameter(mepConfig);
+    const manifestTag = createTag('div', { class: 'mep-manifest-list' });
+    manifestTag.innerHTML = `<h6>Manifests</h6>
+      ${mepConfig.activities?.length ? manifestList : '<div class="mep-section">(0 manifests found.)</div>'}
+    `;
+    mepPopupBody[0].append(manifestTag);
+  }
+  BuildOptionsManifestList();
+
+  function BuildOptionsManifestLisMMM() {
+    const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
+    if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
+  }
+  BuildOptionsManifestLisMMM();
+
+  function buildOptionsLingoSelect() {
+    if (lingoActive() && regionKeys.length > 0) {
+      const regionOptions = regionKeys.map((key) => {
+        const country = key.split('_')[0];
+        const currentAkamaiLocale = urlParams.get('akamaiLocale');
+        const selected = currentAkamaiLocale === country ? ' selected' : '';
+        return `<option value="${country}"${selected}>${key}</option>`;
+      }).join('');
+
+      return `
         <div class="mep-experience-dropdown">
           <label for="mepLingoRegionSelect${pageId}">Supported Lingo Geos</label>
           <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
@@ -478,39 +486,41 @@ export function getMepPopup(mepConfig, isMmm = false) {
             ${regionOptions}
           </select>
         </div>`;
-  } else regionDropdownHTML = '<div>(No regions to spoof available.)</div>';
+    } return '<div>(No Lingo supported geos for this page.)</div>';
+  }
+  const regionDropdownHTML = buildOptionsLingoSelect();
 
-  // Build Options : Toggles
-  const mepToggleOptions = createTag('div', { class: 'mep-section' });
-  const infoSVG = `
+  function buildOptionsToggles() {
+    const mepToggleOptions = createTag('div', { class: 'mep-section' });
+    const infoSVG = `
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff" class="mep-info-icon">
     <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
     </svg>`;
-  const mepToggleInfo = `
+    const mepToggleInfo = `
     ${infoSVG}
     <div class="mep-info-tooltip">
-      <h6 class="mep-section-header">Color Key</h6>
+      <h6 class="mep-section-header">Fragment Color Key</h6>
       <div class="mep-section-data">
         <span class="D1ECF1 color-swatch"></span>
-        <span class="plain-label">Plain</span>
-        <span class="E9ECEF color-swatch"></span>
-        <span class="manifest-label">Manifiest</span>
+        <span class="mep-manifest-label">MEP Manifest</span>
         <span class="D4EDDA color-swatch"></span> 
         <span class="regional-label">Lingo Regional</span>
         <span class="FFF3CD color-swatch"></span>
         <span class="fallback-label">Lingo Fallback</span>
+        <span class="E9ECEF color-swatch"></span>
+        <span class="manifest-label">Other</span>
       </div>
     </div>
     `;
 
-  const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
-    ? `<div>
+    const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
+      ? `<div>
         <input type="checkbox" name="mepHighlight${pageId}"
         id="mepManifestsCheckbox" value="false">
         <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
       </div>`
-    : '';
-  mepToggleOptions.innerHTML = `
+      : '';
+    mepToggleOptions.innerHTML = `
     <h6 class="mep-section-header">
       Toggles
       ${mepToggleInfo}
@@ -537,28 +547,34 @@ export function getMepPopup(mepConfig, isMmm = false) {
     <div>New manifest location or path*</div>
     <input type="text" name="new-manifest${pageId}" class="new-manifest">
   `;
-  mepPopupBody[0].append(mepToggleOptions);
+    mepPopupBody[0].append(mepToggleOptions);
+  }
+  buildOptionsToggles();
 
   // Build Options : Footer
-  const mepFooterHTML = `
-    <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''} active>
-      Preview
-    </a>`;
+  function buildOptionsFooter() {
+    const mepFooterHTML = `
+      <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''} active>
+        Preview
+      </a>`;
 
-  mepPopupBody[0].append(createTag('div', { class: `mep-popup-footer${isMmm ? '' : ' dark'}` }, mepFooterHTML));
+    mepPopupBody[0].append(createTag('div', { class: `mep-popup-footer${isMmm ? '' : ' dark'}` }, mepFooterHTML));
+  }
+  buildOptionsFooter();
 
   // Build Summary : Page
-  const mepTarget = isMmm ? page.target : ({ postlcp: 'postlcp', true: 'on', false: 'off' }[config.mep?.targetEnabled]);
+  function buildSummaryPage() {
+    const mepTarget = isMmm ? page.target : ({ postlcp: 'postlcp', true: 'on', false: 'off' }[config.mep?.targetEnabled]);
 
-  const pageData = {
-    manifestsFound: mepConfig.activities?.length || 0,
-    targetIntegration: setTargetOnText(mepTarget, page),
-    personalization: page.personalization,
-    locale: page.locale?.toLowerCase(),
-    lastSeen: formatDate(new Date(page.lastSeen)),
-  };
+    const pageData = {
+      manifestsFound: mepConfig.activities?.length || 0,
+      targetIntegration: setTargetOnText(mepTarget, page),
+      personalization: page.personalization,
+      locale: page.locale?.toLowerCase(),
+      lastSeen: formatDate(new Date(page.lastSeen)),
+    };
 
-  const pageHTML = `
+    const pageHTML = `
     <h6 class="mep-section-header">Page</h6>
     <div class="mep-section-data">
         <span>Manifests Found</span>
@@ -574,17 +590,21 @@ export function getMepPopup(mepConfig, isMmm = false) {
     </div>
     `;
 
-  mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, pageHTML));
+    mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, pageHTML));
+  }
+  buildSummaryPage();
 
   // Build Summary : Consent
-  const { consentState } = config.mep;
+  function buildSummaryConsent() {
+    if (isMmm) return;
+    const { consentState } = config.mep;
 
-  const consentData = {
-    functional: consentState?.functional ? 'on' : 'off',
-    advertising: consentState?.advertising ? 'on' : 'off',
-  };
+    const consentData = {
+      functional: consentState?.functional ? 'on' : 'off',
+      advertising: consentState?.advertising ? 'on' : 'off',
+    };
 
-  const consentHTML = `
+    const consentHTML = `
     <h6 class="mep-section-header">Consent</h6>
     <div class="mep-section-data">
         <span>Functional</span>
@@ -593,55 +613,72 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <span>${consentData.advertising}</span>
     </div>
   `;
-  mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, consentHTML));
-
-  // Build Summary : Lingo
-  function getGeoUserSupport() {
-    if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
-    if (getMepLingoPrefix()) return 'Supported';
-    return 'Not Supported';
+    mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, consentHTML));
   }
 
-  const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
-  const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
+  buildSummaryConsent();
 
-  const lingoData = {
-    langFirst: lingoActive() ? 'on' : 'off',
-    geoFolder: page.geo || 'Us (None)',
-    userCountry: getCountry(),
-    geoUser: getGeoUserSupport(),
-    updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
-  };
+  // Build Summary : Lingo
+  function buildSummaryLingo() {
+    function getGeoUserSupport() {
+      if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
+      if (getMepLingoPrefix()) return 'Supported';
+      return 'Not Supported';
+    }
 
-  const lingoHTML = `
+    const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
+    const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
+
+    const lingoData = {
+      langFirst: lingoActive() ? 'on' : 'off',
+      geoFolder: page.geo || 'Us (None)',
+      userCountry: getCountry(),
+      geoUser: getGeoUserSupport(),
+      updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
+      total: regionalFragments.length + fallbackFragments.length,
+    };
+
+    const lingoHTML = `
     <h6 class="mep-section-header">Lingo</h6>
     <div class="mep-section-data">
-        <span>Lang First</span>
+        <span>Lang First / Lingo</span>
         <span>${lingoData.langFirst}</span>
         <span>Geo Folder</span>
         <span>${lingoData.geoFolder}</span>
+      ${isMmm ? '' : `
         <span>User Country</span>
         <span>${lingoData.userCountry}</span>
         <span>Geo + User</span>
         <span>${lingoData.geoUser}</span>
+      `}
+      ${isMmm ? `
+        <span>Total</span>
+        <span>${lingoData.total}</span>
+      ` : `
         <span>Updates</span>
         <span>${lingoData.updates}</span>
+      `}
+
     </div>
   `;
-
-  mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, lingoHTML));
+    mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, lingoHTML));
+  }
+  buildSummaryLingo();
 
   // Inject Overlay
-  mepPopup.append(mepPopupHeader, mepPopupTabs, ...mepPopupBody);
+  function compileOverlay() {
+    mepPopup.append(mepPopupHeader, mepPopupTabs, ...mepPopupBody);
 
-  mepPopupBody.forEach((body) => {
-    addDividers(body, '.mep-section');
-  });
+    mepPopupBody.forEach((body) => {
+      addDividers(body, '.mep-section');
+    });
 
-  addMepPopupListeners(mepPopup, pageId);
+    addMepPopupListeners(mepPopup, pageId);
 
-  const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
-  if (previewButton) updatePreviewButton(mepPopup, pageId);
+    const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
+    if (previewButton) updatePreviewButton(mepPopup, pageId);
+  }
+  compileOverlay();
 
   return mepPopup;
 }
