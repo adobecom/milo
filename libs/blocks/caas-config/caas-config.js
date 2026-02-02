@@ -199,6 +199,7 @@ const defaultOptions = {
     workfront: 'Workfront',
     'bacom-blog': 'Bacom Blog',
     news: 'Newsroom',
+    blog: 'Blog',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
   titleHeadingLevel: {
