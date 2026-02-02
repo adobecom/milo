@@ -90,7 +90,7 @@ const CHECKOUT_LINK_CONFIGS = {
     FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/audition.html?mid=ft&web=1',
     BUY_NOW_PATH: 'www.adobe.com/will/not/be/localized.html',
     LOCALE: '',
-    CRM_HASH: 'crm-buy-illustrator',
+    CRM_HASH: 'crm-buy-audition',
     CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm/audition/master.modal.html'
   },
   {
@@ -100,8 +100,8 @@ const CHECKOUT_LINK_CONFIGS = {
     FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1',
     BUY_NOW_PATH: 'https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1',
     LOCALE: '',
-    CRM_HASH: 'crm-buy-illustrator',
-    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm_abc/audition/master.modal.html'
+    CRM_HASH: 'crm-buy-illustrator-abc',
+    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm_abc/illustrator/master.modal.html'
   },
   ],
 };
@@ -981,7 +981,7 @@ describe('Merch Block', () => {
       const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
       expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1');
       expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1');
-      expect(checkoutLinkConfig.CRM_PATH).to.equal('https://www.adobe.com/plans-fragments/modals/individual/crm_abc/audition/master.modal.html');
+      expect(checkoutLinkConfig.CRM_PATH).to.equal('https://www.adobe.com/plans-fragments/modals/individual/crm_abc/illustrator/master.modal.html');
     });
 
     it('getCheckoutLinkConfig: finds using paCode and no svar', async () => {
