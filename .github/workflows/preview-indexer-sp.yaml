@@ -1,21 +1,19 @@
-name: Preview Indexer (Incremental)
-description: This workflow updates the preview index for the given site and region(s)
+name: Preview Indexer - SharePoint (Incremental)
+description: This workflow updates the preview index for the given sharepoint site and region(s)
 
 on:
   repository_dispatch:
-    types: [preview-indexer-incremental]
-  schedule:
-    - cron: '*/15 * * * *'
+    types: [preview-indexer-sp-incremental]
   workflow_dispatch:
     inputs:
       site:
-        description: "Site name e.g da-bacom"
+        description: "Site name e.g cc"
         required: true
         type: choice
         options:
-          - da-bacom
+          - cc
       siteRegionPaths:
-        description: "Comma-separated regional paths (e.g. ar,ro) or blank for all regions"
+        description: "Comma-separated regional paths (e.g. ch_fr) or blank for all regions"
         required: false
         type: string
       lastRunISOFrom:
@@ -32,27 +30,29 @@ permissions:
   contents: write # required to access the repository, for the dispatch event
 
 concurrency:
-  group: preview-indexer-run
+  group: preview-indexer-sp-run
   cancel-in-progress: false
 
 env:
-  ROLLING_IMPORT_IMS_URL: ${{ secrets.ROLLING_IMPORT_IMS_URL }}
-  ROLLING_IMPORT_CLIENT_ID: ${{ secrets.ROLLING_IMPORT_CLIENT_ID }}
-  ROLLING_IMPORT_CLIENT_SECRET: ${{ secrets.ROLLING_IMPORT_CLIENT_SECRET }}
-  ROLLING_IMPORT_CODE: ${{ secrets.ROLLING_IMPORT_CODE }}
-  ROLLING_IMPORT_GRANT_TYPE: ${{ secrets.ROLLING_IMPORT_GRANT_TYPE }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   LINGO_CONFIG: ${{ vars.LINGO_CONFIG }}
-  PREVIEW_INDEXER_REPOS: ${{ vars.PREVIEW_INDEXER_REPOS }}
+  PREVIEW_INDEXER_SP_REPOS: ${{ vars.PREVIEW_INDEXER_SP_REPOS }}
   PREVIEW_INDEX_FILE: ${{ vars.PREVIEW_INDEX_FILE }}
-  AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM }}
-  EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM: ${{ vars.EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM }}
-  PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM }}
-  PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM: ${{ vars.PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM }}
+  SP_CLIENT_ID: ${{ secrets.SP_CLIENT_ID }}
+  SP_TENANT_ID: ${{ secrets.SP_TENANT_ID }}
+  SP_CERT_PASSWORD: ${{ secrets.SP_CERT_PASSWORD }}
+  SP_CERT_THUMB_PRINT: ${{ secrets.SP_CERT_THUMB_PRINT }}
+  SP_CERT_CONTENT: ${{ secrets.SP_CERT_CONTENT }}
+  AEM_ADMIN_TOKEN_ADOBECOM_CC: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_CC }}
+  EXCLUDE_PREVIEW_PATHS_ADOBECOM_CC: ${{ vars.EXCLUDE_PREVIEW_PATHS_ADOBECOM_CC }}
+  PREVIEW_INDEX_KEY_ADOBECOM_CC: ${{ vars.PREVIEW_INDEX_KEY_ADOBECOM_CC }}
+  PREVIEW_INDEX_FILE_ADOBECOM_CC: ${{ vars.PREVIEW_INDEX_FILE_ADOBECOM_CC }}
+  PREVIEW_PATH_EXTN_ADOBECOM_CC: ${{ vars.PREVIEW_PATH_EXTN_ADOBECOM_CC }}
+  PREVIEW_FILE_EXTN_ADOBECOM_CC: ${{ vars.PREVIEW_FILE_EXTN_ADOBECOM_DA_BACOM }}
   PREVIEW_INDEXER_LOG_LEVEL: ${{ vars.PREVIEW_INDEXER_LOG_LEVEL }}
 
 jobs:
-  preview-indexer:
+  preview-indexer-sp:
     if: github.repository == 'adobecom/milo'
     runs-on: ubuntu-latest
     steps:
@@ -63,16 +63,16 @@ jobs:
         id: cache-restore
         uses: actions/cache@v4
         with:
-          path: preview-indexer/state/last-runs.json
-          key: preview-indexer-last-runs-${{ github.run_id }}
+          path: preview-indexer/state/last-runs-sp.json
+          key: preview-indexer-last-runs-sp-${{ github.run_id }}
           restore-keys: |
-            preview-indexer-last-runs-
+            preview-indexer-last-runs-sp-
 
       - name: Initialize file if missing
         run: |
           mkdir -p preview-indexer/state
-          if [ ! -f preview-indexer/state/last-runs.json ]; then
-            echo "{}" > preview-indexer/state/last-runs.json
+          if [ ! -f preview-indexer/state/last-runs-sp.json ]; then
+            echo "{}" > preview-indexer/state/last-runs-sp.json
           fi
 
       - name: Set up Node.js
@@ -83,8 +83,8 @@ jobs:
       - name: Install dependencies
         run: cd ./.github/workflows/preview-indexer/ && npm install
 
-      - name: Run preview-indexer/incremental.js
-        run: node ./.github/workflows/preview-indexer/incremental.js
+      - name: Run preview-indexer/incremental-sp.js
+        run: node ./.github/workflows/preview-indexer/incremental-sp.js
         env:
           LAST_RUN_ISO_TO: ${{ github.event.inputs.lastRunISOTo }}
           LAST_RUN_ISO_FROM: ${{ github.event.inputs.lastRunISOFrom }}
@@ -95,5 +95,5 @@ jobs:
         if: always()
         uses: actions/cache@v4
         with:
-          path: preview-indexer/state/last-runs.json
-          key: preview-indexer-last-runs-${{ github.run_id }}
+          path: preview-indexer/state/last-runs-sp.json
+          key: preview-indexer-last-runs-sp-${{ github.run_id }}

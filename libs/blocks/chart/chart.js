@@ -535,6 +535,20 @@ const initChart = ({
     setDonutListeners(chart, data.dataset?.source, series, data.units);
   }
 
+  const handleEscapeKey = (event) => {
+    if (event.key === 'Escape') {
+      chart.dispatchAction({ type: 'hideTip' });
+    }
+  };
+
+  document.addEventListener('keyup', handleEscapeKey);
+
+  const originalDispose = chart.dispose.bind(chart);
+  chart.dispose = () => {
+    document.removeEventListener('keyup', handleEscapeKey);
+    originalDispose();
+  };
+
   return chart;
 };
 

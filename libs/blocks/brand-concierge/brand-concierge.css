@@ -124,7 +124,7 @@
   padding: 0 10px;
   position: relative;
   gap: 12px;
-  z-index: 9;
+  z-index: 2;
 }
 
 .bc-input-field::before {
@@ -208,7 +208,7 @@
   top: -26px;
   transform: translateX(-50%);
   user-select: none;
-  z-index: 9;
+  z-index: 4;
 } 
 
 .bc-input-tooltip::before {
@@ -455,7 +455,7 @@
   padding: 0 20px 40px;
   position: fixed;
   right: 0;
-  z-index: 9;
+  z-index: 3;
 }
 
 .sticky .bc-input-field {
@@ -497,7 +497,7 @@
   padding: 0;
   position: relative;
   width: var(--bc-sticky-mobile-height);
-  z-index: 9;
+  z-index: 3;
 }
 
 .sticky .bc-mobile-button:focus-visible {
@@ -516,7 +516,7 @@
   padding: 10px 12px;
   position: relative;
   text-align: left;
-  z-index: 9;
+  z-index: 4;
 }
 
 .sticky .bc-legal h1,
