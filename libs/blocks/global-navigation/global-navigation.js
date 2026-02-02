@@ -12,6 +12,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  getCountry,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -55,16 +56,13 @@ const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/asi
 
 const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
-const [utilities, placeholders, merch, { processTrackingLabels }] = await Promise.all([
+const [utilities, placeholders, { processTrackingLabels }] = await Promise.all([
   import('./utilities/utilities.js'),
   import('../../features/placeholders.js'),
-  import('../merch/merch.js'),
   import('../../martech/attributes.js'),
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-
-const { getMiloLocaleSettings } = merch;
 
 const {
   closeAllDropdowns,
@@ -914,7 +912,7 @@ class Gnav {
       target: this.blocks.universalNav,
       env: environment,
       locale,
-      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
+      countryCode: getCountry() || 'US',
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
@@ -1540,7 +1538,7 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
@@ -1548,7 +1546,7 @@ class Gnav {
           let linkElem = item.querySelector('a');
           if (shouldBlockFreeTrialLinks(linkElem)) return null;
           if (linkElem.classList.contains('merch')) {
-            linkElem = await merch.default(linkElem);
+            linkElem = await (await import('../merch/merch.js')).default(linkElem);
           }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
@@ -1591,7 +1589,7 @@ class Gnav {
             // Remove (black) from the text content so merch.default sees the clean text
             item.textContent = item.textContent.replace(/\s*\(black\)$/i, '');
           }
-          const content = isMerch ? await merch.default(item) : item.textContent;
+          const content = isMerch ? await (await import('../merch/merch.js')).default(item) : item.textContent;
           if (isBlack && content instanceof HTMLElement) {
             content.classList.add('feds-navLink--black');
           }
