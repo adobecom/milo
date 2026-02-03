@@ -61,6 +61,9 @@ const insertInlineFrag = async (sections, a, relHref) => {
   } else {
     a.replaceWith(...fragChildren);
   }
+  // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
+  if (a.dataset.skipLoadArea === 'true') return;
+
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
