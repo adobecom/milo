@@ -889,18 +889,33 @@ export const getConfig = async (originalState, strs = {}) => {
     ? `${state.paginationAnimationStyle}-light`
     : state.paginationAnimationStyle;
 
-  const currentPage = `${window.location.hostname}${window.location.pathname}`;
-  let currentPageUuid = null;
+  console.log('********** CARLOS PLAYGROUND **********');
+  const currentPath = location.pathname;
+  console.log('***currentPath:', currentPath);
+  let currentPathUuid = null;
   try {
-    currentPageUuid = await getUuid(currentPage);
+    currentPathUuid = await getUuid(currentPath);
+    console.log('***currentPathUuid:', currentPathUuid);
   } catch (error) {
-    window.lana?.log('Could not get UUID for current path', error);
+    console.log('Could not get UUID for current path:', error);
   }
-
-  const excludedCardsWithCurrent = currentPageUuid
-    // eslint-disable-next-line no-nested-ternary
-    ? (excludedCards ? `${excludedCards}%2C${currentPageUuid}` : currentPageUuid)
-    : excludedCards;
+  
+  let excludedCardsWithCurrent;
+  if (currentPathUuid) {
+    if (excludedCards) {
+      excludedCardsWithCurrent = `${excludedCards}%2C${currentPathUuid}`;
+    } else {
+      excludedCardsWithCurrent = currentPathUuid;
+    }
+  } else {
+    excludedCardsWithCurrent = excludedCards;
+  }
+  
+  console.log('currentPath:', currentPath);
+  console.log('currentPathUuid:', currentPathUuid);
+  console.log('excludedCards (original):', excludedCards);
+  console.log('excludedCards (with current):', excludedCardsWithCurrent);
+  console.log('********** CARLOS PLAYGROUND **********');
 
   const config = {
     collection: {
@@ -1110,6 +1125,9 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
+  console.log('********** CONFIG **********');
+  console.log(config);
+  console.log('********** CONFIG **********');
   return config;
 };
 
