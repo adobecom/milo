@@ -1259,7 +1259,7 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   const [, domainsMap] = matchedRules;
   [...anchors].forEach((a) => {
     const hasLocalePrefix = a.pathname.startsWith(`${locale.prefix}/`);
-    const noLocaleLink = hasLocalePrefix ? a.href.replace(locale.prefix, '') : a.href;
+    const noLocaleLink = hasLocalePrefix ? a.href.replace(`/${locale.prefix.replace(/^\//, '')}/`, '/') : a.href;
     const matchedDomain = Object.keys(domainsMap)
       .find((domain) => (new RegExp(domain)).test(noLocaleLink));
     if (!matchedDomain) return;
