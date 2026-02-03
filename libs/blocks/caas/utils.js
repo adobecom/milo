@@ -889,8 +889,8 @@ export const getConfig = async (originalState, strs = {}) => {
     ? `${state.paginationAnimationStyle}-light`
     : state.paginationAnimationStyle;
 
-  const currentPage = `${window.location.origin}${window.location.pathname}`;
-  let currentPathUuid = null;
+  const currentPage = `${window.location.hostname}${window.location.pathname}`;
+  let currentPageUuid = null;
   try {
     currentPageUuid = await getUuid(currentPage);
   } catch (error) {
@@ -1109,9 +1109,6 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
-  console.log('********** CONFIG **********');
-  console.log(config);
-  console.log('********** CONFIG **********');
   return config;
 };
 
