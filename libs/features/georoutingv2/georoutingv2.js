@@ -131,7 +131,7 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
-    if (config.lingoProjectSuccessLogging === 'on' && eventType === 'Switch') window.lana?.log(`Click:${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 100, tags: 'lingo,lingo-georouting-click' });
+    if (config.lingoProjectSuccessLogging === 'on' && eventType === 'Switch') window.lana?.log(`Click:${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo,lingo-georouting-click', severity: 'i' });
     removeOverflow();
   });
 }
@@ -426,7 +426,7 @@ export default async function loadGeoRouting(
         const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`;
         sendAnalyticsFunc(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
-          window.lana.log(eventString, { sampleRate: 100, tags: 'lingo,lingo-georouting-load' });
+          window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
         }
       }
     }
@@ -445,7 +445,7 @@ export default async function loadGeoRouting(
         const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`;
         sendAnalyticsFunc(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
-          window.lana.log(eventString, { sampleRate: 100, tags: 'lingo,lingo-georouting-load' });
+          window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
         }
       }
     }
