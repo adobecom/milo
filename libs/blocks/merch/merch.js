@@ -361,35 +361,44 @@ export function getMasBase(hostname, maslibs) {
 }
 
 /**
- * Gets the base URL for loading web components based on maslibs parameter
- * @returns {string|null} Base URL for web components or null if maslibs not present
+ * Parses maslibs URL parameter and returns base URL info
+ * @returns {{ baseUrl: string, isLocal: boolean } | null}
  */
-export function getMasLibs() {
+export function getMasLibsBaseUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   const masLibs = urlParams.get('maslibs');
 
   if (!masLibs || masLibs.trim() === '') return null;
 
-  const sanitizedMasLibs = masLibs.trim().toLowerCase();
+  const sanitized = masLibs.trim().toLowerCase();
 
-  if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3000/web-components/dist';
-  }
-  if (sanitizedMasLibs === 'main') {
-    return 'http://www.adobe.com/mas/libs';
+  if (sanitized === 'local') {
+    return { baseUrl: 'http://localhost:3000', isLocal: true };
   }
 
-  // Detect current domain extension (.page or .live)
+  if (sanitized === 'main') {
+    return { baseUrl: 'https://main--mas--adobecom.aem.live', isLocal: false };
+  }
+
   const { hostname } = window.location;
   const extension = hostname.endsWith('.page') ? 'page' : 'live';
 
-  if (sanitizedMasLibs.includes('--mas--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/web-components/dist`;
+  let branch = sanitized;
+  if (!sanitized.includes('--')) {
+    branch = `${sanitized}--mas--adobecom`;
   }
-  if (sanitizedMasLibs.includes('--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/web-components/dist`;
-  }
-  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/web-components/dist`;
+
+  return { baseUrl: `https://${branch}.aem.${extension}`, isLocal: false };
+}
+
+/**
+ * Gets the base URL for loading web components based on maslibs parameter
+ * @returns {string|null} Base URL for web components or null if maslibs not present
+ */
+export function getMasLibs() {
+  const result = getMasLibsBaseUrl();
+  if (!result) return null;
+  return `${result.baseUrl}/web-components/dist`;
 }
 
 /**
@@ -397,31 +406,9 @@ export function getMasLibs() {
  * @returns {string|null} URL for fragment-client.js or null if maslibs not present
  */
 function getFragmentClientUrl() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('maslibs');
-
-  if (!masLibs || masLibs.trim() === '') return null;
-
-  const sanitizedMasLibs = masLibs.trim().toLowerCase();
-
-  if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3000/studio/libs/fragment-client.js';
-  }
-  if (sanitizedMasLibs === 'main') {
-    return 'https://mas.adobe.com/studio/libs/fragment-client.js';
-  }
-
-  // Detect current domain extension (.page or .live)
-  const { hostname } = window.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
-
-  if (sanitizedMasLibs.includes('--mas--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
-  }
-  if (sanitizedMasLibs.includes('--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
-  }
-  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/studio/libs/fragment-client.js`;
+  const result = getMasLibsBaseUrl();
+  if (!result) return null;
+  return `${result.baseUrl}/studio/libs/fragment-client.js`;
 }
 
 /**
@@ -430,6 +417,23 @@ function getFragmentClientUrl() {
 const failedExternalLoads = new Set();
 
 const loadingPromises = new Map();
+
+/**
+ * Generates the URL for loading a MAS component
+ * @param {string} componentName - Name of the component to load
+ * @param {string|null} masLibsBase - Base URL from getMasLibs() if available
+ * @param {string} hostname - Current hostname
+ * @returns {string} The URL to load the component from
+ */
+export function getMasComponentUrl(componentName, masLibsBase, hostname) {
+  if (masLibsBase) {
+    return `${masLibsBase}/${componentName}.js`;
+  }
+  const isAdobeProd = hostname === 'www.adobe.com';
+  return isAdobeProd
+    ? `https://www.adobe.com/mas/libs/${componentName}.js`
+    : `https://main--mas--adobecom.aem.live/web-components/dist/${componentName}.js`;
+}
 
 /**
  * Loads a MAS component either from external URL (if masLibs present) or from production CDN
@@ -449,8 +453,7 @@ export async function loadMasComponent(componentName) {
 
   const loadPromise = (async () => {
     const masLibsBase = getMasLibs();
-    const productionUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
-    const targetUrl = masLibsBase ? `${masLibsBase}/${componentName}.js` : productionUrl;
+    const targetUrl = getMasComponentUrl(componentName, masLibsBase, window.location.hostname);
 
     // Fail fast if this URL has already failed before
     if (failedExternalLoads.has(targetUrl)) {
