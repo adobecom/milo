@@ -885,8 +885,8 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
   const isLingoActive = await getLingoActive();
-  const isLingoSite = await getLingoSiteLocale().isLingoSite;
-  const getLingoResults = (isLingoActive && (isLingoSite === 'true')) ? 'true' : 'false';
+  const isLingoSite = await getLingoSiteLocale(originSelection, document.location.pathname);
+  const getLingoResults = (isLingoActive && (isLingoSite.isLingoSite === 'true')) ? 'true' : 'false';
   const langFirst = state.langFirst ? `&langFirst=${getLingoResults}` : '';
 
   const navigationStyle = state.container === 'carousel'
