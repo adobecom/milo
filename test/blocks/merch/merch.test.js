@@ -1372,10 +1372,10 @@ describe('Merch Block', () => {
   describe('getMasComponentUrl', () => {
     it('returns correct URL based on masLibsBase and hostname', () => {
       // When masLibsBase is provided, use it regardless of hostname
-      expect(getMasComponentUrl('commerce', 'https://custom.cdn.com/libs', 'www.adobe.com'))
-        .to.equal('https://custom.cdn.com/libs/commerce.js');
-      expect(getMasComponentUrl('merch-card', 'https://custom.cdn.com/libs', 'www.stage.adobe.com'))
-        .to.equal('https://custom.cdn.com/libs/merch-card.js');
+      expect(getMasComponentUrl('commerce', 'https://main--mas--adobecom.aem.live/web-components/dist', 'www.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+      expect(getMasComponentUrl('merch-card', 'https://main--mas--adobecom.aem.live/web-components/dist', 'www.stage.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/merch-card.js');
 
       // When masLibsBase is null and hostname is www.adobe.com, use Adobe prod URL
       expect(getMasComponentUrl('commerce', null, 'www.adobe.com'))
