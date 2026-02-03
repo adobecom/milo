@@ -889,6 +889,25 @@ export const getConfig = async (originalState, strs = {}) => {
     ? `${state.paginationAnimationStyle}-light`
     : state.paginationAnimationStyle;
 
+  const currentPage = `${window.location.hostname}${window.location.pathname}`;
+  let currentPageUuid = null;
+  try {
+    currentPageUuid = await getUuid(currentPage);
+  } catch (error) {
+    window.lana?.log(`Could not get UUID for current page: ${currentPage}`, error);
+  }
+
+  let excludedCardsWithCurrent;
+  if (currentPageUuid) {
+    if (excludedCards) {
+      excludedCardsWithCurrent = `${excludedCards}%2C${currentPageUuid}`;
+    } else {
+      excludedCardsWithCurrent = currentPageUuid;
+    }
+  } else {
+    excludedCardsWithCurrent = excludedCards;
+  }
+
   const config = {
     collection: {
       mode: state.theme,
@@ -910,7 +929,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&language=${language
       }&country=${country
       }&complexQuery=${complexQuery
-      }&excludeIds=${excludedCards
+      }&excludeIds=${excludedCardsWithCurrent
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow
