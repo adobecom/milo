@@ -950,7 +950,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
   let columnName;
-  if (el?.dataset.modal === 'crm') {
+  if (el.dataset.modal === 'crm') {
     columnName = CRM_HASH;
   } else {
     columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH;
