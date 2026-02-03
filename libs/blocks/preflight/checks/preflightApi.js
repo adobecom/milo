@@ -1,6 +1,8 @@
 import { getConfig, getFederatedContentRoot } from '../../../utils/utils.js';
 import { fetchPreflightChecks, asoCache } from './asoApi.js';
 import { isViewportTooSmall, checkImageDimensions, runChecks as runChecksAssets } from './assets.js';
+import runChecksAccessibility from './accessibility.js';
+import captureMetrics from './captureMetrics.js';
 import {
   getLcpEntry,
   checkSingleBlock,
@@ -31,7 +33,20 @@ let checksSuite = null;
 
 const globalPreflightCache = new Map();
 
+function getGlobalMetricsSentCache() {
+  const cacheKey = '__miloPreflightMetricsSent';
+  if (!window[cacheKey]) {
+    window[cacheKey] = new Set();
+  }
+  return window[cacheKey];
+}
+
+function getMetricsDedupeKey(isASO) {
+  return `${window.location.origin}${window.location.pathname}_${isASO ? 'ASO' : 'OG'}`;
+}
+
 export default {
+  accessibility: { runChecks: runChecksAccessibility },
   assets: {
     isViewportTooSmall,
     checkImageDimensions,
@@ -100,11 +115,18 @@ const isUrlExcluded = (url, exclusionPatterns = {}) => {
 
 const runChecks = async (url, area, injectVisualMetadata = false) => {
   const isASO = (await getChecksSuite()) === 'ASO';
+  const accessibility = await Promise.all(runChecksAccessibility({ area }));
   const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
   const performance = await Promise.all(runChecksPerformance(url, area));
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   const structure = await Promise.all(runChecksStructure({ area }));
-  return { assets, performance, seo, structure };
+  return {
+    accessibility,
+    assets,
+    performance,
+    seo,
+    structure,
+  };
 };
 
 function generateCacheKey(url, injectVisualMetadata, isASO, asoAuthed) {
@@ -135,6 +157,7 @@ export async function getPreflightResults(options = {}) {
 
   const res = await runChecks(url, area, injectVisualMetadata);
   const allResults = [
+    ...(res.accessibility || []),
     ...(res.assets || []),
     ...(res.performance || []),
     ...(res.seo || []),
@@ -146,6 +169,13 @@ export async function getPreflightResults(options = {}) {
     runChecks: res,
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
+
+  const metricsSentCache = getGlobalMetricsSentCache();
+  const metricsDedupeKey = getMetricsDedupeKey(isASO);
+  if (!metricsSentCache.has(metricsDedupeKey)) {
+    metricsSentCache.add(metricsDedupeKey);
+    await captureMetrics(res);
+  }
 
   if (useCache) globalPreflightCache.set(cacheKey, result);
 
