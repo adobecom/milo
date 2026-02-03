@@ -894,10 +894,11 @@ export const getConfig = async (originalState, strs = {}) => {
   try {
     currentPageUuid = await getUuid(currentPage);
   } catch (error) {
-    console.log('Could not get UUID for current path:', error);
+    window.lana?.log('Could not get UUID for current path', error);
   }
-  
-  const excludedCardsWithCurrent = currentPageUuid 
+
+  const excludedCardsWithCurrent = currentPageUuid
+    // eslint-disable-next-line no-nested-ternary
     ? (excludedCards ? `${excludedCards}%2C${currentPageUuid}` : currentPageUuid)
     : excludedCards;
 
