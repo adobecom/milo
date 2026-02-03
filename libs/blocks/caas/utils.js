@@ -777,7 +777,6 @@ const addMissingStateProps = (state) => {
 };
 
 const fetchUuidForCard = async (card) => {
-  console.log('***fetchUuidForCard card:', card);
   if (!card.contentId) {
     return null;
   }
@@ -787,7 +786,6 @@ const fetchUuidForCard = async (card) => {
   try {
     const localizedLink = await localizeLinkAsync(card.contentId, null, true);
     const substr = String(localizedLink).split('https://').pop();
-    console.log('***substr:', substr);
     return await getUuid(substr);
   } catch (error) {
     return null;
@@ -891,22 +889,10 @@ export const getConfig = async (originalState, strs = {}) => {
     ? `${state.paginationAnimationStyle}-light`
     : state.paginationAnimationStyle;
 
-  console.log('********** CARLOS PLAYGROUND **********');
-  const currentPage = window.location.href;
-  console.log('***currentPage:', currentPage);
-  let currentPageUuid = null;
-  currentPageUuid = await fetchUuidForCard(currentPage) || '';
-  console.log('***currentPageUuid:', currentPageUuid);
-
-  // const substr = currentPage.split('https://').pop();
-  // currentPageUuid =  await getUuid(substr);
-  // console.log('***currentPageUuid:', currentPageUuid);
-
-
+  const currentPage = `${window.location.origin}${window.location.pathname}`;
+  let currentPathUuid = null;
   try {
-    // Build the full URL and strip protocol, similar to fetchUuidForCard
-    // currentPageUuid = await fetchUuidForCard(currentPage);
-    console.log('***currentPageUuid:', currentPageUuid);
+    currentPageUuid = await getUuid(currentPage);
   } catch (error) {
     console.log('Could not get UUID for current path:', error);
   }
@@ -914,12 +900,6 @@ export const getConfig = async (originalState, strs = {}) => {
   const excludedCardsWithCurrent = currentPageUuid 
     ? (excludedCards ? `${excludedCards}%2C${currentPageUuid}` : currentPageUuid)
     : excludedCards;
-  
-  console.log('currentPage:', currentPage);
-  console.log('currentPageUuid:', currentPageUuid);
-  console.log('excludedCards (original):    ', excludedCards);
-  console.log('excludedCards (with current):', excludedCardsWithCurrent);
-  console.log('********** CARLOS PLAYGROUND **********');
 
   const config = {
     collection: {
