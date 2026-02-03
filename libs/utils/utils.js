@@ -1,5 +1,3 @@
-import { fetchPlaceholders } from '../features/placeholders.js';
-
 /* eslint-disable no-console */
 const MILO_TEMPLATES = [
   '404',
@@ -1628,9 +1626,27 @@ async function loadPostLCP(config) {
           default: return 'http://localhost:3000';
         }
       })();
-      const placeholdersPromise = fetchPlaceholders({ config })
-        .then((placeholders) => new Map(Object.entries(placeholders)));
+      const placeholdersPromise = (async () => {
+        const { fetchPlaceholders } = await import('../features/placeholders.js');
+        const placeholders = await fetchPlaceholders({ config });
+        return new Map(Object.entries(placeholders));
+      })();
+      // for now we only support inBlock commands.
+      // Since MEP on gnav is relatively rare we'll
+      // keep it at this and see if any problems crop up.
+      const mepGnav = config.mep?.inBlock?.['global-navigation'];
+      const commands = mepGnav?.commands ?? [];
+      const gnavMepCommands = config?.mep?.commands?.filter(
+        (command) => command?.modifiers?.find((modifier) => modifier === 'include-gnav'),
+      ) || [];
+
+      const personalizationHandler = async (cs, root) => {
+        const { handleCommands } = await import('../features/personalization/personalization.js');
+        return handleCommands(cs, root);
+      };
+
       const { main } = await import(`${federalDomain}/libs/global-navigation/dist/main.js`);
+
       main({
         gnavSource: new URL(await getGnavSource()),
         asideSource: null,
@@ -1639,6 +1655,10 @@ async function loadPostLCP(config) {
         unavEnabled: false,
         placeholders: placeholdersPromise,
         miloConfig: getConfig(),
+        personalization: {
+          commands: [...commands, ...gnavMepCommands],
+          handleCommands: personalizationHandler,
+        },
       }).catch((error) => {
         console.log(error);
       });
