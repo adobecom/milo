@@ -450,8 +450,10 @@
   .brick.mobile-editorial-card .foreground a {
     font-weight: normal;
   }
-  .brick.mobile-editorial-card .foreground {
+  .brick.mobile-editorial-card:not(.dark) .foreground {
     color: var(--text-color);
+  }
+  .brick.mobile-editorial-card .foreground {
     padding: 24px;
   }
   .brick.mobile-editorial-card .icon-stack-area li picture:nth-child(3) {
