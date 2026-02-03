@@ -200,9 +200,8 @@
   --s2a-typography-line-height-12xl: var(--s2a-typography-line-height-74);
   --s2a-typography-line-height-13xl: var(--s2a-typography-line-height-84);
   --s2a-typography-line-height-14xl: var(--s2a-typography-line-height-95);
-}
 
-.light {
+  /* tokens.semantic.light */
   --s2a-color-gray-25: #fff;
   --s2a-color-gray-50: #f8f8f8;
   --s2a-color-gray-75: #f3f3f3;
@@ -356,7 +355,56 @@
   --s2a-color-content-knockout: var(--s2a-color-gray-25);
   --s2a-color-content-brand: var(--s2a-color-brand-adobe-red);
   --s2a-color-content-disabled: var(--s2a-color-gray-400);
+
+  /* Milo-specific declarations */
+  --scroll-padding-block: 0;
+  --body-font-family: var(--s2a-typography-font-family-adobe-clean), adobe-clean, 'Trebuchet MS', sans-serif;
+
+  /* Grid sizes */
+  --grid-container-width: 83.4%;
+  --grid-column-width: calc(var(--grid-container-width) / 12);
+  --grid-margins-width: calc((100% - var(--grid-container-width)) / 2);
+  --grid-margins-width-10: calc((100vw - (var(--grid-column-width) * 10)) / 2);
+  --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
+  --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
+
+  /* Regional font variations */
+  &:lang(ar) {
+    --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family), adobe-clean, 'Trebuchet MS', sans-serif;
+    --font-size-multiplier: 1.25;
+  }
+
+  &:lang(ko-KR),
+  &:lang(ko) {
+    --body-font-family: adobe-clean-han-korean, var(--body-font-family), adobe-clean, 'Trebuchet MS', sans-serif;
+
+    word-break: keep-all;
+  }
+
+  &:lang(ja-JP),
+  &:lang(ja) {
+    --body-font-family: adobe-clean-han-japanese, var(--body-font-family), adobe-clean, 'Trebuchet MS', sans-serif;
+  }
+
+  &:lang(zh-TW) {
+    --body-font-family: adobe-clean-han-traditional, var(--body-font-family), adobe-clean, 'Trebuchet MS', sans-serif;
+  }
+
+  &:lang(zh-CN) {
+    --body-font-family: adobe-clean-han-simplified-c, var(--body-font-family), adobe-clean, 'Trebuchet MS', sans-serif;
+  }
+
+  &:lang(zh-HK) {
+    --body-font-family: adobe-clean-han-traditional, var(--body-font-family), adobe-clean, 'Trebuchet MS', sans-serif;
+  }
+
+  &:lang(th) {
+    --body-font-family: adobe-clean-thai, var(--body-font-family), adobe-clean, 'Trebuchet MS', sans-serif;
+  }
+
+  --s2a-invalid-var: none;
 }
+
 
 .dark {
   --s2a-color-gray-25: #111;
@@ -488,6 +536,8 @@
   --s2a-color-brand-cc-il: #ff9a00;
   --s2a-color-brand-cc-ppafx: #99f;
   --s2a-color-brand-cc-ps: #3a18ff;
+
+  /* tokens.semantic.dark */
   --s2a-color-background-utility-error: var(--s2a-color-red-900);
   --s2a-color-background-default: var(--s2a-color-gray-25);
   --s2a-color-background-default-hover: var(--s2a-color-gray-25);
@@ -540,21 +590,25 @@
 /* Source: tokens.semantic.dark.css */
 
 /* ========================================================================
-   BASE STYLES
-   Carried over from previous styles.css implementation
+   MILO BASE STYLES
+   Specific declarations for Milo, not part of the S2A Design System
    ======================================================================== */
+
+html {
+  scroll-padding-block: var(--scroll-padding-block);
+}
 
 body {
   display: block;
-  font-family: var(--s2a-typography-font-family-adobe-clean);
+  font-family: var(--body-font-family);
   font-size: var(--s2a-typography-font-size-md);
-  line-height: var(--type-body-m-lh);
-  background-color: var(--background-color);
-  color: var(--color-gray-25);
+  line-height: var(--s2a-typography-line-height-md);
+  background-color: var(--s2a-color-background-default);
+  color: #fff; /* TODO: Replace with a variable */
   margin: 0;
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
-  opacity: 1 !important;
+  opacity: 1 !important; /* Fix Target hiding */
 }
 
 /*** Global Styles ***/
@@ -574,8 +628,8 @@ body {
     local('TrebuchetMS');
 }
 
-html {
-  scroll-padding-block: var(--scroll-padding-block);
+body:has(.dialog-modal) #onetrust-consent-sdk {
+  display: none;
 }
 
 body:has(footer:focus-within) #onetrust-consent-sdk:not(:has(#ot-cookie-button.show)) {
@@ -589,8 +643,59 @@ body:has(footer:focus-within) #onetrust-consent-sdk:not(:has(#ot-cookie-button.s
   position: sticky;
 }
 
-body:has(.dialog-modal) #onetrust-consent-sdk {
-  display: none;
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+blockquote {
+  margin: 0 0 var(--spacing-s) 0;
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--link-hover-color);
+  }
+
+  &:has(> sub:only-child) { text-decoration: unset; }
+  & > sub:only-child { text-decoration: underline; }
+
+  &:is(.auto-block, .fragment) {
+    display: none;
+  }
+
+  &.quiet,
+  &.quiet:is(:hover, :focus, :active) {
+    text-decoration: none;
+  }
+
+  &.static,
+  &.static:is(:hover, :focus, :active) {
+    color: var(--text-color); /* TODO: Replace with an S2A variable */
+  }
+}
+
+svg.icon-milo, img.icon-milo {
+  height: 1em;
+  position: relative;
+  top: .1em;
+  width: auto;
+}
+
+picture.bg-img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+picture.bg-img img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
 }
 
 header.gnav {
@@ -881,22 +986,6 @@ header.global-navigation + .feds-localnav {
   color: var(--color-black);
 }
 
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-blockquote {
-  margin: 0 0 var(--spacing-s) 0;
-}
-
-svg.icon-milo, img.icon-milo {
-  height: 1em;
-  position: relative;
-  top: .1em;
-  width: auto;
-}
-
 /* Not blocks */
 div:not([class]) > div > div > img[src^="./media_"] {
   width: 100%;
@@ -905,19 +994,6 @@ div:not([class]) > div > div > img[src^="./media_"] {
 .container {
   width: var(--grid-container-width);
   margin: 0 auto;
-}
-
-picture.bg-img {
-  display: block;
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-
-picture.bg-img img {
-  object-fit: cover;
-  height: 100%;
-  width: 100%;
 }
 
 .section .section-background img {
@@ -1134,13 +1210,6 @@ header.global-navigation.new-nav.local-nav {
   top: 0;
 }
 
-body.mweb-enabled {
-  --type-heading-all-weight: 800;
-  [class^="heading-"], h1, h2, h3, h4, h5, h6 {
-    font-weight: var(--type-heading-all-weight);
-  }
-}
-
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
@@ -1211,40 +1280,6 @@ h6 {
 
 :is(h1, h2, h3, h4, h5, h6, p):lang(ja) {
   line-break: strict;
-}
-
-/* Links */
-a.auto-block,
-a.fragment {
-  display: none;
-}
-
-a {
-  color: var(--link-color);
-  text-decoration: underline;
-}
-
-a:hover {
-  color: var(--link-hover-color);
-}
-
-a:has(> sub:only-child) { text-decoration: unset; }
-a > sub:only-child { text-decoration: underline; }
-
-/* Links Quiet */
-a.quiet,
-a.quiet:hover,
-a.quiet:focus,
-a.quiet:active {
-  text-decoration: none;
-}
-
-/* Links Static */
-a.static,
-a.static:hover,
-a.static:focus,
-a.static:active  {
-  color: var(--text-color);
 }
 
 .dark a.static,
@@ -1394,19 +1429,7 @@ a.static:active  {
 
 /* tablet down */
 @media screen and (max-width: 1199px) {
-  /* Mweb specific changes for body typography */
-  .mweb-enabled {
-    --type-body-xxl-size: calc(var(--font-size-multiplier, 1) * 24px);
-    --type-body-xxl-lh: 36px;
-    --type-body-xl-size: calc(var(--font-size-multiplier, 1) * 20px);
-    --type-body-xl-lh: 30px;
-    --type-body-l-size: calc(var(--font-size-multiplier, 1) * 18px);
-    --type-body-l-lh: 27px;
-    --s2a-typography-font-size-md: calc(var(--font-size-multiplier, 1) * 16px);
-    --type-body-m-lh: 24px;
-    --type-body-s-size: calc(var(--font-size-multiplier, 1) * 14px);
-    --type-body-s-lh: 21px;
-  }
+  
 }
 
 /* desktop up */
