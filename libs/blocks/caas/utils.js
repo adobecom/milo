@@ -598,6 +598,7 @@ async function getLingoSiteLocale(origin, path) {
       return {
         country: currCountry,
         language: currLang,
+        isLingoSite: 'false'
       };
     }
 
@@ -608,6 +609,7 @@ async function getLingoSiteLocale(origin, path) {
           lingoSiteMapping = {
             country: 'xx',
             language: baseSite.split('/')[1],
+            isLingoSite: 'true'
           };
           return;
         }
@@ -616,11 +618,13 @@ async function getLingoSiteLocale(origin, path) {
             lingoSiteMapping = {
               country: localeStr,
               language: 'en',
+              isLingoSite: 'true'
             };
           }
           lingoSiteMapping = {
             country: localeStr,
             language: baseSite.split('/')[1],
+            isLingoSite: 'true'
           };
         }
       });
@@ -881,7 +885,9 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
   const isLingoActive = await getLingoActive();
-  const langFirst = state.langFirst ? `&langFirst=${isLingoActive}` : '';
+  const isLingoSite = await getLingoSiteLocale().isLingoSite;
+  const getLingoResults = (isLingoActive && (isLingoSite === 'true')) ? 'true' : 'false';
+  const langFirst = state.langFirst ? `&langFirst=${getLingoResults}` : '';
 
   const navigationStyle = state.container === 'carousel'
     && state.paginationAnimationStyle.includes('Modern')
