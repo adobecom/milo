@@ -525,6 +525,7 @@ export async function fetchAndProcessPlainHtml({
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
+  if (mepFragment?.content) body.dataset.path = mepFragment.content;
   let commands = mepGnav?.commands || [];
 
   const gnavMepCommands = config?.mep?.commands?.filter(
