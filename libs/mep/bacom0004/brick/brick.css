@@ -443,7 +443,7 @@
   .brick.mobile-editorial-card .foreground p.action-area {
     margin-top: 24px;
   }
-  .brick.mobile-editorial-card .foreground .con-button {
+  .brick.mobile-editorial-card:not(.dark) .foreground .con-button {
     border-color: var(--text-color);
     color: var(--text-color);
   }
