@@ -4,7 +4,7 @@ export default `
   <h5 id="shop-for">Shop for</h5>
   <div class="link-group">
     <div>
-      <div><a href="/federal/assets/svgs/creative-cloud-40.svg">https://main--federal--adobecom.hlx.page/federal/assets/svgs/creative-cloud-40.svg | Adobe Creative Cloud</a></div>
+      <div><a href="/federal/assets/svgs/creative-cloud-40.svg">https://main--federal--adobecom.aem.page/federal/assets/svgs/creative-cloud-40.svg | Adobe Creative Cloud</a></div>
       <div>
         <p><a href="https://www.adobe.com/creativecloud.html">What is Creative Cloud?</a></p>
         <p>Creative apps and services for everyone</p>

@@ -6,7 +6,7 @@ const taxonomy = {
     {
       Type: 'primaryProductName',
       Name: 'Experience Cloud',
-      'Footer Promo Link': 'https://main--bacom--adobecom.hlx.page/footer-promo-experience',
+      'Footer Promo Link': 'https://main--bacom--adobecom.aem.page/footer-promo-experience',
       'Other Data': '17',
       ExcludeFromMetadata: '',
     },
@@ -41,7 +41,7 @@ const taxonomy = {
     {
       Type: 'tag',
       Name: 'Insights & Inspiration | Creativity | 3D & AR',
-      'Footer Promo Link': 'https://main--bacom--adobecom.hlx.page/footer-promo-3d-ar',
+      'Footer Promo Link': 'https://main--bacom--adobecom.aem.page/footer-promo-3d-ar',
       'Other Data': '',
       ExcludeFromMetadata: '',
     },
