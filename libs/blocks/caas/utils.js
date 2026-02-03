@@ -598,7 +598,7 @@ async function getLingoSiteLocale(origin, path) {
       return {
         country: currCountry,
         language: currLang,
-        isLingoSite: 'false'
+        isLingoSite: 'false',
       };
     }
 
@@ -609,7 +609,7 @@ async function getLingoSiteLocale(origin, path) {
           lingoSiteMapping = {
             country: 'xx',
             language: baseSite.split('/')[1],
-            isLingoSite: 'true'
+            isLingoSite: 'true',
           };
           return;
         }
@@ -618,7 +618,7 @@ async function getLingoSiteLocale(origin, path) {
             lingoSiteMapping = {
               country: localeStr,
               language: 'en',
-              isLingoSite: 'true'
+              isLingoSite: 'true',
             };
           }
           lingoSiteMapping = {
