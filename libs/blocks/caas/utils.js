@@ -624,7 +624,7 @@ async function getLingoSiteLocale(origin, path) {
           lingoSiteMapping = {
             country: localeStr,
             language: baseSite.split('/')[1],
-            isLingoSite: 'true'
+            isLingoSite: 'true',
           };
         }
       });
