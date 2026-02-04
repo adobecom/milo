@@ -598,6 +598,7 @@ async function getLingoSiteLocale(origin, path) {
       return {
         country: currCountry,
         language: currLang,
+        isLingoSite: 'false',
       };
     }
 
@@ -608,6 +609,7 @@ async function getLingoSiteLocale(origin, path) {
           lingoSiteMapping = {
             country: 'xx',
             language: baseSite.split('/')[1],
+            isLingoSite: 'true',
           };
           return;
         }
@@ -616,11 +618,13 @@ async function getLingoSiteLocale(origin, path) {
             lingoSiteMapping = {
               country: localeStr,
               language: 'en',
+              isLingoSite: 'true',
             };
           }
           lingoSiteMapping = {
             country: localeStr,
             language: baseSite.split('/')[1],
+            isLingoSite: 'true',
           };
         }
       });
@@ -881,7 +885,14 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
   const isLingoActive = await getLingoActive();
-  const langFirst = state.langFirst ? `&langFirst=${isLingoActive}` : '';
+  const singleOrigin = originSelection.split(',')[0];
+  let isLingoSite = isLingoActive ? await getLingoSiteLocale(singleOrigin, document.location.pathname) : { isLingoSite: 'false' };
+  // handle news source separately as it is not a lingo site
+  if (originSelection === 'news') {
+    isLingoSite = { isLingoSite: 'true' };
+  }
+  const getLingoResults = (isLingoActive && (isLingoSite.isLingoSite === 'true')) ? 'true' : 'false';
+  const langFirst = state.langFirst ? `&langFirst=${getLingoResults}` : '';
 
   const navigationStyle = state.container === 'carousel'
     && state.paginationAnimationStyle.includes('Modern')
