@@ -182,6 +182,12 @@ describe('MEP Lingo Fragments', () => {
       if (urlStr.includes('query-index')) {
         return Promise.resolve(createQueryIndexResponse(paths));
       }
+      if (urlStr.includes('lingo-site-mapping.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          'site-query-index-map': { data: [] },
+          'site-locales': { data: [] },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      }
       return originalFetch(url);
     });
   };
@@ -203,6 +209,12 @@ describe('MEP Lingo Fragments', () => {
       const urlStr = typeof url === 'string' ? url : url.toString();
       if (urlStr.includes('query-index')) {
         return Promise.resolve(createQueryIndexResponse([]));
+      }
+      if (urlStr.includes('lingo-site-mapping.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          'site-query-index-map': { data: [] },
+          'site-locales': { data: [] },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
       }
       return originalFetch(url);
     });
@@ -676,19 +688,22 @@ describe('MEP Lingo Fragments', () => {
     expect(textBlock.textContent).to.not.include('mep-lingo');
   });
 
-  it.skip('removes element when regional content is empty (remove variant)', async () => {
-    stubQueryIndex([]);
+  it('removes element when regional content is empty (remove variant)', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
 
     const section = document.createElement('div');
+    section.className = 'section';
     const a = document.createElement('a');
-    a.href = '/test/blocks/fragment/mocks/fragments/empty-remove#_mep-lingo-remove';
+    // Use regional path directly and set data attributes manually to bypass URL transformation
+    a.href = '/test/blocks/fragment/mocks/ch_de/fragments/empty-remove';
+    a.dataset.mepLingo = 'true';
+    a.dataset.mepLingoRemove = 'true';
+    a.dataset.originalHref = '/test/blocks/fragment/mocks/de/fragments/empty-remove';
     section.appendChild(a);
     document.body.appendChild(section);
 
-    await simulateDecorateLinks(a);
     await getFragment(a);
 
     expect(section.querySelector('a')).to.be.null;
@@ -696,19 +711,22 @@ describe('MEP Lingo Fragments', () => {
     section.remove();
   });
 
-  it.skip('shows content when regional content has text (remove variant)', async () => {
-    stubQueryIndex([]);
+  it('shows content when regional content has text (remove variant)', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
 
     const section = document.createElement('div');
+    section.className = 'section';
     const a = document.createElement('a');
-    a.href = '/test/blocks/fragment/mocks/fragments/text-remove#_mep-lingo-remove';
+    // Use regional path directly and set data attributes manually
+    a.href = '/test/blocks/fragment/mocks/ch_de/fragments/text-remove';
+    a.dataset.mepLingo = 'true';
+    a.dataset.mepLingoRemove = 'true';
+    a.dataset.originalHref = '/test/blocks/fragment/mocks/de/fragments/text-remove';
     section.appendChild(a);
     document.body.appendChild(section);
 
-    await simulateDecorateLinks(a);
     await getFragment(a);
 
     const fragment = section.querySelector('.fragment');
@@ -717,14 +735,19 @@ describe('MEP Lingo Fragments', () => {
     section.remove();
   });
 
-  it.skip('falls back to base content on 404 (remove variant)', async () => {
+  it('falls back to base content on 404 (remove variant)', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
     updateConfig({ ...currentConfig, locale: mepLingoLocale });
 
     const section = document.createElement('div');
+    section.className = 'section';
     const a = document.createElement('a');
-    a.href = '/test/blocks/fragment/mocks/fragments/fallback-remove#_mep-lingo-remove';
+    // Use regional path that will 404, with originalHref pointing to base for fallback
+    a.href = '/test/blocks/fragment/mocks/ch_de/fragments/fallback-remove';
+    a.dataset.mepLingo = 'true';
+    a.dataset.mepLingoRemove = 'true';
+    a.dataset.originalHref = '/test/blocks/fragment/mocks/de/fragments/fallback-remove';
     section.appendChild(a);
     document.body.appendChild(section);
 
@@ -735,6 +758,12 @@ describe('MEP Lingo Fragments', () => {
       if (mockPath?.includes('query-index')) {
         return Promise.resolve(createQueryIndexResponse([]));
       }
+      if (mockPath?.includes('lingo-site-mapping.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          'site-query-index-map': { data: [] },
+          'site-locales': { data: [] },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      }
       // Regional path 404s (ch_de doesn't exist)
       if (mockPath?.includes('/ch_de/fragments/fallback-remove')) {
         return Promise.resolve({ ok: false, status: 404 });
@@ -743,7 +772,6 @@ describe('MEP Lingo Fragments', () => {
       return originalFetch(resource);
     });
 
-    await simulateDecorateLinks(a);
     await getFragment(a);
 
     const fragment = section.querySelector('.fragment');
