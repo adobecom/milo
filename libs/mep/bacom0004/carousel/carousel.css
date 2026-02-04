@@ -720,13 +720,13 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.peek-mobile .carousel-button-container {
     background: #F8F8F8;
   }
-  .carousel.peek-mobile.disable-buttons .carousel-button.disabled path, .carousel.disable-buttons .carousel-button.disabled path {
+  .carousel.peek-mobile.disable-buttons .carousel-button.disabled path {
     fill: white;
   }
-  .carousel.peek-mobile .carousel-slide .brick .brik-text .actrion-area {
+  .carousel.peek-mobile .carousel-slide .brick .brick-text .action-area {
     margin-top: auto;
   }
-  .carousel.peek-mobile .carousel-slide .brick .brik-text {
+  .carousel.peek-mobile .carousel-slide .brick .brick-text {
     display: flex;
     flex-direction: column;
   }
