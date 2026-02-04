@@ -679,6 +679,9 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.peek-mobile.disable-buttons .carousel-button.disabled path {
     fill: white;
   }
+  .carousel.peek-mobile .carousel-slide .brick .brick-text .action-area a {
+    margin-top: 1.5rem;
+  }
   .carousel.peek-mobile .carousel-slide .brick .brick-text .action-area {
     margin-top: auto;
   }
