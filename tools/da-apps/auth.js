@@ -8,7 +8,7 @@ const ORG_MAP = {
   'da-express-milo': 'DA EXPRESS',
   'da-events': 'DA EVENTS',
   'da-cc': 'DA CC',
-  upp: 'DA HOMEPAGE',
+  upp: 'DA UPP HOMEPAGE',
 };
 
 (async function init() {
