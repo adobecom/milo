@@ -575,7 +575,7 @@
 }
 
 .table[class*="sticky"] .row-heading.active {
-  z-index: 8;
+  z-index: 9;
 }
 
 .top-border-transparent {
