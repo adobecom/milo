@@ -7,7 +7,6 @@ logs/*
 .idea
 .iml
 .env
-**/mas/*/stats.json
 test-html-results/
 test-results/
 test-a11y-results/

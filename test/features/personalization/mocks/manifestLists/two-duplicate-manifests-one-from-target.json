@@ -7,7 +7,7 @@
                         "action": "appendtosection",
                         "selector": "section1",
                         "pageFilter": "",
-                        "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/target-version-in-target",
+                        "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/target-version-in-target",
                         "selectorType": "css"
                     }
                 ],
@@ -19,7 +19,7 @@
                         "action": "appendtosection",
                         "selector": "section1",
                         "pageFilter": "",
-                        "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/all-version-in-target",
+                        "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/all-version-in-target",
                         "selectorType": "css"
                     }
                 ],
@@ -38,8 +38,8 @@
         "selectedVariant": {},
         "source": "pzn",
         "name": "MILO0013b - use fresh manifest over saved",
-        "manifest": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
-        "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
+        "manifest": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
+        "manifestUrl": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
         "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
         "placeholderData": {
             "marquee-title": "Value in Target"
@@ -53,7 +53,7 @@
                         "action": "appendtosection",
                         "selector": "section1",
                         "pageFilter": "",
-                        "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/target-version-in-pzn",
+                        "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/target-version-in-pzn",
                         "selectorType": "css"
                     }
                 ],
@@ -65,7 +65,7 @@
                         "action": "appendtosection",
                         "selector": "section1",
                         "pageFilter": "",
-                        "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/all-version-in-pzn",
+                        "target": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/all-version-in-pzn",
                         "selectorType": "css"
                     }
                 ],
@@ -84,7 +84,7 @@
         "selectedVariant": {},
         "source": "target",
         "manifest": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
-        "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
+        "manifestUrl": "https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
         "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/outdated-manifest.json",
         "placeholderData": {
             "marquee-title": "Value in Pzn"

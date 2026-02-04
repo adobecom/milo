@@ -2,7 +2,7 @@ import ctaTextOption from './ctaTextOption.js';
 import {
   getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
 } from '../../utils/utils.js';
-import { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } from '../merch/merch.js';
+import { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, COMMERCE_LIBRARY } from '../merch/merch.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -159,7 +159,7 @@ export async function loadOstEnv() {
   }
   await initService(true, attributes);
   // Load commerce.js based on masLibs parameter
-  masCommerceService = await loadMasComponent(MAS_COMMERCE_SERVICE);
+  masCommerceService = await loadMasComponent(COMMERCE_LIBRARY);
 
   // Get the exports - they might be in different places depending on how it was loaded
   let Log;
@@ -169,7 +169,8 @@ export async function loadOstEnv() {
     ({ Log, Defaults } = window.mas.commerce);
   } else {
     // Loaded as module
-    ({ Log, Defaults } = await import('../../deps/mas/commerce.js'));
+    // eslint-disable-next-line import/no-unresolved
+    ({ Log, Defaults } = await import('https://www.adobe.com/mas/libs/commerce.js'));
   }
 
   const defaultPlaceholderOptions = Object.fromEntries([
