@@ -129,7 +129,7 @@ function decorateBricks(el) {
     decorateBlockBg(el, elems[elems.length - 2], { useHandleFocalpoint: true });
   }
   if (elems.length > 2) {
-    el.children[el.children.length - 1].style.background = elems[0].textContent;
+    el.style.background = elems[0].textContent;
     elems[0].remove();
   }
   const foreground = elems[elems.length - 1];
