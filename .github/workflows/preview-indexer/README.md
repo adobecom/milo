@@ -1,6 +1,6 @@
 # Preview Indexer
 
-A GitHub Actions-based system that automatically maintains preview indexes for DA (Document Authoring) sites by monitoring and processing Helix admin logs.
+A GitHub Actions-based system that automatically maintains preview indexes for DA and SharePoint sites by monitoring and processing Helix admin logs.
 
 ## Overview
 
@@ -16,31 +16,6 @@ The Preview Indexer tracks content preview activity across regional sites and ma
 - **Retry Logic**: Built-in retry mechanism for failed API requests
 - **Concurrent Processing**: Supports parallel processing of multiple sites
 
-## Architecture
-
-### Components
-
-```
-.github/workflows/preview-indexer/
-├── incremental.js              # Incremental update entry point
-├── full-index.js               # Full index generation entry point
-├── package.json                # Node.js dependencies
-└── internal/
-    ├── indexer.js              # Core indexing logic
-    ├── config.js               # Site configuration management
-    ├── da-client.js            # DA API client
-    ├── helix-client.js         # Helix admin API client
-    ├── indexer-state.js        # State persistence
-    └── utils.js                # Shared utilities
-```
-
-### State Directory
-
-```
-preview-indexer/state/
-└── last-runs.json              # Checkpoint data for incremental runs
-```
-
 ## GitHub Actions Workflows
 
 ### 1. Incremental Preview Indexer
@@ -48,7 +23,9 @@ preview-indexer/state/
 
 Updates preview indexes based on recent activity from Helix admin logs.
 
-**Triggers**: Manual workflow dispatch
+**Triggers**: 
+- Manual workflow dispatch (`workflow_dispatch`)
+- Repository dispatch event (`repository_dispatch`) with type `preview-indexer-incremental`
 
 **Inputs**:
 - `lastRunISOFrom` (optional): Start timestamp in GMT for fetching helix log format YYYY-MM-DDT24HH:MI:SS.SSSZ e.g 2025-11-19T18:51:41.007Z
@@ -58,7 +35,7 @@ Updates preview indexes based on recent activity from Helix admin logs.
 
 **Features**:
 - Uses GitHub Actions cache to persist state across runs
-- Prevents concurrent runs using workflow status checks
+- Prevents concurrent runs using workflow concurrency group
 - Automatically fetches logs since last successful run
 - Merges new preview paths with existing index data
 
