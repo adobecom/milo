@@ -780,6 +780,102 @@ describe('MEP Lingo Fragments', () => {
     section.remove();
   });
 
+  it('removes insert variant when no regional targeting', async () => {
+    // Don't set akamai - no regional targeting means shouldFetchMepLingo is false
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const a = document.createElement('a');
+    a.href = '/fragments/test';
+    a.dataset.mepLingo = 'true';
+    a.dataset.mepLingoInsert = 'true';
+    section.appendChild(a);
+    document.body.appendChild(section);
+
+    await getFragment(a);
+
+    expect(section.querySelector('a')).to.be.null;
+    section.remove();
+  });
+
+  it('removes mep-lingo block for insert variant when no regional targeting', async () => {
+    // Don't set akamai - no regional targeting
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const mepLingoBlock = document.createElement('div');
+    mepLingoBlock.className = 'mep-lingo insert';
+    const row = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/fragments/test';
+    a.dataset.mepLingo = 'true';
+    a.dataset.mepLingoInsert = 'true';
+    a.dataset.mepLingoBlockSwap = 'mep-lingo';
+    row.appendChild(a);
+    mepLingoBlock.appendChild(row);
+    section.appendChild(mepLingoBlock);
+    document.body.appendChild(section);
+
+    await getFragment(a);
+
+    expect(section.querySelector('.mep-lingo')).to.be.null;
+    section.remove();
+  });
+
+  it('removes insert variant when fallback content is used', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const a = document.createElement('a');
+    // Use regional path directly but it will return base content (simulating fallback)
+    a.href = '/test/blocks/fragment/mocks/de/fragments/mep-lingo-test';
+    a.dataset.mepLingo = 'true';
+    a.dataset.mepLingoInsert = 'true';
+    a.dataset.originalHref = '/test/blocks/fragment/mocks/de/fragments/mep-lingo-test';
+    section.appendChild(a);
+    document.body.appendChild(section);
+
+    await getFragment(a);
+
+    // Insert with fallback should be removed
+    expect(section.querySelector('a')).to.be.null;
+    expect(section.querySelector('.fragment')).to.be.null;
+    section.remove();
+  });
+
+  it('handles section swap with mep-lingo', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const content = document.createElement('div');
+    content.innerHTML = '<p>Original content</p>';
+    section.appendChild(content);
+
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test';
+    a.dataset.mepLingo = 'true';
+    a.dataset.mepLingoSectionSwap = 'true';
+    a.dataset.originalHref = '/test/blocks/fragment/mocks/de/fragments/mep-lingo-test';
+    section.appendChild(a);
+    document.body.appendChild(section);
+
+    await getFragment(a);
+
+    // Section should have new content
+    expect(section.querySelector('.fragment')).to.exist;
+    section.remove();
+  });
+
   it('removes insert variant when regional content does not exist (no fallback to base)', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     stubQueryIndex([]);
