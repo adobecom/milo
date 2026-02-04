@@ -64,6 +64,7 @@ const generateStorageName = (tabId) => {
 };
 
 const loadActiveTab = (config) => {
+  if (!config['active-tab']) return ''; // force to have no active t ab at all
   if (config.remember !== 'on') return 0;
 
   const tabId = config['tab-id'];
@@ -323,12 +324,18 @@ export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
 }
 
 // mWeb specific
-
-const toggleMobileTab = (button) => () => {
+const hideAllTabs = () => {
   [...document.querySelectorAll('.tab-content-container .tabpanel:not(:has([hidden]))')]
     .forEach((panel) => panel.setAttribute('hidden', true));
+};
+
+const toggleMobileTab = (button) => () => {
   const currentPanel = button.closest('.tabpanel');
-  currentPanel.removeAttribute('hidden');
+  const isHidden = currentPanel.getAttribute('hidden');
+  hideAllTabs();
+  if (isHidden) currentPanel.removeAttribute('hidden');
+  else currentPanel.setAttribute('hidden', true);
+
   setTimeout(() => {
     currentPanel.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
   }, 250);
@@ -432,7 +439,7 @@ const init = async (block) => {
       };
       const tabListContent = createTag('div', tabContentAttributes);
       tabListContent.setAttribute('aria-labelledby', `tab-${tabId}-${tabName}`);
-      if (i > 0) tabListContent.setAttribute('hidden', '');
+      tabListContent.setAttribute('hidden', '');
       tabContentContainer.append(tabListContent);
     });
     tabListItems[0].parentElement.remove();
