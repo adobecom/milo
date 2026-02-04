@@ -622,6 +622,56 @@ describe('MEP Lingo Fragments', () => {
     expect(frag).to.exist;
   });
 
+  it('detects mep-lingo block with insert class', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    section.innerHTML = `
+      <div class="mep-lingo insert">
+        <div>
+          <div>mep-lingo</div>
+          <div><a href="/fragments/test">Link</a></div>
+        </div>
+      </div>`;
+    document.body.appendChild(section);
+
+    const a = section.querySelector('a');
+    await simulateDecorateLinks(a);
+
+    expect(a.dataset.mepLingo).to.equal('true');
+    expect(a.dataset.mepLingoInsert).to.equal('true');
+    expect(a.dataset.mepLingoBlockSwap).to.equal('mep-lingo');
+    section.remove();
+  });
+
+  it('detects mep-lingo block with remove class', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    section.innerHTML = `
+      <div class="mep-lingo remove">
+        <div>
+          <div>mep-lingo</div>
+          <div><a href="/fragments/test">Link</a></div>
+        </div>
+      </div>`;
+    document.body.appendChild(section);
+
+    const a = section.querySelector('a');
+    await simulateDecorateLinks(a);
+
+    expect(a.dataset.mepLingo).to.equal('true');
+    expect(a.dataset.mepLingoRemove).to.equal('true');
+    expect(a.dataset.mepLingoBlockSwap).to.equal('mep-lingo');
+    section.remove();
+  });
+
   it('removes mep-lingo block even when fetch fails (line 171)', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();
