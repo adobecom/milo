@@ -331,7 +331,7 @@ const hideAllTabs = () => {
 
 const toggleMobileTab = (button) => () => {
   const currentPanel = button.closest('.tabpanel');
-  const isHidden = currentPanel.getAttribute('hidden');
+  const isHidden = currentPanel.getAttribute('hidden') !== null;
   hideAllTabs();
   if (isHidden) currentPanel.removeAttribute('hidden');
   else currentPanel.setAttribute('hidden', true);
