@@ -811,6 +811,14 @@ export function getMepLingoPrefix() {
   return regionKey ? regions[regionKey].prefix : null;
 }
 
+let mepLingoModulePreloaded = false;
+
+function preloadMepLingoModule() {
+  if (mepLingoModulePreloaded) return;
+  mepLingoModulePreloaded = true;
+  import('../features/mep/lingo.js');
+}
+
 function detectMepLingoSwap(a) {
   if (!a) return;
   const isInsertHash = a.href.includes('#_mep-lingo-insert');
@@ -827,6 +835,7 @@ function detectMepLingoSwap(a) {
     if (isRemoveHash) a.dataset.mepLingoRemove = 'true';
     a.dataset.originalHref = a.href.replace(hashToRemove, '');
     a.href = a.href.replace(hashToRemove, '');
+    if (lingoActive()) preloadMepLingoModule();
     if (isInsertHash || isRemoveHash) return;
   }
   const row = a.closest('.section > div > div');
@@ -835,6 +844,7 @@ function detectMepLingoSwap(a) {
   if (firstCellText === 'mep-lingo') {
     a.dataset.mepLingo = 'true';
     a.dataset.originalHref = a.href;
+    if (lingoActive()) preloadMepLingoModule();
     const swapBlock = a.closest('.section > div[class]');
     if (a.closest('.section-metadata')) {
       a.dataset.mepLingoSectionSwap = 'true';
@@ -2329,10 +2339,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
-    if (lingoActive()) {
-      preloadMarketsConfig();
-      import('../features/mep/lingo.js');
-    }
+    if (lingoActive()) preloadMarketsConfig();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
