@@ -361,8 +361,8 @@ export function getMasBase(hostname, maslibs) {
 }
 
 /**
- * Parses maslibs URL parameter and returns base URL info
- * @returns {{ baseUrl: string, isLocal: boolean } | null}
+ * Parses maslibs URL parameter and returns base URL
+ * @returns {string | null} Base URL or null if maslibs not present
  */
 export function getMasLibsBaseUrl() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -373,11 +373,11 @@ export function getMasLibsBaseUrl() {
   const sanitized = masLibs.trim().toLowerCase();
 
   if (sanitized === 'local') {
-    return { baseUrl: 'http://localhost:3000', isLocal: true };
+    return 'http://localhost:3000';
   }
 
   if (sanitized === 'main') {
-    return { baseUrl: 'https://main--mas--adobecom.aem.live', isLocal: false };
+    return 'https://main--mas--adobecom.aem.live';
   }
 
   const { hostname } = window.location;
@@ -388,7 +388,7 @@ export function getMasLibsBaseUrl() {
     branch = `${sanitized}--mas--adobecom`;
   }
 
-  return { baseUrl: `https://${branch}.aem.${extension}`, isLocal: false };
+  return `https://${branch}.aem.${extension}`;
 }
 
 /**
@@ -396,9 +396,9 @@ export function getMasLibsBaseUrl() {
  * @returns {string|null} Base URL for web components or null if maslibs not present
  */
 export function getMasLibs() {
-  const result = getMasLibsBaseUrl();
-  if (!result) return null;
-  return `${result.baseUrl}/web-components/dist`;
+  const baseUrl = getMasLibsBaseUrl();
+  if (!baseUrl) return null;
+  return `${baseUrl}/web-components/dist`;
 }
 
 /**
@@ -406,9 +406,9 @@ export function getMasLibs() {
  * @returns {string|null} URL for fragment-client.js or null if maslibs not present
  */
 function getFragmentClientUrl() {
-  const result = getMasLibsBaseUrl();
-  if (!result) return null;
-  return `${result.baseUrl}/studio/libs/fragment-client.js`;
+  const baseUrl = getMasLibsBaseUrl();
+  if (!baseUrl) return null;
+  return `${baseUrl}/studio/libs/fragment-client.js`;
 }
 
 /**

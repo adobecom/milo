@@ -1409,33 +1409,23 @@ describe('Merch Block', () => {
 
       // Local development
       window.history.pushState({}, '', '/?maslibs=local');
-      let result = getMasLibsBaseUrl();
-      expect(result.baseUrl).to.equal('http://localhost:3000');
-      expect(result.isLocal).to.be.true;
+      expect(getMasLibsBaseUrl()).to.equal('http://localhost:3000');
 
       // Main branch
       window.history.pushState({}, '', '/?maslibs=main');
-      result = getMasLibsBaseUrl();
-      expect(result.baseUrl).to.equal('https://main--mas--adobecom.aem.live');
-      expect(result.isLocal).to.be.false;
+      expect(getMasLibsBaseUrl()).to.equal('https://main--mas--adobecom.aem.live');
 
       // Feature branch (simple name)
       window.history.pushState({}, '', '/?maslibs=feature-branch');
-      result = getMasLibsBaseUrl();
-      expect(result.baseUrl).to.equal('https://feature-branch--mas--adobecom.aem.live');
-      expect(result.isLocal).to.be.false;
+      expect(getMasLibsBaseUrl()).to.equal('https://feature-branch--mas--adobecom.aem.live');
 
       // Full branch name with --mas--
       window.history.pushState({}, '', '/?maslibs=mybranch--mas--adobecom');
-      result = getMasLibsBaseUrl();
-      expect(result.baseUrl).to.equal('https://mybranch--mas--adobecom.aem.live');
-      expect(result.isLocal).to.be.false;
+      expect(getMasLibsBaseUrl()).to.equal('https://mybranch--mas--adobecom.aem.live');
 
       // Branch name with -- but not --mas--
       window.history.pushState({}, '', '/?maslibs=feature--other--repo');
-      result = getMasLibsBaseUrl();
-      expect(result.baseUrl).to.equal('https://feature--other--repo.aem.live');
-      expect(result.isLocal).to.be.false;
+      expect(getMasLibsBaseUrl()).to.equal('https://feature--other--repo.aem.live');
     });
   });
 
