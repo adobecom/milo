@@ -1501,8 +1501,9 @@ class Gnav {
           const tag = isSectionMenu ? 'section' : 'div';
           const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
           const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
+          const syncLargeMenuModifier = (itemType === 'syncDropdownTrigger' && item.querySelector('u')) ? 'sync' : '';
           const triggerTemplate = toFragment`
-            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
+            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier} ${syncLargeMenuModifier}" ${sectionDaaLh}>
               ${dropdownTrigger}
             </${tag}>`;
 
