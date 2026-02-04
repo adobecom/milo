@@ -26,6 +26,11 @@ Updates preview indexes based on recent activity from Helix admin logs.
 **Triggers**: 
 - Manual workflow dispatch (`workflow_dispatch`)
 - Repository dispatch event (`repository_dispatch`) with type `preview-indexer-incremental`
+Equivalent SharePoint triggers are also created.
+An external trigger from Adobe I/O Runtime runs this workflow every 15 minutes.
+This is necessary because the GitHub scheduler may not reliably execute at precise intervals.
+The recommendation is to use an external cron job to trigger the workflow via
+one of the manual events (repository_dispatch or workflow_dispatch).
 
 **Inputs**:
 - `lastRunISOFrom` (optional): Start timestamp in GMT for fetching helix log format YYYY-MM-DDT24HH:MI:SS.SSSZ e.g 2025-11-19T18:51:41.007Z
