@@ -4,8 +4,6 @@ description: This workflow updates the preview index for the given site and regi
 on:
   repository_dispatch:
     types: [preview-indexer-incremental]
-  schedule:
-    - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       site:

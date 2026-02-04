@@ -91,7 +91,7 @@ describe('seotech', () => {
     });
 
     it('should not append JSON-LD', async () => {
-      const locationUrl = 'https://main--cc--adobecom.hlx.page/in/creativecloud/example2?foo=bar&seotech-env=stage';
+      const locationUrl = 'https://main--cc--adobecom.aem.page/in/creativecloud/example2?foo=bar&seotech-env=stage';
       stub(window.lana, 'log');
       const getMetadata = stub().returns(null);
       getMetadata.withArgs('seotech-structured-data').returns('on');
@@ -109,7 +109,7 @@ describe('seotech', () => {
     });
 
     it('should append JSON-LD', async () => {
-      const locationUrl = 'https://main--cc--adobecom.hlx.page/in/creativecloud/example?foo=bar';
+      const locationUrl = 'https://main--cc--adobecom.aem.page/in/creativecloud/example?foo=bar';
       const lanaStub = stub(window.lana, 'log');
       const fetchStub = stub(window, 'fetch');
       const getConfigStub = stub().returns({ imsClientId: 'adobedotcom-cc' });
