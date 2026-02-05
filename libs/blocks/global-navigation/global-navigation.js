@@ -1508,7 +1508,9 @@ class Gnav {
           const tag = isSectionMenu ? 'section' : 'div';
           const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
           const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
-          const metadata = getDropdownMetadata(item.parentElement?.querySelector('.gnav-dropdown-metadata'));
+          const metadataEl = item.parentElement?.querySelector('.gnav-dropdown-metadata');
+          const metadata = getDropdownMetadata(metadataEl);
+          metadataEl?.remove();
           const fullWidthModifier = metadata['full-width']?.toLowerCase() === 'true' ? ' full-width' : '';
 
           const triggerTemplate = toFragment`

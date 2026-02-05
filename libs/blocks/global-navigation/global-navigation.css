@@ -36,10 +36,6 @@ header.global-navigation {
   box-sizing: content-box;
 }
 
-.gnav-dropdown-metadata {
-  display: none;
-}
-
 .feds-topnav-wrapper {
   position: relative;
   z-index: 2;
