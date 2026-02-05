@@ -356,8 +356,18 @@
 }
 
 /* mepHighlight */
-body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem),
-body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > * {
+body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *) {
+  outline: 3px #17a2b8 dashed !important;
+  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
+  margin: 5px 2px;
+}
+
+/* position:relative needed for badge positioning, but exclude gnav elements */
+body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *):not(header.global-navigation *) {
+  position: relative !important;
+}
+
+body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > *:not(.feds-popup) {
   outline: 3px #17a2b8 dashed !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
@@ -414,15 +424,16 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   content: attr(data-manifest-id);
 }
 
-body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before {
+/* Clickable fragment badges - show link icon */
+body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before,
+body[data-mep-highlight='true'] [data-manifest-id][data-path]::before {
   content: '🔗 ' attr(data-manifest-display);
   cursor: pointer !important;
 }
 
-body[data-mep-highlight='true'] [data-manifest-id]:not([data-fragment-path])::before,
-body[data-mep-highlight='true'] [data-code-manifest-id]::before,
-body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
-  pointer-events: none !important;
+/* HTML badges (no fragment-path or data-path) - show manifest name without link icon */
+body[data-mep-highlight='true'] [data-manifest-id]:not([data-fragment-path]):not([data-path])::before {
+  content: attr(data-manifest-display);
 }
 
 body[data-mep-highlight='true'] [data-manifest-id]::before,
@@ -432,6 +443,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
 body[data-mep-fragments='true'] [data-fragment-default]::before {
   font-size: 14px !important;
+  font-weight: 400 !important;
   min-height: 20px !important;
   min-width: 60px !important;
   text-align: center !important;
@@ -447,6 +459,13 @@ body[data-mep-fragments='true'] [data-fragment-default]::before {
   border-radius: 5px;
   box-shadow: 0 3px 8px 1px #808080;
   pointer-events: auto !important;
+}
+
+/* Non-fragment (HTML) badges - not clickable */
+body[data-mep-highlight='true'] [data-manifest-id]:not([data-fragment-path]):not([data-path])::before,
+body[data-mep-highlight='true'] [data-code-manifest-id]::before,
+body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
+  cursor: default !important;
 }
 
 body[data-mep-highlight='true'] [data-manifest-id]::before,
