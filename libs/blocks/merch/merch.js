@@ -1045,6 +1045,15 @@ export function setPreview(attributes) {
     attributes.preview = 'on';
   }
 }
+
+function isAnnualPriceEnabled(params) {
+  const annualEnabled = getMetadata('mas-ff-annual-price');
+  if (annualEnabled === 'true' || annualEnabled === 'on') {
+    return params?.get('annual') !== 'false';
+  }
+  return undefined;
+}
+
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -1121,7 +1130,7 @@ export async function initService(force = false, attributes = {}) {
           if (isSignedIn) fetchEntitlements();
         });
       }
-      if (country === 'AU') {
+      if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
       }
       return service;
@@ -1257,13 +1266,12 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
-  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const displayPlanType = params.get('planType');
-  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
+  const displayAnnual = isAnnualPriceEnabled(params);
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   const quantity = params.get('quantity');
