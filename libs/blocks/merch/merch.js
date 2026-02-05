@@ -1008,11 +1008,23 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   }
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
+
+  if (url?.includes('|')) {
+    const urls = url.split('|');
+    const tabpanel = el.closest('.tabpanel');
+    if (tabpanel) {
+      const index = [...tabpanel.parentElement.children].indexOf(tabpanel);
+      if (urls[index]) {
+        url = urls[index].trim();
+      }
+    }
+  }
+
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
   url = isInternalModal(url) || prodModalUrl
-    ? await localizeLinkAsync(checkoutLinkConfig[columnName])
-    : checkoutLinkConfig[columnName];
+    ? await localizeLinkAsync(url)
+    : url;
   url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
   return {
     url,
