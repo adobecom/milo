@@ -1508,7 +1508,7 @@ class Gnav {
           const tag = isSectionMenu ? 'section' : 'div';
           const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
           const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
-          const metadata = getDropdownMetadata(item.parentElement?.querySelector('.gnav-section-metadata'));
+          const metadata = getDropdownMetadata(item.parentElement?.querySelector('.gnav-dropdown-metadata'));
           const fullWidthModifier = metadata['full-width']?.toLowerCase() === 'true' ? ' full-width' : '';
 
           const triggerTemplate = toFragment`
