@@ -23,7 +23,7 @@
   color: #fff;
   text-align: left;
   display: none;
-  z-index: 2;
+  z-index: 8;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
@@ -41,7 +41,7 @@
   border: 8px solid #0469E3;
   border-color: transparent #0469E3 transparent transparent;
   display: none;
-  z-index: 2;
+  z-index: 8;
 }
 
 .milo-tooltip.top::after,
