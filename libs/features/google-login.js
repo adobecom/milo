@@ -18,6 +18,7 @@ const onToken = async (getMetadata, data, getConfig) => {
     idp_token: data?.credential,
     client_id: window.adobeid?.client_id,
     scope: window.adobeid?.scope,
+    accepted_tou_list: 'ADOBE_MASTER',
   }).then(() => {
     if (window.DISABLE_PAGE_RELOAD === true) return;
     // Existing account
