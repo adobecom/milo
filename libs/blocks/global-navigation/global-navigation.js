@@ -1307,6 +1307,13 @@ class Gnav {
       && getActiveLink(item.closest('div')) instanceof HTMLElement;
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
+    const getDropdownMetadata = (elem) => Object.fromEntries(
+      [...(elem?.querySelectorAll(':scope > div') || [])].map((row) => {
+        const [key, val] = [...row.querySelectorAll(':scope > div')].map((d) => d.textContent.trim());
+        return [key, val];
+      }).filter(([k]) => k),
+    );
+
     const makeTabActive = (popup) => {
       if (popup.classList.contains('loading')) return;
       const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
@@ -1501,9 +1508,11 @@ class Gnav {
           const tag = isSectionMenu ? 'section' : 'div';
           const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
           const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
-          const syncLargeMenuModifier = (itemType === 'syncDropdownTrigger' && item.querySelector('u')) ? 'full-width' : '';
+          const metadata = getDropdownMetadata(item.parentElement?.querySelector('.gnav-section-metadata'));
+          const fullWidthModifier = metadata['full-width']?.toLowerCase() === 'true' ? ' full-width' : '';
+
           const triggerTemplate = toFragment`
-            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier} ${syncLargeMenuModifier}" ${sectionDaaLh}>
+            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}${fullWidthModifier}" ${sectionDaaLh}>
               ${dropdownTrigger}
             </${tag}>`;
 
