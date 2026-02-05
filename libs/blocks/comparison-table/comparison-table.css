@@ -206,6 +206,11 @@
   display: none;
 }
 
+.comparison-table .header-item img {
+  width: 24px;
+  height: 24px;
+}
+
 .comparison-table .sub-header-item-container {
   display: flex;
   flex-direction: column;
