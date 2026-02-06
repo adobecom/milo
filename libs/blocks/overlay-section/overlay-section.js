@@ -95,12 +95,15 @@ function bindTimelineToSlides(timelineEl, slides, onSlideChange) {
   slides.forEach(({ video }, i) => {
     if (!video) return;
     video.addEventListener('ended', () => {
-      if (i === currentIndex) goToNext();
+      if (i !== currentIndex) return;
+      goToNext();
     });
     video.addEventListener('timeupdate', updateTimelineFromIndex);
     video.addEventListener('loadedmetadata', updateTimelineFromIndex);
     video.addEventListener('progress', updateTimelineFromIndex);
   });
+
+  updateTimelineFromIndex();
 
   track.addEventListener('click', (e) => {
     const segment = e.target.closest('.overlay-section-timeline-segment');
@@ -126,6 +129,9 @@ export default function init(el) {
     if (row) row.classList.add('overlay-section-row');
     slide.textEl.classList.add('overlay-section-text');
     slide.videoWrap.classList.add('overlay-section-video');
+    if (slide.video) {
+      slide.video.removeAttribute('loop');
+    }
     if (i > 0) {
       slide.textEl.classList.remove('overlay-section-slide-active');
       slide.videoWrap.classList.remove('overlay-section-slide-active');
@@ -144,9 +150,10 @@ export default function init(el) {
 
   const timeline = createTimeline(slides.length);
   el.appendChild(timeline);
-  bindTimelineToSlides(timeline, slides);
+  const { updateProgress } = bindTimelineToSlides(timeline, slides);
 
   if (slides[0]?.video) {
     slides[0].video.play().catch(() => {});
+    updateProgress();
   }
 }
