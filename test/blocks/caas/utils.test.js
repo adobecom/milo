@@ -806,7 +806,7 @@ describe('getCountryAndLang', () => {
       ok: true,
       json: () => Promise.resolve({
         'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
-        'site-locales': { data: [{ uniqueSiteId: 'hawks-site', baseSite: '/en', regionalSites: 'be' }] },
+        'site-locales': { data: [{ uniqueSiteId: 'hawks-site', baseSite: '/en', regionalSites: 'be,us' }] },
       }),
     });
 
