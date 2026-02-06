@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../utils/utils.js';
 
 const arrowSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8" fill="none">
 <path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -22,13 +22,24 @@ const getSlidesData = (el) => {
     return srcset.split(',')[0]?.trim().split(' ')[0] || '';
   };
 
+  const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+
+  const getLogoSrc = (textCol) => {
+    const imgEls = Array.from(textCol?.querySelectorAll('picture img, img') || []);
+    const svgImg = imgEls.find((img) => isSvgUrl(img.currentSrc || img.src || img.getAttribute('src') || ''));
+    if (svgImg) return getFederatedUrl(svgImg.currentSrc || svgImg.src || svgImg.getAttribute('src') || '');
+
+    const lastLogoP = Array.from(textCol?.querySelectorAll('p') || []).reverse()
+      .find((p) => p.querySelector('picture img, img'));
+    return getFederatedUrl(getPictureSrc(lastLogoP));
+  };
+
   const slideEls = Array.from(el?.children || []).filter((n) => n.nodeType === Node.ELEMENT_NODE);
 
   return slideEls.map((slideEl) => {
     const cols = slideEl.querySelectorAll(':scope > div');
     const coverCol = cols[0] || null;
     const textCol = cols[1] || null;
-    const logoCol = cols[2] || null;
 
     const boxAnchor = textCol?.querySelector('h3 a') || null;
     const ctaAnchors = Array.from(textCol?.querySelectorAll('p a') || []);
@@ -44,7 +55,7 @@ const getSlidesData = (el) => {
       cta2Text: (cta2?.textContent || '').trim(),
       cta1Link: getLink(cta1),
       cta2Link: getLink(cta2),
-      boxLogo: getPictureSrc(logoCol),
+      boxLogo: getLogoSrc(textCol),
       boxText: (boxAnchor?.textContent || '').trim(),
       boxLink: getLink(boxAnchor),
     };
