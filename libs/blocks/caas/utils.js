@@ -910,14 +910,13 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
-  const isLingoActive = await getLingoActive();
-  const singleOrigin = originSelection.split(',')[0];
-  let isLingoSite = isLingoActive ? await getLingoSiteLocale(singleOrigin, document.location.pathname) : { isLingoSite: 'false' };
+  let isLingoSite = await getIsLingoLocale(originSelection.split(',')[0], country);
+  // let isLingoSite = isLingoActive ? await getLingoSiteLocale(singleOrigin, document.location.pathname) : { isLingoSite: 'false' };
   // handle news source separately as it is not a lingo site
   if (originSelection?.toLowerCase().includes('news')) {
     isLingoSite = 'true';
   }
-  const getLingoResults = (isLingoActive && (isLingoSite.isLingoSite === 'true')) ? 'true' : 'false';
+  const getLingoResults = (isLingoActive && isLingoSite) ? 'true' : 'false';
   const langFirst = state.langFirst ? `&langFirst=${getLingoResults}` : '';
 
   const navigationStyle = state.container === 'carousel'
