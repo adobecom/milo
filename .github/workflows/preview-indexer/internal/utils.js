@@ -1,16 +1,37 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+import ExcelJS from 'exceljs';
 
 const RETRY_DELAY = Number(process.env.INDEXER_RETRY_DELAY || '5');
 const RETRY_ATTEMPTS = Number(process.env.INDEXER_RETRY_ATTEMPTS || '4');
+
+export async function getPreviewExcel(paths = []) {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('shared-default');
+    worksheet.columns = [
+    { header: 'Path', key: 'path', width: 100 }
+  ];
+  paths.forEach((path) => {
+    worksheet.addRow({ path });
+  });
+  const buffer = await workbook.xlsx.writeBuffer();
+  return buffer;
+}
 
 export function createAxiosWithRetry() {
   const axiosWithRetry = axios.create();
   axiosRetry(axiosWithRetry, {
     retries: RETRY_ATTEMPTS,
-    retryDelay: (retryCount) => {
-      console.log(`Retry attempt ${retryCount} - waiting ${RETRY_DELAY * 2 ** (retryCount - 1)}ms`);
-      return RETRY_DELAY * 2 ** (retryCount - 1);
+    retryDelay: (retryCount, error) => {
+      console.log(`Retry attempt ${retryCount}`);
+      let retryAfter = RETRY_DELAY * 1000 * 2 ** (retryCount - 1);
+      const respHeaders = error?.response?.headers;
+      const retryAfterHeader = Number(respHeaders?.['retry-after']  || respHeaders?.['X-Rate-Limit-Retry-After-Seconds'] || '');
+      if (retryAfterHeader && !Number.isNaN(retryAfterHeader)) {
+        retryAfter = Number(retryAfterHeader) * 1000;
+      }
+      console.log(`Delay of ${retryAfter}ms`);
+      return retryAfter;
     },
     retryCondition: (error) => {
       const status = error.response?.status;

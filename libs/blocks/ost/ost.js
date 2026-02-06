@@ -2,6 +2,7 @@ import ctaTextOption from './ctaTextOption.js';
 import {
   getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
 } from '../../utils/utils.js';
+import { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, COMMERCE_LIBRARY } from '../merch/merch.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -10,8 +11,8 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://mas.adobe.com/studio/ost/index.js';
-const OST_STYLE_URL = 'https://mas.adobe.com/studio/ost/index.css';
+const OST_SCRIPT_URL = '/studio/ost/index.js';
+const OST_STYLE_URL = '/studio/ost/index.css';
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
@@ -26,6 +27,7 @@ function isMasDefaultsEnabled() {
   return defaults === 'on';
 }
 
+let masCommerceService;
 const masDefaultsEnabled = isMasDefaultsEnabled();
 
 /**
@@ -44,8 +46,8 @@ const priceDefaultOptions = {
   exclusive: false,
 };
 
-const updateParams = (params, key, value, cs) => {
-  let defaultValue = priceDefaultOptions[key];
+const updateParams = (params, key, value, opts, cs) => {
+  let defaultValue = opts[key];
   if (key === 'seat') defaultValue = cs !== 'INDIVIDUAL';
   if (value !== defaultValue) {
     params.set(key, value);
@@ -55,17 +57,36 @@ const updateParams = (params, key, value, cs) => {
 document.body.classList.add('tool', 'tool-ost');
 
 /**
+ * Gets the base URL for loading Tacocat OST build file based on maslibs parameter
+ * @returns {string} Base URL for OST index.js
+ */
+export function getMasLibsBase() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const masLibs = urlParams.get('maslibs');
+
+  if (!masLibs || masLibs.trim() === '' || masLibs.trim() === 'main') return 'https://mas.adobe.com';
+
+  return getMasLibs().replace('/web-components/dist', '');
+}
+
+/**
  * @param {Commerce.Defaults} defaults
  */
-export const createLinkMarkup = (
+export const createLinkMarkup = async (
   defaults,
   offerSelectorId,
   type,
   offer,
   options,
   promo,
+  country,
 ) => {
   const isCta = !!type?.startsWith('checkout');
+  const cs = offer.customer_segment;
+  const ms = offer.market_segments[0];
+  const taxFlags = masDefaultsEnabled && masCommerceService
+    ? await masCommerceService.resolvePriceTaxFlags(country, null, cs, ms)
+    : {};
 
   const createHref = () => {
     const params = new URLSearchParams([
@@ -92,11 +113,17 @@ export const createLinkMarkup = (
         displayOldPrice,
         forceTaxExclusive,
       } = options;
-      updateParams(params, 'term', displayRecurrence);
-      updateParams(params, 'seat', displayPerUnit, masDefaultsEnabled ? offer.customer_segment : null);
-      updateParams(params, 'tax', displayTax);
-      updateParams(params, 'old', displayOldPrice);
-      updateParams(params, 'exclusive', forceTaxExclusive);
+      const optsMasDefaults = masDefaultsEnabled ? {
+        ...priceDefaultOptions,
+        seat: offer.customer_segment !== 'INDIVIDUAL',
+        tax: taxFlags.displayTax || priceDefaultOptions.tax,
+        exclusive: taxFlags.forceTaxExclusive || priceDefaultOptions.exclusive,
+      } : priceDefaultOptions;
+      updateParams(params, 'term', displayRecurrence, optsMasDefaults);
+      updateParams(params, 'seat', displayPerUnit, optsMasDefaults, masDefaultsEnabled ? offer.customer_segment : null);
+      updateParams(params, 'tax', displayTax, optsMasDefaults);
+      updateParams(params, 'old', displayOldPrice, optsMasDefaults);
+      updateParams(params, 'exclusive', forceTaxExclusive, optsMasDefaults);
     }
     return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
@@ -126,26 +153,24 @@ export async function loadOstEnv() {
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
-  /* c8 ignore next */
-  const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
   const attributes = { 'allow-override': 'true' };
-  if (isMasDefaultsEnabled) {
+  if (masDefaultsEnabled) {
     attributes['data-mas-ff-defaults'] = 'on';
   }
   await initService(true, attributes);
   // Load commerce.js based on masLibs parameter
-  await loadMasComponent(MAS_COMMERCE_SERVICE);
+  masCommerceService = await loadMasComponent(COMMERCE_LIBRARY);
 
   // Get the exports - they might be in different places depending on how it was loaded
   let Log;
   let Defaults;
-  let resolvePriceTaxFlags;
   if (getMasLibs() && window.mas?.commerce) {
     // Loaded from external URL - check global scope
-    ({ Log, Defaults, resolvePriceTaxFlags } = window.mas.commerce);
+    ({ Log, Defaults } = window.mas.commerce);
   } else {
     // Loaded as module
-    ({ Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js'));
+    // eslint-disable-next-line import/no-unresolved
+    ({ Log, Defaults } = await import('https://www.adobe.com/mas/libs/commerce.js'));
   }
 
   const defaultPlaceholderOptions = Object.fromEntries([
@@ -239,21 +264,23 @@ export async function loadOstEnv() {
     }
   }
 
-  const onSelect = (
+  const onSelect = async (
     offerSelectorId,
     type,
     offer,
     options,
     promoOverride,
+    co,
   ) => {
     log.debug(offerSelectorId, type, offer, options, promoOverride);
-    const link = createLinkMarkup(
+    const link = await createLinkMarkup(
       Defaults,
       offerSelectorId,
       type,
       offer,
       options,
       promoOverride,
+      co,
     );
 
     log.debug(`Use Link: ${link.outerHTML}`);
@@ -279,7 +306,7 @@ export async function loadOstEnv() {
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
-    resolvePriceTaxFlags,
+    resolvePriceTaxFlags: masCommerceService?.resolvePriceTaxFlags,
     modalsAndEntitlements: true,
   };
 }
@@ -322,12 +349,12 @@ export function addToggleSwitches(el, ostEnv, masDefEnabled, windowObj) {
 export default async function init(el) {
   el.innerHTML = '<div />';
 
-  loadStyle(OST_STYLE_URL);
+  loadStyle(`${getMasLibsBase()}${OST_STYLE_URL}`);
   loadStyle('https://use.typekit.net/pps7abe.css');
 
   const [ostEnv] = await Promise.all([
     loadOstEnv(),
-    loadScript(OST_SCRIPT_URL),
+    loadScript(`${getMasLibsBase()}${OST_SCRIPT_URL}`),
   ]);
 
   function openOst() {
@@ -335,7 +362,7 @@ export default async function init(el) {
       ...ostEnv,
       rootElement: el.firstElementChild,
     });
-    addToggleSwitches(el, ostEnv, masDefaultsEnabled, window);
+    addToggleSwitches(el.firstElementChild, ostEnv, masDefaultsEnabled, window);
   }
 
   if (ostEnv.aosAccessToken) {

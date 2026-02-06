@@ -15,7 +15,13 @@ const ARROW_PREVIOUS_IMG = `<svg xmlns="http://www.w3.org/2000/svg" width="21" h
 <path d="M19.2214 10.8918C19.3516 10.5773 19.3516 10.2226 19.2214 9.90808C19.1562 9.75098 19.0621 9.60895 18.9435 9.49041L12.9241 3.47092C12.4226 2.96819 11.6076 2.96819 11.1061 3.47092C10.604 3.97239 10.604 4.78743 11.1061 5.2889L14.9312 9.11399H2.4314C1.72109 9.11399 1.146 9.69036 1.146 10.4C1.146 11.1097 1.72109 11.6861 2.4314 11.6861H14.9312L11.1061 15.5112C10.604 16.0126 10.604 16.8277 11.1061 17.3291C11.3568 17.5805 11.6863 17.7062 12.0151 17.7062C12.3439 17.7062 12.6733 17.5805 12.9241 17.3291L18.9436 11.3097C19.0622 11.1911 19.1562 11.0491 19.2214 10.8918Z"/>
 </svg>`;
 const LIGHTBOX_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/expand.svg" height="14" width="20">`;
-const CLOSE_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/close.svg" height="20" width="20">`;
+const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <g transform="translate(-10500 3403)">
+    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)"/>
+    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/>
+    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/>
+  </g>
+</svg>`;
 
 const KEY_CODES = {
   SPACE: 'Space',
@@ -23,6 +29,8 @@ const KEY_CODES = {
   HOME: 'Home',
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
+  ESCAPE: 'Escape',
+  TAB: 'Tab',
 };
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
@@ -201,18 +209,34 @@ function removeEqualHeight(slides, slideContainer) {
 
 function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   const curtain = createTag('div', { class: 'carousel-curtain' });
+  const header = document.querySelector('header');
+  const headerZIndex = header?.style.zIndex;
+
+  const closeLightbox = () => {
+    if (header) header.style.zIndex = headerZIndex;
+    el.classList.remove('lightbox-active');
+    el.removeAttribute('role');
+    el.removeAttribute('aria-modal');
+    el.removeAttribute('name');
+    curtain.remove();
+  };
 
   [...lightboxBtns].forEach((button) => {
     button.addEventListener('click', (event) => {
       event.preventDefault();
       if (button.classList.contains('carousel-expand')) {
+        if (header) header.style.zIndex = '0';
         el.classList.add('lightbox-active');
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-modal', 'true');
+        el.setAttribute('name', el.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim() || 'Carousel modal');
         slideWrapper.append(curtain);
+        const firstFocusable = el.querySelector('button:not(.carousel-expand), a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        firstFocusable?.focus();
       }
 
       if (button.classList.contains('carousel-close')) {
-        el.classList.remove('lightbox-active');
-        curtain.remove();
+        closeLightbox();
       }
     }, true);
   });
@@ -220,9 +244,34 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   // Handle click outside of Carousel
   curtain.addEventListener('click', (event) => {
     event.preventDefault();
-    el.classList.remove('lightbox-active');
-    curtain.remove();
+    closeLightbox();
   }, true);
+
+  document.addEventListener('keydown', (event) => {
+    if (!el.classList.contains('lightbox-active')) return;
+
+    if (event.key === KEY_CODES.ESCAPE) {
+      closeLightbox();
+      return;
+    }
+
+    if (event.key === KEY_CODES.TAB) {
+      const focusableElements = [...el.querySelectorAll('button:not(.carousel-expand), a, input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((elem) => !elem.closest('[aria-hidden="true"]'));
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements.at(-1);
+
+      if (event.shiftKey && document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable.focus();
+        return;
+      }
+
+      if (!event.shiftKey && document.activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable.focus();
+      }
+    }
+  });
 }
 
 function checkSlideForVideo(activeSlide) {
@@ -577,13 +626,6 @@ export default function init(el) {
     currentActiveIndex: 0,
   };
 
-  if (el.classList.contains('lightbox')) {
-    const lightboxBtns = decorateLightboxButtons();
-    slideWrapper.append(slideContainer, ...lightboxBtns);
-    handleLightboxButtons(lightboxBtns, el, slideWrapper);
-  } else {
-    slideWrapper.append(slideContainer);
-  }
   /*
    * Hinting center variant - Set slides order
    * before moveSlides is called for centering to work.
@@ -602,6 +644,15 @@ export default function init(el) {
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
   el.append(nextPreviousContainer);
+
+  if (el.classList.contains('lightbox')) {
+    const lightboxBtns = decorateLightboxButtons();
+    el.append(lightboxBtns[1]);
+    slideWrapper.append(lightboxBtns[0], slideContainer);
+    handleLightboxButtons(lightboxBtns, el, slideWrapper);
+  } else {
+    slideWrapper.append(slideContainer);
+  }
 
   function normalizeVideoHeights() {
     const videos = el.querySelectorAll('video');
