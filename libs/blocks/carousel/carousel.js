@@ -32,6 +32,8 @@ const KEY_CODES = {
   ESCAPE: 'Escape',
   TAB: 'Tab',
 };
+
+const AUTO_ADVANCE_INTERVAL = 6000;
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
@@ -554,6 +556,32 @@ function mobileSwipeDetect(carouselElements) {
   /* c8 ignore end */
 }
 
+function startAutoAdvance(carouselElements) {
+  if (carouselElements.autoAdvanceTimer) return;
+
+  carouselElements.autoAdvanceTimer = setInterval(() => {
+    const event = { currentTarget: { dataset: { toggle: 'next' } } };
+    moveSlides(event, carouselElements);
+  }, AUTO_ADVANCE_INTERVAL);
+}
+
+function stopAutoAdvance(carouselElements) {
+  if (!carouselElements.autoAdvanceTimer) return;
+
+  clearInterval(carouselElements.autoAdvanceTimer);
+  carouselElements.autoAdvanceTimer = null;
+}
+
+function handleAutoAdvancePause(carouselElements) {
+  const { el } = carouselElements;
+
+  el.addEventListener('mouseenter', () => stopAutoAdvance(carouselElements));
+  el.addEventListener('mouseleave', () => startAutoAdvance(carouselElements));
+  el.addEventListener('focusin', () => stopAutoAdvance(carouselElements));
+  el.addEventListener('focusout', () => startAutoAdvance(carouselElements));
+  el.addEventListener('touchstart', () => stopAutoAdvance(carouselElements), { passive: true });
+}
+
 function handleChangingSlides(carouselElements) {
   const { el, nextPreviousBtns, slideIndicators, jumpTo } = carouselElements;
 
@@ -674,6 +702,7 @@ export default function init(el) {
     ariaLive,
     currentActiveIndex: 0,
     jumpTo,
+    autoAdvanceTimer: null,
   };
 
   /*
@@ -771,4 +800,9 @@ export default function init(el) {
   }
 
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
+
+  if (el.classList.contains('autoplay')) {
+    handleAutoAdvancePause(carouselElements);
+    startAutoAdvance(carouselElements);
+  }
 }
