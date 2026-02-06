@@ -940,6 +940,22 @@ a.static:active  {
   scroll-margin-top: var(--global-height-nav);
 }
 
+.bottom-radius {
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+  overflow: hidden;
+  z-index: 1;
+  background-color: white;
+}
+
+.top-radius {
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
+  overflow: hidden;
+  z-index: 1;
+  background-color: white;
+}
+
 @media screen and (min-width: 600px) {
   .global-navigation.has-breadcrumbs + main .section-anchor {
     scroll-margin-top: var(--feds-totalheight-nav);

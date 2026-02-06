@@ -1,0 +1,24 @@
+.overlay-section {
+  position: relative;
+  height: 900px;
+  margin: -32px 0;
+  padding: 32px 0;
+}
+
+.overlay-section video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay-section .overlay-section-text {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9;
+  color: white;
+  max-width: 404px;
+  left: 120px;
+}
