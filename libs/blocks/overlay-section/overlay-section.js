@@ -120,9 +120,49 @@ function bindTimelineToSlides(timelineEl, slides, onSlideChange) {
   };
 }
 
+const PARALLAX_OFFSET_PX = -300;
+
+function initParallax(blockEl) {
+  const inner = document.createElement('div');
+  inner.className = 'overlay-section-parallax-inner';
+  while (blockEl.firstChild) {
+    inner.appendChild(blockEl.firstChild);
+  }
+  blockEl.appendChild(inner);
+
+  let rafId = null;
+  let lastOffset = -1;
+
+  function update() {
+    const rect = blockEl.getBoundingClientRect();
+    const viewportH = window.innerHeight;
+    const progress = Math.min(1, Math.max(0, (viewportH - rect.top) / viewportH));
+    const offset = Math.round(PARALLAX_OFFSET_PX * (1 - progress));
+    if (offset !== lastOffset) {
+      lastOffset = offset;
+      inner.style.transform = `translate3d(0, ${offset}px, 0)`;
+    }
+    rafId = null;
+  }
+
+  function onScroll() {
+    if (rafId != null) return;
+    rafId = requestAnimationFrame(update);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(update);
+  });
+}
+
 export default function init(el) {
   const slides = getSlides(el);
   if (slides.length === 0) return;
+
+  initParallax(el);
 
   slides.forEach((slide, i) => {
     const row = slide.textEl.parentElement;
@@ -149,7 +189,8 @@ export default function init(el) {
   sectionAfter?.classList.add('top-radius');
 
   const timeline = createTimeline(slides.length);
-  el.appendChild(timeline);
+  const parallaxInner = el.querySelector('.overlay-section-parallax-inner');
+  (parallaxInner || el).appendChild(timeline);
   const { updateProgress } = bindTimelineToSlides(timeline, slides);
 
   if (slides[0]?.video) {

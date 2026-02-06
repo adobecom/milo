@@ -4,6 +4,12 @@
   margin: -32px 0;
 }
 
+.overlay-section-parallax-inner {
+  position: relative;
+  min-height: 100%;
+  will-change: transform;
+}
+
 .overlay-section video {
   width: 100%;
   max-height: 900px;
