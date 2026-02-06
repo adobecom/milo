@@ -1,17 +1,29 @@
 import { decorateButtons } from '../../utils/decorate.js';
 
-const CHAPTER_DOTS = 3;
+/* Segments: dot1 10%, line 60%, dot2 10%, dot3 10%, dot4 10% = 100%. Loading inside each. */
+const SEGMENT_DOT1 = 10;
+const SEGMENT_LINE = 60;
 
 function createTimeline() {
   const wrap = document.createElement('div');
   wrap.className = 'overlay-section-timeline';
   wrap.innerHTML = `
     <div class="overlay-section-timeline-track">
-      <div class="overlay-section-timeline-played" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-      <span class="overlay-section-timeline-dot overlay-section-timeline-dot--start"></span>
-      <div class="overlay-section-timeline-line"></div>
-      <div class="overlay-section-timeline-dots">
-        ${Array.from({ length: CHAPTER_DOTS }, () => '<span></span>').join('')}
+      <div class="overlay-section-timeline-dot overlay-section-timeline-dot--start">
+        <span class="overlay-section-timeline-dot-fill"></span>
+      </div>
+      <div class="overlay-section-timeline-line">
+        <span class="overlay-section-timeline-line-remaining"></span>
+        <span class="overlay-section-timeline-line-played" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></span>
+      </div>
+      <div class="overlay-section-timeline-dot">
+        <span class="overlay-section-timeline-dot-fill"></span>
+      </div>
+      <div class="overlay-section-timeline-dot">
+        <span class="overlay-section-timeline-dot-fill"></span>
+      </div>
+      <div class="overlay-section-timeline-dot">
+        <span class="overlay-section-timeline-dot-fill"></span>
       </div>
     </div>
   `;
@@ -20,13 +32,32 @@ function createTimeline() {
 
 function bindTimelineToVideo(timelineEl, video) {
   if (!video) return;
-  const played = timelineEl.querySelector('.overlay-section-timeline-played');
   const track = timelineEl.querySelector('.overlay-section-timeline-track');
+
+  function segmentFill(p, start, end) {
+    if (p <= start) return 0;
+    if (p >= end) return 100;
+    return ((p - start) / (end - start)) * 100;
+  }
 
   function setProgress(percent) {
     const p = Math.min(100, Math.max(0, percent));
-    played.style.width = `${p}%`;
-    played.setAttribute('aria-valuenow', Math.round(p));
+    const fills = timelineEl.querySelectorAll('.overlay-section-timeline-dot-fill');
+    const linePlayedEl = timelineEl.querySelector('.overlay-section-timeline-line-played');
+
+    const dot1Pct = p <= SEGMENT_DOT1 ? (p / SEGMENT_DOT1) * 100 : 100;
+    const linePct = segmentFill(p, SEGMENT_DOT1, SEGMENT_DOT1 + SEGMENT_LINE);
+    const dot2Pct = segmentFill(p, 70, 80);
+    const dot3Pct = segmentFill(p, 80, 90);
+    const dot4Pct = segmentFill(p, 90, 100);
+
+    if (fills[0]) fills[0].style.width = `${dot1Pct}%`;
+    if (linePlayedEl) linePlayedEl.style.width = `${linePct}%`;
+    if (fills[1]) fills[1].style.width = `${dot2Pct}%`;
+    if (fills[2]) fills[2].style.width = `${dot3Pct}%`;
+    if (fills[3]) fills[3].style.width = `${dot4Pct}%`;
+
+    linePlayedEl?.setAttribute('aria-valuenow', Math.round(p));
   }
 
   function updateFromVideo() {
