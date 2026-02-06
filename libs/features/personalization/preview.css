@@ -436,7 +436,8 @@ body[data-mep-fragments='true'] [data-fragment-default]::before {
   vertical-align: top;
   position: absolute !important;
   left: 5px;
-  z-index: 100;
+  top: var(--badge-top-offset, 0);
+  z-index: 3;
   padding: 5px 10px !important;
   margin: 2px;
   color: #000 !important;

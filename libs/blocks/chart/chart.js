@@ -461,6 +461,7 @@ export const getChartOptions = ({
       }),
       trigger: isBar || isPie || isDonut ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
+      enterable: true,
     },
     grid: { bottom: bottomGrid },
     xAxis: {
@@ -533,6 +534,20 @@ const initChart = ({
   if (chartType === 'donut') {
     setDonutListeners(chart, data.dataset?.source, series, data.units);
   }
+
+  const handleEscapeKey = (event) => {
+    if (event.key === 'Escape') {
+      chart.dispatchAction({ type: 'hideTip' });
+    }
+  };
+
+  document.addEventListener('keyup', handleEscapeKey);
+
+  const originalDispose = chart.dispose.bind(chart);
+  chart.dispose = () => {
+    document.removeEventListener('keyup', handleEscapeKey);
+    originalDispose();
+  };
 
   return chart;
 };

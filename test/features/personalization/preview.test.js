@@ -11,14 +11,14 @@ const {
 const { setConfig, updateConfig, MILO_EVENTS, createTag } = await import('../../../libs/utils/utils.js');
 
 const config = {
-  miloLibs: 'https://main--milo--adobecom.hlx.live/libs',
-  codeRoot: 'https://main--homepage--adobecom.hlx.live/homepage',
+  miloLibs: 'https://main--milo--adobecom.aem.live/libs',
+  codeRoot: 'https://main--homepage--adobecom.aem.live/homepage',
   locale: {
     ietf: 'en-US',
     tk: 'hah7vzn.css',
     prefix: '',
     region: 'us',
-    contentRoot: 'https://main--cc--adobecom.hlx.page/cc-shared',
+    contentRoot: 'https://main--cc--adobecom.aem.page/cc-shared',
   },
   mep: {
     preview: true,
@@ -41,7 +41,7 @@ const config = {
       'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
       'projectneo.adobe.com': 'stg.projectneo.adobe.com',
     },
-    '--cc--adobecom.hlx.live': {
+    '--cc--adobecom.aem.live': {
       'www.adobe.com': 'origin',
       'business.adobe.com': 'business.stage.adobe.com',
       'helpx.adobe.com': 'helpx.stage.adobe.com',
@@ -52,7 +52,7 @@ const config = {
       'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
       'projectneo.adobe.com': 'stg.projectneo.adobe.com',
     },
-    '--cc--adobecom.hlx.page': {
+    '--cc--adobecom.aem.page': {
       'www.adobe.com': 'origin',
       'business.adobe.com': 'business.stage.adobe.com',
       'helpx.adobe.com': 'helpx.stage.adobe.com',
@@ -108,7 +108,7 @@ describe('preview feature', () => {
   });
   it('updates preview button', () => {
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
-    document.querySelector('.new-manifest').value = 'https://main--homepage--adobecom.hlx.live/homepage/fragments/mep/new-manifest.json';
+    document.querySelector('.new-manifest').value = 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/new-manifest.json';
     document.querySelector('option[name*="/homepage/fragments/mep/selected-example.json"][value="default"]').closest('select').dispatchEvent(new Event('change'));
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('new-manifest.json');
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('%2Fhomepage%2Ffragments%2Fmep%2Fselected-example.json--target-smb');
@@ -129,13 +129,13 @@ describe('preview feature', () => {
     expect(page).to.equal('/products/photoshop.html');
   });
   it('parse url and page for homepage preview', () => {
-    const { url, page } = parsePageAndUrl(config, new URL('https://main--homepage--adobecom.hlx.page/fr/homepage/index-loggedout'), 'fr');
+    const { url, page } = parsePageAndUrl(config, new URL('https://main--homepage--adobecom.aem.page/fr/homepage/index-loggedout'), 'fr');
     expect(url).to.equal('https://www.adobe.com/fr/');
     expect(page).to.equal('/');
   });
   it('parse url and page for bacom preview', () => {
     config.stageDomainsMap = { 'business.stage.adobe.com': {} };
-    const { url, page } = parsePageAndUrl(config, new URL('https://main--bacom--adobecom.hlx.page/fr/products/real-time-customer-data-platform/rtcdp'), 'fr');
+    const { url, page } = parsePageAndUrl(config, new URL('https://main--bacom--adobecom.aem.page/fr/products/real-time-customer-data-platform/rtcdp'), 'fr');
     expect(url).to.equal('https://business.adobe.com/fr/products/real-time-customer-data-platform/rtcdp.html');
     expect(page).to.equal('/products/real-time-customer-data-platform/rtcdp.html');
   });
@@ -169,11 +169,10 @@ describe('MEP Lingo region select with lingo param', () => {
   beforeEach(() => {
     // Use meta tag instead of URL param because PAGE_URL is captured at module load time
     lingoMeta = document.createElement('meta');
-    lingoMeta.setAttribute('name', 'langFirst');
+    lingoMeta.setAttribute('name', 'langfirst');
     lingoMeta.setAttribute('content', 'on');
     document.head.appendChild(lingoMeta);
 
-    // Stub fetch for page existence checks
     fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, status: 200 });
   });
 
@@ -286,15 +285,30 @@ describe('MEP Lingo region select with lingo param', () => {
 describe('Lingo fragment click handlers', () => {
   let windowOpenStub;
   let testFragment;
+  let getComputedStyleStub;
 
   beforeEach(async () => {
     windowOpenStub = sinon.stub(window, 'open');
+    // Mock getComputedStyle to return badge styles
+    const originalGetComputedStyle = window.getComputedStyle;
+    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((element, pseudoElt) => {
+      if (pseudoElt === '::before') {
+        return {
+          display: 'block',
+          content: '"test badge"',
+          width: '400px',
+        };
+      }
+      return originalGetComputedStyle(element, pseudoElt);
+    });
     setConfig(config);
     await decoratePreviewMode();
   });
 
   afterEach(() => {
     windowOpenStub.restore();
+    getComputedStyleStub.restore();
+    delete document.body.dataset.mepHighlight;
     if (testFragment) {
       testFragment.remove();
       testFragment = null;

@@ -19,26 +19,27 @@ const stageDomainsMap = {
     'helpx.adobe.com': 'helpx.stage.adobe.com',
     'news.adobe.com': 'news.stage.adobe.com',
   },
-  '--bacom--adobecom.hlx.live': {
+  '--bacom--adobecom.aem.live': {
     'business.adobe.com': 'origin',
-    'blog.adobe.com': 'main--blog--adobecom.hlx.live',
-    'helpx.adobe.com': 'main--helpx--adobecom.hlx.live',
-    'news.adobe.com': 'main--news--adobecom.hlx.live',
+    'blog.adobe.com': 'main--blog--adobecom.aem.live',
+    'helpx.adobe.com': 'main--helpx--adobecom.aem.live',
+    'news.adobe.com': 'main--news--adobecom.aem.live',
   },
-  '--blog--adobecom.hlx.page': {
+  '--blog--adobecom.aem.page': {
     'blog.adobe.com': 'origin',
-    'business.adobe.com': 'main--bacom--adobecom.hlx.page',
-    'helpx.adobe.com': 'main--helpx--adobecom.hlx.page',
-    'news.adobe.com': 'main--news--adobecom.hlx.page',
+    'business.adobe.com': 'main--bacom--adobecom.aem.page',
+    'helpx.adobe.com': 'main--helpx--adobecom.aem.page',
+    'news.adobe.com': 'main--news--adobecom.aem.page',
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
+  'dev6-nest.creativecloud.adobe.com': { 'creativecloud.adobe.com': 'stage.creativecloud.adobe.com' },
 };
 const stageDomainsMapWRegex = {
-  hostname: 'stage--milo--owner.hlx.page',
+  hostname: 'stage--milo--owner.aem.page',
   map: {
-    '^https://.*--milo--owner.hlx.page': {
-      '^https://www.adobe.com/acrobat': 'https://main--dc--adobecom.hlx.page',
-      '^https://business.adobe.com/blog': 'https://main--bacom-blog--adobecom.hlx.page',
+    '^https://.*--milo--owner.aem.page': {
+      '^https://www.adobe.com/acrobat': 'https://main--dc--adobecom.aem.page',
+      '^https://business.adobe.com/blog': 'https://main--bacom-blog--adobecom.aem.page',
       '^https://business.adobe.com': 'https://business.stage.adobe.com',
       '^https://www.adobe.com': 'origin',
     },
@@ -385,7 +386,7 @@ describe('Utils', () => {
     });
 
     it('Decorates meta helix url', () => {
-      const meta = document.head.querySelector('[name="hlx-url"]');
+      const meta = document.head.querySelector('[name="aem-url"]');
       expect(meta.content).to.equal('http://localhost:2000/otis');
     });
 
@@ -478,6 +479,14 @@ describe('Utils', () => {
       expect(dntLink.dataset.hasDnt).to.equal('true');
     });
 
+    it('Should transform invalid anchor link to valid', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><a href="https://#test">Test</a></p>';
+      await utils.decorateLinksAsync(container);
+      const link = container.querySelector('a');
+      expect(link.href).to.equal(`${window.location.href}#test`);
+    });
+
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
@@ -565,47 +574,47 @@ describe('Utils', () => {
         utils.setConfig(config);
       }
       it('Same domain link is relative and localized', async () => {
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions');
       });
 
       it('Same domain fragment link is relative and localized', async () => {
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/fragments/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/fragments/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/fragments/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/fragments/gnav/solutions');
       });
 
       it('Same domain langstore link is relative and localized', async () => {
         setConfigPath('/langstore/fr/page');
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/langstore/fr/gnav/solutions');
         setConfigPath('/be_fr/page');
       });
 
       it('Same domain extensions /, .html, .json are handled', async () => {
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions.html', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.html');
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions.json', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.json');
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions/', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions/');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/gnav/solutions.html', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions.html');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/gnav/solutions.json', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions.json');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/gnav/solutions/', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions/');
       });
 
       it('Same domain link that is already localized is returned as relative', async () => {
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/be_fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/fi/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/fi', 'main--milo--adobecom.hlx.page')).to.equal('/fi');
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/be_fr/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/be_fr/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/fi/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/fi/gnav/solutions');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/fi', 'main--milo--adobecom.aem.page')).to.equal('/fi');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.aem.page')).to.equal('/langstore/fr/gnav/solutions');
       });
 
       it('Same domain PDF link is returned as relative and not localized', async () => {
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions.pdf', 'main--milo--adobecom.hlx.page')).to.equal('/gnav/solutions.pdf');
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/gnav/solutions.pdf', 'main--milo--adobecom.aem.page')).to.equal('/gnav/solutions.pdf');
       });
 
       it('Same domain link with #_dnt is returned as relative, #_dnt is removed and not localized', async () => {
-        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.hlx.page/gnav/solutions#_dnt', 'main--milo--adobecom.hlx.page'))
+        expect(await utils.localizeLinkAsync('https://main--milo--adobecom.aem.page/gnav/solutions#_dnt', 'main--milo--adobecom.aem.page'))
           .to
           .equal('/gnav/solutions');
       });
 
       it('Live domain html link  is absolute and localized', async () => {
-        expect(await utils.localizeLinkAsync('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+        expect(await utils.localizeLinkAsync('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.aem.page'))
           .to
           .equal('https://milo.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
-        expect(await utils.localizeLinkAsync('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+        expect(await utils.localizeLinkAsync('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.aem.page'))
           .to
           .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
@@ -620,13 +629,13 @@ describe('Utils', () => {
       });
 
       it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', async () => {
-        expect(await utils.localizeLinkAsync('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
+        expect(await utils.localizeLinkAsync('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.aem.page'))
           .to
           .equal('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html');
       });
 
       it('Invalid href fails gracefully', async () => {
-        expect(await utils.localizeLinkAsync('not-a-url', 'main--milo--adobecom.hlx.page'))
+        expect(await utils.localizeLinkAsync('not-a-url', 'main--milo--adobecom.aem.page'))
           .to
           .equal('not-a-url');
       });
@@ -659,6 +668,32 @@ describe('Utils', () => {
   });
 
   describe('stageDomainsMap', () => {
+    it('should not corrupt hostnames when removing locale', async () => {
+      const localePrefix = '/de';
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+        locale: { prefix: localePrefix },
+      };
+      const localeString = localePrefix.replace(/^\//, '');
+      const [hostname] = Object.entries(stageDomainsMap)
+        .find(([h]) => h.includes(localeString));
+      const a = utils.createTag('a', { href: `https://${hostname}${localePrefix}/some/path` });
+
+      utils.convertStageLinks({
+        anchors: [a],
+        config: stageConfig,
+        hostname,
+        href: `https://${hostname}`,
+      });
+
+      const converted = new URL(a.href);
+      expect(converted.hostname).to.contain(localeString);
+      expect(converted.pathname).to.equal(`${localePrefix}/some/path`);
+      expect(converted.pathname).to.not.contain(`${localePrefix}${localePrefix}/`);
+    });
+
     it('should convert links when stageDomainsMap provided without regex', async () => {
       const stageConfig = {
         ...config,
@@ -968,7 +1003,7 @@ describe('Utils', () => {
 
   describe('personalization', async () => {
     const MANIFEST_JSON = {
-      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
+      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.aem.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
     };
     function htmlResponse() {
       return new Promise((resolve) => {
@@ -1092,8 +1127,8 @@ describe('Utils', () => {
       ['.mp4', `${origin}/media_1234.mp4`, true],
       ['.mp4', `${origin}/media_1234.mp3`, false],
       ['.mp4', 'https://fake-website.com/media_1234.mp4', false],
-      ['.mp4', 'https://main--milo--adobecom.hlx.page/media_1234.mp4', true],
-      ['.mp4', 'https://main--milo--adobecom.hlx.live/media_1234.mp4', true],
+      ['.mp4', 'https://main--milo--adobecom.aem.page/media_1234.mp4', true],
+      ['.mp4', 'https://main--milo--adobecom.aem.live/media_1234.mp4', true],
       ['.mp4', 'https://main--milo--adobecom.aem.page/media_1234.mp4', true],
       ['.mp4', 'https://main--milo--adobecom.aem.live/media_1234.mp4', true],
       ['.mp4', 'https://adobe.com/media_1234.mp4', true],
@@ -1621,7 +1656,7 @@ describe('Utils', () => {
       lingoUtils.setConfig(defaultTestConfig);
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('content', 'on');
-      lingoMeta.setAttribute('name', 'langFirst');
+      lingoMeta.setAttribute('name', 'langfirst');
       document.head.append(lingoMeta);
     });
 
@@ -1632,7 +1667,7 @@ describe('Utils', () => {
       } else {
         delete window.lana;
       }
-      const meta = document.querySelector('meta[name="langFirst"]');
+      const meta = document.querySelector('meta[name="langfirst"]');
       if (meta) document.head.removeChild(meta);
     });
 
@@ -1668,6 +1703,9 @@ describe('Utils', () => {
         if (url.includes('cc-shared') && url.includes('/de/')) {
           ccBaseResolved = true;
           return mockRes({ payload: ccBaseQueryIndex });
+        }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
         }
         if (url.includes('dc-shared') && url.includes('/ch_de/')) {
           // DC Regional index is slow - simulating other subsites
@@ -1753,6 +1791,9 @@ describe('Utils', () => {
         if (url.includes('query-index')) {
           return mockRes({ payload: null, ok: false, status: 404 });
         }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
+        }
         return mockRes({ payload: { data: [] } });
       });
 
@@ -1836,6 +1877,127 @@ describe('Utils', () => {
     });
   });
 
+  describe('Language Banner in Utils', () => {
+    let fetchStub;
+    const sandbox = sinon.createSandbox();
+    const setConfigForTest = (pathname = '/', locales = {
+      '': { ietf: 'en-US', prefix: '' },
+      de: { ietf: 'de-DE', prefix: '/de' },
+      fr: { ietf: 'fr-FR', prefix: '/fr' },
+      it: { ietf: 'it-IT', prefix: '/it' },
+      jp: { ietf: 'ja-JP', prefix: '/jp' },
+    }) => {
+      const bannerConfig = {
+        imsClientId: 'milo',
+        codeRoot: '/libs',
+        contentRoot: window.location.origin,
+        locales,
+        pathname,
+      };
+      utils.setConfig(bannerConfig);
+    };
+
+    const mockMarkets = {
+      data: [
+        {
+          prefix: '', lang: 'en', languageName: 'English', text: 'This page is also available in', continueText: 'Continue', supportedRegions: 'us, gb',
+        },
+        {
+          prefix: 'de', lang: 'de', languageName: 'Deutsch', text: 'Diese Seite ist auch auf', continueText: 'Weiter', supportedRegions: 'de, at, ch, us', regionPriorities: 'ch:1, lu:2',
+        },
+        {
+          prefix: 'fr', lang: 'fr', languageName: 'Français', text: 'Cette page est également disponible en', continueText: 'Continuer', supportedRegions: 'fr, ch', regionPriorities: 'ch:2, lu:1',
+        },
+        {
+          prefix: 'it', lang: 'it', languageName: 'Italiano', text: 'Visualizza questa pagina in', continueText: 'Continuare', supportedRegions: 'it, ch', regionPriorities: 'ch:3',
+        },
+        {
+          prefix: 'jp', lang: 'ja', languageName: '日本語', text: 'このページは次の言語でもご覧いただけます', continueText: '続行', supportedRegions: 'jp',
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      fetchStub = sandbox.stub(window, 'fetch');
+      fetchStub.withArgs(sinon.match('/federal/assets/data/lingo-site-mapping.json')).resolves({
+        ok: true,
+        json: () => Promise.resolve({ data: [] }),
+      });
+      sandbox.stub(console, 'warn');
+      document.head.innerHTML = '';
+      document.body.innerHTML = '';
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+      document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      sessionStorage.clear();
+      if (navigator.language) delete navigator.language;
+    });
+
+    const mockGeo = (country = 'us') => {
+      const res = new Response(JSON.stringify({ country }), {
+        status: 200,
+        headers: { 'Content-type': 'application/json' },
+      });
+      fetchStub.withArgs(sinon.match('geo2.adobe.com')).resolves(res);
+    };
+
+    const mockMarketsConfig = (marketConfig = mockMarkets) => {
+      fetchStub.withArgs(sinon.match('supported-markets')).resolves({
+        ok: true,
+        json: () => Promise.resolve(JSON.parse(JSON.stringify(marketConfig))),
+      });
+    };
+
+    it('does not show banner if disabled via metadata', async () => {
+      document.head.innerHTML = '<meta name="language-banner" content="off">';
+      setConfigForTest('/');
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+
+    it('does not show banner if international cookie is already set to the page locale', async () => {
+      document.cookie = 'international=de; path=/';
+      setConfigForTest('/de/page');
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+    it('does not show banner if preferred language is the same as page language', async () => {
+      setConfigForTest('/de/page');
+      mockGeo('de');
+      mockMarketsConfig();
+      Object.defineProperty(navigator, 'language', { value: 'de-DE', configurable: true });
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+
+    it('does not show banner if geo location cannot be determined', async () => {
+      setConfigForTest('/');
+      fetchStub.withArgs(sinon.match('geo2.adobe.com')).resolves({ ok: false, statusText: 'Not Found' });
+      mockMarketsConfig();
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+
+    it('does not show banner if markets config is not available', async () => {
+      setConfigForTest('/');
+      mockGeo('de');
+      fetchStub.withArgs(sinon.match('supported-markets')).resolves({ ok: false });
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+
+    it('does not show banner for supported market if no preferred market is available', async () => {
+      setConfigForTest('/');
+      mockGeo('us');
+      mockMarketsConfig();
+      Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
+      await utils.loadArea();
+      expect(document.querySelector('.language-banner')).to.be.null;
+    });
+  });
+
   describe('MEP Lingo Preprocessing in decorateLinksAsync', () => {
     let lingoMeta;
     let testContainer;
@@ -1845,7 +2007,7 @@ describe('Utils', () => {
       document.body.innerHTML = '';
       document.body.className = '';
       lingoMeta = document.createElement('meta');
-      lingoMeta.setAttribute('name', 'langFirst');
+      lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
       document.head.append(lingoMeta);
       testContainer = document.createElement('div');
@@ -1873,8 +2035,8 @@ describe('Utils', () => {
       expect(link.href).to.equal('https://www.adobe.com/fragments/test');
     });
 
-    it('verifies lingoActive is true when langFirst meta is set', async () => {
-      const lingoValue = utils.getMetadata('langFirst');
+    it('verifies lingoActive is true when langfirst meta is set', async () => {
+      const lingoValue = utils.getMetadata('langfirst');
       expect(lingoValue).to.equal('on');
     });
 

@@ -599,54 +599,72 @@ function markDefaultFragments() {
     const hasManifest = fragment.dataset.manifestId;
     const hasRoc = fragment.dataset.mepLingoRoc;
     const hasFallback = fragment.dataset.mepLingoFallback;
-    if (!hasManifest && !hasRoc && !hasFallback) {
+    if (!hasManifest && !hasRoc && !hasFallback && fragment.dataset.path) {
       fragment.dataset.fragmentDefault = '';
-      if (fragment.dataset.path) {
-        fragment.dataset.fragmentDisplay = fragment.dataset.path;
-      }
+      fragment.dataset.fragmentDisplay = fragment.dataset.path;
     }
   });
 }
 
-function adjustBadgePositions() {
+function adjustBadgesForZeroHeightSections() {
   const badgeSelectors = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
   document.querySelectorAll(badgeSelectors).forEach((el) => {
-    const elWidth = el.offsetWidth;
-    // Create a temporary element to measure the badge width
-    const tempBadge = document.createElement('span');
-    tempBadge.style.cssText = 'position: absolute; visibility: hidden; font-size: 14px; padding: 5px 10px; white-space: nowrap;';
-    const badgeText = el.dataset.mepLingoRoc
-      || el.dataset.mepLingoFallback
-      || el.dataset.fragmentDisplay
-      || '';
-    tempBadge.textContent = `🔗 ${badgeText}`;
-    document.body.appendChild(tempBadge);
-    const badgeWidth = tempBadge.offsetWidth;
-    document.body.removeChild(tempBadge);
-
-    // If badge is wider than element, shift it right by element width
-    if (badgeWidth > elWidth) {
-      el.style.setProperty('--badge-margin-left', `${elWidth}px`);
+    const section = el.closest('.section');
+    const elementHeight = el.offsetHeight;
+    const sectionHeight = section ? section.offsetHeight : elementHeight;
+    if (sectionHeight < 10) {
+      const badgeHeight = 35;
+      const spacing = 5;
+      el.style.setProperty('--badge-top-offset', `-${badgeHeight + spacing}px`);
     }
   });
 }
 
-function addLingoFragmentClickHandlers() {
+function addFragmentBadgeClickHandlers() {
   document.body.addEventListener('click', (e) => {
-    const lingoFragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
-    if (lingoFragment) {
-      const rect = lingoFragment.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      if (clickY < 35 && clickX < 400 && clickX > 0) {
-        e.preventDefault();
-        e.stopPropagation();
-        const fragmentPath = lingoFragment.dataset.path;
-        if (fragmentPath) {
-          window.open(fragmentPath, '_blank');
+    const isHighlightEnabled = document.body.dataset.mepHighlight === 'true';
+    const isFragmentsEnabled = document.body.dataset.mepFragments === 'true';
+    if (!isHighlightEnabled && !isFragmentsEnabled) return;
+
+    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
+    if (!fragment) return;
+
+    const elementStyle = window.getComputedStyle(fragment);
+    const beforeStyles = window.getComputedStyle(fragment, '::before');
+    const badgeIsVisible = beforeStyles.display !== 'none' && beforeStyles.content !== 'none';
+    if (!badgeIsVisible) return;
+
+    // Use max of calculated width or a reasonable minimum for long badge text
+    const badgeWidth = Math.max(parseFloat(beforeStyles.width) + 30, 200);
+    const openFragment = () => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (fragment.dataset.path) window.open(fragment.dataset.path, '_blank');
+    };
+
+    // Handle badges inside of tabs and other display:contents elements:
+    if (elementStyle.display === 'contents') {
+      const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
+      if (visibleChildren.length === 0) {
+        if (e.clientX >= 0 && e.clientX < badgeWidth) openFragment();
+        return;
+      }
+      for (const child of visibleChildren) {
+        const childRect = child.getBoundingClientRect();
+        const relativeY = e.clientY - childRect.top;
+        const relativeX = e.clientX - childRect.left;
+        if (relativeY >= -40 && relativeY < 0 && relativeX >= 0 && relativeX < badgeWidth) {
+          openFragment();
+          return;
         }
       }
+      return;
     }
+
+    const rect = fragment.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    if (clickY < 35 && clickX >= 0 && clickX < badgeWidth) openFragment();
   });
 }
 
@@ -687,7 +705,7 @@ export default async function decoratePreviewMode() {
   createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
-  addLingoFragmentClickHandlers();
+  addFragmentBadgeClickHandlers();
   // Adjust badge positions after a short delay to allow rendering
-  setTimeout(adjustBadgePositions, 100);
+  setTimeout(adjustBadgesForZeroHeightSections, 100);
 }

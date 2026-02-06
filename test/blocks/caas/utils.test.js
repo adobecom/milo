@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { getLingoActive } from '../../../libs/utils/lingo-active.js';
 import {
   defaultState,
   getConfig,
@@ -11,6 +12,13 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
+
+describe('utils.js export sanity', () => {
+  it('getLingoActive() is callable and returns a boolean', async () => {
+    const val = await getLingoActive();
+    expect(val).to.be.a('boolean');
+  });
+});
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
@@ -220,6 +228,7 @@ describe('getConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',
@@ -493,6 +502,7 @@ describe('getConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',
@@ -727,6 +737,14 @@ describe('getCountryAndLang', () => {
     },
   };
 
+  beforeEach(() => {
+    // Ensure no langfirst metadata exists for tests that don't explicitly set it
+    const existingLangFirst = document.querySelector('meta[name="langfirst"]');
+    if (existingLangFirst) {
+      existingLangFirst.remove();
+    }
+  });
+
   it('should use country and lang from CaaS Config', async () => {
     setConfig(cfg);
     const expected = await getCountryAndLang({
@@ -931,6 +949,7 @@ describe('getFloodgateCaasConfig', () => {
         eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
+        categoryMappings: {},
         categories: [
           {
             group: 'All Topics',
@@ -1181,5 +1200,70 @@ describe('getGrayboxExperienceId', () => {
 
     const experienceId = getGrayboxExperienceId(hostname, pathname);
     expect(experienceId).to.equal('test-exp');
+  });
+});
+
+describe('isLocaleInRegionalSites helper function tests', () => {
+  // This tests the helper function logic inline since it's not exported
+  const isLocaleInRegionalSites = (regionalSites, localeStr) => {
+    if (!regionalSites) return false;
+    return regionalSites
+      .split(',')
+      .map((site) => site.trim().replace(/^\//, ''))
+      .includes(localeStr);
+  };
+
+  describe('Locale examples', () => {
+    it('should match "ca_fr" in "/ca_fr, /ch_fr, /be_fr"', () => {
+      const result = isLocaleInRegionalSites('/ca_fr, /ch_fr, /be_f', 'ca_fr');
+      expect(result).to.be.true;
+    });
+
+    it('should NOT match "ca" in "/africa" (was a substring bug)', () => {
+      const result = isLocaleInRegionalSites('/africa', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "ca" in "/ca_fr" (partial locale bug)', () => {
+      const result = isLocaleInRegionalSites('/ca_fr', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "en" in "/ae_en, /be_en" (suffix bug)', () => {
+      const result = isLocaleInRegionalSites('/ae_en, /be_en', 'en');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "fr" in "/ca_fr, /be_fr, /ch_fr" (suffix bug)', () => {
+      const result = isLocaleInRegionalSites('/ca_fr, /be_fr, /ch_fr', 'fr');
+      expect(result).to.be.false;
+    });
+  });
+
+  describe('Edge cases and error handling', () => {
+    it('should return false for empty string', () => {
+      const result = isLocaleInRegionalSites('', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should return false for null', () => {
+      const result = isLocaleInRegionalSites(null, 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should return false for undefined', () => {
+      const result = isLocaleInRegionalSites(undefined, 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should handle whitespace in list "/ca , /ie , /nz"', () => {
+      const result = isLocaleInRegionalSites('/ca , /ie , /nz', 'ie');
+      expect(result).to.be.true;
+    });
+
+    it('should return false when locale not in list', () => {
+      const result = isLocaleInRegionalSites('/ca, /ie, /nz', 'sg');
+      expect(result).to.be.false;
+    });
   });
 });

@@ -21,6 +21,11 @@ const isProductFamily = (offer, pfs) => {
   const productFamily = offer?.offer?.product_arrangement_v2?.family;
   return productFamily && pfs.includes(productFamily) && !isProductCodeIgnored(offer);
 };
+
+const isProductCode = (offer, codes) => {
+  const productCode = offer?.offer?.product_code;
+  return productCode && codes.includes(productCode) && !isProductCodeIgnored(offer);
+};
 export const LANA_OPTIONS = {
   clientId: 'merch-at-scale',
   sampleRate: 10,
@@ -113,11 +118,14 @@ export default async function handleUpgradeOffer(
 ) {
   if (!TARGET_PF.includes(ctaPF)) return undefined;
 
-  const hasUpgradeTarget = entitlements?.find((offer) => isProductFamily(offer, TARGET_PF));
-  if (hasUpgradeTarget) return undefined;
+  const hasUpgradeTargetFamily = entitlements?.find((offer) => isProductFamily(offer, TARGET_PF));
+  const hasUpgradeTargetCode = entitlements?.find((offer) => isProductCode(offer, TARGET_PF));
+  if (hasUpgradeTargetFamily && hasUpgradeTargetCode) return undefined;
 
   const changePlanOffers = entitlements?.filter((offer) => offer.change_plan_available === true);
-  const upgradable = changePlanOffers?.find((offer) => isProductFamily(offer, SOURCE_PF));
+  const upgradable = changePlanOffers?.find(
+    (offer) => isProductFamily(offer, SOURCE_PF) || isProductCode(offer, SOURCE_PF),
+  );
   if (!upgradable) return undefined;
 
   const { env, base } = getConfig();

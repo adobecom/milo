@@ -25,11 +25,10 @@ export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
-  const localePrefix = getConfig()?.locale?.prefix;
 
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    if (shouldBlockFreeTrialLinks({ button, localePrefix, parent })) return;
+    if (shouldBlockFreeTrialLinks(button)) return;
     let target = button;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
@@ -138,6 +137,19 @@ export function handleFocalpoint(pic, child, removeChild) {
   image.style.objectPosition = `${x} ${y}`;
 }
 
+// Used in DA focal point feature
+export function setBackgroundFocus(pic) {
+  const img = pic?.querySelector('img');
+  if (!img) return;
+  const { title } = img.dataset;
+  if (!title?.startsWith('data-focal:')) return;
+  const coords = title.split(':')[1]?.split(',');
+  if (coords?.length !== 2) return;
+  const [x, y] = coords;
+  delete img.dataset.title;
+  img.style.objectPosition = `${x}% ${y}%`;
+}
+
 export async function decorateBlockBg(block, node, { useHandleFocalpoint = false, className = 'background' } = {}) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
@@ -148,6 +160,7 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
     [...node.children].forEach((child, i) => {
       if (childCount > 1 && i < viewports.length) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
+      setBackgroundFocus(pic); // Used in DA focal point feature
       if (useHandleFocalpoint && pic
         && (child.childElementCount === 2 || child.textContent?.trim())) {
         handleFocalpoint(pic, child, true);

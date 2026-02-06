@@ -644,6 +644,10 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   if (inline) {
     if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
+    if (fragment.dataset.mepLingoRoc) setDataIdOnChildren(sections, 'mepLingoRoc', fragment.dataset.mepLingoRoc);
+    if (fragment.dataset.mepLingoFallback) {
+      setDataIdOnChildren(sections, 'mepLingoFallback', fragment.dataset.mepLingoFallback);
+    }
   } else {
     addIds(fragment, manifestId, adobeTargetTestid);
   }
@@ -674,10 +678,13 @@ export async function handleCommands(
   const section1 = document.querySelector('main > div');
   addSectionAnchors(rootEl);
   for (const cmd of commands) {
-    const { action, content, selector } = cmd;
-    cmd.content = forceInline && getSelectorType(content) === SELECTOR_TYPES.fragment
-      ? addHash(content, INLINE_HASH)
-      : content;
+    const { action, selector } = cmd;
+    if (forceInline
+      && action !== 'updateattribute'
+      && getSelectorType(cmd.content) === SELECTOR_TYPES.fragment
+      && !cmd.content.includes(INLINE_HASH)) {
+      cmd.content = addHash(cmd.content, INLINE_HASH);
+    }
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd);
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
@@ -1292,6 +1299,7 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
 
         if (targetManifestWinsOverServerManifest) {
           freshManifest.variants = fullManifest.variants;
+          freshManifest.variantNames = fullManifest.variantNames;
           freshManifest.placeholderData = fullManifest.placeholderData;
         }
 
