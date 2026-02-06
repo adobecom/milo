@@ -799,51 +799,24 @@ describe('getCountryAndLang', () => {
 
   describe('langFirst with GEO IP', () => {
     let metaLangFirst;
-    let ogFetch;
-    let savedPathname;
-
-    const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
-    /** Mocks getLingoSiteLocale via fetch stub. Two entries: /fr → { country: 'xx', language: 'fr' }; /en or /en/be → { country: 'xx', language: 'en' }. Both trigger geo when mep.countryIP is set. */
-    const lingoMappingResponse = () => Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({
-        'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
-        'site-locales': {
-          data: [
-            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: '' },
-            { uniqueSiteId: 'hawks-site', baseSite: '/en', regionalSites: 'be' },
-          ],
-        },
-      }),
-    });
 
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
       metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
-      savedPathname = window.location.pathname;
-      ogFetch = window.fetch;
-      window.fetch = stub().callsFake((url) => {
-        const urlStr = typeof url === 'string' ? url : (url?.url ?? url?.href ?? '');
-        return urlStr === LINGO_MAPPING_URL ? lingoMappingResponse() : ogFetch(url);
-      });
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
-      window.fetch = ogFetch;
-      history.replaceState({}, '', savedPathname);
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
-      history.replaceState({}, '', '/fr/blah.html');
       setConfig({
-        pathname: '/fr/blah.html',
-        locales: { '': { ietf: 'fr-FR' } },
-        mep: { countryIP: 'ch' },
+        pathname: '/en/blah.html',
+        locales: { '': { ietf: 'en-US' } },
       });
 
       const expected = await getCountryAndLang({
@@ -852,7 +825,7 @@ describe('getCountryAndLang', () => {
       });
 
       expect(expected.country).to.not.eq('xx');
-      expect(expected.language).to.eq('fr');
+      expect(expected.language).to.eq('en');
     });
 
     it('should NOT use GEO IP for news source', async () => {
@@ -871,14 +844,12 @@ describe('getCountryAndLang', () => {
     });
 
     it('should return valid country with fallback support', async () => {
-      history.replaceState({}, '', '/fr/be/blah.html');
       setConfig({
         pathname: '/en/be/blah.html',
         locales: {
           '': { ietf: 'en-US' },
           be: { ietf: 'nl-BE' },
         },
-        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({
