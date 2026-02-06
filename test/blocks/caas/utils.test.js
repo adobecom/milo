@@ -799,24 +799,42 @@ describe('getCountryAndLang', () => {
 
   describe('langFirst with GEO IP', () => {
     let metaLangFirst;
+    let ogFetch;
+
+    const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
+    /** Mocks getLingoSiteLocale via fetch: /en or /en/be path returns isLingoSite 'true', country 'xx', so geo is used when mep.countryIP is set. */
+    const lingoMappingResponse = () => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
+        'site-locales': { data: [{ uniqueSiteId: 'hawks-site', baseSite: '/en', regionalSites: 'be' }] },
+      }),
+    });
 
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
       metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
+      ogFetch = window.fetch;
+      window.fetch = stub().callsFake((url) => {
+        const urlStr = typeof url === 'string' ? url : (url?.url ?? url?.href ?? '');
+        return urlStr === LINGO_MAPPING_URL ? lingoMappingResponse() : ogFetch(url);
+      });
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
+      window.fetch = ogFetch;
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
       setConfig({
         pathname: '/en/blah.html',
         locales: { '': { ietf: 'en-US' } },
+        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({
@@ -850,6 +868,7 @@ describe('getCountryAndLang', () => {
           '': { ietf: 'en-US' },
           be: { ietf: 'nl-BE' },
         },
+        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({

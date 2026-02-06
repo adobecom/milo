@@ -679,13 +679,14 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
     if (!isNewsSource) {
       const primeSource = Array.from([source].flat())[0];
-      const mapping = await getLanguageFirstCountryAndLang(window.location.pathname, primeSource);
+      const pathname = pageConfigHelper()?.pathname || window.location.pathname;
+      const mapping = await getLanguageFirstCountryAndLang(pathname, primeSource);
 
       countryStr = mapping.country || fallbackCountry;
       langStr = mapping.lang || fallbackLang;
 
       if (countryStr === 'xx') {
-        const { isLingoSite } = await getLingoSiteLocale(primeSource, window.location.pathname);
+        const { isLingoSite } = await getLingoSiteLocale(primeSource, pathname);
         try {
           let geoCountry = getCountry()
             || pageConfigHelper().mep?.countryIP;
