@@ -685,6 +685,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       langStr = mapping.lang || fallbackLang;
 
       if (countryStr === 'xx') {
+        const isLingoSite = getLingoSiteLocale(primeSource, window.location.pathname);
         try {
           let geoCountry = getCountry()
             || pageConfigHelper().mep?.countryIP;
@@ -694,7 +695,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
             geoCountry = await getAkamaiCode(true);
           }
 
-          if (geoCountry) countryStr = geoCountry.toLowerCase();
+          if (geoCountry && (isLingoSite.isLingoSite === 'true')) countryStr = geoCountry.toLowerCase();
         } catch (error) {
           window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
         }
@@ -888,7 +889,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const singleOrigin = originSelection.split(',')[0];
   let isLingoSite = isLingoActive ? await getLingoSiteLocale(singleOrigin, document.location.pathname) : { isLingoSite: 'false' };
   // handle news source separately as it is not a lingo site
-  if (originSelection === 'news') {
+  if (originSelection?.toLowerCase().includes('news')) {
     isLingoSite = { isLingoSite: 'true' };
   }
   const getLingoResults = (isLingoActive && (isLingoSite.isLingoSite === 'true')) ? 'true' : 'false';
