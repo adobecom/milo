@@ -538,6 +538,41 @@ const getCategoryMappings = async (state) => {
   return {};
 };
 
+const isLocaleInRegionalSites = (regionalSites, locStr) => {
+  if (!regionalSites) return false;
+  return regionalSites
+    .split(',')
+    .map((site) => site.trim().replace(/^\//, ''))
+    .includes(locStr);
+};
+
+async function getIsLingoLocale(origin, country) {
+  let siteId;
+  let isKnownLingoSiteLocale = false;
+  const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const configJson = await response.json();
+
+  const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+  const siteLocalesData = configJson['site-locales']?.data ?? [];
+  try {
+    const matchedByOrigin = siteQueryIndexMap.find(({ caasOrigin }) => origin === caasOrigin);
+    if (matchedByOrigin) {
+      siteId = matchedByOrigin.uniqueSiteId;
+    }
+    isKnownLingoSiteLocale = siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => {
+      if (uniqueSiteId !== siteId) return false;
+      const baseLocale = baseSite?.split('/')[1];
+      const matchesBase = country === baseLocale;
+      const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
+      return matchesBase || matchesRegional;
+    });
+  } catch (e) {
+    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+  }
+  return isKnownLingoSiteLocale;
+}
+
 async function getLingoSiteLocale(origin, path) {
   const host = origin.toLowerCase();
   let lingoSiteMapping = {
@@ -572,23 +607,10 @@ async function getLingoSiteLocale(origin, path) {
     const siteLocalesData = configJson['site-locales']?.data ?? [];
 
     // Map origin (caasOrigin) to uniqueSiteId for locale lookup
-    siteQueryIndexMap
-      .forEach(({ uniqueSiteId, caasOrigin }) => {
-        if (host === caasOrigin) {
-          siteId = uniqueSiteId;
-        } else {
-          window.lana?.log('[getLingoSiteLocale] No match: host', host, '!== caasOrigin', caasOrigin);
-        }
-      });
-
-    const isLocaleInRegionalSites = (regionalSites, locStr) => {
-      if (!regionalSites) return false;
-      return regionalSites
-        .split(',')
-        .map((site) => site.trim().replace(/^\//, ''))
-        .includes(locStr);
-    };
-
+    const matchedByOrigin = siteQueryIndexMap.find(({ caasOrigin }) => host === caasOrigin);
+    if (matchedByOrigin) {
+      siteId = matchedByOrigin.uniqueSiteId;
+    }
     // check if the localeStr is in the baseSite or regionalSites.
     // if not, use the og country/language logic
     if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || isLocaleInRegionalSites(regionalSites, localeStr)))) {
@@ -686,7 +708,6 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       langStr = mapping.lang || fallbackLang;
 
       if (countryStr === 'xx') {
-        const { isLingoSite } = await getLingoSiteLocale(primeSource, pathname);
         try {
           let geoCountry = getCountry()
             || pageConfigHelper().mep?.countryIP;
@@ -696,7 +717,10 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
             geoCountry = await getAkamaiCode(true);
           }
 
-          if (geoCountry && (isLingoSite === 'true')) countryStr = geoCountry.toLowerCase();
+          if (geoCountry) {
+            const isLingoLocale = await getIsLingoLocale(primeSource, geoCountry);
+            if (isLingoLocale) countryStr = geoCountry.toLowerCase();
+          }
         } catch (error) {
           window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
         }
