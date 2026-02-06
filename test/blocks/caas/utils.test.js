@@ -801,11 +801,12 @@ describe('getCountryAndLang', () => {
     let metaLangFirst;
     let ogFetch;
 
+    /** Mocks getLingoSiteLocale by stubbing its dependency: fetch(lingo-site-mapping.json) */
     const lingoMappingResponse = () => Promise.resolve({
       ok: true,
       json: () => Promise.resolve({
         'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
-        'site-locales': { data: [{ uniqueSiteId: 'hawks-site', baseSite: '/en', regionalSites: '' }] },
+        'site-locales': { data: [{ uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'ch' }] },
       }),
     });
 
@@ -831,9 +832,9 @@ describe('getCountryAndLang', () => {
 
     it('should use GEO IP for langFirst when not news source', async () => {
       setConfig({
-        pathname: '/en/blah.html',
-        locales: { '': { ietf: 'en-US' } },
-        mep: { countryIP: 'us' },
+        pathname: '/fr/blah.html',
+        locales: { '': { ietf: 'fr-FR' } },
+        mep: { countryIP: 'ch' },
       });
 
       const expected = await getCountryAndLang({
@@ -842,7 +843,7 @@ describe('getCountryAndLang', () => {
       });
 
       expect(expected.country).to.not.eq('xx');
-      expect(expected.language).to.eq('en');
+      expect(expected.language).to.eq('fr');
     });
 
     it('should NOT use GEO IP for news source', async () => {
