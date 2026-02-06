@@ -1,6 +1,6 @@
 .multimedia-marquee.mm {
   --mm-accent: #fa0f00;
-  --mm-nav-bg: rgb(0 0 0 / 35%);
+  --mm-nav-bg: rgb(255 255 255 / 15%);
   --mm-nav-bg-hover: rgb(0 0 0 / 45%);
   --mm-nav-bg-active: rgb(255 255 255 / 92%);
   --mm-nav-text: #fff;
@@ -162,7 +162,7 @@
   color: var(--mm-nav-text);
   cursor: pointer;
   user-select: none;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(16.5px);
 }
 
 .mm-nav-item:hover {
