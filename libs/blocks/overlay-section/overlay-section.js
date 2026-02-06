@@ -153,9 +153,7 @@ function initParallax(blockEl) {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll, { passive: true });
   update();
-  requestAnimationFrame(() => {
-    requestAnimationFrame(update);
-  });
+  requestAnimationFrame(update);
 }
 
 export default function init(el) {
