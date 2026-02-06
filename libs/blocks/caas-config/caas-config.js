@@ -159,8 +159,10 @@ const defaultOptions = {
     'over-background': 'Over Background',
   },
   paginationAnimationStyle: {
-    paged: 'Paged',
-    incremental: 'Incremental',
+    pagedModern: 'Modern (Paged)',
+    incrementalModern: 'Modern (Incremental)',
+    paged: 'Classic (Paged)',
+    incremental: 'Classic (Incremental)',
   },
   paginationType: {
     paginator: 'Paginator',
@@ -197,6 +199,7 @@ const defaultOptions = {
     workfront: 'Workfront',
     'bacom-blog': 'Bacom Blog',
     news: 'Newsroom',
+    'adobe-blog': 'Adobe Blog',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
   titleHeadingLevel: {
@@ -378,6 +381,17 @@ const UiPanel = () => {
     </div>
   `;
 
+  const carouselOptions = html`
+    <div class="carousel-options">
+      <${Select}
+        label="Carousel Controls Options"
+        prop="paginationAnimationStyle"
+        options=${defaultOptions.paginationAnimationStyle}
+      />
+      <${Input} label="Light background (Modern only)" prop="useLightControls" type="checkbox" />
+    </div>
+  `;
+
   return html`
     <${Input} label="Show Total Count" prop="showTotalResults" type="checkbox" />
     <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
@@ -393,6 +407,7 @@ const UiPanel = () => {
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
     <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
+      ${state.container === 'carousel' && carouselOptions}
     <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
     <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
     <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
@@ -602,7 +617,10 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
-  `;
+    <${Input} label="Categories mapping file (optional)" type="text" 
+      prop="categoriesMappingFile"
+      value=${context.state.categoriesMappingFile}/>
+    `;
 
   const FilterBuildPanel = html`
     <${FilterOptions}>
@@ -683,11 +701,6 @@ const PaginationPanel = () => {
       label="Pagination Type"
       prop="paginationType"
       options=${defaultOptions.paginationType}
-    />
-    <${Select}
-      label="Carousel Animation Style"
-      prop="paginationAnimationStyle"
-      options=${defaultOptions.paginationAnimationStyle}
     />
     <${Input} label="Use Theme 3" prop="paginationUseTheme3" type="checkbox" />
   `;

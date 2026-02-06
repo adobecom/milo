@@ -12,6 +12,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  getCountry,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -55,16 +56,13 @@ const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/asi
 
 const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
-const [utilities, placeholders, merch, { processTrackingLabels }] = await Promise.all([
+const [utilities, placeholders, { processTrackingLabels }] = await Promise.all([
   import('./utilities/utilities.js'),
   import('../../features/placeholders.js'),
-  import('../merch/merch.js'),
   import('../../martech/attributes.js'),
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-
-const { getMiloLocaleSettings } = merch;
 
 const {
   closeAllDropdowns,
@@ -131,11 +129,7 @@ export function getAnalyticsValue(str, index) {
 }
 
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  if (shouldBlockFreeTrialLinks({
-    button: elem,
-    localePrefix: getConfig()?.locale?.prefix,
-    parent: elem.parentElement,
-  })) return null;
+  if (shouldBlockFreeTrialLinks(elem)) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
   const clone = elem.cloneNode(true);
@@ -918,7 +912,7 @@ class Gnav {
       target: this.blocks.universalNav,
       env: environment,
       locale,
-      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
+      countryCode: getCountry() || 'US',
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
@@ -1178,7 +1172,7 @@ class Gnav {
     const promoPath = getMetadata('gnav-promo-source');
     const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
 
-    if (!promoPath || !asideJsPromise) {
+    if (!promoPath || !asideJsPromise || !fedsPromoWrapper) {
       fedsPromoWrapper?.remove();
       this.block.classList.remove('has-promo');
       return this.elements.aside;
@@ -1274,17 +1268,24 @@ class Gnav {
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
+    const languageBanner = document.querySelector('.language-banner');
+    const languageBannerHeight = languageBanner?.offsetHeight || 0;
 
     const isLocalNav = this.isLocalNav();
-    if (!isLocalNav && hasPromo) {
-      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+
+    // Handle initial positioning for non-local nav (promo + visible language banner)
+    if (!isLocalNav && (hasPromo || languageBanner)) {
+      const langBannerNewHeight = languageBanner ? Math.max(0, languageBannerHeight - yOffset) : 0;
+      const totalOffsetHeight = (hasPromo ? promoHeight : 0) + langBannerNewHeight;
+      popup.style.top = `calc(0px - var(--feds-height-nav) - ${totalOffsetHeight}px)`;
       if (isSmallScreen) return;
     }
-    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
     const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     if (isLocalNav) {
-      popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+      const langBannerOffset = languageBanner ? languageBannerHeight : 0;
+      popup.style.top = `calc(${yOffset}px - ${navOffset} - ${langBannerOffset}px - 2px)`;
     }
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent) {
@@ -1486,6 +1487,7 @@ class Gnav {
       switch (itemType) {
         case 'syncDropdownTrigger':
         case 'asyncDropdownTrigger': {
+          if (shouldBlockFreeTrialLinks(item)) return null;
           const dropdownTrigger = toFragment`<button
             class="feds-navLink feds-navLink--hoverCaret"
             aria-expanded="false"
@@ -1536,14 +1538,15 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
           let linkElem = item.querySelector('a');
+          if (shouldBlockFreeTrialLinks(linkElem)) return null;
           if (linkElem.classList.contains('merch')) {
-            linkElem = await merch.default(linkElem);
+            linkElem = await (await import('../merch/merch.js')).default(linkElem);
           }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
@@ -1577,10 +1580,24 @@ class Gnav {
             </div>`;
           return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
         }
-        case 'text':
+        case 'text': {
+          let isBlack = false;
+          const isMerch = item.classList.contains('merch');
+          // Check for (black) in text content
+          if (isMerch && (item.textContent.match(/\(black\)$/i) || item.innerText.match(/\(black\)$/i))) {
+            isBlack = true;
+            // Remove (black) from the text content so merch.default sees the clean text
+            item.textContent = item.textContent.replace(/\s*\(black\)$/i, '');
+          }
+          const content = isMerch ? await (await import('../merch/merch.js')).default(item) : item.textContent;
+          if (isBlack && content instanceof HTMLElement) {
+            content.classList.add('feds-navLink--black');
+          }
+
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
+              ${content}
             </div>`, item);
+        }
         default:
           /* c8 ignore next 3 */
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
