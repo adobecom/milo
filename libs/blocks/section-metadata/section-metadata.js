@@ -12,6 +12,71 @@ const mediaQueries = {
   tablet: window.matchMedia('(min-width: 600px) and (max-width: 1199px)'),
 };
 
+const generateID = () => {
+  const idLength = 9;
+  const getId = Date.now();
+
+  let uid = getId.toString().split('').reverse();
+  uid = uid.splice(0, idLength).join('');
+
+  return uid;
+};
+
+function handleAdvanced(metadata, section) {
+  console.log('where my metadata', metadata);
+  if (!metadata || !section) return;
+
+  const templateAreaArray = [metadata.grid, metadata['grid-tablet'], metadata['grid-desktop']];
+  console.log('grid array', templateAreaArray);
+  const sectionId = `section-${generateID()}`;
+  section.classList.add('advanced', sectionId);
+
+  if (!metadata.grid || !metadata.grid.text) return;
+  console.log('metadata.grid', metadata['grid-desktop']?.text);
+
+  // test - get all breakpoint details
+  // const gridBreakpoint = Object.keys(metadata).filter((key) => key.indexOf('grid') === 0).reduce((newData, key) => {
+  //   console.log('newData', newData);
+  //   newData[key] = metadata[key];
+  //   return newData;
+  // }, {});
+  // console.log('gridBreakpoint', gridBreakpoint);
+  const templateAreas = [];
+
+  // const tabletAreasArray = gridBreakpoint['grid-tablet'];
+  // // const tabletAreasArray = Object.entries(gridBreakpoint['grid-tablet']);
+  // // const desktopAreasArray = Object.entries(gridBreakpoint['grid-desktop']);
+  // console.log('tabletAreasArray', tabletAreasArray.text); // tabletAreasArray[1][1]?.text
+  // // const desktopTemplateAreas = [];
+
+  metadata.grid.text.split('\n').forEach((line) => {
+    console.log('line', line);
+    templateAreas.push(...line.trim().replace(/,/g, '').split('\n'));
+  });
+  const areasString = templateAreas.map((area) => `"${area}"`).join('\n');
+  const areas = templateAreas.map((area) => `${area}`).join('\n').replace(/\n/g, ' ').split(' ');
+
+  // const testArray = areas.replace(/\n/g, ' ').split(' ');
+  // Removes duplicates
+  const gridTemplateAreas = [...new Set(areas)];
+  console.log('area Styles', areas);
+  console.log('grid Areas Styles', gridTemplateAreas);
+
+  const items = section.querySelectorAll(":scope > div:not([class*='metadata'])");
+  [...items].forEach((item, rdx) => {
+    const currentStyle = item.getAttribute('style') || '';
+    // item.style = `${currentStyle} grid-area: area-${rdx + 1}`;
+    item.style = `${currentStyle} grid-area: ${gridTemplateAreas[rdx]}`;
+  });
+  const templateAreasStyles = `
+    .${sectionId} {
+      grid-template-areas: ${areasString};
+    }
+  `;
+  console.log('templateAreasStyles', templateAreasStyles);
+  section.style = `grid-template-areas: ${areasString}`;
+}
+
 const applyBackground = (colors, section) => {
   if (colors.length === 1) {
     const [color] = colors;
@@ -102,7 +167,7 @@ function handleAnchor(anchor, section) {
 
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
-    const key = row.children[0].textContent.trim().toLowerCase();
+    const key = row.children[0].textContent.replace(/ /g, '-').trim().toLowerCase();
     const content = row.children[1];
     const text = content?.textContent.trim().toLowerCase();
     if (key && content) rdx[key] = { content, text };
@@ -160,6 +225,7 @@ function addListAttrToSection(section) {
 export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
+  const advanced = el.classList.contains('advanced');
   if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
@@ -167,5 +233,6 @@ export default async function init(el) {
   if (metadata.delay) handleDelay(metadata.delay.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text, section);
   if (metadata['collapse-ups-mobile']?.text === 'on') await handleCollapseSection(section);
+  if (advanced) handleAdvanced(metadata, section);
   addListAttrToSection(section);
 }

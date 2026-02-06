@@ -620,15 +620,33 @@ span.icon.milo-tooltip.margin-inline-start { margin-inline-start: 3px; }
 .con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
 div[class*='-up'] .con-block.full-width { grid-column: 1 /-1; }
+
+.advanced .con-block.has-bg,
 div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
+
+.advanced .con-block.has-bg.xs-spacing,
 div[class*='-up'] .con-block.has-bg.xxs-spacing { padding: var(--spacing-xxs); }
+
+.advanced .con-block.has-bg.xs-spacing,
 div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
+
+.advanced .con-block.has-bg.s-spacing,
 div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
 div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
+
+.advanced .con-block.has-bg.l-spacing,
 div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
+
+.advanced .con-block.has-bg.xl-spacing,
 div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
+
+.advanced .con-block.has-bg.xxl-spacing,
 div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+
+.advanced .con-block.has-bg.xxxl-spacing,
 div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
+
+.advanced .con-block.has-bg.no-spacing,
 div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 
 .con-block .foreground { position: relative; }
@@ -794,6 +812,25 @@ body.mweb-enabled {
   --type-heading-all-weight: 800;
   [class^="heading-"], h1, h2, h3, h4, h5, h6 {
     font-weight: var(--type-heading-all-weight);
+  }
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) {
+  --content-title-line-height: 100%;
+
+  [class^="heading-"], h1, h2, h3, h4, h5, h6 {
+    font-family: 'Adobe Clean Display', var(--body-font-family);
+    font-weight: 900;
+  }
+
+  .hero-marquee .heading-xxl,
+  .text .heading-xxl {
+    font-size: 88px;
+    line-height: var(--content-title-line-height);
+  }
+
+  .text .heading-xxl {
+    font-size: 56px;
   }
 }
 

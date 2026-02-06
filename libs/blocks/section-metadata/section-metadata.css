@@ -109,35 +109,43 @@
   justify-items: center;
 }
 
-.section[class*='-up'].no-gap {
+.section[class*='-up'].no-gap,
+.section.advanced.no-gap {
   gap: 0;
 }
 
-.section[class*='-up'].xxs-gap {
+.section[class*='-up'].xxs-gap,
+.section.advanced.xxs-gap {
   gap: var(--spacing-xxs);
 }
 
-.section[class*='-up'].xs-gap {
+.section[class*='-up'].xs-gap,
+.section.advanced.xs-gap {
   gap: var(--spacing-xs);
 }
 
-.section[class*='-up'].s-gap {
+.section[class*='-up'].s-gap,
+.section.advanced.s-gap {
   gap: var(--spacing-s);
 }
 
-.section[class*='-up'].l-gap {
+.section[class*='-up'].l-gap,
+.section.advanced.l-gap {
   gap: var(--spacing-l);
 }
 
-.section[class*='-up'].xl-gap {
+.section[class*='-up'].xl-gap,
+.section.advanced.xl-gap {
   gap: var(--spacing-xl)
 }
 
-.section[class*='-up'].xxl-gap {
+.section[class*='-up'].xxl-gap,
+.section.advanced.xxl-gap {
   gap: var(--spacing-xxl);
 }
 
-.section[class*='-up'].xxxl-gap {
+.section[class*='-up'].xxxl-gap,
+.section.advanced.xxxl-gap {
   gap: var(--spacing-xxxl);
 }
 
@@ -204,6 +212,13 @@
 main > .section[class*='-up'] > .content {
   max-width: initial;
   margin: 0;
+}
+
+.section.advanced {
+  display: grid;
+  gap: var(--spacing-m);
+  grid-template-columns: repeat(auto-fit, minmax(8.3333%, 1fr));
+  grid-template-rows: repeat(4, 1fr);
 }
 
 .section.masonry-layout {
