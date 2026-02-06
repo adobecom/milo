@@ -685,7 +685,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       langStr = mapping.lang || fallbackLang;
 
       if (countryStr === 'xx') {
-        const isLingoSite = await getLingoSiteLocale(primeSource, window.location.pathname);
+        const { isLingoSite } = await getLingoSiteLocale(primeSource, window.location.pathname);
         try {
           let geoCountry = getCountry()
             || pageConfigHelper().mep?.countryIP;
@@ -695,7 +695,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
             geoCountry = await getAkamaiCode(true);
           }
 
-          if (geoCountry && (isLingoSite.isLingoSite === 'true')) countryStr = geoCountry.toLowerCase();
+          if (geoCountry && (isLingoSite === 'true')) countryStr = geoCountry.toLowerCase();
         } catch (error) {
           window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
         }
@@ -887,12 +887,12 @@ export const getConfig = async (originalState, strs = {}) => {
 
   const isLingoActive = await getLingoActive();
   const singleOrigin = originSelection.split(',')[0];
-  let isLingoSite = isLingoActive ? await getLingoSiteLocale(singleOrigin, document.location.pathname) : { isLingoSite: 'false' };
+  let { isLingoSite } = isLingoActive ? await getLingoSiteLocale(singleOrigin, document.location.pathname) : { isLingoSite: 'false' };
   // handle news source separately as it is not a lingo site
   if (originSelection?.toLowerCase().includes('news')) {
-    isLingoSite = { isLingoSite: 'true' };
+    isLingoSite = 'true';
   }
-  const getLingoResults = (isLingoActive && (isLingoSite.isLingoSite === 'true')) ? 'true' : 'false';
+  const getLingoResults = (isLingoActive && (isLingoSite === 'true')) ? 'true' : 'false';
   const langFirst = state.langFirst ? `&langFirst=${getLingoResults}` : '';
 
   const navigationStyle = state.container === 'carousel'
