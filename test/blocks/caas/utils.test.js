@@ -802,7 +802,6 @@ describe('getCountryAndLang', () => {
     let ogFetch;
 
     const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
-    /** Mocks getLingoSiteLocale via fetch: /en or /en/be path returns isLingoSite 'true', country 'xx', so geo is used when mep.countryIP is set. */
     const lingoMappingResponse = () => Promise.resolve({
       ok: true,
       json: () => Promise.resolve({
