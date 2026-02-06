@@ -564,7 +564,7 @@ async function getLingoSiteLocale(origin, path) {
 
   try {
     let siteId;
-    const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
+    const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping-vhargrave.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
 

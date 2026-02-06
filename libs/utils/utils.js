@@ -369,6 +369,20 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.consumerEntitlements = conf.entitlements || [];
       setupMiloObj(config);
 
+      if (config.locale.prefix === '') {
+        config.uniqueSiteId = 'cc';
+        config.locale.regions = {
+          ca: {
+            ietf: 'en-CA',
+            tk: 'hah7vzn.css',
+            base: '',
+            prefix: '/ca',
+            region: 'ca',
+          },
+        };
+        config.queryIndexPath = '/assets/query-index.json';
+      }
+
       return config;
     },
     (conf) => (config = conf),
@@ -658,7 +672,7 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
 
   lingoSiteMapping = (async () => {
     try {
-      const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
+      const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const configJson = await response.json();
 
