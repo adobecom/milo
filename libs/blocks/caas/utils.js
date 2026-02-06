@@ -685,7 +685,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
       langStr = mapping.lang || fallbackLang;
 
       if (countryStr === 'xx') {
-        const isLingoSite = getLingoSiteLocale(primeSource, window.location.pathname);
+        const isLingoSite = await getLingoSiteLocale(primeSource, window.location.pathname);
         try {
           let geoCountry = getCountry()
             || pageConfigHelper().mep?.countryIP;
