@@ -620,7 +620,6 @@ async function getLingoSiteLocale(origin, path) {
       return {
         country: currCountry,
         language: currLang,
-        isLingoSite: 'false',
       };
     }
 
@@ -631,7 +630,6 @@ async function getLingoSiteLocale(origin, path) {
           lingoSiteMapping = {
             country: 'xx',
             language: baseSite.split('/')[1],
-            isLingoSite: 'true',
           };
           return;
         }
@@ -640,13 +638,11 @@ async function getLingoSiteLocale(origin, path) {
             lingoSiteMapping = {
               country: localeStr,
               language: 'en',
-              isLingoSite: 'true',
             };
           }
           lingoSiteMapping = {
             country: localeStr,
             language: baseSite.split('/')[1],
-            isLingoSite: 'true',
           };
         }
       });
@@ -912,7 +908,6 @@ export const getConfig = async (originalState, strs = {}) => {
 
   const isLingoActive = await getLingoActive();
   let isLingoSite = await getIsLingoLocale(originSelection.split(',')[0], country);
-  // let isLingoSite = isLingoActive ? await getLingoSiteLocale(singleOrigin, document.location.pathname) : { isLingoSite: 'false' };
   // handle news source separately as it is not a lingo site
   if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
     isLingoSite = 'true';
