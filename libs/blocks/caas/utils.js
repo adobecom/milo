@@ -910,10 +910,11 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
+  const isLingoActive = await getLingoActive();
   let isLingoSite = await getIsLingoLocale(originSelection.split(',')[0], country);
   // let isLingoSite = isLingoActive ? await getLingoSiteLocale(singleOrigin, document.location.pathname) : { isLingoSite: 'false' };
   // handle news source separately as it is not a lingo site
-  if (originSelection?.toLowerCase().includes('news')) {
+  if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
     isLingoSite = 'true';
   }
   const getLingoResults = (isLingoActive && isLingoSite) ? 'true' : 'false';
