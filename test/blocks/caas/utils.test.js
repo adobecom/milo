@@ -133,24 +133,6 @@ describe('loadStrings', () => {
 
 describe('getConfig', () => {
   const state = defaultState;
-  let savedFetch;
-  const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
-  const lingoMappingOkResponse = () => Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({ 'site-query-index-map': { data: [] }, 'site-locales': { data: [] } }),
-  });
-
-  beforeEach(function () {
-    savedFetch = window.fetch;
-    window.fetch = stub().callsFake((url) => {
-      const u = typeof url === 'string' ? url : (url?.url ?? url?.href ?? '');
-      return u === LINGO_MAPPING_URL ? lingoMappingOkResponse() : savedFetch(url);
-    });
-  });
-
-  afterEach(() => {
-    if (savedFetch) window.fetch = savedFetch;
-  });
 
   state.featuredCards = [{ contentId: 'https://business.adobe.com/resources/articles/4-pieces-of-social-media-real-estate-you-shouldnt-ignore.html' }, { contentId: 'e9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd' }];
   state.andLogicTags = [
@@ -817,41 +799,24 @@ describe('getCountryAndLang', () => {
 
   describe('langFirst with GEO IP', () => {
     let metaLangFirst;
-    let ogFetch;
-
-    const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
-    const lingoMappingResponse = () => Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({
-        'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
-        'site-locales': { data: [{ uniqueSiteId: 'hawks-site', baseSite: '/en', regionalSites: 'be,us' }] },
-      }),
-    });
 
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
       metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
-      ogFetch = window.fetch;
-      window.fetch = stub().callsFake((url) => {
-        const urlStr = typeof url === 'string' ? url : (url?.url ?? url?.href ?? '');
-        return urlStr === LINGO_MAPPING_URL ? lingoMappingResponse() : ogFetch(url);
-      });
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
-      window.fetch = ogFetch;
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
       setConfig({
         pathname: '/en/blah.html',
         locales: { '': { ietf: 'en-US' } },
-        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({
@@ -885,7 +850,6 @@ describe('getCountryAndLang', () => {
           '': { ietf: 'en-US' },
           be: { ietf: 'nl-BE' },
         },
-        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({

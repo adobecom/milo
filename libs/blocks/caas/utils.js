@@ -907,7 +907,10 @@ export const getConfig = async (originalState, strs = {}) => {
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
   const isLingoActive = await getLingoActive();
-  let isLingoSite = await getIsLingoLocale(originSelection.split(',')[0], country);
+  let isLingoSite = false;
+  if (isLingoActive) {
+    isLingoSite = await getIsLingoLocale(originSelection.split(',')[0], country);
+  }
   // handle news source separately as it is not a lingo site
   if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
     isLingoSite = 'true';
