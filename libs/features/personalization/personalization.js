@@ -861,7 +861,7 @@ function hasCountryMatch(str, config) {
   }
   return false;
 }
-/* c8 ignore start */
+
 export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const { countryIP, countryChoice } = config.mep || {};
@@ -891,7 +891,12 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, key);
+  const filteredPlaceholders = placeholders.filter((item) => {
+    const pageFilter = item['page filter'] || item['page filter (optional)'];
+    return !pageFilter || matchGlob(pageFilter, new URL(window.location).pathname);
+  });
+
+  createMartechMetadata(filteredPlaceholders, config, key);
 
   return config;
 }
