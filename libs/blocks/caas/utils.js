@@ -574,10 +574,10 @@ async function getIsLingoLocale(origin, country, language) {
       let baseSiteLocale = language;
       if (language === 'en') baseSiteLocale = '/';
       siteLocalesData
-      .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
-      .filter(({ baseSite }) => baseSite === baseSiteLocale).forEach(({ regionalSites }) => {
-        if (regionalSites.includes(country)) isPermittedLingoSiteLocale = true;
-      });
+        .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
+        .filter(({ baseSite }) => baseSite === baseSiteLocale).forEach(({ regionalSites }) => {
+          isPermittedLingoSiteLocale = regionalSites.includes(country);
+        });
     }
   } catch (e) {
     window.lana?.log('Failed to load lingo-site-mapping.json:', e);
