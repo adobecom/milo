@@ -702,7 +702,7 @@ describe('global navigation', () => {
     it('should load webapp prompt resources', async () => {
       document.head.innerHTML = `<meta name="app-prompt" content="on" />
       <meta name="app-prompt-entitlement" content="firefly-web-usage" />
-      <meta name="app-prompt-path" content="https://dismiss-pep--milo--adobecom.hlx.page/drafts/raghavs/pep-prompt-content"/>
+      <meta name="app-prompt-path" content="https://dismiss-pep--milo--adobecom.aem.page/drafts/raghavs/pep-prompt-content"/>
       <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any" />
       <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
       <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>

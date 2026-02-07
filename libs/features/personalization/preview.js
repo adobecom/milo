@@ -788,7 +788,8 @@ function addFragmentBadgeClickHandlers() {
     const badgeIsVisible = beforeStyles.display !== 'none' && beforeStyles.content !== 'none';
     if (!badgeIsVisible) return;
 
-    const badgeWidth = parseFloat(beforeStyles.width) + 30;
+    // Use max of calculated width or a reasonable minimum for long badge text
+    const badgeWidth = Math.max(parseFloat(beforeStyles.width) + 30, 200);
     const openFragment = () => {
       e.preventDefault();
       e.stopPropagation();
