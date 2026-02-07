@@ -801,7 +801,6 @@ describe('getCountryAndLang', () => {
     let metaLangFirst;
     let ogFetch;
     const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
-    // baseSite '/en' => getLingoSiteLocale returns country 'xx' for path /en/...; baseSite '/' => getIsLingoLocale(..., 'us', 'en') passes permitted check (baseSiteLocale '/' and regionalSites.includes('us'))
     const lingoMappingResponse = () => Promise.resolve({
       ok: true,
       json: () => Promise.resolve({
