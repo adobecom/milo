@@ -596,16 +596,11 @@ async function getIsLingoLocale(origin, country, language) {
   return isPermittedLingoSiteLocale;
 }
 
-async function getLangFirstParam(origin, path, country, language) {
-  let langFirstParam = false;
+async function getLangFirstParam(origin, country, language) {
   const isLingoLocale = await getIsLingoLocale(origin, country, language);
   // if it's not a lingo locale, check if you're on a base site.
-  if (!isLingoLocale) {
-    if (country == 'xx') {
-      return true;
-    } else {
-      return false;
-    }
+  if (!isLingoLocale && country !== 'xx') {
+    return false;
   }
   return true;
 }
@@ -946,7 +941,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const isLingoActive = await getLingoActive();
   let isLingoSite = false;
   if (isLingoActive) {
-    isLingoSite = await getLangFirstParam(originSelection.split(',')[0], document.location.href, country, language);
+    isLingoSite = await getLangFirstParam(originSelection.split(',')[0], country, language);
   }
   // handle news source separately as it is not a lingo site
   if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
