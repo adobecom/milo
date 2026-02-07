@@ -801,11 +801,17 @@ describe('getCountryAndLang', () => {
     let metaLangFirst;
     let ogFetch;
     const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
+    // baseSite '/en' => getLingoSiteLocale returns country 'xx' for path /en/...; baseSite '/' => getIsLingoLocale(..., 'us', 'en') passes permitted check (baseSiteLocale '/' and regionalSites.includes('us'))
     const lingoMappingResponse = () => Promise.resolve({
       ok: true,
       json: () => Promise.resolve({
         'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
-        'site-locales': { data: [{ uniqueSiteId: 'hawks-site', baseSite: '/en', regionalSites: 'be,us' }] },
+        'site-locales': {
+          data: [
+            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'be,ch' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'be,us' },
+          ],
+        },
       }),
     });
 
