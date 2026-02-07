@@ -546,6 +546,48 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
     .includes(locStr);
 };
 
+async function getLangFirstParam(origin, country, language) {
+  let siteId;
+  let isKnownLingoSiteLocale = false;
+  let isPermittedLingoSiteLocale = false;
+  const altLocale = `${country}_${language}`;
+  const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const configJson = await response.json();
+
+  const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+  const siteLocalesData = configJson['site-locales']?.data ?? [];
+  try {
+    const matchedByOrigin = siteQueryIndexMap.find(({ caasOrigin }) => origin === caasOrigin);
+    if (matchedByOrigin) {
+      siteId = matchedByOrigin.uniqueSiteId;
+    }
+    isKnownLingoSiteLocale = siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => {
+      if (uniqueSiteId !== siteId) return false;
+      const baseLocale = baseSite?.split('/')[1];
+      const matchesBase = country === baseLocale;
+      const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
+      const matchesAltLocale = isLocaleInRegionalSites(regionalSites, altLocale);
+      return matchesBase || matchesRegional || matchesAltLocale;
+    });
+
+    if (isKnownLingoSiteLocale) {
+      // determine if the country is allowed to be used for the langauge
+      let baseSiteLocale = language;
+      if (language === 'en') baseSiteLocale = '/';
+      siteLocalesData
+        .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
+        .filter(({ baseSite }) => baseSite === baseSiteLocale).forEach(({ regionalSites }) => {
+          if (regionalSites.includes(country)) isPermittedLingoSiteLocale = true;
+          if (regionalSites.includes(altLocale)) isPermittedLingoSiteLocale = true;
+        });
+    }
+  } catch (e) {
+    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+  }
+  return isPermittedLingoSiteLocale;
+}
+
 async function getIsLingoLocale(origin, country, language) {
   let siteId;
   let isKnownLingoSiteLocale = false;
@@ -565,18 +607,29 @@ async function getIsLingoLocale(origin, country, language) {
       if (uniqueSiteId !== siteId) return false;
       const baseLocale = baseSite?.split('/')[1];
       const matchesBase = country === baseLocale;
+      const langMatchesBase = language === baseLocale;
       const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
-      return matchesBase || matchesRegional;
+      return matchesBase || matchesRegional || langMatchesBase;
     });
 
     if (isKnownLingoSiteLocale) {
       // determine if the country is allowed to be used for the langauge
       let baseSiteLocale = language;
-      if (language === 'en') baseSiteLocale = '/';
+      if (language === 'en') baseSiteLocale = '';
+      const altLocale = `${country}_${language}`;
       siteLocalesData
         .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
-        .filter(({ baseSite }) => baseSite === baseSiteLocale).forEach(({ regionalSites }) => {
-          isPermittedLingoSiteLocale = regionalSites.includes(country);
+        .forEach(({ baseSite, regionalSites }) => {
+          if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
+            const regionalMap = regionalSites.split(',').map((site) => site.trim().replace(/^\//, ''));
+            if (country === 'xx') {
+              isPermittedLingoSiteLocale = true;
+            } else if (regionalMap.includes(country)) {
+              isPermittedLingoSiteLocale = true;
+            } else if (regionalMap.includes(altLocale)) {
+              isPermittedLingoSiteLocale = true;
+            }
+          }
         });
     }
   } catch (e) {
@@ -921,7 +974,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const isLingoActive = await getLingoActive();
   let isLingoSite = false;
   if (isLingoActive) {
-    isLingoSite = await getIsLingoLocale(originSelection.split(',')[0], country, language);
+    isLingoSite = await getLangFirstParam(originSelection.split(',')[0], country, language);
   }
   // handle news source separately as it is not a lingo site
   if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
