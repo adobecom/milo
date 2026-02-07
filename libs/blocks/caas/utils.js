@@ -546,9 +546,10 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
     .includes(locStr);
 };
 
-async function getIsLingoLocale(origin, country) {
+async function getIsLingoLocale(origin, country, language) {
   let siteId;
   let isKnownLingoSiteLocale = false;
+  let isPermittedLingoSiteLocale = false;
   const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const configJson = await response.json();
@@ -567,10 +568,21 @@ async function getIsLingoLocale(origin, country) {
       const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
       return matchesBase || matchesRegional;
     });
+
+    if (isKnownLingoSiteLocale) {
+      // determine if the country is allowed to be used for the langauge
+      let baseSiteLocale = language;
+      if (language === 'en') baseSiteLocale = '/';
+      siteLocalesData
+      .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
+      .filter(({ baseSite }) => baseSite === baseSiteLocale).forEach(({ regionalSites }) => {
+        if (regionalSites.includes(country)) isPermittedLingoSiteLocale = true;
+      });
+    }
   } catch (e) {
     window.lana?.log('Failed to load lingo-site-mapping.json:', e);
   }
-  return isKnownLingoSiteLocale;
+  return isPermittedLingoSiteLocale;
 }
 
 async function getLingoSiteLocale(origin, path) {
@@ -714,7 +726,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
           }
 
           if (geoCountry) {
-            const isLingoLocale = await getIsLingoLocale(primeSource, geoCountry);
+            const isLingoLocale = await getIsLingoLocale(primeSource, geoCountry, langStr);
             if (isLingoLocale) countryStr = geoCountry.toLowerCase();
           }
         } catch (error) {
@@ -909,7 +921,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const isLingoActive = await getLingoActive();
   let isLingoSite = false;
   if (isLingoActive) {
-    isLingoSite = await getIsLingoLocale(originSelection.split(',')[0], country);
+    isLingoSite = await getIsLingoLocale(originSelection.split(',')[0], country, language);
   }
   // handle news source separately as it is not a lingo site
   if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
