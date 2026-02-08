@@ -32,8 +32,6 @@ const KEY_CODES = {
   ESCAPE: 'Escape',
   TAB: 'Tab',
 };
-
-const AUTO_ADVANCE_INTERVAL = 6000;
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
@@ -96,7 +94,7 @@ function decorateLightboxButtons() {
   return [expandBtn, closeBtn];
 }
 
-function decorateSlideIndicators(slides, jumpTo) {
+function decorateSlideIndicators(slides) {
   const indicatorDots = [];
 
   for (let i = 0; i < slides.length; i += 1) {
@@ -105,18 +103,10 @@ function decorateSlideIndicators(slides, jumpTo) {
       'data-index': i,
     });
 
-    if (jumpTo) {
-      li.setAttribute('role', 'tab');
-      li.setAttribute('tabindex', -1);
-      li.setAttribute('aria-selected', false);
-      li.setAttribute('aria-labelledby', `Viewing Slide ${i + 1}`);
-    }
-
     // Set inital active state
     if (i === 0) {
       li.classList.add('active');
       li.setAttribute('aria-current', 'location');
-      if (jumpTo) li.setAttribute('tabindex', 0);
     }
     indicatorDots.push(li);
   }
@@ -284,14 +274,6 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   });
 }
 
-function jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer) {
-  if (activeSlideIndex < jumpToIndex) {
-    slideContainer.classList.remove('is-reversing');
-  } else {
-    slideContainer.classList.add('is-reversing');
-  }
-}
-
 function checkSlideForVideo(activeSlide) {
   const video = activeSlide.querySelector('video');
   /* c8 ignore start */
@@ -369,7 +351,7 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
   });
 }
 
-function moveSlides(event, carouselElements, jumpToIndex) {
+function moveSlides(event, carouselElements) {
   const {
     slideContainer,
     slides,
@@ -378,7 +360,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     controlsContainer,
     direction,
     ariaLive,
-    jumpTo,
   } = carouselElements;
 
   ariaLive.textContent = '';
@@ -386,7 +367,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
   let activeSlideIndicator = controlsContainer.querySelector('.active');
-  const activeSlideIndex = activeSlideIndicator.dataset.index;
 
   checkSlideForVideo(activeSlide);
 
@@ -403,26 +383,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   activeSlide.classList.remove('active');
   activeSlideIndicator.classList.remove('active');
   activeSlideIndicator.removeAttribute('aria-current');
-  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
 
-  /*
-   * If indicator dot buttons are clicked update:
-   * reference slide, active indicator dot, and active slide
-  */
-  if (jumpToIndex >= 0) {
-    if (jumpToIndex === 0) {
-      referenceSlide = slides[slides.length - 1];
-    } else if (jumpToIndex === slides.length - 1) {
-      referenceSlide = slides[slides.length - 2];
-    } else {
-      referenceSlide = slides[jumpToIndex - 1];
-    }
-    referenceSlide.classList.add('reference-slide');
-    referenceSlide.style.order = '1';
-    activeSlideIndicator = slideIndicators[jumpToIndex];
-    activeSlide = slides[jumpToIndex];
-    jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer);
-  }
   // Next arrow button, swipe, keyboard navigation
   if ((event.currentTarget).dataset.toggle === 'next'
     || event.key === KEY_CODES.ARROW_RIGHT
@@ -464,7 +425,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   }
 
   activeSlideIndicator.classList.add('active');
-  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
   activeSlideIndicator.setAttribute('aria-current', 'location');
   setIndicatorMultiplier(carouselElements, activeSlideIndicator, event);
 
@@ -556,34 +516,8 @@ function mobileSwipeDetect(carouselElements) {
   /* c8 ignore end */
 }
 
-function startAutoAdvance(carouselElements) {
-  if (carouselElements.autoAdvanceTimer) return;
-
-  carouselElements.autoAdvanceTimer = setInterval(() => {
-    const event = { currentTarget: { dataset: { toggle: 'next' } } };
-    moveSlides(event, carouselElements);
-  }, AUTO_ADVANCE_INTERVAL);
-}
-
-function stopAutoAdvance(carouselElements) {
-  if (!carouselElements.autoAdvanceTimer) return;
-
-  clearInterval(carouselElements.autoAdvanceTimer);
-  carouselElements.autoAdvanceTimer = null;
-}
-
-function handleAutoAdvancePause(carouselElements) {
-  const { el } = carouselElements;
-
-  el.addEventListener('mouseenter', () => stopAutoAdvance(carouselElements));
-  el.addEventListener('mouseleave', () => startAutoAdvance(carouselElements));
-  el.addEventListener('focusin', () => stopAutoAdvance(carouselElements));
-  el.addEventListener('focusout', () => startAutoAdvance(carouselElements));
-  el.addEventListener('touchstart', () => stopAutoAdvance(carouselElements), { passive: true });
-}
-
 function handleChangingSlides(carouselElements) {
-  const { el, nextPreviousBtns, slideIndicators, jumpTo } = carouselElements;
+  const { el, nextPreviousBtns } = carouselElements;
 
   // Handle Next/Previous Buttons
   [...nextPreviousBtns].forEach((btn) => {
@@ -597,16 +531,6 @@ function handleChangingSlides(carouselElements) {
     if (event.key === KEY_CODES.ARROW_RIGHT
       || event.key === KEY_CODES.ARROW_LEFT) { moveSlides(event, carouselElements); }
   });
-
-  // Handle slide indictors click
-  if (jumpTo) {
-    [...slideIndicators].forEach((li) => {
-      li.addEventListener('click', (event) => {
-        const jumpToIndex = Number(li.dataset.index);
-        moveSlides(event, carouselElements, jumpToIndex);
-      });
-    });
-  }
 
   // Swipe Events
   mobileSwipeDetect(carouselElements);
@@ -675,11 +599,10 @@ export default function init(el) {
     return rdx;
   }, []);
 
-  const jumpTo = el.classList.contains('jump-to');
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns(slides);
   const nextPreviousContainer = createTag('div', { class: 'carousel-button-container' });
-  const slideIndicators = decorateSlideIndicators(slides, jumpTo);
+  const slideIndicators = decorateSlideIndicators(slides);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
   convertMpcMp4(slides);
@@ -701,8 +624,6 @@ export default function init(el) {
     direction: undefined,
     ariaLive,
     currentActiveIndex: 0,
-    jumpTo,
-    autoAdvanceTimer: null,
   };
 
   /*
@@ -718,11 +639,6 @@ export default function init(el) {
   el.append(slideWrapper);
 
   const dotsUl = createTag('ul', { class: 'carousel-indicators' });
-
-  if (jumpTo) {
-    dotsUl.setAttribute('role', 'tablist');
-    dotsUl.setAttribute('tabindex', 0);
-  }
 
   dotsUl.append(...slideIndicators);
   controlsContainer.append(dotsUl);
@@ -800,9 +716,4 @@ export default function init(el) {
   }
 
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
-
-  if (el.classList.contains('autoplay')) {
-    handleAutoAdvancePause(carouselElements);
-    startAutoAdvance(carouselElements);
-  }
 }

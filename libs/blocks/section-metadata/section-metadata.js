@@ -23,57 +23,35 @@ const generateID = () => {
 };
 
 function handleAdvanced(metadata, section) {
-  console.log('where my metadata', metadata);
   if (!metadata || !section) return;
 
-  const templateAreaArray = [metadata.grid, metadata['grid-tablet'], metadata['grid-desktop']];
-  console.log('grid array', templateAreaArray);
+  // const templateAreaArray = [metadata.grid, metadata['grid-tablet'], metadata['grid-desktop']];
+  // console.log('grid array', templateAreaArray);
   const sectionId = `section-${generateID()}`;
   section.classList.add('advanced', sectionId);
 
   if (!metadata.grid || !metadata.grid.text) return;
-  console.log('metadata.grid', metadata['grid-desktop']?.text);
 
-  // test - get all breakpoint details
-  // const gridBreakpoint = Object.keys(metadata).filter((key) => key.indexOf('grid') === 0).reduce((newData, key) => {
-  //   console.log('newData', newData);
-  //   newData[key] = metadata[key];
-  //   return newData;
-  // }, {});
-  // console.log('gridBreakpoint', gridBreakpoint);
   const templateAreas = [];
 
-  // const tabletAreasArray = gridBreakpoint['grid-tablet'];
-  // // const tabletAreasArray = Object.entries(gridBreakpoint['grid-tablet']);
-  // // const desktopAreasArray = Object.entries(gridBreakpoint['grid-desktop']);
-  // console.log('tabletAreasArray', tabletAreasArray.text); // tabletAreasArray[1][1]?.text
-  // // const desktopTemplateAreas = [];
-
   metadata.grid.text.split('\n').forEach((line) => {
-    console.log('line', line);
     templateAreas.push(...line.trim().replace(/,/g, '').split('\n'));
   });
   const areasString = templateAreas.map((area) => `"${area}"`).join('\n');
   const areas = templateAreas.map((area) => `${area}`).join('\n').replace(/\n/g, ' ').split(' ');
-
-  // const testArray = areas.replace(/\n/g, ' ').split(' ');
-  // Removes duplicates
-  const gridTemplateAreas = [...new Set(areas)];
-  console.log('area Styles', areas);
-  console.log('grid Areas Styles', gridTemplateAreas);
+  const gridTemplateAreas = [...new Set(areas)]; // Removes duplicates
 
   const items = section.querySelectorAll(":scope > div:not([class*='metadata'])");
   [...items].forEach((item, rdx) => {
     const currentStyle = item.getAttribute('style') || '';
-    // item.style = `${currentStyle} grid-area: area-${rdx + 1}`;
     item.style = `${currentStyle} grid-area: ${gridTemplateAreas[rdx]}`;
   });
-  const templateAreasStyles = `
-    .${sectionId} {
-      grid-template-areas: ${areasString};
-    }
-  `;
-  console.log('templateAreasStyles', templateAreasStyles);
+  // const templateAreasStyles = `
+  //   .${sectionId} {
+  //     grid-template-areas: ${areasString};
+  //   }
+  // `;
+  // console.log('templateAreasStyles', templateAreasStyles);
   section.style = `grid-template-areas: ${areasString}`;
 }
 
