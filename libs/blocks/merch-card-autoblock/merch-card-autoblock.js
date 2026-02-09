@@ -65,10 +65,13 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
+/** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInline(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  // mas-field listens for aem:load from aem-fragment and renders the field content.
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
   const parent = el.parentElement;
+  // Unwrap parent <p> only when the link is its sole content.
   if (parent && parent.tagName === 'P' && parent.children.length === 1
     && parent.textContent.trim() === el.textContent.trim()) {
     parent.replaceWith(masField);
