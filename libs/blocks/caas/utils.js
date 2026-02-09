@@ -547,12 +547,13 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
 };
 
 async function getIsLingoLocale(origin, country, language) {
-  let siteId;
-  let isKnownLingoSiteLocale = false;
-  let isPermittedLingoSiteLocale = false;
   const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const configJson = await response.json();
+  
+  let siteId;
+  let isKnownLingoSiteLocale = false;
+  let isPermittedLingoSiteLocale = false;
 
   const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
   const siteLocalesData = configJson['site-locales']?.data ?? [];
@@ -572,19 +573,14 @@ async function getIsLingoLocale(origin, country, language) {
 
     if (isKnownLingoSiteLocale) {
       // determine if the country is allowed to be used for the langauge
-      let baseSiteLocale = language;
-      if (language === 'en') baseSiteLocale = '';
+      const baseSiteLocale = language === 'en' ? '' : language;
       const altLocale = `${country}_${language}`;
       siteLocalesData
         .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
         .forEach(({ baseSite, regionalSites }) => {
           if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
             const regionalMap = regionalSites.split(',').map((site) => site.trim().replace(/^\//, ''));
-            if (country === 'xx') {
-              isPermittedLingoSiteLocale = true;
-            } else if (regionalMap.includes(country)) {
-              isPermittedLingoSiteLocale = true;
-            } else if (regionalMap.includes(altLocale)) {
+            if (country === 'xx' || regionalMap.includes(country) || regionalMap.includes(altLocale)) {
               isPermittedLingoSiteLocale = true;
             }
           }
