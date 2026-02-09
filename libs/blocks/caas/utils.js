@@ -550,7 +550,7 @@ async function getIsLingoLocale(origin, country, language) {
   const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const configJson = await response.json();
-  
+
   let siteId;
   let isKnownLingoSiteLocale = false;
   let isPermittedLingoSiteLocale = false;
