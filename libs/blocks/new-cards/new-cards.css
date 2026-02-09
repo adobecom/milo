@@ -1,0 +1,49 @@
+
+
+.new-cards .media {
+  height: 256px;
+  position: relative;
+}
+
+.new-cards .media .icon {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  margin: 0;
+}
+
+.new-cards .media div img {
+  border-radius: 16px;
+  height: 256px;
+}
+
+.new-cards .foreground {
+  padding: var(--spacing-s);
+  padding-bottom: var(--spacing-l);
+}
+.new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
+  margin-bottom: 8px;
+}
+
+.new-cards .foreground .action-area {
+  margin-top: 24px;
+}
+
+.new-cards .foreground .action-area a {
+  color: #000000;
+  text-decoration: none;
+  font-size: var(--type-body-s-size);
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+}
+.new-cards .foreground .action-area a::after {
+  content: '>';
+  position: absolute;
+  bottom: 0;
+  left: calc(100% + 8px);
+}
+
+.section.three-up {
+  gap: 8px !important;
+}
