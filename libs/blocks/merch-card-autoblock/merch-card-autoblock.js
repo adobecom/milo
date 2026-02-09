@@ -71,12 +71,13 @@ async function createInline(el, options) {
   // mas-field listens for aem:load from aem-fragment and renders the field content.
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
   const parent = el.parentElement;
-  // Unwrap parent <p> only when the link is its sole content.
-  if (parent && parent.tagName === 'P' && parent.children.length === 1
-    && parent.textContent.trim() === el.textContent.trim()) {
-    parent.replaceWith(masField);
+  const isWrappedInParagraph = parent?.tagName === 'P';
+  const isOnlyChild = parent?.children.length === 1;
+  const hasNoSurroundingText = parent?.textContent.trim() === el.textContent.trim();
+  if (isWrappedInParagraph && isOnlyChild && hasNoSurroundingText) {
+    parent.replaceWith(masField); // remove empty <p>, replace with mas-field
   } else {
-    el.replaceWith(masField);
+    el.replaceWith(masField); // keep <p> and surrounding text, replace only the link
   }
   await checkReady(masField);
 }
