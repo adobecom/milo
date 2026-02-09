@@ -64,7 +64,10 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    if (child.querySelector('a[href*="/fragments/"]')) promises.push(loadArea(child));
+    // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
+    if (a.dataset.skipLoadArea !== 'true' && child.querySelector('a[href*="/fragments/"]')) {
+      promises.push(loadArea(child));
+    }
   });
   await Promise.all(promises);
 };
