@@ -331,6 +331,22 @@ function applyCurrentFilters(block, close) {
     selectedContainer.classList.remove('hide');
   } else {
     selectedContainer.classList.add('hide');
+    // Move focus when filters are cleared
+    setTimeout(() => {
+      const filterContainer = document.querySelector('.filter-container');
+      const firstFilterButton = filterContainer?.querySelector('.filter-button');
+      if (firstFilterButton) {
+        firstFilterButton.focus();
+      } else {
+        // Fallback to article feed container
+        const articleFeed = document.querySelector('.article-feed');
+        if (articleFeed) {
+          articleFeed.setAttribute('tabindex', '-1');
+          articleFeed.focus();
+          articleFeed.removeAttribute('tabindex');
+        }
+      }
+    }, 300);
   }
   if (block) {
     block.innerHTML = '';
@@ -386,6 +402,7 @@ async function buildFilter(type, tax, block, config) {
   button.classList.add('filter-button');
   button.id = `${type}-filter-button`;
   button.setAttribute('tabindex', '0');
+  button.setAttribute('role', 'button');
   button.setAttribute('aria-haspopup', 'true');
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-controls', `${type}-filter-panel`);
@@ -594,9 +611,13 @@ async function decorateArticleFeed(
     noMatches.innerHTML = `<strong>${noMatchesText}</strong>`;
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
-    userHelp.textContent = await replacePlaceholder('user-help');
+    const userHelpText = await replacePlaceholder('user-help');
+    userHelp.textContent = userHelpText;
     container.append(noMatches, userHelp);
-    announceFilterChange(noMatchesText);
+    // Announce the full message with assertive priority
+    const fullMessage = `${noMatchesText}. ${userHelpText}`;
+    container.focus();
+    announceFilterChange(fullMessage);
   } else {
     // no results were found
     spinner.remove();
@@ -665,6 +686,7 @@ async function decorateFeedFilter(articleFeedEl) {
   const clearBtn = document.createElement('a');
   clearBtn.classList.add('button', 'small', 'clear');
   clearBtn.href = '#';
+  clearBtn.setAttribute('tabindex', '0');
   clearBtn.textContent = await replacePlaceholder('clear-all');
   const handleClearFilters = (e) => {
     e.preventDefault();
