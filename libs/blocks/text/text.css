@@ -662,27 +662,3 @@
   margin-left: 10px;
   margin-right: 10px;
 }
-
-.text-block.full-bg .background {
-  position: relative;
-}
-
-.text-block.full-bg .foreground {
-  position: absolute !important;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.text-block.full-bg .background > div::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,1) 0%,   /* darkest at bottom */
-    rgba(0,0,0,0.3) 30%,
-    rgba(0,0,0,0) 60%     /* fades to transparent */
-  );
-  pointer-events: none;
-}
