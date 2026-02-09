@@ -663,7 +663,7 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   }
 
   if (config.queryIndexPath) {
-    const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${contentRoot}`;
+    const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base !== undefined ? config.locale.base : config.locale.prefix.replace('/', '')}` : ''}${contentRoot}`;
     baseQueryIndex = processQueryIndexMap(
       `${baseContentRoot}${config.queryIndexPath}`,
       window.location.hostname,
@@ -693,7 +693,7 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
       const domainInProdDomains = (d) => d.uniqueSiteId !== siteId
         && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath));
 
-      const hasRegionalQueryIndex = (locale) => parseList(locale.regionalSites).includes(prefix);
+      const hasRegionalQueryIndex = (locale) => parseList(locale.regionalSites).some((e) => e.includes(prefix));
 
       siteQueryIndexMapLingo
         .filter(domainInProdDomains)
