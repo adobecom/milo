@@ -1123,3 +1123,28 @@ a.static:active  {
 @media screen and (min-width: 1440px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
+
+/* C2 demo styles */
+.section {
+  --border-radius-gap: 32px;
+}
+
+.section[class*="border-radius-"] {
+  position: relative;
+  z-index: 1;
+}
+
+.section + .section.border-radius-top,
+.section.border-radius-bottom + .section {
+  margin-top: calc(-1 * var(--border-radius-gap));
+}
+
+.border-radius-top {
+  border-top-left-radius: var(--border-radius-gap);
+  border-top-right-radius: var(--border-radius-gap);
+}
+
+.border-radius-bottom {
+  border-bottom-left-radius: var(--border-radius-gap);
+  border-bottom-right-radius: var(--border-radius-gap);
+}

@@ -10,7 +10,6 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: 0 0 16px 16px;
 }
 
 .mm-stage {
@@ -203,7 +202,7 @@
   font-weight: 800;
   line-height: 100%; /* 12px */
   letter-spacing: -0.24px;
-  
+
   overflow: hidden;
   text-overflow: ellipsis;
 }
