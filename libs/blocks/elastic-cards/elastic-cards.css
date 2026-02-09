@@ -74,47 +74,28 @@
   background: #fff;
   border-radius: 24px;
   display: grid;
-  overflow: hidden;
   padding: 0 3px;
   --text-color: #000;
   --description-color: rgba(0, 0, 0, 0.60);
-  transition: flex-grow 200ms ease;
 }
 
 .ec-card:hover {
   background-color: black;
   --text-color: #fff;
   --description-color: #fff;
-  flex-grow: 1.2;
 }
 
 .ec-card-image-wrap {
   width: 100%;
-  height: 450px;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border-radius: 16px;
-  position: relative;
-  display: block;
-}
-
-.ec-card-image-inner {
-  position: relative;
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform: scaleX(1);
-  transform-origin: center;
-  transition: transform 200ms ease;
 }
 
 .ec-card-image {
   width: 100%;
   object-fit: cover;
   border-radius: 16px;
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  z-index: 1;
 }
 
 .ec-card-icon {
@@ -147,15 +128,6 @@
   height: 100%;
   border-radius: inherit;
 }
-
-.ec-card:hover .ec-card-image-wrap {
-  transform: none;
-}
-
-.ec-card:hover .ec-card-image-inner {
-  transform: scaleX(1.08);
-}
-
 
 .ec-card-info {
   display: flex;

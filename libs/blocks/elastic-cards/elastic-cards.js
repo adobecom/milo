@@ -87,7 +87,7 @@ export default function init(el) {
     createTag('p', { class: 'ec-description' }, introData.description || ''),
   ]);
 
-  const cardEls = cardsData.slice(0, 5).map((card) => {
+  const cardEls = cardsData.slice(0, 4).map((card) => {
     const iconRow = createTag('div', { class: 'ec-card-icon' }, [
       createTag('img', {
         class: 'ec-card-icon-img',
@@ -104,8 +104,7 @@ export default function init(el) {
       alt: card.cardTitle || '',
       loading: 'lazy',
     });
-    const imageInner = createTag('div', { class: 'ec-card-image-inner' }, image);
-    const imageWrap = createTag('div', { class: 'ec-card-image-wrap' }, imageInner);
+    const imageWrap = createTag('div', { class: 'ec-card-image-wrap' }, image);
 
     const title = createTag('h3', { class: 'ec-card-title' }, card.cardTitle || '');
     const description = createTag('p', { class: 'ec-card-description' }, card.cardDescription || '');
