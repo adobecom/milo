@@ -708,6 +708,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
   const langFirst = await getLingoActive();
+  let geoCountry = null;
   /* if it is a language first localized page don't use the milo locales.
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
@@ -733,7 +734,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
       if (countryStr === 'xx') {
         try {
-          let geoCountry = getCountry()
+          geoCountry = getCountry()
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
@@ -758,6 +759,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     return {
       country: countryStr,
       language: langStr,
+      geoCountry,
       locales,
     };
   }
@@ -912,7 +914,7 @@ export const getGrayboxExperienceId = (
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const { country, language, locales } = await getCountryAndLang(state);
+  const { country, language, locales, geoCountry } = await getCountryAndLang(state);
   const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
@@ -933,6 +935,7 @@ export const getConfig = async (originalState, strs = {}) => {
 
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
+  const geoCountryParam = geoCountry ? `&geoCountry=${geoCountry}` : '';
 
   const isLingoActive = await getLingoActive();
   let isLingoSite = false;
@@ -977,6 +980,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow
+      }${geoCountryParam
       }${localesQueryParam
       }${debug
       }${flatFile
