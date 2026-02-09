@@ -38,7 +38,7 @@ export default function init(el) {
     rows = tail || rows;
   }
 
-  const size = 'xlarge';
+  const size = getBlockSize(el);
   const blockType = 'text';
 
   rows.forEach((row) => {

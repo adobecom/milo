@@ -7,18 +7,33 @@
 }
 
 .new-text .foreground {
+  display: flex;
+  justify-content: center;
+}
+
+.new-text.center {
+  text-align: center;
+}
+
+.new-text.full-bg .foreground {
   position: absolute;
   top: 80px;
   left: 50%;
   transform: translateX(-50%);
-  text-align: center;
+}
+
+.new-text.dark .foreground {
   color: #FFFFFF;
+}
+
+.new-text:not(.dark) [class^="body-"]:not(.action-area) {
+  opacity: 0.5;
 }
 
 .new-text [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
 .new-text [class^="body-"] { margin: var(--spacing-xs) 0; }
 
-.new-text .action-area {
+.new-text.dark .action-area {
   color: #FFFFFF;
 }
 
