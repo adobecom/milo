@@ -13,6 +13,7 @@
   align-items: center;
   transform-style: preserve-3d;
   scroll-snap-type: x mandatory;
+  gap: 10px;
 }
 
 .new-carousel-wrapper.is-reversing {
@@ -36,6 +37,7 @@
 .new-carousel .carousel-slide img {
   height: 560px;
   border-radius: 16px;
+  width: 100%;
 }
 
 .new-carousel .carousel-slide > .content p {
@@ -50,6 +52,10 @@
   border-radius: 16px;
 }
 
+.new-carousel .carousel-slide .marquee .foreground {
+  padding-left: 100px;
+}
+
 .new-carousel .btn-container {
   width: 100px;
   position: absolute;
@@ -59,15 +65,29 @@
   justify-content: space-between;
 }
 
-.new-carousel .btn-container button {
+.new-carousel button {
   width: 40px;
   height: 40px;
   border-radius: 90.909px;
-  background: rgba(255, 255, 255, 0.30);
+  background: #FFFFFF;
   backdrop-filter: blur(13.63636302947998px);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  position: absolute;
+}
+
+.new-carousel button:is(.next, .prev) {
+  z-index: 10;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.new-carousel button.prev {
+  left: 13.5%;
+}
+
+.new-carousel button.next {
+  left: 85.5%;
 }
