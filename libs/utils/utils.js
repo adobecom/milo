@@ -649,7 +649,7 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   }
 
   if (config.queryIndexPath) {
-    const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base !== undefined ? config.locale.base : config.locale.prefix.replace('/', '')}` : ''}${contentRoot}`;
+    const baseContentRoot = origin + (config.locale.base !== undefined ? `/${config.locale.base}` : config.locale.prefix);
     baseQueryIndex = processQueryIndexMap(
       `${baseContentRoot}${config.queryIndexPath}`,
       window.location.hostname,
