@@ -167,6 +167,18 @@
     },
     {
       "containerId": "tools",
+      "id": "mas-field-inspector",
+      "title": "MAS Field Inspector",
+      "environments": [ "edit" ],
+      "isPalette": true,
+      "passReferrer": true,
+      "passConfig": true,
+      "paletteRect": "top: auto; bottom: 25px; right: 25px; height: 520px; width: 420px;",
+      "url": "https://MWPW-180167--milo--adobecom.aem.page/tools/aem-fragment-inline-inspector/index.html",
+      "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
       "id": "rollout",
       "title": "Rollout",
       "environments": [ "preview" ],

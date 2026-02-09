@@ -1,0 +1,93 @@
+<html lang="en">
+<head>
+  <title>AEM Fragment Inline Inspector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="aem-fragment-inline-inspector.css">
+</head>
+<body>
+  <main>
+    <section class="search-section">
+      <div class="input-row">
+        <input type="text" id="studio-url" placeholder="Paste URL or UUID...">
+        <select id="locale-select"></select>
+        <button id="fetch-btn" type="button">Inspect</button>
+      </div>
+    </section>
+
+    <section id="table-section" class="hidden card">
+      <div class="section-bar">
+        <button type="button" class="section-toggle" data-target="table-section">
+          <span class="section-toggle-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></span>
+          <span id="table-label" class="section-title"></span>
+        </button>
+        <div class="table-actions">
+          <button id="copy-table-btn" type="button" class="copy-table-btn">Copy table</button>
+          <button id="reload-table-btn" type="button" class="reload-table-btn" title="Reload from document">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor"><path d="M16.337,10H15.39a.6075.6075,0,0,0-.581.469A5.7235,5.7235,0,0,1,5.25,13.006l-.346-.3465L6.8815,10.682A.392.392,0,0,0,7,10.4a.4.4,0,0,0-.377-.4H1.25a.25.25,0,0,0-.25.25v5.375A.4.4,0,0,0,1.4,16a.3905.3905,0,0,0,.28-.118l1.8085-1.8085.178.1785a8.09048,8.09048,0,0,0,3.642,2.1655,7.715,7.715,0,0,0,9.4379-5.47434q.04733-.178.0861-.35816A.5.5,0,0,0,16.337,10Z"/><path d="M16.6,2a.3905.3905,0,0,0-.28.118L14.5095,3.9265l-.178-.1765a8.09048,8.09048,0,0,0-3.642-2.1655A7.715,7.715,0,0,0,1.25269,7.06072q-.04677.17612-.08519.35428A.5.5,0,0,0,1.663,8H2.61a.6075.6075,0,0,0,.581-.469A5.7235,5.7235,0,0,1,12.75,4.994l.346.3465L11.1185,7.318A.392.392,0,0,0,11,7.6a.4.4,0,0,0,.377.4H16.75A.25.25,0,0,0,17,7.75V2.377A.4.4,0,0,0,16.6,2Z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="table-entries" class="section-body table-entries"></div>
+    </section>
+
+    <section id="loading-section" class="hidden">
+      <div class="loading-spinner"></div>
+    </section>
+
+    <section id="error-section" class="hidden">
+      <div class="error-message" id="error-message"></div>
+    </section>
+
+    <section id="fragment-meta" class="hidden card expanded">
+      <div class="section-bar">
+        <button type="button" class="section-toggle" data-target="fragment-meta">
+          <span class="section-toggle-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></span>
+          <span id="fragment-title" class="section-title"></span>
+        </button>
+        <div class="card-actions">
+          <span id="fragment-surface" class="surface-badge"></span>
+          <span id="source-badge" class="source-badge"></span>
+          <button id="clear-card-btn" type="button" class="clear-card-btn" title="Clear">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="section-body" id="meta-body">
+        <div class="meta-details">
+          <code id="fragment-id"></code>
+          <button class="btn-icon" id="copy-id-btn" type="button" title="Copy fragment ID">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M4 4v-2c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2h-2v2c0 1.1-.9 2-2 2H2c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h2zm2 0h2c1.1 0 2 .9 2 2v2h2V2H6v2zM2 6v6h6V6H2z"/></svg>
+          </button>
+          <a id="studio-link" class="studio-link" target="_blank" title="Open in MAS Studio">
+            <svg width="12" height="12" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10v5a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h5"/><path d="M10 3h5v5"/><path d="M8 10L15 3"/></svg>
+          </a>
+        </div>
+        <div class="alias-row">
+          <label for="alias-input">Alias</label>
+          <input type="text" id="alias-input" placeholder="e.g. photoshop">
+          <button id="add-to-table-btn" type="button" class="add-btn" disabled>+ Add</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="fields-section" class="hidden card expanded">
+      <div class="section-bar">
+        <button type="button" class="section-toggle" data-target="fields-section">
+          <span class="section-toggle-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></span>
+          <span class="section-title">Fields</span>
+          <span class="field-count" id="field-count"></span>
+        </button>
+      </div>
+      <div class="section-body" id="fields-body">
+        <div id="fields-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import init from './aem-fragment-inline-inspector.js';
+    init();
+  </script>
+</body>
+</html>

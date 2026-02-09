@@ -62,11 +62,37 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
+const seenFragmentIds = new Set();
+
+async function createInlineFragment(el, options) {
+  const attrs = { fragment: options.fragment, field: options.field };
+  if (seenFragmentIds.has(options.fragment)) {
+    attrs.loading = 'cache';
+  }
+  seenFragmentIds.add(options.fragment);
+  const aemFragment = createTag('aem-fragment', attrs);
+  const parent = el.parentElement;
+  if (parent?.tagName === 'P' && parent.children.length === 1
+    && parent.textContent.trim() === el.textContent.trim()) {
+    parent.replaceWith(aemFragment);
+  } else {
+    el.replaceWith(aemFragment);
+  }
+  await new Promise((resolve) => {
+    aemFragment.addEventListener('aem:load', resolve, { once: true });
+    setTimeout(resolve, CARD_AUTOBLOCK_TIMEOUT);
+  });
+}
+
 export default async function init(el) {
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return;
   options = overrideOptions(fragment, options);
   await loadDependencies();
-  await createCard(el, options);
+  if (options.field) {
+    await createInlineFragment(el, options);
+  } else {
+    await createCard(el, options);
+  }
 }

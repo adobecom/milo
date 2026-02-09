@@ -107,6 +107,71 @@ describe('merch-card-autoblock autoblock', () => {
       const card = document.querySelector('merch-card');
       expect(card.querySelector('[slot="heading-xs"]')?.textContent).to.equal('Creative Cloud All Apps PROMO');
     });
+
+    it('creates inline aem-fragment with correct attributes', async () => {
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=9de46774-dafe-4f3e-badd-0cbeed37ea08&field=prices';
+      a.textContent = '[[my-card:prices]]';
+      p.append(a);
+      document.body.append(p);
+      await init(a);
+      const frag = document.querySelector('aem-fragment');
+      expect(frag).to.exist;
+      expect(frag.getAttribute('fragment')).to.equal('9de46774-dafe-4f3e-badd-0cbeed37ea08');
+      expect(frag.getAttribute('field')).to.equal('prices');
+    });
+
+    it('creates inline aem-fragment with description field', async () => {
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc-123&field=description';
+      a.textContent = '[[my-card:description]]';
+      document.body.append(a);
+      await init(a);
+      const frag = document.querySelector('aem-fragment');
+      expect(frag).to.exist;
+      expect(frag.getAttribute('field')).to.equal('description');
+    });
+
+    it('returns early for inline fragment when fragment is missing', async () => {
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&field=prices';
+      a.textContent = '[[no-id]]';
+      document.body.append(a);
+      await init(a);
+      const frag = document.querySelector('aem-fragment');
+      expect(frag).to.not.exist;
+    });
+
+    it('unwraps parent <p> for inline fragment when link is only child', async () => {
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=unwrap-789&field=description';
+      a.textContent = '[[unwrap-test:description]]';
+      p.append(a);
+      document.body.append(p);
+      await init(a);
+      const frag = document.querySelector('aem-fragment');
+      expect(frag).to.exist;
+      expect(frag.parentElement).to.equal(document.body);
+      expect(document.querySelector('p')).to.not.exist;
+    });
+
+    it('preserves parent <p> for inline fragment when link has siblings', async () => {
+      const p = document.createElement('p');
+      const span = document.createElement('span');
+      span.textContent = 'sibling';
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=sibling-101&field=prices';
+      a.textContent = '[[sibling-test:prices]]';
+      p.append(span, a);
+      document.body.append(p);
+      await init(a);
+      const frag = document.querySelector('aem-fragment');
+      expect(frag).to.exist;
+      expect(frag.parentElement).to.equal(p);
+      expect(p.querySelector('span')).to.exist;
+    });
   });
 
   describe('Simplified Pricing Express Card', () => {
