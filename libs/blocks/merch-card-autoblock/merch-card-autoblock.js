@@ -7,12 +7,14 @@ import {
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
+  MAS_FIELD,
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
 loadMasComponent(MAS_MERCH_CARD);
 loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
+loadMasComponent(MAS_FIELD);
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -32,6 +34,7 @@ async function loadDependencies() {
   await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
+    loadMasComponent(MAS_FIELD),
   ]);
 }
 
@@ -62,26 +65,17 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
-const seenFragmentIds = new Set();
-
-async function createInlineFragment(el, options) {
-  const attrs = { fragment: options.fragment, field: options.field };
-  if (seenFragmentIds.has(options.fragment)) {
-    attrs.loading = 'cache';
-  }
-  seenFragmentIds.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+async function createInline(el, options) {
+  const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  const masField = createTag('mas-field', { field: options.field }, aemFragment);
   const parent = el.parentElement;
-  if (parent?.tagName === 'P' && parent.children.length === 1
+  if (parent && parent.tagName === 'P' && parent.children.length === 1
     && parent.textContent.trim() === el.textContent.trim()) {
-    parent.replaceWith(aemFragment);
+    parent.replaceWith(masField);
   } else {
-    el.replaceWith(aemFragment);
+    el.replaceWith(masField);
   }
-  await new Promise((resolve) => {
-    aemFragment.addEventListener('aem:load', resolve, { once: true });
-    setTimeout(resolve, CARD_AUTOBLOCK_TIMEOUT);
-  });
+  await checkReady(masField);
 }
 
 export default async function init(el) {
@@ -91,7 +85,7 @@ export default async function init(el) {
   options = overrideOptions(fragment, options);
   await loadDependencies();
   if (options.field) {
-    await createInlineFragment(el, options);
+    await createInline(el, options);
   } else {
     await createCard(el, options);
   }

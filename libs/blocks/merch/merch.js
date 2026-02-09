@@ -14,6 +14,7 @@ export const MAS_MERCH_QUANTITY_SELECT = 'merch-quantity-select';
 export const MAS_MERCH_SECURE_TRANSACTION = 'merch-secure-transaction';
 export const MAS_MERCH_SIDENAV = 'merch-sidenav';
 export const MAS_MERCH_WHATS_INCLUDED = 'merch-whats-included';
+export const MAS_FIELD = 'mas-field';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
