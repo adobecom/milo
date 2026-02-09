@@ -772,12 +772,14 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     return {
       country: currCountry,
       language: currLang,
+      geoCountry,
       locales,
     };
   }
   return {
     country: country ? country.split('/').pop() : 'US',
     language: language ? language.split('/').pop() : 'en',
+    geoCountry,
     locales,
   };
 }
