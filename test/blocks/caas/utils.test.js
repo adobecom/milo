@@ -753,6 +753,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'ec',
+      geoCountry: null,
       language: 'es',
       locales: '',
     });
@@ -763,6 +764,7 @@ describe('getCountryAndLang', () => {
     const expected = await getCountryAndLang({ autoCountryLang: false });
     expect(expected).to.deep.eq({
       country: 'US',
+      geoCountry: null,
       language: 'en',
       locales: '',
     });
@@ -776,6 +778,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'BE',
+      geoCountry: null,
       language: 'fr',
       locales: '',
     });
@@ -792,6 +795,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'US',
+      geoCountry: null,
       language: 'en',
       locales: '',
     });
