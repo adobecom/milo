@@ -1,5 +1,5 @@
 import { getConfig, getFederatedContentRoot } from '../../../utils/utils.js';
-import { fetchPreflightChecks } from './asoApi.js';
+import { fetchPreflightChecks, asoCache } from './asoApi.js';
 import { isViewportTooSmall, checkImageDimensions, runChecks as runChecksAssets } from './assets.js';
 import {
   getLcpEntry,
@@ -91,8 +91,8 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
   return { assets, performance, seo, structure };
 };
 
-function generateCacheKey(url, injectVisualMetadata, isASO) {
-  return `${url}_${injectVisualMetadata}_${isASO}`;
+function generateCacheKey(url, injectVisualMetadata, isASO, asoAuthed) {
+  return `${url}_${injectVisualMetadata}_${isASO}_${asoAuthed}`;
 }
 
 export async function getPreflightResults(options = {}) {
@@ -104,7 +104,8 @@ export async function getPreflightResults(options = {}) {
   } = options;
 
   const isASO = (await getChecksSuite()) === 'ASO';
-  const cacheKey = generateCacheKey(url, injectVisualMetadata, isASO);
+  const asoAuthed = isASO ? !!asoCache.sessionToken : false;
+  const cacheKey = generateCacheKey(url, injectVisualMetadata, isASO, asoAuthed);
 
   if (useCache && globalPreflightCache.has(cacheKey)) {
     return globalPreflightCache.get(cacheKey);
