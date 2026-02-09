@@ -80,6 +80,7 @@ const defaultOptions = {
     'horizontal-card': 'Horizontal Card',
     'custom-card': 'Custom Card',
     'blade-card': 'Blade Card',
+    'editorial-card': 'Editorial Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
