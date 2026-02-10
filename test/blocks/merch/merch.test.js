@@ -30,6 +30,9 @@ import merch, {
   updateModalState,
   isFallbackStepUsed,
   getWorkflowStep,
+  getMasComponentUrl,
+  getMasLibsBaseUrl,
+  getMasLibs,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -1401,6 +1404,92 @@ describe('Merch Block', () => {
       });
       expect(workflowStep).to.equal('commitment');
       document.querySelector('meta[name="mas-ff-3in1"]').remove();
+    });
+  });
+
+  describe('getMasComponentUrl', () => {
+    it('returns correct URL based on masLibsBase and hostname', () => {
+      // When masLibsBase is provided, use it regardless of hostname
+      expect(getMasComponentUrl('commerce', 'https://main--mas--adobecom.aem.live/web-components/dist', 'www.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+      expect(getMasComponentUrl('merch-card', 'https://main--mas--adobecom.aem.live/web-components/dist', 'www.stage.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/merch-card.js');
+
+      // When masLibsBase is null and hostname is www.adobe.com, use Adobe prod URL
+      expect(getMasComponentUrl('commerce', null, 'www.adobe.com'))
+        .to.equal('https://www.adobe.com/mas/libs/commerce.js');
+
+      // When masLibsBase is null and hostname is not www.adobe.com, use aem.live URL
+      expect(getMasComponentUrl('commerce', null, 'www.stage.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+      expect(getMasComponentUrl('merch-card', null, 'main--cc--adobecom.aem.live'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/merch-card.js');
+      expect(getMasComponentUrl('commerce', null, 'localhost'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+    });
+  });
+
+  describe('getMasLibsBaseUrl', () => {
+    const originalHref = window.location.href;
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns correct base URL for all maslibs parameter variations', () => {
+      // No maslibs parameter
+      window.history.pushState({}, '', '/');
+      expect(getMasLibsBaseUrl()).to.be.null;
+
+      // Empty maslibs parameter
+      window.history.pushState({}, '', '/?maslibs=');
+      expect(getMasLibsBaseUrl()).to.be.null;
+
+      // Local development
+      window.history.pushState({}, '', '/?maslibs=local');
+      expect(getMasLibsBaseUrl()).to.equal('http://localhost:3000');
+
+      // Main branch
+      window.history.pushState({}, '', '/?maslibs=main');
+      expect(getMasLibsBaseUrl()).to.equal('https://main--mas--adobecom.aem.live');
+
+      // Feature branch (simple name)
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getMasLibsBaseUrl()).to.equal('https://feature-branch--mas--adobecom.aem.live');
+
+      // Full branch name with --mas--
+      window.history.pushState({}, '', '/?maslibs=mybranch--mas--adobecom');
+      expect(getMasLibsBaseUrl()).to.equal('https://mybranch--mas--adobecom.aem.live');
+
+      // Branch name with -- but not --mas--
+      window.history.pushState({}, '', '/?maslibs=feature--other--repo');
+      expect(getMasLibsBaseUrl()).to.equal('https://feature--other--repo.aem.live');
+    });
+  });
+
+  describe('getMasLibs', () => {
+    const originalHref = window.location.href;
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns correct web-components URL for maslibs parameter variations', () => {
+      // No maslibs parameter
+      window.history.pushState({}, '', '/');
+      expect(getMasLibs()).to.be.null;
+
+      // Local development
+      window.history.pushState({}, '', '/?maslibs=local');
+      expect(getMasLibs()).to.equal('http://localhost:3000/web-components/dist');
+
+      // Main branch
+      window.history.pushState({}, '', '/?maslibs=main');
+      expect(getMasLibs()).to.equal('https://main--mas--adobecom.aem.live/web-components/dist');
+
+      // Feature branch
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
     });
   });
 });
