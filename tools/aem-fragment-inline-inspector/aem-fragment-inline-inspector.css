@@ -171,16 +171,17 @@ main {
   background: var(--mii-bg-card);
 }
 
-#locale-select {
-  padding: 4px 6px;
+.locale-badge {
+  padding: 4px 8px;
   border: 1px solid var(--mii-border);
   border-radius: 6px;
-  font-size: 11px;
-  font-family: inherit;
-  background: var(--mii-bg-input);
-  color: var(--mii-text);
+  font-size: 10px;
+  font-family: 'Source Code Pro', 'SF Mono', Consolas, monospace;
+  background: var(--mii-code-bg);
+  color: var(--mii-text-muted);
   flex-shrink: 0;
-  width: 68px;
+  white-space: nowrap;
+  user-select: none;
 }
 
 #fetch-btn {

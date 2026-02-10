@@ -4,11 +4,102 @@ const API_KEY = 'wcms-commerce-ims-ro-user-milo';
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const WCS_URL = 'https://www.adobe.com/web_commerce_artifact';
 
-const LOCALES = [
-  'en_US', 'fr_FR', 'de_DE', 'ja_JP', 'es_ES', 'pt_BR',
-  'ko_KR', 'it_IT', 'nl_NL', 'da_DK', 'sv_SE', 'nb_NO', 'fi_FI',
-  'en_GB', 'en_AU', 'fr_CA', 'de_AT', 'zh_CN', 'zh_TW',
-];
+// Maps URL path prefixes to COUNTRY_language (mirrors merch.js GeoMap)
+const GeoMap = {
+  ar: 'AR_es',
+  be_en: 'BE_en',
+  be_fr: 'BE_fr',
+  be_nl: 'BE_nl',
+  br: 'BR_pt',
+  ca: 'CA_en',
+  ch_de: 'CH_de',
+  ch_fr: 'CH_fr',
+  ch_it: 'CH_it',
+  cl: 'CL_es',
+  co: 'CO_es',
+  la: 'DO_es',
+  mx: 'MX_es',
+  pe: 'PE_es',
+  africa: 'MU_en',
+  dk: 'DK_da',
+  de: 'DE_de',
+  ee: 'EE_et',
+  eg_ar: 'EG_ar',
+  eg_en: 'EG_en',
+  es: 'ES_es',
+  fr: 'FR_fr',
+  gr_el: 'GR_el',
+  gr_en: 'GR_en',
+  ie: 'IE_en',
+  il_he: 'IL_iw',
+  it: 'IT_it',
+  lv: 'LV_lv',
+  lt: 'LT_lt',
+  lu_de: 'LU_de',
+  lu_en: 'LU_en',
+  lu_fr: 'LU_fr',
+  my_en: 'MY_en',
+  my_ms: 'MY_ms',
+  hu: 'HU_hu',
+  mt: 'MT_en',
+  mena_en: 'DZ_en',
+  mena_ar: 'DZ_ar',
+  nl: 'NL_nl',
+  no: 'NO_nb',
+  pl: 'PL_pl',
+  pt: 'PT_pt',
+  ro: 'RO_ro',
+  si: 'SI_sl',
+  sk: 'SK_sk',
+  fi: 'FI_fi',
+  se: 'SE_sv',
+  tr: 'TR_tr',
+  uk: 'GB_en',
+  at: 'AT_de',
+  cz: 'CZ_cs',
+  bg: 'BG_bg',
+  ru: 'RU_ru',
+  ua: 'UA_uk',
+  au: 'AU_en',
+  in_en: 'IN_en',
+  in_hi: 'IN_hi',
+  id_en: 'ID_en',
+  id_id: 'ID_id',
+  nz: 'NZ_en',
+  sa_ar: 'SA_ar',
+  sa_en: 'SA_en',
+  sg: 'SG_en',
+  cn: 'CN_zh-Hans',
+  tw: 'TW_zh-Hant',
+  hk_zh: 'HK_zh-hant',
+  jp: 'JP_ja',
+  kr: 'KR_ko',
+  za: 'ZA_en',
+  ng: 'NG_en',
+  cr: 'CR_es',
+  ec: 'EC_es',
+  pr: 'US_es',
+  gt: 'GT_es',
+  cis_en: 'TM_en',
+  cis_ru: 'TM_ru',
+  sea: 'SG_en',
+  th_en: 'TH_en',
+  th_th: 'TH_th',
+};
+
+let detectedLocale = 'en_US';
+
+function getLocaleFromPrefix(prefix) {
+  const geo = GeoMap[prefix];
+  if (!geo) return 'en_US';
+  const [country, language] = geo.split('_', 2);
+  return `${language}_${country}`;
+}
+
+function updateLocaleBadge() {
+  const badge = document.getElementById('locale-badge');
+  if (badge) badge.textContent = detectedLocale;
+}
 
 let currentFragmentData = null;
 const tableEntries = [];
@@ -206,8 +297,7 @@ function renderFields(fields, alias, fragmentId) {
     const rawValue = fields[key];
     const rawHtml = rawValue?.mimeType ? rawValue.value : (typeof rawValue === 'string' ? rawValue : null);
     if (rawHtml && rawHtml.includes('is="inline-price"')) {
-      const locale = document.getElementById('locale-select').value;
-      resolveInlinePrices(rawHtml, locale).then((resolved) => {
+      resolveInlinePrices(rawHtml, detectedLocale).then((resolved) => {
         if (resolved) valueEl.textContent = resolved;
       });
     }
@@ -300,7 +390,7 @@ function renderTable() {
   const container = document.getElementById('table-entries');
   container.innerHTML = '';
 
-  tableEntries.forEach(({ alias, fragmentId, locale }) => {
+  tableEntries.forEach(({ alias, fragmentId }) => {
     const row = document.createElement('div');
     row.className = 'table-entry';
 
@@ -321,7 +411,7 @@ function renderTable() {
     loadBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="7.5" r="5.5"/><line x1="12" y1="12" x2="16" y2="16"/></svg>';
     loadBtn.addEventListener('click', () => {
       document.getElementById('studio-url').value = fragmentId;
-      loadFragment(fragmentId, alias, locale);
+      loadFragment(fragmentId, alias);
     });
 
     const removeBtn = document.createElement('button');
@@ -339,7 +429,7 @@ function renderTable() {
 }
 
 function addToTable(alias, fragmentId) {
-  const locale = document.getElementById('locale-select').value;
+  const locale = detectedLocale;
   const existing = tableEntries.findIndex((e) => e.alias === alias);
   if (existing >= 0) {
     tableEntries[existing].fragmentId = fragmentId;
@@ -372,20 +462,17 @@ function showLoading(show) {
   document.getElementById('loading-section').classList.toggle('hidden', !show);
 }
 
-async function loadFragment(fragmentId, alias, locale) {
-  const localeSelect = document.getElementById('locale-select');
+async function loadFragment(fragmentId, alias) {
   const aliasInput = document.getElementById('alias-input');
 
   hideError();
   hideResults();
   currentFragmentData = null;
   aliasInput.value = alias || '';
-  if (locale) localeSelect.value = locale;
   showLoading(true);
 
   try {
-    const selectedLocale = localeSelect.value;
-    const { data, source } = await resolveFragment(fragmentId, selectedLocale);
+    const { data, source } = await resolveFragment(fragmentId, detectedLocale);
     currentFragmentData = data;
     showResults(data, source);
   } catch (e) {
@@ -452,20 +539,42 @@ function hideResults() {
   document.getElementById('fields-section').classList.add('hidden');
 }
 
+function detectLocaleFromReferrer() {
+  const params = new URLSearchParams(window.location.search);
+  const referrer = params.get('referrer');
+  if (!referrer) return;
+  try {
+    const url = new URL(referrer);
+    const segments = decodeURIComponent(url.pathname).split('/').filter(Boolean);
+    for (const segment of segments) {
+      if (GeoMap[segment]) {
+        detectedLocale = getLocaleFromPrefix(segment);
+        updateLocaleBadge();
+        return;
+      }
+    }
+  } catch { /* not a valid URL */ }
+}
+
 export default function init() {
   const fetchBtn = document.getElementById('fetch-btn');
   const urlInput = document.getElementById('studio-url');
   const aliasInput = document.getElementById('alias-input');
-  const localeSelect = document.getElementById('locale-select');
   const copyIdBtn = document.getElementById('copy-id-btn');
   const addToTableBtn = document.getElementById('add-to-table-btn');
 
-  LOCALES.forEach((locale) => {
-    const option = document.createElement('option');
-    option.value = locale;
-    option.textContent = locale;
-    localeSelect.appendChild(option);
-  });
+  // Power-user locale override via URL param
+  const params = new URLSearchParams(window.location.search);
+  const localeOverride = params.get('locale');
+  if (localeOverride) {
+    detectedLocale = localeOverride;
+  }
+  updateLocaleBadge();
+
+  // Auto-detect locale from sidekick referrer path
+  if (!localeOverride) {
+    detectLocaleFromReferrer();
+  }
 
   async function inspectFragment() {
     const input = urlInput.value;
@@ -498,10 +607,6 @@ export default function init() {
       const alias = aliasInput.value.trim();
       renderFields(currentFragmentData.fields || {}, alias, currentFragmentData.id);
     }
-  });
-
-  localeSelect.addEventListener('change', () => {
-    if (currentFragmentData) inspectFragment();
   });
 
   copyIdBtn.addEventListener('click', () => {
