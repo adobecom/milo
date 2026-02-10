@@ -640,6 +640,11 @@
     padding: 56px 32px 12px;
   }
 
+  /* floating-button */
+  .bc-floating-button {
+    max-width: calc(336px - var(--bc-input-border-size) * 2);
+  }
+
   /* hero */
   .brand-concierge.hero {
     padding: 80px 32px 24px;
@@ -710,11 +715,6 @@
   .bc-legal {
     margin: 0 auto;
     max-width: calc(670px - 4px);
-  }
-
-  /* floating-button */
-  .bc-floating-button {
-    max-width: calc(336px - var(--bc-input-border-size) * 2);
   }
 
   /* hero */
