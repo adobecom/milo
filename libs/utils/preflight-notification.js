@@ -78,11 +78,11 @@ function createObserver() {
       return;
     }
 
-    const { hasFailures } = await getPreflightResults({
+    const results = await getPreflightResults({
       url: window.location.href,
       area: document,
     });
-    if (hasFailures) await createPreflightNotification();
+    if (results?.hasFailures) await createPreflightNotification();
   });
 
   sidekickObserver.observe(sidekick, {
@@ -108,9 +108,11 @@ export default async function show() {
   createObserver();
   if (sidekick && sidekick.getAttribute('open') !== 'true') return;
 
-  const { hasFailures } = await preflightPromise;
+  const results = await preflightPromise;
 
-  if (hasFailures) {
+  if (!results) return;
+
+  if (results.hasFailures) {
     await createPreflightNotification();
   } else {
     setupLinkCheckListener();
