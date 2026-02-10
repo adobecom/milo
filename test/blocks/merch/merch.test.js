@@ -839,6 +839,7 @@ describe('Merch Block', () => {
       const upgradeOfferLink = document.createElement('a');
       upgradeOfferLink.setAttribute('href', '/tools/ost?osi=632B3ADD940A7FBB7864AA5AD19B8D28&type=checkoutUrl');
       upgradeOfferLink.setAttribute('data-wcs-osi', '632B3ADD940A7FBB7864AA5AD19B8D28');
+      upgradeOfferLink.setAttribute('aria-label', 'Upgrade to Creative Cloud All Apps');
       upgradeOfferContainer.appendChild(upgradeOfferLink);
       document.body.appendChild(upgradeOfferContainer);
 
@@ -873,6 +874,7 @@ describe('Merch Block', () => {
       await cta?.onceSettled();
 
       expect(merchCard.querySelector('a')).to.exist;
+      expect(merchCard.querySelector('a').getAttribute('aria-label')).to.equal('Upgrade to Creative Cloud All Apps');
 
       document.body.removeChild(merchCard);
       document.body.removeChild(upgradeOfferContainer);

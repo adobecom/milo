@@ -722,6 +722,7 @@ export async function getUpgradeAction(
       merchCard?.querySelector('merch-addon')?.remove();
       merchCard?.querySelectorAll('[is="checkout-link"]').forEach((link) => {
         if (link !== el) link.remove();
+        link.setAttribute('aria-label', upgradeOffer.getAttribute('aria-label'));
       });
     }
     return upgradeAction;
@@ -1285,6 +1286,15 @@ export async function getPriceContext(el, params) {
 }
 
 export async function addAriaLabelToCta(cta) {
+  if (cta.classList.contains('upgrade')) {
+    const upgradeBlock = document.querySelector('.merch-offers.upgrade');
+    const targetLabel = upgradeBlock?.getAttribute('aria-label')
+      || upgradeBlock?.getAttribute('data-upgrade-target-label');
+    if (targetLabel) {
+      cta.setAttribute('aria-label', `${cta.textContent} - ${targetLabel}`);
+      return;
+    }
+  }
   const productCode = cta.value[0]?.productArrangement?.productCode;
   const { marketSegment, customerSegment } = cta;
   const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
