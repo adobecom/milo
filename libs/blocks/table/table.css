@@ -582,13 +582,18 @@
   border-top: 1px solid transparent;
 }
 
+.table .col-heading:not(.left-round):last-child {
+  border-top-right-radius: var(--border-radius);
+}
+
+[dir="rtl"] .table .col-heading:not(.left-round):last-child {
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: 0;
+}
+
 @media (min-width: 769px) {
   .table .col-heading:first-child {
     border-top-left-radius: var(--border-radius);
-  }
-
-  .table .col-heading:last-child {
-    border-top-right-radius: var(--border-radius);
   }
 
   .table-section .filters {
