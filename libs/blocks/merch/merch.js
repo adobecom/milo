@@ -921,7 +921,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   return modalState.isOpen;
 }
 
-export async function openModal(e, url, offerType, hash, extraOptions, el) {
+export async function openModal(e, urlParam, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
   if (modalState.isOpen) return;
@@ -940,7 +940,10 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
       modal = await openThreeInOneModal(el);
     }
     return;
-  } else if (el?.dataset.modal === 'crm') {
+  }
+
+  let url = urlParam;
+  if (el?.dataset.modal === 'crm') {
     const card = el.closest('merch-card');
     const stock = card?.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]')?.checked;
     const quantity = card?.querySelector('merch-quantity-select')?.shadowRoot?.querySelector('input[name="quantity"]')?.value;
