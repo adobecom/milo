@@ -699,17 +699,9 @@ async function decorateFeedFilter(articleFeedEl) {
     }
   });
 
-  // const ariaLive = createTag('div', {
-  //   class: 'article-feed-live-container',
-  //   role: 'alert',
-  //   'aria-atomic': 'true',
-  // });
-
   selectedWrapper.append(selectedText, selectedCategories, clearBtn);
   selectedContainer.append(selectedWrapper);
   parent.parentElement.insertBefore(selectedContainer, parent);
-  // parent.parentElement.insertBefore(ariaLive, parent);
-  // document.body.appendChild(ariaLive);
 }
 
 export default async function init(el) {
