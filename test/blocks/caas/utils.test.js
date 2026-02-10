@@ -753,6 +753,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'ec',
+      geoCountry: null,
       language: 'es',
       locales: '',
     });
@@ -763,6 +764,7 @@ describe('getCountryAndLang', () => {
     const expected = await getCountryAndLang({ autoCountryLang: false });
     expect(expected).to.deep.eq({
       country: 'US',
+      geoCountry: null,
       language: 'en',
       locales: '',
     });
@@ -776,6 +778,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'BE',
+      geoCountry: null,
       language: 'fr',
       locales: '',
     });
@@ -792,6 +795,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'US',
+      geoCountry: null,
       language: 'en',
       locales: '',
     });
@@ -799,24 +803,45 @@ describe('getCountryAndLang', () => {
 
   describe('langFirst with GEO IP', () => {
     let metaLangFirst;
+    let ogFetch;
+    const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
+    const lingoMappingResponse = () => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
+        'site-locales': {
+          data: [
+            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'be,ch' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'be,us' },
+          ],
+        },
+      }),
+    });
 
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
       metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
+      ogFetch = window.fetch;
+      window.fetch = stub().callsFake((url) => {
+        const urlStr = typeof url === 'string' ? url : (url?.url ?? url?.href ?? '');
+        return urlStr === LINGO_MAPPING_URL ? lingoMappingResponse() : ogFetch(url);
+      });
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
+      if (ogFetch) window.fetch = ogFetch;
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
       setConfig({
         pathname: '/en/blah.html',
         locales: { '': { ietf: 'en-US' } },
+        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({
@@ -850,6 +875,7 @@ describe('getCountryAndLang', () => {
           '': { ietf: 'en-US' },
           be: { ietf: 'nl-BE' },
         },
+        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({

@@ -92,6 +92,11 @@ function createObserver() {
 }
 
 export default async function show() {
+  const preflightPromise = getPreflightResults({
+    url: window.location.href,
+    area: document,
+  });
+
   if (wasDismissed || document.querySelector('.milo-preflight-overlay')) return;
 
   const isPublishButtonDisabled = sidekick?.shadowRoot
@@ -103,10 +108,7 @@ export default async function show() {
   createObserver();
   if (sidekick && sidekick.getAttribute('open') !== 'true') return;
 
-  const { hasFailures } = await getPreflightResults({
-    url: window.location.href,
-    area: document,
-  });
+  const { hasFailures } = await preflightPromise;
 
   if (hasFailures) {
     await createPreflightNotification();
