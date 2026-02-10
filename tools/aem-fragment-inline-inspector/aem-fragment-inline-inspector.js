@@ -96,9 +96,16 @@ function getLocaleFromPrefix(prefix) {
   return `${language}_${country}`;
 }
 
-function updateLocaleBadge() {
+function updateLocaleBadge(loading) {
   const badge = document.getElementById('locale-badge');
-  if (badge) badge.textContent = detectedLocale;
+  if (!badge) return;
+  if (loading) {
+    badge.textContent = '';
+    badge.classList.add('loading');
+  } else {
+    badge.textContent = detectedLocale;
+    badge.classList.remove('loading');
+  }
 }
 
 let currentFragmentData = null;
@@ -542,7 +549,12 @@ function hideResults() {
 async function detectLocale() {
   const params = new URLSearchParams(window.location.search);
   const referrer = params.get('referrer');
-  if (!referrer) return;
+  if (!referrer) {
+    updateLocaleBadge();
+    return;
+  }
+
+  updateLocaleBadge(true);
 
   let previewPath;
   try {
@@ -554,7 +566,7 @@ async function detectLocale() {
     if (isEdit) {
       const owner = params.get('owner');
       const repo = params.get('repo');
-      if (!owner || !repo) return;
+      if (!owner || !repo) { updateLocaleBadge(); return; }
       const url = `https://admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`;
       const res = await fetch(url);
       const json = await res.json();
@@ -562,16 +574,16 @@ async function detectLocale() {
     } else {
       previewPath = pathname;
     }
-  } catch { return; }
+  } catch { updateLocaleBadge(); return; }
 
   const segments = previewPath.split('/').filter(Boolean);
   for (const segment of segments) {
     if (GeoMap[segment]) {
       detectedLocale = getLocaleFromPrefix(segment);
-      updateLocaleBadge();
-      return;
+      break;
     }
   }
+  updateLocaleBadge();
 }
 
 export default function init() {
@@ -581,16 +593,13 @@ export default function init() {
   const copyIdBtn = document.getElementById('copy-id-btn');
   const addToTableBtn = document.getElementById('add-to-table-btn');
 
-  // Power-user locale override via URL param
+  // Power-user locale override via URL param, or auto-detect from sidekick context
   const params = new URLSearchParams(window.location.search);
   const localeOverride = params.get('locale');
   if (localeOverride) {
     detectedLocale = localeOverride;
-  }
-  updateLocaleBadge();
-
-  // Auto-detect locale from sidekick context
-  if (!localeOverride) {
+    updateLocaleBadge();
+  } else {
     detectLocale();
   }
 

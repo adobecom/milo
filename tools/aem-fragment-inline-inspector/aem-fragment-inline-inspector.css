@@ -182,6 +182,26 @@ main {
   flex-shrink: 0;
   white-space: nowrap;
   user-select: none;
+  min-width: 20px;
+  text-align: center;
+}
+
+.locale-badge.loading {
+  color: transparent;
+  position: relative;
+}
+
+.locale-badge.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--mii-border);
+  border-top-color: var(--mii-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
 
 #fetch-btn {
