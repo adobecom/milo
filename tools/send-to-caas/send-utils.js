@@ -5,6 +5,7 @@ import {
   getPageLocale,
   getGrayboxExperienceId,
   getLanguageFirstCountryAndLang,
+  getIsLingoLocale,
 } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
@@ -306,6 +307,10 @@ const getBulkPublishLangAttr = async (options) => {
       options.repo,
       options.host,
     );
+    const isLingoLocale = await getIsLingoLocale(options.repo, country, lang);
+    if (!isLingoLocale) {
+      throw new Error(`This page is not a valid language-first case for repo: ${options.repo}, country: ${country}, language: ${lang}`);
+    }
     return `${lang}-${country}`;
   }
   if (!getLocale) {
