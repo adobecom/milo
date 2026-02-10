@@ -539,21 +539,39 @@ function hideResults() {
   document.getElementById('fields-section').classList.add('hidden');
 }
 
-function detectLocaleFromReferrer() {
+async function detectLocale() {
   const params = new URLSearchParams(window.location.search);
   const referrer = params.get('referrer');
   if (!referrer) return;
+
+  let previewPath;
   try {
-    const url = new URL(referrer);
-    const segments = decodeURIComponent(url.pathname).split('/').filter(Boolean);
-    for (const segment of segments) {
-      if (GeoMap[segment]) {
-        detectedLocale = getLocaleFromPrefix(segment);
-        updateLocaleBadge();
-        return;
-      }
+    const { origin, pathname } = new URL(referrer);
+    const split = origin.split('.');
+    const topLevel = split.slice(Math.max(split.length - 2, 1)).join('.');
+    const isEdit = topLevel === 'google.com' || topLevel === 'sharepoint.com';
+
+    if (isEdit) {
+      const owner = params.get('owner');
+      const repo = params.get('repo');
+      if (!owner || !repo) return;
+      const url = `https://admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      previewPath = new URL(json.preview.url).pathname;
+    } else {
+      previewPath = pathname;
     }
-  } catch { /* not a valid URL */ }
+  } catch { return; }
+
+  const segments = previewPath.split('/').filter(Boolean);
+  for (const segment of segments) {
+    if (GeoMap[segment]) {
+      detectedLocale = getLocaleFromPrefix(segment);
+      updateLocaleBadge();
+      return;
+    }
+  }
 }
 
 export default function init() {
@@ -571,9 +589,9 @@ export default function init() {
   }
   updateLocaleBadge();
 
-  // Auto-detect locale from sidekick referrer path
+  // Auto-detect locale from sidekick context
   if (!localeOverride) {
-    detectLocaleFromReferrer();
+    detectLocale();
   }
 
   async function inspectFragment() {

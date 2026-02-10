@@ -174,7 +174,7 @@
       "passReferrer": true,
       "passConfig": true,
       "paletteRect": "top: auto; bottom: 25px; right: 25px; height: 520px; width: 420px;",
-      "url": "https://MWPW-180167--milo--adobecom.aem.page/tools/aem-fragment-inline-inspector/index.html",
+      "url": "https://MWPW-180167-b--milo--adobecom.aem.page/tools/aem-fragment-inline-inspector/index.html",
       "includePaths": [ "**.docx**" ]
     },
     {
