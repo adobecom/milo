@@ -416,7 +416,10 @@ export const getFederatedUrl = (url = '') => {
     const { pathname, search, hash } = new URL(url);
     return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
   } catch (e) {
-    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`);
+    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
   }
   return url;
 };
@@ -459,7 +462,10 @@ export async function loadLanguageConfig() {
 
     return langConfig;
   } catch (e) {
-    window.lana?.log('Failed to load language-config.json:', e);
+    window.lana?.log(`Failed to load language-config.json: ${e}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
   }
 
   return {};
@@ -608,7 +614,10 @@ function processQueryIndexMap(link, domain) {
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
-      window.lana?.log(`Failed to load query index: ${link}`, error);
+      window.lana?.log(`Failed to load query index: ${link} | ${error}`, {
+        tags: 'utils',
+        severity: 'error',
+      });
       return [];
     })
     .finally(() => {
@@ -693,7 +702,10 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
           queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
         });
     } catch (e) {
-      window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+      window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, {
+        tags: 'utils',
+        severity: 'error',
+      });
     } finally {
       lingoSiteMappingLoaded = true;
     }
@@ -952,7 +964,10 @@ export function appendHtmlToLink(link) {
         : linkUrl.href);
     }
   } catch (e) {
-    window.lana?.log(`Error while attempting to append '.html' to ${link}: ${e}`);
+    window.lana?.log(`Error while attempting to append '.html' to ${link}: ${e}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
   }
 }
 
@@ -1031,7 +1046,10 @@ function getBlockData(block) {
       });
       if (match?.base) base = match.base;
     } catch (error) {
-      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`);
+      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`, {
+        tags: 'utils',
+        severity: 'error',
+      });
     }
   }
 
@@ -1169,7 +1187,10 @@ export function decorateAutoBlock(a) {
   try {
     url = new URL(a.href);
   } catch (e) {
-    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`);
+    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
     return false;
   }
 
@@ -1896,7 +1917,10 @@ async function decorateMeta(ignoreNames = []) {
       meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
       meta.dataset.localized = 'true';
     } catch (e) {
-      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`, {
+        tags: 'utils',
+        severity: 'error',
+      });
     }
   }));
 }
@@ -1972,7 +1996,10 @@ export function scrollToHashedElement(hash) {
   try {
     targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   } catch (e) {
-    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`);
+    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
   }
   if (!targetElement) return;
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
@@ -2390,7 +2417,7 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i', severity: 'error' });
   };
 
   window.lana = {

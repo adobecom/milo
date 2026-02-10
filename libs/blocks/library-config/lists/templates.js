@@ -71,7 +71,7 @@ function formatDom(aemDom, path) {
 
 async function formatTemplate(path) {
   const resp = await fetch(path);
-  if (!resp.ok) window.lana.log('Could not fetch template path', { tags: 'sidekick-templates', errorType: 'i' });
+  if (!resp.ok) window.lana.log('Could not fetch template path', { tags: 'sidekick-templates', errorType: 'i', severity: 'error' });
 
   const html = await resp.text();
   const dom = new DOMParser().parseFromString(html, 'text/html');
