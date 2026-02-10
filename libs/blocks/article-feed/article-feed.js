@@ -260,12 +260,14 @@ function buildSelectedFilter(name) {
 
 function announceFilterChange(message) {
   const ariaLive = document.querySelector('.article-feed-live-container');
-  if (ariaLive) {
-    ariaLive.textContent = '';
-    requestAnimationFrame(() => {
-      ariaLive.textContent = message;
-    });
-  }
+  if (ariaLive) ariaLive.remove();
+
+  const alert = document.createElement('div');
+  alert.class = 'article-feed-live-container';
+  alert.setAttribute('role', 'alert');
+  alert.textContent = message;
+
+  document.body.appendChild(alert);
 }
 
 function clearFilter(e, block) {
@@ -578,12 +580,7 @@ async function decorateArticleFeed(
     articleFeedEl.append(articleCards);
   }
 
-  const container = createTag('div', {
-    class: 'article-cards-empty',
-    role: 'alert',
-    'aria-live': 'assertive',
-    'aria-atomic': 'true',
-  });
+  const container = createTag('div', { class: 'article-cards-empty' });
 
   // display spinner
   const spinner = createTag('div', {
@@ -613,10 +610,12 @@ async function decorateArticleFeed(
     userHelp.classList.add('article-cards-empty-filtered');
     const userHelpText = await replacePlaceholder('user-help');
     userHelp.textContent = userHelpText;
+    container.setAttribute('tabindex', '-1');
     container.append(noMatches, userHelp);
+    container.focus();
     // Announce the full message with assertive priority
     const fullMessage = `${noMatchesText}. ${userHelpText}`;
-    container.focus();
+
     announceFilterChange(fullMessage);
   } else {
     // no results were found
@@ -700,15 +699,17 @@ async function decorateFeedFilter(articleFeedEl) {
     }
   });
 
-  const ariaLive = createTag('div', {
-    class: 'article-feed-live-container',
-    'aria-live': 'polite',
-  });
+  // const ariaLive = createTag('div', {
+  //   class: 'article-feed-live-container',
+  //   role: 'alert',
+  //   'aria-atomic': 'true',
+  // });
 
   selectedWrapper.append(selectedText, selectedCategories, clearBtn);
   selectedContainer.append(selectedWrapper);
   parent.parentElement.insertBefore(selectedContainer, parent);
-  parent.parentElement.insertBefore(ariaLive, parent);
+  // parent.parentElement.insertBefore(ariaLive, parent);
+  // document.body.appendChild(ariaLive);
 }
 
 export default async function init(el) {
