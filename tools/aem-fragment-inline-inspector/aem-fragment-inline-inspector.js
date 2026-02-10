@@ -2,6 +2,7 @@ const MAS_IO_BASE = 'https://www.adobe.com/mas/io';
 const FRAGMENT_CLIENT_URL = 'https://mas.adobe.com/studio/libs/fragment-client.js';
 const API_KEY = 'wcms-commerce-ims-ro-user-milo';
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const WCS_URL = 'https://www.adobe.com/web_commerce_artifact';
 
 const LOCALES = [
   'en_US', 'fr_FR', 'de_DE', 'ja_JP', 'es_ES', 'pt_BR',
@@ -71,6 +72,55 @@ function normalizeFieldValue(value) {
     return text || raw;
   }
   return String(value ?? '');
+}
+
+async function resolveInlinePrices(html, locale) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const spans = doc.querySelectorAll('span[is="inline-price"]');
+  if (!spans.length) return null;
+
+  const osiSet = new Set();
+  spans.forEach((span) => {
+    const osi = span.dataset.wcsOsi;
+    if (osi) osiSet.add(osi);
+  });
+  if (!osiSet.size) return null;
+
+  const [language, country] = locale.split('_');
+  const params = new URLSearchParams({
+    offer_selector_ids: [...osiSet].join(','),
+    country,
+    locale,
+    landscape: 'PUBLISHED',
+    api_key: API_KEY,
+    language: 'MULT',
+  });
+
+  const res = await fetch(`${WCS_URL}?${params}`, { credentials: 'omit' });
+  if (!res.ok) return null;
+  const data = await res.json();
+
+  const priceMap = new Map();
+  for (const offer of data.resolvedOffers || []) {
+    const osi = offer.offerSelectorIds?.[0];
+    if (!osi) continue;
+    const { price, formatString } = offer.priceDetails || {};
+    const currency = formatString?.match(/'([^']+)'/)?.[1] || '$';
+    const formatted = `${currency}${price?.toFixed(2) ?? '?'}`;
+    const term = offer.term === 'MONTHLY' ? '/mo' : offer.term === 'ANNUAL' ? '/yr' : '';
+    priceMap.set(osi, `${formatted}${term}`);
+  }
+
+  let result = html;
+  spans.forEach((span) => {
+    const osi = span.dataset.wcsOsi;
+    const resolved = priceMap.get(osi);
+    if (resolved) {
+      result = result.replace(span.outerHTML, resolved);
+    }
+  });
+
+  return stripHtml(result).trim();
 }
 
 function extractSurface(path) {
@@ -153,12 +203,21 @@ function renderFields(fields, alias, fragmentId) {
     valueEl.textContent = display;
     info.appendChild(valueEl);
 
+    const rawValue = fields[key];
+    const rawHtml = rawValue?.mimeType ? rawValue.value : (typeof rawValue === 'string' ? rawValue : null);
+    if (rawHtml && rawHtml.includes('is="inline-price"')) {
+      const locale = document.getElementById('locale-select').value;
+      resolveInlinePrices(rawHtml, locale).then((resolved) => {
+        if (resolved) valueEl.textContent = resolved;
+      });
+    }
+
     top.appendChild(info);
 
     const copyBtn = document.createElement('button');
     copyBtn.type = 'button';
     if (alias) {
-      const syntax = `[[${alias}:${key}]]`;
+      const syntax = `${alias} → ${key}`;
       copyBtn.className = 'field-copy-btn';
       copyBtn.textContent = syntax;
       if (fragmentId) {
@@ -195,7 +254,7 @@ function updateTableSection() {
     section.classList.remove('expanded');
   } else {
     section.classList.remove('hidden');
-    label.textContent = `Metadata Table (${tableEntries.length})`;
+    label.textContent = `Fragments (${tableEntries.length})`;
   }
 }
 
@@ -292,23 +351,6 @@ function addToTable(alias, fragmentId) {
   document.getElementById('table-section').classList.add('expanded');
 }
 
-function copyTable(buttonEl) {
-  const rows = tableEntries.map(
-    ({ alias, fragmentId }) => `<tr><td>${alias}</td><td>${fragmentId}</td></tr>`,
-  ).join('');
-  const html = `<table border="1" style="width:100%"><tr><th colspan="2">fragment-metadata</th></tr>${rows}</table>`;
-  const blob = new Blob([html], { type: 'text/html' });
-  navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]).then(() => {
-    const original = buttonEl.textContent;
-    buttonEl.textContent = 'Copied!';
-    buttonEl.classList.add('copied');
-    setTimeout(() => {
-      buttonEl.textContent = original;
-      buttonEl.classList.remove('copied');
-    }, 1500);
-  });
-}
-
 function updateAddButton() {
   const alias = document.getElementById('alias-input').value.trim();
   const btn = document.getElementById('add-to-table-btn');
@@ -353,9 +395,19 @@ async function loadFragment(fragmentId, alias, locale) {
   }
 }
 
+const MAX_ALIAS_LENGTH = 30;
+
 function suggestAlias(title) {
   if (!title) return '';
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const toKebab = (str) => str.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  let alias = toKebab(title);
+  if (alias.length > MAX_ALIAS_LENGTH && title.includes(':')) {
+    alias = toKebab(title.split(':').pop());
+  }
+  if (alias.length > MAX_ALIAS_LENGTH) {
+    alias = alias.slice(0, MAX_ALIAS_LENGTH).replace(/-[^-]*$/, '');
+  }
+  return alias;
 }
 
 function showResults(data, source) {
@@ -400,53 +452,6 @@ function hideResults() {
   document.getElementById('fields-section').classList.add('hidden');
 }
 
-async function importFromDocument() {
-  const params = new URLSearchParams(window.location.search);
-  const referrer = params.get('referrer');
-  const owner = params.get('owner');
-  const repo = params.get('repo');
-
-  if (!referrer || !owner || !repo) return;
-
-  showLoading(true);
-
-  try {
-    const statusRes = await fetch(`//admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`);
-    if (!statusRes.ok) throw new Error('Status fetch failed');
-    const statusJson = await statusRes.json();
-    const previewUrl = statusJson.preview?.url;
-    if (!previewUrl) throw new Error('No preview URL');
-
-    const pageRes = await fetch(previewUrl);
-    if (!pageRes.ok) throw new Error('Page fetch failed');
-    const html = await pageRes.text();
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const metaTable = doc.querySelector('.fragment-metadata');
-
-    if (metaTable) {
-      [...metaTable.children].forEach((row) => {
-        if (row.children?.length >= 2) {
-          const alias = row.children[0].textContent.trim().toLowerCase();
-          const fragmentId = row.children[1].textContent.trim();
-          if (alias && fragmentId) {
-            addToTable(alias, fragmentId);
-          }
-        }
-      });
-    }
-
-    if (tableEntries.length > 0) {
-      document.getElementById('table-section').classList.add('expanded');
-    }
-  } catch {
-    // Silently fail
-  }
-
-  showLoading(false);
-}
-
 export default function init() {
   const fetchBtn = document.getElementById('fetch-btn');
   const urlInput = document.getElementById('studio-url');
@@ -454,7 +459,6 @@ export default function init() {
   const localeSelect = document.getElementById('locale-select');
   const copyIdBtn = document.getElementById('copy-id-btn');
   const addToTableBtn = document.getElementById('add-to-table-btn');
-  const copyTableBtn = document.getElementById('copy-table-btn');
 
   LOCALES.forEach((locale) => {
     const option = document.createElement('option');
@@ -512,19 +516,6 @@ export default function init() {
     }
   });
 
-  copyTableBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    copyTable(copyTableBtn);
-  });
-
-  const reloadTableBtn = document.getElementById('reload-table-btn');
-  reloadTableBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    tableEntries.length = 0;
-    renderTable();
-    await importFromDocument();
-  });
-
   const clearCardBtn = document.getElementById('clear-card-btn');
   clearCardBtn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -540,6 +531,4 @@ export default function init() {
       if (targetId) document.getElementById(targetId).classList.toggle('expanded');
     });
   });
-
-  importFromDocument();
 }

@@ -554,6 +554,7 @@ main {
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+  position: relative;
 }
 
 .field-info {
@@ -597,7 +598,9 @@ main {
 }
 
 .field-copy-btn {
-  flex-shrink: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
   display: flex;
   align-items: center;
   padding: 3px 8px;
