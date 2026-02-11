@@ -235,6 +235,10 @@ header.global-navigation:has(.feds-dropdown--active) .feds-topnav-wrapper {
   position: relative;
 }
 
+.global-navigation .feds-dropdown--active .feds-navLink {
+  opacity: 1;
+}
+
 .global-navigation .feds-dropdown--active::before {
   position: absolute;
   top: 0;
@@ -718,6 +722,9 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
 
   .feds-navItem--section > .feds-navLink {
     padding: 0 20px;
+    font-weight: 700;
+    color: #000;
+    opacity: 0.6;
   }
 
   .feds-navItem--section.feds-navItem--active > .feds-navLink:before {

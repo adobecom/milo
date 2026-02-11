@@ -16,8 +16,9 @@ import {
 } from '../../../utils/utils.js';
 
 const cssPromise = (async () => {
-  const { miloLibs, codeRoot, theme } = getConfig();
-  const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
+  const { theme } = getConfig();
+  // Load CSS from the same directory as this JS file (redesign folder)
+  const baseUrl = new URL('./', import.meta.url).href;
   const loadStylePromise = (u) => new Promise((resolve, reject) => {
     loadStyle(u, (e) => {
       if (e === 'error') return reject(u);
@@ -25,8 +26,8 @@ const cssPromise = (async () => {
     });
   });
   try {
-    await loadStylePromise(`${url}base.css`);
-    if (theme === 'dark') await loadStylePromise(`${url}dark-nav.css`);
+    await loadStylePromise(`${baseUrl}base.css`);
+    if (theme === 'dark') await loadStylePromise(`${baseUrl}dark-nav.css`);
   } catch (e) {
     const gnavSource = getMetadata('gnav-source');
     if (!window.lana?.log) loadLana();
@@ -76,7 +77,6 @@ const {
   isTangentToViewport,
   lanaLog,
   loadDecorateMenu,
-  rootPath,
   loadStyles,
   logErrorFor,
   selectors,
@@ -742,19 +742,21 @@ class Gnav {
         this.block.removeEventListener('click', this.loadDelayed);
         this.block.removeEventListener('keydown', this.loadDelayed);
         if (this.searchPresent()) {
+          const searchCssUrl = new URL('./features/search/gnav-search.css', import.meta.url).href;
           const [
             { default: Search },
           ] = await Promise.all([
             import('./features/search/gnav-search.js'),
-            loadStyles(rootPath('features/search/gnav-search.css')),
+            loadStyles(searchCssUrl),
           ]);
           this.Search = Search;
         }
 
         if (!this.useUniversalNav) {
+          const profileCssUrl = new URL('./features/profile/dropdown.css', import.meta.url).href;
           const [{ default: ProfileDropdown }] = await Promise.all([
             import('./features/profile/dropdown.js'),
-            loadStyles(rootPath('features/profile/dropdown.css')),
+            loadStyles(profileCssUrl),
           ]);
           this.ProfileDropdown = ProfileDropdown;
         }

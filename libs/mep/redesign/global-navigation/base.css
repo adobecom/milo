@@ -112,6 +112,25 @@ html[lang="ja-jp"] a.feds-navLink wbr {
   color: var(--feds-color-link);
 }
 
+.feds-navLink--hoverCaret:hover,
+.feds-navLink--hoverCaret:focus {
+  color: #000;
+  opacity: 1;
+}
+
+.global-navigation .feds-menu-items .feds-navLink {
+  margin: 0 12px;
+  border-radius: 16px;
+}
+
+.global-navigation .feds-menu-items .feds-navLink:hover {
+  background-color: #000;
+}
+
+.global-navigation .feds-menu-items .feds-navLink:hover .feds-navLink-title {
+  color: #fff;
+}
+
 .feds-navLink--hoverCaret:after,
 .feds-navLink[class *= '-gradient'] .feds-navLink-title:after {
   display: flex;

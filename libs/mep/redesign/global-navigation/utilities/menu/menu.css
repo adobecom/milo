@@ -575,13 +575,18 @@ content auhtored manually and AEM-imported content */
   }
 
   /* Highlighted first column */
-  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child {
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:hover {
     background: #000;
     border-color: transparent;
+    color: #fff;
   }
-
-  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-menu-headline,
-  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-navLink--learn-more {
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:hover {
+    background: #000;
+    border-color: transparent;
+    color: #fff;
+  }
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:hover .feds-menu-headline,
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:hover .feds-navLink--learn-more {
     color: #fff;
   }
 
@@ -589,9 +594,9 @@ content auhtored manually and AEM-imported content */
     color: #000
   }
 
-  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-navLink:hover {
+  /* .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-navLink:hover {
     background: rgba(255, 255, 255, 0.1);
-  }
+  } */
 
   /* Product list section */
   .global-navigation .feds-menu-content.use-cases .feds-menu-items {
@@ -620,9 +625,9 @@ content auhtored manually and AEM-imported content */
     transition: background-color 0.15s ease;
   }
 
-  .global-navigation .feds-menu-content.use-cases .feds-menu-items .feds-navLink:hover {
+  /* .global-navigation .feds-menu-content.use-cases .feds-menu-items .feds-navLink:hover {
     background: var(--feds-background-hover, rgba(0, 0, 0, 0.04));
-  }
+  } */
 
   .global-navigation .feds-menu-content.use-cases .feds-navLink-image {
     width: 24px;
@@ -664,7 +669,7 @@ content auhtored manually and AEM-imported content */
     color: #fff;
   }
 
-  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-cta {
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:hover .feds-cta {
     border-color: #fff;
     color: #fff;
     background: #000;
@@ -673,7 +678,7 @@ content auhtored manually and AEM-imported content */
     height: 41px;
   }
 
-  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-cta:hover {
-    background: #0d66d0;
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:last-child {
+    display: none;
   }
 }
