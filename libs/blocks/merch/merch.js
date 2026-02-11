@@ -1031,6 +1031,8 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
       if (urls[index]) {
         url = urls[index].trim();
       }
+    } else {
+      url = urls[0].trim();
     }
   }
 
