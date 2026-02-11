@@ -240,6 +240,15 @@ describe('Brand Concierge', () => {
     const modal = await waitForElement('#brand-concierge-modal');
     expect(modal).to.exist;
 
+    // Wait for openChatModal
+    await new Promise((resolve) => {
+      const check = () => {
+        if (window.adobe.concierge.bootstrap.calledOnce) resolve();
+        else setTimeout(check, 10);
+      };
+      check();
+    });
+
     // Verify bootstrap was called
     expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
     expect(window.adobe.concierge.bootstrap.firstCall.args[0]).to.deep.include({
