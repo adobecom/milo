@@ -68,21 +68,10 @@ describe('Brand Concierge', () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 
-    // Mock alloy version 2.31.0
-    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
-
-    // Mock window.adobe.concierge.bootstrap
-    window.adobe = window.adobe || {};
-    window.adobe.concierge = { bootstrap: sinon.spy() };
-
-    // Pre-load script to bypass loadScript await
-    const { env } = getConfig();
-    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
-    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
-    const script = document.createElement('script');
-    script.src = src;
-    script.dataset.loaded = 'true';
-    document.head.append(script);
+    // Mock window._satellite.track before init
+    const oldSatellite = window._satellite;
+    const trackStub = sinon.stub();
+    window._satellite = { track: trackStub };
 
     await init(block);
 
@@ -112,39 +101,21 @@ describe('Brand Concierge', () => {
     expect(block.querySelector('#bc-input-field').value).to.equal('');
 
     // Verify bootstrapConversationalExperience was called
-    expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
-    expect(window.adobe.concierge.bootstrap.firstCall.args[0]).to.deep.include({
+    expect(trackStub.calledOnce).to.be.true;
+    expect(trackStub.firstCall.args[0]).to.equal('bootstrapConversationalExperience');
+    expect(trackStub.firstCall.args[1]).to.deep.include({
       selector: '#brand-concierge-mount',
-      instanceName: 'alloy',
+      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
       stylingConfigurations: chatUIConfig,
     });
 
     // Clean up
-    script.remove();
-    delete window.adobe.concierge;
-    delete window.alloy_all;
+    window._satellite = oldSatellite;
   });
 
   it('clicking a prompt card fills input and opens modal with card text', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
-
-    // Mock alloy version 2.31.0
-    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
-
-    // Mock window.adobe.concierge.bootstrap
-    window.adobe = window.adobe || {};
-    window.adobe.concierge = { bootstrap: sinon.spy() };
-
-    // Pre-load script
-    const { env } = getConfig();
-    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
-    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
-    const script = document.createElement('script');
-    script.src = src;
-    script.dataset.loaded = 'true';
-    document.head.append(script);
-
     await init(block);
 
     const buttons = block.querySelectorAll('.prompt-card-button');
@@ -154,83 +125,89 @@ describe('Brand Concierge', () => {
     const mount = modal.querySelector('#brand-concierge-mount');
     expect(mount).to.exist;
     expect(mount.dataset.initialMessage).to.contain('Prompt two');
-
-    // Clean up
-    script.remove();
-    delete window.adobe.concierge;
-    delete window.alloy_all;
   });
 
-  it('loads prod script when env is prod', async () => {
-    // Setup prod config
-    setConfig({ env: { name: 'prod' } });
-    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
-    const block = document.querySelector('.brand-concierge');
+  describe('Privacy Consent Handling', () => {
+    let block;
+    let originalAdobePrivacy;
+    let originalLana;
 
-    // Mock alloy version 2.31.0
-    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
+    beforeEach(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      block = document.querySelector('.brand-concierge');
+      originalAdobePrivacy = window.adobePrivacy;
+      originalLana = window.lana;
+    });
 
-    window.adobe = window.adobe || {};
-    window.adobe.concierge = { bootstrap: sinon.spy() };
+    afterEach(() => {
+      window.adobePrivacy = originalAdobePrivacy;
+      window.lana = originalLana;
+      sinon.restore();
+    });
 
-    // Pre-load script to bypass loadScript
-    const script = document.createElement('script');
-    script.src = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-    script.dataset.loaded = 'true';
-    document.head.append(script);
+    it('shows the block if privacy hasnt loaded yet', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+    });
 
-    await init(block);
+    it('hides the block if the user rejects all cookies', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+      window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001']) };
+      window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
+      expect(block.classList.contains('hide-block')).to.be.true;
+    });
 
-    const input = block.querySelector('#bc-input-field');
-    input.value = 'Hello world';
-    input.dispatchEvent(new Event('input'));
-    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-
-    await waitForElement('#brand-concierge-modal');
-
-    // Verify bootstrap was called
-    expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
-
-    // Clean up
-    script.remove();
-    delete window.adobe.concierge;
-    delete window.alloy_all;
+    it('hides the block if the user rejects performance cookies', async () => {
+      window.adobePrivacy = undefined;
+      await init(block);
+      expect(block.classList.contains('hide-block')).to.be.false;
+      window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001', 'C0003']) };
+      window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
+      expect(block.classList.contains('hide-block')).to.be.true;
+    });
   });
 
-  it('loads stage script when env is stage', async () => {
-    // Setup stage config
-    setConfig({ env: { name: 'stage' } });
-    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
-    const block = document.querySelector('.brand-concierge');
+  describe('getUpdatedChatUIConfig', () => {
+    const originalChatUIConfig = JSON.parse(JSON.stringify(chatUIConfig));
+    it('returns original chatUIConfig when no placeholder is provided', () => {
+      const result = getUpdatedChatUIConfig();
+      expect(result).to.deep.equal(originalChatUIConfig);
+      expect(result.text['input.placeholder']).to.equal('Tell us what you\'d like to do or create');
+    });
 
-    // Mock alloy version 2.31.0
-    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
+    it('updates the input placeholder', () => {
+      const customPlaceholder = 'Custom placeholder text';
+      const result = getUpdatedChatUIConfig(customPlaceholder);
 
-    window.adobe = window.adobe || {};
-    window.adobe.concierge = { bootstrap: sinon.spy() };
+      expect(result.text['input.placeholder']).to.equal(customPlaceholder);
+    });
+  });
 
-    // Pre-load script to bypass loadScript
-    const script = document.createElement('script');
-    script.src = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-    script.dataset.loaded = 'true';
-    document.head.append(script);
+  describe('updateReplicatedValue', () => {
+    let textareaWrapper;
+    let textarea;
 
-    await init(block);
+    beforeEach(() => {
+      textareaWrapper = document.createElement('div');
+      textarea = document.createElement('textarea');
+    });
 
-    const input = block.querySelector('#bc-input-field');
-    input.value = 'Hello world';
-    input.dispatchEvent(new Event('input'));
-    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    it('sets replicatedValue to textarea placeholder when value is empty', () => {
+      textarea.value = '';
+      textarea.placeholder = 'Enter your message here';
+      updateReplicatedValue(textareaWrapper, textarea);
+      expect(textareaWrapper.dataset.replicatedValue).to.equal('Enter your message here');
+    });
 
-    await waitForElement('#brand-concierge-modal');
-
-    // Verify bootstrap was called
-    expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
-
-    // Clean up
-    script.remove();
-    delete window.adobe.concierge;
-    delete window.alloy_all;
+    it('prioritizes value over placeholder when both exist', () => {
+      textarea.value = 'Actual input';
+      textarea.placeholder = 'Placeholder text';
+      updateReplicatedValue(textareaWrapper, textarea);
+      expect(textareaWrapper.dataset.replicatedValue).to.equal('Actual input');
+    });
   });
 
   it('uses bootstrap API when alloy version is exactly 2.31.0', async () => {
@@ -339,88 +316,5 @@ describe('Brand Concierge', () => {
 
     // Clean up
     delete window._satellite;
-  });
-
-  describe('Privacy Consent Handling', () => {
-    let block;
-    let originalAdobePrivacy;
-    let originalLana;
-
-    beforeEach(async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
-      block = document.querySelector('.brand-concierge');
-      originalAdobePrivacy = window.adobePrivacy;
-      originalLana = window.lana;
-    });
-
-    afterEach(() => {
-      window.adobePrivacy = originalAdobePrivacy;
-      window.lana = originalLana;
-      sinon.restore();
-    });
-
-    it('shows the block if privacy hasnt loaded yet', async () => {
-      window.adobePrivacy = undefined;
-      await init(block);
-      expect(block.classList.contains('hide-block')).to.be.false;
-    });
-
-    it('hides the block if the user rejects all cookies', async () => {
-      window.adobePrivacy = undefined;
-      await init(block);
-      expect(block.classList.contains('hide-block')).to.be.false;
-      window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001']) };
-      window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
-      expect(block.classList.contains('hide-block')).to.be.true;
-    });
-
-    it('hides the block if the user rejects performance cookies', async () => {
-      window.adobePrivacy = undefined;
-      await init(block);
-      expect(block.classList.contains('hide-block')).to.be.false;
-      window.adobePrivacy = { activeCookieGroups: sinon.stub().returns(['C0001', 'C0003']) };
-      window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
-      expect(block.classList.contains('hide-block')).to.be.true;
-    });
-  });
-
-  describe('getUpdatedChatUIConfig', () => {
-    const originalChatUIConfig = JSON.parse(JSON.stringify(chatUIConfig));
-    it('returns original chatUIConfig when no placeholder is provided', () => {
-      const result = getUpdatedChatUIConfig();
-      expect(result).to.deep.equal(originalChatUIConfig);
-      expect(result.text['input.placeholder']).to.equal('Tell us what you\'d like to do or create');
-    });
-
-    it('updates the input placeholder', () => {
-      const customPlaceholder = 'Custom placeholder text';
-      const result = getUpdatedChatUIConfig(customPlaceholder);
-
-      expect(result.text['input.placeholder']).to.equal(customPlaceholder);
-    });
-  });
-
-  describe('updateReplicatedValue', () => {
-    let textareaWrapper;
-    let textarea;
-
-    beforeEach(() => {
-      textareaWrapper = document.createElement('div');
-      textarea = document.createElement('textarea');
-    });
-
-    it('sets replicatedValue to textarea placeholder when value is empty', () => {
-      textarea.value = '';
-      textarea.placeholder = 'Enter your message here';
-      updateReplicatedValue(textareaWrapper, textarea);
-      expect(textareaWrapper.dataset.replicatedValue).to.equal('Enter your message here');
-    });
-
-    it('prioritizes value over placeholder when both exist', () => {
-      textarea.value = 'Actual input';
-      textarea.placeholder = 'Placeholder text';
-      updateReplicatedValue(textareaWrapper, textarea);
-      expect(textareaWrapper.dataset.replicatedValue).to.equal('Actual input');
-    });
   });
 });
