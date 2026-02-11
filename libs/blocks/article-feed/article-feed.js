@@ -333,14 +333,17 @@ function applyCurrentFilters(block, close) {
     selectedContainer.classList.remove('hide');
   } else {
     selectedContainer.classList.add('hide');
-    // Move focus when filters are cleared
+    // Move focus when filters are cleared only if no dropdown is expanded (e.g. Clear all).
+    // When Reset is used inside an expanded dropdown, keep focus on the Reset button.
     setTimeout(() => {
+      const dropdownExpanded = document.querySelector('.filter-button[aria-expanded="true"]');
+      if (dropdownExpanded) return;
+
       const filterContainer = document.querySelector('.filter-container');
       const firstFilterButton = filterContainer?.querySelector('.filter-button');
       if (firstFilterButton) {
         firstFilterButton.focus();
       } else {
-        // Fallback to article feed container
         const articleFeed = document.querySelector('.article-feed');
         if (articleFeed) {
           articleFeed.setAttribute('tabindex', '-1');
