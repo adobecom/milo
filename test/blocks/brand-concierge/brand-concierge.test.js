@@ -68,6 +68,9 @@ describe('Brand Concierge', () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 
+    // Mock alloy version 2.31.0
+    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
+
     // Mock window.adobe.concierge.bootstrap
     window.adobe = window.adobe || {};
     window.adobe.concierge = { bootstrap: sinon.spy() };
@@ -119,11 +122,15 @@ describe('Brand Concierge', () => {
     // Clean up
     script.remove();
     delete window.adobe.concierge;
+    delete window.alloy_all;
   });
 
   it('clicking a prompt card fills input and opens modal with card text', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
+
+    // Mock alloy version 2.31.0
+    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
 
     // Mock window.adobe.concierge.bootstrap
     window.adobe = window.adobe || {};
@@ -151,6 +158,7 @@ describe('Brand Concierge', () => {
     // Clean up
     script.remove();
     delete window.adobe.concierge;
+    delete window.alloy_all;
   });
 
   it('loads prod script when env is prod', async () => {
@@ -159,8 +167,17 @@ describe('Brand Concierge', () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 
+    // Mock alloy version 2.31.0
+    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
+
     window.adobe = window.adobe || {};
     window.adobe.concierge = { bootstrap: sinon.spy() };
+
+    // Pre-load script to bypass loadScript
+    const script = document.createElement('script');
+    script.src = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+    script.dataset.loaded = 'true';
+    document.head.append(script);
 
     await init(block);
 
@@ -169,18 +186,15 @@ describe('Brand Concierge', () => {
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    // Wait for script to appear
-    await new Promise((resolve) => { setTimeout(resolve, 100); });
+    await waitForElement('#brand-concierge-modal');
 
-    const script = document.querySelector('script[src="https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js"]');
-    expect(script).to.exist;
-
-    // Simulate load so the flow finishes (and doesn't leave hanging promises)
-    if (script) script.dispatchEvent(new Event('load'));
+    // Verify bootstrap was called
+    expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
 
     // Clean up
-    if (script) script.remove();
+    script.remove();
     delete window.adobe.concierge;
+    delete window.alloy_all;
   });
 
   it('loads stage script when env is stage', async () => {
@@ -189,8 +203,17 @@ describe('Brand Concierge', () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 
+    // Mock alloy version 2.31.0
+    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
+
     window.adobe = window.adobe || {};
     window.adobe.concierge = { bootstrap: sinon.spy() };
+
+    // Pre-load script to bypass loadScript
+    const script = document.createElement('script');
+    script.src = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+    script.dataset.loaded = 'true';
+    document.head.append(script);
 
     await init(block);
 
@@ -199,15 +222,123 @@ describe('Brand Concierge', () => {
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    await new Promise((resolve) => { setTimeout(resolve, 100); });
+    await waitForElement('#brand-concierge-modal');
 
-    const script = document.querySelector('script[src="https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js"]');
-    expect(script).to.exist;
+    // Verify bootstrap was called
+    expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
 
-    if (script) script.dispatchEvent(new Event('load'));
-
-    if (script) script.remove();
+    // Clean up
+    script.remove();
     delete window.adobe.concierge;
+    delete window.alloy_all;
+  });
+
+  it('uses bootstrap API when alloy version is exactly 2.31.0', async () => {
+    setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+
+    // Mock alloy version 2.31.0
+    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.31.0' } } } } };
+
+    window.adobe = window.adobe || {};
+    window.adobe.concierge = { bootstrap: sinon.spy() };
+
+    // Pre-load script to bypass loadScript await
+    const { env } = getConfig();
+    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
+    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+    const script = document.createElement('script');
+    script.src = src;
+    script.dataset.loaded = 'true';
+    document.head.append(script);
+
+    await init(block);
+
+    const input = block.querySelector('#bc-input-field');
+    input.value = 'Test message';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    const modal = await waitForElement('#brand-concierge-modal');
+    expect(modal).to.exist;
+
+    // Verify bootstrap was called
+    expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
+    expect(window.adobe.concierge.bootstrap.firstCall.args[0]).to.deep.include({
+      selector: '#brand-concierge-mount',
+      instanceName: 'alloy',
+    });
+
+    // Clean up
+    script.remove();
+    delete window.adobe.concierge;
+    delete window.alloy_all;
+  });
+
+  it('uses _satellite.track when alloy version is < 2.31.0', async () => {
+    setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+
+    // Mock alloy version 2.30.0
+    window.alloy_all = { data: { _adobe_corpnew: { digitalData: { page: { libraryVersions: '2.30.0' } } } } };
+
+    window._satellite = { track: sinon.spy() };
+
+    await init(block);
+
+    const input = block.querySelector('#bc-input-field');
+    input.value = 'Test message';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    const modal = await waitForElement('#brand-concierge-modal');
+    expect(modal).to.exist;
+
+    // Verify _satellite.track was called
+    expect(window._satellite.track.calledOnce).to.be.true;
+    expect(window._satellite.track.firstCall.args[0]).to.equal('bootstrapConversationalExperience');
+    expect(window._satellite.track.firstCall.args[1]).to.deep.include({
+      selector: '#brand-concierge-mount',
+      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+    });
+
+    // Verify script was NOT loaded via loadScript (no script tag should exist)
+    const script = document.querySelector('script[src*="experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent"]');
+    expect(script).to.not.exist;
+
+    // Clean up
+    delete window._satellite;
+    delete window.alloy_all;
+  });
+
+  it('uses _satellite.track when alloy version is missing', async () => {
+    setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+
+    // Don't set window.alloy_all to simulate missing version
+    delete window.alloy_all;
+
+    window._satellite = { track: sinon.spy() };
+
+    await init(block);
+
+    const input = block.querySelector('#bc-input-field');
+    input.value = 'Test message';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    const modal = await waitForElement('#brand-concierge-modal');
+    expect(modal).to.exist;
+
+    // Verify _satellite.track was called (fallback to legacy)
+    expect(window._satellite.track.calledOnce).to.be.true;
+    expect(window._satellite.track.firstCall.args[0]).to.equal('bootstrapConversationalExperience');
+
+    // Clean up
+    delete window._satellite;
   });
 
   describe('Privacy Consent Handling', () => {
