@@ -886,8 +886,7 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
   const seenKeys = new Set();
   const filteredPlaceholders = placeholders.filter((item) => {
     const pageFilter = item['page filter'] || item['page filter (optional)'];
-    if (seenKeys.has(item.key)) return false;
-    if (pageFilter && !matchGlob(pageFilter, pathname)) return false;
+    if (seenKeys.has(item.key) || (pageFilter && !matchGlob(pageFilter, pathname))) return false;
     seenKeys.add(item.key);
     return true;
   });
