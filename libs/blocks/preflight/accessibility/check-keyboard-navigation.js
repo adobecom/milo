@@ -13,10 +13,10 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
   const violations = [];
   const focusableSelectors = [
     'a[href]',
-    'button',
-    'input',
-    'textarea',
-    'select',
+    'button:not([disabled])',
+    'input:not([disabled], .hide)',
+    'textarea:not([disabled])',
+    'select:not([disabled])',
     '[tabindex]:not([tabindex="-1"])',
   ];
   const focusableElements = elements.filter((el) => el.matches(focusableSelectors.join(',')));
@@ -32,18 +32,33 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
     });
     return violations;
   }
-  // Check each focusable element for a visible focus indicator
+  const isHiddenByStyle = (node) => {
+    const styles = window.getComputedStyle(node);
+    return styles.display === 'none'
+      || styles.visibility === 'hidden'
+      || parseFloat(styles.opacity) === 0;
+  };
+  const isHiddenByAncestors = (node) => {
+    let current = node?.parentElement;
+    while (current) {
+      if (isHiddenByStyle(current)) return true;
+      current = current.parentElement;
+    }
+    return false;
+  };
+  const isSelfHidden = (el) => {
+    if (isHiddenByStyle(el)) return true;
+    const elBox = el.getBoundingClientRect();
+    return !elBox.width || !elBox.height;
+  };
   focusableElements.forEach((el) => {
-    const styles = window.getComputedStyle(el);
-    const hasVisibleOutline = styles.outlineStyle !== 'none' && parseFloat(styles.outlineWidth) > 0;
-    const hasBoxShadow = styles.boxShadow !== 'none' && styles.boxShadow;
-    if (hasVisibleOutline || hasBoxShadow) return;
+    if (isHiddenByAncestors(el) || !isSelfHidden(el)) return;
     violations.push({
-      description: 'Element does not have a visible focus indicator.',
-      impact: 'moderate',
+      description: 'Element is not visibly rendered; keyboard focus may not be perceivable.',
+      impact: 'critical',
       id: 'focus-visible',
-      help: 'Ensure interactive elements show a visible focus indicator on keyboard focus.',
-      helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html',
+      help: 'Ensure elements are visible and occupy space so keyboard focus is perceivable.',
+      helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
       nodes: [{
         target: [getUniqueSelector(el)],
         html: el.outerHTML,
