@@ -538,6 +538,69 @@ const getCategoryMappings = async (state) => {
   return {};
 };
 
+const isLocaleInRegionalSites = (regionalSites, locStr) => {
+  if (!regionalSites) return false;
+  return regionalSites
+    .split(',')
+    .map((site) => site.trim().replace(/^\//, ''))
+    .includes(locStr);
+};
+
+async function getIsLingoLocale(origin, country, language) {
+  const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const configJson = await response.json();
+
+  let siteId;
+  let isKnownLingoSiteLocale = false;
+  let isPermittedLingoSiteLocale = false;
+
+  const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+  const siteLocalesData = configJson['site-locales']?.data ?? [];
+  try {
+    const matchedByOrigin = siteQueryIndexMap.find(({ caasOrigin }) => origin === caasOrigin);
+    if (matchedByOrigin) {
+      siteId = matchedByOrigin.uniqueSiteId;
+    }
+    isKnownLingoSiteLocale = siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => {
+      if (uniqueSiteId !== siteId) return false;
+      const baseLocale = baseSite?.split('/')[1];
+      const matchesBase = country === baseLocale;
+      const langMatchesBase = language === baseLocale;
+      const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
+      return matchesBase || matchesRegional || langMatchesBase;
+    });
+
+    if (isKnownLingoSiteLocale) {
+      // determine if the country is allowed to be used for the langauge
+      const baseSiteLocale = language === 'en' ? '' : language;
+      const altLocale = `${country}_${language}`;
+      siteLocalesData
+        .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
+        .forEach(({ baseSite, regionalSites }) => {
+          if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
+            const regionalMap = regionalSites.split(',').map((site) => site.trim().replace(/^\//, ''));
+            if (country === 'xx' || regionalMap.includes(country) || regionalMap.includes(altLocale)) {
+              isPermittedLingoSiteLocale = true;
+            }
+          }
+        });
+    }
+  } catch (e) {
+    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+  }
+  return isPermittedLingoSiteLocale;
+}
+
+async function getLangFirstParam(origin, country, language) {
+  const isLingoLocale = await getIsLingoLocale(origin, country, language);
+  // if it's not a lingo locale, check if you're on a base site.
+  if (!isLingoLocale && country !== 'xx') {
+    return false;
+  }
+  return true;
+}
+
 async function getLingoSiteLocale(origin, path) {
   const host = origin.toLowerCase();
   let lingoSiteMapping = {
@@ -572,23 +635,10 @@ async function getLingoSiteLocale(origin, path) {
     const siteLocalesData = configJson['site-locales']?.data ?? [];
 
     // Map origin (caasOrigin) to uniqueSiteId for locale lookup
-    siteQueryIndexMap
-      .forEach(({ uniqueSiteId, caasOrigin }) => {
-        if (host === caasOrigin) {
-          siteId = uniqueSiteId;
-        } else {
-          window.lana?.log('[getLingoSiteLocale] No match: host', host, '!== caasOrigin', caasOrigin);
-        }
-      });
-
-    const isLocaleInRegionalSites = (regionalSites, locStr) => {
-      if (!regionalSites) return false;
-      return regionalSites
-        .split(',')
-        .map((site) => site.trim().replace(/^\//, ''))
-        .includes(locStr);
-    };
-
+    const matchedByOrigin = siteQueryIndexMap.find(({ caasOrigin }) => host === caasOrigin);
+    if (matchedByOrigin) {
+      siteId = matchedByOrigin.uniqueSiteId;
+    }
     // check if the localeStr is in the baseSite or regionalSites.
     // if not, use the og country/language logic
     if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || isLocaleInRegionalSites(regionalSites, localeStr)))) {
@@ -658,6 +708,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
   const langFirst = await getLingoActive();
+  let geoCountry = null;
   /* if it is a language first localized page don't use the milo locales.
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
@@ -675,14 +726,15 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
     if (!isNewsSource) {
       const primeSource = Array.from([source].flat())[0];
-      const mapping = await getLanguageFirstCountryAndLang(window.location.pathname, primeSource);
+      const pathname = pageConfigHelper()?.pathname || window.location.pathname;
+      const mapping = await getLanguageFirstCountryAndLang(pathname, primeSource);
 
       countryStr = mapping.country || fallbackCountry;
       langStr = mapping.lang || fallbackLang;
 
       if (countryStr === 'xx') {
         try {
-          let geoCountry = getCountry()
+          geoCountry = getCountry()
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
@@ -690,7 +742,10 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
             geoCountry = await getAkamaiCode(true);
           }
 
-          if (geoCountry) countryStr = geoCountry.toLowerCase();
+          if (geoCountry) {
+            const isLingoLocale = await getIsLingoLocale(primeSource, geoCountry, langStr);
+            if (isLingoLocale) countryStr = geoCountry.toLowerCase();
+          }
         } catch (error) {
           window?.lana?.log(`GEO IP lookup failed, fallback to URL path. ${error}`, { tags: 'caas,geo-ip' });
         }
@@ -704,6 +759,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     return {
       country: countryStr,
       language: langStr,
+      geoCountry,
       locales,
     };
   }
@@ -716,12 +772,14 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     return {
       country: currCountry,
       language: currLang,
+      geoCountry,
       locales,
     };
   }
   return {
     country: country ? country.split('/').pop() : 'US',
     language: language ? language.split('/').pop() : 'en',
+    geoCountry,
     locales,
   };
 }
@@ -858,7 +916,7 @@ export const getGrayboxExperienceId = (
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const { country, language, locales } = await getCountryAndLang(state);
+  const { country, language, locales, geoCountry } = await getCountryAndLang(state);
   const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
@@ -879,9 +937,19 @@ export const getConfig = async (originalState, strs = {}) => {
 
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
+  const geoCountryParam = geoCountry ? `&geoCountry=${geoCountry}` : '';
 
   const isLingoActive = await getLingoActive();
-  const langFirst = state.langFirst ? `&langFirst=${isLingoActive}` : '';
+  let isLingoSite = false;
+  if (isLingoActive) {
+    isLingoSite = await getLangFirstParam(originSelection.split(',')[0], country, language);
+  }
+  // handle news source separately as it is not a lingo site
+  if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
+    isLingoSite = 'true';
+  }
+  const getLingoResults = (isLingoActive && isLingoSite) ? 'true' : 'false';
+  const langFirst = state.langFirst ? `&langFirst=${getLingoResults}` : '';
 
   const navigationStyle = state.container === 'carousel'
     && state.paginationAnimationStyle.includes('Modern')
@@ -914,6 +982,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow
+      }${geoCountryParam
       }${localesQueryParam
       }${debug
       }${flatFile

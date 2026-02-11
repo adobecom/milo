@@ -80,6 +80,7 @@ const MILO_BLOCKS = [
   'slideshare',
   'preflight',
   'promo',
+  'quick-facts',
   'quiz',
   'quiz-entry',
   'quiz-marquee',
@@ -169,7 +170,7 @@ const LANGUAGE_BASED_PATHS = [
   'news.adobe.com',
 ];
 const DEFAULT_LANG = 'en';
-export const SLD = PAGE_URL.hostname.includes('.hlx.') ? 'hlx' : 'aem';
+export const SLD = 'aem';
 
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
@@ -810,28 +811,53 @@ export function getMepLingoPrefix() {
   return regionKey ? regions[regionKey].prefix : null;
 }
 
+let mepLingoModulePreloaded = false;
+
+function preloadMepLingoModule() {
+  if (mepLingoModulePreloaded) return;
+  mepLingoModulePreloaded = true;
+  import('../features/mep/lingo.js');
+}
+
 function detectMepLingoSwap(a) {
   if (!a) return;
-  if (a.href.includes('#_mep-lingo')) {
+  const isInsertHash = a.href.includes('#_mep-lingo-insert');
+  const isRemoveHash = !isInsertHash && a.href.includes('#_mep-lingo-remove');
+  const isRegularHash = !isInsertHash && !isRemoveHash && a.href.includes('#_mep-lingo');
+
+  if (isInsertHash || isRemoveHash || isRegularHash) {
+    let hashToRemove = '#_mep-lingo';
+    if (isInsertHash) hashToRemove = '#_mep-lingo-insert';
+    if (isRemoveHash) hashToRemove = '#_mep-lingo-remove';
+
     a.dataset.mepLingo = 'true';
-    // Store original href before transformation for fallback purposes
-    a.dataset.originalHref = a.href.replace('#_mep-lingo', '');
-    a.href = a.href.replace('#_mep-lingo', '');
+    if (isInsertHash) a.dataset.mepLingoInsert = 'true';
+    if (isRemoveHash) a.dataset.mepLingoRemove = 'true';
+    a.dataset.originalHref = a.href.replace(hashToRemove, '');
+    a.href = a.href.replace(hashToRemove, '');
+    if (lingoActive()) preloadMepLingoModule();
+    if (isInsertHash || isRemoveHash) return;
   }
-  // Always detect mep-lingo rows (even when lingoActive() is false) for fallback purposes
   const row = a.closest('.section > div > div');
   const firstCellText = row?.children[0]?.textContent?.toLowerCase().trim();
 
   if (firstCellText === 'mep-lingo') {
     a.dataset.mepLingo = 'true';
     a.dataset.originalHref = a.href;
+    if (lingoActive()) preloadMepLingoModule();
+    const swapBlock = a.closest('.section > div[class]');
     if (a.closest('.section-metadata')) {
       a.dataset.mepLingoSectionSwap = 'true';
-    } else {
-      const swapBlock = a.closest('.section > div[class]');
-      if (swapBlock) {
-        const [blockName] = swapBlock.classList;
-        a.dataset.mepLingoBlockSwap = blockName;
+    } else if (swapBlock) {
+      const [blockName] = swapBlock.classList;
+      a.dataset.mepLingoBlockSwap = blockName;
+
+      if (blockName === 'mep-lingo') {
+        if (swapBlock.classList.contains('insert')) {
+          a.dataset.mepLingoInsert = 'true';
+        } else if (swapBlock.classList.contains('remove')) {
+          a.dataset.mepLingoRemove = 'true';
+        }
       }
     }
   }
@@ -844,8 +870,9 @@ export async function localizeLinkAsync(
   aTag = null,
 ) {
   if (!href) return href;
+
   detectMepLingoSwap(aTag);
-  const effectiveHref = href.replace('#_mep-lingo', '');
+  const effectiveHref = href.replace(/#_mep-lingo(-insert|-remove)?/g, '');
   const isMepLingoLink = aTag?.dataset?.mepLingo
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
@@ -1259,7 +1286,7 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   const [, domainsMap] = matchedRules;
   [...anchors].forEach((a) => {
     const hasLocalePrefix = a.pathname.startsWith(`${locale.prefix}/`);
-    const noLocaleLink = hasLocalePrefix ? a.href.replace(locale.prefix, '') : a.href;
+    const noLocaleLink = hasLocalePrefix ? a.href.replace(`/${locale.prefix.replace(/^\//, '')}/`, '/') : a.href;
     const matchedDomain = Object.keys(domainsMap)
       .find((domain) => (new RegExp(domain)).test(noLocaleLink));
     if (!matchedDomain) return;

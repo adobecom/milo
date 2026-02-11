@@ -1,7 +1,7 @@
+import { CheckoutWorkflowStep, Defaults, Log } from '@adobecom/mas-platform/web-components/dist/commerce.js';
+
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
-
-import { CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
@@ -30,6 +30,9 @@ import merch, {
   updateModalState,
   isFallbackStepUsed,
   getWorkflowStep,
+  getMasComponentUrl,
+  getMasLibsBaseUrl,
+  getMasLibs,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -780,6 +783,100 @@ describe('Merch Block', () => {
       await sourceCta.onceSettled();
       expect(sourceCta.textContent).to.equal('Upgrade Now');
     });
+
+    it('uses Acrobat-specific upgrade flow for Acrobat Studio OSI', async () => {
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      const ACROBAT_ENTITLEMENT = [
+        {
+          change_plan_available: true,
+          offer: {
+            offer_id: 'TEST_OFFER_ID',
+            product_code: 'ACAI',
+            product_arrangement_v2: { family: 'ACROBAT' },
+          },
+        },
+      ];
+      setSubscriptionsData(ACROBAT_ENTITLEMENT);
+
+      const upgradeOfferContainer = document.createElement('div');
+      upgradeOfferContainer.classList.add('merch-offers', 'upgrade');
+      const upgradeOfferLink = document.createElement('a');
+      upgradeOfferLink.setAttribute('href', '/tools/ost?osi=V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0&type=checkoutUrl');
+      upgradeOfferLink.setAttribute('data-wcs-osi', 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0');
+      upgradeOfferContainer.appendChild(upgradeOfferLink);
+      document.body.appendChild(upgradeOfferContainer);
+
+      const merchCard = document.createElement('merch-card');
+      merchCard.setAttribute('name', 'acrobat');
+      const upgradeEl = document.createElement('a');
+      upgradeEl.classList.add('merch', 'cta');
+      upgradeEl.setAttribute('href', '/tools/ost?osi=V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0&type=checkoutUrl&upgrade=true');
+      upgradeEl.textContent = 'Buy Now';
+      merchCard.appendChild(upgradeEl);
+      document.body.appendChild(merchCard);
+
+      await merch(upgradeOfferLink);
+
+      const cta = await merch(upgradeEl);
+      await cta.onceSettled();
+
+      expect(cta).to.exist;
+
+      document.body.removeChild(merchCard);
+      document.body.removeChild(upgradeOfferContainer);
+    });
+
+    it('removes other checkout links when upgrade action is set', async () => {
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
+
+      const upgradeOfferContainer = document.createElement('div');
+      upgradeOfferContainer.classList.add('merch-offers', 'upgrade');
+      const upgradeOfferLink = document.createElement('a');
+      upgradeOfferLink.setAttribute('href', '/tools/ost?osi=632B3ADD940A7FBB7864AA5AD19B8D28&type=checkoutUrl');
+      upgradeOfferLink.setAttribute('data-wcs-osi', '632B3ADD940A7FBB7864AA5AD19B8D28');
+      upgradeOfferContainer.appendChild(upgradeOfferLink);
+      document.body.appendChild(upgradeOfferContainer);
+
+      const merchCard = document.createElement('merch-card');
+      merchCard.setAttribute('name', 'photoshop');
+
+      const upgradeLink = document.createElement('a');
+      upgradeLink.classList.add('merch', 'cta');
+      upgradeLink.setAttribute('href', '/tools/ost?osi=632B3ADD940A7FBB7864AA5AD19B8D28&type=checkoutUrl&upgrade=true');
+      upgradeLink.textContent = 'Upgrade';
+
+      const otherLink1 = document.createElement('a');
+      otherLink1.setAttribute('is', 'checkout-link');
+      otherLink1.setAttribute('href', '/tools/ost?osi=other1&type=checkoutUrl');
+      otherLink1.textContent = 'Other Link 1';
+
+      const otherLink2 = document.createElement('a');
+      otherLink2.setAttribute('is', 'checkout-link');
+      otherLink2.setAttribute('href', '/tools/ost?osi=other2&type=checkoutUrl');
+      otherLink2.textContent = 'Other Link 2';
+
+      merchCard.appendChild(upgradeLink);
+      merchCard.appendChild(otherLink1);
+      merchCard.appendChild(otherLink2);
+      document.body.appendChild(merchCard);
+
+      expect(merchCard.querySelectorAll('a').length).to.equal(3);
+
+      await merch(upgradeOfferLink);
+
+      const cta = await merch(upgradeLink);
+      await cta?.onceSettled();
+
+      expect(merchCard.querySelector('a')).to.exist;
+
+      document.body.removeChild(merchCard);
+      document.body.removeChild(upgradeOfferContainer);
+    });
   });
 
   describe('openModal', () => {
@@ -1165,7 +1262,7 @@ describe('Merch Block', () => {
 
       const a2 = document.createElement('a');
       a2.classList.add('link2');
-      a2.setAttribute('href', 'https://main--cc--adobecom.hlx.live/test/cc/path');
+      a2.setAttribute('href', 'https://main--cc--adobecom.aem.live/test/cc/path');
       div.append(a2);
 
       const a3 = document.createElement('a');
@@ -1269,6 +1366,92 @@ describe('Merch Block', () => {
       });
       expect(workflowStep).to.equal('commitment');
       document.querySelector('meta[name="mas-ff-3in1"]').remove();
+    });
+  });
+
+  describe('getMasComponentUrl', () => {
+    it('returns correct URL based on masLibsBase and hostname', () => {
+      // When masLibsBase is provided, use it regardless of hostname
+      expect(getMasComponentUrl('commerce', 'https://main--mas--adobecom.aem.live/web-components/dist', 'www.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+      expect(getMasComponentUrl('merch-card', 'https://main--mas--adobecom.aem.live/web-components/dist', 'www.stage.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/merch-card.js');
+
+      // When masLibsBase is null and hostname is www.adobe.com, use Adobe prod URL
+      expect(getMasComponentUrl('commerce', null, 'www.adobe.com'))
+        .to.equal('https://www.adobe.com/mas/libs/commerce.js');
+
+      // When masLibsBase is null and hostname is not www.adobe.com, use aem.live URL
+      expect(getMasComponentUrl('commerce', null, 'www.stage.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+      expect(getMasComponentUrl('merch-card', null, 'main--cc--adobecom.aem.live'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/merch-card.js');
+      expect(getMasComponentUrl('commerce', null, 'localhost'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+    });
+  });
+
+  describe('getMasLibsBaseUrl', () => {
+    const originalHref = window.location.href;
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns correct base URL for all maslibs parameter variations', () => {
+      // No maslibs parameter
+      window.history.pushState({}, '', '/');
+      expect(getMasLibsBaseUrl()).to.be.null;
+
+      // Empty maslibs parameter
+      window.history.pushState({}, '', '/?maslibs=');
+      expect(getMasLibsBaseUrl()).to.be.null;
+
+      // Local development
+      window.history.pushState({}, '', '/?maslibs=local');
+      expect(getMasLibsBaseUrl()).to.equal('http://localhost:3000');
+
+      // Main branch
+      window.history.pushState({}, '', '/?maslibs=main');
+      expect(getMasLibsBaseUrl()).to.equal('https://main--mas--adobecom.aem.live');
+
+      // Feature branch (simple name)
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getMasLibsBaseUrl()).to.equal('https://feature-branch--mas--adobecom.aem.live');
+
+      // Full branch name with --mas--
+      window.history.pushState({}, '', '/?maslibs=mybranch--mas--adobecom');
+      expect(getMasLibsBaseUrl()).to.equal('https://mybranch--mas--adobecom.aem.live');
+
+      // Branch name with -- but not --mas--
+      window.history.pushState({}, '', '/?maslibs=feature--other--repo');
+      expect(getMasLibsBaseUrl()).to.equal('https://feature--other--repo.aem.live');
+    });
+  });
+
+  describe('getMasLibs', () => {
+    const originalHref = window.location.href;
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns correct web-components URL for maslibs parameter variations', () => {
+      // No maslibs parameter
+      window.history.pushState({}, '', '/');
+      expect(getMasLibs()).to.be.null;
+
+      // Local development
+      window.history.pushState({}, '', '/?maslibs=local');
+      expect(getMasLibs()).to.equal('http://localhost:3000/web-components/dist');
+
+      // Main branch
+      window.history.pushState({}, '', '/?maslibs=main');
+      expect(getMasLibs()).to.equal('https://main--mas--adobecom.aem.live/web-components/dist');
+
+      // Feature branch
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
     });
   });
 });
