@@ -643,7 +643,7 @@
 
   /* floating-button */
   .bc-floating-button {
-    max-width: calc(320px - var(--bc-input-border-size) * 2);
+    max-width: calc(324px - var(--bc-input-border-size) * 2);
   }
 
   /* hero */
