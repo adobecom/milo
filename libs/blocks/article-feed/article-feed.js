@@ -334,7 +334,6 @@ function applyCurrentFilters(block, close) {
   } else {
     selectedContainer.classList.add('hide');
     // Move focus when filters are cleared only if no dropdown is expanded (e.g. Clear all).
-    // When Reset is used inside an expanded dropdown, keep focus on the Reset button.
     setTimeout(() => {
       const dropdownExpanded = document.querySelector('.filter-button[aria-expanded="true"]');
       if (dropdownExpanded) return;
@@ -616,10 +615,6 @@ async function decorateArticleFeed(
     container.setAttribute('tabindex', '-1');
     container.append(noMatches, userHelp);
     container.focus();
-    // Announce the full message with assertive priority
-    const fullMessage = `${noMatchesText}. ${userHelpText}`;
-
-    announceFilterChange(fullMessage);
   } else {
     // no results were found
     spinner.remove();
