@@ -547,6 +547,7 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
 };
 
 async function getIsLingoLocale(origin, country, language) {
+  if (origin === 'news') return true;
   const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const configJson = await response.json();
