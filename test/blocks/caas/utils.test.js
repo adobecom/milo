@@ -13,7 +13,7 @@ import {
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
-// Mock lingo-site-mapping.json so the test runner never sees an external fetch (run at load time)
+// Mock lingo-site-mapping.json for test runner
 (function patchFetchForLingoMapping() {
   const orig = window.fetch;
   const defaultLingoMock = () => Promise.resolve({
