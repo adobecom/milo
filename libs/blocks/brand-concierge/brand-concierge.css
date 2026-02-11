@@ -822,9 +822,4 @@
   #brand-concierge-modal.dialog-modal {
     max-width: 80vw;
   }
-
-  /* floating-button */
-  .bc-floating-button {
-    max-width: calc(400px - var(--bc-input-border-size) * 2);
-  }
 }
