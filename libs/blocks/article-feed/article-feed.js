@@ -262,11 +262,11 @@ function announceFilterChange(message) {
   const ariaLive = document.querySelector('.article-feed-live-container');
   if (ariaLive) ariaLive.remove();
 
-  const alert = document.createElement('div');
-  alert.class = 'article-feed-live-container';
-  alert.setAttribute('role', 'alert');
+  const alert = createTag('div', {
+    class: 'article-feed-live-container',
+    role: 'alert',
+  });
   alert.textContent = message;
-
   document.body.appendChild(alert);
 }
 
