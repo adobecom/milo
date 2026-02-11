@@ -364,10 +364,12 @@
 }
 
 .bc-floating-input {
+  flex-grow: 2;
   min-height: var(--bc-floating-button-height);
   padding: 12px 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: auto;
   white-space: nowrap;
 }
 
