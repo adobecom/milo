@@ -3,7 +3,6 @@
 import {
   getConfig as pageConfigHelper,
   getCountry,
-  getFederatedContentRoot,
   getMetadata,
   loadScript,
   loadStyle,
@@ -569,7 +568,7 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
-  const configJson = await getLingoSiteMappingConfig(getFederatedContentRoot());
+  const configJson = await getLingoSiteMappingConfig();
 
   let siteId;
   let isKnownLingoSiteLocale = false;
@@ -650,7 +649,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
     let siteId;
     const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const configJson = await response.json();
+    const configJson = await getLingoSiteMappingConfig();
 
     const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
     const siteLocalesData = configJson['site-locales']?.data ?? [];

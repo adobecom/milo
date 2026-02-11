@@ -32,11 +32,6 @@ import {
   };
 }());
 
-// So getFederatedContentRoot() returns 'https://www.adobe.com' (ES module exports can't be stubbed)
-before(() => {
-  setConfig({ origin: 'https://www.adobe.com' });
-});
-
 describe('utils.js export sanity', () => {
   it('getLingoActive() is callable and returns a boolean', async () => {
     const val = await getLingoActive();
@@ -754,7 +749,6 @@ describe('getCountryAndLang', () => {
     language: 'caas:laguange/es',
   };
   const cfg = {
-    origin: 'https://www.adobe.com',
     pathname: '/be_fr/blah.html',
     locales: {
       '': { ietf: 'en-US' },
@@ -865,7 +859,6 @@ describe('getCountryAndLang', () => {
 
     it('should use GEO IP for langFirst when not news source', async () => {
       setConfig({
-        origin: 'https://www.adobe.com',
         pathname: '/en/blah.html',
         locales: { '': { ietf: 'en-US' } },
         mep: { countryIP: 'us' },
@@ -882,7 +875,6 @@ describe('getCountryAndLang', () => {
 
     it('should NOT use GEO IP for news source', async () => {
       setConfig({
-        origin: 'https://www.adobe.com',
         pathname: '/en/blah.html',
         locales: { '': { ietf: 'en-US' } },
       });
@@ -898,7 +890,6 @@ describe('getCountryAndLang', () => {
 
     it('should return valid country with fallback support', async () => {
       setConfig({
-        origin: 'https://www.adobe.com',
         pathname: '/en/be/blah.html',
         locales: {
           '': { ietf: 'en-US' },
