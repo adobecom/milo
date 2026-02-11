@@ -2,14 +2,13 @@
   --bc-header-color: #131313;
   --bc-card-radius: 12px;
   --bc-card-text-color: #292929;
-  --bc-input-radius: 28px;
+  --bc-input-radius: 24px;
   --bc-input-height: 52px;
   --bc-input-border-size: 2px;
-  --bc-input-outer-border-size: 6px;
   --bc-floating-button-height: 46px;
   --bc-floating-button-spacing: 24px;
-  --bc-input-border: linear-gradient(98.11deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%);
-  --bc-input-border-filter-color: rgba(223 223 223 / 60%);
+  --bc-input-border-color: #e8e8e8;
+  --bc-floating-button-border-color: rgba(0 0 0 / 12%);
   --bc-button-dimensions: 32px;
   --bc-button-radius: 50%;
   --bc-button-color: #292929;
@@ -125,7 +124,7 @@
 .bc-input-field-container,
 .bc-floating-button-container {
   align-items: center;
-  background: #fff;
+  background: linear-gradient(180deg, rgba(255 255 255 / 80%) 0%, #FFF 100%);
   border-radius: calc(var(--bc-input-radius) - var(--bc-input-border-size));
   display: flex;
   min-height: var(--bc-input-height);
@@ -138,23 +137,8 @@
 
 .bc-input-field::before,
 .bc-floating-button::before {
-  background: var(--bc-input-border);
+  border: var(--bc-input-border-size) solid var(--bc-input-border-color);
   border-radius: var(--bc-input-radius);
-  content: '';
-  height: 100%;
-  left: 50%;
-  padding: var(--bc-input-border-size);
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  z-index: 2;
-}
-
-.bc-input-field::after,
-.bc-floating-button::after {
-  border: 8px solid var(--bc-input-border-filter-color);
-  border-radius: calc(var(--bc-input-radius) + var(--bc-input-outer-border-size));
   content: '';
   backdrop-filter: blur(10px);
   height: 100%;
@@ -194,6 +178,11 @@
 .bc-input-field-label:focus-visible {
   outline: 2px solid var(--bc-keyboard-focus-color);
   outline-offset: 2px;
+}
+
+.bc-input-field-container:hover,
+.bc-input-field-container:has(textarea:focus-visible) {
+  background:#fff;
 }
 
 .bc-input-field-label svg,
@@ -347,6 +336,14 @@
   z-index: 4;
 }
 
+.bc-floating-button::before {
+  border-color: var(--bc-floating-button-border-color);
+}
+
+.bc-floating-button:hover .bc-floating-button-container {
+  background: #fff;
+}
+
 .bc-floating-button.floating-hidden {
   opacity: 0;
   top: 100vh;
@@ -358,9 +355,12 @@
 }
 
 .bc-floating-button-container {
+  background: rgba(250 250 250 / 85%);
+  border: none;
   margin: 0;
   max-height: var(--bc-floating-button-height);
   min-height: auto;
+  box-shadow: 0 4px 12px 0 rgba(0 0 0 / 6%);
 }
 
 .bc-floating-input {
@@ -372,6 +372,7 @@
 }
 
 .bc-floating-submit {
+  background: transparent;
   margin-bottom: 7px;
 }
 
