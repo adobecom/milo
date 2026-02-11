@@ -155,10 +155,14 @@
     right: .5rem;
     line-height: 0;
   }
+  .action-scroller.mobile-grid .scroller {
+    padding: 3px 2rem;
+    mask: 0;
+  }
   .action-scroller.mobile-grid .scroller .action-item {
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     border-radius: 8px;
-    padding: 8px;
+    padding: 14px;
     width: auto;
     position: relative;
   }
