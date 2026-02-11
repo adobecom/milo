@@ -3,6 +3,7 @@
 import {
   getConfig as pageConfigHelper,
   getCountry,
+  getFederatedContentRoot,
   getMetadata,
   loadScript,
   loadStyle,
@@ -190,6 +191,26 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   }
   // defaults to en_US
   return '';
+}
+
+const cacheByBase = new Map();
+
+export async function getLingoSiteMappingConfig(baseUrl = 'https://www.adobe.com') {
+  const normalized = baseUrl.replace(/\/$/, '');
+  if (!cacheByBase.has(normalized)) {
+    const url = `${normalized}/federal/assets/data/lingo-site-mapping.json`;
+    const promise = fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .catch((e) => {
+        cacheByBase.delete(normalized);
+        throw e;
+      });
+    cacheByBase.set(normalized, promise);
+  }
+  return cacheByBase.get(normalized);
 }
 
 export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
@@ -548,9 +569,7 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
-  const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const configJson = await response.json();
+  const configJson = await getLingoSiteMappingConfig(getFederatedContentRoot());
 
   let siteId;
   let isKnownLingoSiteLocale = false;

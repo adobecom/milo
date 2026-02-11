@@ -395,6 +395,14 @@ function localizeCtaUrl(val) {
   return val;
 }
 
+const makeCountryLangResolver = (key) => async (s, options) => {
+  if (s) return s;
+  const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
+  const origin = getOrigin(fgColor);
+  const result = await getCountryAndLang(options, origin);
+  return result[key];
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -420,13 +428,7 @@ const props = {
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
-  country: async (s, options) => {
-    if (s) return s;
-    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
-    const origin = getOrigin(fgColor);
-    const { country } = await getCountryAndLang(options, origin);
-    return country;
-  },
+  country: makeCountryLangResolver('country'),
   created: (s) => {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
@@ -464,13 +466,7 @@ const props = {
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
   floodgatecolor: (s, options) => s || options.floodgatecolor || getMetadata('floodgatecolor') || 'default',
-  lang: async (s, options) => {
-    if (s) return s;
-    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
-    const origin = getOrigin(fgColor);
-    const { lang } = await getCountryAndLang(options, origin);
-    return lang;
-  },
+  lang: makeCountryLangResolver('lang'),
   modified: (s) => {
     const { doc, lastModified } = getConfig();
     return s
