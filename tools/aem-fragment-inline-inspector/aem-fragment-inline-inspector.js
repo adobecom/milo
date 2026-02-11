@@ -109,6 +109,7 @@ function updateLocaleBadge(loading) {
 }
 
 let currentFragmentData = null;
+let pageContext = null;
 const tableEntries = [];
 
 function stripHtml(html) {
@@ -546,27 +547,24 @@ function hideResults() {
   document.getElementById('fields-section').classList.add('hidden');
 }
 
-async function detectLocale() {
+async function resolvePageContext() {
   const params = new URLSearchParams(window.location.search);
   const referrer = params.get('referrer');
-  if (!referrer) {
-    updateLocaleBadge();
-    return;
-  }
+  if (!referrer) return null;
 
-  updateLocaleBadge(true);
-
-  let previewPath;
   try {
     const { origin, pathname } = new URL(referrer);
     const split = origin.split('.');
     const topLevel = split.slice(Math.max(split.length - 2, 1)).join('.');
     const isEdit = topLevel === 'google.com' || topLevel === 'sharepoint.com';
 
+    const owner = params.get('owner');
+    const repo = params.get('repo');
+    const ref = params.get('ref') || 'main';
+
+    let previewPath;
     if (isEdit) {
-      const owner = params.get('owner');
-      const repo = params.get('repo');
-      if (!owner || !repo) { updateLocaleBadge(); return; }
+      if (!owner || !repo) return null;
       const url = `https://admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`;
       const res = await fetch(url);
       const json = await res.json();
@@ -574,9 +572,23 @@ async function detectLocale() {
     } else {
       previewPath = pathname;
     }
-  } catch { updateLocaleBadge(); return; }
 
-  const segments = previewPath.split('/').filter(Boolean);
+    return { owner, repo, ref, previewPath };
+  } catch {
+    return null;
+  }
+}
+
+async function detectLocale() {
+  updateLocaleBadge(true);
+
+  pageContext = await resolvePageContext();
+  if (!pageContext) {
+    updateLocaleBadge();
+    return;
+  }
+
+  const segments = pageContext.previewPath.split('/').filter(Boolean);
   for (const segment of segments) {
     if (GeoMap[segment]) {
       detectedLocale = getLocaleFromPrefix(segment);
@@ -584,6 +596,73 @@ async function detectLocale() {
     }
   }
   updateLocaleBadge();
+}
+
+async function scanDocumentForFragments() {
+  if (!pageContext) return [];
+  const { owner, repo, ref, previewPath } = pageContext;
+  if (!owner || !repo || !previewPath) return [];
+
+  const previewUrl = `https://${ref}--${repo}--${owner}.aem.page${previewPath}`;
+  let html;
+  try {
+    const res = await fetch(previewUrl);
+    if (!res.ok) return [];
+    html = await res.text();
+  } catch {
+    return [];
+  }
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const links = doc.querySelectorAll('a[href*="mas.adobe.com/studio.html"]');
+  const seen = new Map();
+
+  links.forEach((link) => {
+    try {
+      const url = new URL(link.href);
+      const hashParams = new URLSearchParams(url.hash.slice(1));
+      const fragmentId = hashParams.get('fragment') || hashParams.get('query');
+      if (!fragmentId || seen.has(fragmentId)) return;
+
+      let alias = '';
+      const text = link.textContent.trim();
+      const bracketMatch = text.match(/^\[\[([^\]:]+)/);
+      if (bracketMatch) {
+        alias = bracketMatch[1].trim();
+      } else if (text) {
+        alias = suggestAlias(text);
+      }
+      if (!alias) {
+        alias = `fragment-${fragmentId.slice(0, 8)}`;
+      }
+
+      seen.set(fragmentId, { alias, fragmentId });
+    } catch {
+      // skip malformed links
+    }
+  });
+
+  return [...seen.values()];
+}
+
+async function importFragmentsFromDocument() {
+  const reloadBtn = document.getElementById('reload-table-btn');
+  reloadBtn?.classList.add('reloading');
+
+  try {
+    const fragments = await scanDocumentForFragments();
+    if (fragments.length === 0) return;
+
+    tableEntries.length = 0;
+    fragments.forEach(({ alias, fragmentId }) => {
+      tableEntries.push({ alias, fragmentId, locale: detectedLocale });
+    });
+
+    renderTable();
+    document.getElementById('table-section').classList.add('expanded');
+  } finally {
+    reloadBtn?.classList.remove('reloading');
+  }
 }
 
 export default function init() {
@@ -599,8 +678,12 @@ export default function init() {
   if (localeOverride) {
     detectedLocale = localeOverride;
     updateLocaleBadge();
+    resolvePageContext().then((ctx) => {
+      pageContext = ctx;
+      importFragmentsFromDocument();
+    });
   } else {
-    detectLocale();
+    detectLocale().then(() => importFragmentsFromDocument());
   }
 
   async function inspectFragment() {
@@ -655,6 +738,10 @@ export default function init() {
     urlInput.value = '';
     hideResults();
     updateAddButton();
+  });
+
+  document.getElementById('reload-table-btn').addEventListener('click', () => {
+    importFragmentsFromDocument();
   });
 
   document.querySelectorAll('.section-toggle').forEach((btn) => {
