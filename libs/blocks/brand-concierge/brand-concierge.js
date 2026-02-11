@@ -69,15 +69,30 @@ async function openChatModal(initialMessage, el) {
   submitButton.disabled = true;
   updateReplicatedValue(textareaWrapper, textarea);
 
-  const { env } = getConfig();
-  const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
-  const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
-  await loadScript(src);
-  window.adobe.concierge.bootstrap({
-    instanceName: 'alloy',
-    stylingConfigurations: getUpdatedChatUIConfig(textarea.placeholder),
-    selector: `#${mountId}`,
-  });
+  // eslint-disable-next-line no-underscore-dangle
+  const alloyVersion = window.alloy_all?.data?._adobe_corpnew?.digitalData?.page?.libraryVersions;
+  const useNewBootstrapAPI = alloyVersion === '2.31.0';
+
+  if (useNewBootstrapAPI) {
+    // New method: Load script and use bootstrap API
+    const { env } = getConfig();
+    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
+    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+    await loadScript(src);
+    window.adobe.concierge.bootstrap({
+      instanceName: 'alloy',
+      stylingConfigurations: getUpdatedChatUIConfig(textarea.placeholder),
+      selector: `#${mountId}`,
+    });
+  } else {
+    // Legacy method: Use _satellite.track
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite?.track('bootstrapConversationalExperience', {
+      selector: `#${mountId}`,
+      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+      stylingConfigurations: getUpdatedChatUIConfig(textarea.placeholder),
+    });
+  }
 
   const handleViewportResize = () => updateModalHeight();
   const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
