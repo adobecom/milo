@@ -3,6 +3,7 @@
 import {
   getConfig as pageConfigHelper,
   getCountry,
+  getFederatedContentRoot,
   getMetadata,
   loadScript,
   loadStyle,
@@ -568,7 +569,7 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
-  const configJson = await getLingoSiteMappingConfig();
+  const configJson = await getLingoSiteMappingConfig(getFederatedContentRoot());
 
   let siteId;
   let isKnownLingoSiteLocale = false;
