@@ -267,12 +267,13 @@ export function isDarkMode() {
 export async function loadBaseStyles() {
   const { standaloneGnav } = getConfig();
   if (standaloneGnav) return;
+  // Load CSS from the parent directory (redesign folder)
+  const baseUrl = new URL('../', import.meta.url).href;
   if (isDarkMode()) {
-    new Promise((resolve) => { loadStyle(rootPath('base.css'), resolve); })
-      .then(() => loadStyles(rootPath('dark-nav.css')));
+    new Promise((resolve) => { loadStyle(`${baseUrl}base.css`, resolve); })
+      .then(() => loadStyles(`${baseUrl}dark-nav.css`, true));
   } else {
-    const url = rootPath('base.css');
-    await loadStyles(url);
+    await loadStyles(`${baseUrl}base.css`, true);
   }
 }
 
@@ -285,9 +286,12 @@ export async function loadDecorateMenu() {
     resolve = _resolve;
   });
 
+  // Load menu.css from the same directory as this utilities.js file (redesign folder)
+  const menuCssUrl = new URL('./menu/menu.css', import.meta.url).href;
+
   const [menu] = await Promise.all([
     import('./menu/menu.js'),
-    loadStyles(rootPath('utilities/menu/menu.css')),
+    loadStyles(menuCssUrl, true),
   ]);
 
   resolve(menu.default);

@@ -32,8 +32,9 @@ header.global-navigation {
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: var(--feds-background-nav);
+  background-color: transparent;
   box-sizing: content-box;
+  transition: background-color 0.2s ease;
 }
 
 .feds-topnav-wrapper {
@@ -42,7 +43,17 @@ header.global-navigation {
   display: flex;
   justify-content: center;
   height: var(--feds-height-nav);
-  background-color: var(--feds-background-nav);
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+/* Header background when dropdown is open */
+header.global-navigation:has(.feds-dropdown--active) {
+  background-color: #fff;
+}
+
+header.global-navigation:has(.feds-dropdown--active) .feds-topnav-wrapper {
+  background-color: #fff;
 }
 
 .feds-topnav {

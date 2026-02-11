@@ -445,8 +445,16 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const content = await fetchAndProcessPlainHtml({ url: pathElement.href });
 
     if (!content) return;
-    const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
-    menuTemplate = toFragment`<div class="feds-popup">
+
+    // Get menu type class from the parent section in gnav source (e.g., 'products', 'use-cases')
+    const menuTypeClasses = ['products', 'use-cases'];
+    const parentSection = config.item.closest('.section');
+    const sectionClasses = [...(parentSection?.classList || [])];
+    const menuType = sectionClasses.find((cls) => menuTypeClasses.includes(cls)) || '';
+    const menuTypeClass = menuType ? ` ${menuType}` : '';
+
+    const menuContent = toFragment`<div class="feds-menu-content${menuTypeClass}">${content.innerHTML}</div>`;
+    menuTemplate = toFragment`<div class="feds-popup${menuTypeClass}">
         <div class="feds-menu-container">
           ${menuContent}
         </div>

@@ -174,6 +174,113 @@ content auhtored manually and AEM-imported content */
   display: none;
 }
 
+/* ===== MOBILE STYLES FOR PRODUCTS DROPDOWN ===== */
+.global-navigation .feds-popup.products .feds-menu-container {
+  padding: 0;
+}
+
+.global-navigation .feds-menu-content.products {
+  display: flex;
+  flex-direction: column;
+}
+
+.global-navigation .feds-menu-content.products > .feds-menu-column {
+  padding: 0;
+}
+
+.global-navigation .feds-menu-content.products .feds-navLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+}
+
+.global-navigation .feds-menu-content.products .feds-navLink-image {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.global-navigation .feds-menu-content.products .feds-navLink-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.global-navigation .feds-menu-content.products .feds-navLink-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.global-navigation .feds-menu-content.products .feds-navLink-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.global-navigation .feds-menu-content.products .feds-navLink-description {
+  font-size: 12px;
+  color: var(--feds-color-description, #6e6e6e);
+}
+
+/* ===== MOBILE STYLES FOR USE-CASES DROPDOWN ===== */
+.global-navigation .feds-popup.use-cases {
+  padding-top: 12px;
+  background-color: #fff;
+}
+
+.global-navigation .feds-menu-content.use-cases {
+  display: flex;
+  flex-direction: column;
+}
+
+.global-navigation .feds-menu-content.use-cases > .feds-menu-column {
+  border-bottom: 1px solid var(--feds-borderColor);
+}
+
+.global-navigation .feds-menu-content.use-cases > .feds-menu-column:last-child {
+  border-bottom: none;
+}
+
+.global-navigation .feds-menu-content.use-cases .feds-menu-headline {
+  padding: 16px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  border-bottom: none;
+  color: #000;
+}
+
+.global-navigation .feds-menu-content.use-cases .feds-menu-items .feds-navLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+}
+
+.global-navigation .feds-menu-content.use-cases .feds-navLink-image {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.global-navigation .feds-menu-content.use-cases .feds-cta-wrapper {
+  padding: 16px 12px;
+  position: absolute;
+  width: calc(100% - 40px);
+  bottom: 0;
+}
+
+.global-navigation .feds-menu-content.use-cases .feds-cta {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 10px 16px;
+  border: 1px solid var(--feds-color-link);
+  border-radius: 20px;
+  font-size: 14px;
+}
+
 @media (min-width: 900px) {
   .global-navigation .feds-menu-content {
     display: flex;
@@ -312,5 +419,261 @@ content auhtored manually and AEM-imported content */
   
   .feds-crossCloudMenu .feds-navLink {
     padding: 0 28px;
+  }
+
+  /* ===== PRODUCTS DROPDOWN LAYOUT ===== */
+  /* Left sidebar with category tabs + product grid on the right */
+  .global-navigation .feds-popup.products .feds-menu-container {
+    display: flex;
+    padding: 0;
+  }
+
+  .global-navigation .feds-menu-content.products {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    justify-content: flex-start;
+  }
+
+  /* Category tabs sidebar */
+  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child {
+    flex: 0 0 200px;
+    min-width: 200px;
+    background: var(--feds-background-nav);
+    border-right: 1px solid var(--feds-borderColor);
+    padding: 16px 0;
+  }
+
+  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-menu-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-navLink {
+    display: block;
+    padding: 12px 24px;
+    font-weight: 500;
+    color: var(--feds-color-link);
+    border-radius: 0;
+    transition: background-color 0.15s ease;
+  }
+
+  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-navLink:hover,
+  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-navLink.is-active {
+    background: var(--feds-color-link);
+    color: var(--feds-background-nav);
+  }
+
+  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-navLink.is-active {
+    font-weight: 600;
+  }
+
+  /* Product cards grid */
+  .global-navigation .feds-menu-content.products > .feds-menu-column:not(:first-child) {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 24px 32px;
+    background: var(--feds-background-popup, #fff);
+  }
+
+  .global-navigation .feds-menu-content.products > .feds-menu-column:not(:first-child) .feds-menu-section {
+    display: contents;
+  }
+
+  .global-navigation .feds-menu-content.products > .feds-menu-column:not(:first-child) .feds-navLink {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 16px;
+    border-radius: 8px;
+    background: transparent;
+    transition: background-color 0.15s ease;
+  }
+
+  .global-navigation .feds-menu-content.products > .feds-menu-column:not(:first-child) .feds-navLink:hover {
+    background: var(--feds-background-hover, rgba(0, 0, 0, 0.04));
+  }
+
+  .global-navigation .feds-menu-content.products .feds-navLink-image {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 8px;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-navLink-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-navLink-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--feds-color-link);
+  }
+
+  .global-navigation .feds-menu-content.products .feds-navLink-description {
+    font-size: 12px;
+    color: var(--feds-color-description, #6e6e6e);
+    line-height: 1.4;
+  }
+
+  /* "More" link with arrow */
+  .global-navigation .feds-menu-content.products .feds-navLink--more .feds-navLink-title::after {
+    content: '→';
+    margin-left: 8px;
+  }
+
+  /* ===== USE-CASES DROPDOWN LAYOUT ===== */
+  /* Multiple columns with headers, product lists, and CTAs */
+
+  .global-navigation .feds-menu-content.use-cases {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+  }
+
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column {
+    display: flex;
+    flex-direction: column;
+    background: var(--feds-background-nav);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--feds-borderColor);
+    min-width: 272px;
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-menu-headline {
+    margin: 0;
+    padding: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.3;
+    border: none;
+    white-space: normal;
+    padding: 20px;
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-menu-headline::after {
+    display: none;
+  }
+
+  /* "Learn more" link in header */
+  .global-navigation .feds-menu-content.use-cases .feds-menu-section:first-child .feds-navLink--learn-more {
+    font-size: 14px;
+    padding: 0;
+    color: var(--feds-color-link);
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-menu-section:first-child .feds-navLink--learn-more::after {
+    content: '›';
+    margin-left: 4px;
+  }
+
+  /* Highlighted first column */
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child {
+    background: #000;
+    border-color: transparent;
+  }
+
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-menu-headline,
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-navLink--learn-more {
+    color: #fff;
+  }
+
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-navLink {
+    color: #000
+  }
+
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-navLink:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Product list section */
+  .global-navigation .feds-menu-content.use-cases .feds-menu-items {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 12px 0;
+    border: none;
+    background: #fff;
+    border-radius: 16px;
+    margin: 4px;
+    position: relative;
+    height: 305px;
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-navLink-title {
+    font-weight: 700;
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-menu-items .feds-navLink {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    font-size: 14px;
+    transition: background-color 0.15s ease;
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-menu-items .feds-navLink:hover {
+    background: var(--feds-background-hover, rgba(0, 0, 0, 0.04));
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-navLink-image {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-navLink-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* CTA button at bottom */
+  .global-navigation .feds-menu-content.use-cases .feds-cta-wrapper {
+    padding: 16px 20px;
+    margin-top: auto;
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-cta {
+    width: 100%;
+    text-align: center;
+    padding: 10px 16px;
+    border: 1px solid var(--feds-color-link);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--feds-color-link);
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    height: 41px;
+    justify-content: center;
+  }
+
+  .global-navigation .feds-menu-content.use-cases .feds-cta:hover {
+    background: var(--feds-color-link);
+    color: #fff;
+  }
+
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-cta {
+    border-color: #fff;
+    color: #fff;
+    background: #000;
+    display: flex;
+    align-items: center;
+    height: 41px;
+  }
+
+  .global-navigation .feds-menu-content.use-cases > .feds-menu-column:first-child .feds-cta:hover {
+    background: #0d66d0;
   }
 }
