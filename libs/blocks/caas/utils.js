@@ -980,13 +980,16 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
-      // Only include bladeCard when explicitly configured
+      // Only include bladeCard and editorialOpenVariant when explicitly configured
       ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent) && {
         bladeCard: {
           reverse: !!state.bladeCardReverse,
           lightText: !!state.bladeCardLightText,
           transparent: !!state.bladeCardTransparent,
         },
+      }),
+      ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant) && {
+        editorialOpenVariant: !!state.editorialCardOpenVariant,
       }),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
