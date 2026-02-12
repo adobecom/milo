@@ -23,7 +23,7 @@ import {
 
 let merch;
 try {
-  merch = await import('../../../merch/merch.js');
+  merch = await import('../../../../../blocks/merch/merch.js');
 } catch (e) {
   merch = { default: async (elem) => elem };
 }
@@ -225,6 +225,18 @@ const decoratePromo = async (elem, index) => {
   const isImageOnly = elem.matches('.image-only');
   const promoHeader = elem.querySelector('p > strong');
   const imageElem = elem.querySelector('picture');
+  const iconImage = [...elem.querySelectorAll('picture')][1]; /* second image added as icon image, if exists */
+
+  /* check column span modifier */
+  let colModifier = '';
+  const classMap = {
+    '.span-2-col': 'feds-promo--span-2-col',
+  };
+  Object.entries(classMap).forEach(([selector, className]) => {
+    if (elem.matches(selector)) {
+      colModifier += ` ${className}`;
+    }
+  });
 
   if (!isImageOnly) {
     const content = [...elem.querySelectorAll(':scope > div')]
@@ -246,7 +258,7 @@ const decoratePromo = async (elem, index) => {
     const imageWrapper = imageElem.closest(`${selectors.gnavPromo} > div`);
     let promoImageElem;
 
-    if (linkElem instanceof HTMLElement) {
+    if (linkElem instanceof HTMLElement && !colModifier) {
       promoImageElem = toFragment`<a class="feds-promo-image" href="${linkElem.href}" daa-ll="promo-image">
           ${imageElem}
         </a>`;
@@ -272,13 +284,19 @@ const decoratePromo = async (elem, index) => {
     decorateImage();
   }
 
+  if (iconImage instanceof HTMLElement) {
+    const iconElem = toFragment`<div class="feds-promo-icon"></div>`;
+    iconElem.append(iconImage);
+    elem.querySelector('.feds-promo-image').insertAdjacentElement('afterend', iconElem);
+  }
+
   elem.classList = 'feds-promo';
 
   if (isDarkTheme) {
     elem.classList.add('feds-promo--dark');
   }
 
-  return toFragment`<div class="feds-promo-wrapper" daa-lh="promo-card">
+  return toFragment`<div class="feds-promo-wrapper${colModifier}" daa-lh="promo-card">
       ${elem}
     </div>`;
 };
@@ -448,8 +466,8 @@ const decorateMenu = (config) => logErrorFor(async () => {
 
     if (!content) return;
 
-    // Get menu type class from the parent section in gnav source (e.g., 'products', 'use-cases')
-    const menuTypeClasses = ['products', 'use-cases'];
+    // Get menu type class from the parent section in gnav source (e.g., 'products', 'use-cases', 'solutions', 'learn-support')
+    const menuTypeClasses = ['products', 'use-cases', 'solutions', 'learn-support'];
     const parentSection = config.item.closest('.section');
     const sectionClasses = [...(parentSection?.classList || [])];
     const menuType = sectionClasses.find((cls) => menuTypeClasses.includes(cls)) || '';
