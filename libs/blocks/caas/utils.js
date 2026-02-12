@@ -702,9 +702,14 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com', fromBulk
   return lingoSiteMapping;
 }
 
-export const getLanguageFirstCountryAndLang = async (path, origin, fqdn, fromBulkPublisher = false) => {
+export const getLanguageFirstCountryAndLang = async (path,
+  origin,
+  fqdn,
+  fromBulkPublisher = false,
+) => {
   const localeArr = path.split('/');
-  let langStr, countryStr;
+  let langStr;
+  let countryStr;
   // only provide fallback values if not from the bulk publisher
   if (!fromBulkPublisher) {
     langStr = 'en';
