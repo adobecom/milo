@@ -566,7 +566,7 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
     .includes(locStr);
 };
 
-async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
+export async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await getLingoSiteMappingConfig(fqdn);
 
