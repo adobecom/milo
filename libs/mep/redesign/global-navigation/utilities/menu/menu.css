@@ -623,8 +623,7 @@ content auhtored manually and AEM-imported content */
   .feds-popup.learn-support .feds-menu-container,
   .feds-popup.solutions .feds-menu-container {
     padding: 8px 24px 24px;
-    /* width: 1392px; */
-    margin: 0 auto;
+    width: 100%;
   }
   .feds-popup.learn-support .feds-menu-content,
   .feds-popup.solutions .feds-menu-content {

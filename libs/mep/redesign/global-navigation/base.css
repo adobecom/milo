@@ -288,6 +288,8 @@ header.global-navigation.ready {
   .global-navigation .feds-navLink-image picture,
   .global-navigation .feds-navLink-image img {
     display: block;
+    width: 24px;
+    height: 24px;
   }
 
   .global-navigation .feds-navLink-image picture {

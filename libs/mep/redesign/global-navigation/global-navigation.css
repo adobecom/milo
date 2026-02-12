@@ -1652,13 +1652,25 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
   inset: 0;
 }
 
-:root:has(meta[name="theme"][content="redesign-poc"]) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink) {
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink),
+:root:has(meta[name="theme"][content="redesign-poc"]) .universal-nav-container .unav-comp-icon,
+:root:has(meta[name="theme"][content="redesign-poc"]) .universal-nav-container .profile-signed-out button {
   --feds-color-link: #fff;
 
   color: var(--feds-color-link);
   font-weight: 700;
+  fill: var(--feds-color-link);
+  border: 0;
 }
 
-:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink) {
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-cta--secondary {
+   --feds-color-link: #fff;
+  color: var(--feds-color-link);
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink),
+:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .universal-nav-container .unav-comp-icon,
+:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .universal-nav-container .profile-signed-out button,
+:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .feds-cta--secondary {
   --feds-color-link: #000;
 }
