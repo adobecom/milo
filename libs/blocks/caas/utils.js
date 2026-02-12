@@ -192,7 +192,7 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   return '';
 }
 
-export let configJson = null;
+let configJson = null;
 
 const cacheByBase = new Map();
 
