@@ -621,13 +621,16 @@ async function getLangFirstParam(origin, country, language) {
   return true;
 }
 
-async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
+async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com', fromBulkPublisher = false) {
   const host = origin.toLowerCase();
-  let lingoSiteMapping = {
-    country: 'xx',
-    language: 'en',
-  };
-
+  let lingoSiteMapping;
+  // only provide fallback values if not from the bulk publisher
+  if (!fromBulkPublisher) {
+    lingoSiteMapping = {
+      country: 'xx',
+      language: 'en',
+    };
+  }
   // Extract pathname from URL if path includes domain
   let pathname = path;
   if (path.includes('://') || !path.startsWith('/')) {
@@ -699,10 +702,14 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
   return lingoSiteMapping;
 }
 
-export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
+export const getLanguageFirstCountryAndLang = async (path, origin, fqdn, fromBulkPublisher = false) => {
   const localeArr = path.split('/');
-  let langStr = 'en';
-  let countryStr = 'xx';
+  let langStr, countryStr;
+  // only provide fallback values if not from the bulk publisher
+  if (!fromBulkPublisher) {
+    langStr = 'en';
+    countryStr = 'xx';
+  }
   if (origin.toLowerCase() === 'news') {
     langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
     countryStr = LOCALES[localeArr[2]] ?? 'xx';
@@ -710,7 +717,10 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
   } else {
-    const mapping = await getLingoSiteLocale(origin, path, fqdn);
+    const mapping = await getLingoSiteLocale(origin, path, fqdn, fromBulkPublisher);
+    if (!mapping) {
+      throw new Error(`Failed to get lingo site locale for bulk publisher`);
+    }
     countryStr = LOCALES[mapping.country.toLowerCase()] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
