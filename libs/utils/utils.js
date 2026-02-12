@@ -2281,11 +2281,13 @@ async function resolveHighPriorityFragments(section) {
   });
 
   // Load in cascading order: section swaps → block swaps → inline fragments
-  const hadSectionSwaps = await loadFragments(section.el, 'a[data-mep-lingo-section-swap]');
-  const hadBlockSwaps = await loadFragments(section.el, 'a[data-mep-lingo-block-swap]');
+  // Section/block swaps don't need re-decoration — loadArea(fragment) in
+  // fragment.js fully processes the replacement content.
+  await loadFragments(section.el, 'a[data-mep-lingo-section-swap]');
+  await loadFragments(section.el, 'a[data-mep-lingo-block-swap]');
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
-  if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
+  if (hadInlineFrags) {
     const newlyDecoratedSection = await decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;
