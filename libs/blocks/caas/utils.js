@@ -194,10 +194,10 @@ export function getPageLocale(currentPath, locales = pageLocales) {
 
 const cacheByBase = new Map();
 
-export async function getLingoSiteMappingConfig(baseUrl = 'https://www.adobe.com') {
+export async function getLingoSiteMappingConfig(fqdn = 'www.adobe.com', baseUrl = 'https://www.adobe.com', ) {
   const normalized = baseUrl.replace(/\/$/, '');
   if (!cacheByBase.has(normalized)) {
-    const url = `${normalized}/federal/assets/data/lingo-site-mapping.json`;
+    const url = `${normalized}/federal/assets/data/lingo-site-mapping.json?${fqdn}`;
     const promise = fetch(url)
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -568,7 +568,7 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
-  const configJson = await getLingoSiteMappingConfig();
+  const configJson = await getLingoSiteMappingConfig(fqdn);
 
   let siteId;
   let isKnownLingoSiteLocale = false;
@@ -647,9 +647,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
 
   try {
     let siteId;
-    const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const configJson = await getLingoSiteMappingConfig();
+    const configJson = await getLingoSiteMappingConfig(fqdn);
 
     const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
     const siteLocalesData = configJson['site-locales']?.data ?? [];
