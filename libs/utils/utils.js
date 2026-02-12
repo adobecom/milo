@@ -1948,11 +1948,55 @@ async function loadPostLCP(config) {
   }
   const header = document.querySelector('header');
   if (header) {
-    header.classList.add('gnav-hide');
-    performance.mark('Gnav-Start');
+    if (getMetadata('redesigned-gnav') === 'on' || true) {
+      const federalDomain = (() => {
+        const env = getEnv(config);
+        switch (env.name) {
+          default: return 'https://redesign--federal--adobecom.aem.page';
+        }
+      })();
+      const placeholdersPromise = (async () => {
+        const { fetchPlaceholders } = await import('../features/placeholders.js');
+        const placeholders = await fetchPlaceholders({ config });
+        return new Map(Object.entries(placeholders));
+      })();
+      // for now we only support inBlock commands.
+      // Since MEP on gnav is relatively rare we'll
+      // keep it at this and see if any problems crop up.
+      const mepGnav = config.mep?.inBlock?.['global-navigation'];
+      const commands = mepGnav?.commands ?? [];
+      const gnavMepCommands = config?.mep?.commands?.filter(
+        (command) => command?.modifiers?.find((modifier) => modifier === 'include-gnav'),
+      ) || [];
 
-    loadBlock(header);
-    header.classList.remove('gnav-hide');
+      const personalizationHandler = async (cs, root) => {
+        const { handleCommands } = await import('../features/personalization/personalization.js');
+        return handleCommands(cs, root);
+      };
+
+      const { main } = await import(`${federalDomain}/libs/global-navigation/dist/main.js`);
+
+      main({
+        gnavSource: new URL('https://main--federal--adobecom.aem.page/drafts/raghavs/gnav-redesign'),
+        asideSource: null,
+        isLocalNav: false,
+        mountpoint: header,
+        unavEnabled: false,
+        placeholders: placeholdersPromise,
+        miloConfig: getConfig(),
+        personalization: {
+          commands: [...commands, ...gnavMepCommands],
+          handleCommands: personalizationHandler,
+        },
+      }).catch((error) => {
+        console.log(error);
+      });
+    } else {
+      header.classList.add('gnav-hide');
+      performance.mark('Gnav-Start');
+      loadBlock(header);
+      header.classList.remove('gnav-hide');
+    }
   }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
