@@ -900,7 +900,7 @@ export const getConfig = async (originalState, strs = {}) => {
     ? `${state.paginationAnimationStyle}-light`
     : state.paginationAnimationStyle;
 
-  const currentPage = `${window.location.hostname}${window.location.pathname}`;
+  const currentPage = `${window.location.hostname.replace('.stage.', '.')}${window.location.pathname}`;
   let currentPageUuid = null;
   try {
     currentPageUuid = await getUuid(currentPage);
