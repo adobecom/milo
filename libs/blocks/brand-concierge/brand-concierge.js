@@ -95,7 +95,7 @@ async function openChatModal(initialMessage, el) {
     window._satellite?.track('bootstrapConversationalExperience', {
       selector: `#${mountId}`,
       src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
-      stylingConfigurations: getUpdatedChatUIConfig(textarea.placeholder),
+      stylingConfigurations: getUpdatedChatUIConfig(),
     });
   }
 
