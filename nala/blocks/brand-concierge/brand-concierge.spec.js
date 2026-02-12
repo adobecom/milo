@@ -14,19 +14,6 @@ module.exports = {
       },
     },
     {
-      tcid: '1',
-      name: '@brand-concierge sticky',
-      path: '/drafts/nala/blocks/brand-concierge/brand-concierge-sticky',
-      tags: '@brand-concierge @brand-concierge-sticky @smoke @regression @milo',
-      data: {
-        h2Text: 'Heading XL Marquee standard medium left',
-        bodyText: 'Body M Lorem ipsum dolor sit amet',
-        inputPlaceholder: 'Tell us what you\'d like to do or create',
-        aiAssistantText: 'AI Assistant',
-        disclaimerText: 'Your use of this automated chatbot constitutes consent',
-      },
-    },
-    {
       tcid: '2',
       name: '@brand-concierge hero',
       path: '/drafts/nala/blocks/brand-concierge/brand-concierge-hero',
