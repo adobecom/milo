@@ -138,10 +138,14 @@ function SeoItem({ id, icon, title, description, supportsAi }) {
 }
 
 async function getResults() {
-  const results = (await getPreflightResults({
+  const preflightResults = await getPreflightResults({
     url: window.location.href,
     area: document,
-  })).runChecks.seo || [];
+  });
+
+  if (!preflightResults) return; // Page is excluded from preflight checks
+
+  const results = preflightResults.runChecks.seo || [];
 
   // Update UI as each check resolves
   const icons = [];
