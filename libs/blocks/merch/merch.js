@@ -325,8 +325,10 @@ export const CC_ALL_APPS = [
 const NAME_LOCALE = 'LOCALE';
 const NAME_PRODUCT_FAMILY = 'PRODUCT_FAMILY';
 const FREE_TRIAL_PATH = 'FREE_TRIAL_PATH';
+const CRM_PATH = 'CRM_PATH';
 const BUY_NOW_PATH = 'BUY_NOW_PATH';
 const FREE_TRIAL_HASH = 'FREE_TRIAL_HASH';
+const CRM_HASH = 'CRM_HASH';
 const BUY_NOW_HASH = 'BUY_NOW_HASH';
 const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
@@ -919,7 +921,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   return modalState.isOpen;
 }
 
-export async function openModal(e, url, offerType, hash, extraOptions, el) {
+export async function openModal(e, urlParam, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
   if (modalState.isOpen) return;
@@ -939,6 +941,17 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
     }
     return;
   }
+
+  let url = urlParam;
+  if (el?.dataset.modal === 'crm') {
+    const card = el.closest('merch-card');
+    const stock = card?.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]')?.checked;
+    const quantity = card?.querySelector('merch-quantity-select')?.shadowRoot?.querySelector('input[name="quantity"]')?.value;
+    const urlObj = new URL(url);
+    if (stock) urlObj.searchParams.set('stock', 'on');
+    if (quantity) urlObj.searchParams.set('qs', quantity);
+    if (stock || quantity) url = urlObj.toString();
+  }
   if (isInternalModal(url)) {
     const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
@@ -950,9 +963,13 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
-  const hash = checkoutLinkConfig[
-    `${offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH}`
-  ];
+  let columnName;
+  if (el.dataset.modal === 'crm') {
+    columnName = CRM_HASH;
+  } else {
+    columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH;
+  }
+  const hash = checkoutLinkConfig[columnName];
   if (hash) {
     el.setAttribute('data-modal-id', hash);
   }
@@ -997,14 +1014,33 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
     options,
   );
   if (!checkoutLinkConfig) return undefined;
-  const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  let columnName;
+  if (el?.dataset.modal === 'crm') {
+    columnName = CRM_PATH;
+  } else {
+    columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  }
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
+
+  if (url?.includes('|')) {
+    const urls = url.split('|');
+    const tabpanel = el.closest('.tabpanel');
+    if (tabpanel) {
+      const index = [...tabpanel.parentElement.children].indexOf(tabpanel);
+      if (urls[index]) {
+        url = urls[index].trim();
+      }
+    } else {
+      url = urls[0].trim();
+    }
+  }
+
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
   url = isInternalModal(url) || prodModalUrl
-    ? await localizeLinkAsync(checkoutLinkConfig[columnName])
-    : checkoutLinkConfig[columnName];
+    ? await localizeLinkAsync(url)
+    : url;
   url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
   return {
     url,

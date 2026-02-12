@@ -546,8 +546,9 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
     .includes(locStr);
 };
 
-async function getIsLingoLocale(origin, country, language) {
-  const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
+async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
+  if (origin === 'news') return true;
+  const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const configJson = await response.json();
 
@@ -593,7 +594,8 @@ async function getIsLingoLocale(origin, country, language) {
 }
 
 async function getLangFirstParam(origin, country, language) {
-  const isLingoLocale = await getIsLingoLocale(origin, country, language);
+  const fqdn = window.location.hostname;
+  const isLingoLocale = await getIsLingoLocale(origin, country, language, fqdn);
   // if it's not a lingo locale, check if you're on a base site.
   if (!isLingoLocale && country !== 'xx') {
     return false;
@@ -601,7 +603,7 @@ async function getLangFirstParam(origin, country, language) {
   return true;
 }
 
-async function getLingoSiteLocale(origin, path) {
+async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
   const host = origin.toLowerCase();
   let lingoSiteMapping = {
     country: 'xx',
@@ -627,7 +629,7 @@ async function getLingoSiteLocale(origin, path) {
 
   try {
     let siteId;
-    const response = await fetch('https://www.adobe.com/federal/assets/data/lingo-site-mapping.json');
+    const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
 
@@ -681,7 +683,7 @@ async function getLingoSiteLocale(origin, path) {
   return lingoSiteMapping;
 }
 
-export const getLanguageFirstCountryAndLang = async (path, origin) => {
+export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
   const localeArr = path.split('/');
   let langStr = 'en';
   let countryStr = 'xx';
@@ -692,7 +694,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin) => {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
   } else {
-    const mapping = await getLingoSiteLocale(origin, path);
+    const mapping = await getLingoSiteLocale(origin, path, fqdn);
     countryStr = LOCALES[mapping.country.toLowerCase()] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
@@ -727,7 +729,8 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     if (!isNewsSource) {
       const primeSource = Array.from([source].flat())[0];
       const pathname = pageConfigHelper()?.pathname || window.location.pathname;
-      const mapping = await getLanguageFirstCountryAndLang(pathname, primeSource);
+      const fqdn = window.location.hostname;
+      const mapping = await getLanguageFirstCountryAndLang(pathname, primeSource, fqdn);
 
       countryStr = mapping.country || fallbackCountry;
       langStr = mapping.lang || fallbackLang;
@@ -743,7 +746,7 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
           }
 
           if (geoCountry) {
-            const isLingoLocale = await getIsLingoLocale(primeSource, geoCountry, langStr);
+            const isLingoLocale = await getIsLingoLocale(primeSource, geoCountry, langStr, fqdn);
             if (isLingoLocale) countryStr = geoCountry.toLowerCase();
           }
         } catch (error) {
