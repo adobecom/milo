@@ -7,7 +7,7 @@ import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init, getUpdatedChatUIConfig, updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { default: init, updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
 const { default: chatUIConfig } = await import('../../../libs/blocks/brand-concierge/chat-ui-config.js');
 
 describe('Brand Concierge', () => {
