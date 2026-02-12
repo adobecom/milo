@@ -349,10 +349,16 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
         const isProductsMenu = columnElem.closest('.products') !== null;
+        let subHeader = '';
+        const headlineLink = columnElem.querySelector('a');
+        if (headlineLink !== null) {
+          subHeader = headlineLink;
+          headlineLink.remove();
+        }
         const sectionHeadline = decorateHeadline(columnElem, headlineIndex, context, isProductsMenu);
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
 
-        itemDestination.append(sectionHeadline, menuItems);
+        itemDestination.append(sectionHeadline, subHeader, menuItems);
 
         if (column.querySelector(selectors.columnBreak)) {
           wrapper.classList.add(`${wrapperClass}--group`);
