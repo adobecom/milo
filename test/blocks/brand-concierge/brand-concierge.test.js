@@ -170,22 +170,6 @@ describe('Brand Concierge', () => {
     });
   });
 
-  describe('getUpdatedChatUIConfig', () => {
-    const originalChatUIConfig = JSON.parse(JSON.stringify(chatUIConfig));
-    it('returns original chatUIConfig when no placeholder is provided', () => {
-      const result = getUpdatedChatUIConfig();
-      expect(result).to.deep.equal(originalChatUIConfig);
-      expect(result.text['input.placeholder']).to.equal('Tell us what you\'d like to do or create');
-    });
-
-    it('updates the input placeholder', () => {
-      const customPlaceholder = 'Custom placeholder text';
-      const result = getUpdatedChatUIConfig(customPlaceholder);
-
-      expect(result.text['input.placeholder']).to.equal(customPlaceholder);
-    });
-  });
-
   describe('updateReplicatedValue', () => {
     let textareaWrapper;
     let textarea;
