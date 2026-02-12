@@ -620,16 +620,19 @@ content auhtored manually and AEM-imported content */
     padding-top: 0;
     background-color: #fff;
     height: auto;
+    box-sizing: border-box;
   }
   .feds-popup.learn-support .feds-menu-container,
   .feds-popup.solutions .feds-menu-container {
     padding: 8px 24px 24px;
     width: 100%;
+    box-sizing: border-box;
   }
   .feds-popup.learn-support .feds-menu-content,
   .feds-popup.solutions .feds-menu-content {
     column-gap: unset;
     justify-content: space-between;
+    max-width: unset;
   }
   .feds-popup.learn-support .feds-menu-content .feds-menu-column,
   .feds-popup.solutions .feds-menu-content .feds-menu-column {
@@ -645,6 +648,9 @@ content auhtored manually and AEM-imported content */
   .feds-popup.learn-support .feds-menu-content .feds-menu-column:has(> :nth-child(2)) {
     flex-direction: column;
     row-gap: 8px;
+    .feds-menu-section {
+      flex: 0 0 calc(50% - 4px);
+    }
   }
   /* common menu stylings */
   .feds-popup.learn-support .feds-menu-column > .feds-menu-section,
