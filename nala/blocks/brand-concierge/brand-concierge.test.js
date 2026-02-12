@@ -60,17 +60,17 @@ test.describe('Milo Brand Concierge Block test suite', () => {
     },
   );
 
-  // Test 2: Brand Concierge hero
+  // Test 1: Brand Concierge hero
   test(
-    `[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`,
+    `[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`,
     async ({ page, baseURL }) => {
-      console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
-      const { data } = features[2];
+      console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
+      const { data } = features[1];
 
       await test.step('step-1: Go to Brand Concierge hero page', async () => {
-        await page.goto(`${baseURL}${features[2].path}${miloLibs}`);
+        await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
         await page.waitForLoadState('domcontentloaded');
-        await expect(page).toHaveURL(`${baseURL}${features[2].path}${miloLibs}`);
+        await expect(page).toHaveURL(`${baseURL}${features[1].path}${miloLibs}`);
       });
 
       await test.step('step-2: Verify Brand Concierge hero variant content/specs', async () => {
@@ -93,17 +93,17 @@ test.describe('Milo Brand Concierge Block test suite', () => {
     },
   );
 
-  // Test 3: Brand Concierge 404
+  // Test 2: Brand Concierge 404
   test(
-    `[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`,
+    `[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`,
     async ({ page, baseURL }) => {
-      console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
-      const { data } = features[3];
+      console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
+      const { data } = features[2];
 
       await test.step('step-1: Go to Brand Concierge 404 page', async () => {
-        await page.goto(`${baseURL}${features[3].path}${miloLibs}`);
+        await page.goto(`${baseURL}${features[2].path}${miloLibs}`);
         await page.waitForLoadState('domcontentloaded');
-        await expect(page).toHaveURL(`${baseURL}${features[3].path}${miloLibs}`);
+        await expect(page).toHaveURL(`${baseURL}${features[2].path}${miloLibs}`);
       });
 
       await test.step('step-2: Verify Brand Concierge 404 content/specs', async () => {
