@@ -86,7 +86,7 @@ async function openChatModal(initialMessage, el) {
     await loadScript(src);
     window.adobe.concierge.bootstrap({
       instanceName: 'alloy',
-      stylingConfigurations: getUpdatedChatUIConfig(textarea.placeholder),
+      stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
     });
   } else {
