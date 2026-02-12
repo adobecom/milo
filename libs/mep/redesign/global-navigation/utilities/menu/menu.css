@@ -411,20 +411,22 @@ content auhtored manually and AEM-imported content */
     color: #000;
     font-size: 24px;
     font-weight: 900;
-  }
-
-  .global-navigation .feds-menu-content.products .feds-menu-section {
     border-radius: 16px;
+    margin: 0;
+    padding: 16px;
   }
 
-  .global-navigation .feds-menu-content.products .feds-menu-section:hover {
+
+  .global-navigation .feds-menu-content.products .feds-menu-headline:hover,
+  .global-navigation .feds-menu-content.products .feds-menu-section.feds-dropdown--active .feds-menu-headline{
     background-color: #000;
   }
 
-  .global-navigation .feds-menu-content.products .feds-menu-section:hover .feds-menu-headline {
+  .global-navigation .feds-menu-content.products .feds-menu-section .feds-menu-headline:hover,
+  .global-navigation .feds-menu-content.products .feds-menu-section.feds-dropdown--active .feds-menu-headline {
     color: #fff;
   }
-  .global-navigation .feds-menu-content.products .feds-menu-section:hover .feds-navLink-title {
+  .global-navigation .feds-menu-content.products .feds-menu-headline:hover .feds-navLink-title {
     color: #000;
   }
 

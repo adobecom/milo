@@ -1536,6 +1536,13 @@ class Gnav {
             }
             trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
             setActiveDropdown(dropdownTrigger);
+            const { parentElement } = e.currentTarget;
+            const isProductsMenu = parentElement.querySelector('.products') !== null;
+            if (isProductsMenu) {
+              const firstHeadline = parentElement.querySelector('.feds-menu-headline');
+              firstHeadline?.click();
+              setActiveDropdown(firstHeadline);
+            }
           });
           // Set aria attributes
           isDesktop.addEventListener('change', () => setAriaAtributes(dropdownTrigger));

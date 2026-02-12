@@ -81,6 +81,7 @@ const decorateHeadline = (elem, index, context = 'viewport', isProductsMenu) => 
       headline.setAttribute('aria-expanded', false);
       headline.setAttribute('daa-ll', getAnalyticsValue(headline.textContent, index));
       headline.addEventListener('click', headlineClickHandler);
+      if (isProductsMenu) headline.addEventListener('mouseenter', headlineClickHandler);
     }
   };
 
