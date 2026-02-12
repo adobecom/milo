@@ -309,7 +309,7 @@ const getBulkPublishLangAttr = async (options) => {
       true,
     );
     if (!country || !lang) {
-      throw new Error(`Failed to get lang-first locales for bulk publisher`);
+      throw new Error('Failed to get lang-first locales for bulk publisher');
     }
     const isLingoLocale = await getIsLingoLocale(options.repo, country, lang);
     if (!isLingoLocale) {
