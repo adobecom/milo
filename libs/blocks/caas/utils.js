@@ -192,6 +192,8 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   return '';
 }
 
+export let configJson = null;
+
 const cacheByBase = new Map();
 
 export async function getLingoSiteMappingConfig(fqdn = 'www.adobe.com', baseUrl = 'https://www.adobe.com') {
@@ -568,7 +570,7 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
 
 export async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
-  const configJson = await getLingoSiteMappingConfig(fqdn);
+  if (!configJson) configJson = await getLingoSiteMappingConfig(fqdn);
 
   let siteId;
   let isKnownLingoSiteLocale = false;
@@ -650,7 +652,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com', fromBulk
 
   try {
     let siteId;
-    const configJson = await getLingoSiteMappingConfig(fqdn);
+    if (!configJson) configJson = await getLingoSiteMappingConfig(fqdn);
 
     const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
     const siteLocalesData = configJson['site-locales']?.data ?? [];
