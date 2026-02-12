@@ -702,7 +702,8 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com', fromBulk
   return lingoSiteMapping;
 }
 
-export const getLanguageFirstCountryAndLang = async (path,
+export const getLanguageFirstCountryAndLang = async (
+  path,
   origin,
   fqdn,
   fromBulkPublisher = false,
@@ -724,7 +725,7 @@ export const getLanguageFirstCountryAndLang = async (path,
   } else {
     const mapping = await getLingoSiteLocale(origin, path, fqdn, fromBulkPublisher);
     if (!mapping) {
-      throw new Error(`Failed to get lingo site locale for bulk publisher`);
+      throw new Error('Failed to get lingo site locale for bulk publisher');
     }
     countryStr = LOCALES[mapping.country.toLowerCase()] ?? 'xx';
     if (typeof countryStr === 'object') {
