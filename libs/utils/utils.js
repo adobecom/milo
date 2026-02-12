@@ -1632,10 +1632,24 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
-async function decorateSection(section, idx) {
+function decorateLinksMinimal(el) {
+  // Lightweight link pass: identifies link-blocks without re-running
+  // appendHtmlToLink or localizeLinkAsync (which cause double-processing
+  // issues on already-processed links).
+  // Already-processed link-blocks are returned as-is; new links get
+  // decorateAutoBlock to check if they need link-block classification.
+  const anchors = el.getElementsByTagName('a');
+  return [...anchors].map((a) => {
+    if (a.classList.contains('link-block')) return a;
+    const autoBlock = decorateAutoBlock(a);
+    return autoBlock ? a : null;
+  }).filter(Boolean);
+}
+
+async function decorateSection(section, idx, { skipLinks = false } = {}) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
-  let links = await decorateLinksAsync(section);
+  let links = skipLinks ? decorateLinksMinimal(section) : await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
 
@@ -2313,9 +2327,12 @@ async function resolveHighPriorityFragments(section) {
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
-    const newlyDecoratedSection = await decorateSection(section.el, section.idx);
-    section.blocks = newlyDecoratedSection.blocks;
-    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+    // Re-decorate to rebuild section.blocks (stale references to replaced/removed
+    // elements would cause loadBlock errors). skipLinks prevents appendHtmlToLink
+    // and localizeLinkAsync from double-processing already-decorated links.
+    const redecorated = await decorateSection(section.el, section.idx, { skipLinks: true });
+    section.blocks = redecorated.blocks;
+    section.preloadLinks = redecorated.preloadLinks;
   }
 }
 
