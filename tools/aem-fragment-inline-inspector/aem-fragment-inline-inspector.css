@@ -503,31 +503,6 @@ main {
   background: var(--mii-bg-card);
 }
 
-.add-btn {
-  padding: 5px 10px;
-  background: var(--mii-bg-card);
-  color: var(--mii-accent);
-  border: 1px solid var(--mii-accent);
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-family: inherit;
-  transition: all 0.15s;
-}
-
-.add-btn:hover:not(:disabled) {
-  background: var(--mii-accent);
-  color: #fff;
-}
-
-.add-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
 /* ---- Fields ---- */
 #fields-section {
   flex: 1;

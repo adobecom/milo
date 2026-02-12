@@ -294,7 +294,7 @@ function renderFields(fields, alias, fragmentId) {
 
     const nameEl = document.createElement('div');
     nameEl.className = 'field-name';
-    nameEl.textContent = key;
+    nameEl.textContent = key === 'variant' ? 'template' : key;
     info.appendChild(nameEl);
 
     const valueEl = document.createElement('div');
@@ -306,7 +306,10 @@ function renderFields(fields, alias, fragmentId) {
     const rawHtml = rawValue?.mimeType ? rawValue.value : (typeof rawValue === 'string' ? rawValue : null);
     if (rawHtml && rawHtml.includes('is="inline-price"')) {
       resolveInlinePrices(rawHtml, detectedLocale).then((resolved) => {
-        if (resolved) valueEl.textContent = resolved;
+        if (resolved) {
+          valueEl.textContent = resolved;
+          valueEl.classList.toggle('truncated', valueEl.scrollHeight > valueEl.clientHeight);
+        }
       });
     }
 
@@ -320,9 +323,15 @@ function renderFields(fields, alias, fragmentId) {
       copyBtn.textContent = syntax;
       if (fragmentId) {
         const href = `https://mas.adobe.com/studio.html#content-type=merch-card&fragment=${fragmentId}&field=${key}`;
-        copyBtn.addEventListener('click', () => copyRichLink(href, syntax, copyBtn));
+        copyBtn.addEventListener('click', () => {
+          copyRichLink(href, syntax, copyBtn);
+          addToTable(alias, fragmentId);
+        });
       } else {
-        copyBtn.addEventListener('click', () => copyToClipboard(syntax, copyBtn));
+        copyBtn.addEventListener('click', () => {
+          copyToClipboard(syntax, copyBtn);
+          addToTable(alias, fragmentId);
+        });
       }
     } else {
       copyBtn.className = 'field-copy-btn no-alias';
@@ -449,12 +458,6 @@ function addToTable(alias, fragmentId) {
   document.getElementById('table-section').classList.add('expanded');
 }
 
-function updateAddButton() {
-  const alias = document.getElementById('alias-input').value.trim();
-  const btn = document.getElementById('add-to-table-btn');
-  btn.disabled = !alias || !currentFragmentData;
-}
-
 function showError(message) {
   const errorSection = document.getElementById('error-section');
   const errorMessage = document.getElementById('error-message');
@@ -535,8 +538,6 @@ function showResults(data, source) {
 
   document.getElementById('fragment-meta').classList.remove('hidden');
   document.getElementById('fields-section').classList.remove('hidden');
-
-  updateAddButton();
 
   const alias = aliasInput.value.trim();
   renderFields(data.fields || {}, alias, data.id);
@@ -670,7 +671,6 @@ export default function init() {
   const urlInput = document.getElementById('studio-url');
   const aliasInput = document.getElementById('alias-input');
   const copyIdBtn = document.getElementById('copy-id-btn');
-  const addToTableBtn = document.getElementById('add-to-table-btn');
 
   // Power-user locale override via URL param, or auto-detect from sidekick context
   const params = new URLSearchParams(window.location.search);
@@ -712,7 +712,6 @@ export default function init() {
   });
 
   aliasInput.addEventListener('input', () => {
-    updateAddButton();
     if (currentFragmentData) {
       const alias = aliasInput.value.trim();
       renderFields(currentFragmentData.fields || {}, alias, currentFragmentData.id);
@@ -724,20 +723,12 @@ export default function init() {
     if (id) copyToClipboard(id, copyIdBtn);
   });
 
-  addToTableBtn.addEventListener('click', () => {
-    const alias = aliasInput.value.trim();
-    if (alias && currentFragmentData) {
-      addToTable(alias, currentFragmentData.id);
-    }
-  });
-
   const clearCardBtn = document.getElementById('clear-card-btn');
   clearCardBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     currentFragmentData = null;
     urlInput.value = '';
     hideResults();
-    updateAddButton();
   });
 
   document.getElementById('reload-table-btn').addEventListener('click', () => {
