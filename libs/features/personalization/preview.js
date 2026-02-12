@@ -742,6 +742,7 @@ function addHighlightData(manifests) {
           el.dataset.fragmentPath = el.dataset.path;
         } else {
           el.dataset.manifestDisplay = `${manifestName}: html`;
+          el.dataset.mepHtmlBadge = 'true'; // Mark as non-clickable HTML badge - gnav workaround
         }
       }
     });
@@ -780,7 +781,11 @@ function addFragmentBadgeClickHandlers() {
     const isFragmentsEnabled = document.body.dataset.mepFragments === 'true';
     if (!isHighlightEnabled && !isFragmentsEnabled) return;
 
-    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]');
+    // Ignore clicks from within the MEP popup
+    if (e.target.closest('.mep-preview-overlay')) return;
+
+    // Find the badged element that was clicked (includes non-fragment badges)
+    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default]');
     if (!fragment) return;
 
     const elementStyle = window.getComputedStyle(fragment);
@@ -788,27 +793,34 @@ function addFragmentBadgeClickHandlers() {
     const badgeIsVisible = beforeStyles.display !== 'none' && beforeStyles.content !== 'none';
     if (!badgeIsVisible) return;
 
-    // Use max of calculated width or a reasonable minimum for long badge text
+    // Use max of calculated dimensions or reasonable minimums for badge text
     const badgeWidth = Math.max(parseFloat(beforeStyles.width) + 30, 200);
-    const openFragment = () => {
+    const badgeHeight = parseFloat(beforeStyles.height)
+      || parseFloat(beforeStyles.minHeight)
+      || 35;
+    const fragmentPath = fragment.dataset.path || fragment.dataset.fragmentPath;
+    const handleBadgeClick = () => {
       e.preventDefault();
       e.stopPropagation();
-      if (fragment.dataset.path) window.open(fragment.dataset.path, '_blank');
+      // Only open if it's a fragment (has path), otherwise just block the click
+      if (fragmentPath) window.open(fragmentPath, '_blank');
     };
 
     // Handle badges inside of tabs and other display:contents elements:
     if (elementStyle.display === 'contents') {
       const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
       if (visibleChildren.length === 0) {
-        if (e.clientX >= 0 && e.clientX < badgeWidth) openFragment();
+        if (e.clientX >= 0 && e.clientX < badgeWidth) handleBadgeClick();
         return;
       }
       for (const child of visibleChildren) {
         const childRect = child.getBoundingClientRect();
         const relativeY = e.clientY - childRect.top;
         const relativeX = e.clientX - childRect.left;
-        if (relativeY >= -40 && relativeY < 0 && relativeX >= 0 && relativeX < badgeWidth) {
-          openFragment();
+        const inBadgeY = relativeY >= -badgeHeight && relativeY < 0;
+        const inBadgeX = relativeX >= 0 && relativeX < badgeWidth;
+        if (inBadgeY && inBadgeX) {
+          handleBadgeClick();
           return;
         }
       }
@@ -818,7 +830,7 @@ function addFragmentBadgeClickHandlers() {
     const rect = fragment.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
-    if (clickY < 35 && clickX >= 0 && clickX < badgeWidth) openFragment();
+    if (clickY < badgeHeight && clickX >= 0 && clickX < badgeWidth) handleBadgeClick();
   });
 }
 
