@@ -194,7 +194,7 @@ export function getPageLocale(currentPath, locales = pageLocales) {
 
 const cacheByBase = new Map();
 
-export async function getLingoSiteMappingConfig(fqdn = 'www.adobe.com', baseUrl = 'https://www.adobe.com', ) {
+export async function getLingoSiteMappingConfig(fqdn = 'www.adobe.com', baseUrl = 'https://www.adobe.com') {
   const normalized = baseUrl.replace(/\/$/, '');
   if (!cacheByBase.has(normalized)) {
     const url = `${normalized}/federal/assets/data/lingo-site-mapping.json?${fqdn}`;
