@@ -59,7 +59,7 @@ const decorateHeadline = (elem, index, context = 'viewport', isProductsMenu) => 
     </div>`;
 
   const headlineClickHandler = (e) => {
-    if (isDesktopForContext(context) && !isProductsMenu) return;
+    if ((isDesktopForContext(context) && !isProductsMenu) || (isProductsMenu && e.currentTarget.ariaExpanded === 'true')) return;
     trigger({ element: headline, event: e, type: 'headline' });
     setActiveDropdown(headline);
   };
