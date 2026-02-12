@@ -826,7 +826,8 @@ describe('getCountryAndLang', () => {
       ogFetch = window.fetch;
       window.fetch = stub().callsFake((url) => {
         const urlStr = typeof url === 'string' ? url : (url?.url ?? url?.href ?? '');
-        return urlStr === LINGO_MAPPING_URL ? lingoMappingResponse() : ogFetch(url);
+        const isLingoMapping = urlStr === LINGO_MAPPING_URL || urlStr.includes('lingo-site-mapping.json');
+        return isLingoMapping ? lingoMappingResponse() : ogFetch(url);
       });
     });
 
