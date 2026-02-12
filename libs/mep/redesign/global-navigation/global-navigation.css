@@ -595,7 +595,6 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
   }
 
   .feds-topnav-wrapper {
-    border-bottom: 1px solid var(--feds-borderColor);
     box-sizing: content-box;
   }
 
@@ -720,7 +719,6 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
     padding: 0 20px;
     font-weight: 700;
     color: #000;
-    opacity: 0.6;
   }
 
   .feds-navItem--section.feds-navItem--active > .feds-navLink:before {
@@ -1636,4 +1634,31 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
     padding: 15px 11px 15px 20px;
     min-height: max-content;
   }
+}
+
+
+:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink),
+:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .feds-navLink--hoverCaret:after {
+  --feds-color-link: #000;
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .feds-navItem--section > .feds-navLink:not([aria-expanded = "true"]) {
+  opacity: 0.6;
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) header.global-navigation {
+  background-color: transparent;
+  position: absolute;
+  inset: 0;
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink) {
+  --feds-color-link: #fff;
+
+  color: var(--feds-color-link);
+  font-weight: 700;
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) .global-navigation:has(.feds-dropdown--active) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink) {
+  --feds-color-link: #000;
 }
