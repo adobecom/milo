@@ -73,6 +73,14 @@
   flex-shrink: 0;
 }
 
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink) {
+  --feds-color-link: #fff;
+
+  color: var(--feds-color-link);
+  font-weight: 700;
+}
+
+
 .feds-popup .has-subheader .feds-navLink:not(.feds-navLink--header) {
   padding: 12px 24px;
 }
@@ -121,6 +129,13 @@ html[lang="ja-jp"] a.feds-navLink wbr {
   transform-origin: 75% 75%;
   transition: transform 0.1s ease;
   box-sizing: content-box;
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-navLink--hoverCaret:after,
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-navLink[class *= '-gradient'] .feds-navLink-title:after {
+  --feds-color-link: #fff;
+
+  border-color: var(--feds-color-link);
 }
 
 .feds-navLink--hoverCaret:after {
@@ -205,6 +220,12 @@ header.global-navigation.ready {
     right: 0;
     border-bottom: 2px solid var(--feds-borderColor-navLink);
     content: "";
+  }
+
+  :root:has(meta[name="theme"][content="redesign-poc"]) .feds-navItem--active > .feds-navLink:before {
+    --feds-borderColor-navLink: #fff;
+
+    border-bottom: 2px solid var(--feds-borderColor-navLink);
   }
 
   .feds-navItem--active > .feds-navLink:before {

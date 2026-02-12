@@ -1,0 +1,93 @@
+.new-carousel {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+
+}
+.new-carousel-wrapper {
+  left: -58%;
+  transform: translateX(58%);
+  scrollbar-width: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  transform-style: preserve-3d;
+  scroll-snap-type: x mandatory;
+  gap: 10px;
+}
+
+.new-carousel-wrapper.is-reversing {
+  transform: translateX(-58%);
+}
+
+.new-carousel-wrapper.is-ready {
+  transform: none;
+  transition: transform .6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.new-carousel .carousel-slide {
+  scroll-snap-align: center;
+  flex: 1 0 72%;
+  transition: opacity 0.5s ease-in-out;
+  height: 560px;
+  border-radius: 16px !important;
+  width: 700px;
+}
+
+.new-carousel .carousel-slide img {
+  height: 560px;
+  border-radius: 16px;
+  width: 100%;
+}
+
+.new-carousel .carousel-slide > .content p {
+  margin: 0;
+}
+
+.new-carousel .carousel-slide:not(.active) {
+  opacity: 0.75;
+}
+
+.new-carousel .carousel-slide .marquee .video-container video {
+  border-radius: 16px;
+}
+
+.new-carousel .carousel-slide .marquee .foreground {
+  padding-left: 100px;
+}
+
+.new-carousel .btn-container {
+  width: 100px;
+  position: absolute;
+  bottom: 30px;
+  left: 16%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.new-carousel button {
+  width: 40px;
+  height: 40px;
+  border-radius: 90.909px;
+  background: #FFFFFF;
+  backdrop-filter: blur(13.63636302947998px);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: absolute;
+}
+
+.new-carousel button:is(.next, .prev) {
+  z-index: 10;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.new-carousel button.prev {
+  left: 13.5%;
+}
+
+.new-carousel button.next {
+  left: 85.5%;
+}

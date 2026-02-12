@@ -1,0 +1,194 @@
+.elastic-cards {
+  display: flex;
+  padding: 120px 0 64px 0;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 80px;
+}
+
+.ec-intro {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.ec-smallprint {
+  color: rgba(0, 0, 0, 0.50);
+  text-align: center;
+  /* Caption */
+  font-family: "Adobe Clean";
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 100%; /* 10px */
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.ec-title {
+  color: #000;
+  text-align: center;
+  /* Title 4 */
+  font-family: "Adobe Clean Display";
+  font-size: 48px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 100%; /* 48px */
+  letter-spacing: -1.44px;
+  margin: 0;
+}
+
+.ec-description {
+  color: rgba(0, 0, 0, 0.50);
+  margin: 0;
+  text-align: center;
+  /* Body Medium */
+  font-family: "Adobe Clean";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 120%; /* 19.2px */
+  letter-spacing: 0.16px;
+  max-width: 595px;
+}
+
+.ec-cards-wrap {
+  overflow: hidden;
+  width: 100%;
+}
+
+.ec-cards {
+  --ec-edge-overflow: 80px;
+  display: flex;
+  width: calc(100% + (var(--ec-edge-overflow) * 2));
+  margin: 0 calc(var(--ec-edge-overflow) * -1);
+  box-sizing: border-box;
+}
+
+.ec-card {
+  flex: 1 1 0;
+  background: #fff;
+  border-radius: 24px;
+  display: grid;
+  overflow: hidden;
+  padding: 0 3px;
+  --text-color: #000;
+  --description-color: rgba(0, 0, 0, 0.60);
+  transition: flex-grow 200ms ease;
+}
+
+.ec-card:hover {
+  background-color: black;
+  --text-color: #fff;
+  --description-color: #fff;
+  flex-grow: 1.2;
+}
+
+.ec-card-image-wrap {
+  width: 100%;
+  height: 450px;
+  overflow: hidden;
+  border-radius: 16px;
+  position: relative;
+  display: block;
+}
+
+.ec-card-image-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(1);
+  transform-origin: center;
+  transition: transform 200ms ease;
+}
+
+.ec-card-image {
+  width: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  z-index: 1;
+}
+
+.ec-card-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 24px;
+}
+
+.ec-card-icon-img {
+  width: 24px;
+  height: 24px;
+  aspect-ratio: 28/27;
+}
+
+.ec-card-icon-label {
+  color: var(--text-color);
+  font-family: "Adobe Clean Display";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 100%;
+  letter-spacing: -0.14px;
+  margin: 0;
+}
+
+.ec-card-image-wrap .ec-card-image {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.ec-card:hover .ec-card-image-wrap {
+  transform: none;
+}
+
+.ec-card:hover .ec-card-image-inner {
+  transform: scaleX(1.08);
+}
+
+
+.ec-card-info {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 4px;
+}
+
+.ec-card-title {
+  margin: 0;
+  color: var(--text-color);
+
+  /* Small TItle */
+  font-family: "Adobe Clean Display";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 100%; /* 16px */
+  letter-spacing: -0.16px;
+}
+
+.ec-card-description {
+  margin: 0;
+  color: var(--description-color);
+
+  /* Body Small */
+  font-family: "Adobe Clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 120%; /* 16.8px */
+  letter-spacing: -0.14px;
+
+  max-width: 250px;
+}
+

@@ -36,6 +36,12 @@ header.global-navigation {
   box-sizing: content-box;
 }
 
+:root:has(meta[name="theme"][content="redesign-poc"]) header.global-navigation {
+  background-color: transparent;
+  position: absolute;
+  inset: 0;
+}
+
 .feds-topnav-wrapper {
   position: relative;
   z-index: 2;
@@ -43,6 +49,10 @@ header.global-navigation {
   justify-content: center;
   height: var(--feds-height-nav);
   background-color: var(--feds-background-nav);
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-topnav-wrapper {
+  background-color: transparent;
 }
 
 .feds-topnav {
@@ -109,6 +119,12 @@ header.global-navigation {
   font-weight: 300;
 }
 
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-toggle {
+  --feds-color-hamburger: #fff;
+
+  color: var(--feds-color-hamburger);
+}
+
 .feds-toggle:before {
   content: "\2630";
 }
@@ -154,6 +170,12 @@ header.global-navigation {
   flex-shrink: 0;
 }
 
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-brand-image svg path {
+  --feds-color-adobeBrand: #fff;
+
+  fill: var(--feds-color-adobeBrand);
+}
+
 .feds-brand-image.brand-image-only {
   height: 36px;
   width: auto;
@@ -176,6 +198,13 @@ header.global-navigation {
   flex-shrink: 0;
   font-weight: 700;
   font-size: 18px;
+  color: var(--feds-color-adobeBrand);
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-brand-label,
+:root:has(meta[name="theme"][content="redesign-poc"]) .feds-logo-label {
+  --feds-color-adobeBrand: #fff;
+
   color: var(--feds-color-adobeBrand);
 }
 
@@ -586,6 +615,10 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
   .feds-topnav-wrapper {
     border-bottom: 1px solid var(--feds-borderColor);
     box-sizing: content-box;
+  }
+
+  :root:has(meta[name="theme"][content="redesign-poc"]) .feds-topnav-wrapper {
+    border-bottom: none;
   }
 
   .feds-toggle {
