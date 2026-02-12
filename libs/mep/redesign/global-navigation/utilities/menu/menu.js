@@ -51,7 +51,7 @@ function decorateCta({ elem, type = 'primaryCta', index } = {}) {
     </div>`;
 }
 
-const decorateHeadline = (elem, index, context = 'viewport') => {
+const decorateHeadline = (elem, index, context = 'viewport', isProductsMenu) => {
   if (!(elem instanceof HTMLElement)) return null;
 
   const headline = toFragment`<div class="feds-menu-headline">
@@ -59,13 +59,13 @@ const decorateHeadline = (elem, index, context = 'viewport') => {
     </div>`;
 
   const headlineClickHandler = (e) => {
-    if (isDesktopForContext(context)) return;
+    if (isDesktopForContext(context) && !isProductsMenu) return;
     trigger({ element: headline, event: e, type: 'headline' });
     setActiveDropdown(headline);
   };
 
   const setHeadlineAttributes = () => {
-    if (isDesktopForContext(context)) {
+    if (isDesktopForContext(context) && !isProductsMenu) {
       headline.setAttribute('role', 'heading');
       headline.removeAttribute('tabindex');
       headline.setAttribute('aria-level', 2);
@@ -329,7 +329,8 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
 
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
-        const sectionHeadline = decorateHeadline(columnElem, headlineIndex, context);
+        const isProductsMenu = columnElem.closest('.products') !== null;
+        const sectionHeadline = decorateHeadline(columnElem, headlineIndex, context, isProductsMenu);
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
 
         itemDestination.append(sectionHeadline, menuItems);

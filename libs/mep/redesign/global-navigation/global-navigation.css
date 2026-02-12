@@ -59,9 +59,10 @@ header.global-navigation:has(.feds-dropdown--active) .feds-topnav-wrapper {
 .feds-topnav {
   display: flex;
   width: 100%;
-  max-width: var(--feds-maxWidth-nav);
+  /* max-width: var(--feds-maxWidth-nav); */
   height: inherit;
   justify-content: space-between;
+  padding: 0 24px;
 }
 
 .feds-nav-wrapper {
@@ -147,7 +148,7 @@ header.global-navigation:has(.feds-dropdown--active) .feds-topnav-wrapper {
 .feds-logo {
   align-items: center;
   outline-offset: 2px;
-  padding: 0 var(--feds-gutter);
+  /* padding: 0 var(--feds-gutter); */
   column-gap: 10px;
 }
 
@@ -228,11 +229,6 @@ header.global-navigation:has(.feds-dropdown--active) .feds-topnav-wrapper {
 
 .feds-navItem:not(:last-child) > .feds-navLink {
   border-bottom: 1px solid var(--feds-borderColor-link);
-}
-
-/* Item with active dropdown */
-.global-navigation .feds-dropdown--active {
-  position: relative;
 }
 
 .global-navigation .feds-dropdown--active .feds-navLink {
@@ -663,7 +659,7 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
 
   .feds-menu-container {
     min-width: 100%;
-    padding: 0 12px 40px;
+    padding: 0 24px 40px;
   }
 
   /* Nav Links */
@@ -835,7 +831,6 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
 
   .feds-menu-container {
     min-width: var(--feds-minWidth-menu);
-    margin: 0 auto;
   }
 
   .feds-localnav {

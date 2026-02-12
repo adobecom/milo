@@ -174,53 +174,8 @@ content auhtored manually and AEM-imported content */
   display: none;
 }
 
-/* ===== MOBILE STYLES FOR PRODUCTS DROPDOWN ===== */
-.global-navigation .feds-popup.products .feds-menu-container {
-  padding: 0;
-}
-
-.global-navigation .feds-menu-content.products {
-  display: flex;
-  flex-direction: column;
-}
-
-.global-navigation .feds-menu-content.products > .feds-menu-column {
-  padding: 0;
-}
-
-.global-navigation .feds-menu-content.products .feds-navLink {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
-}
-
-.global-navigation .feds-menu-content.products .feds-navLink-image {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-}
-
-.global-navigation .feds-menu-content.products .feds-navLink-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.global-navigation .feds-menu-content.products .feds-navLink-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.global-navigation .feds-menu-content.products .feds-navLink-title {
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.global-navigation .feds-menu-content.products .feds-navLink-description {
-  font-size: 12px;
-  color: var(--feds-color-description, #6e6e6e);
+.global-navigation .feds-popup {
+  height: 560px;
 }
 
 /* ===== MOBILE STYLES FOR USE-CASES DROPDOWN ===== */
@@ -420,114 +375,89 @@ content auhtored manually and AEM-imported content */
   .feds-crossCloudMenu .feds-navLink {
     padding: 0 28px;
   }
-
   /* ===== PRODUCTS DROPDOWN LAYOUT ===== */
-  /* Left sidebar with category tabs + product grid on the right */
-  .global-navigation .feds-popup.products .feds-menu-container {
-    display: flex;
-    padding: 0;
-  }
 
   .global-navigation .feds-menu-content.products {
-    display: flex;
-    flex-direction: row;
-    gap: 0;
-    justify-content: flex-start;
-  }
-
-  /* Category tabs sidebar */
-  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child {
-    flex: 0 0 200px;
-    min-width: 200px;
-    background: var(--feds-background-nav);
-    border-right: 1px solid var(--feds-borderColor);
-    padding: 16px 0;
-  }
-
-  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-menu-section {
-    display: flex;
     flex-direction: column;
-    gap: 0;
+    width: 290px;
   }
 
-  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-navLink {
-    display: block;
-    padding: 12px 24px;
-    font-weight: 500;
-    color: var(--feds-color-link);
-    border-radius: 0;
-    transition: background-color 0.15s ease;
+  .global-navigation .feds-menu-content.products .feds-menu-items,
+  .global-navigation .feds-menu-content.products .feds-promo-wrapper {
+    display: none;
   }
 
-  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-navLink:hover,
-  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-navLink.is-active {
-    background: var(--feds-color-link);
-    color: var(--feds-background-nav);
+  .global-navigation .feds-menu-content.products .feds-menu-headline {
+    border-bottom: 0;
   }
 
-  .global-navigation .feds-menu-content.products > .feds-menu-column:first-child .feds-navLink.is-active {
-    font-weight: 600;
+  .global-navigation .feds-menu-content.products .feds-menu-items {
+    display: none;
+    position: absolute;
+    left: 348px;
+    top: 30px;
+    width: calc(100% - 348px);
   }
 
-  /* Product cards grid */
-  .global-navigation .feds-menu-content.products > .feds-menu-column:not(:first-child) {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    padding: 24px 32px;
-    background: var(--feds-background-popup, #fff);
-  }
-
-  .global-navigation .feds-menu-content.products > .feds-menu-column:not(:first-child) .feds-menu-section {
-    display: contents;
-  }
-
-  .global-navigation .feds-menu-content.products > .feds-menu-column:not(:first-child) .feds-navLink {
+  .global-navigation .feds-menu-content.products .feds-dropdown--active .feds-menu-items {
     display: flex;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-menu-container {
+    position: relative;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-menu-headline {
+    color: #000;
+    font-size: 24px;
+    font-weight: 900;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-menu-section {
+    border-radius: 16px;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-menu-section:hover {
+    background-color: #000;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-menu-section:hover .feds-menu-headline {
+    color: #fff;
+  }
+  .global-navigation .feds-menu-content.products .feds-menu-section:hover .feds-navLink-title {
+    color: #000;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-menu-section ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(173px, 257px));
+    gap: 16px;
+    justify-content: start;
+  }
+
+  .global-navigation .feds-menu-content.products .feds-menu-section ul > li > a {
+    display: flex;
+    height: 173px;
+    padding: 16px;
+    background-color: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--feds-borderColor);
+    justify-content: space-between;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
-    padding: 16px;
-    border-radius: 8px;
-    background: transparent;
-    transition: background-color 0.15s ease;
+    margin: 0;
   }
 
-  .global-navigation .feds-menu-content.products > .feds-menu-column:not(:first-child) .feds-navLink:hover {
-    background: var(--feds-background-hover, rgba(0, 0, 0, 0.04));
-  }
-
-  .global-navigation .feds-menu-content.products .feds-navLink-image {
-    width: 32px;
-    height: 32px;
-    margin-bottom: 8px;
-  }
-
-  .global-navigation .feds-menu-content.products .feds-navLink-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+  .global-navigation .feds-menu-content.products .feds-menu-section ul > li > a:hover {
+    background-color: rgb(252, 249, 249);
+    color: #fff;
   }
 
   .global-navigation .feds-menu-content.products .feds-navLink-title {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--feds-color-link);
+    font-weight: 700;
+    font-size: 16px;
   }
-
-  .global-navigation .feds-menu-content.products .feds-navLink-description {
-    font-size: 12px;
-    color: var(--feds-color-description, #6e6e6e);
-    line-height: 1.4;
-  }
-
-  /* "More" link with arrow */
-  .global-navigation .feds-menu-content.products .feds-navLink--more .feds-navLink-title::after {
-    content: '→';
-    margin-left: 8px;
-  }
-
+  
   /* ===== USE-CASES DROPDOWN LAYOUT ===== */
   /* Multiple columns with headers, product lists, and CTAs */
 
