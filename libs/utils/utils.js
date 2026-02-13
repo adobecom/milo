@@ -2327,10 +2327,9 @@ async function resolveHighPriorityFragments(section) {
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
-    // Re-decorate to rebuild section.blocks (stale references to replaced/removed
-    // elements would cause loadBlock errors). skipLinks prevents appendHtmlToLink
-    // and localizeLinkAsync from double-processing already-decorated links.
-    const redecorated = await decorateSection(section.el, section.idx, { skipLinks: true });
+    // skipLinks avoids double-processing links already decorated by loadArea in fragment.js.
+    const opts = hadInlineFrags ? {} : { skipLinks: true };
+    const redecorated = await decorateSection(section.el, section.idx, opts);
     section.blocks = redecorated.blocks;
     section.preloadLinks = redecorated.preloadLinks;
   }
