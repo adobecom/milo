@@ -901,3 +901,20 @@ content auhtored manually and AEM-imported content */
 .global-navigation .feds-menu-content.use-cases > .feds-menu-column:hover .feds-menu-headline~a {
   color: #fff;
 }
+
+.global-navigation .feds-popup.use-cases .feds-subheadline {
+  padding-left: 24px;
+  position: absolute;
+  
+  &::after {
+   content: "";
+   position: absolute;
+   right: -12px;
+   top: 10px;
+   width: 4px;
+   height: 4px;
+   border-right: 2px solid #000;
+   border-top: 2px solid #000000;
+   transform: translateY(-50%) rotate(45deg);
+ }
+}

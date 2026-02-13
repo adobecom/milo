@@ -352,7 +352,10 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
         let subHeader = '';
         const headlineLink = columnElem.querySelector('a');
         if (headlineLink !== null) {
+          columnElem.textContent = headlineLink.textContent;
           subHeader = headlineLink;
+          subHeader.classList.add('feds-subheadline');
+          subHeader.textContent = 'Learn More';
           headlineLink.remove();
         }
         const sectionHeadline = decorateHeadline(columnElem, headlineIndex, context, isProductsMenu);
