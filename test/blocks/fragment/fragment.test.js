@@ -969,6 +969,53 @@ describe('MEP Lingo Fragments', () => {
     expect(section.querySelector('.fragment')).to.be.null;
     section.remove();
   });
+
+  it('block swap through loadArea uses skipLinks (decorateLinksMinimal)', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale, useDotHtml: true });
+
+    const area = document.createElement('div');
+    area.innerHTML = `
+      <div>
+        <div class="text">
+          <div>
+            <div><p>Original content</p></div>
+          </div>
+          <div>
+            <div>mep-lingo</div>
+            <div><a href="/fragments/mep-lingo-test">swap</a></div>
+          </div>
+        </div>
+        <div>
+          <p><a href="https://www.youtube.com/watch?v=test123">video link</a></p>
+          <p><a href="http://localhost:2000/customer-success-stories">regular link</a></p>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(area);
+
+    await loadArea(area);
+
+    const section = area.querySelector('.section');
+    expect(section.textContent).to.include('MEP Lingo Fragment Content');
+
+    const ytLink = section.querySelector('a[href*="youtube"]');
+    expect(ytLink).to.exist;
+    expect(ytLink.classList.contains('link-block')).to.be.true;
+
+    const regularLink = section.querySelector('a[href*="customer-success"]');
+    expect(regularLink).to.exist;
+    expect(regularLink.classList.contains('link-block')).to.be.false;
+
+    const fragLink = section.querySelector('.fragment a[href*="customer-success"]');
+    expect(fragLink).to.exist;
+    expect(fragLink.getAttribute('href')).to.include('.html');
+    expect(fragLink.getAttribute('href')).to.not.include('.html.html');
+
+    area.remove();
+  });
 });
 
 describe('removeMepLingoRow helper (covers lines 203-206, 208-211 logic)', () => {
