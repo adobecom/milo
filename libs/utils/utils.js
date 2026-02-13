@@ -1048,6 +1048,7 @@ export async function loadTemplate() {
 function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
+  const isRedesignPocTheme = getMetadata('theme')?.toLowerCase().includes('redesign-poc');
 
   let base = codeRoot;
   if (externalLibs) {
@@ -1069,8 +1070,14 @@ function getBlockData(block) {
   if (miloLibs && MILO_BLOCKS.includes(name)) base = miloLibs;
 
   let path = `${base}/blocks/${name}`;
-  if (mep?.blocks?.[name]) path = mep.blocks[name];
-  const blockPath = `${path}/${name}`;
+  let fileName = name;
+  if (name === 'global-navigation' && isRedesignPocTheme) {
+    path = `${base}/blocks/global-nav`;
+    fileName = 'global-nav';
+  } else if (mep?.blocks?.[name]) {
+    path = mep.blocks[name];
+  }
+  const blockPath = `${path}/${fileName}`;
   const hasStyles = AUTO_BLOCKS.find((ab) => Object.keys(ab).includes(name))?.styles ?? true;
 
   return { blockPath, name, hasStyles };
