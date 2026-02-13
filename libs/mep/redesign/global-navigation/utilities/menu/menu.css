@@ -542,7 +542,7 @@ content auhtored manually and AEM-imported content */
     margin: 4px;
     position: relative;
     height: 305px;
-    margin-top: 24px;
+    margin-top: 48px;
   }
 
   .global-navigation .feds-menu-content.use-cases .feds-navLink-title {
@@ -896,6 +896,11 @@ content auhtored manually and AEM-imported content */
   color: #000;
   font-weight: 700;
   padding-left: 24px;
+}
+
+.global-navigation .feds-menu-content.use-cases > .feds-menu-column:hover .feds-menu-headline~a:after {
+  border-right: 2px solid #fff;
+  border-top: 2px solid #fff;
 }
 
 .global-navigation .feds-menu-content.use-cases > .feds-menu-column:hover .feds-menu-headline~a {
