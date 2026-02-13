@@ -15,12 +15,10 @@ import {
   getCountry,
 } from '../../utils/utils.js';
 
-const isRedesignPocTheme = () => getMetadata('theme')?.toLowerCase().includes('redesign-poc');
-
 const cssPromise = (async () => {
-  if (isRedesignPocTheme()) return;
-  const { miloLibs, codeRoot, theme } = getConfig();
-  const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
+  const { theme } = getConfig();
+  // Load CSS from the same directory as this JS file (redesign folder)
+  const baseUrl = new URL('./', import.meta.url).href;
   const loadStylePromise = (u) => new Promise((resolve, reject) => {
     loadStyle(u, (e) => {
       if (e === 'error') return reject(u);
@@ -28,8 +26,8 @@ const cssPromise = (async () => {
     });
   });
   try {
-    await loadStylePromise(`${url}base.css`);
-    if (theme === 'dark') await loadStylePromise(`${url}dark-nav.css`);
+    await loadStylePromise(`${baseUrl}base.css`);
+    if (theme === 'dark') await loadStylePromise(`${baseUrl}dark-nav.css`);
   } catch (e) {
     const gnavSource = getMetadata('gnav-source');
     if (!window.lana?.log) loadLana();
@@ -79,7 +77,6 @@ const {
   isTangentToViewport,
   lanaLog,
   loadDecorateMenu,
-  rootPath,
   loadStyles,
   logErrorFor,
   selectors,
@@ -554,12 +551,12 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
-        ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
+        ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${this.decorateLogo()}
       </nav>
     `;
@@ -745,19 +742,21 @@ class Gnav {
         this.block.removeEventListener('click', this.loadDelayed);
         this.block.removeEventListener('keydown', this.loadDelayed);
         if (this.searchPresent()) {
+          const searchCssUrl = new URL('./features/search/gnav-search.css', import.meta.url).href;
           const [
             { default: Search },
           ] = await Promise.all([
             import('./features/search/gnav-search.js'),
-            loadStyles(rootPath('features/search/gnav-search.css')),
+            loadStyles(searchCssUrl),
           ]);
           this.Search = Search;
         }
 
         if (!this.useUniversalNav) {
+          const profileCssUrl = new URL('./features/profile/dropdown.css', import.meta.url).href;
           const [{ default: ProfileDropdown }] = await Promise.all([
             import('./features/profile/dropdown.js'),
-            loadStyles(rootPath('features/profile/dropdown.css')),
+            loadStyles(profileCssUrl),
           ]);
           this.ProfileDropdown = ProfileDropdown;
         }
@@ -1537,6 +1536,13 @@ class Gnav {
             }
             trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
             setActiveDropdown(dropdownTrigger);
+            const { parentElement } = e.currentTarget;
+            const isProductsMenu = parentElement.querySelector('.products') !== null;
+            if (isProductsMenu) {
+              const firstHeadline = parentElement.querySelector('.feds-menu-headline');
+              firstHeadline?.click();
+              setActiveDropdown(firstHeadline);
+            }
           });
           // Set aria attributes
           isDesktop.addEventListener('change', () => setAriaAtributes(dropdownTrigger));
@@ -1670,11 +1676,6 @@ class Gnav {
 }
 
 export default async function init(block) {
-  if (isRedesignPocTheme()) {
-    const { default: initRedesign } = await import('../global-nav/global-nav.js');
-    return initRedesign(block);
-  }
-
   const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
