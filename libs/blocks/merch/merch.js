@@ -28,7 +28,6 @@ export const PRICE_TEMPLATE_LEGAL = 'legal';
 
 const isPreview = window.location.host.includes('aem.page') || window.location.host === 'www.stage.adobe.com';
 
-/** Cached upgrade offer aria-label (set when processing .merch-offers.upgrade link) so card CTAs can use it after the offer is replaced. */
 let cachedUpgradeAriaLabel = '';
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
