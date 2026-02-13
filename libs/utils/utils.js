@@ -1981,7 +1981,7 @@ async function loadPostLCP(config) {
         asideSource: null,
         isLocalNav: false,
         mountpoint: header,
-        unavEnabled: false,
+        unavEnabled: true,
         placeholders: placeholdersPromise,
         miloConfig: getConfig(),
         personalization: {
