@@ -123,8 +123,27 @@ html[lang="ja-jp"] a.feds-navLink wbr {
   border-radius: 16px;
 }
 
+.global-navigation .feds-popup.use-cases .feds-menu-items .feds-navLink {
+  &:hover,&:active {
+         background-color: #000;
+         color: #FFF;
+       }
+ &::after {
+         content: "";
+         position: absolute;
+         right: 16px;
+         top: calc(50% + 1px);
+         width: 4px;
+         height: 4px;
+         border-right: 2px solid #FFF;
+         border-top: 2px solid #FFF;
+         transform: translateY(-50%) rotate(45deg);
+       }
+}
+
 .global-navigation .feds-menu-items .feds-navLink:hover {
   background-color: #000;
+  position: relative;
 }
 
 .global-navigation .feds-menu-items .feds-navLink:hover .feds-navLink-title {
@@ -384,4 +403,12 @@ header.global-navigation.ready {
   .feds-navLink--ai-gradient {
     background: linear-gradient(90deg, #bce3ff, #ffe9d3, #f8d5e4);
   }
+}
+
+.global-navigation .feds-menu-items .feds-navLink:hover .feds-navLink-title {
+  color: #000;
+}
+
+.global-navigation .feds-popup.use-cases .feds-menu-items .feds-navLink:hover .feds-navLink-title {
+  color: #fff;
 }

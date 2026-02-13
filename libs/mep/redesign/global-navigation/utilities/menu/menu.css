@@ -662,6 +662,11 @@ content auhtored manually and AEM-imported content */
     border-radius: 16px;
     width: 100%;
   }
+
+  .feds-popup .feds-menu-column .feds-menu-headline {
+    font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
+  }
+
   .feds-popup.learn-support .feds-menu-column > .feds-menu-section .feds-menu-headline,
   .feds-popup.solutions .feds-menu-column > .feds-menu-section .feds-menu-headline {
     --heading-font-family: 'Adobe Clean Display', adobe-clean-display, adobe-clean, 'Trebuchet MS', sans-serif;
@@ -749,6 +754,9 @@ content auhtored manually and AEM-imported content */
     }
     .feds-promo-image img {
       object-fit: cover;
+    }
+    .feds-promo-image {
+      background-color: #000;
     }
   }
 
