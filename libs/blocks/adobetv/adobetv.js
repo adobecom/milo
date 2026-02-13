@@ -9,8 +9,7 @@ const updateCaptionsLang = (url, geo, captionsLangMap) => {
   if (geo && captionsLangMap) {
     const entry = captionsLangMap.find((l) => l?.geos?.split(',')?.includes(geo));
     if (entry) {
-      const captionParam = entry.captions === 'eng' ? entry.captions : `${entry.captions},eng`;
-      url.searchParams.set('captions', captionParam);
+      url.searchParams.set('captions', entry.captions);
     }
   }
   return url.toString();
