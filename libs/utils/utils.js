@@ -1633,11 +1633,6 @@ export function filterDuplicatedLinkBlocks(blocks) {
 }
 
 function decorateLinksMinimal(el) {
-  // Lightweight link pass: identifies link-blocks without re-running
-  // appendHtmlToLink or localizeLinkAsync (which cause double-processing
-  // issues on already-processed links).
-  // Already-processed link-blocks are returned as-is; new links get
-  // decorateAutoBlock to check if they need link-block classification.
   const anchors = el.getElementsByTagName('a');
   return [...anchors].map((a) => {
     if (a.classList.contains('link-block')) return a;
