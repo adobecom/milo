@@ -47,11 +47,13 @@ header.global-navigation {
   transition: background-color 0.2s ease;
 }
 
-/* Header background when dropdown is open */
+/* Keep header background stable while menu is open */
+header.global-navigation:has(.feds-nav-wrapper--expanded),
 header.global-navigation:has(.feds-dropdown--active) {
   background-color: #fff;
 }
 
+header.global-navigation:has(.feds-nav-wrapper--expanded) .feds-topnav-wrapper,
 header.global-navigation:has(.feds-dropdown--active) .feds-topnav-wrapper {
   background-color: #fff;
 }
@@ -1646,10 +1648,20 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
   opacity: 0.6;
 }
 
-:root:has(meta[name="theme"][content="redesign-poc"]) header.global-navigation {
+:root:has(meta[name="theme"][content="redesign-poc"]) header.global-navigation:not(:has(.feds-nav-wrapper--expanded, .feds-dropdown--active)) {
   background-color: transparent;
   position: absolute;
   inset: 0;
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) header.global-navigation:has(.feds-nav-wrapper--expanded),
+:root:has(meta[name="theme"][content="redesign-poc"]) header.global-navigation:has(.feds-dropdown--active) {
+  background-color: #fff;
+}
+
+:root:has(meta[name="theme"][content="redesign-poc"]) header.global-navigation:has(.feds-nav-wrapper--expanded) .feds-topnav-wrapper,
+:root:has(meta[name="theme"][content="redesign-poc"]) header.global-navigation:has(.feds-dropdown--active) .feds-topnav-wrapper {
+  background-color: #fff;
 }
 
 :root:has(meta[name="theme"][content="redesign-poc"]) .feds-navLink:not(.feds-menu-items .feds-navLink, .feds-menu-section .feds-navLink),
