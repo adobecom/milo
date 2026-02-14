@@ -34,7 +34,7 @@ function getExtension(path) {
  * @returns {Promise<Set<string>>}
  */
 async function fetchRegionalQueryIndexPaths(regionalPrefix, queryIndexSuffix) {
-  const root = getFederatedContentRoot();
+  const root = 'https://main--da-bacom--adobecom.aem.page';
   const prefixSegment = regionalPrefix.replace(/^\//, '');
   const url = `${root}/${prefixSegment}/assets/lingo/query-index${queryIndexSuffix}.json`;
   try {
@@ -44,7 +44,7 @@ async function fetchRegionalQueryIndexPaths(regionalPrefix, queryIndexSuffix) {
     const paths = (json.data ?? []).map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')).filter(Boolean);
     return new Set(paths);
   } catch (e) {
-    window.lana?.log(`Geo base-to-regional: failed to load query-index ${url}`, e);
+    console.log(`Geo base-to-regional: failed to load query-index ${url}`, e);
     return new Set();
   }
 }
