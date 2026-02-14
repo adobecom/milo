@@ -63,8 +63,8 @@ export async function transformBaseToRegionalLinksPostLCP() {
   const country = getCountry();
   if (!country) return;
 
-  const regionalPrefix = getMepLingoPrefix();
-  if (!regionalPrefix) return;
+  // const regionalPrefix = getMepLingoPrefix();
+  // if (!regionalPrefix) return;
 
   const basePrefix = locale.prefix ?? '';
   if (!basePrefix) return;
