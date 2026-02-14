@@ -73,7 +73,7 @@ export async function transformBaseToRegionalLinksPostLCP() {
   const hostname = window.location.hostname;
   const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
 
-  const pathSet = await fetchRegionalQueryIndexPaths(regionalPrefix, queryIndexSuffix);
+  const pathSet = await fetchRegionalQueryIndexPaths('sg', queryIndexSuffix);
   if (!pathSet.size) return;
 
   const links = document.querySelectorAll('main a[href]');
