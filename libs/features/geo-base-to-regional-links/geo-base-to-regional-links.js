@@ -36,7 +36,7 @@ function getExtension(path) {
 async function fetchRegionalQueryIndexPaths(regionalPrefix, queryIndexSuffix) {
   const root = getFederatedContentRoot();
   const prefixSegment = regionalPrefix.replace(/^\//, '');
-  const url = `${root}/${prefixSegment}/federal/assets/lingo/query-index${queryIndexSuffix}.json`;
+  const url = `${root}/${prefixSegment}/assets/lingo/query-index${queryIndexSuffix}.json`;
   try {
     const response = await fetch(url);
     if (!response.ok) return new Set();
