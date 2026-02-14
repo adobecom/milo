@@ -80,7 +80,7 @@ export async function transformBaseToRegionalLinksPostLCP() {
       if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) continue;
 
       const url = new URL(href, origin);
-      if (url.hostname !== hostname) continue;
+      // if (url.hostname !== hostname) continue;
 
       const path = url.pathname;
       if (!path.startsWith(basePrefix)) continue;
