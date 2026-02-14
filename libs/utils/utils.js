@@ -1960,7 +1960,14 @@ async function loadPostLCP(config) {
   if (languageBanner === 'on') {
     const { default: init } = await import('../features/language-banner/language-banner.js');
     await init();
-  } else if (georouting === 'on') {
+  }
+
+  if (lingoActive()) {
+    import('../features/geo-base-to-regional-links/geo-base-to-regional-links.js')
+      .then(({ transformBaseToRegionalLinksPostLCP }) => transformBaseToRegionalLinksPostLCP());
+  }
+
+  if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
