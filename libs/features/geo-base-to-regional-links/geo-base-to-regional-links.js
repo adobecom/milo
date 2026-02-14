@@ -63,17 +63,14 @@ export async function transformBaseToRegionalLinksPostLCP() {
   const country = getCountry();
   if (!country) return;
 
-  // const regionalPrefix = getMepLingoPrefix();
-  // if (!regionalPrefix) return;
-
-  const basePrefix = locale.prefix ?? '';
-  if (!basePrefix) return;
+  const regionalPrefix = 'sg';
+  const basePrefix = '';
 
   const origin = config.origin || window.location.origin;
   const hostname = window.location.hostname;
   const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
 
-  const pathSet = await fetchRegionalQueryIndexPaths('sg', queryIndexSuffix);
+  const pathSet = await fetchRegionalQueryIndexPaths(basePrefix, queryIndexSuffix);
   if (!pathSet.size) return;
 
   const links = document.querySelectorAll('main a[href]');
