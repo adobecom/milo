@@ -90,7 +90,7 @@ export async function transformBaseToRegionalLinksPostLCP() {
       if (!ALLOWED_EXTENSIONS.includes(ext)) continue;
 
       const pathWithoutBase = path.slice(basePrefix.length) || '/';
-      const regionalPath = `${regionalPrefix}${pathWithoutBase}`.replace(/\.html$/, '');
+      const regionalPath = `/${regionalPrefix}${pathWithoutBase}`.replace(/\.html$/, '');
       if (!pathSet.has(regionalPath)) continue;
 
       const newPath = `${regionalPath}${path.endsWith('.html') ? '.html' : ''}${url.search}${url.hash}`;
