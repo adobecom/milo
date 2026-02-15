@@ -92,7 +92,18 @@ class Popup {
   }
 
   mobileArrowUp = ({ prev, curr, element, isFooter, newNav }) => {
-    // Case 1:  Move focus to the previous item
+    // Case 1: First item in the list - Move focus to the headline that opened it
+    if (isFooter && curr === 0) {
+      const headline = document.activeElement.closest(selectors.section)
+        ?.querySelector(selectors.headline)
+        || document.activeElement.closest(selectors.column)?.querySelector(selectors.headline);
+      if (headline) {
+        headline.focus();
+        return;
+      }
+    }
+
+    // Case 2: Move focus to the previous item
     const state = getState(element);
     const { currentSection } = state;
     const popupItems = newNav && !isFooter ? this.popupItems() : state.popupItems;
@@ -102,7 +113,7 @@ class Popup {
       return;
     }
 
-    // Case 2: No headline + no previous item, move to the main nav
+    // Case 3: No headline + no previous item, move to the main nav
     const { prevHeadline } = getState(element);
     if (!prevHeadline && !newNav && !isFooter) {
       this.focusMainNav(isFooter);
@@ -119,12 +130,38 @@ class Popup {
       return;
     }
 
-    // Case 3: Open the previous headline
+    // Case 4: Open the previous headline
     if (newNav && !isFooter) popupItems?.[popupItems.length - 1]?.focus();
     else openHeadline({ headline: prevHeadline, focus: 'last' });
   };
 
   mobileArrowDown = ({ next, element, isFooter, newNav }) => {
+    // Case 0: Last item in the list - Move focus to the next global headline
+    if (isFooter) {
+      const { popupItems } = getState(element);
+      if (next === -1 || next >= popupItems.length) {
+        // We are at the end of the current list.
+        // Even if we are inside a section, we want to jump to the NEXT HEADLINE.
+        const currentHeadline = document.activeElement.closest(selectors.section)
+          ?.querySelector(selectors.headline)
+          || document.activeElement.closest(selectors.column)
+            ?.querySelector(selectors.headline);
+
+        if (currentHeadline) {
+          const footer = document.querySelector(selectors.globalFooter);
+          const allHeadlines = [...footer.querySelectorAll(selectors.headline)]
+            .filter((h) => isElementVisible(h));
+          const idx = allHeadlines.indexOf(currentHeadline);
+          if (idx !== -1 && idx < allHeadlines.length - 1) {
+            const nextHeadline = allHeadlines[idx + 1];
+            openHeadline({ headline: nextHeadline, focus: null });
+            nextHeadline.focus();
+            return;
+          }
+        }
+      }
+    }
+
     // Case 1: Move focus to the next item
     const state = getState(element);
     const { currentSection } = state;
@@ -204,15 +241,25 @@ class Popup {
     const prev = getPreviousVisibleItemPosition(curr, popupItems);
     const next = getNextVisibleItemPosition(curr, popupItems);
 
+    if (e.code === 'Tab') return;
+
     e.preventDefault();
     e.stopPropagation();
 
     switch (e.code) {
-      case 'Tab': {
-        if (e.shiftKey) {
-          this.mobileArrowUp({ prev, curr, element, isFooter, newNav });
-        } else {
-          this.mobileArrowDown({ curr, next, element, isFooter, newNav });
+      case 'Enter':
+      case 'Space': {
+        if (isFooter) {
+          const headline = e.target.closest(selectors.headline);
+
+          if (headline) {
+            const isExpanded = headline.getAttribute('aria-expanded') === 'true';
+            if (isExpanded) {
+              closeHeadlines();
+            } else {
+              openHeadline({ headline, focus: null });
+            }
+          }
         }
         break;
       }
@@ -245,6 +292,23 @@ class Popup {
       }
       case 'ArrowUp': {
         if (newNav && !isFooter) break;
+        if (isFooter && e.target.closest(selectors.headline)) {
+          const { prevHeadline } = getState(element);
+          if (prevHeadline) {
+            prevHeadline.focus();
+            break;
+          }
+          const footer = document.querySelector(selectors.globalFooter);
+          const allHeadlines = [...footer.querySelectorAll(selectors.headline)]
+            .filter((h) => isElementVisible(h));
+          const current = e.target.closest(selectors.headline);
+          const idx = allHeadlines.indexOf(current);
+          if (idx > 0) {
+            allHeadlines[idx - 1].focus();
+            break;
+          }
+          break;
+        }
         this.mobileArrowUp({ prev, curr, element, isFooter });
         break;
       }
@@ -266,6 +330,41 @@ class Popup {
       }
       case 'ArrowDown': {
         if (newNav && !isFooter) break;
+        if (isFooter && e.target.closest(selectors.headline)) {
+          const headline = e.target.closest(selectors.headline);
+          const expanded = headline.getAttribute('aria-expanded') === 'true';
+          
+          // Case 1: If headline is expanded, focus the first link
+          if (expanded) {
+            const section = headline.closest(selectors.section) || headline.closest(selectors.column);
+            // Default popupItems selector might not work here as it's scoped to class methods
+            // We use the same selectors found in utils or assume standard link classes
+            const firstLink = section?.querySelector(
+              '.feds-navLink, .feds-cta--button, .feds-cta--link',
+            );
+            if (firstLink) {
+              firstLink.focus();
+              break;
+            }
+          }
+
+          // Case 2: Navigate by Headline (Local or Global)
+          const { nextHeadline } = getState(element);
+          if (nextHeadline) {
+            nextHeadline.focus();
+            break;
+          }
+          const footer = document.querySelector(selectors.globalFooter);
+          const allHeadlines = [...footer.querySelectorAll(selectors.headline)]
+            .filter((h) => isElementVisible(h));
+          const current = e.target.closest(selectors.headline);
+          const idx = allHeadlines.indexOf(current);
+          if (idx !== -1 && idx < allHeadlines.length - 1) {
+            allHeadlines[idx + 1].focus();
+            break;
+          }
+          break;
+        }
         this.mobileArrowDown({ next, element, isFooter });
         break;
       }
@@ -283,37 +382,28 @@ class Popup {
         this.handleKeyDown({ e, element, popupEl: element, isFooter: false });
       }, `popup key failed ${e.code}`, 'gnav-keyboard', 'e'));
 
-    document.querySelector(selectors.globalFooterTag)
-      ?.addEventListener('keydown', (e) => logErrorFor(() => {
-        if (!e.target.closest(selectors.globalFooter)) return;
+    document.addEventListener('keydown', (e) => logErrorFor(() => {
+      if (!e.target.closest(selectors.globalFooter)) return;
 
-        const element = e.target.closest(selectors.menuContent)
-          || e.target.closest(selectors.featuredProducts);
-        if (!element || isDesktopForContext('footer')) return;
+      const element = e.target.closest(selectors.menuContent)
+        || e.target.closest(selectors.featuredProducts);
+      if (!element || isDesktopForContext('footer')) return;
 
-        const firstNavLink = element.querySelector(selectors.popupItems);
-        const firstHeadline = element.querySelector(selectors.headline);
-        const isFirstNavlink = e.target === firstNavLink;
-        const isFirstHeadline = e.target === firstHeadline;
-        const shiftTabOutOfFooter = e.shiftKey
-          && (isFirstNavlink || isFirstHeadline)
-          && !e.target.closest(selectors.featuredProducts);
-        if (shiftTabOutOfFooter) return;
+      const firstNavLink = element.querySelector(selectors.popupItems);
+      const firstHeadline = element.querySelector(selectors.headline);
+      const isFirstNavlink = e.target === firstNavLink;
+      const isFirstHeadline = e.target === firstHeadline;
+      const shiftTabOutOfFooter = e.shiftKey
+        && (isFirstNavlink || isFirstHeadline)
+        && !e.target.closest(selectors.featuredProducts);
+      if (shiftTabOutOfFooter) return;
 
-        // special case, the first dropdown needs some special logic to allow opening.
-        if (e.target.closest(selectors.headline)) {
-          openHeadline({ headline: e.target.closest(selectors.headline), focus: 'first' });
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-
-        this.handleKeyDown({
-          e,
-          element,
-          isFooter: true,
-        });
-      }, `footer key failed ${e.code}`, 'gnav-keyboard', 'e'));
+      this.handleKeyDown({
+        e,
+        element,
+        isFooter: true,
+      });
+    }, `footer key failed ${e.code}`, 'gnav-keyboard', 'e'));
   };
 }
 
