@@ -5,8 +5,6 @@ const {
   getPdfConfig,
   CLIENT_ID_PAGE,
   CLIENT_ID_LIVE,
-  CLIENT_ID_HLX_PAGE,
-  CLIENT_ID_HLX_LIVE,
 } = await import('../../../libs/blocks/pdf-viewer/pdf-viewer.js');
 const CONSUMER_CONFIG = {
   local: {
@@ -28,14 +26,6 @@ const CONSUMER_CONFIG = {
   live: {
     pdfViewerClientId: 'liveID',
     pdfViewerReportSuite: 'liveReportSuite',
-  },
-  hlxPage: {
-    pdfViewerClientId: 'hlxPageID',
-    pdfViewerReportSuite: 'hlxPageReportSuite',
-  },
-  hlxLive: {
-    pdfViewerClientId: 'hlxLiveID',
-    pdfViewerReportSuite: 'hlxLiveReportSuite',
   },
 };
 
@@ -60,24 +50,6 @@ describe('PDF Viewer', () => {
       setConfig({ clientEnv: 'stage' });
       expect(getPdfConfig(location)).to.eql({
         clientId: CLIENT_ID_LIVE,
-        reportSuiteId: undefined,
-      });
-    });
-
-    it('gets milo hlxPage config', () => {
-      const location = { host: 'main--milo--adobecom.hlx.page' };
-      setConfig({ clientEnv: 'stage' });
-      expect(getPdfConfig(location)).to.eql({
-        clientId: CLIENT_ID_HLX_PAGE,
-        reportSuiteId: undefined,
-      });
-    });
-
-    it('gets milo hlxLive config', () => {
-      const location = { host: 'main--milo--adobecom.hlx.live' };
-      setConfig({ clientEnv: 'stage' });
-      expect(getPdfConfig(location)).to.eql({
-        clientId: CLIENT_ID_HLX_LIVE,
         reportSuiteId: undefined,
       });
     });
@@ -111,24 +83,6 @@ describe('PDF Viewer', () => {
       expect(getPdfConfig(location)).to.eql({
         clientId: 'liveID',
         reportSuiteId: 'liveReportSuite',
-      });
-    });
-
-    it('gets consumer hlxPage config', () => {
-      const location = { host: 'main--bacom--adobecom.hlx.page' };
-      setConfig(CONSUMER_CONFIG);
-      expect(getPdfConfig(location)).to.eql({
-        clientId: 'hlxPageID',
-        reportSuiteId: 'hlxPageReportSuite',
-      });
-    });
-
-    it('gets consumer hlxLive config', () => {
-      const location = { host: 'main--bacom--adobecom.hlx.live' };
-      setConfig(CONSUMER_CONFIG);
-      expect(getPdfConfig(location)).to.eql({
-        clientId: 'hlxLiveID',
-        reportSuiteId: 'hlxLiveReportSuite',
       });
     });
 

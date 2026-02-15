@@ -12,6 +12,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  getCountry,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -55,16 +56,13 @@ const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/asi
 
 const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
-const [utilities, placeholders, merch, { processTrackingLabels }] = await Promise.all([
+const [utilities, placeholders, { processTrackingLabels }] = await Promise.all([
   import('./utilities/utilities.js'),
   import('../../features/placeholders.js'),
-  import('../merch/merch.js'),
   import('../../martech/attributes.js'),
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-
-const { getMiloLocaleSettings } = merch;
 
 const {
   closeAllDropdowns,
@@ -1008,7 +1006,7 @@ class Gnav {
       target: this.blocks.universalNav,
       env: environment,
       locale,
-      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
+      countryCode: getCountry() || 'US',
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
@@ -1403,6 +1401,13 @@ class Gnav {
       && getActiveLink(item.closest('div')) instanceof HTMLElement;
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
+    const getDropdownMetadata = (elem) => Object.fromEntries(
+      [...(elem?.querySelectorAll(':scope > div') || [])].map((row) => {
+        const [key, val] = [...row.querySelectorAll(':scope > div')].map((d) => d.textContent.trim());
+        return [key, val];
+      }).filter(([k]) => k),
+    );
+
     const makeTabActive = (popup) => {
       if (popup.classList.contains('loading')) return;
       const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
@@ -1597,8 +1602,13 @@ class Gnav {
           const tag = isSectionMenu ? 'section' : 'div';
           const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
           const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
+          const metadataEl = item.parentElement?.querySelector('.gnav-dropdown-metadata');
+          const metadata = getDropdownMetadata(metadataEl);
+          metadataEl?.remove();
+          const fullWidthModifier = metadata['full-width']?.toLowerCase() === 'true' ? ' full-width' : '';
+
           const triggerTemplate = toFragment`
-            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
+            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}${fullWidthModifier}" ${sectionDaaLh}>
               ${dropdownTrigger}
             </${tag}>`;
 
@@ -1634,7 +1644,7 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
@@ -1642,7 +1652,7 @@ class Gnav {
           let linkElem = item.querySelector('a');
           if (shouldBlockFreeTrialLinks(linkElem)) return null;
           if (linkElem.classList.contains('merch')) {
-            linkElem = await merch.default(linkElem);
+            linkElem = await (await import('../merch/merch.js')).default(linkElem);
           }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
@@ -1676,10 +1686,24 @@ class Gnav {
             </div>`;
           return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
         }
-        case 'text':
+        case 'text': {
+          let isBlack = false;
+          const isMerch = item.classList.contains('merch');
+          // Check for (black) in text content
+          if (isMerch && (item.textContent.match(/\(black\)$/i) || item.innerText.match(/\(black\)$/i))) {
+            isBlack = true;
+            // Remove (black) from the text content so merch.default sees the clean text
+            item.textContent = item.textContent.replace(/\s*\(black\)$/i, '');
+          }
+          const content = isMerch ? await (await import('../merch/merch.js')).default(item) : item.textContent;
+          if (isBlack && content instanceof HTMLElement) {
+            content.classList.add('feds-navLink--black');
+          }
+
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
+              ${content}
             </div>`, item);
+        }
         default:
           /* c8 ignore next 3 */
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">

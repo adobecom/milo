@@ -5,7 +5,7 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 
 // MAS Component Names
-export const MAS_COMMERCE_SERVICE = 'commerce';
+export const COMMERCE_LIBRARY = 'commerce';
 export const MAS_MERCH_CARD = 'merch-card';
 export const MAS_MERCH_CARD_COLLECTION = 'merch-card-collection';
 export const MAS_MERCH_MNEMONIC_LIST = 'merch-mnemonic-list';
@@ -325,8 +325,10 @@ export const CC_ALL_APPS = [
 const NAME_LOCALE = 'LOCALE';
 const NAME_PRODUCT_FAMILY = 'PRODUCT_FAMILY';
 const FREE_TRIAL_PATH = 'FREE_TRIAL_PATH';
+const CRM_PATH = 'CRM_PATH';
 const BUY_NOW_PATH = 'BUY_NOW_PATH';
 const FREE_TRIAL_HASH = 'FREE_TRIAL_HASH';
+const CRM_HASH = 'CRM_HASH';
 const BUY_NOW_HASH = 'BUY_NOW_HASH';
 const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
@@ -361,35 +363,44 @@ export function getMasBase(hostname, maslibs) {
 }
 
 /**
- * Gets the base URL for loading web components based on maslibs parameter
- * @returns {string|null} Base URL for web components or null if maslibs not present
+ * Parses maslibs URL parameter and returns base URL
+ * @returns {string | null} Base URL or null if maslibs not present
  */
-export function getMasLibs() {
+export function getMasLibsBaseUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   const masLibs = urlParams.get('maslibs');
 
   if (!masLibs || masLibs.trim() === '') return null;
 
-  const sanitizedMasLibs = masLibs.trim().toLowerCase();
+  const sanitized = masLibs.trim().toLowerCase();
 
-  if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3030/web-components/dist';
-  }
-  if (sanitizedMasLibs === 'main') {
-    return 'http://www.adobe.com/mas/libs';
+  if (sanitized === 'local') {
+    return 'http://localhost:3000';
   }
 
-  // Detect current domain extension (.page or .live)
+  if (sanitized === 'main') {
+    return 'https://main--mas--adobecom.aem.live';
+  }
+
   const { hostname } = window.location;
   const extension = hostname.endsWith('.page') ? 'page' : 'live';
 
-  if (sanitizedMasLibs.includes('--mas--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/web-components/dist`;
+  let branch = sanitized;
+  if (!sanitized.includes('--')) {
+    branch = `${sanitized}--mas--adobecom`;
   }
-  if (sanitizedMasLibs.includes('--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/web-components/dist`;
-  }
-  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/web-components/dist`;
+
+  return `https://${branch}.aem.${extension}`;
+}
+
+/**
+ * Gets the base URL for loading web components based on maslibs parameter
+ * @returns {string|null} Base URL for web components or null if maslibs not present
+ */
+export function getMasLibs() {
+  const baseUrl = getMasLibsBaseUrl();
+  if (!baseUrl) return null;
+  return `${baseUrl}/web-components/dist`;
 }
 
 /**
@@ -397,31 +408,9 @@ export function getMasLibs() {
  * @returns {string|null} URL for fragment-client.js or null if maslibs not present
  */
 function getFragmentClientUrl() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('maslibs');
-
-  if (!masLibs || masLibs.trim() === '') return null;
-
-  const sanitizedMasLibs = masLibs.trim().toLowerCase();
-
-  if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3030/studio/libs/fragment-client.js';
-  }
-  if (sanitizedMasLibs === 'main') {
-    return 'https://mas.adobe.com/studio/libs/fragment-client.js';
-  }
-
-  // Detect current domain extension (.page or .live)
-  const { hostname } = window.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
-
-  if (sanitizedMasLibs.includes('--mas--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
-  }
-  if (sanitizedMasLibs.includes('--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
-  }
-  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/studio/libs/fragment-client.js`;
+  const baseUrl = getMasLibsBaseUrl();
+  if (!baseUrl) return null;
+  return `${baseUrl}/studio/libs/fragment-client.js`;
 }
 
 /**
@@ -432,58 +421,56 @@ const failedExternalLoads = new Set();
 const loadingPromises = new Map();
 
 /**
- * Checks if mas-ff-mas-deps feature flag is enabled
- * @returns {boolean} true if flag is on
+ * Generates the URL for loading a MAS component
+ * @param {string} componentName - Name of the component to load
+ * @param {string|null} masLibsBase - Base URL from getMasLibs() if available
+ * @param {string} hostname - Current hostname
+ * @returns {string} The URL to load the component from
  */
-function isMasDepsFlagEnabled() {
-  const metaFlag = getMetadata('mas-ff-mas-deps');
-  if (metaFlag === 'off' || metaFlag === 'false') return false;
-  return true;
+export function getMasComponentUrl(componentName, masLibsBase, hostname) {
+  if (masLibsBase) {
+    return `${masLibsBase}/${componentName}.js`;
+  }
+  const isAdobeProd = hostname === 'www.adobe.com';
+  return isAdobeProd
+    ? `https://www.adobe.com/mas/libs/${componentName}.js`
+    : `https://main--mas--adobecom.aem.live/web-components/dist/${componentName}.js`;
 }
 
 /**
- * Loads a MAS component either from external URL (if masLibs present) or local deps
+ * Loads a MAS component either from external URL (if masLibs present) or from production CDN
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
  */
 export async function loadMasComponent(componentName) {
+  // Return existing loading promise if already in progress
   if (loadingPromises.has(componentName)) {
     return loadingPromises.get(componentName);
   }
 
+  // Component already loaded, return immediately
   if (customElements.get(componentName)) {
     return Promise.resolve();
   }
 
   const loadPromise = (async () => {
     const masLibsBase = getMasLibs();
+    const targetUrl = getMasComponentUrl(componentName, masLibsBase, window.location.hostname);
 
-    if (masLibsBase) {
-      const externalUrl = `${masLibsBase}/${componentName}.js`;
+    // Fail fast if this URL has already failed before
+    if (failedExternalLoads.has(targetUrl)) {
+      throw new Error(`Previously failed to load component from ${targetUrl}`);
+    }
 
-      if (failedExternalLoads.has(externalUrl)) {
-        throw new Error(`Failed to load component from ${externalUrl}`);
-      }
-
-      try {
-        return await import(externalUrl);
-      } catch (error) {
-        failedExternalLoads.add(externalUrl);
-        throw error;
-      }
-    } else if (isMasDepsFlagEnabled()) {
-      const masUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
-      try {
-        return await import(masUrl);
-      } catch (error) {
-        console.warn(`Failed to load from MAS repository, falling back to Milo deps: ${error.message}`);
-        return import(`../../deps/mas/${componentName}.js`);
-      }
-    } else {
-      return import(`../../deps/mas/${componentName}.js`);
+    try {
+      return await import(targetUrl);
+    } catch (error) {
+      failedExternalLoads.add(targetUrl);
+      throw error;
     }
   })();
 
+  // Cache the promise and clean up when done
   loadingPromises.set(componentName, loadPromise);
   loadPromise.finally(() => loadingPromises.delete(componentName));
 
@@ -702,6 +689,8 @@ export async function getUpgradeAction(
   el,
 ) {
   if (!options.upgrade) return undefined;
+  let SOURCE_PF;
+  let TARGET_PF;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
@@ -712,6 +701,14 @@ export async function getUpgradeAction(
       '.merch-offers.upgrade [data-wcs-osi]',
     );
   }
+
+  if (upgradeOffer.getAttribute('data-wcs-osi') === 'V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0') {
+    SOURCE_PF = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
+    TARGET_PF = ['ACROBAT'];
+  } else {
+    SOURCE_PF = CC_SINGLE_APPS_ALL;
+    TARGET_PF = CC_ALL_APPS;
+  }
   await upgradeOffer?.onceSettled();
   if (upgradeOffer && entitlements?.length && offerFamily) {
     const { default: handleUpgradeOffer } = await import('./upgrade.js');
@@ -719,10 +716,16 @@ export async function getUpgradeAction(
       offerFamily,
       upgradeOffer,
       entitlements,
-      CC_SINGLE_APPS_ALL,
-      CC_ALL_APPS,
+      SOURCE_PF,
+      TARGET_PF,
     );
-    el?.closest('merch-card')?.querySelector('merch-addon')?.remove();
+    if (upgradeAction) {
+      const merchCard = el?.closest('merch-card');
+      merchCard?.querySelector('merch-addon')?.remove();
+      merchCard?.querySelectorAll('[is="checkout-link"]').forEach((link) => {
+        if (link !== el) link.remove();
+      });
+    }
     return upgradeAction;
   }
   return undefined;
@@ -918,7 +921,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   return modalState.isOpen;
 }
 
-export async function openModal(e, url, offerType, hash, extraOptions, el) {
+export async function openModal(e, urlParam, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
   if (modalState.isOpen) return;
@@ -938,6 +941,17 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
     }
     return;
   }
+
+  let url = urlParam;
+  if (el?.dataset.modal === 'crm') {
+    const card = el.closest('merch-card');
+    const stock = card?.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]')?.checked;
+    const quantity = card?.querySelector('merch-quantity-select')?.shadowRoot?.querySelector('input[name="quantity"]')?.value;
+    const urlObj = new URL(url);
+    if (stock) urlObj.searchParams.set('stock', 'on');
+    if (quantity) urlObj.searchParams.set('qs', quantity);
+    if (stock || quantity) url = urlObj.toString();
+  }
   if (isInternalModal(url)) {
     const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
@@ -949,9 +963,13 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
-  const hash = checkoutLinkConfig[
-    `${offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH}`
-  ];
+  let columnName;
+  if (el.dataset.modal === 'crm') {
+    columnName = CRM_HASH;
+  } else {
+    columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH;
+  }
+  const hash = checkoutLinkConfig[columnName];
   if (hash) {
     el.setAttribute('data-modal-id', hash);
   }
@@ -996,14 +1014,33 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
     options,
   );
   if (!checkoutLinkConfig) return undefined;
-  const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  let columnName;
+  if (el?.dataset.modal === 'crm') {
+    columnName = CRM_PATH;
+  } else {
+    columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  }
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
+
+  if (url?.includes('|')) {
+    const urls = url.split('|');
+    const tabpanel = el.closest('.tabpanel');
+    if (tabpanel) {
+      const index = [...tabpanel.parentElement.children].indexOf(tabpanel);
+      if (urls[index]) {
+        url = urls[index].trim();
+      }
+    } else {
+      url = urls[0].trim();
+    }
+  }
+
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
   url = isInternalModal(url) || prodModalUrl
-    ? await localizeLinkAsync(checkoutLinkConfig[columnName])
-    : checkoutLinkConfig[columnName];
+    ? await localizeLinkAsync(url)
+    : url;
   url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
   return {
     url,
@@ -1036,6 +1073,15 @@ export function setPreview(attributes) {
     attributes.preview = 'on';
   }
 }
+
+function isAnnualPriceEnabled(params) {
+  const annualEnabled = getMetadata('mas-ff-annual-price');
+  if (annualEnabled === 'true' || annualEnabled === 'on') {
+    return params?.get('annual') !== 'false';
+  }
+  return undefined;
+}
+
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -1066,7 +1112,7 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise
     ?? polyfills().then(async () => {
-      await loadMasComponent(MAS_COMMERCE_SERVICE);
+      await loadMasComponent(COMMERCE_LIBRARY);
 
       // Load fragment-client.js when maslibs is present
       const fragmentClientUrl = getFragmentClientUrl();
@@ -1112,7 +1158,7 @@ export async function initService(force = false, attributes = {}) {
           if (isSignedIn) fetchEntitlements();
         });
       }
-      if (country === 'AU') {
+      if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
       }
       return service;
@@ -1137,23 +1183,29 @@ function getHardcodedFallbackStep(wcsOsi, checkoutClientId) {
   const osiToStepMap = {
     'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs': 'commitment',
     'ZZQMV2cU-SWQoDxuznonUFMRdxSyTr4J3fB77YBNakY': 'commitment',
-    'vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE': 'email',
-    'nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s': 'email',
+    'vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE': 'recommendation',
+    'nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s': 'recommendation',
     'QgYu51CVY2wKyFEqMuvec4N1tc1OaCypeKJjT5n2-Fc': 'commitment',
-    'AW-jV275GNYtPao6Q7XWENqyv_Stkc1BbzF7ak2u1dk': 'email',
+    'AW-jV275GNYtPao6Q7XWENqyv_Stkc1BbzF7ak2u1dk': 'recommendation',
     'nIy-IPGnALw3KNncaqMjOJsMUrqElWi8sdGnBFBAgTw': 'commitment',
     WRe4gUHuyqJgCCr3ZywwU9CDP0ezBaCKoMk4xryVQhs: 'commitment',
     Hnk2P6L5wYhnpZLFYTW5upuk2Y3AJXlso8VGWQ0l2TI: 'commitment',
     '-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ': 'commitment',
     WJLr3TF4T4qyJIGZTsDf9KPbTfxA7qAgStpaF2IgYao: 'commitment',
-    '8Lr09qx_PHqAJUwvUNiof4FFFEKjsR1TTbvBUncV2b0': 'email',
-    lI5NvdLBWJUJEHkP9CAx787kt0uCc3WnoCFVVIjECiA: 'email',
+    '8Lr09qx_PHqAJUwvUNiof4FFFEKjsR1TTbvBUncV2b0': 'recommendation',
+    lI5NvdLBWJUJEHkP9CAx787kt0uCc3WnoCFVVIjECiA: 'recommendation',
     'OQ1oCm1tZG35Gj7LCrkGeOOdUMfVlC7xx-7ml-CTWIE': 'commitment',
     'VQpXGYJh-MBOcGPvokz_INgE88dj3KIyMJaU-iIQxlY': 'commitment',
     'b-xXdWqVkpll0yBirom1c4bI3FwdXvNCy1HtHZV2yfU': 'commitment',
-    ZfP6XPHxvTFnOS_Hd4q9taPkKHinmf6PCozeJEmzqNI: 'email',
+    ZfP6XPHxvTFnOS_Hd4q9taPkKHinmf6PCozeJEmzqNI: 'recommendation',
     'NNe0xkjqasLN3Q0ASuv3ZB4zSQW-iVN4TBoHOkQBEOA': 'commitment',
     zX46r0tn5frbNvEMCdBg5WhZnq2hfl0qamka1iZGKTY: 'commitment',
+    '6hVc9P54QOeatmbtX4XyQ5zW2TE_O4TAiDCjQXUqJWI': 'recommendation',
+    TqjFogVsgvoHMvBD2LQgOXuNnrfsLmy0M9WK33I_A3k: 'recommendation',
+    V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0: 'recommendation',
+    x0LkInr7lGkqK8dcTFS_Pc6oHauo_g7N_4yWT_gLn20: 'recommendation',
+    SfkorgyrBAsqBVpyKddQQEn6jR0ItBohpXc74sZcKHg: 'recommendation',
+    'PVhDPYXq4fsy15OdlEE-XyIlvcxaPMxGs73pw39Cx-s': 'recommendation',
   };
   return osiToStepMap[wcsOsi];
 }
@@ -1242,13 +1294,12 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
-  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const displayPlanType = params.get('planType');
-  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
+  const displayAnnual = isAnnualPriceEnabled(params);
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   const quantity = params.get('quantity');
