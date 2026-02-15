@@ -2136,6 +2136,9 @@ async function decorateLanguageBanner() {
   const geoIp = geoIpCode.toLowerCase();
   marketsConfig.data.forEach((market) => {
     market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
+    if (market.languageName && !market.text.includes(market.languageName)) {
+      market.text = `${market.text || ''} ${market.languageName}.`.trim();
+    }
   });
   const pagePrefix = locale.prefix?.replace('/', '') || '';
   const pageMarket = marketsConfig.data.find((m) => m.prefix === pagePrefix)

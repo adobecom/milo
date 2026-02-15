@@ -77,4 +77,9 @@
     flex-direction: column;
     width: auto;
   }
+
+  [dir="rtl"] .language-banner-close {
+    right: auto;
+    left: 24px;
+  }
 }

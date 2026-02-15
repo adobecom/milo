@@ -5,7 +5,7 @@ function buildBanner(market, translatedUrl) {
   const banner = document.body.querySelector('.language-banner');
   if (!banner) return banner;
   const messageContainer = createTag('div', { class: 'language-banner-content' });
-  const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} ${market.languageName}.`);
+  const messageText = createTag('span', { class: 'language-banner-text' }, market.text);
   const link = createTag('a', { class: 'language-banner-link', href: translatedUrl, 'daa-ll': `${market.prefix || 'us'}|Continue` }, market.continueText || 'Continue');
   const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close', 'daa-ll': 'Close' });
   closeButton.innerHTML = `
@@ -16,7 +16,11 @@ function buildBanner(market, translatedUrl) {
     </svg>
   `;
 
-  messageContainer.append(messageText, link);
+  if (document.dir === 'rtl') {
+    messageContainer.append(link, messageText);
+  } else {
+    messageContainer.append(messageText, link);
+  }
   banner.append(messageContainer, closeButton);
   return banner;
 }

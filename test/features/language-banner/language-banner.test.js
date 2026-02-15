@@ -1,20 +1,20 @@
 /* eslint-disable no-underscore-dangle */
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, setTargetMarket } from '../../../libs/utils/utils.js';
+import { setConfig, updateConfig, setTargetMarket } from '../../../libs/utils/utils.js';
 
 const { default: init, sendAnalytics } = await import('../../../libs/features/language-banner/language-banner.js');
 
 const mockMarkets = {
-  de: { prefix: 'de', lang: 'de', languageName: 'Deutsch', text: 'Diese Seite ist auch auf', continueText: 'Weiter' },
-  fr: { prefix: 'fr', lang: 'fr', languageName: 'Français', text: 'Cette page est également disponible en', continueText: 'Continuer' },
-  it: { prefix: 'it', lang: 'it', languageName: 'Italiano', text: 'Visualizza questa pagina in', continueText: 'Continuare' },
+  de: { prefix: 'de', lang: 'de', text: 'Diese Seite ist auch auf Deutsch.', continueText: 'Weiter' },
+  fr: { prefix: 'fr', lang: 'fr', text: 'Cette page est également disponible en Français.', continueText: 'Continuer' },
+  it: { prefix: 'it', lang: 'it', text: 'Visualizza questa pagina in Italiano.', continueText: 'Continuare' },
 };
 
 describe('Language Banner', () => {
   const sandbox = sinon.createSandbox();
 
-  const setConfigForTest = (pathname = '/') => {
+  const setConfigForTest = (pathname = '/', locale) => {
     const config = {
       imsClientId: 'milo',
       codeRoot: '/libs',
@@ -28,6 +28,7 @@ describe('Language Banner', () => {
       },
       pathname,
     };
+    if (locale) config.locale = locale;
     setConfig(config);
   };
 
@@ -44,6 +45,8 @@ describe('Language Banner', () => {
     sessionStorage.clear();
     delete window._satellite;
     setTargetMarket(null);
+    document.dir = 'ltr';
+    document.documentElement.removeAttribute('dir');
   });
 
   it('does not show banner if no target markets are provided', async () => {
@@ -82,8 +85,35 @@ describe('Language Banner', () => {
 
     const banner = document.querySelector('.language-banner');
     expect(banner.childElementCount).to.be.greaterThan(0);
-    expect(banner.querySelector('.language-banner-text').textContent).to.contain('Deutsch');
+    expect(banner.querySelector('.language-banner-text').textContent).to.equal('Diese Seite ist auch auf Deutsch.');
     expect(banner.querySelector('.language-banner-link').href).to.include('/de/');
+  });
+
+  it('shows banner with custom sentence if provided', async () => {
+    setConfigForTest('/');
+    const customMarket = {
+      prefix: 'jp',
+      lang: 'ja',
+      text: 'このページを日本語で表示する',
+      continueText: '続く',
+    };
+    setTargetMarket(customMarket);
+
+    await init();
+
+    const banner = document.querySelector('.language-banner');
+    expect(banner.querySelector('.language-banner-text').textContent).to.equal('このページを日本語で表示する');
+    expect(banner.querySelector('.language-banner-link').textContent).to.equal('続く');
+  });
+
+  it('handles RTL correctly', async () => {
+    document.dir = 'rtl';
+    setTargetMarket(mockMarkets.de);
+
+    await init();
+
+    const content = document.querySelector('.language-banner-content');
+    expect(content.firstElementChild.classList.contains('language-banner-link')).to.be.true;
   });
 
   it('shows banner for French market', async () => {
