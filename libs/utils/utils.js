@@ -2103,14 +2103,14 @@ const getCookie = (name) => document.cookie
   ?.split('=')[1];
 
 function getMarketsUrl() {
-  const { env, marketsSource } = getConfig();
+  const { env, marketsSource, contentRoot } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
   const allowedMarkets = ['bacom'];
   const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
       || getMetadata('marketssource')
       || marketsSource;
-
-  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSourceKey ? `-${marketsSourceKey}` : ''}.json`;
+  if (marketsSourceKey) return `${contentRoot ?? ''}/supported-markets/supported-markets-${marketsSourceKey}.json`;
+  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets.json`;
 }
 
 async function decorateLanguageBanner() {
