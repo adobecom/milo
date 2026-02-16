@@ -304,6 +304,7 @@ const getBulkPublishLangAttr = async (options) => {
     const { country, lang } = await getLanguageFirstCountryAndLang(
       options.prodUrl,
       options.repo,
+      options.host,
     );
     return `${lang}-${country}`;
   }
@@ -323,6 +324,7 @@ const getCountryAndLang = async (options, origin) => {
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
       origin,
+      window.location.hostname,
     );
   }
   /* c8 ignore next */
