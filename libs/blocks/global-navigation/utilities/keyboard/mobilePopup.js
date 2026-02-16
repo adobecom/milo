@@ -304,7 +304,8 @@ class Popup {
           const current = e.target.closest(selectors.headline);
           const idx = allHeadlines.indexOf(current);
           if (idx > 0) {
-            allHeadlines[idx - 1].focus();
+            const previousHeadline = allHeadlines[idx - 1];
+            openHeadline({ headline: previousHeadline, focus: 'last' });
             break;
           }
           break;
