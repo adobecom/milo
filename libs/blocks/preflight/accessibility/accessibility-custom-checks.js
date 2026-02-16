@@ -21,7 +21,7 @@ const checkFunctions = [
 async function customAccessibilityChecks(config = {}) {
   try {
     // Filter DOM elements based on include/exclude
-    const elements = getFilteredElements(config.include, config.exclude, config.root || document);
+    const elements = getFilteredElements(config.include, config.exclude);
     if (!elements.length) return [];
     const results = await Promise.all(
       checkFunctions.map((checkFn) => Promise.resolve(checkFn(elements, config))),

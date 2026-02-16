@@ -19,15 +19,14 @@ export function getUniqueSelector(el) {
  * Returns elements included by selectors, excluding specified selectors.
  * @param {string[]} includeSelectors - css selectors to include.
  * @param {string[]} excludeSelectors - css selectors to exclude.
- * @param {Document|Element} root - Root element to query within.
  * @returns {HTMLElement[]} - Filtered DOM elements.
  */
-export function getFilteredElements(includeSelectors = ['body'], excludeSelectors = [], root = document) {
-  const includedElements = includeSelectors.flatMap((selector) => Array.from(root.querySelectorAll(`${selector},  ${selector} *`)));
+export function getFilteredElements(includeSelectors = ['body'], excludeSelectors = []) {
+  const includedElements = includeSelectors.flatMap((selector) => Array.from(document.querySelectorAll(`${selector},  ${selector} *`)));
 
   if (excludeSelectors.length === 0) return includedElements;
 
-  const excludedElements = excludeSelectors.flatMap((selector) => Array.from(root.querySelectorAll(`${selector}, ${selector} *`)));
+  const excludedElements = excludeSelectors.flatMap((selector) => Array.from(document.querySelectorAll(`${selector}, ${selector} *`)));
 
   return includedElements.filter((el) => !excludedElements.some((ex) => el.isSameNode(ex)));
 }
