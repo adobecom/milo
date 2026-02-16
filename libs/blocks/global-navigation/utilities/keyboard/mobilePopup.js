@@ -308,7 +308,6 @@ class Popup {
             openHeadline({ headline: previousHeadline, focus: 'last' });
             break;
           }
-          break;
         }
         this.mobileArrowUp({ prev, curr, element, isFooter });
         break;
