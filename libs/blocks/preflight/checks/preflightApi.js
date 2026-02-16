@@ -174,7 +174,7 @@ export async function getPreflightResults(options = {}) {
   const metricsDedupeKey = getMetricsDedupeKey(isASO);
   if (!metricsSentCache.has(metricsDedupeKey)) {
     metricsSentCache.add(metricsDedupeKey);
-    await captureMetrics(res);
+    captureMetrics(res).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
   }
 
   if (useCache) globalPreflightCache.set(cacheKey, result);
