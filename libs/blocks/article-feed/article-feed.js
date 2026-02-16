@@ -406,7 +406,6 @@ async function buildFilter(type, tax, block, config) {
   button.classList.add('filter-button');
   button.id = `${type}-filter-button`;
   button.setAttribute('tabindex', '0');
-  button.setAttribute('role', 'button');
   button.setAttribute('aria-haspopup', 'true');
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-controls', `${type}-filter-panel`);
