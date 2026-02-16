@@ -1,7 +1,5 @@
 import { getConfig } from '../../../utils/utils.js';
 
-const OBSERVER_TIMEOUT_MS = 5000;
-
 const getLogsEndpoint = () => {
   const currentUrl = window.location.href.toLowerCase();
   if (currentUrl.includes('preflightlogs=local')) return 'http://localhost:8080/preflight-logs';
@@ -45,44 +43,6 @@ const mapChecksWithColumn = (checks) => checks?.map((check) => ({
   key: ID_TO_COLUMN[check.checkId || check.id],
 }));
 
-function observeWithTimeout(type, handler) {
-  return Promise.race([
-    new Promise((resolve) => {
-      new PerformanceObserver((list) => {
-        resolve(handler(list.getEntries()));
-      }).observe({ type, buffered: true });
-    }),
-    new Promise((resolve) => { setTimeout(resolve, OBSERVER_TIMEOUT_MS); }),
-  ]);
-}
-
-async function collectWebVitals() {
-  const vitals = {
-    performance_lcp: 0,
-    performance_fcp: 0,
-    performance_ttfb: 0,
-    performance_cls: 0,
-  };
-
-  vitals.performance_fcp = window.performance
-    .getEntriesByType('paint')
-    .find((e) => e.name === 'first-contentful-paint')?.startTime ?? 0;
-
-  vitals.performance_ttfb = window.performance
-    .getEntriesByType('navigation')[0]?.responseStart ?? 0;
-
-  await observeWithTimeout('layout-shift', (entries) => {
-    vitals.performance_cls = entries.reduce((sum, e) => sum + e.value, 0);
-  });
-
-  await observeWithTimeout('largest-contentful-paint', (entries) => {
-    const last = entries[entries.length - 1];
-    if (last) vitals.performance_lcp = last.startTime;
-  });
-
-  return vitals;
-}
-
 async function capture(results) {
   const token = window.adobeIMS?.getAccessToken()?.token;
   const { imsClientId } = getConfig();
@@ -119,15 +79,12 @@ async function capture(results) {
     structure: mapChecksWithColumn(resolvedStructure),
   };
 
-  const vitals = await collectWebVitals();
-
   const contextData = {
     email: profile?.email || '',
     url: window.location.href,
     project_key: window.location.hostname.split('--')[1] || imsClientId,
     window_width: window.innerWidth,
     window_height: window.innerHeight,
-    ...vitals,
     accessibility_issues_count: accessibilitySummary?.details?.issuesCount ?? null,
     accessibility_metrics: accessibilitySummary?.details?.violations ?? null,
   };
