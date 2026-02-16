@@ -333,10 +333,11 @@ class Popup {
         if (isFooter && e.target.closest(selectors.headline)) {
           const headline = e.target.closest(selectors.headline);
           const expanded = headline.getAttribute('aria-expanded') === 'true';
-          
+
           // Case 1: If headline is expanded, focus the first link
           if (expanded) {
-            const section = headline.closest(selectors.section) || headline.closest(selectors.column);
+            const section = headline.closest(selectors.section)
+              || headline.closest(selectors.column);
             // Default popupItems selector might not work here as it's scoped to class methods
             // We use the same selectors found in utils or assume standard link classes
             const firstLink = section?.querySelector(
