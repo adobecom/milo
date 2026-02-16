@@ -197,7 +197,7 @@ const handleSignIn = async () => {
   sentry.authParams = {
     client_id: imsClientId || SIGNIN_CONTEXT.client_id,
     scope: imsScope || SIGNIN_CONTEXT.scope || 'AdobeID,openid,gnav',
-    response_type: 'code',
+    response_type: 'token',
     redirect_uri: redirectUri,
     locale: locale?.ietf || 'en-US',
   };
@@ -206,17 +206,10 @@ const handleSignIn = async () => {
   if (dctxId) sentry.authParams.dctx_id = dctxId;
 
   sentry.config = { consentProfile: 'free' };
+  sentry.popup = true;
 
-  sentry.addEventListener('redirect', (e) => {
-    if (e.preventDefault) e.preventDefault();
-    // Open in new window popup
-    const width = 600;
-    const height = 700;
-    const top = Math.max(0, (window.screen.height - height) / 2);
-    const left = Math.max(0, (window.screen.width - width) / 2);
-    // Explicitly define all features to force a popup window
-    const features = `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,resizable=yes,toolbar=no,menubar=no,location=no,directories=no`;
-    window.open(e.detail, 'AdobeID', features);
+  sentry.addEventListener('on-token', () => {
+    window.location.reload();
   });
 
   sentry.addEventListener('on-error', (e) => {
@@ -1761,13 +1754,6 @@ class Gnav {
 }
 
 export default async function init(block) {
-  // Check for IMS Popup flow return
-  if (window.opener && (window.location.hash.includes('from_ims=true') || window.location.search.includes('from_ims=true'))) {
-    window.opener.location.reload();
-    window.close();
-    return null; // Stop execution to prevent flashing content
-  }
-
   const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
