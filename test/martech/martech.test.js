@@ -104,22 +104,18 @@ describe('martech', () => {
       const propositions = [{ id: 'prop1' }];
       const result = { propositions, decisions: [] };
 
-      const promise = getTargetAjoPersonalization({
-        handleAlloyResponse,
-        config,
-        sendTargetResponseAnalytics,
-      });
+      const opts = { handleAlloyResponse, config, sendTargetResponseAnalytics };
+      const promise = getTargetAjoPersonalization(opts);
 
-      window.dispatchEvent(new CustomEvent('alloy_propositionFetch', {
-        detail: { result },
-      }));
+      window.dispatchEvent(new CustomEvent('alloy_propositionFetch', { detail: { result } }));
 
       const output = await promise;
 
       expect(output.targetAjoManifests).to.deep.equal([{ manifestPath: '/test.json' }]);
       expect(output.targetAjoPropositions).to.deep.equal(propositions);
       expect(handleAlloyResponse.calledWith(result)).to.be.true;
-      expect(sendTargetResponseAnalytics.calledWith(false, sinon.match.number, sinon.match.number)).to.be.true;
+      expect(sendTargetResponseAnalytics.calledWith(false, sinon.match.number, sinon.match.number))
+        .to.be.true;
     });
 
     it('returns manifests and propositions on Target (no AJO) success', async () => {
@@ -129,21 +125,17 @@ describe('martech', () => {
       const propositions = [{ id: 'prop2' }];
       const result = { propositions };
 
-      const promise = getTargetAjoPersonalization({
-        handleAlloyResponse,
-        config,
-        sendTargetResponseAnalytics,
-      });
+      const opts = { handleAlloyResponse, config, sendTargetResponseAnalytics };
+      const promise = getTargetAjoPersonalization(opts);
 
-      window.dispatchEvent(new CustomEvent('alloy_sendEvent', {
-        detail: { result },
-      }));
+      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result } }));
 
       const output = await promise;
 
       expect(output.targetAjoManifests).to.deep.equal([{ manifestPath: '/target.json' }]);
       expect(output.targetAjoPropositions).to.deep.equal(propositions);
-      expect(sendTargetResponseAnalytics.calledWith(false, sinon.match.number, sinon.match.number)).to.be.true;
+      expect(sendTargetResponseAnalytics.calledWith(false, sinon.match.number, sinon.match.number))
+        .to.be.true;
     });
 
     it('returns empty arrays on error (ad blocker)', async () => {
@@ -151,11 +143,8 @@ describe('martech', () => {
       const sendTargetResponseAnalytics = sinon.stub();
       const config = { mep: { ajoEnabled: false } };
 
-      const promise = getTargetAjoPersonalization({
-        handleAlloyResponse,
-        config,
-        sendTargetResponseAnalytics,
-      });
+      const opts = { handleAlloyResponse, config, sendTargetResponseAnalytics };
+      const promise = getTargetAjoPersonalization(opts);
 
       window.dispatchEvent(new CustomEvent('alloy_sendEvent_error'));
 
@@ -172,15 +161,10 @@ describe('martech', () => {
       const sendTargetResponseAnalytics = sinon.stub();
       const config = { mep: { ajoEnabled: true } };
 
-      const promise = getTargetAjoPersonalization({
-        handleAlloyResponse,
-        config,
-        sendTargetResponseAnalytics,
-      });
+      const opts = { handleAlloyResponse, config, sendTargetResponseAnalytics };
+      const promise = getTargetAjoPersonalization(opts);
 
-      window.dispatchEvent(new CustomEvent('alloy_propositionFetch', {
-        detail: { error: true },
-      }));
+      window.dispatchEvent(new CustomEvent('alloy_propositionFetch', { detail: { error: true } }));
 
       const output = await promise;
 
@@ -195,11 +179,8 @@ describe('martech', () => {
       const sendTargetResponseAnalytics = sinon.stub();
       const config = { mep: { ajoEnabled: false } };
 
-      const promise = getTargetAjoPersonalization({
-        handleAlloyResponse,
-        config,
-        sendTargetResponseAnalytics,
-      });
+      const opts = { handleAlloyResponse, config, sendTargetResponseAnalytics };
+      const promise = getTargetAjoPersonalization(opts);
 
       await clock.tickAsync(4500);
 
@@ -210,7 +191,8 @@ describe('martech', () => {
 
       await clock.tickAsync(1500);
 
-      expect(sendTargetResponseAnalytics.calledWith(true, sinon.match.number, sinon.match.number)).to.be.true;
+      expect(sendTargetResponseAnalytics.calledWith(true, sinon.match.number, sinon.match.number))
+        .to.be.true;
 
       clock.restore();
     });
@@ -220,15 +202,10 @@ describe('martech', () => {
       const sendTargetResponseAnalytics = sinon.stub();
       const config = { mep: { ajoEnabled: false } };
 
-      const promise = getTargetAjoPersonalization({
-        handleAlloyResponse,
-        config,
-        sendTargetResponseAnalytics,
-      });
+      const opts = { handleAlloyResponse, config, sendTargetResponseAnalytics };
+      const promise = getTargetAjoPersonalization(opts);
 
-      window.dispatchEvent(new CustomEvent('alloy_sendEvent', {
-        detail: { result: { propositions: [] } },
-      }));
+      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: { propositions: [] } } }));
 
       await promise;
 
@@ -241,15 +218,10 @@ describe('martech', () => {
       const sendTargetResponseAnalytics = sinon.stub();
       const config = { mep: { ajoEnabled: false } };
 
-      const promise = getTargetAjoPersonalization({
-        handleAlloyResponse,
-        config,
-        sendTargetResponseAnalytics,
-      });
+      const opts = { handleAlloyResponse, config, sendTargetResponseAnalytics };
+      const promise = getTargetAjoPersonalization(opts);
 
-      window.dispatchEvent(new CustomEvent('alloy_sendEvent', {
-        detail: { result: { propositions: [] } },
-      }));
+      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: { propositions: [] } } }));
 
       await promise;
 
@@ -261,15 +233,10 @@ describe('martech', () => {
       const sendTargetResponseAnalytics = sinon.stub();
       const config = { mep: { ajoEnabled: false } };
 
-      const promise = getTargetAjoPersonalization({
-        handleAlloyResponse,
-        config,
-        sendTargetResponseAnalytics,
-      });
+      const opts = { handleAlloyResponse, config, sendTargetResponseAnalytics };
+      const promise = getTargetAjoPersonalization(opts);
 
-      window.dispatchEvent(new CustomEvent('alloy_sendEvent', {
-        detail: { result: {} },
-      }));
+      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: {} } }));
 
       const output = await promise;
 
