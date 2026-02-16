@@ -12,7 +12,6 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
-  getCountry,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
