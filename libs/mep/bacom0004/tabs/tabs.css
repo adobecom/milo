@@ -166,6 +166,10 @@
   border-bottom: 1px solid var(--tabs-border-color);
 }
 
+.tabs.mobile-accordion .tab-content {
+  border-bottom: 0;
+}
+
 /* mweb design */
 .tabs.no-border-bottom .tab-content {
   border-bottom: none;
@@ -652,7 +656,7 @@
   .tabs.mobile-accordion .tab-content {
     border: 0;
   }
-  .tabs.mobile-accordion .tab-content-container .tabpanel:not([hidden]):not(:first-child) .section {
+  .tabs.mobile-accordion .tab-content-container .tabpanel.mobile-show:not(:first-child) .section {
     margin-top: .5rem;
   }
   .tabs.mobile-accordion .tab-content-container .tabpanel .section div:nth-child(2) {
@@ -672,7 +676,7 @@
     border-bottom-left-radius: .5rem;
     border-bottom-right-radius: .5rem;
   }
-  .tabs.mobile-accordion .tab-content-container .tabpanel[hidden] .section {
+  .tabs.mobile-accordion .tab-content-container .tabpanel:not(.mobile-show) .section {
     padding-bottom: 0;
   }
   .tabs.mobile-accordion .tab-content-container .tabpanel .tab-mobile-accordion {
@@ -685,11 +689,11 @@
   .tabs.mobile-accordion .tab-content-container .tabpanel .tab-mobile-accordion .icon {
     display: none;
   }
-  .tabs.mobile-accordion .tab-content-container .tabpanel:not([hidden]) .tab-mobile-accordion .icon-minus,
-  .tabs.mobile-accordion .tab-content-container .tabpanel[hidden] .tab-mobile-accordion .icon-plus {
+  .tabs.mobile-accordion .tab-content-container .tabpanel.mobile-show .tab-mobile-accordion .icon-minus,
+  .tabs.mobile-accordion .tab-content-container .tabpanel:not(.mobile-show) .tab-mobile-accordion .icon-plus {
     display: block;
   }
-  .tabs.mobile-accordion .tab-content-container .tabpanel:not([hidden]) .tab-mobile-accordion {
+  .tabs.mobile-accordion .tab-content-container .tabpanel.mobile-show .tab-mobile-accordion {
     background-color: #292929;
     color: white;
     border-radius: .5rem;
@@ -699,11 +703,11 @@
     scroll-margin-top: 70px;
   }
 
-  .tabs.mobile-accordion .tab-content-container .tabpanel[hidden] div:not(:has(.tab-mobile-accordion)){
+  .tabs.mobile-accordion .tab-content-container .tabpanel:not(.mobile-show) div:not(:has(.tab-mobile-accordion)){
     display: none;
   }
 
-  .tabs.mobile-accordion .tab-content-container .tabpanel[hidden] .section:nth-child(1){
+  .tabs.mobile-accordion .tab-content-container .tabpanel:not(.mobile-show) .section:nth-child(1){
     display: block;
   }
   .tabs.mobile-accordion .tab-mobile-accordion{
