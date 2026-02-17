@@ -1,6 +1,11 @@
-import { getModal } from '../modal/modal.js';
-import { createTag, getConfig, loadScript } from '../../utils/utils.js';
+/* eslint-disable no-underscore-dangle, no-unused-vars */
+import { getModal, closeModal } from '../modal/modal.js';
+import { createTag, getConfig, loadScript, getMetadata } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
+
+/* SUSI Light modal: DCTX IDs from libs/mep/emea1435/susi-light/susi-light.js */
+const DCTX_ID_STAGE = 'v:2,s,dcp-r,bg:express2024,bf31d610-dd5f-11ee-abfd-ebac9468bc58';
+const DCTX_ID_PROD = 'v:2,s,dcp-r,bg:express2024,45faecb0-e687-11ee-a865-f545a8ca5d2c';
 
 const cardIcon = '<svg class="card-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M7.93446 10.5992C7.75946 10.5992 7.58289 10.5539 7.42352 10.4617C7.03836 10.239 6.84383 9.79763 6.93836 9.36325L7.52039 6.66404L5.6657 4.61794C5.36726 4.28825 5.3157 3.80856 5.53836 3.42341C5.76101 3.03748 6.20633 2.84294 6.6368 2.93825L9.33601 3.52028L11.3821 1.6656C11.7126 1.3656 12.1923 1.31638 12.5766 1.53825C12.9618 1.76091 13.1563 2.20232 13.0618 2.63669L12.4798 5.33591L14.3345 7.382C14.6329 7.71091 14.6837 8.1906 14.4618 8.57576C14.2391 8.96013 13.7993 9.15623 13.3641 9.06248L10.6649 8.47889L8.61806 10.3344C8.42509 10.5094 8.18054 10.5992 7.93446 10.5992ZM8.71336 6.82654L8.22977 9.06638L9.92742 7.52732C10.1696 7.30779 10.504 7.21716 10.8251 7.28591L13.0665 7.77028L11.5274 6.07263C11.3071 5.82888 11.2173 5.49216 11.2876 5.17184L11.7704 2.93356L10.0727 4.47263C9.82899 4.69294 9.49306 4.782 9.17196 4.71247L6.93368 4.22965L8.47274 5.92731C8.69305 6.17028 8.7829 6.50623 8.71336 6.82654Z" fill="currentColor"/><path d="M2.67645 14.6017C2.57333 14.6017 2.47021 14.5751 2.37645 14.5212C2.15067 14.3907 2.03505 14.1298 2.08973 13.8751L2.33505 12.7407L1.55536 11.8813C1.38036 11.6884 1.34989 11.404 1.48036 11.1782C1.61083 10.9524 1.87333 10.8399 2.12645 10.8915L3.26083 11.1368L4.12021 10.3571C4.31396 10.1813 4.59677 10.1516 4.82333 10.2821C5.04912 10.4126 5.16474 10.6735 5.11005 10.9282L4.86474 12.0626L5.64443 12.922C5.81943 13.1149 5.8499 13.3993 5.71943 13.6251C5.58896 13.8509 5.32568 13.9618 5.07333 13.9118L3.93896 13.6665L3.07958 14.4462C2.9663 14.5485 2.82177 14.6017 2.67645 14.6017Z" fill="currentColor"/></svg>';
 const submitIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="send-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M18.6485 9.9735C18.6482 9.67899 18.4769 9.41106 18.2059 9.29056L4.05752 2.93282C3.80133 2.8175 3.50129 2.85583 3.28171 3.03122C3.06178 3.20765 2.95889 3.49146 3.01516 3.76733L4.28678 10.008L3.06488 16.2384C3.0162 16.4852 3.09492 16.738 3.27031 16.9134C3.29068 16.9337 3.31278 16.9531 3.33522 16.9714C3.55619 17.1454 3.85519 17.182 4.11069 17.066L18.2086 10.6578C18.4773 10.5356 18.6489 10.268 18.6485 9.9735ZM14.406 9.22716L5.66439 9.25379L4.77705 4.90084L14.406 9.22716ZM4.81711 15.0973L5.6694 10.7529L14.4323 10.7264L4.81711 15.0973Z"></path></svg>';
@@ -10,6 +15,20 @@ const chatLabelText = 'Ask';
 const floatingButtonText = 'Ask a question';
 const mountId = 'brand-concierge-mount';
 const animationMs = 500;
+
+/** Port for local brand-concierge-web-agent Vite dev server (vite.config server.port). */
+const LOCAL_WEB_AGENT_PORT = 8081;
+
+/** Token receiver registered by the script via bridge.setTokenReceiver();
+ * called from onSuccessfulToken. */
+let brandConciergeTokenReceiver = null;
+
+/** Event name: host signals that the bridge is ready. See README for script contract. */
+const BRAND_CONCIERGE_HOST_READY = 'brandConcierge:hostReady';
+
+/** Window property name for the host bridge;
+ * passed to bootstrap so the script can look up the bridge. */
+const BRAND_CONCIERGE_BRIDGE_NAME = '__brandConciergeBridge';
 
 const authoredContent = {};
 const variants = {};
@@ -45,6 +64,19 @@ export function getUpdatedChatUIConfig() {
   return chatUIConfig;
 }
 
+/**
+ * True when the Brand Concierge web-agent script should be loaded from the local
+ * brand-concierge-web-agent Vite dev server (for local dev with hot reload).
+ * Trigger via URL param:
+ * ?bc-local=1 or ?brand-concierge-local=1, or metadata "brand-concierge-local".
+ */
+function shouldUseLocalBrandConciergeWebAgent() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('bc-local') === '1' || params.get('brand-concierge-local') === '1') return true;
+  const meta = getMetadata('brand-concierge-local')?.toLowerCase();
+  return meta === 'true' || meta === '1' || meta === 'yes';
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
@@ -74,11 +106,33 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  // eslint-disable-next-line no-underscore-dangle
   const alloyVersion = window.alloy_all?.data?._adobe_corpnew?.digitalData?.page?.libraryVersions;
   const useNewBootstrapAPI = alloyVersion === '2.31.0';
 
-  if (useNewBootstrapAPI) {
+  if (shouldUseLocalBrandConciergeWebAgent()) {
+    const bootstrapConfig = {
+      instanceName: 'alloy',
+      bridgeName: BRAND_CONCIERGE_BRIDGE_NAME,
+      stylingConfigurations: getUpdatedChatUIConfig(),
+      selector: `#${mountId}`,
+    };
+    const bootstrapPromise = new Promise((resolve, reject) => {
+      const onReady = async () => {
+        window.removeEventListener('adobe-brand-concierge-prompt-loaded', onReady);
+        try {
+          if (window.adobe?.concierge?.bootstrap) {
+            await window.adobe.concierge.bootstrap(bootstrapConfig);
+          }
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      };
+      window.addEventListener('adobe-brand-concierge-prompt-loaded', onReady, { once: true });
+    });
+    await loadScript(`http://localhost:${LOCAL_WEB_AGENT_PORT}/@src/index.ts`, 'module');
+    await bootstrapPromise;
+  } else if (useNewBootstrapAPI) {
     // New method: Load script and use bootstrap API
     const { env } = getConfig();
     const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
@@ -86,12 +140,12 @@ async function openChatModal(initialMessage, el) {
     await loadScript(src);
     window.adobe.concierge.bootstrap({
       instanceName: 'alloy',
+      bridgeName: BRAND_CONCIERGE_BRIDGE_NAME,
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
     });
   } else {
     // Legacy method: Use _satellite.track
-    // eslint-disable-next-line no-underscore-dangle
     window._satellite?.track('bootstrapConversationalExperience', {
       selector: `#${mountId}`,
       src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
@@ -258,6 +312,146 @@ function decorateInput(el, input) {
   });
 }
 
+function getSusiDestURL(url) {
+  try {
+    const dest = new URL(url || window.location.href);
+    const config = getConfig();
+    if (config?.env?.name !== 'prod' && ['new.express.adobe.com', 'express.adobe.com'].includes(dest.hostname)) {
+      dest.hostname = 'stage.projectx.corp.adobe.com';
+    }
+    return dest.toString();
+  } catch (err) {
+    window.lana?.log(`invalid redirect uri for susi-light: ${url}`);
+    return new URL('https://new.express.adobe.com').toString();
+  }
+}
+
+/**
+ * Creates the SUSI Light component for the sign-in modal.
+ * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
+ * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
+ */
+function createSusiComponentForModal({
+  authParams, config, variant, destURL, isStage, popup, onCloseRedirect, onSuccessfulToken,
+}) {
+  const susi = createTag('susi-sentry-light');
+  susi.authParams = {
+    ...authParams,
+    redirect_uri: destURL,
+    dctx_id: isStage ? DCTX_ID_STAGE : DCTX_ID_PROD,
+  };
+  susi.config = config;
+  susi.variant = variant;
+  susi.popup = !!popup;
+  if (isStage) susi.stage = 'true';
+
+  const onRedirect = (e) => {
+    if (popup && typeof onCloseRedirect === 'function') {
+      onCloseRedirect();
+    } else if (!popup) {
+      window.location.assign(e.detail);
+    }
+  };
+  const onError = (e) => { window.lana?.log('SUSI Light error:', e); };
+  const onAnalytics = (e) => { /* TODO: send analytics from e.detail (type, event, client_id) */ };
+  const onAuthFailed = (e) => { /* TODO: handle auth failed (e.detail) */ };
+
+  susi.addEventListener('redirect', onRedirect);
+  susi.addEventListener('on-error', onError);
+  susi.addEventListener('on-analytics', onAnalytics);
+  if (onSuccessfulToken) {
+    susi.addEventListener('on-token', onSuccessfulToken);
+  }
+  susi.addEventListener('on-auth-failed', onAuthFailed);
+  return susi;
+}
+
+async function openSusiLightModal() {
+  const config = getConfig();
+  const { env, locale, imsClientId } = config || {};
+  const isStage = env?.name !== 'prod';
+  const redirectUrl = getMetadata('susi-light-url')?.trim() || window.location.href;
+  const destURL = getSusiDestURL(redirectUrl);
+  const clientId = imsClientId || 'AdobeExpressWeb';
+  const localeIetf = (locale?.ietf || 'en-US').toLowerCase();
+
+  const CDN_URL = `https://auth-light.identity${isStage ? '-stage' : ''}.adobe.com/sentry/wrapper.js`;
+  await loadScript(CDN_URL);
+
+  /* Popup mode (Nest/Express): auth runs in a separate window;
+   * modal closes on redirect or on-token */
+  const usePopup = true;
+  const SUSI_MODAL_ID = 'bc-susi-modal';
+  const closeSusiModal = () => {
+    const modal = document.getElementById(SUSI_MODAL_ID);
+    if (modal) closeModal(modal);
+  };
+  const authParams = {
+    dt: false,
+    locale: localeIetf,
+    response_type: usePopup ? 'token' : 'code',
+    client_id: clientId,
+    scope: 'AdobeID,openid',
+  };
+  const susiConfig = { consentProfile: 'free', fullWidth: true };
+  const onSuccessfulToken = (e) => {
+    // eslint-disable-next-line no-console
+    console.log('SUSI Light: on-token (successful auth), token received', e?.detail);
+    closeSusiModal();
+    const payload = { token: e?.detail, detail: e?.detail };
+    if (typeof brandConciergeTokenReceiver === 'function') brandConciergeTokenReceiver(payload);
+  };
+  const susiEl = createSusiComponentForModal({
+    authParams,
+    config: susiConfig,
+    variant: 'standard',
+    destURL,
+    isStage,
+    popup: usePopup,
+    onCloseRedirect: closeSusiModal,
+    onSuccessfulToken,
+  });
+  const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
+  const fragment = new DocumentFragment();
+  fragment.append(title, wrapper);
+  await getModal(null, {
+    id: SUSI_MODAL_ID,
+    class: 'bc-susi-modal',
+    content: fragment,
+  });
+}
+
+/**
+ * Registers the host bridge and dispatches brandConcierge:hostReady so the script can
+ * call openSusiLight and setTokenReceiver. See README for the script contract.
+ */
+function registerBrandConciergeBridge() {
+  const bridge = {
+    openSusiLight: () => openSusiLightModal(),
+    setTokenReceiver: (callback) => {
+      brandConciergeTokenReceiver = typeof callback === 'function' ? callback : null;
+    },
+  };
+  window[BRAND_CONCIERGE_BRIDGE_NAME] = bridge;
+  window.dispatchEvent(new CustomEvent(BRAND_CONCIERGE_HOST_READY, { detail: { bridge } }));
+}
+
+function decorateSusiTrigger(el) {
+  el._openSusiLight = openSusiLightModal;
+
+  const section = createTag('section', { class: 'bc-susi-trigger-wrap' });
+  const button = createTag('button', {
+    type: 'button',
+    class: 'bc-susi-trigger no-track',
+    'aria-label': 'Sign in',
+    'daa-ll': getAnalyticsLabel('susi-trigger'),
+  }, 'Sign in');
+  button.addEventListener('click', () => el._openSusiLight());
+  section.append(button);
+  el.append(section);
+}
+
 function decorateLegal(el, legal) {
   const legalSection = createTag('section', { class: 'bc-legal' });
   const legalContent = createTag('p', {}, legal.querySelector('div').innerHTML);
@@ -359,6 +553,8 @@ export default async function init(el) {
       decorateCards(el, cards);
       decorateInput(el, input);
     }
+    decorateSusiTrigger(el);
+    registerBrandConciergeBridge();
     decorateLegal(el, legal);
   }
 

@@ -306,6 +306,70 @@
   pointer-events: none;
 }
 
+.bc-susi-trigger-wrap {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.bc-susi-trigger {
+  background: transparent;
+  border: 1px solid var(--bc-button-color);
+  border-radius: 8px;
+  color: var(--bc-button-color);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px 16px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.bc-susi-trigger:hover {
+  background: var(--bc-button-color);
+  color: #fff;
+}
+
+.bc-susi-trigger:focus-visible {
+  outline: 2px solid var(--bc-keyboard-focus-color);
+  outline-offset: 2px;
+}
+
+/* SUSI modal: vars mirrored from express/code/blocks/susi-light/susi-light.css */
+:root {
+  --susi-modal-width: 370px;
+  --susi-tabs-width: 400px;
+  --susi-min-height: 462px;
+  --susi-standard-padding: 24px;
+}
+
+/* SUSI modal: dialog dimensions mirrored from .dialog-modal:has(.susi-light) in express/code/blocks/susi-light/susi-light.css */
+.dialog-modal.bc-susi-modal {
+  width: var(--susi-modal-width);
+  min-height: var(--susi-min-height);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dialog-modal.bc-susi-modal .bc-susi-modal-title {
+  margin: 0;
+  padding: 20px var(--susi-standard-padding) 12px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  box-sizing: border-box;
+}
+
+.dialog-modal.bc-susi-modal .bc-susi-modal-content {
+  width: 100%;
+  padding: 0 var(--susi-standard-padding) var(--susi-standard-padding);
+  box-sizing: border-box;
+}
+
+/* Let SUSI component use full content width so social buttons and email form align */
+.dialog-modal.bc-susi-modal .bc-susi-modal-content susi-sentry-light {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .bc-legal {
   color: #4B4B4B;
   font-size: 11px;
