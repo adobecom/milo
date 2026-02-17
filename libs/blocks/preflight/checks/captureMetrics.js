@@ -116,10 +116,12 @@ async function sendMetrics(metricsData) {
 }
 
 export default async function captureMetrics(results) {
+  if (window.hasCapturedPreflightMetrics) return;
+  window.hasCapturedPreflightMetrics = true;
   try {
     const metrics = await capture(results);
-    return await sendMetrics(metrics);
+    await sendMetrics(metrics);
   } catch (error) {
-    return { success: false, error: error.message };
+    window.hasCapturedPreflightMetrics = false;
   }
 }

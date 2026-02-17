@@ -33,18 +33,6 @@ let checksSuite = null;
 
 const globalPreflightCache = new Map();
 
-function getGlobalMetricsSentCache() {
-  const cacheKey = '__miloPreflightMetricsSent';
-  if (!window[cacheKey]) {
-    window[cacheKey] = new Set();
-  }
-  return window[cacheKey];
-}
-
-function getMetricsDedupeKey(isASO) {
-  return `${window.location.origin}${window.location.pathname}_${isASO ? 'ASO' : 'OG'}`;
-}
-
 export default {
   accessibility: { runChecks: runChecksAccessibility },
   assets: {
@@ -170,12 +158,7 @@ export async function getPreflightResults(options = {}) {
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
 
-  const metricsSentCache = getGlobalMetricsSentCache();
-  const metricsDedupeKey = getMetricsDedupeKey(isASO);
-  if (!metricsSentCache.has(metricsDedupeKey)) {
-    metricsSentCache.add(metricsDedupeKey);
-    captureMetrics(res).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
-  }
+  captureMetrics(res).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
 
   if (useCache) globalPreflightCache.set(cacheKey, result);
 
