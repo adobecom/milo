@@ -3,7 +3,7 @@ const MILO_TEMPLATES = [
   '404',
   'featured-story',
 ];
-const MILO_BLOCKS = [
+const C1_BLOCKS = [
   'accordion',
   'action-item',
   'action-scroller',
@@ -104,6 +104,12 @@ const MILO_BLOCKS = [
   'susi-light-login',
   'reading-time',
 ];
+
+const C2_BLOCKS = [
+  'box',
+  'section-metadata',
+];
+
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
   { gist: 'gist.github.com' },
@@ -1062,7 +1068,8 @@ function getBlockData(block) {
     }
   }
 
-  if (miloLibs && MILO_BLOCKS.includes(name)) base = miloLibs;
+  if (miloLibs && C1_BLOCKS.includes(name)) base = miloLibs;
+  if (getMetadata('foundation') === 'c2' && C2_BLOCKS.includes(name)) base += '/c2';
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -1621,12 +1628,13 @@ async function decorateSection(section, idx) {
   const { doNotInline } = getConfig();
   const blockLinks = [...blocks].reduce((blkLinks, block) => {
     const blockName = block.classList[0];
+    const blocksList = getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS;
     links.filter((link) => block.contains(link))
       .forEach((link) => {
         if (link.classList.contains('fragment') && link.href.includes('#_replacecell')) {
           link.href = link.href.replace('#_replacecell', '');
         } else if (link.classList.contains('fragment')
-          && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
+          && blocksList.includes(blockName) // do not inline consumer blocks (for now)
           && !doNotInline.includes(blockName)
           && link.dataset.mepLingo !== 'true') {
           if (!link.href.includes('#_inline')) {
@@ -2332,6 +2340,16 @@ function loadLingoIndexes(area = document) {
   if (prefix) {
     loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
   }
+}
+
+export async function loadBaseStyles(libsPath) {
+  const pathsToLoad = [];
+  const stylesPrefix = getMetadata('foundation') === 'c2' ? '/c2' : '';
+  pathsToLoad.push(`${libsPath}${stylesPrefix}/styles/styles.css`);
+  const theme = getMetadata('theme');
+  if (theme) pathsToLoad.push(`${libsPath}/styles/themes/${theme}.css`);
+
+  await Promise.all(pathsToLoad.map((path) => loadStyle(path)));
 }
 
 export async function loadArea(area = document) {
