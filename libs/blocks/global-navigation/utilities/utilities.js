@@ -128,9 +128,26 @@ export const logErrorFor = async (fn, message, tags, errorType) => {
 
 export function addMepHighlightAndTargetId(el, source) {
   let { manifestId, targetManifestId } = source.dataset;
-  manifestId ??= source?.closest('[data-manifest-id]')?.dataset?.manifestId;
+  const manifestIdEl = source?.closest('[data-manifest-id]');
+  manifestId ??= manifestIdEl?.dataset?.manifestId;
   targetManifestId ??= source?.closest('[data-adobe-target-testid]')?.dataset?.adobeTargetTestid;
-  if (manifestId) el.dataset.manifestId = manifestId;
+  if (manifestId) {
+    el.dataset.manifestId = manifestId;
+    let path = source.dataset?.path
+      || el.dataset?.path
+      || source?.closest('[data-path]')?.dataset?.path
+      || manifestIdEl?.dataset?.path
+      || manifestIdEl?.querySelector('[data-path]')?.dataset?.path;
+    if (path) {
+      try {
+        path = new URL(path).pathname;
+      } catch {
+        // Already a path, keep as-is
+      }
+      el.dataset.path = path;
+    }
+    el.dataset.manifestDisplay = path ? `${manifestId}: ${path}` : `${manifestId}: html`;
+  }
   if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   return el;
 }
@@ -521,6 +538,7 @@ export async function fetchAndProcessPlainHtml({
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
+  if (mepFragment?.content) body.dataset.path = mepFragment.content;
   let commands = mepGnav?.commands || [];
 
   const gnavMepCommands = config?.mep?.commands?.filter(
@@ -537,7 +555,11 @@ export async function fetchAndProcessPlainHtml({
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map(async (link) => {
-      link.href = getFederatedUrl(await localizeLinkAsync(link.href));
+      link.href = await localizeLinkAsync(getFederatedUrl(link.href));
+      // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
+      if (link.dataset.manifestId) {
+        link.dataset.skipLoadArea = 'true';
+      }
       return loadInlineFrags(link);
     });
     await Promise.all(fragPromises);
@@ -953,6 +975,10 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 updatePopupPosition();
                 // Optional: Disconnect the observer if you no longer need to track it
                 observer.disconnect();
+              }
+              if (node.classList?.contains('language-banner')) {
+                // Update the popup position when the language banner is removed
+                updatePopupPosition();
               }
             });
           }

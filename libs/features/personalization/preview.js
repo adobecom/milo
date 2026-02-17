@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle, lingoActive } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
@@ -19,8 +19,9 @@ function updatePreviewButton(popup, pageId) {
 
   selectedInputs.forEach((selected) => {
     const isHidden = selected.closest('select')?.disabled;
+    const isMepLingoSelect = selected.closest('select')?.id?.startsWith('mepLingoRegionSelect');
 
-    if (!selected.value || isHidden) return;
+    if (!selected.value || isHidden || isMepLingoSelect) return;
 
     let { value } = selected;
 
@@ -54,6 +55,17 @@ function updatePreviewButton(popup, pageId) {
     simulateHref.searchParams.delete('mepHighlight');
   }
 
+  const mepFragmentsCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepFragmentsCheckbox${pageId}`,
+  );
+
+  document.body.dataset.mepFragments = mepFragmentsCheckbox.checked;
+  if (mepFragmentsCheckbox.checked) {
+    simulateHref.searchParams.set('mepFragments', true);
+  } else {
+    simulateHref.searchParams.delete('mepFragments');
+  }
+
   const mepPreviewButtonCheckbox = popup.querySelector(
     `input[type="checkbox"]#mepPreviewButtonCheckbox${pageId}`,
   );
@@ -61,6 +73,18 @@ function updatePreviewButton(popup, pageId) {
     simulateHref.searchParams.set('mepButton', 'off');
   } else {
     simulateHref.searchParams.delete('mepButton');
+  }
+
+  const mepLingoRegionSelect = popup.querySelector(
+    `select#mepLingoRegionSelect${pageId}`,
+  );
+  if (mepLingoRegionSelect) {
+    const selectedRegion = mepLingoRegionSelect.value;
+    if (selectedRegion) {
+      simulateHref.searchParams.set('akamaiLocale', selectedRegion);
+    } else {
+      simulateHref.searchParams.delete('akamaiLocale');
+    }
   }
 
   popup
@@ -117,6 +141,7 @@ export function parsePageAndUrl(config, windowLocation, prefix) {
 function parseMepConfig() {
   const config = getConfig();
   const { mep, locale } = config;
+  if (!mep || !locale) return null;
   const { experiments, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
@@ -149,8 +174,8 @@ function parseMepConfig() {
       target: getMetadata('target') || 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
       geo: prefix === US_GEO ? '' : prefix,
-      locale: locale.ietf,
-      region: locale.region,
+      locale: locale?.ietf,
+      region: locale?.region,
       highlight,
     },
     activities,
@@ -268,6 +293,7 @@ function getPillText(manifestCount) {
 let sevenDayPageData;
 async function mmmToggleManifests(event, popup, pageId) {
   const mepConfig = parseMepConfig();
+  if (!mepConfig) return;
   const mmmManifestsElement = document.querySelector('.mep-manifest-list.mmm-list');
 
   if (!sevenDayPageData) {
@@ -339,10 +365,21 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
   const { manifestList } = getManifestListDomAndParameter(mepConfig);
+
+  // Check URL parameters for highlight and fragments
+  const urlParams = new URLSearchParams(window.location.search);
+  const highlightParam = urlParams.get('mepHighlight');
+  const fragmentsParam = urlParams.get('mepFragments');
+
   let mepHighlightChecked = '';
-  if (page?.highlight) {
+  if (page?.highlight || highlightParam === 'true') {
     mepHighlightChecked = 'checked="checked"';
     document.body.dataset.mepHighlight = true;
+  }
+  let mepFragmentsChecked = '';
+  if (page?.fragments || fragmentsParam === 'true') {
+    mepFragmentsChecked = 'checked="checked"';
+    document.body.dataset.mepFragments = true;
   }
   const PREVIEW_BUTTON_ID = 'preview-button';
   const pageUrl = isMmm ? page.url : new URL(window.location.href).href;
@@ -407,6 +444,39 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
       </div>`
     : '';
+
+  const isLingoActive = lingoActive();
+  const regions = config?.locale?.regions || {};
+  const regionKeys = Object.keys(regions);
+  const showRegionDropdown = isLingoActive && regionKeys.length > 0;
+
+  let mepLingoSectionHTML = '';
+  if (isLingoActive) {
+    let regionDropdownHTML = '';
+    if (showRegionDropdown) {
+      const regionOptions = regionKeys.map((key) => {
+        const country = key.split('_')[0];
+        const currentAkamaiLocale = urlParams.get('akamaiLocale');
+        const selected = currentAkamaiLocale === country ? ' selected' : '';
+        return `<option value="${country}"${selected}>${key}</option>`;
+      }).join('');
+
+      regionDropdownHTML = `
+        <div class="mep-experience-dropdown">
+          <label for="mepLingoRegionSelect${pageId}">Spoof Region</label>
+          <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
+            <option value="">-- Select Region --</option>
+            ${regionOptions}
+          </select>
+        </div>`;
+    }
+
+    mepLingoSectionHTML = `
+      <div class="mep-section mep-lingo-section">
+        <h6 class="mep-manifest-page-info-title">MEP Lingo</h6>       ${regionDropdownHTML}
+      </div>`;
+  }
+
   mepOptions.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Options</h6>
     <div class="mep-manifest-variants">
@@ -414,6 +484,11 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <input type="checkbox" name="mepHighlight${pageId}"
         id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
         <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
+      </div>
+      <div>
+        <input type="checkbox" name="mepFragments${pageId}"
+        id="mepFragmentsCheckbox${pageId}" ${mepFragmentsChecked} value="true">
+        <label for="mepFragmentsCheckbox${pageId}">Highlight fragments</label>
       </div>
       ${showManifestsCheckbox}
       <div>
@@ -423,7 +498,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
       </div>
     </div>
     <div>New manifest location or path*</div>
-    <input type="text" name="new-manifest${pageId}" class="new-manifest">`;
+    <input type="text" name="new-manifest${pageId}" class="new-manifest">
+    ${mepLingoSectionHTML}`;
 
   const mepPopupFooter = createTag('div', { class: `mep-popup-footer${isMmm ? '' : ' dark'}` });
   mepPopupFooter.innerHTML += `
@@ -457,6 +533,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
 
 function createPreviewPill() {
   const mepConfig = parseMepConfig();
+  if (!mepConfig) return;
   const { activities } = mepConfig;
   const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   const pill = document.createElement('div');
@@ -474,11 +551,22 @@ function addHighlightData(manifests) {
     const manifestName = getFileName(manifest);
 
     const updateManifestId = (selector, prop = 'manifestId') => {
-      document.querySelectorAll(selector).forEach((el) => (el.dataset[prop] = manifestName));
+      document.querySelectorAll(selector).forEach((el) => {
+        el.dataset[prop] = manifestName;
+        if (prop === 'manifestId') {
+          el.dataset.manifestDisplay = `${manifestName}: html`;
+        }
+      });
     };
 
     selectedVariant?.replacefragment?.forEach(
-      ({ val }) => updateManifestId(`[data-path*="${val}"]`),
+      ({ val }) => {
+        document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
+          el.dataset.manifestId = manifestName;
+          el.dataset.fragmentPath = val;
+          el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path || val}`;
+        });
+      },
     );
 
     selectedVariant?.useblockcode?.forEach(({ selector }) => {
@@ -492,10 +580,109 @@ function addHighlightData(manifests) {
     // eslint-disable-next-line max-len
     document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`)
       .forEach((el) => (el.dataset.manifestId = manifestName));
+
+    document.querySelectorAll(`[data-manifest-id="${manifestName}"]`).forEach((el) => {
+      if (!el.dataset.manifestDisplay) {
+        if (el.dataset.path) {
+          el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path}`;
+          el.dataset.fragmentPath = el.dataset.path;
+        } else {
+          el.dataset.manifestDisplay = `${manifestName}: html`;
+          el.dataset.mepHtmlBadge = 'true'; // Mark as non-clickable HTML badge - gnav workaround
+        }
+      }
+    });
   });
 }
+
+function markDefaultFragments() {
+  document.querySelectorAll('.fragment').forEach((fragment) => {
+    const hasManifest = fragment.dataset.manifestId;
+    const hasRoc = fragment.dataset.mepLingoRoc;
+    const hasFallback = fragment.dataset.mepLingoFallback;
+    if (!hasManifest && !hasRoc && !hasFallback && fragment.dataset.path) {
+      fragment.dataset.fragmentDefault = '';
+      fragment.dataset.fragmentDisplay = fragment.dataset.path;
+    }
+  });
+}
+
+function adjustBadgesForZeroHeightSections() {
+  const badgeSelectors = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
+  document.querySelectorAll(badgeSelectors).forEach((el) => {
+    const section = el.closest('.section');
+    const elementHeight = el.offsetHeight;
+    const sectionHeight = section ? section.offsetHeight : elementHeight;
+    if (sectionHeight < 10) {
+      const badgeHeight = 35;
+      const spacing = 5;
+      el.style.setProperty('--badge-top-offset', `-${badgeHeight + spacing}px`);
+    }
+  });
+}
+
+function addFragmentBadgeClickHandlers() {
+  document.body.addEventListener('click', (e) => {
+    const isHighlightEnabled = document.body.dataset.mepHighlight === 'true';
+    const isFragmentsEnabled = document.body.dataset.mepFragments === 'true';
+    if (!isHighlightEnabled && !isFragmentsEnabled) return;
+
+    // Ignore clicks from within the MEP popup
+    if (e.target.closest('.mep-preview-overlay')) return;
+
+    // Find the badged element that was clicked (includes non-fragment badges)
+    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default]');
+    if (!fragment) return;
+
+    const elementStyle = window.getComputedStyle(fragment);
+    const beforeStyles = window.getComputedStyle(fragment, '::before');
+    const badgeIsVisible = beforeStyles.display !== 'none' && beforeStyles.content !== 'none';
+    if (!badgeIsVisible) return;
+
+    // Use max of calculated dimensions or reasonable minimums for badge text
+    const badgeWidth = Math.max(parseFloat(beforeStyles.width) + 30, 200);
+    const badgeHeight = parseFloat(beforeStyles.height)
+      || parseFloat(beforeStyles.minHeight)
+      || 35;
+    const fragmentPath = fragment.dataset.path || fragment.dataset.fragmentPath;
+    const handleBadgeClick = () => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Only open if it's a fragment (has path), otherwise just block the click
+      if (fragmentPath) window.open(fragmentPath, '_blank');
+    };
+
+    // Handle badges inside of tabs and other display:contents elements:
+    if (elementStyle.display === 'contents') {
+      const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
+      if (visibleChildren.length === 0) {
+        if (e.clientX >= 0 && e.clientX < badgeWidth) handleBadgeClick();
+        return;
+      }
+      for (const child of visibleChildren) {
+        const childRect = child.getBoundingClientRect();
+        const relativeY = e.clientY - childRect.top;
+        const relativeX = e.clientX - childRect.left;
+        const inBadgeY = relativeY >= -badgeHeight && relativeY < 0;
+        const inBadgeX = relativeX >= 0 && relativeX < badgeWidth;
+        if (inBadgeY && inBadgeX) {
+          handleBadgeClick();
+          return;
+        }
+      }
+      return;
+    }
+
+    const rect = fragment.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    if (clickY < badgeHeight && clickX >= 0 && clickX < badgeWidth) handleBadgeClick();
+  });
+}
+
 export async function saveToMmm() {
   const data = parseMepConfig();
+  if (!data) return false;
   const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/'];
   if (excludedStrings.some((str) => data.page.url.includes(str))) return false;
   data.activities = data.activities.filter((activity) => {
@@ -529,4 +716,8 @@ export default async function decoratePreviewMode() {
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
+  markDefaultFragments();
+  addFragmentBadgeClickHandlers();
+  // Adjust badge positions after a short delay to allow rendering
+  setTimeout(adjustBadgesForZeroHeightSections, 100);
 }

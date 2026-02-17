@@ -1,5 +1,5 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { getMetadata } from '../../libs/utils/utils.js';
+import { getMetadata, lingoActive } from '../../libs/utils/utils.js';
 import {
   LOCALES,
   getPageLocale,
@@ -304,6 +304,7 @@ const getBulkPublishLangAttr = async (options) => {
     const { country, lang } = await getLanguageFirstCountryAndLang(
       options.prodUrl,
       options.repo,
+      options.host,
     );
     return `${lang}-${country}`;
   }
@@ -318,11 +319,12 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options, origin) => {
-  const langFirst = getMetadata('langfirst');
+  const langFirst = lingoActive();
   if (langFirst) {
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
       origin,
+      window.location.hostname,
     );
   }
   /* c8 ignore next */

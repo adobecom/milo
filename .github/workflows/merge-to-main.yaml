@@ -1,7 +1,7 @@
 name: Merge to main
 
 on:
-  pull_request:
+  pull_request_target:
     types: [labeled]
   schedule:
     - cron: '0 9 * * *' # Run every day at 9am UTC
