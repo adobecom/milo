@@ -643,6 +643,13 @@ export function getMepPopup(mepConfig, isMmm = false) {
     const lingoHTML = `
     <h6 class="mep-section-header">Lingo</h6>
     <div class="mep-section-data">
+      ${isMmm ? `
+        <span>Total</span>
+        <span>${lingoData.total}</span>
+      ` : `
+        <span>Page Updates</span>
+        <span>${lingoData.updates}</span>
+      `}
         <span>Lang First / Lingo</span>
         <span>${lingoData.langFirst}</span>
         <span>Geo Folder</span>
@@ -653,14 +660,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <span>Geo + User</span>
         <span>${lingoData.geoUser}</span>
       `}
-      ${isMmm ? `
-        <span>Total</span>
-        <span>${lingoData.total}</span>
-      ` : `
-        <span>Updates</span>
-        <span>${lingoData.updates}</span>
-      `}
-
     </div>
   `;
     mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, lingoHTML));
