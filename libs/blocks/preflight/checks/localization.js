@@ -23,8 +23,7 @@ function addLocale(basePath, prefix) {
 }
 
 function normalizePath(path) {
-  if (!path) return '/';
-  if (path === '/') return path;
+  if (!path || path === '/') return '/';
   return path.replace(/\/+$/, '');
 }
 
@@ -55,16 +54,13 @@ export async function runChecks({ area = document } = {}) {
     const shouldFlag = (!isCurrentLocaleLink && [200, 404].includes(localizedStatus))
       || (isCurrentLocaleLink && localizedStatus === 404);
 
-    if (shouldFlag) {
-      return {
-        url: url.href,
-        isLocalized: isCurrentLocaleLink,
-        usStatus,
-        localizedStatus,
-      };
-    }
-
-    return null;
+    if (!shouldFlag) return null;
+    return {
+      url: url.href,
+      isLocalized: isCurrentLocaleLink,
+      usStatus,
+      localizedStatus,
+    };
   }))).filter(Boolean);
 
   const violationsCount = violations.length;
