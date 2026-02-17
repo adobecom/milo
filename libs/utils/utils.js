@@ -1069,7 +1069,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && C1_BLOCKS.includes(name)) base = miloLibs;
-  if (getMetadata('foundation') === 'c2' && C2_BLOCKS.includes(name)) base += '/c2';
+  if (getMetadata('foundation') === 'c2' && C2_BLOCKS.includes(name)) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
