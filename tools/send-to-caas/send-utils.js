@@ -334,6 +334,14 @@ const getCountryAndLang = async (options, origin) => {
     ? await getBulkPublishLangAttr(options)
     : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
     const langAttr = langStr?.toLowerCase().split('-') || [];
+    // do not use the fallback values if the language first is enabled
+    if (options.languageFirst) {
+      const [lang, country] = langAttr;
+      return {
+        country,
+        lang,
+      }
+    }
     const [lang = 'en', country = 'us'] = langAttr;
     return {
       country,
