@@ -70,11 +70,26 @@ function setTooltipPosition(tooltips) {
   });
 }
 
+function isPointerOverElement(element, clientX, clientY) {
+  if (clientX == null || clientY == null) return false;
+  const rect = element.getBoundingClientRect();
+  return clientX >= rect.left && clientX <= rect.right
+    && clientY >= rect.top && clientY <= rect.bottom;
+}
+
 export default function addTooltipListeners() {
-  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
+  let lastMouseX = null;
+  let lastMouseY = null;
+  document.addEventListener('mousemove', (e) => {
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+  }, { passive: true });
+
+  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur', 'scroll'].forEach((eventType) => {
     document.addEventListener(eventType, (event) => {
       const isTooltip = event.target?.matches?.('.milo-tooltip');
-      if (!isTooltip && eventType !== 'keydown') return;
+
+      if (!isTooltip && eventType !== 'keydown' && eventType !== 'scroll') return;
 
       if (['mouseenter', 'focus'].includes(eventType)) {
         event.target.classList.remove('hide-tooltip');
@@ -83,6 +98,12 @@ export default function addTooltipListeners() {
         event.target.classList.add('hide-tooltip');
       } else if (eventType === 'keydown' && event.key === 'Escape') {
         document.querySelector('.milo-tooltip:not(.hide-tooltip)')?.classList.add('hide-tooltip');
+      } else if (eventType === 'scroll') {
+        document.querySelectorAll('.milo-tooltip:not(.hide-tooltip)').forEach((tooltip) => {
+          if (!isPointerOverElement(tooltip, lastMouseX, lastMouseY)) {
+            tooltip.classList.add('hide-tooltip');
+          }
+        });
       }
     }, true);
   });
