@@ -198,8 +198,9 @@ const cacheByBase = new Map();
 
 export async function getLingoSiteMappingConfig(fqdn = 'www.adobe.com', baseUrl = 'https://www.adobe.com') {
   const normalized = baseUrl.replace(/\/$/, '');
+  const cacheKey = `${normalized}::${fqdn}`;
   if (!cacheByBase.has(normalized)) {
-    const url = `${normalized}/federal/assets/data/lingo-site-mapping.json?${fqdn}`;
+    const url = `${normalized}/federal/assets/data/lingo-site-mapping.json?${encodeURIComponent(cacheKey)}`;
     const promise = fetch(url)
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
