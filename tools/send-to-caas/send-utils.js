@@ -328,25 +328,21 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options, origin) => {
+  let langAttr;
   /* c8 ignore next */
   if (window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')) {
     const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
-    ? await getBulkPublishLangAttr(options)
-    : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
-    const langAttr = langStr?.toLowerCase().split('-') || [];
+      ? await getBulkPublishLangAttr(options)
+      : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
+    langAttr = langStr?.toLowerCase().split('-') || [];
     // do not use the fallback values if the language first is enabled
     if (options.languageFirst) {
       const [lang, country] = langAttr;
       return {
         country,
         lang,
-      }
+      };
     }
-    const [lang = 'en', country = 'us'] = langAttr;
-    return {
-      country,
-      lang,
-    };
   }
   const langFirst = lingoActive();
   if (langFirst) {
@@ -356,6 +352,11 @@ const getCountryAndLang = async (options, origin) => {
       window.location.hostname,
     );
   }
+  const [lang = 'en', country = 'us'] = langAttr;
+    return {
+      country,
+      lang,
+  };
 };
 
 const parseCardMetadata = () => {
