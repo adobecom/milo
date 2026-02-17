@@ -1,27 +1,7 @@
 import { html, useState, useEffect } from '../../../deps/htm-preact.js';
-import '../../../deps/axe.min.js';
-import { AXE_CORE_CONFIG, CUSTOM_CHECKS_CONFIG } from './accessibility-config.js';
-import customAccessibilityChecks from './accessibility-custom-checks.js';
+import { AXE_CORE_CONFIG } from './accessibility-config.js';
+import runAccessibilityTest from './accessibility-runner.js';
 import AuditImageAltText from './audit-image-alt-text.js';
-
-/**
- * Runs the accessibility test using axe-core and custom checks.
- * @returns {Promise<Object>} Test results object (pass/fail + violations) or error.
- */
-async function runAccessibilityTest() {
-  try {
-    const results = await window.axe.run(AXE_CORE_CONFIG);
-    const customViolations = await customAccessibilityChecks(CUSTOM_CHECKS_CONFIG);
-    results.violations.push(...customViolations);
-    return {
-      pass: !results.violations.length,
-      violations: results.violations,
-    };
-  } catch (error) {
-    window.lana.log(`Error running accessiblity test:, ${error}`);
-    return { error: `Error running accessibility test: ${error.message}` };
-  }
-}
 
 /**
  * Preflight Accessibility Tab/Panel.

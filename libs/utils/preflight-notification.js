@@ -81,7 +81,7 @@ function createObserver() {
     const results = await getPreflightResults({
       url: window.location.href,
       area: document,
-    });
+    }).catch(() => null);
     if (results?.hasFailures) await createPreflightNotification();
   });
 
@@ -95,7 +95,7 @@ export default async function show() {
   const preflightPromise = getPreflightResults({
     url: window.location.href,
     area: document,
-  });
+  }).catch(() => null);
 
   if (wasDismissed || document.querySelector('.milo-preflight-overlay')) return;
 
@@ -112,7 +112,7 @@ export default async function show() {
 
   if (!results) return;
 
-  if (results.hasFailures) {
+  if (results?.hasFailures) {
     await createPreflightNotification();
   } else {
     setupLinkCheckListener();
