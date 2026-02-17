@@ -13,7 +13,7 @@ const timeout = parseInt(params.get('target-timeout'), 10)
   || parseInt(getMetadata('target-timeout'), 10)
   || TARGET_TIMEOUT_MS;
 
-const setDeep = (obj, path, value) => {
+export const setDeep = (obj, path, value) => {
   const pathArr = path.split('.');
   let currentObj = obj;
 
@@ -56,7 +56,7 @@ const waitForEventOrTimeout = (eventName, timeoutLocal, returnValIfTimeout) => n
   window.addEventListener(eventError, errorListener, { once: true });
 });
 
-function roundToQuarter(num) {
+export function roundToQuarter(num) {
   return Math.ceil(num / 250) / 4;
 }
 
@@ -144,8 +144,8 @@ const setupEntitlementCallback = () => {
   );
 };
 
-function isProxied() {
-  return /^(www|milo|business|blog|news)(\.stage)?\.adobe\.com$/.test(window.location.hostname);
+export function isProxied(hostname = window.location.hostname) {
+  return /^(www|milo|business|blog|news)(\.stage)?\.adobe\.com$/.test(hostname);
 }
 
 let filesLoadedPromise = false;
