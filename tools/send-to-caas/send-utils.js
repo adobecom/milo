@@ -353,9 +353,9 @@ const getCountryAndLang = async (options, origin) => {
     );
   }
   const [lang = 'en', country = 'us'] = langAttr;
-    return {
-      country,
-      lang,
+  return {
+    country,
+    lang,
   };
 };
 
