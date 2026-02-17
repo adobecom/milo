@@ -1,0 +1,71 @@
+<div class="section">
+  <div class="filter-container">
+    <div>
+      <p class="filter-text">Filters</p>
+      <div class="filter">
+        <button class="filter-button" id="products-filter-button"
+          tabindex="0" role="button"
+          aria-haspopup="true" aria-expanded="false"
+          aria-controls="products-filter-panel">Products</button>
+        <div class="filter-dropdown" id="products-filter-panel"
+          aria-labelledby="products-filter-button" aria-modal="true">
+          <div class="filter-search">
+            <input id="products-filter-search" aria-label="Search" placeholder="Search">
+          </div>
+          <ul class="filter-options" data-type="products" aria-label="Products Filters">
+            <li class="filter-option filter-option-primary">
+              <input id="creative cloud" name="creative cloud" type="checkbox">
+              <label for="creative cloud">creative cloud</label>
+            </li>
+            <li class="filter-option filter-option-primary">
+              <input id="experience cloud" name="experience cloud" type="checkbox">
+              <label for="experience cloud">experience cloud</label>
+            </li>
+          </ul>
+          <div class="filter-dropdown-footer">
+            <button class="button small reset" tabindex="0">Reset</button>
+            <button class="button small apply" tabindex="0">Apply</button>
+          </div>
+        </div>
+      </div>
+      <div class="filter">
+        <button class="filter-button" id="industries-filter-button"
+          tabindex="0" role="button"
+          aria-haspopup="true" aria-expanded="false"
+          aria-controls="industries-filter-panel">Industries</button>
+        <div class="filter-dropdown" id="industries-filter-panel"
+          aria-labelledby="industries-filter-button" aria-modal="true">
+          <div class="filter-search">
+            <input id="industries-filter-search" aria-label="Search" placeholder="Search">
+          </div>
+          <ul class="filter-options" data-type="industries" aria-label="Industries Filters">
+            <li class="filter-option filter-option-primary">
+              <input id="education" name="education" type="checkbox">
+              <label for="education">education</label>
+            </li>
+            <li class="filter-option filter-option-primary">
+              <input id="healthcare" name="healthcare" type="checkbox">
+              <label for="healthcare">healthcare</label>
+            </li>
+          </ul>
+          <div class="filter-dropdown-footer">
+            <button class="button small reset" tabindex="0">Reset</button>
+            <button class="button small apply" tabindex="0">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="selected-container">
+    <div>
+      <p class="selected-text">Showing articles for</p>
+      <span class="selected-filters">
+        <a class="selected-filter" tabindex="0" aria-label="Remove creative cloud filter">creative cloud</a>
+      </span>
+      <a class="button small clear" tabindex="0">Clear all</a>
+    </div>
+  </div>
+  <div class="article-feed appear">
+    <div class="article-cards"></div>
+  </div>
+</div>

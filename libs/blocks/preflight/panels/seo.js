@@ -56,7 +56,9 @@ const aiSuggestions = signal([]);
 const authErrorMessage = signal('');
 const asoSessionTrigger = signal(0);
 
-const isAso = getChecksSuite() === 'ASO';
+const isAsoSuite = signal(false);
+
+let asoImsSignInInFlight = false;
 
 const signals = [
   h1Result,
@@ -121,7 +123,7 @@ export async function sendResults() {
 
 function SeoItem({ id, icon, title, description, supportsAi }) {
   const aiSuggestion = aiSuggestions.value.find((suggestion) => suggestion.id === id)?.aiSuggestion;
-  const showLoadingAi = isAso && supportsAi && icon === 'red' && !aiSuggestion;
+  const showLoadingAi = isAsoSuite.value && supportsAi && icon === 'red' && !aiSuggestion;
   const showAiSuggestion = supportsAi && aiSuggestion && icon === 'red';
   return html`
     <div class=preflight-item>
@@ -136,10 +138,14 @@ function SeoItem({ id, icon, title, description, supportsAi }) {
 }
 
 async function getResults() {
-  const results = (await getPreflightResults({
+  const preflightResults = await getPreflightResults({
     url: window.location.href,
     area: document,
-  })).runChecks.seo || [];
+  });
+
+  if (!preflightResults) return; // Page is excluded from preflight checks
+
+  const results = preflightResults.runChecks.seo || [];
 
   // Update UI as each check resolves
   const icons = [];
@@ -185,15 +191,26 @@ async function getResults() {
 }
 
 async function handleAsoSignIn() {
-  await window.asoIMS.signIn({ profile_filter: 'inc@AdobeOrg' });
+  if (asoImsSignInInFlight) {
+    return;
+  }
+  asoImsSignInInFlight = true;
+
+  try {
+    await window.asoIMS.signIn({ profile_filter: 'inc@AdobeOrg' });
+  } catch (e) {
+    asoImsSignInInFlight = false;
+    return;
+  }
 
   const sessionIntervalId = setInterval(async () => {
     try {
-      const res = await window.asoIMS.refreshToken();
-      if (res?.tokenInfo) {
+      const hasAccessToken = !!window.asoIMS?.getAccessToken?.()?.token;
+      if (hasAccessToken) {
         authErrorMessage.value = '';
         await getASOToken();
         asoSessionTrigger.value += 1;
+        asoImsSignInInFlight = false;
         clearInterval(sessionIntervalId);
       }
     } catch (e) {
@@ -203,44 +220,63 @@ async function handleAsoSignIn() {
 
   setTimeout(() => {
     clearInterval(sessionIntervalId);
+    asoImsSignInInFlight = false;
   }, ASO_TIMEOUT_MS);
 }
 
 export default function SEO() {
   useEffect(() => {
     getResults();
-    if (!isAso) return;
+    let intervalIdIdentify;
+    let intervalIdSuggest;
+    let timeoutId;
 
-    if (!asoCache.sessionToken) {
-      authErrorMessage.value = 'Please make sure you are authenticated with IMS';
-      return;
-    }
+    (async () => {
+      const suite = await getChecksSuite();
+      isAsoSuite.value = suite === 'ASO';
 
-    const intervalIdIdentify = setInterval(() => {
-      if (asoCache.identify?.length > 0) {
-        asoCache.identify.forEach((partial) => {
-          const targetSignal = signals.find((s) => s.value.id === partial.id);
-          if (targetSignal) toUIFormat(partial, targetSignal);
-        });
+      if (!isAsoSuite.value) return;
+
+      if (!asoCache.sessionToken) {
+        try {
+          await getASOToken();
+        } catch (e) {
+          // no-op
+        }
       }
-      if (asoCache.identifyFinished) clearInterval(intervalIdIdentify);
-    }, 1000);
 
-    const intervalIdSuggest = setInterval(() => {
-      if (asoCache.suggest?.length > 0) aiSuggestions.value = asoCache.suggest;
-      if (asoCache.suggestFinished) clearInterval(intervalIdSuggest);
-    }, 1000);
+      if (!asoCache.sessionToken) {
+        authErrorMessage.value = 'Please make sure you are authenticated with IMS';
+        return;
+      }
+      authErrorMessage.value = '';
 
-    const timeoutId = setTimeout(() => {
-      clearInterval(intervalIdIdentify);
-      clearInterval(intervalIdSuggest);
-    }, ASO_TIMEOUT_MS);
+      intervalIdIdentify = setInterval(() => {
+        if (asoCache.identify?.length > 0) {
+          asoCache.identify.forEach((partial) => {
+            const targetSignal = signals.find((s) => s.value.id === partial.id);
+            if (targetSignal) toUIFormat(partial, targetSignal);
+          });
+        }
+        if (asoCache.identifyFinished) clearInterval(intervalIdIdentify);
+      }, 1000);
+
+      intervalIdSuggest = setInterval(() => {
+        if (asoCache.suggest?.length > 0) aiSuggestions.value = asoCache.suggest;
+        if (asoCache.suggestFinished) clearInterval(intervalIdSuggest);
+      }, 1000);
+
+      timeoutId = setTimeout(() => {
+        clearInterval(intervalIdIdentify);
+        clearInterval(intervalIdSuggest);
+      }, ASO_TIMEOUT_MS);
+    })();
 
     // eslint-disable-next-line
     return () => {
-      clearInterval(intervalIdIdentify);
-      clearInterval(intervalIdSuggest);
-      clearTimeout(timeoutId);
+      if (intervalIdIdentify) clearInterval(intervalIdIdentify);
+      if (intervalIdSuggest) clearInterval(intervalIdSuggest);
+      if (timeoutId) clearTimeout(timeoutId);
     };
   // eslint-disable-next-line
   }, [asoSessionTrigger.value]);

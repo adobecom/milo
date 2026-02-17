@@ -15,6 +15,7 @@ function getSiteOrigin() {
   const search = new URLSearchParams(window.location.search);
   const repo = search.get('repo');
   const owner = search.get('owner');
+
   return repo && owner ? `https://main--${repo}--${owner}.aem.live` : window.location.origin;
 }
 

@@ -36,7 +36,7 @@ export async function fetchMepLingo(mepLingoPath, fallbackPath) {
   return {};
 }
 
-export function handleInvalidMepLingo(a, { env, relHref }) {
+export function handleInvalidMepLingo(a, { env }) {
   const { mepLingoSectionSwap, mepLingoBlockSwap } = a.dataset;
   const isProd = env?.name === 'prod';
 
@@ -66,7 +66,7 @@ export function handleInvalidMepLingo(a, { env, relHref }) {
     if (!parent?.children.length && !parent?.textContent?.trim()) parent?.remove();
     return;
   }
-  const isInline = a.href?.includes('#_inline') || relHref?.includes('#_inline');
+  const isInline = a.dataset.originalHref?.includes('#_inline');
   a.replaceWith(createTag('div', {
     'data-failed': 'true',
     'data-reason': `mep-lingo: ${isInline ? 'inline ' : ''}fragment not available`,
@@ -74,10 +74,48 @@ export function handleInvalidMepLingo(a, { env, relHref }) {
   }));
 }
 
-export function addMepLingoPreviewAttrs(fragment, { usedFallback, relHref }) {
-  if (usedFallback) {
-    fragment.dataset.mepLingoFallback = relHref;
+export function addMepLingoPreviewAttrs(fragment, {
+  usedFallback,
+  relHref,
+  isInsert = false,
+  isRemove = false,
+}) {
+  fragment.dataset[usedFallback ? 'mepLingoFallback' : 'mepLingoRoc'] = relHref;
+  if (isInsert) fragment.dataset.mepLingoInsert = 'true';
+  if (isRemove) fragment.dataset.mepLingoRemove = 'true';
+}
+
+export function removeMepLingoElement(a, isMepLingoBlock, originalBlock) {
+  if (isMepLingoBlock && originalBlock) {
+    originalBlock.remove();
+    a.parentElement?.remove();
   } else {
-    fragment.dataset.mepLingoRoc = relHref;
+    const parent = a.parentElement;
+    a.remove();
+    if (!parent?.children.length && !parent?.textContent?.trim()) parent?.remove();
   }
+}
+
+export async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath) {
+  window.lana?.log(`MEP Lingo: Query-index indicated regional content exists but fetch failed for ${resourcePath}. Falling back to authored locale.`);
+
+  let fallbackPath = originalHref;
+  try {
+    const resourceUrl = new URL(resourcePath);
+    const originalUrl = new URL(originalHref);
+    if (locale?.prefix !== undefined && !originalUrl.pathname.startsWith(locale.prefix)) {
+      fallbackPath = `${resourceUrl.origin}${locale.prefix}${originalUrl.pathname}`;
+    } else {
+      fallbackPath = `${resourceUrl.origin}${originalUrl.pathname}`;
+    }
+  } catch (e) {
+    if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
+      fallbackPath = `${locale.prefix}${fallbackPath}`;
+    }
+  }
+
+  const resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
+
+  return { resp, fallbackPath };
 }

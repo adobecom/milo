@@ -1,0 +1,120 @@
+.quick-facts {
+  --gap: var(--spacing-m);
+
+  background: #fff;
+  border-radius: 16px;
+  container-type: inline-size; /* stylelint-disable-line property-no-unknown */
+}
+
+.quick-facts .foreground {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gap);
+  padding: var(--spacing-m);
+}
+
+.quick-facts .quick-facts-logo {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.quick-facts .quick-facts-logo img {
+  max-height: 80px;
+  width: auto;
+}
+
+.quick-facts .fact-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.quick-facts .inset {
+  border-inline-start: 2px solid #000;
+  padding-inline-start: 14px;
+}
+
+.quick-facts .icon-stack-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  list-style-type: none;
+  padding-inline-start: 0;
+}
+
+.quick-facts .inset + p,
+.quick-facts .inset + .icon-stack-area {
+  padding-inline-start: var(--spacing-xs);
+}
+
+.quick-facts .fact-list .fact-title {
+  margin-top: 0;
+  margin-bottom: var(--spacing-xxs);
+}
+
+.quick-facts .product-list .product-title {
+  margin: 0 0 var(--spacing-xs);
+}
+
+.quick-facts .product-list a {
+   color: var(--text-color);
+}
+
+.quick-facts .icon-stack-area li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  line-height: 24px;
+}
+
+.quick-facts .icon-stack-area picture {
+  display: flex;
+}
+
+.quick-facts .icon-stack-area img {
+  width: 24px;
+}
+
+.quick-facts .subheading-xs {
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-heading-xs-lh);
+}
+
+.quick-facts .subheading-s {
+  font-size: var(--type-heading-s-size);
+  line-height: var(--type-heading-s-lh);
+}
+
+.quick-facts .subheading-m {
+  font-size: var(--type-heading-m-size);
+  line-height: var(--type-heading-m-lh);
+}
+
+.quick-facts .titlebody-xl {
+  font-size: var(--type-body-xl-size);
+  line-height: var(--type-body-xl-lh);
+}
+
+.quick-facts .titlebody-xxl {
+  font-size: var(--type-body-xxl-size);
+  line-height: var(--type-body-xxl-lh);
+}
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@container (min-width: 499px) {
+  .quick-facts .foreground {
+    flex-flow: row wrap;
+  }
+
+  .quick-facts .quick-facts-logo {
+    justify-content: flex-start;
+  }
+
+  .quick-facts .fact-list,
+  .quick-facts .product-list {
+    width: calc(50% - var(--gap) / 2);
+  }
+}
+

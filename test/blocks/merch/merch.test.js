@@ -30,6 +30,9 @@ import merch, {
   updateModalState,
   isFallbackStepUsed,
   getWorkflowStep,
+  getMasComponentUrl,
+  getMasLibsBaseUrl,
+  getMasLibs,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -54,6 +57,8 @@ const CHECKOUT_LINK_CONFIGS = {
     FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1',
     BUY_NOW_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html',
     LOCALE: '',
+    CRM_HASH: 'crm-buy-illustrator',
+    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm/illustrator/master.modal.html',
   },
   {
     PRODUCT_FAMILY: 'PHOTOSHOP',
@@ -88,6 +93,8 @@ const CHECKOUT_LINK_CONFIGS = {
     FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/audition.html?mid=ft&web=1',
     BUY_NOW_PATH: 'www.adobe.com/will/not/be/localized.html',
     LOCALE: '',
+    CRM_HASH: 'crm-buy-audition',
+    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm/audition/master.modal.html',
   },
   {
     PRODUCT_FAMILY: 'ILLUSTRATOR+abc',
@@ -96,6 +103,8 @@ const CHECKOUT_LINK_CONFIGS = {
     FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1',
     BUY_NOW_PATH: 'https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1',
     LOCALE: '',
+    CRM_HASH: 'crm-buy-illustrator-abc',
+    CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm_abc/illustrator/master.modal.html',
   },
   ],
 };
@@ -975,6 +984,7 @@ describe('Merch Block', () => {
       const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
       expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator_abc.html?mid=ft&web=1');
       expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/buy/mini-plans/illustrator_abc.html?mid=ft&web=1');
+      expect(checkoutLinkConfig.CRM_PATH).to.equal('https://www.adobe.com/plans-fragments/modals/individual/crm_abc/illustrator/master.modal.html');
     });
 
     it('getCheckoutLinkConfig: finds using paCode and no svar', async () => {
@@ -982,6 +992,7 @@ describe('Merch Block', () => {
       const checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'ILLUSTRATOR', options);
       expect(checkoutLinkConfig.FREE_TRIAL_PATH).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1');
       expect(checkoutLinkConfig.BUY_NOW_PATH).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
+      expect(checkoutLinkConfig.CRM_PATH).to.equal('https://www.adobe.com/plans-fragments/modals/individual/crm/illustrator/master.modal.html');
     });
 
     it('getCheckoutLinkConfig: finds using productCode', async () => {
@@ -1029,6 +1040,36 @@ describe('Merch Block', () => {
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
       const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: true }, undefined, true);
       expect(action.url).to.equal('https://www.stage.adobe.com/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
+    });
+
+    it('getModalAction: localize crm path if it comes from us/en production', async () => {
+      setConfig({
+        ...config,
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const el = document.createElement('a');
+      el.setAttribute('data-modal', 'crm');
+      const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: true }, el);
+      expect(action.url).to.equal('https://www.adobe.com/fr/plans-fragments/modals/individual/crm/illustrator/master.modal.html');
+    });
+
+    it('getModalAction: rewrites host on crm path to www.stage.adobe.com if on Stage or aem.page', async () => {
+      setConfig({
+        ...config,
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const el = document.createElement('a');
+      el.setAttribute('data-modal', 'crm');
+      const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: true }, el, true);
+      expect(action.url).to.equal('https://www.stage.adobe.com/plans-fragments/modals/individual/crm/illustrator/master.modal.html');
     });
 
     it('getModalAction: skip modal url localization if url is invalid', async () => {
@@ -1259,7 +1300,7 @@ describe('Merch Block', () => {
 
       const a2 = document.createElement('a');
       a2.classList.add('link2');
-      a2.setAttribute('href', 'https://main--cc--adobecom.hlx.live/test/cc/path');
+      a2.setAttribute('href', 'https://main--cc--adobecom.aem.live/test/cc/path');
       div.append(a2);
 
       const a3 = document.createElement('a');
@@ -1363,6 +1404,92 @@ describe('Merch Block', () => {
       });
       expect(workflowStep).to.equal('commitment');
       document.querySelector('meta[name="mas-ff-3in1"]').remove();
+    });
+  });
+
+  describe('getMasComponentUrl', () => {
+    it('returns correct URL based on masLibsBase and hostname', () => {
+      // When masLibsBase is provided, use it regardless of hostname
+      expect(getMasComponentUrl('commerce', 'https://main--mas--adobecom.aem.live/web-components/dist', 'www.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+      expect(getMasComponentUrl('merch-card', 'https://main--mas--adobecom.aem.live/web-components/dist', 'www.stage.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/merch-card.js');
+
+      // When masLibsBase is null and hostname is www.adobe.com, use Adobe prod URL
+      expect(getMasComponentUrl('commerce', null, 'www.adobe.com'))
+        .to.equal('https://www.adobe.com/mas/libs/commerce.js');
+
+      // When masLibsBase is null and hostname is not www.adobe.com, use aem.live URL
+      expect(getMasComponentUrl('commerce', null, 'www.stage.adobe.com'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+      expect(getMasComponentUrl('merch-card', null, 'main--cc--adobecom.aem.live'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/merch-card.js');
+      expect(getMasComponentUrl('commerce', null, 'localhost'))
+        .to.equal('https://main--mas--adobecom.aem.live/web-components/dist/commerce.js');
+    });
+  });
+
+  describe('getMasLibsBaseUrl', () => {
+    const originalHref = window.location.href;
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns correct base URL for all maslibs parameter variations', () => {
+      // No maslibs parameter
+      window.history.pushState({}, '', '/');
+      expect(getMasLibsBaseUrl()).to.be.null;
+
+      // Empty maslibs parameter
+      window.history.pushState({}, '', '/?maslibs=');
+      expect(getMasLibsBaseUrl()).to.be.null;
+
+      // Local development
+      window.history.pushState({}, '', '/?maslibs=local');
+      expect(getMasLibsBaseUrl()).to.equal('http://localhost:3000');
+
+      // Main branch
+      window.history.pushState({}, '', '/?maslibs=main');
+      expect(getMasLibsBaseUrl()).to.equal('https://main--mas--adobecom.aem.live');
+
+      // Feature branch (simple name)
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getMasLibsBaseUrl()).to.equal('https://feature-branch--mas--adobecom.aem.live');
+
+      // Full branch name with --mas--
+      window.history.pushState({}, '', '/?maslibs=mybranch--mas--adobecom');
+      expect(getMasLibsBaseUrl()).to.equal('https://mybranch--mas--adobecom.aem.live');
+
+      // Branch name with -- but not --mas--
+      window.history.pushState({}, '', '/?maslibs=feature--other--repo');
+      expect(getMasLibsBaseUrl()).to.equal('https://feature--other--repo.aem.live');
+    });
+  });
+
+  describe('getMasLibs', () => {
+    const originalHref = window.location.href;
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns correct web-components URL for maslibs parameter variations', () => {
+      // No maslibs parameter
+      window.history.pushState({}, '', '/');
+      expect(getMasLibs()).to.be.null;
+
+      // Local development
+      window.history.pushState({}, '', '/?maslibs=local');
+      expect(getMasLibs()).to.equal('http://localhost:3000/web-components/dist');
+
+      // Main branch
+      window.history.pushState({}, '', '/?maslibs=main');
+      expect(getMasLibs()).to.equal('https://main--mas--adobecom.aem.live/web-components/dist');
+
+      // Feature branch
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
     });
   });
 });

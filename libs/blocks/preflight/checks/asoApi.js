@@ -28,6 +28,7 @@ const lanaLog = (message) => {
 
 export async function getASOToken() {
   if (!window.asoIMS) {
+    const allowedOrigin = window.location.origin;
     window.adobeImsFactory.createIMSLib({
       client_id: 'milo-tools',
       scope: 'AdobeID,openid,gnav,read_organizations,additional_info.projectedProductContext,additional_info.roles',
@@ -35,6 +36,8 @@ export async function getASOToken() {
       autoValidateToken: true,
       useLocalStorage: false,
       modalMode: true,
+      modalSettings: { allowedOrigin },
+      onModalModeSignInComplete: () => true,
     }, 'asoIMS');
     await window.asoIMS.initialize();
   }

@@ -39,6 +39,18 @@ describe('Quote', () => {
           expect(cite).to.not.be.empty;
         });
       }
+
+      if (authorType.includes('background')) {
+        it('supports an optional background color', () => {
+          expect(quote.classList.contains('has-bg')).to.be.true;
+        });
+      }
+
+      if (authorType.includes('rounded-corners')) {
+        it('supports rounded corners', () => {
+          expect(quote.classList.contains('rounded-corners')).to.be.true;
+        });
+      }
     });
   });
 });

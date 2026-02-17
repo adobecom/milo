@@ -150,9 +150,15 @@ function getSidenav(collection) {
     for (const node of level) {
       const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
-      const iconPath = localizeIconPath(node.icon);
-      if (iconPath) {
-        createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
+      let iconPath;
+      if (node.icon?.startsWith('sp-icon-')) {
+        createTag(node.icon, { slot: 'icon' }, null, { parent: item });
+        iconPath = node.icon;
+      } else {
+        iconPath = localizeIconPath(node.icon);
+        if (iconPath) {
+          createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
+        }
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };
