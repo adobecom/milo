@@ -1038,9 +1038,12 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
 
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
-  url = isInternalModal(url) || prodModalUrl
-    ? await localizeLinkAsync(url)
-    : url;
+  if (isInternalModal(url) || prodModalUrl) {
+    const localized = await localizeLinkAsync(url);
+    url = prodModalUrl && !localized.startsWith('http')
+      ? `${new URL(url).origin}${localized}`
+      : localized;
+  }
   url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
   return {
     url,
