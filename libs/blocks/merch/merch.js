@@ -27,6 +27,8 @@ export const PRICE_TEMPLATE_ANNUAL = 'annual';
 export const PRICE_TEMPLATE_LEGAL = 'legal';
 
 const isPreview = window.location.host.includes('aem.page') || window.location.host === 'www.stage.adobe.com';
+
+let cachedUpgradeAriaLabel = '';
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
   [PRICE_TEMPLATE_DISCOUNT, PRICE_TEMPLATE_DISCOUNT],
@@ -725,8 +727,13 @@ export async function getUpgradeAction(
     if (upgradeAction) {
       const merchCard = el?.closest('merch-card');
       merchCard?.querySelector('merch-addon')?.remove();
+      const upgradeOfferContainer = document.querySelector('.merch-offers.upgrade');
+      const upgradeAriaLabel = upgradeOffer?.getAttribute('aria-label')
+        || upgradeOfferContainer?.getAttribute('data-upgrade-aria-label')
+        || cachedUpgradeAriaLabel;
       merchCard?.querySelectorAll('[is="checkout-link"]').forEach((link) => {
         if (link !== el) link.remove();
+        if (upgradeAriaLabel) link.setAttribute('aria-label', upgradeAriaLabel);
       });
     }
     return upgradeAction;
@@ -1380,8 +1387,22 @@ export async function buildCta(el, params) {
     });
   }
 
-  // Adding aria-label for checkout-link using productCode and customerSegment as placeholder key.
-  if (el.ariaLabel) {
+  // Aria-label for checkout-link. For upgrade links use upgrade offer's aria-label.
+  const isUpgradeLink = el.href?.includes('upgrade=true');
+  const upgradeOfferContainer = document.querySelector('.merch-offers.upgrade');
+  const upgradeOfferEl = upgradeOfferContainer?.querySelector('[data-wcs-osi]');
+  const upgradeAriaLabel = isUpgradeLink
+    && (el.getAttribute('data-upgrade-aria-label')
+      || upgradeOfferEl?.getAttribute('aria-label')
+      || upgradeOfferContainer?.getAttribute('data-upgrade-aria-label')
+      || cachedUpgradeAriaLabel);
+  if (upgradeAriaLabel) {
+    cta.setAttribute('aria-label', upgradeAriaLabel);
+    // Re-apply after settle so upgrade label wins over checkout-link's addAriaLabelToCta.
+    cta.onceSettled().then(() => {
+      queueMicrotask(() => cta.setAttribute('aria-label', upgradeAriaLabel));
+    });
+  } else if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
@@ -1458,6 +1479,14 @@ export default async function init(el) {
   log = service.Log.module('merch');
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
+    const upgradeOfferContainer = el.closest('.merch-offers.upgrade');
+    if (upgradeOfferContainer) {
+      const ariaLabel = el.getAttribute('aria-label');
+      if (ariaLabel) {
+        upgradeOfferContainer.setAttribute('data-upgrade-aria-label', ariaLabel);
+        cachedUpgradeAriaLabel = ariaLabel;
+      }
+    }
     el.replaceWith(merch);
     return merch;
   }

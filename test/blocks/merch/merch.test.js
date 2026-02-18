@@ -843,8 +843,10 @@ describe('Merch Block', () => {
       const upgradeOfferContainer = document.createElement('div');
       upgradeOfferContainer.classList.add('merch-offers', 'upgrade');
       const upgradeOfferLink = document.createElement('a');
+      upgradeOfferLink.classList.add('merch');
       upgradeOfferLink.setAttribute('href', '/tools/ost?osi=632B3ADD940A7FBB7864AA5AD19B8D28&type=checkoutUrl');
       upgradeOfferLink.setAttribute('data-wcs-osi', '632B3ADD940A7FBB7864AA5AD19B8D28');
+      upgradeOfferLink.setAttribute('aria-label', 'Upgrade to Creative Cloud All Apps');
       upgradeOfferContainer.appendChild(upgradeOfferLink);
       document.body.appendChild(upgradeOfferContainer);
 
@@ -854,6 +856,7 @@ describe('Merch Block', () => {
       const upgradeLink = document.createElement('a');
       upgradeLink.classList.add('merch', 'cta');
       upgradeLink.setAttribute('href', '/tools/ost?osi=632B3ADD940A7FBB7864AA5AD19B8D28&type=checkoutUrl&upgrade=true');
+      upgradeLink.setAttribute('data-upgrade-aria-label', 'Upgrade to Creative Cloud All Apps');
       upgradeLink.textContent = 'Upgrade';
 
       const otherLink1 = document.createElement('a');
@@ -877,8 +880,45 @@ describe('Merch Block', () => {
 
       const cta = await merch(upgradeLink);
       await cta?.onceSettled();
+      await Promise.resolve(); // yield so queueMicrotask re-apply runs
 
       expect(merchCard.querySelector('a')).to.exist;
+      expect(merchCard.querySelector('a').getAttribute('aria-label')).to.equal('Upgrade to Creative Cloud All Apps');
+
+      document.body.removeChild(merchCard);
+      document.body.removeChild(upgradeOfferContainer);
+    });
+
+    it('does not set aria-label to the string "null"', async () => {
+      mockIms();
+      getUserEntitlements();
+      mockIms('US');
+      setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
+
+      const upgradeOfferContainer = document.createElement('div');
+      upgradeOfferContainer.classList.add('merch-offers', 'upgrade');
+      const upgradeOfferLink = document.createElement('a');
+      upgradeOfferLink.setAttribute('href', '/tools/ost?osi=632B3ADD940A7FBB7864AA5AD19B8D28&type=checkoutUrl');
+      upgradeOfferLink.setAttribute('data-wcs-osi', '632B3ADD940A7FBB7864AA5AD19B8D28');
+      // No aria-label on purpose – ensure null/undefined is never serialized as "null"
+      upgradeOfferContainer.appendChild(upgradeOfferLink);
+      document.body.appendChild(upgradeOfferContainer);
+
+      const merchCard = document.createElement('merch-card');
+      merchCard.setAttribute('name', 'photoshop');
+      const upgradeLink = document.createElement('a');
+      upgradeLink.classList.add('merch', 'cta');
+      upgradeLink.setAttribute('href', '/tools/ost?osi=632B3ADD940A7FBB7864AA5AD19B8D28&type=checkoutUrl&upgrade=true');
+      upgradeLink.textContent = 'Upgrade';
+      merchCard.appendChild(upgradeLink);
+      document.body.appendChild(merchCard);
+
+      await merch(upgradeOfferLink);
+      const cta = await merch(upgradeLink);
+      await cta?.onceSettled();
+
+      const ariaLabel = merchCard.querySelector('a')?.getAttribute('aria-label');
+      expect(ariaLabel, 'aria-label must not be the string "null"').to.not.equal('null');
 
       document.body.removeChild(merchCard);
       document.body.removeChild(upgradeOfferContainer);
