@@ -13,6 +13,25 @@ import {
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
+// Mock lingo-site-mapping.json for test runner
+(function patchFetchForLingoMapping() {
+  const orig = window.fetch;
+  const defaultLingoMock = () => Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({
+      'site-query-index-map': { data: [] },
+      'site-locales': { data: [] },
+    }),
+  });
+  window.fetch = function patchedFetch(resource, options) {
+    const url = typeof resource === 'string' ? resource : (resource?.url ?? resource?.href ?? '');
+    if (url.includes('lingo-site-mapping.json')) {
+      return defaultLingoMock();
+    }
+    return orig.call(window, resource, options);
+  };
+}());
+
 describe('utils.js export sanity', () => {
   it('getLingoActive() is callable and returns a boolean', async () => {
     const val = await getLingoActive();
