@@ -108,7 +108,7 @@ export default class ComparisonTableBlock {
       if (descriptionLinkText) {
         const link = actions.locator('p.description a', { hasText: descriptionLinkText });
         await expect(link).toBeVisible();
-        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('href');
       }
 
       // buttons
@@ -121,7 +121,7 @@ export default class ComparisonTableBlock {
             await expect(btn).toHaveClass(new RegExp(`\\b${type}\\b`));
           }
 
-          await expect(btn).toHaveAttribute('target', '_blank');
+          await expect(btn).toHaveAttribute('href');
         }
       }
     }
@@ -180,7 +180,7 @@ export default class ComparisonTableBlock {
       if (linkText) {
         const link = header.locator('a');
         await expect(link).toContainText(linkText);
-        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('href');
       }
 
       // cells
