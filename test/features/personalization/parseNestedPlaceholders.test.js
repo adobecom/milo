@@ -77,3 +77,31 @@ describe('parsePlaceholders()', () => {
     expect(response.placeholders).to.exist;
   });
 });
+
+describe('parsePlaceholders()', () => {
+  it('should not apply placeholders filtered by page/geo', () => {
+    const response = parsePlaceholders([
+      {
+        key: 'marquee-placeholder',
+        'page filter (optional)': '/fr/**',
+        jp: 'Japenese Replaced Header',
+        fr: 'French Replaced Header',
+        value: '',
+      },
+    ], config, 'all', '/products/photoshop');
+    expect(response.placeholders['marquee-placeholder']).to.be.undefined;
+  });
+
+  it('should apply placeholders filtered by page/geo', () => {
+    const response = parsePlaceholders([
+      {
+        key: 'marquee-placeholder',
+        'page filter (optional)': '/fr/**',
+        jp: 'Japenese Replaced Header',
+        fr: 'French Replaced Header',
+        value: '',
+      },
+    ], config, 'fr', '/fr/products/photoshop');
+    expect(response.placeholders['marquee-placeholder']).to.equal('French Replaced Header');
+  });
+});
