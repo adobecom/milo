@@ -58,7 +58,7 @@ describe('LANA', () => {
       expect(xhrRequests.length).to.equal(1);
       expect(xhrRequests[0].method).to.equal('GET');
       expect(xhrRequests[0].url).to.equal(
-        'https://www.stage.adobe.com/lana/ll?m=Promise%20Rejection&c=testClientId&s=100&t=i',
+        'https://www.stage.adobe.com/lana/ll?m=Promise%20Rejection&c=testClientId&s=100&t=i&r=error',
       );
       done();
     };
@@ -73,7 +73,7 @@ describe('LANA', () => {
       expect(xhrRequests.length).to.equal(1);
       expect(xhrRequests[0].method).to.equal('GET');
       expect(xhrRequests[0].url).to.equal(
-        'https://www.stage.adobe.com/lana/ll?m=&c=testClientId&s=100&t=i',
+        'https://www.stage.adobe.com/lana/ll?m=&c=testClientId&s=100&t=i&r=error',
       );
       done();
     };

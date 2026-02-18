@@ -17,7 +17,7 @@ const parsePlaceholderJson = async (resp, placeholders) => {
       placeholders[item.key] = item.value;
     });
   } catch (e) {
-    window.lana.log(`Error parsing placeholder json: ${e.message}`, { tags: 'placeholders', errorType: 'e' });
+    window.lana.log(`Error parsing placeholder json: ${e.message}`, { tags: 'placeholders', severity: 'error' });
   }
 };
 

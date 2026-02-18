@@ -31,7 +31,10 @@ export function handleIFrameEvents(message) {
     const parsedMsg = JSON.parse(data);
     if (parsedMsg.app === 'ManagePlan') handleManagePlanEvents(parsedMsg);
   } catch (error) {
-    window.lana?.log(`Error while attempting to parse JSON from an iframe message: ${error}`);
+    window.lana?.log(`Error while attempting to parse JSON from an iframe message: ${error}`, {
+      tags: 'iframe',
+      severity: 'error',
+    });
   }
 }
 
