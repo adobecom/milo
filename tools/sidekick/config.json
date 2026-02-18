@@ -167,18 +167,6 @@
     },
     {
       "containerId": "tools",
-      "id": "mas-field-inspector",
-      "title": "Merch Field Selector",
-      "environments": [ "edit" ],
-      "isPalette": true,
-      "passReferrer": true,
-      "passConfig": true,
-      "paletteRect": "top: auto; bottom: 25px; right: 25px; height: 520px; width: 420px;",
-      "url": "https://MWPW-180167-b--milo--adobecom.aem.page/tools/merch-field-selector/index.html",
-      "includePaths": [ "**.docx**" ]
-    },
-    {
-      "containerId": "tools",
       "id": "rollout",
       "title": "Rollout",
       "environments": [ "preview" ],
