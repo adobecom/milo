@@ -1050,6 +1050,12 @@ export async function loadTemplate() {
 function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
+  const isC2Page = getMetadata('foundation') === 'c2';
+  const isC1Block = C1_BLOCKS.includes(name);
+  const isC2Block = C2_BLOCKS.includes(name);
+  const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
+
+  if (isC2Page && isC1Block && !isC2Block && !isAutoBlock) return { name, isInvalid: true };
 
   let base = codeRoot;
   if (externalLibs) {
@@ -1068,8 +1074,8 @@ function getBlockData(block) {
     }
   }
 
-  if (miloLibs && C1_BLOCKS.includes(name)) base = miloLibs;
-  if (getMetadata('foundation') === 'c2' && C2_BLOCKS.includes(name)) base += '/c2';
+  if (miloLibs && isC1Block && (!isC2Page || isAutoBlock)) base = miloLibs;
+  if (isC2Page && isC2Block) base += '/c2';
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -1084,7 +1090,12 @@ export async function loadBlock(block) {
     block.remove();
     return null;
   }
-  const { name, blockPath, hasStyles } = getBlockData(block);
+  const { name, blockPath, hasStyles, isInvalid } = getBlockData(block);
+  if (isInvalid) {
+    block.dataset.failed = 'true';
+    block.dataset.reason = `${name} is a C1 block and cannot be used on C2 pages`;
+    return block;
+  }
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
