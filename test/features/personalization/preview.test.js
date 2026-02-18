@@ -208,9 +208,6 @@ describe('MEP Lingo region select with lingo param', () => {
     const popup = popups[popups.length - 1];
     expect(popup).to.exist;
 
-    const lingoSection = popup?.querySelector('.mep-lingo-section');
-    expect(lingoSection).to.exist;
-
     const regionSelect = popup?.querySelector('select[id^="mepLingoRegionSelect"]');
     expect(regionSelect).to.exist;
   });

@@ -34,7 +34,7 @@ dl.mmm.target-metadata-lookup {
 
 .mmm dd {
   margin: 0;
-  padding: var(--spacing-xs);
+  padding: 0;
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
   background: #eee;

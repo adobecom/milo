@@ -95,15 +95,15 @@ test(`${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
   console.info(`[Test Page]: ${targetOnURL}`);
   await page.goto(targetOnURL);
   await mepButtonLoc.mepButton.click();
-  await expect(mepButtonLoc.targetStatus.nth(0)).toHaveText('on');
+  await expect(mepButtonLoc.targetStatus).toHaveText('on');
 
   console.info(`[Test Page]: ${postLCPURL}`);
   await page.goto(postLCPURL);
   await mepButtonLoc.mepButton.click();
-  await expect(mepButtonLoc.targetStatus.nth(0)).toHaveText('on post LCP');
+  await expect(mepButtonLoc.targetStatus).toHaveText('on post LCP');
 
   console.info(`[Test Page]: ${targetOffURL}`);
   await page.goto(targetOffURL);
   await mepButtonLoc.mepButton.click();
-  await expect(mepButtonLoc.targetStatus.nth(0)).toHaveText('off');
+  await expect(mepButtonLoc.targetStatus2).toHaveText('off');
 });

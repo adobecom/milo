@@ -34,12 +34,57 @@
   margin-right: 16px;
 }
 
-.mep-popup-header > div > div:not(.mep-manifest-page-info-title) {
+.mep-section-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mep-popup-header > div > div:not(.mep-section-header) {
   padding-left: 15px;
+}
+
+.mep-popup .mep-popup-tabs {
+  display: flex;
+  gap: 24px;
+  padding: 0 12px;
+  border-left: 2px solid #274dea;
+  background-color: #fafafa;
+}
+
+.mep-popup.in-page .mep-popup-tabs {
+  background-color: #222;
+}
+
+.mep-popup .mep-popup-tabs .mep-tab {
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid #274dea;
+}
+
+.mep-popup.in-page .mep-popup-tabs .mep-tab {
+  color: #fff;
+  border-bottom: 2px solid #fff;
+}
+
+.mep-popup .mep-popup-tabs .mep-tab:not([active]) {
+  border-bottom: none;
+}
+
+.mep-popup.in-page .mep-popup-tabs .mep-tab:not([active]) {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .mep-popup, .mep-badge {
   direction: ltr;
+}
+
+.mep-popup .mep-popup-body:not([active]) {
+  display: none;
 }
 
 .mep-popup .mep-popup-body,
@@ -53,8 +98,9 @@
   flex-direction: column;
 }
 
-.mep-popup .mep-section {
-  gap: 8px;
+.mep-popup .mep-section,
+.mep-popup .mep-info-tooltip {
+  gap: 12px;
   max-width: 444px;
   display: flex;
   flex-direction: column;
@@ -113,19 +159,16 @@
   font-size: 16px;
 }
 
-.mep-popup .mep-columns {
-  display:flex;
-  gap: 16px;
+.mep-popup .mep-section-data {
+  gap: 0 16px;
+  display: grid;
+  /* align-items: center; */
+  grid-template-columns: auto minmax(0, 1fr);
   text-transform: capitalize;
 }
 
-.mep-popup .mep-columns .mep-selected-variant {
+.mep-popup .mep-section-data .mep-selected-variant {
   text-transform: initial;
-}
-
-.mep-popup .mep-column a {
-  position: absolute;
-  right: 0;
 }
 
 .mep-popup a.mep-edit-manifest {
@@ -147,6 +190,75 @@
 
 .mep-popup .mep-popup-header > div {
   margin: 8px 0;
+}
+
+.mep-popup .mep-info-icon {
+  cursor: pointer;
+}
+
+.mep-popup .mep-info-icon:hover + .mep-info-tooltip {
+  display: flex;
+}
+
+.mep-popup .mep-info-tooltip {
+  display: none;
+  font-weight: initial;
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  top: 30px;
+  background-color: #444;
+  border: 1px solid #fff;
+  box-shadow: 0 0 10px #000;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.mep-popup .mep-info-tooltip .mep-section-data {
+  gap: 8px 8px;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.mep-popup .mep-info-tooltip .mep-manifest-label {
+  color: #17A2B8;
+}
+
+.mep-popup .mep-info-tooltip .manifest-label {
+  color: #E9ECEF;
+}
+
+.mep-popup .mep-info-tooltip .regional-label {
+  color: #28A745;
+}
+
+.mep-popup .mep-info-tooltip .fallback-label { 
+  color: #FFC107;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch.D1ECF1 {
+  border: 2px solid #17A2B8;
+  background-color: #D1ECF1;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch.E9ECEF {  
+  border: 2px solid #6C757D;
+  background-color: #E9ECEF;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch.D4EDDA {
+  border: 2px solid #28A745;
+  background-color: #D4EDDA;
+}
+
+.mep-popup .mep-info-tooltip .color-swatch.FFF3CD {
+  border: 2px solid #FFC107;
+  background-color: #FFF3CD;
 }
 
 .mep-popup h6 {
@@ -196,14 +308,51 @@
 }
 
 .mep-popup .mep-popup-footer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: right;
   padding: 12px;
 }
 
+.mep-popup .mep-popup-footer a:not([active]) {
+  display: none;
+}
+
 .mep-popup .target-activity-name {
   font-style: italic;
+}
+
+.mep-manifest-title {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mep-manifest-title .mep-manifest-toggle {
+  cursor: pointer;
+}
+
+.mep-manifest-title .mep-manifest-toggle svg{
+  fill: rgb(44, 44, 44);
+}
+
+.mep-popup.in-page .mep-manifest-title .mep-manifest-toggle svg{
+  fill: #ffffff;
+}
+
+.mep-manifest-title .mep-manifest-toggle[active] svg.mep-toggle-expand {
+  display: none;
+}
+
+.mep-manifest-title .mep-manifest-toggle:not([active]) svg.mep-toggle-collapse {
+  display: none;
+}
+
+.mep-manifest-info:not([active]) {
+  display: none;
 }
 
 .mep-manifest-info,
@@ -215,12 +364,7 @@
 .mep-experience-dropdown {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.mep-popup .mep-column .mep-upstream-page a,
-.mep-popup .mep-column .mep-downstream-pages a {
-  position: static;
+  gap: 16px;
 }
 
 .mep-downstream-toggle {
@@ -278,10 +422,19 @@
   box-shadow: 0 0 10px #000;
 }
 
+.mep-popup-body {
+  padding: var(--spacing-xs);
+}
+
 .mep-popup.in-page .mep-popup-body {
   padding: 12px;
   overflow-y: auto;
-  max-height: calc(100vh - 234px);
+  height: calc(100vh - 210px);
+}
+
+.mep-popup.in-page .mep-options-body {
+  height: calc(100vh - 274px);
+  margin-bottom: 64px;
 }
 
 .mep-popup.in-page .mep-manifest-list {
@@ -303,7 +456,7 @@
 }
 
 .mep-popup.in-page .mep-section {
-  flex: 1 1 auto;
+  flex: 0 auto;
 }
 
 .mep-popup.in-page::before {
