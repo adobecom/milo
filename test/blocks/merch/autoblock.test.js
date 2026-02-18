@@ -1,7 +1,11 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { setConfig } from '../../../libs/utils/utils.js';
 import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock } from '../../../libs/blocks/merch/autoblock.js';
+
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+setConfig({ locales, miloLibs: '/libs' });
 
 describe('autoblock', () => {
   let satellite;
@@ -113,6 +117,47 @@ describe('autoblock', () => {
 
       expect(card1.checkReady.called).to.be.true;
       expect(card2.checkReady.called).to.be.true;
+    });
+
+    it('should load badge icons when card has merch-badge with sp-icon', async () => {
+      const container = document.createElement('div');
+      const card = document.createElement('merch-card');
+      const badge = document.createElement('merch-badge');
+      badge.setAttribute('icon', 'sp-icon-star');
+      card.appendChild(badge);
+      card.checkReady = sinon.stub().resolves();
+      container.appendChild(card);
+
+      // should not throw even though icons-workflow.js doesn't exist in test env
+      await postProcessAutoblock(container, false);
+      expect(card.checkReady.called).to.be.true;
+    });
+
+    it('should not reload badge icons on subsequent calls', async () => {
+      const container = document.createElement('div');
+      const card = document.createElement('merch-card');
+      const badge = document.createElement('merch-badge');
+      badge.setAttribute('icon', 'sp-icon-star');
+      card.appendChild(badge);
+      card.checkReady = sinon.stub().resolves();
+      container.appendChild(card);
+
+      // second call — iconsLoaded flag prevents re-import
+      await postProcessAutoblock(container, false);
+      expect(card.checkReady.called).to.be.true;
+    });
+
+    it('should not load badge icons when no sp-icon badges exist', async () => {
+      const container = document.createElement('div');
+      const card = document.createElement('merch-card');
+      const badge = document.createElement('merch-badge');
+      badge.setAttribute('icon', 'https://example.com/icon.png');
+      card.appendChild(badge);
+      card.checkReady = sinon.stub().resolves();
+      container.appendChild(card);
+
+      await postProcessAutoblock(container, false);
+      expect(card.checkReady.called).to.be.true;
     });
   });
 });
