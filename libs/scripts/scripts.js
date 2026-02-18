@@ -65,25 +65,7 @@ const config = {
   // taxonomyRoot: '/your-path-here',
 };
 
-export const [setLibs, getLibs] = (() => {
-  let libs;
-  return [
-    () => {
-      libs = (() => {
-        const { hostname, search } = window.location;
-        const branch = new URLSearchParams(search).get('milolibs');
-        if (branch) {
-          return branch.includes('--') ? `https://${branch}.aem.live/libs` : `https://${branch}--milo--adobecom.aem.live/libs`;
-        }
-        if (hostname.includes('local')) return 'http://localhost:6456/libs';
-        return `https://${hostname}/libs`;
-      })();
-      return libs;
-    }, () => libs,
-  ];
-})();
-
-const miloLibs = setLibs();
+const miloLibs = '/libs';
 
 const eagerLoad = (img) => {
   img?.setAttribute('loading', 'eager');

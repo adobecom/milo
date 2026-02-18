@@ -1075,7 +1075,7 @@ function getBlockData(block) {
   }
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock)) base = miloLibs;
-  if (isC2Page && isC2Block) base += '/c2';
+  if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
