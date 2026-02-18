@@ -18,7 +18,10 @@ async function runAccessibilityTest() {
       violations: results.violations,
     };
   } catch (error) {
-    window.lana.log(`Error running accessiblity test:, ${error}`);
+    window.lana.log(`Error running accessiblity test:, ${error}`, {
+      tags: 'preflight',
+      severity: 'error',
+    });
     return { error: `Error running accessibility test: ${error.message}` };
   }
 }

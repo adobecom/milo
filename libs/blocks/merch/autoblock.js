@@ -10,7 +10,10 @@ export async function localizePreviewLinks(el) {
         const url = new URL(href);
         a.href = await localizeLinkAsync(href, url.hostname);
       } catch (e) {
-        window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`);
+        window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`, {
+          tags: 'merch-autoblock',
+          severity: 'error',
+        });
       }
     }
   }
@@ -104,7 +107,10 @@ export async function postProcessAutoblock(autoblockEl, isCard = false) {
       decorateCardCtasWithA11y(card);
       enableAnalytics(card);
     } catch (e) {
-      window.lana?.log(`Error processing autoblock element: ${e.toString()}`);
+      window.lana?.log(`Error processing autoblock element: ${e.toString()}`, {
+        tags: 'merch-autoblock',
+        severity: 'error',
+      });
     }
   });
   return Promise.allSettled(processPromises);

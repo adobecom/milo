@@ -38,7 +38,10 @@ const PROD_INDEX = 'query-index-cards.json';
 const PREVIEW_INDEX = 'query-index-cards-preview.json';
 
 const fail = (el, err = '') => {
-  window.lana?.log(`Failed to initialize merch cards: ${err}`);
+  window.lana?.log(`Failed to initialize merch cards: ${err}`, {
+    tags: 'merch-card-collection',
+    severity: 'error',
+  });
   el.innerHTML = '';
   return el;
 };
