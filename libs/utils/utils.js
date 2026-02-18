@@ -1079,25 +1079,11 @@ function getBlockData(block) {
   return { blockPath, name, hasStyles };
 }
 
-function transformC2Spacing(block) {
-  const name = block.classList[0];
-  if (getMetadata('foundation') !== 'c2' || !C2_BLOCKS.includes(name)) return;
-  block.classList.forEach((className) => {
-    if (!className.includes('spacing')) return;
-    const [spacingValue, spacingString, ...rest] = className.split('-');
-    let newSpacingValue = spacingValue;
-    const xCount = [...newSpacingValue].filter((l) => l === 'x').length;
-    if (xCount > 1) newSpacingValue = `${xCount}x${newSpacingValue.slice(-1)}`;
-    block.classList.replace(className, [spacingString, newSpacingValue, ...rest].join('-'));
-  });
-}
-
 export async function loadBlock(block) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
   }
-  transformC2Spacing(block);
   const { name, blockPath, hasStyles } = getBlockData(block);
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
