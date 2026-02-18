@@ -14,6 +14,7 @@ export const AXE_CORE_CONFIG = {
     ['#preflight'],
     ['.block-label-container'],
     ['.adbMsgClientWrapper'],
+    ['#onetrust-consent-sdk'],
   ],
   runOnly: {
     type: 'tag',
@@ -22,7 +23,7 @@ export const AXE_CORE_CONFIG = {
 };
 
 export const CUSTOM_CHECKS_CONFIG = {
-  checks: ['altText', 'color-contrast', 'video-captions'],
+  checks: ['altText', 'color-contrast', 'aria-labels', 'video-captions', 'keyboard'],
   include: [['body']],
   exclude: [
     ['.preflight'],
@@ -38,5 +39,6 @@ export const CUSTOM_CHECKS_CONFIG = {
     ['#preflight'],
     ['.block-label-container'],
     ['.adbMsgClientWrapper'],
+    ['#onetrust-consent-sdk'],
   ],
 };

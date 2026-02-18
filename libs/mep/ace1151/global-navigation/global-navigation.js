@@ -33,7 +33,7 @@ const cssPromise = (async () => {
       clientId: 'feds-milo',
       sampleRate: 1,
       tags: 'utilities',
-      errorType: 'info',
+      severity: 'error',
     });
   }
 })();
@@ -207,8 +207,8 @@ export const CONFIG = {
                   trace: () => {},
                   debug: () => {},
                   info: () => {},
-                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav,warn' }),
-                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
+                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', severity: 'warning' }),
+                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
@@ -284,7 +284,7 @@ export const LANGMAP = {
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
-    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav,warn' });
+    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav', severity: 'warning' });
     return;
   }
   window.adobeIMS.signIn(options);
@@ -320,7 +320,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         signIn(SIGNIN_CONTEXT);
       });
     } else {
-      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav,warn' });
+      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav', severity: 'warning' });
     }
 
     decoratedElem.append(dropdownElem);
@@ -584,7 +584,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'i' });
+      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'i', severity: 'error' });
     }));
 
   decorateProductEntryCTA = () => {
@@ -624,7 +624,7 @@ class Gnav {
     if (!this.isLocalNav()) {
       const localNavWrapper = document.querySelector('.feds-localnav');
       if (localNavWrapper) {
-        lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav,warn' });
+        lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav', severity: 'warning' });
         localNavWrapper.remove();
       }
       return;
@@ -632,7 +632,7 @@ class Gnav {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
     const firstElem = localNavItems?.[0]?.querySelector('a, button') || localNavItems?.[0];
     if (!firstElem) {
-      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i' });
+      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i', severity: 'error' });
       return;
     }
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
@@ -642,6 +642,7 @@ class Gnav {
         message: 'GNAV: Localnav does not include \'localnav\' in its name.',
         tags: 'gnav',
         errorType: 'i',
+        severity: 'warning',
       });
       localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
@@ -819,7 +820,7 @@ class Gnav {
 
         resolve();
       } catch (e) {
-        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav,warn' });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav', severity: 'error' });
         resolve();
       }
     });
@@ -845,6 +846,7 @@ class Gnav {
         tags: 'gnav',
         errorType: 'i',
         message: `GNAV: issues within imsReady - ${this.useUniversalNav ? 'decorateUniversalNav' : 'decorateProfile'}`,
+        severity: 'error',
       });
     }
   };
@@ -885,6 +887,7 @@ class Gnav {
         e: `${profileData.statusText} url: ${profileData.url}`,
         tags: 'gnav',
         errorType: 'i',
+        severity: 'error',
       });
       return;
     }
@@ -1210,7 +1213,7 @@ class Gnav {
     fedsPromoWrapper.append(this.elements.aside);
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
-      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
+      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i', severity: 'warning' });
     }
     this.updateGnavTop();
     this.promoResizeObserver?.disconnect();
@@ -1660,6 +1663,7 @@ export default async function init(block) {
     error.tags = 'gnav';
     error.url = url;
     error.errorType = 'e';
+    error.severity = 'error';
     lanaLog({ message: error.message, ...error });
     throw error;
   }

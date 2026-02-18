@@ -417,7 +417,10 @@ export const getFederatedUrl = (url = '') => {
     const { pathname, search, hash } = new URL(url);
     return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
   } catch (e) {
-    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`);
+    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
   }
   return url;
 };
@@ -460,7 +463,10 @@ export async function loadLanguageConfig() {
 
     return langConfig;
   } catch (e) {
-    window.lana?.log('Failed to load language-config.json:', e);
+    window.lana?.log(`Failed to load language-config.json: ${e}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
   }
 
   return {};
@@ -609,7 +615,10 @@ function processQueryIndexMap(link, domain) {
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
-      window.lana?.log(`Failed to load query index: ${link}`, error);
+      window.lana?.log(`Failed to load query index: ${link} | ${error}`, {
+        tags: 'utils',
+        severity: 'error',
+      });
       return [];
     })
     .finally(() => {
@@ -694,7 +703,10 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
           queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
         });
     } catch (e) {
-      window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+      window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, {
+        tags: 'utils',
+        severity: 'error',
+      });
     } finally {
       lingoSiteMappingLoaded = true;
     }
@@ -811,28 +823,53 @@ export function getMepLingoPrefix() {
   return regionKey ? regions[regionKey].prefix : null;
 }
 
+let mepLingoModulePreloaded = false;
+
+function preloadMepLingoModule() {
+  if (mepLingoModulePreloaded) return;
+  mepLingoModulePreloaded = true;
+  import('../features/mep/lingo.js');
+}
+
 function detectMepLingoSwap(a) {
   if (!a) return;
-  if (a.href.includes('#_mep-lingo')) {
+  const isInsertHash = a.href.includes('#_mep-lingo-insert');
+  const isRemoveHash = !isInsertHash && a.href.includes('#_mep-lingo-remove');
+  const isRegularHash = !isInsertHash && !isRemoveHash && a.href.includes('#_mep-lingo');
+
+  if (isInsertHash || isRemoveHash || isRegularHash) {
+    let hashToRemove = '#_mep-lingo';
+    if (isInsertHash) hashToRemove = '#_mep-lingo-insert';
+    if (isRemoveHash) hashToRemove = '#_mep-lingo-remove';
+
     a.dataset.mepLingo = 'true';
-    // Store original href before transformation for fallback purposes
-    a.dataset.originalHref = a.href.replace('#_mep-lingo', '');
-    a.href = a.href.replace('#_mep-lingo', '');
+    if (isInsertHash) a.dataset.mepLingoInsert = 'true';
+    if (isRemoveHash) a.dataset.mepLingoRemove = 'true';
+    a.dataset.originalHref = a.href.replace(hashToRemove, '');
+    a.href = a.href.replace(hashToRemove, '');
+    if (lingoActive()) preloadMepLingoModule();
+    if (isInsertHash || isRemoveHash) return;
   }
-  // Always detect mep-lingo rows (even when lingoActive() is false) for fallback purposes
   const row = a.closest('.section > div > div');
   const firstCellText = row?.children[0]?.textContent?.toLowerCase().trim();
 
   if (firstCellText === 'mep-lingo') {
     a.dataset.mepLingo = 'true';
     a.dataset.originalHref = a.href;
+    if (lingoActive()) preloadMepLingoModule();
+    const swapBlock = a.closest('.section > div[class]');
     if (a.closest('.section-metadata')) {
       a.dataset.mepLingoSectionSwap = 'true';
-    } else {
-      const swapBlock = a.closest('.section > div[class]');
-      if (swapBlock) {
-        const [blockName] = swapBlock.classList;
-        a.dataset.mepLingoBlockSwap = blockName;
+    } else if (swapBlock) {
+      const [blockName] = swapBlock.classList;
+      a.dataset.mepLingoBlockSwap = blockName;
+
+      if (blockName === 'mep-lingo') {
+        if (swapBlock.classList.contains('insert')) {
+          a.dataset.mepLingoInsert = 'true';
+        } else if (swapBlock.classList.contains('remove')) {
+          a.dataset.mepLingoRemove = 'true';
+        }
       }
     }
   }
@@ -845,8 +882,9 @@ export async function localizeLinkAsync(
   aTag = null,
 ) {
   if (!href) return href;
+
   detectMepLingoSwap(aTag);
-  const effectiveHref = href.replace('#_mep-lingo', '');
+  const effectiveHref = href.replace(/#_mep-lingo(-insert|-remove)?/g, '');
   const isMepLingoLink = aTag?.dataset?.mepLingo
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
@@ -953,7 +991,10 @@ export function appendHtmlToLink(link) {
         : linkUrl.href);
     }
   } catch (e) {
-    window.lana?.log(`Error while attempting to append '.html' to ${link}: ${e}`);
+    window.lana?.log(`Error while attempting to append '.html' to ${link}: ${e}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
   }
 }
 
@@ -1032,7 +1073,10 @@ function getBlockData(block) {
       });
       if (match?.base) base = match.base;
     } catch (error) {
-      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`);
+      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`, {
+        tags: 'utils',
+        severity: 'error',
+      });
     }
   }
 
@@ -1170,7 +1214,10 @@ export function decorateAutoBlock(a) {
   try {
     url = new URL(a.href);
   } catch (e) {
-    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`);
+    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
     return false;
   }
 
@@ -1897,7 +1944,10 @@ async function decorateMeta(ignoreNames = []) {
       meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
       meta.dataset.localized = 'true';
     } catch (e) {
-      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`, {
+        tags: 'utils',
+        severity: 'error',
+      });
     }
   }));
 }
@@ -1973,7 +2023,10 @@ export function scrollToHashedElement(hash) {
   try {
     targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   } catch (e) {
-    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`);
+    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`, {
+      tags: 'utils',
+      severity: 'error',
+    });
   }
   if (!targetElement) return;
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
@@ -2391,7 +2444,7 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i', severity: 'error' });
   };
 
   window.lana = {

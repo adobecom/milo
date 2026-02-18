@@ -79,7 +79,10 @@ function localizeIconPath(iconPath) {
       const url = new URL(iconPath);
       return `https://www.adobe.com${url.pathname}`;
     } catch (e) {
-      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`);
+      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`, {
+        tags: 'merch-card-collection',
+        severity: 'error',
+      });
     }
   }
   return iconPath;
@@ -147,9 +150,15 @@ function getSidenav(collection) {
     for (const node of level) {
       const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
-      const iconPath = localizeIconPath(node.icon);
-      if (iconPath) {
-        createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
+      let iconPath;
+      if (node.icon?.startsWith('sp-icon-')) {
+        createTag(node.icon, { slot: 'icon' }, null, { parent: item });
+        iconPath = node.icon;
+      } else {
+        iconPath = localizeIconPath(node.icon);
+        if (iconPath) {
+          createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
+        }
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };

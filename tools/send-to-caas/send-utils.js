@@ -5,6 +5,7 @@ import {
   getPageLocale,
   getGrayboxExperienceId,
   getLanguageFirstCountryAndLang,
+  getIsLingoLocale,
 } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
@@ -304,7 +305,16 @@ const getBulkPublishLangAttr = async (options) => {
     const { country, lang } = await getLanguageFirstCountryAndLang(
       options.prodUrl,
       options.repo,
+      options.host,
+      true,
     );
+    if (!country || !lang) {
+      throw new Error('Failed to get lang-first locales for bulk publisher');
+    }
+    const isLingoLocale = await getIsLingoLocale(options.repo, country, lang);
+    if (!isLingoLocale) {
+      throw new Error(`This page is not a valid language-first case for repo: ${options.repo}, country: ${country}, language: ${lang}`);
+    }
     return `${lang}-${country}`;
   }
   if (!getLocale) {
@@ -318,19 +328,30 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options, origin) => {
+  let langAttr;
+  /* c8 ignore next */
+  if (window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')) {
+    const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
+      ? await getBulkPublishLangAttr(options)
+      : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
+    langAttr = langStr?.toLowerCase().split('-') || [];
+    // do not use the fallback values if the language first is enabled
+    if (options.languageFirst) {
+      const [lang, country] = langAttr;
+      return {
+        country,
+        lang,
+      };
+    }
+  }
   const langFirst = lingoActive();
   if (langFirst) {
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
       origin,
+      window.location.hostname,
     );
   }
-  /* c8 ignore next */
-  const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
-    ? await getBulkPublishLangAttr(options)
-    : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
-  const langAttr = langStr?.toLowerCase().split('-') || [];
-
   const [lang = 'en', country = 'us'] = langAttr;
   return {
     country,
@@ -388,6 +409,14 @@ function localizeCtaUrl(val) {
   return val;
 }
 
+const makeCountryLangResolver = (key) => async (s, options) => {
+  if (s) return s;
+  const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
+  const origin = getOrigin(fgColor);
+  const result = await getCountryAndLang(options, origin);
+  return result[key];
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -413,13 +442,7 @@ const props = {
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
-  country: async (s, options) => {
-    if (s) return s;
-    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
-    const origin = getOrigin(fgColor);
-    const { country } = await getCountryAndLang(options, origin);
-    return country;
-  },
+  country: makeCountryLangResolver('country'),
   created: (s) => {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
@@ -457,13 +480,7 @@ const props = {
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
   floodgatecolor: (s, options) => s || options.floodgatecolor || getMetadata('floodgatecolor') || 'default',
-  lang: async (s, options) => {
-    if (s) return s;
-    const fgColor = options.floodgatecolor || getMetadata('floodgatecolor');
-    const origin = getOrigin(fgColor);
-    const { lang } = await getCountryAndLang(options, origin);
-    return lang;
-  },
+  lang: makeCountryLangResolver('lang'),
   modified: (s) => {
     const { doc, lastModified } = getConfig();
     return s
