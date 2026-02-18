@@ -930,7 +930,8 @@ export function buildVariantInfo(variantNames) {
 }
 
 const getXLGListURL = (config) => {
-  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
+  const params = new URLSearchParams(document.location.search);
+  const sheet = params.get('sheet') || (config.env?.name === 'prod' ? 'prod' : 'stage');
   return `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
 };
 
