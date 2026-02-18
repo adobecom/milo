@@ -678,7 +678,10 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
       });
     return lingoSiteMapping;
   } catch (e) {
-    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+    window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, {
+      tags: 'caas',
+      severity: 'error',
+    });
   }
   return lingoSiteMapping;
 }

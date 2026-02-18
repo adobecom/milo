@@ -25,7 +25,10 @@ class LiteYTEmbed extends HTMLElement {
       this.videoTitle = title;
       return this.videoTitle;
     } catch (error) {
-      window.lana.log('Error fetching YouTube video title', { error });
+      window.lana.log(`Error fetching YouTube video title: ${error?.message || error}`, {
+        tags: 'youtube',
+        severity: 'error',
+      });
       return this.videoTitle;
     }
   }

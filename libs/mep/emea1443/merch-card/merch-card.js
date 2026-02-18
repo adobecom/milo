@@ -84,7 +84,10 @@ export async function loadMnemonicList(foreground) {
       .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
     await Promise.all([stylePromise, loadModule]);
   } catch (err) {
-    window.lana?.log(`Failed to load mnemonic list module: ${err}`);
+    window.lana?.log(`Failed to load mnemonic list module: ${err}`, {
+      tags: 'merch-card',
+      severity: 'error',
+    });
   }
 }
 
