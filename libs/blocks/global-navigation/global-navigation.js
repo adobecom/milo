@@ -170,6 +170,87 @@ const getMessageEventListener = () => {
   };
 };
 
+const handleSignIn = async () => {
+  const { getModal } = await import('../modal/modal.js');
+  const details = document.createElement('div');
+  details.className = 'feds-signin-modal-content';
+
+  const { env } = getConfig();
+  const lib = `https://auth-light.identity${env.name === 'prod' ? '' : '-stage'}.adobe.com/sentry/wrapper.js`;
+  await loadScript(lib);
+
+  const sentry = document.createElement('susi-sentry-light');
+  if (env.name !== 'prod') sentry.stage = true;
+  sentry.variant = 'standard';
+
+  // Map to SUSI authParams cleanly
+  const { locale, imsClientId, imsScope } = getConfig();
+
+  let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
+  try {
+    const url = new URL(redirectUri);
+    url.searchParams.set('from_ims', 'true');
+    redirectUri = url.toString();
+  } catch (e) {
+    // Fallback if URL parsing fails
+  }
+
+  sentry.authParams = {
+    client_id: imsClientId || SIGNIN_CONTEXT.client_id,
+    scope: imsScope || SIGNIN_CONTEXT.scope || 'AdobeID,openid,gnav',
+    response_type: 'token',
+    redirect_uri: redirectUri,
+    locale: locale?.ietf || 'en-US',
+  };
+
+  const dctxId = getMetadata('susi-light-dctx-id');
+  if (dctxId) sentry.authParams.dctx_id = dctxId;
+
+  sentry.config = { consentProfile: 'free' };
+  sentry.popup = true;
+
+  sentry.addEventListener('on-token', () => {
+    window.location.reload();
+  });
+
+  sentry.addEventListener('on-error', (e) => {
+    window.lana?.log('GNav Sign-In Modal: SUSI Light Error: ', e);
+  });
+
+  // Basic styling to ensure it fits in modal
+  details.innerHTML = `
+    <style>
+      .feds-signin-modal-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 48px 0px;
+      }
+      #signin-modal {
+        width: 400px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: center;
+      }
+      #signin-modal .dialog-close {
+        display: block;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background-color: transparent;
+      }
+      susi-sentry-light {
+        width: 100%;
+      }
+    </style>
+  `;
+
+  details.append(sentry);
+
+  return getModal(null, { content: details, id: 'signin-modal' });
+};
+
 const getSignInCtaStyle = () => {
   const isPrimary = (
     getMetadata('signin-cta-style') === 'primary'
@@ -221,7 +302,13 @@ export const CONFIG = {
           signInCtaStyle: getSignInCtaStyle(),
           isSignUpRequired: false,
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
+            onSignIn: () => {
+              if (getConfig().useSusiModal) {
+                handleSignIn();
+              } else {
+                window.adobeIMS?.signIn(SIGNIN_CONTEXT);
+              }
+            },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
