@@ -390,18 +390,6 @@ export default async (block) => {
     block.classList.add('match-background');
   }
 
-  // Set zoom on the body to handle edgecases in illustrator
-  // We do this only because this block is meant to be loaded in
-  // standalone contexts on desktop apps.
-  try {
-    const scaleFactorString = searchParams.get('scale_factor');
-    const scaleFactor = parseFloat(scaleFactorString);
-    if (Number.isNaN(scaleFactor)) throw new Error('Invalid scale factor');
-    document.body.style.zoom = scaleFactor;
-  } catch (e) {
-    console.warn(e);
-  }
-
   const radioGroupList = (() => {
     const [scale, optionList] = radioLabels?.split('::').map((x) => x.trim()) ?? [];
     if (scale !== '5' && scale !== '7') {

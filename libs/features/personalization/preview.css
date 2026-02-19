@@ -385,6 +385,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-roc] {
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
   position: relative !important;
+  pointer-events: none !important;
 }
 
 body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
@@ -392,6 +393,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   margin: 5px 2px;
   position: relative !important;
+  pointer-events: none !important;
 }
 
 body[data-mep-fragments='true'] [data-fragment-default] {
