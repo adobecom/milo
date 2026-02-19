@@ -84,25 +84,24 @@ function decorate(el) {
 
   const fragment = document.createDocumentFragment();
 
-  const featuredRow = rows[0];
-  const featuredCell = featuredRow.querySelector('[data-valign="middle"]');
-  if (featuredCell) {
-    const featuredWrap = createTag('div', { class: 'cards-featured' });
-    const data = parseCardCell(featuredCell);
-    featuredWrap.appendChild(buildCard(data, { featured: true }));
-    fragment.appendChild(featuredWrap);
-  }
+  rows.forEach((row) => {
+    const cells = row.querySelectorAll('[data-valign="middle"]');
+    if (!cells.length) return;
 
-  const standardRow = rows[1];
-  if (standardRow) {
-    const standardWrap = createTag('div', { class: 'cards-row' });
-    const cells = standardRow.querySelectorAll('[data-valign="middle"]');
-    cells.forEach((cell) => {
-      const data = parseCardCell(cell);
-      standardWrap.appendChild(buildCard(data, { featured: false }));
-    });
-    fragment.appendChild(standardWrap);
-  }
+    if (cells.length === 1) {
+      const featuredWrap = createTag('div', { class: 'cards-featured' });
+      const data = parseCardCell(cells[0]);
+      featuredWrap.appendChild(buildCard(data, { featured: true }));
+      fragment.appendChild(featuredWrap);
+    } else {
+      const standardWrap = createTag('div', { class: 'cards-row' });
+      cells.forEach((cell) => {
+        const data = parseCardCell(cell);
+        standardWrap.appendChild(buildCard(data, { featured: false }));
+      });
+      fragment.appendChild(standardWrap);
+    }
+  });
 
   el.innerHTML = '';
   el.appendChild(fragment);
