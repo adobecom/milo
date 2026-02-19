@@ -2,6 +2,13 @@
   --bc-modal-animation-time: 500ms;
 }
 
+:root {
+  --bc-modal-animation-time: 500ms;
+  --bc-susi-modal-width: 370px;
+  --bc-susi-min-height: 462px;
+  --bc-susi-standard-padding: 24px;
+}
+
 .brand-concierge {
   --bc-header-color: #131313;
   --bc-card-radius: 12px;
@@ -402,6 +409,92 @@
   margin-bottom: 8px;
 }
 
+.dialog-modal.bc-susi-modal {
+  width: var(--bc-susi-modal-width);
+  min-height: var(--bc-susi-min-height);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dialog-modal.bc-susi-modal .bc-susi-modal-title {
+  padding: 20px var(--bc-susi-standard-padding) 12px;
+  margin: 0;
+}
+
+/* Temporary override to chat styling */
+#brand-concierge-mount .input-section {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#brand-concierge-mount .chat-input {
+  line-height: 1.5 !important;
+  padding: 14px 0 !important;
+  margin: 0 !important;
+}
+
+#brand-concierge-mount .container-mobile .chat-input {
+  font-size: 16px !important;
+}
+
+#brand-concierge-mount .container-mobile .chat-history {
+  padding-left: 28px !important;
+  padding-right: 28px !important;
+}
+
+#brand-concierge-mount .ai-chat-label {
+  height: 32px !important;
+  width: 32px !important;
+}
+
+#brand-concierge-mount .input-container:has(.ai-chat-label) {
+  padding: 0 10px !important;
+}
+
+#brand-concierge-mount .ai-chat-label svg {
+  background: linear-gradient(98.11deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%);
+  mask: url('data:image/svg+xml;base64,PHN2ZyB0aXRsZT0iQXNrIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNi4yNSAxOC45OThDNi4xNTAzOSAxOC45OTggNi4wNTA3OCAxOC45Nzg1IDUuOTU2MDUgMTguOTM4NUM1LjY3OTY4IDE4LjgyMDMgNS41IDE4LjU0ODggNS41IDE4LjI0OFYxNC45OThINC43NUMyLjY4MjYyIDE0Ljk5OCAxIDEzLjMxNTQgMSAxMS4yNDhWNS43NDgwNUMxIDMuNjgwNjcgMi42ODI2MiAxLjk5ODA1IDQuNzUgMS45OTgwNUg4LjcwMzEyQzkuMTE3MTggMS45OTgwNSA5LjQ1MzEyIDIuMzMzOTkgOS40NTMxMiAyLjc0ODA1QzkuNDUzMTIgMy4xNjIxMSA5LjExNzE4IDMuNDk4MDUgOC43MDMxMiAzLjQ5ODA1SDQuNzVDMy41MDk3NyAzLjQ5ODA1IDIuNSA0LjUwNzgyIDIuNSA1Ljc0ODA1VjExLjI0OEMyLjUgMTIuNDg4MyAzLjUwOTc3IDEzLjQ5OCA0Ljc1IDEzLjQ5OEg2LjI1QzYuNjY0MDYgMTMuNDk4IDcgMTMuODM0IDcgMTQuMjQ4VjE2LjQ4NDRMOS44ODM3OSAxMy43MDhDMTAuMDIzNCAxMy41NzMyIDEwLjIxIDEzLjQ5OCAxMC40MDQzIDEzLjQ5OEgxNS4yNUMxNi40OTAyIDEzLjQ5OCAxNy41IDEyLjQ4ODMgMTcuNSAxMS4yNDhWOS45NzY1N0MxNy41IDkuNTYyNTEgMTcuODM1OSA5LjIyNjU3IDE4LjI1IDkuMjI2NTdDMTguNjY0MSA5LjIyNjU3IDE5IDkuNTYyNTEgMTkgOS45NzY1N1YxMS4yNDhDMTkgMTMuMzE1NCAxNy4zMTc0IDE0Ljk5OCAxNS4yNSAxNC45OThIMTAuNzA3TDYuNzcwNTEgMTguNzg4MUM2LjYyNzkzIDE4LjkyNTggNi40NDA0MyAxOC45OTggNi4yNSAxOC45OThaIiBmaWxsPSJjdXJyZW50Q29sb3IiLz48cGF0aCBkPSJNMTMuMjc3NCA5LjA4MjkyQzEzLjA4ODkgOS4wODI5MiAxMi44OTk1IDkuMDM0MDkgMTIuNzI4NiA4LjkzNTQ2QzEyLjMxMjYgOC42OTYyIDEyLjEwMTYgOC4yMjA2MiAxMi4yMDIyIDcuNzUxODdMMTIuNjYyMiA1LjYyNjg3TDExLjIwMjIgNC4wMTY1MkMxMC44Nzk5IDMuNjYxMDUgMTAuODI0MyAzLjE0NDQ1IDExLjA2MzUgMi43Mjk0MUMxMS4zMDM4IDIuMzE0MzcgMTEuNzg0MiAyLjEwMzQzIDEyLjI0NzEgMi4yMDMwNEwxNC4zNzIxIDIuNjYzTDE1Ljk4MjUgMS4yMDMwNEMxNi4zMzggMC44ODE3NDcgMTYuODU3NSAwLjgyNzA1NyAxNy4yNjk2IDEuMDY0MzdDMTcuNjg1NiAxLjMwMzYzIDE3Ljg5NjUgMS43NzkyMSAxNy43OTYgMi4yNDc5NkwxNy4zMzYgNC4zNzI5NkwxOC43OTYgNS45ODMzMUMxOS4xMTgyIDYuMzM4NzggMTkuMTczOSA2Ljg1NTM4IDE4LjkzNDYgNy4yNzA0MkMxOC42OTQ0IDcuNjg2NDQgMTguMjE3OCA3Ljg5OTMzIDE3Ljc1MSA3Ljc5Njc5TDE1LjYyNiA3LjMzNjgzTDE0LjAxNTcgOC43OTY3OUMxMy44MDc3IDguOTg1MjcgMTMuNTQ0IDkuMDgyOTIgMTMuMjc3NCA5LjA4MjkyWk0xMy4xNTE0IDMuOTMzNUwxMy45MTEyIDQuNzcxMzlDMTQuMTQ3NSA1LjAyOTIgMTQuMjQ2MiA1LjM5MjQ4IDE0LjE3MTkgNS43NDAxNEwxMy45MzI3IDYuODQ3NTdMMTQuNzcwNiA2LjA4NzhDMTUuMDI5NCA1Ljg1MTQ3IDE1LjM5NjYgNS43NTM4MiAxNS43MzkzIDUuODI3MDZMMTYuODQ2NyA2LjA2NjMyTDE2LjA4NyA1LjIyODQzQzE1Ljg1MDYgNC45NzA2MiAxNS43NTIgNC42MDczNCAxNS44MjYyIDQuMjU5NjhMMTYuMDY1NSAzLjE1MjI2TDE1LjIyNzYgMy45MTIwM0MxNC45Njk4IDQuMTQ5MzMgMTQuNjA0NiA0LjI0ODk0IDE0LjI1ODkgNC4xNzI3N0wxMy4xNTE0IDMuOTMzNVoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjxwYXRoIGQ9Ik03LjkzMjYxIDExLjUwMzlDNy44MDM3IDExLjUwMzkgNy42NzQ4IDExLjQ3MDcgNy41NTc2MSAxMS40MDMzQzcuMjc1MzggMTEuMjQwMiA3LjEzMDg1IDEwLjkxNDEgNy4xOTkyMSAxMC41OTU3TDcuMzc2OTQgOS43NzUzOEw2LjgxMzQ2IDkuMTU0MjlDNi41OTQ3MSA4LjkxMzA4IDYuNTU2NjIgOC41NTc2MSA2LjcxOTcxIDguMjc1MzhDNi44ODI4IDcuOTkzMTUgNy4yMTA5MiA3Ljg1NDQ4IDcuNTI3MzMgNy45MTY5OEw4LjM0NzY0IDguMDk0NzFMOC45Njg3MyA3LjUzMTIzQzkuMjEwOTIgNy4zMTI0OCA5LjU2NDQzIDcuMjc0MzkgOS44NDc2NCA3LjQzNzQ4QzEwLjEyOTkgNy42MDA1NyAxMC4yNzQ0IDcuOTI2NzQgMTAuMjA2IDguMjQ1MUwxMC4wMjgzIDkuMDY1NDFMMTAuNTkxOCA5LjY4NjVDMTAuODEwNSA5LjkyNzcxIDEwLjg0ODYgMTAuMjgzMiAxMC42ODU1IDEwLjU2NTRDMTAuNTIyNSAxMC44NDc2IDEwLjE5MzMgMTAuOTg5MiA5Ljg3NzkyIDEwLjkyMzhMOS4wNTc2MSAxMC43NDYxTDguNDM2NTIgMTEuMzA5NkM4LjI5NDkyIDExLjQzNzUgOC4xMTQyNSAxMS41MDM5IDcuOTMyNjEgMTEuNTAzOVoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==') no-repeat center;
+  mask-size: contain;
+  width: 20px !important;
+  height: 20px !important;
+  color: transparent !important;
+}
+
+#brand-concierge-mount .disclaimer-message {
+  line-height: 1.5 !important;
+}
+
+#brand-concierge-mount .container-desktop .bc-response-footer,
+#brand-concierge-mount .container-mobile .bc-response-footer {
+  margin-top: 16px !important;
+}
+
+#brand-concierge-mount .citations-sources-panel:not(.active) {
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+#brand-concierge-mount .bc-response-footer-actions .bc-feedback-buttons {
+  margin-top: 4px !important;
+}
+
+#brand-concierge-mount .feedback-button:hover:not(:disabled) {
+  color: #131313 !important;
+  transform: none !important;
+}
+
+#brand-concierge-mount .submit-button:hover:not(:disabled) {
+  transform: none !important;
+}
+
+#brand-concierge-mount .privacy-notice-title {
+  display: none !important;
+}
+
+#brand-concierge-mount .message-blocker {
+  height: calc(90px - 24px) !important;
+}
+
 /* hero */
 .brand-concierge.hero {
   padding: 40px 24px 12px;
@@ -488,6 +581,14 @@
   top: unset;
   bottom: 0;
   animation: var(--bc-modal-animation-time) ease-in-out slide-up;
+}
+
+#bc-susi-modal {
+  z-index: calc( var(--modal-z-index) + 1);
+}
+
+#bc-susi-modal ~ .modal-curtain {
+  z-index: calc( var(--modal-z-index-curtain) + 1);
 }
 
 /* Fallback for browsers that don't support dvh */

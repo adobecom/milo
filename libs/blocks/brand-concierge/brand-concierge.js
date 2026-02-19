@@ -1,4 +1,4 @@
-import { getModal } from '../modal/modal.js';
+import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -78,6 +78,96 @@ function waitForCondition(checkFn, timeout = 5000, interval = 100) {
   });
 }
 
+/**
+ * Creates the SUSI Light component for the sign-in modal.
+ * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
+ * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
+ */
+function createSusiComponentForModal({
+  authParams, config, variant, redirectUrl, isStage, popup, onCloseRedirect, onSuccessfulToken,
+}) {
+  const susi = createTag('susi-sentry-light');
+  susi.authParams = {
+    ...authParams,
+    redirect_uri: redirectUrl,
+  };
+  susi.config = config;
+  susi.variant = variant;
+  susi.popup = !!popup;
+  if (isStage) susi.stage = 'true';
+
+  const onRedirect = (e) => {
+    if (popup && typeof onCloseRedirect === 'function') {
+      onCloseRedirect();
+    } else if (!popup) {
+      window.location.assign(e.detail);
+    }
+  };
+  const onError = (e) => { window.lana?.log('SUSI Light error:', e); };
+  const onAnalytics = () => { /* TODO: send analytics from e.detail (type, event, client_id) */ };
+  const onAuthFailed = () => { /* TODO: handle auth failed (e.detail) */ };
+
+  susi.addEventListener('redirect', onRedirect);
+  susi.addEventListener('on-error', onError);
+  susi.addEventListener('on-analytics', onAnalytics);
+  if (onSuccessfulToken) {
+    susi.addEventListener('on-token', onSuccessfulToken);
+  }
+  susi.addEventListener('on-auth-failed', onAuthFailed);
+  return susi;
+}
+
+async function openSusiLightModal() {
+  const config = getConfig();
+  const { env, locale, imsClientId } = config || {};
+  const isStage = env?.name !== 'prod';
+  const redirectUrl = window.location.href;
+  const clientId = imsClientId;
+  const localeIetf = (locale?.ietf || 'en-US').toLowerCase();
+
+  const CDN_URL = `https://auth-light.identity${isStage ? '-stage' : ''}.adobe.com/sentry/wrapper.js`;
+  await loadScript(CDN_URL);
+
+  const SUSI_MODAL_ID = 'bc-susi-modal';
+  const closeSusiModal = () => {
+    const modal = document.getElementById(SUSI_MODAL_ID);
+    if (modal) closeModal(modal);
+  };
+  const authParams = {
+    dt: false,
+    locale: localeIetf,
+    response_type: 'token',
+    client_id: clientId,
+    scope: 'AdobeID,openid',
+  };
+  const susiConfig = { consentProfile: 'free', fullWidth: true };
+  const onSuccessfulToken = ({ detail }) => {
+    closeSusiModal();
+    const token = detail;
+    console.log('SUSI Light: on-token (successful auth), token received', token);
+    // ToDo: Do something with the token - need info from Nina
+  };
+  const susiEl = createSusiComponentForModal({
+    authParams,
+    config: susiConfig,
+    variant: 'standard',
+    redirectUrl,
+    isStage,
+    popup: true,
+    onCloseRedirect: closeSusiModal,
+    onSuccessfulToken,
+  });
+  const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
+  const fragment = new DocumentFragment();
+  fragment.append(title, wrapper);
+  await getModal(null, {
+    id: SUSI_MODAL_ID,
+    class: 'bc-susi-modal',
+    content: fragment,
+  });
+}
+
 function resetFloatingButton(el) {
   const floatingButton = el.querySelector('.bc-floating-button');
   if (floatingButton) {
@@ -122,39 +212,47 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  const { env } = getConfig();
-  const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  let src = stage;
+  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
+    console.log('bc:cta-action', detail);
+    if (detail?.action === 'sign-in') {
+      openSusiLightModal();
+    }
+  });
 
-  if (env.name === 'prod') {
-    src = prod;
-  }
+  // eslint-disable-next-line no-underscore-dangle
+  const alloyVersion = window.alloy_all?.data?._adobe_corpnew?.digitalData?.page?.libraryVersions;
+  const useNewBootstrapAPI = alloyVersion === '2.31.0';
 
-  if (webClient === 'prod') {
-    console.log('prod', prod);
-    src = prod;
-  } else if (webClient === 'stage') {
-    console.log('stage', stage);
-    src = stage;
-  }
+  if (useNewBootstrapAPI) {
+    // New method: Load script and use bootstrap API
+    const { env } = getConfig();
+    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
+    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+    await loadScript(src);
 
-  await loadScript(src);
+    const urlParams = new URLSearchParams(window.location.search);
+    const testParam = urlParams.get('test');
+    const useTestInstance = env.name !== 'prod' && (testParam === 'cts' || testParam === 'cjm');
+    const instanceName = useTestInstance ? 'alloy2' : 'alloy';
+    const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
 
-  const bootstrapAPIReady = await waitForCondition(
-    () => !!window.adobe?.concierge?.bootstrap,
-    5000, // 5 seconds max wait
-    100, // Check every 100ms
-  );
-
-  if (bootstrapAPIReady) {
-    window.adobe.concierge.bootstrap({
-      instanceName: 'alloy',
-      stylingConfigurations: getUpdatedChatUIConfig(),
-      selector: `#${mountId}`,
-    });
+    if (bootstrapAPIReady) {
+      window.adobe.concierge.bootstrap({
+        instanceName,
+        stylingConfigurations: getUpdatedChatUIConfig(),
+        selector: `#${mountId}`,
+      });
+    } else {
+      window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
+    }
   } else {
-    window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
+    // Legacy method: Use _satellite.track
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite?.track('bootstrapConversationalExperience', {
+      selector: `#${mountId}`,
+      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+      stylingConfigurations: getUpdatedChatUIConfig(),
+    });
   }
 
   const handleViewportResize = () => updateModalHeight();
@@ -439,4 +537,19 @@ export default async function init(el) {
     decorateCards(el, cards);
     decorateLegal(el, legal);
   }
+  if (variants.isFloatingButton) {
+    decorateFloatingButton(el);
+  }
+  if (variants.isFloatingButtonOnly) {
+    rows.forEach((row) => {
+      el.removeChild(row);
+    });
+    decorateFloatingButton(el);
+  }
+
+  // Testing only: Remove before contributing
+  const button = document.createElement('button');
+  button.textContent = 'Click me to open SUSI Light (testing only)';
+  button.onclick = openSusiLightModal;
+  el.appendChild(button);
 }
