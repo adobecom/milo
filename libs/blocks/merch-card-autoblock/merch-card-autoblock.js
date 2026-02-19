@@ -11,6 +11,7 @@ import {
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
+const seenFragments = new Set();
 let log;
 loadMasComponent(MAS_MERCH_CARD);
 loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
@@ -53,7 +54,10 @@ export async function checkReady(masElement) {
 }
 
 export async function createCard(el, options) {
-  const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  const attrs = { fragment: options.fragment };
+  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
+  seenFragments.add(options.fragment);
+  const aemFragment = createTag('aem-fragment', attrs);
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   const parent = el.parentElement;
   if (parent && parent.tagName === 'P' && parent.children.length === 1) {
@@ -67,7 +71,10 @@ export async function createCard(el, options) {
 
 /** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInline(el, options) {
-  const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  const attrs = { fragment: options.fragment };
+  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
+  seenFragments.add(options.fragment);
+  const aemFragment = createTag('aem-fragment', attrs);
   // mas-field listens for aem:load from aem-fragment and renders the field content.
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
   const parent = el.parentElement;
