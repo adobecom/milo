@@ -1,5 +1,5 @@
-import { getModal } from '../modal/modal.js';
-import { createTag, getConfig, loadScript } from '../../utils/utils.js';
+import { getModal, closeModal } from '../modal/modal.js';
+import { createTag, getConfig, loadScript, getMetadata } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 
 const cardIcon = '<svg class="card-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M7.93446 10.5992C7.75946 10.5992 7.58289 10.5539 7.42352 10.4617C7.03836 10.239 6.84383 9.79763 6.93836 9.36325L7.52039 6.66404L5.6657 4.61794C5.36726 4.28825 5.3157 3.80856 5.53836 3.42341C5.76101 3.03748 6.20633 2.84294 6.6368 2.93825L9.33601 3.52028L11.3821 1.6656C11.7126 1.3656 12.1923 1.31638 12.5766 1.53825C12.9618 1.76091 13.1563 2.20232 13.0618 2.63669L12.4798 5.33591L14.3345 7.382C14.6329 7.71091 14.6837 8.1906 14.4618 8.57576C14.2391 8.96013 13.7993 9.15623 13.3641 9.06248L10.6649 8.47889L8.61806 10.3344C8.42509 10.5094 8.18054 10.5992 7.93446 10.5992ZM8.71336 6.82654L8.22977 9.06638L9.92742 7.52732C10.1696 7.30779 10.504 7.21716 10.8251 7.28591L13.0665 7.77028L11.5274 6.07263C11.3071 5.82888 11.2173 5.49216 11.2876 5.17184L11.7704 2.93356L10.0727 4.47263C9.82899 4.69294 9.49306 4.782 9.17196 4.71247L6.93368 4.22965L8.47274 5.92731C8.69305 6.17028 8.7829 6.50623 8.71336 6.82654Z" fill="currentColor"/><path d="M2.67645 14.6017C2.57333 14.6017 2.47021 14.5751 2.37645 14.5212C2.15067 14.3907 2.03505 14.1298 2.08973 13.8751L2.33505 12.7407L1.55536 11.8813C1.38036 11.6884 1.34989 11.404 1.48036 11.1782C1.61083 10.9524 1.87333 10.8399 2.12645 10.8915L3.26083 11.1368L4.12021 10.3571C4.31396 10.1813 4.59677 10.1516 4.82333 10.2821C5.04912 10.4126 5.16474 10.6735 5.11005 10.9282L4.86474 12.0626L5.64443 12.922C5.81943 13.1149 5.8499 13.3993 5.71943 13.6251C5.58896 13.8509 5.32568 13.9618 5.07333 13.9118L3.93896 13.6665L3.07958 14.4462C2.9663 14.5485 2.82177 14.6017 2.67645 14.6017Z" fill="currentColor"/></svg>';
@@ -61,6 +61,96 @@ function waitForCondition(checkFn, timeout = 5000, interval = 100) {
   });
 }
 
+/**
+ * Creates the SUSI Light component for the sign-in modal.
+ * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
+ * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
+ */
+function createSusiComponentForModal({
+  authParams, config, variant, redirectUrl, isStage, popup, onCloseRedirect, onSuccessfulToken,
+}) {
+  const susi = createTag('susi-sentry-light');
+  susi.authParams = {
+    ...authParams,
+    redirect_uri: redirectUrl,
+  };
+  susi.config = config;
+  susi.variant = variant;
+  susi.popup = !!popup;
+  if (isStage) susi.stage = 'true';
+
+  const onRedirect = (e) => {
+    if (popup && typeof onCloseRedirect === 'function') {
+      onCloseRedirect();
+    } else if (!popup) {
+      window.location.assign(e.detail);
+    }
+  };
+  const onError = (e) => { window.lana?.log('SUSI Light error:', e); };
+  const onAnalytics = () => { /* TODO: send analytics from e.detail (type, event, client_id) */ };
+  const onAuthFailed = () => { /* TODO: handle auth failed (e.detail) */ };
+
+  susi.addEventListener('redirect', onRedirect);
+  susi.addEventListener('on-error', onError);
+  susi.addEventListener('on-analytics', onAnalytics);
+  if (onSuccessfulToken) {
+    susi.addEventListener('on-token', onSuccessfulToken);
+  }
+  susi.addEventListener('on-auth-failed', onAuthFailed);
+  return susi;
+}
+
+async function openSusiLightModal() {
+  const config = getConfig();
+  const { env, locale, imsClientId } = config || {};
+  const isStage = env?.name !== 'prod';
+  const redirectUrl = window.location.href;
+  const clientId = imsClientId;
+  const localeIetf = (locale?.ietf || 'en-US').toLowerCase();
+
+  const CDN_URL = `https://auth-light.identity${isStage ? '-stage' : ''}.adobe.com/sentry/wrapper.js`;
+  await loadScript(CDN_URL);
+
+  const SUSI_MODAL_ID = 'bc-susi-modal';
+  const closeSusiModal = () => {
+    const modal = document.getElementById(SUSI_MODAL_ID);
+    if (modal) closeModal(modal);
+  };
+  const authParams = {
+    dt: false,
+    locale: localeIetf,
+    response_type: 'token',
+    client_id: clientId,
+    scope: 'AdobeID,openid',
+  };
+  const susiConfig = { consentProfile: 'free', fullWidth: true };
+  const onSuccessfulToken = ({ detail }) => {
+    closeSusiModal();
+    const token = detail;
+    console.log('SUSI Light: on-token (successful auth), token received', token);
+    // ToDo: Do something with the token - need info from Nina
+  };
+  const susiEl = createSusiComponentForModal({
+    authParams,
+    config: susiConfig,
+    variant: 'standard',
+    redirectUrl,
+    isStage,
+    popup: true,
+    onCloseRedirect: closeSusiModal,
+    onSuccessfulToken,
+  });
+  const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
+  const fragment = new DocumentFragment();
+  fragment.append(title, wrapper);
+  await getModal(null, {
+    id: SUSI_MODAL_ID,
+    class: 'bc-susi-modal',
+    content: fragment,
+  });
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
@@ -90,6 +180,13 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
+  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
+    console.log('bc:cta-action', detail);
+    if (detail?.action === 'sign-in') {
+      openSusiLightModal();
+    }
+  });
+
   // eslint-disable-next-line no-underscore-dangle
   const alloyVersion = window.alloy_all?.data?._adobe_corpnew?.digitalData?.page?.libraryVersions;
   const useNewBootstrapAPI = alloyVersion === '2.31.0';
@@ -101,15 +198,15 @@ async function openChatModal(initialMessage, el) {
     const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
     await loadScript(src);
 
-    const bootstrapAPIReady = await waitForCondition(
-      () => !!window.adobe?.concierge?.bootstrap,
-      5000, // 5 seconds max wait
-      100, // Check every 100ms
-    );
+    const urlParams = new URLSearchParams(window.location.search);
+    const testParam = urlParams.get('test');
+    const useTestInstance = env.name !== 'prod' && (testParam === 'cts' || testParam === 'cjm');
+    const instanceName = useTestInstance ? 'alloy2' : 'alloy';
+    const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
 
     if (bootstrapAPIReady) {
       window.adobe.concierge.bootstrap({
-        instanceName: 'alloy',
+        instanceName,
         stylingConfigurations: getUpdatedChatUIConfig(),
         selector: `#${mountId}`,
       });
@@ -406,4 +503,10 @@ export default async function init(el) {
     });
     decorateFloatingButton(el);
   }
+
+  // Testing only: Remove before contributing
+  const button = document.createElement('button');
+  button.textContent = 'Click me to open SUSI Light (testing only)';
+  button.onclick = openSusiLightModal;
+  el.appendChild(button);
 }

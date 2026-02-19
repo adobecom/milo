@@ -1,3 +1,10 @@
+:root {
+  --bc-modal-animation-time: 500ms;
+  --bc-susi-modal-width: 370px;
+  --bc-susi-min-height: 462px;
+  --bc-susi-standard-padding: 24px;
+}
+
 .brand-concierge {
   --bc-header-color: #131313;
   --bc-card-radius: 12px;
@@ -379,6 +386,18 @@
   margin-bottom: 8px;
 }
 
+.dialog-modal.bc-susi-modal {
+  width: var(--bc-susi-modal-width);
+  min-height: var(--bc-susi-min-height);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dialog-modal.bc-susi-modal .bc-susi-modal-title {
+  padding: 20px var(--bc-susi-standard-padding) 12px;
+  margin: 0;
+}
+
 /* Temporary override to chat styling */
 #brand-concierge-mount .input-section {
   padding-top: 0 !important;
@@ -530,10 +549,6 @@
   }
 }
 
-:root {
-  --bc-modal-animation-time: 500ms;
-}
-
 #brand-concierge-modal {
   --modal-header-height: 57px;
 }
@@ -549,6 +564,14 @@
   top: unset;
   bottom: 0;
   animation: var(--bc-modal-animation-time) ease-in-out slide-up;
+}
+
+#bc-susi-modal {
+  z-index: calc( var(--modal-z-index) + 1);
+}
+
+#bc-susi-modal ~ .modal-curtain {
+  z-index: calc( var(--modal-z-index-curtain) + 1);
 }
 
 /* Fallback for browsers that don't support dvh */
