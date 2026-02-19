@@ -1632,10 +1632,19 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
-async function decorateSection(section, idx) {
+function decorateLinksMinimal(el) {
+  const anchors = el.getElementsByTagName('a');
+  return [...anchors].map((a) => {
+    if (a.classList.contains('link-block')) return a;
+    const autoBlock = decorateAutoBlock(a);
+    return autoBlock ? a : null;
+  }).filter(Boolean);
+}
+
+async function decorateSection(section, idx, { skipLinks = false } = {}) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
-  let links = await decorateLinksAsync(section);
+  let links = skipLinks ? decorateLinksMinimal(section) : await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
 
@@ -2313,9 +2322,10 @@ async function resolveHighPriorityFragments(section) {
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
-    const newlyDecoratedSection = await decorateSection(section.el, section.idx);
-    section.blocks = newlyDecoratedSection.blocks;
-    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+    const opts = hadInlineFrags ? {} : { skipLinks: true };
+    const redecorated = await decorateSection(section.el, section.idx, opts);
+    section.blocks = redecorated.blocks;
+    section.preloadLinks = redecorated.preloadLinks;
   }
 }
 
