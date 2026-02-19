@@ -85,7 +85,10 @@ function decorate(el) {
   const fragment = document.createDocumentFragment();
 
   rows.forEach((row) => {
-    const cells = row.querySelectorAll('[data-valign="middle"]');
+    const allCells = row.querySelectorAll('[data-valign="middle"]');
+    const cells = [...allCells].filter(
+      (cell) => (cell.textContent || '').trim().toLowerCase() !== 'hide',
+    );
     if (!cells.length) return;
 
     if (cells.length === 1) {
@@ -95,6 +98,7 @@ function decorate(el) {
       fragment.appendChild(featuredWrap);
     } else {
       const standardWrap = createTag('div', { class: 'cards-row' });
+      standardWrap.style.setProperty('--cards-count', cells.length);
       cells.forEach((cell) => {
         const data = parseCardCell(cell);
         standardWrap.appendChild(buildCard(data, { featured: false }));
