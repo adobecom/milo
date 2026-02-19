@@ -211,9 +211,12 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   const curtain = createTag('div', { class: 'carousel-curtain' });
   const header = document.querySelector('header');
   const headerZIndex = header?.style.zIndex;
+  const fedsLocalnav = document.querySelector('.feds-localnav');
+  const fedsLocalnavZIndex = fedsLocalnav?.style.zIndex;
 
   const closeLightbox = () => {
     if (header) header.style.zIndex = headerZIndex;
+    if (fedsLocalnav) fedsLocalnav.style.zIndex = fedsLocalnavZIndex;
     el.classList.remove('lightbox-active');
     el.removeAttribute('role');
     el.removeAttribute('aria-modal');
@@ -226,6 +229,7 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
       event.preventDefault();
       if (button.classList.contains('carousel-expand')) {
         if (header) header.style.zIndex = '0';
+        if (fedsLocalnav) fedsLocalnav.style.zIndex = '0';
         el.classList.add('lightbox-active');
         el.setAttribute('role', 'dialog');
         el.setAttribute('aria-modal', 'true');
