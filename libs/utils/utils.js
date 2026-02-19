@@ -107,6 +107,7 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'box',
+  'cards',
   'section-metadata',
 ];
 
