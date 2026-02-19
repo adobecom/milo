@@ -970,7 +970,7 @@ export async function openModal(e, urlParam, offerType, hash, extraOptions, el) 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
   let columnName;
-  if (el.dataset.modal === 'crm') {
+  if (el.dataset.modal === 'crm' && !el.isOpen3in1Modal) {
     columnName = CRM_HASH;
   } else {
     columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH;
@@ -1011,6 +1011,8 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
       offerType,
       productArrangementCode,
       productArrangement: { productCode, productFamily: offerFamily } = {},
+      customerSegment,
+      marketSegments,
     },
   ] = offers ?? [{}];
   const checkoutLinkConfig = await getCheckoutLinkConfig(
@@ -1021,7 +1023,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   );
   if (!checkoutLinkConfig) return undefined;
   let columnName;
-  if (el?.dataset.modal === 'crm') {
+  if (el?.dataset.modal === 'crm' && !el?.isOpen3in1Modal) {
     columnName = CRM_PATH;
   } else {
     columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
@@ -1029,17 +1031,11 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
 
-  if (url?.includes('|')) {
-    const urls = url.split('|');
-    const tabpanel = el.closest('.tabpanel');
-    if (tabpanel) {
-      const index = [...tabpanel.parentElement.children].indexOf(tabpanel);
-      if (urls[index]) {
-        url = urls[index].trim();
-      }
-    } else {
-      url = urls[0].trim();
-    }
+  if (url?.includes('|') && !el?.isOpen3in1Modal) {
+    const segment = el?.isCheckoutLink ? `${customerSegment}_${marketSegments?.[0]}` : '';
+    const segments = ['INDIVIDUAL_COM', 'TEAM_COM', 'INDIVIDUAL_EDU', 'TEAM_EDU'];
+    const index = segments.indexOf(segment) || 0;
+    url = url.split('|')[index].trim();
   }
 
   if (!url && !el?.isOpen3in1Modal) return undefined;
