@@ -295,7 +295,8 @@ export const loadMarketo = (el, formData) => {
 
       /* c8 ignore next 3 */
       if (el.classList.contains('multi-step')) {
-        import('./marketo-multi.js').then(({ default: multiStep }) => multiStep(el));
+        // Disabling multi-step while progressive profiling is enabled
+        // import('./marketo-multi.js').then(({ default: multiStep }) => multiStep(el));
       }
     })
     .catch(() => {
