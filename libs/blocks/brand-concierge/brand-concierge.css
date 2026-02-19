@@ -1,5 +1,8 @@
 :root {
   --bc-modal-animation-time: 500ms;
+  --bc-susi-modal-width: 370px;
+  --bc-susi-min-height: 462px;
+  --bc-susi-standard-padding: 24px;
 }
 
 .brand-concierge {
@@ -471,6 +474,14 @@
   to {
     opacity: 0;
   }
+}
+
+#bc-susi-modal {
+  z-index: calc( var(--modal-z-index) + 1);
+}
+
+#bc-susi-modal ~ .modal-curtain {
+  z-index: calc( var(--modal-z-index-curtain) + 1);
 }
 
 #brand-concierge-modal {
