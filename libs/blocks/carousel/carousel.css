@@ -950,7 +950,7 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.disable-nav.tablet-hinting .carousel-slides {
     left: calc(-1 * var(--tablet-card-width) - var(--tablet-margin));
     transform: translateX(calc(var(--tablet-card-width) + var(--tablet-margin)));
-    align-items: center;
+    align-items: flex-start;
   }
 
   .carousel.disable-nav.tablet-hinting .carousel-slides.is-reversing {
