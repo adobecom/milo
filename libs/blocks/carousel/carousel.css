@@ -916,7 +916,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
   .carousel.tablet-hinting .carousel-wrapper {
     /* margin-left: var(--tablet-margin); */
-    margin-left: 65px;
+    margin-left: var(--grid-margins-width)
   }
 
   .carousel.tablet-hinting .carousel-slides {
