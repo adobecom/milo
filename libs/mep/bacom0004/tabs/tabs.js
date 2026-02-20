@@ -325,7 +325,7 @@ export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
 // mWeb specific
 const hideAllTabs = () => {
   [...document.querySelectorAll('.tab-content-container .tabpanel.mobile-show')]
-    .forEach((panel) => panel.setAttribute('hidden', true));
+    .forEach((panel) => panel.classList.remove('mobile-show'));
 };
 
 const toggleMobileTab = (button) => () => {
