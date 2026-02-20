@@ -683,7 +683,7 @@
     transition: all .3s ease;
     width: 100%;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 18px;
     font-family: var(--body-font-family);
   }
   .tabs.mobile-accordion .tab-content-container .tabpanel .tab-mobile-accordion .icon {
