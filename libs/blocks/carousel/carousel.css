@@ -901,3 +901,65 @@ html[dir="rtl"] .carousel .move-indicators {
     }
   }
 }
+
+:root:has(meta[name="theme"][content="ff-doodlebug"]) {
+  @media (min-width: 600px) and (max-width: 1199px) {
+  .carousel.tablet-hinting {
+    --tablet-card-width: calc(300 / 768 * 100vw);
+    --tablet-gap: 24px;
+    --tablet-margin: 2rem;
+  }
+
+  .carousel.container.tablet-hinting {
+    width: 100%;
+  }
+
+  .carousel.tablet-hinting .carousel-wrapper {
+    /* margin-left: var(--tablet-margin); */
+    margin-left: 65px;
+  }
+
+  .carousel.tablet-hinting .carousel-slides {
+    gap: var(--tablet-gap);
+    left: calc(-1 * var(--tablet-card-width));
+    transform: translateX(var(--tablet-card-width));
+  }
+
+  .carousel.tablet-hinting .carousel-slides.is-reversing {
+    transform: translateX(calc(-1 * var(--tablet-card-width)));
+  }
+
+  .carousel.tablet-hinting .carousel-slide {
+    flex-basis: var(--tablet-card-width);
+  }
+
+  .carousel.tablet-hinting .carousel-slides.is-ready,
+  .carousel.tablet-hinting .carousel-slides.is-ready.is-reversing {
+    transform: translateX(calc(-1 * var(--tablet-gap)));
+  }
+
+  /* .carousel.disable-nav.tablet-hinting:has(.carousel-slide:first-child.active) .carousel-previous,
+  .carousel.disable-nav.tablet-hinting:has(.carousel-slide:last-child.active) .carousel-next {
+    pointer-events: none;
+  }
+
+  .carousel.disable-nav.tablet-hinting:has(.carousel-slide:first-child.active) .carousel-slide:last-child {
+    visibility: hidden;
+  } */
+
+  .carousel.disable-nav.tablet-hinting .carousel-slides {
+    left: calc(-1 * var(--tablet-card-width) - var(--tablet-margin));
+    transform: translateX(calc(var(--tablet-card-width) + var(--tablet-margin)));
+    align-items: center;
+  }
+
+  .carousel.disable-nav.tablet-hinting .carousel-slides.is-reversing {
+    transform: translateX(calc(-1 * var(--tablet-card-width) - var(--tablet-margin)));
+  }
+
+  .carousel.disable-nav.tablet-hinting .carousel-slides.is-ready,
+  .carousel.disable-nav.tablet-hinting .carousel-slides.is-ready.is-reversing {
+    transform: translateX(calc(var(--tablet-margin) - var(--tablet-gap)));
+  }
+}
+}

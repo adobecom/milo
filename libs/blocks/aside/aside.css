@@ -1361,3 +1361,31 @@
     margin-inline: var(--spacing-m);
   }
 }
+
+:root:has(meta[name="theme"][content="ff-doodlebug"]) {
+  .aside .foreground.container {
+    align-items: center;
+    gap: 165px;
+    display: grid;
+    width: 85%;
+    grid-template-columns: minmax(45%, 1fr) minmax(55%, 1fr);
+  }
+
+  .aside .foreground.container:has(> .image:first-child) {
+    grid-template-columns: minmax(55%, 1fr) minmax(45%, 1fr);
+  }
+
+  .aside .foreground.container .text {
+    margin-inline: 180px 0;
+  }
+
+  .aside .foreground.container:has(> .image:first-child) .text {
+    margin-inline: 0 180px;
+  }
+
+  .aside .foreground.container .image img {
+    border-radius: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.30);
+  }
+
+}
