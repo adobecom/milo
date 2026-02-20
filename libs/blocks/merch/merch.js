@@ -188,6 +188,8 @@ const TAB_DEEPLINK_MAPPING = {
 
 const LANG_STORE_PREFIX = 'langstore/';
 
+const MERCH_MODAL_CTA_INDEX_KEY = 'merch-modal-cta-index';
+
 function getDefaultLangstoreCountry(language) {
   let country = LanguageMap[language];
   if (!country && GeoMap[language]) {
@@ -860,6 +862,10 @@ const closeModalWithoutEvent = (modalId) => {
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
 
+function getModalCtaStorageKey(modalId) {
+  return `${MERCH_MODAL_CTA_INDEX_KEY}-${window.location.pathname}-${modalId}`;
+}
+
 export async function updateModalState({ cta, closedByUser } = {}) {
   const { hash } = window.location;
 
@@ -884,7 +890,16 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   if (hash && !cta && !modalState.isOpen && !modal) {
-    const ctaToClick = document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`);
+    const modalId = hash.replace('#', '');
+    const ctas = [...document.querySelectorAll(`[is=checkout-link][data-modal-id="${modalId}"]`)];
+    let ctaToClick = ctas[0];
+    try {
+      const stored = sessionStorage.getItem(getModalCtaStorageKey(modalId));
+      if (stored != null) {
+        const index = parseInt(stored, 10);
+        if (Number.isInteger(index) && index >= 0 && ctas[index]) ctaToClick = ctas[index];
+      }
+    } catch (e) { /* ignore */ }
     if (ctaToClick && !ctaToClick.dataset.clickDisabled) {
       ctaToClick.dataset.clickDisabled = 'true';
       ctaToClick.click();
@@ -897,8 +912,22 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   if (hash && hash === `#${cta?.getAttribute('data-modal-id')}` && !modalState.isOpen && !modal) {
-    cta.click();
-    modalState.isOpen = true;
+    const modalId = hash.replace('#', '');
+    const ctas = [...document.querySelectorAll(`[is=checkout-link][data-modal-id="${modalId}"]`)];
+    let shouldClick = true;
+    try {
+      const stored = sessionStorage.getItem(getModalCtaStorageKey(modalId));
+      if (stored != null) {
+        const index = parseInt(stored, 10);
+        if (Number.isInteger(index) && index >= 0 && ctas[index]) {
+          shouldClick = ctas.indexOf(cta) === index;
+        }
+      }
+    } catch (err) { /* ignore */ }
+    if (shouldClick) {
+      cta.click();
+      modalState.isOpen = true;
+    }
     return modalState.isOpen;
   }
 
@@ -931,7 +960,17 @@ export async function openModal(e, urlParam, offerType, hash, extraOptions, el) 
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
 
-  if (hash) window.location.hash = hash;
+  if (hash) {
+    window.location.hash = hash;
+    const modalId = hash.replace('#', '');
+    const ctas = [...document.querySelectorAll(`[is=checkout-link][data-modal-id="${modalId}"]`)];
+    const index = el ? ctas.indexOf(el) : -1;
+    if (index >= 0) {
+      try {
+        sessionStorage.setItem(getModalCtaStorageKey(modalId), String(index));
+      } catch (err) { /* ignore */ }
+    }
+  }
 
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
