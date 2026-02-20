@@ -2,13 +2,13 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 
-// TODO: Remove once mas-field is published to @adobecom/mas-platform.
+// TODO: Remove once merch-field is published to @adobecom/mas-platform.
 // All other MAS components (merch-card, merch-quantity-select, etc.) resolve via the import map
 // in web-test-runner.config.mjs: https://www.adobe.com/mas/libs/ → node_modules.
-// mas-field isn't in the npm package yet, so we register a stub to prevent loadMasComponent
+// merch-field isn't in the npm package yet, so we register a stub to prevent loadMasComponent
 // from failing. Once published, replace this block with a static import like the others.
-if (!customElements.get('mas-field')) {
-  customElements.define('mas-field', class extends HTMLElement {
+if (!customElements.get('merch-field')) {
+  customElements.define('merch-field', class extends HTMLElement {
     checkReady() { return Promise.resolve(true); }
   });
 }
@@ -120,7 +120,7 @@ describe('merch-card-autoblock autoblock', () => {
       expect(card.querySelector('[slot="heading-xs"]')?.textContent).to.equal('Creative Cloud All Apps PROMO');
     });
 
-    it('creates mas-field wrapping aem-fragment with correct attributes', async () => {
+    it('creates merch-field wrapping aem-fragment with correct attributes', async () => {
       const p = document.createElement('p');
       const a = document.createElement('a');
       a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=9de46774-dafe-4f3e-badd-0cbeed37ea08&field=prices';
@@ -128,25 +128,25 @@ describe('merch-card-autoblock autoblock', () => {
       p.append(a);
       document.body.append(p);
       await init(a);
-      const masField = document.querySelector('mas-field');
-      expect(masField).to.exist;
-      expect(masField.getAttribute('field')).to.equal('prices');
-      const frag = masField.querySelector('aem-fragment');
+      const merchField = document.querySelector('merch-field');
+      expect(merchField).to.exist;
+      expect(merchField.getAttribute('field')).to.equal('prices');
+      const frag = merchField.querySelector('aem-fragment');
       expect(frag).to.exist;
       expect(frag.getAttribute('fragment')).to.equal('9de46774-dafe-4f3e-badd-0cbeed37ea08');
       expect(frag.getAttribute('field')).to.not.exist;
     });
 
-    it('creates mas-field with description field', async () => {
+    it('creates merch-field with description field', async () => {
       const a = document.createElement('a');
       a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc-123&field=description';
       a.textContent = '[[my-card:description]]';
       document.body.append(a);
       await init(a);
-      const masField = document.querySelector('mas-field');
-      expect(masField).to.exist;
-      expect(masField.getAttribute('field')).to.equal('description');
-      const frag = masField.querySelector('aem-fragment');
+      const merchField = document.querySelector('merch-field');
+      expect(merchField).to.exist;
+      expect(merchField.getAttribute('field')).to.equal('description');
+      const frag = merchField.querySelector('aem-fragment');
       expect(frag).to.exist;
     });
 
@@ -156,8 +156,8 @@ describe('merch-card-autoblock autoblock', () => {
       a.textContent = '[[no-id]]';
       document.body.append(a);
       await init(a);
-      const masField = document.querySelector('mas-field');
-      expect(masField).to.not.exist;
+      const merchField = document.querySelector('merch-field');
+      expect(merchField).to.not.exist;
     });
 
     it('unwraps parent <p> for inline fragment when link is only child', async () => {
@@ -168,9 +168,9 @@ describe('merch-card-autoblock autoblock', () => {
       p.append(a);
       document.body.append(p);
       await init(a);
-      const masField = document.querySelector('mas-field');
-      expect(masField).to.exist;
-      expect(masField.parentElement).to.equal(document.body);
+      const merchField = document.querySelector('merch-field');
+      expect(merchField).to.exist;
+      expect(merchField.parentElement).to.equal(document.body);
       expect(document.querySelector('p')).to.not.exist;
     });
 
@@ -184,9 +184,9 @@ describe('merch-card-autoblock autoblock', () => {
       p.append(span, a);
       document.body.append(p);
       await init(a);
-      const masField = document.querySelector('mas-field');
-      expect(masField).to.exist;
-      expect(masField.parentElement).to.equal(p);
+      const merchField = document.querySelector('merch-field');
+      expect(merchField).to.exist;
+      expect(merchField.parentElement).to.equal(p);
       expect(p.querySelector('span')).to.exist;
     });
   });

@@ -7,7 +7,7 @@ import {
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
-  MAS_FIELD,
+  MAS_MERCH_FIELD,
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
@@ -15,7 +15,7 @@ const seenFragments = new Set();
 let log;
 loadMasComponent(MAS_MERCH_CARD);
 loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
-loadMasComponent(MAS_FIELD);
+loadMasComponent(MAS_MERCH_FIELD);
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -35,7 +35,7 @@ async function loadDependencies() {
   await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
-    loadMasComponent(MAS_FIELD),
+    loadMasComponent(MAS_MERCH_FIELD),
   ]);
 }
 
@@ -69,24 +69,24 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
-/** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
+/** Replaces an inline fragment link with a merch-field wrapping an aem-fragment. */
 async function createInline(el, options) {
   const attrs = { fragment: options.fragment };
   if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
   seenFragments.add(options.fragment);
   const aemFragment = createTag('aem-fragment', attrs);
-  // mas-field listens for aem:load from aem-fragment and renders the field content.
-  const masField = createTag('mas-field', { field: options.field }, aemFragment);
+  // merch-field listens for aem:load from aem-fragment and renders the field content.
+  const merchField = createTag('merch-field', { field: options.field }, aemFragment);
   const parent = el.parentElement;
   const isWrappedInParagraph = parent?.tagName === 'P';
   const isOnlyChild = parent?.children.length === 1;
   const hasNoSurroundingText = parent?.textContent.trim() === el.textContent.trim();
   if (isWrappedInParagraph && isOnlyChild && hasNoSurroundingText) {
-    parent.replaceWith(masField); // remove empty <p>, replace with mas-field
+    parent.replaceWith(merchField); // remove empty <p>, replace with merch-field
   } else {
-    el.replaceWith(masField); // keep <p> and surrounding text, replace only the link
+    el.replaceWith(merchField); // keep <p> and surrounding text, replace only the link
   }
-  await checkReady(masField);
+  await checkReady(merchField);
 }
 
 export default async function init(el) {
