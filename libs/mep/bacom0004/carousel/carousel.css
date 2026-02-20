@@ -681,6 +681,7 @@ html[dir="rtl"] .carousel .move-indicators {
   }
   .carousel.peek-mobile .carousel-slide .brick .brick-text .action-area a {
     margin-top: 1.5rem;
+    font-weight: bold;
   }
   .carousel.peek-mobile .carousel-slide .brick .brick-text .action-area {
     margin-top: auto;
@@ -735,6 +736,10 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 @media (min-width: 900px) {
+  .carousel.peek-mobile.show-2 .carousel-slides {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
   .carousel.peek-mobile.show-3 .carousel-slides.is-ready,
   .carousel.peek-mobile.show-3 .carousel-slides.is-ready.is-reversing {
     transform: translateX(33.3333%) !important;
