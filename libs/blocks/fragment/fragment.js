@@ -340,8 +340,9 @@ export default async function init(a) {
 
   if (!inline) {
     const { hash } = window.location;
-    if (hash
-      && fragment.querySelector(`a[data-modal-hash="${hash}"]`)
+    const modalTrigger = hash && fragment.querySelector(`a[data-modal-hash="${hash}"]`);
+    if (modalTrigger
+      && !modalTrigger.dataset.blockStatus
       && !document.querySelector(`.dialog-modal${hash}`)) {
       window.dispatchEvent(new CustomEvent('modal:open', { detail: { hash } }));
     }
