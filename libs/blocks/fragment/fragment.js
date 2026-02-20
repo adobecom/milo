@@ -337,6 +337,15 @@ export default async function init(a) {
 
     await loadArea(fragment);
   }
+
+  if (!inline) {
+    const { hash } = window.location;
+    if (hash
+      && fragment.querySelector(`a[data-modal-hash="${hash}"]`)
+      && !document.querySelector(`.dialog-modal${hash}`)) {
+      window.dispatchEvent(new CustomEvent('modal:open', { detail: { hash } }));
+    }
+  }
 }
 
 class Node {
