@@ -80,6 +80,7 @@ const defaultOptions = {
     'horizontal-card': 'Horizontal Card',
     'custom-card': 'Custom Card',
     'blade-card': 'Blade Card',
+    'editorial-card': 'Editorial Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -392,6 +393,12 @@ const UiPanel = () => {
     </div>
   `;
 
+  const editorialCardOptions = html`
+    <div class="nested">
+      <${Input} label="Editorial Open variant" prop="editorialCardOpenVariant" type="checkbox" />
+    </div>
+  `;
+
   return html`
     <${Input} label="Show Total Count" prop="showTotalResults" type="checkbox" />
     <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
@@ -405,6 +412,7 @@ const UiPanel = () => {
     <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
+      ${state.cardStyle === 'editorial-card' && editorialCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
     <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
       ${state.container === 'carousel' && carouselOptions}
