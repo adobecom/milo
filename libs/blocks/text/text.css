@@ -585,7 +585,7 @@
     max-height: 81px;
     align-items: center;
     justify-content: space-between;
-    color: #2C2C2C;
+    color: var(--text-color);
     border: none;
     padding: 24px 18px;
     box-sizing: border-box;
