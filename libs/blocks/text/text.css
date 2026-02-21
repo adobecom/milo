@@ -556,6 +556,84 @@
   }
 }
 
+
+:root:has(meta[name="theme"][content="doodlebug"]){
+ .text-block.grid-cta .foreground {
+  --cell-width: 300px;
+
+  max-width: 100%;
+  margin: 0 6.51%;
+  
+ }
+
+ .text-block.text-block.grid-cta .foreground .cta-container .action-area {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--cell-width), 1fr));
+  justify-content: center;
+  gap: 10px;
+  max-width: 100%;
+}
+
+ .text-block.grid-cta .foreground .cta-container .action-area .con-button {
+    border-radius: 8px;
+    font-weight: 800;
+    line-height: 0.98;
+    font-size: 1.25rem;
+    background: var(--color-white);
+    display: flex;
+    width: 100%;
+    max-height: 81px;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-color);
+    border: none;
+    padding: 24px 18px;
+    box-sizing: border-box;
+  }
+
+  .text-block.grid-cta .foreground .cta-container a::after {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 20px;
+    background-image: url('https://main--cc--adobecom.aem.live/drafts/ssircar/s2-icon-openin-20-n.svg');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+  }
+
+  .text-block.grid-cta .foreground .cta-container .action-area .con-button:hover {
+    color: var(--color-black);
+    box-shadow: 0 1.85px 3.15px 0 #0000000C, 0 8.15px 6.52px 0 #00000013,  0 20px 13px 0 #00000018, 0 38.52px 25.48px 0 #0000001D;
+  }
+  
+  @media (min-width: 600px) {
+    .text-block.grid-cta .foreground {
+      --cell-width: 310px;
+    }
+
+    .text-block.grid-cta .foreground .cta-container .action-area .con-button {
+      width: 100%;
+      font-size: 1.5rem;
+      letter-spacing: -3%;
+    }
+    
+  }
+
+  @media (min-width: 1200px) {
+    .text-block.grid-cta .foreground {
+      --cell-width: 410px
+    }
+  
+
+    .text-block.grid-cta .foreground .cta-container .action-area .con-button {
+      font-size: 1.5rem;
+      width: 100%;
+      letter-spacing: -3%;
+    }
+    
+  }
+}
+
 /* Northstar specific */
 :root:has(meta[name="theme"][content="northstar"]) {
   .section:not(.dark) .text-block:not(.dark) :is([class*="heading-"],[class*="body-"]) {
@@ -662,3 +740,5 @@
   margin-left: 10px;
   margin-right: 10px;
 }
+
+
