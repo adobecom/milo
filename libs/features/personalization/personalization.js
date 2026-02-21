@@ -107,7 +107,7 @@ export const normalizePath = (p, localize = true) => {
 
   try {
     const url = new URL(path);
-    const { hash, pathname } = url;
+    const { hash, pathname, search } = url;
     const firstFolder = pathname.split('/')[1];
     const mepHash = '#_dnt';
 
@@ -121,7 +121,7 @@ export const normalizePath = (p, localize = true) => {
         || hash.includes(mepHash)
         || firstFolder in config.locales
         || path.includes('.json')) {
-        path = pathname;
+        path = `${pathname}${search}${hash}`;
       } else {
         path = `${config.locale.prefix}${pathname}`;
       }
