@@ -71,15 +71,10 @@
 
   .language-banner-close {
     position: absolute;
-    right: 24px;
+    inset-inline-end: 24px;
     top: 50%;
     transform: translateY(-50%);
     flex-direction: column;
     width: auto;
-  }
-
-  [dir="rtl"] .language-banner-close {
-    right: auto;
-    left: 24px;
   }
 }

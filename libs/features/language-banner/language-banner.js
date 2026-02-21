@@ -4,6 +4,7 @@ import { getConfig, createTag, loadStyle, getTargetMarket, getCountry } from '..
 function buildBanner(market, translatedUrl) {
   const banner = document.body.querySelector('.language-banner');
   if (!banner) return banner;
+  banner.setAttribute('dir', market.dir || 'ltr');
   const messageContainer = createTag('div', { class: 'language-banner-content' });
   const messageText = createTag('span', { class: 'language-banner-text' }, market.text);
   const link = createTag('a', { class: 'language-banner-link', href: translatedUrl, 'daa-ll': `${market.prefix || 'us'}|Continue` }, market.continueText || 'Continue');
@@ -16,11 +17,7 @@ function buildBanner(market, translatedUrl) {
     </svg>
   `;
 
-  if (document.dir === 'rtl') {
-    messageContainer.append(link, messageText);
-  } else {
-    messageContainer.append(messageText, link);
-  }
+  messageContainer.append(messageText, link);
   banner.append(messageContainer, closeButton);
   return banner;
 }

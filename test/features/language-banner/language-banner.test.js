@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, updateConfig, setTargetMarket } from '../../../libs/utils/utils.js';
+import { setConfig, setTargetMarket } from '../../../libs/utils/utils.js';
 
 const { default: init, sendAnalytics } = await import('../../../libs/features/language-banner/language-banner.js');
 
@@ -14,7 +14,7 @@ const mockMarkets = {
 describe('Language Banner', () => {
   const sandbox = sinon.createSandbox();
 
-  const setConfigForTest = (pathname = '/', locale) => {
+  const setConfigForTest = (locale, pathname = '/') => {
     const config = {
       imsClientId: 'milo',
       codeRoot: '/libs',
@@ -50,20 +50,20 @@ describe('Language Banner', () => {
   });
 
   it('does not show banner if no target markets are provided', async () => {
-    setConfigForTest('/');
+    setConfigForTest();
     await init();
     expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
   });
 
   it('does not show banner if no target market is set', async () => {
-    setConfigForTest('/');
+    setConfigForTest();
     setTargetMarket(null);
     await init();
     expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
   });
 
   it('shows banner when target market is set', async () => {
-    setConfigForTest('/');
+    setConfigForTest();
     setTargetMarket(mockMarkets.de);
     await init();
     expect(document.querySelector('.language-banner').childElementCount).to.be.greaterThan(0);
@@ -71,14 +71,14 @@ describe('Language Banner', () => {
 
   it('does not build banner if the placeholder element is missing', async () => {
     document.body.innerHTML = ''; // remove the banner placeholder
-    setConfigForTest('/');
+    setConfigForTest();
     setTargetMarket(mockMarkets.de);
     await init();
     expect(document.querySelector('.language-banner')).to.be.null;
   });
 
   it('shows banner with correct market information', async () => {
-    setConfigForTest('/');
+    setConfigForTest();
     setTargetMarket(mockMarkets.de);
 
     await init();
@@ -90,7 +90,7 @@ describe('Language Banner', () => {
   });
 
   it('shows banner with custom sentence if provided', async () => {
-    setConfigForTest('/');
+    setConfigForTest();
     const customMarket = {
       prefix: 'jp',
       lang: 'ja',
@@ -107,17 +107,25 @@ describe('Language Banner', () => {
   });
 
   it('handles RTL correctly', async () => {
-    document.dir = 'rtl';
-    setTargetMarket(mockMarkets.de);
+    const customMarket = {
+      prefix: 'ae_ar',
+      lang: 'ar',
+      text: 'عرض هذه الصفحة باللغة العربية',
+      continueText: 'متابعة',
+      dir: 'rtl',
+    };
+    setTargetMarket(customMarket);
 
     await init();
 
+    const banner = document.querySelector('.language-banner');
+    expect(banner.getAttribute('dir')).to.equal('rtl');
     const content = document.querySelector('.language-banner-content');
-    expect(content.firstElementChild.classList.contains('language-banner-link')).to.be.true;
+    expect(content.firstElementChild.classList.contains('language-banner-text')).to.be.true;
   });
 
   it('shows banner for French market', async () => {
-    setConfigForTest('/');
+    setConfigForTest();
     setTargetMarket(mockMarkets.fr);
 
     await init();
@@ -163,7 +171,7 @@ describe('Language Banner', () => {
 
     beforeEach(async () => {
       openStub = sandbox.stub(window, 'open');
-      setConfigForTest('/');
+      setConfigForTest();
       setTargetMarket(mockMarkets.de);
       await init();
     });

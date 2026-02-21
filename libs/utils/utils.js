@@ -2139,6 +2139,7 @@ async function decorateLanguageBanner() {
     if (market.languageName && !market.text.includes(market.languageName)) {
       market.text = `${market.text || ''} ${market.languageName}.`.trim();
     }
+    market.dir = locales?.[market.prefix || '']?.dir || 'ltr';
   });
   const pagePrefix = locale.prefix?.replace('/', '') || '';
   const pageMarket = marketsConfig.data.find((m) => m.prefix === pagePrefix)
