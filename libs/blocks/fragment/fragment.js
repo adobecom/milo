@@ -337,16 +337,6 @@ export default async function init(a) {
 
     await loadArea(fragment);
   }
-
-  if (!inline) {
-    const { hash } = window.location;
-    const modalTrigger = hash && fragment.querySelector(`a[data-modal-hash="${hash}"]`);
-    if (modalTrigger
-      && !modalTrigger.dataset.blockStatus
-      && !document.querySelector(`.dialog-modal${hash}`)) {
-      window.dispatchEvent(new CustomEvent('modal:open', { detail: { hash } }));
-    }
-  }
 }
 
 class Node {
