@@ -126,8 +126,8 @@ export const normalizePath = (p, localize = true) => {
         path = `${config.locale.prefix}${pathname}`;
       }
     }
-    path = `${isFederal ? getFederatedUrl(path) : path}${search}${hash}`;
-    return `${path}${hash.replace(mepHash, '')}`;
+    path = isFederal ? getFederatedUrl(path) : path;
+    return `${path}${search}${hash.replace(mepHash, '')}`;
   } catch (e) {
     path = isFederal ? getFederatedUrl(path) : path;
     return path;
