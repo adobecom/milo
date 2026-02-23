@@ -17,9 +17,7 @@ import {
 } from '../utilities.js';
 
 const closeHeadlines = () => {
-  const open = [
-    ...document.querySelectorAll(`${selectors.headline}[aria-expanded="true"]`),
-  ];
+  const open = [...document.querySelectorAll(`${selectors.headline}[aria-expanded="true"]`)];
   open.forEach((el) => el.setAttribute('aria-expanded', 'false'));
   // Shift active class back to the parent of the first closed headline
   setActiveDropdown(open[0]);
