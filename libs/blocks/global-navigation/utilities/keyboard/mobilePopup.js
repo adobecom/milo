@@ -17,7 +17,9 @@ import {
 } from '../utilities.js';
 
 const closeHeadlines = () => {
-  const open = [...document.querySelectorAll(`${selectors.headline}[aria-expanded="true"]`)];
+  const open = [
+    ...document.querySelectorAll(`${selectors.headline}[aria-expanded="true"]`),
+  ];
   open.forEach((el) => el.setAttribute('aria-expanded', 'false'));
   // Shift active class back to the parent of the first closed headline
   setActiveDropdown(open[0]);
@@ -93,13 +95,31 @@ class Popup {
 
   mobileArrowUp = ({ prev, curr, element, isFooter, newNav }) => {
     // Case 1: First item in the list - Move focus to the headline that opened it
-    if (isFooter && curr === 0) {
-      const headline = document.activeElement.closest(selectors.section)
-        ?.querySelector(selectors.headline)
-        || document.activeElement.closest(selectors.column)?.querySelector(selectors.headline);
-      if (headline) {
-        headline.focus();
-        return;
+    if (isFooter) {
+      const section = document.activeElement.closest(selectors.section)
+        || document.activeElement.closest(selectors.column);
+
+      if (section) {
+        const headline = section.querySelector(selectors.headline);
+        const sectionItems = [...section.querySelectorAll(selectors.popupItems)]
+          .filter((e) => isElementVisible(e));
+
+        if (sectionItems.length > 0 && sectionItems[0] === document.activeElement) {
+          if (headline) {
+            headline.focus();
+            return;
+          }
+        }
+      } else if (curr === 0) {
+        // Fallback for non-standard structures where curr is absolutely 0
+        const headline = document.activeElement.closest(selectors.section)
+          ?.querySelector(selectors.headline)
+          || document.activeElement.closest(selectors.column)
+            ?.querySelector(selectors.headline);
+        if (headline) {
+          headline.focus();
+          return;
+        }
       }
     }
 
@@ -293,19 +313,21 @@ class Popup {
       case 'ArrowUp': {
         if (newNav && !isFooter) break;
         if (isFooter && e.target.closest(selectors.headline)) {
-          const { prevHeadline } = getState(element);
-          if (prevHeadline) {
-            prevHeadline.focus();
-            break;
-          }
+          const headline = e.target.closest(selectors.headline);
+          const expanded = headline.getAttribute('aria-expanded') === 'true';
           const footer = document.querySelector(selectors.globalFooter);
           const allHeadlines = [...footer.querySelectorAll(selectors.headline)]
             .filter((h) => isElementVisible(h));
-          const current = e.target.closest(selectors.headline);
-          const idx = allHeadlines.indexOf(current);
-          if (idx > 0) {
+          const idx = allHeadlines.indexOf(headline);
+          if (expanded) {
+            if (idx > 0) {
+              const previousHeadline = allHeadlines[idx - 1];
+              openHeadline({ headline: previousHeadline, focus: 'last' });
+              break;
+            }
+          } else if (idx > 0) {
             const previousHeadline = allHeadlines[idx - 1];
-            openHeadline({ headline: previousHeadline, focus: 'last' });
+            previousHeadline.focus();
             break;
           }
         }
@@ -338,8 +360,6 @@ class Popup {
           if (expanded) {
             const section = headline.closest(selectors.section)
               || headline.closest(selectors.column);
-            // Default popupItems selector might not work here as it's scoped to class methods
-            // We use the same selectors found in utils or assume standard link classes
             const firstLink = section?.querySelector(
               '.feds-navLink, .feds-cta--button, .feds-cta--link',
             );
