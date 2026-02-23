@@ -127,7 +127,10 @@ export default async function init(a) {
   }
 
   if (isCircularRef(relHref)) {
-    window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
+    window.lana?.log(`Fragment Circular Reference loading ${a.href}`, {
+      tags: 'fragment',
+      severity: 'error',
+    });
     return;
   }
 
@@ -264,7 +267,10 @@ export default async function init(a) {
       return;
     }
     const message = `Could not get ${shouldFetchMepLingo ? 'mep-lingo ' : ''}fragment: ${resourcePath}.plain.html`;
-    window.lana?.log(message);
+    window.lana?.log(message, {
+      tags: 'fragment',
+      severity: 'error',
+    });
     return;
   }
 
@@ -275,7 +281,10 @@ export default async function init(a) {
 
   const sections = doc.querySelectorAll('body > div');
   if (!sections.length) {
-    window.lana?.log(`Could not make fragment: ${resourcePath}.plain.html`);
+    window.lana?.log(`Could not make fragment: ${resourcePath}.plain.html`, {
+      tags: 'fragment',
+      severity: 'error',
+    });
     return;
   }
 

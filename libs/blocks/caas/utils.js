@@ -192,6 +192,29 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   return '';
 }
 
+let configJson = null;
+
+const cacheByBase = new Map();
+
+export async function getLingoSiteMappingConfig(fqdn = 'www.adobe.com', baseUrl = 'https://www.adobe.com') {
+  const normalized = baseUrl.replace(/\/$/, '');
+  const cacheKey = `${normalized}::${fqdn}`;
+  if (!cacheByBase.has(normalized)) {
+    const url = `${normalized}/federal/assets/data/lingo-site-mapping.json?${encodeURIComponent(cacheKey)}`;
+    const promise = fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .catch((e) => {
+        cacheByBase.delete(normalized);
+        throw e;
+      });
+    cacheByBase.set(normalized, promise);
+  }
+  return cacheByBase.get(normalized);
+}
+
 export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
 export const loadStrings = async (
@@ -546,11 +569,9 @@ const isLocaleInRegionalSites = (regionalSites, locStr) => {
     .includes(locStr);
 };
 
-async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
+export async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
-  const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const configJson = await response.json();
+  if (!configJson) configJson = await getLingoSiteMappingConfig(fqdn);
 
   let siteId;
   let isKnownLingoSiteLocale = false;
@@ -603,13 +624,16 @@ async function getLangFirstParam(origin, country, language) {
   return true;
 }
 
-async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
+async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com', fromBulkPublisher = false) {
   const host = origin.toLowerCase();
-  let lingoSiteMapping = {
-    country: 'xx',
-    language: 'en',
-  };
-
+  let lingoSiteMapping;
+  // only provide fallback values if not from the bulk publisher
+  if (!fromBulkPublisher) {
+    lingoSiteMapping = {
+      country: 'xx',
+      language: 'en',
+    };
+  }
   // Extract pathname from URL if path includes domain
   let pathname = path;
   if (path.includes('://') || !path.startsWith('/')) {
@@ -629,9 +653,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
 
   try {
     let siteId;
-    const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const configJson = await response.json();
+    if (!configJson) configJson = await getLingoSiteMappingConfig(fqdn);
 
     const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
     const siteLocalesData = configJson['site-locales']?.data ?? [];
@@ -678,15 +700,28 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
       });
     return lingoSiteMapping;
   } catch (e) {
-    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+    window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, {
+      tags: 'caas',
+      severity: 'error',
+    });
   }
   return lingoSiteMapping;
 }
 
-export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
+export const getLanguageFirstCountryAndLang = async (
+  path,
+  origin,
+  fqdn,
+  fromBulkPublisher = false,
+) => {
   const localeArr = path.split('/');
-  let langStr = 'en';
-  let countryStr = 'xx';
+  let langStr;
+  let countryStr;
+  // only provide fallback values if not from the bulk publisher
+  if (!fromBulkPublisher) {
+    langStr = 'en';
+    countryStr = 'xx';
+  }
   if (origin.toLowerCase() === 'news') {
     langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
     countryStr = LOCALES[localeArr[2]] ?? 'xx';
@@ -694,7 +729,10 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
   } else {
-    const mapping = await getLingoSiteLocale(origin, path, fqdn);
+    const mapping = await getLingoSiteLocale(origin, path, fqdn, fromBulkPublisher);
+    if (!mapping) {
+      throw new Error('Failed to get lingo site locale for bulk publisher');
+    }
     countryStr = LOCALES[mapping.country.toLowerCase()] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
@@ -960,6 +998,25 @@ export const getConfig = async (originalState, strs = {}) => {
     ? `${state.paginationAnimationStyle}-light`
     : state.paginationAnimationStyle;
 
+  const currentPage = `${window.location.hostname}${window.location.pathname}`;
+  let currentPageUuid = null;
+  try {
+    currentPageUuid = await getUuid(currentPage);
+  } catch (error) {
+    window.lana?.log(`Could not get UUID for current page: ${currentPage}`, error);
+  }
+
+  let excludedCardsWithCurrent;
+  if (currentPageUuid) {
+    if (excludedCards) {
+      excludedCardsWithCurrent = `${excludedCards}%2C${currentPageUuid}`;
+    } else {
+      excludedCardsWithCurrent = currentPageUuid;
+    }
+  } else {
+    excludedCardsWithCurrent = excludedCards;
+  }
+
   const config = {
     collection: {
       mode: state.theme,
@@ -981,7 +1038,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&language=${language
       }&country=${country
       }&complexQuery=${complexQuery
-      }&excludeIds=${excludedCards
+      }&excludeIds=${excludedCardsWithCurrent
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow

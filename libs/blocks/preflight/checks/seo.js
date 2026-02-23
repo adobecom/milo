@@ -228,7 +228,7 @@ async function spidyCheck(url) {
     return connectionError({ isVpnError: true });
   } catch (e) {
     const errorMessage = 'Unable to connect to the link check service.';
-    window.lana.log(`${errorMessage} ${url}. ${e}`, { tags: 'preflight', errorType: 'i' });
+    window.lana.log(`${errorMessage} ${url}. ${e}`, { tags: 'preflight', errorType: 'i', severity: 'error' });
     return connectionError({ isVpnError: false });
   }
 }
@@ -250,7 +250,7 @@ async function getSpidyResults(url, opts) {
       return acc;
     }, []);
   } catch (e) {
-    window.lana.log(`There was a problem connecting to the link check API ${url}/api/url-http-status. ${e}`, { tags: 'preflight', errorType: 'i' });
+    window.lana.log(`There was a problem connecting to the link check API ${url}/api/url-http-status. ${e}`, { tags: 'preflight', errorType: 'i', severity: 'error' });
     return [];
   }
 }

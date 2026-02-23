@@ -15,7 +15,13 @@
     isProdDomain: false,
   };
 
-  const VALID_SEVERITIES = new Set(['d', 'debug', 'i', 'info', 'w', 'warn', 'e', 'error', 'c', 'critical']);
+  const VALID_SEVERITIES = new Set([
+    'd', 'debug',
+    'i', 'info',
+    'w', 'warning',
+    'e', 'error',
+    'c', 'critical',
+  ]);
 
   const w = window;
 
@@ -131,7 +137,7 @@
   }
 
   function sendUnhandledError(e) {
-    log(e.reason || e.error || e.message, { errorType: 'i' });
+    log(e.reason || e.error || e.message, { errorType: 'i', severity: 'error' });
   }
 
   w.lana = {

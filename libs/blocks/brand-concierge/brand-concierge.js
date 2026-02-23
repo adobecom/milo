@@ -45,6 +45,22 @@ export function getUpdatedChatUIConfig() {
   return chatUIConfig;
 }
 
+function waitForCondition(checkFn, timeout = 5000, interval = 100) {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    const check = () => {
+      if (checkFn()) {
+        resolve(true);
+      } else if (Date.now() - startTime >= timeout) {
+        resolve(false);
+      } else {
+        setTimeout(check, interval);
+      }
+    };
+    check();
+  });
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
@@ -84,11 +100,22 @@ async function openChatModal(initialMessage, el) {
     const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
     const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
     await loadScript(src);
-    window.adobe.concierge.bootstrap({
-      instanceName: 'alloy',
-      stylingConfigurations: getUpdatedChatUIConfig(),
-      selector: `#${mountId}`,
-    });
+
+    const bootstrapAPIReady = await waitForCondition(
+      () => !!window.adobe?.concierge?.bootstrap,
+      5000, // 5 seconds max wait
+      100, // Check every 100ms
+    );
+
+    if (bootstrapAPIReady) {
+      window.adobe.concierge.bootstrap({
+        instanceName: 'alloy',
+        stylingConfigurations: getUpdatedChatUIConfig(),
+        selector: `#${mountId}`,
+      });
+    } else {
+      window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
+    }
   } else {
     // Legacy method: Use _satellite.track
     // eslint-disable-next-line no-underscore-dangle
