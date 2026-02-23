@@ -47,7 +47,7 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
   const blockName = a.closest('[data-block-status="loaded"]')?.classList[0];
   if (blockName) urlObj.searchParams.append('~placement', blockName);
   a.href = urlObj.href;
-  if (isNewTab || a.getAttribute('target') === '_blank') window.open(a.href, '_blank', 'noopener');
+  if (isNewTab) window.open(a.href, '_blank', 'noopener');
   else window.location.href = a.href;
 }
 
@@ -86,7 +86,7 @@ export default function processQuickLink(a) {
     if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
     const hasConsent = await waitForConsent();
     if (loader) loader.replaceWith(a);
-    const isNewTab = (e.metaKey || e.ctrlKey);
+    const isNewTab = (e.metaKey || e.ctrlKey || a.getAttribute('target') === '_blank');
     decorateQuickLink(a, hasConsent, isNewTab);
   });
 }
