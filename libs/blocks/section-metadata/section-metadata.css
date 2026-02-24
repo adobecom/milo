@@ -461,7 +461,7 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-/* :root:has(meta[name="theme"][content="doodlebug"]) {
+:root:has(meta[name="theme"][content="doodlebug"]) {
   --xl-rounded-corners: 20px;
 
   .section.two-up, .section.three-up, .section.four-up, .section.five-up {
@@ -505,4 +505,4 @@ main > .section[class*='-up'] > .content {
       padding-top: 0;
     }
   }
-} */
+}

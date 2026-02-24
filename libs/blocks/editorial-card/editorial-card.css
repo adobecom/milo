@@ -438,7 +438,7 @@
   }
 }
 
-/* :root:has(meta[name="theme"][content="doodlebug"]) {
+:root:has(meta[name="theme"][content="doodlebug"]) {
   .editorial-card.l-shadow {
     box-shadow: 0 5px 20px 10px #0000000F;
   }
@@ -501,4 +501,4 @@
       padding: 0;
     }
   }
-} */
+}

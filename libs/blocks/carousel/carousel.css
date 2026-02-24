@@ -902,7 +902,7 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
-/* :root:has(meta[name="theme"][content="doodlebug"]) {
+:root:has(meta[name="theme"][content="doodlebug"]) {
   @media (min-width: 600px) and (max-width: 1199px) {
   .carousel.tablet-hinting {
     --tablet-card-width: calc(300 / 768 * 100vw);
@@ -988,4 +988,4 @@ html[dir="rtl"] .carousel .move-indicators {
     transform: translateX(calc(var(--tablet-margin) - var(--tablet-gap)));
   }
 }
-} */
+}
