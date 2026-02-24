@@ -191,9 +191,10 @@ class Footer {
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+    marketParent?.appendChild(market);
 
-    // Support auto populated modal and market selector
-    const blocks = ['.modal', '.market-selector'].map((s) => [...this.body.querySelectorAll(s)]).flat();
+    // Support auto populated modal, fragment and market selector
+    const blocks = ['.modal', '.fragment', '.market-selector'].map((s) => [...this.body.querySelectorAll(s)]).flat();
     await Promise.all(blocks.map(loadBlock));
 
     // Process Jarvis chat footer link

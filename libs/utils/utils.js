@@ -51,7 +51,6 @@ const MILO_BLOCKS = [
   'locui',
   'locui-create',
   'm7',
-  'market-selector',
   'marketo',
   'marketo-config',
   'marquee',
