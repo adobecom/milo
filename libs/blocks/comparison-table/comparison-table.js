@@ -492,13 +492,23 @@ function setupStickyHeader(el) {
   const headerContent = el.querySelector('.header-content');
   const headerContentDummy = el.querySelector('.header-content-dummy');
   let isSticky = false;
-  const headerOffset = document.querySelector('header')?.offsetHeight || 0;
+
+  const calculateTotalOffset = () => {
+    const header = document.querySelector('header');
+    const headerIsSticky = header && getComputedStyle(header).position === 'sticky';
+    const headerOffset = headerIsSticky ? header.offsetHeight : 0;
+    const fedsNav = document.querySelector('.feds-localnav');
+    return headerOffset + (fedsNav?.offsetHeight || 0);
+  };
+
+  let totalOffset = calculateTotalOffset();
 
   const observer = new IntersectionObserver(
     ([entry]) => {
       if (!el.offsetHeight || entry.boundingClientRect.top > window.innerHeight * 0.5) return;
 
       if (!entry.isIntersecting && !isSticky) {
+        totalOffset = calculateTotalOffset();
         const firstChild = headerContent.querySelector('.sub-header-item-container:first-child');
         const secondChild = headerContent.querySelector('.sub-header-item-container:nth-of-type(2)');
         const firstChildPadding = parseFloat(getComputedStyle(firstChild)?.paddingBottom) || 0;
@@ -518,7 +528,7 @@ function setupStickyHeader(el) {
         if (adjustedHeight / window.innerHeight >= 0.45) return;
 
         const heightBeforeSticky = headerContent.offsetHeight;
-        headerContent.style.top = `${headerOffset}px`;
+        headerContent.style.top = `${totalOffset}px`;
         headerContent.classList.add('sticky');
         const heightDifference = heightBeforeSticky - headerContent.offsetHeight;
         headerContentDummy.style.height = `${heightDifference}px`;
@@ -533,7 +543,7 @@ function setupStickyHeader(el) {
         isSticky = false;
       }
     },
-    { rootMargin: `-${headerOffset}px 0px 0px 0px` },
+    { rootMargin: `-${totalOffset}px 0px 0px 0px` },
   );
 
   observer.observe(headerContentDummy);

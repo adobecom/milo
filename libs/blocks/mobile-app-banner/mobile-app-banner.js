@@ -18,7 +18,7 @@ async function getECID() {
   if (window.alloy) {
     await window.alloy_getIdentity.then((data) => {
       ecid = data?.identity?.ECID;
-    }).catch((err) => window.lana.log(`Error fetching ECID: ${err}`, { tags: 'mobile-app-banner' }));
+    }).catch((err) => window.lana.log(`Error fetching ECID: ${err}`, { tags: 'mobile-app-banner', severity: 'error' }));
   }
   return ecid;
 }

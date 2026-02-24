@@ -444,7 +444,7 @@ export async function loadCDT(el, classList) {
         .then(({ default: initCDT }) => initCDT(el, classList)),
     ]);
   } catch (error) {
-    window.lana?.log(`WARN: Failed to load countdown timer: ${error}`, { tags: 'errorType=warn,module=countdown-timer' });
+    window.lana?.log(`Failed to load countdown timer: ${error}`, { tags: 'countdown-timer', severity: 'error' });
   }
 }
 

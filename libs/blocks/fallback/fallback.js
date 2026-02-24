@@ -19,6 +19,7 @@ const SYNTHETIC_BLOCKS = [
   'social',
   'product-entry-cta',
   'gnav-image',
+  'gnav-dropdown-metadata',
 ];
 
 // eslint-disable-next-line import/prefer-default-export

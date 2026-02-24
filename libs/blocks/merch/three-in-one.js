@@ -241,5 +241,6 @@ export default async function openThreeInOneModal(el) {
     content,
     closeEvent: 'closeModal',
     class: 'three-in-one',
+    title: el?.getAttribute('aria-label')?.trim() || el?.textContent?.trim() || '',
   });
 }

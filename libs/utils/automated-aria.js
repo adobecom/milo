@@ -234,7 +234,10 @@ export default async function addAriaLabels() {
   });
   if (!ctas.length) return;
 
-  const logError = (msg, error) => window.lana.log(`${msg}: ${error}`, { tags: 'aria' });
+  const logError = (msg, error) => window.lana.log(`${msg}: ${error}`, {
+    tags: 'aria',
+    severity: 'error',
+  });
 
   const [configResponse, namesResponse] = await Promise.all([
     fetch(`${getFederatedContentRoot()}/federal/assets/data/cta-aria-label-config.json`)
@@ -258,7 +261,7 @@ export default async function addAriaLabels() {
   if (!ctaAriaLabelConfig.data?.length || !productNames.data?.length) {
     window.lana.log(
       `No cta aria label config or product names found for locale ${localePrefix}`,
-      { tags: 'aria' },
+      { tags: 'aria', severity: 'warning' },
     );
     return;
   }

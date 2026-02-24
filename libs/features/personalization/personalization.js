@@ -678,10 +678,13 @@ export async function handleCommands(
   const section1 = document.querySelector('main > div');
   addSectionAnchors(rootEl);
   for (const cmd of commands) {
-    const { action, content, selector } = cmd;
-    cmd.content = forceInline && getSelectorType(content) === SELECTOR_TYPES.fragment
-      ? addHash(content, INLINE_HASH)
-      : content;
+    const { action, selector } = cmd;
+    if (forceInline
+      && action !== 'updateattribute'
+      && getSelectorType(cmd.content) === SELECTOR_TYPES.fragment
+      && !cmd.content.includes(INLINE_HASH)) {
+      cmd.content = addHash(cmd.content, INLINE_HASH);
+    }
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd);
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
