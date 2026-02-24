@@ -438,7 +438,7 @@
   }
 }
 
-:root:has(meta[name="theme"][content="doodlebug"]) {
+/* :root:has(meta[name="theme"][content="doodlebug"]) {
   .editorial-card.l-shadow {
     box-shadow: 0 5px 20px 10px #0000000F;
   }
@@ -497,9 +497,8 @@
     .show-2-desktop .editorial-card .media-area::after {
       border-radius: 20px;
     }
-    /* js */
     .show-2-desktop .editorial-card.s-padding-media .media-area > div {
       padding: 0;
     }
   }
-}
+} */

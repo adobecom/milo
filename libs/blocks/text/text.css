@@ -594,7 +594,7 @@
 }
 
 
-:root:has(meta[name="theme"][content="doodlebug"]) {
+/* :root:has(meta[name="theme"][content="doodlebug"]) {
   .text-block.grid-cta .foreground {
     --cell-width: 300px;
 
@@ -713,7 +713,7 @@
     }
 
   }
-}
+} */
 
 /* Northstar specific */
 :root:has(meta[name="theme"][content="northstar"]) {
