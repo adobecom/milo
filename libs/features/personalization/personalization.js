@@ -121,7 +121,7 @@ export const normalizePath = (p, localize = true) => {
         || hash.includes(mepHash)
         || firstFolder in config.locales
         || path.includes('.json')) {
-        path = 'pathname';
+        path = pathname;
       } else {
         path = `${config.locale.prefix}${pathname}`;
       }
