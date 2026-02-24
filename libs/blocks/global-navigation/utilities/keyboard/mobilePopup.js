@@ -40,28 +40,20 @@ const openHeadline = ({ headline, focus } = {}) => {
 const getState = (element = getOpenPopup()) => {
   if (!element) return { popupItems: [] };
   const popupItems = [...element.querySelectorAll(selectors.popupItems)];
-  // In the markup either a section OR column can contain a expandable headline
-  // which is what we are interested in - so we can treat them both as sections.
+  const allHeadlines = [...element.querySelectorAll(selectors.headline)]
+    .filter((el) => isElementVisible(el));
+
   const section = document.activeElement.closest(selectors.section)
     || document.activeElement.closest(selectors.column);
-  let allSections = [...element.querySelectorAll(selectors.section)];
-  if (!allSections.length) allSections = [...element.querySelectorAll(selectors.column)];
-  const visibleSections = allSections.filter((el) => isElementVisible(el));
-  const currentSection = visibleSections.findIndex((node) => node.isEqualNode(section));
-  const firstHeadline = visibleSections[0]?.querySelector(selectors.headline);
-  const lastHeadline = visibleSections[visibleSections.length - 1]
-    ?.querySelector(selectors.headline);
-  const prevHeadline = visibleSections[currentSection - 1]
-    ?.querySelector(selectors.headline);
-  const nextHeadline = visibleSections[currentSection + 1]
-    ?.querySelector(selectors.headline);
+
+  const currentHeadline = section?.querySelector(selectors.headline);
+  const currentHeadlineIdx = allHeadlines.findIndex((node) => node.isEqualNode(currentHeadline));
+
   return {
-    visibleSections,
-    currentSection,
-    firstHeadline,
-    lastHeadline,
-    prevHeadline,
-    nextHeadline,
+    firstHeadline: allHeadlines[0],
+    lastHeadline: allHeadlines[allHeadlines.length - 1],
+    prevHeadline: allHeadlines[currentHeadlineIdx - 1],
+    nextHeadline: allHeadlines[currentHeadlineIdx + 1],
     popupItems,
   };
 };
