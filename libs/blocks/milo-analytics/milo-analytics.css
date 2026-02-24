@@ -1,0 +1,282 @@
+header, footer {
+  display: none !important;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────── */
+
+.milo-analytics {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #fff;
+  color: #333;
+  line-height: 1.5;
+}
+
+.milo-analytics *,
+.milo-analytics *::before,
+.milo-analytics *::after {
+  box-sizing: border-box;
+}
+
+/* ── Loading ──────────────────────────────────────────────────────── */
+
+.milo-analytics .ma-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 16px;
+  color: #666;
+  font-size: 15px;
+}
+
+.milo-analytics .ma-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #4e79a7;
+  border-radius: 50%;
+  animation: ma-spin 0.7s linear infinite;
+}
+
+@keyframes ma-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Filter bar ───────────────────────────────────────────────────── */
+
+.milo-analytics .ma-filter-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-wrap: wrap;
+}
+
+/* ── Multi-select ─────────────────────────────────────────────────── */
+
+.milo-analytics .ms-wrapper {
+  position: relative;
+  min-width: 160px;
+  flex: 1;
+}
+
+.milo-analytics .ms-input-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.milo-analytics .ms-input-row:focus-within {
+  border-color: #4e79a7;
+  box-shadow: 0 0 0 2px rgba(78, 121, 167, 0.15);
+}
+
+.milo-analytics .ms-input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 13px;
+  min-width: 50px;
+  background: transparent;
+  color: #333;
+}
+
+.milo-analytics .ms-input::placeholder {
+  color: #999;
+}
+
+.milo-analytics .ms-badge {
+  background: #4e79a7;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 1px 7px;
+  margin-right: 6px;
+  line-height: 1.4;
+}
+
+.milo-analytics .ms-arrow {
+  color: #aaa;
+  font-size: 11px;
+  user-select: none;
+}
+
+.milo-analytics .ms-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 200;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.milo-analytics .ms-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #333;
+  transition: background 0.1s;
+}
+
+.milo-analytics .ms-item:hover {
+  background: #f5f7fa;
+}
+
+.milo-analytics .ms-item input[type="checkbox"] {
+  margin: 0;
+  accent-color: #4e79a7;
+}
+
+.milo-analytics .ms-empty,
+.milo-analytics .ms-more {
+  padding: 10px 12px;
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+}
+
+/* ── Reset button ─────────────────────────────────────────────────── */
+
+.milo-analytics .ma-reset-btn {
+  padding: 8px 14px;
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #555;
+  transition: background 0.15s;
+}
+
+.milo-analytics .ma-reset-btn:hover {
+  background: #e8e8e8;
+}
+
+/* ── Breadcrumbs ──────────────────────────────────────────────────── */
+
+.milo-analytics .ma-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 13px;
+  color: #555;
+}
+
+.milo-analytics .ma-bc-label {
+  font-weight: 600;
+  color: #666;
+  margin-right: 2px;
+}
+
+.milo-analytics .ma-bc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #e8eff7;
+  color: #3b6a9b;
+  border-radius: 12px;
+  padding: 2px 6px 2px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.milo-analytics .ma-bc-remove {
+  background: none;
+  border: none;
+  color: #3b6a9b;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.milo-analytics .ma-bc-remove:hover {
+  opacity: 1;
+}
+
+.milo-analytics .ma-bc-sep {
+  color: #ccc;
+  margin: 0 2px;
+  font-weight: 300;
+}
+
+/* ── Chart area ───────────────────────────────────────────────────── */
+
+.milo-analytics .ma-chart-area {
+  padding: 20px 16px;
+}
+
+.milo-analytics .ma-chart-box {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.milo-analytics .ma-chart-title {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.milo-analytics .ma-canvas-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* ── Detail grid ──────────────────────────────────────────────────── */
+
+.milo-analytics .ma-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+.milo-analytics .ma-detail-grid .ma-chart-box {
+  margin-bottom: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .milo-analytics .ma-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .milo-analytics .ma-filter-bar {
+    flex-direction: column;
+  }
+
+  .milo-analytics .ms-wrapper {
+    width: 100%;
+  }
+}
