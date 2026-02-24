@@ -501,15 +501,29 @@ body {
   font-size: var(--s2a-typography-font-size-md);
   line-height: var(--s2a-typography-line-height-md);
   background-color: var(--s2a-color-background-default);
-  color: #fff; /* TODO: Replace with a variable */
+  color: var(--s2a-color-gray-25);
   margin: 0;
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   opacity: 1 !important; /* Fix Target hiding */
 }
 
-body:has(.dialog-modal) #onetrust-consent-sdk {
-  display: none;
+body {
+  &:has(footer:focus-within) {
+    #onetrust-consent-sdk:not(:has(#ot-cookie-button.show)) {
+      position: sticky;
+      bottom: 0;
+      /* #onetrust-banner-sdk z-index value */
+      z-index: 2147483645;
+
+      #onetrust-banner-sdk {
+        position: sticky;
+      }
+    }
+  }
+  &:has(.dialog-modal) #onetrust-consent-sdk {
+    display: none;
+  }
 }
 
 main > div,
@@ -536,15 +550,15 @@ div[data-failed="true"] {
   margin: 12px;
   border-radius: 6px;
   display: block;
-}
 
-div[data-failed="true"]::before {
-  content: attr(data-reason);
-  color: white;
-  padding: 0 0 2px 6px;
-  background: #ff00a0;
-  font-weight: 700;
-  display: block;
+  &::before {
+    content: attr(data-reason);
+    color: white;
+    padding: 0 0 2px 6px;
+    background: #ff00a0;
+    font-weight: 700;
+    display: block;
+  }
 }
 
 img {
@@ -715,6 +729,18 @@ p, [class*="body-"] {
 
 .section {
   position: relative;
+
+  .section-background {
+    img {
+      object-fit: cover;
+      height: 100%;
+      width: 100%;
+    }
+  }
+}
+
+.section-anchor {
+  scroll-margin-top: var(--global-height-nav); /* TODO: Replace with correct variable */
 }
 
 .hide-block {
@@ -727,6 +753,58 @@ p, [class*="body-"] {
 
 .static-links a:not([class*="button"]) {
   color: inherit;
+}
+
+.con-button {
+  background-color: transparent;
+  border-radius: var(--s2a-border-radius-md);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-1000);
+  color: var(--s2a-color-gray-1000);
+  display: inline-block;
+  font-size: var(--s2a-typography-font-size-sm);
+  font-style: normal;
+  font-weight: var(--s2a-typography-font-weight-bold);
+  line-height: 16px;
+  padding: 5px 14px;
+  text-decoration: none;
+
+  &:hover {
+    background-color: var(--s2a-color-gray-1000);
+    border-color: var(--s2a-color-gray-1000);
+    color: var(--s2a-color-gray-25);
+    text-decoration: none;
+  }
+
+  &.l-button, &.button-l {
+    border-radius: 40px;
+    line-height: var(--s2a-typography-line-height-3xs);
+    padding: 9px 35px 11px 35px;
+  }
+
+  &.blue {
+    background-color: #3b63fb; /* Missing color */
+    border-color: #3b63fb;
+    /* color: var(--s2a-color-gray-25); */
+    color: #fff; /* Set this to actual value because of .dark */
+
+    &:hover, &:active {
+      background-color: #274dea; /* Missing color */
+      border-color: #274dea;
+      /* color: var(--s2a-color-gray-25); */
+      color: #fff; /* Set this to actual value because of .dark */
+    }
+  }
+
+  &.fill {
+    background-color: var(--s2a-color-gray-1000);
+    border-color: var(--s2a-color-gray-1000);
+    color: var(--s2a-color-gray-25);
+
+    &:hover, &:active {
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
+    }
+  }
 }
 
 /* NOTE: Experimental parallax concept to be easily enabled on elements */
