@@ -9,7 +9,9 @@ import { setConfig } from '../../../libs/utils/utils.js';
 // from failing. Once published, replace this block with a static import like the others.
 if (!customElements.get('merch-field')) {
   customElements.define('merch-field', class extends HTMLElement {
-    checkReady = () => Promise.resolve(true);
+    checkReady() {
+      return Promise.resolve(Boolean(this));
+    }
   });
 }
 
