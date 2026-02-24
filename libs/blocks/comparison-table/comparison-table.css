@@ -174,7 +174,7 @@
 .comparison-table .header-content.sticky {
   position: sticky;
   top: 0;
-  z-index: 9;
+  z-index: 3;
   background-color: var(--color-gray-100);
   width: 100%;
   box-shadow: 0 1px 6px 0 rgb(0  0  0 / 12%);
@@ -204,6 +204,11 @@
 
 .comparison-table .header-content-wrapper .header-item:first-child {
   display: none;
+}
+
+.comparison-table .header-item img {
+  width: 24px;
+  height: 24px;
 }
 
 .comparison-table .sub-header-item-container {

@@ -24,6 +24,9 @@ async function getResults() {
     useCache: false,
     injectVisualMetadata: false,
   });
+
+  if (!results) return; // Page is excluded from preflight checks
+
   const checks = results.runChecks.assets || [];
 
   const result = await Promise.resolve(checks[0]).catch((error) => ({

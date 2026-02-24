@@ -234,7 +234,10 @@ export async function getGeoLocaleSettings(miloLocale) {
       const { getAkamaiCode } = await import('../../utils/geo.js');
       country = await getAkamaiCode(true);
     } catch (error) {
-      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
+      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`, {
+        tags: 'merch',
+        severity: 'error',
+      });
     }
   }
   if (country) {
@@ -326,8 +329,10 @@ export const CC_ALL_APPS = [
 const NAME_LOCALE = 'LOCALE';
 const NAME_PRODUCT_FAMILY = 'PRODUCT_FAMILY';
 const FREE_TRIAL_PATH = 'FREE_TRIAL_PATH';
+const CRM_PATH = 'CRM_PATH';
 const BUY_NOW_PATH = 'BUY_NOW_PATH';
 const FREE_TRIAL_HASH = 'FREE_TRIAL_HASH';
+const CRM_HASH = 'CRM_HASH';
 const BUY_NOW_HASH = 'BUY_NOW_HASH';
 const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
@@ -362,35 +367,44 @@ export function getMasBase(hostname, maslibs) {
 }
 
 /**
- * Gets the base URL for loading web components based on maslibs parameter
- * @returns {string|null} Base URL for web components or null if maslibs not present
+ * Parses maslibs URL parameter and returns base URL
+ * @returns {string | null} Base URL or null if maslibs not present
  */
-export function getMasLibs() {
+export function getMasLibsBaseUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   const masLibs = urlParams.get('maslibs');
 
   if (!masLibs || masLibs.trim() === '') return null;
 
-  const sanitizedMasLibs = masLibs.trim().toLowerCase();
+  const sanitized = masLibs.trim().toLowerCase();
 
-  if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3000/web-components/dist';
-  }
-  if (sanitizedMasLibs === 'main') {
-    return 'http://www.adobe.com/mas/libs';
+  if (sanitized === 'local') {
+    return 'http://localhost:3000';
   }
 
-  // Detect current domain extension (.page or .live)
+  if (sanitized === 'main') {
+    return 'https://main--mas--adobecom.aem.live';
+  }
+
   const { hostname } = window.location;
   const extension = hostname.endsWith('.page') ? 'page' : 'live';
 
-  if (sanitizedMasLibs.includes('--mas--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/web-components/dist`;
+  let branch = sanitized;
+  if (!sanitized.includes('--')) {
+    branch = `${sanitized}--mas--adobecom`;
   }
-  if (sanitizedMasLibs.includes('--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/web-components/dist`;
-  }
-  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/web-components/dist`;
+
+  return `https://${branch}.aem.${extension}`;
+}
+
+/**
+ * Gets the base URL for loading web components based on maslibs parameter
+ * @returns {string|null} Base URL for web components or null if maslibs not present
+ */
+export function getMasLibs() {
+  const baseUrl = getMasLibsBaseUrl();
+  if (!baseUrl) return null;
+  return `${baseUrl}/web-components/dist`;
 }
 
 /**
@@ -398,31 +412,9 @@ export function getMasLibs() {
  * @returns {string|null} URL for fragment-client.js or null if maslibs not present
  */
 function getFragmentClientUrl() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('maslibs');
-
-  if (!masLibs || masLibs.trim() === '') return null;
-
-  const sanitizedMasLibs = masLibs.trim().toLowerCase();
-
-  if (sanitizedMasLibs === 'local') {
-    return 'http://localhost:3000/studio/libs/fragment-client.js';
-  }
-  if (sanitizedMasLibs === 'main') {
-    return 'https://mas.adobe.com/studio/libs/fragment-client.js';
-  }
-
-  // Detect current domain extension (.page or .live)
-  const { hostname } = window.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
-
-  if (sanitizedMasLibs.includes('--mas--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
-  }
-  if (sanitizedMasLibs.includes('--')) {
-    return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
-  }
-  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/studio/libs/fragment-client.js`;
+  const baseUrl = getMasLibsBaseUrl();
+  if (!baseUrl) return null;
+  return `${baseUrl}/studio/libs/fragment-client.js`;
 }
 
 /**
@@ -431,6 +423,23 @@ function getFragmentClientUrl() {
 const failedExternalLoads = new Set();
 
 const loadingPromises = new Map();
+
+/**
+ * Generates the URL for loading a MAS component
+ * @param {string} componentName - Name of the component to load
+ * @param {string|null} masLibsBase - Base URL from getMasLibs() if available
+ * @param {string} hostname - Current hostname
+ * @returns {string} The URL to load the component from
+ */
+export function getMasComponentUrl(componentName, masLibsBase, hostname) {
+  if (masLibsBase) {
+    return `${masLibsBase}/${componentName}.js`;
+  }
+  const isAdobeProd = hostname === 'www.adobe.com';
+  return isAdobeProd
+    ? `https://www.adobe.com/mas/libs/${componentName}.js`
+    : `https://main--mas--adobecom.aem.live/web-components/dist/${componentName}.js`;
+}
 
 /**
  * Loads a MAS component either from external URL (if masLibs present) or from production CDN
@@ -450,8 +459,7 @@ export async function loadMasComponent(componentName) {
 
   const loadPromise = (async () => {
     const masLibsBase = getMasLibs();
-    const productionUrl = `https://www.adobe.com/mas/libs/${componentName}.js`;
-    const targetUrl = masLibsBase ? `${masLibsBase}/${componentName}.js` : productionUrl;
+    const targetUrl = getMasComponentUrl(componentName, masLibsBase, window.location.hostname);
 
     // Fail fast if this URL has already failed before
     if (failedExternalLoads.has(targetUrl)) {
@@ -794,7 +802,10 @@ export function appendDexterParameters(url, extraOptions, el) {
       isRelativePath ? `${window.location.origin}${url}` : url,
     );
   } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    window.lana?.log(`Invalid URL ${url} : ${err}`, {
+      tags: 'merch',
+      severity: 'error',
+    });
     return url;
   }
   absoluteUrl = applyPromo(absoluteUrl);
@@ -917,7 +928,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   return modalState.isOpen;
 }
 
-export async function openModal(e, url, offerType, hash, extraOptions, el) {
+export async function openModal(e, urlParam, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
   if (modalState.isOpen) return;
@@ -937,6 +948,17 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
     }
     return;
   }
+
+  let url = urlParam;
+  if (el?.dataset.modal === 'crm') {
+    const card = el.closest('merch-card');
+    const stock = card?.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]')?.checked;
+    const quantity = card?.querySelector('merch-quantity-select')?.shadowRoot?.querySelector('input[name="quantity"]')?.value;
+    const urlObj = new URL(url);
+    if (stock) urlObj.searchParams.set('stock', 'on');
+    if (quantity) urlObj.searchParams.set('qs', quantity);
+    if (stock || quantity) url = urlObj.toString();
+  }
   if (isInternalModal(url)) {
     const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
@@ -948,9 +970,13 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
-  const hash = checkoutLinkConfig[
-    `${offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH}`
-  ];
+  let columnName;
+  if (el.dataset.modal === 'crm') {
+    columnName = CRM_HASH;
+  } else {
+    columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH;
+  }
+  const hash = checkoutLinkConfig[columnName];
   if (hash) {
     el.setAttribute('data-modal-id', hash);
   }
@@ -995,14 +1021,36 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
     options,
   );
   if (!checkoutLinkConfig) return undefined;
-  const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  let columnName;
+  if (el?.dataset.modal === 'crm') {
+    columnName = CRM_PATH;
+  } else {
+    columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  }
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
+
+  if (url?.includes('|')) {
+    const urls = url.split('|');
+    const tabpanel = el.closest('.tabpanel');
+    if (tabpanel) {
+      const index = [...tabpanel.parentElement.children].indexOf(tabpanel);
+      if (urls[index]) {
+        url = urls[index].trim();
+      }
+    } else {
+      url = urls[0].trim();
+    }
+  }
+
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
-  url = isInternalModal(url) || prodModalUrl
-    ? await localizeLinkAsync(checkoutLinkConfig[columnName])
-    : checkoutLinkConfig[columnName];
+  if (isInternalModal(url) || prodModalUrl) {
+    const localized = await localizeLinkAsync(url);
+    url = prodModalUrl && !localized.startsWith('http')
+      ? `${new URL(url).origin}${localized}`
+      : localized;
+  }
   url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
   return {
     url,
@@ -1035,6 +1083,15 @@ export function setPreview(attributes) {
     attributes.preview = 'on';
   }
 }
+
+function isAnnualPriceEnabled(params) {
+  const annualEnabled = getMetadata('mas-ff-annual-price');
+  if (annualEnabled === 'true' || annualEnabled === 'on') {
+    return params?.get('annual') !== 'false';
+  }
+  return undefined;
+}
+
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -1111,7 +1168,7 @@ export async function initService(force = false, attributes = {}) {
           if (isSignedIn) fetchEntitlements();
         });
       }
-      if (country === 'AU') {
+      if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
       }
       return service;
@@ -1247,13 +1304,12 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
-  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const displayPlanType = params.get('planType');
-  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
+  const displayAnnual = isAnnualPriceEnabled(params);
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   const quantity = params.get('quantity');

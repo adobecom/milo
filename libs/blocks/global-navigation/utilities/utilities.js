@@ -64,7 +64,13 @@ export const darkIcons = {
   company: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="22" viewBox="0 0 24 22" fill="none"><path d="M14.2353 21.6209L12.4925 16.7699H8.11657L11.7945 7.51237L17.3741 21.6209H24L15.1548 0.379395H8.90929L0 21.6209H14.2353Z" fill="#FFFFFF"/></svg>',
 };
 
-export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
+export const lanaLog = ({
+  message,
+  e = '',
+  tags = 'default',
+  errorType,
+  severity,
+} = {}) => {
   const { locale = {} } = getConfig();
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
@@ -72,6 +78,7 @@ export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
     sampleRate: 1,
     tags,
     errorType,
+    severity,
   });
 };
 
@@ -117,20 +124,37 @@ export const logPerformance = (
   }
 };
 
-export const logErrorFor = async (fn, message, tags, errorType) => {
+export const logErrorFor = async (fn, message, tags, errorType, severity = 'error') => {
   try {
     await fn();
   } catch (e) {
-    lanaLog({ message, e, tags, errorType });
+    lanaLog({ message, e, tags, errorType, severity });
     throw new Error(e);
   }
 };
 
 export function addMepHighlightAndTargetId(el, source) {
   let { manifestId, targetManifestId } = source.dataset;
-  manifestId ??= source?.closest('[data-manifest-id]')?.dataset?.manifestId;
+  const manifestIdEl = source?.closest('[data-manifest-id]');
+  manifestId ??= manifestIdEl?.dataset?.manifestId;
   targetManifestId ??= source?.closest('[data-adobe-target-testid]')?.dataset?.adobeTargetTestid;
-  if (manifestId) el.dataset.manifestId = manifestId;
+  if (manifestId) {
+    el.dataset.manifestId = manifestId;
+    let path = source.dataset?.path
+      || el.dataset?.path
+      || source?.closest('[data-path]')?.dataset?.path
+      || manifestIdEl?.dataset?.path
+      || manifestIdEl?.querySelector('[data-path]')?.dataset?.path;
+    if (path) {
+      try {
+        path = new URL(path).pathname;
+      } catch {
+        // Already a path, keep as-is
+      }
+      el.dataset.path = path;
+    }
+    el.dataset.manifestDisplay = path ? `${manifestId}: ${path}` : `${manifestId}: html`;
+  }
   if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
   return el;
 }
@@ -521,6 +545,7 @@ export async function fetchAndProcessPlainHtml({
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
+  if (mepFragment?.content) body.dataset.path = mepFragment.content;
   let commands = mepGnav?.commands || [];
 
   const gnavMepCommands = config?.mep?.commands?.filter(
@@ -538,6 +563,10 @@ export async function fetchAndProcessPlainHtml({
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map(async (link) => {
       link.href = await localizeLinkAsync(getFederatedUrl(link.href));
+      // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
+      if (link.dataset.manifestId) {
+        link.dataset.skipLoadArea = 'true';
+      }
       return loadInlineFrags(link);
     });
     await Promise.all(fragPromises);
