@@ -498,12 +498,26 @@ function mobileSwipeDetect(carouselElements) {
 
     // stop swipe for disabled-buttons variant.
     const activeSlideIndex = carouselElements.currentActiveIndex;
-    if (carouselElements.el.classList.contains('disable-buttons')
-          && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
-          || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left'))) {
+    const { classList } = carouselElements.el;
+    const isSwipingBack = carouselElements.direction === 'right';
+    const isSwipingForward = carouselElements.direction === 'left';
+    const isAtStart = activeSlideIndex === 0 && isSwipingBack;
+
+    if (classList.contains('disable-buttons')
+          && (isAtStart || (activeSlideIndex === slides.length - 1 && isSwipingForward))) {
       swipe.xStart = 0;
       swipe.xEnd = 0;
       return;
+    }
+    if (classList.contains('disable-circular-nav')) {
+      const wrapperRect = carouselElements.el.querySelector('.carousel-wrapper').getBoundingClientRect();
+      const lastSlide = slides[slides.length - 1];
+      const isLastSlideFullyVisible = lastSlide.getBoundingClientRect().right <= wrapperRect.right;
+      if (isAtStart || (isSwipingForward && isLastSlideFullyVisible)) {
+        swipe.xStart = 0;
+        swipe.xEnd = 0;
+        return;
+      }
     }
     // reset end swipe values
     swipe.xStart = 0;
