@@ -509,7 +509,7 @@ function mobileSwipeDetect(carouselElements) {
       swipe.xEnd = 0;
       return;
     }
-    if (classList.contains('hinting-tablet')) {
+    if (classList.contains('disable-circular-nav')) {
       const wrapperRect = carouselElements.el.querySelector('.carousel-wrapper').getBoundingClientRect();
       const lastSlide = slides[slides.length - 1];
       const isLastSlideFullyVisible = lastSlide.getBoundingClientRect().right <= wrapperRect.right;
