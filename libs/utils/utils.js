@@ -1393,10 +1393,15 @@ function setupLinksDecoration(el) {
   return { config, anchors, hostname, href };
 }
 
+const decoratedLinks = new WeakSet();
+
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
+    if (decoratedLinks.has(a)) {
+      return a.classList.contains('link-block') ? a : null;
+    }
     if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
@@ -1408,6 +1413,7 @@ export async function decorateLinksAsync(el) {
         a,
       );
     }
+    decoratedLinks.add(a);
     return processLinkDecoration(a, config, hasDnt);
   });
 
@@ -1632,19 +1638,10 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
-function decorateLinksMinimal(el) {
-  const anchors = el.getElementsByTagName('a');
-  return [...anchors].map((a) => {
-    if (a.classList.contains('link-block')) return a;
-    const autoBlock = decorateAutoBlock(a);
-    return autoBlock ? a : null;
-  }).filter(Boolean);
-}
-
-async function decorateSection(section, idx, { skipLinks = false } = {}) {
+async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
-  let links = skipLinks ? decorateLinksMinimal(section) : await decorateLinksAsync(section);
+  let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
 
@@ -2322,8 +2319,7 @@ async function resolveHighPriorityFragments(section) {
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
-    const opts = hadInlineFrags ? {} : { skipLinks: true };
-    const redecorated = await decorateSection(section.el, section.idx, opts);
+    const redecorated = await decorateSection(section.el, section.idx);
     section.blocks = redecorated.blocks;
     section.preloadLinks = redecorated.preloadLinks;
   }
