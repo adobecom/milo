@@ -970,7 +970,7 @@ describe('MEP Lingo Fragments', () => {
     section.remove();
   });
 
-  it('block swap through loadArea uses skipLinks (decorateLinksMinimal)', async () => {
+  it('block swap through loadArea skips already-decorated links on redecoration', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     stubQueryIndex();
     const currentConfig = getConfig();
