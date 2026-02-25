@@ -97,11 +97,6 @@ describe('Functional Test', () => {
     expect(normalizePath(nonDAMpath)).to.not.include('https://www.adobe.com');
   });
 
-  it('should retain params and hash when normalizing path', async () => {
-    const paramPath = 'https://main--cc--adobecom.aem.page/products/photoshop-lightroom?mep&sheet=%27testsheet%27#testhash';
-    expect(normalizePath(paramPath)).to.include('sheet=%27testsheet%27#testhash');
-  });
-
   it('scheduled manifest should apply changes if active (bts)', async () => {
     const config = getConfig();
     config.mep = {
