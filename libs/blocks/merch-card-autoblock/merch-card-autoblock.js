@@ -15,7 +15,6 @@ const seenFragments = new Set();
 let log;
 loadMasComponent(MAS_MERCH_CARD);
 loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
-loadMasComponent(MAS_MERCH_FIELD);
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -23,7 +22,7 @@ function getTimeoutPromise() {
   });
 }
 
-async function loadDependencies() {
+async function loadCoreDependencies() {
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {
@@ -35,8 +34,11 @@ async function loadDependencies() {
   await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
-    loadMasComponent(MAS_MERCH_FIELD),
   ]);
+}
+
+async function loadInlineDependencies() {
+  await loadMasComponent(MAS_MERCH_FIELD);
 }
 
 export async function checkReady(masElement) {
@@ -94,8 +96,9 @@ export default async function init(el) {
   const { fragment } = options;
   if (!fragment) return;
   options = overrideOptions(fragment, options);
-  await loadDependencies();
+  await loadCoreDependencies();
   if (options.field) {
+    await loadInlineDependencies();
     await createInline(el, options);
   } else {
     await createCard(el, options);
