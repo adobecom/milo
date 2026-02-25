@@ -496,19 +496,28 @@ function mobileSwipeDetect(carouselElements) {
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     carouselElements.direction = getSwipeDirection(swipe, swipeDistance);
 
+    // stop swipe for disabled-buttons variant.
     const activeSlideIndex = carouselElements.currentActiveIndex;
+    const { classList } = carouselElements.el;
     const isSwipingBack = carouselElements.direction === 'right';
     const isSwipingForward = carouselElements.direction === 'left';
-    const { classList } = carouselElements.el;
     const isAtStart = activeSlideIndex === 0 && isSwipingBack;
-    const isDisableButtons = (classList.contains('disable-buttons') || classList.contains('disable-circular-nav'))
-          && (isAtStart || (activeSlideIndex === slides.length - 1 && isSwipingForward));
-    const isTabletHinting = classList.contains('hinting-tablet') && classList.contains('disable-circular-nav')
-          && (isAtStart || (activeSlideIndex === slides.length - 2 && isSwipingForward));
-    if (isDisableButtons || isTabletHinting) {
+
+    if (classList.contains('disable-buttons')
+          && (isAtStart || (activeSlideIndex === slides.length - 1 && isSwipingForward))) {
       swipe.xStart = 0;
       swipe.xEnd = 0;
       return;
+    }
+    if (classList.contains('hinting-tablet')) {
+      const wrapperRect = carouselElements.el.querySelector('.carousel-wrapper').getBoundingClientRect();
+      const lastSlide = slides[slides.length - 1];
+      const isLastSlideFullyVisible = lastSlide.getBoundingClientRect().right <= wrapperRect.right;
+      if (isAtStart || (isSwipingForward && isLastSlideFullyVisible)) {
+        swipe.xStart = 0;
+        swipe.xEnd = 0;
+        return;
+      }
     }
     // reset end swipe values
     swipe.xStart = 0;
