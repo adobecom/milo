@@ -749,7 +749,7 @@ function addHighlightData(manifests) {
 }
 
 function markDefaultFragments() {
-  document.querySelectorAll('.fragment').forEach((fragment) => {
+  document.querySelectorAll('[data-path]').forEach((fragment) => {
     const hasManifest = fragment.dataset.manifestId;
     const hasRoc = fragment.dataset.mepLingoRoc;
     const hasFallback = fragment.dataset.mepLingoFallback;
