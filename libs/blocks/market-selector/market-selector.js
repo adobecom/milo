@@ -230,9 +230,10 @@ function createDropdown(label, placeholder, items, onSelect, noResultLabel, isSe
     const term = normalizeText(e.target.value.trim());
     const filtered = items.filter((item) => {
       const labelMatch = normalizeText(item.label).includes(term);
+      const englishMatch = item.englishName && normalizeText(item.englishName).includes(term);
       const valueMatch = item.value && normalizeText(item.value).includes(term);
       const codeMatch = item.marketCode && normalizeText(item.marketCode).includes(term);
-      return labelMatch || valueMatch || codeMatch;
+      return labelMatch || englishMatch || valueMatch || codeMatch;
     });
     renderItems(filtered);
   });
@@ -284,9 +285,11 @@ export default async function init(block) {
 
   const currentPrefix = getPrefix(window.location.pathname);
   const currentLang = config.languages.find((l) => l.prefix === currentPrefix) || config.languages[0];
-  const currentMarket = config.markets.find((m) => m.marketCode === currentMarketCode)
+  const currentMarket = config.markets.find((m) => m.marketCode === currentMarketCode) 
     || config.markets.find((m) => m.marketCode === currentLang.defaultMarket)
     || config.markets[0];
+
+  const langDropdownLabel = currentLang.nativeName || currentLang.languageName;
 
   const onLanguageSelect = (langItem) => {
     const selectedLang = config.languages.find((l) => l.prefix === langItem.value);
@@ -312,7 +315,8 @@ export default async function init(block) {
   };
 
   const langItems = config.languages.map((l) => ({
-    label: l.languageName,
+    label: l.nativeName || l.languageName,
+    englishName: l.languageName,
     value: l.prefix,
     url: getTargetUrl(l.prefix, window.location.pathname),
   }));
@@ -328,7 +332,7 @@ export default async function init(block) {
     }));
 
   const langDropdown = createDropdown(
-    currentLang.languageName,
+    langDropdownLabel,
     labels.searchLanguage,
     langItems,
     onLanguageSelect,
