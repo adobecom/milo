@@ -702,7 +702,7 @@ body:has(footer:focus-within) #onetrust-consent-sdk:not(:has(#ot-cookie-button.s
 }
 
 body {
-  display: block;
+  visibility: visible;
   font-family: var(--body-font-family);
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
