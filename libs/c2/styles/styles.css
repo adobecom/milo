@@ -501,7 +501,7 @@ body {
   font-size: var(--s2a-typography-font-size-md);
   line-height: var(--s2a-typography-line-height-md);
   background-color: var(--s2a-color-background-default);
-  color: var(--s2a-color-gray-25);
+  color: var(--s2a-color-gray-1000);
   margin: 0;
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
