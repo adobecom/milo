@@ -144,6 +144,20 @@ function updateButtonStates(carouselElements) {
   }
 }
 
+function checkCircularNav(ce) {
+  if (!ce.el.classList.contains('disable-circular-nav')) return;
+  const wrapperRect = ce.el.querySelector('.carousel-wrapper').getBoundingClientRect();
+  const lastRect = ce.slides.at(-1).getBoundingClientRect();
+  const atStart = ce.currentActiveIndex === 0;
+  const atEnd = wrapperRect.width > 0
+    && lastRect.left >= wrapperRect.left && lastRect.right <= wrapperRect.right;
+  ce.nextPreviousBtns?.forEach((btn, i) => {
+    const off = i === 0 ? atStart : atEnd;
+    btn.disabled = off;
+    btn.classList.toggle('disabled', off);
+  });
+}
+
 function handleNext(nextElement, elements) {
   if (nextElement.nextElementSibling) {
     return nextElement.nextElementSibling;
@@ -439,6 +453,7 @@ function moveSlides(event, carouselElements) {
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
   }
+  checkCircularNav(carouselElements);
 
   /*
    * Activates slide animation.
@@ -511,8 +526,9 @@ function mobileSwipeDetect(carouselElements) {
     }
     if (classList.contains('disable-circular-nav')) {
       const wrapperRect = carouselElements.el.querySelector('.carousel-wrapper').getBoundingClientRect();
-      const lastSlide = slides[slides.length - 1];
-      const isLastSlideFullyVisible = lastSlide.getBoundingClientRect().right <= wrapperRect.right;
+      const lastRect = slides[slides.length - 1].getBoundingClientRect();
+      const isLastSlideFullyVisible = lastRect.left >= wrapperRect.left
+        && lastRect.right <= wrapperRect.right;
       if (isAtStart || (isSwipingForward && isLastSlideFullyVisible)) {
         swipe.xStart = 0;
         swipe.xEnd = 0;
@@ -713,6 +729,7 @@ export default function init(el) {
       updateDisableButtonsHeights(carouselElements);
       updateButtonStates(carouselElements);
     }
+    checkCircularNav(carouselElements);
   });
 
   function handleDeferredHeights() {
@@ -723,6 +740,7 @@ export default function init(el) {
     updateButtonStates(carouselElements);
     setTimeout(handleDeferredHeights, 1000);
   }
+  checkCircularNav(carouselElements);
 
   function handleLateLoadingNavigation() {
     [...el.querySelectorAll('.is-delayed')].forEach((item) => item.classList.remove('is-delayed'));
