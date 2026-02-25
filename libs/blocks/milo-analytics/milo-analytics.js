@@ -337,16 +337,44 @@ function calcBarHeight(count) {
 export default async function init(el) {
   el.innerHTML = '';
 
-  /* Loading state */
-  const loading = h(
-    'div',
-    { class: 'ma-loading' },
-    h('div', { class: 'ma-spinner' }),
-    h('p', {}, 'Loading RUM data…'),
-  );
-  el.append(loading);
+  /* Inject keyframes if not already present */
+  if (!document.getElementById('ma-spin-style')) {
+    const style = document.createElement('style');
+    style.id = 'ma-spin-style';
+    style.textContent = '@keyframes ma-spin { to { transform: rotate(360deg); } }';
+    document.head.append(style);
+  }
+
+  /* Loading overlay – fixed position so it shows regardless of parent sizing */
+  const loading = h('div', {
+    style: {
+      position: 'fixed',
+      inset: '0',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '16px',
+      background: '#fff',
+      zIndex: '9999',
+      color: '#666',
+      fontSize: '15px',
+    },
+  }, h('div', {
+    style: {
+      width: '36px',
+      height: '36px',
+      border: '3px solid #e0e0e0',
+      borderTopColor: '#4e79a7',
+      borderRadius: '50%',
+      animation: 'ma-spin 0.7s linear infinite',
+    },
+  }), h('p', { style: { margin: '0' } }, 'Loading RUM data…'));
+
+  document.body.append(loading);
 
   const data = await getRumData();
+  loading.remove();
   el.innerHTML = '';
 
   const opts = extractOpts(data);
