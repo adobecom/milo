@@ -2,8 +2,6 @@
 import { Chart } from 'https://esm.sh/chart.js/auto';
 import getRumData from './rum-data-formatter.js';
 
-/* ── Constants ─────────────────────────────────────────────────────── */
-
 const COLORS = [
   '#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
   '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ac',
@@ -12,25 +10,31 @@ const MAX_DROPDOWN = 200;
 const BAR_H = 28;
 const MIN_H = 200;
 
-/* ── Helpers ───────────────────────────────────────────────────────── */
-
 const fmt = (n) => (n ?? 0).toLocaleString('en-US');
 const locLabel = (l) => (l === '' ? 'en-US (default)' : l);
+const palette = (n) => Array.from({ length: n }, (_, i) => COLORS[i % COLORS.length]);
+const barHeight = (count) => `${Math.max(MIN_H, count * BAR_H + 60)}px`;
 
 function toPath(url) {
   try { return new URL(url).pathname; } catch { return url; }
 }
 
-function palette(n) {
-  return Array.from({ length: n }, (_, i) => COLORS[i % COLORS.length]);
-}
-
 function desc(obj) {
-  return Object.entries(obj)
-    .filter(([, v]) => v > 0)
-    .sort((a, b) => b[1] - a[1]);
+  return Object.entries(obj).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
 }
 
+/** Format chart title: "Name (3 of 10)" or "Name (10 blocks)" */
+function chartTitle(name, shown, total, unit) {
+  if (shown < total) return `${name} (${fmt(shown)} of ${fmt(total)})`;
+  return `${name} (${fmt(total)} ${unit}${total !== 1 ? 's' : ''})`;
+}
+
+/** Map an array into MultiSelect-compatible { value, display } options */
+function toOpts(arr, displayFn) {
+  return arr.map((v) => ({ value: v, display: displayFn ? displayFn(v) : v }));
+}
+
+/** Minimal DOM builder */
 function h(tag, attrs, ...kids) {
   const el = document.createElement(tag);
   if (attrs) {
@@ -44,13 +48,10 @@ function h(tag, attrs, ...kids) {
     }
   }
   for (const c of kids.flat()) {
-    if (c != null) el.append(typeof c === 'string' ? document.createTextNode(c) : c);
+    if (c != null) el.append(c);
   }
   return el;
 }
-
-/* ── MultiSelect Component ─────────────────────────────────────────── */
-
 class MultiSelect {
   constructor(label, opts, onChange) {
     this.label = label;
@@ -62,15 +63,15 @@ class MultiSelect {
   }
 
   build() {
-    this.inp = h('input', {
-      type: 'text',
-      class: 'ms-input',
-      placeholder: this.label,
-    });
+    this.inp = h('input', { type: 'text', class: 'ms-input', placeholder: this.label });
     this.bdg = h('span', { class: 'ms-badge', style: { display: 'none' } });
-    const arrow = h('span', { class: 'ms-arrow' }, '▾');
-
-    this.row = h('div', { class: 'ms-input-row' }, this.inp, this.bdg, arrow);
+    this.row = h(
+      'div',
+      { class: 'ms-input-row' },
+      this.inp,
+      this.bdg,
+      h('span', { class: 'ms-arrow' }, '▾'),
+    );
     this.dd = h('div', { class: 'ms-dropdown', style: { display: 'none' } });
     this.wrap = h('div', { class: 'ms-wrapper' }, this.row, this.dd);
 
@@ -85,7 +86,6 @@ class MultiSelect {
     document.addEventListener('click', (e) => {
       if (!this.wrap.contains(e.target)) this.close();
     });
-
     return this.wrap;
   }
 
@@ -99,13 +99,11 @@ class MultiSelect {
       return;
     }
 
-    /* Selected items float to top */
     const sorted = [...list].sort(
       (a, b) => (this.sel.has(a.value) ? 0 : 1) - (this.sel.has(b.value) ? 0 : 1),
     );
-    const show = sorted.slice(0, MAX_DROPDOWN);
 
-    for (const o of show) {
+    for (const o of sorted.slice(0, MAX_DROPDOWN)) {
       const cb = h('input', { type: 'checkbox' });
       cb.checked = this.sel.has(o.value);
       cb.addEventListener('change', () => {
@@ -170,8 +168,6 @@ class MultiSelect {
   }
 }
 
-/* ── Data extraction ───────────────────────────────────────────────── */
-
 function extractOpts(data) {
   const blocks = new Set();
   const projects = new Set();
@@ -204,29 +200,7 @@ function extractOpts(data) {
   };
 }
 
-/* ── Filtered page options ─────────────────────────────────────────── */
-
-function getFilteredPages(data, sB, sP, sL) {
-  const pages = new Set();
-  const bks = sB.length ? sB : Object.keys(data);
-  for (const block of bks) {
-    if (data[block]) {
-      for (const [proj, locData] of Object.entries(data[block])) {
-        if (proj !== 'totalViews' && (!sP.length || sP.includes(proj))) {
-          for (const [loc, pgData] of Object.entries(locData)) {
-            if (!sL.length || sL.includes(loc)) {
-              for (const pg of Object.keys(pgData)) pages.add(pg);
-            }
-          }
-        }
-      }
-    }
-  }
-  return [...pages].sort((a, b) => a.localeCompare(b));
-}
-
-/* ── Filtered data computation ─────────────────────────────────────── */
-
+/** Traverse filtered data: block → project → locale → page → views */
 function walk(data, sB, sP, sL, sPg, fn) {
   const bks = sB.length ? sB : Object.keys(data);
   for (const block of bks) {
@@ -236,9 +210,7 @@ function walk(data, sB, sP, sL, sPg, fn) {
           for (const [loc, pgData] of Object.entries(locData)) {
             if (!sL.length || sL.includes(loc)) {
               for (const [pg, v] of Object.entries(pgData)) {
-                if (!sPg.length || sPg.includes(pg)) {
-                  fn(block, proj, loc, pg, v);
-                }
+                if (!sPg.length || sPg.includes(pg)) fn(block, proj, loc, pg, v);
               }
             }
           }
@@ -247,6 +219,23 @@ function walk(data, sB, sP, sL, sPg, fn) {
     }
   }
 }
+
+/** Factory: create a totals-by-key function powered by walk() */
+function makeSummer(pick) {
+  return (data, sB, sP, sL, sPg) => {
+    const r = {};
+    walk(data, sB, sP, sL, sPg, (b, p, l, pg, v) => {
+      const k = pick(b, p, l, pg);
+      r[k] = (r[k] || 0) + v;
+    });
+    return r;
+  };
+}
+
+const sumByBlock = makeSummer((b) => b);
+const projTotals = makeSummer((_b, p) => p);
+const locTotals = makeSummer((_b, _p, l) => l);
+const pgTotals = makeSummer((_b, _p, _l, pg) => pg);
 
 function blockTotals(data, sB, sP, sL, sPg) {
   /* Fast path: no project/locale/page filter → use pre-computed totals */
@@ -258,51 +247,35 @@ function blockTotals(data, sB, sP, sL, sPg) {
     });
     return r;
   }
-  const r = {};
-  walk(data, sB, sP, sL, sPg, (b, _p, _l, _pg, v) => { r[b] = (r[b] || 0) + v; });
-  return r;
+  return sumByBlock(data, sB, sP, sL, sPg);
 }
 
-function projTotals(data, sB, sP, sL, sPg) {
-  const r = {};
-  walk(data, sB, sP, sL, sPg, (_b, p, _l, _pg, v) => { r[p] = (r[p] || 0) + v; });
-  return r;
+/** Collect page URLs matching the current block/project/locale filters */
+function getFilteredPages(data, sB, sP, sL) {
+  const pages = new Set();
+  walk(data, sB, sP, sL, [], (_b, _p, _l, pg) => pages.add(pg));
+  return [...pages].sort((a, b) => a.localeCompare(b));
 }
 
-function locTotals(data, sB, sP, sL, sPg) {
-  const r = {};
-  walk(data, sB, sP, sL, sPg, (_b, _p, l, _pg, v) => { r[l] = (r[l] || 0) + v; });
-  return r;
+/** Create a titled chart container with canvas; returns { title, cv, wrap, box } */
+function chartBox(fixedHeight) {
+  const title = h('h3', { class: 'ma-chart-title' });
+  const cv = h('canvas');
+  const style = fixedHeight ? { height: fixedHeight } : {};
+  const wrap = h('div', { class: 'ma-canvas-wrap', style });
+  wrap.append(cv);
+  return { title, cv, wrap, box: h('div', { class: 'ma-chart-box' }, title, wrap) };
 }
-
-function pgTotals(data, sB, sP, sL, sPg) {
-  const r = {};
-  walk(data, sB, sP, sL, sPg, (_b, _p, _l, pg, v) => { r[pg] = (r[pg] || 0) + v; });
-  return r;
-}
-
-/* ── Chart helpers ─────────────────────────────────────────────────── */
 
 function makeChart(canvas, horiz) {
-  const valAxis = {
-    ticks: { callback: (v) => fmt(v) },
-    grid: { color: '#f0f0f0' },
-  };
-  const catAxis = {
-    ticks: { font: { size: 12 } },
-    grid: { display: false },
-  };
+  const valAxis = { ticks: { callback: (v) => fmt(v) }, grid: { color: '#f0f0f0' } };
+  const catAxis = { ticks: { font: { size: 12 } }, grid: { display: false } };
 
   return new Chart(canvas, {
     type: 'bar',
     data: {
       labels: [],
-      datasets: [{
-        label: 'Views',
-        data: [],
-        backgroundColor: [],
-        borderRadius: 3,
-      }],
+      datasets: [{ label: 'Views', data: [], backgroundColor: [], borderRadius: 3 }],
     },
     options: {
       indexAxis: horiz ? 'y' : 'x',
@@ -328,25 +301,15 @@ function feed(chart, labels, values) {
   chart.update();
 }
 
-function calcBarHeight(count) {
-  return `${Math.max(MIN_H, count * BAR_H + 60)}px`;
-}
-
-/* ── Main init ─────────────────────────────────────────────────────── */
-
-export default async function init(el) {
-  el.innerHTML = '';
-
-  /* Inject keyframes if not already present */
+function showLoader() {
   if (!document.getElementById('ma-spin-style')) {
-    const style = document.createElement('style');
-    style.id = 'ma-spin-style';
-    style.textContent = '@keyframes ma-spin { to { transform: rotate(360deg); } }';
-    document.head.append(style);
+    const s = document.createElement('style');
+    s.id = 'ma-spin-style';
+    s.textContent = '@keyframes ma-spin { to { transform: rotate(360deg); } }';
+    document.head.append(s);
   }
 
-  /* Loading overlay – fixed position so it shows regardless of parent sizing */
-  const loading = h('div', {
+  const overlay = h('div', {
     style: {
       position: 'fixed',
       inset: '0',
@@ -371,20 +334,28 @@ export default async function init(el) {
     },
   }), h('p', { style: { margin: '0' } }, 'Loading RUM data…'));
 
-  document.body.append(loading);
+  document.body.append(overlay);
+  return overlay;
+}
 
+export default async function init(el) {
+  el.innerHTML = '';
+  const loader = showLoader();
   const data = await getRumData();
-  loading.remove();
+  loader.remove();
   el.innerHTML = '';
 
   const opts = extractOpts(data);
 
-  /* ── Detail charts (created lazily) ───────────────────────────────── */
-
-  let detailEl = null;
-  let dProjChart = null;
-  let dLocChart = null;
-  let dPgChart = null;
+  let fBlock;
+  let fProj;
+  let fLoc;
+  let fPage;
+  let mainChart;
+  let detailEl;
+  let dProjChart;
+  let dLocChart;
+  let dPgChart;
   let dProjTitle;
   let dLocTitle;
   let dPgTitle;
@@ -394,44 +365,32 @@ export default async function init(el) {
   function ensureDetail() {
     if (detailEl) return;
 
-    /* Project */
-    dProjTitle = h('h3', { class: 'ma-chart-title' });
-    const projCv = h('canvas');
-    const projWrap = h('div', { class: 'ma-canvas-wrap', style: { height: '300px' } });
-    projWrap.append(projCv);
+    const proj = chartBox('300px');
+    const loc = chartBox('300px');
+    const pg = chartBox();
 
-    /* Locale */
-    dLocTitle = h('h3', { class: 'ma-chart-title' });
-    const locCv = h('canvas');
-    const locWrap = h('div', { class: 'ma-canvas-wrap', style: { height: '300px' } });
-    locWrap.append(locCv);
-
-    /* Top Pages */
-    dPgTitle = h('h3', { class: 'ma-chart-title' });
-    const pgCv = h('canvas');
-    dPgWrap = h('div', { class: 'ma-canvas-wrap' });
-    dPgWrap.append(pgCv);
+    dProjTitle = proj.title;
+    dLocTitle = loc.title;
+    dPgTitle = pg.title;
+    dPgWrap = pg.wrap;
 
     detailEl = h(
       'div',
       { class: 'ma-detail-grid' },
-      h('div', { class: 'ma-chart-box' }, dProjTitle, projWrap),
-      h('div', { class: 'ma-chart-box' }, dLocTitle, locWrap),
-      h('div', { class: 'ma-chart-box' }, dPgTitle, dPgWrap),
+      proj.box,
+      loc.box,
+      pg.box,
     );
-
     chartArea.append(detailEl);
 
-    dProjChart = makeChart(projCv, false);
-    dLocChart = makeChart(locCv, false);
-    dPgChart = makeChart(pgCv, true);
+    dProjChart = makeChart(proj.cv, false);
+    dLocChart = makeChart(loc.cv, false);
+    dPgChart = makeChart(pg.cv, true);
   }
 
   function destroyDetail() {
     if (!detailEl) return;
-    dProjChart.destroy();
-    dLocChart.destroy();
-    dPgChart.destroy();
+    [dProjChart, dLocChart, dPgChart].forEach((c) => c.destroy());
     detailEl.remove();
     detailEl = null;
     dProjChart = null;
@@ -439,21 +398,7 @@ export default async function init(el) {
     dPgChart = null;
   }
 
-  /* ── Main chart + layout refs (set up after DOM is built) ─────────── */
-
-  const mainTitle = h('h3', { class: 'ma-chart-title' });
-  const mainWrap = h('div', { class: 'ma-canvas-wrap' });
-  const mainCv = h('canvas');
-  mainWrap.append(mainCv);
-  const mainBox = h('div', { class: 'ma-chart-box' }, mainTitle, mainWrap);
-
-  /* ── Dashboard update (defined before filters so they can ref it) ── */
-
-  let fBlock;
-  let fProj;
-  let fLoc;
-  let fPage;
-  let mainChart;
+  const main = chartBox();
 
   function updateDashboard() {
     const sB = fBlock.selected();
@@ -461,58 +406,33 @@ export default async function init(el) {
     const sL = fLoc.selected();
     const sPg = fPage.selected();
 
-    /* Main: Block Distribution */
+    /* Block Distribution */
     const bt = desc(blockTotals(data, sB, sP, sL, sPg));
-    const blockCount = bt.length;
-    const plural = blockCount !== 1 ? 's' : '';
-
-    mainTitle.textContent = `Block Distribution (${fmt(blockCount)} block${plural})`;
-    mainWrap.style.height = calcBarHeight(blockCount);
+    main.title.textContent = chartTitle('Block Distribution', bt.length, bt.length, 'block');
+    main.wrap.style.height = barHeight(bt.length);
     feed(mainChart, bt.map(([n]) => n), bt.map(([, v]) => v));
 
-    /* Detail charts – only when blocks are selected */
-    if (sB.length) {
-      ensureDetail();
+    if (!sB.length) { destroyDetail(); return; }
+    ensureDetail();
 
-      /* Project Distribution */
-      const pt = desc(projTotals(data, sB, sP, sL, sPg));
-      const projPlural = pt.length !== 1 ? 's' : '';
-      dProjTitle.textContent = `Project Distribution (${fmt(pt.length)} project${projPlural})`;
-      feed(dProjChart, pt.map(([n]) => n), pt.map(([, v]) => v));
+    /* Project Distribution */
+    const pt = desc(projTotals(data, sB, sP, sL, sPg));
+    dProjTitle.textContent = chartTitle('Project Distribution', pt.length, pt.length, 'project');
+    feed(dProjChart, pt.map(([n]) => n), pt.map(([, v]) => v));
 
-      /* Locale Distribution (top 20) */
-      const lt = desc(locTotals(data, sB, sP, sL, sPg));
-      const totalLoc = lt.length;
-      const topLoc = lt.slice(0, 20);
+    /* Top Locale Distribution */
+    const lt = desc(locTotals(data, sB, sP, sL, sPg));
+    const topLoc = lt.slice(0, 20);
+    dLocTitle.textContent = chartTitle('Top Locale Distribution', topLoc.length, lt.length, 'locale');
+    feed(dLocChart, topLoc.map(([n]) => locLabel(n)), topLoc.map(([, v]) => v));
 
-      if (topLoc.length < totalLoc) {
-        dLocTitle.textContent = `Top Locale Distribution (${fmt(topLoc.length)} of ${fmt(totalLoc)})`;
-      } else {
-        const locPlural = totalLoc !== 1 ? 's' : '';
-        dLocTitle.textContent = `Top Locale Distribution (${fmt(totalLoc)} locale${locPlural})`;
-      }
-      feed(dLocChart, topLoc.map(([n]) => locLabel(n)), topLoc.map(([, v]) => v));
-
-      /* Top Pages */
-      const pgt = desc(pgTotals(data, sB, sP, sL, sPg));
-      const totalPg = pgt.length;
-      const top = pgt.slice(0, 30);
-
-      if (top.length < totalPg) {
-        dPgTitle.textContent = `Top Pages (${fmt(top.length)} of ${fmt(totalPg)})`;
-      } else {
-        const pgPlural = totalPg !== 1 ? 's' : '';
-        dPgTitle.textContent = `Top Pages (${fmt(totalPg)} page${pgPlural})`;
-      }
-
-      dPgWrap.style.height = calcBarHeight(top.length);
-      feed(dPgChart, top.map(([u]) => toPath(u)), top.map(([, v]) => v));
-    } else {
-      destroyDetail();
-    }
+    /* Top Pages */
+    const pgt = desc(pgTotals(data, sB, sP, sL, sPg));
+    const topPg = pgt.slice(0, 30);
+    dPgTitle.textContent = chartTitle('Top Pages', topPg.length, pgt.length, 'page');
+    dPgWrap.style.height = barHeight(topPg.length);
+    feed(dPgChart, topPg.map(([u]) => toPath(u)), topPg.map(([, v]) => v));
   }
-
-  /* ── Breadcrumbs ──────────────────────────────────────────────────── */
 
   const breadcrumbsEl = h('div', { class: 'ma-breadcrumbs', style: { display: 'none' } });
 
@@ -529,9 +449,7 @@ export default async function init(el) {
     for (const { label, ms, show } of groups) {
       const sel = ms.selected();
       if (sel.length) {
-        if (hasAny) {
-          breadcrumbsEl.append(h('span', { class: 'ma-bc-sep' }, '›'));
-        }
+        if (hasAny) breadcrumbsEl.append(h('span', { class: 'ma-bc-sep' }, '›'));
         hasAny = true;
         breadcrumbsEl.append(h('span', { class: 'ma-bc-label' }, `${label}:`));
         for (const v of sel) {
@@ -547,41 +465,17 @@ export default async function init(el) {
     breadcrumbsEl.style.display = hasAny ? 'flex' : 'none';
   }
 
-  /* ── Filters ──────────────────────────────────────────────────────── */
-
   function refresh() {
-    /* Update page options based on block/project/locale selections */
-    const filteredPgs = getFilteredPages(
-      data,
-      fBlock.selected(),
-      fProj.selected(),
-      fLoc.selected(),
-    );
-    fPage.setOptions(filteredPgs.map((p) => ({ value: p, display: toPath(p) })));
+    const fp = getFilteredPages(data, fBlock.selected(), fProj.selected(), fLoc.selected());
+    fPage.setOptions(toOpts(fp, toPath));
     renderBreadcrumbs();
     updateDashboard();
   }
 
-  fBlock = new MultiSelect(
-    'Blocks',
-    opts.blocks.map((b) => ({ value: b, display: b })),
-    refresh,
-  );
-  fProj = new MultiSelect(
-    'Projects',
-    opts.projects.map((p) => ({ value: p, display: p })),
-    refresh,
-  );
-  fLoc = new MultiSelect(
-    'Locales',
-    opts.locales.map((l) => ({ value: l, display: locLabel(l) })),
-    refresh,
-  );
-  fPage = new MultiSelect(
-    'Pages',
-    opts.pages.map((p) => ({ value: p, display: toPath(p) })),
-    refresh,
-  );
+  fBlock = new MultiSelect('Blocks', toOpts(opts.blocks), refresh);
+  fProj = new MultiSelect('Projects', toOpts(opts.projects), refresh);
+  fLoc = new MultiSelect('Locales', toOpts(opts.locales, locLabel), refresh);
+  fPage = new MultiSelect('Pages', toOpts(opts.pages, toPath), refresh);
 
   const resetBtn = h('button', {
     class: 'ma-reset-btn',
@@ -604,20 +498,13 @@ export default async function init(el) {
     resetBtn,
   );
 
-  /* ── Chart layout ─────────────────────────────────────────────────── */
-
-  chartArea = h('div', { class: 'ma-chart-area' }, mainBox);
+  chartArea = h('div', { class: 'ma-chart-area' }, main.box);
   el.append(filterBar, breadcrumbsEl, chartArea);
 
-  /* ── Main chart ───────────────────────────────────────────────────── */
-
-  mainChart = makeChart(mainCv, true);
+  mainChart = makeChart(main.cv, true);
   mainChart.options.onClick = (_e, els) => {
-    if (els.length) {
-      fBlock.toggle(mainChart.data.labels[els[0].index]);
-    }
+    if (els.length) fBlock.toggle(mainChart.data.labels[els[0].index]);
   };
 
-  /* Initial render */
   refresh();
 }
