@@ -496,11 +496,16 @@ function mobileSwipeDetect(carouselElements) {
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     carouselElements.direction = getSwipeDirection(swipe, swipeDistance);
 
-    // stop swipe for disabled-buttons variant.
     const activeSlideIndex = carouselElements.currentActiveIndex;
-    if (carouselElements.el.classList.contains('disable-buttons')
-          && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
-          || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left'))) {
+    const isSwipingBack = carouselElements.direction === 'right';
+    const isSwipingForward = carouselElements.direction === 'left';
+    const { classList } = carouselElements.el;
+    const isAtStart = activeSlideIndex === 0 && isSwipingBack;
+    const isDisableButtons = (classList.contains('disable-buttons') || classList.contains('disable-circular-nav'))
+          && (isAtStart || (activeSlideIndex === slides.length - 1 && isSwipingForward));
+    const isTabletHinting = classList.contains('hinting-tablet') && classList.contains('disable-circular-nav')
+          && (isAtStart || (activeSlideIndex === slides.length - 2 && isSwipingForward));
+    if (isDisableButtons || isTabletHinting) {
       swipe.xStart = 0;
       swipe.xEnd = 0;
       return;
