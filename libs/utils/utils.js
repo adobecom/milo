@@ -29,6 +29,7 @@ const MILO_BLOCKS = [
   'comparison-table',
   'editorial-card',
   'email-collection',
+  'explore',
   'faas',
   'featured-article',
   'figure',
