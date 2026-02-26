@@ -139,7 +139,6 @@ export default async function loadBlock(configs, customLib) {
     prodDomains,
     clientEnv: env,
     standaloneGnav: true,
-    useSusiModal: true,
     pathname: `/${locale}`,
     miloLibs: `${miloLibs}/libs`,
     locales: configs.locales || locales,
