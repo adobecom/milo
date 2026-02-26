@@ -2,13 +2,15 @@ import { expect, test } from '@playwright/test';
 import { features } from './comparison-table.spec.js';
 import ComparisonTableBlock from './comparison-table.page.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
+import WebUtil from '../../libs/webutil.js';
 
 let table;
-
+let webUtil;
 const miloLibs = process.env.MILO_LIBS || '';
 
 test.describe('Milo Comparison Table block feature test suite', () => {
   test.beforeEach(async ({ page }) => {
+    webUtil = new WebUtil(page);
     table = new ComparisonTableBlock(page);
   });
 
@@ -29,6 +31,25 @@ test.describe('Milo Comparison Table block feature test suite', () => {
       await expect(await table.tableRows).toHaveCount(data.rowsCount);
       await expect(await table.tableHeader).toHaveCount(data.headerColCount);
 
+      const attrMap = {
+        1: table.attributes['headerItem.media-area.mobile'].cardImgMobileCol1,
+        2: table.attributes['headerItem.media-area.mobile'].cardImgMobileCol2,
+        3: table.attributes['headerItem.media-area.mobile'].cardImgMobileCol3,
+        4: table.attributes['headerItem.media-area.mobile'].cardImgMobileCol4,
+      };
+
+      const columnCount = await table.tableHeader.count();
+
+      for (let i = 0; i < columnCount; i++) {
+        const colIndex = i + 1;
+        const imgMobile = table.getMobileImgLocator(colIndex);
+
+        const expectedAttr = attrMap[colIndex];
+
+        if (expectedAttr) {
+          expect(await webUtil.verifyAttributes(imgMobile, expectedAttr)).toBeTruthy();
+        }
+      }
       await table.verifyTableSubHeaders(data);
       await table.verifyTableSection(data.firstSection);
       await table.verifyTableSection(data.firstSection);

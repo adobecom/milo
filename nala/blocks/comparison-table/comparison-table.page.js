@@ -12,6 +12,21 @@ export default class ComparisonTableBlock {
     this.tableHeader = this.table.locator('.header-item');
     this.tableSubHeader = this.table.locator('.sub-header-item-container');
     this.stickyHeader = this.table.locator('.header-content.sticky');
+
+    this.attributes = {
+      'headerItem.media-area.mobile': {
+        cardImgMobileCol1: { loading: 'eager', fetchpriority: 'high', width: '46', height: '48' },
+        cardImgMobileCol2: { loading: 'lazy', width: '46', height: '48' },
+        cardImgMobileCol3: { loading: 'lazy', width: '46', height: '48' },
+        cardImgMobileCol4: { loading: 'lazy', width: '46', height: '48' },
+      },
+    };
+  }
+
+  getMobileImgLocator(colIndex) {
+    const column = this.headerColumn(colIndex);
+    const subHeaderTitle = this.subHeaderContainers(column).title;
+    return subHeaderTitle.locator('picture img');
   }
 
   headerColumn(colIndex) {
