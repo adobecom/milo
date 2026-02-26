@@ -140,7 +140,7 @@
     const error = e.reason || e.error || e.message;
     let stack = error?.stack;
 
-    if (!error?.stack) {
+    if (!stack) {
       const o = {};
       Error.captureStackTrace?.(o, sendUnhandledError);
       stack = o.stack;
