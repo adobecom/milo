@@ -19,6 +19,10 @@
   margin: 0;
 }
 
+.new-cards .media .icon img {
+  width: 24px;
+}
+
 .new-cards .media div {
   height: 100%;
 }
