@@ -685,6 +685,7 @@
     font-weight: 700;
     font-size: 18px;
     font-family: var(--body-font-family);
+    color: var(--tabs-active-text-color);
   }
   .tabs.mobile-accordion .tab-content-container .tabpanel .tab-mobile-accordion .icon {
     display: none;
