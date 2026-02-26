@@ -325,7 +325,7 @@ export default async function init(block) {
   const marketItems = config.markets
     .filter((m) => supportedMarkets.includes(m.marketCode))
     .map((m) => ({
-      label: `${m.marketName} - ${m.currencyName} ${m.currencySymbol || ''}`.trim(),
+      label: m.marketName,
       value: m.marketCode,
       marketCode: m.marketCode,
       url: '#',
@@ -341,7 +341,7 @@ export default async function init(block) {
   );
 
   const marketDropdown = createDropdown(
-    `${currentMarket.marketName} - ${currentMarket.currencyName} ${currentMarket.currencySymbol || ''}`.trim(),
+    currentMarket.marketName,
     labels.searchMarket,
     marketItems,
     onMarketSelect,
