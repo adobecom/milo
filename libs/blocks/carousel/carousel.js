@@ -470,7 +470,7 @@ function moveSlides(event, carouselElements) {
   */
   const slideDelay = 25;
   slideContainer.classList.remove('is-ready');
-  return setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
+  setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
 }
 
 export function getSwipeDistance(start, end) {
