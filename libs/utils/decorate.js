@@ -22,6 +22,7 @@ const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').ma
 let videoCounter = 0;
 
 export function decorateButtons(el, size) {
+  return;
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
