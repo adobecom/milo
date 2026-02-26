@@ -1,0 +1,107 @@
+
+.new-cards .media {
+  position: relative;
+}
+
+.new-cards h1, h2, h3, h4, h5, h6 {
+  color: #000000;
+  padding-bottom: var(--s2a-spacing-8);
+}
+
+.new-cards p {
+  color: rgba(0, 0, 0, 0.56);
+}
+
+.new-cards .media .icon {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  margin: 0;
+}
+
+.new-cards .media div {
+  height: 100%;
+}
+
+.new-cards .media div img {
+  border-radius: var(--s2a-border-radius-md);
+  width: 100%;
+  object-fit: cover;
+  aspect-ratio: 395.599 / 246.494;
+}
+
+.new-cards .foreground {
+  padding: var(--spacing-s);
+  padding-bottom: var(--spacing-l);
+}
+
+.new-cards .foreground div {
+  padding: var(--s2a-spacing-16) var(--s2a-spacing-16) var(--s2a-spacing-40) var(--s2a-spacing-16);
+}
+
+@media (max-width: 1023px) {
+  div.section.new-cards-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (width >= 1024px) {
+
+  .new-cards.full-width .foreground div {
+    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+
+  .new-cards.full-width .foreground div :is(h1, h2, h3, h4, h5, h6) {
+    flex: 1 1 auto;
+  }
+
+  /* CTA paragraph (contains the link) – same line as heading */
+  .new-cards.full-width .foreground div p:has(> a) {
+    flex: 0 0 auto;
+    order: 1;
+  }
+
+  .new-cards.full-width .foreground div p:has(> a) a {
+    padding-top: 0;
+  }
+
+  /* Body paragraph – next line, full width */
+  .new-cards.full-width .foreground div p:not(:has(> a)) {
+    flex-basis: 100%;
+    order: 2;
+  }
+
+  .new-cards .media div img {
+    aspect-ratio: 195/146;
+  }
+
+  .new-cards.full-width .media div img {
+    aspect-ratio: 298/135;
+  }
+}
+
+@media (width >= 1441px) {
+
+}
+
+.new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
+  margin-bottom: 8px;
+}
+
+.new-cards .foreground a {
+  color: #000000;
+  text-decoration: none;
+  font-size: var(--type-body-s-size);
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  padding-top: var(--s2a-spacing-24);
+}
+
+.new-cards .foreground a::after {
+  content: '>';
+  margin-left: 8px;
+}
