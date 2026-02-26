@@ -3,6 +3,11 @@ import { getEnv, getConfig, getMetadata } from '../../../utils/utils.js';
 export default async function init(el) {
   const config = getConfig();
   const federalDomain = (() => {
+    // TO remove after testing
+    const isLocal = URLSearchParams(window.location.search).get('federal-domain') === 'local';
+    if (isLocal) {
+      return 'http://localhost:3000';
+    }
     const env = getEnv(config);
     switch (env.name) {
       default: return 'https://gnav-redesign--federal--adobecom.aem.page';
@@ -28,13 +33,14 @@ export default async function init(el) {
   };
 
   const { main } = await import(`${federalDomain}/libs/global-navigation/dist/main.js`);
-
+  const unavComponents = getMetadata('universal-nav')?.split(',') || [];
   main({
+    unavComponents,
     gnavSource: new URL(getMetadata('gnav-source')),
     asideSource: null,
     isLocalNav: false,
     mountpoint: el,
-    unavEnabled: false,
+    unavEnabled: getMetadata('unav') === 'on',
     placeholders: placeholdersPromise,
     miloConfig: getConfig(),
     personalization: {
