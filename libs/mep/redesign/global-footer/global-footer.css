@@ -102,7 +102,7 @@
 
 /* Region picker */
 .feds-regionPicker {
-  column-gap: 10px;
+  column-gap: 6px;
   color: var(--mep-feds-color-link);
   border-color: var(--mep-feds-color-link);
   fill: var(--mep-feds-color-link);
@@ -115,19 +115,17 @@
 }
 
 .feds-regionPicker:after {
-  width: 6px;
-  height: 6px;
-  border-width: 0 1px 1px 0;
-  border-style: solid;
-  border-color: inherit;
-  transform-origin: 75% 75%;
-  transform: rotateZ(45deg);
+  width: 8px;
+  height: 4px;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform: rotate(0deg);
   transition: transform 0.1s ease;
   content: "";
 }
 
 .feds-regionPicker[aria-expanded = "true"]:after {
-  transform: rotateZ(-135deg);
+  transform: rotate(180deg);
 }
 
 .feds-regionPicker-globe {
@@ -275,37 +273,65 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (max-width: 599px) {
-  .feds-footer-miscLinks {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    row-gap: 12px;
-  }
+/* Mobile layout is controlled by the JS `.mobile` class toggle */
+.global-footer .feds-footer-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "region social"
+    "legal legal";
+  column-gap: 12px;
+  row-gap: 26px;
+  align-items: center;
+}
 
-  .feds-regionPicker-wrapper {
-    width: 100%;
-    order: 1;
-  }
+.global-footer .feds-footer-options > .feds-regionPicker-wrapper {
+  grid-area: region;
+  width: auto;
+  min-width: 0;
+}
 
-  .feds-social {
-    order: 2;
-  }
+.global-footer .feds-footer-options > .feds-social {
+  grid-area: social;
+  justify-self: end;
+  width: auto;
+}
 
-  .feds-footer-miscLinks .footer-logo {
-    order: 3;
-    margin-left: auto;
-  }
+.global-footer .feds-footer-options > .feds-footer-miscLinks-legal {
+  grid-area: legal;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
 
-  [dir="rtl"] .feds-footer-miscLinks .footer-logo {
-    margin-left: 0;
-    margin-right: auto;
-  }
+.global-footer .feds-footer-miscLinks-legal > .footer-logo {
+  order: 1;
+  padding-bottom: 12px;
+}
+
+.global-footer .feds-footer-miscLinks-legal > .feds-footer-legalWrapper {
+  order: 2;
+  position: relative;
+}
+
+[dir="rtl"] .global-footer .feds-footer-miscLinks-legal .footer-logo {
+  margin-left: 0;
+  margin-right: auto;
 }
 
 .global-footer:not(.mobile) .feds-navLink-image {
   height: 16px;
   width: 16px;
+}
+
+.global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem {
+  line-height: 24px;
+}
+
+.global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+  position: absolute;
+  right: 0;
+  bottom: 0;
 }
 
 @media (min-width: 900px) {
@@ -361,7 +387,7 @@ span.feds-footer-privacyLink-divider {
     padding: 0;
     margin: 0;
     line-height: inherit;
-    padding-bottom: 24px;
+    padding-bottom: 16px;
   }
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-items ul {
@@ -379,8 +405,25 @@ span.feds-footer-privacyLink-divider {
 
   /* Options (region selector, social, privacy) */
   .global-footer:not(.mobile) .feds-footer-options {
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-areas: "region legal social";
+    align-items: center;
     margin-top: 0;
+    column-gap: clamp(12px, 2.5vw, 40px);
+  }
+
+  .global-footer:not(.mobile) .feds-footer-options > .feds-regionPicker-wrapper {
+    grid-area: region;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-options > .feds-footer-miscLinks-legal {
+    grid-area: legal;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-options > .feds-social {
+    grid-area: social;
+    justify-self: end;
   }
 
   /* Privacy */
@@ -396,6 +439,35 @@ span.feds-footer-privacyLink-divider {
   .global-footer:not(.mobile) span.feds-footer-privacyLink-divider, .feds-footer-privacyLink {
     margin-left: 5px;
     margin-right: 0;
+  }
+
+  .global-footer .feds-footer-options {
+    grid-template-areas:
+      "region legal social";
+  }
+  
+  .global-footer .feds-footer-miscLinks-legal .footer-logo {
+    margin-left: auto;
+    padding-left: 30px;
+  }
+
+
+  .global-footer .feds-footer-miscLinks-legal > .footer-logo {
+    order: 2;
+    padding-bottom: 0;
+  }
+
+  .global-footer .feds-footer-miscLinks-legal > .feds-footer-legalWrapper {
+    order: 1;
+    position: inherit;
+  }
+  .global-footer .feds-footer-options > .feds-footer-miscLinks-legal {
+    flex-direction: row;
+  }
+
+  .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+    position: inherit;
+    padding-left: 24px;
   }
 }
 

@@ -25,6 +25,7 @@ import {
   isDarkMode,
   setupKeyboardNav,
   KEYBOARD_DELAY,
+  isDesktop,
 } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../../features/placeholders.js';
@@ -331,9 +332,6 @@ class Footer {
         href="${regionSelector.href}"
         class="${regionPickerClass}"
         role="button">
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="feds-regionPicker-globe" focusable="false">
-          <use href="#footer-icon-globe" />
-        </svg>
         ${regionPickerTextElem}
       </a>`;
     regionPickerElem.dataset.modalPath = `${url.pathname}#_inline`;
@@ -468,7 +466,6 @@ class Footer {
       </svg>`);
 
     this.elements.legal = toFragment`<div class="feds-footer-legalWrapper" daa-lh="Legal"></div>`;
-    const linkDivider = '<span class="feds-footer-privacyLink-divider" aria-hidden="true">/</span>';
 
     let privacyContentIndex = 0;
     while (privacyContent.children.length) {
@@ -482,7 +479,7 @@ class Footer {
         link.parentNode.insertBefore(privacySectionListItem, link);
         privacySectionListItem.appendChild(link);
         if (index !== privacySection.querySelectorAll('a').length - 1) {
-          privacySectionListItem.innerHTML += linkDivider;
+          privacySectionListItem.innerHTML += ' ';
         }
       });
       this.elements.legal.append(privacySection);
@@ -494,7 +491,7 @@ class Footer {
         });
         const copyrightListItem = document.createElement('li');
         copyrightListItem.classList.add('feds-footer-privacy-listitem');
-        copyrightListItem.innerHTML = linkDivider;
+        copyrightListItem.innerHTML = '';
         copyrightListItem.prepend(copyrightElem);
         copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">© ${currentYear} Adobe Inc. ${copyrightElem.textContent}</span>`);
         privacySectionList.prepend(copyrightListItem);
@@ -518,19 +515,17 @@ class Footer {
 
   decorateFooter = () => {
     this.elements.footer = toFragment`<div class="feds-footer-wrapper">
-        ${this.elements.footerMenu}
-        ${this.elements.featuredProducts}
-        <div class="feds-footer-options">
-          <div class="feds-footer-miscLinks">
-            ${this.elements.regionPicker}
-            ${this.elements.legal}
-             ${this.decorateLogo()}
-          </div>
-          <div>
-            ${this.elements.social}
-          </div>      
-        </div>
-      </div>`;
+    ${this.elements.footerMenu}
+    ${this.elements.featuredProducts}
+    <div class="feds-footer-options">
+      ${this.elements.regionPicker}
+      <div class="feds-footer-miscLinks-legal">
+        ${this.elements.legal}
+        ${this.decorateLogo()}
+      </div>
+      ${this.elements.social}   
+      </div>
+    </div>`;
 
     return this.elements.footer;
   };
