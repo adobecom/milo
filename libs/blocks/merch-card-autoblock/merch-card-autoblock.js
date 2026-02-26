@@ -7,9 +7,11 @@ import {
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
+  MAS_MERCH_FIELD,
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
+const seenFragments = new Set();
 let log;
 loadMasComponent(MAS_MERCH_CARD);
 loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
@@ -20,7 +22,7 @@ function getTimeoutPromise() {
   });
 }
 
-async function loadDependencies() {
+async function loadCoreDependencies() {
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {
@@ -33,6 +35,10 @@ async function loadDependencies() {
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
   ]);
+}
+
+async function loadInlineDependencies() {
+  await loadMasComponent(MAS_MERCH_FIELD);
 }
 
 export async function checkReady(masElement) {
@@ -50,7 +56,10 @@ export async function checkReady(masElement) {
 }
 
 export async function createCard(el, options) {
-  const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  const attrs = { fragment: options.fragment };
+  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
+  seenFragments.add(options.fragment);
+  const aemFragment = createTag('aem-fragment', attrs);
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   const parent = el.parentElement;
   if (parent && parent.tagName === 'P' && parent.children.length === 1) {
@@ -62,11 +71,36 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
+/** Replaces an inline fragment link with a merch-field wrapping an aem-fragment. */
+async function createInline(el, options) {
+  const attrs = { fragment: options.fragment };
+  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
+  seenFragments.add(options.fragment);
+  const aemFragment = createTag('aem-fragment', attrs);
+  // merch-field listens for aem:load from aem-fragment and renders the field content.
+  const merchField = createTag('merch-field', { field: options.field }, aemFragment);
+  const parent = el.parentElement;
+  const isWrappedInParagraph = parent?.tagName === 'P';
+  const isOnlyChild = parent?.children.length === 1;
+  const hasNoSurroundingText = parent?.textContent.trim() === el.textContent.trim();
+  if (isWrappedInParagraph && isOnlyChild && hasNoSurroundingText) {
+    parent.replaceWith(merchField); // remove empty <p>, replace with merch-field
+  } else {
+    el.replaceWith(merchField); // keep <p> and surrounding text, replace only the link
+  }
+  await checkReady(merchField);
+}
+
 export default async function init(el) {
   let options = getOptions(el);
   const { fragment } = options;
   if (!fragment) return;
   options = overrideOptions(fragment, options);
-  await loadDependencies();
-  await createCard(el, options);
+  await loadCoreDependencies();
+  if (options.field) {
+    await loadInlineDependencies();
+    await createInline(el, options);
+  } else {
+    await createCard(el, options);
+  }
 }
