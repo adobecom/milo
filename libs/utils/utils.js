@@ -759,6 +759,7 @@ function localizeLinkCore(
         const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
         const qiResolved = queryIndexes[siteId]?.requestResolved;
         if (isMepLingoFragment && (mepLingoSkipQI() || (isLcpSection && !qiResolved))) {
+          if (aTag) aTag.dataset.mepLingoSkippedQI = 'true';
           const urlPath = `${prefix}${path}${url.search}${hash}`;
           return relative ? urlPath : `${url.origin}${urlPath}`;
         }

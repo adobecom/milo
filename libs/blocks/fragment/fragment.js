@@ -1,7 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
   createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix, lingoActive,
-  mepLingoSkipQI,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -228,14 +227,15 @@ export default async function init(a) {
     }
   };
 
-  const skipQi = mepLingoSkipQI();
+  const skipQI = a.dataset.mepLingoSkippedQI === 'true';
+  delete a.dataset.mepLingoSkippedQI;
 
   if (!resp?.ok && attemptedRegionalFetch && canTryFallback) {
     const fallback = await lingoModule.tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
       resourcePath,
-      skipQi,
+      skipQI,
     );
     applyFallback(fallback);
   }
@@ -245,7 +245,7 @@ export default async function init(a) {
       a.dataset.originalHref,
       locale,
       resourcePath,
-      skipQi,
+      skipQI,
     );
     applyFallback(fallback);
   }

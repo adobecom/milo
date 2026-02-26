@@ -96,12 +96,15 @@ export function removeMepLingoElement(a, isMepLingoBlock, originalBlock) {
   }
 }
 
-export async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath, silent) {
-  if (!silent) {
-    const msg = 'MEP Lingo: Query-index indicated regional content exists'
+export async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath, skipQI) {
+  const msg = skipQI
+    ? `MEP Lingo: Regional content not found for ${resourcePath}. Using authored locale.`
+    : 'MEP Lingo: Query-index indicated regional content exists'
       + ` but fetch failed for ${resourcePath}. Falling back to authored locale.`;
-    window.lana?.log(msg, { tags: 'mep-lingo', severity: 'warn' });
-  }
+  const logOpts = skipQI
+    ? { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 }
+    : { tags: 'mep-lingo', severity: 'error' };
+  window.lana?.log(msg, logOpts);
 
   let fallbackPath = originalHref;
   try {
