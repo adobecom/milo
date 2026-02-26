@@ -138,9 +138,9 @@
 
   function sendUnhandledError(type, e) {
     const error = e.reason || e.error || e.message;
-    let { stack } = error;
+    let stack = error?.stack;
 
-    if (!error.stack) {
+    if (!error?.stack) {
       const o = {};
       Error.captureStackTrace?.(o, sendUnhandledError);
       stack = o.stack;
