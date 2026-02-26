@@ -540,6 +540,11 @@ export function lingoActive() {
   return ['true', 'on'].includes(langFirst);
 }
 
+export function mepLingoSkipQI() {
+  const skip = (PAGE_URL.searchParams.get('mep-lingo-skip-qi') || getMetadata('mep-lingo-skip-qi'))?.toLowerCase();
+  return lingoActive() && ['true', 'on'].includes(skip);
+}
+
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
@@ -751,6 +756,12 @@ function localizeLinkCore(
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
           || (!!locale.regions && isMepLingoFragment))) {
       return (async () => {
+        const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
+        const qiResolved = queryIndexes[siteId]?.requestResolved;
+        if (isMepLingoFragment && (mepLingoSkipQI() || (isLcpSection && !qiResolved))) {
+          const urlPath = `${prefix}${path}${url.search}${hash}`;
+          return relative ? urlPath : `${url.origin}${urlPath}`;
+        }
         loadQueryIndexes(prefix, false, [href]);
         if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
           await Promise.all([queryIndexes[siteId]?.pathsRequest, lingoSiteMapping].filter(Boolean));
