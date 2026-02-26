@@ -145,13 +145,14 @@ function updateButtonStates(carouselElements) {
 }
 
 function checkCircularNav(ce) {
-  if (!ce.el.classList.contains('disable-circular-nav')) return;
-  const wrapperRect = ce.el.querySelector('.carousel-wrapper').getBoundingClientRect();
-  const lastRect = ce.slides.at(-1).getBoundingClientRect();
-  const atStart = ce.currentActiveIndex === 0;
+  const { el, currentActiveIndex, slides, nextPreviousBtns } = ce;
+  if (!el.classList.contains('disable-circular-nav')) return;
+  const wrapperRect = el.querySelector('.carousel-wrapper').getBoundingClientRect();
+  const lastRect = slides[slides.length - 1].getBoundingClientRect();
+  const atStart = currentActiveIndex === 0;
   const atEnd = wrapperRect.width > 0
     && lastRect.left >= wrapperRect.left && lastRect.right <= wrapperRect.right;
-  ce.nextPreviousBtns?.forEach((btn, i) => {
+  nextPreviousBtns?.forEach((btn, i) => {
     const off = i === 0 ? atStart : atEnd;
     btn.disabled = off;
     btn.classList.toggle('disabled', off);
@@ -367,6 +368,7 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
 
 function moveSlides(event, carouselElements) {
   const {
+    el,
     slideContainer,
     slides,
     nextPreviousBtns,
@@ -375,6 +377,13 @@ function moveSlides(event, carouselElements) {
     direction,
     ariaLive,
   } = carouselElements;
+
+  const isNext = event.currentTarget?.dataset?.toggle === 'next'
+    || event.key === KEY_CODES.ARROW_RIGHT
+    || (direction === 'left' && event.type === 'touchend');
+  if (el.classList.contains('disable-circular-nav')
+    && (isNext ? carouselElements.currentActiveIndex >= slides.length - 1
+      : carouselElements.currentActiveIndex <= 0)) return;
 
   ariaLive.textContent = '';
 
