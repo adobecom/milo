@@ -115,11 +115,37 @@ export function getMepLingoFallbackPath(originalHref, locale, resourcePath) {
   return fallbackPath;
 }
 
+export async function dualFetchMepLingo(resourcePath, originalHref, locale) {
+  const fallbackPath = getMepLingoFallbackPath(originalHref, locale, resourcePath);
+  const result = await fetchMepLingo(resourcePath, fallbackPath);
+  if (result.usedFallback) {
+    window.lana?.log(
+      'MEP Lingo: Regional content not found for '
+        + `${resourcePath}. Falling back to base fragment.`,
+      { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 },
+    );
+  }
+  return { ...result, fallbackPath };
+}
+
+export function logMepLingoFallback(resourcePath, skipQI) {
+  const msg = skipQI
+    ? 'MEP Lingo: Regional content not found for '
+      + `${resourcePath}. Keeping authored content.`
+    : 'MEP Lingo: Regional fetch failed for '
+      + `${resourcePath}. Keeping authored content.`;
+  const logOpts = skipQI
+    ? { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 }
+    : { tags: 'mep-lingo', severity: 'error' };
+  window.lana?.log(msg, logOpts);
+}
+
 export async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath, skipQI) {
   const msg = skipQI
-    ? `MEP Lingo: Regional content not found for ${resourcePath}. Using authored locale.`
+    ? 'MEP Lingo: Regional content not found for '
+      + `${resourcePath}. Falling back to base fragment.`
     : 'MEP Lingo: Query-index indicated regional content exists'
-      + ` but fetch failed for ${resourcePath}. Falling back to authored locale.`;
+      + ` but fetch failed for ${resourcePath}. Falling back to base fragment.`;
   const logOpts = skipQI
     ? { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 }
     : { tags: 'mep-lingo', severity: 'error' };
