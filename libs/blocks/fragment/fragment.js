@@ -204,17 +204,12 @@ export default async function init(a) {
 
   if (useDualFetch) {
     const origHref = a.dataset.originalHref;
-    const fallbackPath = lingoModule.getMepLingoFallbackPath(origHref, locale, resourcePath);
-    const result = await lingoModule.fetchMepLingo(resourcePath, fallbackPath);
+    const result = await lingoModule.dualFetchMepLingo(resourcePath, origHref, locale);
     resp = result.resp;
     if (result.usedFallback) {
       usedFallback = true;
+      const { fallbackPath } = result;
       try { relHref = new URL(fallbackPath).pathname; } catch { relHref = fallbackPath; }
-      window.lana?.log(
-        'MEP Lingo: Regional content not found for '
-          + `${resourcePath}. Using authored locale.`,
-        { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 },
-      );
     }
   } else {
     resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
@@ -270,6 +265,10 @@ export default async function init(a) {
   }
 
   if (!resp?.ok) {
+    if (isMepLingoLink && !needsFallback) {
+      lingoModule.logMepLingoFallback(resourcePath, skipQI);
+    }
+
     if (isMepLingoInsert) {
       lingoModule.removeMepLingoElement(a, isMepLingoBlock, originalBlock);
       return;
