@@ -144,6 +144,7 @@ const isInLcpSection = (el) => {
 const GLOBAL_CMDS = [
   'insertscript',
   'replacepage',
+  'updateframework',
   'updatemetadata',
   'useblockcode',
 ];
@@ -1243,6 +1244,23 @@ export async function categorizeActions(experiment, config) {
 
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
+
+  if (selectedVariant.updateframework?.length) {
+    const fw = selectedVariant.updateframework[0];
+    const { miloLibs, codeRoot } = getConfig();
+    const libsPath = miloLibs || codeRoot;
+    const prefix = fw.val ? `/${fw.val}` : '';
+    const targetHref = `${libsPath}${prefix}/styles/styles.css`;
+    const existing = document.head.querySelector(
+      `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
+    );
+    if (existing?.getAttribute('href') !== targetHref) {
+      existing?.remove();
+      setMetadata({ selector: 'foundation', val: fw.val });
+      const { loadBaseStyles } = await import('../../utils/utils.js');
+      loadBaseStyles(libsPath);
+    }
+  }
 
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
