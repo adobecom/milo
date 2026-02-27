@@ -96,6 +96,25 @@ export function removeMepLingoElement(a, isMepLingoBlock, originalBlock) {
   }
 }
 
+export function getMepLingoFallbackPath(originalHref, locale, resourcePath) {
+  let fallbackPath = originalHref;
+  try {
+    const resourceUrl = new URL(resourcePath);
+    const originalUrl = new URL(originalHref);
+    if (locale?.prefix !== undefined
+      && !originalUrl.pathname.startsWith(locale.prefix)) {
+      fallbackPath = `${resourceUrl.origin}${locale.prefix}${originalUrl.pathname}`;
+    } else {
+      fallbackPath = `${resourceUrl.origin}${originalUrl.pathname}`;
+    }
+  } catch (e) {
+    if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
+      fallbackPath = `${locale.prefix}${fallbackPath}`;
+    }
+  }
+  return fallbackPath;
+}
+
 export async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath, skipQI) {
   const msg = skipQI
     ? `MEP Lingo: Regional content not found for ${resourcePath}. Using authored locale.`
@@ -106,21 +125,7 @@ export async function tryMepLingoFallbackForStaleIndex(originalHref, locale, res
     : { tags: 'mep-lingo', severity: 'error' };
   window.lana?.log(msg, logOpts);
 
-  let fallbackPath = originalHref;
-  try {
-    const resourceUrl = new URL(resourcePath);
-    const originalUrl = new URL(originalHref);
-    if (locale?.prefix !== undefined && !originalUrl.pathname.startsWith(locale.prefix)) {
-      fallbackPath = `${resourceUrl.origin}${locale.prefix}${originalUrl.pathname}`;
-    } else {
-      fallbackPath = `${resourceUrl.origin}${originalUrl.pathname}`;
-    }
-  } catch (e) {
-    if (locale?.prefix && !fallbackPath.startsWith(locale.prefix)) {
-      fallbackPath = `${locale.prefix}${fallbackPath}`;
-    }
-  }
-
+  const fallbackPath = getMepLingoFallbackPath(originalHref, locale, resourcePath);
   const resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 

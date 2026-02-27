@@ -195,10 +195,31 @@ export default async function init(a) {
   const needsFallback = (isMepLingoBlock || isMepLingoFragment)
     && !!a.dataset.originalHref && !isMepLingoInsert && !isMepLingoRemove;
 
-  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
+  const skipQI = a.dataset.mepLingoSkippedQI === 'true';
+  delete a.dataset.mepLingoSkippedQI;
+  const useDualFetch = skipQI && needsFallback;
 
+  let resp;
   let usedFallback = false;
+
+  if (useDualFetch) {
+    const origHref = a.dataset.originalHref;
+    const fallbackPath = lingoModule.getMepLingoFallbackPath(origHref, locale, resourcePath);
+    const result = await lingoModule.fetchMepLingo(resourcePath, fallbackPath);
+    resp = result.resp;
+    if (result.usedFallback) {
+      usedFallback = true;
+      try { relHref = new URL(fallbackPath).pathname; } catch { relHref = fallbackPath; }
+      window.lana?.log(
+        'MEP Lingo: Regional content not found for '
+          + `${resourcePath}. Using authored locale.`,
+        { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 },
+      );
+    }
+  } else {
+    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
+  }
 
   const mepLingoPrefix = await getMepLingoPrefix();
   if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
@@ -227,10 +248,7 @@ export default async function init(a) {
     }
   };
 
-  const skipQI = a.dataset.mepLingoSkippedQI === 'true';
-  delete a.dataset.mepLingoSkippedQI;
-
-  if (!resp?.ok && attemptedRegionalFetch && canTryFallback) {
+  if (!useDualFetch && !resp?.ok && attemptedRegionalFetch && canTryFallback) {
     const fallback = await lingoModule.tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
@@ -240,7 +258,8 @@ export default async function init(a) {
     applyFallback(fallback);
   }
 
-  if (!resp?.ok && isMepLingoRemove && attemptedRegionalFetch && a.dataset.originalHref) {
+  if (!useDualFetch && !resp?.ok && isMepLingoRemove && attemptedRegionalFetch
+    && a.dataset.originalHref) {
     const fallback = await lingoModule.tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
