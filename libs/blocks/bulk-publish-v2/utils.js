@@ -50,6 +50,8 @@ const sticky = () => {
 };
 
 const getAemUrl = (url) => url.hostname.split('.')[0].split('--');
+/** Host must be exactly {ref}--{repo}--{owner}.aem.page (no .hlx.page or other segments) */
+const AEM_PAGE_HOST_REGEX = /^[^.]+\.aem\.page$/;
 const isValidUrl = (str) => {
   let url;
   try {
@@ -57,8 +59,10 @@ const isValidUrl = (str) => {
   } catch (_) {
     return false;
   }
+  if (url.protocol !== 'https:') return false;
+  if (!AEM_PAGE_HOST_REGEX.test(url.hostname)) return false;
   const [ref, repo, owner] = getAemUrl(url);
-  return url.protocol === 'https:' && ref && repo && owner;
+  return Boolean(ref && repo && owner);
 };
 
 const editEntry = (el, str) => {
