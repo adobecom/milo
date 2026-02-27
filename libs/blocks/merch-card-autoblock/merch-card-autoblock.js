@@ -7,7 +7,7 @@ import {
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
-  MAS_MERCH_FIELD,
+  MAS_FIELD,
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
@@ -38,7 +38,7 @@ async function loadCoreDependencies() {
 }
 
 async function loadInlineDependencies() {
-  await loadMasComponent(MAS_MERCH_FIELD);
+  await loadMasComponent(MAS_FIELD);
 }
 
 export async function checkReady(masElement) {
@@ -71,24 +71,24 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
-/** Replaces an inline fragment link with a merch-field wrapping an aem-fragment. */
+/** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInline(el, options) {
   const attrs = { fragment: options.fragment };
   if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
   seenFragments.add(options.fragment);
   const aemFragment = createTag('aem-fragment', attrs);
-  // merch-field listens for aem:load from aem-fragment and renders the field content.
-  const merchField = createTag('merch-field', { field: options.field }, aemFragment);
+  // mas-field listens for aem:load from aem-fragment and renders the field content.
+  const masField = createTag('mas-field', { field: options.field }, aemFragment);
   const parent = el.parentElement;
   const isWrappedInParagraph = parent?.tagName === 'P';
   const isOnlyChild = parent?.children.length === 1;
   const hasNoSurroundingText = parent?.textContent.trim() === el.textContent.trim();
   if (isWrappedInParagraph && isOnlyChild && hasNoSurroundingText) {
-    parent.replaceWith(merchField); // remove empty <p>, replace with merch-field
+    parent.replaceWith(masField); // remove empty <p>, replace with mas-field
   } else {
-    el.replaceWith(merchField); // keep <p> and surrounding text, replace only the link
+    el.replaceWith(masField); // keep <p> and surrounding text, replace only the link
   }
-  await checkReady(merchField);
+  await checkReady(masField);
 }
 
 export default async function init(el) {
