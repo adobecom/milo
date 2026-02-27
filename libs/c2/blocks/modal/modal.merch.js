@@ -1,4 +1,4 @@
-import { debounce } from '../../utils/action.js';
+import { debounce } from '../../../utils/action.js';
 
 export const MOBILE_MAX = 599;
 export const TABLET_MAX = 1199;

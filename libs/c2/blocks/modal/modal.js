@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
-import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../utils/utils.js';
-import { decorateSectionAnalytics } from '../../martech/attributes.js';
+import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../../utils/utils.js';
+import { decorateSectionAnalytics } from '../../../martech/attributes.js';
 
 const LOCALE_MODAL_ID = 'locale-modal-v2';
 const FOCUSABLES = 'a:not(.hide-video, .faas), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
