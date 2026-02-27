@@ -22,13 +22,21 @@
     grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); /* 320px - 2 * 24px */
     gap: var(--grid-gutter-width);
     align-items: start;
-    /* padding-inline: var(--grid-margin-width); */
+    padding-inline: var(--grid-margin-width);
+
+    &.fluid {
+      --grid-margin-width: 0px; /* Keep unit for calc */
+    }
   }
 
   &.masonry-layout {
     gap: var(--grid-gutter-width);
-    /* padding-inline: var(--grid-margin-width); */
+    padding-inline: var(--grid-margin-width);
     grid-template-columns: repeat(var(--grid-columns), 1fr);
+
+    &.fluid {
+      --grid-margin-width: 0px; /* Keep unit for calc */
+    }
 
     .grid-full-width { grid-column: span var(--grid-columns); }
     .grid-half-width { grid-column: span 3; }

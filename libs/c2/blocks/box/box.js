@@ -2,7 +2,7 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateBlockKit } from '../../../utils/decorate.js';
 
 const boxKits = {
-  'foo-kit': ['col-12', 'constrained', 'spacing-md', 'parallax-move-up'],
+  'foo-kit': ['col-12', 'fluid', 'spacing-md', 'parallax-move-up'],
   'bar-kit': ['col-2', 'spacing-md', 'parallax-stagger-ltr'],
   'baz-kit': ['col-2', 'spacing-md', 'parallax-stagger-rtl'],
 };
