@@ -1162,8 +1162,10 @@ function sendAnalytics(val) {
 }
 /* c8 ignore stop */
 
-export function sendMktgTracking(isAllowed, fileName, mktgAction) {
-  if (!isAllowed || !mktgAction?.startsWith('marketing')) return false;
+export function sendMktgTracking(fileName, mktgAction) {
+  if (!mktgAction?.startsWith('marketing')) return false;
+  const { advertising } = getConfig().mep.consentState;
+  if (!advertising) return false;
   const eventName = `${fileName} was served`;
   sendAnalytics(eventName);
   return eventName;
@@ -1244,7 +1246,7 @@ async function getManifestConfig(info, variantOverride) {
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
   }
-  sendMktgTracking(isAllowed, fileName, manifestConfig.mktgAction);
+  sendMktgTracking(fileName, manifestConfig.mktgAction);
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
     manifestConfig.manifestPath,
@@ -1270,7 +1272,7 @@ const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestI
   targetManifestId,
 });
 export async function categorizeActions(experiment, config) {
-  if (!experiment) return null;
+  if (!experiment || experiment.disabled) return null;
   const { manifestPath, selectedVariant } = experiment;
   if (!selectedVariant || selectedVariant === 'default') return { experiment };
 

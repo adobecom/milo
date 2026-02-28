@@ -507,16 +507,24 @@ describe('MEP Utils', () => {
   });
 });
 describe('sendMktgTracking', () => {
-  it('should return false if isAllowed is false', async () => {
-    expect(sendMktgTracking(false, 'my-manifest', 'marketing')).to.be.false;
+  it('should return false if advertising is false and mktgAction is marketing increase', async () => {
+    const config = getConfig();
+    config.mep.consentState = { advertising: false };
+    expect(sendMktgTracking('my-manifest', 'marketing increase')).to.be.false;
   });
-  it('should return false if mktgAction is not marketing', async () => {
+  it('should return false if advertising is true and mktgAction is non-marketing', async () => {
+    const config = getConfig();
+    config.mep.consentState = { advertising: true };
     expect(sendMktgTracking(true, 'my-manifest', 'non-marketing')).to.be.false;
   });
-  it('should send analytics event if isAllowed is true and mktgAction is marketing increase', async () => {
-    expect(sendMktgTracking(true, 'my-manifest', 'marketing increase')).to.equal('my-manifest was served');
+  it('should send return event name if advertising is true and mktgAction is marketing increase', async () => {
+    const config = getConfig();
+    config.mep.consentState = { advertising: true };
+    expect(sendMktgTracking('my-manifest', 'marketing increase')).to.equal('my-manifest was served');
   });
-  it('should send analytics event if isAllowed is true and mktgAction is marketing decrease', async () => {
-    expect(sendMktgTracking(true, 'my-manifest', 'marketing decrease')).to.equal('my-manifest was served');
+  it('should send return event name if advertising is true and mktgAction is marketing decrease', async () => {
+    const config = getConfig();
+    config.mep.consentState = { advertising: true };
+    expect(sendMktgTracking('my-manifest', 'marketing decrease')).to.equal('my-manifest was served');
   });
 });
