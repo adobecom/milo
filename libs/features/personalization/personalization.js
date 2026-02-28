@@ -1170,6 +1170,7 @@ export function sendMktgTracking(fileName, mktgAction) {
   sendAnalytics(eventName);
   return eventName;
 }
+
 async function getManifestConfig(info, variantOverride) {
   const {
     name,
