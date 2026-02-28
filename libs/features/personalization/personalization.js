@@ -1132,6 +1132,28 @@ export function canServeManifest(manifestConfig) {
   return true;
 }
 
+function sendSatelliteEvent(val) {
+  if (!window._satellite?.track) return;
+  // eslint-disable-next-line no-underscore-dangle
+  window.addEventListener('alloy_sendEvent', () => {
+    window._satellite?.track?.('event', {
+      documentUnloading: true,
+      xdm: {
+        eventType: 'web.webinteraction.linkClicks',
+        web: {
+          webInteraction: {
+            linkClicks: { value: 1 },
+            type: 'other',
+            name: val,
+          },
+        },
+      },
+      data:
+        { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+    });
+  }, { once: true });
+}
+
 async function getManifestConfig(info, variantOverride) {
   const {
     name,
@@ -1207,10 +1229,7 @@ async function getManifestConfig(info, variantOverride) {
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
   } else if (isAllowed && manifestConfig.mktgAction?.startsWith('marketing')) {
-    window._satellite?.track('event', {
-      xdm: {},
-      data: { web: { webInteraction: { name: `${manifestConfig.analyticsTitle} was served` } } },
-    });
+    sendSatelliteEvent(`${getFileName(manifestPath).replace('.json', '')} was served`);
   }
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1505,24 +1524,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
   const timeoutTime = roundToQuarter(timeoutLocal);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  // eslint-disable-next-line no-underscore-dangle
-  window.addEventListener('alloy_sendEvent', () => {
-    window._satellite?.track?.('event', {
-      documentUnloading: true,
-      xdm: {
-        eventType: 'web.webinteraction.linkClicks',
-        web: {
-          webInteraction: {
-            linkClicks: { value: 1 },
-            type: 'other',
-            name: val,
-          },
-        },
-      },
-      data:
-        { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-    });
-  }, { once: true });
+  sendSatelliteEvent(val);
 }
 
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
