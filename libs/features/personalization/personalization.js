@@ -1203,7 +1203,12 @@ async function getManifestConfig(info, variantOverride) {
   manifestConfig.mktgAction = getManifestMarketingAction(manifestConfig.mktgAction, source);
   manifestConfig.manifestPath = normalizePath(manifestPath);
   const isAllowed = canServeManifest(manifestConfig);
-  if (!isAllowed) {
+  if (isAllowed && manifestConfig.mktgAction?.startsWith('marketing')) {
+    window._satellite?.track('event', {
+      xdm: {},
+      data: { web: { webInteraction: { name: `${manifestConfig.analyticsTitle} was served` } } },
+    });
+  } else if (!isAllowed) {
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
   }
