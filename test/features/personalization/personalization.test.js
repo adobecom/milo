@@ -5,6 +5,7 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
+  sendMktgTracking,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -503,5 +504,19 @@ describe('MEP Utils', () => {
       ftLinks = [...allLinks].filter((link) => link.innerHTML.toLowerCase().match(/free.trial/));
       expect(ftLinks.length).to.equal(0);
     });
+  });
+});
+describe('sendMktgTracking', () => {
+  it('should return false if isAllowed is false', async () => {
+    expect(sendMktgTracking(false, 'my-manifest', 'marketing')).to.be.false;
+  });
+  it('should return false if mktgAction is not marketing', async () => {
+    expect(sendMktgTracking(true, 'my-manifest', 'non-marketing')).to.be.false;
+  });
+  it('should send analytics event if isAllowed is true and mktgAction is marketing increase', async () => {
+    expect(sendMktgTracking(true, 'my-manifest', 'marketing increase')).to.equal('my-manifest was served');
+  });
+  it('should send analytics event if isAllowed is true and mktgAction is marketing decrease', async () => {
+    expect(sendMktgTracking(true, 'my-manifest', 'marketing decrease')).to.equal('my-manifest was served');
   });
 });

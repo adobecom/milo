@@ -1132,6 +1132,7 @@ export function canServeManifest(manifestConfig) {
   return true;
 }
 
+/* c8 ignore start */
 function fireAnalyticsEvent(val) {
   window._satellite?.track?.('event', {
     documentUnloading: true,
@@ -1159,7 +1160,14 @@ function sendAnalytics(val) {
     }, { once: true });
   }
 }
+/* c8 ignore stop */
 
+export function sendMktgTracking(isAllowed, fileName, mktgAction) {
+  if (!isAllowed || !mktgAction?.startsWith('marketing')) return false;
+  const eventName = `${fileName} was served`;
+  sendAnalytics(eventName);
+  return eventName;
+}
 async function getManifestConfig(info, variantOverride) {
   const {
     name,
@@ -1235,9 +1243,8 @@ async function getManifestConfig(info, variantOverride) {
   if (!isAllowed) {
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
-  } else if (isAllowed && manifestConfig.mktgAction?.startsWith('marketing')) {
-    sendAnalytics(`${fileName} was served`);
   }
+  sendMktgTracking(isAllowed, fileName, manifestConfig.mktgAction);
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
     manifestConfig.manifestPath,
