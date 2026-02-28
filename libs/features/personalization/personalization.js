@@ -1132,26 +1132,32 @@ export function canServeManifest(manifestConfig) {
   return true;
 }
 
-function sendSatelliteEvent(val) {
-  if (!window._satellite?.track) return;
-  // eslint-disable-next-line no-underscore-dangle
-  window.addEventListener('alloy_sendEvent', () => {
-    window._satellite?.track?.('event', {
-      documentUnloading: true,
-      xdm: {
-        eventType: 'web.webinteraction.linkClicks',
-        web: {
-          webInteraction: {
-            linkClicks: { value: 1 },
-            type: 'other',
-            name: val,
-          },
+function fireAnalyticsEvent(val) {
+  window._satellite?.track?.('event', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
         },
       },
-      data:
-        { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-    });
-  }, { once: true });
+    },
+    data:
+      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
+function sendAnalytics(val) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(val);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(val);
+    }, { once: true });
+  }
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1196,11 +1202,12 @@ async function getManifestConfig(info, variantOverride) {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
+  const fileName = getFileName(manifestPath).replace('.json', '');
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
       manifestConfig.manifestOverrideName = manifestOverrideName;
-      const analytics = manifestOverrideName || getFileName(manifestPath).replace('.json', '');
+      const analytics = manifestOverrideName || fileName;
       manifestConfig.analyticsTitle = analytics.trim().slice(0, 15);
     }
     const executionOrder = {
@@ -1229,7 +1236,7 @@ async function getManifestConfig(info, variantOverride) {
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
   } else if (isAllowed && manifestConfig.mktgAction?.startsWith('marketing')) {
-    sendSatelliteEvent(`${getFileName(manifestPath).replace('.json', '')} was served`);
+    sendAnalytics(`${fileName} was served`);
   }
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1524,7 +1531,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
   const timeoutTime = roundToQuarter(timeoutLocal);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  sendSatelliteEvent(val);
+  sendAnalytics(val);
 }
 
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
