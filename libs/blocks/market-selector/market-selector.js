@@ -15,14 +15,11 @@ const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0
 const GLOBE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="market-selector-globe"><path d="M10 19C14.9706 19 19 14.9706 19 10C19 5.02944 14.9706 1 10 1C5.02944 1 1 5.02944 1 10C1 14.9706 5.02944 19 10 19Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 1C12.25 3.5 13.5 6.5 13.5 10C13.5 13.5 12.25 16.5 10 19C7.75 16.5 6.5 13.5 6.5 10C6.5 6.5 7.75 3.5 10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const SEARCH_ICON_INNER = '<path d="M14.8243 13.9758L10.7577 9.90923C11.5332 8.94809 12 7.72807 12 6.40005C12 3.31254 9.48755 0.800049 6.40005 0.800049C3.31254 0.800049 0.800049 3.31254 0.800049 6.40004C0.800049 9.48755 3.31254 12 6.40005 12C7.72807 12 8.9481 11.5331 9.90922 10.7577L13.9758 14.8243C14.093 14.9414 14.2461 15 14.4 15C14.5539 15 14.7071 14.9414 14.8243 14.8243C15.0586 14.5899 15.0586 14.2102 14.8243 13.9758ZM6.40005 10.8C3.97426 10.8 2.00005 8.82582 2.00005 6.40004C2.00005 3.97426 3.97426 2.00004 6.40005 2.00004C8.82583 2.00004 10.8 3.97426 10.8 6.40004C10.8 8.82582 8.82583 10.8 6.40005 10.8Z" fill="#666"/>';
 
-function getMarketsUrl() {
+function getMarketUrl() {
   const config = getConfig();
-  const { contentRoot } = config;
+  const { contentRoot, marketSelector } = config;
   const sourceFromUrl = PAGE_URL.searchParams.get('marketSelector');
-  const marketSelectorKey = sourceFromUrl
-      || getMetadata('marketselector')
-      || config.marketSelector
-      || config.marketselector;
+  const marketSelectorKey = sourceFromUrl || getMetadata('marketselector') || marketSelector;
 
   if (marketSelectorKey) {
     return `${contentRoot ?? ''}/market-selector/market-selector-${marketSelectorKey}.json`;
@@ -31,7 +28,7 @@ function getMarketsUrl() {
 }
 
 async function loadMarketConfig() {
-  const marketsUrl = getMarketsUrl();
+  const marketsUrl = getMarketUrl();
   try {
     const resp = await fetch(marketsUrl);
     if (!resp.ok) throw new Error('Failed to load market config');
@@ -41,25 +38,19 @@ async function loadMarketConfig() {
       markets: json.markets?.data || [],
     };
   } catch (e) {
-    console.error('Market Selector: Error loading config', e);
+    window.lana?.log(`Market Selector: Error loading config: ${e.message}`);
     return { languages: [], markets: [] };
   }
 }
 
-function getPrefix(pathname) {
-  const firstSegment = pathname.split('/')[1];
-  if (!firstSegment || firstSegment.length > 3 || firstSegment.includes('.')) return '';
-  return firstSegment;
-}
-
 function getTargetUrl(targetPrefix, currentPath) {
-  const currentPrefix = getPrefix(currentPath);
-  const pathWithoutPrefix = currentPrefix
-    ? currentPath.replace(new RegExp(`^/${currentPrefix}(/|$)`), '/')
+  const { locale } = getConfig();
+  const currentPrefix = locale.prefix || '';
+  const pathWithoutPrefix = currentPrefix && currentPath.startsWith(currentPrefix)
+    ? currentPath.substring(currentPrefix.length)
     : currentPath;
 
-  const sanitizedPath = pathWithoutPrefix.startsWith('/') ? pathWithoutPrefix : `/${pathWithoutPrefix}`;
-  const newPath = targetPrefix ? `/${targetPrefix}${sanitizedPath}` : sanitizedPath;
+  const newPath = targetPrefix ? `/${targetPrefix}${pathWithoutPrefix}` : pathWithoutPrefix;
   const url = `${window.location.origin}${newPath.replace(/\/+$/, '') || '/'}`;
   return `${url}${window.location.search}${window.location.hash}`;
 }
@@ -144,7 +135,7 @@ function createDropdown(label, placeholder, items, onSelect, noResultLabel, isSe
       const selected = isSelected(item);
       const li = createTag('li', { class: 'market-selector-item-wrapper', role: 'none', id: `market-option-${idx}` });
       const a = createTag('a', {
-        class: `market-selector-item${selected ? ' is-selected' : ''}`, 
+        class: `market-selector-item${selected ? ' is-selected' : ''}`,
         role: 'option',
         'aria-selected': selected ? 'true' : 'false',
         href: item.url || '#',
@@ -266,19 +257,23 @@ export default async function init(block) {
     noResultMarket: placeholders[3]?.textContent.trim() || 'No results for market',
   };
 
+  const { locale } = getConfig();
+  const currentPrefix = locale.prefix || '';
+  const currentLang = config.languages.find((l) => (l.prefix ? `/${l.prefix}` : '') === currentPrefix) || config.languages[0];
+
   let currentMarketCode = getCookie(MARKET_COOKIE);
   if (!currentMarketCode) {
-    currentMarketCode = getCountry()?.toLowerCase() || 'us';
+    const params = new URLSearchParams(window.location.search);
+    currentMarketCode = params.get('akamaiLocale')
+      || params.get('country')
+      || getCountry()?.toLowerCase()
+      || currentLang.defaultMarket
+      || 'us';
     setMarket(currentMarketCode);
   }
-
-  const currentPrefix = getPrefix(window.location.pathname);
-  const currentLang = config.languages.find((l) => l.prefix === currentPrefix) || config.languages[0];
-  const currentMarket = config.markets.find((m) => m.marketCode === currentMarketCode) 
+  const currentMarket = config.markets.find((m) => m.marketCode === currentMarketCode)
     || config.markets.find((m) => m.marketCode === currentLang.defaultMarket)
     || config.markets[0];
-
-  const langDropdownLabel = currentLang.nativeName || currentLang.languageName;
 
   const onLanguageSelect = (langItem) => {
     const selectedLang = config.languages.find((l) => l.prefix === langItem.value);
@@ -302,21 +297,16 @@ export default async function init(block) {
     const { locales } = getConfig();
     const currentLangCode = currentLang.prefix || 'en';
     const regionalPrefix = `${marketItem.value}_${currentLangCode.replace('/', '')}`;
-
-    const targetPrefix = locales[regionalPrefix]
-      ? regionalPrefix
-      : (marketItem.prefix || '');
+    const targetPrefix = locales[regionalPrefix] ? regionalPrefix : (marketItem.prefix || '');
 
     setMarket(marketItem.value);
 
-    if (targetPrefix && targetPrefix !== currentPrefix) {
-      const targetUrl = getTargetUrl(targetPrefix, window.location.pathname);
+    const targetPrefixNormalized = targetPrefix ? `/${targetPrefix}` : '';
+    if (targetPrefixNormalized && targetPrefixNormalized !== currentPrefix) {
       handleEvent({
         prefix: targetPrefix,
-        link: { href: targetUrl },
-        callback: (url) => {
-          window.location.href = url;
-        },
+        link: { href: getTargetUrl(targetPrefix, window.location.pathname) },
+        callback: (url) => { window.location.href = url; },
       });
     } else {
       window.location.reload();
@@ -343,12 +333,12 @@ export default async function init(block) {
     }));
 
   const langDropdown = createDropdown(
-    langDropdownLabel,
+    currentLang.nativeName || currentLang.languageName,
     labels.searchLanguage,
     langItems,
     onLanguageSelect,
     labels.noResultLanguage,
-    (item) => item.value === currentPrefix,
+    (item) => (item.value ? `/${item.value}` : '') === currentPrefix,
   );
 
   const marketDropdown = createDropdown(
