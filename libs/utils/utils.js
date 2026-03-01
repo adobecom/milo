@@ -305,6 +305,13 @@ export function setInternational(prefix) {
   sessionStorage.setItem('international', prefix);
 }
 
+export function setMarket(marketCode) {
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+  const maxAge = 365 * 24 * 60 * 60;
+  document.cookie = `market=${marketCode};max-age=${maxAge};path=/;${domain}`;
+  sessionStorage.setItem('akamai', marketCode);
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -2098,7 +2105,7 @@ let langBannerPromise;
 export const getTargetMarket = () => targetMarket;
 export const setTargetMarket = (market) => { targetMarket = market; };
 
-const getCookie = (name) => document.cookie
+export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
