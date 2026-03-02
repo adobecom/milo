@@ -1,3 +1,11 @@
+div.section.new-cards-section {
+  gap: var(--s2a-spacing-40);
+}
+
+.new-cards.full-width {
+  margin-bottom: var(--s2a-spacing-40);
+}
+
 .new-cards {
   height: 100%;
 }
@@ -7,9 +15,8 @@
 }
 
 .new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
-  margin-bottom: 8px;
+  margin-bottom: var(--s2a-spacing-8);
   color: #000000;
-  padding-bottom: var(--s2a-spacing-8);
   font-size: var(--s2a-font-size-xl);
 }
 
@@ -20,7 +27,7 @@
   font-weight: 700;
   position: relative;
   display: inline-block;
-  padding-top: var(--s2a-spacing-24);
+  margin-top: var(--s2a-spacing-24);
 }
 
 .new-cards .foreground p {
@@ -39,6 +46,8 @@
 }
 
 .new-cards .media .icon {
+  height: 24px;
+  width: 24px;
   position: absolute;
   top: 20px;
   left: 24px;
@@ -66,7 +75,7 @@
 }
 
 .new-cards .foreground div {
-  padding: var(--s2a-spacing-16) var(--s2a-spacing-16) var(--s2a-spacing-40) var(--s2a-spacing-16);
+  padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
 }
 
 @media (max-width: 1023px) {
