@@ -398,7 +398,10 @@ function moveSlides(event, carouselElements) {
     || (direction === 'left' && event.type === 'touchend');
   if (el.classList.contains('disable-circular-nav')) {
     const idx = carouselElements.currentActiveIndex;
-    const atBoundary = isNext ? idx >= slides.length - 1 : idx <= 0;
+    const isTabletLayout = el.classList.contains('hinting-tablet')
+      && window.matchMedia('(min-width: 600px) and (max-width: 1199px)').matches;
+    const lastIdx = isTabletLayout ? slides.length - 2 : slides.length - 1;
+    const atBoundary = isNext ? idx >= lastIdx : idx <= 0;
     if (atBoundary) {
       const btn = isNext ? nextPreviousBtns?.[1] : nextPreviousBtns?.[0];
       if (btn) { btn.disabled = true; btn.classList.add('disabled'); }
