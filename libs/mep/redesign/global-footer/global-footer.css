@@ -1,0 +1,479 @@
+:root {
+  --mep-feds-color-link: #FFFFFF80;
+  --mep-feds-background-footer: #000;
+}
+
+/* Base */
+.global-footer {
+  padding: 20px 0;
+  display: flex;
+  justify-content: center;
+  font-size: 12px;
+  background: #000;
+  -webkit-text-size-adjust: none;
+}
+
+.global-footer ul {
+  list-style-type: none;
+}
+
+.global-footer a {
+  text-decoration: unset;
+}
+
+.global-footer a:hover {
+  text-decoration: none;
+}
+
+.global-footer button {
+  background: none;
+  cursor: pointer;
+}
+
+.feds-footer-wrapper {
+  width: 100%;
+  max-width: var(--feds-maxWidth-nav);
+  display: flex;
+  flex-direction: column;
+  color: var(--mep-feds-color-link);
+}
+
+.feds-footer-wrapper ul {
+  margin: 0;
+  padding: 0;
+}
+
+.feds-footer-icons {
+  display: none;
+}
+
+/* Feature Products */
+.feds-featuredProducts .feds-navLink {
+  padding: 0 32px;
+  color: #fff;
+  opacity: 0.6;
+  font-weight: 700;
+}
+
+/* Menu */
+.feds-footer-wrapper .feds-menu-headline {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #fff;
+}
+
+.feds-footer-wrapper .feds-menu-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Additional nesting is needed for specificity */
+.feds-footer-wrapper .feds-menu-content .feds-navLink {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding: 0px 16px;
+  margin: 0 16px;
+  color: #fff;
+  opacity: 0.6;
+}
+
+/* Options (region selector, social, privacy) */
+.feds-footer-options,
+.feds-footer-miscLinks,
+.feds-regionPicker {
+  display: flex;
+  align-items: center;
+}
+
+.feds-footer-options {
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0 var(--feds-gutter-footer);
+  flex-wrap: wrap;
+  row-gap: 12px;
+  column-gap: 40px;
+  margin-top: 30px;
+}
+
+.feds-footer-miscLinks {
+  column-gap: 30px;
+  flex-shrink: 0;
+}
+
+/* Region picker */
+.feds-regionPicker {
+  column-gap: 6px;
+  color: var(--mep-feds-color-link);
+  border-color: var(--mep-feds-color-link);
+  fill: var(--mep-feds-color-link);
+}
+
+.feds-regionPicker:hover {
+  color: var(--mep-feds-color-link--hover);
+  border-color: var(--mep-feds-color-link--hover);
+  fill: var(--mep-feds-color-link--hover);
+}
+
+.feds-regionPicker:after {
+  width: 8px;
+  height: 4px;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform: rotate(0deg);
+  transition: transform 0.1s ease;
+  content: "";
+}
+
+.feds-regionPicker[aria-expanded = "true"]:after {
+  transform: rotate(180deg);
+}
+
+.feds-regionPicker-globe {
+  width: 20px;
+  height: 20px;
+  fill: inherit;
+}
+
+.feds-regionPicker-wrapper {
+  position: relative;
+}
+
+.feds-regionPicker-wrapper > .fragment {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  display: none;
+  padding: 20px;
+  min-width: 130px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--feds-background-nav);
+  border: 1px solid var(--feds-borderColor);
+  border-radius: 4px;
+}
+
+[dir = "rtl"] .feds-regionPicker-wrapper > .fragment {
+  left: auto;
+  right: 0;
+}
+
+.feds-regionPicker[aria-expanded = "true"] + .fragment {
+  display: block;
+}
+
+/* Styling inline region selector dropdown to maintain backwards compatibility */
+.feds-regionPicker-wrapper .fragment.link-block {
+  display: none; /* Hide fragment placeholder until it is loaded */
+}
+
+.feds-regionPicker-wrapper > .fragment .region-selector {
+  padding: 0;
+}
+
+.feds-regionPicker-wrapper > .fragment .content {
+  display: flex;
+  flex-direction: column;
+}
+
+.feds-regionPicker-wrapper > .fragment p { /* Usually the title */
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.feds-regionPicker-wrapper > .fragment ul { /* Usually regions wrapper */
+  margin: 0 -20px;
+}
+
+.feds-regionPicker-wrapper > .fragment a { /* Usually a region */
+  padding: 0 20px;
+  display: block;
+  line-height: 2;
+  color: var(--mep-feds-color-link--hover);
+}
+
+.feds-regionPicker-wrapper > .fragment a:hover {
+  background: var(--feds-background-link--hover);
+}
+
+/* Social */
+.feds-social {
+  display: flex;
+  column-gap: 15px;
+}
+
+.feds-social-link {
+  display: block;
+}
+
+.feds-social-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  color: #808080;
+}
+
+.feds-social-link:hover .feds-social-icon {
+  color: #909090;
+}
+
+.footer-logo-image svg {
+  width: 67px;
+  height: 20px;
+  display: block;
+}
+
+/* Privacy */
+.feds-footer-legalWrapper {
+  display: flex;
+  flex-direction: column;
+  row-gap: 12px;
+}
+
+.feds-footer-privacySection {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.feds-footer-privacyLink {
+  display: inline-flex;
+  column-gap: 5px;
+  align-items: center;
+  color: var(--mep-feds-color-link);
+  fill: var(--mep-feds-color-link);
+  vertical-align: bottom;
+}
+
+span.feds-footer-privacyLink-divider {
+    display: inline-block;
+    margin: 0 5px;
+}
+
+.feds-footer-privacyLink:hover {
+  color: var(--mep-feds-color-link--hover);
+  fill: var(--mep-feds-color-link--hover);
+}
+
+.feds-adChoices-icon {
+  width: 12px;
+  height: 12px;
+}
+
+@media (min-width: 600px) {
+  dialog.feds-dialog {
+    max-width: 80vw;
+    width: fit-content;
+  }
+}
+
+@media (min-width: 1200px) {
+  dialog.feds-dialog {
+    width: 1200px;
+    max-width: calc((100% - 6px) - 2em);
+  }
+}
+
+/* Mobile layout is controlled by the JS `.mobile` class toggle */
+.global-footer .feds-footer-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "region social"
+    "legal legal";
+  column-gap: 12px;
+  row-gap: 26px;
+  align-items: center;
+}
+
+.global-footer .feds-footer-options > .feds-regionPicker-wrapper {
+  grid-area: region;
+  width: auto;
+  min-width: 0;
+}
+
+.global-footer .feds-footer-options > .feds-social {
+  grid-area: social;
+  justify-self: end;
+  width: auto;
+}
+
+.global-footer .feds-footer-options > .feds-footer-miscLinks-legal {
+  grid-area: legal;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.global-footer .feds-footer-miscLinks-legal > .footer-logo {
+  order: 1;
+  padding-bottom: 12px;
+}
+
+.global-footer .feds-footer-miscLinks-legal > .feds-footer-legalWrapper {
+  order: 2;
+  position: relative;
+}
+
+[dir="rtl"] .global-footer .feds-footer-miscLinks-legal .footer-logo {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.global-footer:not(.mobile) .feds-navLink-image {
+  height: 16px;
+  width: 16px;
+}
+
+.global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem {
+  line-height: 24px;
+}
+
+.global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+@media (min-width: 900px) {
+  .global-footer:not(.mobile) .feds-footer-wrapper {
+    row-gap: 30px;
+  }
+
+  /* If there is too much content, float it on multiple rows */
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content {
+    flex-wrap: wrap;
+    width: auto;
+    column-gap: 12px;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-headline {
+    border: none;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column {
+    row-gap: 15px;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child {
+    flex-grow: 1;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-last-child(-n+3):first-child .feds-menu-section,
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child .feds-menu-section,
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(2):nth-last-child(2) .feds-menu-section {
+    width: fit-content;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-last-child(-n+3):first-child,
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(2):nth-last-child(2) {
+    min-width: 20%;
+  }
+
+  /* Featured products */
+  .global-footer:not(.mobile) .feds-featuredProducts {
+    padding: 8px 0;
+    margin: 0 var(--feds-gutter-footer);
+  }
+
+  /* .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-section {
+    display: flex;
+    column-gap: 8px;
+  } */
+
+  .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-headline {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 0;
+    margin: 0;
+    line-height: inherit;
+    padding-bottom: 16px;
+  }
+
+  .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-items ul {
+    display: flex;
+    column-gap: 12px;
+  }
+
+  .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink {
+    padding: 0 12px;
+  }
+
+  .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink:first-child {
+    padding-left: 0;
+  }
+
+  /* Options (region selector, social, privacy) */
+  .global-footer:not(.mobile) .feds-footer-options {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-areas: "region legal social";
+    align-items: center;
+    margin-top: 0;
+    column-gap: clamp(12px, 2.5vw, 40px);
+  }
+
+  .global-footer:not(.mobile) .feds-footer-options > .feds-regionPicker-wrapper {
+    grid-area: region;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-options > .feds-footer-miscLinks-legal {
+    grid-area: legal;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-options > .feds-social {
+    grid-area: social;
+    justify-self: end;
+  }
+
+  /* Privacy */
+  .global-footer:not(.mobile) .feds-footer-legalWrapper {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-privacySection {
+    justify-content: flex-end;
+    text-align: right;
+  }
+  .global-footer:not(.mobile) span.feds-footer-privacyLink-divider, .feds-footer-privacyLink {
+    margin-left: 5px;
+    margin-right: 0;
+  }
+
+  .global-footer .feds-footer-options {
+    grid-template-areas:
+      "region legal social";
+  }
+  
+  .global-footer .feds-footer-miscLinks-legal .footer-logo {
+    margin-left: auto;
+    padding-left: 30px;
+  }
+
+
+  .global-footer .feds-footer-miscLinks-legal > .footer-logo {
+    order: 2;
+    padding-bottom: 0;
+  }
+
+  .global-footer .feds-footer-miscLinks-legal > .feds-footer-legalWrapper {
+    order: 1;
+    position: inherit;
+  }
+  .global-footer .feds-footer-options > .feds-footer-miscLinks-legal {
+    flex-direction: row;
+  }
+
+  .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+    position: inherit;
+    padding-left: 24px;
+  }
+}
+
+/* max-width (1440) + 2 x gutter (32) */
+@media (min-width: 1504px) {
+  .feds-footer-wrapper {
+    max-width: 1504px;
+  }
+}
