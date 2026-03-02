@@ -861,8 +861,8 @@ function hasCountryMatch(str, config) {
   }
   return false;
 }
-/* c8 ignore start */
-export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+
+export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const { countryIP, countryChoice } = config.mep || {};
   const valueNames = [
@@ -883,15 +883,23 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
   });
   const key = keyVal?.[0];
 
+  const seenKeys = new Set();
+  const filteredPlaceholders = placeholders.filter((item) => {
+    const pageFilter = item['page filter'] || item['page filter (optional)'];
+    if (seenKeys.has(item.key) || (pageFilter && !matchGlob(pageFilter, pathname))) return false;
+    seenKeys.add(item.key);
+    return true;
+  });
+
   if (key) {
-    const results = placeholders.reduce((res, item) => {
+    const results = filteredPlaceholders.reduce((res, item) => {
       res[item.key] = item[key];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, key);
+  createMartechMetadata(filteredPlaceholders, config, key);
 
   return config;
 }
