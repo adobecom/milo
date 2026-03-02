@@ -410,7 +410,9 @@ const setMetadata = (metadata) => {
   metaEl.setAttribute('content', val);
 };
 
-function updateFramework(fw) {
+function updateFramework(updateFrameworkList) {
+  if (!updateFrameworkList?.length) return;
+  const fw = updateFrameworkList[0];
   if (getMetadata('foundation') === fw.val) return;
   const { miloLibs, codeRoot } = getConfig();
   const libsPath = miloLibs || codeRoot;
@@ -1259,9 +1261,7 @@ export async function categorizeActions(experiment, config) {
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  if (selectedVariant.updateframework?.length) {
-    updateFramework(selectedVariant.updateframework[0]);
-  }
+  updateFramework(selectedVariant.updateframework);
 
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
