@@ -31,6 +31,8 @@ import {
 import { replaceKey } from '../../../features/placeholders.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 
+const FOOTER_LOGO_SRC = new URL('./adobe-logo.svg', import.meta.url).href;
+
 const ADOBE_LOGO_DARK = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 179.35 46.86">
   <path fill="#AFAFAF" d="M76.93,30.93l-1.92,5.93c-0.08,0.2-0.2,0.32-0.44,0.32h-4.64c-0.28,0-0.36-0.16-0.32-0.4l8.01-23.1
     c0.16-0.44,0.32-0.92,0.4-2.44c0-0.16,0.12-0.28,0.24-0.28h6.41c0.2,0,0.28,0.04,0.32,0.24l9.09,25.62
@@ -105,6 +107,8 @@ class Footer {
     this.resizeObserver = null;
     this.resizeTimeout = null;
     this.lastContainerWidth = null;
+    this.footerOrderMediaQuery = null;
+    this.footerOrderMediaQueryHandler = null;
     this.init();
   }
 
@@ -148,6 +152,7 @@ class Footer {
       if (isMobile === this.isMobile) return;
       this.isMobile = isMobile;
       this.block.classList.toggle('mobile', isMobile);
+      this.syncFooterOptionsOrder();
     };
     this.resizeObserver = new ResizeObserver(([entry]) => requestAnimationFrame(
       () => update(Math.round(entry.contentRect.width)),
@@ -159,6 +164,11 @@ class Footer {
   destroy = () => {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+    if (this.footerOrderMediaQuery && this.footerOrderMediaQueryHandler) {
+      this.footerOrderMediaQuery.removeEventListener('change', this.footerOrderMediaQueryHandler);
+    }
+    this.footerOrderMediaQuery = null;
+    this.footerOrderMediaQueryHandler = null;
     this.isMobile = null;
   };
 
@@ -221,13 +231,11 @@ class Footer {
     const fetchKeyboardNav = () => {
       setupKeyboardNav(false);
     };
-    const nav = document.querySelector('.global-navigation');
-    if (!nav || nav.children.length < 1) {
-      setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
-    }
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
     this.block.append(this.elements.footer);
+    this.initFooterOptionsOrderSync();
+    setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
     const { onFooterReady } = getConfig();
     onFooterReady?.();
   }, 'Failed to decorate footer content', 'global-footer', 'e');
@@ -525,9 +533,43 @@ class Footer {
       </div>
       ${this.elements.social}   
       </div>
+      <div class="feds-footer-logo">
+      <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
+      </div>
     </div>`;
 
     return this.elements.footer;
+  };
+
+  isFooterMobileLayout = () => this.block.classList.contains('mobile')
+    || window.matchMedia('(max-width: 899px)').matches;
+
+  syncFooterOptionsOrder = () => {
+    const options = this.elements.footer?.querySelector('.feds-footer-options');
+    if (!options) return;
+
+    const region = options.querySelector('.feds-regionPicker-wrapper');
+    const legal = options.querySelector('.feds-footer-miscLinks-legal');
+    const social = options.querySelector('.feds-social');
+
+    if (!region || !legal || !social) return;
+
+    if (this.isFooterMobileLayout()) {
+      options.append(region, social, legal);
+    } else {
+      options.append(region, legal, social);
+    }
+  };
+
+  initFooterOptionsOrderSync = () => {
+    if (!this.footerOrderMediaQuery) {
+      this.footerOrderMediaQuery = window.matchMedia('(max-width: 899px)');
+    }
+    if (!this.footerOrderMediaQueryHandler) {
+      this.footerOrderMediaQueryHandler = () => this.syncFooterOptionsOrder();
+      this.footerOrderMediaQuery.addEventListener('change', this.footerOrderMediaQueryHandler);
+    }
+    this.syncFooterOptionsOrder();
   };
 
   processJarvisLink = async () => {
