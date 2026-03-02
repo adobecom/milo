@@ -412,10 +412,14 @@ const setMetadata = (metadata) => {
 
 function updateFramework(fw) {
   if (getMetadata('foundation') === fw.val) return;
-  document.getElementById('framework-styles')?.remove();
-  setMetadata({ selector: 'foundation', val: fw.val });
   const { miloLibs, codeRoot } = getConfig();
-  loadBaseStyles(miloLibs || codeRoot);
+  const libsPath = miloLibs || codeRoot;
+  const existing = document.head.querySelector(
+    `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
+  );
+  existing?.remove();
+  setMetadata({ selector: 'foundation', val: fw.val });
+  loadBaseStyles(libsPath);
 }
 
 function toLowerAlpha(str) {

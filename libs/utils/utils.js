@@ -2361,8 +2361,6 @@ export async function loadBaseStyles(libsPath) {
   if (skin) pathsToLoad.push(`${libsPath}/styles/skins/${skin}.css`);
 
   await Promise.all(pathsToLoad.map((path) => loadStyle(path)));
-  const base = document.head.querySelector(`link[href$="${stylesPrefix}/styles/styles.css"]`);
-  if (base) base.id = 'framework-styles';
 }
 
 export async function loadArea(area = document) {
