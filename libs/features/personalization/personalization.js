@@ -1244,6 +1244,7 @@ async function getManifestConfig(info, variantOverride) {
   manifestConfig.manifestPath = normalizePath(manifestPath);
   const isAllowed = canServeManifest(manifestConfig);
   if (!isAllowed) {
+    overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
   }
@@ -1273,7 +1274,7 @@ const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestI
   targetManifestId,
 });
 export async function categorizeActions(experiment, config) {
-  if (!experiment || experiment.disabled) return null;
+  if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
   if (!selectedVariant || selectedVariant === 'default') return { experiment };
 
