@@ -163,10 +163,10 @@ function updateButtonStates(carouselElements) {
   }
 }
 
-function checkCircularNav(ce) {
-  const { el, nextPreviousBtns } = ce;
+function checkCircularNav(carouselElements) {
+  const { el, nextPreviousBtns } = carouselElements;
   if (!el.classList.contains('disable-circular-nav')) return;
-  const { atStart, atEnd } = getCircularNavState(ce);
+  const { atStart, atEnd } = getCircularNavState(carouselElements);
   nextPreviousBtns?.forEach((btn, i) => {
     const off = i === 0 ? atStart : atEnd;
     btn.disabled = off;
@@ -396,9 +396,15 @@ function moveSlides(event, carouselElements) {
   const isNext = event.currentTarget?.dataset?.toggle === 'next'
     || event.key === KEY_CODES.ARROW_RIGHT
     || (direction === 'left' && event.type === 'touchend');
-  if (el.classList.contains('disable-circular-nav')
-    && (isNext ? carouselElements.currentActiveIndex >= slides.length - 1
-      : carouselElements.currentActiveIndex <= 0)) return;
+  if (el.classList.contains('disable-circular-nav')) {
+    const idx = carouselElements.currentActiveIndex;
+    const atBoundary = isNext ? idx >= slides.length - 1 : idx <= 0;
+    if (atBoundary) {
+      const btn = isNext ? nextPreviousBtns?.[1] : nextPreviousBtns?.[0];
+      if (btn) { btn.disabled = true; btn.classList.add('disabled'); }
+      return;
+    }
+  }
 
   ariaLive.textContent = '';
 
