@@ -107,7 +107,7 @@ export const normalizePath = (p, localize = true) => {
 
   try {
     const url = new URL(path);
-    const { hash, pathname } = url;
+    const { hash, pathname, search } = url;
     const firstFolder = pathname.split('/')[1];
     const mepHash = '#_dnt';
 
@@ -127,7 +127,7 @@ export const normalizePath = (p, localize = true) => {
       }
     }
     path = isFederal ? getFederatedUrl(path) : path;
-    return `${path}${hash.replace(mepHash, '')}`;
+    return `${path}${search}${hash.replace(mepHash, '')}`;
   } catch (e) {
     path = isFederal ? getFederatedUrl(path) : path;
     return path;
