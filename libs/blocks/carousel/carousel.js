@@ -35,7 +35,6 @@ const KEY_CODES = {
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
-const CIRCULAR_NAV_TOLERANCE = 1;
 
 function getPreviousAriaLabel(currentIndex, totalSlides) {
   return currentIndex === 0 && totalSlides > 0
@@ -55,15 +54,10 @@ function getCircularNavState(carouselElements) {
   const atStart = currentActiveIndex === 0;
   if (!el.classList.contains('disable-circular-nav')) return { atStart, atEnd: false };
 
-  const wrapper = el.querySelector('.carousel-wrapper');
-  const lastSlide = slides[slides.length - 1];
-  if (!wrapper || !lastSlide) return { atStart, atEnd: false };
-
-  const wrapperRect = wrapper.getBoundingClientRect();
-  const lastRect = lastSlide.getBoundingClientRect();
-  const atEnd = wrapperRect.width > 0
-    && lastRect.left >= wrapperRect.left - CIRCULAR_NAV_TOLERANCE
-    && lastRect.right <= wrapperRect.right + CIRCULAR_NAV_TOLERANCE;
+  const isTabletLayout = el.classList.contains('hinting-tablet')
+    && window.matchMedia('(min-width: 600px) and (max-width: 1199px)').matches;
+  const lastIdx = isTabletLayout ? slides.length - 2 : slides.length - 1;
+  const atEnd = currentActiveIndex >= lastIdx;
 
   return { atStart, atEnd };
 }
@@ -397,14 +391,10 @@ function moveSlides(event, carouselElements) {
     || event.key === KEY_CODES.ARROW_RIGHT
     || (direction === 'left' && event.type === 'touchend');
   if (el.classList.contains('disable-circular-nav')) {
-    const idx = carouselElements.currentActiveIndex;
-    const isTabletLayout = el.classList.contains('hinting-tablet')
-      && window.matchMedia('(min-width: 600px) and (max-width: 1199px)').matches;
-    const lastIdx = isTabletLayout ? slides.length - 2 : slides.length - 1;
-    const atBoundary = isNext ? idx >= lastIdx : idx <= 0;
+    const { atStart, atEnd } = getCircularNavState(carouselElements);
+    const atBoundary = isNext ? atEnd : atStart;
     if (atBoundary) {
-      const btn = isNext ? nextPreviousBtns?.[1] : nextPreviousBtns?.[0];
-      if (btn) { btn.disabled = true; btn.classList.add('disabled'); }
+      checkCircularNav(carouselElements);
       return;
     }
   }
