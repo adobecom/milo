@@ -5,6 +5,8 @@
 import {
   createTag,
   getConfig,
+  getMetadata,
+  loadBaseStyles,
   loadLink,
   loadScript,
   localizeLinkAsync,
@@ -407,6 +409,18 @@ const setMetadata = (metadata) => {
   }
   metaEl.setAttribute('content', val);
 };
+
+function updateFramework(fw) {
+  if (getMetadata('foundation') === fw.val) return;
+  const { miloLibs, codeRoot } = getConfig();
+  const libsPath = miloLibs || codeRoot;
+  const existing = document.head.querySelector(
+    `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
+  );
+  existing?.remove();
+  setMetadata({ selector: 'foundation', val: fw.val });
+  loadBaseStyles(libsPath);
+}
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
@@ -1246,20 +1260,7 @@ export async function categorizeActions(experiment, config) {
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
   if (selectedVariant.updateframework?.length) {
-    const fw = selectedVariant.updateframework[0];
-    const { miloLibs, codeRoot } = getConfig();
-    const libsPath = miloLibs || codeRoot;
-    const prefix = fw.val ? `/${fw.val}` : '';
-    const targetHref = `${libsPath}${prefix}/styles/styles.css`;
-    const existing = document.head.querySelector(
-      `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
-    );
-    if (existing?.getAttribute('href') !== targetHref) {
-      existing?.remove();
-      setMetadata({ selector: 'foundation', val: fw.val });
-      const { loadBaseStyles } = await import('../../utils/utils.js');
-      loadBaseStyles(libsPath);
-    }
+    updateFramework(selectedVariant.updateframework[0]);
   }
 
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
