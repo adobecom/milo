@@ -185,7 +185,7 @@ export async function loadOstEnv() {
     ['term', 'displayRecurrence', 'true'],
     ['seat', 'displayPerUnit', masDefaultsEnabled ? null : 'true'],
     ['tax', 'displayTax'],
-    ['old', 'displayOldPrice'],
+    ['old', 'displayOldPrice', 'true'],
   ].map(([key, targetKey, defaultValue = false]) => {
     const value = searchParameters.get(key) ?? defaultValue;
     searchParameters.delete(key);
