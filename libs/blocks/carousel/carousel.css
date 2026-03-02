@@ -605,7 +605,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
   .carousel.hinting-mobile .carousel-slide {
     flex-basis: 80%;
-    min-width: 276px;
+    min-width: 300px;
   }
 
   .carousel.hinting-center-mobile .carousel-slides {
