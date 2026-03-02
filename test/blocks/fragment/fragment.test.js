@@ -101,17 +101,19 @@ describe('Fragments', () => {
   });
 
   it('Doesnt infinitely load circular references', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const a = document.querySelector('a.frag-a');
     await getFragment(a);
     expect(document.querySelector('h4')).to.exist;
-    expect(window.lana.log.args[2][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/frag-a');
+    expect(window.lana.log.lastCall.args[0]).to.equal('Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/frag-a');
   });
 
   it('Doesnt infinitely load circular reference to itself', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const a = document.querySelector('a.self-ref');
     await getFragment(a);
     expect(document.querySelector('h5')).to.exist;
-    expect(window.lana.log.args[3][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/self-ref');
+    expect(window.lana.log.lastCall.args[0]).to.equal('Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/self-ref');
   });
 
   it('Inlines fragments inside a block', async () => {

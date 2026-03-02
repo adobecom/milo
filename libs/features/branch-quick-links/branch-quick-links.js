@@ -37,7 +37,7 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
     const data = await window.alloy_getIdentity;
     ecid = data?.identity?.ECID;
   } catch (e) {
-    window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
+    window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links', severity: 'error' });
   }
   if (ecid && hasConsent && !a.href.includes('ecid')) {
     urlObj.searchParams.set('ecid', ecid);

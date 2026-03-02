@@ -233,7 +233,10 @@ export async function getGeoLocaleSettings(miloLocale) {
       const { getAkamaiCode } = await import('../../utils/geo.js');
       country = await getAkamaiCode(true);
     } catch (error) {
-      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
+      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`, {
+        tags: 'merch',
+        severity: 'error',
+      });
     }
   }
   if (country) {
@@ -798,7 +801,10 @@ export function appendDexterParameters(url, extraOptions, el) {
       isRelativePath ? `${window.location.origin}${url}` : url,
     );
   } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    window.lana?.log(`Invalid URL ${url} : ${err}`, {
+      tags: 'merch',
+      severity: 'error',
+    });
     return url;
   }
   absoluteUrl = applyPromo(absoluteUrl);

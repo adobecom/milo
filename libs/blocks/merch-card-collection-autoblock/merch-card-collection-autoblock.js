@@ -79,7 +79,10 @@ function localizeIconPath(iconPath) {
       const url = new URL(iconPath);
       return `https://www.adobe.com${url.pathname}`;
     } catch (e) {
-      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`);
+      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`, {
+        tags: 'merch-card-collection',
+        severity: 'error',
+      });
     }
   }
   return iconPath;
