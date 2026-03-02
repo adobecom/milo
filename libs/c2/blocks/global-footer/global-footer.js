@@ -25,7 +25,6 @@ import {
   isDarkMode,
   setupKeyboardNav,
   KEYBOARD_DELAY,
-  isDesktop,
 } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../../features/placeholders.js';

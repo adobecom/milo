@@ -58,15 +58,6 @@
   column-count: 1;
 }
 
-.region-nav > div:nth-of-type(2) .region-nav-columns {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.region-nav > div:nth-of-type(2) .region-nav-column {
-  break-inside: avoid;
-}
-
 .region-nav.hide {
   display: none;
 }
@@ -76,14 +67,18 @@
   color: #000;
 }
 
+.region-nav .tracking-header {
+
+}
+
 @media (min-width: 600px) {
-  .region-nav > div:nth-of-type(2) .region-nav-columns {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .region-nav > div:nth-of-type(2) {
+    column-count: 3;
   }
 }
 
 @media (min-width: 1200px) {
-  .region-nav > div:nth-of-type(2) .region-nav-columns {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+  .region-nav > div:nth-of-type(2) {
+    column-count: 5;
   }
 }
