@@ -1,4 +1,4 @@
-:root:has(meta[name="theme"][content="max25"]) {
+:root:has(meta[name="skin"][content="max25"]) {
   /* text */
   .text-block [class*="detail-"] {
     line-height: 1.5;
