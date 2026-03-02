@@ -14,6 +14,7 @@ on:
           - da-dc
           - upp
           - da-events
+          - edu
       siteRegionPaths:
         description: "Comma-separated regional paths (e.g. ar,ro) or blank for all regions"
         required: false
