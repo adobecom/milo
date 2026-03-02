@@ -6,11 +6,16 @@ div.section.new-cards-section {
   height: 100%;
 }
 
+.new-cards > div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
 .new-cards .media {
   position: relative;
 }
 
-.new-cards .media picture {
+.new-cards .media > picture {
   height: 100%;
   display: flex;
 }
@@ -51,20 +56,21 @@ div.section.new-cards-section {
   height: 24px;
   width: 24px;
   position: absolute;
-  top: 20px;
-  left: 24px;
-  margin: 0;
+  top: 16px;
+  left: 16px;
 }
 
 .new-cards .media .icon img {
   width: 24px;
 }
 
-.new-cards .media div {
+.new-cards .media > div,
+.new-cards .media > picture {
   height: 100%;
 }
 
-.new-cards .media div img {
+.new-cards .media div img,
+.new-cards .media picture:not(.icon) img {
   border-radius: var(--s2a-border-radius-md);
   width: 100%;
   object-fit: cover;
@@ -72,11 +78,6 @@ div.section.new-cards-section {
 }
 
 .new-cards .foreground {
-  padding: var(--spacing-s);
-  padding-bottom: var(--spacing-l);
-}
-
-.new-cards .foreground div {
   padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
 }
 
@@ -88,31 +89,40 @@ div.section.new-cards-section {
 
 @media (width >= 1024px) {
 
-  .new-cards.full-width .foreground div {
+  .new-cards.full-width .foreground {
     padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
     display: grid;
     grid-template-columns: 1fr auto;
-    align-items: baseline;
+    align-items: start;
   }
 
-  .new-cards.full-width .foreground div p:has(> a) {
+  .new-cards.full-width .foreground :is(h1, h2, h3, h4, h5, h6) {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .new-cards.full-width .foreground p:has(> a) {
     grid-row: 1;
     grid-column: 2;
   }
 
-  .new-cards.full-width .foreground div p:has(> a) a {
+  .new-cards.full-width .foreground p:has(> a) a {
     margin-top: 0;
   }
 
-  .new-cards.full-width .foreground div p:not(:has(> a)) {
+  .new-cards.full-width .foreground p:not(:has(> a)) {
+    grid-row: 2;
+    grid-column: 1;
     max-width: 466.809px;
   }
 
-  .new-cards .media div img {
+  .new-cards .media div img,
+  .new-cards .media picture:not(.icon) img {
     aspect-ratio: 195/146;
   }
 
-  .new-cards.full-width .media div img {
+  .new-cards.full-width .media div img,
+  .new-cards.full-width .media picture:not(.icon) img {
     aspect-ratio: 298/135;
   }
 }
@@ -122,13 +132,13 @@ div.section.new-cards-section {
     font-size: var(--s2a-font-size-2xl);
   }
 
-  .new-cards.full-width .foreground div {
+  .new-cards.full-width .foreground {
     padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
   }
 }
 
 @media (width >= 1441px) {
-  .new-cards.full-width .foreground div p:not(:has(> a)) {
+  .new-cards.full-width .foreground p:not(:has(> a)) {
     max-width: 567px;
   }
 }
