@@ -38,6 +38,7 @@ const C1_BLOCKS = [
   'gist',
   'graybox',
   'footer',
+  'global-navigation',
   'gnav',
   'hero-marquee',
   'how-to',
