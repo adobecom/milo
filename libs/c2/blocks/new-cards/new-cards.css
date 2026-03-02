@@ -1,9 +1,5 @@
 div.section.new-cards-section {
-  gap: var(--s2a-spacing-40);
-}
-
-.new-cards.full-width {
-  margin-bottom: var(--s2a-spacing-40);
+  gap: var(--s2a-spacing-8);
 }
 
 .new-cards {
@@ -12,6 +8,11 @@ div.section.new-cards-section {
 
 .new-cards .media {
   position: relative;
+}
+
+.new-cards .media picture {
+  height: 100%;
+  display: flex;
 }
 
 .new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
@@ -28,6 +29,7 @@ div.section.new-cards-section {
   position: relative;
   display: inline-block;
   margin-top: var(--s2a-spacing-24);
+  line-height: 18.2px;
 }
 
 .new-cards .foreground p {
@@ -86,35 +88,24 @@ div.section.new-cards-section {
 
 @media (width >= 1024px) {
 
-  .new-cards.full-width .foreground p {
-    max-width: 466.809px;
-  }  
-
   .new-cards.full-width .foreground div {
-    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
-    display: flex;
-    flex-wrap: wrap;
+    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: baseline;
   }
 
-  .new-cards.full-width .foreground div :is(h1, h2, h3, h4, h5, h6) {
-    flex: 1 1 auto;
-  }
-
-  /* CTA paragraph (contains the link) – same line as heading */
   .new-cards.full-width .foreground div p:has(> a) {
-    flex: 0 0 auto;
-    order: 1;
+    grid-row: 1;
+    grid-column: 2;
   }
 
   .new-cards.full-width .foreground div p:has(> a) a {
-    padding-top: 0;
+    margin-top: 0;
   }
 
-  /* Body paragraph – next line, full width */
   .new-cards.full-width .foreground div p:not(:has(> a)) {
-    flex-basis: 100%;
-    order: 2;
+    max-width: 466.809px;
   }
 
   .new-cards .media div img {
@@ -130,10 +121,14 @@ div.section.new-cards-section {
   .new-cards.full-width .foreground :is(h1, h2, h3, h4, h5, h6) {
     font-size: var(--s2a-font-size-2xl);
   }
+
+  .new-cards.full-width .foreground div {
+    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+  }
 }
 
 @media (width >= 1441px) {
-  .new-cards.full-width .foreground p {
-      max-width: 567px;
+  .new-cards.full-width .foreground div p:not(:has(> a)) {
+    max-width: 567px;
   }
 }
