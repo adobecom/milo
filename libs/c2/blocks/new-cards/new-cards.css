@@ -1,5 +1,5 @@
 div.section.new-cards-section {
-  gap: var(--s2a-spacing-8);
+  gap: var(--s2a-spacing-40);
 }
 
 .new-cards {
@@ -81,6 +81,11 @@ div.section.new-cards-section {
   padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
 }
 
+
+.new-cards.full-width .foreground {
+  padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+}
+
 @media (max-width: 1023px) {
   div.section.new-cards-section {
     grid-template-columns: 1fr;
@@ -88,9 +93,11 @@ div.section.new-cards-section {
 }
 
 @media (width >= 1024px) {
+  div.section.new-cards-section {
+    gap: var(--s2a-spacing-8);
+  }
 
   .new-cards.full-width .foreground {
-    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: start;
