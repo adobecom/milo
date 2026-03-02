@@ -97,6 +97,16 @@ const CHECKOUT_LINK_CONFIGS = {
     CRM_PATH: 'https://www.adobe.com/plans-fragments/modals/individual/crm/audition/master.modal.html',
   },
   {
+    PRODUCT_FAMILY: 'CC_ALL_APPS_TEST',
+    DOWNLOAD_TEXT: '',
+    DOWNLOAD_URL: '',
+    FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/free_test.html?mid=ft&web=1',
+    BUY_NOW_PATH: 'https://www.adobe.com/mini-plans/buy_test.html?web=1',
+    LOCALE: '',
+    CRM_HASH: 'crm-all-apps-test',
+    CRM_PATH: 'https://www.adobe.com/individual/crm/master.modal.html | https://www.adobe.com/business/crm/master.modal.html?qs=1 | https://www.adobe.com/students/crm/master.modal.html',
+  },
+  {
     PRODUCT_FAMILY: 'ILLUSTRATOR+abc',
     DOWNLOAD_TEXT: 'Download',
     DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/illustrator',
@@ -1093,9 +1103,73 @@ describe('Merch Block', () => {
       expect(action).to.be.undefined;
     });
 
+    it('getModalAction: returns crm path for Individuals', async () => {
+      setConfig({
+        ...config,
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const el = document.createElement('a');
+      el.setAttribute('data-modal', 'crm');
+      el.isOpen3in1Modal = false;
+      el.isCheckoutLink = true;
+      const action = await getModalAction([{ productArrangement: { productFamily: 'CC_ALL_APPS_TEST' }, customerSegment: 'INDIVIDUAL', marketSegments: ['COM'] }], { modal: true }, el);
+      expect(action.url).to.equal('https://www.adobe.com/individual/crm/master.modal.html');
+    });
+
+    it('getModalAction: returns crm path for Business', async () => {
+      setConfig({
+        ...config,
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const el = document.createElement('a');
+      el.setAttribute('data-modal', 'crm');
+      el.isOpen3in1Modal = false;
+      el.isCheckoutLink = true;
+      const action = await getModalAction([{ productArrangement: { productFamily: 'CC_ALL_APPS_TEST' }, customerSegment: 'TEAM', marketSegments: ['COM'] }], { modal: true }, el);
+      expect(action.url).to.equal('https://www.adobe.com/business/crm/master.modal.html?qs=1');
+    });
+
+    it('getModalAction: returns free trial path for crm modal if 3in1 enabled', async () => {
+      setConfig({
+        ...config,
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const el = document.createElement('a');
+      el.setAttribute('data-modal', 'crm');
+      el.isOpen3in1Modal = true;
+      el.isCheckoutLink = true;
+      const action = await getModalAction([{ productArrangement: { productFamily: 'CC_ALL_APPS_TEST' }, customerSegment: 'INDIVIDUAL', marketSegments: ['COM'], offerType: 'TRIAL' }], { modal: true }, el);
+      expect(action.url).to.equal('https://www.adobe.com/mini-plans/free_test.html?mid=ft&web=1');
+    });
+
     it('setCtaHash: sets authored hash', async () => {
       const el = createCtaInMerchCard();
       const hash = setCtaHash(el, { FREE_TRIAL_HASH: 'try-photoshop-authored' }, 'TRIAL');
+      expect(hash).to.equal('try-photoshop-authored');
+    });
+
+    it('setCtaHash: sets authored CRM hash', async () => {
+      const el = createCtaInMerchCard();
+      el.setAttribute('data-modal', 'crm');
+      el.isOpen3in1Modal = false;
+      const hash = setCtaHash(el, { CRM_HASH: 'crm-phsp' }, 'BASE');
+      expect(hash).to.equal('crm-phsp');
+    });
+
+    it('setCtaHash: sets authored CRM hash when 3in1 is enabled', async () => {
+      const el = createCtaInMerchCard();
+      el.setAttribute('data-modal', 'crm');
+      el.isOpen3in1Modal = true;
+      const hash = setCtaHash(el, { CRM_HASH: 'crm-phsp', FREE_TRIAL_HASH: 'try-photoshop-authored' }, 'TRIAL');
       expect(hash).to.equal('try-photoshop-authored');
     });
 
