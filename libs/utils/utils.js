@@ -36,8 +36,6 @@ const C1_BLOCKS = [
   'fragment',
   'featured-article',
   'gist',
-  'global-footer',
-  'global-navigation',
   'graybox',
   'footer',
   'gnav',
@@ -74,7 +72,6 @@ const C1_BLOCKS = [
   'quote',
   'read-more',
   'recommended-articles',
-  'region-nav',
   'review',
   'section-metadata',
   'slideshare',
@@ -109,6 +106,9 @@ const C2_BLOCKS = [
   'box',
   'section-metadata',
   'explore-card',
+  'global-footer',
+  'global-navigation',
+  'region-nav',
 ];
 
 const AUTO_BLOCKS = [
