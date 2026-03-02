@@ -31,6 +31,10 @@ export default {
     'feedback.toast.success': 'Thank you for the feedback.',
     'feedback.thumbsUp.aria': 'Thumbs up',
     'feedback.thumbsDown.aria': 'Thumbs down',
+    'widget.firefly-gallery.preamble-markdown': 'To see what you can do, check out these images from the [Firefly](https://firefly.adobe.com/gallery) community of creators:',
+    'widget.firefly-gallery.title': 'Adobe Firefly gallery',
+    'widget.firefly-gallery.view-item-text': 'View',
+    'widget.firefly-gallery.view-more-text': 'More in Firefly gallery',
   },
   disclaimer: {
     text: 'AI responses may be inaccurate, and any offers provided are non-binding. Check answers and sources. {Terms}',
@@ -57,6 +61,10 @@ export default {
     },
     privacyNotice: { text: 'Welcome! Thank you for trying out this initial release. The experience is still evolving and will continue to improve over time.' },
     productCard: { actionButtonSize: 'S' },
+    fireflyGalleryWidget: {
+      videoFraction: 0,
+      promoid: 'bc-firefly-widget',
+    },
   },
   arrays: {
     'feedback.positive.options': [
@@ -172,6 +180,12 @@ export default {
     '--input-text-color': '#292929',
     '--line-height-body': '1.75',
     '--loading-dot-background': '#6338EE',
+    '--link-button-primary-background': '#292929',
+    '--link-button-primary-text-color': '#FFFFFF',
+    '--link-button-primary-hover': '#131313',
+    '--link-button-secondary-background': '#E9E9E9',
+    '--link-button-secondary-text': '#292929',
+    '--link-button-secondary-hover': '#D9D9D9',
     '--loading-message-background': '#F8F8F8',
     '--main-container-background': '#FFFFFF',
     '--main-container-bottom-background': '#FFFFFF',
