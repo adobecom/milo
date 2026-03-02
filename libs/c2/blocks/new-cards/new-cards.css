@@ -1,15 +1,41 @@
+.new-cards {
+  height: 100%;
+}
 
 .new-cards .media {
   position: relative;
 }
 
-.new-cards h1, h2, h3, h4, h5, h6 {
+.new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
+  margin-bottom: 8px;
   color: #000000;
   padding-bottom: var(--s2a-spacing-8);
+  font-size: var(--s2a-font-size-xl);
+}
+
+.new-cards .foreground a {
+  color: #000000;
+  text-decoration: none;
+  font-size: var(--type-body-s-size);
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  padding-top: var(--s2a-spacing-24);
+}
+
+.new-cards .foreground p {
+  font-size: var(--s2a-font-size-md);
+  letter-spacing: 0.16px;
+  line-height: 130%;
+}
+
+.new-cards .foreground a::after {
+  content: '>';
+  margin-left: 8px;
 }
 
 .new-cards p {
-  color: rgba(0, 0, 0, 0.56);
+  color: rgba(0, 0, 0, 0.60);
 }
 
 .new-cards .media .icon {
@@ -51,6 +77,10 @@
 
 @media (width >= 1024px) {
 
+  .new-cards.full-width .foreground p {
+    max-width: 466.809px;
+  }  
+
   .new-cards.full-width .foreground div {
     padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
     display: flex;
@@ -87,25 +117,14 @@
   }
 }
 
+@media (width >= 1280px) {
+  .new-cards.full-width .foreground :is(h1, h2, h3, h4, h5, h6) {
+    font-size: var(--s2a-font-size-2xl);
+  }
+}
+
 @media (width >= 1441px) {
-
-}
-
-.new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
-  margin-bottom: 8px;
-}
-
-.new-cards .foreground a {
-  color: #000000;
-  text-decoration: none;
-  font-size: var(--type-body-s-size);
-  font-weight: 700;
-  position: relative;
-  display: inline-block;
-  padding-top: var(--s2a-spacing-24);
-}
-
-.new-cards .foreground a::after {
-  content: '>';
-  margin-left: 8px;
+  .new-cards.full-width .foreground p {
+      max-width: 567px;
+  }
 }
