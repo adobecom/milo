@@ -10,6 +10,10 @@ on:
         type: choice
         options:
           - da-bacom
+          - da-cc
+          - da-dc
+          - upp
+          - da-events
       siteRegionPaths:
         description: "Comma-separated regional paths (e.g. ar,ro) or blank for all regions"
         required: false

@@ -9,7 +9,8 @@ on:
         required: true
         type: choice
         options:
-          - cc
+          - federal
+          - genuine
       siteRegionPaths:
         description: "Comma-separated regional paths (e.g. ch_fr) or blank for all regions"
         required: false
