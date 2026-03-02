@@ -107,7 +107,7 @@ export const normalizePath = (p, localize = true) => {
 
   try {
     const url = new URL(path);
-    const { hash, pathname } = url;
+    const { hash, pathname, search } = url;
     const firstFolder = pathname.split('/')[1];
     const mepHash = '#_dnt';
 
@@ -127,7 +127,7 @@ export const normalizePath = (p, localize = true) => {
       }
     }
     path = isFederal ? getFederatedUrl(path) : path;
-    return `${path}${hash.replace(mepHash, '')}`;
+    return `${path}${search}${hash.replace(mepHash, '')}`;
   } catch (e) {
     path = isFederal ? getFederatedUrl(path) : path;
     return path;
@@ -678,10 +678,13 @@ export async function handleCommands(
   const section1 = document.querySelector('main > div');
   addSectionAnchors(rootEl);
   for (const cmd of commands) {
-    const { action, content, selector } = cmd;
-    cmd.content = forceInline && getSelectorType(content) === SELECTOR_TYPES.fragment
-      ? addHash(content, INLINE_HASH)
-      : content;
+    const { action, selector } = cmd;
+    if (forceInline
+      && action !== 'updateattribute'
+      && getSelectorType(cmd.content) === SELECTOR_TYPES.fragment
+      && !cmd.content.includes(INLINE_HASH)) {
+      cmd.content = addHash(cmd.content, INLINE_HASH);
+    }
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd);
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
@@ -858,8 +861,8 @@ function hasCountryMatch(str, config) {
   }
   return false;
 }
-/* c8 ignore start */
-export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+
+export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const { countryIP, countryChoice } = config.mep || {};
   const valueNames = [
@@ -880,15 +883,23 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
   });
   const key = keyVal?.[0];
 
+  const seenKeys = new Set();
+  const filteredPlaceholders = placeholders.filter((item) => {
+    const pageFilter = item['page filter'] || item['page filter (optional)'];
+    if (seenKeys.has(item.key) || (pageFilter && !matchGlob(pageFilter, pathname))) return false;
+    seenKeys.add(item.key);
+    return true;
+  });
+
   if (key) {
-    const results = placeholders.reduce((res, item) => {
+    const results = filteredPlaceholders.reduce((res, item) => {
       res[item.key] = item[key];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, key);
+  createMartechMetadata(filteredPlaceholders, config, key);
 
   return config;
 }
@@ -1296,6 +1307,7 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
 
         if (targetManifestWinsOverServerManifest) {
           freshManifest.variants = fullManifest.variants;
+          freshManifest.variantNames = fullManifest.variantNames;
           freshManifest.placeholderData = fullManifest.placeholderData;
         }
 

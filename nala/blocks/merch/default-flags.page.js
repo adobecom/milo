@@ -19,25 +19,25 @@ export default class DefaultFlags {
       taxIndividual: {
         el: page.locator('[data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"] .price-tax-inclusivity:not(.disabled)'),
         textEN: '',
-        textFR: 'TVA comprise',
+        textFR: 'TTC',
         textNG: 'incl. VAT',
       },
       taxBusiness: {
         el: page.locator('[data-wcs-osi="yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI"] .price-tax-inclusivity:not(.disabled)'),
         textEN: '',
-        textFR: 'hors TVA',
+        textFR: 'HT',
         textNG: 'incl. VAT',
       },
       taxStudents: {
         el: page.locator('[data-wcs-osi="ZaYfYXbCY4vSKmLfVe-8_RrEDOkwRrFLUgGR3tBXu6k"] .price-tax-inclusivity:not(.disabled)'),
         textEN: '',
-        textFR: 'TVA comprise',
+        textFR: 'TTC',
         textNG: '',
       },
       taxUni: {
         el: page.locator('[data-wcs-osi="Q4QqArYA-FiSl-onSZlz_r3QUnDjXirAHaYcQW9KoTk"] .price-tax-inclusivity:not(.disabled)'),
         textEN: '',
-        textFR: 'hors TVA',
+        textFR: 'HT',
         textNG: '',
       },
     };

@@ -58,6 +58,10 @@
   font-size: var(--type-body-l-size);
  }
 
+  .how-to ol > li h3 {
+    margin: 0;
+  }
+
  .how-to ol > li:first-of-type {
   border-top: 1px solid var(--color-gray-400);
  }

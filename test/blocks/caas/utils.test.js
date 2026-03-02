@@ -13,6 +13,25 @@ import {
   getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
+// Mock lingo-site-mapping.json for test runner
+(function patchFetchForLingoMapping() {
+  const orig = window.fetch;
+  const defaultLingoMock = () => Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({
+      'site-query-index-map': { data: [] },
+      'site-locales': { data: [] },
+    }),
+  });
+  window.fetch = function patchedFetch(resource, options) {
+    const url = typeof resource === 'string' ? resource : (resource?.url ?? resource?.href ?? '');
+    if (url.includes('lingo-site-mapping.json')) {
+      return defaultLingoMock();
+    }
+    return orig.call(window, resource, options);
+  };
+}());
+
 describe('utils.js export sanity', () => {
   it('getLingoActive() is callable and returns a boolean', async () => {
     const val = await getLingoActive();
@@ -180,7 +199,7 @@ describe('getConfig', () => {
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
         endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=1fffd42e-9a20-5118-89eb-fae87a84665b&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         hideDateInterval: false,
         totalCardsToShow: 10,
@@ -454,7 +473,7 @@ describe('getConfig', () => {
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
         endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=1fffd42e-9a20-5118-89eb-fae87a84665b&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         hideDateInterval: false,
         totalCardsToShow: 10,
@@ -753,6 +772,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'ec',
+      geoCountry: null,
       language: 'es',
       locales: '',
     });
@@ -763,6 +783,7 @@ describe('getCountryAndLang', () => {
     const expected = await getCountryAndLang({ autoCountryLang: false });
     expect(expected).to.deep.eq({
       country: 'US',
+      geoCountry: null,
       language: 'en',
       locales: '',
     });
@@ -776,6 +797,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'BE',
+      geoCountry: null,
       language: 'fr',
       locales: '',
     });
@@ -792,6 +814,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'US',
+      geoCountry: null,
       language: 'en',
       locales: '',
     });
@@ -799,24 +822,46 @@ describe('getCountryAndLang', () => {
 
   describe('langFirst with GEO IP', () => {
     let metaLangFirst;
+    let ogFetch;
+    const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
+    const lingoMappingResponse = () => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
+        'site-locales': {
+          data: [
+            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'be,ch' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'be,us' },
+          ],
+        },
+      }),
+    });
 
     beforeEach(() => {
       metaLangFirst = document.createElement('meta');
       metaLangFirst.setAttribute('name', 'langfirst');
       metaLangFirst.setAttribute('content', 'true');
       document.head.appendChild(metaLangFirst);
+      ogFetch = window.fetch;
+      window.fetch = stub().callsFake((url) => {
+        const urlStr = typeof url === 'string' ? url : (url?.url ?? url?.href ?? '');
+        const isLingoMapping = urlStr === LINGO_MAPPING_URL || urlStr.includes('lingo-site-mapping.json');
+        return isLingoMapping ? lingoMappingResponse() : ogFetch(url);
+      });
     });
 
     afterEach(() => {
       if (metaLangFirst && metaLangFirst.parentNode) {
         document.head.removeChild(metaLangFirst);
       }
+      if (ogFetch) window.fetch = ogFetch;
     });
 
     it('should use GEO IP for langFirst when not news source', async () => {
       setConfig({
         pathname: '/en/blah.html',
         locales: { '': { ietf: 'en-US' } },
+        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({
@@ -850,6 +895,7 @@ describe('getCountryAndLang', () => {
           '': { ietf: 'en-US' },
           be: { ietf: 'nl-BE' },
         },
+        mep: { countryIP: 'us' },
       });
 
       const expected = await getCountryAndLang({
@@ -901,7 +947,7 @@ describe('getFloodgateCaasConfig', () => {
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
         endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=1fffd42e-9a20-5118-89eb-fae87a84665b&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         hideDateInterval: false,
         totalCardsToShow: 10,
@@ -1200,5 +1246,70 @@ describe('getGrayboxExperienceId', () => {
 
     const experienceId = getGrayboxExperienceId(hostname, pathname);
     expect(experienceId).to.equal('test-exp');
+  });
+});
+
+describe('isLocaleInRegionalSites helper function tests', () => {
+  // This tests the helper function logic inline since it's not exported
+  const isLocaleInRegionalSites = (regionalSites, localeStr) => {
+    if (!regionalSites) return false;
+    return regionalSites
+      .split(',')
+      .map((site) => site.trim().replace(/^\//, ''))
+      .includes(localeStr);
+  };
+
+  describe('Locale examples', () => {
+    it('should match "ca_fr" in "/ca_fr, /ch_fr, /be_fr"', () => {
+      const result = isLocaleInRegionalSites('/ca_fr, /ch_fr, /be_f', 'ca_fr');
+      expect(result).to.be.true;
+    });
+
+    it('should NOT match "ca" in "/africa" (was a substring bug)', () => {
+      const result = isLocaleInRegionalSites('/africa', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "ca" in "/ca_fr" (partial locale bug)', () => {
+      const result = isLocaleInRegionalSites('/ca_fr', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "en" in "/ae_en, /be_en" (suffix bug)', () => {
+      const result = isLocaleInRegionalSites('/ae_en, /be_en', 'en');
+      expect(result).to.be.false;
+    });
+
+    it('should NOT match "fr" in "/ca_fr, /be_fr, /ch_fr" (suffix bug)', () => {
+      const result = isLocaleInRegionalSites('/ca_fr, /be_fr, /ch_fr', 'fr');
+      expect(result).to.be.false;
+    });
+  });
+
+  describe('Edge cases and error handling', () => {
+    it('should return false for empty string', () => {
+      const result = isLocaleInRegionalSites('', 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should return false for null', () => {
+      const result = isLocaleInRegionalSites(null, 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should return false for undefined', () => {
+      const result = isLocaleInRegionalSites(undefined, 'ca');
+      expect(result).to.be.false;
+    });
+
+    it('should handle whitespace in list "/ca , /ie , /nz"', () => {
+      const result = isLocaleInRegionalSites('/ca , /ie , /nz', 'ie');
+      expect(result).to.be.true;
+    });
+
+    it('should return false when locale not in list', () => {
+      const result = isLocaleInRegionalSites('/ca, /ie, /nz', 'sg');
+      expect(result).to.be.false;
+    });
   });
 });

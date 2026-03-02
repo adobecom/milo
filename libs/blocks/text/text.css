@@ -656,3 +656,8 @@
     }
   }
 }
+
+.link-list a {
+  display: inline-block;
+  margin: 5px 10px;
+}

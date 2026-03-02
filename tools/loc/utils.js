@@ -87,7 +87,7 @@ export function getUrlInfo() {
     owner,
     repo,
     ref,
-    origin: `https://${ref}--${repo}--${owner}.hlx.page`, // TODO ADD HLX5 SUPPORT
+    origin: `https://${ref}--${repo}--${owner}.aem.page`,
     isValid() {
       return sp && owner && repo && ref && isValidReferrer(sp);
     },

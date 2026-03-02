@@ -23,10 +23,15 @@ module.exports = {
     {
       tcid: '3',
       name: '@Commerce-Promo',
-      path: '/drafts/nala/features/commerce/promo-placeholders',
+      path: '/drafts/nala/features/commerce/promo-placeholders-fake',
       data: {
+        price_promo: 'NICOPROMO',
         promo: 'UMRM2MUSPr501YOC',
         workflow: 'recommendation',
+        price: 'US$55.50/mo',
+        priceOld: 'US$99.90/mo',
+        priceOptical: 'US$55.50/mo',
+        priceStrikethrough: 'US$55.50/mo',
       },
       tags: '@commerce @smoke @regression',
     },
@@ -78,7 +83,7 @@ module.exports = {
       name: '@Commerce-GB',
       path: '/uk/drafts/nala/features/commerce/promo-placeholders',
       data: {
-        promo: 'UPWORK_CCSN_A23',
+        promo: 'CCI_AA_3MO_UK',
         CO: 'co=GB',
         lang: 'lang=en',
         workflow: 'recommendation',

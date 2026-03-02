@@ -3,6 +3,12 @@ import { getMetadata as getSectionMetadata } from '../section-metadata/section-m
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
 
+const hasTextNode = (...nodeLists) => nodeLists.some(
+  (nodes) => nodes && [...nodes].some(
+    (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
+  ),
+);
+
 function setEqualHeight(el) {
   const calculateMaxHeight = (elements) => Math.max(...elements.map((p) => {
     const styles = window.getComputedStyle(p);
@@ -160,36 +166,45 @@ function addLastContainerElements(container) {
 }
 
 function createSubHeaderContainer({
+  containerIndex,
   childrenArray,
   startIndex,
   endIndex,
   el,
-  isLast = false,
-  isFirst = false,
   headerTitles = [],
   headerItemIndex = 0,
   headerItemsCount = 0,
 }) {
   const container = createTag('div', { class: 'sub-header-item-container' });
-  const decoratePromises = [];
+  const isLast = containerIndex === 2;
+  const elementsToDecorate = [];
 
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
       container.appendChild(childrenArray[i]);
-      if (isLast && childrenArray[i].querySelector('strong')) {
-        const promise = import('../../utils/decorate.js').then(({ decorateButtons }) => {
-          decorateButtons(childrenArray[i]);
-        });
-        decoratePromises.push(promise);
+      const strongOrEm = childrenArray[i].querySelector('strong, em');
+      if (isLast && !hasTextNode(strongOrEm?.parentElement?.childNodes, strongOrEm?.childNodes)) {
+        elementsToDecorate.push(childrenArray[i]);
       }
     }
   }
-  if (isFirst && headerItemsCount > 3) {
+
+  if (containerIndex === 0 && headerItemsCount > 3) {
     const select = createMobileFilterSelect({ headerTitles, headerItemIndex, el });
     container.appendChild(select);
   }
   if (!isLast) return container;
-  Promise.all(decoratePromises).then(() => addLastContainerElements(container));
+
+  if (!elementsToDecorate.length) {
+    addLastContainerElements(container);
+    return container;
+  }
+
+  import('../../utils/decorate.js').then(({ decorateButtons }) => {
+    elementsToDecorate.forEach((element) => decorateButtons(element));
+    addLastContainerElements(container);
+  });
+
   return container;
 }
 
@@ -203,14 +218,12 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
   childrenArray.forEach((child, index) => {
     if (child.textContent.trim() !== '-' && index !== childrenArray.length - 1) return;
     const separatorIndex = child.textContent.trim() === '-' ? index : childrenArray.length;
-    const isLast = separatorIndex === childrenArray.length;
     const container = createSubHeaderContainer({
       childrenArray,
       startIndex: lastIndex + 1,
       endIndex: separatorIndex,
       el,
-      isLast,
-      isFirst: containerIndex === 0,
+      containerIndex,
       headerTitles,
       headerItemIndex,
       headerItemsCount,
@@ -263,12 +276,20 @@ function createAccessibilityHeaderRow(el) {
   return headerRow;
 }
 
+function isExpandedSection(expandMetadata, tableIndex) {
+  if (!expandMetadata) return tableIndex === 0;
+  if (expandMetadata === 'all') return true;
+  return expandMetadata.split(',').map(
+    (item) => parseInt(item.trim(), 10),
+  ).includes(tableIndex + 1);
+}
+
 function decorateTableToggleButton({
   tableChild,
   arePrimaryColumns,
   tableElement,
+  tableIndex,
   expandMetadata,
-  el,
 }) {
   [...tableChild.children].forEach((child, childIndex) => {
     const isPrimary = childIndex !== 0 && child.textContent.trim() === COLUMN_TYPES.PRIMARY;
@@ -277,9 +298,7 @@ function decorateTableToggleButton({
   });
   tableChild.classList.add('table-column-header');
   const firstChild = tableChild.children[0];
-  const isExpanded = expandMetadata
-    ? expandMetadata.includes(el.querySelectorAll('.table-container').length + 1)
-    : el.querySelectorAll('.table-container').length === 0;
+  const isExpanded = isExpandedSection(expandMetadata, tableIndex);
   tableElement.classList.toggle('hide', !isExpanded);
   const buttonElement = createTag('button', { 'aria-expanded': !!isExpanded });
 
@@ -293,10 +312,23 @@ function decorateTableToggleButton({
   return tableChild;
 }
 
+function hasMinimalContent(el) {
+  return el.querySelector('.icon') || [...el.children].every((c) => c.tagName === 'WBR');
+}
+
+function hasOnlyParagraphs(el) {
+  const children = [...el.children];
+  return children.length > 0
+    && children.every((c) => c.tagName === 'P')
+    && !el.querySelector('.icon');
+}
+
 function setupCellAttributes(child, childIndex, arePrimaryColumns) {
   child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
   if (childIndex === 0) {
     child.setAttribute('role', 'rowheader');
+    if (hasMinimalContent(child)) child.classList.add('minimal-content');
+    if (hasOnlyParagraphs(child)) child.classList.add('text-only');
   } else {
     child.setAttribute('data-column-index', childIndex);
     child.setAttribute('role', 'cell');
@@ -317,7 +349,7 @@ function processCellWithSeparator(child, separatorIndex) {
 function processCellWithoutSeparator(child) {
   const cellDiv = createTag('div');
   if (child.children.length > 1 || !child.textContent.trim()) {
-    [...child.children].forEach((element) => cellDiv.appendChild(element));
+    cellDiv.append(...child.childNodes);
   } else {
     cellDiv.appendChild(createTag('p', {}, child.innerHTML));
   }
@@ -344,7 +376,7 @@ function decorateTableCells({ tableChild, arePrimaryColumns, el }) {
   return tableChild;
 }
 
-function decorateTable({ el, tableChildren, expandMetadata }) {
+function decorateTable({ el, tableChildren, expandMetadata, tableIndex }) {
   const tableContainer = createTag('div', { class: 'table-container' });
   const tableElement = createTag('div', { class: 'table-body', role: 'table' });
   const arePrimaryColumns = [];
@@ -356,7 +388,7 @@ function decorateTable({ el, tableChildren, expandMetadata }) {
         arePrimaryColumns,
         tableElement,
         expandMetadata,
-        el,
+        tableIndex,
       }));
       return;
     }
@@ -369,9 +401,7 @@ function decorateTable({ el, tableChildren, expandMetadata }) {
 
 function decorateTables(el, children) {
   const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
-  const expandMetadata = sectionMetadata
-    ? getSectionMetadata(sectionMetadata)?.expand?.text.split(',').map((item) => parseInt(item.trim(), 10))
-    : null;
+  const expandMetadata = sectionMetadata ? getSectionMetadata(sectionMetadata)?.expand?.text : null;
 
   const tableGroups = [];
   let currentGroup = [];
@@ -388,8 +418,8 @@ function decorateTables(el, children) {
 
   if (currentGroup.length) tableGroups.push(currentGroup);
 
-  tableGroups.forEach((tableChildren) => {
-    el.appendChild(decorateTable({ el, tableChildren, expandMetadata }));
+  tableGroups.forEach((tableChildren, tableIndex) => {
+    el.appendChild(decorateTable({ el, tableChildren, expandMetadata, tableIndex }));
   });
 }
 
@@ -449,7 +479,8 @@ function setAccessibilityLabels(el) {
         const content = cellDiv.textContent.trim();
         const hasEmptyContent = /^-+$/.test(content);
         if (content && !hasEmptyContent) return;
-        cellDiv.setAttribute('aria-label', emptyText);
+        const srOnly = createTag('span', { class: 'sr-only' }, emptyText);
+        cellDiv.appendChild(srOnly);
         if (hasEmptyContent) cellDiv.children[0].setAttribute('aria-hidden', 'true');
       });
     });
@@ -457,17 +488,27 @@ function setAccessibilityLabels(el) {
 }
 
 function setupStickyHeader(el) {
-  if (el.classList.contains('sticky-cancel')) return;
+  if (el.classList.contains('static-header')) return;
   const headerContent = el.querySelector('.header-content');
   const headerContentDummy = el.querySelector('.header-content-dummy');
   let isSticky = false;
-  const headerOffset = document.querySelector('header')?.offsetHeight || 0;
+
+  const calculateTotalOffset = () => {
+    const header = document.querySelector('header');
+    const headerIsSticky = header && getComputedStyle(header).position === 'sticky';
+    const headerOffset = headerIsSticky ? header.offsetHeight : 0;
+    const fedsNav = document.querySelector('.feds-localnav');
+    return headerOffset + (fedsNav?.offsetHeight || 0);
+  };
+
+  let totalOffset = calculateTotalOffset();
 
   const observer = new IntersectionObserver(
     ([entry]) => {
       if (!el.offsetHeight || entry.boundingClientRect.top > window.innerHeight * 0.5) return;
 
       if (!entry.isIntersecting && !isSticky) {
+        totalOffset = calculateTotalOffset();
         const firstChild = headerContent.querySelector('.sub-header-item-container:first-child');
         const secondChild = headerContent.querySelector('.sub-header-item-container:nth-of-type(2)');
         const firstChildPadding = parseFloat(getComputedStyle(firstChild)?.paddingBottom) || 0;
@@ -487,7 +528,7 @@ function setupStickyHeader(el) {
         if (adjustedHeight / window.innerHeight >= 0.45) return;
 
         const heightBeforeSticky = headerContent.offsetHeight;
-        headerContent.style.top = `${headerOffset}px`;
+        headerContent.style.top = `${totalOffset}px`;
         headerContent.classList.add('sticky');
         const heightDifference = heightBeforeSticky - headerContent.offsetHeight;
         headerContentDummy.style.height = `${heightDifference}px`;
@@ -502,7 +543,7 @@ function setupStickyHeader(el) {
         isSticky = false;
       }
     },
-    { rootMargin: `-${headerOffset}px 0px 0px 0px` },
+    { rootMargin: `-${totalOffset}px 0px 0px 0px` },
   );
 
   observer.observe(headerContentDummy);

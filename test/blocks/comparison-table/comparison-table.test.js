@@ -478,4 +478,27 @@ describe('Comparison Table', () => {
       }
     });
   });
+
+  describe('Expand All Metadata', () => {
+    const expandAllTable = document.querySelector('.expand-all-table');
+
+    it('expands all table sections when expand metadata is set to all', () => {
+      const tableContainers = expandAllTable.querySelectorAll('.table-container');
+      expect(tableContainers.length).to.equal(3);
+
+      tableContainers.forEach((container) => {
+        const tableBody = container.querySelector('.table-body');
+        expect(tableBody.classList.contains('hide')).to.be.false;
+      });
+    });
+
+    it('all section toggle buttons have aria-expanded true', () => {
+      const toggleButtons = expandAllTable.querySelectorAll('.table-column-header button');
+      expect(toggleButtons.length).to.equal(3);
+
+      toggleButtons.forEach((button) => {
+        expect(button.getAttribute('aria-expanded')).to.equal('true');
+      });
+    });
+  });
 });

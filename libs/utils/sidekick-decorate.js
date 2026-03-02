@@ -115,7 +115,7 @@ async function checkAuthorization(page, btn) {
 
   btn.setAttribute('disabled', true);
   btn.insertAdjacentHTML('beforeend', `<span>${message}</span>`);
-  setTimeout(() => btn.querySelector('span').remove(), 4000);
+  setTimeout(() => btn.querySelector('span')?.remove(), 4000);
 }
 
 export default async function stylePublish(sk) {
@@ -165,6 +165,15 @@ export default async function stylePublish(sk) {
   const pluginActionBarSR = sk.shadowRoot.querySelector('plugin-action-bar').shadowRoot;
   pluginActionBarSR.adoptedStyleSheets ??= [];
   pluginActionBarSR.adoptedStyleSheets.push(style);
+
+  // Override action-bar clip-path to show tooltip
+  const actionBarSR = pluginActionBarSR.querySelector('action-bar')?.shadowRoot;
+  if (actionBarSR) {
+    const clipFix = new CSSStyleSheet();
+    clipFix.replaceSync('.action-bar { clip-path: none !important; }');
+    actionBarSR.adoptedStyleSheets ??= [];
+    actionBarSR.adoptedStyleSheets.push(clipFix);
+  }
 
   const publishBtn = pluginActionBarSR.querySelector('sk-action-button.publish');
   if (!publishBtn) {

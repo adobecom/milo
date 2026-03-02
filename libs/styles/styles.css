@@ -770,7 +770,7 @@ header.global-navigation + .feds-localnav {
   visibility: hidden;
 }
 
-sr-only, .feds-sr-only {
+sr-only, .sr-only, .feds-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;

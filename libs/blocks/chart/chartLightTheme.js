@@ -36,7 +36,7 @@ export default (deviceSize) => {
       left: 'left',
       padding: 0,
       textStyle: {
-        padding: [0, 0, 0, isLarge ? 10 : 3],
+        padding: [0, isLarge ? 0 : 3, 0, isLarge ? 10 : 3],
         lineHeight: 1,
         height: isLarge ? 25 : 20,
       },

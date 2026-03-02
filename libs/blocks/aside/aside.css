@@ -573,7 +573,8 @@
   padding: var(--spacing-xs) 0;
 }
 
-.aside.promobar .promo-text[data-align="center"] {
+.aside.promobar .promo-text[data-align="center"],
+.aside.promobar.promo-text-center .promo-text {
   justify-content: center;
 }
 

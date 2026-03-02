@@ -1,0 +1,65 @@
+name: Preview Indexer - SharePoint (Full)
+description: This workflow generates the preview index for the given sharepoint site and region(s)
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Site name e.g cc"
+        required: true
+        type: choice
+        options:
+          - cc
+      siteRegionPaths:
+        description: "Comma-separated regional paths (e.g. ch_fr) or blank for all regions"
+        required: false
+        type: string
+
+permissions:
+  actions: read # required to access workflow runs
+  contents: write # required to access the repository, for the dispatch event
+
+concurrency:
+  group: preview-indexer-sp-run
+  cancel-in-progress: false
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  LINGO_CONFIG: ${{ vars.LINGO_CONFIG }}
+  AEM_ORG_AUTH_TOKEN: ${{ secrets.AEM_ORG_AUTH_TOKEN }}
+  PREVIEW_INDEXER_SP_REPOS: ${{ vars.PREVIEW_INDEXER_SP_REPOS }}
+  PREVIEW_INDEX_FILE: ${{ vars.PREVIEW_INDEX_FILE }}
+  SP_CLIENT_ID: ${{ secrets.SP_CLIENT_ID }}
+  SP_TENANT_ID: ${{ secrets.SP_TENANT_ID }}
+  SP_CERT_PASSWORD: ${{ secrets.SP_CERT_PASSWORD }}
+  SP_CERT_THUMB_PRINT: ${{ secrets.SP_CERT_THUMB_PRINT }}
+  SP_CERT_CONTENT: ${{ secrets.SP_CERT_CONTENT }}
+  AEM_ADMIN_TOKEN_ADOBECOM_CC: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_CC }}
+  EXCLUDE_PREVIEW_PATHS_ADOBECOM_CC: ${{ vars.EXCLUDE_PREVIEW_PATHS_ADOBECOM_CC }}
+  PREVIEW_INDEX_KEY_ADOBECOM_CC: ${{ vars.PREVIEW_INDEX_KEY_ADOBECOM_CC }}
+  PREVIEW_INDEX_FILE_ADOBECOM_CC: ${{ vars.PREVIEW_INDEX_FILE_ADOBECOM_CC }}
+  PREVIEW_PATH_EXTN_ADOBECOM_CC: ${{ vars.PREVIEW_PATH_EXTN_ADOBECOM_CC }}
+  PREVIEW_FILE_EXTN_ADOBECOM_CC: ${{ vars.PREVIEW_FILE_EXTN_ADOBECOM_DA_BACOM }}
+  PREVIEW_INDEXER_LOG_LEVEL: ${{ vars.PREVIEW_INDEXER_LOG_LEVEL }}
+
+jobs:
+  preview-indexer-full-sp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 21
+
+      - name: Install dependencies
+        run: cd ./.github/workflows/preview-indexer/ && npm install
+
+      - name: Run preview-indexer/full-index-sp.js
+        run: node ./.github/workflows/preview-indexer/full-index-sp.js
+        env:
+          SITE: ${{ github.event.inputs.site }}
+          SITE_REGION_PATHS: ${{ github.event.inputs.siteRegionPaths }}
+
