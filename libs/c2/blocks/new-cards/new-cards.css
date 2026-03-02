@@ -103,16 +103,6 @@ div.section.new-cards-section {
     align-items: start;
   }
 
-  .new-cards.full-width .foreground :is(h1, h2, h3, h4, h5, h6) {
-    grid-row: 1;
-    grid-column: 1;
-  }
-
-  .new-cards.full-width .foreground p:has(> a) {
-    grid-row: 1;
-    grid-column: 2;
-  }
-
   .new-cards.full-width .foreground p:has(> a) a {
     margin-top: 0;
   }
