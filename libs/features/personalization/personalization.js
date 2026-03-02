@@ -1247,8 +1247,9 @@ async function getManifestConfig(info, variantOverride) {
     overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
+  } else {
+    sendMktgTracking(fileName, manifestConfig.mktgAction);
   }
-  sendMktgTracking(fileName, manifestConfig.mktgAction);
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
     manifestConfig.manifestPath,
