@@ -566,6 +566,14 @@
   }
 }
 
+#bc-susi-modal {
+  z-index: calc( var(--modal-z-index) + 1);
+}
+
+#bc-susi-modal ~ .modal-curtain {
+  z-index: calc( var(--modal-z-index-curtain) + 1);
+}
+
 #brand-concierge-modal {
   --modal-header-height: 57px;
 }
@@ -581,14 +589,6 @@
   top: unset;
   bottom: 0;
   animation: var(--bc-modal-animation-time) ease-in-out slide-up;
-}
-
-#bc-susi-modal {
-  z-index: calc( var(--modal-z-index) + 1);
-}
-
-#bc-susi-modal ~ .modal-curtain {
-  z-index: calc( var(--modal-z-index-curtain) + 1);
 }
 
 /* Fallback for browsers that don't support dvh */

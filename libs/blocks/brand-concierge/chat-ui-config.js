@@ -79,6 +79,40 @@ export default {
     'feedback.toast.success': 'Thank you for the feedback.',
     'feedback.thumbsUp.aria': 'Thumbs up',
     'feedback.thumbsDown.aria': 'Thumbs down',
+    'widget.firefly-gallery.preamble-markdown': 'To see what you can do, check out these images from the [Firefly](https://firefly.adobe.com/gallery) community of creators:',
+    'widget.firefly-gallery.title': 'Adobe Firefly gallery',
+    'widget.firefly-gallery.view-item-text': 'View',
+    'widget.firefly-gallery.view-more-text': 'More in Firefly gallery',
+  },
+  disclaimer: {
+    text: 'AI responses may be inaccurate, and any offers provided are non-binding. Check answers and sources. {Terms}',
+    links: [
+      {
+        text: 'Terms',
+        url: 'https://www.adobe.com/legal/licenses-terms/adobe-gen-ai-user-guidelines.html',
+      },
+    ],
+  },
+  behavior: {
+    multimodalCarousel: {
+      cardClickAction: 'openLink',
+      hideCarousel: true,
+    },
+    input: {
+      enableVoiceInput: false,
+      disableMultiline: false,
+      showAiChatIcon: { icon: '<svg title="Ask" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.25 18.998C6.15039 18.998 6.05078 18.9785 5.95605 18.9385C5.67968 18.8203 5.5 18.5488 5.5 18.248V14.998H4.75C2.68262 14.998 1 13.3154 1 11.248V5.74805C1 3.68067 2.68262 1.99805 4.75 1.99805H8.70312C9.11718 1.99805 9.45312 2.33399 9.45312 2.74805C9.45312 3.16211 9.11718 3.49805 8.70312 3.49805H4.75C3.50977 3.49805 2.5 4.50782 2.5 5.74805V11.248C2.5 12.4883 3.50977 13.498 4.75 13.498H6.25C6.66406 13.498 7 13.834 7 14.248V16.4844L9.88379 13.708C10.0234 13.5732 10.21 13.498 10.4043 13.498H15.25C16.4902 13.498 17.5 12.4883 17.5 11.248V9.97657C17.5 9.56251 17.8359 9.22657 18.25 9.22657C18.6641 9.22657 19 9.56251 19 9.97657V11.248C19 13.3154 17.3174 14.998 15.25 14.998H10.707L6.77051 18.7881C6.62793 18.9258 6.44043 18.998 6.25 18.998Z" fill="currentColor"/><path d="M13.2774 9.08292C13.0889 9.08292 12.8995 9.03409 12.7286 8.93546C12.3126 8.6962 12.1016 8.22062 12.2022 7.75187L12.6622 5.62687L11.2022 4.01652C10.8799 3.66105 10.8243 3.14445 11.0635 2.72941C11.3038 2.31437 11.7842 2.10343 12.2471 2.20304L14.3721 2.663L15.9825 1.20304C16.338 0.881747 16.8575 0.827057 17.2696 1.06437C17.6856 1.30363 17.8965 1.77921 17.796 2.24796L17.336 4.37296L18.796 5.98331C19.1182 6.33878 19.1739 6.85538 18.9346 7.27042C18.6944 7.68644 18.2178 7.89933 17.751 7.79679L15.626 7.33683L14.0157 8.79679C13.8077 8.98527 13.544 9.08292 13.2774 9.08292ZM13.1514 3.9335L13.9112 4.77139C14.1475 5.0292 14.2462 5.39248 14.1719 5.74014L13.9327 6.84757L14.7706 6.0878C15.0294 5.85147 15.3966 5.75382 15.7393 5.82706L16.8467 6.06632L16.087 5.22843C15.8506 4.97062 15.752 4.60734 15.8262 4.25968L16.0655 3.15226L15.2276 3.91203C14.9698 4.14933 14.6046 4.24894 14.2589 4.17277L13.1514 3.9335Z" fill="currentColor"/><path d="M7.93261 11.5039C7.8037 11.5039 7.6748 11.4707 7.55761 11.4033C7.27538 11.2402 7.13085 10.9141 7.19921 10.5957L7.37694 9.77538L6.81346 9.15429C6.59471 8.91308 6.55662 8.55761 6.71971 8.27538C6.8828 7.99315 7.21092 7.85448 7.52733 7.91698L8.34764 8.09471L8.96873 7.53123C9.21092 7.31248 9.56443 7.27439 9.84764 7.43748C10.1299 7.60057 10.2744 7.92674 10.206 8.2451L10.0283 9.06541L10.5918 9.6865C10.8105 9.92771 10.8486 10.2832 10.6855 10.5654C10.5225 10.8476 10.1933 10.9892 9.87792 10.9238L9.05761 10.7461L8.43652 11.3096C8.29492 11.4375 8.11425 11.5039 7.93261 11.5039Z" fill="currentColor"/></svg>' },
+    },
+    chat: {
+      messageAlignment: 'left',
+      messageWidth: '100%',
+    },
+    privacyNotice: { text: 'Welcome! Thank you for trying out this initial release. The experience is still evolving and will continue to improve over time.' },
+    productCard: { actionButtonSize: 'S' },
+    fireflyGalleryWidget: {
+      videoFraction: 0,
+      promoid: 'bc-firefly-widget',
+    },
   },
   arrays: {
     'welcome.examples': [
@@ -287,6 +321,12 @@ export default {
     '--input-text-color': '#292929',
     '--line-height-body': '1.75',
     '--loading-dot-background': '#6338EE',
+    '--link-button-primary-background': '#292929',
+    '--link-button-primary-text-color': '#FFFFFF',
+    '--link-button-primary-hover': '#131313',
+    '--link-button-secondary-background': '#E9E9E9',
+    '--link-button-secondary-text': '#292929',
+    '--link-button-secondary-hover': '#D9D9D9',
     '--loading-message-background': '#F8F8F8',
     '--main-container-background': '#FFFFFF',
     '--main-container-bottom-background': '#FFFFFF',
