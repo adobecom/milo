@@ -6,7 +6,6 @@ div.section.new-cards-section {
   height: 100%;
 }
 
-/* Viewport variants: show only the content for the current viewport */
 .new-cards > div[data-viewport] {
   display: none;
 }
