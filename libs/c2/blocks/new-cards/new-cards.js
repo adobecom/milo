@@ -26,6 +26,16 @@ function decorateCard(wrapper) {
   }
 }
 
+function decorateViewportStructure(rows) {
+  for (let i = 0; i < rows.length; i += 2) {
+    const labelRow = rows[i];
+    const contentRow = rows[i + 1];
+    contentRow.setAttribute('data-viewport', getRowLabelText(labelRow));
+    labelRow.remove();
+    decorateCard(contentRow);
+  }
+}
+
 export default function init(el) {
   el.closest('.section').classList.add('new-cards-section');
   const rows = [...el.children];
@@ -35,16 +45,9 @@ export default function init(el) {
     && isViewportLabel(getRowLabelText(rows[0]));
 
   if (hasViewportStructure) {
-    for (let i = 0; i < rows.length; i += 2) {
-      const labelRow = rows[i];
-      const contentRow = rows[i + 1];
-      contentRow.setAttribute('data-viewport', getRowLabelText(labelRow));
-      labelRow.remove();
-      decorateCard(contentRow);
-    }
+    decorateViewportStructure(rows);
     return;
   }
 
-  const wrapper = rows[0];
-  decorateCard(wrapper);
+  decorateCard(rows[0]);
 }
