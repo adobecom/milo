@@ -35,6 +35,7 @@ const KEY_CODES = {
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
+const CIRCULAR_NAV_TOLERANCE = 1;
 
 function getPreviousAriaLabel(currentIndex, totalSlides) {
   return currentIndex === 0 && totalSlides > 0
@@ -47,6 +48,24 @@ function updatePreviousAriaLabel(carouselElements) {
   if (!nextPreviousBtns?.[0]) return;
 
   nextPreviousBtns[0].setAttribute('aria-label', getPreviousAriaLabel(currentActiveIndex, slides.length));
+}
+
+function getCircularNavState(carouselElements) {
+  const { el, currentActiveIndex, slides } = carouselElements;
+  const atStart = currentActiveIndex === 0;
+  if (!el.classList.contains('disable-circular-nav')) return { atStart, atEnd: false };
+
+  const wrapper = el.querySelector('.carousel-wrapper');
+  const lastSlide = slides[slides.length - 1];
+  if (!wrapper || !lastSlide) return { atStart, atEnd: false };
+
+  const wrapperRect = wrapper.getBoundingClientRect();
+  const lastRect = lastSlide.getBoundingClientRect();
+  const atEnd = wrapperRect.width > 0
+    && lastRect.left >= wrapperRect.left - CIRCULAR_NAV_TOLERANCE
+    && lastRect.right <= wrapperRect.right + CIRCULAR_NAV_TOLERANCE;
+
+  return { atStart, atEnd };
 }
 
 function decorateNextPreviousBtns(slides, currentIndex = 0) {
@@ -145,13 +164,9 @@ function updateButtonStates(carouselElements) {
 }
 
 function checkCircularNav(ce) {
-  const { el, currentActiveIndex, slides, nextPreviousBtns } = ce;
+  const { el, nextPreviousBtns } = ce;
   if (!el.classList.contains('disable-circular-nav')) return;
-  const wrapperRect = el.querySelector('.carousel-wrapper').getBoundingClientRect();
-  const lastRect = slides[slides.length - 1].getBoundingClientRect();
-  const atStart = currentActiveIndex === 0;
-  const atEnd = wrapperRect.width > 0
-    && lastRect.left >= wrapperRect.left && lastRect.right <= wrapperRect.right;
+  const { atStart, atEnd } = getCircularNavState(ce);
   nextPreviousBtns?.forEach((btn, i) => {
     const off = i === 0 ? atStart : atEnd;
     btn.disabled = off;
@@ -534,11 +549,8 @@ function mobileSwipeDetect(carouselElements) {
       return;
     }
     if (classList.contains('disable-circular-nav')) {
-      const wrapperRect = carouselElements.el.querySelector('.carousel-wrapper').getBoundingClientRect();
-      const lastRect = slides[slides.length - 1].getBoundingClientRect();
-      const isLastSlideFullyVisible = lastRect.left >= wrapperRect.left
-        && lastRect.right <= wrapperRect.right;
-      if (isAtStart || (isSwipingForward && isLastSlideFullyVisible)) {
+      const { atStart, atEnd } = getCircularNavState(carouselElements);
+      if ((isSwipingBack && atStart) || (isSwipingForward && atEnd)) {
         swipe.xStart = 0;
         swipe.xEnd = 0;
         return;
@@ -743,6 +755,7 @@ export default function init(el) {
 
   function handleDeferredHeights() {
     updateDisableButtonsHeights(carouselElements);
+    checkCircularNav(carouselElements);
   }
 
   if (el.classList.contains('disable-buttons')) {
