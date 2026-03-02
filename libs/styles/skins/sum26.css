@@ -1,4 +1,4 @@
-:root:has(meta[name="theme"][content="sum26"]) {
+:root:has(meta[name="skin"][content="sum26"]) {
   .box {
     background: var(--s2a-color-green-1000);
   }
