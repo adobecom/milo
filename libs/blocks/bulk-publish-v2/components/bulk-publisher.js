@@ -9,6 +9,7 @@ import {
   FORM_MODES,
   getJobErrorText,
   getProcessedCount,
+  getInvalidUrlReason,
   isValidUrl,
   processJobResult,
   PROCESS_TYPES,
@@ -273,7 +274,7 @@ class BulkPublish2 extends LitElement {
           <div class="malformed-urls">
             <strong>Malformed URLs (${this.invalidUrls.length}):</strong>
             <ul class="malformed-list">
-              ${this.invalidUrls.map((url) => html`<li>${url}</li>`)}
+              ${this.invalidUrls.map((url) => html`<li>${url} — ${getInvalidUrlReason(url)}</li>`)}
             </ul>
           </div>
         ` : ''}

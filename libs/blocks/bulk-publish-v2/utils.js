@@ -53,18 +53,23 @@ const getAemUrl = (url) => url.hostname.split('.')[0].split('--');
 /** Host must be exactly {ref}--{repo}--{owner}.aem.page or .
  * aem.live (no .hlx.page or other segments) */
 const AEM_PAGE_HOST_REGEX = /^[^.]+\.aem\.(?:page|live)$/;
-const isValidUrl = (str) => {
+const getInvalidUrlReason = (str) => {
   let url;
   try {
     url = new URL(str);
   } catch (_) {
-    return false;
+    return 'Invalid URL';
   }
-  if (url.protocol !== 'https:') return false;
-  if (!AEM_PAGE_HOST_REGEX.test(url.hostname)) return false;
+  if (url.protocol !== 'https:') return 'Must use HTTPS';
+  if (!AEM_PAGE_HOST_REGEX.test(url.hostname)) return 'Invalid host (expected *.aem.page or *.aem.live)';
   const [ref, repo, owner] = getAemUrl(url);
-  return Boolean(ref && repo && owner);
+  if (!ref || !repo || !owner) return 'Invalid host (missing ref, repo, or owner)';
+  if (repo === 'bacom') return 'Old Bacom project is not supported, use new DA project instead';
+  if (url.pathname.toLowerCase().endsWith('.html')) return 'URL must not end with .html';
+  return null;
 };
+
+const isValidUrl = (str) => !getInvalidUrlReason(str);
 
 const editEntry = (el, str) => {
   if (el?.value) {
@@ -221,6 +226,7 @@ export {
   getStatusProps,
   updateJobUrls,
   sticky,
+  getInvalidUrlReason,
   isValidUrl,
   delay,
   setJobTime,
