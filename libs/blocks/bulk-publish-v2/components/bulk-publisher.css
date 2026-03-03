@@ -457,7 +457,7 @@ label[for='urls'] i {
   border: 1px solid var(--error);
   border-radius: 6px;
   font-size: 0.75em;
-  height: 50%;
+  max-height: 50%;
 }
 
 .malformed-urls strong {
@@ -469,7 +469,7 @@ label[for='urls'] i {
 .malformed-list {
   margin: 0;
   padding-left: 18px;
-  max-height: 160px;
+  max-height: 80%;
   overflow-y: auto;
 }
 
