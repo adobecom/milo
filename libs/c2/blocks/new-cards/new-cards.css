@@ -32,6 +32,8 @@ div.section.new-cards-section {
   margin-bottom: var(--s2a-spacing-8);
   color: var(--s2a-color-gray-1000);
   font-size: var(--s2a-font-size-xl);
+  font-weight: 900;
+  letter-spacing: -0.2px;
 }
 
 .new-cards .foreground a {
@@ -89,11 +91,9 @@ div.section.new-cards-section {
   padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
 }
 
-
 .new-cards.full-width .foreground {
   padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
 }
-
 
 @media (width >= 768px) {
   .new-cards > div[data-viewport="mobile"] {
@@ -118,6 +118,10 @@ div.section.new-cards-section {
 
   .new-cards > div[data-viewport="desktop"] {
     display: flex;
+  }
+
+  .new-cards .foreground :is(h1, h2, h3, h4, h5, h6) { 
+    letter-spacing: -0.4px;
   }
 
   div.section.new-cards-section {
@@ -152,16 +156,25 @@ div.section.new-cards-section {
 }
 
 @media (width >= 1280px) {
-  .new-cards.full-width .foreground :is(h1, h2, h3, h4, h5, h6) {
+  .new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
     font-size: var(--s2a-font-size-2xl);
+    letter-spacing: -0.4px;
   }
 
   .new-cards.full-width .foreground {
-    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
+  }
+
+  .new-cards .foreground {
+    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) 0 var(--s2a-spacing-24);
   }
 }
 
 @media (width >= 1441px) {
+  .new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
+    letter-spacing: -0.48px;
+  }
+
   .new-cards.full-width .foreground p:not(:has(> a)) {
     max-width: 567px;
   }
