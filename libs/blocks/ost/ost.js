@@ -291,7 +291,7 @@ export async function loadOstEnv() {
       co,
     );
 
-    log.debug(`Use Link: ${link.outerHTML}`);
+    log.debug(`Use link: ${link.outerHTML}`);
     const linkBlob = new Blob([link.outerHTML], { type: 'text/html' });
     const textBlob = new Blob([link.href], { type: 'text/plain' });
     // eslint-disable-next-line no-undef
