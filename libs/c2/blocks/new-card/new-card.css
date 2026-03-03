@@ -130,28 +130,30 @@ div.section.new-card-section {
       letter-spacing: -0.4px;
     }
 
-    &.full-width .foreground {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: start;
-    }
-
-    &.full-width .foreground p:has(> a) a {
-      margin-top: 0;
-    }
-
-    &.full-width .foreground p:not(:has(> a)) {
-      grid-row: 2;
-      grid-column: 1;
-      max-width: 466.809px;
-    }
-
     .media picture:not(.icon) img {
       aspect-ratio: 4/3;
     }
 
-    &.full-width .media picture:not(.icon) img {
-      aspect-ratio: 148/67;
+    &.full-width {
+      .foreground {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: start;
+
+        p:has(> a) a {
+          margin-top: 0;
+        }
+
+        p:not(:has(> a)) {
+          grid-row: 2;
+          grid-column: 1;
+          max-width: 466.809px;
+        }
+      }
+
+      .media picture:not(.icon) img {
+        aspect-ratio: 148/67;
+      }
     }
   }
 }
