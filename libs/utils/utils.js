@@ -107,7 +107,12 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'box',
+  'rich-content',
   'section-metadata',
+  'explore-card',
+  'global-footer',
+  'global-navigation',
+  'region-nav',
 ];
 
 const AUTO_BLOCKS = [
@@ -2351,16 +2356,6 @@ function loadLingoIndexes(area = document) {
   if (prefix) {
     loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
   }
-}
-
-export async function loadBaseStyles(libsPath) {
-  const pathsToLoad = [];
-  const stylesPrefix = getMetadata('foundation') === 'c2' ? '/c2' : '';
-  pathsToLoad.push(`${libsPath}${stylesPrefix}/styles/styles.css`);
-  const skin = getMetadata('skin');
-  if (skin) pathsToLoad.push(`${libsPath}/styles/skins/${skin}.css`);
-
-  await Promise.all(pathsToLoad.map((path) => loadStyle(path)));
 }
 
 export async function loadArea(area = document) {
