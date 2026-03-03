@@ -469,7 +469,7 @@ label[for='urls'] i {
 .malformed-list {
   margin: 0;
   padding-left: 18px;
-  max-height: 120px;
+  max-height: 160px;
   overflow-y: auto;
 }
 
