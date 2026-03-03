@@ -58,17 +58,28 @@ test.describe('CaaS Bulk Publisher test suite', () => {
     await test.step('Sign in with IMS if needed', async () => {
       await page.waitForFunction(() => window.adobeIMS && typeof window.adobeIMS.getAccessToken === 'function');
       const hasToken = await page.evaluate(() => !!window.adobeIMS.getAccessToken()?.token);
-
       if (!hasToken) {
-        await Promise.all([
-          page.waitForURL('**/auth.services.adobe.com/**'),
-          page.evaluate(() => window.adobeIMS.signIn()),
-        ]);
-        await ims.fillOutSignInForm({ url: testPage }, page);
-        await page.waitForLoadState('domcontentloaded');
+        // Use EMAIL_COLLECTION credentials as fallback - the default
+        // IMS_EMAIL account may not exist on the Adobe IMS domain.
+        const origEmail = process.env.IMS_EMAIL;
+        const origPass = process.env.IMS_PASS;
+        if (process.env.EMAIL_COLLECTION_IMS_MAIL) {
+          process.env.IMS_EMAIL = process.env.EMAIL_COLLECTION_IMS_MAIL;
+          process.env.IMS_PASS = process.env.EMAIL_COLLECTION_IMS_PASS;
+        }
+        try {
+          await Promise.all([
+            page.waitForURL('**/auth.services.adobe.com/**'),
+            page.evaluate(() => window.adobeIMS.signIn()),
+          ]);
+          await ims.fillOutSignInForm({ url: testPage }, page);
+          await page.waitForLoadState('domcontentloaded');
+        } finally {
+          process.env.IMS_EMAIL = origEmail;
+          process.env.IMS_PASS = origPass;
+        }
       }
     });
-
     await test.step('Select Adobe Business (bacom) preset', async () => {
       await bulkPublisher.presetSelector.waitFor({ state: 'visible', timeout: 20000 });
       const presetOption = bulkPublisher.presetOptions
