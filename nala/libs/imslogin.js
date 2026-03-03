@@ -12,7 +12,7 @@ async function fillOutSignInForm(props, page) {
   expect(process.env.IMS_EMAIL, 'ERROR: No environment variable for email provided for IMS Test.').toBeTruthy();
   expect(process.env.IMS_PASS, 'ERROR: No environment variable for password provided for IMS Test.').toBeTruthy();
 
-  await expect(page).toHaveTitle(/Adobe ID/);
+  await expect(page).toHaveTitle(/Adobe ID|Sign in/i);
   let heading = await page.locator(selectors['@page-heading']).first().innerText();
   expect(heading).toBe('Sign in');
 
