@@ -2,6 +2,41 @@
 import { expect } from '@playwright/test';
 import selectors from '../features/imslogin/imslogin.page.js';
 
+const getPasswordField = async (page) => {
+  const selectorCandidates = [
+    selectors['@password'],
+    'input[type="password"]',
+  ];
+
+  for (const selector of selectorCandidates) {
+    const locator = page.locator(selector);
+    if (await locator.count()) return locator.first();
+  }
+
+  for (const frame of page.frames()) {
+    for (const selector of selectorCandidates) {
+      const locator = frame.locator(selector);
+      if (await locator.count()) return locator.first();
+    }
+  }
+
+  return null;
+};
+
+const clickUsePasswordIfPresent = async (page) => {
+  const usePassword = page.getByText(/use (a )?password/i).first();
+  if (await usePassword.count()) {
+    await usePassword.click().catch(() => {});
+  }
+
+  for (const frame of page.frames()) {
+    const frameUsePassword = frame.getByText(/use (a )?password/i).first();
+    if (await frameUsePassword.count()) {
+      await frameUsePassword.click().catch(() => {});
+    }
+  }
+};
+
 async function clickSignin(page) {
   const signinBtn = page.locator(selectors['@gnav-signin']);
   await expect(signinBtn).toBeVisible();
@@ -27,7 +62,18 @@ async function fillOutSignInForm(props, page) {
   await expect(async () => {
     await emailField.fill(process.env.IMS_EMAIL);
     await page.locator(selectors['@email-continue-btn']).click();
-    await expect(page.locator(selectors['@password'])).toBeVisible({ timeout: 45000 }); // Timeout accounting for how long IMS Login page takes to switch form
+
+    // Some IMS flows require opting into password-based auth.
+    await clickUsePasswordIfPresent(page);
+
+    const passwordField = await getPasswordField(page);
+    if (!passwordField) {
+      await expect.poll(async () => {
+        await clickUsePasswordIfPresent(page);
+        const field = await getPasswordField(page);
+        return !!field;
+      }, { timeout: 60000, intervals: [1_000] }).toBeTruthy();
+    }
   }).toPass({
     intervals: [1_000],
     timeout: 60_000,
@@ -38,7 +84,9 @@ async function fillOutSignInForm(props, page) {
     const heading = await passwordHeading.innerText();
     expect(heading).toBe('Enter your password');
   }
-  await page.locator(selectors['@password']).fill(process.env.IMS_PASS);
+  const passwordField = await getPasswordField(page);
+  expect(passwordField, 'Expected a password field on IMS login page').toBeTruthy();
+  await passwordField.fill(process.env.IMS_PASS);
   await page.locator(selectors['@password-continue-btn']).click();
   await page.waitForURL(`${props.url}#`);
   await expect(page).toHaveURL(`${props.url}#`);
