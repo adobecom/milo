@@ -21,6 +21,7 @@ export default class CommercePage {
     this.mepSelectReplace = page.locator('select').nth(1);
     this.getMerchCardCollection = (id) => page.locator(`merch-card-collection[id="${id}"]`);
     this.getMerchCard = (id) => page.locator(`merch-card[id="${id}"]`);
+    this.getMerchCardByFilter = (filter) => page.locator(`merch-card[filters="${filter}"]`);
     this.getFragment = (path) => page.locator(`div.fragment[data-path="${path}"]`);
   }
 }

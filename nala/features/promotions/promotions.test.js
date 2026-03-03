@@ -616,7 +616,10 @@ test.describe('Promotions feature test suite', () => {
       expect(await collection.getAttribute('overrides')).toBe(data.overrideAttributes);
 
       // check that the subcollection specific card is  visible
-      const baseSubcollectionCard = await PROMO.getMerchCard(data.cardId);
+      let baseSubcollectionCard = await PROMO.getMerchCard(data.cardId);
+      if (await baseSubcollectionCard.count() === 0) {
+        baseSubcollectionCard = await PROMO.getMerchCardByFilter(data.filter);
+      }
       await expect(await baseSubcollectionCard).toBeVisible({ timeout: 30000 });
       expect(await baseSubcollectionCard.getAttribute('filters')).toBe(data.filter);
     });
