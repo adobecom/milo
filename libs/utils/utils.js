@@ -778,6 +778,12 @@ function localizeLinkCore(
       })();
     }
 
+    const explPath = url.origin.includes('experienceleague') ? url.pathname.slice(3, url.pathname.length) : false;
+    if (explPath) {
+      const urlPath = `${prefix}${explPath}${url.search}${hash}`;
+      return `${url.origin}${urlPath}`;
+    }
+
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
