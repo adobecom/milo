@@ -111,6 +111,7 @@ const C2_BLOCKS = [
   'explore-card',
   'global-footer',
   'global-navigation',
+  'new-card',
   'region-nav',
 ];
 
