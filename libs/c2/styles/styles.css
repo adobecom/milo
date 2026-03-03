@@ -345,7 +345,7 @@
   --s2a-typography-font-size-h2: var(--s2a-font-size-3xl);
   --s2a-typography-font-size-h3: var(--s2a-font-size-2xl);
   --s2a-typography-font-size-h4: var(--s2a-font-size-xl);
-  --s2a-typography-font-size-p-lg: var(--s2a-font-size-lg);
+  --s2a-typography-font-size-p-lg: var(--s2a-font-size-md);
   --s2a-typography-font-size-p-md: var(--s2a-font-size-md);
   --s2a-typography-font-size-p-sm: var(--s2a-font-size-sm);
   --s2a-typography-font-size-eyebrow: var(--s2a-font-size-md);
