@@ -2,46 +2,14 @@ import {
   createTag,
   getConfig,
   getMetadata,
-  getCountry,
-  getFederatedContentRoot,
   setInternational,
-  getCookie,
   setMarket,
 } from '../../utils/utils.js';
+import { getMarketConfig, getValidatedMarket } from '../../utils/market.js';
 
-const MARKET_COOKIE = 'market';
-const PAGE_URL = new URL(window.location.href);
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const GLOBE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="market-selector-globe"><path d="M10 19C14.9706 19 19 14.9706 19 10C19 5.02944 14.9706 1 10 1C5.02944 1 1 5.02944 1 10C1 14.9706 5.02944 19 10 19Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 1C12.25 3.5 13.5 6.5 13.5 10C13.5 13.5 12.25 16.5 10 19C7.75 16.5 6.5 13.5 6.5 10C6.5 6.5 7.75 3.5 10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const SEARCH_ICON_INNER = '<path d="M14.8243 13.9758L10.7577 9.90923C11.5332 8.94809 12 7.72807 12 6.40005C12 3.31254 9.48755 0.800049 6.40005 0.800049C3.31254 0.800049 0.800049 3.31254 0.800049 6.40004C0.800049 9.48755 3.31254 12 6.40005 12C7.72807 12 8.9481 11.5331 9.90922 10.7577L13.9758 14.8243C14.093 14.9414 14.2461 15 14.4 15C14.5539 15 14.7071 14.9414 14.8243 14.8243C15.0586 14.5899 15.0586 14.2102 14.8243 13.9758ZM6.40005 10.8C3.97426 10.8 2.00005 8.82582 2.00005 6.40004C2.00005 3.97426 3.97426 2.00004 6.40005 2.00004C8.82583 2.00004 10.8 3.97426 10.8 6.40004C10.8 8.82582 8.82583 10.8 6.40005 10.8Z" fill="#666"/>';
-
-function getMarketUrl() {
-  const config = getConfig();
-  const { contentRoot, marketSelector } = config;
-  const sourceFromUrl = PAGE_URL.searchParams.get('marketSelector');
-  const marketSelectorKey = sourceFromUrl || getMetadata('marketselector') || marketSelector;
-
-  if (marketSelectorKey) {
-    return `${contentRoot ?? ''}/market-selector/market-selector-${marketSelectorKey}.json`;
-  }
-  return `${getFederatedContentRoot()}/federal/market-selector/market-selector.json`;
-}
-
-async function loadMarketConfig() {
-  const marketsUrl = getMarketUrl();
-  try {
-    const resp = await fetch(marketsUrl);
-    if (!resp.ok) throw new Error('Failed to load market config');
-    const json = await resp.json();
-    return {
-      languages: json.languages?.data || [],
-      markets: json.markets?.data || [],
-    };
-  } catch (e) {
-    window.lana?.log(`Market Selector: Error loading config: ${e.message}`);
-    return { languages: [], markets: [] };
-  }
-}
 
 function getTargetUrl(targetPrefix, currentPath) {
   const { locale } = getConfig();
@@ -246,8 +214,8 @@ function createDropdown(label, placeholder, items, onSelect, noResultLabel, isSe
 }
 
 export default async function init(block) {
-  const config = await loadMarketConfig();
-  if (!config.languages.length || !config.markets.length) return;
+  const config = await getMarketConfig();
+  if (!config) return;
 
   const placeholders = block.querySelectorAll('p');
   const labels = {
@@ -261,16 +229,7 @@ export default async function init(block) {
   const currentPrefix = locale.prefix || '';
   const currentLang = config.languages.find((l) => (l.prefix ? `/${l.prefix}` : '') === currentPrefix) || config.languages[0];
 
-  let currentMarketCode = getCookie(MARKET_COOKIE);
-  if (!currentMarketCode) {
-    const params = new URLSearchParams(window.location.search);
-    currentMarketCode = params.get('akamaiLocale')
-      || params.get('country')
-      || getCountry()?.toLowerCase()
-      || currentLang.defaultMarket
-      || 'us';
-    setMarket(currentMarketCode);
-  }
+  const currentMarketCode = await getValidatedMarket();
   const currentMarket = config.markets.find((m) => m.marketCode === currentMarketCode)
     || config.markets.find((m) => m.marketCode === currentLang.defaultMarket)
     || config.markets[0];
@@ -284,12 +243,14 @@ export default async function init(block) {
 
     setMarket(targetMarketCode);
     setInternational(selectedLang.prefix || 'us');
+
+    const finalUrl = new URL(langItem.url);
+    finalUrl.searchParams.set('country', targetMarketCode);
+
     handleEvent({
       prefix: selectedLang.prefix,
-      link: { href: langItem.url },
-      callback: (url) => {
-        window.location.href = url;
-      },
+      link: { href: finalUrl.toString() },
+      callback: (url) => { window.location.href = url; },
     });
   };
 
@@ -301,15 +262,17 @@ export default async function init(block) {
 
     setMarket(marketItem.value);
 
-    const targetPrefixNormalized = targetPrefix ? `/${targetPrefix}` : '';
-    if (targetPrefixNormalized && targetPrefixNormalized !== currentPrefix) {
+    const finalUrl = new URL(marketItem.url && marketItem.url !== '#' ? marketItem.url : window.location.href);
+    finalUrl.searchParams.set('country', marketItem.value);
+
+    if (targetPrefix && `/${targetPrefix}` !== currentPrefix) {
       handleEvent({
         prefix: targetPrefix,
-        link: { href: getTargetUrl(targetPrefix, window.location.pathname) },
+        link: { href: finalUrl.toString() },
         callback: (url) => { window.location.href = url; },
       });
     } else {
-      window.location.reload();
+      window.location.href = finalUrl.toString();
     }
   };
 

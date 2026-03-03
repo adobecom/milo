@@ -309,7 +309,7 @@ export function setMarket(marketCode) {
   const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
   const maxAge = 365 * 24 * 60 * 60;
   document.cookie = `market=${marketCode};max-age=${maxAge};path=/;${domain}`;
-  sessionStorage.setItem('akamai', marketCode);
+  sessionStorage.setItem('market', marketCode);
 }
 
 export function getMetadata(name, doc = document) {
