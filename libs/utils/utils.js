@@ -107,6 +107,7 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'box',
+  'rich-content',
   'section-metadata',
   'explore-card',
   'global-footer',
