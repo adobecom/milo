@@ -39,6 +39,11 @@ const hasExpectedMetadata = (data, expected) => {
 let bulkPublisher;
 
 test.describe('CaaS Bulk Publisher test suite', () => {
+  // Skip on GitHub Actions - CI IMS credentials are not provisioned for the
+  // standard Adobe SUSI login flow used by the Bulk Publisher tool.
+  // Run on Jenkins or locally where valid IMS credentials are available.
+  test.skip(!!process.env.GITHUB_ACTIONS, 'IMS login requires credentials not available in GitHub Actions');
+
   test.beforeEach(async ({ page }) => {
     bulkPublisher = new BulkPublisherPage(page);
   });
@@ -59,25 +64,12 @@ test.describe('CaaS Bulk Publisher test suite', () => {
       await page.waitForFunction(() => window.adobeIMS && typeof window.adobeIMS.getAccessToken === 'function');
       const hasToken = await page.evaluate(() => !!window.adobeIMS.getAccessToken()?.token);
       if (!hasToken) {
-        // Use EMAIL_COLLECTION credentials as fallback - the default
-        // IMS_EMAIL account may not exist on the Adobe IMS domain.
-        const origEmail = process.env.IMS_EMAIL;
-        const origPass = process.env.IMS_PASS;
-        if (process.env.EMAIL_COLLECTION_IMS_MAIL) {
-          process.env.IMS_EMAIL = process.env.EMAIL_COLLECTION_IMS_MAIL;
-          process.env.IMS_PASS = process.env.EMAIL_COLLECTION_IMS_PASS;
-        }
-        try {
-          await Promise.all([
-            page.waitForURL('**/auth.services.adobe.com/**'),
-            page.evaluate(() => window.adobeIMS.signIn()),
-          ]);
-          await ims.fillOutSignInForm({ url: testPage }, page);
-          await page.waitForLoadState('domcontentloaded');
-        } finally {
-          process.env.IMS_EMAIL = origEmail;
-          process.env.IMS_PASS = origPass;
-        }
+        await Promise.all([
+          page.waitForURL('**/auth.services.adobe.com/**'),
+          page.evaluate(() => window.adobeIMS.signIn()),
+        ]);
+        await ims.fillOutSignInForm({ url: testPage }, page);
+        await page.waitForLoadState('domcontentloaded');
       }
     });
     await test.step('Select Adobe Business (bacom) preset', async () => {
