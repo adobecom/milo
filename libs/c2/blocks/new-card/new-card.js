@@ -16,7 +16,7 @@ function decorateCard(wrapper) {
   if (!foreground || !media) return;
   media.classList.add('media');
   foreground.classList.add('foreground');
-  decorateBlockText(foreground, ['xxs', 's', 'm']);
+  decorateBlockText(foreground);
   const firstCell = foreground.children[0];
   if (firstCell?.childElementCount === 1
     && firstCell?.firstElementChild?.tagName === 'PICTURE') {
