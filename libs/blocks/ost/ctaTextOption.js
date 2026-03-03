@@ -16,6 +16,9 @@ const ctaTextOption = {
     { id: 'save-today', name: 'Save today' },
     { id: 'select', name: 'Select' },
     { id: 'get-for-free', name: 'Get for free' },
+    { id: 'seven-day-trial', name: 'Start 7-day free trial' },
+    { id: 'fourteen-day-trial', name: 'Start 14-day free trial' },
+    { id: 'thirty-day-trial', name: 'Start 30-day free trial' },
   ],
 
   getDefaultText() {

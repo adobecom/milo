@@ -147,7 +147,8 @@ function createButtonDetailsPair(mmmEl, page) {
   const triggerId = `mmm-trigger-${pageId}`;
   const panelId = `mmm-content-${pageId}`;
   const icon = createTag('span', { class: 'mmm-icon' });
-  const hTag = createTag('h5', false, url);
+  const anchor = createTag('a', { href: url }, url);
+  const hTag = createTag('h5', false, anchor);
   const activitiesNum = createTag(
     'span',
     { class: 'mmm-page_item-subtext' },
@@ -181,6 +182,7 @@ function createButtonDetailsPair(mmmEl, page) {
       </svg>`,
   );
   const dd = createTag('dd', { id: panelId, hidden: true }, loading);
+  anchor.addEventListener('click', (e) => { e.stopPropagation(); });
   button.addEventListener('click', (e) => { toggleDrawer(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);
 }
