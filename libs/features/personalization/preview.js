@@ -397,7 +397,7 @@ function setTargetOnText(target, page) {
   if (target === undefined) return page.target;
   return target === 'postlcp' ? 'on post LCP' : target;
 }
-export function getMepPopup(mepConfig, isMmm = false) {
+export async function getMepPopup(mepConfig, isMmm = false) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
 
@@ -621,7 +621,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   buildSummaryConsent();
 
   // Build Summary : Lingo
-  function buildSummaryLingo() {
+  async function buildSummaryLingo() {
     function getGeoUserSupport() {
       if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
       if (getMepLingoPrefix()) return 'Supported';
@@ -634,7 +634,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
     const lingoData = {
       langFirst: lingoActive() ? 'on' : 'off',
       geoFolder: page.geo || 'Us (None)',
-      userCountry: getCountry(),
+      userCountry: await getCountry(),
       geoUser: getGeoUserSupport(),
       updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
       total: regionalFragments.length + fallbackFragments.length,
@@ -664,7 +664,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   `;
     mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, lingoHTML));
   }
-  buildSummaryLingo();
+  await buildSummaryLingo();
 
   // Inject Overlay
   function compileOverlay() {
@@ -684,7 +684,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   return mepPopup;
 }
 
-function createPreviewPill() {
+async function createPreviewPill() {
   const mepConfig = parseMepConfig();
   if (!mepConfig) return;
   const { activities } = mepConfig;
@@ -694,7 +694,7 @@ function createPreviewPill() {
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
   mepBadge.innerHTML = getPillText(activities?.length);
   pill.append(mepBadge);
-  pill.append(getMepPopup(mepConfig));
+  pill.append(await getMepPopup(mepConfig));
   overlay.append(pill);
   document.body.append(overlay);
   addPillEventListeners(pill);
@@ -867,7 +867,7 @@ export async function saveToMmm() {
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  createPreviewPill();
+  await createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addFragmentBadgeClickHandlers();

@@ -801,7 +801,7 @@ export async function getCountry(skipFallback = false) {
     const { getAkamaiCode } = await import('./geo.js');
     return await getAkamaiCode();
   } catch (error) {
-    window.lana?.log(`Error getting Akamai code: ${error}`);
+    window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
     return null;
   }
 }

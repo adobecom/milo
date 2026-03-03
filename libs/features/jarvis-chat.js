@@ -1,5 +1,3 @@
-import { getCountry, lingoActive } from '../utils/utils.js';
-
 let chatInitialized = false;
 let loadScript;
 let loadStyle;

@@ -304,13 +304,14 @@ function renderLanguages({
           <span class="language-name">${lang.name}</span>
           ${lang.name === currentLang.name ? CHECKMARK_SVG : ''}
         `;
-        langLink.addEventListener('click', (e) => {
+        langLink.addEventListener('click', async (e) => {
           sendAnalyticsEvent(`language-switch:${lang.prefix || 'us'}`);
           const config = getConfig();
           if (config?.lingoProjectSuccessLogging === 'on') {
             const startingPoint = `lingo-language-selector-starting-locale=${currentLang.name}`;
             const destination = `lingo-language-selector-destination-locale=${lang.name}`;
-            window?.lana?.log(`Click: Language_Selector,${startingPoint},${destination}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo,lingo-language-selector-click', severity: 'i' });
+            const country = await getCountry();
+            window?.lana?.log(`Click: Language_Selector,${startingPoint},${destination}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo,lingo-language-selector-click', severity: 'i' });
           }
           e.preventDefault();
           const cookieValue = getInternationalCookieValue(lang.prefix);
@@ -440,7 +441,8 @@ function setupDropdownEvents({
     sendAnalyticsEvent('language-selector:opened');
     const config = getConfig();
     if (config?.lingoProjectSuccessLogging === 'on') {
-      window?.lana?.log(`Open: Language_Selector|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo,lingo-language-selector-open', severity: 'i' });
+      const country = await getCountry();
+      window?.lana?.log(`Open: Language_Selector|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo,lingo-language-selector-open', severity: 'i' });
     }
     isDropdownOpen = true;
     dropdown.style.display = 'block';
