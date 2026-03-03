@@ -58,7 +58,6 @@ div.section.new-card-section {
       margin-bottom: var(--s2a-spacing-8);
       color: var(--s2a-color-gray-1000);
       font-size: var(--s2a-font-size-xl);
-      font-weight: 900;
       letter-spacing: -0.2px;
     }
 
@@ -70,7 +69,6 @@ div.section.new-card-section {
       position: relative;
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
-      line-height: 18.2px;
 
       &::after {
         content: url('./img/icon.svg');
@@ -80,8 +78,6 @@ div.section.new-card-section {
 
     p {
       font-size: var(--s2a-font-size-md);
-      letter-spacing: 0.16px;
-      line-height: 130%;
     }
   }
 
@@ -94,7 +90,7 @@ div.section.new-card-section {
   }
 }
 
-@media (max-width: 1023px) {
+@media (width < 1024px) {
   div.section.new-card-section {
     grid-template-columns: 1fr;
   }
@@ -175,7 +171,7 @@ div.section.new-card-section {
   }
 }
 
-@media (width >= 1441px) {
+@media (width > 1440px) {
   .new-card {
     .foreground :is(h1, h2, h3, h4, h5, h6) {
       letter-spacing: -0.48px;
