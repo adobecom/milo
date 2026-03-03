@@ -21,9 +21,9 @@ const hasExpectedMetadata = (data, expected) => {
     return data.some((item) => hasExpectedMetadata(item, expected));
   }
   if (typeof data === 'object') {
-    const origin = data.origin;
+    const { origin } = data;
     const lang = data.lang ?? data.language;
-    const country = data.country;
+    const { country } = data;
 
     if (
       matchesExpectedValue(origin, expected.origin)
