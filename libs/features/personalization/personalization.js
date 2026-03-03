@@ -6,7 +6,6 @@ import {
   createTag,
   getConfig,
   getMetadata,
-  loadBaseStyles,
   loadLink,
   loadScript,
   localizeLinkAsync,
@@ -421,7 +420,8 @@ function updateFramework(updateFrameworkList) {
   );
   existing?.remove();
   setMetadata({ selector: 'foundation', val: fw.val });
-  loadBaseStyles(libsPath);
+  const stylesPrefix = fw.val ? `/${fw.val}` : '';
+  loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, { rel: 'stylesheet' });
 }
 
 function toLowerAlpha(str) {
