@@ -360,7 +360,7 @@
   /* Milo-specific declarations */
   --scroll-padding-block: 0;
   --body-font-family: var(--s2a-font-family-default), adobe-clean, 'Trebuchet MS', sans-serif;
-  --heading-font-family: var(--s2a-font-family-heading), adobe-clean-display, 'Arial Bold Adjusted', sans-serif;
+  --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, 'Arial Bold Adjusted', sans-serif;
 
   /* Grid sizes */
   --grid-columns: 6;
@@ -576,7 +576,7 @@ p {
 }
 
 .body-lg {
-  font-size: var(--s2a-typography-line-height-p-lg);
+  font-size: var(--s2a-typography-font-size-p-lg);
   line-height: var(--s2a-typography-line-height-p-lg);
   letter-spacing: var(--s2a-typography-letter-spacing-p-lg);
 }
@@ -739,6 +739,14 @@ p {
   }
 }
 
+
+.dark .con-button:not(.blue) {
+  border-color: var(--s2a-color-gray-25);
+  &:hover {
+    border-color: var(--s2a-color-gray-1000);
+  }
+}
+
 /* NOTE: Experimental parallax concept to be easily enabled on elements */
 [class*="parallax-"] {
   /* Default transition values */
@@ -847,7 +855,7 @@ that would likely have to be done via JS */
 }
 
 /* Desktop and above */
-@media (width >= 1024px) {
+@media (width >= 1280px) {
   :root {
     --s2a-typography-line-height-super: var(--s2a-font-line-height-6xl);
     --s2a-typography-line-height-h1: var(--s2a-font-line-height-5xl);
