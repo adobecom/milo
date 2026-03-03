@@ -6,6 +6,43 @@ let config;
 
 const queriedPages = [];
 
+function groupRegionsByHeading(block) {
+  const sections = block.querySelectorAll(':scope > div');
+  if (sections.length < 2) return;
+
+  const content = sections[1].querySelector(':scope > div');
+  if (!content) return;
+
+  const items = [...content.children];
+  if (!items.length) return;
+
+  const columns = document.createElement('div');
+  columns.className = 'region-nav-columns';
+
+  for (let i = 0; i < items.length; i += 1) {
+    const current = items[i];
+    if (current.tagName === 'P') {
+      const column = document.createElement('div');
+      column.className = 'region-nav-column';
+      current.classList.add('eyebrow');
+      column.append(current);
+
+      const next = items[i + 1];
+      if (next?.tagName === 'UL') {
+        column.append(next);
+        i += 1;
+      }
+
+      columns.append(column);
+    }
+  }
+
+  if (columns.children.length) {
+    content.textContent = '';
+    content.append(columns);
+  }
+}
+
 function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;
 
@@ -88,6 +125,7 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
 export default async function init(block) {
   const { localeToLanguageMap } = await loadLanguageConfig();
   config = getConfig();
+  groupRegionsByHeading(block);
   const divs = block.querySelectorAll(':scope > div');
   if (divs.length < 2) return;
   const links = divs[1].querySelectorAll('a');

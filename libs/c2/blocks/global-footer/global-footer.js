@@ -58,7 +58,7 @@ const ADOBE_LOGO_DARK = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 17
 </svg>`;
 
 const ADOBE_LOGO_LIGHT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 179.35 46.86">
-  <path fill="#505050" d="M76.93,30.93l-1.92,5.93c-0.08,0.2-0.2,0.32-0.44,0.32h-4.64c-0.28,0-0.36-0.16-0.32-0.4l8.01-23.1
+  <path fill="#FFFFFF80" d="M76.93,30.93l-1.92,5.93c-0.08,0.2-0.2,0.32-0.44,0.32h-4.64c-0.28,0-0.36-0.16-0.32-0.4l8.01-23.1
     c0.16-0.44,0.32-0.92,0.4-2.44c0-0.16,0.12-0.28,0.24-0.28h6.41c0.2,0,0.28,0.04,0.32,0.24l9.09,25.62
     c0.08,0.2,0.04,0.36-0.2,0.36h-5.21c-0.24,0-0.36-0.08-0.44-0.28l-2.04-5.97H76.93z M84.7,25.92c-0.8-2.64-2.4-7.49-3.16-10.33
     H81.5c-0.64,2.68-2.08,7.09-3.12,10.33H84.7z
@@ -273,7 +273,7 @@ class Footer {
   };
 
   loadIcons = async () => {
-    const file = await fetch(`${base}/mep/redesign/global-footer/icons.svg`);
+    const file = await fetch(`${base}/c2/blocks/global-footer/icons.svg`);
     if (!file.ok) {
       lanaLog({
         message: 'Issue with loadIcons',
