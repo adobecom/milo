@@ -576,7 +576,7 @@ p {
 }
 
 .body-lg {
-  font-size: var(--s2a-typography-line-height-p-lg);
+  font-size: var(--s2a-typography-font-size-p-lg);
   line-height: var(--s2a-typography-line-height-p-lg);
   letter-spacing: var(--s2a-typography-letter-spacing-p-lg);
 }
@@ -736,6 +736,14 @@ p {
       background-color: var(--s2a-color-gray-1000);
       border-color: var(--s2a-color-gray-1000);
     }
+  }
+}
+
+
+.dark .con-button:not(.blue) {
+  border-color: var(--s2a-color-gray-25);
+  &:hover {
+    border-color: var(--s2a-color-gray-1000);
   }
 }
 
