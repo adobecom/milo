@@ -384,6 +384,47 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
   });
 
+  it('updateFramework should swap the framework stylesheet', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.be.null;
+    expect(document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)).to.not.be.null;
+    expect(document.querySelector('meta[name="foundation"]').content).to.equal('c2');
+
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+  });
+
+  it('updateFramework should no-op when already on target foundation', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', 'c2');
+    const c2Link = document.createElement('link');
+    c2Link.rel = 'stylesheet';
+    c2Link.href = `${libsPath}/c2/styles/styles.css`;
+    document.head.appendChild(c2Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
   it('will add id to the section div', async () => {
     addSectionAnchors(document);
     const sectionWithId = document.querySelector('#marquee-container');
