@@ -7,7 +7,7 @@ export default [
             action: 'replacecontent',
             selector: 'main>div:nth-of-type(1)',
             pageFilter: '',
-            target: 'https://main--homepage--adobecom.hlx.page/homepage/fragments/loggedout/personalization/marquees/apro-twp-abandon',
+            target: 'https://main--homepage--adobecom.aem.page/homepage/fragments/loggedout/personalization/marquees/apro-twp-abandon',
           },
         ],
       },
@@ -46,8 +46,8 @@ export default [
         },
       ],
     },
-    manifest: 'https://main--cc--homepage.hlx.page/homepage/fragments/mep/selected-example.json',
-    manifestUrl: 'https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/unit-tests/manifest.json',
+    manifest: 'https://main--cc--homepage.aem.page/homepage/fragments/mep/selected-example.json',
+    manifestUrl: 'https://main--milo--adobecom.aem.page/drafts/vgoodrich/fragments/unit-tests/manifest.json',
   },
   {
     variants: {
@@ -57,7 +57,7 @@ export default [
             action: 'replacecontent',
             selector: 'main>div:nth-of-type(1)',
             pageFilter: '',
-            target: 'https://main--homepage--adobecom.hlx.page/homepage/fragments/loggedout/personalization/marquees/apro-twp-abandon',
+            target: 'https://main--homepage--adobecom.aem.page/homepage/fragments/loggedout/personalization/marquees/apro-twp-abandon',
           },
         ],
       },
@@ -69,8 +69,8 @@ export default [
     manifestOverrideName: 'hp',
     selectedVariantName: 'default',
     selectedVariant: 'default',
-    manifest: 'https://main--homepage--adobecom.hlx.live/homepage/fragments/mep/default-selected.json',
-    manifestUrl: 'https://main--homepage--adobecom.hlx.live/homepage/fragments/mep/default-selected.json',
+    manifest: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/default-selected.json',
+    manifestUrl: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/default-selected.json',
   },
   {
     variants: {
@@ -100,8 +100,8 @@ export default [
         },
       ],
     },
-    manifest: 'https://main--cc--adobecom.hlx.page/promos/2023/global/black-friday/black-friday-global.json',
-    manifestUrl: 'https://main--cc--adobecom.hlx.page/promos/2023/global/black-friday/black-friday-global.json',
+    manifest: 'https://main--cc--adobecom.aem.page/promos/2023/global/black-friday/black-friday-global.json',
+    manifestUrl: 'https://main--cc--adobecom.aem.page/promos/2023/global/black-friday/black-friday-global.json',
     disabled: false,
     event: {
       name: 'black-friday-global',
@@ -116,7 +116,7 @@ export default [
       start: new Date('2024-11-24T00:00:00.000Z'),
       end: new Date('2024-11-24T00:00:00.000Z'),
     },
-    manifest: 'https://main--cc--adobecom.hlx.page/promos/2023/emea/cyber-monday/cyber-monday-emea.json',
+    manifest: 'https://main--cc--adobecom.aem.page/promos/2023/emea/cyber-monday/cyber-monday-emea.json',
     variantNames: [
       'all',
     ],

@@ -6,6 +6,7 @@ import {
   decorateButtons,
   handleObjectFit,
   loadCDT,
+  setBackgroundFocus,
 } from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
@@ -270,6 +271,7 @@ export default async function init(el) {
   if (asset) {
     const mediaClasses = ['media-cover', 'media-cover-left', 'media-cover-right', 'media-cover-top', 'media-cover-bottom'];
     asset.parentElement.classList.add('asset');
+    setBackgroundFocus(asset); // Used in DA focal point feature
     mediaClasses.forEach((className) => {
       if (!el.classList.contains(className)) return;
       asset.style.setProperty('--media-cover-position', className.split('-')[2] ?? 'center top');

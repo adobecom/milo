@@ -1,5 +1,4 @@
 // node --env-file=.env .github/workflows/preview-indexer/incremental.js (node >= 21)
-import { getImsToken, saveJsonToDa, getJsonFromDa } from './da-client.js';
 import { fetchLogsForSite, getSiteEnvKey, triggerPreview, getPreviewPathsForRegion } from './helix-client.js';
 import { getLastRunInfo, saveLastRuns } from './indexer-state.js';
 import SiteConfig from './site-config.js';
@@ -28,7 +27,7 @@ const {
   SITE_REGION_PATHS,
 } = env;
 
-const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
+const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
   const self = {};
 
   // Initialize site configuration
@@ -112,8 +111,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       await slackNotification(validationError || `No preview roots to process for ${siteOrg}/${siteRepo}`);
       return;
     }
-    await getImsToken();
-    const lastRunInfo = await getLastRunInfo(orgWithRepo);
+    const lastRunInfo = await getLastRunInfo(orgWithRepo, datalayer.isSp);
     const fromParam = LAST_RUN_ISO_FROM || lastRunInfo?.lastRunISO || getISOSinceXDaysAgo(1);
     console.log(`Last run used: ${fromParam}. Last run from cache: ${lastRunInfo?.lastRunISO}`);
     const toParam = LAST_RUN_ISO_TO || new Date().toISOString();
@@ -123,6 +121,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       fromParam,
       toParam,
     );
+    const lastRunISO = logsResult?.lastFetchedISO || toParam;
     const entries = logsResult?.entries || [];
     if (!entries?.length) {
       console.log(`No entries found, exiting for ${siteOrg}/${siteRepo} at ${toParam}.`);
@@ -147,7 +146,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       console.log(`Processing root: ${rootPath}`);
       const previewIndexPath = previewRoot?.indexPath || unpreviewRoot?.indexPath;
       const previewIndexPreviewPath = previewRoot?.indexPreviewPath || unpreviewRoot?.indexPreviewPath;
-      const currentData = await getJsonFromDa(siteOrg, siteRepo, previewIndexPath);
+      const currentData = await datalayer.getPreviewIndexJson(siteOrg, siteRepo, previewIndexPath);
       let previewIndex = { ...previewJsonTemplate };
       if (currentData?.data?.length) {
         const filteredCurrentData = currentData.data.filter((item) => !unpreviewPathsPerRoot[rootPath]?.paths?.includes(item.Path));
@@ -163,15 +162,15 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
         const { length } = previewRoot.paths;
         previewIndex = { ...previewIndex, total: length, limit: length, data: pathData };
       }
-      const result = await saveJsonToDa(siteOrg, siteRepo, previewIndexPath, previewIndex);
-      console.log(`Preview index saved to DA at ${result.daHref}`);
+      const result = await datalayer.savePreviewIndexJson(siteOrg, siteRepo, `${previewIndexPath}${config.getPreviewFileExtension()}`, previewIndex);
+      console.log(`Preview index saved at ${result.href} with ${result.status}`);
       const previewResult = await triggerPreview(siteOrg, siteRepo, previewIndexPreviewPath);
       console.log(`Preview result: ${previewResult?.preview?.url}`);
     }
 
     // Save the checkpoint for the next run only if its not a manual trigger.
     if (!LAST_RUN_ISO_TO) {
-      await saveLastRuns(orgWithRepo, { lastRunISO: toParam });
+      await saveLastRuns(orgWithRepo, { lastRunISO }, datalayer.isSp);
     }
 
     await slackNotification(
@@ -187,8 +186,6 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       return;
     }
 
-    await getImsToken();
-
     for (const [regionIndex, root] of previewRoots.entries()) {
       const msg = `Processing region ${regionIndex + 1} of ${previewRoots.length}`;
       console.log(`${msg} for ${siteOrg}/${siteRepo} with root ${root}`);
@@ -202,9 +199,9 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
       const pathExtn = config.getPreviewPathExtension();
       const filteredPreviewPaths = (previewPaths?.filter(
         (path) => hasNoExtension(path) && notExcluded(path),
-      ) || []).map((path) => `${path}${pathExtn}`);
+      ) || []).map((path) => `${path.endsWith('/') ? path : path + pathExtn}`);
 
-      const defaultPreviewsPathsJson = await getJsonFromDa(siteOrg, siteRepo, `${indexPath}-default`);
+      const defaultPreviewsPathsJson = await datalayer.getPreviewIndexJson(siteOrg, siteRepo, `${indexPath}-default`);
       const defaultPreviewPaths = defaultPreviewsPathsJson?.data?.map?.((item) => item.Path) || [];
       const mergedPreviewPaths = [...defaultPreviewPaths, ...filteredPreviewPaths];
       if (mergedPreviewPaths?.length) {
@@ -212,9 +209,10 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap) => {
         const pathData = mergedPreviewPaths.map((path) => ({ Path: path }));
         const total = mergedPreviewPaths.length;
         previewIndex = { ...previewIndex, total, limit: total, data: pathData };
-        const result = await saveJsonToDa(siteOrg, siteRepo, indexPath, previewIndex);
-        console.log(`Preview index saved to DA at ${result.daHref} with ${JSON.stringify(result)}`);
-        await triggerPreview(siteOrg, siteRepo, indexPreviewPath);
+        const result = await datalayer.savePreviewIndexJson(siteOrg, siteRepo, `${indexPath}${config.getPreviewFileExtension()}`, previewIndex);
+        console.log(`Preview index saved at ${result.href} with ${result.status}`);
+        const previewResult = await triggerPreview(siteOrg, siteRepo, indexPreviewPath);
+        console.log(`Preview result: ${previewResult?.preview?.url}`);
       }
     }
   };

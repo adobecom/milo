@@ -195,6 +195,124 @@ describe('Switch Modal (Upgrade Flow)', () => {
       );
       expect(result).to.equal(undefined);
     });
+
+    it('should return upgrade action when user has source product code', async () => {
+      const SOURCE_PRODUCT_CODES = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
+      const TARGET_PRODUCT_FAMILY = ['ACROBAT'];
+      const ENTITLEMENTS_WITH_ACAI = [
+        {
+          offer: {
+            offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
+            product_code: 'ACAI',
+            product_arrangement_v2: { family: 'ILLUSTRATOR' },
+          },
+          change_plan_available: true,
+        },
+      ];
+      const result = await handleUpgradeOffer(
+        'ACROBAT',
+        UPGRADE_OFFER,
+        ENTITLEMENTS_WITH_ACAI,
+        SOURCE_PRODUCT_CODES,
+        TARGET_PRODUCT_FAMILY,
+      );
+      expect(result).to.not.equal(undefined);
+      expect(result.text).to.equal('Upgrade Now');
+    });
+
+    it('should return upgrade action when user has source product code APCC', async () => {
+      const SOURCE_PRODUCT_CODES = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
+      const TARGET_PRODUCT_FAMILY = ['ACROBAT'];
+      const ENTITLEMENTS_WITH_APCC = [
+        {
+          offer: {
+            offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
+            product_code: 'APCC',
+            product_arrangement_v2: { family: 'PHOTOSHOP' },
+          },
+          change_plan_available: true,
+        },
+      ];
+      const result = await handleUpgradeOffer(
+        'ACROBAT',
+        UPGRADE_OFFER,
+        ENTITLEMENTS_WITH_APCC,
+        SOURCE_PRODUCT_CODES,
+        TARGET_PRODUCT_FAMILY,
+      );
+      expect(result).to.not.equal(undefined);
+      expect(result.text).to.equal('Upgrade Now');
+    });
+
+    it('should return undefined if user has target product code', async () => {
+      const SOURCE_PRODUCT_CODES = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
+      const TARGET_PRODUCT_CODES = ['ACROBAT'];
+      const ENTITLEMENTS_WITH_TARGET_CODE = [
+        {
+          offer: {
+            offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
+            product_code: 'ACROBAT',
+            product_arrangement_v2: { family: 'ACROBAT' },
+          },
+          change_plan_available: true,
+        },
+      ];
+      const result = await handleUpgradeOffer(
+        'ACROBAT',
+        UPGRADE_OFFER,
+        ENTITLEMENTS_WITH_TARGET_CODE,
+        SOURCE_PRODUCT_CODES,
+        TARGET_PRODUCT_CODES,
+      );
+      expect(result).to.equal(undefined);
+    });
+
+    it('should return upgrade action when checking by product code with different family', async () => {
+      const SOURCE_PRODUCT_CODES = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
+      const TARGET_PRODUCT_CODES = ['ACROBAT'];
+      const ENTITLEMENTS_WITH_ACROBAT_CODE = [
+        {
+          offer: {
+            offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
+            product_code: 'ACAI',
+            product_arrangement_v2: { family: 'ILLUSTRATOR' },
+          },
+          change_plan_available: true,
+        },
+      ];
+      const result = await handleUpgradeOffer(
+        'ACROBAT',
+        UPGRADE_OFFER,
+        ENTITLEMENTS_WITH_ACROBAT_CODE,
+        SOURCE_PRODUCT_CODES,
+        TARGET_PRODUCT_CODES,
+      );
+      expect(result).to.not.equal(undefined);
+      expect(result.text).to.equal('Upgrade Now');
+    });
+
+    it('should return undefined when user has both target family and target code', async () => {
+      const SOURCE_PRODUCT_CODES = ['ACROBAT', 'ACROBAT_STOCK_BUNDLE', 'ACAI', 'APCC', 'apcc_direct_individual'];
+      const TARGET_PRODUCT_CODES = ['ACROBAT'];
+      const ENTITLEMENTS_WITH_BOTH = [
+        {
+          offer: {
+            offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
+            product_code: 'ACROBAT',
+            product_arrangement_v2: { family: 'ACROBAT' },
+          },
+          change_plan_available: true,
+        },
+      ];
+      const result = await handleUpgradeOffer(
+        'ACROBAT',
+        UPGRADE_OFFER,
+        ENTITLEMENTS_WITH_BOTH,
+        SOURCE_PRODUCT_CODES,
+        TARGET_PRODUCT_CODES,
+      );
+      expect(result).to.equal(undefined);
+    });
   });
 
   describe('handleIFrameEvents', () => {

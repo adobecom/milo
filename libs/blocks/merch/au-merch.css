@@ -48,8 +48,18 @@ merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix {
   display: block;
 }
 
-merch-card [slot='heading-m'] [is="inline-price"] .price:not(.price-annual) {
+merch-card:not([id]) [slot='heading-m'] [is="inline-price"] .price:not(.price-annual) {
   display: block;
+}
+
+merch-card[id] [slot='heading-m'] [is="inline-price"] .price.price-strikethrough {
+  color: #ff0000;
+}
+
+merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual,
+merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
+  position: relative;
+  top: -3px;
 }
 
 merch-card [slot='heading-m'] [is="inline-price"] .price-annual::before {

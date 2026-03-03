@@ -33,7 +33,7 @@ const cssPromise = (async () => {
       clientId: 'feds-milo',
       sampleRate: 1,
       tags: 'utilities',
-      errorType: 'info',
+      severity: 'error',
     });
   }
 })();
@@ -63,7 +63,6 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-
 const { getMiloLocaleSettings } = merch;
 
 const {
@@ -171,6 +170,87 @@ const getMessageEventListener = () => {
   };
 };
 
+const handleSignIn = async () => {
+  const { getModal } = await import('../modal/modal.js');
+  const details = document.createElement('div');
+  details.className = 'feds-signin-modal-content';
+
+  const { env } = getConfig();
+  const lib = `https://auth-light.identity${env.name === 'prod' ? '' : '-stage'}.adobe.com/sentry/wrapper.js`;
+  await loadScript(lib);
+
+  const sentry = document.createElement('susi-sentry-light');
+  if (env.name !== 'prod') sentry.stage = true;
+  sentry.variant = 'standard';
+
+  // Map to SUSI authParams cleanly
+  const { locale, imsClientId, imsScope } = getConfig();
+
+  let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
+  try {
+    const url = new URL(redirectUri);
+    url.searchParams.set('from_ims', 'true');
+    redirectUri = url.toString();
+  } catch (e) {
+    // Fallback if URL parsing fails
+  }
+
+  sentry.authParams = {
+    client_id: imsClientId || SIGNIN_CONTEXT.client_id,
+    scope: imsScope || SIGNIN_CONTEXT.scope || 'AdobeID,openid,gnav',
+    response_type: 'token',
+    redirect_uri: redirectUri,
+    locale: locale?.ietf || 'en-US',
+  };
+
+  const dctxId = getMetadata('susi-light-dctx-id');
+  if (dctxId) sentry.authParams.dctx_id = dctxId;
+
+  sentry.config = { consentProfile: 'free' };
+  sentry.popup = true;
+
+  sentry.addEventListener('on-token', () => {
+    window.location.reload();
+  });
+
+  sentry.addEventListener('on-error', (e) => {
+    window.lana?.log('GNav Sign-In Modal: SUSI Light Error: ', e);
+  });
+
+  // Basic styling to ensure it fits in modal
+  details.innerHTML = `
+    <style>
+      .feds-signin-modal-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 48px 0px;
+      }
+      #signin-modal {
+        width: 400px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: center;
+      }
+      #signin-modal .dialog-close {
+        display: block;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background-color: transparent;
+      }
+      susi-sentry-light {
+        width: 100%;
+      }
+    </style>
+  `;
+
+  details.append(sentry);
+
+  return getModal(null, { content: details, id: 'signin-modal' });
+};
+
 const getSignInCtaStyle = () => {
   const isPrimary = (
     getMetadata('signin-cta-style') === 'primary'
@@ -208,8 +288,8 @@ export const CONFIG = {
                   trace: () => {},
                   debug: () => {},
                   info: () => {},
-                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav,warn' }),
-                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
+                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', severity: 'warning' }),
+                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
@@ -222,7 +302,13 @@ export const CONFIG = {
           signInCtaStyle: getSignInCtaStyle(),
           isSignUpRequired: false,
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
+            onSignIn: () => {
+              if (getConfig().useSusiModal) {
+                handleSignIn();
+              } else {
+                window.adobeIMS?.signIn(SIGNIN_CONTEXT);
+              }
+            },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
@@ -285,7 +371,7 @@ export const LANGMAP = {
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
-    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav,warn' });
+    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav', severity: 'warning' });
     return;
   }
   window.adobeIMS.signIn(options);
@@ -321,7 +407,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         signIn(SIGNIN_CONTEXT);
       });
     } else {
-      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav,warn' });
+      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav', severity: 'warning' });
     }
 
     decoratedElem.append(dropdownElem);
@@ -528,7 +614,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'i' });
+      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'i', severity: 'error' });
     }));
 
   decorateProductEntryCTA = () => {
@@ -568,7 +654,7 @@ class Gnav {
     if (!this.isLocalNav()) {
       const localNavWrapper = document.querySelector('.feds-localnav');
       if (localNavWrapper) {
-        lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav,warn' });
+        lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav', severity: 'warning' });
         localNavWrapper.remove();
       }
       return;
@@ -576,7 +662,7 @@ class Gnav {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
     const firstElem = localNavItems?.[0]?.querySelector('a, button') || localNavItems?.[0];
     if (!firstElem) {
-      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i' });
+      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i', severity: 'error' });
       return;
     }
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
@@ -586,6 +672,7 @@ class Gnav {
         message: 'GNAV: Localnav does not include \'localnav\' in its name.',
         tags: 'gnav',
         errorType: 'i',
+        severity: 'warning',
       });
       localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
@@ -763,7 +850,7 @@ class Gnav {
 
         resolve();
       } catch (e) {
-        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav,warn' });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav', severity: 'error' });
         resolve();
       }
     });
@@ -789,6 +876,7 @@ class Gnav {
         tags: 'gnav',
         errorType: 'i',
         message: `GNAV: issues within imsReady - ${this.useUniversalNav ? 'decorateUniversalNav' : 'decorateProfile'}`,
+        severity: 'error',
       });
     }
   };
@@ -829,6 +917,7 @@ class Gnav {
         e: `${profileData.statusText} url: ${profileData.url}`,
         tags: 'gnav',
         errorType: 'i',
+        severity: 'error',
       });
       return;
     }
@@ -1187,7 +1276,7 @@ class Gnav {
     fedsPromoWrapper.append(this.elements.aside);
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
-      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
+      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i', severity: 'warning' });
     }
     this.updateGnavTop();
     this.promoResizeObserver?.disconnect();
@@ -1308,6 +1397,13 @@ class Gnav {
     const itemHasActiveLink = ['syncDropdownTrigger', 'link'].includes(itemType)
       && getActiveLink(item.closest('div')) instanceof HTMLElement;
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
+
+    const getDropdownMetadata = (elem) => Object.fromEntries(
+      [...(elem?.querySelectorAll(':scope > div') || [])].map((row) => {
+        const [key, val] = [...row.querySelectorAll(':scope > div')].map((d) => d.textContent.trim());
+        return [key, val];
+      }).filter(([k]) => k),
+    );
 
     const makeTabActive = (popup) => {
       if (popup.classList.contains('loading')) return;
@@ -1503,8 +1599,13 @@ class Gnav {
           const tag = isSectionMenu ? 'section' : 'div';
           const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
           const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
+          const metadataEl = item.parentElement?.querySelector('.gnav-dropdown-metadata');
+          const metadata = getDropdownMetadata(metadataEl);
+          metadataEl?.remove();
+          const fullWidthModifier = metadata['full-width']?.toLowerCase() === 'true' ? ' full-width' : '';
+
           const triggerTemplate = toFragment`
-            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
+            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}${fullWidthModifier}" ${sectionDaaLh}>
               ${dropdownTrigger}
             </${tag}>`;
 
@@ -1540,7 +1641,7 @@ class Gnav {
           item.parentElement.replaceWith(item);
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await merch.default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item, type: itemType, index: index + 1 })}
             </div>`, item);
         case 'link': {
           let customLinkModifier = '';
@@ -1548,7 +1649,7 @@ class Gnav {
           let linkElem = item.querySelector('a');
           if (shouldBlockFreeTrialLinks(linkElem)) return null;
           if (linkElem.classList.contains('merch')) {
-            linkElem = await merch.default(linkElem);
+            linkElem = await (await import('../merch/merch.js')).default(linkElem);
           }
           const customLinksSection = item.closest('.link-group');
           linkElem.className = 'feds-navLink';
@@ -1582,10 +1683,24 @@ class Gnav {
             </div>`;
           return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
         }
-        case 'text':
+        case 'text': {
+          let isBlack = false;
+          const isMerch = item.classList.contains('merch');
+          // Check for (black) in text content
+          if (isMerch && (item.textContent.match(/\(black\)$/i) || item.innerText.match(/\(black\)$/i))) {
+            isBlack = true;
+            // Remove (black) from the text content so merch.default sees the clean text
+            item.textContent = item.textContent.replace(/\s*\(black\)$/i, '');
+          }
+          const content = isMerch ? await (await import('../merch/merch.js')).default(item) : item.textContent;
+          if (isBlack && content instanceof HTMLElement) {
+            content.classList.add('feds-navLink--black');
+          }
+
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-              ${item.classList.contains('merch') ? await merch.default(item) : item.textContent}
+              ${content}
             </div>`, item);
+        }
         default:
           /* c8 ignore next 3 */
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
@@ -1657,6 +1772,7 @@ export default async function init(block) {
     error.tags = 'gnav';
     error.url = url;
     error.errorType = 'e';
+    error.severity = 'error';
     lanaLog({ message: error.message, ...error });
     throw error;
   }

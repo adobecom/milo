@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { getConfig, createTag, loadStyle, getTargetMarket } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle, getTargetMarket, getCountry } from '../../utils/utils.js';
 
 function buildBanner(market, translatedUrl) {
   const banner = document.body.querySelector('.language-banner');
@@ -64,7 +64,7 @@ async function showBanner(market, config) {
     const { setInternational } = await import('../../utils/utils.js');
     setInternational(market.prefix || 'us');
     if (config.lingoProjectSuccessLogging === 'on') {
-      window.lana.log(`Click: ${eventName}`, { sampleRate: 100, tags: 'lingo, lingo-language-banner-click' });
+      window.lana.log(`Click: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-click', severity: 'i' });
     }
     window.open(translatedUrl, '_self');
   });
@@ -73,14 +73,14 @@ async function showBanner(market, config) {
     const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
     document.cookie = `international=${pagePrefix};path=/;${domain}`;
     if (config.lingoProjectSuccessLogging === 'on') {
-      window.lana.log(`Close: ${eventName}`, { sampleRate: 100, tags: 'lingo, lingo-language-banner-close' });
+      window.lana.log(`Close: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-close', severity: 'i' });
     }
     banner.remove();
   });
 
   sendAnalytics(new Event(eventName));
   if (config.lingoProjectSuccessLogging === 'on') {
-    window.lana.log(`Load: ${eventName}`, { sampleRate: 100, tags: 'lingo, lingo-language-banner-load' });
+    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-load', severity: 'i' });
   }
 }
 

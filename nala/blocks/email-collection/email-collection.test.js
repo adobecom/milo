@@ -15,6 +15,15 @@ const isFork = process.env.isFork === 'true';
 const isValidBranch = /^mwpw-\d{6}$/i.test(branchName);
 
 test.describe('Milo Email Collection Block test suite', () => {
+  test.skip(
+    !isValidBranch || isFork,
+    `Skipping Email Collection tests — reason: ${
+      !isValidBranch
+        ? `branch name “${branchName}” does not match required format “MWPW-123456"`
+        : 'PR comes from a forked repo'
+    }`,
+  );
+
   test.beforeEach(async ({ page }) => {
     webUtil = new WebUtil(page);
     emailCollection = new EmailCollectionBlock(page);
@@ -24,15 +33,6 @@ test.describe('Milo Email Collection Block test suite', () => {
   test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
     const { data } = features[0];
-
-    test.skip(
-      !isValidBranch || isFork,
-      `Skipping Email Collection tests — reason: ${
-        !isValidBranch
-          ? `branch name “${branchName}” does not match required format “MWPW-123456"`
-          : 'PR comes from a forked repo'
-      }`,
-    );
 
     await test.step('step-1: Go to test page', async () => {
       await page.goto(`${baseURL}${features[0].path}${miloLibs}`);
