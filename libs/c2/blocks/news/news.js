@@ -89,7 +89,7 @@ function addStyle(filename) {
 }
 
 export default async function init(el) {
-  console.log('init news');
+  console.log('init news forced');
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1 || el.matches('.accent-bar')) {
