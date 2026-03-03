@@ -108,6 +108,7 @@ const C1_BLOCKS = [
 const C2_BLOCKS = [
   'box',
   'section-metadata',
+  'explore-card',
 ];
 
 const AUTO_BLOCKS = [
