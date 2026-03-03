@@ -937,15 +937,20 @@ export function buildVariantInfo(variantNames) {
   }, { allNames: [] });
 }
 
-const getXLGListURL = (config) => {
+const getXLGListURL = (config) => new Promise((resolve) => {
+  if (config.mepXlgTagsURL) {
+    resolve(undefined);
+    return;
+  }
   const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
-  return `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
-};
+  config.mepXlgTagsURL = `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
+  resolve(config.mepXlgTagsURL);
+});
 
 export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
-  const entitlementUrl = getXLGListURL(config);
+  const entitlementUrl = await getXLGListURL(config);
   const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
@@ -1672,7 +1677,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) loadLink(await getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
   if (enablePersV2 && target === true) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
