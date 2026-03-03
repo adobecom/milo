@@ -2358,16 +2358,6 @@ function loadLingoIndexes(area = document) {
   }
 }
 
-export async function loadBaseStyles(libsPath) {
-  const pathsToLoad = [];
-  const stylesPrefix = getMetadata('foundation') === 'c2' ? '/c2' : '';
-  pathsToLoad.push(`${libsPath}${stylesPrefix}/styles/styles.css`);
-  const skin = getMetadata('skin');
-  if (skin) pathsToLoad.push(`${libsPath}/styles/skins/${skin}.css`);
-
-  await Promise.all(pathsToLoad.map((path) => loadStyle(path)));
-}
-
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
