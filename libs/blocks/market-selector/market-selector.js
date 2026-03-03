@@ -258,16 +258,21 @@ export default async function init(block) {
     const { locales } = getConfig();
     const currentLangCode = currentLang.prefix || 'en';
     const regionalPrefix = `${marketItem.value}_${currentLangCode.replace('/', '')}`;
-    const targetPrefix = locales[regionalPrefix] ? regionalPrefix : (marketItem.prefix || '');
+    const marketPrefix = locales[regionalPrefix] ? regionalPrefix : (marketItem.prefix || '');
 
     setMarket(marketItem.value);
 
-    const finalUrl = new URL(marketItem.url && marketItem.url !== '#' ? marketItem.url : window.location.href);
+    const targetPrefix = marketPrefix ? `/${marketPrefix}` : '';
+    const targetUrl = (targetPrefix && targetPrefix !== currentPrefix)
+      ? getTargetUrl(marketPrefix, window.location.pathname)
+      : window.location.href;
+
+    const finalUrl = new URL(targetUrl);
     finalUrl.searchParams.set('country', marketItem.value);
 
-    if (targetPrefix && `/${targetPrefix}` !== currentPrefix) {
+    if (targetPrefix && targetPrefix !== currentPrefix) {
       handleEvent({
-        prefix: targetPrefix,
+        prefix: marketPrefix,
         link: { href: finalUrl.toString() },
         callback: (url) => { window.location.href = url; },
       });
