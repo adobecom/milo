@@ -30,12 +30,12 @@ div.section.new-cards-section {
 
 .new-cards .foreground :is(h1, h2, h3, h4, h5, h6) {
   margin-bottom: var(--s2a-spacing-8);
-  color: #000000;
+  color: var(--s2a-color-gray-1000);
   font-size: var(--s2a-font-size-xl);
 }
 
 .new-cards .foreground a {
-  color: #000000;
+  color: var(--s2a-color-gray-1000);
   text-decoration: none;
   font-size: var(--type-body-s-size);
   font-weight: 700;
