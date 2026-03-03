@@ -1,6 +1,6 @@
 :root {
   --mep-feds-color-link: #FFFFFF80;
-  --mep-feds-background-footer: #000;
+  --mep-feds-color-link--hover: #FFFFFF;
 }
 
 /* Base */
@@ -57,9 +57,11 @@
 
 /* Menu */
 .feds-footer-wrapper .feds-menu-headline {
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 16px;
+  line-height: var(--type-heading-xs-lh);
   color: #fff;
+  font-weight: var(--s2a-font-weight-adobe-clean-black);
+  font-family: var(--body-font-family);
 }
 
 .feds-footer-wrapper .feds-menu-column {
@@ -69,12 +71,13 @@
 
 /* Additional nesting is needed for specificity */
 .feds-footer-wrapper .feds-menu-content .feds-navLink {
-  padding-top: 0;
-  padding-bottom: 0;
   padding: 0px 16px;
   margin: 0 16px;
-  color: #fff;
   opacity: 0.6;
+  font-size: 16px;
+  color: #fff;
+  font-family: var(--body-font-family);
+  line-height: var(--s2a-font-line-height-16);
 }
 
 /* Options (region selector, social, privacy) */
@@ -83,6 +86,12 @@
 .feds-regionPicker {
   display: flex;
   align-items: center;
+}
+
+.feds-featuredProducts .feds-navLink:hover,
+.feds-footer-wrapper .feds-menu-content .feds-navLink:hover {
+  color: #fff;
+  opacity: 1;
 }
 
 .feds-footer-options {
@@ -219,12 +228,11 @@
 }
 
 .feds-social-link:hover .feds-social-icon {
-  color: #909090;
+  color: #fff;
 }
 
 .footer-logo-image svg {
-  width: 67px;
-  height: 20px;
+  height: 13px;
   display: block;
 }
 
@@ -233,7 +241,7 @@
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   line-height: 0;
-  padding-top: 16px;
+  margin-top: 30px;
 }
 
 .global-footer .feds-footer-logo img {
@@ -360,7 +368,7 @@ span.feds-footer-privacyLink-divider {
 
 @media (min-width: 900px) {
   .global-footer:not(.mobile) .feds-footer-wrapper {
-    row-gap: 30px;
+    row-gap: var(--s2a-spacing-24);
   }
 
   /* If there is too much content, float it on multiple rows */
@@ -407,11 +415,20 @@ span.feds-footer-privacyLink-divider {
   .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-headline {
     flex-shrink: 0;
     font-size: 14px;
-    font-weight: 700;
     padding: 0;
     margin: 0;
     line-height: inherit;
-    padding-bottom: 16px;
+    padding-bottom: var(--s2a-spacing-24);
+    font-weight: var(--s2a-font-weight-adobe-clean-black);
+  }
+
+  .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink-title {
+    font-size: 12px;
+    font-weight: var(--s2a-font-weight-adobe-clean-black);
+  }
+
+  .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink {
+    gap: var(--s2a-spacing-8);
   }
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-items ul {
@@ -443,6 +460,7 @@ span.feds-footer-privacyLink-divider {
 
   .global-footer:not(.mobile) .feds-footer-options > .feds-footer-miscLinks-legal {
     grid-area: legal;
+    align-items: center;
   }
 
   .global-footer:not(.mobile) .feds-footer-options > .feds-social {
@@ -492,6 +510,16 @@ span.feds-footer-privacyLink-divider {
   .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
     position: inherit;
     padding-left: 24px;
+  }
+
+  .global-footer .feds-footer-logo {
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1100px) {
+  .global-footer:not(.mobile) .feds-footer-options {
+    column-gap: clamp(12px, 1.5vw, 40px);
   }
 }
 
