@@ -214,11 +214,7 @@ const startInitialization = async (config, event, onDemand) => {
   ]);
   let language;
   let region;
-  if (lingoActive()) {
-    [language] = config.locale.ietf.split('-');
-    const country = await getCountry();
-    region = country?.toUpperCase() || '';
-  } else if (config.locale.ietf.includes('-')) {
+  if (config.locale.ietf.includes('-')) {
     [language, region] = config.locale.ietf.split('-');
   } else {
     [region, language] = config.locale.prefix.replace('/', '').split('_');
