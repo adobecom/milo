@@ -184,6 +184,8 @@ const defaultOptions = {
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title: (A - Z)',
     titleDesc: 'Title: (Z - A)',
+    localFirst: 'Local Region First',
+    localLast: 'Local Region Last',
     random: 'Random',
   },
   source: {
@@ -584,6 +586,8 @@ const SortPanel = () => {
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
+      <${Input} label="Local Region First" prop="sortLocalFirst" type="checkbox" />
+      <${Input} label="Local Region Last" prop="sortLocalLast" type="checkbox" />
       <${Input} label="Random" prop="sortRandom" type="checkbox" />
     </div>
 

@@ -374,6 +374,8 @@ const getSortOptions = (state, strs) => {
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
+    localFirst: 'Local Region First',
+    localLast: 'Local Region Last',
     random: 'Random',
   };
 
