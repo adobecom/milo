@@ -1140,6 +1140,45 @@ export function canServeManifest(manifestConfig) {
   return true;
 }
 
+/* c8 ignore start */
+function fireAnalyticsEvent(val) {
+  window._satellite?.track?.('event', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
+        },
+      },
+    },
+    data:
+      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
+function sendAnalytics(val) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(val);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(val);
+    }, { once: true });
+  }
+}
+/* c8 ignore stop */
+
+export function sendMktgTracking(fileName, mktgAction) {
+  if (!mktgAction?.startsWith('marketing')) return false;
+  const { advertising } = getConfig().mep.consentState;
+  if (!advertising) return false;
+  const eventName = `${fileName} was served`;
+  sendAnalytics(eventName);
+  return eventName;
+}
+
 async function getManifestConfig(info, variantOverride) {
   const {
     name,
@@ -1182,11 +1221,12 @@ async function getManifestConfig(info, variantOverride) {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
+  const fileName = getFileName(manifestPath).replace('.json', '');
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
       manifestConfig.manifestOverrideName = manifestOverrideName;
-      const analytics = manifestOverrideName || getFileName(manifestPath).replace('.json', '');
+      const analytics = manifestOverrideName || fileName;
       manifestConfig.analyticsTitle = analytics.trim().slice(0, 15);
     }
     const executionOrder = {
@@ -1212,8 +1252,11 @@ async function getManifestConfig(info, variantOverride) {
   manifestConfig.manifestPath = normalizePath(manifestPath);
   const isAllowed = canServeManifest(manifestConfig);
   if (!isAllowed) {
+    overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
+  } else {
+    sendMktgTracking(fileName, manifestConfig.mktgAction);
   }
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1508,24 +1551,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
   const timeoutTime = roundToQuarter(timeoutLocal);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  // eslint-disable-next-line no-underscore-dangle
-  window.addEventListener('alloy_sendEvent', () => {
-    window._satellite?.track?.('event', {
-      documentUnloading: true,
-      xdm: {
-        eventType: 'web.webinteraction.linkClicks',
-        web: {
-          webInteraction: {
-            linkClicks: { value: 1 },
-            type: 'other',
-            name: val,
-          },
-        },
-      },
-      data:
-        { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-    });
-  }, { once: true });
+  sendAnalytics(val);
 }
 
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
