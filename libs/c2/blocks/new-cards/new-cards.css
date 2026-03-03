@@ -52,7 +52,7 @@ div.section.new-cards-section {
 }
 
 .new-cards .foreground a::after {
-  content: '>';
+  content: url('./img/icon.svg');
   margin-left: 8px;
 }
 
