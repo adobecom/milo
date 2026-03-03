@@ -13,21 +13,31 @@ async function fillOutSignInForm(props, page) {
   expect(process.env.IMS_PASS, 'ERROR: No environment variable for password provided for IMS Test.').toBeTruthy();
 
   await expect(page).toHaveTitle(/Adobe ID|Sign in/i);
-  let heading = await page.locator(selectors['@page-heading']).first().innerText();
-  expect(heading).toBe('Sign in');
+  const emailField = page.locator(selectors['@email']);
+  await expect(emailField).toBeVisible({ timeout: 45000 });
+
+  // Heading can vary by IMS rollout; validate only if it exists.
+  const headingLocator = page.locator(selectors['@page-heading']).first();
+  if (await headingLocator.count()) {
+    const heading = await headingLocator.innerText();
+    expect(heading.toLowerCase()).toContain('sign in');
+  }
 
   // Fill out Sign-in Form
   await expect(async () => {
-    await page.locator(selectors['@email']).fill(process.env.IMS_EMAIL);
+    await emailField.fill(process.env.IMS_EMAIL);
     await page.locator(selectors['@email-continue-btn']).click();
-    await expect(page.locator(selectors['@password-reset'])).toBeVisible({ timeout: 45000 }); // Timeout accounting for how long IMS Login page takes to switch form
+    await expect(page.locator(selectors['@password'])).toBeVisible({ timeout: 45000 }); // Timeout accounting for how long IMS Login page takes to switch form
   }).toPass({
     intervals: [1_000],
     timeout: 10_000,
   });
 
-  heading = await page.locator(selectors['@page-heading'], { hasText: 'Enter your password' }).first().innerText();
-  expect(heading).toBe('Enter your password');
+  const passwordHeading = page.locator(selectors['@page-heading'], { hasText: 'Enter your password' }).first();
+  if (await passwordHeading.count()) {
+    const heading = await passwordHeading.innerText();
+    expect(heading).toBe('Enter your password');
+  }
   await page.locator(selectors['@password']).fill(process.env.IMS_PASS);
   await page.locator(selectors['@password-continue-btn']).click();
   await page.waitForURL(`${props.url}#`);
