@@ -109,6 +109,9 @@ const C2_BLOCKS = [
   'box',
   'section-metadata',
   'explore-card',
+  'global-footer',
+  'global-navigation',
+  'region-nav',
 ];
 
 const AUTO_BLOCKS = [
