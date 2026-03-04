@@ -423,7 +423,6 @@ function updateFramework(updateFrameworkList) {
   const stylesPrefix = fwVal === 'c1' ? '' : `/${fwVal}`;
   loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, {
     rel: 'stylesheet',
-    fetchpriority: 'high',
     callback: (status) => {
       if (status === 'load') {
         existing?.remove();
