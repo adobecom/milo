@@ -188,7 +188,7 @@ async function openChatModal(initialMessage, el) {
   const { env } = getConfig();
   // const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
   // const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
-  const src = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js?experience-platform-brand-concierge-web-agent_version=PR-363-9cbac8976af9998d702a21738e6d5c5acdcc5845';
+  const src = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   await loadScript(src);
 
   const urlParams = new URLSearchParams(window.location.search);
