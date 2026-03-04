@@ -71,7 +71,7 @@
     }
 
     &:not(.hero) .content [class*="body-"]:not(.action-area) {
-      max-width: 794px; /*TODO: Update with token value */
+      max-width: 794px;
     }
 
     .action-area {
