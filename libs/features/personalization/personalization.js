@@ -411,17 +411,30 @@ const setMetadata = (metadata) => {
 
 function updateFramework(updateFrameworkList) {
   if (!updateFrameworkList?.length) return;
-  const fw = updateFrameworkList[0];
-  if (getMetadata('foundation') === fw.val) return;
+  const fwVal = updateFrameworkList[0].val?.toLowerCase();
+  if (!/^c\d+$/.test(fwVal)) return;
+  const currentFoundation = getMetadata('foundation') || 'c1';
+  if (currentFoundation === fwVal) return;
   const { miloLibs, codeRoot } = getConfig();
   const libsPath = miloLibs || codeRoot;
   const existing = document.head.querySelector(
     `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
   );
-  existing?.remove();
-  setMetadata({ selector: 'foundation', val: fw.val });
-  const stylesPrefix = fw.val ? `/${fw.val}` : '';
-  loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, { rel: 'stylesheet' });
+  const stylesPrefix = fwVal === 'c1' ? '' : `/${fwVal}`;
+  loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, {
+    rel: 'stylesheet',
+    fetchpriority: 'high',
+    callback: (status) => {
+      if (status === 'load') {
+        existing?.remove();
+        if (fwVal === 'c1') {
+          document.querySelector('meta[name="foundation"]')?.remove();
+        } else {
+          setMetadata({ selector: 'foundation', val: fwVal });
+        }
+      }
+    },
+  });
 }
 
 function toLowerAlpha(str) {
