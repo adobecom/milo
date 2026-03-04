@@ -44,7 +44,7 @@
   }
 
   .rm-eyebrow {
-    font-family: var(--s2a-font-family-default);
+    font-family: var(--body-font-family);
     font-size: var(--s2a-typography-font-size-eyebrow);
     font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
     line-height: var(--s2a-typography-line-height-eyebrow);
@@ -61,11 +61,11 @@
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
-    font-family: var(--s2a-font-family-default);
-    font-size: var(--s2a-typography-font-size-p-lg);
+    font-family: var(--body-font-family);
+    font-size: var(--s2a-typography-font-size-body-lg);
     font-weight: var(--s2a-font-weight-adobe-clean-regular);
-    line-height: var(--s2a-typography-line-height-p-lg);
-    letter-spacing: var(--s2a-typography-letter-spacing-p-lg);
+    line-height: var(--s2a-typography-line-height-body-lg);
+    letter-spacing: var(--s2a-typography-letter-spacing-body-lg);
     margin-bottom: var(--s2a-spacing-sm);
   }
 
@@ -82,7 +82,7 @@
     align-items: center;
     border-radius: 75px;
     backdrop-filter: blur(16.5px);
-    font-family: var(--s2a-font-family-default);
+    font-family: var(--body-font-family);
     font-size: var(--s2a-typography-font-size-label);
     font-weight: var(--s2a-font-weight-adobe-clean-bold);
     line-height: var(--s2a-typography-line-height-label);
