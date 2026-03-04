@@ -58,7 +58,6 @@ div.section.new-card-section {
       margin-bottom: var(--s2a-spacing-8);
       color: var(--s2a-color-gray-1000);
       font-size: var(--s2a-font-size-xl);
-      letter-spacing: -0.2px;
     }
 
     a {
@@ -122,10 +121,6 @@ div.section.new-card-section {
       display: flex;
     }
 
-    .foreground :is(h1, h2, h3, h4, h5, h6) {
-      letter-spacing: -0.4px;
-    }
-
     .media picture:not(.icon) img {
       aspect-ratio: 4/3;
     }
@@ -158,7 +153,6 @@ div.section.new-card-section {
   .new-card {
     .foreground :is(h1, h2, h3, h4, h5, h6) {
       font-size: var(--s2a-font-size-2xl);
-      letter-spacing: -0.4px;
     }
 
     &.full-width .foreground {
@@ -173,10 +167,6 @@ div.section.new-card-section {
 
 @media (width > 1440px) {
   .new-card {
-    .foreground :is(h1, h2, h3, h4, h5, h6) {
-      letter-spacing: -0.48px;
-    }
-
     &.full-width .foreground p:not(:has(> a)) {
       max-width: 567px;
     }
