@@ -1273,7 +1273,9 @@ export async function categorizeActions(experiment, config) {
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  updateFramework(selectedVariant.updateframework);
+  if (selectedVariant.updateframework?.length) {
+    [config.mep.updateframework] = selectedVariant.updateframework;
+  }
 
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
@@ -1410,6 +1412,10 @@ export async function applyPers({ manifests }) {
   config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
   config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+  if (config.mep.updateframework) {
+    updateFramework([config.mep.updateframework]);
+  }
 
   const main = document.querySelector('main');
   if (config.mep.replacepage && !isPostLCP && main) {
