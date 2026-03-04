@@ -54,6 +54,7 @@
 }
 
 .mep-popup.in-page .mep-popup-tabs {
+  border-left: none;
   background-color: #222;
 }
 
