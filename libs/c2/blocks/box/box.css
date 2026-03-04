@@ -1,7 +1,7 @@
 .box {
   display: grid;
   grid-template-columns: repeat(var(--grid-columns), 1fr);
-  gap: var(--grid-gutter-width);
+  gap: var(--s2a-grid-gutter);
   counter-reset: box-cell;
   position: relative;
 }

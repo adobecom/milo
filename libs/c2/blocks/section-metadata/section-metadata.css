@@ -20,7 +20,7 @@
   &.four-up {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); /* 320px - 2 * 24px */
-    gap: var(--grid-gutter-width);
+    gap: var(--s2a-grid-gutter);
     align-items: start;
     padding-inline: var(--grid-margin-width);
 
@@ -30,7 +30,7 @@
   }
 
   &.masonry-layout {
-    gap: var(--grid-gutter-width);
+    gap: var(--s2a-grid-gutter);
     padding-inline: var(--grid-margin-width);
     grid-template-columns: repeat(var(--grid-columns), 1fr);
 
@@ -61,8 +61,8 @@
 
 .section[class*='grid-width-'] {
   display: grid;
-  /* padding-inline: var(--grid-margin-width); */
-  gap: var(--grid-gutter-width);
+  padding-inline: var(--grid-margin-width);
+  gap: var(--s2a-grid-gutter);
 }
 
 .section[class*='grid-width-'] > .content,

@@ -60,9 +60,11 @@
       &.max-width-8 {
         --grid-container-width: calc(100% - (var(--grid-margin-width-8) * 2));
       }
+
       &.max-width-10 {
         --grid-container-width: calc(100% - (var(--grid-margin-width-10) * 2));
       }
+
       height: 1040px;
 
       .container {
@@ -82,4 +84,3 @@
 
 @media (width >= 1440px) {
 }
-
