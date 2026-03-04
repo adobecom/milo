@@ -1,4 +1,3 @@
-/* eslint-disable no-continue */
 /* eslint-disable class-methods-use-this */
 import { expect } from '@playwright/test';
 
@@ -50,9 +49,7 @@ export default class ComparisonTableBlock {
   }
 
   sectionBody(sectionHeader) {
-    return sectionHeader.locator(
-      'xpath=following::div[contains(@class,"table-body")][1]',
-    );
+    return sectionHeader.locator('~ .table-body');
   }
 
   sectionRowsFromBody(tableBody) {
@@ -88,7 +85,7 @@ export default class ComparisonTableBlock {
       } = sh;
 
       const column = this.headerColumn(colIndex);
-
+      /* eslint-disable no-continue */
       if (!visibility) {
         await expect(column).toBeHidden();
         continue;

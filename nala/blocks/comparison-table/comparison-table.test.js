@@ -52,7 +52,7 @@ test.describe('Milo Comparison Table block feature test suite', () => {
       }
       await table.verifyTableSubHeaders(data);
       await table.verifyTableSection(data.firstSection);
-      await table.verifyTableSection(data.firstSection);
+      await table.verifyTableSection(data.secondSection);
     });
 
     await test.step('step-3: Verify sticky header', async () => {
