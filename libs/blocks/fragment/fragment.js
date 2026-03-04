@@ -149,9 +149,17 @@ export default async function init(a) {
   // Import mep/lingo.js once if this is a mep-lingo link
   const lingoModule = isMepLingoLink ? await import('../../features/mep/lingo.js') : null;
 
-  if (isMepLingoLink && (isOnRegionalPage || !lingoActive())) {
+  if (isMepLingoLink && (isOnRegionalPage || (!lingoActive() && env?.name !== 'prod'))) {
     lingoModule.handleInvalidMepLingo(a, { env });
     return;
+  }
+
+  if (isMepLingoLink && !lingoActive()) {
+    window.lana?.log(`mep-lingo content on non-lingo page: ${a.href}`, {
+      tags: 'mep-lingo',
+      severity: 'warn',
+      sampleRate: 0.1,
+    });
   }
 
   let originalBlock;
@@ -288,6 +296,9 @@ export default async function init(a) {
       removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
       a.parentElement?.remove();
       return;
+    }
+    if (isMepLingoFragment) {
+      lingoModule.removeMepLingoElement(a, false);
     }
     const message = `Could not get ${shouldFetchMepLingo ? 'mep-lingo ' : ''}fragment: ${resourcePath}.plain.html`;
     window.lana?.log(message, {

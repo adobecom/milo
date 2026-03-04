@@ -1507,3 +1507,120 @@ describe('fetchFragment and fetchMepLingo', () => {
     expect(fragment.dataset.mepLingoRemove).to.equal('true');
   });
 });
+
+describe('MEP Lingo Prod Fallback (lingo not active)', () => {
+  let savedEnv;
+
+  beforeEach(() => {
+    savedEnv = getConfig().env;
+    updateConfig({ ...getConfig(), env: { name: 'prod' } });
+  });
+
+  afterEach(() => {
+    updateConfig({ ...getConfig(), env: savedEnv });
+  });
+
+  it('keeps block and removes only the mep-lingo row on prod', async () => {
+    const section = document.createElement('div');
+    section.className = 'section';
+    const marquee = document.createElement('div');
+    marquee.className = 'marquee';
+
+    const contentRow = document.createElement('div');
+    const contentCell = document.createElement('div');
+    contentCell.textContent = 'Marquee Content';
+    contentRow.appendChild(contentCell);
+    marquee.appendChild(contentRow);
+
+    const lingoRow = document.createElement('div');
+    const lingoLabel = document.createElement('div');
+    lingoLabel.textContent = 'mep-lingo';
+    const lingoLinkCell = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/fragments/regional-marquee';
+    lingoLinkCell.appendChild(a);
+    lingoRow.appendChild(lingoLabel);
+    lingoRow.appendChild(lingoLinkCell);
+    marquee.appendChild(lingoRow);
+
+    section.appendChild(marquee);
+    document.body.appendChild(section);
+
+    await getFragment(a);
+
+    expect(document.body.contains(marquee)).to.be.true;
+    const rows = marquee.querySelectorAll(':scope > div');
+    expect(rows.length).to.equal(1);
+    expect(rows[0].textContent).to.include('Marquee Content');
+    section.remove();
+  });
+
+  it('keeps section and removes mep-lingo row from section-metadata on prod', async () => {
+    const section = document.createElement('div');
+    section.className = 'section';
+
+    const contentDiv = document.createElement('div');
+    contentDiv.textContent = 'Section Content';
+    section.appendChild(contentDiv);
+
+    const sectionMetadata = document.createElement('div');
+    sectionMetadata.className = 'section-metadata';
+
+    const styleRow = document.createElement('div');
+    const styleLabel = document.createElement('div');
+    styleLabel.textContent = 'style';
+    const styleValue = document.createElement('div');
+    styleValue.textContent = 'dark';
+    styleRow.appendChild(styleLabel);
+    styleRow.appendChild(styleValue);
+    sectionMetadata.appendChild(styleRow);
+
+    const lingoRow = document.createElement('div');
+    const lingoLabel = document.createElement('div');
+    lingoLabel.textContent = 'mep-lingo';
+    const lingoLinkCell = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/fragments/regional-section';
+    lingoLinkCell.appendChild(a);
+    lingoRow.appendChild(lingoLabel);
+    lingoRow.appendChild(lingoLinkCell);
+    sectionMetadata.appendChild(lingoRow);
+
+    section.appendChild(sectionMetadata);
+    document.body.appendChild(section);
+
+    await getFragment(a);
+
+    expect(document.body.contains(section)).to.be.true;
+    const metaRows = sectionMetadata.querySelectorAll(':scope > div');
+    expect(metaRows.length).to.equal(1);
+    expect(metaRows[0].querySelector('div').textContent).to.equal('style');
+    section.remove();
+  });
+
+  it('removes mep-lingo insert block on prod when lingo not active', async () => {
+    const section = document.createElement('div');
+    section.className = 'section';
+    const block = document.createElement('div');
+    block.className = 'mep-lingo insert';
+
+    const lingoRow = document.createElement('div');
+    const lingoLabel = document.createElement('div');
+    lingoLabel.textContent = 'mep-lingo';
+    const lingoLinkCell = document.createElement('div');
+    const a = document.createElement('a');
+    a.href = '/fragments/insert-content';
+    lingoLinkCell.appendChild(a);
+    lingoRow.appendChild(lingoLabel);
+    lingoRow.appendChild(lingoLinkCell);
+    block.appendChild(lingoRow);
+
+    section.appendChild(block);
+    document.body.appendChild(section);
+
+    await getFragment(a);
+
+    expect(section.querySelector('.mep-lingo')).to.be.null;
+    section.remove();
+  });
+});
