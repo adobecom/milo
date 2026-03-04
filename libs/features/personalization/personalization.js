@@ -938,13 +938,14 @@ export function buildVariantInfo(variantNames) {
 }
 
 const getXLGListURL = (config) => new Promise((resolve) => {
-  if (config.mepXlgTagsURL) {
-    resolve(undefined);
-    return;
-  }
-  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
-  config.mepXlgTagsURL = `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
-  resolve(config.mepXlgTagsURL);
+  const isSignedInUser = window.adobeIMS?.isSignedInUser();
+
+  const xlgUrl = (config.mepXlgTagsURL || !isSignedInUser)
+    ? undefined
+    : `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${config.env?.name === 'prod' ? 'prod' : 'stage'}`;
+
+  config.mepXlgTagsURL = xlgUrl;
+  resolve(xlgUrl);
 });
 
 export const getEntitlementMap = async () => {
