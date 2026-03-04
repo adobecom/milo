@@ -127,8 +127,9 @@ async function openSusiLightModal() {
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
     const token = detail;
-    console.log('SUSI Light: on-token (successful auth), token received', token);
-    // ToDo: Do something with the token - need info from Nina
+    // console.log('SUSI Light: on-token (successful auth), token received', token);
+    // // ToDo: Do something with the token - need info from Nina
+    window.miloBrandConcierge.token = token;
   };
   const susiEl = createSusiComponentForModal({
     authParams,
@@ -183,7 +184,7 @@ async function openChatModal(initialMessage, el) {
   const { env } = getConfig();
   // const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
   // const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
-  const src = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const src = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js?experience-platform-brand-concierge-web-agent_version=PR-363-9cbac8976af9998d702a21738e6d5c5acdcc5845';
   await loadScript(src);
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -192,18 +193,28 @@ async function openChatModal(initialMessage, el) {
   const instanceName = useTestInstance ? 'alloy2' : 'alloy';
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
 
+  const onBeforeEventSend = (content) => {
+    if (window.miloBrandConcierge.token) {
+      content.data = {
+        type: 'auth',
+        payload: { token: window.miloBrandConcierge.token },
+      };
+    }
+  };
+
   if (bootstrapAPIReady) {
     window.adobe.concierge.bootstrap({
       instanceName,
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
+      onBeforeEventSend,
     });
   } else {
     window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
   }
 
   mountEl.addEventListener('bc:cta-action', ({ detail }) => {
-    console.log('bc:cta-action', detail);
+    // console.log('bc:cta-action', detail);
     if (detail?.action === 'sign-in') {
       openSusiLightModal();
     }
