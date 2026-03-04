@@ -82,7 +82,7 @@ div.section.new-card-section {
   }
 
   p {
-    color: rgba(0, 0, 0, 0.60);
+    color: var(--s2a-color-transparent-black-64);
   }
 
   &.full-width .foreground {
