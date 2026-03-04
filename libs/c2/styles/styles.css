@@ -382,8 +382,8 @@
 
   /* Milo-specific declarations */
   --scroll-padding-block: 0;
-  --body-font-family: var(--s2a-font-family-default), adobe-clean, 'Trebuchet MS', sans-serif;
-  --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, 'Arial Bold Adjusted', sans-serif;
+  --body-font-family: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
+  --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
 
   /* Grid sizes */
   --grid-columns: 6;
@@ -396,7 +396,8 @@
   /* Regional font variations */
   &:lang(ar) {
     --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family);
-    --font-size-multiplier: 1.25;
+
+    font-size: 125%;
   }
 
   &:lang(ko-KR),
@@ -459,9 +460,9 @@ html {
 body {
   display: block;
   font-family: var(--body-font-family);
-  font-size: var(--s2a-typography-font-size-p-md);
-  line-height: var(--s2a-typography-line-height-p-md);
-  letter-spacing: var(--s2a-typography-letter-spacing-p-md);
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
   background-color: var(--s2a-color-background-default);
   color: var(--s2a-color-gray-1000);
   margin: 0;
@@ -578,27 +579,27 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
 }
 
 h1 {
-  font-size: var(--s2a-typography-font-size-h1);
-  line-height: var(--s2a-typography-line-height-h1);
-  letter-spacing: var(--s2a-typography-letter-spacing-h1);
+  font-size: var(--s2a-typography-font-size-title-1);
+  line-height: var(--s2a-typography-line-height-title-1);
+  letter-spacing: var(--s2a-typography-letter-spacing-title-1);
 }
 
 h2 {
-  font-size: var(--s2a-typography-font-size-h2);
-  line-height: var(--s2a-typography-line-height-h2);
-  letter-spacing: var(--s2a-typography-letter-spacing-h2);
+  font-size: var(--s2a-typography-font-size-title-2);
+  line-height: var(--s2a-typography-line-height-title-2);
+  letter-spacing: var(--s2a-typography-letter-spacing-title-2);
 }
 
 h3 {
-  font-size: var(--s2a-typography-font-size-h3);
-  line-height: var(--s2a-typography-line-height-h3);
-  letter-spacing: var(--s2a-typography-letter-spacing-h3);
+  font-size: var(--s2a-typography-font-size-title-3);
+  line-height: var(--s2a-typography-line-height-title-3);
+  letter-spacing: var(--s2a-typography-letter-spacing-title-3);
 }
 
 h4 {
-  font-size: var(--s2a-typography-font-size-h4);
-  line-height: var(--s2a-typography-line-height-h4);
-  letter-spacing: var(--s2a-typography-letter-spacing-h4);
+  font-size: var(--s2a-typography-font-size-title-4);
+  line-height: var(--s2a-typography-line-height-title-4);
+  letter-spacing: var(--s2a-typography-letter-spacing-title-4);
 }
 
 p {
@@ -606,21 +607,21 @@ p {
 }
 
 .body-lg {
-  font-size: var(--s2a-typography-font-size-p-lg);
-  line-height: var(--s2a-typography-line-height-p-lg);
-  letter-spacing: var(--s2a-typography-letter-spacing-p-lg);
+  font-size: var(--s2a-typography-font-size-body-lg);
+  line-height: var(--s2a-typography-line-height-body-lg);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-lg);
 }
 
 .body-md {
-  font-size: var(--s2a-typography-font-size-p-md);
-  line-height: var(--s2a-typography-line-height-p-md);
-  letter-spacing: var(--s2a-typography-letter-spacing-p-md);
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
 }
 
 .body-sm {
-  font-size: var(--s2a-typography-font-size-p-sm);
-  line-height: var(--s2a-typography-line-height-p-sm);
-  letter-spacing: var(--s2a-typography-letter-spacing-p-sm);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
 }
 
 .eyebrow, [class*="eyebrow-"] {
@@ -725,9 +726,9 @@ p {
   border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-1000);
   color: var(--s2a-color-gray-1000);
   display: inline-block;
-  font-size: var(--s2a-typography-font-size-sm);
+  font-size: var(--s2a-font-size-14); /* TODO: Replace with a semantic token that scales */
   font-style: normal;
-  font-weight: var(--s2a-typography-font-weight-bold);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
   line-height: 16px;
   padding: 5px 14px;
   text-decoration: none;
@@ -739,9 +740,10 @@ p {
     text-decoration: none;
   }
 
-  &.l-button, &.button-l {
+  &.l-button,
+  &.button-l {
     border-radius: 40px;
-    line-height: var(--s2a-typography-line-height-3xs);
+    line-height: var(--s2a-font-line-height-16); /* TODO: Replace with a semantic token that scales */
     padding: 9px 35px 11px;
   }
 
@@ -750,7 +752,8 @@ p {
     border-color: #3b63fb;
     color: var(--s2a-color-gray-25);
 
-    &:hover, &:active {
+    &:hover,
+    &:active {
       background-color: #274dea; /* Missing color */
       border-color: #274dea;
       color: var(--s2a-color-gray-25);
@@ -762,7 +765,8 @@ p {
     border-color: var(--s2a-color-gray-1000);
     color: var(--s2a-color-gray-25);
 
-    &:hover, &:active {
+    &:hover,
+    &:active {
       background-color: var(--s2a-color-gray-1000);
       border-color: var(--s2a-color-gray-1000);
     }
@@ -772,6 +776,7 @@ p {
 
 .dark .con-button:not(.blue) {
   border-color: var(--s2a-color-gray-25);
+
   &:hover {
     border-color: var(--s2a-color-gray-1000);
   }
@@ -863,45 +868,51 @@ that would likely have to be done via JS */
   }
 }
 
-/* Tablet and above */
+/* responsive.sm and up */
 @media (width >= 768px) {
   :root {
-    --s2a-typography-line-height-super: var(--s2a-font-line-height-4xl);
-    --s2a-typography-line-height-h1: var(--s2a-font-line-height-3xl);
-    --s2a-typography-line-height-h2: var(--s2a-font-line-height-xl);
-    --s2a-typography-line-height-h3: var(--s2a-font-line-height-lg);
-    --s2a-typography-line-height-p-lg: var(--s2a-font-line-height-md);
-    --s2a-typography-line-height-p-sm: var(--s2a-font-line-height-xs);
-    --s2a-typography-letter-spacing-h1: var(--s2a-font-letter-spacing-sm);
-    --s2a-typography-letter-spacing-h2: var(--s2a-font-letter-spacing-md);
-    --s2a-typography-letter-spacing-h3: var(--s2a-font-letter-spacing-lg);
-    --s2a-typography-letter-spacing-eyebrow: var(--s2a-font-letter-spacing-3xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-8xl);
-    --s2a-typography-font-size-h1: var(--s2a-font-size-6xl);
-    --s2a-typography-font-size-h2: var(--s2a-font-size-4xl);
-    --s2a-typography-font-size-h3: var(--s2a-font-size-3xl);
-    --s2a-typography-font-size-p-lg: var(--s2a-font-size-lg);
+    --s2a-typography-font-size-title-1: var(--s2a-font-size-6xl);
+    --s2a-typography-font-size-title-2: var(--s2a-font-size-4xl);
+    --s2a-typography-font-size-title-3: var(--s2a-font-size-3xl);
+    --s2a-typography-font-size-body-lg: var(--s2a-font-size-lg);
+    --s2a-typography-font-size-body-xs: var(--s2a-font-size-sm);
+    --s2a-typography-letter-spacing-super: var(--s2a-font-letter-spacing-md);
+    --s2a-typography-letter-spacing-title-1: var(--s2a-font-letter-spacing-lg);
+    --s2a-typography-letter-spacing-title-2: var(--s2a-font-letter-spacing-2xl);
+    --s2a-typography-letter-spacing-title-3: var(--s2a-font-letter-spacing-3xl);
+    --s2a-typography-letter-spacing-title-4: var(--s2a-font-letter-spacing-4xl);
+    --s2a-typography-line-height-super: var(--s2a-font-line-height-4xl);
+    --s2a-typography-line-height-title-1: var(--s2a-font-line-height-3xl);
+    --s2a-typography-line-height-title-2: var(--s2a-font-line-height-xl);
+    --s2a-typography-line-height-title-3: var(--s2a-font-line-height-lg);
+    --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
   }
 }
 
-/* Desktop and above */
+/* responsive.md and up */
+@media (width >= 1024px) {
+
+}
+
+/* responsive.lg and up */
 @media (width >= 1280px) {
   :root {
-    --s2a-typography-line-height-super: var(--s2a-font-line-height-6xl);
-    --s2a-typography-line-height-h1: var(--s2a-font-line-height-5xl);
-    --s2a-typography-line-height-h2: var(--s2a-font-line-height-3xl);
-    --s2a-typography-line-height-h3: var(--s2a-font-line-height-2xl);
-    --s2a-typography-line-height-h4: var(--s2a-font-line-height-md);
-    --s2a-typography-line-height-p-sm: var(--s2a-font-line-height-2xs);
-    --s2a-typography-line-height-label: var(--s2a-font-line-height-2xs);
-    --s2a-typography-letter-spacing-super: var(--s2a-font-letter-spacing-xs);
-    --s2a-typography-letter-spacing-h4: var(--s2a-font-letter-spacing-xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-10xl);
-    --s2a-typography-font-size-h1: var(--s2a-font-size-9xl);
-    --s2a-typography-font-size-h2: var(--s2a-font-size-6xl);
-    --s2a-typography-font-size-h3: var(--s2a-font-size-5xl);
-    --s2a-typography-font-size-h4: var(--s2a-font-size-2xl);
-    --s2a-typography-font-size-p-lg: var(--s2a-font-size-xl);
+    --s2a-typography-font-size-title-1: var(--s2a-font-size-9xl);
+    --s2a-typography-font-size-title-2: var(--s2a-font-size-6xl);
+    --s2a-typography-font-size-title-3: var(--s2a-font-size-5xl);
+    --s2a-typography-font-size-title-4: var(--s2a-font-size-2xl);
+    --s2a-typography-font-size-body-lg: var(--s2a-font-size-xl);
+    --s2a-typography-letter-spacing-super: var(--s2a-font-letter-spacing-xs);
+    --s2a-typography-letter-spacing-title-1: var(--s2a-font-letter-spacing-sm);
+    --s2a-typography-letter-spacing-title-2: var(--s2a-font-letter-spacing-lg);
+    --s2a-typography-letter-spacing-title-3: var(--s2a-font-letter-spacing-xl);
+    --s2a-typography-line-height-super: var(--s2a-font-line-height-6xl);
+    --s2a-typography-line-height-title-1: var(--s2a-font-line-height-5xl);
+    --s2a-typography-line-height-title-2: var(--s2a-font-line-height-3xl);
+    --s2a-typography-line-height-title-3: var(--s2a-font-line-height-2xl);
+    --s2a-typography-line-height-title-4: var(--s2a-font-line-height-md);
 
     /* Grid definitions */
     --grid-columns: 12;
@@ -912,9 +923,9 @@ that would likely have to be done via JS */
   }
 }
 
-/* Desktop XL and beyond */
+/* responsive.xl and up */
 @media (width >= 1440px) {
   :root {
-
+    --s2a-typography-letter-spacing-title-3: var(--s2a-font-letter-spacing-2xl);
   }
 }
