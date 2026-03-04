@@ -14,6 +14,8 @@ const animationMs = 500;
 const authoredContent = {};
 const variants = {};
 
+let brandConciergeToken = null;
+
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
 }
@@ -127,9 +129,9 @@ async function openSusiLightModal() {
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
     const token = detail;
-    // console.log('SUSI Light: on-token (successful auth), token received', token);
-    // // ToDo: Do something with the token - need info from Nina
-    window.miloBrandConcierge.token = token;
+    console.log('SUSI Light: on-token (successful auth), token received', token);
+    // ToDo: Do something with the token - need info from Nina
+    brandConciergeToken = token;
   };
   const susiEl = createSusiComponentForModal({
     authParams,
@@ -194,10 +196,10 @@ async function openChatModal(initialMessage, el) {
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
 
   const onBeforeEventSend = (content) => {
-    if (window.miloBrandConcierge.token) {
+    if (brandConciergeToken) {
       content.data = {
         type: 'auth',
-        payload: { token: window.miloBrandConcierge.token },
+        payload: { token: brandConciergeToken },
       };
     }
   };
