@@ -937,7 +937,7 @@ export function buildVariantInfo(variantNames) {
   }, { allNames: [] });
 }
 
-const getXLGListURL = (config) => new Promise((resolve) => {
+export const getXLGListURL = (config) => new Promise((resolve) => {
   const isSignedInUser = window.adobeIMS?.isSignedInUser();
 
   const xlgUrl = (config.mepXlgTagsURL || !isSignedInUser)
