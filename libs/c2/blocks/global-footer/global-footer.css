@@ -419,7 +419,7 @@ span.feds-footer-privacyLink-divider {
     margin: 0;
     line-height: inherit;
     padding-bottom: var(--s2a-spacing-24);
-    font-weight: var(--s2a-font-weight-adobe-clean-black);
+    font-weight: var(--s2a-font-weight-adobe-clean-display-black);
   }
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink-title {
@@ -487,7 +487,7 @@ span.feds-footer-privacyLink-divider {
     grid-template-areas:
       "region legal social";
   }
-  
+
   .global-footer .feds-footer-miscLinks-legal .footer-logo {
     margin-left: auto;
     padding-left: 30px;
