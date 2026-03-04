@@ -157,7 +157,12 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
+export const MILO_EVENTS = {
+  DEFERRED: 'milo:deferred',
+  QUERY_INDEX_PRIMARY_LOADED: 'milo:query-index:primary-loaded',
+  QUERY_INDEX_ALL_LOADED: 'milo:query-index:all-loaded',
+  LINGO_LOCALIZATION_STATS: 'milo:lingo:localization-stats',
+};
 const TARGET_TIMEOUT_MS = 4000;
 
 const LANGSTORE = 'langstore';
@@ -181,6 +186,25 @@ let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 let isLoadingQueryIndexes = false;
 let siteQueryIndexMapLingo = [];
+
+/** List of { url, source } for each localization (non-distinct, same URL can appear multiple times). */
+const localizedLinksList = [];
+
+/**
+ * Returns whether the given (localized) URL was localized with primary or other index (last match).
+ * @param {string} url - The localized URL string
+ * @returns {'primary' | 'other' | null | undefined}
+ */
+export function getLocalizedSource(url) {
+  if (!url) return undefined;
+  const last = [...localizedLinksList].reverse().find((e) => e.url === url);
+  return last?.source;
+}
+
+/** Returns the list of localized links for stats/iteration (not distinct). */
+export function getLocalizedLinksList() {
+  return localizedLinksList;
+}
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -619,8 +643,19 @@ function processQueryIndexMap(link, domain) {
   };
 
   result.pathsRequest = fetch(link)
-    .then((response) => response.json())
-    .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((json) => {
+      const data = json.data ?? [];
+      const paths = data
+        .map((d) => (d.path ?? d.Path)?.replace(/\.html$/, ''))
+        .filter(Boolean);
+      return paths;
+    })
     .catch((error) => {
       window.lana?.log(`Failed to load query index: ${link}`, error);
       return [];
@@ -633,13 +668,15 @@ function processQueryIndexMap(link, domain) {
 }
 const getDomainLingo = (path) => path?.split('/*')[0];
 
+const QUERY_INDEX_LIMIT = 50000;
+
 async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   const config = getConfig();
   const queryIndexSuffix = config.env?.name === 'prod' || window.location.host.includes(`${SLD}.live`) ? '' : '-preview';
 
   if (links.length && links.some((link) => link.includes('/federal/')) && !queryIndexes.federal) {
     queryIndexes.federal = processQueryIndexMap(
-      `${getFederatedContentRoot()}${prefix}/federal/assets/lingo/query-index${queryIndexSuffix}.json`,
+      `${getFederatedContentRoot()}${prefix}/federal/assets/lingo/query-index${queryIndexSuffix}.json?limit=${QUERY_INDEX_LIMIT}`,
       getFederatedContentRoot().replace('https://', ''),
     );
     queryIndexes.federal.domains.push(window.location.hostname);
@@ -647,28 +684,47 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   if (lingoSiteMapping || isLoadingQueryIndexes) return;
   isLoadingQueryIndexes = true;
 
+  const queryIndexLoadStart = performance.now();
+
   const origin = config.origin || window.location.origin;
   const contentRoot = config.contentRoot ?? '';
   const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
   const siteId = config.uniqueSiteId ?? '';
 
-  queryIndexes[siteId] = processQueryIndexMap(
-    `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
-    window.location.hostname,
-  );
-
+  const queryIndexLimit = QUERY_INDEX_LIMIT;
+  const siteIndexUrl = `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json?limit=${queryIndexLimit}`;
+  queryIndexes[siteId] = processQueryIndexMap(siteIndexUrl, window.location.hostname);
   if (onlyCurrentSite) {
     lingoSiteMapping = Promise.resolve(lingoSiteMappingLoaded = true);
+    Promise.all([queryIndexes[siteId].pathsRequest]).then(() => {
+      const durationMs = Math.round(performance.now() - queryIndexLoadStart);
+      const primaryDetail = { durationMs };
+      window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED, { detail: primaryDetail }));
+      console.log('[Milo]', MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED, primaryDetail);
+    });
     return;
   }
 
   if (config.queryIndexPath) {
-    const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base !== undefined ? config.locale.base : config.locale.prefix.replace('/', '')}` : ''}${contentRoot}`;
-    baseQueryIndex = processQueryIndexMap(
-      `${baseContentRoot}${config.queryIndexPath}`,
-      window.location.hostname,
-    );
+    // Base query index: where the primary-path list actually lives. On preview, cc-shared
+    // index is not on the preview host, so load it from production (www.adobe.com).
+    let baseOrigin = origin;
+    if (queryIndexSuffix && contentRoot.includes('cc-shared')) {
+      baseOrigin = 'https://www.adobe.com';
+    }
+    const baseWithLocale = `${baseOrigin}${config.locale.base ? `/${config.locale.base !== undefined ? config.locale.base : config.locale.prefix.replace('/', '')}` : ''}${contentRoot}`;
+    const baseContentRoot = queryIndexSuffix ? `${baseOrigin}${contentRoot}` : baseWithLocale;
+    const baseIndexUrl = `${baseContentRoot}${config.queryIndexPath}?limit=${queryIndexLimit}`;
+    baseQueryIndex = processQueryIndexMap(baseIndexUrl, window.location.hostname);
   }
+
+  const primaryIndexPromises = [queryIndexes[siteId].pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean);
+  Promise.all(primaryIndexPromises).then(() => {
+    const durationMs = Math.round(performance.now() - queryIndexLoadStart);
+    const primaryDetail = { durationMs };
+    window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED, { detail: primaryDetail }));
+    console.log('[Milo]', MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED, primaryDetail);
+  });
 
   lingoSiteMapping = (async () => {
     try {
@@ -712,6 +768,16 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
       lingoSiteMappingLoaded = true;
     }
   })();
+
+  lingoSiteMapping.then(() => {
+    const allIndexPromises = Object.values(queryIndexes).map((q) => q.pathsRequest).filter(Boolean);
+    return Promise.all(allIndexPromises);
+  }).then(() => {
+    const durationMs = Math.round(performance.now() - queryIndexLoadStart);
+    const allDetail = { durationMs };
+    window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_ALL_LOADED, { detail: allDetail }));
+    console.log('[Milo]', MILO_EVENTS.QUERY_INDEX_ALL_LOADED, allDetail);
+  });
 
   import('./lingo.js');
 }
@@ -761,9 +827,16 @@ function localizeLinkCore(
           .filter((q) => q.domains.includes(url.hostname));
         const base = overrideBase ?? locale.base;
         const basePrefix = base === '' ? '' : `/${base}`;
+        const primaryIndexes = [queryIndexes[siteId], baseQueryIndex].filter(Boolean);
+        const regionalPath = `${prefix}${path}`;
+        const basePathFull = `${basePrefix}${path}`;
+        let source = null;
         if (matchingIndexes.length) {
           const { default: urlInQueryIndex } = await import('./lingo.js');
-          const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
+          // eslint-disable-next-line max-len
+          const result = await urlInQueryIndex(regionalPath, basePathFull, url.hostname, matchingIndexes, baseQueryIndex, aTag, primaryIndexes);
+          const useRegionalPrefix = result?.useRegionalPrefix ?? result;
+          source = result?.source ?? 'other';
           const shouldFallbackToBase = isMepLingoFragment
             ? locale?.regions
             : (locale.base || locale.base === '');
@@ -773,16 +846,22 @@ function localizeLinkCore(
             ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
             ?.length
         ) {
+          source = 'other';
           prefix = basePrefix;
         } else {
           prefix = getPrefixBySite(locale, url, relative);
+          if (prefix) source = 'other';
         }
+        if (relative) source = 'primary';
         const urlPath = `${prefix}${path}${url.search}${hash}`;
-        return relative ? urlPath : `${url.origin}${urlPath}`;
+        const result = relative ? urlPath : `${url.origin}${urlPath}`;
+        localizedLinksList.push({ url: result, source });
+        return { url: result, source };
       })();
     }
     const urlPath = `${prefix}${path}${url.search}${hash}`;
-    return relative ? urlPath : `${url.origin}${urlPath}`;
+    const result = relative ? urlPath : `${url.origin}${urlPath}`;
+    return result;
   } catch (error) {
     return href;
   }
@@ -872,7 +951,9 @@ export async function localizeLinkAsync(
     ? getConfig()?.locale?.prefix.replace('/', '')
     : null;
 
-  return localizeLinkCore(effectiveHref, originHostName, overrideDomain, true, prefix, base, aTag);
+  const raw = await localizeLinkCore(effectiveHref, originHostName, overrideDomain, true, prefix, base, aTag);
+  const url = typeof raw === 'object' && raw?.url != null ? raw.url : raw;
+  return url;
 }
 
 // this method is deprecated - use localizeLinkAsync instead
@@ -1370,12 +1451,13 @@ export async function decorateLinksAsync(el) {
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
     if (!a.dataset.hasDnt) {
-      a.href = await localizeLinkAsync(
+      const localized = await localizeLinkAsync(
         a.href,
         window.location.hostname,
         false,
         a,
       );
+      a.href = localized;
     }
     return processLinkDecoration(a, config, hasDnt);
   });
@@ -2001,6 +2083,17 @@ export function scrollToHashedElement(hash) {
 }
 
 export async function loadDeferred(area, blocks, config) {
+  if (area === document) {
+    const list = getLocalizedLinksList();
+    const primaryCount = list.filter((e) => e.source === 'primary').length;
+    const otherCount = list.filter((e) => e.source === 'other').length;
+    const totalLocalized = list.length;
+    const primaryPercent = totalLocalized > 0 ? Math.round((primaryCount / totalLocalized) * 100) : null;
+    const statsDetail = { primaryCount, otherCount, totalLocalized, primaryPercent };
+    window.dispatchEvent(new CustomEvent(MILO_EVENTS.LINGO_LOCALIZATION_STATS, { detail: statsDetail }));
+    console.log('[Milo]', MILO_EVENTS.LINGO_LOCALIZATION_STATS, statsDetail);
+  }
+
   area.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
 
   if (area !== document) {
