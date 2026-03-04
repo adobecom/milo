@@ -71,6 +71,55 @@ const [handleOverflow, removeOverflow] = (() => {
   ];
 })();
 
+/** C2-only dialog (no C1 modal). Same events/API surface so feature works without loading C1. */
+// eslint-disable-next-line quotes -- SVG attributes require double quotes for compatibility
+const C2_CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><g transform="translate(-10500 3403)"><circle cx="10" cy="10" r="10" transform="translate(10500 -3403)"/><line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/><line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/></g></svg>`;
+
+function createC2Dialog(content, options = {}) {
+  const { id = 'locale-modal-v2', class: className = 'locale-modal-v2', closeEvent = 'closeModal' } = options;
+  const dialog = createTag('div', {
+    class: `dialog-modal ${className}`.trim(),
+    id,
+    role: 'dialog',
+    'aria-modal': true,
+  });
+  const closeBtn = createTag('button', {
+    class: 'dialog-close',
+    'aria-label': 'Close',
+  }, C2_CLOSE_ICON);
+
+  let keydownListener;
+  const onClose = () => {
+    dialog.removeEventListener(closeEvent, onClose);
+    dialog.removeEventListener('keydown', keydownListener);
+    const curtain = document.querySelector(`#${id}~.modal-curtain`);
+    if (curtain) curtain.remove();
+    dialog.remove();
+    document.body.classList.remove('disable-scroll');
+    [...document.querySelectorAll('header, main, footer')].forEach((el) => el.removeAttribute('aria-disabled'));
+    window.dispatchEvent(new Event('milo:modal:closed'));
+  };
+  keydownListener = (e) => { if (e.key === 'Escape') onClose(); };
+  dialog.addEventListener(closeEvent, onClose);
+  dialog.addEventListener('keydown', keydownListener);
+
+  closeBtn.addEventListener('click', (e) => { e.preventDefault(); onClose(); });
+  dialog.prepend(closeBtn);
+  dialog.append(content);
+
+  document.body.appendChild(dialog);
+  document.body.classList.add('disable-scroll');
+  const curtain = createTag('div', { class: 'modal-curtain is-open' });
+  curtain.addEventListener('click', (e) => { if (e.target === curtain) onClose(); });
+  dialog.insertAdjacentElement('afterend', curtain);
+  [...document.querySelectorAll('header, main, footer')].forEach((el) => el.setAttribute('aria-disabled', 'true'));
+
+  const firstFocusable = dialog.querySelector('a, button:not([disabled])');
+  if (firstFocusable) firstFocusable.focus({ preventScroll: true });
+  window.dispatchEvent(new Event('milo:modal:loaded'));
+  return dialog;
+}
+
 export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
@@ -351,11 +400,17 @@ async function getDetails(currentPage, localeMatches, geoData) {
 
 async function showModal(details) {
   const { miloLibs, codeRoot } = config;
+  const base = miloLibs || codeRoot;
+  const georoutingPath = `${base}/features/georoutingv2/georoutingv2.css`;
+
+  if (getMetadata('foundation') === 'c2') {
+    await new Promise((resolve) => { loadStyle(georoutingPath, resolve); });
+    return createC2Dialog(details, { id: 'locale-modal-v2', class: 'locale-modal-v2', closeEvent: 'closeModal' });
+  }
 
   const tabs = details.querySelector('.tabs');
-  const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
-  const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
-  const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
+  const sectionMetaPath = `${base}/blocks/section-metadata/section-metadata.css`;
+  const modalPath = `${base}/blocks/modal/modal.css`;
   const promises = [
     tabs ? loadBlock(tabs) : null,
     tabs ? new Promise((resolve) => { loadStyle(sectionMetaPath, resolve); }) : null,
