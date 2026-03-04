@@ -14,7 +14,7 @@ const animationMs = 500;
 const authoredContent = {};
 const variants = {};
 
-let brandConciergeToken = null;
+let bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
@@ -129,9 +129,11 @@ async function openSusiLightModal() {
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
     const token = detail;
-    console.log('SUSI Light: on-token (successful auth), token received', token);
+    // console.log('SUSI Light: on-token (successful auth), token received', token);
     // ToDo: Do something with the token - need info from Nina
-    brandConciergeToken = token;
+    if (!bcToken) {
+      bcToken = token;
+    }
   };
   const susiEl = createSusiComponentForModal({
     authParams,
@@ -196,11 +198,14 @@ async function openChatModal(initialMessage, el) {
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
 
   const onBeforeEventSend = (content) => {
-    if (brandConciergeToken) {
+    if (bcToken) {
       content.data = {
         type: 'auth',
-        payload: { token: brandConciergeToken },
+        payload: { token: bcToken },
       };
+      console.log('onBeforeEventSend', content);
+    } else {
+      console.log('no token', content);
     }
   };
 
