@@ -47,7 +47,7 @@ div.section.new-card-section {
       border-radius: var(--s2a-border-radius-md);
       width: 100%;
       object-fit: cover;
-      aspect-ratio: 327 / 245
+      aspect-ratio: 4/3;
     }
   }
 
@@ -148,7 +148,7 @@ div.section.new-card-section {
       }
 
       .media picture:not(.icon) img {
-        aspect-ratio: 148/67;
+        aspect-ratio: 2.2/1;
       }
     }
   }
