@@ -2045,10 +2045,10 @@ async function loadPostLCP(config) {
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
 
-    loadBlock(header);
+    // await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
-  loadTemplate();
+  // await loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
 
@@ -2083,6 +2083,17 @@ export function scrollToHashedElement(hash) {
 }
 
 export async function loadDeferred(area, blocks, config) {
+  if (area === document) {
+    const list = getLocalizedLinksList();
+    const primaryCount = list.filter((e) => e.source === 'primary').length;
+    const otherCount = list.filter((e) => e.source === 'other').length;
+    const totalLocalized = list.length;
+    const primaryPercent = totalLocalized > 0 ? Math.round((primaryCount / totalLocalized) * 100) : null;
+    const statsDetail = { primaryCount, otherCount, totalLocalized, primaryPercent, list };
+    window.dispatchEvent(new CustomEvent(MILO_EVENTS.LINGO_LOCALIZATION_STATS, { detail: statsDetail }));
+    console.log('[Milo]', MILO_EVENTS.LINGO_LOCALIZATION_STATS, statsDetail);
+  }
+
   area.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
 
   if (area !== document) {
@@ -2119,19 +2130,6 @@ export async function loadDeferred(area, blocks, config) {
     loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
-  }
-
-  if (area === document) {
-    setTimeout(() => {
-      const list = getLocalizedLinksList();
-      const primaryCount = list.filter((e) => e.source === 'primary').length;
-      const otherCount = list.filter((e) => e.source === 'other').length;
-      const totalLocalized = list.length;
-      const primaryPercent = totalLocalized > 0 ? Math.round((primaryCount / totalLocalized) * 100) : null;
-      const statsDetail = { primaryCount, otherCount, totalLocalized, primaryPercent, list };
-      window.dispatchEvent(new CustomEvent(MILO_EVENTS.LINGO_LOCALIZATION_STATS, { detail: statsDetail }));
-      console.log('[Milo]', MILO_EVENTS.LINGO_LOCALIZATION_STATS, statsDetail);
-    }, 10000);
   }
 }
 
@@ -2313,7 +2311,7 @@ async function documentPostSectionLoading(config) {
     const { default: addRichResults } = await import('../features/richresults.js');
     addRichResults(richResults, { createTag, getMetadata });
   }
-  loadFooter();
+  // loadFooter();
   if (config.experiment?.selectedVariant?.scripts?.length) {
     config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
   }
