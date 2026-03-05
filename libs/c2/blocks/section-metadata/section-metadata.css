@@ -27,6 +27,16 @@
     &.fluid {
       --grid-margin-width: 0px; /* Keep unit for calc */
     }
+
+    &.dark {
+      background-color: var(--s2a-color-gray-900);
+      color: var(--s2a-color-gray-25);
+    }
+    
+    &.light {
+      background-color: var(--s2a-color-gray-25);
+      color: var(--s2a-color-gray-1000);
+    }
   }
 
   &.masonry-layout {

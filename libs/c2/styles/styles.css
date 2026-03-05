@@ -127,7 +127,9 @@
   --s2a-border-radius-2: 2px;
   --s2a-border-radius-4: 4px;
   --s2a-border-radius-8: 8px;
+  --s2a-border-radius-12: 12px;
   --s2a-border-radius-16: 16px;
+  --s2a-border-radius-24: 24px;
   --s2a-border-radius-32: 32px;
   --s2a-border-radius-999: 999px;
   --s2a-border-width-0: 0;
@@ -307,7 +309,6 @@
 
   /* tokens.semantic.light */
   --s2a-color-background-default: var(--s2a-color-gray-25);
-  --s2a-color-background-default-hover: var(--s2a-color-gray-25);
   --s2a-color-background-subtle: var(--s2a-color-gray-50);
   --s2a-color-background-brand: var(--s2a-color-brand-adobe-red);
   --s2a-color-background-knockout: var(--s2a-color-gray-1000);
@@ -315,7 +316,6 @@
   --s2a-color-background-disabled: var(--s2a-color-gray-50);
   --s2a-color-background-utility-error: var(--s2a-color-red-900);
   --s2a-color-border-default: var(--s2a-color-gray-800);
-  --s2a-color-border-default-hover: var(--s2a-color-gray-900);
   --s2a-color-border-subtle: var(--s2a-color-gray-300);
   --s2a-color-border-strong: var(--s2a-color-gray-900);
   --s2a-color-border-knockout: var(--s2a-color-gray-1000);
@@ -324,15 +324,14 @@
   --s2a-color-border-disabled: var(--s2a-color-gray-400);
   --s2a-color-border-utility-error: var(--s2a-color-red-900);
   --s2a-color-content-default: var(--s2a-color-gray-800);
-  --s2a-color-content-default-hover: var(--s2a-color-gray-900);
   --s2a-color-content-subtle: var(--s2a-color-gray-700);
   --s2a-color-content-knockout: var(--s2a-color-gray-25);
   --s2a-color-content-inverse: var(--s2a-color-gray-1000);
   --s2a-color-content-brand: var(--s2a-color-brand-adobe-red);
   --s2a-color-content-disabled: var(--s2a-color-gray-400);
   --s2a-color-content-utility-error: var(--s2a-color-red-900);
-  --s2a-color-content-body-sublte: var(--s2a-color-transparent-black-64);
   --s2a-color-content-body-strong: var(--s2a-color-gray-900);
+  --s2a-color-content-body-subtle: var(--s2a-color-transparent-black-64);
   --s2a-color-content-eyebrow: var(--s2a-color-transparent-black-64);
   --s2a-color-content-caption: var(--s2a-color-transparent-black-64);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-900);
@@ -342,7 +341,7 @@
   --s2a-color-content-label: var(--s2a-color-content-default);
 
   /* tokens.responsive.xs */
-  --s2a-grid-gutter: 8px;
+  --s2a-grid-gutter: var(--s2a-spacing-xs);
   --s2a-typography-font-size-super: var(--s2a-font-size-6xl);
   --s2a-typography-font-size-title-1: var(--s2a-font-size-4xl);
   --s2a-typography-font-size-title-2: var(--s2a-font-size-3xl);
@@ -434,13 +433,11 @@
 .dark {
   /* tokens.semantic.dark */
   --s2a-color-background-default: var(--s2a-color-gray-900);
-  --s2a-color-background-default-hover: var(--s2a-color-gray-800);
   --s2a-color-background-subtle: var(--s2a-color-gray-700);
   --s2a-color-content-default: var(--s2a-color-gray-25);
-  --s2a-color-content-default-hover: var(--s2a-color-gray-75);
   --s2a-color-content-subtle: var(--s2a-color-gray-600);
-  --s2a-color-content-body-sublte: var(--s2a-color-transparent-white-64);
   --s2a-color-content-body-strong: var(--s2a-color-gray-50);
+  --s2a-color-content-body-subtle: var(--s2a-color-transparent-white-64);
   --s2a-color-content-eyebrow: var(--s2a-color-transparent-white-48);
   --s2a-color-content-caption: var(--s2a-color-transparent-white-64);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-500);
@@ -686,9 +683,15 @@ p {
   max-width: 1440px;
   margin: 0 auto;
 
+  &.wide {
+    max-width: 1920px;
+  }
+
   &.fluid {
     --grid-margin-width: 0px; /* Keep unit for calc */
     --grid-container-width: calc(100% - (var(--grid-margin-width) * 2));
+
+    max-width: 2560px;
   }
 }
 
@@ -868,9 +871,11 @@ that would likely have to be done via JS */
   }
 }
 
-/* responsive.sm and up */
+/* tokens.responsive.sm and up */
 @media (width >= 768px) {
   :root {
+    --s2a-grid-element-gap-sm: var(--s2a-spacing-lg);
+    --s2a-grid-element-gap-lg: var(--s2a-spacing-2xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-8xl);
     --s2a-typography-font-size-title-1: var(--s2a-font-size-6xl);
     --s2a-typography-font-size-title-2: var(--s2a-font-size-4xl);
@@ -887,17 +892,49 @@ that would likely have to be done via JS */
     --s2a-typography-line-height-title-2: var(--s2a-font-line-height-xl);
     --s2a-typography-line-height-title-3: var(--s2a-font-line-height-lg);
     --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
+    --s2a-section-padding-none: var(--s2a-spacing-none);
+    --s2a-section-padding-xs: var(--s2a-spacing-lg);
+    --s2a-section-padding-sm: var(--s2a-spacing-xl);
+    --s2a-section-padding-md: var(--s2a-spacing-2xl);
+    --s2a-section-padding-lg: var(--s2a-spacing-4xl);
+    --s2a-section-padding-xl: var(--s2a-layout-sm);
   }
 }
 
-/* responsive.md and up */
+/* tokens.responsive.md and up */
 @media (width >= 1024px) {
-
+  :root {
+    --s2a-grid-element-gap-sm: var(--s2a-spacing-lg);
+    --s2a-grid-element-gap-lg: var(--s2a-spacing-2xl);
+    --s2a-typography-font-size-super: var(--s2a-font-size-8xl);
+    --s2a-typography-font-size-title-1: var(--s2a-font-size-6xl);
+    --s2a-typography-font-size-title-2: var(--s2a-font-size-4xl);
+    --s2a-typography-font-size-title-3: var(--s2a-font-size-3xl);
+    --s2a-typography-font-size-body-lg: var(--s2a-font-size-lg);
+    --s2a-typography-font-size-body-xs: var(--s2a-font-size-sm);
+    --s2a-typography-letter-spacing-super: var(--s2a-font-letter-spacing-md);
+    --s2a-typography-letter-spacing-title-1: var(--s2a-font-letter-spacing-lg);
+    --s2a-typography-letter-spacing-title-2: var(--s2a-font-letter-spacing-2xl);
+    --s2a-typography-letter-spacing-title-3: var(--s2a-font-letter-spacing-3xl);
+    --s2a-typography-letter-spacing-title-4: var(--s2a-font-letter-spacing-4xl);
+    --s2a-typography-line-height-super: var(--s2a-font-line-height-4xl);
+    --s2a-typography-line-height-title-1: var(--s2a-font-line-height-3xl);
+    --s2a-typography-line-height-title-2: var(--s2a-font-line-height-xl);
+    --s2a-typography-line-height-title-3: var(--s2a-font-line-height-lg);
+    --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
+    --s2a-section-padding-xs: var(--s2a-spacing-2xl);
+    --s2a-section-padding-sm: var(--s2a-spacing-4xl);
+    --s2a-section-padding-md: var(--s2a-layout-sm);
+    --s2a-section-padding-lg: var(--s2a-layout-lg);
+    --s2a-section-padding-xl: var(--s2a-layout-xl);
+  }
 }
 
-/* responsive.lg and up */
+/* tokens.responsive.lg and up */
 @media (width >= 1280px) {
   :root {
+    --s2a-grid-element-gap-sm: var(--s2a-spacing-xl);
+    --s2a-grid-element-gap-lg: var(--s2a-spacing-4xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-10xl);
     --s2a-typography-font-size-title-1: var(--s2a-font-size-9xl);
     --s2a-typography-font-size-title-2: var(--s2a-font-size-6xl);
@@ -913,6 +950,11 @@ that would likely have to be done via JS */
     --s2a-typography-line-height-title-2: var(--s2a-font-line-height-3xl);
     --s2a-typography-line-height-title-3: var(--s2a-font-line-height-2xl);
     --s2a-typography-line-height-title-4: var(--s2a-font-line-height-md);
+    --s2a-section-padding-xs: var(--s2a-spacing-4xl);
+    --s2a-section-padding-sm: var(--s2a-layout-sm);
+    --s2a-section-padding-md: var(--s2a-layout-lg);
+    --s2a-section-padding-lg: var(--s2a-layout-xl);
+    --s2a-section-padding-xl: var(--s2a-layout-2xl);
 
     /* Grid definitions */
     --grid-columns: 12;
@@ -923,7 +965,7 @@ that would likely have to be done via JS */
   }
 }
 
-/* responsive.xl and up */
+/* tokens.responsive.xl and up */
 @media (width >= 1440px) {
   :root {
     --s2a-typography-letter-spacing-title-3: var(--s2a-font-letter-spacing-2xl);

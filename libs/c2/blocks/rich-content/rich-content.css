@@ -68,7 +68,7 @@
       height: 1040px;
 
       .container {
-        padding-top: var(--s2a-layout-2xl);
+        padding-top: var(--s2a-layout-xl);
       }
     }
 
