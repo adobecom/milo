@@ -130,9 +130,12 @@ async function openSusiLightModal() {
     closeSusiModal();
     const token = detail;
     // console.log('SUSI Light: on-token (successful auth), token received', token);
-    // ToDo: Do something with the token - need info from Nina
     if (!bcToken) {
       bcToken = token;
+      const mountEl = document.getElementById(mountId);
+      if (mountEl) {
+        mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
+      }
     }
   };
   const susiEl = createSusiComponentForModal({
