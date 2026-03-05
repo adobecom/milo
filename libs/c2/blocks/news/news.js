@@ -24,63 +24,63 @@ const blockTypeSizes = {
   },
 };
 
-function decorateMultiViewport(foreground) {
-  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
-  if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
-    [...foreground.children].forEach((child, index) => {
-      child.className = viewports[index];
-      if (foreground.childElementCount === 2 && index === 1) child.className = 'tablet-up desktop-up';
-    });
-  }
-  return foreground;
-}
+// function decorateMultiViewport(foreground) {
+//   const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
+//   if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
+//     [...foreground.children].forEach((child, index) => {
+//       child.className = viewports[index];
+//       if (foreground.childElementCount === 2 && index === 1) child.className = 'tablet-up desktop-up';
+//     });
+//   }
+//   return foreground;
+// }
 
-function decorateBlockIconArea(content, el) {
-  const first = content.children[0];
-  if (first?.querySelector('img')) {
-    const areaClass = el.className.match(/-(lockup|icon)/);
-    first.classList.add(areaClass ? `${areaClass[1]}-area` : 'image');
-  }
-  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  if (!headings) return;
-  headings.forEach((h) => {
-    const hPrevElem = h.previousElementSibling;
-    if (hPrevElem?.childElementCount) {
-      const picCount = [...hPrevElem.children].reduce((result, item) => {
-        let count = result;
-        if (item.nodeName === 'PICTURE') count += 1;
-        return count;
-      }, 0);
-      if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
-    }
-  });
-}
+// function decorateBlockIconArea(content, el) {
+//   const first = content.children[0];
+//   if (first?.querySelector('img')) {
+//     const areaClass = el.className.match(/-(lockup|icon)/);
+//     first.classList.add(areaClass ? `${areaClass[1]}-area` : 'image');
+//   }
+//   const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+//   if (!headings) return;
+//   headings.forEach((h) => {
+//     const hPrevElem = h.previousElementSibling;
+//     if (hPrevElem?.childElementCount) {
+//       const picCount = [...hPrevElem.children].reduce((result, item) => {
+//         let count = result;
+//         if (item.nodeName === 'PICTURE') count += 1;
+//         return count;
+//       }, 0);
+//       if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
+//     }
+//   });
+// }
 
-function decorateLinkFarms(el) {
-  const { miloLibs, codeRoot } = getConfig();
-  loadStyle(`${miloLibs || codeRoot}/blocks/text/link-farms.css`);
-  const [title, foregroundDiv] = [...el.querySelectorAll('.foreground')];
-  const hCount = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
-  title.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading-l');
-  foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
-  foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
-    divElem.setAttribute('role', 'list');
-    [...divElem.children].forEach((child) => child.setAttribute('role', 'listitem'));
-    const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
-    heading?.classList.add('heading-xs');
-    if (!hCount) return;
-    if (!heading) {
-      divElem.prepend(createTag('h3', { class: 'no-heading heading-xs' }));
-      return;
-    }
-    const sibling = index % 2 === 0
-      ? divElem.nextElementSibling
-      : divElem.previousElementSibling;
-    sibling?.classList.add('hspace');
-    if (index > 0) divElem.classList.add('has-heading');
-    if (index > 1) foregroundDiv.classList.add('gap-xl');
-  });
-}
+// function decorateLinkFarms(el) {
+//   const { miloLibs, codeRoot } = getConfig();
+//   loadStyle(`${miloLibs || codeRoot}/blocks/text/link-farms.css`);
+//   const [title, foregroundDiv] = [...el.querySelectorAll('.foreground')];
+//   const hCount = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
+//   title.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading-l');
+//   foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
+//   foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
+//     divElem.setAttribute('role', 'list');
+//     [...divElem.children].forEach((child) => child.setAttribute('role', 'listitem'));
+//     const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
+//     heading?.classList.add('heading-xs');
+//     if (!hCount) return;
+//     if (!heading) {
+//       divElem.prepend(createTag('h3', { class: 'no-heading heading-xs' }));
+//       return;
+//     }
+//     const sibling = index % 2 === 0
+//       ? divElem.nextElementSibling
+//       : divElem.previousElementSibling;
+//     sibling?.classList.add('hspace');
+//     if (index > 0) divElem.classList.add('has-heading');
+//     if (index > 1) foregroundDiv.classList.add('gap-xl');
+//   });
+// }
 
 function addStyle(filename) {
   const { miloLibs, codeRoot } = getConfig();
@@ -88,41 +88,51 @@ function addStyle(filename) {
   loadStyle(`${base}/styles/${filename}.css`);
 }
 
+function decorateBlockHeader(row) {
+  row.classList.add('news-headline');
+  const headlineText = row.textContent.trim();
+  const icon = row.querySelector('picture');
+  const headlineEl = createTag('div', { class: 'headline-text' }, `<p>${headlineText}</p>`);
+  const headline = createTag('div', { class: 'headline' }, headlineEl);
+  if (icon) {
+    const iconEl = createTag('div', { class: 'icon' }, icon);
+    headline.prepend(iconEl);
+  }
+  row.appendChild(headline);
+  row.firstElementChild.remove();
+}
+
 export default async function init(el) {
-  console.log('init news forced');
-  el.classList.add('text-block', 'con-block');
+  // el.classList.add('text-block', 'con-block');
+  el.classList.add('news', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1 || el.matches('.accent-bar')) {
-    if (rows[0].textContent !== '') el.classList.add('has-bg');
+  if (rows.length > 1) {
+    if (rows[0].textContent === '' || rows[0].textContent.startsWith('#')) el.classList.add('has-bg');
     const [head, ...tail] = rows;
-    decorateBlockBg(el, head);
+    decorateBlockHeader(head);
     rows = tail || rows;
+    const newsWrapper = createTag('div', { class: 'news-wrapper section' });
+    if (rows.length <= 3) newsWrapper.classList.add('three-up');
+    rows.forEach((row) => {
+      row.classList.add('news-item');
+      const pTags = row.querySelectorAll('p');
+      pTags.forEach((p) => {
+        if (p.parentElement.querySelector('p:first-child') === p) p.classList.add('news-item-headline');
+        else if (p.querySelector('a')) {
+          if (p.querySelector('a').innerText.trim() === p.innerText.trim()) p.classList.add('news-item-link');
+        } else p.classList.add('news-item-body');
+      });
+      newsWrapper.appendChild(row);
+    });
+    el.appendChild(newsWrapper);
   }
   const helperClasses = [];
-  let blockType = 'text';
-  const size = el.classList.contains('legal') ? 'xxsmall' : getBlockSize(el);
-  ['inset', 'long-form', 'bio'].forEach((variant, index) => {
-    if (el.classList.contains(variant)) {
-      helperClasses.push('max-width-8-desktop');
-      blockType = (index > 0) ? 'standard' : variant;
-    }
-  });
-  const hasLinkFarm = el.classList.contains('link-farm');
-  rows.forEach((row) => {
-    row.classList.add('foreground');
-    if (!hasLinkFarm) {
-      [...row.children].forEach((c) => decorateBlockText(c, blockTypeSizes[blockType][size]));
-      decorateMultiViewport(row);
-    }
-    [...row.children].forEach((c) => decorateBlockIconArea(c, el));
-  });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-s');
   }
-  if (hasLinkFarm) decorateLinkFarms(el);
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
 

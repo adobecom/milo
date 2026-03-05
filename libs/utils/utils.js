@@ -113,6 +113,7 @@ const C2_BLOCKS = [
   'global-footer',
   'global-navigation',
   'region-nav',
+  'news',
 ];
 
 const AUTO_BLOCKS = [
