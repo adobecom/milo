@@ -466,8 +466,9 @@ export function getMepPopup(mepConfig, isMmm = false) {
   BuildOptionsManifestList();
 
   function BuildOptionsManifestLisMMM() {
+    if (config.env?.name !== 'prod') return;
     const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
-    if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
+    mepPopupBody[0].append(mepManifestListMMM);
   }
   BuildOptionsManifestLisMMM();
 
