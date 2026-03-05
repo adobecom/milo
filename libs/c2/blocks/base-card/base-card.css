@@ -30,8 +30,8 @@ div.section.base-card-section {
       height: 24px;
       width: 24px;
       position: absolute;
-      top: 16px;
-      inset-inline-start: 16px;
+      top: var(--s2a-spacing-md);
+      inset-inline-start: var(--s2a-spacing-md);
 
       img {
         width: 24px;
@@ -57,26 +57,28 @@ div.section.base-card-section {
     :is(h1, h2, h3, h4, h5, h6) {
       margin-bottom: var(--s2a-spacing-8);
       color: var(--s2a-color-gray-1000);
-      font-size: var(--s2a-font-size-xl);
+      font-size: var(--s2a-typography-font-size-title-4);
+      letter-spacing: var(--s2a-typography-letter-spacing-title-4);
     }
 
     a {
       color: var(--s2a-color-gray-1000);
       text-decoration: none;
-      font-size: var(--type-body-s-size);
-      font-weight: 700;
+      font-size: var(--s2a-typography-font-size-body-sm);
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      line-height: var(--s2a-typography-line-height-body-xs);
       position: relative;
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
 
       &::after {
         content: url('./img/icon.svg');
-        margin-left: 8px;
+        margin-left: var(--s2a-spacing-8);
       }
     }
 
     p {
-      font-size: var(--s2a-font-size-md);
+      font-size: var(--s2a-typography-font-size-body-md);
     }
   }
 
@@ -161,10 +163,6 @@ div.section.base-card-section {
 
 @media (width >= 1280px) {
   .base-card {
-    .foreground :is(h1, h2, h3, h4, h5, h6) {
-      font-size: var(--s2a-font-size-2xl);
-    }
-
     &.full-width .foreground {
       padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
     }
