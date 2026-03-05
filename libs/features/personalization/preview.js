@@ -622,9 +622,9 @@ export async function getMepPopup(mepConfig, isMmm = false) {
 
   // Build Summary : Lingo
   async function buildSummaryLingo() {
-    function getGeoUserSupport() {
+    async function getGeoUserSupport() {
       if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
-      if (getMepLingoPrefix()) return 'Supported';
+      if (await getMepLingoPrefix()) return 'Supported';
       return 'Not Supported';
     }
 
@@ -635,7 +635,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
       langFirst: lingoActive() ? 'on' : 'off',
       geoFolder: page.geo || 'Us (None)',
       userCountry: await getCountry(),
-      geoUser: getGeoUserSupport(),
+      geoUser: await getGeoUserSupport(),
       updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
       total: regionalFragments.length + fallbackFragments.length,
     };
