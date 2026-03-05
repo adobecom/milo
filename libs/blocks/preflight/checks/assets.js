@@ -4,8 +4,25 @@ import { displayPreflightVisuals } from '../visual-metadata.js';
 
 const maxFullWidth = 1920;
 
+function getAssetSrc(asset) {
+  if (asset.tagName === 'IMG') return asset.getAttribute('src') || '';
+  if (asset.tagName === 'VIDEO') {
+    return asset.getAttribute('src')
+      || asset.getAttribute('data-video-source')
+      || asset.querySelector('source')?.getAttribute('src')
+      || '';
+  }
+  return asset.getAttribute('src') || '';
+}
+
+function isBlobOrDataUrl(asset) {
+  const src = getAssetSrc(asset);
+  return typeof src === 'string' && (src.startsWith('blob:') || src.startsWith('data:'));
+}
+
 export function loadImage(asset) {
   if (asset.complete) return Promise.resolve();
+  if (isBlobOrDataUrl(asset)) return Promise.resolve();
   asset.setAttribute('loading', 'eager');
 
   return new Promise((resolve) => {
@@ -14,6 +31,7 @@ export function loadImage(asset) {
 }
 
 function loadVideo(asset) {
+  if (isBlobOrDataUrl(asset)) return Promise.resolve();
   if (asset.querySelector('source')
     && asset.readyState > 1
     && asset.videoWidth > 0) return Promise.resolve();
@@ -206,7 +224,9 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
     };
   }
 
-  const assets = await loadAssets(allAssets);
+  // Exclude blob: and data: URL assets - they cannot be loaded by Preflight and cause net::ERR_FILE_NOT_FOUND
+  const loadableAssets = allAssets.filter((asset) => !isBlobOrDataUrl(asset));
+  const assets = await loadAssets(loadableAssets);
 
   if (!assets.length) {
     return {
