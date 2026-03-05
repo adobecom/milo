@@ -568,8 +568,10 @@ export function getMepPopup(mepConfig, isMmm = false) {
   function buildSummaryPage() {
     const mepTarget = isMmm ? page.target : ({ postlcp: 'postlcp', true: 'on', false: 'off' }[config.mep?.targetEnabled]);
 
+    const foundation = (getMetadata('foundation') || 'c1').toUpperCase();
     const pageData = {
       manifestsFound: mepConfig.activities?.length || 0,
+      foundation,
       targetIntegration: setTargetOnText(mepTarget, page),
       personalization: page.personalization,
       locale: page.locale?.toLowerCase(),
@@ -581,6 +583,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
     <div class="mep-section-data">
         <span>Manifests Found</span>
         <span>${pageData.manifestsFound}</span>
+        <span>Foundation</span>
+        <span>${pageData.foundation}</span>
         <span>Target Integration</span>
         <span>${pageData.targetIntegration}</span>
         <span>Personalization</span>
