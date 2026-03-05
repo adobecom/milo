@@ -50,6 +50,111 @@ function normalizeText(text) {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
+function getCurrentMarket(markets, currentMarketCode, currentLang) {
+  return markets.find((market) => market.marketCode === currentMarketCode)
+    || markets.find((market) => market.marketCode === currentLang.defaultMarket)
+    || markets[0];
+}
+
+function getLanguageOptions(languages, currentLang) {
+  const languageOptions = [];
+  const addedKeys = new Set();
+  languages.forEach((lang) => {
+    const groupKey = lang.group || lang.prefix || 'us';
+    if (addedKeys.has(groupKey)) return;
+    addedKeys.add(groupKey);
+
+    const isCurrentGroup = currentLang.group
+      ? lang.group === currentLang.group
+      : lang.prefix === currentLang.prefix;
+    const targetPrefix = isCurrentGroup ? (currentLang.prefix || '') : (lang.prefix || '');
+
+    languageOptions.push({
+      label: lang.group || lang.nativeName,
+      englishName: lang.group || lang.languageName,
+      value: targetPrefix,
+      url: getTargetUrl(targetPrefix, window.location.pathname),
+    });
+  });
+  return languageOptions;
+}
+
+function handleLanguageSelect(langOption, config, currentMarketCode) {
+  const selectedLang = config.languages.find((lang) => lang.prefix === langOption.value);
+  const supportedMarkets = selectedLang.markets.split(',').map((market) => market.trim());
+  const targetMarketCode = supportedMarkets.includes(currentMarketCode)
+    ? currentMarketCode
+    : selectedLang.defaultMarket;
+
+  setMarket(targetMarketCode);
+  setInternational(selectedLang.prefix || 'us');
+
+  const finalUrl = new URL(langOption.url);
+  finalUrl.searchParams.set('country', targetMarketCode);
+
+  handleEvent({
+    prefix: selectedLang.prefix,
+    link: { href: finalUrl.toString() },
+    callback: (url) => { window.location.href = url; },
+  });
+}
+
+function handleMarketSelect(marketItem, config, currentLang, currentPrefix) {
+  const { locales } = getConfig();
+  const currentLangPrefix = currentLang.prefix || 'en';
+  const regionalPrefix = `${marketItem.value}_${currentLangPrefix.replace('/', '')}`;
+
+  let marketPrefix;
+
+  if (currentLang.group) {
+    const sameGroupLang = config.languages.find((lang) => (
+      lang.group === currentLang.group && lang.defaultMarket === marketItem.value
+    ));
+    if (sameGroupLang) marketPrefix = sameGroupLang.prefix;
+  }
+
+  if (marketPrefix === undefined && locales[regionalPrefix]) {
+    marketPrefix = regionalPrefix;
+  }
+
+  setMarket(marketItem.value);
+
+  let targetPrefix = currentPrefix;
+  if (marketPrefix !== undefined) {
+    targetPrefix = marketPrefix ? `/${marketPrefix}` : '';
+  }
+  const isRedirect = targetPrefix !== currentPrefix;
+  const targetUrl = isRedirect
+    ? getTargetUrl(marketPrefix, window.location.pathname)
+    : window.location.href;
+
+  const finalUrl = new URL(targetUrl);
+  finalUrl.searchParams.set('country', marketItem.value);
+
+  if (isRedirect) {
+    handleEvent({
+      prefix: marketPrefix,
+      link: { href: finalUrl.toString() },
+      callback: (url) => { window.location.href = url; },
+    });
+  } else {
+    window.location.href = finalUrl.toString();
+  }
+}
+
+function getMarketOptions(markets, currentLang) {
+  const supportedMarkets = currentLang.markets.split(',').map((market) => market.trim());
+  return markets
+    .filter((market) => supportedMarkets.includes(market.marketCode))
+    .map((market) => ({
+      label: market.marketName,
+      value: market.marketCode,
+      marketCode: market.marketCode,
+      prefix: market.prefix,
+      url: '#',
+    }));
+}
+
 function createDropdown(label, placeholder, items, onSelect, noResultLabel, isSelected) {
   const container = createTag('div', { class: 'market-selector-dropdown' });
   const button = createTag('button', {
@@ -227,83 +332,27 @@ export default async function init(block) {
 
   const { locale } = getConfig();
   const currentPrefix = locale.prefix || '';
-  const currentLang = config.languages.find((l) => (l.prefix ? `/${l.prefix}` : '') === currentPrefix) || config.languages[0];
+  const currentLang = config.languages.find((lang) => (
+    (lang.prefix ? `/${lang.prefix}` : '') === currentPrefix
+  )) || config.languages[0];
 
   const currentMarketCode = await getValidatedMarket();
-  const currentMarket = config.markets.find((m) => m.marketCode === currentMarketCode)
-    || config.markets.find((m) => m.marketCode === currentLang.defaultMarket)
-    || config.markets[0];
+  const currentMarket = getCurrentMarket(config.markets, currentMarketCode, currentLang);
 
-  const onLanguageSelect = (langItem) => {
-    const selectedLang = config.languages.find((l) => l.prefix === langItem.value);
-    const supportedMarkets = selectedLang.markets.split(',').map((m) => m.trim());
-    const targetMarketCode = supportedMarkets.includes(currentMarketCode)
-      ? currentMarketCode
-      : selectedLang.defaultMarket;
+  const onLanguageSelect = (langOption) => (
+    handleLanguageSelect(langOption, config, currentMarketCode)
+  );
+  const onMarketSelect = (marketItem) => (
+    handleMarketSelect(marketItem, config, currentLang, currentPrefix)
+  );
 
-    setMarket(targetMarketCode);
-    setInternational(selectedLang.prefix || 'us');
-
-    const finalUrl = new URL(langItem.url);
-    finalUrl.searchParams.set('country', targetMarketCode);
-
-    handleEvent({
-      prefix: selectedLang.prefix,
-      link: { href: finalUrl.toString() },
-      callback: (url) => { window.location.href = url; },
-    });
-  };
-
-  const onMarketSelect = (marketItem) => {
-    const { locales } = getConfig();
-    const currentLangCode = currentLang.prefix || 'en';
-    const regionalPrefix = `${marketItem.value}_${currentLangCode.replace('/', '')}`;
-    const marketPrefix = locales[regionalPrefix] ? regionalPrefix : (marketItem.prefix || '');
-
-    setMarket(marketItem.value);
-
-    const targetPrefix = marketPrefix ? `/${marketPrefix}` : '';
-    const targetUrl = (targetPrefix && targetPrefix !== currentPrefix)
-      ? getTargetUrl(marketPrefix, window.location.pathname)
-      : window.location.href;
-
-    const finalUrl = new URL(targetUrl);
-    finalUrl.searchParams.set('country', marketItem.value);
-
-    if (targetPrefix && targetPrefix !== currentPrefix) {
-      handleEvent({
-        prefix: marketPrefix,
-        link: { href: finalUrl.toString() },
-        callback: (url) => { window.location.href = url; },
-      });
-    } else {
-      window.location.href = finalUrl.toString();
-    }
-  };
-
-  const langItems = config.languages.map((l) => ({
-    label: l.nativeName || l.languageName,
-    englishName: l.languageName,
-    value: l.prefix,
-    url: getTargetUrl(l.prefix, window.location.pathname),
-  }));
-
-  const supportedMarkets = currentLang.markets.split(',').map((m) => m.trim());
-
-  const marketItems = config.markets
-    .filter((m) => supportedMarkets.includes(m.marketCode))
-    .map((m) => ({
-      label: m.marketName,
-      value: m.marketCode,
-      marketCode: m.marketCode,
-      prefix: m.prefix,
-      url: '#',
-    }));
+  const languageOptions = getLanguageOptions(config.languages, currentLang);
+  const marketOptions = getMarketOptions(config.markets, currentLang);
 
   const langDropdown = createDropdown(
-    currentLang.nativeName || currentLang.languageName,
+    currentLang.group || currentLang.nativeName || currentLang.languageName,
     labels.searchLanguage,
-    langItems,
+    languageOptions,
     onLanguageSelect,
     labels.noResultLanguage,
     (item) => (item.value ? `/${item.value}` : '') === currentPrefix,
@@ -312,7 +361,7 @@ export default async function init(block) {
   const marketDropdown = createDropdown(
     currentMarket.marketName,
     labels.searchMarket,
-    marketItems,
+    marketOptions,
     onMarketSelect,
     labels.noResultMarket,
     (item) => item.value === currentMarketCode,

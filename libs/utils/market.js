@@ -30,8 +30,9 @@ export async function getValidatedMarket() {
   const config = await getMarketConfig();
   const params = new URLSearchParams(window.location.search);
   const countryParam = norm(params.get('country'));
+  const akamaiParam = norm(params.get('akamaiLocale'));
   const cookieMarket = getCookie('market');
-  let detectedMarket = countryParam || cookieMarket || norm(getCountry());
+  let detectedMarket = countryParam || akamaiParam || cookieMarket || norm(getCountry());
   if (!detectedMarket) {
     const { default: getAkamaiCode } = await import('./geo.js');
     detectedMarket = norm(await getAkamaiCode());
