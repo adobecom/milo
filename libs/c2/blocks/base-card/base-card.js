@@ -11,12 +11,23 @@ function isViewportLabel(text) {
   return VIEWPORT_LABELS.includes(text);
 }
 
+function markStandaloneLinks(foreground) {
+  foreground.querySelectorAll('a').forEach((a) => {
+    const parent = a.parentElement;
+    if (!parent) return;
+    const parentText = parent.textContent?.trim() ?? '';
+    const linkText = a.textContent?.trim() ?? '';
+    if (parentText === linkText) a.classList.add('standalone-link');
+  });
+}
+
 function decorateCard(wrapper) {
   const [foreground, media] = [...wrapper.children];
   if (!foreground || !media) return;
   media.classList.add('media');
   foreground.classList.add('foreground');
   decorateBlockText(foreground);
+  markStandaloneLinks(foreground);
   const firstCell = foreground.children[0];
   if (firstCell?.childElementCount !== 1 || firstCell?.firstElementChild?.tagName !== 'PICTURE') return;
 

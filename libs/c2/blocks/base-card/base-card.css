@@ -71,7 +71,7 @@ div.section.base-card-section {
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
 
-      &::after {
+      &.standalone-link::after {
         content: url('./img/icon.svg');
         margin-left: var(--s2a-spacing-8);
       }
