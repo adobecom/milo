@@ -128,17 +128,27 @@ div.section.base-card-section {
     &.full-width {
       .foreground {
         display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: start;
+        grid-template-columns: repeat(12, 1fr);
 
-        p:has(> a) a {
-          margin-top: 0;
+        :is(h1, h2, h3, h4, h5, h6) {
+          grid-row: 1;
+          grid-column: 1 / span 5;
+        }
+
+        p:has(> a) {
+          grid-row: 1;
+          grid-column: 6 / -1;
+          align-self: center;
+          display: flex;
+          justify-content: flex-end;
         }
 
         p:not(:has(> a)) {
-          grid-row: 2;
-          grid-column: 1;
-          max-width: 466.809px;
+          grid-column: 1 / span 5;
+        }
+
+        p:has(> a) a {
+          margin-top: 0;
         }
       }
 
@@ -165,10 +175,3 @@ div.section.base-card-section {
   }
 }
 
-@media (width > 1440px) {
-  .base-card {
-    &.full-width .foreground p:not(:has(> a)) {
-      max-width: 567px;
-    }
-  }
-}
