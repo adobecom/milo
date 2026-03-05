@@ -774,6 +774,25 @@ function adjustBadgesForZeroHeightSections() {
   });
 }
 
+function adjustStackedBadges() {
+  const badgeSelectors = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
+  const badgeHeight = 35;
+  const spacing = 5;
+  document.querySelectorAll('.section').forEach((section) => {
+    const allBadges = section.querySelectorAll(badgeSelectors);
+    const directBadges = [...allBadges].filter((el) => {
+      if (el.closest('.section') !== section) return false;
+      return window.getComputedStyle(el).display === 'contents';
+    });
+    if (directBadges.length <= 1) return;
+    let offset = 0;
+    directBadges.forEach((el) => {
+      if (offset > 0) el.style.setProperty('--badge-top-offset', `${offset}px`);
+      offset += badgeHeight + spacing;
+    });
+  });
+}
+
 function addFragmentBadgeClickHandlers() {
   document.body.addEventListener('click', (e) => {
     const isHighlightEnabled = document.body.dataset.mepHighlight === 'true';
@@ -798,14 +817,13 @@ function addFragmentBadgeClickHandlers() {
       || parseFloat(beforeStyles.minHeight)
       || 35;
     const fragmentPath = fragment.dataset.path || fragment.dataset.fragmentPath;
+    const badgeTopOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
     const handleBadgeClick = () => {
       e.preventDefault();
       e.stopPropagation();
-      // Only open if it's a fragment (has path), otherwise just block the click
       if (fragmentPath) window.open(fragmentPath, '_blank');
     };
 
-    // Handle badges inside of tabs and other display:contents elements:
     if (elementStyle.display === 'contents') {
       const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
       if (visibleChildren.length === 0) {
@@ -816,7 +834,8 @@ function addFragmentBadgeClickHandlers() {
         const childRect = child.getBoundingClientRect();
         const relativeY = e.clientY - childRect.top;
         const relativeX = e.clientX - childRect.left;
-        const inBadgeY = relativeY >= -badgeHeight && relativeY < 0;
+        const inBadgeY = relativeY >= (badgeTopOffset - badgeHeight)
+          && relativeY < badgeTopOffset;
         const inBadgeX = relativeX >= 0 && relativeX < badgeWidth;
         if (inBadgeY && inBadgeX) {
           handleBadgeClick();
@@ -829,7 +848,8 @@ function addFragmentBadgeClickHandlers() {
     const rect = fragment.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
-    if (clickY < badgeHeight && clickX >= 0 && clickX < badgeWidth) handleBadgeClick();
+    const inBadgeY = clickY >= badgeTopOffset && clickY < (badgeTopOffset + badgeHeight);
+    if (inBadgeY && clickX >= 0 && clickX < badgeWidth) handleBadgeClick();
   });
 }
 
@@ -872,5 +892,8 @@ export default async function decoratePreviewMode() {
   markDefaultFragments();
   addFragmentBadgeClickHandlers();
   // Adjust badge positions after a short delay to allow rendering
-  setTimeout(adjustBadgesForZeroHeightSections, 100);
+  setTimeout(() => {
+    adjustBadgesForZeroHeightSections();
+    adjustStackedBadges();
+  }, 100);
 }
