@@ -411,7 +411,7 @@ const setMetadata = (metadata) => {
 
 function updateFramework(updateFrameworkList) {
   if (!updateFrameworkList?.length) return;
-  const fwVal = updateFrameworkList[0].val?.toLowerCase();
+  const fwVal = updateFrameworkList[0].val?.trim().toLowerCase();
   if (!/^c\d+$/.test(fwVal)) return;
   const currentFoundation = getMetadata('foundation') || 'c1';
   if (currentFoundation === fwVal) return;
