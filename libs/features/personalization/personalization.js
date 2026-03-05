@@ -298,6 +298,7 @@ const COMMANDS = {
       }
     } else {
       value = cmd.content;
+      if (attribute === 'href' && value.includes('/fragments/')) value = normalizePath(value);
     }
 
     if (value) {
