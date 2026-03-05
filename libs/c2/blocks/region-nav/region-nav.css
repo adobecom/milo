@@ -1,7 +1,5 @@
 :root {
   --s2a-font-size-24: 1.5rem;
-  --s2a-font-family-adobe-clean-display: "Adobe Clean Display, adobe-clean, sans-serif";
-  --s2a-font-weight-adobe-clean-black: 900;
 }
 
 .region-nav > div:nth-of-type(2) > div > p,
