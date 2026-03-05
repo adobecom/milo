@@ -23,6 +23,7 @@ function decorateCard(wrapper) {
     const iconPicture = firstCell.firstElementChild;
     iconPicture.classList.add('icon');
     media.appendChild(iconPicture);
+    firstCell.remove();
   }
 }
 
@@ -37,7 +38,7 @@ function decorateViewportStructure(rows) {
 }
 
 export default function init(el) {
-  el.closest('.section').classList.add('new-card-section');
+  el.closest('.section').classList.add('base-card-section');
   const rows = [...el.children];
 
   const hasViewportStructure = rows.length >= 2

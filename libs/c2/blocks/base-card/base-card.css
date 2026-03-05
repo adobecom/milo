@@ -1,8 +1,8 @@
-div.section.new-card-section {
+div.section.base-card-section {
   gap: var(--s2a-spacing-40);
 }
 
-.new-card {
+.base-card {
   height: 100%;
 
   > div[data-viewport] {
@@ -31,7 +31,7 @@ div.section.new-card-section {
       width: 24px;
       position: absolute;
       top: 16px;
-      left: 16px;
+      inset-inline-start: 16px;
 
       img {
         width: 24px;
@@ -90,13 +90,13 @@ div.section.new-card-section {
 }
 
 @media (width < 1024px) {
-  div.section.new-card-section {
+  div.section.base-card-section {
     grid-template-columns: 1fr;
   }
 }
 
 @media (width >= 768px) {
-  .new-card {
+  .base-card {
     > div[data-viewport="mobile"] {
       display: none;
     }
@@ -108,11 +108,11 @@ div.section.new-card-section {
 }
 
 @media (width >= 1024px) {
-  div.section.new-card-section {
+  div.section.base-card-section {
     gap: var(--s2a-spacing-8);
   }
 
-  .new-card {
+  .base-card {
     > div[data-viewport="tablet"] {
       display: none;
     }
@@ -150,7 +150,7 @@ div.section.new-card-section {
 }
 
 @media (width >= 1280px) {
-  .new-card {
+  .base-card {
     .foreground :is(h1, h2, h3, h4, h5, h6) {
       font-size: var(--s2a-font-size-2xl);
     }
@@ -166,7 +166,7 @@ div.section.new-card-section {
 }
 
 @media (width > 1440px) {
-  .new-card {
+  .base-card {
     &.full-width .foreground p:not(:has(> a)) {
       max-width: 567px;
     }
