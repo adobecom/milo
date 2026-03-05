@@ -22,10 +22,17 @@ jobs:
       uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.npm
+          **/node_modules
+        key: npm-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci --no-fund --prefer-offline
 
     - name: Run the tests
       run: npm test
