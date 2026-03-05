@@ -532,6 +532,14 @@ describe('sendMktgTracking', () => {
 describe('getXLGListURL', () => {
   it('should not fire if the citeria is not met', async () => {
     const config = getConfig();
+
+    window.adobeIMS = { isSignedInUser: () => false };
     expect(await getXLGListURL(config)).to.equal(undefined);
+  });
+  it('should return URL if the citeria is met', async () => {
+    const config = getConfig();
+
+    window.adobeIMS = { isSignedInUser: () => true };
+    expect(await getXLGListURL(config)).to.equal('https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=prod');
   });
 });
