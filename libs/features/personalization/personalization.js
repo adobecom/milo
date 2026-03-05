@@ -424,14 +424,9 @@ function updateFramework(updateFrameworkList) {
   loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, {
     rel: 'stylesheet',
     callback: (status) => {
-      if (status === 'load') {
-        existing?.remove();
-        if (fwVal === 'c1') {
-          document.querySelector('meta[name="foundation"]')?.remove();
-        } else {
-          setMetadata({ selector: 'foundation', val: fwVal });
-        }
-      }
+      if (status !== 'load') return;
+      existing?.remove();
+      setMetadata({ selector: 'foundation', val: fwVal });
     },
   });
 }
