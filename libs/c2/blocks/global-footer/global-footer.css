@@ -5,12 +5,12 @@
 
 /* Base */
 .global-footer {
-  padding-top: 20px;
+  padding-top: var(--s2a-spacing-3xl);
   display: flex;
   justify-content: center;
-  font-size: 12px;
-  background: #000;
+  background: var(--s2a-color-gray-1000);
   -webkit-text-size-adjust: none;
+  /* padding:  var(--s2a-spacing-3xl) var(--s2a-spacing-lg) 0 var(--s2a-spacing-lg); */
 }
 
 .global-footer ul {
@@ -50,18 +50,19 @@
 /* Feature Products */
 .feds-featuredProducts .feds-navLink {
   padding: 0 32px;
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   opacity: 0.6;
   font-weight: 700;
 }
 
 /* Menu */
 .feds-footer-wrapper .feds-menu-headline {
-  font-size: 16px;
-  line-height: var(--type-heading-xs-lh);
-  color: #fff;
-  font-weight: var(--s2a-font-weight-adobe-clean-black);
-  font-family: var(--body-font-family);
+  color: var(--s2a-color-gray-25);
+  border-color: var(--s2a-color-transparent-white-12);
+}
+
+.feds-footer-wrapper .feds-menu-headline::after {
+  border-color: var(--s2a-color-gray-25);
 }
 
 .feds-footer-wrapper .feds-menu-column {
@@ -75,9 +76,11 @@
   margin: 0 16px;
   opacity: 0.6;
   font-size: 16px;
-  color: #fff;
-  font-family: var(--body-font-family);
-  line-height: var(--s2a-font-line-height-16);
+  color: var(--s2a-color-gray-25);
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+  margin-bottom: var(--s2a-spacing-xs);
 }
 
 /* Options (region selector, social, privacy) */
@@ -90,7 +93,7 @@
 
 .feds-featuredProducts .feds-navLink:hover,
 .feds-footer-wrapper .feds-menu-content .feds-navLink:hover {
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   opacity: 1;
 }
 
@@ -122,12 +125,6 @@
   border-color: var(--mep-feds-color-link--hover);
   fill: var(--mep-feds-color-link--hover);
 }
-
-/* .global-footer.mobile .feds-regionPicker:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 3px;
-  border-radius: 4px;
-} */
 
 .feds-regionPicker:after {
   width: 8px;
@@ -228,7 +225,7 @@
 }
 
 .feds-social-link:hover .feds-social-icon {
-  color: #fff;
+  color: var(--s2a-color-gray-25);
 }
 
 .footer-logo-image svg {
@@ -285,6 +282,13 @@ span.feds-footer-privacyLink-divider {
 .feds-adChoices-icon {
   width: 12px;
   height: 12px;
+}
+
+.global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-headline {
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: var(--s2a-typography-font-size-eyebrow);
+  line-height: var(--s2a-typography-line-height-eyebrow);
+  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
 }
 
 @media (min-width: 600px) {
@@ -352,10 +356,6 @@ span.feds-footer-privacyLink-divider {
   width: 16px;
 }
 
-.global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem {
-  line-height: 24px;
-}
-
 .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
   position: absolute;
   right: 0;
@@ -363,12 +363,16 @@ span.feds-footer-privacyLink-divider {
 }
 
 .global-footer .feds-featuredProducts .feds-navLink:focus .feds-navLink-title {
-  color: #fff;
+  color: var(--s2a-color-white);
+}
+
+.global-footer .feds-menu-items {
+  border-color: var(--s2a-color-transparent-white-12);
 }
 
 @media (min-width: 900px) {
   .global-footer:not(.mobile) .feds-footer-wrapper {
-    row-gap: var(--s2a-spacing-24);
+    row-gap: var(--s2a-spacing-md);
   }
 
   /* If there is too much content, float it on multiple rows */
@@ -380,6 +384,8 @@ span.feds-footer-privacyLink-divider {
 
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-headline {
     border: none;
+    padding-top: 0;
+    padding-bottom: var(--s2a-spacing-lg);
   }
 
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column {
@@ -414,21 +420,11 @@ span.feds-footer-privacyLink-divider {
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-headline {
     flex-shrink: 0;
-    font-size: 14px;
-    padding: 0;
     margin: 0;
-    line-height: inherit;
-    padding-bottom: var(--s2a-spacing-24);
-    font-weight: var(--s2a-font-weight-adobe-clean-display-black);
-  }
-
-  .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink-title {
-    font-size: 12px;
-    font-weight: var(--s2a-font-weight-adobe-clean-black);
   }
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink {
-    gap: var(--s2a-spacing-8);
+    gap: var(--s2a-spacing-xs);
   }
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-items ul {

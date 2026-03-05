@@ -309,7 +309,7 @@ class Footer {
       featureProductsSection.append(this.decorateHeadline(headline, 0, 'footer'));
     }
 
-    const featuredProductsList = toFragment`<ul></ul>`;
+    const featuredProductsList = toFragment`<ul class="caption"></ul>`;
     featuredProductsContent.querySelectorAll('.link-group').forEach((linkGroup) => {
       featuredProductsList.append(toFragment`<li>${this.decorateLinkGroup(linkGroup)}</li>`);
     });
@@ -524,7 +524,7 @@ class Footer {
     this.elements.footer = toFragment`<div class="feds-footer-wrapper">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
-    <div class="feds-footer-options">
+    <div class="feds-footer-options caption">
       ${this.elements.regionPicker}
       <div class="feds-footer-miscLinks-legal">
         ${this.elements.legal}
