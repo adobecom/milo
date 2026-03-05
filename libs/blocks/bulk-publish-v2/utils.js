@@ -50,8 +50,6 @@ const sticky = () => {
 };
 
 const getAemUrl = (url) => url.hostname.split('.')[0].split('--');
-/** Host must be exactly {ref}--{repo}--{owner}.aem.page or .
- * aem.live (no .hlx.page or other segments) */
 const AEM_PAGE_HOST_REGEX = /^[^.]+\.aem\.(?:page|live)$/;
 const getInvalidUrlReason = (str) => {
   let url;
