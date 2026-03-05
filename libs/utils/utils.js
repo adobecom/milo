@@ -2045,10 +2045,10 @@ async function loadPostLCP(config) {
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
 
-    // await loadBlock(header);
+    await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
-  // await loadTemplate();
+  await loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
 
@@ -2311,7 +2311,7 @@ async function documentPostSectionLoading(config) {
     const { default: addRichResults } = await import('../features/richresults.js');
     addRichResults(richResults, { createTag, getMetadata });
   }
-  // loadFooter();
+  await loadFooter();
   if (config.experiment?.selectedVariant?.scripts?.length) {
     config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
   }
