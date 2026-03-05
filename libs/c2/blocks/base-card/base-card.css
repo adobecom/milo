@@ -72,7 +72,7 @@ div.section.base-card-section {
       margin-top: var(--s2a-spacing-24);
 
       &.standalone-link::after {
-        content: url('./img/icon.svg');
+        content: url('../../assets/img/arrow-right.svg');
         margin-left: var(--s2a-spacing-8);
       }
     }

@@ -1,4 +1,5 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
+import { getFederatedUrl } from '../../../utils/utils.js';
 
 const VIEWPORT_LABELS = ['mobile', 'tablet', 'desktop'];
 
@@ -21,6 +22,8 @@ function markStandaloneLinks(foreground) {
   });
 }
 
+const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+
 function decorateCard(wrapper) {
   const [foreground, media] = [...wrapper.children];
   if (!foreground || !media) return;
@@ -32,6 +35,8 @@ function decorateCard(wrapper) {
   if (firstCell?.childElementCount !== 1 || firstCell?.firstElementChild?.tagName !== 'PICTURE') return;
 
   const iconPicture = firstCell.firstElementChild;
+  const iconImg = iconPicture.querySelector('img');
+  if (iconImg?.hasAttribute('src') && isSvgUrl(iconImg?.src)) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
   iconPicture.classList.add('icon');
   media.appendChild(iconPicture);
   firstCell.remove();
