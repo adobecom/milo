@@ -667,9 +667,9 @@
 
 
 /* news styles */
-.news {
+/* .news {
   padding: var(--s2a-spacing-24);
-}
+} */
 
 .news .news-headline .headline {
   display: flex;
@@ -677,7 +677,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: var(--s2a-spacing-xs);
-  padding-left: var(--s2a-spacing-24);
+  /* padding-left: var(--s2a-spacing-24); */
 }
 
 .news .news-headline .icon {

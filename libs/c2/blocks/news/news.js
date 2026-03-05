@@ -102,24 +102,32 @@ function decorateBlockHeader(row) {
   row.firstElementChild.remove();
 }
 
+function addChevronIcon(pTag) {
+  const chevronIcon = createTag('span', { class: 'chevron-icon' }, ' >');
+  pTag.append(chevronIcon);
+}
+
 export default async function init(el) {
   // el.classList.add('text-block', 'con-block');
   el.classList.add('news', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
-    if (rows[0].textContent === '' || rows[0].textContent.startsWith('#')) el.classList.add('has-bg');
     const [head, ...tail] = rows;
     decorateBlockHeader(head);
     rows = tail || rows;
     const newsWrapper = createTag('div', { class: 'news-wrapper section' });
-    if (rows.length <= 3) newsWrapper.classList.add('three-up');
+    const evenItems = rows.length % 2 === 0;
+    newsWrapper.classList.add(evenItems ? 'four-up' : 'three-up');
     rows.forEach((row) => {
       row.classList.add('news-item');
       const pTags = row.querySelectorAll('p');
       pTags.forEach((p) => {
         if (p.parentElement.querySelector('p:first-child') === p) p.classList.add('news-item-headline');
         else if (p.querySelector('a')) {
-          if (p.querySelector('a').innerText.trim() === p.innerText.trim()) p.classList.add('news-item-link');
+          if (p.querySelector('a').innerText.trim() === p.innerText.trim()) {
+            p.classList.add('news-item-link');
+            addChevronIcon(p);
+          }
         } else p.classList.add('news-item-body');
       });
       newsWrapper.appendChild(row);
