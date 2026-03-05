@@ -164,7 +164,7 @@
   overflow-y: auto;
   background: var(--feds-background-nav);
   border: 1px solid var(--feds-borderColor);
-  border-radius: 4px;
+  border-radius: var(--s2a-border-radius-xs);
 }
 
 [dir = "rtl"] .feds-regionPicker-wrapper > .fragment {

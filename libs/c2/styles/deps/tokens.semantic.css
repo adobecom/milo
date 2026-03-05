@@ -29,6 +29,12 @@
   --s2a-spacing-4xl: var(--s2a-spacing-64);
   --s2a-font-family-heading: var(--s2a-font-family-adobe-clean-display);
   --s2a-font-family-default: var(--s2a-font-family-adobe-clean);
+  --s2a-font-family-title: var(--s2a-font-family-adobe-clean-display);
+  --s2a-font-family-subheading: var(--s2a-font-family-adobe-clean-display);
+  --s2a-font-family-body: var(--s2a-font-family-adobe-clean);
+  --s2a-font-family-label: var(--s2a-font-family-adobe-clean);
+  --s2a-font-family-eyebrow: var(--s2a-font-family-adobe-clean);
+  --s2a-font-family-caption: var(--s2a-font-family-adobe-clean);
   --s2a-font-letter-spacing-xs: var(--s2a-font-letter-spacing-neg-3_84);
   --s2a-font-letter-spacing-sm: var(--s2a-font-letter-spacing-neg-3_2);
   --s2a-font-letter-spacing-md: var(--s2a-font-letter-spacing-neg-2_88);
