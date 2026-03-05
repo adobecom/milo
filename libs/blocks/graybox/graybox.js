@@ -1,4 +1,4 @@
-import { createTag, getMetadata } from '../../utils/utils.js';
+import { createTag, getMetadata, loadStyle, getConfig } from '../../utils/utils.js';
 import { getModal, closeModal } from '../modal/modal.js';
 import { iphoneFrame, ipadFrame } from './mobileFrames.js';
 
@@ -323,6 +323,8 @@ const openDeviceModal = async (e) => {
 };
 
 const createGrayboxOverlayToggle = (grayboxMenu) => {
+  const { base } = getConfig();
+  loadStyle(`${base}/blocks/graybox/switch.css`);
   const switchDiv = createTag('div', { class: 'spectrum-Switch' }, null, { parent: grayboxMenu });
   const input = createTag('input', { type: 'checkbox', class: 'spectrum-Switch-input', id: 'gb-overlay-toggle' }, null, { parent: switchDiv });
   createTag('span', { class: 'spectrum-Switch-switch' }, null, { parent: switchDiv });

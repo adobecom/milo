@@ -38,11 +38,7 @@ function getAnalyticsValue(str, index) {
 }
 
 function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  if (shouldBlockFreeTrialLinks({
-    button: elem,
-    localePrefix: getConfig()?.locale?.prefix,
-    parent: elem.parentElement,
-  })) return null;
+  if (shouldBlockFreeTrialLinks(elem)) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
   const clone = elem.cloneNode(true);
@@ -159,6 +155,7 @@ const decorateLinkGroup = (elem, index) => {
 
 const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = { position: 0 } } = {}) => {
   const decorateLink = async (link) => {
+    if (shouldBlockFreeTrialLinks(link)) return null;
     // Increase analytics index every time a link is decorated
     itemIndex.position += 1;
 

@@ -22,7 +22,6 @@ function isBlobOrDataUrl(asset) {
 
 export function loadImage(asset) {
   if (asset.complete) return Promise.resolve();
-  if (isBlobOrDataUrl(asset)) return Promise.resolve();
   asset.setAttribute('loading', 'eager');
 
   return new Promise((resolve) => {
@@ -30,19 +29,21 @@ export function loadImage(asset) {
   });
 }
 
-function loadVideo(asset) {
-  if (isBlobOrDataUrl(asset)) return Promise.resolve();
-  if (asset.querySelector('source')
-    && asset.readyState > 1
-    && asset.videoWidth > 0) return Promise.resolve();
+async function loadVideo(asset) {
+  if (isBlobOrDataUrl(asset)) return;
+  const source = asset.querySelector('source');
+  if (source && asset.readyState > 1 && asset.videoWidth > 0) return;
 
-  return new Promise((resolve) => {
-    if (!asset.querySelector('source')) {
-      asset.appendChild(createTag('source', { src: asset.getAttribute('data-video-source'), type: 'video/mp4' }));
-    }
-    ['loadedmetadata', 'error'].forEach((evt) => asset.addEventListener(evt, resolve, { once: true }));
-    asset.load();
-  });
+  const dataSource = asset.getAttribute('data-video-source');
+  if (!source && !dataSource) return;
+
+  if (!source) asset.appendChild(createTag('source', { src: dataSource, type: 'video/mp4' }));
+
+  asset.load();
+  await Promise.race(['loadedmetadata', 'error']
+    .map((event) => new Promise((resolve) => {
+      asset.addEventListener(event, resolve, { once: true });
+    })));
 }
 
 function loadMpc(asset) {
@@ -188,7 +189,7 @@ function isAboveFold(asset) {
   const main = asset.closest('main');
   const sections = main?.querySelectorAll(':scope > div.section');
 
-  return !sections.length
+  return !sections?.length
     || sections[0]?.contains(asset)
     || sections[1]?.contains(asset);
 }

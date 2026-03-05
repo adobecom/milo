@@ -656,7 +656,6 @@ export const createRequestUrl = ({
     dataStreamId = DATA_STREAM_IDS_PROD.business;
   } else if (
     hostname.includes('business.stage.adobe')
-    || hostname.includes('bacom--adobecom.hlx')
     || hostname.includes('bacom--adobecom.aem')
   ) {
     dataStreamId = DATA_STREAM_IDS_STAGE.business;

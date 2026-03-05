@@ -129,6 +129,34 @@ describe('Preflight Asset Checks', () => {
     });
   });
 
+  describe('Video Loading', () => {
+    it('should resolve immediately when video has no data-video-source attribute', async () => {
+      const mockVideo = {
+        tagName: 'VIDEO',
+        querySelector: sinon.stub().returns(null),
+        getAttribute: sinon.stub(),
+        appendChild: sinon.stub(),
+        addEventListener: sinon.stub(),
+        load: sinon.stub(),
+        checkVisibility: sinon.stub().returns(false),
+        closest: sinon.stub().returns(null),
+      };
+
+      mockVideo.getAttribute.withArgs('data-video-source').returns(null);
+
+      mockDocument.querySelectorAll
+        .withArgs('main picture img, main video, :is(main, .dialog-modal:not(#preflight)) .adobetv')
+        .returns([mockVideo]);
+
+      window.createTag = () => ({ append: sinon.stub() });
+
+      await checkImageDimensions('test-url-video', mockDocument);
+
+      expect(mockVideo.appendChild.called).to.be.false;
+      expect(mockVideo.load.called).to.be.false;
+    });
+  });
+
   describe('Additional Coverage', () => {
     it('tests isViewportTooSmall function', () => {
       expect(typeof isViewportTooSmall()).to.equal('boolean');

@@ -2,7 +2,7 @@ export default `
 <div>
   <div class="gnav-brand logo brand-image-only">
     <div>
-      <div><a href="/federal/assets/svgs/adobe-logo.svg">https://main--federal--adobecom.hlx.page/federal/assets/svgs/adobe-logo.svg|Adobe, Inc.</a> <a href="https://www.adobe.com/">Adobe</a></div>
+      <div><a href="/federal/assets/svgs/adobe-logo.svg">https://main--federal--adobecom.aem.page/federal/assets/svgs/adobe-logo.svg|Adobe, Inc.</a> <a href="https://www.adobe.com/">Adobe</a></div>
     </div>
   </div>
   <div class="large-menu section">

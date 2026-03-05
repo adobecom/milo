@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { constructTestUrl } from '../../libs/commerce.js';
 import { features } from './tabs.spec.js';
 import TabBlock from './tabs.page.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
-import { constructTestUrl } from '../../libs/commerce.js';
 
 let tab;
 
@@ -168,10 +168,13 @@ test.describe('Milo Tab block feature test suite', () => {
     await test.step('click tab and get redirected to the proper page', async () => {
       await expect(await page.url()).toContain('tabs-page-1');
       await tab.tab2.click();
+      await page.waitForURL(/tabs-page-2/);
       await expect(await page.url()).toContain('tabs-page-2');
       await tab.tab3.click();
+      await page.waitForURL(/tabs-page-3/);
       await expect(await page.url()).toContain('tabs-page-3');
       await tab.tab1.click();
+      await page.waitForURL(/tabs-page-1/);
       await expect(await page.url()).toContain('tabs-page-1');
     });
   });

@@ -6,6 +6,7 @@ const WRAPPER = 'feds-profile';
 const onToken = async (getMetadata, data, getConfig) => {
   let destination;
   const config = getConfig();
+  const acceptedTouList = getMetadata('google-login-accepted-tou-list')?.trim();
   try {
     destination = new URL(typeof config.googleLoginURLCallback === 'function' ? await config.googleLoginURLCallback()
       : getMetadata('google-login-redirect'))?.href;
@@ -18,6 +19,7 @@ const onToken = async (getMetadata, data, getConfig) => {
     idp_token: data?.credential,
     client_id: window.adobeid?.client_id,
     scope: window.adobeid?.scope,
+    accepted_tou_list: acceptedTouList || '',
   }).then(() => {
     if (window.DISABLE_PAGE_RELOAD === true) return;
     // Existing account

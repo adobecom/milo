@@ -14,28 +14,33 @@ describe('normalizePath function', () => {
   });
 
   it('does not localize for US page', async () => {
-    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
+    const path = await normalizePath('https://main--milo--adobecom.aem.page/path/to/fragment.plain.html');
     expect(path).to.equal('/path/to/fragment.plain.html');
   });
 
   it('does not localize for #_dnt', async () => {
-    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html#_dnt');
+    const path = await normalizePath('https://main--milo--adobecom.aem.page/path/to/fragment.plain.html#_dnt');
     expect(path).to.equal('/path/to/fragment.plain.html');
   });
 
   it('does not localize if fragment is already localized', async () => {
-    const path = await normalizePath('https://main--milo--adobecom.hlx.page/de/path/to/fragment.plain.html#_dnt');
+    const path = await normalizePath('https://main--milo--adobecom.aem.page/de/path/to/fragment.plain.html#_dnt');
     expect(path).to.equal('/de/path/to/fragment.plain.html');
   });
 
   it('does not localize json', async () => {
-    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/manifest.json');
+    const path = await normalizePath('https://main--milo--adobecom.aem.page/path/to/manifest.json');
     expect(path).to.equal('/path/to/manifest.json');
   });
 
   it('retains a hash if one is passed in', async () => {
-    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html#noActiveItem');
+    const path = await normalizePath('https://main--milo--adobecom.aem.page/path/to/fragment.plain.html#noActiveItem');
     expect(path).to.equal('/path/to/fragment.plain.html#noActiveItem');
+  });
+
+  it('should retain params and hash when normalizing path', async () => {
+    const paramPath = 'https://main--cc--adobecom.aem.page/products/photoshop-lightroom?mep&sheet=%27testsheet%27#testhash';
+    expect(normalizePath(paramPath)).to.equal('/products/photoshop-lightroom?mep&sheet=%27testsheet%27#testhash');
   });
 
   it('does localize otherwise', async () => {
@@ -46,7 +51,7 @@ describe('normalizePath function', () => {
       },
     };
     config.locale = config.locales.de;
-    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html');
+    const path = await normalizePath('https://main--milo--adobecom.aem.page/path/to/fragment.plain.html');
     expect(path).to.equal('/de/path/to/fragment.plain.html');
   });
 });

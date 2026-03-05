@@ -1,11 +1,14 @@
 .nps-csat-form {
   background: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 32px;
   height: 404px;
   max-width: 576px;
   width: 100%;
   margin: 0 auto;
+}
+
+.nps-csat-form:not(.remove-box-shadow) {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .nps-csat-form #nps {
@@ -306,6 +309,14 @@
   background: #222;
   color: #F2F2F2;
 }
+
+/* This is acceptable to do only since nps-csat form is
+ * meant only to be loaded in webview contexts and not on
+ * regular milo pages */
+body:has(.nps-csat-form.dark.match-background) {
+  background: #222;
+}
+
 .nps-csat-form.dark legend {
   color: #AFAFAF;
 }

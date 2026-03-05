@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import '../../../libs/deps/mas/commerce.js';
+import '@adobecom/mas-platform/web-components/dist/commerce.js';
 
 document.head.appendChild(document.createElement('mas-commerce-service'));
 
@@ -254,11 +254,11 @@ describe('Merch Cards', async () => {
       ...conf,
       pathname: '/fr/test.html',
       locales: { fr: { ietf: 'fr-FR' } },
-      prodDomains: ['main--milo--adobecom.hlx.live'],
+      prodDomains: ['main--milo--adobecom.aem.live'],
     });
     const el = document.getElementById('localizeQueryIndex');
     await init(el);
-    expect(window.fetch.calledWith('https://main--milo--adobecom.hlx.live/fr/query-index-cards.json?sheet=catalog')).to.be.true;
+    expect(window.fetch.calledWith('https://main--milo--adobecom.aem.live/fr/query-index-cards.json?sheet=catalog')).to.be.true;
   });
 
   it('should use preview query-index url if stage env and not hlx.live', async () => {
@@ -268,7 +268,7 @@ describe('Merch Cards', async () => {
     });
     const el = document.getElementById('previewQueryIndex');
     await init(el);
-    expect(window.fetch.calledWith('https://main--milo--adobecom.hlx.live/query-index-cards-preview.json?sheet=catalog')).to.be.true;
+    expect(window.fetch.calledWith('https://main--milo--adobecom.aem.live/query-index-cards-preview.json?sheet=catalog')).to.be.true;
   });
 
   it('should default to prod index if preview is missing', async () => {
@@ -278,7 +278,7 @@ describe('Merch Cards', async () => {
     });
     const el = document.getElementById('previewQueryIndexMissing');
     await init(el);
-    expect(window.fetch.calledWith('https://main--milo--adobecom.hlx.live/query-index-cards.json?sheet=catalog')).to.be.true;
+    expect(window.fetch.calledWith('https://main--milo--adobecom.aem.live/query-index-cards.json?sheet=catalog')).to.be.true;
   });
 
   describe('error handling', async () => {

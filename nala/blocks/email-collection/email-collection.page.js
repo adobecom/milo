@@ -7,6 +7,7 @@ export default class EmailCollectionBlock {
     this.FedsLogin = new FedsLogin(this.page);
     // marquee
     this.marqueeDark = page.locator('.marquee');
+    this.marqueeLight = page.locator('.marquee.light');
     this.headingXL = this.marqueeDark.locator('.heading-xl');
     this.bodyM = this.marqueeDark.locator('.body-m');
     this.outlineButton = this.marqueeDark.locator('.con-button.outline');
@@ -26,11 +27,13 @@ export default class EmailCollectionBlock {
     this.occupationInputContainer = this.emailCollectionFillForm.locator('.input-container').nth(2);
     this.consentString = this.emailCollectionFillForm.locator('.body-xxs.consent-string');
     this.submitButton = this.emailCollectionFillForm.locator('.button-container .con-button.outline');
+    this.submitMailingListButton = this.emailCollectionFillForm.locator('.button-container .con-button.blue');
     this.closeButton = this.page.locator('.dialog-close');
 
     // required fields
     this.requiredEmailField = this.emailCollection.locator('#error-email');
     this.requiredOrganizationField = this.emailCollection.locator('#error-organization');
+    this.requiredCountryField = this.emailCollection.locator('#error-country');
     this.requiredOccupationField = this.emailCollectionFillForm.locator('#error-occupation');
 
     // foregound messages
@@ -38,7 +41,7 @@ export default class EmailCollectionBlock {
     this.foregroundHeading = this.emailCollection.locator('.foreground.message .text h2').first();
     this.foregroundText = this.emailCollection.locator('.foreground.message .text p.body-m').nth(1);
     this.subscribedEmail = this.emailCollection.locator('.foreground.message .text p.body-m');
-    this.backToTheWebsiteButton = this.emailCollection.locator('.button-container .con-button.outline').nth(1);
+    this.backToTheWebsiteButton = this.emailCollection.locator('button[aria-label="Back to the website"]:visible');
 
     // foreground images
     this.foreground = this.emailCollection.locator('.foreground');
@@ -53,6 +56,14 @@ export default class EmailCollectionBlock {
           loading: 'lazy',
           width: '442',
           height: '304',
+        },
+      },
+
+      'mailing.list': {
+        foregroundImg: {
+          loading: 'lazy',
+          width: '387',
+          height: '265',
         },
       },
     };
@@ -96,6 +107,13 @@ export default class EmailCollectionBlock {
 
     await emailLabel.fill(newEmail);
     await expect(emailLabel).toHaveValue(newEmail);
+    return newEmail;
+  }
+
+  async enterEmail(email) {
+    const emailLabel = this.page.locator('#email');
+    await emailLabel.fill(email);
+    await expect(emailLabel).toHaveValue(email);
   }
 
   async clearEmailField() {
@@ -135,5 +153,11 @@ export default class EmailCollectionBlock {
     } catch (error) {
       'Button not visible';
     }
+  }
+
+  async selectCountry(value) {
+    const countrySelect = this.page.locator('#country');
+    await countrySelect.waitFor({ state: 'visible' });
+    await countrySelect.selectOption(value);
   }
 }

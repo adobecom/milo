@@ -41,16 +41,16 @@ const getPrDescription = ({ branch, scriptPath }) => {
       - After: https://business.stage.adobe.com/fr/customer-success-stories.html?martech=off&milolibs=${branch}--milo--adobecom
 
       **CC:**
-      - Before: https://main--cc--adobecom.hlx.live/?martech=off
-      - After: https://main--cc--adobecom.hlx.live/?martech=off&milolibs=${branch}--milo--adobecom
+      - Before: https://main--cc--adobecom.aem.live/?martech=off
+      - After: https://main--cc--adobecom.aem.live/?martech=off&milolibs=${branch}--milo--adobecom
 
       **Homepage:**
-      - Before: https://main--homepage--adobecom.hlx.page/homepage/index-loggedout?martech=off
-      - After: https://main--homepage--adobecom.hlx.page/homepage/index-loggedout?martech=off&milolibs=${branch}--milo--adobecom
+      - Before: https://main--homepage--adobecom.aem.page/homepage/index-loggedout?martech=off
+      - After: https://main--homepage--adobecom.aem.page/homepage/index-loggedout?martech=off&milolibs=${branch}--milo--adobecom
 
       **Blog:**
-      - Before: https://main--blog--adobecom.hlx.page/?martech=off
-      - After: https://main--blog--adobecom.hlx.page/?martech=off&milolibs=${branch}--milo--adobecom
+      - Before: https://main--blog--adobecom.aem.page/?martech=off
+      - After: https://main--blog--adobecom.aem.page/?martech=off&milolibs=${branch}--milo--adobecom
 
       **Milo:**
       - Before: https://main--milo--adobecom.aem.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off
@@ -74,8 +74,8 @@ const getPrDescription = ({ branch, scriptPath }) => {
       - After: https://business.stage.adobe.com?martech=off&milolibs=${branch}--milo--adobecom
 
       **Milo:**
-      - Before: https://main--milo--adobecom.hlx.live/drafts/bmarshal/marketo/full
-      - After: https://${branch}--milo--adobecom.hlx.live/drafts/bmarshal/marketo/full`
+      - Before: https://main--milo--adobecom.aem.live/drafts/bmarshal/marketo/full
+      - After: https://${branch}--milo--adobecom.aem.live/drafts/bmarshal/marketo/full`
   }
 }
 

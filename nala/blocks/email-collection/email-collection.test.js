@@ -7,22 +7,23 @@ import { runAccessibilityTest } from '../../libs/accessibility.js';
 let webUtil;
 let marquee;
 let emailCollection;
+let generatedEmail;
 
 const miloLibs = process.env.MILO_LIBS || '';
 const branchName = process.env.prBranch || '';
 const isFork = process.env.isFork === 'true';
 const isValidBranch = /^mwpw-\d{6}$/i.test(branchName);
 
-test.skip(
-  !isValidBranch || isFork,
-  `Skipping Email Collection tests — reason: ${
-    !isValidBranch
-      ? `branch name “${branchName}” does not match required format “MWPW-123456"`
-      : 'PR comes from a forked repo'
-  }`,
-);
-
 test.describe('Milo Email Collection Block test suite', () => {
+  test.skip(
+    !isValidBranch || isFork,
+    `Skipping Email Collection tests — reason: ${
+      !isValidBranch
+        ? `branch name “${branchName}” does not match required format “MWPW-123456"`
+        : 'PR comes from a forked repo'
+    }`,
+  );
+
   test.beforeEach(async ({ page }) => {
     webUtil = new WebUtil(page);
     emailCollection = new EmailCollectionBlock(page);
@@ -157,6 +158,97 @@ test.describe('Milo Email Collection Block test suite', () => {
 
     await test.step('step-14: Verify subscribed message analytic attributes', async () => {
       await expect(await emailCollection.closeButton).toHaveAttribute('daa-ll', 'large-image:modalClose:buttonClose');
+    });
+  });
+
+  test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
+    console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
+    const { data } = features[1];
+
+    await test.step('step-1: Go to test page', async () => {
+      await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[1].path}${miloLibs}`);
+    });
+
+    await test.step('step-2: Verify marquee light specs', async () => {
+      await expect(await marquee.marqueeLight).toBeVisible();
+
+      await expect(await marquee.headingXL).toContainText(data.marquee.h2Text);
+      await expect(await marquee.bodyM).toContainText(data.marquee.bodyText);
+      await expect(await marquee.outlineButton).toContainText(data.marquee.outlineButtonText);
+      await expect(await marquee.filledButtonL).toContainText(data.marquee.blueButtonText);
+    });
+
+    await test.step('step-3: Verify marquee light analytic attributes', async () => {
+      await expect(await marquee.marqueeLight).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('marquee', 1));
+    });
+
+    await test.step('step-4: Verify the accessibility test on the marquee light', async () => {
+      await runAccessibilityTest({ page, testScope: marquee.marqueeLight });
+    });
+
+    await test.step('step-5: Verify mailing list with image', async () => {
+      await emailCollection.outlineButton.click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(marquee.foreground).toBeVisible();
+    });
+
+    await test.step('step-6: Verify mailing list with image form spec', async () => {
+      await emailCollection.closeOneTrustBanner();
+
+      await expect(await emailCollection.emailLabel).toHaveAttribute('required', 'true');
+      await expect(await emailCollection.countryLabel).toContainText(data.mailingListForm.countryLabel);
+      await expect(await emailCollection.submitMailingListButton).toContainText(data.mailingListForm.blueButtonText);
+
+      await emailCollection.submitMailingListButton.click();
+      await expect(await emailCollection.requiredEmailField).toContainText(data.mailingListForm.bodyXS);
+      await expect(await emailCollection.requiredCountryField).toContainText(data.mailingListForm.bodyXS);
+
+      expect(await webUtil.verifyAttributes(emailCollection.foregroundImg, emailCollection.attributes['mailing.list'].foregroundImg)).toBeTruthy();
+    });
+
+    await test.step('step-7: Submit mailing list', async () => {
+      generatedEmail = await emailCollection.enterNewEmail();
+      await emailCollection.selectCountry('US');
+      await emailCollection.submitMailingListButton.click();
+      await marquee.foregroundMessage.waitFor({ state: 'visible', timeout: 60000 });
+      await expect(marquee.foregroundMessage).toBeVisible();
+    });
+
+    await test.step('step-8: Verify submited message spec', async () => {
+      await expect(emailCollection.foregroundHeading).toContainText(data.mailingSubmitedMessage.h2Text);
+      await expect(emailCollection.foregroundText).toContainText(data.mailingSubmitedMessage.bodyText);
+      await expect(emailCollection.backToTheWebsiteButton).toContainText(data.mailingSubmitedMessage.outlineButtonText);
+
+      expect(await webUtil.verifyAttributes(emailCollection.foregroundImg, emailCollection.attributes['mailing.list'].foregroundImg)).toBeTruthy();
+      await expect(emailCollection.backToTheWebsiteButton).toBeVisible();
+      await emailCollection.backToTheWebsiteButton.click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(await marquee.marqueeLight).toBeVisible();
+    });
+
+    await test.step('step-9: Submit submited email', async () => {
+      await emailCollection.outlineButton.click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(marquee.foreground).toBeVisible();
+      await emailCollection.enterEmail(generatedEmail);
+      await emailCollection.selectCountry('US');
+
+      await emailCollection.submitMailingListButton.click();
+      await marquee.foregroundMessage.waitFor({ state: 'visible', timeout: 60000 });
+      await expect(emailCollection.foregroundHeading).toContainText(data.mailingSubmitedMessage.h2Text);
+      await emailCollection.closeForm();
+    });
+
+    await test.step('step-10: Verify mailing list without image form spec', async () => {
+      await emailCollection.filledButtonL.click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(marquee.foreground).toBeVisible();
+
+      await expect(await emailCollection.emailLabel).toHaveAttribute('required', 'true');
+      await expect(await emailCollection.countryLabel).toContainText(data.mailingListForm.countryLabel);
+      await expect(await emailCollection.submitMailingListButton).toContainText(data.mailingListForm.blueButtonText);
     });
   });
 });

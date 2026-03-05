@@ -67,6 +67,13 @@ element {
   font-weight: 400;
 }
 
+.article-feed-live-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 @media (min-width: 600px) {
   .filter {
     z-index: 2;

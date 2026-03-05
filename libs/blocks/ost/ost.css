@@ -25,6 +25,7 @@ body.tool-ost .ost>div {
   border-color: var(--color-gray-200);
   border-style: solid;
   box-sizing: border-box;
+  position: relative;
 }
 
 [data-offer-selector-id] {

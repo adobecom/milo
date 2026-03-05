@@ -89,7 +89,7 @@ describe('updateAttribute action', async () => {
     config.placeholders = { 'my-aria-test': 'Hello world!' };
     await handleCommands(manifestJson.data, undefined, true, true);
     expect(document.querySelector('.marquee h2').getAttribute('class')).to.equal('added-class');
-    expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('https://www.google.com/?osi=new-parameter#_inline');
+    expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('https://www.google.com/?osi=new-parameter');
     expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
     expect(document.querySelector('#placeholder-replace').getAttribute('aria-label')).to.equal('Hello world!');
   });
@@ -192,10 +192,10 @@ describe('addHash', async () => {
     await handleCommands(config.mep.commands, rootEl, true, true);
     console.log(config.mep.commands[0].content);
     expect(config.mep.commands[0].content).to.equal('/new-fragment#_inline');
-    config.mep.commands[0].content = 'https://main--cc--adobecom.hlx.page/cc/fragments/new-fragment';
+    config.mep.commands[0].content = 'https://main--cc--adobecom.aem.page/cc/fragments/new-fragment';
     await handleCommands(config.mep.commands, rootEl, true, true);
     console.log(config.mep.commands[0].content);
-    expect(config.mep.commands[0].content).to.equal('https://main--cc--adobecom.hlx.page/cc/fragments/new-fragment#_inline');
+    expect(config.mep.commands[0].content).to.equal('https://main--cc--adobecom.aem.page/cc/fragments/new-fragment#_inline');
   });
 });
 

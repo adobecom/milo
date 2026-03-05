@@ -52,7 +52,7 @@ module.exports = {
         {
           sectionId: 'deeplink-students-override',
           attributes: {
-            'data-modal': 'crm',
+            'data-modal': 'd2p',
             href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=e&ot=BASE&cs=INDIVIDUAL&pa=phsp_direct_individual',
             'aria-label': 'Buy now - Photoshop - Students and teachers',
             'data-extra-options': '{"ms":"e"}',
@@ -62,7 +62,7 @@ module.exports = {
         {
           sectionId: 'deeplink-business-override',
           attributes: {
-            'data-modal': 'crm',
+            'data-modal': 'd2p',
             href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=t&pa=phsp_direct_individual',
             'aria-label': 'Buy now - Photoshop - Business',
             'data-extra-options': '{"cs":"t"}',
@@ -72,7 +72,7 @@ module.exports = {
         {
           sectionId: 'deeplink-promoid',
           attributes: {
-            'data-modal': 'crm',
+            'data-modal': 'd2p',
             href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&promoid=K42KVSWP&mv=other&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=phsp_direct_individual',
             'aria-label': 'Buy now - Photoshop - Individuals',
             'data-extra-options': '{"promoid":"K42KVSWP","mv":"other"}',

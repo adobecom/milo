@@ -48,6 +48,10 @@
   display: none;
 }
 
+.brick.media-contain.split.row .foreground .brick-media :is(img, video) {
+  object-fit: contain;
+}
+
 .brick.rounded-corners,
 .brick.rounded-corners .background,
 .brick.rounded-corners .foreground {

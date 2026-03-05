@@ -1,5 +1,6 @@
 import { initIndexer } from './internal/indexer.js';
 import { getLingoConfigMap } from './internal/utils.js';
+import { saveJsonToDa, getJsonFromDa } from './internal/da-client.js';
 
 const { env } = process;
 const {
@@ -15,7 +16,15 @@ const siteToProcess = PREVIEW_INDEXER_REPOS?.split(',').map((path) => path.trim(
 const lingoConfigMap = await getLingoConfigMap();
 
 if (siteToProcess) {
-  const indexer = await initIndexer(ORG, siteToProcess, lingoConfigMap);
+  const indexer = await initIndexer(
+    ORG,
+    siteToProcess,
+    lingoConfigMap,
+    {
+      savePreviewIndexJson: saveJsonToDa,
+      getPreviewIndexJson: getJsonFromDa
+    }
+  );
   const siteRegionPaths = indexer.normalizeRegionPaths(SITE_REGION_PATHS);
   await indexer.full(siteRegionPaths);
 } else {

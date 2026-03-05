@@ -20,7 +20,7 @@ async function getPromoFromTaxonomy(contentRoot, doc) {
     if (primaryTag) return primaryTag[FOOTER_PROMO_LINK_KEY];
   } catch (error) {
     /* c8 ignore next 2 */
-    window.lana.log(`Footer Promo - Taxonomy error: ${error}`, { tags: 'footer-promo', errorType: 'i' });
+    window.lana.log(`Footer Promo - Taxonomy error: ${error}`, { tags: 'footer-promo', severity: 'error' });
   }
   return undefined;
 }

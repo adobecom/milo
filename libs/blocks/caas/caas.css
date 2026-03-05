@@ -571,3 +571,7 @@ color: #eee;
   padding-top: 10px;
   border-top: solid 2px #000;
 }
+
+.content-panel .consonant-Wrapper--carousel {
+  margin: 0;
+} 

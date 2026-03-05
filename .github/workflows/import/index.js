@@ -173,6 +173,15 @@ const projectExclude = {
   ],
   'da-dc': [
     '.json',
+  ],  
+  'events-milo': [
+    '.json',
+  ],
+  'upp': [
+    '.json',
+  ],
+  'da-cc': [
+    '.json',
   ],
 };
 const redirectsUrls = {

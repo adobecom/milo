@@ -95,7 +95,12 @@ const TagSelector = ({ consumerUrls = [] }) => {
 
     const fetchCasS = async () => {
       const { tags, errorMsg } = await loadCaasTags(caasTagUrl);
-      if (errorMsg) window.lana.log(`Tag Selector. Error fetching caas tags: ${errorMsg}`, { tags: 'tag-selector', errorType: 'i' });
+      if (errorMsg) {
+        window.lana.log(
+          `Tag Selector. Error fetching caas tags: ${errorMsg}`,
+          { tags: 'tag-selector', severity: 'error' },
+        );
+      }
 
       setTagSelectorTags((prevConsumerTags) => ({ CaaS: tags, ...prevConsumerTags }));
     };
@@ -107,7 +112,7 @@ const TagSelector = ({ consumerUrls = [] }) => {
           setTagSelectorTags((prevConsumerTags) => ({ [title]: tags, ...prevConsumerTags }));
         }).catch((e) => {
           /* c8 ignore next 2 */
-          window.lana.log(`Tag Selector. Error fetching consumer tags: ${e.message}`, { tags: 'tag-selector', errorType: 'i' });
+          window.lana.log(`Tag Selector. Error fetching consumer tags: ${e.message}`, { tags: 'tag-selector', severity: 'error' });
         });
       });
     };

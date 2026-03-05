@@ -5,7 +5,7 @@
 ```
 | review                                                                         |
 |--------------------------------------------------------------------------------|
-| review url          | https://main--helixdemo--nkthakur48.hlx.page/data/review |
+| review url          | https://main--helixdemo--nkthakur48.aem.page/data/review |
 | title               | Rate your experience                                     |
 | hide title          | false                                                    |
 | rating verb         | Vote,Votes                                               |

@@ -238,6 +238,11 @@ html[dir="rtl"] .quiz-option-checkbox {
   color: var(--color-white);
 }
 
+body:has(.feds-promo-aside-wrapper) .quiz-step-container,
+body:has(header.global-navigation) .quiz-step-container {
+  z-index: 5;
+}
+
 .quiz-step-container {
   align-items: center;
   display: flex;

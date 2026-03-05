@@ -194,11 +194,6 @@ content auhtored manually and AEM-imported content */
     column-gap: 12px;
   }
 
-  .feds-menu-column--wide {
-    flex-grow: 1;
-    max-width: 75%;
-  }
-
   .feds-menu-column--group .feds-menu-column:not(:last-child) {
     margin-bottom: 0;
     padding-bottom: 0;

@@ -3,7 +3,10 @@ import { createTag, getConfig, getFederatedContentRoot } from '../../utils/utils
 
 let captionsLangMapPromise = null;
 
-const logError = (msg, error) => window.lana.log(`${msg}: ${error}`);
+const logError = (msg, error) => window.lana.log(`${msg}: ${error}`, {
+  tags: 'adobetv',
+  severity: 'error',
+});
 
 const updateCaptionsLang = (url, geo, captionsLangMap) => {
   if (geo && captionsLangMap) {

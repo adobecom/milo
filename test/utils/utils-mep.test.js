@@ -100,7 +100,7 @@ describe('MEP Utils', () => {
         americas_manifestnames: 'us-special-promo',
         manifestnames: 'pre-black-friday-global,black-friday-global',
       });
-      expect(persEnabled).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
+      expect(persEnabled).to.equal('https://main--milo--adobecom.aem.page/products/special-offers-manifest.json');
       expect(targetEnabled).to.equal(false);
     });
     it('checks xlg metadata', async () => {

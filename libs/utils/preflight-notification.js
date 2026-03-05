@@ -78,11 +78,11 @@ function createObserver() {
       return;
     }
 
-    const { hasFailures } = await getPreflightResults({
+    const results = await getPreflightResults({
       url: window.location.href,
       area: document,
     });
-    if (hasFailures) await createPreflightNotification();
+    if (results?.hasFailures) await createPreflightNotification();
   });
 
   sidekickObserver.observe(sidekick, {
@@ -92,6 +92,11 @@ function createObserver() {
 }
 
 export default async function show() {
+  const preflightPromise = getPreflightResults({
+    url: window.location.href,
+    area: document,
+  });
+
   if (wasDismissed || document.querySelector('.milo-preflight-overlay')) return;
 
   const isPublishButtonDisabled = sidekick?.shadowRoot
@@ -103,12 +108,11 @@ export default async function show() {
   createObserver();
   if (sidekick && sidekick.getAttribute('open') !== 'true') return;
 
-  const { hasFailures } = await getPreflightResults({
-    url: window.location.href,
-    area: document,
-  });
+  const results = await preflightPromise;
 
-  if (hasFailures) {
+  if (!results) return;
+
+  if (results.hasFailures) {
     await createPreflightNotification();
   } else {
     setupLinkCheckListener();

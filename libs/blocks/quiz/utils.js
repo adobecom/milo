@@ -43,7 +43,10 @@ export const getQuizData = async () => {
     );
     return [questions, dataStrings];
   } catch (ex) {
-    window.lana?.log(`ERROR: Fetching data for quiz flow ${ex}`);
+    window.lana?.log(`Fetching data for quiz flow failed: ${ex}`, {
+      tags: 'quiz',
+      severity: 'error',
+    });
   }
   return [];
 };
@@ -99,7 +102,11 @@ export const findAndStoreResultData = async (answers = [], quizEntryResults = {}
       umbrellaProduct,
     );
   } else {
-    window.lana?.log(`ERROR: No results found for ${answers}`);
+    window.lana?.log(`No results found for ${answers}`, {
+      tags: 'quiz',
+      errorType: 'e',
+      severity: 'error',
+    });
   }
 
   return {

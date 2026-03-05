@@ -21,7 +21,7 @@ async function loadFragments(el, experiences) {
 
 function redirectPage(quizUrl, debug, message) {
   const url = quizUrl ? getLocalizedURL(quizUrl.text) : 'https://adobe.com';
-  window.lana.log(message, { tags: 'quiz-results' });
+  window.lana.log(message, { tags: 'quiz-results', severity: 'error' });
 
   if (debug === 'quiz-results') {
     // eslint-disable-next-line no-console
@@ -98,7 +98,7 @@ export default async function init(el, debug = null, localStoreKey = null) {
       return;
     }
   } else {
-    window.lana.log(`${LOADING_ERROR} The quiz-results block is misconfigured`, { tags: 'quiz-results' });
+    window.lana.log(`${LOADING_ERROR} The quiz-results block is misconfigured`, { tags: 'quiz-results', severity: 'error' });
     return;
   }
 

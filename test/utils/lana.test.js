@@ -57,9 +57,10 @@ describe('LANA', () => {
       window.removeEventListener('unhandledrejection', testCallback);
       expect(xhrRequests.length).to.equal(1);
       expect(xhrRequests[0].method).to.equal('GET');
-      expect(xhrRequests[0].url).to.equal(
-        'https://www.stage.adobe.com/lana/ll?m=Promise%20Rejection&c=testClientId&s=100&t=i',
-      );
+      const msg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+      expect(msg).to.include('unhandled-rejection:');
+      expect(msg).to.include('Promise Rejection');
+      expect(xhrRequests[0].url).to.include('t=i&r=error');
       done();
     };
     window.addEventListener('unhandledrejection', testCallback);
@@ -72,9 +73,9 @@ describe('LANA', () => {
       window.removeEventListener('unhandledrejection', testCallback);
       expect(xhrRequests.length).to.equal(1);
       expect(xhrRequests[0].method).to.equal('GET');
-      expect(xhrRequests[0].url).to.equal(
-        'https://www.stage.adobe.com/lana/ll?m=&c=testClientId&s=100&t=i',
-      );
+      const msg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+      expect(msg).to.include('unhandled-rejection:');
+      expect(xhrRequests[0].url).to.include('t=i&r=error');
       done();
     };
     window.addEventListener('unhandledrejection', testCallback);
@@ -306,5 +307,119 @@ describe('LANA', () => {
     // Double-check that decoding gets back the original string
     const decodedMsg = decodeURIComponent(msgParam);
     expect(decodedMsg).to.equal(maliciousString);
+  });
+
+  describe('sendUnhandledError', () => {
+    it('logs unhandled-error with Error object (message and stack)', (done) => {
+      const err = new Error('script failed');
+      const prevOnError = window.onerror;
+      window.onerror = () => true;
+      const callback = () => {
+        window.onerror = prevOnError;
+        window.removeEventListener('error', callback);
+        expect(xhrRequests.length).to.equal(1);
+        const msg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+        expect(msg).to.include('unhandled-error:');
+        expect(msg).to.include('Error: script failed');
+        expect(msg).to.include('at ');
+        done();
+      };
+      window.addEventListener('error', callback);
+      window.dispatchEvent(new ErrorEvent('error', { message: 'script failed', error: err }));
+    });
+
+    it('logs unhandled-error when e.error is missing (uses e.message)', (done) => {
+      const prevOnError = window.onerror;
+      window.onerror = () => true;
+      const callback = () => {
+        window.onerror = prevOnError;
+        window.removeEventListener('error', callback);
+        expect(xhrRequests.length).to.equal(1);
+        const msg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+        expect(msg).to.include('unhandled-error:');
+        expect(msg).to.include('Script error');
+        done();
+      };
+      window.addEventListener('error', callback);
+      window.dispatchEvent(new ErrorEvent('error', { message: 'Script error', error: null }));
+    });
+
+    it('logs unhandled-rejection with Error object', (done) => {
+      const callback = () => {
+        window.removeEventListener('unhandledrejection', callback);
+        expect(xhrRequests.length).to.equal(1);
+        const msg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+        expect(msg).to.include('unhandled-rejection:');
+        expect(msg).to.include('Error: async failure');
+        expect(msg).to.include('at ');
+        done();
+      };
+      window.addEventListener('unhandledrejection', callback);
+      Promise.reject(new Error('async failure'));
+    });
+
+    it('logs unhandled-rejection with string reason', (done) => {
+      const callback = () => {
+        window.removeEventListener('unhandledrejection', callback);
+        expect(xhrRequests.length).to.equal(1);
+        const msg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+        expect(msg).to.include('unhandled-rejection:');
+        expect(msg).to.include('string rejection');
+        done();
+      };
+      window.addEventListener('unhandledrejection', callback);
+      // eslint-disable-next-line prefer-promise-reject-errors
+      Promise.reject('string rejection');
+    });
+
+    it('logs unhandled-rejection with number reason', (done) => {
+      const callback = () => {
+        window.removeEventListener('unhandledrejection', callback);
+        expect(xhrRequests.length).to.equal(1);
+        const msg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+        expect(msg).to.include('unhandled-rejection:');
+        expect(msg).to.include('404');
+        done();
+      };
+      window.addEventListener('unhandledrejection', callback);
+      // eslint-disable-next-line prefer-promise-reject-errors
+      Promise.reject(404);
+    });
+
+    it('logs unhandled-rejection with null without throwing', (done) => {
+      const callback = () => {
+        window.removeEventListener('unhandledrejection', callback);
+        expect(xhrRequests.length).to.equal(1);
+        const msg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+        expect(msg).to.include('unhandled-rejection:');
+        done();
+      };
+      window.addEventListener('unhandledrejection', callback);
+      // eslint-disable-next-line prefer-promise-reject-errors
+      Promise.reject(null);
+    });
+
+    it('includes type prefix in logged message for both event types', (done) => {
+      const prevOnError = window.onerror;
+      window.onerror = () => true;
+      let checks = 0;
+      const checkBoth = () => {
+        checks += 1;
+        if (checks === 2) {
+          window.onerror = prevOnError;
+          window.removeEventListener('error', checkBoth);
+          window.removeEventListener('unhandledrejection', checkBoth);
+          const errorMsg = decodeURIComponent(xhrRequests[0].url.match(/m=([^&]*)/)[1]);
+          const rejectionMsg = decodeURIComponent(xhrRequests[1].url.match(/m=([^&]*)/)[1]);
+          expect(errorMsg).to.include('unhandled-error:');
+          expect(rejectionMsg).to.include('unhandled-rejection:');
+          done();
+        }
+      };
+      window.addEventListener('error', checkBoth);
+      window.addEventListener('unhandledrejection', checkBoth);
+      window.dispatchEvent(new ErrorEvent('error', { message: 'err', error: new Error('err') }));
+      Promise.reject(new Error('rej'));
+    });
   });
 });

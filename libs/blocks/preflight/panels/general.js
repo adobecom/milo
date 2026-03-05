@@ -1,7 +1,8 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { STATUS, STRUCTURE_TITLES } from '../checks/constants.js';
+import { STATUS_TO_ICON_MAP, STRUCTURE_TITLES } from '../checks/constants.js';
 import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
+import { runChecks as runLocalizationChecks } from '../checks/localization.js';
 
 const DEF_NOT_FOUND = 'Not found';
 const DEF_NEVER = 'Never';
@@ -20,6 +21,9 @@ const footerResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.footer, de
 const regionSelectorResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.regionSelector, description: 'Checking...' });
 const georoutingResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.georouting, description: 'Checking...' });
 const breadcrumbsResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.breadcrumbs, description: 'Checking...' });
+const localizationResult = signal({ icon: 'purple', title: 'Links', description: 'Checking...' });
+const localizationIssues = signal([]);
+const localizationClosed = signal(false);
 
 async function getStructureResults() {
   const signals = [
@@ -31,16 +35,9 @@ async function getStructureResults() {
   ];
   const checks = runStructureChecks({ area: document });
 
-  const statusToIconMap = {
-    [STATUS.PASS]: 'green',
-    [STATUS.FAIL]: 'red',
-    [STATUS.LIMBO]: 'orange',
-    [STATUS.EMPTY]: 'empty',
-  };
-
   await Promise.all(checks.map((result, index) => Promise.resolve(result)
     .then((res) => {
-      const icon = statusToIconMap[res.status] || 'orange';
+      const icon = STATUS_TO_ICON_MAP[res.status] || 'orange';
       signals[index].value = {
         icon,
         title: res.title,
@@ -54,6 +51,24 @@ async function getStructureResults() {
         description: `Error: ${error.message}`,
       };
     })));
+}
+
+async function getLocalizationResults() {
+  try {
+    const [res] = await runLocalizationChecks({ area: document });
+    localizationResult.value = {
+      icon: STATUS_TO_ICON_MAP[res.status] || 'orange',
+      title: res.title,
+      description: res.description,
+    };
+    localizationIssues.value = res.details?.violations || [];
+  } catch (error) {
+    localizationResult.value = {
+      icon: 'red',
+      title: 'Links',
+      description: `Error: ${error.message}`,
+    };
+  }
 }
 
 function getAdminUrl(url, type) {
@@ -275,10 +290,8 @@ function ContentGroup({ name, group }) {
     </div>`;
 }
 
-export default function General() {
-  useEffect(() => { setContent(); getStructureResults(); }, []);
-
-  const StructureItem = ({ icon, title, description }) => html`
+function StructureItem({ icon, title, description }) {
+  return html`
     <div class="preflight-item">
       <div class="result-icon ${icon}"></div>
       <div class="preflight-item-text">
@@ -286,6 +299,36 @@ export default function General() {
         <p class="preflight-item-description">${description}</p>
       </div>
     </div>`;
+}
+
+function LocalizationIssuesList({ issues }) {
+  return html`
+    ${issues.length > 0 && html`
+      <div class="preflight-content-group${localizationClosed.value ? ' is-closed' : ''}">
+        <div class="preflight-group-row preflight-group-heading" onClick=${() => { localizationClosed.value = !localizationClosed.value; }}>
+          <div class="preflight-group-expand"></div>
+          <p class=preflight-content-heading>Faulty links</p>
+          <p class="preflight-content-heading">Loc</p>
+          <p class="preflight-content-heading">US status</p>
+          <p class="preflight-content-heading">Loc status</p>
+        </div>
+        <div class=preflight-group-items>
+          ${issues.map((v) => html`
+            <div class="preflight-group-row preflight-group-detail">
+              <p><a href=${v.url} target=_blank>${v.url}</a></p>
+              <p>${v.isLocalized ? 'Yes' : 'No'}</p>
+              <p>${v.usStatus}</p>
+              <p>${v.localizedStatus}</p>
+            </div>
+          `)}
+        </div>
+      </div>
+    `}
+  `;
+}
+
+export default function General() {
+  useEffect(() => { setContent(); getStructureResults(); getLocalizationResults(); }, []);
 
   const allChecked = Object.values(content.value)
     .flatMap((item) => item.items).filter((item) => item.checked);
@@ -313,6 +356,14 @@ export default function General() {
           <${StructureItem} ...${breadcrumbsResult.value} />
         </div>
       </div>
+      <p class="preflight-structure-title">Localization</p>
+      <div class=preflight-structure-columns>
+        <div class=preflight-column>
+          <${StructureItem} ...${localizationResult.value} />
+        </div>
+      </div>
+      <${LocalizationIssuesList} issues=${localizationIssues.value} />
+      <p class="preflight-structure-title">Content</p>
       ${Object.keys(content.value).map((key) => html`<${ContentGroup} name=${key} group=${content.value[key]} />`)}
     </div>
 

@@ -7,7 +7,9 @@ span[data-wcs-osi] {
   display: inline-block;
 }
 
-span.placeholder-resolved[data-template="strikethrough"], span.price.price-strikethrough {
+span.placeholder-resolved[data-template="strikethrough"],
+span.price.price-strikethrough,
+span.price.price-promo-strikethrough {
   text-decoration: line-through;
 }
 

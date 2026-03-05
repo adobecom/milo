@@ -25,10 +25,16 @@ async function fetchFromRainfocus(eventId) {
       credentials: 'same-origin',
     });
     if (response.ok) return response.json();
-    window.lana?.log(`Unable to fetch from Rainfocus: ${response.statusText}`);
+    window.lana?.log(`Unable to fetch from Rainfocus: ${response.statusText}`, {
+      tags: 'mep-event',
+      severity: 'error',
+    });
     return {};
   } catch (e) {
-    window.lana?.log(`Unable to fetch from Rainfocus: ${e.toString()}`);
+    window.lana?.log(`Unable to fetch from Rainfocus: ${e.toString()}`, {
+      tags: 'mep-event',
+      severity: 'error',
+    });
     return {};
   }
 }

@@ -98,6 +98,10 @@ html[lang="ja-jp"] a.feds-navLink wbr {
   color: var(--feds-color-blue-link);
 }
 
+.feds-navLink--black {
+  color: var(--feds-color-link);
+}
+
 .feds-navLink--hoverCaret {
   position: relative;
   padding-right: 32px;

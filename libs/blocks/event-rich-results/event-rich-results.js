@@ -16,7 +16,7 @@ function logNullValues(obj) {
   Object.keys(obj).forEach((key) => {
     const value = obj[key];
     if (!value || value === '') {
-      window.lana.log(`Event property ${key} is not defined`, { tags: 'event-rich-results' });
+      window.lana.log(`Event property ${key} is not defined`, { tags: 'event-rich-results', severity: 'warning' });
     }
     logNullValues(value);
   });

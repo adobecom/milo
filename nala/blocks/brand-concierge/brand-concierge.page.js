@@ -7,7 +7,6 @@ export default class BrandConciergeBlock {
 
     // Block variants
     this.brandConciergeHero = this.page.locator('.brand-concierge.hero');
-    this.brandConciergeSticky = this.page.locator('.brand-concierge.sticky');
 
     // Input field (may be hidden on mobile for sticky variant)
     this.inputField = this.block.locator('textarea, input[type="text"]');

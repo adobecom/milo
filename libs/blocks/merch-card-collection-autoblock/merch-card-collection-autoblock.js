@@ -79,7 +79,10 @@ function localizeIconPath(iconPath) {
       const url = new URL(iconPath);
       return `https://www.adobe.com${url.pathname}`;
     } catch (e) {
-      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`);
+      window.lana?.log(`Invalid URL - ${iconPath}: ${e.toString()}`, {
+        tags: 'merch-card-collection',
+        severity: 'error',
+      });
     }
   }
   return iconPath;
@@ -130,19 +133,32 @@ function getSidenav(collection) {
   }
 
   /* Filters */
-  const spSidenav = createTag('sp-sidenav', { manageTabIndex: true });
+  const spSidenav = createTag('sp-sidenav', { manageTabIndex: true, label: placeholders?.sidenavFilterCategories || '' });
   spSidenav.setAttribute('manageTabIndex', true);
   const deeplink = collection.variant === 'catalog' ? 'category' : 'filter';
   const sidenavList = createTag('merch-sidenav-list', { deeplink }, spSidenav);
+
+  // Filter items change page content rather than navigate, so button role fits better.
+  sidenavList.updateComplete.then(() => {
+    sidenavList.querySelectorAll('sp-sidenav-item:not([href])').forEach((item) => {
+      item.shadowRoot?.querySelector('a')?.setAttribute('role', 'button');
+    });
+  });
 
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
       const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
-      const iconPath = localizeIconPath(node.icon);
-      if (iconPath) {
-        createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
+      let iconPath;
+      if (node.icon?.startsWith('sp-icon-')) {
+        createTag(node.icon, { slot: 'icon' }, null, { parent: item });
+        iconPath = node.icon;
+      } else {
+        iconPath = localizeIconPath(node.icon);
+        if (iconPath) {
+          createTag('img', { src: iconPath, slot: 'icon', alt: '' }, null, { parent: item });
+        }
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };
@@ -174,7 +190,7 @@ function getSidenav(collection) {
 
   /* Resources List */
   if (sidenavSettings?.linksTitle && sidenavSettings?.link) {
-    const resourcesSpSidenav = createTag('sp-sidenav', { manageTabIndex: true });
+    const resourcesSpSidenav = createTag('sp-sidenav', { manageTabIndex: true, label: placeholders?.sidenavResources || '' });
     resourcesSpSidenav.classList.add('resources');
 
     const resourcesList = createTag('merch-sidenav-list', {
@@ -185,7 +201,7 @@ function getSidenav(collection) {
     const resourceItem = createTag('sp-sidenav-item', {
       href: sidenavSettings.link,
       target: '_blank',
-      'aria-label': sidenavSettings.linkText,
+      'aria-label': placeholders?.catalogSpecialOffersAlt,
     });
 
     resourceItem.textContent = sidenavSettings.linkText || 'Link';
