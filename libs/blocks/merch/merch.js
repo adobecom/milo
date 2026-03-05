@@ -14,6 +14,7 @@ export const MAS_MERCH_QUANTITY_SELECT = 'merch-quantity-select';
 export const MAS_MERCH_SECURE_TRANSACTION = 'merch-secure-transaction';
 export const MAS_MERCH_SIDENAV = 'merch-sidenav';
 export const MAS_MERCH_WHATS_INCLUDED = 'merch-whats-included';
+export const MAS_FIELD = 'mas-field';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
@@ -1477,6 +1478,7 @@ export function getOptions(el) {
   for (const [key, value] of searchParams.entries()) {
     if (key === 'sidenav') options.sidenav = value === 'true';
     else if (key === 'fragment' || key === 'query') options.fragment = value;
+    else if (key === 'field') options.field = value;
   }
   return options;
 }

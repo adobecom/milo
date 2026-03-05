@@ -1105,7 +1105,6 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel[class*='show-'].ups-desktop:has(.editorial-card).lightbox .carousel-expand {
     display: none;
   }
-
 }
 
 @media (min-width: 900px) and (max-width: 1199px) {
