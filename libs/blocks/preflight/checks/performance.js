@@ -91,6 +91,16 @@ export async function checkImageSize(url, area, observeLcp) {
       description: 'No image as LCP element.',
     };
   }
+  // Skip fetch for blob: and data: URLs - they are in-memory or inline and cannot be fetched
+  if (lcp.url.startsWith('blob:') || lcp.url.startsWith('data:')) {
+    return {
+      checkId: PERFORMANCE_IDS.imageSize,
+      severity: PERFORMANCE_SEVERITIES.imageSize,
+      title: PERFORMANCE_TITLES.ImageSize,
+      status: STATUS.EMPTY,
+      description: 'LCP is a blob or embedded resource (e.g. video player); size check skipped.',
+    };
+  }
   try {
     const blob = await fetch(lcp.url).then((res) => res.blob());
     const isSizeValid = blob.size / 1024 <= 100;
