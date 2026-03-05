@@ -18,13 +18,12 @@ function decorateCard(wrapper) {
   foreground.classList.add('foreground');
   decorateBlockText(foreground);
   const firstCell = foreground.children[0];
-  if (firstCell?.childElementCount === 1
-    && firstCell?.firstElementChild?.tagName === 'PICTURE') {
-    const iconPicture = firstCell.firstElementChild;
-    iconPicture.classList.add('icon');
-    media.appendChild(iconPicture);
-    firstCell.remove();
-  }
+  if (firstCell?.childElementCount !== 1 || firstCell?.firstElementChild?.tagName !== 'PICTURE') return;
+
+  const iconPicture = firstCell.firstElementChild;
+  iconPicture.classList.add('icon');
+  media.appendChild(iconPicture);
+  firstCell.remove();
 }
 
 function decorateViewportStructure(rows) {
