@@ -50,6 +50,7 @@ function addChevronIcon(pTag) {
 }
 
 export default async function init(el) {
+  console.log('debug commit');
   el.classList.add('news', 'con-block', 'section', 'container');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
