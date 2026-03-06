@@ -5,6 +5,13 @@ export const STATUS = {
   EMPTY: 'empty',
 };
 
+export const STATUS_TO_ICON_MAP = {
+  [STATUS.PASS]: 'green',
+  [STATUS.FAIL]: 'red',
+  [STATUS.LIMBO]: 'orange',
+  [STATUS.EMPTY]: 'empty',
+};
+
 export const SEVERITY = {
   CRITICAL: 'critical',
   WARNING: 'warning',

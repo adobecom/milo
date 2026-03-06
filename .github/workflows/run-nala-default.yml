@@ -46,8 +46,6 @@ jobs:
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-          cache-dependency-path: '**/package-lock.json'
 
       # Cache node_modules
       - name: Cache node_modules
@@ -57,8 +55,6 @@ jobs:
             ~/.npm
             **/node_modules
           key: npm-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            npm-${{ runner.os }}-${{ matrix.node-version }}-
 
       # Cache Playwright browser binaries across runs
       - name: Cache Playwright browsers
@@ -71,7 +67,7 @@ jobs:
 
       # Install dependencies (cheap on cache hit, ensures Playwright is in node_modules)
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund --prefer-offline
+        run: npm ci --no-fund --prefer-offline
 
       # Install only the browser needed for this matrix job (fast; uses the cache above)
       - name: Install Playwright (${{ matrix.browser }})
