@@ -1,5 +1,16 @@
-import { decorateLinksAsync, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
+import { decorateLinksAsync, getConfig, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
 import { addAriaLabelToCta } from './merch.js';
+
+let iconsLoaded;
+function loadBadgeIcons(cards) {
+  if (iconsLoaded) return;
+  const hasBadgeIcon = cards.some((card) => card.querySelector('merch-badge[icon^="sp-icon-"]'));
+  if (hasBadgeIcon) {
+    iconsLoaded = true;
+    const { base } = getConfig();
+    import(`${base}/features/spectrum-web-components/dist/icons-workflow.js`);
+  }
+}
 
 export async function localizePreviewLinks(el) {
   const anchors = el.getElementsByTagName('a');
@@ -98,6 +109,7 @@ export function enableAnalytics(card) {
 export async function postProcessAutoblock(autoblockEl, isCard = false) {
   cleanupTabsAnalytics(autoblockEl);
   const cards = isCard ? [autoblockEl] : Array.from(autoblockEl.querySelectorAll('merch-card'));
+  loadBadgeIcons(cards);
   const processPromises = cards.map(async (card) => {
     try {
       await card.checkReady();
