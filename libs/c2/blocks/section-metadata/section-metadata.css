@@ -22,16 +22,16 @@
     grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); /* 320px - 2 * 24px */
     gap: var(--s2a-grid-gutter);
     align-items: start;
+  }
 
-    &.dark {
-      background-color: var(--s2a-color-gray-900);
-      color: var(--s2a-color-gray-25);
-    }
+  &.dark {
+    background-color: var(--s2a-color-gray-900);
+    color: var(--s2a-color-gray-25);
+  }
 
-    &.light {
-      background-color: var(--s2a-color-gray-25);
-      color: var(--s2a-color-gray-1000);
-    }
+  &.light {
+    background-color: var(--s2a-color-gray-25);
+    color: var(--s2a-color-gray-1000);
   }
 
   &.masonry-layout {
