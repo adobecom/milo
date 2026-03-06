@@ -1,4 +1,4 @@
-import { decorateTextOverrides } from '../../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../../utils/decorate.js';
 import { createTag, loadStyle, getConfig, loadBlock } from '../../../utils/utils.js';
 
 // size: [heading, body, ...detail]
