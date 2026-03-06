@@ -1,86 +1,28 @@
-import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../../utils/decorate.js';
+import { decorateTextOverrides } from '../../../utils/decorate.js';
 import { createTag, loadStyle, getConfig, loadBlock } from '../../../utils/utils.js';
 
 // size: [heading, body, ...detail]
-const blockTypeSizes = {
-  standard: {
-    small: ['s', 's', 's'],
-    medium: ['m', 'm', 'm'],
-    large: ['l', 'l', 'l'],
-    xlarge: ['xl', 'xl', 'xl'],
-  },
-  inset: {
-    small: ['s', 'm'],
-    medium: ['m', 'l'],
-    large: ['l', 'xl'],
-    xlarge: ['xl', 'xxl'],
-  },
-  text: {
-    xxsmall: ['xxs', 'xxs'],
-    small: ['m', 's', 's'],
-    medium: ['l', 'm', 'm'],
-    large: ['xl', 'm', 'l'],
-    xlarge: ['xxl', 'l', 'xl'],
-  },
-};
-
-// function decorateMultiViewport(foreground) {
-//   const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
-//   if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
-//     [...foreground.children].forEach((child, index) => {
-//       child.className = viewports[index];
-//       if (foreground.childElementCount === 2 && index === 1) child.className = 'tablet-up desktop-up';
-//     });
-//   }
-//   return foreground;
-// }
-
-// function decorateBlockIconArea(content, el) {
-//   const first = content.children[0];
-//   if (first?.querySelector('img')) {
-//     const areaClass = el.className.match(/-(lockup|icon)/);
-//     first.classList.add(areaClass ? `${areaClass[1]}-area` : 'image');
-//   }
-//   const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
-//   if (!headings) return;
-//   headings.forEach((h) => {
-//     const hPrevElem = h.previousElementSibling;
-//     if (hPrevElem?.childElementCount) {
-//       const picCount = [...hPrevElem.children].reduce((result, item) => {
-//         let count = result;
-//         if (item.nodeName === 'PICTURE') count += 1;
-//         return count;
-//       }, 0);
-//       if (picCount === hPrevElem.childElementCount) hPrevElem.classList.add('icon-area');
-//     }
-//   });
-// }
-
-// function decorateLinkFarms(el) {
-//   const { miloLibs, codeRoot } = getConfig();
-//   loadStyle(`${miloLibs || codeRoot}/blocks/text/link-farms.css`);
-//   const [title, foregroundDiv] = [...el.querySelectorAll('.foreground')];
-//   const hCount = foregroundDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
-//   title.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading-l');
-//   foregroundDiv.querySelectorAll('p').forEach((p) => p.classList.add('body-s'));
-//   foregroundDiv.querySelectorAll('div').forEach((divElem, index) => {
-//     divElem.setAttribute('role', 'list');
-//     [...divElem.children].forEach((child) => child.setAttribute('role', 'listitem'));
-//     const heading = divElem.querySelector('h1, h2, h3, h4, h5, h6');
-//     heading?.classList.add('heading-xs');
-//     if (!hCount) return;
-//     if (!heading) {
-//       divElem.prepend(createTag('h3', { class: 'no-heading heading-xs' }));
-//       return;
-//     }
-//     const sibling = index % 2 === 0
-//       ? divElem.nextElementSibling
-//       : divElem.previousElementSibling;
-//     sibling?.classList.add('hspace');
-//     if (index > 0) divElem.classList.add('has-heading');
-//     if (index > 1) foregroundDiv.classList.add('gap-xl');
-//   });
-// }
+// const blockTypeSizes = {
+//   standard: {
+//     small: ['s', 's', 's'],
+//     medium: ['m', 'm', 'm'],
+//     large: ['l', 'l', 'l'],
+//     xlarge: ['xl', 'xl', 'xl'],
+//   },
+//   inset: {
+//     small: ['s', 'm'],
+//     medium: ['m', 'l'],
+//     large: ['l', 'xl'],
+//     xlarge: ['xl', 'xxl'],
+//   },
+//   text: {
+//     xxsmall: ['xxs', 'xxs'],
+//     small: ['m', 's', 's'],
+//     medium: ['l', 'm', 'm'],
+//     large: ['xl', 'm', 'l'],
+//     xlarge: ['xxl', 'l', 'xl'],
+//   },
+// };
 
 function addStyle(filename) {
   const { miloLibs, codeRoot } = getConfig();
@@ -108,16 +50,14 @@ function addChevronIcon(pTag) {
 }
 
 export default async function init(el) {
-  // el.classList.add('text-block', 'con-block');
-  el.classList.add('news', 'con-block');
+  el.classList.add('news', 'con-block', 'section', 'container');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
     const [head, ...tail] = rows;
     decorateBlockHeader(head);
     rows = tail || rows;
-    const newsWrapper = createTag('div', { class: 'news-wrapper section' });
     const evenItems = rows.length % 2 === 0;
-    newsWrapper.classList.add(evenItems ? 'four-up' : 'three-up');
+    el.classList.add(evenItems ? 'four-up' : 'three-up');
     rows.forEach((row) => {
       row.classList.add('news-item');
       const pTags = row.querySelectorAll('p');
@@ -127,12 +67,11 @@ export default async function init(el) {
           if (p.querySelector('a').innerText.trim() === p.innerText.trim()) {
             p.classList.add('news-item-link');
             addChevronIcon(p);
+            if (el.classList.contains('quiet')) p.querySelector('a').classList.add('quiet');
           }
         } else p.classList.add('news-item-body');
       });
-      newsWrapper.appendChild(row);
     });
-    el.appendChild(newsWrapper);
   }
   const helperClasses = [];
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
