@@ -14,7 +14,6 @@ import {
 
 import {
   getExperienceName,
-  loadDecorateMenu,
   fetchAndProcessPlainHtml,
   loadBaseStyles,
   yieldToMain,
@@ -25,6 +24,7 @@ import {
   isDarkMode,
   setupKeyboardNav,
   KEYBOARD_DELAY,
+  loadStyles,
 } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../../features/placeholders.js';
@@ -97,8 +97,26 @@ const base = miloLibs || codeRoot;
 const CONFIG = {
   socialPlatforms: ['facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'],
   delays: { decoration: 3000 },
-  containerBreakpoint: 900,
+  containerBreakpoint: 767,
 };
+
+let cachedDecorateMenu;
+export async function loadDecorateMenu() {
+  if (cachedDecorateMenu) return cachedDecorateMenu;
+
+  let resolve;
+  cachedDecorateMenu = new Promise((_resolve) => {
+    resolve = _resolve;
+  });
+  const url = `${miloLibs || codeRoot}/c2/blocks/global-footer/menu/menu.css`;
+  const [menu] = await Promise.all([
+    import('./menu/menu.js'),
+    loadStyles(url),
+  ]);
+
+  resolve(menu.default);
+  return cachedDecorateMenu;
+}
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
@@ -232,7 +250,7 @@ class Footer {
     };
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
-    this.block.append(this.elements.footer);
+    this.block.append(this.elements.footer, this.elements.footerLogo);
     this.initFooterOptionsOrderSync();
     setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
     const { onFooterReady } = getConfig();
@@ -532,11 +550,11 @@ class Footer {
       </div>
       ${this.elements.social}   
       </div>
-      <div class="feds-footer-logo">
-      <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
-      </div>
     </div>`;
-
+    const footerLogo = toFragment`<div class="feds-footer-logo">
+        <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
+      </div>`;
+    this.elements.footerLogo = footerLogo;
     return this.elements.footer;
   };
 
