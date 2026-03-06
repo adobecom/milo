@@ -1,3 +1,4 @@
+.region-nav > div:nth-of-type(2) > div > p,
 .region-nav > div:nth-of-type(2) > div > ul li {
   line-height: 1.7;
   font-size: var(--s2a-typography-font-size-body-sm);
