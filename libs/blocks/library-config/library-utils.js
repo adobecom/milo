@@ -6,10 +6,7 @@ export function isMatching(container, query, type, titleText) {
   let tagsString;
 
   switch (type) {
-    case 'c1-blocks':
-      tagsString = getSearchTags(container);
-      break;
-    case 'c2-blocks':
+    case 'blocks':
       tagsString = getSearchTags(container);
       break;
     case 'templates':
