@@ -582,8 +582,15 @@ function handleChangingSlides(carouselElements) {
 
   // Handle keyboard navigation
   el.addEventListener('keydown', (event) => {
-    if (event.key === KEY_CODES.ARROW_RIGHT
-      || event.key === KEY_CODES.ARROW_LEFT) { moveSlides(event, carouselElements); }
+    const keyMap = {
+      [KEY_CODES.ARROW_LEFT]: 0, // previous
+      [KEY_CODES.ARROW_RIGHT]: 1, // next
+    };
+
+    const btnIndex = keyMap[event.key];
+    // Stop keyboard navigation for disabled-buttons variant.
+    if (btnIndex === undefined || nextPreviousBtns[btnIndex]?.disabled) return;
+    moveSlides(event, carouselElements);
   });
 
   // Swipe Events
