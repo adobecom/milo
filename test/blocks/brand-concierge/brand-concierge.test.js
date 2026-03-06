@@ -187,6 +187,8 @@ describe('Brand Concierge', () => {
     const { env } = getConfig();
     const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
     const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+    // Remove stale script tags left by previous tests so loadScript finds the pre-loaded one
+    document.querySelectorAll(`head > script[src="${src}"]`).forEach((s) => s.remove());
     const script = document.createElement('script');
     script.src = src;
     script.dataset.loaded = 'true';
