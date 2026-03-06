@@ -22,17 +22,12 @@
     grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); /* 320px - 2 * 24px */
     gap: var(--s2a-grid-gutter);
     align-items: start;
-    padding-inline: var(--grid-margin-width);
-
-    &.fluid {
-      --grid-margin-width: 0px; /* Keep unit for calc */
-    }
 
     &.dark {
       background-color: var(--s2a-color-gray-900);
       color: var(--s2a-color-gray-25);
     }
-    
+
     &.light {
       background-color: var(--s2a-color-gray-25);
       color: var(--s2a-color-gray-1000);
@@ -41,12 +36,7 @@
 
   &.masonry-layout {
     gap: var(--s2a-grid-gutter);
-    padding-inline: var(--grid-margin-width);
     grid-template-columns: repeat(var(--grid-columns), 1fr);
-
-    &.fluid {
-      --grid-margin-width: 0px; /* Keep unit for calc */
-    }
 
     .grid-full-width { grid-column: span var(--grid-columns); }
     .grid-half-width { grid-column: span 3; }
@@ -71,14 +61,7 @@
 
 .section[class*='grid-width-'] {
   display: grid;
-  padding-inline: var(--grid-margin-width);
   gap: var(--s2a-grid-gutter);
-}
-
-.section[class*='grid-width-'] > .content,
-main > .section[class*='-up'] > .content {
-  max-width: initial;
-  margin: 0;
 }
 
 .section-background {
@@ -165,16 +148,10 @@ main > .section[class*='-up'] > .content {
       .grid-span-11 { grid-column: span 11; }
     }
 
-    &.grid-width-6 {
-      padding-inline: var(--grid-margin-width-6);
-    }
-
-    &.grid-width-8 {
-      padding-inline: var(--grid-margin-width-8);
-    }
-
-    &.grid-width-10 {
-      padding-inline: var(--grid-margin-width-10);
+    &.container {
+      &.grid-width-6 { --grid-content-width: var(--grid-width-6); }
+      &.grid-width-8 { --grid-content-width: var(--grid-width-8); }
+      &.grid-width-10 { --grid-content-width: var(--grid-width-10); }
     }
   }
 }
