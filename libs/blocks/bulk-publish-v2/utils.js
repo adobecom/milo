@@ -52,6 +52,9 @@ const sticky = () => {
 const getAemUrl = (url) => url.hostname.split('.')[0].split('--');
 const AEM_PAGE_HOST_REGEX = /^[^.]+\.aem\.(?:page|live)$/;
 const getInvalidUrlReason = (str) => {
+  const trimmed = typeof str === 'string' ? str.trim() : '';
+  if (!trimmed.startsWith('https://')) return 'Invalid URL (must start with https://)';
+  if (trimmed.length > 8 && trimmed[8] === '/') return 'Invalid URL (use exactly two slashes after https:)';
   let url;
   try {
     url = new URL(str);
@@ -59,10 +62,12 @@ const getInvalidUrlReason = (str) => {
     return 'Invalid URL';
   }
   if (url.protocol !== 'https:') return 'Must use HTTPS';
+  if (!url.hostname) return 'Invalid URL (missing hostname)';
   if (!AEM_PAGE_HOST_REGEX.test(url.hostname)) return 'Invalid host (expected *.aem.page or *.aem.live)';
   const [ref, repo, owner] = getAemUrl(url);
   if (!ref || !repo || !owner) return 'Invalid host (missing ref, repo, or owner)';
   if (repo === 'bacom') return 'Old Bacom project is not supported, use new DA project instead';
+  if (url.pathname.includes('//')) return 'Invalid URL (path must not contain //)';
   if (url.pathname.toLowerCase().endsWith('.html')) return 'URL must not end with .html';
   return null;
 };
