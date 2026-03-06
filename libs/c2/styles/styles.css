@@ -387,10 +387,9 @@
   /* Grid sizes */
   --grid-columns: 6;
   --grid-margin-width: 24px;
-  --grid-container-width: calc(100% - (var(--grid-margin-width) * 2));
-  --grid-column-width: calc(
-    (var(--grid-container-width) - var(--s2a-grid-gutter) * (var(--grid-columns) - 1))
-    / var(--grid-columns));
+  --grid-max-width-default: 1440px;
+  --grid-max-width-wide: 1920px;
+  --grid-max-width-fluid: 2560px;
 
   /* Regional font variations */
   &:lang(ar) {
@@ -495,13 +494,6 @@ main > .section,
 .fragment > .section {
   display: block;
   position: relative;
-}
-
-main > .section > .content,
-.fragment > .section > .content {
-  display: block;
-  max-width: var(--grid-container-width);
-  margin: 0 auto;
 }
 
 div[data-failed="true"] {
@@ -679,19 +671,27 @@ p {
 .spacing-none-bottom { padding-bottom: var(--s2a-spacing-none); }
 
 .container {
-  width: var(--grid-container-width);
-  max-width: 1440px;
-  margin: 0 auto;
+  --grid-max-width: var(--grid-max-width-default);
+  --grid-content-width: var(--grid-max-width);
+
+  width: auto;
+  max-width: none;
+  padding-inline: max(
+    var(--grid-margin-width),
+    calc((100% - var(--grid-content-width)) / 2)
+  );
 
   &.wide {
-    max-width: 1920px;
+    --grid-max-width: var(--grid-max-width-wide);
   }
 
   &.fluid {
+    --grid-max-width: var(--grid-max-width-fluid);
     --grid-margin-width: 0px; /* Keep unit for calc */
-    --grid-container-width: calc(100% - (var(--grid-margin-width) * 2));
+  }
 
-    max-width: 2560px;
+  .container {
+    padding-inline: 0;
   }
 }
 
@@ -898,6 +898,16 @@ that would likely have to be done via JS */
     --s2a-section-padding-md: var(--s2a-spacing-2xl);
     --s2a-section-padding-lg: var(--s2a-spacing-4xl);
     --s2a-section-padding-xl: var(--s2a-layout-sm);
+
+    /* Grid definitions */
+    --grid-columns: 12;
+    --grid-margin-width: 8.333%;
+  }
+
+  .container {
+    --grid-width-6: calc(var(--grid-max-width) * 6 / var(--grid-columns));
+    --grid-width-8: calc(var(--grid-max-width) * 8 / var(--grid-columns));
+    --grid-width-10: calc(var(--grid-max-width) * 10 / var(--grid-columns));
   }
 }
 
@@ -955,13 +965,6 @@ that would likely have to be done via JS */
     --s2a-section-padding-md: var(--s2a-layout-lg);
     --s2a-section-padding-lg: var(--s2a-layout-xl);
     --s2a-section-padding-xl: var(--s2a-layout-2xl);
-
-    /* Grid definitions */
-    --grid-columns: 12;
-    --grid-margin-width: 8.333%;
-    --grid-margin-width-10: calc((100vw - (var(--grid-column-width) * 10 + var(--s2a-grid-gutter) * 9)) / 2);
-    --grid-margin-width-8: calc((100vw - (var(--grid-column-width) * 8  + var(--s2a-grid-gutter) * 7)) / 2);
-    --grid-margin-width-6: calc((100vw - (var(--grid-column-width) * 6  + var(--s2a-grid-gutter) * 5)) / 2);
   }
 }
 
