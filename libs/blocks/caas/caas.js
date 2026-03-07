@@ -81,12 +81,26 @@ const loadCaas = async (a) => {
   initCaas(state, caasStrs, block);
 };
 
-const isGoogleBot = function () {
-  return /googlebot/i.test(navigator.userAgent);
-};
+const defined_eagerCrawlers = [
+  'googlebot',
+  'Tokowaka-AI',
+  'AdobeEdgeOptimize',
+  'ChatGPT-User',
+  'GPTBot',
+  'OAI-SearchBot',
+  'PerplexityBot',
+  'ClaudeBot',
+  'Claude-User',
+  'Claude-SearchBot',
+  'Perplexity-User',
+];
+
+const defined_eagerCrawlersRegex = new RegExp(defined_eagerCrawlers.join('|'), 'i');
+
+const defined_isEagerCrawler = () => defined_eagerCrawlersRegex.test(navigator.userAgent);
 
 export default async function init(link) {
-  if (link.textContent.includes('no-lazy') || isGoogleBot()) {
+  if (link.textContent.includes('no-lazy') || defined_isEagerCrawler()) {
     loadCaas(link);
   } else {
     createIntersectionObserver({

@@ -36,7 +36,7 @@
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
     import init from '../../../libs/blocks/caas/caas.js';
-    import { loadScript, loadStyle } from '../../../libs/utils/utils.js';
+    import { createIntersectionObserver, loadScript, loadStyle } from '../../../libs/utils/utils.js';
     import { delay, waitForElement } from '../../helpers/waitfor.js';
 
     let config;
@@ -58,6 +58,7 @@
         beforeEach(() => {
           document.getElementById('caas')?.remove();
           caasEl = null;
+          createIntersectionObserver.resetHistory();
           loadScript.reset();
           loadStyle.reset();
 
@@ -108,6 +109,36 @@
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));
+        });
+
+        it('disables lazy loading for eager crawlers', async function () {
+          const userAgentDescriptor = Object.getOwnPropertyDescriptor(navigator, 'userAgent');
+          if (userAgentDescriptor && !userAgentDescriptor.configurable) {
+            this.skip();
+          }
+
+          const originalUserAgent = navigator.userAgent;
+          try {
+            Object.defineProperty(navigator, 'userAgent', {
+              value: 'Tokowaka-AI',
+              configurable: true,
+            });
+
+            const a = document.getElementById('caaslink');
+            await init(a);
+            await waitForElement('#caas');
+            await delay(50);
+            expect(createIntersectionObserver.callCount).to.equal(0);
+          } finally {
+            try {
+              Object.defineProperty(navigator, 'userAgent', {
+                value: originalUserAgent,
+                configurable: true,
+              });
+            } catch (e) {
+              // Ignore restoration failures in test environment.
+            }
+          }
         });
 
       });
