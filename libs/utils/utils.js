@@ -115,6 +115,7 @@ const C2_BLOCKS = [
   'global-navigation',
   'base-card',
   'region-nav',
+  'news',
 ];
 
 const AUTO_BLOCKS = [
