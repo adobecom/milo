@@ -9,7 +9,7 @@ export async function getMarketConfig() {
   const sourceFromUrl = new URLSearchParams(window.location.search).get('marketSelector');
   const marketSelectorKey = sourceFromUrl || getMetadata('marketselector') || marketSelector;
   const marketsUrl = marketSelectorKey
-    ? `${contentRoot ?? ''}/market-selector/market-selector-${marketSelectorKey}.json`
+    ? `${contentRoot ?? ''}/assets/market-selector/market-selector-${marketSelectorKey}.json`
     : `${getFederatedContentRoot()}/federal/market-selector/market-selector.json`;
   try {
     const resp = await fetch(marketsUrl);
@@ -31,7 +31,7 @@ export async function getValidatedMarket() {
   const params = new URLSearchParams(window.location.search);
   const countryParam = norm(params.get('country'));
   const akamaiParam = norm(params.get('akamaiLocale'));
-  const cookieMarket = getCookie('market');
+  const cookieMarket = getCookie('country');
   let detectedMarket = countryParam || akamaiParam || cookieMarket || norm(getCountry());
   if (!detectedMarket) {
     const { default: getAkamaiCode } = await import('./geo.js');
