@@ -43,5 +43,8 @@ export async function getValidatedMarket() {
   const currLang = config.languages.find((l) => (l.prefix || '') === prefix) || config.languages[0];
   const market = detectedMarket || currLang.defaultMarket || 'us';
   const supported = currLang.markets?.split(',').map((m) => m.trim()) || [];
-  return supported.includes(market) ? market : currLang.defaultMarket;
+  const validated = supported.includes(market) ? market : currLang.defaultMarket;
+  return config.markets.some((marketItem) => marketItem.marketCode === validated)
+    ? validated
+    : (currLang.defaultMarket || 'us');
 }

@@ -25,15 +25,16 @@ function getTargetUrl(targetPrefix, currentPath) {
 
 const queriedPages = [];
 
-function handleEvent({ prefix, link, callback } = {}) {
+function handleEvent({ prefix, link, callback, fallbackUrl } = {}) {
   if (typeof callback !== 'function') return;
   const config = getConfig();
   const { baseSitePath } = config;
-  const fallbackUrl = `${window.location.origin}${prefix ? `/${prefix}` : ''}${getMetadata('base-site-path') || baseSitePath || ''}/`;
+  const defaultFallback = `${window.location.origin}${prefix ? `/${prefix}` : ''}${getMetadata('base-site-path') || baseSitePath || ''}/`;
+  const resolvedFallback = fallbackUrl || defaultFallback;
   const urlForCheck = link.href;
   const existingPage = queriedPages.find((page) => page.href === urlForCheck);
   if (existingPage) {
-    callback(existingPage.ok ? link.href : fallbackUrl);
+    callback(existingPage.ok ? link.href : resolvedFallback);
     return;
   }
   fetch(urlForCheck, { method: 'HEAD' }).then((resp) => {
@@ -42,7 +43,7 @@ function handleEvent({ prefix, link, callback } = {}) {
     callback(link.href);
   }).catch(() => {
     queriedPages.push({ href: urlForCheck, ok: false });
-    callback(fallbackUrl);
+    callback(resolvedFallback);
   });
 }
 
@@ -132,10 +133,14 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix) {
   finalUrl.searchParams.set('country', marketItem.value);
 
   if (isRedirect) {
+    const currentUrlWithParam = new URL(window.location.href);
+    currentUrlWithParam.searchParams.set('country', marketItem.value);
+
     handleEvent({
       prefix: marketPrefix,
       link: { href: finalUrl.toString() },
       callback: (url) => { window.location.href = url; },
+      fallbackUrl: currentUrlWithParam.toString(),
     });
   } else {
     window.location.href = finalUrl.toString();
