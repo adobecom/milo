@@ -81,7 +81,7 @@ const loadCaas = async (a) => {
   initCaas(state, caasStrs, block);
 };
 
-const defined_eagerCrawlers = [
+const eagerCrawlers = [
   'googlebot',
   'Tokowaka-AI',
   'AdobeEdgeOptimize',
@@ -95,12 +95,12 @@ const defined_eagerCrawlers = [
   'Perplexity-User',
 ];
 
-const defined_eagerCrawlersRegex = new RegExp(defined_eagerCrawlers.join('|'), 'i');
+const eagerCrawlersRegex = new RegExp(eagerCrawlers.join('|'), 'i');
 
-const defined_isEagerCrawler = () => defined_eagerCrawlersRegex.test(navigator.userAgent);
+const isEagerCrawler = () => eagerCrawlersRegex.test(navigator.userAgent);
 
 export default async function init(link) {
-  if (link.textContent.includes('no-lazy') || defined_isEagerCrawler()) {
+  if (link.textContent.includes('no-lazy') || isEagerCrawler()) {
     loadCaas(link);
   } else {
     createIntersectionObserver({
