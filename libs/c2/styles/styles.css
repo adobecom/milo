@@ -447,6 +447,9 @@
   /* Milo-specific declarations */
 
   /* New tokens get added here, move them to the correct location above */
+
+  background-color: var(--s2a-color-background-default);
+  color: var(--s2a-color-content-default);
 }
 
 html {
