@@ -27,10 +27,10 @@ export const isValidHtmlUrl = (url) => {
   return regex.test(url);
 };
 
-export const createIntersectionObserver = stub().callsFake(({ el, callback /* , once = true, options = {} */ }) => {
+export function createIntersectionObserver({ el, callback /* , once = true, options = {} */ }) {
   // fire immediately
   callback(el, { target: el });
-});
+}
 
 const PAGE_URL = new URL(window.location.href);
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
