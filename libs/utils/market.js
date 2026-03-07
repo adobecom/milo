@@ -6,7 +6,7 @@ const norm = (c) => (c?.toLowerCase() === 'uk' ? 'gb' : c?.toLowerCase()?.split(
 export async function getMarketConfig() {
   if (marketConfig) return marketConfig;
   const { contentRoot, marketSelector } = getConfig();
-  const sourceFromUrl = new URLSearchParams(window.location.search).get('marketSelector');
+  const sourceFromUrl = new URLSearchParams(window.location.search).get('marketselector');
   const marketSelectorKey = sourceFromUrl || getMetadata('marketselector') || marketSelector;
   const marketsUrl = marketSelectorKey
     ? `${contentRoot ?? ''}/assets/market-selector/market-selector-${marketSelectorKey}.json`
