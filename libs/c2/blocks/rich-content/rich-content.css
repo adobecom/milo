@@ -1,8 +1,11 @@
 .rich-content {
   --content-gap: var(--s2a-spacing-8);
 
-  text-align: center;
   position: relative;
+
+  &.center {
+    text-align: center;
+  }
 
   &.hero {
     height: 640px;
@@ -22,12 +25,15 @@
 
   .container .content {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     flex-direction: column;
     gap: var(--content-gap);
     position: relative;
     z-index: 1;
+  }
 
+  &.center .container .content {
+    align-items: center;
   }
 
   .background {
@@ -57,18 +63,18 @@
 @media (width >= 1024px) {
   .rich-content {
     &.hero {
-      &.max-width-8 {
-        --grid-container-width: calc(100% - (var(--grid-margin-width-8) * 2));
-      }
-
-      &.max-width-10 {
-        --grid-container-width: calc(100% - (var(--grid-margin-width-10) * 2));
-      }
-
       height: 1040px;
 
+      &.max-width-8 .container {
+        --grid-content-width: var(--grid-width-8);
+      }
+
+      &.max-width-10 .container {
+        --grid-content-width: var(--grid-width-10);
+      }
+
       .container {
-        padding-top: var(--s2a-layout-xl);
+        padding-top: var(--s2a-layout-xl); /* TODO: should likely be authorable */
       }
     }
 
