@@ -1,5 +1,6 @@
 div.section.base-card-section {
   gap: var(--s2a-spacing-40);
+  overflow: visible;
 }
 
 .base-card {
@@ -133,6 +134,12 @@ div.section.base-card-section {
     }
 
     &.full-width {
+      position: relative;
+      animation: base-card-full-width-shrink linear;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+      animation-fill-mode: both;
+
       .foreground {
         display: grid;
         grid-template-columns: repeat(12, 1fr);
@@ -163,6 +170,18 @@ div.section.base-card-section {
         aspect-ratio: 2.2/1;
       }
     }
+  }
+}
+
+/* left: calc(50% - 50vw) keeps card centered (center = 50% of section); no transform so interpolation stays centered */
+@keyframes base-card-full-width-shrink {
+  from {
+    width: 100vw;
+    left: calc(50% - 50vw);
+  }
+  to {
+    width: 100%;
+    left: 0;
   }
 }
 
