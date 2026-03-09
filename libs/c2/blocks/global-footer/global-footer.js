@@ -14,7 +14,6 @@ import {
 
 import {
   getExperienceName,
-  loadDecorateMenu,
   fetchAndProcessPlainHtml,
   loadBaseStyles,
   yieldToMain,
@@ -25,6 +24,7 @@ import {
   isDarkMode,
   setupKeyboardNav,
   KEYBOARD_DELAY,
+  loadStyles,
 } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../../features/placeholders.js';
@@ -97,8 +97,26 @@ const base = miloLibs || codeRoot;
 const CONFIG = {
   socialPlatforms: ['facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'],
   delays: { decoration: 3000 },
-  containerBreakpoint: 900,
+  containerBreakpoint: 767,
 };
+
+let cachedDecorateMenu;
+export async function loadDecorateMenu() {
+  if (cachedDecorateMenu) return cachedDecorateMenu;
+
+  let resolve;
+  cachedDecorateMenu = new Promise((_resolve) => {
+    resolve = _resolve;
+  });
+  const url = `${miloLibs || codeRoot}/c2/blocks/global-footer/menu/menu.css`;
+  const [menu] = await Promise.all([
+    import('./menu/menu.js'),
+    loadStyles(url),
+  ]);
+
+  resolve(menu.default);
+  return cachedDecorateMenu;
+}
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
@@ -151,7 +169,6 @@ class Footer {
       if (isMobile === this.isMobile) return;
       this.isMobile = isMobile;
       this.block.classList.toggle('mobile', isMobile);
-      this.syncFooterOptionsOrder();
     };
     this.resizeObserver = new ResizeObserver(([entry]) => requestAnimationFrame(
       () => update(Math.round(entry.contentRect.width)),
@@ -232,8 +249,7 @@ class Footer {
     };
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
-    this.block.append(this.elements.footer);
-    this.initFooterOptionsOrderSync();
+    this.block.append(this.elements.footer, this.elements.footerLogo);
     setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
     const { onFooterReady } = getConfig();
     onFooterReady?.();
@@ -309,7 +325,7 @@ class Footer {
       featureProductsSection.append(this.decorateHeadline(headline, 0, 'footer'));
     }
 
-    const featuredProductsList = toFragment`<ul></ul>`;
+    const featuredProductsList = toFragment`<ul class="caption"></ul>`;
     featuredProductsContent.querySelectorAll('.link-group').forEach((linkGroup) => {
       featuredProductsList.append(toFragment`<li>${this.decorateLinkGroup(linkGroup)}</li>`);
     });
@@ -521,10 +537,10 @@ class Footer {
   };
 
   decorateFooter = () => {
-    this.elements.footer = toFragment`<div class="feds-footer-wrapper">
+    this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
-    <div class="feds-footer-options">
+    <div class="feds-footer-options caption">
       ${this.elements.regionPicker}
       <div class="feds-footer-miscLinks-legal">
         ${this.elements.legal}
@@ -532,44 +548,16 @@ class Footer {
       </div>
       ${this.elements.social}   
       </div>
-      <div class="feds-footer-logo">
-      <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
-      </div>
     </div>`;
-
+    const footerLogo = toFragment`<div class="feds-footer-logo">
+        <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
+      </div>`;
+    this.elements.footerLogo = footerLogo;
     return this.elements.footer;
   };
 
   isFooterMobileLayout = () => this.block.classList.contains('mobile')
     || window.matchMedia('(max-width: 899px)').matches;
-
-  syncFooterOptionsOrder = () => {
-    const options = this.elements.footer?.querySelector('.feds-footer-options');
-    if (!options) return;
-
-    const region = options.querySelector('.feds-regionPicker-wrapper');
-    const legal = options.querySelector('.feds-footer-miscLinks-legal');
-    const social = options.querySelector('.feds-social');
-
-    if (!region || !legal || !social) return;
-
-    if (this.isFooterMobileLayout()) {
-      options.append(region, social, legal);
-    } else {
-      options.append(region, legal, social);
-    }
-  };
-
-  initFooterOptionsOrderSync = () => {
-    if (!this.footerOrderMediaQuery) {
-      this.footerOrderMediaQuery = window.matchMedia('(max-width: 899px)');
-    }
-    if (!this.footerOrderMediaQueryHandler) {
-      this.footerOrderMediaQueryHandler = () => this.syncFooterOptionsOrder();
-      this.footerOrderMediaQuery.addEventListener('change', this.footerOrderMediaQueryHandler);
-    }
-    this.syncFooterOptionsOrder();
-  };
 
   processJarvisLink = async () => {
     const sectionMeta = this.body.querySelector('.section-metadata');

@@ -1,12 +1,18 @@
 .rich-content {
   --content-gap: var(--s2a-spacing-8);
 
-  text-align: center;
   position: relative;
 
+  &.center {
+    text-align: center;
+  }
+
   &.hero {
-    box-sizing: border-box;
     height: 640px;
+
+    .container {
+      padding-top: var(--s2a-layout-sm);
+    }
 
     .eyebrow {
       color: var(--s2a-color-gray-25);
@@ -19,12 +25,15 @@
 
   .container .content {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     flex-direction: column;
     gap: var(--content-gap);
     position: relative;
     z-index: 1;
+  }
 
+  &.center .container .content {
+    align-items: center;
   }
 
   .background {
@@ -39,11 +48,7 @@
   }
 
   .eyebrow {
-    color: rgba(0, 0, 0, 0.50);
-  }
-
-  :is(h1, h2, h3, h4, h5, h6) {
-    font-weight: var(--s2a-font-weight-adobe-clean-black);
+    color: var(--s2a-color-gray-700);
   }
 
   .action-area {
@@ -59,18 +64,29 @@
   .rich-content {
     &.hero {
       height: 1040px;
+
+      &.max-width-8 .container {
+        --grid-content-width: var(--grid-width-8);
+      }
+
+      &.max-width-10 .container {
+        --grid-content-width: var(--grid-width-10);
+      }
+
+      .container {
+        padding-top: var(--s2a-layout-xl); /* TODO: should likely be authorable */
+      }
     }
 
-    &:not(.hero).content [class*="body-"]:not(.action-area) {
-      max-width: 794px; /*TODO: Update with token value */
+    &:not(.hero) .content [class*="body-"]:not(.action-area) {
+      max-width: 794px;
     }
 
     .action-area {
-      margin-top:calc(var(--s2a-spacing-32) - var(--content-gap));
+      margin-top: calc(var(--s2a-spacing-32) - var(--content-gap));
     }
   }
 }
 
 @media (width >= 1440px) {
 }
-

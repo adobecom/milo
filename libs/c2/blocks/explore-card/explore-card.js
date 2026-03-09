@@ -4,7 +4,7 @@ function hasContent(node) {
   return node.textContent?.trim() !== '' || node.querySelector('img, picture, svg, a[href]');
 }
 
-function hasForeground(foregroundRow, contentDiv, blockName) {
+function getForegroundContent(foregroundRow, contentDiv, blockName) {
   if (foregroundRow) {
     if (hasContent(foregroundRow)) {
       [...foregroundRow.children].forEach((child) => child.classList.add(`${blockName}-foreground`));
@@ -38,7 +38,7 @@ export default function init(el) {
   firstRow.classList.add(`${blockName}-container`);
 
   // Second row: foreground container
-  hasForeground(foregroundRow, contentDiv, blockName);
+  getForegroundContent(foregroundRow, contentDiv, blockName);
 
   if (!link) return;
   const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href });
