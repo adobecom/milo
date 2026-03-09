@@ -6,6 +6,7 @@ import {
   setMarket,
 } from '../../utils/utils.js';
 import { getMarketConfig, getValidatedMarket } from '../../utils/market.js';
+import { replaceKeyArray } from '../../features/placeholders.js';
 
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const GLOBE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="market-selector-globe"><path d="M10 19C14.9706 19 19 14.9706 19 10C19 5.02944 14.9706 1 10 1C5.02944 1 1 5.02944 1 10C1 14.9706 5.02944 19 10 19Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 1C12.25 3.5 13.5 6.5 13.5 10C13.5 13.5 12.25 16.5 10 19C7.75 16.5 6.5 13.5 6.5 10C6.5 6.5 7.75 3.5 10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -399,15 +400,27 @@ export default async function init(block) {
   const config = await getMarketConfig();
   if (!config) return;
 
-  const placeholders = block.querySelectorAll('p');
+  const miloConfig = getConfig();
+  const [
+    searchLanguage,
+    searchMarket,
+    noResultLanguage,
+    noResultMarket,
+  ] = await replaceKeyArray([
+    'search-language',
+    'search-market',
+    'no-results-language',
+    'no-results-market',
+  ], miloConfig);
+
   const labels = {
-    searchLanguage: placeholders[0]?.textContent.trim() || 'Search Language',
-    searchMarket: placeholders[1]?.textContent.trim() || 'Search Market',
-    noResultLanguage: placeholders[2]?.textContent.trim() || 'No results for language',
-    noResultMarket: placeholders[3]?.textContent.trim() || 'No results for market',
+    searchLanguage,
+    searchMarket,
+    noResultLanguage,
+    noResultMarket,
   };
 
-  const { locale } = getConfig();
+  const { locale } = miloConfig;
   const currentPrefix = locale.prefix || '';
   const currentLang = config.languages.find((lang) => (
     (lang.prefix ? `/${lang.prefix}` : '') === currentPrefix
