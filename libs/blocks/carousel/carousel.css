@@ -643,6 +643,7 @@ html[dir="rtl"] .carousel .move-indicators {
   .dark .carousel.disable-buttons .carousel-button.disabled,
   .carousel.disable-buttons .carousel-button.disabled {
     background-color: var(--carousel-nav-background-dark);
+    cursor: not-allowed;
   }
 
   .dark .carousel.disable-buttons .carousel-button.disabled path,
