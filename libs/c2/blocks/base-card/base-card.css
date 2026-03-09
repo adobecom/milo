@@ -73,7 +73,12 @@ div.section.base-card-section {
 
       &.standalone-link::after {
         content: url('../../assets/img/arrow-right.svg');
-        margin-left: var(--s2a-spacing-8);
+        display: inline-block;
+        margin-inline-start: var(--s2a-spacing-8);
+      }
+
+      [dir="rtl"] &.standalone-link::after {
+        transform: rotate(180deg);
       }
     }
 
