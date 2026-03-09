@@ -937,22 +937,27 @@ export function buildVariantInfo(variantNames) {
   }, { allNames: [] });
 }
 
-export const getXLGListURL = (config) => new Promise((resolve) => {
-  const isSignedInUser = window.adobeIMS?.isSignedInUser();
+export const getXLGListURL = (config) => {
+  if (config.mepXlgTagsURL) return config.mepXlgTagsURL;
+  if (!window.adobeIMS?.isSignedInUser()) return undefined;
+  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
+  const rawUrl = `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
+  config.mepXlgTagsURL = normalizePath(rawUrl);
+  return config.mepXlgTagsURL;
+};
 
-  const xlgUrl = (config.mepXlgTagsURL || !isSignedInUser)
-    ? undefined
-    : `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${config.env?.name === 'prod' ? 'prod' : 'stage'}`;
-
-  config.mepXlgTagsURL = xlgUrl;
-  resolve(xlgUrl);
-});
+export function prefetchXLGTags(config) {
+  const url = getXLGListURL(config);
+  if (!url) return;
+  config.mepXlgTagsPromise = fetchData(url, DATA_TYPE.JSON);
+}
 
 export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
-  const entitlementUrl = await getXLGListURL(config);
-  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
+  const fetchedData = config.mepXlgTagsPromise
+    ? await config.mepXlgTagsPromise
+    : await fetchData(getXLGListURL(config), DATA_TYPE.JSON);
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
   fetchedData?.data?.forEach((ent) => {
@@ -1678,7 +1683,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn || pznroc) loadLink(await getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) prefetchXLGTags(config);
   }
   if (enablePersV2 && target === true) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
