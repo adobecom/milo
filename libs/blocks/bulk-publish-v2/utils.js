@@ -49,8 +49,11 @@ const sticky = () => {
   };
 };
 
-const getAemUrl = (url) => url.hostname.split('.')[0].split('--');
-const AEM_PAGE_HOST_REGEX = /^[^.]+\.aem\.(?:page|live)$/;
+const AEM_PAGE_HOST_REGEX = /^([^.]+\.)*[^.]+\.aem\.(?:page|live)$/;
+const getAemUrl = (url) => {
+  const segment = url.hostname.split('.').find((s) => s.includes('--'));
+  return segment ? segment.split('--') : [];
+};
 const getInvalidUrlReason = (str) => {
   const trimmed = typeof str === 'string' ? str.trim() : '';
   const preParse = [
@@ -71,7 +74,7 @@ const getInvalidUrlReason = (str) => {
   const postParse = [
     [url.protocol !== 'https:', 'Must use HTTPS'],
     [!url.hostname, 'Invalid URL (missing hostname)'],
-    [!AEM_PAGE_HOST_REGEX.test(url.hostname), 'Invalid host (expected *.aem.page or *.aem.live)'],
+    [!url.hostname || !AEM_PAGE_HOST_REGEX.test(url.hostname), 'Invalid host (expected *.aem.page or *.aem.live)'],
     [!ref || !repo || !owner, 'Invalid host (missing ref, repo, or owner)'],
     [repo === 'bacom', 'Old Bacom project is not supported, use new DA project instead'],
     [url.pathname.includes('//'), 'Invalid URL (path must not contain //)'],

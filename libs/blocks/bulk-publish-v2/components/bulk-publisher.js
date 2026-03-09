@@ -274,7 +274,14 @@ class BulkPublish2 extends LitElement {
           <div class="malformed-urls">
             <strong>Malformed URLs (${this.invalidUrls.length}):</strong>
             <ul class="malformed-list">
-              ${this.invalidUrls.map((url) => html`<li>${url} — ${getInvalidUrlReason(url)}</li>`)}
+              ${this.invalidUrls.map((url) => {
+    try {
+      const reason = getInvalidUrlReason(url);
+      return html`<li>${url} — ${reason}</li>`;
+    } catch (e) {
+      return html`<li>${url} — Invalid URL</li>`;
+    }
+  })}
             </ul>
           </div>
         ` : ''}
