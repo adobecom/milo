@@ -45,7 +45,10 @@ const initC2Tabs = async (tabs) => {
    * better semantics.
    */
   const tabsStylePath = `${miloLibs || codeRoot}/blocks/tabs/tabs.css`;
-  const results = await Promise.all([import('../../blocks/tabs/tabs.js'), new Promise((resolve) => { loadStyle(tabsStylePath, resolve); })]);
+  const results = await Promise.all([
+    import('../../blocks/tabs/tabs.js'),
+    new Promise((resolve) => { loadStyle(tabsStylePath, resolve); }),
+  ]);
   const { default: initTabs } = results[0];
   return initTabs(tabs);
 };
@@ -379,7 +382,11 @@ async function showModal(details) {
   if (tabs) tabsPromise = isC2Page ? initC2Tabs(tabs) : loadBlock(tabs);
   const promises = [
     tabsPromise,
-    tabs ? new Promise((resolve) => { loadStyle(isC2Page ? sectionMetaC2Path : sectionMetaPath, resolve); }) : null,
+    tabs
+      ? new Promise((resolve) => {
+        loadStyle(isC2Page ? sectionMetaC2Path : sectionMetaPath, resolve);
+      })
+      : null,
     new Promise((resolve) => { loadStyle(georoutingPath, resolve); }),
     new Promise((resolve) => { loadStyle(modalPath, resolve); }),
     import('../../blocks/modal/modal.js'),
