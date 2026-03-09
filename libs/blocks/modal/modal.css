@@ -272,6 +272,49 @@
   min-width: 90vw;
 }
 
+/* c2 stylings for modal */
+html:has(meta[name="foundation"][content="c2"]) {
+  --locale-modal-close-size: 12px;
+  --locale-modal-close-line-width: calc(var(--locale-modal-close-size) * 1.33);
+  --locale-modal-close-line-thickness: 2px;
+  .dialog-modal {
+    border-radius: var(--s2a-spacing-md);
+  }
+  .dialog-modal .dialog-close svg {
+    display: none;
+  }
+
+  .dialog-modal .dialog-close {
+    width: var(--locale-modal-close-size);
+    height: var(--locale-modal-close-size);
+    border: none;
+    right: var(--s2a-spacing-lg);
+    top: var(--s2a-spacing-lg);
+  }
+
+  .dialog-modal .dialog-close::before,
+  .dialog-modal .dialog-close::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--locale-modal-close-line-width);
+    height: var(--locale-modal-close-line-thickness);
+    background: var(--s2a-color-gray-1000);
+    border-radius: var(--locale-modal-close-line-thickness);
+    transform-origin: center;
+  }
+
+  .dialog-modal .dialog-close::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .dialog-modal .dialog-close::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+}
+/* c2 stylings for modal */
+
 @media (min-width: 600px) {
   .dialog-modal {
     max-width: 80vw;
@@ -434,6 +477,15 @@
     max-width: 100%;
     width: 1280px;
   }
+
+  /* c2 stylings for modal */
+  html:has(meta[name="foundation"][content="c2"]) {
+    .dialog-modal .dialog-close {
+      right: calc(2 * var(--s2a-spacing-lg));
+      top: calc(2 * var(--s2a-spacing-lg));
+    }
+  }
+  /* c2 stylings for modal */
 }
 
 @media (min-width: 1200px) and (orientation: landscape) {
