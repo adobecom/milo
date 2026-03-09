@@ -70,7 +70,7 @@ div.section.base-card-section {
       letter-spacing: var(--s2a-typography-letter-spacing-title-4);
     }
 
-    a {
+    .standalone-link {
       color: var(--s2a-color-gray-1000);
       text-decoration: none;
       font-size: var(--s2a-typography-font-size-body-sm);
@@ -80,13 +80,13 @@ div.section.base-card-section {
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
 
-      &.standalone-link::after {
+      &::after {
         content: url('../../assets/img/arrow-right.svg');
         display: inline-block;
         margin-inline-start: var(--s2a-spacing-8);
       }
 
-      [dir="rtl"] &.standalone-link::after {
+      [dir="rtl"] &::after {
         transform: rotate(180deg);
       }
     }
