@@ -371,7 +371,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 767px) {
+@media (min-width: 768px) {
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: var(--s2a-spacing-md);
   }
@@ -506,7 +506,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
   .global-footer:not(.mobile) .feds-footer-options {
     display: grid;
     grid-template-areas: "region legal social";
@@ -523,15 +523,9 @@ span.feds-footer-privacyLink-divider {
   .global-footer:not(.mobile) .feds-footer-options > .feds-footer-miscLinks-legal {
     gap: var(--s2a-spacing-xl);
   }
-}
 
-@media (min-width: 1441px) {
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: var(--s2a-spacing-2xl);
-  }
-
-  .global-footer:not(.mobile) .feds-footer-options {
-    column-gap: var(--s2a-spacing-xl);
   }
 }
 
