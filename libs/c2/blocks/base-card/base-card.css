@@ -142,12 +142,6 @@ div.section.base-card-section {
     }
 
     &.full-width {
-      position: relative;
-      animation: base-card-full-width-shrink linear;
-      animation-timeline: view();
-      animation-range: entry 0% entry 100%;
-      animation-fill-mode: both;
-
       .foreground {
         display: grid;
         grid-template-columns: repeat(12, 1fr);
@@ -174,8 +168,16 @@ div.section.base-card-section {
         }
       }
 
-      .media picture:not(.icon) img {
-        aspect-ratio: 2.2/1;
+      .media {
+        position: relative;
+        animation: base-card-full-width-shrink linear;
+        animation-timeline: view();
+        animation-range: entry 0% entry 100%;
+        animation-fill-mode: both;
+
+        picture:not(.icon) img {
+          aspect-ratio: 2.2/1;
+        }
       }
     }
   }
