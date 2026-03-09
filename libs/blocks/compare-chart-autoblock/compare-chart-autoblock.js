@@ -42,7 +42,7 @@ function renderCellValue(fields) {
   if (type === 'boolean') {
     return fields.booleanValue
       ? '<span class="icon icon-checkmark"></span>'
-      : '';
+      : '<span class="icon icon-close"></span>';
   }
   if (type === 'number') return String(fields.numberValue ?? '');
   if (type === 'text') return fields.textValue || '';

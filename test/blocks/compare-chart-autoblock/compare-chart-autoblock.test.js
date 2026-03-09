@@ -154,7 +154,7 @@ describe('compare-chart-autoblock', () => {
     expect(sec2Title.children[0].textContent).to.equal('Advanced Features');
   });
 
-  it('renders false boolean as empty cell', async () => {
+  it('renders false boolean as cross icon', async () => {
     setConfig({ codeRoot: '/libs' });
     const a = document.createElement('a');
     a.href = 'https://mas.adobe.com/studio.html#content-type=compare-chart&fragment=test-chart-id';
@@ -167,7 +167,7 @@ describe('compare-chart-autoblock', () => {
     // Row 7 = Redact content (after separator and section 2 title)
     const redactRow = table.children[7];
     expect(redactRow.children[0].textContent).to.equal('Redact content');
-    expect(redactRow.children[1].innerHTML).to.equal('');
+    expect(redactRow.children[1].querySelector('.icon-close')).to.exist;
     expect(redactRow.children[2].querySelector('.icon-checkmark')).to.exist;
   });
 
