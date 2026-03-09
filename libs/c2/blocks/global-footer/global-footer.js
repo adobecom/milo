@@ -169,7 +169,6 @@ class Footer {
       if (isMobile === this.isMobile) return;
       this.isMobile = isMobile;
       this.block.classList.toggle('mobile', isMobile);
-      this.syncFooterOptionsOrder();
     };
     this.resizeObserver = new ResizeObserver(([entry]) => requestAnimationFrame(
       () => update(Math.round(entry.contentRect.width)),
@@ -251,7 +250,6 @@ class Footer {
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
     this.block.append(this.elements.footer, this.elements.footerLogo);
-    this.initFooterOptionsOrderSync();
     setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
     const { onFooterReady } = getConfig();
     onFooterReady?.();
@@ -539,7 +537,7 @@ class Footer {
   };
 
   decorateFooter = () => {
-    this.elements.footer = toFragment`<div class="feds-footer-wrapper">
+    this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
     <div class="feds-footer-options caption">
@@ -560,34 +558,6 @@ class Footer {
 
   isFooterMobileLayout = () => this.block.classList.contains('mobile')
     || window.matchMedia('(max-width: 899px)').matches;
-
-  syncFooterOptionsOrder = () => {
-    const options = this.elements.footer?.querySelector('.feds-footer-options');
-    if (!options) return;
-
-    const region = options.querySelector('.feds-regionPicker-wrapper');
-    const legal = options.querySelector('.feds-footer-miscLinks-legal');
-    const social = options.querySelector('.feds-social');
-
-    if (!region || !legal || !social) return;
-
-    if (this.isFooterMobileLayout()) {
-      options.append(region, social, legal);
-    } else {
-      options.append(region, legal, social);
-    }
-  };
-
-  initFooterOptionsOrderSync = () => {
-    if (!this.footerOrderMediaQuery) {
-      this.footerOrderMediaQuery = window.matchMedia('(max-width: 899px)');
-    }
-    if (!this.footerOrderMediaQueryHandler) {
-      this.footerOrderMediaQueryHandler = () => this.syncFooterOptionsOrder();
-      this.footerOrderMediaQuery.addEventListener('change', this.footerOrderMediaQueryHandler);
-    }
-    this.syncFooterOptionsOrder();
-  };
 
   processJarvisLink = async () => {
     const sectionMeta = this.body.querySelector('.section-metadata');
