@@ -6,6 +6,14 @@ div.section.base-card-section {
 .base-card {
   height: 100%;
 
+  /* Scroll-driven staggered slide-up for regular cards (no full-width); reverses when scrolling back up */
+  &:not(.full-width) {
+    animation: base-card-enter linear;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+    animation-fill-mode: both;
+  }
+
   > div[data-viewport] {
     display: none;
   }
@@ -173,7 +181,6 @@ div.section.base-card-section {
   }
 }
 
-/* left: calc(50% - 50vw) keeps card centered (center = 50% of section); no transform so interpolation stays centered */
 @keyframes base-card-full-width-shrink {
   from {
     width: 100vw;
@@ -183,6 +190,19 @@ div.section.base-card-section {
     width: 100%;
     left: 0;
   }
+}
+
+@keyframes base-card-enter {
+  from {
+    transform: translateY(30px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.base-card-section .base-card:not(.full-width) {
+  animation-range: entry calc(200px * var(--stagger-index, 0)) entry 100%;
 }
 
 @media (width >= 1280px) {
