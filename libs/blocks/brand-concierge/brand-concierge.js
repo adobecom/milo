@@ -90,40 +90,26 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  // eslint-disable-next-line no-underscore-dangle
-  const alloyVersion = window.alloy_all?.data?._adobe_corpnew?.digitalData?.page?.libraryVersions;
-  const useNewBootstrapAPI = alloyVersion === '2.31.0';
+  // New method: Load script and use bootstrap API
+  const { env } = getConfig();
+  const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
+  const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+  await loadScript(src);
 
-  if (useNewBootstrapAPI) {
-    // New method: Load script and use bootstrap API
-    const { env } = getConfig();
-    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
-    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
-    await loadScript(src);
+  const bootstrapAPIReady = await waitForCondition(
+    () => !!window.adobe?.concierge?.bootstrap,
+    5000, // 5 seconds max wait
+    100, // Check every 100ms
+  );
 
-    const bootstrapAPIReady = await waitForCondition(
-      () => !!window.adobe?.concierge?.bootstrap,
-      5000, // 5 seconds max wait
-      100, // Check every 100ms
-    );
-
-    if (bootstrapAPIReady) {
-      window.adobe.concierge.bootstrap({
-        instanceName: 'alloy',
-        stylingConfigurations: getUpdatedChatUIConfig(),
-        selector: `#${mountId}`,
-      });
-    } else {
-      window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
-    }
-  } else {
-    // Legacy method: Use _satellite.track
-    // eslint-disable-next-line no-underscore-dangle
-    window._satellite?.track('bootstrapConversationalExperience', {
-      selector: `#${mountId}`,
-      src: 'https://cdn.experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js',
+  if (bootstrapAPIReady) {
+    window.adobe.concierge.bootstrap({
+      instanceName: 'alloy',
       stylingConfigurations: getUpdatedChatUIConfig(),
+      selector: `#${mountId}`,
     });
+  } else {
+    window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
   }
 
   const handleViewportResize = () => updateModalHeight();
