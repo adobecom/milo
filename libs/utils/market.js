@@ -10,7 +10,7 @@ export async function getMarketConfig() {
   const marketSelectorKey = sourceFromUrl || getMetadata('marketselector') || marketSelector;
   const marketsUrl = marketSelectorKey
     ? `${contentRoot ?? ''}/assets/market-selector/market-selector-${marketSelectorKey}.json`
-    : `${getFederatedContentRoot()}/federal/market-selector/market-selector.json`;
+    : `${getFederatedContentRoot()}/federal/assets/market-selector/market-selector.json`;
   try {
     const resp = await fetch(marketsUrl);
     if (!resp.ok) throw new Error('Failed to load market config');
