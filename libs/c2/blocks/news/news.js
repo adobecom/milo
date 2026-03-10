@@ -21,11 +21,6 @@ function formatHeader(row) {
   row.firstElementChild.remove();
 }
 
-function addChevronIcon(pTag) {
-  const chevronIcon = createTag('span', { class: 'chevron-icon' }, ' >');
-  pTag.append(chevronIcon);
-}
-
 export default async function init(el) {
   const blockLevelClassAdditions = ['news', 'con-block', 'container'];
   el.classList.add(...blockLevelClassAdditions);
@@ -45,7 +40,7 @@ export default async function init(el) {
         else if (p.querySelector('a')) {
           if (p.querySelector('a').innerText.trim() === p.innerText.trim()) {
             p.classList.add('news-item-link');
-            addChevronIcon(p);
+            p.querySelector('a').classList.add('standalone-link');
             if (el.classList.contains('quiet')) p.querySelector('a').classList.add('quiet');
           }
         } else p.classList.add('news-item-body');

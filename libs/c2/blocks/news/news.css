@@ -82,6 +82,11 @@
   margin-top: auto;
 }
 
+.news .news-item-link a.standalone-link::after {
+  content: url('../../assets/img/arrow-right.svg');
+  margin-left: var(--s2a-spacing-8);
+}
+
 @media screen and (max-width: 766px) {
   body .news.container {
     display: flex;
