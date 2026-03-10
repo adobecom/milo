@@ -102,7 +102,7 @@ async function openChatModal(initialMessage, el) {
     content: innerModal,
     closeCallback: async () => {
       const floatingButton = el.querySelector('.bc-floating-button');
-      if (floatingButton.classList.contains('is-clicked')) {
+      if (floatingButton && floatingButton.classList.contains('is-clicked')) {
         resetFloatingButton(el);
       }
       modal.classList.add('closing');
