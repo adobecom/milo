@@ -49,6 +49,19 @@ function updatePreviousAriaLabel(carouselElements) {
   nextPreviousBtns[0].setAttribute('aria-label', getPreviousAriaLabel(currentActiveIndex, slides.length));
 }
 
+function getCircularNavState(carouselElements) {
+  const { el, currentActiveIndex, slides } = carouselElements;
+  const atStart = currentActiveIndex === 0;
+  if (!el.classList.contains('disable-circular-nav')) return { atStart, atEnd: false };
+
+  const isTabletLayout = el.classList.contains('hinting-tablet')
+    && window.matchMedia('(min-width: 600px) and (max-width: 1199px)').matches;
+  const lastIdx = isTabletLayout ? slides.length - 2 : slides.length - 1;
+  const atEnd = currentActiveIndex >= lastIdx;
+
+  return { atStart, atEnd };
+}
+
 function decorateNextPreviousBtns(slides, currentIndex = 0) {
   const totalSlides = slides ? slides.length : 0;
 
@@ -142,6 +155,17 @@ function updateButtonStates(carouselElements) {
     firstSlide?.classList.remove('hide-left-hint');
     lastSlide?.classList.remove('hide-left-hint');
   }
+}
+
+function checkCircularNav(carouselElements) {
+  const { el, nextPreviousBtns } = carouselElements;
+  if (!el.classList.contains('disable-circular-nav')) return;
+  const { atStart, atEnd } = getCircularNavState(carouselElements);
+  nextPreviousBtns?.forEach((btn, i) => {
+    const off = i === 0 ? atStart : atEnd;
+    btn.disabled = off;
+    btn.classList.toggle('disabled', off);
+  });
 }
 
 function handleNext(nextElement, elements) {
@@ -357,6 +381,7 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
 
 function moveSlides(event, carouselElements) {
   const {
+    el,
     slideContainer,
     slides,
     nextPreviousBtns,
@@ -365,6 +390,18 @@ function moveSlides(event, carouselElements) {
     direction,
     ariaLive,
   } = carouselElements;
+
+  const isNext = event.currentTarget?.dataset?.toggle === 'next'
+    || event.key === KEY_CODES.ARROW_RIGHT
+    || (direction === 'left' && event.type === 'touchend');
+  if (el.classList.contains('disable-circular-nav')) {
+    const { atStart, atEnd } = getCircularNavState(carouselElements);
+    const atBoundary = isNext ? atEnd : atStart;
+    if (atBoundary) {
+      checkCircularNav(carouselElements);
+      return;
+    }
+  }
 
   ariaLive.textContent = '';
 
@@ -443,6 +480,7 @@ function moveSlides(event, carouselElements) {
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
   }
+  checkCircularNav(carouselElements);
 
   /*
    * Activates slide animation.
@@ -450,7 +488,7 @@ function moveSlides(event, carouselElements) {
   */
   const slideDelay = 25;
   slideContainer.classList.remove('is-ready');
-  return setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
+  setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
 }
 
 export function getSwipeDistance(start, end) {
@@ -502,12 +540,24 @@ function mobileSwipeDetect(carouselElements) {
 
     // stop swipe for disabled-buttons variant.
     const activeSlideIndex = carouselElements.currentActiveIndex;
-    if (carouselElements.el.classList.contains('disable-buttons')
-          && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
-          || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left'))) {
+    const { classList } = carouselElements.el;
+    const isSwipingBack = carouselElements.direction === 'right';
+    const isSwipingForward = carouselElements.direction === 'left';
+    const isAtStart = activeSlideIndex === 0 && isSwipingBack;
+
+    if (classList.contains('disable-buttons')
+          && (isAtStart || (activeSlideIndex === slides.length - 1 && isSwipingForward))) {
       swipe.xStart = 0;
       swipe.xEnd = 0;
       return;
+    }
+    if (classList.contains('disable-circular-nav')) {
+      const { atStart, atEnd } = getCircularNavState(carouselElements);
+      if ((isSwipingBack && atStart) || (isSwipingForward && atEnd)) {
+        swipe.xStart = 0;
+        swipe.xEnd = 0;
+        return;
+      }
     }
     // reset end swipe values
     swipe.xStart = 0;
@@ -532,8 +582,15 @@ function handleChangingSlides(carouselElements) {
 
   // Handle keyboard navigation
   el.addEventListener('keydown', (event) => {
-    if (event.key === KEY_CODES.ARROW_RIGHT
-      || event.key === KEY_CODES.ARROW_LEFT) { moveSlides(event, carouselElements); }
+    const keyMap = {
+      [KEY_CODES.ARROW_LEFT]: 0, // previous
+      [KEY_CODES.ARROW_RIGHT]: 1, // next
+    };
+
+    const btnIndex = keyMap[event.key];
+    // Stop keyboard navigation for disabled-buttons variant.
+    if (btnIndex === undefined || nextPreviousBtns[btnIndex]?.disabled) return;
+    moveSlides(event, carouselElements);
   });
 
   // Swipe Events
@@ -703,16 +760,19 @@ export default function init(el) {
       updateDisableButtonsHeights(carouselElements);
       updateButtonStates(carouselElements);
     }
+    checkCircularNav(carouselElements);
   });
 
   function handleDeferredHeights() {
     updateDisableButtonsHeights(carouselElements);
+    checkCircularNav(carouselElements);
   }
 
   if (el.classList.contains('disable-buttons')) {
     updateButtonStates(carouselElements);
     setTimeout(handleDeferredHeights, 1000);
   }
+  checkCircularNav(carouselElements);
 
   function handleLateLoadingNavigation() {
     [...el.querySelectorAll('.is-delayed')].forEach((item) => item.classList.remove('is-delayed'));
