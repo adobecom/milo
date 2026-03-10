@@ -354,8 +354,9 @@ span.feds-footer-privacyLink-divider {
   color: var(--s2a-color-white);
 }
 
-.global-footer .feds-menu-items {
-  border: 0;
+.global-footer .feds-navLink:focus, .global-footer a:focus {
+  outline: 2px solid var(--s2a-color-focus-ring-default);
+  outline-offset: 2px;
 }
 
 .global-footer:not(.mobile) .feds-footer-legalWrapper {
@@ -371,7 +372,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: var(--s2a-spacing-md);
   }
