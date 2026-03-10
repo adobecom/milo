@@ -718,7 +718,7 @@ describe('MEP Lingo Fragments', () => {
     document.body.appendChild(section);
     await getFragment(a);
     expect(textBlock.dataset.failed).to.equal('true');
-    expect(textBlock.dataset.reason).to.include('mep-lingo: not available');
+    expect(textBlock.dataset.reason).to.include('Failed loading mep-lingo row');
   });
 
   it('keeps authored content when no regional targeting (lines 156-161)', async () => {
@@ -1333,7 +1333,7 @@ describe('handleInvalidMepLingo', () => {
     handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
 
     expect(section.dataset.failed).to.equal('true');
-    expect(section.dataset.reason).to.include('section swap');
+    expect(section.dataset.reason).to.include('Failed loading mep-lingo row');
     section.remove();
   });
 
@@ -1363,11 +1363,11 @@ describe('handleInvalidMepLingo', () => {
     handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
 
     expect(block.dataset.failed).to.equal('true');
-    expect(block.dataset.reason).to.include('block swap');
+    expect(block.dataset.reason).to.include('Failed loading mep-lingo row');
     block.remove();
   });
 
-  it('marks mep-lingo block as failed without removing parent', () => {
+  it('skips marking mep-lingo block as failed (fallback.js handles it)', () => {
     const block = document.createElement('div');
     block.className = 'mep-lingo';
     const a = document.createElement('a');
@@ -1377,9 +1377,8 @@ describe('handleInvalidMepLingo', () => {
 
     handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
 
-    expect(block.dataset.failed).to.equal('true');
-    expect(block.dataset.reason).to.include('block');
-    expect(block.contains(a)).to.be.true; // parent not removed for mep-lingo block
+    expect(block.dataset.failed).to.be.undefined;
+    expect(block.contains(a)).to.be.true;
     block.remove();
   });
 
@@ -1407,22 +1406,22 @@ describe('handleInvalidMepLingo', () => {
 
     const failedDiv = parent.querySelector('[data-failed="true"]');
     expect(failedDiv).to.exist;
-    expect(failedDiv.dataset.reason).to.include('fragment not available');
+    expect(failedDiv.dataset.reason).to.include('Failed loading mep-lingo fragment.');
     parent.remove();
   });
 
-  it('includes inline in reason for inline fragments on non-prod', () => {
+  it('uses same reason for inline fragments on non-prod', () => {
     const parent = document.createElement('div');
     const a = document.createElement('a');
     a.href = '/fragments/test#_inline';
-    a.dataset.originalHref = '/fragments/test#_inline'; // Set original href for detection
+    a.dataset.originalHref = '/fragments/test#_inline';
     parent.appendChild(a);
     document.body.appendChild(parent);
 
     handleInvalidMepLingo(a, { env: { name: 'stage' } });
 
     const failedDiv = parent.querySelector('[data-failed="true"]');
-    expect(failedDiv.dataset.reason).to.include('inline');
+    expect(failedDiv.dataset.reason).to.equal('Failed loading mep-lingo fragment.');
     parent.remove();
   });
 });
