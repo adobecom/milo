@@ -44,7 +44,7 @@ export function handleInvalidMepLingo(a, { env }) {
     const section = a.closest('.section');
     if (isProd) { section?.remove(); return; }
     section.dataset.failed = 'true';
-    section.dataset.reason = 'mep-lingo: not available (section swap)';
+    section.dataset.reason = 'Failed loading mep-lingo row';
     a.parentElement?.remove();
     return;
   }
@@ -52,10 +52,11 @@ export function handleInvalidMepLingo(a, { env }) {
   if (mepLingoBlockSwap) {
     const block = a.closest(`.${mepLingoBlockSwap}`);
     if (isProd) { block?.remove(); return; }
-    const swapType = mepLingoBlockSwap === 'mep-lingo' ? 'block' : 'block swap';
-    block.dataset.failed = 'true';
-    block.dataset.reason = `mep-lingo: not available (${swapType})`;
-    if (mepLingoBlockSwap !== 'mep-lingo') a.parentElement?.remove();
+    if (mepLingoBlockSwap !== 'mep-lingo') {
+      block.dataset.failed = 'true';
+      block.dataset.reason = 'Failed loading mep-lingo row';
+      a.parentElement?.remove();
+    }
     return;
   }
 
@@ -66,10 +67,9 @@ export function handleInvalidMepLingo(a, { env }) {
     if (!parent?.children.length && !parent?.textContent?.trim()) parent?.remove();
     return;
   }
-  const isInline = a.dataset.originalHref?.includes('#_inline');
   a.replaceWith(createTag('div', {
     'data-failed': 'true',
-    'data-reason': `mep-lingo: ${isInline ? 'inline ' : ''}fragment not available`,
+    'data-reason': 'Failed loading mep-lingo fragment',
     style: 'min-height: 40px; margin: 8px 0;',
   }));
 }
