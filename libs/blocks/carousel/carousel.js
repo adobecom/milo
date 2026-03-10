@@ -484,7 +484,7 @@ function moveSlides(event, carouselElements) {
       syncPausePlayIcon(video);
     }
     /* c8 ignore end */
-  };
+  }
 
   // Update heights dynamically for disable-button
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
