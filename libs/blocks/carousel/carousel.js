@@ -55,8 +55,8 @@ function getCircularNavState(carouselElements) {
   const atStart = currentActiveIndex === 0;
   if (!el.classList.contains('disable-circular-nav')) return { atStart, atEnd: false };
 
-  const isTabletLayout = el.classList.contains('hinting-tablet') && isTablet.matches;
-  const lastIdx = isTabletLayout ? slides.length - 2 : slides.length - 1;
+  const isHintingTablet = el.classList.contains('hinting-tablet') && isTablet.matches;
+  const lastIdx = isHintingTablet ? slides.length - 2 : slides.length - 1;
   const atEnd = currentActiveIndex >= lastIdx;
 
   return { atStart, atEnd };
