@@ -103,11 +103,13 @@ const C1_BLOCKS = [
   'share',
   'susi-light-login',
   'reading-time',
+  'elastic-carousel', // temp while coding in blocks folder
 ];
 
 const C2_BLOCKS = [
   'box',
   'section-metadata',
+  'elastic-carousel',
 ];
 
 const AUTO_BLOCKS = [

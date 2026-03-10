@@ -1,0 +1,233 @@
+
+.elastic-carousel-container {
+  --elastic-carousel-transtions: all .25s ease;
+  --elastic-carousel-transtions-slow: all .5s ease;
+  --elastic-carousel-container-height: 580px;
+  --elastic-carousel-item-max-width: 294px;
+  --slides: 5;
+
+  position: relative;
+  overflow: hidden;
+  max-width: 1920px;
+  height: var(--elastic-carousel-container-height);
+}
+.elastic-carousel {
+  display: flex;
+  height: 100%;
+  flex-direction: row;
+  gap: .5rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: var(--elastic-carousel-transtions);
+
+  &.stick-left {
+    left: 0;
+    transform: translate(0%, -50%);
+  }
+  &.stick-right {
+    left: 100%;
+    transform: translate(-100%, -50%);
+  }
+}
+
+.elastic-carousel__item {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  max-width: var(--elastic-carousel-item-max-width);
+  width: calc(100vw/calc(var(--slides) - 1));
+  background-color: #F6F6F6;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: var(--elastic-carousel-transtions-slow), background-color .25s ease-in;
+
+  &:hover, 
+  &:focus-visible {
+    background-color: #000;
+    max-width: 496px;
+    width: calc((100vw/calc(var(--slides)))*1.75);
+    outline: none;
+
+    .elastic-carousel__item-footer p,
+    .elastic-carousel__item-footer h3,
+    .elastic-carousel__item-header p {
+      color: #fff;
+    }
+  }
+}
+
+.elastic-carousel__item-header {
+  display: flex;
+  flex-direction: row;
+  padding: 1rem;
+  gap: 1rem;
+  img {
+    width: 24px;
+  }
+  p {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+    transition: var(--elastic-carousel-transtions);
+  }
+}
+
+.elastic-carousel__item-media {
+  img {
+    border-radius: 1rem;
+    object-fit: cover;
+    height: 394px;
+  }
+}
+
+.elastic-carousel__item-footer {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  max-width: 270px;
+
+  &:after {
+    content: '';
+    display: block;
+    background: url('./icons/arrow.svg') no-repeat;
+    width: 24px;
+    height: 24px;
+    margin: 24px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transition: var(--elastic-carousel-transtions);
+  }
+  
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 20px;
+    transition: var(--elastic-carousel-transtions);
+  }
+  p {
+    opacity: .6;
+    margin: 0;
+    transition: var(--elastic-carousel-transtions);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+}
+
+/** temp helpers */
+.before, .after {
+  height: 0;
+  background-color: #000;
+  margin: 2rem 0;
+  color: white;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 32px;
+  padding: 20vh 0;
+}
+
+
+@media (width > 787px) {
+  .elastic-carousel__item {
+    &:hover, 
+    &:focus-visible {
+      .elastic-carousel__item-footer:after {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+/* mobile only */
+@media (width < 768px) {
+  .elastic-carousel-container {
+    height: auto;
+    overflow: visible;
+    padding-bottom: 120px;
+    .elastic-carousel {
+      position: relative;
+      flex-direction: column;
+      left: unset;
+      transform: unset;
+      display: grid;
+      .elastic-carousel__item {
+        --offset-adjuster: 10%;
+        --offset-scale: .8;
+
+        position: sticky;
+        top: 20%;
+        width: 100%;
+        height: var(--elastic-carousel-container-height);
+        max-width: none;
+        color: white;
+        background: transparent;
+        /** animation */
+        animation: translateY linear both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+        /** if we go with dynamic amount of slides, below stuff can be moved to JS */
+        &:nth-child(1) { --stack-offset: 0px;   z-index:1; --stack-contrast: 0;   --stack-shrink: 4rem }
+        &:nth-child(2) { --stack-offset: 30px;  z-index:2; --stack-contrast: .25; --stack-shrink: 3rem }
+        &:nth-child(3) { --stack-offset: 60px;  z-index:3; --stack-contrast: .5;  --stack-shrink: 2rem }
+        &:nth-child(4) { --stack-offset: 90px;  z-index:4; --stack-contrast: .75; --stack-shrink: 1rem }
+        &:nth-child(5) { --stack-offset: 120px; z-index:5; --stack-contrast: 1;   --stack-shrink: 0rem }
+
+        .elastic-carousel__item-container {
+          background-color: #000;
+          border-radius: 1.5rem;
+          animation: shrink linear both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
+
+          .elastic-carousel__item-header {
+            padding: 1.5rem;
+            &:after {
+              content: '';
+              display: flex;
+              background: url('./icons/arrow.svg') no-repeat;
+              width: 24px;
+              height: 24px;
+              margin-left: auto;
+              transition: var(--elastic-carousel-transtions);
+            }
+          }
+
+          .elastic-carousel__item-media {
+            img {
+              border-radius: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes translateY {
+  0% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast));
+  }
+}
+
+@keyframes shrink {
+  0% {
+    margin: 0
+  }
+
+  100% {
+    margin: 0 var(--stack-shrink);
+  }
+}
