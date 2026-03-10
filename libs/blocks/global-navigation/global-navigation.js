@@ -13,6 +13,7 @@ import {
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
 } from '../../utils/utils.js';
+import { getCookie } from '../../martech/helpers.js';
 
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
@@ -858,11 +859,60 @@ class Gnav {
     return this.ready;
   };
 
+  /** POC: Remove event registration link if user is logged-in and registered (no MEP). */
+  setUpEventRegistrationLink = async () => {
+    const EVENT_REGISTRATION_BASE_URL = 'https://reg.dev.rainfocus.com/flow/adobe/m25/MAXReg';
+    const link = this.block?.querySelector(`a[href^="${EVENT_REGISTRATION_BASE_URL}"]`);
+    if (!link) return;
+
+    let eventId;
+    try {
+      const url = new URL(link.href);
+      eventId = url.searchParams.get('event-id');
+    } catch {
+      eventId = null;
+    }
+
+    if (!eventId) {
+      const wrapper = link.closest('.feds-navItem') || link.closest('.feds-cta-wrapper') || link.parentElement;
+      wrapper?.remove();
+      return;
+    }
+
+    if (!window.adobeIMS.isSignedInUser()) return;
+
+    const consentCookieValue = getCookie('OptanonConsent');
+    if (consentCookieValue?.includes('C0002:0')) return;
+
+    const userId = (await window.adobeIMS.getProfile())?.userId;
+    const accessToken = window.adobeIMS.getAccessToken()?.token;
+    if (!userId || !accessToken) return;
+
+    const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '.stage';
+    const apiUrl = `https://www${domainSuffix}.adobe.com/events/api/rf-auth-seq-generic/${eventId}?user_id=${encodeURIComponent(userId)}`;
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: 'same-origin',
+      });
+      if (!response.ok) return;
+      const eventDetails = await response.json();
+      if (eventDetails?.isRegistered === true) {
+        const wrapper = link.closest('.feds-navItem') || link.closest('.feds-cta-wrapper') || link.parentElement;
+        wrapper?.remove();
+      }
+    } catch (e) {
+      lanaLog({ message: 'GNAV: Unable to fetch from Rainfocus', e, tags: 'gnav-event-reg', severity: 'error' });
+    }
+  };
+
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
     const tasks = [
       this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile,
       this.setUpProductCTA,
+      this.setUpEventRegistrationLink,
     ];
 
     try {
