@@ -351,6 +351,9 @@ async function mmmToggleManifests(event, popup, pageId) {
           input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
         });
         addDividers(mmmManifestsElement, '.mep-section');
+        mmmManifestsElement.querySelectorAll('.mep-manifest-title .mep-manifest-toggle').forEach((input) => {
+          input.addEventListener('click', (e) => expandManifest.bind(null, e)());
+        });
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -466,8 +469,9 @@ export function getMepPopup(mepConfig, isMmm = false) {
   BuildOptionsManifestList();
 
   function BuildOptionsManifestLisMMM() {
+    if (config.env?.name !== 'prod') return;
     const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
-    if (config.env?.name === 'prod') mepPopupBody[1].append(mepManifestListMMM);
+    mepPopupBody[0].append(mepManifestListMMM);
   }
   BuildOptionsManifestLisMMM();
 
