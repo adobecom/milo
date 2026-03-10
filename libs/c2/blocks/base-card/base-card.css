@@ -20,6 +20,7 @@ div.section.base-card-section {
 
   .media {
     position: relative;
+    clip-path: inset(0 round var(--s2a-border-radius-md));
 
     > picture {
       height: 100%;

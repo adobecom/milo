@@ -28,6 +28,7 @@ function decorateCard(wrapper) {
   const [foreground, media] = [...wrapper.children];
   if (!foreground || !media) return;
   media.classList.add('media');
+  media.querySelector('picture').classList.add('parallax-scale-down');
   foreground.classList.add('foreground');
   decorateBlockText(foreground);
   markStandaloneLinks(foreground);
