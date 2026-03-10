@@ -1934,6 +1934,7 @@ async function checkForPageMods() {
     enablePersV2,
     promises,
     mepMarketingDecrease,
+    akamaiCode,
   });
 }
 
