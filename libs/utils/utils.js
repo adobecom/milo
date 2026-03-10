@@ -116,6 +116,7 @@ const C2_BLOCKS = [
   'global-navigation',
   'base-card',
   'region-nav',
+  'elastic-carousel',
 ];
 
 const AUTO_BLOCKS = [
