@@ -68,6 +68,30 @@ function normalizeText(text) {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
+function isNameMatch(name, searchNormalized) {
+  return name && normalizeText(name).includes(searchNormalized);
+}
+
+function isIetfMatchForPrefix(prefix, searchNormalized) {
+  const { locales } = getConfig();
+  if (!locales || !prefix) return false;
+  const localeKey = prefix.replace(/^\//, '');
+  const fullIetf = locales[localeKey]?.ietf?.toLowerCase();
+  const ietfLang = fullIetf?.split('-')[0];
+  return ietfLang && fullIetf?.includes(searchNormalized);
+}
+
+function filterMarket(item, term) {
+  return isNameMatch(item.label, term);
+}
+
+function filterLang(item, term) {
+  const labelMatch = isNameMatch(item.label, term);
+  const englishMatch = isNameMatch(item.englishName, term);
+  const ietfMatch = isIetfMatchForPrefix(item.value, term);
+  return labelMatch || englishMatch || ietfMatch;
+}
+
 function getCurrentMarket(markets, currentMarketCode, currentLang) {
   return markets.find((market) => market.marketCode === currentMarketCode)
     || markets.find((market) => market.marketCode === currentLang.defaultMarket)
@@ -178,7 +202,16 @@ function getMarketOptions(markets, currentLang) {
     }));
 }
 
-function createDropdown(label, placeholder, items, onSelect, noResultLabel, isSelected, showGlobe) {
+function createDropdown(
+  label,
+  placeholder,
+  items,
+  onSelect,
+  noResultLabel,
+  isSelected,
+  filterOptions,
+  showGlobe,
+) {
   const container = createTag('div', { class: 'market-selector-dropdown' });
   const button = createTag('button', {
     class: 'market-selector-button',
@@ -347,11 +380,7 @@ function createDropdown(label, placeholder, items, onSelect, noResultLabel, isSe
 
   searchInput.addEventListener('input', (e) => {
     const term = normalizeText(e.target.value.trim());
-    const filtered = items.filter((item) => {
-      const labelMatch = normalizeText(item.label).includes(term);
-      const englishMatch = item.englishName && normalizeText(item.englishName).includes(term);
-      return labelMatch || englishMatch;
-    });
+    const filtered = items.filter((item) => filterOptions(item, term));
     renderItems(filtered);
   });
 
@@ -452,6 +481,7 @@ export default async function init(block) {
     onLanguageSelect,
     labels.noResultLanguage,
     (item) => (item.value ? `/${item.value}` : '') === currentPrefix,
+    filterLang,
     true,
   );
 
@@ -462,10 +492,13 @@ export default async function init(block) {
     onMarketSelect,
     labels.noResultMarket,
     (item) => item.value === currentMarketCode,
+    filterMarket,
+    false,
   );
 
   const wrapper = createTag('div', { class: 'market-selector-wrapper' });
   wrapper.append(langDropdown.container, marketDropdown.container);
   block.innerHTML = '';
+  block.classList.add('feds-regionPicker-wrapper');
   block.append(wrapper);
 }
