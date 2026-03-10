@@ -82,10 +82,10 @@
 }
 
 .feds-menu-items {
-  border-bottom: solid 1px var(--feds-borderColor-menu);
+  border-bottom: solid 1px var(--s2a-color-transparent-white-12);
 }
 
-@media (min-width: 767px) {
+@media (min-width: 1024px) {
   .global-footer:not(.mobile) .feds-menu-content {
     display: grid;
     width: 100%;
