@@ -125,8 +125,9 @@ async function openChatModal(initialMessage, el) {
 
   // New method: Load script and use bootstrap API
   const { env } = getConfig();
-  const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
-  const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+  const src = env.name === 'prod'
+    ? 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js'
+    : 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   await loadScript(src);
 
   const bootstrapAPIReady = await waitForCondition(
