@@ -540,6 +540,6 @@ describe('getXLGListURL', () => {
     const config = getConfig();
 
     window.adobeIMS = { isSignedInUser: () => true };
-    expect(await getXLGListURL(config)).to.equal('https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=prod');
+    expect(await getXLGListURL(config)).to.equal('https://main--federal--adobecom.aem.page/federal/assets/data/mep-xlg-tags.json?sheet=prod');
   });
 });
