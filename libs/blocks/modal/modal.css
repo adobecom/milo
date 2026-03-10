@@ -292,6 +292,11 @@ html:has(meta[name="foundation"][content="c2"]) {
     top: var(--s2a-spacing-lg);
   }
 
+  &[dir="rtl"] .dialog-modal .dialog-close {
+    right: auto;
+    left: var(--s2a-spacing-lg);
+  }
+
   .dialog-modal .dialog-close::before,
   .dialog-modal .dialog-close::after {
     content: "";
@@ -483,6 +488,10 @@ html:has(meta[name="foundation"][content="c2"]) {
     .dialog-modal .dialog-close {
       right: calc(2 * var(--s2a-spacing-lg));
       top: calc(2 * var(--s2a-spacing-lg));
+    }
+
+    &[dir="rtl"] .dialog-modal .dialog-close {
+      left: calc(2 * var(--s2a-spacing-lg));
     }
   }
   /* c2 stylings for modal */
