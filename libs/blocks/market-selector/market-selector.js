@@ -174,6 +174,7 @@ function getMarketOptions(markets, currentLang) {
       marketCode: market.marketCode,
       prefix: market.prefix,
       url: '#',
+      dir: market.dir,
     }));
 }
 
@@ -248,7 +249,12 @@ function createDropdown(label, placeholder, items, onSelect, noResultLabel, isSe
     }
     filteredItems.forEach((item, idx) => {
       const selected = isSelected(item);
-      const li = createTag('li', { class: `market-selector-item${selected ? ' selected' : ''}`, role: 'none', id: `market-option-${idx}` });
+      const li = createTag('li', {
+        class: `market-selector-item${selected ? ' selected' : ''}`,
+        role: 'none',
+        id: `market-option-${idx}`,
+        ...(item.dir && { dir: item.dir }),
+      });
       const a = createTag('a', {
         class: 'market-selector-link',
         role: 'option',
@@ -260,7 +266,7 @@ function createDropdown(label, placeholder, items, onSelect, noResultLabel, isSe
 
       a.innerHTML = `<span class="market-selector-item-text">${item.label}</span>${selected ? CHECKMARK_SVG : ''}`;
 
-      a.addEventListener('mouseover', () => {
+      a.addEventListener('mouseenter', () => {
         if (item.url && item.url !== '#' && item.value) {
           handleEvent({
             prefix: item.value,
