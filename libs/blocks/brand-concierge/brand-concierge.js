@@ -123,7 +123,7 @@ async function openSusiLightModal() {
     locale: localeIetf,
     response_type: 'token',
     client_id: clientId,
-    scope: 'AdobeID,openid',
+    scope: 'AdobeID,openid,gnav,pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read',
   };
   const susiConfig = { consentProfile: 'free', fullWidth: true };
   const onSuccessfulToken = ({ detail }) => {
