@@ -69,7 +69,7 @@ export function handleInvalidMepLingo(a, { env }) {
   }
   a.replaceWith(createTag('div', {
     'data-failed': 'true',
-    'data-reason': 'Failed loading mep-lingo fragment',
+    'data-reason': 'Failed loading mep-lingo fragment.',
     style: 'min-height: 40px; margin: 8px 0;',
   }));
 }
