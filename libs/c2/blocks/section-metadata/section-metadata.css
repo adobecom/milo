@@ -29,31 +29,20 @@
   &.rounded-corners,
   &.rounded-corners-top,
   &.rounded-corners-bottom {
-    border-radius: var(--s2a-spacing-xl);
+    border-radius: var(--s2a-border-radius-lg);
     overflow: clip;
-    z-index: 1;
-    margin-block: calc(-1 * var(--s2a-spacing-xl));
+    z-index: 3;
+    margin-block: calc(-1 * var(--s2a-border-radius-lg));
   }
 
   &.rounded-corners-top {
-    border-radius: var(--s2a-spacing-xl) var(--s2a-spacing-xl) 0 0;
+    border-radius: var(--s2a-border-radius-lg) var(--s2a-border-radius-lg) 0 0;
     margin-bottom: initial;
   }
 
   &.rounded-corners-bottom {
-    border-radius: 0 0 var(--s2a-spacing-xl) var(--s2a-spacing-xl);
+    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
     margin-top: initial;
-  }
-
-  &:has(+ .rounded-corners),
-  &:has(+ .rounded-corners-top) {
-    /* add spacing to bottom of previous section to avoid content overlap */
-    &::after {
-      content: '';
-      display: block;
-      width: 100%;
-      height: calc(var(--s2a-spacing-xl) * var(--section-spacing-multiplier));
-    }
   }
 
   &.rounded-corners + .section,
@@ -63,7 +52,7 @@
       content: '';
       display: block;
       width: 100%;
-      height: calc(var(--s2a-spacing-xl) * var(--section-spacing-multiplier));
+      height: calc(var(--s2a-border-radius-lg) * var(--section-spacing-multiplier));
     }
   }
 
