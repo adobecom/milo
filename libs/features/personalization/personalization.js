@@ -262,6 +262,92 @@ export const handleTwpButtons = (el, selector) => {
   }
 };
 
+/* c8 ignore start */
+function fireAnalyticsEvent(val) {
+  window._satellite?.track?.('event', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
+        },
+      },
+    },
+    data:
+      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
+function sendAnalytics(val) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(val);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(val);
+    }, { once: true });
+  }
+}
+/* c8 ignore stop */
+
+const COMMANDS = {
+  [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
+    if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
+    handleTwpButtons(el, selector);
+  },
+  [COMMANDS_KEYS.replace]: async (el, cmd) => {
+    if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
+    el.insertAdjacentElement(
+      'beforebegin',
+      await createContent(el, cmd),
+    );
+  },
+  [COMMANDS_KEYS.analyticIfSeen]: (el, cmd) => {
+    if (!el || !cmd.content) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        sendAnalytics(`${cmd.content} was seen`);
+        observer.unobserve(el);
+      }
+    });
+    observer.observe(el);
+  },
+  [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
+    const { manifestId, targetManifestId } = cmd;
+    if (!cmd.attribute || !cmd.content) return;
+    const [attribute, parameter] = cmd.attribute.split('_');
+    cmd.content = replacePlaceholders(cmd.content);
+
+    let value;
+    if (attribute === 'href' && parameter) {
+      const href = el.getAttribute('href');
+      switch (parameter) {
+        case '#': el.href += el.href.includes(cmd.content) ? '' : cmd.content; break;
+        default:
+          try {
+            const url = new URL(href);
+            const parameters = new URLSearchParams(url.search);
+            parameters.set(parameter, cmd.content);
+            url.search = parameters.toString();
+            value = url.toString();
+          } catch (error) {
+            /* c8 ignore next 2 */
+            console.log(`Invalid updateAttribute URL: ${href}`, error.message || error);
+          }
+      }
+    } else {
+      value = cmd.content;
+    }
+
+    if (value) {
+      el.setAttribute(attribute, value);
+      addIds(el, manifestId, targetManifestId);
+    }
+  },
+};
+
 const log = (...msg) => {
   const config = getConfig();
   if (config.mep?.preview) console.log(...msg);
@@ -1094,93 +1180,6 @@ export function canServeManifest(manifestConfig) {
   if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
 }
-
-/* c8 ignore start */
-function fireAnalyticsEvent(val) {
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data:
-      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
-function sendAnalytics(val) {
-  if (window._satellite?.track) {
-    fireAnalyticsEvent(val);
-  } else {
-    window.addEventListener('alloy_sendEvent', () => {
-      fireAnalyticsEvent(val);
-    }, { once: true });
-  }
-}
-/* c8 ignore stop */
-
-const COMMANDS = {
-  [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
-    if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
-    handleTwpButtons(el, selector);
-  },
-  [COMMANDS_KEYS.replace]: async (el, cmd) => {
-    if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement(
-      'beforebegin',
-      await createContent(el, cmd),
-    );
-  },
-  [COMMANDS_KEYS.analyticIfSeen]: (el, cmd) => {
-    if (!el || !cmd.content) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        console.log(`${cmd.content} was seen`);
-        sendAnalytics(`${cmd.content} was seen`);
-        observer.unobserve(el);
-      }
-    });
-    observer.observe(el);
-  },
-  [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
-    const { manifestId, targetManifestId } = cmd;
-    if (!cmd.attribute || !cmd.content) return;
-    const [attribute, parameter] = cmd.attribute.split('_');
-    cmd.content = replacePlaceholders(cmd.content);
-
-    let value;
-    if (attribute === 'href' && parameter) {
-      const href = el.getAttribute('href');
-      switch (parameter) {
-        case '#': el.href += el.href.includes(cmd.content) ? '' : cmd.content; break;
-        default:
-          try {
-            const url = new URL(href);
-            const parameters = new URLSearchParams(url.search);
-            parameters.set(parameter, cmd.content);
-            url.search = parameters.toString();
-            value = url.toString();
-          } catch (error) {
-            /* c8 ignore next 2 */
-            console.log(`Invalid updateAttribute URL: ${href}`, error.message || error);
-          }
-      }
-    } else {
-      value = cmd.content;
-    }
-
-    if (value) {
-      el.setAttribute(attribute, value);
-      addIds(el, manifestId, targetManifestId);
-    }
-  },
-};
 
 export function sendMktgTracking(fileName, mktgAction) {
   if (!mktgAction?.startsWith('marketing')) return false;
