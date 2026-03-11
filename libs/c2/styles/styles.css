@@ -906,6 +906,9 @@ p {
 }
 
 .dark {
+  background-color: var(--s2a-color-background-default);
+  color: var(--s2a-color-content-default);
+
   a {
     color: var(--link-color-dark); /* TODO: Replace with an S2A variable */
 
