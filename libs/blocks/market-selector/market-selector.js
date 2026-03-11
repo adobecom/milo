@@ -198,7 +198,6 @@ function getMarketOptions(markets, currentLang) {
       marketCode: market.marketCode,
       prefix: market.prefix,
       url: '#',
-      dir: market.dir,
     }));
 }
 
@@ -286,7 +285,6 @@ function createDropdown(
         class: `market-selector-item${selected ? ' selected' : ''}`,
         role: 'none',
         id: `market-option-${idx}`,
-        ...(item.dir && { dir: item.dir }),
       });
       const a = createTag('a', {
         class: 'market-selector-link',

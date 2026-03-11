@@ -131,19 +131,6 @@
   color: #131313;
 }
 
-.market-selector-item[dir="rtl"] {
-  text-align: right;
-}
-
-.market-selector-item[dir="rtl"] .market-selector-link {
-  flex-direction: row-reverse;
-}
-
-.market-selector-item[dir="rtl"] .check-icon {
-  margin-left: 0;
-  margin-right: var(--spacing-xxs);
-}
-
 .check-icon {
   width: 16px;
   height: 16px;
