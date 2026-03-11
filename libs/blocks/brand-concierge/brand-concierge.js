@@ -127,7 +127,7 @@ async function openChatModal(initialMessage, el) {
   const { env } = getConfig();
   const src = env.name === 'prod'
     ? 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js'
-    : 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js?adobe-brand-concierge-acom-brand-concierge-web-agent_version=PR-37-178d002a7a8d508f745f8a0db1bd0e733dffebb5';
+    : 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   await loadScript(src);
 
   const bootstrapAPIReady = await waitForCondition(
