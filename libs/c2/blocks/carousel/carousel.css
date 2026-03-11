@@ -60,7 +60,7 @@
 
         .rich-content {
           width: 100%;
-          padding-bottom: 24px;
+          padding-bottom: var(--s2a-spacing-24);
 
           .content {
             max-width: 477px;
@@ -206,15 +206,15 @@
 
     .indicators-container {
       display: flex;
-      gap: 8px;
+      gap: var(--carousel-slides-gap);
       position: absolute;
       left: 50%;
-      bottom: 24px;
+      bottom: var(--s2a-spacing-24);
       transform: translateX(-50%);
 
       .slide-indicator {
-        width: 8px;
-        height: 8px;
+        width: var(--s2a-spacing-8);
+        height: var(--s2a-spacing-8);
         border-radius: var(--s2a-border-radius-round);
         background: var(--s2a-color-transparent-white-64);
 
