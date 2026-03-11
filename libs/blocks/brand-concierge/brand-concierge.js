@@ -216,17 +216,20 @@ async function openChatModal(initialMessage, el) {
     if (bcToken) {
       content.data = {
         type: 'auth',
-        payload: {
-          token: bcToken,
-          'web.webPageDetails.URL': surfaceURL,
-          'environment.browserDetails.userAgent': userAgent,
-          'environment._dc.language': language,
-        },
+        payload: { token: bcToken },
       };
       console.log('onBeforeEventSend', content);
     } else {
       console.log('no token', content);
     }
+
+    content.xdm = {
+      web: { webPageDetails: { URL: surfaceURL } },
+      environment: {
+        browserDetails: { userAgent },
+        _dc: { language },
+      },
+    };
   };
 
   if (bootstrapAPIReady) {
