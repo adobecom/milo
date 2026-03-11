@@ -771,18 +771,34 @@ p {
 
     &:hover,
     &:active {
-      background-color: var(--s2a-color-gray-1000);
-      border-color: var(--s2a-color-gray-1000);
+      background-color: var(--s2a-color-gray-25);
+      border-color: var(--s2a-color-gray-25);
+      color: var(--s2a-color-gray-1000);
     }
   }
 }
 
 
-.dark .con-button:not(.blue) {
-  border-color: var(--s2a-color-gray-25);
+.dark {
+  .con-button:not(.blue, .fill) {
+    border-color: var(--s2a-color-gray-25);
 
-  &:hover {
-    border-color: var(--s2a-color-gray-1000);
+    &:hover {
+      border-color: var(--s2a-color-gray-1000);
+    }
+  }
+
+  .fill {
+    background-color: var(--s2a-color-gray-25);
+    border-color: var(--s2a-color-gray-25);
+    color: var(--s2a-color-gray-1000);
+
+    &:hover,
+    &:active {
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
+      color: var(--s2a-color-gray-25);
+    }
   }
 }
 
