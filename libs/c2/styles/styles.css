@@ -849,11 +849,11 @@ p {
   --parallax-translate-y: 100px;
 }
 
-/* Same start as .parallax-move-up (no extra push down); ends higher = more upward travel; shorter range = faster */
 .parallax-move-up-fast {
   --parallax-translate-y: 100px;
   --parallax-translate-y-end: -80px;
   --parallax-range-end-length: 35%;
+  margin-bottom: -80px;
 }
 
 .parallax-scale-up {
