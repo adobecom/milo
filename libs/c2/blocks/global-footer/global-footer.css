@@ -390,6 +390,7 @@ span.feds-footer-privacyLink-divider {
     padding: 0;
     padding-bottom: var(--s2a-spacing-lg);
     margin: 0;
+    max-width: 120px;
   }
 
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child {
@@ -410,6 +411,7 @@ span.feds-footer-privacyLink-divider {
   .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-headline {
     flex-shrink: 0;
     margin: 0;
+    max-width: none;
   }
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink {
