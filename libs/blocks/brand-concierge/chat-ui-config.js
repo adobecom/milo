@@ -259,6 +259,7 @@ export default {
     '--disclaimer-text-line-height': '1.5',
     '--disclaimer-padding': '14px',
     '--disclaimer-padding-mobile': '14px',
+    '--disclaimer-min-height': 'calc(var(--disclaimer-font-size) * var(--disclaimer-text-line-height) * 2)',
     '--feedback-container-gap': '4px',
     '--feedback-button-height': '32px',
     '--feedback-button-active-color': '#292929',
