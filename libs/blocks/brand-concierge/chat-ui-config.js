@@ -54,6 +54,7 @@ export default {
       },
     ],
   },
+  env: 'prod',
   text: {
     'welcome.heading': 'Find the right app to bring your ideas to life.',
     'input.placeholder': 'Ask a question',
@@ -112,6 +113,7 @@ export default {
     fireflyGalleryWidget: {
       videoFraction: 0,
       promoid: 'bc-firefly-widget',
+      fireflyHostname: 'https://firefly.adobe.com',
     },
   },
   arrays: {
