@@ -367,8 +367,9 @@ html:has(meta[name="foundation"][content="c2"]) {
     }
 
     .dialog-modal.locale-modal-v2:has(.tabs) .dialog-close {
-      top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-xs) + 20px);
+      top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-xs) + 25px); /* Adjust based on tab height */
     }
+  }
 }
 
 body:has(.dialog-modal:not(.locale-modal-v2)) #locale-modal-v2,
