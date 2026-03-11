@@ -5,6 +5,7 @@ export default {
     language: 'en-US',
     namespace: 'brand-concierge',
   },
+  env: 'prod',
   text: {
     'welcome.heading': 'Explore what you can do with Adobe apps.',
     'welcome.subheading': 'Choose an option or tell us what interests you and we\'ll point you in the right direction.',
@@ -64,6 +65,7 @@ export default {
     fireflyGalleryWidget: {
       videoFraction: 0,
       promoid: 'bc-firefly-widget',
+      fireflyHostname: 'https://firefly.adobe.com'
     },
   },
   arrays: {

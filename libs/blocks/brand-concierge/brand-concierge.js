@@ -44,6 +44,15 @@ export function getUpdatedChatUIConfig() {
   if (authoredContent.header.subTitle) chatUIConfig.text['welcome.subheading'] = authoredContent.header.subTitle;
   if (authoredContent.cards) chatUIConfig.arrays['welcome.examples'] = authoredContent.cards;
   if (authoredContent.input) chatUIConfig.text['input.placeholder'] = authoredContent.input;
+
+  // For stage, override specific env variables
+  const config = getConfig();
+  const { env } = config || {};
+  const isStage = env?.name !== 'prod';
+  if (isStage) {
+    chatUIConfig.env = 'stage';
+    chatUIConfig.behavior.fireflyGalleryWidget.fireflyHostname = 'https://firefly-stage.corp.adobe.com';
+  }
   return chatUIConfig;
 }
 
