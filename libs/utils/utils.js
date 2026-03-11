@@ -2110,15 +2110,15 @@ export const getCookie = (name) => document.cookie
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-function getMarketsUrl() {
+export function getMarketsUrl() {
   const { env, marketsSource, contentRoot } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
-  const allowedMarkets = ['bacom'];
+  const allowedMarkets = ['bacom', 'express'];
   const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
       || getMetadata('marketssource')
       || marketsSource;
-  if (marketsSourceKey) return `${contentRoot ?? ''}/supported-markets/supported-markets-${marketsSourceKey}.json`;
-  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets.json`;
+  if (marketsSourceKey) return `${contentRoot ?? ''}/assets/supported-markets/supported-markets-${marketsSourceKey}.json`;
+  return `${getFederatedContentRoot()}/federal/assets/supported-markets/supported-markets.json`;
 }
 
 async function decorateLanguageBanner() {
@@ -2141,17 +2141,16 @@ async function decorateLanguageBanner() {
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
+  const languageEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  if (!languageEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
-  marketsConfig.data.forEach((market) => {
-    market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
-    if (market.languageName && !market.text.includes(market.languageName)) {
-      market.text = `${market.text || ''} ${market.languageName}.`.trim();
-    }
-    market.dir = locales?.[market.prefix || '']?.dir || 'ltr';
+  languageEntries.forEach((entry) => {
+    entry.supportedRegions = entry.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
+    entry.dir = locales?.[entry.prefix || '']?.dir || 'ltr';
   });
   const pagePrefix = locale.prefix?.replace('/', '') || '';
-  const pageMarket = marketsConfig.data.find((m) => m.prefix === pagePrefix)
-    ?? marketsConfig.data.find((m) => m.prefix === locale.base);
+  const pageMarket = languageEntries.find((m) => m.prefix === pagePrefix)
+    ?? languageEntries.find((m) => m.prefix === locale.base);
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
@@ -2162,7 +2161,7 @@ async function decorateLanguageBanner() {
 
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = marketsConfig.data.find((market) => (
+    const prefMarket = languageEntries.find((market) => (
       market.lang === prefLang
       && market.supportedRegions.includes(geoIp)
     ));
@@ -2170,7 +2169,7 @@ async function decorateLanguageBanner() {
     else return;
   } else {
     // Unsupported Market Path
-    const marketsForGeo = marketsConfig.data.filter((market) => (
+    const marketsForGeo = languageEntries.filter((market) => (
       market.supportedRegions.includes(geoIp)));
     if (!marketsForGeo.length) return;
 

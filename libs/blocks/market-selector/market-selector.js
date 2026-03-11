@@ -113,7 +113,7 @@ function getLanguageOptions(languages, currentLang) {
 
     languageOptions.push({
       label: lang.group || lang.nativeName,
-      englishName: lang.group || lang.languageName,
+      englishName: lang.group || lang.langName,
       value: targetPrefix,
       url: getTargetUrl(targetPrefix, window.location.pathname),
     });
@@ -123,8 +123,8 @@ function getLanguageOptions(languages, currentLang) {
 
 function handleLanguageSelect(langOption, config, currentMarketCode) {
   const selectedLang = config.languages.find((lang) => lang.prefix === langOption.value);
-  const supportedMarkets = selectedLang.markets.split(',').map((market) => market.trim());
-  const targetMarketCode = supportedMarkets.includes(currentMarketCode)
+  const supportedRegions = selectedLang.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
+  const targetMarketCode = supportedRegions.includes(currentMarketCode.toLowerCase())
     ? currentMarketCode
     : selectedLang.defaultMarket;
 
@@ -189,9 +189,9 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix) {
 }
 
 function getMarketOptions(markets, currentLang) {
-  const supportedMarkets = currentLang.markets.split(',').map((market) => market.trim());
+  const supportedRegions = currentLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
   return markets
-    .filter((market) => supportedMarkets.includes(market.marketCode))
+    .filter((market) => supportedRegions.includes(market.marketCode?.toLowerCase()))
     .map((market) => ({
       label: market.marketName,
       value: market.marketCode,
@@ -431,7 +431,7 @@ function createDropdown(
 
 export default async function init(block) {
   const config = await getMarketConfig();
-  if (!config) return;
+  if (!config || !config.markets?.length) return;
 
   const miloConfig = getConfig();
   const [
@@ -473,7 +473,7 @@ export default async function init(block) {
   const marketOptions = getMarketOptions(config.markets, currentLang);
 
   const langDropdown = createDropdown(
-    currentLang.group || currentLang.nativeName || currentLang.languageName,
+    currentLang.group || currentLang.nativeName || currentLang.langName,
     labels.searchLanguage,
     languageOptions,
     onLanguageSelect,
