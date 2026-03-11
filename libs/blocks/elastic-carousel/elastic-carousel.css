@@ -1,15 +1,18 @@
 
 .elastic-carousel-container {
   --elastic-carousel-transtions: all .25s ease;
-  --elastic-carousel-transtions-slow: all .5s ease;
+  --elastic-carousel-transtions-slow: all .3s ease;
   --elastic-carousel-container-height: 580px;
   --elastic-carousel-item-max-width: 294px;
+  --elastic-carousel-item-hover-grow-index: 1.75;
+  --elastic-carousel-container-max-width: calc(1510px + clac(var(--elastic-carousel-item-max-width) / var(--elastic-carousel-item-hover-grow-index)));
   --slides: 5;
 
   position: relative;
   overflow: hidden;
-  max-width: 1920px;
+  max-width: var(--elastic-carousel-container-max-width);
   height: var(--elastic-carousel-container-height);
+  margin: auto;
 }
 .elastic-carousel {
   display: flex;
@@ -21,15 +24,6 @@
   left: 50%;
   transform: translate(-50%, -50%);
   transition: var(--elastic-carousel-transtions);
-
-  &.stick-left {
-    left: 0;
-    transform: translate(0%, -50%);
-  }
-  &.stick-right {
-    left: 100%;
-    transform: translate(-100%, -50%);
-  }
 }
 
 .elastic-carousel__item {
@@ -47,7 +41,7 @@
   &:focus-visible {
     background-color: #000;
     max-width: 496px;
-    width: calc((100vw/calc(var(--slides)))*1.75);
+    width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
     outline: none;
 
     .elastic-carousel__item-footer p,
@@ -114,8 +108,9 @@
     margin: 0;
     transition: var(--elastic-carousel-transtions);
     display: -webkit-box;
-    -webkit-box-orient: vertical;
     line-clamp: 2;
+    box-orient: vertical;
+    -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
   }
@@ -133,8 +128,22 @@
   padding: 20vh 0;
 }
 
-
-@media (width > 787px) {
+@media (width < 1700px) {
+  .elastic-carousel {
+    &.stick-left {
+      left: 0;
+      transform: translate(0%, -50%);
+    }
+    &.stick-right {
+      left: 100%;
+      transform: translate(-100%, -50%);
+    }
+  }
+}
+@media (width > 767px) {
+  .before{
+    height: 100vh;
+  }
   .elastic-carousel__item {
     &:hover, 
     &:focus-visible {

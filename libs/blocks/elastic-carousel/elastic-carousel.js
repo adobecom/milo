@@ -1,25 +1,30 @@
 import { createTag } from '../../utils/utils.js';
 
 let leaveTimeout;
+let hoverTimeout;
 
 const onCarouselLeave = (event) => {
+  clearTimeout(leaveTimeout);
   const carousel = event.currentTarget;
   leaveTimeout = setTimeout(() => {
     carousel.classList.remove('stick-left');
     carousel.classList.remove('stick-right');
-  }, 10);
+  }, 0);
 };
 
 const onCarouselHover = (event) => {
-  const slide = event.target.closest('.elastic-carousel__item');
+  clearTimeout(hoverTimeout);
   clearTimeout(leaveTimeout);
+  const slide = event.target.closest('.elastic-carousel__item');
   if (!slide) return;
   const slideIndex = slide.dataset.index * 1;
   const carousel = event.currentTarget;
-  carousel.classList.remove('stick-left');
-  carousel.classList.remove('stick-right');
-  if (slideIndex < 2) carousel.classList.add('stick-left');
-  if (slideIndex > 4) carousel.classList.add('stick-right');
+  hoverTimeout = setTimeout(() => {
+    carousel.classList.remove('stick-right');
+    carousel.classList.remove('stick-left');
+    if (slideIndex < 3) { carousel.classList.add('stick-left'); }
+    if (slideIndex > 3) { carousel.classList.add('stick-right'); }
+  }, 10);
 };
 
 export default async function init(el) {
@@ -41,7 +46,7 @@ export default async function init(el) {
       </div>
     `;
     const slideEl = createTag('div', {
-      class: `elastic-carousel__item${index === 5 ? ' stack-end' : ''}`,
+      class: 'elastic-carousel__item',
       tabindex: 0,
       'aria-label': 'number',
       'data-index': index + 1,
@@ -59,6 +64,7 @@ export default async function init(el) {
   const carousel = section.querySelector('.elastic-carousel');
   carousel.addEventListener('mouseout', onCarouselLeave);
   carousel.addEventListener('mouseover', onCarouselHover);
+
 
   for (let i = 0; i < 5; i += 1) {
     carousel.append(slide(i));
