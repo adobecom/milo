@@ -708,6 +708,25 @@ p {
   }
 }
 
+.section.overlap {
+  margin-top: -126px;
+  background-color: white;
+  z-index: 9;
+  overflow: hidden;
+  border-start-start-radius: var(--s2a-border-radius-24);
+  border-start-end-radius: var(--s2a-border-radius-24);
+}
+
+/* Section immediately after .section.overlap */
+.section.overlap + .section {
+  /* your styles */
+}
+
+/* All sections after .section.overlap */
+.section.overlap ~ .section {
+  /* your styles */
+}
+
 .section-anchor {
   scroll-margin-top: var(--global-height-nav); /* TODO: Replace with correct variable */
 }
@@ -791,6 +810,7 @@ p {
   /* Default transition values */
   --parallax-opacity-from: 1;
   --parallax-translate-y: 0;
+  --parallax-translate-y-end: 0;
   --parallax-translate-x: 0;
   --parallax-scale: 1;
   --parallax-blur: 0;
@@ -827,6 +847,13 @@ p {
 /* Variant definitions */
 .parallax-move-up {
   --parallax-translate-y: 100px;
+}
+
+/* Same start as .parallax-move-up (no extra push down); ends higher = more upward travel; shorter range = faster */
+.parallax-move-up-fast {
+  --parallax-translate-y: 100px;
+  --parallax-translate-y-end: -80px;
+  --parallax-range-end-length: 35%;
 }
 
 .parallax-scale-up {
@@ -879,7 +906,7 @@ p {
 
   to {
     opacity: 1;
-    transform: translateY(0) translateX(0) scale(1);
+    transform: translateY(var(--parallax-translate-y-end)) translateX(0) scale(1);
     filter: blur(0);
   }
 }

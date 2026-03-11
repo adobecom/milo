@@ -253,7 +253,7 @@
 @media (width >= 1280px) {
   .rm-viewport[data-viewport="desktop"] {
     display: flex;
-    height: 960px;
+    height: 100vh;
   }
 
   .rm-overlay {
