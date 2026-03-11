@@ -146,7 +146,7 @@ html:has(meta[name="foundation"][content="c2"]) {
   }
 
   .dialog-modal.locale-modal-v2 .georouting-wrapper:not(:has(.tabs)) {
-    padding: calc(2 * var(--s2a-spacing-lg));
+    padding: calc(var(--s2a-spacing-lg) + (2 * var(--s2a-spacing-xs)) + var(--locale-modal-close-size)) calc(2 * var(--s2a-spacing-lg)) calc(2* var(--s2a-spacing-lg));
   }
 
   .locale-modal-v2 .georouting-wrapper > .section {
@@ -209,6 +209,10 @@ html:has(meta[name="foundation"][content="c2"]) {
     line-height: var(--s2a-typography-line-height-title-4);
     letter-spacing: var(--s2a-typography-letter-spacing-title-4);
     margin: 0;
+  }
+
+  .dialog-modal.locale-modal-v2 .georouting-wrapper:not(:has(.tabs)) h3 {
+    padding-top: var(--s2a-spacing-lg);
   }
   /* c2 styles for tabs */
 
@@ -341,10 +345,6 @@ html:has(meta[name="foundation"][content="c2"]) {
       padding: 0 var(--s2a-spacing-lg) var(--s2a-spacing-lg);
     }
 
-    .dialog-modal.locale-modal-v2 .georouting-wrapper:not(:has(.tabs)) > * {
-      width: 85%;
-    }
-
     /* c2 styles for tabs */
     .dialog-modal.locale-modal-v2 .tabs .paddle {
       top: var(--s2a-spacing-xs);
@@ -353,17 +353,22 @@ html:has(meta[name="foundation"][content="c2"]) {
 
     .dialog-modal.locale-modal-v2 .tabs div[role="tablist"] {
       padding: var(--s2a-spacing-xs) 0;
-    }
-
-    .dialog-modal.locale-modal-v2 .tabs .tab-content {
-      width: 85%;
+      width: calc(100% - var(--s2a-spacing-lg) - var(--locale-modal-close-size));
     }
     /* c2 styles for tabs */
 
     .dialog-modal.locale-modal-v2 .link-wrapper > a:first-child {
       margin-inline-end: var(--s2a-spacing-lg);
     }
-  }
+
+    .dialog-modal.locale-modal-v2 .dialog-close {
+      right: calc(2 * var(--s2a-spacing-lg));
+      top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-xs));
+    }
+
+    .dialog-modal.locale-modal-v2:has(.tabs) .dialog-close {
+      top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-xs) + 20px);
+    }
 }
 
 body:has(.dialog-modal:not(.locale-modal-v2)) #locale-modal-v2,
