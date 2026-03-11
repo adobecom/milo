@@ -9,7 +9,7 @@ function decorateText(el, config = ['lg', 'l']) {
   const body = `body-${config[0]}`;
   const bodyEls = el?.querySelectorAll('p:not([class])') || [];
   bodyEls.forEach((bodyEl) => bodyEl.classList.add(body));
-  decorateButtons(el, `button-${config[1]}`);
+  decorateButtons(el, config[1] && `button-${config[1]}`);
 }
 
 function decorateBackground(background) {
@@ -21,13 +21,31 @@ function decorateBackground(background) {
   background.style.background = hasBackground;
 }
 
+const blockSizes = {
+  medium: 'md',
+  large: 'lg',
+};
+
+function getBlockSize(block) {
+  const defaultSize = 'large';
+  const size = Object.keys(blockSizes).find((key) => block.classList.contains(key));
+  return blockSizes[size] ?? blockSizes[defaultSize];
+}
+
+function getButtonSize(block) {
+  return [...block.classList].find((c) => c.includes('button'))?.split('-').pop();
+}
+
 function decorate(block) {
   const foreground = block.children[0];
   const [content, background] = foreground?.children || [];
   content?.classList.add('content');
   foreground?.classList.add('container');
   decorateBackground(background);
-  decorateText(content);
+  const blockSize = getBlockSize(block);
+  getButtonSize(block);
+  const buttonSize = getButtonSize(block);
+  decorateText(content, [blockSize, buttonSize]);
 }
 
 function playVideo(video) {
