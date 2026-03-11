@@ -65,7 +65,7 @@ export default {
     fireflyGalleryWidget: {
       videoFraction: 0,
       promoid: 'bc-firefly-widget',
-      fireflyHostname: 'https://firefly.adobe.com'
+      fireflyHostname: 'https://firefly.adobe.com',
     },
   },
   arrays: {
