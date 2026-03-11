@@ -4,8 +4,6 @@ import { debounce } from '../../../../utils/action.js';
 import {
   fetchAndProcessPlainHtml,
   getActiveLink,
-  isDesktop,
-  isDesktopForContext,
   logErrorFor,
   selectors,
   setActiveDropdown,
@@ -26,6 +24,18 @@ try {
 } catch (e) {
   merch = { default: async (elem) => elem };
 }
+
+const isDesktop = window.matchMedia('(min-width: 1024px)');
+const isDesktopForContext = (context = 'viewport') => {
+  const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
+  if (context === 'footer' && isContainerResponsiveFooter) {
+    const footerElement = document.querySelector('footer.global-footer');
+    return footerElement && !footerElement.classList.contains('mobile');
+  }
+
+  // Default to viewport width for all other contexts
+  return isDesktop.matches;
+};
 
 function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;

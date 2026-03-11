@@ -354,8 +354,9 @@ span.feds-footer-privacyLink-divider {
   color: var(--s2a-color-white);
 }
 
-.global-footer .feds-menu-items {
-  border: 0;
+.global-footer .feds-navLink:focus, .global-footer a:focus {
+  outline: 2px solid var(--s2a-color-focus-ring-default);
+  outline-offset: 2px;
 }
 
 .global-footer:not(.mobile) .feds-footer-legalWrapper {
@@ -371,7 +372,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 767px) {
+@media (min-width: 1024px) {
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: var(--s2a-spacing-md);
   }
@@ -389,6 +390,7 @@ span.feds-footer-privacyLink-divider {
     padding: 0;
     padding-bottom: var(--s2a-spacing-lg);
     margin: 0;
+    max-width: 120px;
   }
 
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child {
@@ -409,6 +411,7 @@ span.feds-footer-privacyLink-divider {
   .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-headline {
     flex-shrink: 0;
     margin: 0;
+    max-width: none;
   }
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink {
@@ -506,7 +509,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
   .global-footer:not(.mobile) .feds-footer-options {
     display: grid;
     grid-template-areas: "region legal social";
@@ -523,15 +526,9 @@ span.feds-footer-privacyLink-divider {
   .global-footer:not(.mobile) .feds-footer-options > .feds-footer-miscLinks-legal {
     gap: var(--s2a-spacing-xl);
   }
-}
 
-@media (min-width: 1441px) {
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: var(--s2a-spacing-2xl);
-  }
-
-  .global-footer:not(.mobile) .feds-footer-options {
-    column-gap: var(--s2a-spacing-xl);
   }
 }
 

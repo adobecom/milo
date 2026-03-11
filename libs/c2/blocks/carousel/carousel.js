@@ -299,7 +299,6 @@ export default function init(el) {
 
   el.textContent = '';
   wrapper.append(...slides);
-
   const [prevBtn, nextBtn] = decorateNavigation();
   el.append(wrapper, ariaLive, prevBtn, nextBtn, indicatorsContainer);
 

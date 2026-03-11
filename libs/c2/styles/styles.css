@@ -673,13 +673,14 @@ p {
 .container {
   --grid-max-width: var(--grid-max-width-default);
   --grid-content-width: var(--grid-max-width);
-
-  width: auto;
-  max-width: none;
-  padding-inline: max(
+  --grid-padding: max(
     var(--grid-margin-width),
     calc((100% - var(--grid-content-width)) / 2)
   );
+
+  width: auto;
+  max-width: none;
+  padding-inline: var(--grid-padding);
 
   &.wide {
     --grid-max-width: var(--grid-max-width-wide);
@@ -809,20 +810,23 @@ p {
   --parallax-translate-x: 0;
   --parallax-scale: 1;
   --parallax-blur: 0;
-  --parallax-stagger-factor: 2;
+  --parallax-stagger-factor: 1;
+  --parallax-stagger-drift: 64px;
 
   /* Default range values */
   --parallax-range-start-name: entry;
-  --parallax-range-start-length: 0%;
+  --parallax-range-start-length: 10%;
   --parallax-range-start: var(--parallax-range-start-name) var(--parallax-range-start-length);
   --parallax-range-end-name: cover;
-  --parallax-range-end-length: 30%;
+  --parallax-range-end-length: 60%;
   --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
 
   /* Animation properties */
-  --parallax-easing: ease-in-out;
+  --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
 
-  animation: enable-parallax var(--parallax-easing);
+  animation-name: enable-parallax;
+  animation-timing-function: var(--parallax-easing);
+  animation-fill-mode: both;
   animation-timeline: view();
   animation-range: var(--parallax-range-start) var(--parallax-range-end);
 
@@ -830,18 +834,27 @@ p {
   will-change: opacity, transform, filter;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  [class*="parallax-"] {
+    animation: none !important;
+  }
+}
+
 /* Variant definitions */
 .parallax-move-up {
-  --parallax-translate-y: 200px;
+  --parallax-translate-y: 100px;
 }
 
 .parallax-scale-up {
-  --parallax-scale: 0.7;
+  --parallax-scale: 0.9;
 }
 
-/* Scaling up would make the element exceed the viewport
-and should only be applied on a child element;
-that would likely have to be done via JS */
+/* When scaling down, check whether you need to use clipping
+   to prevent the element from exceeding the viewport */
+.parallax-scale-down {
+  --parallax-scale: 1.1;
+}
+
 .parallax-blur {
   --parallax-blur: 10px;
 }
@@ -850,14 +863,25 @@ that would likely have to be done via JS */
   --parallax-opacity-from: 0;
 }
 
-.parallax-stagger-ltr {
-  --parallax-translate-y: calc(sibling-index() * var(--parallax-stagger-factor) * 100px);
-  --parallax-range-end: cover calc((sibling-index() + 1) * var(--parallax-stagger-factor) * 5%);
+/* Staggering only on larger viewports */
+@media (width >= 1024px) {
+  .parallax-stagger-ltr {
+    --parallax-translate-y: calc(sibling-index() * var(--parallax-stagger-factor) * var(--parallax-stagger-drift));
+    --parallax-range-end: cover calc((sibling-index() + 1) * var(--parallax-stagger-factor) * 5%);
+  }
+
+  .parallax-stagger-rtl {
+    --parallax-translate-y: calc((sibling-count() - sibling-index() + 1) * var(--parallax-stagger-factor) * var(--parallax-stagger-drift));
+    --parallax-range-end: cover calc((sibling-count() - sibling-index() + 2) * var(--parallax-stagger-factor) * 5%);
+  }
 }
 
-.parallax-stagger-rtl {
-  --parallax-translate-y: calc((sibling-count() - sibling-index() + 1) * var(--parallax-stagger-factor) * 100px);
-  --parallax-range-end: cover calc((sibling-count() - sibling-index() + 2) * var(--parallax-stagger-factor) * 5%);
+.parallax-scale-down-grid {
+  --parallax-range-end-name: contain;
+
+  animation-name: enable-grid-parallax;
+  will-change: padding-inline;
+  overflow: clip;
 }
 
 @keyframes enable-parallax {
@@ -874,6 +898,11 @@ that would likely have to be done via JS */
     transform: translateY(0) translateX(0) scale(1);
     filter: blur(0);
   }
+}
+
+@keyframes enable-grid-parallax {
+  from { padding-inline: 0; }
+  to { padding-inline: var(--grid-padding); }
 }
 
 .dark {
