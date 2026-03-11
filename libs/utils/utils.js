@@ -752,17 +752,14 @@ function localizeLinkCore(
     const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
     let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
-    if (useAsync && extension !== 'json' && lingoActive()
+    const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
+    const qiResolved = queryIndexes[siteId]?.requestResolved;
+    const skipQueryIndex = isMepLingoFragment
+      && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
+    if (useAsync && extension !== 'json' && lingoActive() && !skipQueryIndex
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
           || (!!locale.regions && isMepLingoFragment))) {
       return (async () => {
-        const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
-        const qiResolved = queryIndexes[siteId]?.requestResolved;
-        if (isMepLingoFragment && (mepLingoSkipQI() || (isLcpSection && !qiResolved))) {
-          if (aTag) aTag.dataset.mepLingoSkippedQI = 'true';
-          const urlPath = `${prefix}${path}${url.search}${hash}`;
-          return relative ? urlPath : `${url.origin}${urlPath}`;
-        }
         loadQueryIndexes(prefix, false, [href]);
         if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
           await Promise.all([queryIndexes[siteId]?.pathsRequest, lingoSiteMapping].filter(Boolean));
@@ -790,6 +787,7 @@ function localizeLinkCore(
       })();
     }
 
+    if (skipQueryIndex && aTag) aTag.dataset.mepLingoSkippedQI = 'true';
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
