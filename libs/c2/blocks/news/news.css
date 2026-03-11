@@ -54,6 +54,8 @@
   display: -webkit-box;
   -webkit-line-clamp: 3; /* Number of lines to show */
   -webkit-box-orient: vertical; 
+  line-clamp: 3;
+  box-orient: vertical;
   height: 63px;
   max-height: 63px;
   overflow: hidden;

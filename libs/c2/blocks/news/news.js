@@ -1,5 +1,18 @@
 import { decorateTextOverrides } from '../../../utils/decorate.js';
-import { createTag, loadStyle, getConfig, loadBlock } from '../../../utils/utils.js';
+import { createTag, loadStyle, getConfig } from '../../../utils/utils.js';
+
+const BLOCK_CLASS_ADDITIONS = ['con-block', 'container'];
+const SECTION_CLASS_TRIGGERS = [
+  'stagger-ltr',
+  'stagger-rtl',
+  'three-up',
+  'four-up',
+  'parallax-move-up',
+  'parallax-scale-up',
+  'parallax-scale-down',
+  'parallax-blur',
+  'parallax-opacity',
+];
 
 function addStyle(filename) {
   const { miloLibs, codeRoot } = getConfig();
@@ -22,10 +35,12 @@ function formatHeader(row) {
 }
 
 export default async function init(el) {
-  const blockLevelClassAdditions = ['news', 'con-block', 'container'];
-  el.classList.add(...blockLevelClassAdditions);
-  const hasUpClass = [...el.classList].find((cls) => cls.endsWith('-up'));
-  if (!hasUpClass) el.classList.add('three-up');
+  el.classList.add('news', ...BLOCK_CLASS_ADDITIONS);
+  const sectionClasses = el.closest('.section').classList;
+  const sectionMatches = SECTION_CLASS_TRIGGERS.filter((cls) => sectionClasses.contains(cls));
+  sectionClasses.remove(...sectionMatches);
+  const helperClasses = [];
+  helperClasses.push(...sectionMatches);
 
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
@@ -47,31 +62,20 @@ export default async function init(el) {
       });
     });
   }
-  const helperClasses = [];
-  // if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
-  // if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
-  // if (el.classList.contains('vertical')) {
-  //   const elAction = el.querySelector('.action-area');
-  //   if (elAction) elAction.classList.add('body-s');
-  // }
-  el.classList.add(...helperClasses);
-  decorateTextOverrides(el); // remove if not needed for text class names
 
-  // const mnemonicList = el.querySelector('.mnemonic-list');
-  // const foreground = mnemonicList?.closest('.foreground');
-  // if (foreground) {
-  //   mnemonicList.querySelectorAll('p').forEach((product) => product.removeAttribute('class'));
-  //   await loadBlock(mnemonicList);
-  // }
+  if (helperClasses.length) {
+    const upClass = helperClasses.find((val) => val.endsWith('-up')) || 'three-up';
+    el.classList.add(upClass);
+    const staggerClass = helperClasses.find((val) => val.startsWith('stagger-'));
+    if (staggerClass) {
+      el.classList.remove(`parallax-${staggerClass}`);
+      const blockItems = el.querySelectorAll('.news-item');
+      blockItems.forEach((item) => item.classList.add(`parallax-${staggerClass}`));
+    }
+    const parallaxClasses = helperClasses.filter((val) => val.startsWith('parallax-'));
+    if (parallaxClasses.length) parallaxClasses.forEach((cls) => el.classList.add(cls));
+  }
+  decorateTextOverrides(el); // remove if not needed for text class names
   if (el.matches('[class*="rounded-corners"]')) addStyle('rounded-corners');
   if (el.matches('[class*="-lockup"]')) addStyle('iconography');
-
-  if (el.classList.contains('link-spacer')) {
-    el.querySelectorAll('[class^="body-"]').forEach((bodyElem) => {
-      if ([...bodyElem.childNodes].every((n) => (n.nodeType === 1 && n.tagName === 'A' && !n.className)
-        || (n.nodeType === 3 && n.textContent.trim() === ''))) {
-        bodyElem.classList.add('link-list');
-      }
-    });
-  }
 }
