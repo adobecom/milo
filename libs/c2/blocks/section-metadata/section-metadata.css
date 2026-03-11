@@ -24,6 +24,11 @@
     align-items: start;
   }
 
+  /* last child in three-up section should span the entire width */
+  &.three-up > div:nth-last-child(1 of :not(.section-metadata)) {
+    grid-column: 1 / -1;
+  }
+
   &.dark {
     background-color: var(--s2a-color-gray-900);
     color: var(--s2a-color-gray-25);
@@ -131,6 +136,10 @@
 
     &.three-up {
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      
+      > div:nth-last-child(1 of :not(.section-metadata)) {
+        grid-column:initial;
+      }
     }
 
     &.four-up {

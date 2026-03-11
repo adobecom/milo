@@ -14,11 +14,22 @@ function getForegroundContent(foregroundRow, contentDiv, blockName) {
   }
 }
 
+function checkPreset(section, blockName) {
+  const productGrid = section.classList.contains('product-grid');
+  if (!productGrid) return;
+
+  const exploreCards = section.querySelectorAll(`.${blockName}`);
+  exploreCards.forEach((card) => {
+    card.classList.add('parallax-stagger-ltr-grid');
+  });
+}
+
 export default function init(el) {
   const blockName = el.classList[0].toLowerCase();
   const rows = el.querySelectorAll(':scope > div');
   const firstRow = rows[0];
   const foregroundRow = rows[1];
+  const section = el.closest('.section');
 
   if (!firstRow) return;
 
@@ -39,6 +50,7 @@ export default function init(el) {
 
   // Second row: foreground container
   getForegroundContent(foregroundRow, contentDiv, blockName);
+  if (section) checkPreset(section, blockName);
 
   if (!link) return;
   const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href });
