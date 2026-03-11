@@ -209,11 +209,19 @@ async function openChatModal(initialMessage, el) {
   const instanceName = useTestInstance ? 'alloy2' : 'alloy';
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
 
+  const surfaceURL = window.location.href;
+  const { userAgent, language } = window.navigator;
+
   const onBeforeEventSend = (content) => {
     if (bcToken) {
       content.data = {
         type: 'auth',
-        payload: { token: bcToken },
+        payload: {
+          token: bcToken,
+          'web.webPageDetails.URL': surfaceURL,
+          'environment.browserDetails.userAgent': userAgent,
+          'environment._dc.language': language,
+        },
       };
       console.log('onBeforeEventSend', content);
     } else {
