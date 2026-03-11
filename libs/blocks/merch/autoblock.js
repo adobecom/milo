@@ -106,18 +106,26 @@ export function enableAnalytics(card) {
   });
 }
 
+async function postProcessCard(card) {
+  await decorateLinksAsync(card);
+  await localizePreviewLinks(card);
+  card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
+  decorateCardCtasWithA11y(card);
+  enableAnalytics(card);
+}
+
 export async function postProcessAutoblock(autoblockEl, isCard = false) {
   cleanupTabsAnalytics(autoblockEl);
   const cards = isCard ? [autoblockEl] : Array.from(autoblockEl.querySelectorAll('merch-card'));
   loadBadgeIcons(cards);
   const processPromises = cards.map(async (card) => {
     try {
-      await card.checkReady();
-      await decorateLinksAsync(card);
-      await localizePreviewLinks(card);
-      card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
-      decorateCardCtasWithA11y(card);
-      enableAnalytics(card);
+      const cardReady = await card.checkReady();
+      if (cardReady) {
+        postProcessCard(card);
+      } else {
+        card.addEventListener('mas:ready', () => postProcessCard(card));
+      }
     } catch (e) {
       window.lana?.log(`Error processing autoblock element: ${e.toString()}`, {
         tags: 'merch-autoblock',
