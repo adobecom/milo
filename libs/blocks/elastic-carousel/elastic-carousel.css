@@ -142,7 +142,7 @@
 }
 @media (width > 767px) {
   .before{
-    height: 100vh;
+    height: 50vh;
   }
   .elastic-carousel__item {
     &:hover, 
