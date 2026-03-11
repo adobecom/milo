@@ -309,7 +309,7 @@ const delay = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
  * When the result is a real success (or default without error), returns immediately.
  * Used by getBulkPublishLangAttr; exported for tests.
  * @param {object} options - prodUrl, repo, host
- * @param {Function} getLangFirst - async (prodUrl, repo, host) => { country, lang, fromFallback?: boolean }
+ * @param {Function} getLangFirst - async (prodUrl, repo, host) => { country, lang, fromFallback? }
  * @param {{ retryDelayMs?: number }} [retryOpts] - optional; use in tests to avoid delay
  * @returns {Promise<string>} lang-country e.g. 'de-xx'
  */
