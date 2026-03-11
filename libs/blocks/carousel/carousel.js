@@ -36,6 +36,7 @@ const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > vid
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
 const isTablet = window.matchMedia('(min-width: 600px) and (max-width: 1199px)');
+const isMobile = window.matchMedia('(max-width: 599px)');
 
 function getPreviousAriaLabel(currentIndex, totalSlides) {
   return currentIndex === 0 && totalSlides > 0
@@ -378,7 +379,7 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
     });
   });
 }
-/** hinting-tablet: true if the currentslide will still be visible after the transition. */
+/** hinting (tablet/mobile): true if the leaving slide will still be visible after the transition. */
 function isSlideVisible(currentIdx, targetIdx, n, isNext) {
   if (isNext) return currentIdx === targetIdx || currentIdx === (targetIdx + 1) % n;
   const prev = (targetIdx - 1 + n) % n;
@@ -417,9 +418,10 @@ function moveSlides(event, carouselElements) {
   let activeSlideIndicator = controlsContainer.querySelector('.active');
   let skipPause = false;
 
-  // hinting-tablet only: pause leaving slide's video only if it won't be visible after transition
+  // hinting-tablet / hinting-mobile: pause leaving slide's video only if it won't be visible after transition
   const isHintingTablet = el.classList.contains('hinting-tablet') && isTablet.matches;
-  if (isHintingTablet) {
+  const isHintingMobile = (el.classList.contains('hinting-mobile') || el.classList.contains('hinting-center-mobile')) && isMobile.matches;
+  if (isHintingTablet || isHintingMobile) {
     const n = slides.length;
     const currentIdx = carouselElements.currentActiveIndex;
     const targetIdx = isNext ? (currentIdx + 1) % n : (currentIdx - 1 + n) % n;
@@ -476,7 +478,7 @@ function moveSlides(event, carouselElements) {
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
 
-  if (isHintingTablet) {
+  if (isHintingTablet || isHintingMobile) {
     const video = activeSlide?.querySelector('video');
     /* c8 ignore start */
     if (video?.paused && video.readyState >= 2) {
