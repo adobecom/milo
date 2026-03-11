@@ -61,19 +61,22 @@
         .rich-content {
           width: 100%;
           padding-bottom: var(--s2a-spacing-24);
+          .foreground {
+            padding-inline: var(--s2a-spacing-24);
+            .content {
+              max-width: 477px;
+              animation:  content-enter var(--animation-curve), content-enter-margin var(--animation-curve);
+              animation-timeline: --carousel-wrapper, --carousel-wrapper;
+              animation-range: entry 0% entry 100%, entry 0% cover 30%;
 
-          .content {
-            max-width: 477px;
-            animation:  content-enter var(--animation-curve), content-enter-margin var(--animation-curve);
-            animation-timeline: --carousel-wrapper, --carousel-wrapper;
-            animation-range: entry 0% entry 100%, entry 0% cover 30%;
-
-            > * {
-              animation: text-enter var(--animation-curve);
-              animation-timeline: --carousel-wrapper;
-              animation-range: entry 50% cover 70%;
+              > * {
+                animation: text-enter var(--animation-curve);
+                animation-timeline: --carousel-wrapper;
+                animation-range: entry 50% cover 70%;
+              }
             }
           }
+
         }
         .section-background img {
           border-radius: var(--s2a-border-radius-16);
@@ -112,7 +115,7 @@
         &:has(.rich-content) {
           align-items: center;
           padding-bottom: 0;
-          .rich-content .container {
+          .rich-content .foreground {
             padding-inline: var(--s2a-spacing-64);
             .content {
               max-width: 50%;
@@ -236,7 +239,7 @@
 
         &:has(.rich-content) {
           align-items: center;
-          .rich-content .container {
+          .rich-content .foreground {
             padding-inline: var(--s2a-spacing-80);
             .content {
               min-width: 512px;
