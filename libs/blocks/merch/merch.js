@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial,
+  shouldAllowKrTrial, getCountry,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -227,19 +227,7 @@ export function getMiloLocaleSettings(miloLocale) {
 
 export async function getGeoLocaleSettings(miloLocale) {
   const settings = getMiloLocaleSettings(miloLocale);
-  let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
-    || sessionStorage.getItem('akamai');
-  if (!country) {
-    try {
-      const { getAkamaiCode } = await import('../../utils/geo.js');
-      country = await getAkamaiCode(true);
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`, {
-        tags: 'merch',
-        severity: 'error',
-      });
-    }
-  }
+  let country = await getCountry();
   if (country) {
     country = country.toUpperCase();
     settings.country = country;
