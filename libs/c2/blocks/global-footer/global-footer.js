@@ -22,10 +22,12 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
-  setupKeyboardNav,
-  KEYBOARD_DELAY,
   loadStyles,
 } from '../../../blocks/global-navigation/utilities/utilities.js';
+import {
+  setupFooterKeyboardNav,
+  KEYBOARD_DELAY,
+} from './footer-keyboard-navigation.js';
 
 import { replaceKey } from '../../../features/placeholders.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
@@ -245,7 +247,7 @@ class Footer {
       await task();
     }
     const fetchKeyboardNav = () => {
-      setupKeyboardNav(false);
+      setupFooterKeyboardNav();
     };
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
@@ -558,7 +560,7 @@ class Footer {
   };
 
   isFooterMobileLayout = () => this.block.classList.contains('mobile')
-    || window.matchMedia('(max-width: 767px)').matches;
+    || window.matchMedia('(max-width: 1023px)').matches;
 
   syncFooterOptionsOrder = () => {
     const options = this.elements.footer?.querySelector('.feds-footer-options');
