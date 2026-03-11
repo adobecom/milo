@@ -680,6 +680,5 @@ export {
   isPagePublished,
   loadCaasTags,
   postDataToCaaS,
-  runLanguageFirstRetry,
   setConfig,
 };
