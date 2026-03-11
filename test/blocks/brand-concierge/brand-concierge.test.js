@@ -185,8 +185,9 @@ describe('Brand Concierge', () => {
 
     // Pre-load script to bypass loadScript await
     const { env } = getConfig();
-    const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
-    const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
+    const src = env.name === 'prod'
+      ? 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js'
+      : 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
     // Remove stale script tags left by previous tests so loadScript finds the pre-loaded one
     document.querySelectorAll(`head > script[src="${src}"]`).forEach((s) => s.remove());
     const script = document.createElement('script');
