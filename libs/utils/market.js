@@ -1,24 +1,17 @@
-import { getConfig, getMetadata, getCookie, getCountry, getFederatedContentRoot } from './utils.js';
+import { getConfig, getCookie, getCountry, getMarketsUrl } from './utils.js';
 
 let marketConfig;
 const norm = (c) => (c?.toLowerCase() === 'uk' ? 'gb' : c?.toLowerCase()?.split('_')[0]);
 
 export async function getMarketConfig() {
   if (marketConfig) return marketConfig;
-  const { contentRoot, marketSelector } = getConfig();
-  const sourceFromUrl = new URLSearchParams(window.location.search).get('marketselector');
-  const marketSelectorKey = sourceFromUrl || getMetadata('marketselector') || marketSelector;
-  const marketsUrl = marketSelectorKey
-    ? `${contentRoot ?? ''}/assets/market-selector/market-selector-${marketSelectorKey}.json`
-    : `${getFederatedContentRoot()}/federal/assets/market-selector/market-selector.json`;
   try {
-    const resp = await fetch(marketsUrl);
+    const resp = await fetch(getMarketsUrl());
     if (!resp.ok) throw new Error('Failed to load market config');
     const json = await resp.json();
-    marketConfig = {
-      languages: json.languages?.data || [],
-      markets: json.markets?.data || [],
-    };
+    const languages = json.languages?.data || [];
+    const markets = json.markets?.data || [];
+    marketConfig = { languages, markets };
     return marketConfig;
   } catch (e) {
     window.lana?.log(`Market Utils Error: ${e.message}`);
@@ -42,9 +35,9 @@ export async function getValidatedMarket() {
   const prefix = locale.prefix?.replace('/', '') || '';
   const currLang = config.languages.find((l) => (l.prefix || '') === prefix) || config.languages[0];
   const market = detectedMarket || currLang.defaultMarket || 'us';
-  const supported = currLang.markets?.split(',').map((m) => m.trim()) || [];
-  const validated = supported.includes(market) ? market : currLang.defaultMarket;
-  return config.markets.some((marketItem) => marketItem.marketCode === validated)
+  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
+  const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
+  return config.markets?.some((marketItem) => marketItem.marketCode === validated)
     ? validated
     : (currLang.defaultMarket || 'us');
 }
