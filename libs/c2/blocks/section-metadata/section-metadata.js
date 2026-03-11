@@ -52,6 +52,24 @@ export function handleBackground(div, section) {
   section.insertAdjacentElement('afterbegin', bgContainer);
 }
 
+function handleStagger(section) {
+  if (!section) return;
+
+  const isStaggerSupported = [...section.classList].some((cls) => cls.endsWith('-up') || cls === 'masonry-layout');
+  if (!isStaggerSupported) return;
+
+  const blocks = section.querySelectorAll(':scope > div:not([class*="metadata"])');
+  if (!blocks.length) return;
+
+  const staggerClasses = ['stagger-ltr', 'stagger-rtl'];
+  blocks.forEach((block) => { block.classList.remove(...staggerClasses.map((cls) => `parallax-${cls}`)); });
+  const staggerClass = staggerClasses.find((cls) => section.classList.contains(cls));
+
+  if (staggerClass) {
+    blocks.forEach((block) => { block.classList.add(`parallax-${staggerClass}`); });
+  }
+}
+
 export async function handleStyle(text, section) {
   if (!text || !section) return;
 
@@ -65,6 +83,8 @@ export async function handleStyle(text, section) {
   if (styleSets.length === 1) {
     const styles = styleSets[0];
     section.classList.add(...styles);
+    handleStagger(section);
+
     return;
   }
 
@@ -94,6 +114,7 @@ export async function handleStyle(text, section) {
     // Apply active style set
     const activeStyles = styleSets[activeIndex];
     section.classList.add(...activeStyles);
+    handleStagger(section);
   };
 
   // Apply initial styles
