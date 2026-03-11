@@ -26,10 +26,7 @@ export default {
       title: '',
       text: 'Welcome! Thank you for trying out this initial release. The experience is still evolving and will continue to improve over time.',
     },
-    productCard: {
-      actionButtonSize: 'S',
-      useLogo: true,
-    },
+    productCard: { actionButtonSize: 'S' },
     disclaimer: { attachWithInput: false },
     responsive: {
       breakpoints: {
@@ -324,9 +321,8 @@ export default {
     '--product-card-border-width': '1px',
     '--product-card-button-font-size': '15px',
     '--product-card-button-position': 'end',
-    '--product-card-description-font-size': '14px',
     '--product-card-max-width': '378.66px',
-    '--product-card-title-font-size': '20px',
+    '--product-card-title-font-size': '24px',
     '--product-card-title-font-weight': '700',
     '--prompt-pill-container-padding': '0px 11px',
     '--prompt-pill-container-list-gap': '10px',
