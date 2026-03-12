@@ -846,7 +846,8 @@ p {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [class*="parallax-"] {
+  [class*="parallax-"],
+  [class*="parallax-"] :is(h1, h2, h3, h4, h5, h6, p, span, a) {
     animation: none !important;
   }
 }
@@ -861,6 +862,13 @@ p {
   --parallax-range-end-length: 25%;
   margin-bottom: -48vh !important;
   margin-top: -40px;
+  view-timeline-name: --parallax-fast;
+
+  & :is(h1, h2, h3, h4, h5, h6, p, span, a) {
+    animation: text-reveal-up ease-out both;
+    animation-timeline: --parallax-fast;
+    animation-range: cover 0% cover 20%;
+  }
 }
 
 .section:has(+ .section.parallax-move-up-fast) {
@@ -881,6 +889,11 @@ p {
 @keyframes fade-to-dark {
   from { opacity: 0; }
   to { opacity: 0.75; }
+}
+
+@keyframes text-reveal-up {
+  from { margin-top: 40px; }
+  to { margin-top: 0; }
 }
 
 @keyframes squish-text {
