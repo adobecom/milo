@@ -1,22 +1,43 @@
+import locales from '../../utils/locales.js';
 import { createTag } from '../../utils/utils.js';
 
-const LOCALE_LANGUAGE_LABELS = {
-  br: 'Portuguese',
-  ca: 'English',
-  ca_fr: 'French',
-  ch_de: 'German',
-  ch_fr: 'French',
-  cn: 'English',
-  dk: 'English',
-  fi: 'English',
-  la: 'Spanish',
-  mena_en: 'English',
-  nl: 'English',
-  no: 'English',
-  nz: 'English',
-  se: 'English',
-  sg: 'English',
-  th_en: 'English',
+const LANGUAGE_LABELS = {
+  ar: 'Arabic',
+  cs: 'Czech',
+  da: 'Danish',
+  de: 'German',
+  el: 'Greek',
+  en: 'English',
+  es: 'Spanish',
+  et: 'Estonian',
+  fi: 'Finnish',
+  fil: 'Filipino',
+  fr: 'French',
+  he: 'Hebrew',
+  hi: 'Hindi',
+  hu: 'Hungarian',
+  id: 'Indonesian',
+  in: 'Indonesian',
+  it: 'Italian',
+  ja: 'Japanese',
+  ko: 'Korean',
+  lt: 'Lithuanian',
+  lv: 'Latvian',
+  ms: 'Malay',
+  nl: 'Dutch',
+  no: 'Norwegian',
+  pl: 'Polish',
+  pt: 'Portuguese',
+  ro: 'Romanian',
+  ru: 'Russian',
+  sk: 'Slovak',
+  sl: 'Slovenian',
+  sv: 'Swedish',
+  th: 'Thai',
+  tr: 'Turkish',
+  uk: 'Ukrainian',
+  vi: 'Vietnamese',
+  zh: 'Chinese',
 };
 
 function getLocaleFromQueryIndexUrl(indexUrl) {
@@ -29,15 +50,11 @@ function getLocaleFromQueryIndexUrl(indexUrl) {
 }
 
 function getLanguageLabel(locale) {
-  if (LOCALE_LANGUAGE_LABELS[locale]) return LOCALE_LANGUAGE_LABELS[locale];
+  const ietf = locales[locale]?.ietf;
+  if (!ietf) return 'English';
 
-  const [, language] = locale.split('_');
-  if (language) {
-    const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
-    return languageNames.of(language) || language.toUpperCase();
-  }
-
-  return 'English';
+  const languageCode = ietf.toLowerCase().split('-')[0];
+  return LANGUAGE_LABELS[languageCode] || languageCode.toUpperCase();
 }
 
 function getUrlList(cell) {

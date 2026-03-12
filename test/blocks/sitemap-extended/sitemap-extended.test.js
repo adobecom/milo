@@ -53,6 +53,17 @@ const mockIndexResponses = {
       },
     ],
   },
+  'https://stage--da-bacom--adobecom.aem.live/dk/query-index.json?offset=0&limit=500': {
+    total: 1,
+    offset: 0,
+    limit: 500,
+    data: [
+      {
+        path: '/dk/resources/eksempel.html',
+        title: 'Dansk Eksempel',
+      },
+    ],
+  },
 };
 
 describe('Sitemap Extended', () => {
@@ -80,11 +91,12 @@ describe('Sitemap Extended', () => {
     const items = block.querySelectorAll('.sitemap-extended-item');
 
     expect(block).to.exist;
-    expect(items).to.have.length(3);
+    expect(items).to.have.length(4);
     expect([...items].map((item) => item.querySelector('summary').textContent.trim())).to.deep.equal([
       'Brazil',
       'Canada',
       'Switzerland',
+      'Denmark',
     ]);
   });
 
@@ -106,5 +118,12 @@ describe('Sitemap Extended', () => {
 
     expect(frenchLink.textContent.trim()).to.equal('Bonjour Le Monde');
     expect(germanLink.textContent.trim()).to.equal('Hallo Welt');
+  });
+
+  it('derives non-English language labels from locales.js without Intl', () => {
+    const denmark = [...document.querySelectorAll('.sitemap-extended-item')]
+      .find((item) => item.querySelector('summary').textContent.trim() === 'Denmark');
+
+    expect(denmark.querySelector('.language-group h4').textContent.trim()).to.equal('Danish');
   });
 });
