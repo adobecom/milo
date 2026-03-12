@@ -241,9 +241,7 @@ function createDropdown(
     type: 'button',
     tabindex: '0',
   });
-  button.innerHTML = showGlobe
-    ? `${GLOBE_SVG}<span>${label}</span><span class="market-selector-arrow"></span>`
-    : `<span>${label}</span><span class="market-selector-arrow"></span>`;
+  button.innerHTML = `${showGlobe ? GLOBE_SVG : ''}<span>${label}</span>`;
 
   const popover = createTag('div', { class: 'market-selector-popover' });
   const dragHandle = createTag('div', { class: 'market-selector-drag-handle' });

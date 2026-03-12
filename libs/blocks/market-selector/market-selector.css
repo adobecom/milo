@@ -23,10 +23,6 @@
   transition: color 0.2s;
 }
 
-.market-selector-button:hover {
-  color: var(--color-gray-700);
-}
-
 .market-selector-button span {
   max-width: 200px;
   white-space: nowrap;

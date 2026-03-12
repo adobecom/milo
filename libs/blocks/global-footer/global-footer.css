@@ -101,13 +101,13 @@
   fill: var(--feds-color-link);
 }
 
-.feds-regionPicker:hover {
+.feds-regionPicker:hover, .market-selector-button:hover {
   color: var(--feds-color-link--hover);
   border-color: var(--feds-color-link--hover);
   fill: var(--feds-color-link--hover);
 }
 
-.feds-regionPicker:after {
+.feds-regionPicker:after, .market-selector-button:after {
   width: 6px;
   height: 6px;
   border-width: 0 1px 1px 0;
@@ -119,7 +119,7 @@
   content: "";
 }
 
-.feds-regionPicker[aria-expanded = "true"]:after {
+.feds-regionPicker[aria-expanded = "true"]:after, .market-selector-button[aria-expanded = "true"]:after {
   transform: rotateZ(-135deg);
 }
 
