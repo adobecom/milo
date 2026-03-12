@@ -867,7 +867,7 @@ p {
   & :is(h1, h2, h3, h4, h5, h6, p, span, a) {
     animation: text-reveal-up ease-out both;
     animation-timeline: --parallax-fast;
-    animation-range: cover 0% cover 20%;
+    animation-range: cover 0% cover 15%;
   }
 }
 
@@ -892,13 +892,8 @@ p {
 }
 
 @keyframes text-reveal-up {
-  from { margin-top: 40px; }
-  to { margin-top: 0; }
-}
-
-@keyframes squish-text {
-  from { transform: scaleY(1); }
-  to { transform: scaleY(0.9); }
+  from { line-height: 3; }
+  to { line-height: inherit; }
 }
 
 .parallax-scale-up {
