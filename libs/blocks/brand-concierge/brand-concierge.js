@@ -138,7 +138,6 @@ async function openSusiLightModal() {
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
     const token = detail;
-    // console.log('SUSI Light: on-token (successful auth), token received', token);
     if (!bcToken) {
       bcToken = token;
       const mountEl = document.getElementById(mountId);
@@ -160,6 +159,7 @@ async function openSusiLightModal() {
   const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
   const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
   const fragment = new DocumentFragment();
+
   fragment.append(title, wrapper);
   await getModal(null, {
     id: SUSI_MODAL_ID,
@@ -173,6 +173,7 @@ async function openChatModal(initialMessage, el) {
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
   const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel()]);
   const mountEl = createTag('div', { id: mountId });
+
   if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
@@ -188,9 +189,11 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   updateModalHeight();
+
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
   const submitButton = el.querySelector('.input-field-button');
+
   if (textareaWrapper && textarea && submitButton) {
     textarea.value = '';
     submitButton.disabled = true;
@@ -198,9 +201,9 @@ async function openChatModal(initialMessage, el) {
   }
 
   const { env, locale } = getConfig();
-  // const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
-  // const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
-  const src = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const src = env.name === 'prod'
+    ? 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js'
+    : 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   await loadScript(src);
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -208,7 +211,6 @@ async function openChatModal(initialMessage, el) {
   const useTestInstance = env.name !== 'prod' && (testParam === 'cts' || testParam === 'cjm');
   const instanceName = useTestInstance ? 'alloy2' : 'alloy';
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
-
   const surfaceURL = window.location.href;
   const { userAgent, language } = window.navigator;
 
@@ -218,9 +220,6 @@ async function openChatModal(initialMessage, el) {
         type: 'auth',
         payload: { token: bcToken },
       };
-      console.log('onBeforeEventSend', content);
-    } else {
-      console.log('no token', content);
     }
 
     content.xdm = {
@@ -245,7 +244,6 @@ async function openChatModal(initialMessage, el) {
   }
 
   mountEl.addEventListener('bc:cta-action', ({ detail }) => {
-    // console.log('bc:cta-action', detail);
     if (detail?.action === 'sign-in') {
       openSusiLightModal();
     }
@@ -315,6 +313,7 @@ function decorateHeader(el, header) {
   const hTag = header.querySelector('h1, h2, h3, h4, h5, h6');
   const subTitle = header.querySelector('p');
   const headerSection = createTag('section', { class: 'bc-header' });
+
   if (hTag) {
     hTag.classList.add('bc-header-title');
     headerSection.append(hTag);
@@ -326,6 +325,7 @@ function decorateHeader(el, header) {
   if (!hTag && !subTitle) {
     headerSection.append(createTag('p', { class: 'bc-header-subtitle' }, header.textContent.trim()));
   }
+
   el.append(headerSection);
   el.removeChild(header);
 }
@@ -333,6 +333,7 @@ function decorateHeader(el, header) {
 function decorateCards(el, cards) {
   const cardSection = createTag('section', { class: 'bc-prompt-cards' });
   const cardRows = cards.querySelectorAll(':scope > div');
+
   cardRows.forEach((card) => {
     const cardImage = card.querySelector('picture');
     const cardText = createTag('div', { class: 'prompt-card-text' }, `${cardIcon} <p>${card.textContent.trim()}</p>`);
@@ -369,7 +370,9 @@ function decorateInput(el, input) {
     tabindex: 0,
   }, `${aiChatIcon}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, chatLabelText);
+
   fieldLabel.append(fieldLabelToolTip);
+
   const fieldInput = createTag('textarea', {
     id: 'bc-input-field',
     rows: 1,
@@ -383,6 +386,7 @@ function decorateInput(el, input) {
   }, submitIcon);
   const textareaWrapper = createTag('div', { class: 'bc-textarea-grow-wrap' }, fieldInput);
   const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, fieldLabelToolTip, textareaWrapper, fieldButton]);
+
   fieldSection.append(fieldContainer);
   el.append(fieldSection);
   el.removeChild(input);
@@ -434,6 +438,7 @@ function decorateFloatingButton(el) {
 
   const mainElement = document.querySelector('main');
   const gnavElement = document.querySelector('header.global-navigation');
+
   const handleScroll = (target) => {
     const mainHeight = mainElement.scrollHeight;
     const gnavHeight = gnavElement.offsetHeight;
@@ -533,8 +538,11 @@ export default async function init(el) {
   }
 
   // Testing only: Remove before contributing
-  const button = document.createElement('button');
-  button.textContent = 'Click me to open SUSI Light (testing only)';
-  button.onclick = openSusiLightModal;
-  el.appendChild(button);
+  const { env } = getConfig();
+  if (env.name !== 'prod') {
+    const button = document.createElement('button');
+    button.textContent = 'Click me to open SUSI Light (testing only)';
+    button.onclick = openSusiLightModal;
+    el.appendChild(button);
+  }
 }
