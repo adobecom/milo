@@ -197,7 +197,7 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  const { env } = getConfig();
+  const { env, locale } = getConfig();
   // const base = env.name === 'prod' ? 'experience.adobe.net' : 'experience-stage.adobe.net';
   // const src = `https://${base}/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js`;
   const src = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
@@ -229,6 +229,7 @@ async function openChatModal(initialMessage, el) {
         browserDetails: { userAgent },
         _dc: { language },
       },
+      homeAddress: { region: locale.region },
     };
   };
 
