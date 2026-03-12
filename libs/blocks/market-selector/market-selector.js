@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import {
   createTag,
   getConfig,
@@ -10,6 +11,24 @@ import { getMarketConfig, getValidatedMarket } from '../../utils/market.js';
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const GLOBE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="market-selector-globe"><path d="M10 19C14.9706 19 19 14.9706 19 10C19 5.02944 14.9706 1 10 1C5.02944 1 1 5.02944 1 10C1 14.9706 5.02944 19 10 19Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 1C12.25 3.5 13.5 6.5 13.5 10C13.5 13.5 12.25 16.5 10 19C7.75 16.5 6.5 13.5 6.5 10C6.5 6.5 7.75 3.5 10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const SEARCH_ICON_INNER = '<path d="M14.8243 13.9758L10.7577 9.90923C11.5332 8.94809 12 7.72807 12 6.40005C12 3.31254 9.48755 0.800049 6.40005 0.800049C3.31254 0.800049 0.800049 3.31254 0.800049 6.40004C0.800049 9.48755 3.31254 12 6.40005 12C7.72807 12 8.9481 11.5331 9.90922 10.7577L13.9758 14.8243C14.093 14.9414 14.2461 15 14.4 15C14.5539 15 14.7071 14.9414 14.8243 14.8243C15.0586 14.5899 15.0586 14.2102 14.8243 13.9758ZM6.40005 10.8C3.97426 10.8 2.00005 8.82582 2.00005 6.40004C2.00005 3.97426 3.97426 2.00004 6.40005 2.00004C8.82583 2.00004 10.8 3.97426 10.8 6.40004C10.8 8.82582 8.82583 10.8 6.40005 10.8Z" fill="#666"/>';
+
+function sendAnalyticsEvent(eventName, type = 'click') {
+  if (window._satellite?.track) {
+    window._satellite.track('event', {
+      xdm: {},
+      data: {
+        eventType: 'web.webinteraction.linkClicks',
+        web: {
+          webInteraction: {
+            name: eventName,
+            linkClicks: { value: 1 },
+            type,
+          },
+        },
+      },
+    });
+  }
+}
 
 let miloLangIsKeyboard = false;
 document.addEventListener('keydown', (e) => {
@@ -209,6 +228,8 @@ function createDropdown(
   isSelected,
   filterOptions,
   showGlobe,
+  analyticsLabel,
+  getAnalyticsSelectEventName,
 ) {
   const container = createTag('div', { class: 'market-selector-dropdown' });
   const button = createTag('button', {
@@ -269,6 +290,7 @@ function createDropdown(
     if (btn) btn.setAttribute('aria-expanded', 'false');
     const listEl = popoverEl.querySelector('.market-selector-list');
     if (listEl) listEl.removeAttribute('aria-activedescendant');
+    if (analyticsLabel) sendAnalyticsEvent(`${analyticsLabel}:dismissed`, 'dismissal');
   };
 
   const renderItems = (filteredItems) => {
@@ -311,6 +333,10 @@ function createDropdown(
       a.addEventListener('click', (e) => {
         if (e.ctrlKey || e.metaKey) return;
         e.preventDefault();
+        if (getAnalyticsSelectEventName) {
+          const eventName = getAnalyticsSelectEventName(item);
+          if (eventName) sendAnalyticsEvent(eventName);
+        }
         onSelect(item);
         button.querySelector('span').textContent = item.label;
         closePopoverElement(popover);
@@ -329,6 +355,7 @@ function createDropdown(
     if (isOpen) {
       closePopoverElement(popover);
     } else {
+      if (analyticsLabel) sendAnalyticsEvent(`${analyticsLabel}:opened`);
       document.querySelectorAll('.market-selector-popover[data-open="true"]').forEach(closePopoverElement);
       popover.style.display = 'block';
       popover.dataset.open = 'true';
@@ -468,6 +495,8 @@ export default async function init(block) {
     (item) => (item.value ? `/${item.value}` : '') === currentPrefix,
     filterLang,
     true,
+    'language-selector',
+    (item) => `language-switch:${item.value || 'us'}`,
   );
 
   const marketDropdown = createDropdown(
@@ -479,6 +508,8 @@ export default async function init(block) {
     (item) => item.value === currentMarketCode,
     filterMarket,
     false,
+    'market-selector',
+    (item) => `market-switch:${item.value}`,
   );
 
   const wrapper = createTag('div', { class: 'market-selector-wrapper' });
