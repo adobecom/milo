@@ -5,6 +5,18 @@
   src: local('Arial Bold'), local('Arial-BoldMT'), local('ArialBold');
 }
 
+@property --grid-margin-width {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 24px;
+}
+
+@property --grid-max-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 1440px;
+}
+
 :root {
   /* tokens.primitives */
   --s2a-color-gray-25: #fff;
@@ -386,7 +398,9 @@
 
   /* Grid sizes */
   --grid-columns: 6;
-  --grid-margin-width: 24px;
+  --grid-margin-width-base: 24px;
+  --grid-margin-width: var(--grid-margin-width-base);
+  --grid-margin-width-target: var(--grid-margin-width-base);
   --grid-max-width-default: 1440px;
   --grid-max-width-wide: 1920px;
   --grid-max-width-fluid: 2560px;
@@ -672,6 +686,7 @@ p {
 
 .container {
   --grid-max-width: var(--grid-max-width-default);
+  --grid-max-width-target: var(--grid-max-width-default);
   --grid-content-width: var(--grid-max-width);
   --grid-padding: max(
     var(--grid-margin-width),
@@ -684,6 +699,7 @@ p {
 
   &.wide {
     --grid-max-width: var(--grid-max-width-wide);
+    --grid-max-width-target: var(--grid-max-width-wide);
   }
 
   &.fluid {
@@ -901,8 +917,15 @@ p {
 }
 
 @keyframes enable-grid-parallax {
-  from { padding-inline: 0; }
-  to { padding-inline: var(--grid-padding); }
+  from {
+    --grid-max-width: var(--grid-max-width-fluid);
+    --grid-margin-width: 0px;
+  }
+
+  to {
+    --grid-max-width: var(--grid-max-width-target);
+    --grid-margin-width: var(--grid-margin-width-target);
+  }
 }
 
 .dark {
@@ -949,7 +972,7 @@ p {
 
     /* Grid definitions */
     --grid-columns: 12;
-    --grid-margin-width: 8.333%;
+    --grid-margin-width-base: 8.333%;
   }
 
   .container {

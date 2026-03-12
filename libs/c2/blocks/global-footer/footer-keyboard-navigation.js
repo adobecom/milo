@@ -5,6 +5,7 @@ export const KEYBOARD_DELAY = 8000;
 const selectors = {
   globalFooterTag: 'footer',
   globalFooter: '.global-footer',
+  link: 'a',
   menuContent: '.feds-menu-content',
   featuredProducts: '.feds-featuredProducts',
   languagePicker: '.language-dropdown',
@@ -268,6 +269,13 @@ class FooterKeyboardNavigation {
 
   onKeyDown = (e) => {
     if (!e.target.closest(selectors.globalFooter)) return;
+
+    const linkTrigger = e.target.closest(selectors.link);
+    if (linkTrigger && (e.code === 'Space' || e.code === 'Enter')) {
+      e.preventDefault();
+      linkTrigger.click();
+      return;
+    }
 
     if (this.isDesktopForFooter()) {
       if (e.target.closest(selectors.languagePicker)) return;
