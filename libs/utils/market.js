@@ -37,7 +37,5 @@ export async function getValidatedMarket() {
   const market = detectedMarket || currLang.defaultMarket || 'us';
   const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
   const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
-  return config.markets?.some((marketItem) => marketItem.marketCode === validated)
-    ? validated
-    : (currLang.defaultMarket || 'us');
+  return validated || 'us';
 }
