@@ -76,6 +76,11 @@
   flex-direction: column;
   min-height: 240px;
 
+  > :nth-child(1) {
+    flex-shrink: 0;
+    margin-bottom: var(--s2a-spacing-2xl);
+  }
+
   /* Title */
   > :nth-child(2) {
     margin-top: auto;
@@ -109,6 +114,7 @@
   border-radius: var(--s2a-border-radius-16);
   overflow: hidden;
   position: relative;
+  height: 100%;
 
   &:hover .explore-card-background img,
   &:hover .explore-card-background .video-container,

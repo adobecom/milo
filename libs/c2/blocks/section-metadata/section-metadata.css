@@ -79,6 +79,15 @@
   &.masonry-responsive {
     display: grid;
   }
+
+  &.product-grid[class*='-up'] {
+    align-items: stretch;
+    grid-auto-rows: 1fr;
+  }
+
+  &.peek-background > div:nth-child(1 of :not(.section-background)) {
+    padding-bottom: calc(var(--s2a-spacing-4xl) * 7);
+  }
 }
 
 .section[class*='grid-width-'] {

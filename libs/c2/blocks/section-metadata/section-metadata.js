@@ -203,4 +203,5 @@ export default async function init(el) {
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text[0], section);
+  if (metadata.preset) handleStyle(metadata.preset.text, section);
 }
