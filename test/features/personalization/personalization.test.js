@@ -5,7 +5,7 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  sendMktgTracking,
+  sendMktgTracking, getXLGListURL,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -526,5 +526,20 @@ describe('sendMktgTracking', () => {
     const config = getConfig();
     config.mep.consentState = { advertising: true };
     expect(sendMktgTracking('my-manifest', 'marketing decrease')).to.equal('my-manifest was served');
+  });
+});
+
+describe('getXLGListURL', () => {
+  it('should not fire if the citeria is not met', async () => {
+    const config = getConfig();
+
+    window.adobeIMS = { isSignedInUser: () => false };
+    expect(await getXLGListURL(config)).to.equal(undefined);
+  });
+  it('should return URL if the citeria is met', async () => {
+    const config = getConfig();
+
+    window.adobeIMS = { isSignedInUser: () => true };
+    expect(await getXLGListURL(config)).to.equal('https://main--federal--adobecom.aem.page/federal/assets/data/mep-xlg-tags.json?sheet=prod');
   });
 });
