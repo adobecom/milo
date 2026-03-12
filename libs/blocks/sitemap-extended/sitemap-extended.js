@@ -1,5 +1,5 @@
 import locales from '../../utils/locales.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 
 const LANGUAGE_LABELS = {
   ar: 'Arabic',
@@ -40,6 +40,24 @@ const LANGUAGE_LABELS = {
   zh: 'Chinese',
 };
 const QUERY_INDEX_URL_PATTERN = /https?:\/\/[^\s<>"']*query-index\.json(?:\?[^\s<>"']*)?/g;
+const COUNTRY_LABELS = {
+  en: {
+    br: 'Brazil',
+    ca: 'Canada',
+    ch: 'Switzerland',
+    cn: 'China',
+    dk: 'Denmark',
+    fi: 'Finland',
+    la: 'Latin America',
+    mena: 'Middle East & North Africa',
+    nl: 'Netherlands',
+    no: 'Norway',
+    nz: 'New Zealand',
+    se: 'Sweden',
+    sg: 'Singapore',
+    th: 'Thailand',
+  },
+};
 
 function getLocaleFromQueryIndexUrl(indexUrl) {
   try {
@@ -48,6 +66,20 @@ function getLocaleFromQueryIndexUrl(indexUrl) {
   } catch (e) {
     return '';
   }
+}
+
+function getCurrentPageLocale() {
+  const configLocale = getConfig()?.locale?.prefix?.replace(/^\//, '');
+  if (configLocale) return configLocale;
+
+  const [firstPathSegment] = window.location.pathname.split('/').filter(Boolean);
+  return firstPathSegment && locales[firstPathSegment] ? firstPathSegment : '';
+}
+
+function getCurrentLanguageCode() {
+  const currentLocale = getCurrentPageLocale();
+  const ietf = locales[currentLocale]?.ietf || 'en';
+  return ietf.toLowerCase().split('-')[0];
 }
 
 function getLanguageLabel(locale) {
@@ -61,6 +93,29 @@ function getLanguageLabel(locale) {
 function getUrlList(cell) {
   const matches = cell.innerHTML.match(QUERY_INDEX_URL_PATTERN) || [];
   return [...new Set(matches.map((url) => url.trim()))];
+}
+
+function getTokenList(cell) {
+  return [...new Set(
+    cell.textContent
+      .split(/[\s,]+/)
+      .map((token) => token.trim())
+      .filter(Boolean),
+  )];
+}
+
+function normalizeConfigKey(value) {
+  return value.toLowerCase().replace(/[^a-z]/g, '');
+}
+
+function getCountryLabel(countryCode) {
+  const currentLanguageCode = getCurrentLanguageCode();
+  const languageLabels = COUNTRY_LABELS[currentLanguageCode] || COUNTRY_LABELS.en;
+  return languageLabels[countryCode] || countryCode.toUpperCase();
+}
+
+function buildIndexUrl(baseUrl, geo, indexFile) {
+  return new URL(`${geo}/${indexFile}`, baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`).href;
 }
 
 function toPageUrl(indexUrl, item) {
@@ -169,7 +224,43 @@ async function createCountryItem(label, indexUrls) {
   return details;
 }
 
-function readRows(el) {
+function readCompactConfig(el) {
+  const rows = [...el.querySelectorAll(':scope > div')];
+  const config = rows.reduce((acc, row) => {
+    const [keyCell, valueCell] = row.children;
+    if (!keyCell || !valueCell) return acc;
+    acc[normalizeConfigKey(keyCell.textContent.trim())] = valueCell;
+    return acc;
+  }, {});
+
+  const baseUrl = config.baseurl?.textContent.trim();
+  const geos = config.geos ? getTokenList(config.geos) : [];
+  const indexFile = config.indexfile?.textContent.trim();
+
+  if (!baseUrl || !geos.length || !indexFile) return null;
+
+  const countries = [];
+  const countryMap = new Map();
+
+  geos.forEach((geo) => {
+    const countryCode = geo.split('_')[0];
+    const country = countryMap.get(countryCode) || {
+      label: getCountryLabel(countryCode),
+      indexUrls: [],
+    };
+
+    country.indexUrls.push(buildIndexUrl(baseUrl, geo, indexFile));
+
+    if (!countryMap.has(countryCode)) {
+      countryMap.set(countryCode, country);
+      countries.push(country);
+    }
+  });
+
+  return countries;
+}
+
+function readExplicitRows(el) {
   return [...el.querySelectorAll(':scope > div')]
     .map((row) => {
       const [labelCell, urlsCell] = row.children;
@@ -182,6 +273,10 @@ function readRows(el) {
       return { label, indexUrls };
     })
     .filter(Boolean);
+}
+
+function readRows(el) {
+  return readCompactConfig(el) || readExplicitRows(el);
 }
 
 export default async function init(el) {

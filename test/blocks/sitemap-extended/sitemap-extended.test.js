@@ -75,10 +75,33 @@ const mockIndexResponses = {
       },
     ],
   },
+  'https://stage--da-bacom--adobecom.aem.live/la/query-index.json?offset=0&limit=500': {
+    total: 1,
+    offset: 0,
+    limit: 500,
+    data: [
+      {
+        path: '/la/resources/example.html',
+        title: 'Latin America Example',
+      },
+    ],
+  },
+  'https://stage--da-bacom--adobecom.aem.live/mena_en/query-index.json?offset=0&limit=500': {
+    total: 1,
+    offset: 0,
+    limit: 500,
+    data: [
+      {
+        path: '/mena_en/resources/example.html',
+        title: 'MENA Example',
+      },
+    ],
+  },
 };
 
 describe('Sitemap Extended', () => {
   let init;
+  let blocks;
 
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -90,7 +113,8 @@ describe('Sitemap Extended', () => {
       json: async () => mockIndexResponses[url],
     }));
 
-    await init(document.querySelector('.sitemap-extended'));
+    blocks = [...document.querySelectorAll('.sitemap-extended')];
+    await Promise.all(blocks.map((block) => init(block)));
   });
 
   after(() => {
@@ -146,5 +170,23 @@ describe('Sitemap Extended', () => {
 
     expect(thailand.querySelector('.language-group h4').textContent.trim()).to.equal('English');
     expect(thailand.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/th_en/resources/example.html"]')).to.exist;
+  });
+
+  it('supports compact config rows based on base url, geos, and index file', () => {
+    const compactBlock = document.querySelectorAll('.sitemap-extended-container')[1];
+    const items = [...compactBlock.querySelectorAll('.sitemap-extended-item')];
+
+    expect(items.map((item) => item.querySelector('summary').textContent.trim())).to.deep.equal([
+      'Canada',
+      'Switzerland',
+      'Latin America',
+      'Middle East & North Africa',
+    ]);
+
+    const canada = items.find((item) => item.querySelector('summary').textContent.trim() === 'Canada');
+    expect([...canada.querySelectorAll('.language-group h4')].map((node) => node.textContent.trim())).to.deep.equal(['English', 'French']);
+
+    const latinAmerica = items.find((item) => item.querySelector('summary').textContent.trim() === 'Latin America');
+    expect(latinAmerica.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/la/resources/example.html"]')).to.exist;
   });
 });
