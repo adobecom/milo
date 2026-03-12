@@ -262,7 +262,6 @@ export const handleTwpButtons = (el, selector) => {
   }
 };
 
-
 function fireAnalyticsEvent(val) {
   window._satellite?.track?.('event', {
     documentUnloading: true,

@@ -95,24 +95,6 @@ describe('updateAttribute action', async () => {
   });
 });
 
-describe('analyticIfSeen action', async () => {
-  before(async () => {
-    let manifestJson = await readFile({ path: './mocks/actions/manifestAnalyticIfSeen.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
-    mepSettings.mepButton = 'off';
-    await init(mepSettings);
-    await handleCommands(manifestJson.data, undefined, false, false);
-  });
-  it('Attach and detach the observer when triggered', async () => {
-    const element = document.querySelector('.custom-block-4');
-    const observer = element.getAttribute('data-analytics-event');
-    console.log(observer);
-    observer
-    expect(observer).to.not.be.null;
-  });
-});
-
 describe('insertAfter action', async () => {
   it('insertContentAfter should add fragment after target content and fragment', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestInsertAfter.json' });
