@@ -2,11 +2,24 @@
 import {
   createTag,
   getConfig,
+  getFederatedContentRoot,
   getMetadata,
   setInternational,
   setMarket,
 } from '../../utils/utils.js';
 import { getMarketConfig, getValidatedMarket } from '../../utils/market.js';
+
+async function loadMarketsData() {
+  try {
+    const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/markets.json`);
+    if (!resp.ok) return [];
+    const json = await resp.json();
+    return json?.data || [];
+  } catch (e) {
+    window.lana?.log(`Market selector: failed to load markets data: ${e?.message}`);
+    return [];
+  }
+}
 
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const GLOBE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="market-selector-globe"><path d="M10 19C14.9706 19 19 14.9706 19 10C19 5.02944 14.9706 1 10 1C5.02944 1 1 5.02944 1 10C1 14.9706 5.02944 19 10 19Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 1C12.25 3.5 13.5 6.5 13.5 10C13.5 13.5 12.25 16.5 10 19C7.75 16.5 6.5 13.5 6.5 10C6.5 6.5 7.75 3.5 10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -110,6 +123,20 @@ function filterLang(item, term) {
   return labelMatch || englishMatch || ietfMatch;
 }
 
+function getLangKeyForMarket(currentLang) {
+  if (!currentLang) return 'en';
+  const langKey = currentLang.marketLangKey || currentLang.lang;
+  return (typeof langKey === 'string' && langKey.trim()) ? langKey.trim().toLowerCase() : 'en';
+}
+
+function getMarketLabel(market, langKey) {
+  const prefLangLabel = market[langKey];
+  if (typeof prefLangLabel === 'string' && prefLangLabel.trim()) return prefLangLabel.trim();
+  const enLabel = market.en;
+  if (typeof enLabel === 'string' && enLabel.trim()) return enLabel.trim();
+  return market.marketName || '';
+}
+
 function getCurrentMarket(markets, currentMarketCode, currentLang) {
   return markets.find((market) => market.marketCode === currentMarketCode)
     || markets.find((market) => market.marketCode === currentLang.defaultMarket)
@@ -141,7 +168,8 @@ function getLanguageOptions(languages, currentLang) {
 
 function handleLanguageSelect(langOption, config, currentMarketCode, opts = {}) {
   const { openInNewTab = false } = opts;
-  const selectedLang = config.languages.find((lang) => lang.prefix === langOption.value);
+  const selectedLang = config.languages.find((lang) => (lang.prefix || '') === (langOption.value || ''));
+  if (!selectedLang?.supportedRegions) return;
   const supportedRegions = selectedLang.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   const targetMarketCode = supportedRegions.includes(currentMarketCode.toLowerCase())
     ? currentMarketCode
@@ -210,10 +238,11 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts
 
 function getMarketOptions(markets, currentLang) {
   const supportedRegions = currentLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
+  const langKey = getLangKeyForMarket(currentLang);
   return markets
     .filter((market) => supportedRegions.includes(market.marketCode?.toLowerCase()))
     .map((market) => ({
-      label: market.marketName,
+      label: getMarketLabel(market, langKey),
       value: market.marketCode,
       marketCode: market.marketCode,
       prefix: market.prefix,
@@ -459,7 +488,10 @@ function createDropdown(
 
 export default async function init(block) {
   const config = await getMarketConfig();
-  if (!config || !config.markets?.length) return;
+  if (!config || !config.languages?.length) return;
+
+  const markets = await loadMarketsData();
+  if (!markets?.length) return;
 
   const placeholders = block.querySelectorAll('p');
   const labels = {
@@ -476,7 +508,7 @@ export default async function init(block) {
   )) || config.languages[0];
 
   const currentMarketCode = await getValidatedMarket();
-  const currentMarket = getCurrentMarket(config.markets, currentMarketCode, currentLang);
+  const currentMarket = getCurrentMarket(markets, currentMarketCode, currentLang);
 
   const onLanguageSelect = (langOption, opts) => (
     handleLanguageSelect(langOption, config, currentMarketCode, opts)
@@ -486,7 +518,9 @@ export default async function init(block) {
   );
 
   const languageOptions = getLanguageOptions(config.languages, currentLang);
-  const marketOptions = getMarketOptions(config.markets, currentLang);
+  const marketOptions = getMarketOptions(markets, currentLang);
+  const marketLangKey = getLangKeyForMarket(currentLang);
+  const currentMarketLabel = getMarketLabel(currentMarket, marketLangKey);
 
   const langDropdown = createDropdown(
     currentLang.group || currentLang.nativeName || currentLang.langName,
@@ -502,7 +536,7 @@ export default async function init(block) {
   );
 
   const marketDropdown = createDropdown(
-    currentMarket.marketName,
+    currentMarketLabel,
     labels.searchMarket,
     marketOptions,
     onMarketSelect,

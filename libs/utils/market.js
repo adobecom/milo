@@ -9,9 +9,8 @@ export async function getMarketConfig() {
     const resp = await fetch(getMarketsUrl());
     if (!resp.ok) throw new Error('Failed to load market config');
     const json = await resp.json();
-    const languages = json.languages?.data || [];
-    const markets = json.markets?.data || [];
-    marketConfig = { languages, markets };
+    const languages = json.languages?.data ?? json.data ?? [];
+    marketConfig = { languages };
     return marketConfig;
   } catch (e) {
     window.lana?.log(`Market Utils Error: ${e.message}`);
