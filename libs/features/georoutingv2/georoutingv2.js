@@ -44,10 +44,11 @@ const initC2Tabs = async (tabs) => {
    * and the c2 block is not yet ready. Once the c2 block is ready we can switch to it for
    * better semantics.
    */
-  const tabsStylePath = `${miloLibs || codeRoot}/blocks/tabs/tabs.css`;
   const results = await Promise.all([
     import('../../blocks/tabs/tabs.js'),
-    new Promise((resolve) => { loadStyle(tabsStylePath, resolve); }),
+    new Promise((resolve) => {
+      loadStyle(`${miloLibs || codeRoot}/blocks/tabs/tabs.css`, resolve);
+    }),
   ]);
   const { default: initTabs } = results[0];
   return initTabs(tabs);
@@ -374,8 +375,7 @@ async function showModal(details) {
   const { miloLibs, codeRoot } = config;
 
   const tabs = details.querySelector('.tabs');
-  const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
-  const sectionMetaC2Path = `${miloLibs || codeRoot}/c2/blocks/section-metadata/section-metadata.css`;
+  const sectionMetaPath = `${miloLibs || codeRoot}${isC2Page ? '/c2' : ''}/blocks/section-metadata/section-metadata.css`;
   const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
   const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
   let tabsPromise = null;
@@ -384,7 +384,7 @@ async function showModal(details) {
     tabsPromise,
     tabs
       ? new Promise((resolve) => {
-        loadStyle(isC2Page ? sectionMetaC2Path : sectionMetaPath, resolve);
+        loadStyle(sectionMetaPath, resolve);
       })
       : null,
     new Promise((resolve) => { loadStyle(georoutingPath, resolve); }),
@@ -411,7 +411,7 @@ export default async function loadGeoRouting(
   getMetadata = getMetadataFunc;
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
-  isC2Page = getMetadata('foundation') === 'c2';
+  isC2Page = getMetadata('foundation')?.toLowerCase() === 'c2';
 
   const v2JSON = (v2jsonPromise ?? import(`${conf.contentRoot ?? ''}/georoutingv2.json`))
     .then((r) => r.json())
