@@ -884,6 +884,12 @@ p {
     animation-range: entry 100% exit 50%;
     z-index: 2;
   }
+
+  /* & :is(h1, h2, h3, h4, h5, h6, p, span, a) {
+    animation: text-squish ease-out both;
+    animation-timeline: --parallax-fast;
+    animation-range: cover 0% cover 25%;
+  } */
 }
 
 @keyframes fade-to-dark {
@@ -893,7 +899,10 @@ p {
 
 @keyframes text-reveal-up {
   from { line-height: 3; }
-  to { line-height: inherit; }
+}
+
+@keyframes text-squish {
+  to { line-height: 0.8; }
 }
 
 .parallax-scale-up {
