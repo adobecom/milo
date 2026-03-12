@@ -124,8 +124,9 @@
 /** temp helpers */
 .before, .after {
   height: 0;
+  display: none;
   background-color: #000;
-  margin: 2rem 0;
+  margin: 0;
   color: white;
   text-align: center;
   vertical-align: middle;
@@ -187,21 +188,24 @@
 /* mobile only */
 @media (width < 768px) {
   .elastic-carousel-container {
+    --offset-adjuster: 60px;
+    --offset-scale: .8;
+    --last-offset: 12rem;
+
     height: auto;
     overflow: visible;
-    padding-bottom: 120px;
+    padding-bottom: calc(var(--last-offset) * var(--offset-scale));
+    margin-top: calc(var(--offset-adjuster)/10);
     .elastic-carousel {
       position: relative;
       flex-direction: column;
       left: unset;
       transform: unset;
       display: grid;
+      gap: 20vh;
       .elastic-carousel__item {
-        --offset-adjuster: 10%;
-        --offset-scale: .8;
-
         position: sticky;
-        top: 20%;
+        top: 10%;
         width: 100%;
         max-width: none;
         color: white;
@@ -211,11 +215,11 @@
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
         /** if we go with dynamic amount of slides, below stuff can be moved to JS */
-        &:nth-child(1) { --stack-offset: 0rem;  z-index:1; --stack-contrast: 0;   --stack-shrink: 4rem; }
-        &:nth-child(2) { --stack-offset: 3rem;  z-index:2; --stack-contrast: .25; --stack-shrink: 3rem; }
-        &:nth-child(3) { --stack-offset: 6rem;  z-index:3; --stack-contrast: .5;  --stack-shrink: 2rem; }
-        &:nth-child(4) { --stack-offset: 9rem;  z-index:4; --stack-contrast: .75; --stack-shrink: 1rem; }
-        &:nth-child(5) { --stack-offset: 12rem; z-index:5; --stack-contrast: 1;   --stack-shrink: 0rem; }
+        &:nth-child(1) { --stack-offset: 0rem;               z-index:1; --stack-contrast: 0;   --stack-shrink: 4rem; }
+        &:nth-child(2) { --stack-offset: 3rem;               z-index:2; --stack-contrast: .25; --stack-shrink: 3rem; }
+        &:nth-child(3) { --stack-offset: 6rem;               z-index:3; --stack-contrast: .5;  --stack-shrink: 2rem; }
+        &:nth-child(4) { --stack-offset: 9rem;               z-index:4; --stack-contrast: .75; --stack-shrink: 1rem; }
+        &:nth-child(5) { --stack-offset: var(--last-offset); z-index:5; --stack-contrast: 1;   --stack-shrink: 0rem; }
         &:last-child {
           height: auto;
         }
@@ -253,6 +257,15 @@
 
 
 /** animations */
+@keyframes paddingGrow {
+  0% {
+    padding-bottom: 0;
+  }
+
+  100% {
+    padding-bottom: calc(var(--last-offset) - var(--offset-adjuster));
+  }
+}
 @keyframes gapShrink {
   0% {
     margin-inline: var(--start-gap);
