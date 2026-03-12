@@ -1,0 +1,25 @@
+.sitemap-base {
+  display: grid;
+  gap: var(--spacing-m);
+}
+
+.sitemap-base.contained {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.sitemap-base > .sitemap-base-item {
+  min-width: 0;
+}
+
+@media (min-width: 600px) {
+  .sitemap-base {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .sitemap-base {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
