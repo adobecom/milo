@@ -215,7 +215,7 @@
 @media (width <= 767px) {
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
-    height: 640px;
+    height: 100vh;
   }
 
   .rm-title {

@@ -709,7 +709,7 @@ p {
 }
 
 .section.overlap {
-  margin-top: -156px;
+  margin-top: -140px;
   background-color: white;
   z-index: 9;
   overflow: hidden;
@@ -717,7 +717,7 @@ p {
   border-start-end-radius: var(--s2a-border-radius-24);
 
   @media (width >= 1024px) {
-    margin-top: -174px;
+    margin-top: -156px;
   }
 }
 
@@ -854,12 +854,10 @@ p {
 }
 
 .parallax-move-up-fast {
-  @media (width >= 768px) {
-    --parallax-translate-y: 100px;
-    --parallax-translate-y-end: -48vh;
-    --parallax-range-end-length: 35%;
-    margin-bottom: -48vh;
-  }
+  --parallax-translate-y: 100px;
+  --parallax-translate-y-end: -48vh;
+  --parallax-range-end-length: 35%;
+  margin-bottom: -48vh;
 }
 
 .parallax-scale-up {
