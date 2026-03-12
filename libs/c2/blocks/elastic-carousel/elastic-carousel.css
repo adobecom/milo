@@ -148,22 +148,22 @@
     position: sticky;
     top: 0%;
     /** animation */
-    animation: slideIn linear both;
-    animation-timeline: view();
-    animation-range: entry 0% exit 100%;
+    // animation: slideIn linear both;
+    // animation-timeline: view();
+    // animation-range: entry 0% exit 100%;
 
     .elastic-carousel {     
       .elastic-carousel__item {
         --start-gap: 3rem;
-        --end-gap: .5rem;
-        margin-inline: var(--start-gap);
+        --end-gap: .25rem;
+        margin-inline: var(--end-gap);
         will-change: margin-inline;
-        animation-name: gapShrink;
-        animation-timing-function: linear;
-        animation-fill-mode: both;
+        // animation-name: gapShrink;
+        // animation-timing-function: linear;
+        // animation-fill-mode: both;
 
-        animation-timeline: view();
-        animation-range: entry 0% exit 100%;
+        // animation-timeline: view();
+        // animation-range: entry 0% exit 100%;
 
         &:hover, 
         &:focus-visible {
