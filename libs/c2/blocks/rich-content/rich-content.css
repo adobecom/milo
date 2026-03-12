@@ -18,6 +18,7 @@
 
   &.dark {
     color: var(--s2a-color-gray-25);
+    background-color: unset;
   }
 
   .foreground .content {
