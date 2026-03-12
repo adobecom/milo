@@ -262,7 +262,7 @@ export const handleTwpButtons = (el, selector) => {
   }
 };
 
-/* c8 ignore start */
+
 function fireAnalyticsEvent(val) {
   window._satellite?.track?.('event', {
     documentUnloading: true,
@@ -290,7 +290,7 @@ function sendAnalytics(val) {
     }, { once: true });
   }
 }
-/* c8 ignore stop */
+
 
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
@@ -306,6 +306,7 @@ const COMMANDS = {
   },
   [COMMANDS_KEYS.analyticIfSeen]: (el, cmd) => {
     if (!el || !cmd.content) return;
+
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         sendAnalytics(`${cmd.content} was seen`);
