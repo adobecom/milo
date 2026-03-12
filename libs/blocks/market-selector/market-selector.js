@@ -139,7 +139,8 @@ function getLanguageOptions(languages, currentLang) {
   return languageOptions;
 }
 
-function handleLanguageSelect(langOption, config, currentMarketCode) {
+function handleLanguageSelect(langOption, config, currentMarketCode, opts = {}) {
+  const { openInNewTab = false } = opts;
   const selectedLang = config.languages.find((lang) => lang.prefix === langOption.value);
   const supportedRegions = selectedLang.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
   const targetMarketCode = supportedRegions.includes(currentMarketCode.toLowerCase())
@@ -155,11 +156,12 @@ function handleLanguageSelect(langOption, config, currentMarketCode) {
   handleEvent({
     prefix: selectedLang.prefix,
     link: { href: finalUrl.toString() },
-    callback: (url) => { window.location.href = url; },
+    callback: (url) => { window.open(url, openInNewTab ? '_blank' : '_self'); },
   });
 }
 
-function handleMarketSelect(marketItem, config, currentLang, currentPrefix) {
+function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts = {}) {
+  const { openInNewTab = false } = opts;
   const { locales } = getConfig();
   const currentLangPrefix = currentLang.prefix || 'en';
   const regionalPrefix = `${marketItem.value}_${currentLangPrefix.replace('/', '')}`;
@@ -198,11 +200,11 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix) {
     handleEvent({
       prefix: marketPrefix,
       link: { href: finalUrl.toString() },
-      callback: (url) => { window.location.href = url; },
+      callback: (url) => { window.open(url, openInNewTab ? '_blank' : '_self'); },
       fallbackUrl: currentUrlWithParam.toString(),
     });
   } else {
-    window.location.href = finalUrl.toString();
+    window.open(finalUrl.toString(), openInNewTab ? '_blank' : '_self');
   }
 }
 
@@ -331,15 +333,17 @@ function createDropdown(
       });
 
       a.addEventListener('click', (e) => {
-        if (e.ctrlKey || e.metaKey) return;
         e.preventDefault();
+        const openInNewTab = e.ctrlKey || e.metaKey;
         if (getAnalyticsSelectEventName) {
           const eventName = getAnalyticsSelectEventName(item);
           if (eventName) sendAnalyticsEvent(eventName);
         }
-        onSelect(item);
-        button.querySelector('span').textContent = item.label;
-        closePopoverElement(popover);
+        onSelect(item, { openInNewTab });
+        if (!openInNewTab) {
+          button.querySelector('span').textContent = item.label;
+          closePopoverElement(popover);
+        }
       });
 
       li.append(a);
@@ -476,11 +480,11 @@ export default async function init(block) {
   const currentMarketCode = await getValidatedMarket();
   const currentMarket = getCurrentMarket(config.markets, currentMarketCode, currentLang);
 
-  const onLanguageSelect = (langOption) => (
-    handleLanguageSelect(langOption, config, currentMarketCode)
+  const onLanguageSelect = (langOption, opts) => (
+    handleLanguageSelect(langOption, config, currentMarketCode, opts)
   );
-  const onMarketSelect = (marketItem) => (
-    handleMarketSelect(marketItem, config, currentLang, currentPrefix)
+  const onMarketSelect = (marketItem, opts) => (
+    handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts)
   );
 
   const languageOptions = getLanguageOptions(config.languages, currentLang);
