@@ -186,10 +186,14 @@
   }
 
   .rm-cards {
-    inset: auto 24px 124px;
+    inset: auto 24px 24px;
     gap: 4px;
     overflow-x: auto;
     scrollbar-width: none;
+  }
+
+  .section:has(+ .section.parallax-move-up-fast) .rm-cards {
+    inset: auto 24px 64px;
   }
 
   .rm-cards::-webkit-scrollbar {
