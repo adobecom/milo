@@ -876,11 +876,24 @@ p {
     animation-range: entry 100% exit 50%;
     z-index: 2;
   }
+
+  h1, h2, h3, h4, h5, h6, p, a, span {
+    animation-name: squish-text;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    animation-timeline: view();
+    animation-range: exit 0% exit 60%;
+  }
 }
 
 @keyframes fade-to-dark {
   from { opacity: 0; }
   to { opacity: 0.75; }
+}
+
+@keyframes squish-text {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(0.9); }
 }
 
 .parallax-scale-up {
