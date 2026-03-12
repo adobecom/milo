@@ -2,6 +2,11 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
+const relativeThailandIndexUrl = new URL(
+  '/th_en/sitemap-source.json?offset=0&limit=500',
+  window.location.href,
+).href;
+
 const mockIndexResponses = {
   'https://stage--da-bacom--adobecom.aem.live/br/query-index.json?offset=0&limit=500': {
     total: 1,
@@ -64,7 +69,7 @@ const mockIndexResponses = {
       },
     ],
   },
-  'https://stage--da-bacom--adobecom.aem.live/th_en/query-index.json?offset=0&limit=500': {
+  [relativeThailandIndexUrl]: {
     total: 1,
     offset: 0,
     limit: 500,
@@ -136,7 +141,7 @@ describe('Sitemap Extended', () => {
     ]);
   });
 
-  it('renders language groups inferred from each query-index locale', () => {
+  it('renders authored language groups when present', () => {
     const canada = [...document.querySelectorAll('.sitemap-extended-item')]
       .find((item) => item.querySelector('summary').textContent.trim() === 'Canada');
     const labels = [...canada.querySelectorAll('.language-group h4')].map((heading) => heading.textContent.trim());
@@ -157,19 +162,30 @@ describe('Sitemap Extended', () => {
     expect(germanLink.textContent.trim()).to.equal('Hallo Welt');
   });
 
-  it('derives non-English language labels from locales.js without Intl', () => {
+  it('does not render inferred language headings when none are authored', () => {
     const denmark = [...document.querySelectorAll('.sitemap-extended-item')]
       .find((item) => item.querySelector('summary').textContent.trim() === 'Denmark');
+    const thailand = [...document.querySelectorAll('.sitemap-extended-item')]
+      .find((item) => item.querySelector('summary').textContent.trim() === 'Thailand');
 
-    expect(denmark.querySelector('.language-group h4').textContent.trim()).to.equal('Danish');
+    expect(denmark.querySelector('.language-group h4')).not.to.exist;
+    expect(thailand.querySelector('.language-group h4')).not.to.exist;
+  });
+
+  it('extracts query-index urls from rendered text instead of stripped href values', () => {
+    const brazil = [...document.querySelectorAll('.sitemap-extended-item')]
+      .find((item) => item.querySelector('summary').textContent.trim() === 'Brazil');
+
+    expect(brazil.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/br/customer-success-stories/alpina-case-study.html"]')).to.exist;
   });
 
   it('extracts query-index urls from list markup as well as inline text', () => {
     const thailand = [...document.querySelectorAll('.sitemap-extended-item')]
       .find((item) => item.querySelector('summary').textContent.trim() === 'Thailand');
 
-    expect(thailand.querySelector('.language-group h4').textContent.trim()).to.equal('English');
-    expect(thailand.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/th_en/resources/example.html"]')).to.exist;
+    expect(
+      thailand.querySelector(`a[href="${window.location.origin}/th_en/resources/example.html"]`),
+    ).to.exist;
   });
   it('uses authored labels for non-country geo groups', () => {
     const latinAmerica = [...document.querySelectorAll('.sitemap-extended-item')]

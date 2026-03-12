@@ -1,70 +1,19 @@
-import locales from '../../utils/locales.js';
 import { createTag } from '../../utils/utils.js';
 
-const LANGUAGE_LABELS = {
-  ar: 'Arabic',
-  cs: 'Czech',
-  da: 'Danish',
-  de: 'German',
-  el: 'Greek',
-  en: 'English',
-  es: 'Spanish',
-  et: 'Estonian',
-  fi: 'Finnish',
-  fil: 'Filipino',
-  fr: 'French',
-  he: 'Hebrew',
-  hi: 'Hindi',
-  hu: 'Hungarian',
-  id: 'Indonesian',
-  in: 'Indonesian',
-  it: 'Italian',
-  ja: 'Japanese',
-  ko: 'Korean',
-  lt: 'Lithuanian',
-  lv: 'Latvian',
-  ms: 'Malay',
-  nl: 'Dutch',
-  no: 'Norwegian',
-  pl: 'Polish',
-  pt: 'Portuguese',
-  ro: 'Romanian',
-  ru: 'Russian',
-  sk: 'Slovak',
-  sl: 'Slovenian',
-  sv: 'Swedish',
-  th: 'Thai',
-  tr: 'Turkish',
-  uk: 'Ukrainian',
-  vi: 'Vietnamese',
-  zh: 'Chinese',
-};
-const QUERY_INDEX_URL_PATTERN = /https?:\/\/[^\s<>"']*query-index\.json(?:\?[^\s<>"']*)?/g;
-
-function getLocaleFromQueryIndexUrl(indexUrl) {
-  try {
-    const { pathname } = new URL(indexUrl);
-    return pathname.split('/').filter(Boolean)[0] || '';
-  } catch (e) {
-    return '';
-  }
-}
-
-function getLanguageLabel(locale) {
-  const ietf = locales[locale]?.ietf;
-  if (!ietf) return 'English';
-
-  const languageCode = ietf.toLowerCase().split('-')[0];
-  return LANGUAGE_LABELS[languageCode] || languageCode.toUpperCase();
-}
+const JSON_URL_PATTERN = /(?:https?:\/\/[^\s<>"']+|\/[^\s<>"']+)\.json(?:\?[^\s<>"']*)?/g;
 
 function getUrlList(cell) {
-  const matches = cell.innerHTML.match(QUERY_INDEX_URL_PATTERN) || [];
+  const matches = cell.innerHTML.match(JSON_URL_PATTERN) || [];
   return [...new Set(matches.map((url) => url.trim()))];
+}
+
+function getSectionContent(row) {
+  return row.querySelector(':scope > div') || row;
 }
 
 function toPageUrl(indexUrl, item) {
   if (item.url) return item.url;
+  if (item.href) return item.href;
 
   try {
     const parsedIndexUrl = new URL(indexUrl);
@@ -74,6 +23,15 @@ function toPageUrl(indexUrl, item) {
   }
 
   return item.path || '';
+}
+
+function normalizePayload(payload) {
+  return {
+    items: payload?.data || payload?.items || payload?.results || [],
+    total: payload?.total,
+    offset: payload?.offset,
+    limit: payload?.limit,
+  };
 }
 
 function cleanTitle(title) {
@@ -93,7 +51,7 @@ function toPageTitle(item) {
 }
 
 async function fetchQueryIndexPage(indexUrl, offset = 0, pageSize = 500) {
-  const url = new URL(indexUrl);
+  const url = new URL(indexUrl, window.location.href);
   url.searchParams.set('offset', offset);
   url.searchParams.set('limit', pageSize);
 
@@ -108,8 +66,8 @@ async function fetchAllQueryIndexItems(indexUrl) {
   let total = Infinity;
 
   while (offset < total) {
-    const payload = await fetchQueryIndexPage(indexUrl, offset);
-    const pageItems = payload.data || [];
+    const payload = normalizePayload(await fetchQueryIndexPage(indexUrl, offset));
+    const pageItems = payload.items || [];
     items.push(...pageItems);
 
     total = payload.total ?? pageItems.length;
@@ -122,13 +80,11 @@ async function fetchAllQueryIndexItems(indexUrl) {
   return items;
 }
 
-async function buildLanguageGroup(indexUrl) {
-  const locale = getLocaleFromQueryIndexUrl(indexUrl);
+async function buildLanguageGroup(indexUrl, labelOverride) {
   const items = await fetchAllQueryIndexItems(indexUrl);
 
   return {
-    locale,
-    label: getLanguageLabel(locale),
+    label: labelOverride || '',
     items: items.map((item) => ({
       href: toPageUrl(indexUrl, item),
       title: toPageTitle(item),
@@ -137,7 +93,6 @@ async function buildLanguageGroup(indexUrl) {
 }
 
 function createLanguageSection(group) {
-  const title = createTag('h4', null, group.label);
   const list = createTag('ul');
 
   group.items.forEach((item) => {
@@ -145,17 +100,22 @@ function createLanguageSection(group) {
     list.append(createTag('li', null, link));
   });
 
-  return createTag('section', { class: 'language-group' }, [title, list]);
+  const content = [list];
+  if (group.label) {
+    content.unshift(createTag('h4', null, group.label));
+  }
+
+  return createTag('section', { class: 'language-group' }, content);
 }
 
-async function createCountryItem(label, indexUrls) {
+async function createCountryItem(label, indexEntries) {
   const details = createTag('details', { class: 'sitemap-extended-item' });
   const summary = createTag('summary', null, label);
   const body = createTag('div', { class: 'sitemap-extended-body' });
 
-  const groups = await Promise.all(indexUrls.map(async (indexUrl) => {
+  const groups = await Promise.all(indexEntries.map(async ({ url, label: groupLabel }) => {
     try {
-      return await buildLanguageGroup(indexUrl);
+      return await buildLanguageGroup(url, groupLabel);
     } catch (e) {
       return null;
     }
@@ -169,18 +129,55 @@ async function createCountryItem(label, indexUrls) {
   return details;
 }
 
+function readLegacyRow(row) {
+  const [labelCell, urlsCell] = row.children;
+  if (!labelCell || !urlsCell) return null;
+
+  const label = labelCell.textContent.trim();
+  const indexEntries = getUrlList(urlsCell).map((url) => ({ url }));
+  if (!label || !indexEntries.length) return null;
+
+  return { label, indexEntries };
+}
+
+function readStructuredRow(row) {
+  const content = getSectionContent(row);
+  const labelHeading = content.querySelector('h3');
+  if (!labelHeading) return null;
+
+  const label = labelHeading.textContent.trim();
+  const indexEntries = [];
+  let currentGroupLabel = '';
+  let started = false;
+
+  [...content.children].forEach((child) => {
+    if (child === labelHeading) {
+      started = true;
+      return;
+    }
+
+    if (!started) return;
+
+    if (child.tagName === 'H4') {
+      currentGroupLabel = child.textContent.trim();
+      return;
+    }
+
+    getUrlList(child).forEach((url) => {
+      indexEntries.push({
+        url,
+        label: currentGroupLabel || undefined,
+      });
+    });
+  });
+
+  if (!label || !indexEntries.length) return null;
+  return { label, indexEntries };
+}
+
 function readRows(el) {
   return [...el.querySelectorAll(':scope > div')]
-    .map((row) => {
-      const [labelCell, urlsCell] = row.children;
-      if (!labelCell || !urlsCell) return null;
-
-      const label = labelCell.textContent.trim();
-      const indexUrls = getUrlList(urlsCell);
-      if (!label || !indexUrls.length) return null;
-
-      return { label, indexUrls };
-    })
+    .map((row) => readStructuredRow(row) || readLegacyRow(row))
     .filter(Boolean);
 }
 
@@ -190,7 +187,9 @@ export default async function init(el) {
   const rows = readRows(el);
   const list = createTag('div', { class: 'sitemap-extended-list foreground' });
 
-  const items = await Promise.all(rows.map((row) => createCountryItem(row.label, row.indexUrls)));
+  const items = await Promise.all(
+    rows.map((row) => createCountryItem(row.label, row.indexEntries)),
+  );
   items.forEach((item) => list.append(item));
 
   el.textContent = '';
