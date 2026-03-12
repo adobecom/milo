@@ -185,6 +185,8 @@ function readRows(el) {
 }
 
 export default async function init(el) {
+  if (el.dataset.blockStatus === 'loaded') return;
+
   const rows = readRows(el);
   const list = createTag('div', { class: 'sitemap-extended-list foreground' });
 
