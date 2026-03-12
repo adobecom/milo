@@ -71,6 +71,7 @@
   font-size: var(--s2a-typography-font-size-body-md);
   line-height: var(--s2a-typography-line-height-body-md);
   letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+  display: inline-flex;
 }
 
 /* Options (region selector, social, privacy) */
@@ -108,6 +109,7 @@
   border-color: var(--s2a-color-gray-25);
   fill: var(--s2a-color-gray-25);
   opacity: 0.6;
+  display: inline-flex;
 }
 
 .feds-regionPicker:hover {
@@ -226,6 +228,8 @@
 .global-footer .feds-footer-logo {
   line-height: 0;
   margin-top: var(--s2a-spacing-xl);
+  max-width: var(--grid-max-width-default);
+  margin: auto;
 }
 
 .global-footer .feds-footer-logo img {
@@ -282,7 +286,7 @@ span.feds-footer-privacyLink-divider {
 }
 
 .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-items {
-  padding: 0;
+  padding: 0 0 var(--s2a-spacing-lg) 0;
 }
 
 @media (min-width: 600px) {
@@ -390,6 +394,7 @@ span.feds-footer-privacyLink-divider {
     padding: 0;
     padding-bottom: var(--s2a-spacing-lg);
     margin: 0;
+    max-width: 120px;
   }
 
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child {
@@ -410,6 +415,7 @@ span.feds-footer-privacyLink-divider {
   .global-footer:not(.mobile) .feds-featuredProducts .feds-menu-headline {
     flex-shrink: 0;
     margin: 0;
+    max-width: none;
   }
 
   .global-footer:not(.mobile) .feds-featuredProducts .feds-navLink {

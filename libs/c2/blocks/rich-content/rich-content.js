@@ -9,32 +9,32 @@ function decorateText(el, config = ['lg', 'l']) {
   const body = `body-${config[0]}`;
   const bodyEls = el?.querySelectorAll('p:not([class])') || [];
   bodyEls.forEach((bodyEl) => bodyEl.classList.add(body));
-  decorateButtons(el, `button-${config[1]}`);
+  decorateButtons(el, config[1] && `button-${config[1]}`);
 }
 
-function decorateBackground(background) {
-  const hasBackground = background?.querySelector('img, video') || background?.textContent.trim();
-  if (!hasBackground) return;
-  background.classList.add('background');
-  if (hasBackground instanceof HTMLElement) return;
-  background.textContent = '';
-  background.style.background = hasBackground;
+const blockSizes = {
+  medium: 'md',
+  large: 'lg',
+};
+
+function getBlockSize(block) {
+  const defaultSize = 'large';
+  const size = Object.keys(blockSizes).find((key) => block.classList.contains(key));
+  return blockSizes[size] ?? blockSizes[defaultSize];
 }
 
-function decorate(block) {
+function getButtonSize(block) {
+  return [...block.classList].find((c) => c.includes('button'))?.split('-').pop();
+}
+
+function decorate(el, block) {
   const foreground = block.children[0];
-  const [content, background] = foreground?.children || [];
+  const content = foreground?.children[0];
   content?.classList.add('content');
-  foreground?.classList.add('container');
-  decorateBackground(background);
-  decorateText(content);
-}
-
-function playVideo(video) {
-  if (!video) return;
-  const { autoplay } = video;
-  if (!autoplay) return;
-  video.play().catch(() => {});
+  foreground?.classList.add('foreground');
+  const blockSize = getBlockSize(el);
+  const buttonSize = getButtonSize(el);
+  decorateText(content, [blockSize, buttonSize]);
 }
 
 function decorateMultiViewport(el, viewportContent) {
@@ -60,7 +60,6 @@ function decorateMultiViewport(el, viewportContent) {
   Object.entries(viewportContent).forEach(([viewport, value]) => {
     if (!viewportsPoints[viewport]) return;
     const { contentContainer, classes } = value;
-    const video = contentContainer.querySelector('video');
     const contentChildren = [...contentContainer.children];
     const mq = window.matchMedia(viewportsPoints[viewport]);
     const setContent = () => {
@@ -68,7 +67,6 @@ function decorateMultiViewport(el, viewportContent) {
       el.classList.remove(...allClasses);
       el.classList.add(...classes);
       el.replaceChildren(...contentChildren);
-      playVideo(video);
     };
     setContent();
     mq.addEventListener('change', setContent);
@@ -130,7 +128,7 @@ export default function init(el) {
   const viewPortConfig = getViewportConfig(el);
   Object.values(viewPortConfig).forEach((value) => {
     const { contentContainer } = value;
-    decorate(contentContainer);
+    decorate(el, contentContainer);
   });
   decorateMultiViewport(el, viewPortConfig);
 }

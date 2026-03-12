@@ -2,6 +2,7 @@
   --content-gap: var(--s2a-spacing-8);
 
   position: relative;
+  box-sizing: border-box;
 
   &.center {
     text-align: center;
@@ -10,10 +11,6 @@
   &.hero {
     height: 640px;
 
-    .container {
-      padding-top: var(--s2a-layout-sm);
-    }
-
     .eyebrow {
       color: var(--s2a-color-gray-25);
     }
@@ -21,30 +18,24 @@
 
   &.dark {
     color: var(--s2a-color-gray-25);
+    background-color: unset;
   }
 
-  .container .content {
+  .foreground .content {
     display: flex;
     align-items: flex-start;
     flex-direction: column;
     gap: var(--content-gap);
     position: relative;
-    z-index: 1;
-  }
+    z-index: 2;
 
-  &.center .container .content {
-    align-items: center;
-  }
-
-  .background {
-    position: absolute;
-    inset: 0;
-
-    img {
-      object-fit: cover;
-      width: 100%;
-      height: 100%;
+    [class*="body-"]:not(.action-area) {
+      max-width: 680px;
     }
+  }
+
+  &.center .foreground .content {
+    align-items: center;
   }
 
   .eyebrow {
@@ -60,26 +51,42 @@
   }
 }
 
+.section.has-background:has(.rich-content.hero) .section-background {
+  max-width: var(--grid-max-width);
+  margin: 0 auto;
+  z-index: 1;
+
+  img {
+    object-position: top center;
+  }
+}
+
+.section:not(.has-background) .rich-content.hero::after {
+  content: '';
+  position: absolute;
+  background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%);
+  inset: 0;
+}
+
+@media (width >= 768px) {
+  .rich-content .content [class*="body-"]:not(.action-area) {
+    min-width: 560px;
+    width: var(--grid-width-8);
+  }
+}
+
 @media (width >= 1024px) {
   .rich-content {
     &.hero {
       height: 1040px;
 
-      &.max-width-8 .container {
+      &.max-width-8 .foreground {
         --grid-content-width: var(--grid-width-8);
       }
 
-      &.max-width-10 .container {
+      &.max-width-10 .foreground {
         --grid-content-width: var(--grid-width-10);
       }
-
-      .container {
-        padding-top: var(--s2a-layout-xl); /* TODO: should likely be authorable */
-      }
-    }
-
-    &:not(.hero) .content [class*="body-"]:not(.action-area) {
-      max-width: 794px;
     }
 
     .action-area {
@@ -90,3 +97,18 @@
 
 @media (width >= 1440px) {
 }
+
+@media (width >= 1921px) {
+  .section.has-background:has(.rich-content.hero) .section-background::after {
+    content: '';
+    background: linear-gradient(90deg, #000 12%, rgba(0, 0, 0, 0.00) 50%, #000 88%), #FFF;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 100%;
+    z-index: -1;
+  }
+}
+

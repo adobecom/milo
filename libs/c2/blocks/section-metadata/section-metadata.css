@@ -3,6 +3,8 @@
 }
 
 .section {
+  --section-spacing-multiplier: 1;
+
   &.has-background {
     background-color: unset;
   }
@@ -24,14 +26,34 @@
     align-items: start;
   }
 
-  &.dark {
-    background-color: var(--s2a-color-gray-900);
-    color: var(--s2a-color-gray-25);
+  &.rounded-corners,
+  &.rounded-corners-top,
+  &.rounded-corners-bottom {
+    border-radius: var(--s2a-border-radius-lg);
+    overflow: clip;
+    z-index: 3;
+    margin-block: calc(-1 * var(--s2a-border-radius-lg));
   }
 
-  &.light {
-    background-color: var(--s2a-color-gray-25);
-    color: var(--s2a-color-gray-1000);
+  &.rounded-corners-top {
+    border-radius: var(--s2a-border-radius-lg) var(--s2a-border-radius-lg) 0 0;
+    margin-bottom: initial;
+  }
+
+  &.rounded-corners-bottom {
+    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+    margin-top: initial;
+  }
+
+  &.rounded-corners + .section,
+  &.rounded-corners-bottom + .section {
+    /* add spacing to top of next section to avoid content overlap */
+    &::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: calc(var(--s2a-border-radius-lg) * var(--section-spacing-multiplier));
+    }
   }
 
   &.masonry-layout {
