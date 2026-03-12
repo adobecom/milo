@@ -64,6 +64,17 @@ const mockIndexResponses = {
       },
     ],
   },
+  'https://stage--da-bacom--adobecom.aem.live/th_en/query-index.json?offset=0&limit=500': {
+    total: 1,
+    offset: 0,
+    limit: 500,
+    data: [
+      {
+        path: '/th_en/resources/example.html',
+        title: 'Thailand Example',
+      },
+    ],
+  },
 };
 
 describe('Sitemap Extended', () => {
@@ -91,12 +102,13 @@ describe('Sitemap Extended', () => {
     const items = block.querySelectorAll('.sitemap-extended-item');
 
     expect(block).to.exist;
-    expect(items).to.have.length(4);
+    expect(items).to.have.length(5);
     expect([...items].map((item) => item.querySelector('summary').textContent.trim())).to.deep.equal([
       'Brazil',
       'Canada',
       'Switzerland',
       'Denmark',
+      'Thailand',
     ]);
   });
 
@@ -125,5 +137,13 @@ describe('Sitemap Extended', () => {
       .find((item) => item.querySelector('summary').textContent.trim() === 'Denmark');
 
     expect(denmark.querySelector('.language-group h4').textContent.trim()).to.equal('Danish');
+  });
+
+  it('extracts query-index urls from list markup as well as inline text', () => {
+    const thailand = [...document.querySelectorAll('.sitemap-extended-item')]
+      .find((item) => item.querySelector('summary').textContent.trim() === 'Thailand');
+
+    expect(thailand.querySelector('.language-group h4').textContent.trim()).to.equal('English');
+    expect(thailand.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/th_en/resources/example.html"]')).to.exist;
   });
 });

@@ -39,6 +39,7 @@ const LANGUAGE_LABELS = {
   vi: 'Vietnamese',
   zh: 'Chinese',
 };
+const QUERY_INDEX_URL_PATTERN = /https?:\/\/[^\s<>"']*query-index\.json(?:\?[^\s<>"']*)?/g;
 
 function getLocaleFromQueryIndexUrl(indexUrl) {
   try {
@@ -58,13 +59,8 @@ function getLanguageLabel(locale) {
 }
 
 function getUrlList(cell) {
-  const links = [...cell.querySelectorAll('a[href]')].map((link) => link.href.trim()).filter(Boolean);
-  if (links.length) return links;
-
-  return cell.textContent
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
+  const matches = cell.innerHTML.match(QUERY_INDEX_URL_PATTERN) || [];
+  return [...new Set(matches.map((url) => url.trim()))];
 }
 
 function toPageUrl(indexUrl, item) {
