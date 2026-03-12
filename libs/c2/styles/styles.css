@@ -863,6 +863,26 @@ p {
   margin-top: -40px;
 }
 
+.section:has(+ .section.parallax-move-up-fast) {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: black;
+    opacity: 0;
+    pointer-events: none;
+    animation: fade-to-dark linear both;
+    animation-timeline: view();
+    animation-range: entry 100% exit 50%;
+    z-index: 2;
+  }
+}
+
+@keyframes fade-to-dark {
+  from { opacity: 0; }
+  to { opacity: 0.75; }
+}
+
 .parallax-scale-up {
   --parallax-scale: 0.9;
 }
