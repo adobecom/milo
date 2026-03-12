@@ -172,6 +172,7 @@ jobs:
       - name: Run poll-logs.js
         env:
           AEM_LIVE_ADMIN_TOKEN: ${{ secrets.AEM_LIVE_ADMIN_TOKEN_EVENTS_MILO }}
+          AEM_LIVE_DA_ADMIN_TOKEN: ${{ secrets.AEM_LIVE_ADMIN_TOKEN_DA_EVENTS_MILO }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ROLLING_IMPORT_ORG: "adobecom"
           ROLLING_IMPORT_REPO: "da-events"
