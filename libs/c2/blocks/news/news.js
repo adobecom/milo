@@ -1,24 +1,19 @@
-import { decorateTextOverrides } from '../../../utils/decorate.js';
-import { createTag, loadStyle, getConfig } from '../../../utils/utils.js';
+import { createTag } from '../../../utils/utils.js';
 
-const BLOCK_CLASS_ADDITIONS = ['con-block', 'container'];
+const BLOCK_CLASS_ADDITIONS = ['con-block', 'container']; // add these classes to block
 const SECTION_CLASS_TRIGGERS = [
   'stagger-ltr',
   'stagger-rtl',
   'three-up',
   'four-up',
   'parallax-move-up',
-  'parallax-scale-up',
-  'parallax-scale-down',
-  'parallax-blur',
-  'parallax-opacity',
-];
 
-function addStyle(filename) {
-  const { miloLibs, codeRoot } = getConfig();
-  const base = miloLibs || codeRoot;
-  loadStyle(`${base}/styles/${filename}.css`);
-}
+  /* Parallax classes that are not used for news */
+  // 'parallax-scale-up',
+  // 'parallax-scale-down',
+  // 'parallax-blur',
+  // 'parallax-opacity',
+];
 
 function formatHeader(row) {
   row.classList.add('news-headline');
@@ -43,26 +38,25 @@ export default async function init(el) {
   helperClasses.push(...sectionMatches);
 
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1) {
-    const [head, ...tail] = rows;
-    formatHeader(head);
-    rows = tail || rows;
-    rows.forEach((row) => {
-      row.classList.add('news-item');
-      const pTags = row.querySelectorAll('p');
-      pTags.forEach((p, indx) => {
-        if (indx === 0) p.classList.add('news-item-headline');
-        else if (p.querySelector('a')) {
-          if (p.querySelector('a').innerText.trim() === p.innerText.trim()) {
-            p.classList.add('news-item-link');
-            p.querySelector('a').classList.add('standalone-link');
-            if (el.classList.contains('quiet')) p.querySelector('a').classList.add('quiet');
-          }
-        } else p.classList.add('news-item-body');
-      });
+  if (rows.length === 1) return;
+  const [head, ...tail] = rows;
+  formatHeader(head);
+  rows = tail || rows;
+  rows.forEach((row) => {
+    row.classList.add('news-item');
+    const pTags = row.querySelectorAll('p');
+    pTags.forEach((p, indx) => {
+      const linkEl = p.querySelector('a');
+      if (indx === 0) p.classList.add('news-item-headline');
+      else if (linkEl && linkEl.innerText.trim() === p.innerText.trim()) {
+        p.classList.add('news-item-link');
+        linkEl.classList.add('standalone-link');
+        if (el.classList.contains('quiet')) linkEl.classList.add('quiet');
+      } else p.classList.add('news-item-body');
     });
-  }
+  });
 
+  // Transfer section classes to block or news-item containters
   if (helperClasses.length) {
     const upClass = helperClasses.find((val) => val.endsWith('-up')) || 'three-up';
     el.classList.add(upClass);
@@ -75,7 +69,4 @@ export default async function init(el) {
     const parallaxClasses = helperClasses.filter((val) => val.startsWith('parallax-'));
     if (parallaxClasses.length) parallaxClasses.forEach((cls) => el.classList.add(cls));
   }
-  decorateTextOverrides(el); // remove if not needed for text class names
-  if (el.matches('[class*="rounded-corners"]')) addStyle('rounded-corners');
-  if (el.matches('[class*="-lockup"]')) addStyle('iconography');
 }
