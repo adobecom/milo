@@ -291,7 +291,6 @@ function sendAnalytics(val) {
   }
 }
 
-
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
