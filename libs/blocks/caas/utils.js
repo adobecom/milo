@@ -684,6 +684,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
       tags: 'caas',
       severity: 'error',
     });
+    lingoSiteMapping.fromFallback = true;
   }
   return lingoSiteMapping;
 }
@@ -692,6 +693,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
   const localeArr = path.split('/');
   let langStr = 'en';
   let countryStr = 'xx';
+  let fromFallback = false;
   if (origin.toLowerCase() === 'news') {
     langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
     countryStr = LOCALES[localeArr[2]] ?? 'xx';
@@ -700,6 +702,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
     }
   } else {
     const mapping = await getLingoSiteLocale(origin, path, fqdn);
+    fromFallback = mapping.fromFallback === true;
     countryStr = LOCALES[mapping.country.toLowerCase()] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
@@ -709,6 +712,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
   return {
     country: countryStr.toLowerCase(),
     lang: langStr.toLowerCase(),
+    ...(fromFallback && { fromFallback: true }),
   };
 };
 
