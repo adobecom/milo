@@ -1,6 +1,12 @@
+/** helper classes */
 
+.disable-hover * {
+  pointer-events: none !important;
+}
+
+/** main classes */
 .elastic-carousel-container {
-  --elastic-carousel-transtions: all .25s ease;
+  --elastic-carousel-transtions: all .5s ease;
   --elastic-carousel-transtions-slow: all .3s ease;
   --elastic-carousel-container-height: 580px;
   --elastic-carousel-item-max-width: 294px;
@@ -9,7 +15,7 @@
   --slides: 5;
 
   position: relative;
-  overflow: hidden;
+  overflow: clip;
   max-width: var(--elastic-carousel-container-max-width);
   height: var(--elastic-carousel-container-height);
   margin: auto;
@@ -18,11 +24,10 @@
   display: flex;
   height: 100%;
   flex-direction: row;
-  gap: .5rem;
   position: absolute;
-  top: 50%;
+  top: 0%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   transition: var(--elastic-carousel-transtions);
 }
 
@@ -128,42 +133,43 @@
   padding: 20vh 0;
 }
 
+/** custom media rules */
 @media (width < 1700px) {
   .elastic-carousel {
     &.stick-left {
       left: 0;
-      transform: translate(0%, -50%);
+      transform: translateX(0%);
     }
     &.stick-right {
       left: 100%;
-      transform: translate(-100%, -50%);
+      transform: translateX(-100%);
     }
   }
 }
+
+/** desktop only */
 @media (width > 767px) {
   .before{
     height: 50vh;
   }
   .elastic-carousel-container {
-    position: sticky;
-    top: 0%;
-    /** animation */
-    // animation: slideIn linear both;
-    // animation-timeline: view();
-    // animation-range: entry 0% exit 100%;
-
-    .elastic-carousel {     
+    .elastic-carousel {
+     
+      --start-margin: 50%;
+      /** animation */
+      animation: slideIn linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+      
       .elastic-carousel__item {
-        --start-gap: 3rem;
+        --start-gap: 2rem;
         --end-gap: .25rem;
-        margin-inline: var(--end-gap);
-        will-change: margin-inline;
-        // animation-name: gapShrink;
-        // animation-timing-function: linear;
-        // animation-fill-mode: both;
 
-        // animation-timeline: view();
-        // animation-range: entry 0% exit 100%;
+        margin-inline: var(--start-gap);
+        will-change: margin-inline;
+        animation: gapShrink ease both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
 
         &:hover, 
         &:focus-visible {
@@ -171,6 +177,8 @@
             opacity: 1;
           }
         }
+        &:first-child { margin-left: 0 !important; }
+        &:last-child { margin-right: 0 !important; }
       }
     }
   }
@@ -244,25 +252,28 @@
 }
 
 
-
+/** animations */
 @keyframes gapShrink {
   0% {
     margin-inline: var(--start-gap);
   }
 
+  30% {
+    margin-inline: var(--end-gap);
+  }
   100% {
     margin-inline: var(--end-gap);
   }
 }
 @keyframes slideIn {
   0% {
-    transform: translatex(20%);
-    position: sticky;
+    margin-left: var(--start-margin);
   }
-
-  20% {
-    transform: translatex(0%);
-    position: relative;
+  30% {
+     margin-left: 0%;
+  }
+  100% {
+     margin-left: 0%;
   }
 }
 
