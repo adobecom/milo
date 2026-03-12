@@ -21,7 +21,7 @@ const mockIndexResponses = {
     data: [
       {
         path: '/ca/resources/example.html',
-        title: 'English Example',
+        title: 'English Example | Adobe',
       },
     ],
   },
@@ -120,6 +120,7 @@ describe('Sitemap Extended', () => {
     expect(labels).to.deep.equal(['English', 'French']);
     expect(canada.querySelector('.language-group a[href="https://stage--da-bacom--adobecom.aem.live/ca/resources/example.html"]')).to.exist;
     expect(canada.querySelector('.language-group a[href="https://stage--da-bacom--adobecom.aem.live/ca_fr/resources/exemple.html"]')).to.exist;
+    expect(canada.querySelector('.language-group a[href="https://stage--da-bacom--adobecom.aem.live/ca/resources/example.html"]').textContent.trim()).to.equal('English Example');
   });
 
   it('falls back to a title derived from the path when the query-index title is missing', () => {

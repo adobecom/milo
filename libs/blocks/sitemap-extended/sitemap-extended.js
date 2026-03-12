@@ -76,16 +76,20 @@ function toPageUrl(indexUrl, item) {
   return item.path || '';
 }
 
+function cleanTitle(title) {
+  return title.replace(/\s*\|.*$/, '').trim();
+}
+
 function toPageTitle(item) {
-  if (item.title) return item.title;
-  if (item.navtitle) return item.navtitle;
+  if (item.title) return cleanTitle(item.title);
+  if (item.navtitle) return cleanTitle(item.navtitle);
   if (!item.path) return 'Untitled';
 
   const path = item.path.replace(/\/$/, '').split('/').pop() || item.path;
-  return path
+  return cleanTitle(path
     .replace(/\.html?$/i, '')
     .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, (char) => char.toUpperCase()));
 }
 
 async function fetchQueryIndexPage(indexUrl, offset = 0, pageSize = 500) {
