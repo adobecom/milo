@@ -228,6 +228,8 @@
 .global-footer .feds-footer-logo {
   line-height: 0;
   margin-top: var(--s2a-spacing-xl);
+  max-width: var(--grid-max-width-default);
+  margin: auto;
 }
 
 .global-footer .feds-footer-logo img {
