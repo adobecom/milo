@@ -186,7 +186,7 @@
   }
 
   .rm-cards {
-    inset: auto 24px 24px;
+    inset: auto 24px 124px;
     gap: 4px;
     overflow-x: auto;
     scrollbar-width: none;
@@ -234,7 +234,7 @@
 @media (767px < width < 1280px) {
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
-    height: 810px;
+    height: 100vh;
   }
 
   .rm-title {

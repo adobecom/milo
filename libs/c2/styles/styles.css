@@ -709,12 +709,16 @@ p {
 }
 
 .section.overlap {
-  margin-top: -126px;
+  margin-top: -156px;
   background-color: white;
   z-index: 9;
   overflow: hidden;
   border-start-start-radius: var(--s2a-border-radius-24);
   border-start-end-radius: var(--s2a-border-radius-24);
+
+  @media (width >= 1024px) {
+    margin-top: -174px;
+  }
 }
 
 /* Section immediately after .section.overlap */
@@ -850,10 +854,12 @@ p {
 }
 
 .parallax-move-up-fast {
-  --parallax-translate-y: 100px;
-  --parallax-translate-y-end: -80px;
-  --parallax-range-end-length: 35%;
-  margin-bottom: -80px;
+  @media (width >= 768px) {
+    --parallax-translate-y: 100px;
+    --parallax-translate-y-end: -48vh;
+    --parallax-range-end-length: 35%;
+    margin-bottom: -48vh;
+  }
 }
 
 .parallax-scale-up {
