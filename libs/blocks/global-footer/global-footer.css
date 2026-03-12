@@ -202,6 +202,11 @@
   z-index: 1000;
 }
 
+[dir="rtl"] .market-selector-popover {
+  left: auto;
+  right: 0;
+}
+
 .search-container {
   padding: 8px 8px 6px;
 }
@@ -227,6 +232,11 @@
   height: 16px;
   margin-right: var(--spacing-xxs);
   flex-shrink: 0;
+}
+
+[dir="rtl"] .search-icon {
+  margin-right: 0;
+  margin-left: var(--spacing-xxs);
 }
 
 .search-input {
