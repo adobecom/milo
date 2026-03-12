@@ -479,7 +479,7 @@ function moveSlides(event, carouselElements) {
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
 
-  if (isHintingTablet || isHintingMobile) {
+  if (isHintingTablet(el) || isHintingMobile) {
     const video = activeSlide?.querySelector('video');
     /* c8 ignore start */
     if (video?.paused && video.readyState >= 2) {
