@@ -858,7 +858,7 @@ p {
 
 .parallax-move-up-fast {
   --parallax-translate-y-end: -48vh;
-  --parallax-range-end-length: 15%;
+  --parallax-range-end-length: 25%;
   margin-bottom: -48vh !important;
   margin-top: -40px;
 }
