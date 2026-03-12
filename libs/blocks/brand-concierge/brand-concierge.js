@@ -77,7 +77,7 @@ function waitForCondition(checkFn, timeout = 5000, interval = 100) {
  * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
  * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
  */
-function createSusiComponentForModal({
+export function createSusiComponentForModal({
   authParams, config, variant, redirectUrl, isStage, popup, onCloseRedirect, onSuccessfulToken,
 }) {
   const susi = createTag('susi-sentry-light');
