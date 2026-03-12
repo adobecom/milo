@@ -35,7 +35,6 @@ const KEY_CODES = {
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
-const isTablet = window.matchMedia('(min-width: 600px) and (max-width: 1199px)');
 const isMobileVp = window.matchMedia('(max-width: 599px)');
 
 function getPreviousAriaLabel(currentIndex, totalSlides) {
@@ -51,13 +50,16 @@ function updatePreviousAriaLabel(carouselElements) {
   nextPreviousBtns[0].setAttribute('aria-label', getPreviousAriaLabel(currentActiveIndex, slides.length));
 }
 
+function isHintingTablet(el) {
+  return el.classList.contains('hinting-tablet') && window.matchMedia('(min-width: 600px) and (max-width: 1199px)').matches;
+}
+
 function getCircularNavState(carouselElements) {
   const { el, currentActiveIndex, slides } = carouselElements;
   const atStart = currentActiveIndex === 0;
   if (!el.classList.contains('disable-circular-nav')) return { atStart, atEnd: false };
 
-  const isHintingTablet = el.classList.contains('hinting-tablet') && isTablet.matches;
-  const lastIdx = isHintingTablet ? slides.length - 2 : slides.length - 1;
+  const lastIdx = isHintingTablet(el) ? slides.length - 2 : slides.length - 1;
   const atEnd = currentActiveIndex >= lastIdx;
 
   return { atStart, atEnd };
@@ -419,9 +421,8 @@ function moveSlides(event, carouselElements) {
   let skipPause = false;
 
   // hinting-tablet / hinting-mobile
-  const isHintingTablet = el.classList.contains('hinting-tablet') && isTablet.matches;
   const isHintingMobile = (el.classList.contains('hinting-mobile') || el.classList.contains('hinting-center-mobile')) && isMobileVp.matches;
-  if (isHintingTablet || isHintingMobile) {
+  if (isHintingTablet(el) || isHintingMobile) {
     const n = slides.length;
     const currentIdx = carouselElements.currentActiveIndex;
     const targetIdx = isNext ? (currentIdx + 1) % n : (currentIdx - 1 + n) % n;
