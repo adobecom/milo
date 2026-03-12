@@ -742,12 +742,11 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
       if (countryStr === 'xx') {
         try {
-          geoCountry = getCountry()
+          geoCountry = await getCountry(true)
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
-            const { default: getAkamaiCode } = await import('../../utils/geo.js');
-            geoCountry = await getAkamaiCode(true);
+            geoCountry = await getCountry();
           }
 
           if (geoCountry) {
