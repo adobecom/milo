@@ -291,7 +291,7 @@ html:has(meta[name="foundation"][content="c2"]) {
       margin-top: var(--s2a-spacing-xs);
 
       &.top {
-        bottom: 35px;
+        bottom: 40px;
       }
 
       li {
