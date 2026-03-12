@@ -1,14 +1,10 @@
 import { createTag } from '../../utils/utils.js';
 
-const JSON_URL_PATTERN = /(?:https?:\/\/[^\s<>"']+|\/[^\s<>"']+)\.json(?:\?[^\s<>"']*)?/g;
+const JSON_URL_PATTERN = /https?:\/\/[^\s<>"']+\.json(?:\?[^\s<>"']*)?/g;
 
 function getUrlList(cell) {
   const matches = cell.innerHTML.match(JSON_URL_PATTERN) || [];
   return [...new Set(matches.map((url) => url.trim()))];
-}
-
-function getSectionContent(row) {
-  return row.querySelector(':scope > div') || row;
 }
 
 function toPageUrl(indexUrl, item) {
@@ -51,7 +47,7 @@ function toPageTitle(item) {
 }
 
 async function fetchQueryIndexPage(indexUrl, offset = 0, pageSize = 500) {
-  const url = new URL(indexUrl, window.location.href);
+  const url = new URL(indexUrl);
   url.searchParams.set('offset', offset);
   url.searchParams.set('limit', pageSize);
 
@@ -129,19 +125,8 @@ async function createCountryItem(label, indexEntries) {
   return details;
 }
 
-function readLegacyRow(row) {
-  const [labelCell, urlsCell] = row.children;
-  if (!labelCell || !urlsCell) return null;
-
-  const label = labelCell.textContent.trim();
-  const indexEntries = getUrlList(urlsCell).map((url) => ({ url }));
-  if (!label || !indexEntries.length) return null;
-
-  return { label, indexEntries };
-}
-
 function readStructuredRow(row) {
-  const content = getSectionContent(row);
+  const content = row.querySelector(':scope > div') || row;
   const labelHeading = content.querySelector('h3');
   if (!labelHeading) return null;
 
@@ -177,7 +162,7 @@ function readStructuredRow(row) {
 
 function readRows(el) {
   return [...el.querySelectorAll(':scope > div')]
-    .map((row) => readStructuredRow(row) || readLegacyRow(row))
+    .map((row) => readStructuredRow(row))
     .filter(Boolean);
 }
 

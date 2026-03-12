@@ -2,11 +2,6 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-const relativeThailandIndexUrl = new URL(
-  '/th_en/sitemap-source.json?offset=0&limit=500',
-  window.location.href,
-).href;
-
 const mockIndexResponses = {
   'https://stage--da-bacom--adobecom.aem.live/br/query-index.json?offset=0&limit=500': {
     total: 1,
@@ -69,7 +64,7 @@ const mockIndexResponses = {
       },
     ],
   },
-  [relativeThailandIndexUrl]: {
+  'https://stage--da-bacom--adobecom.aem.live/th_en/query-index.json?offset=0&limit=500': {
     total: 1,
     offset: 0,
     limit: 500,
@@ -183,9 +178,7 @@ describe('Sitemap Extended', () => {
     const thailand = [...document.querySelectorAll('.sitemap-extended-item')]
       .find((item) => item.querySelector('summary').textContent.trim() === 'Thailand');
 
-    expect(
-      thailand.querySelector(`a[href="${window.location.origin}/th_en/resources/example.html"]`),
-    ).to.exist;
+    expect(thailand.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/th_en/resources/example.html"]')).to.exist;
   });
   it('uses authored labels for non-country geo groups', () => {
     const latinAmerica = [...document.querySelectorAll('.sitemap-extended-item')]
