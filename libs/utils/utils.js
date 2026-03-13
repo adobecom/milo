@@ -103,6 +103,7 @@ const MILO_BLOCKS = [
   'share',
   'sitemap-base',
   'sitemap-extended',
+  'sitemap-list',
   'susi-light-login',
   'reading-time',
 ];
