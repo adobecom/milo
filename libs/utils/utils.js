@@ -101,6 +101,9 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
+  'sitemap-base',
+  'sitemap-extended',
+  'sitemap-list',
   'susi-light-login',
   'reading-time',
 ];

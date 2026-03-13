@@ -1,0 +1,99 @@
+.sitemap-extended-container {
+  padding: var(--spacing-m) 0;
+}
+
+.sitemap-extended-list {
+  margin: 0 auto;
+  max-width: var(--grid-container-width);
+  border-bottom: 1px solid var(--color-gray-500);
+}
+
+.sitemap-extended-item {
+  border-top: 1px solid var(--color-gray-500);
+}
+
+.sitemap-extended-item summary {
+  position: relative;
+  padding: var(--spacing-s) calc(var(--spacing-xl) + var(--spacing-xs)) var(--spacing-s) var(--spacing-xs);
+  font-size: var(--type-heading-xs-size);
+  font-weight: 700;
+  line-height: var(--type-heading-s-lh);
+  list-style: none;
+  cursor: pointer;
+}
+
+.sitemap-extended-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.sitemap-extended-item summary::before,
+.sitemap-extended-item summary::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: var(--spacing-xs);
+  width: 12px;
+  height: 2px;
+  background: var(--color-gray-600);
+  border-radius: 2px;
+  transform: translateY(-50%);
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+.sitemap-extended-item summary::after {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.sitemap-extended-item[open] summary::after {
+  opacity: 0;
+}
+
+.sitemap-extended-item summary:focus,
+.sitemap-extended-item summary:hover,
+.sitemap-extended-item[open] summary {
+  background: #00000005;
+}
+
+.sitemap-extended-body {
+  padding: 0 var(--spacing-xs) var(--spacing-s);
+}
+
+.sitemap-extended-body .language-group + .language-group {
+  margin-top: var(--spacing-s);
+}
+
+.sitemap-extended-body h4 {
+  margin: 0 0 var(--spacing-xxs);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+
+.sitemap-extended-body ul {
+  margin: 0;
+  padding-inline-start: 1.2rem;
+}
+
+.sitemap-extended-body li + li {
+  margin-top: var(--spacing-xxs);
+}
+
+.dark .sitemap-extended-list,
+.darkest .sitemap-extended-list,
+.dark .sitemap-extended-item,
+.darkest .sitemap-extended-item {
+  border-color: var(--color-gray-600);
+}
+
+.dark .sitemap-extended-item summary,
+.darkest .sitemap-extended-item summary {
+  color: #fff;
+}
+
+.dark .sitemap-extended-item summary:focus,
+.dark .sitemap-extended-item summary:hover,
+.dark .sitemap-extended-item[open] summary,
+.darkest .sitemap-extended-item summary:focus,
+.darkest .sitemap-extended-item summary:hover,
+.darkest .sitemap-extended-item[open] summary {
+  background: #00000060;
+}
