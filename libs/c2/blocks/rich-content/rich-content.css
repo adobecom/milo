@@ -18,6 +18,7 @@
 
   &.dark {
     color: var(--s2a-color-gray-25);
+    background-color: unset;
   }
 
   .foreground .content {
@@ -27,6 +28,10 @@
     gap: var(--content-gap);
     position: relative;
     z-index: 2;
+
+    [class*="body-"]:not(.action-area) {
+      max-width: 680px;
+    }
   }
 
   &.center .foreground .content {
@@ -45,16 +50,16 @@
     gap: var(--content-gap);
   }
 }
+
 .section.has-background:has(.rich-content.hero) .section-background {
   max-width: var(--grid-max-width);
   margin: 0 auto;
   z-index: 1;
 
   img {
-    object-position: bottom center;
+    object-position: top center;
   }
 }
-
 
 .section:not(.has-background) .rich-content.hero::after {
   content: '';
@@ -66,7 +71,6 @@
 @media (width >= 768px) {
   .rich-content .content [class*="body-"]:not(.action-area) {
     min-width: 560px;
-    max-width: 680px;
     width: var(--grid-width-8);
   }
 }
