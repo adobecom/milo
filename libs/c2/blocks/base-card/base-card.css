@@ -1,6 +1,3 @@
-div.section.base-card-section {
-  gap: var(--s2a-spacing-40);
-}
 
 .base-card {
   height: 100%;
@@ -63,7 +60,7 @@ div.section.base-card-section {
       letter-spacing: var(--s2a-typography-letter-spacing-title-4);
     }
 
-    a {
+    .standalone-link {
       color: var(--s2a-color-gray-1000);
       text-decoration: none;
       font-size: var(--s2a-typography-font-size-body-sm);
@@ -73,9 +70,14 @@ div.section.base-card-section {
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
 
-      &.standalone-link::after {
+      &::after {
         content: url('../../assets/img/arrow-right.svg');
-        margin-left: var(--s2a-spacing-8);
+        display: inline-block;
+        margin-inline-start: var(--s2a-spacing-8);
+      }
+
+      [dir="rtl"] &::after {
+        transform: rotate(180deg);
       }
     }
 
@@ -93,9 +95,10 @@ div.section.base-card-section {
   }
 }
 
-@media (width < 1024px) {
+@media (width < 768px) {
   div.section.base-card-section {
     grid-template-columns: 1fr;
+    gap: var(--s2a-spacing-40);
   }
 }
 
@@ -112,9 +115,6 @@ div.section.base-card-section {
 }
 
 @media (width >= 1024px) {
-  div.section.base-card-section {
-    gap: var(--s2a-spacing-8);
-  }
 
   .base-card {
     > div[data-viewport="tablet"] {
