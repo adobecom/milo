@@ -37,7 +37,7 @@ const createTab = (content, tabName) => {
 };
 
 /** tabs reloaded for c2 page */
-const initC2Tabs = async (tabs) => {
+const loadC2TabsBlock = async (tabs) => {
   const { miloLibs, codeRoot } = config;
   /**
    * For now using c1 block for tabs in c2 pages since the styles are mostly the same
@@ -379,7 +379,7 @@ async function showModal(details) {
   const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
   const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
   let tabsPromise = null;
-  if (tabs) tabsPromise = isC2Page ? initC2Tabs(tabs) : loadBlock(tabs);
+  if (tabs) tabsPromise = isC2Page ? loadC2TabsBlock(tabs) : loadBlock(tabs);
   const promises = [
     tabsPromise,
     tabs

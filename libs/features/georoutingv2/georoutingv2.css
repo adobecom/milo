@@ -327,7 +327,6 @@ html:has(meta[name="foundation"][content="c2"]) {
     .dialog-modal.locale-modal-v2 {
       .dialog-close {
         left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-sm));
-        right: auto;
       }
 
       .locale-text {
