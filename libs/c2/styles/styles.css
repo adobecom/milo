@@ -724,16 +724,6 @@ p {
   }
 }
 
-/* Section immediately after .section.overlap */
-.section.overlap + .section {
-  /* your styles */
-}
-
-/* All sections after .section.overlap */
-.section.overlap ~ .section {
-  /* your styles */
-}
-
 .section-anchor {
   scroll-margin-top: var(--global-height-nav); /* TODO: Replace with correct variable */
 }
