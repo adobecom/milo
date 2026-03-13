@@ -222,12 +222,13 @@ async function openChatModal(initialMessage, el) {
       };
     }
 
-    const consentsConfig = window.alloy_all?.data?.adobe_corpnew?.otherConsents?.configuration;
+    // eslint-disable-next-line no-underscore-dangle
+    const consentsConfig = window.alloy_all?.data?._adobe_corpnew?.otherConsents?.configuration;
     const consentConfObject = consentsConfig
       && Object.keys(consentsConfig).reduce((rdx, key) => {
         rdx.push({
           consentStandard: key,
-          consentStringValue: consentsConfig.configuration[key].toString()
+          consentStringValue: consentsConfig.configuration[key].toString(),
         });
         return rdx;
       }, []);
