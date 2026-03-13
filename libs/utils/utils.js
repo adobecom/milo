@@ -2234,7 +2234,7 @@ async function decorateLanguageBanner() {
   }
 }
 
-function preloadMarketsConfig(callback) {
+export function preloadMarketsConfig(callback) {
   const config = getConfig();
   if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
