@@ -16,7 +16,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  color: var(--text-color);
+  color: #505050;
   font-family: var(--body-font-family);
   font-size: var(--type-body-xs-size);
   text-decoration: none;
@@ -28,6 +28,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 700;
 }
 
 .market-selector-arrow {
