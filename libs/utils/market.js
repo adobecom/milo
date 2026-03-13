@@ -1,17 +1,17 @@
 import { getConfig, getCookie, getCountry, getMarketsUrl } from './utils.js';
 
-let marketConfig;
 const norm = (c) => (c?.toLowerCase() === 'uk' ? 'gb' : c?.toLowerCase()?.split('_')[0]);
 
 export async function getMarketConfig() {
-  if (marketConfig) return marketConfig;
   try {
-    const resp = await fetch(getMarketsUrl());
-    if (!resp.ok) throw new Error('Failed to load market config');
-    const json = await resp.json();
-    const languages = json.languages?.data ?? json.data ?? [];
-    marketConfig = { languages };
-    return marketConfig;
+    const config = getConfig();
+    if (!config.marketsConfig) {
+      const resp = await fetch(getMarketsUrl());
+      if (!resp.ok) throw new Error('Failed to load market config');
+      config.marketsConfig = await resp.json();
+    }
+    const languages = config.marketsConfig.languages?.data ?? config.marketsConfig.data ?? [];
+    return { languages };
   } catch (e) {
     window.lana?.log(`Market Utils Error: ${e.message}`);
     return null;

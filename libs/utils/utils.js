@@ -2141,13 +2141,15 @@ async function decorateLanguageBanner() {
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
-  const languageEntries = marketsConfig.languages?.data ?? marketsConfig.data;
-  if (!languageEntries?.length) return;
+  getConfig().marketsConfig = marketsConfig;
+  const rawEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  if (!rawEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
-  languageEntries.forEach((entry) => {
-    entry.supportedRegions = entry.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
-    entry.dir = locales?.[entry.prefix || '']?.dir || 'ltr';
-  });
+  const languageEntries = rawEntries.map((entry) => ({
+    ...entry,
+    supportedRegions: entry.supportedRegions.split(',').map((r) => r.trim().toLowerCase()),
+    dir: locales?.[entry.prefix || '']?.dir || 'ltr',
+  }));
   const pagePrefix = locale.prefix?.replace('/', '') || '';
   const pageMarket = languageEntries.find((m) => m.prefix === pagePrefix)
     ?? languageEntries.find((m) => m.prefix === locale.base);
