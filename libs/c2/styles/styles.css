@@ -13,7 +13,7 @@
 
 @property --grid-max-width {
   syntax: '<length>';
-  inherits: false;
+  inherits: true;
   initial-value: 1440px;
 }
 
