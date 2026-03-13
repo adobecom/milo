@@ -107,7 +107,7 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'box',
-  'carousel',
+  'carousel-c2',
   'rich-content',
   'router-marquee',
   'section-metadata',

@@ -1,3 +1,9 @@
+@property --parallax-stagger-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
 .section-metadata {
   display: none;
 }
@@ -170,10 +176,51 @@
       .grid-span-11 { grid-column: span 11; }
     }
 
+    &[class*="parallax-stagger-"] {
+      --parallax-stagger-cols: 1;
+
+      animation-name: enable-parallax-stagger;
+
+      > :not([class*="section-"]) {
+        /* TODO: look into smarter alternatives to eliminate CLS potential */
+        margin-top: calc(var(--parallax-stagger-from) * var(--parallax-stagger-progress));
+      }
+
+      &.two-up { --parallax-stagger-cols: 2; }
+      &.three-up { --parallax-stagger-cols: 3; }
+      &.four-up { --parallax-stagger-cols: 4; }
+
+      &.two-up > :nth-child(2n+1 of :not([class*="section-"])),
+      &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
+      &.four-up > :nth-child(4n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+
+      &.two-up > :nth-child(2n of :not([class*="section-"])),
+      &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
+      &.four-up > :nth-child(4n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+
+      &.three-up > :nth-child(3n of :not([class*="section-"])),
+      &.four-up > :nth-child(4n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+
+      &.four-up > :nth-child(4n of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+    }
+
+    &.parallax-stagger-ltr > :not([class*="section-"]) {
+      --parallax-stagger-from: calc(var(--parallax-stagger-index) * var(--parallax-stagger-drift));
+    }
+
+    &.parallax-stagger-rtl > :not([class*="section-"]) {
+      --parallax-stagger-from: calc((var(--parallax-stagger-cols) - 1 - var(--parallax-stagger-index)) * var(--parallax-stagger-drift));
+    }
+
     &.container {
       &.grid-width-6 { --grid-content-width: var(--grid-width-6); }
       &.grid-width-8 { --grid-content-width: var(--grid-width-8); }
       &.grid-width-10 { --grid-content-width: var(--grid-width-10); }
     }
+  }
+
+  @keyframes enable-parallax-stagger {
+    from { --parallax-stagger-progress: 1; }
+    to { --parallax-stagger-progress: 0; }
   }
 }

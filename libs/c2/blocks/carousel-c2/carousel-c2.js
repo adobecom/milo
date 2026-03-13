@@ -68,7 +68,7 @@ function decorateNavigation() {
 
 function getMarginAndSlideWidth(slide) {
   const slideWidth = slide.getBoundingClientRect().width;
-  const carouselWidth = slide.closest('.carousel').getBoundingClientRect().width;
+  const carouselWidth = slide.closest('.carousel-c2').getBoundingClientRect().width;
   return { marginWidth: (carouselWidth - slideWidth) / 2, slideWidth };
 }
 
