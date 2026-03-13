@@ -861,49 +861,62 @@ class Gnav {
 
   /** POC: Remove event registration link if user is logged-in and registered (no MEP). */
   setUpEventRegistrationLink = async () => {
-    const EVENT_REGISTRATION_BASE_URL = 'https://reg.dev.rainfocus.com/flow/adobe/m25/MAXReg';
-    const link = this.block?.querySelector(`a[href^="${EVENT_REGISTRATION_BASE_URL}"]`);
-    if (!link) return;
+    // const EVENT_REGISTRATION_BASE_URL = 'https://reg.dev.rainfocus.com/flow/adobe/m25/MAXReg';
+    // const link = this.block?.querySelector(`a[href^="${EVENT_REGISTRATION_BASE_URL}"]`);
+    // if (!link) return;
 
-    let eventId;
-    try {
-      const url = new URL(link.href);
-      eventId = url.searchParams.get('event-id');
-    } catch {
-      eventId = null;
-    }
+    // let eventId;
+    // try {
+    //   const url = new URL(link.href);
+    //   eventId = url.searchParams.get('event-id');
+    // } catch {
+    //   eventId = null;
+    // }
 
-    if (!eventId) {
-      const wrapper = link.closest('.feds-navItem') || link.closest('.feds-cta-wrapper') || link.parentElement;
-      wrapper?.remove();
-      return;
-    }
+    // if (!eventId) {
+    //   const wrapper = link.closest('.feds-navItem') || link.closest('.feds-cta-wrapper') || link.parentElement;
+    //   wrapper?.remove();
+    //   return;
+    // }
 
-    if (!window.adobeIMS.isSignedInUser()) return;
+    // if (!window.adobeIMS.isSignedInUser()) return;
 
-    const consentCookieValue = getCookie('OptanonConsent');
-    if (consentCookieValue?.includes('C0002:0')) return;
+    // const consentCookieValue = getCookie('OptanonConsent');
+    // if (consentCookieValue?.includes('C0002:0')) return;
 
-    const userId = (await window.adobeIMS.getProfile())?.userId;
-    const accessToken = window.adobeIMS.getAccessToken()?.token;
-    if (!userId || !accessToken) return;
+    // const userId = (await window.adobeIMS.getProfile())?.userId;
+    // const accessToken = window.adobeIMS.getAccessToken()?.token;
+    // if (!userId || !accessToken) return;
 
-    const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '.stage';
-    const apiUrl = `https://www${domainSuffix}.adobe.com/events/api/rf-auth-seq-generic/${eventId}?user_id=${encodeURIComponent(userId)}`;
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: 'same-origin',
-      });
-      if (!response.ok) return;
-      const eventDetails = await response.json();
-      if (eventDetails?.isRegistered === true) {
+    // const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '.stage';
+    // const apiUrl = `https://www${domainSuffix}.adobe.com/events/api/rf-auth-seq-generic/${eventId}?user_id=${encodeURIComponent(userId)}`;
+    // try {
+    //   const response = await fetch(apiUrl, {
+    //     method: 'GET',
+    //     headers: { Authorization: `Bearer ${accessToken}` },
+    //     credentials: 'same-origin',
+    //   });
+    //   if (!response.ok) return;
+    //   const eventDetails = await response.json();
+    //   if (eventDetails?.isRegistered === true) {
+    //     const wrapper = link.closest('.feds-navItem') || link.closest('.feds-cta-wrapper') || link.parentElement;
+    //     wrapper?.remove();
+    //   }
+    // } catch (e) {
+    //   lanaLog({ message: 'GNAV: Unable to fetch from Rainfocus', e, tags: 'gnav-event-reg', severity: 'error' });
+    // }
+    const eventDetails = await window.EVENT_DATA_PROMISE;
+
+    if (eventDetails) {
+        console.log("Other repo received data:", eventDetails);
+        const EVENT_REGISTRATION_BASE_URL = 'https://reg.dev.rainfocus.com/flow/adobe/m25/MAXReg';
+        const link = this.block?.querySelector(`a[href^="${EVENT_REGISTRATION_BASE_URL}"]`);
+        if (!link) return;
         const wrapper = link.closest('.feds-navItem') || link.closest('.feds-cta-wrapper') || link.parentElement;
         wrapper?.remove();
-      }
-    } catch (e) {
-      lanaLog({ message: 'GNAV: Unable to fetch from Rainfocus', e, tags: 'gnav-event-reg', severity: 'error' });
+        console.log("Event registration link removed");
+    } else {
+        console.log("No event data available or user not signed in.");
     }
   };
 
