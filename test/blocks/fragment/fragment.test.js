@@ -1124,11 +1124,11 @@ describe('getLocaleCodeFromPrefix', () => {
 });
 
 describe('getMepLingoContext with realistic prefixes', () => {
-  afterEach(() => {
+  beforeEach(() => {
     window.sessionStorage.clear();
   });
 
-  it('uses country-to-region mapping when configured', () => {
+  it('uses country-to-region mapping when configured', async () => {
     const localeWithMapping = {
       prefix: '/de',
       region: 'de',
@@ -1141,7 +1141,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
 
     window.sessionStorage.setItem('akamai', 'ng');
 
-    const context = getMepLingoContext(localeWithMapping);
+    const context = await getMepLingoContext(localeWithMapping);
 
     expect(context.country).to.equal('ng');
     expect(context.regionKey).to.equal('africa_de');
@@ -1151,7 +1151,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
     updateConfig({ ...currentConfig, mepLingoCountryToRegion: undefined });
   });
 
-  it('falls back to regionalCountry key when compound key not found', () => {
+  it('falls back to regionalCountry key when compound key not found', async () => {
     const localeWithDirectRegion = {
       prefix: '/de',
       region: 'de',
@@ -1162,7 +1162,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
 
     window.sessionStorage.setItem('akamai', 'ch');
 
-    const context = getMepLingoContext(localeWithDirectRegion);
+    const context = await getMepLingoContext(localeWithDirectRegion);
 
     expect(context.country).to.equal('ch');
     expect(context.regionKey).to.equal('ch'); // Falls back to just 'ch'
@@ -1170,7 +1170,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
     expect(context.matchingRegion.prefix).to.equal('/ch');
   });
 
-  it('correctly parses locale code from simple prefix like /de', () => {
+  it('correctly parses locale code from simple prefix like /de', async () => {
     const realisticLocale = {
       prefix: '/de',
       region: 'de',
@@ -1181,7 +1181,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
 
     window.sessionStorage.setItem('akamai', 'ch');
 
-    const context = getMepLingoContext(realisticLocale);
+    const context = await getMepLingoContext(realisticLocale);
 
     expect(context.localeCode).to.equal('de');
     expect(context.country).to.equal('ch');
@@ -1190,7 +1190,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
     expect(context.matchingRegion.prefix).to.equal('/ch_de');
   });
 
-  it('correctly parses locale code from /fr prefix', () => {
+  it('correctly parses locale code from /fr prefix', async () => {
     const realisticLocale = {
       prefix: '/fr',
       region: 'fr',
@@ -1201,7 +1201,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
 
     window.sessionStorage.setItem('akamai', 'lu');
 
-    const context = getMepLingoContext(realisticLocale);
+    const context = await getMepLingoContext(realisticLocale);
 
     expect(context.localeCode).to.equal('fr');
     expect(context.country).to.equal('lu');
@@ -1209,7 +1209,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
     expect(context.matchingRegion).to.exist;
   });
 
-  it('handles langstore prefix correctly', () => {
+  it('handles langstore prefix correctly', async () => {
     const langstoreLocale = {
       prefix: '/langstore/de',
       region: 'de',
@@ -1220,17 +1220,19 @@ describe('getMepLingoContext with realistic prefixes', () => {
 
     window.sessionStorage.setItem('akamai', 'ch');
 
-    const context = getMepLingoContext(langstoreLocale);
+    const context = await getMepLingoContext(langstoreLocale);
 
     expect(context.localeCode).to.equal('de');
     expect(context.regionKey).to.equal('ch_de');
     expect(context.matchingRegion).to.exist;
   });
 
-  it('returns null values when no prefix', () => {
+  it('returns null values when no prefix', async () => {
     const noPrefix = { region: 'us', language: 'en' };
 
-    const context = getMepLingoContext(noPrefix);
+    window.sessionStorage.setItem('akamai', 'us');
+
+    const context = await getMepLingoContext(noPrefix);
 
     expect(context.country).to.be.null;
     expect(context.localeCode).to.be.null;
@@ -1238,7 +1240,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
     expect(context.matchingRegion).to.be.null;
   });
 
-  it('returns no matching region when country does not match any region', () => {
+  it('returns no matching region when country does not match any region', async () => {
     const realisticLocale = {
       prefix: '/de',
       region: 'de',
@@ -1249,7 +1251,7 @@ describe('getMepLingoContext with realistic prefixes', () => {
 
     window.sessionStorage.setItem('akamai', 'fr'); // France, not in de regions
 
-    const context = getMepLingoContext(realisticLocale);
+    const context = await getMepLingoContext(realisticLocale);
 
     expect(context.localeCode).to.equal('de');
     expect(context.country).to.equal('fr');
