@@ -107,7 +107,16 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'box',
+  'carousel',
+  'rich-content',
+  'router-marquee',
   'section-metadata',
+  'explore-card',
+  'global-footer',
+  'global-navigation',
+  'base-card',
+  'region-nav',
+  'news',
   'elastic-carousel',
 ];
 
@@ -2352,16 +2361,6 @@ function loadLingoIndexes(area = document) {
   if (prefix) {
     loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
   }
-}
-
-export async function loadBaseStyles(libsPath) {
-  const pathsToLoad = [];
-  const stylesPrefix = getMetadata('foundation') === 'c2' ? '/c2' : '';
-  pathsToLoad.push(`${libsPath}${stylesPrefix}/styles/styles.css`);
-  const theme = getMetadata('theme');
-  if (theme) pathsToLoad.push(`${libsPath}/styles/themes/${theme}.css`);
-
-  await Promise.all(pathsToLoad.map((path) => loadStyle(path)));
 }
 
 export async function loadArea(area = document) {

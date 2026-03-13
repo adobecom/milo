@@ -1,9 +1,9 @@
-:root:has(meta[name="theme"][content="northstar"]) {
+:root:has(meta[name="skin"][content="northstar"]) {
   /* text */
   .section:not(.dark) .text-block:not(.dark) :is([class*="heading-"],[class*="body-"]) {
     color: var(--color-black);
   }
-  
+
   .text-block [class*="heading-"] {
     font-family: "Adobe Clean Black", var(--body-font-family);
     font-weight: 900;
@@ -91,7 +91,7 @@
       font-size: 19px;
       line-height: 24px;
     }
-  
+
     .dark .text-block .con-button {
       padding: 10px 22.5px 12px;
       border-radius: 40px;
@@ -176,7 +176,7 @@
       min-height: 743px;
     }
 
-    
+
     .hero-marquee.northstar .heading-xxl {
       font-size: 96px;
       line-height: 0.98;
@@ -254,7 +254,7 @@
     .brick {
       min-height: 600px;
     }
-    
+
     .brick .foreground {
       padding: var(--spacing-m) var(--spacing-l);
     }

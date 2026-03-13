@@ -113,7 +113,7 @@ class KeyboardNavigation {
               const isNewNav = !!document.querySelector('header.new-nav');
               const isOpen = document
                 .querySelector(selectors.navWrapper)
-                .classList.contains(selectors.navWrapperExpanded.slice(1));
+                ?.classList.contains(selectors.navWrapperExpanded.slice(1));
               if (isNewNav && isOpen) {
                 if (e.target.classList.contains(selectors.mainNavToggle.slice(1))) {
                   e.preventDefault();
