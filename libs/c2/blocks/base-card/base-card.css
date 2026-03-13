@@ -1,18 +1,9 @@
 div.section.base-card-section {
   gap: var(--s2a-spacing-40);
-  overflow: visible;
 }
 
 .base-card {
   height: 100%;
-
-  /* Scroll-driven staggered slide-up for regular cards (no full-width); reverses when scrolling back up */
-  &:not(.full-width) {
-    animation: base-card-enter linear;
-    animation-timeline: view();
-    animation-range: entry 0% entry 100%;
-    animation-fill-mode: both;
-  }
 
   > div[data-viewport] {
     display: none;
@@ -168,43 +159,11 @@ div.section.base-card-section {
         }
       }
 
-      .media {
-        position: relative;
-        animation: base-card-full-width-shrink linear;
-        animation-timeline: view();
-        animation-range: entry 0% entry 100%;
-        animation-fill-mode: both;
-
-        picture:not(.icon) img {
-          aspect-ratio: 2.2/1;
-        }
+      .media picture:not(.icon) img {
+        aspect-ratio: 2.2/1;
       }
     }
   }
-}
-
-@keyframes base-card-full-width-shrink {
-  from {
-    width: 100vw;
-    left: calc(50% - 50vw);
-  }
-  to {
-    width: 100%;
-    left: 0;
-  }
-}
-
-@keyframes base-card-enter {
-  from {
-    transform: translateY(30px);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.base-card-section .base-card:not(.full-width) {
-  animation-range: entry calc(200px * var(--stagger-index, 0)) entry 100%;
 }
 
 @media (width >= 1280px) {
