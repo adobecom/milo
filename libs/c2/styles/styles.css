@@ -864,10 +864,15 @@ p {
 }
 
 .parallax-move-up-fast {
-  --parallax-translate-y-end: -48vh;
-  --parallax-range-end-length: 40%;
-  margin-bottom: -48vh !important;
-  margin-top: -40px;
+  --parallax-pull-up: 50vh;
+
+  animation-name: parallax-pull-up;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 40%;
+  position: relative;
+  z-index: 2;
   view-timeline-name: --parallax-fast;
 
   * {
@@ -878,6 +883,9 @@ p {
 }
 
 .section:has(+ .section.parallax-move-up-fast) {
+  position: relative;
+  z-index: 1;
+
   &::after {
     content: '';
     position: absolute;
@@ -890,6 +898,11 @@ p {
     animation-range: entry 100% exit 50%;
     z-index: 2;
   }
+}
+
+@keyframes parallax-pull-up {
+  from { margin-top: 0; }
+  to { margin-top: calc(-1 * var(--parallax-pull-up)); }
 }
 
 @keyframes fade-to-dark {

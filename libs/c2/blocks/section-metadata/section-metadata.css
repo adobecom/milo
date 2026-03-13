@@ -34,9 +34,9 @@
     z-index: 3;
   }
 
-  &.rounded-corners:not([class*="parallax-"]),
-  &.rounded-corners-top:not([class*="parallax-"]),
-  &.rounded-corners-bottom:not([class*="parallax-"]) {
+  &.rounded-corners,
+  &.rounded-corners-top,
+  &.rounded-corners-bottom {
     margin-block: calc(-1 * var(--s2a-border-radius-lg));
   }
 
