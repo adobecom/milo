@@ -52,14 +52,8 @@ function decorateViewportStructure(rows) {
   }
 }
 
-function setStaggerIndices(section) {
-  const cards = section.querySelectorAll('.base-card:not(.full-width)');
-  cards.forEach((card, i) => card.style.setProperty('--stagger-index', i));
-}
-
 export default function init(el) {
-  const section = el.closest('.section');
-  section.classList.add('base-card-section');
+  el.closest('.section').classList.add('base-card-section');
   const rows = [...el.children];
 
   const hasViewportStructure = rows.length >= 2
@@ -68,9 +62,8 @@ export default function init(el) {
 
   if (hasViewportStructure) {
     decorateViewportStructure(rows);
-  } else {
-    decorateCard(rows[0]);
+    return;
   }
 
-  setStaggerIndices(section);
+  decorateCard(rows[0]);
 }
