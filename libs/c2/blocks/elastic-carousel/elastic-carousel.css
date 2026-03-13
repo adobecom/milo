@@ -150,7 +150,7 @@
 /** desktop only */
 @media (width > 767px) {
   .before{
-    height: 20vh;
+    height: 70vh;
   }
   .elastic-carousel-container {
     .elastic-carousel {

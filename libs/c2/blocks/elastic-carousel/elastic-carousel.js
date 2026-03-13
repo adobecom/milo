@@ -67,7 +67,7 @@ const buildSlide = ({ slide, index }) => {
     class: 'elastic-carousel__item',
     tabindex: 0,
     'aria-label': 'slide X',
-    'data-index': index,
+    'data-index': index + 1,
     'ddl-lh': '',
   }, content);
   return slideEl;
@@ -78,10 +78,10 @@ const buildSlides = (carousel) => {
   const decoratedSlides = slides.map((slide, index) => buildSlide({ slide, index }));
   // turn original div into carousel container
   carousel.replaceChildren();
-  const newCarousel = createTag('div', {
-    class: carousel.className,
-  });
+  const newCarousel = createTag('div', { class: carousel.className });
+  carousel.parentNode.prepend(createTag('div', { class: 'before' }, 'marquee'));
   carousel.append(newCarousel);
+  carousel.parentNode.append(createTag('div', { class: 'after' }, 'content after'));
   carousel.className = 'elastic-carousel-container';
   decoratedSlides.forEach((slide) => newCarousel.append(slide));
   return newCarousel;
