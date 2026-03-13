@@ -60,7 +60,6 @@ const MILO_BLOCKS = [
   'merch',
   'merch-card',
   'merch-card-autoblock',
-  'merch-card-collection',
   'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
