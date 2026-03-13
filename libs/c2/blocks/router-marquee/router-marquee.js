@@ -1,109 +1,253 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
+const AUTOPLAY_MS = 5000;
+const TRANSITION_MS = 500;
+const ENTER_MS = 300;
+const SLIDE_SHIFT = 100;
 
-const getSlidesData = (el) => {
-  const data = {};
-  let breakpoint = null;
-
-  const parseSlide = (textCol, imageCol) => {
-    const heading = textCol?.querySelector('h1, h2');
-    const plainPs = [...(textCol?.querySelectorAll('p') || [])]
-      .filter((p) => !p.querySelector('a'));
-    const cta1 = textCol?.querySelector('em strong a');
-    const cta2 = textCol?.querySelector('em > a');
-    const cardLink = [...(textCol?.querySelectorAll('a') || [])]
-      .find((a) => /\.svg/i.test(a.getAttribute('href') || ''));
-
-    return {
-      backgroundImage: imageCol?.querySelector('img')?.src || '',
-      smallPrint: plainPs[0]?.textContent?.trim() || '',
-      title: heading?.textContent?.trim() || '',
-      description: plainPs.slice(1).map((p) => p.textContent?.trim()).filter(Boolean),
-      cta1Label: cta1?.textContent?.trim() || '',
-      cta1Link: cta1?.getAttribute('href') || '',
-      productLink: cta1?.getAttribute('href') || '',
-      ...(cta2 ? {
-        cta2Label: cta2.textContent?.trim() || '',
-        cta2Link: cta2.getAttribute('href') || '',
-      } : {}),
-      cardLabel: cardLink?.textContent?.trim() || '',
-      cardIcon: getFederatedUrl(cardLink?.getAttribute('href') || ''),
-    };
-  };
+const groupByViewport = (el) => {
+  const viewports = {};
+  let current = null;
 
   [...el.children].forEach((row) => {
-    const cols = row.querySelectorAll(':scope > div');
-    if (cols.length === 1 && cols[0].querySelector('strong')) {
-      breakpoint = cols[0].textContent.trim().toLowerCase();
-      data[breakpoint] = [];
-    } else if (breakpoint) {
-      data[breakpoint].push(parseSlide(cols[0], cols[1]));
+    const firstCol = row.querySelector(':scope > div');
+    const breakpoint = BREAKPOINTS.find((b) => firstCol?.textContent.trim().toLowerCase() === b);
+    if (breakpoint) {
+      current = breakpoint;
+      viewports[current] = [];
+    } else if (current) {
+      viewports[current].push(row);
     }
   });
 
-  return data;
+  return viewports;
 };
 
-const buildContent = (slide) => {
-  const content = createTag('div', { class: 'rm-content' });
+const decorateText = (textCol) => {
+  const heading = textCol.querySelector('h1, h2');
+  heading?.classList.add('rm-title');
+  heading?.previousElementSibling?.classList.add('rm-eyebrow');
 
-  content.append(createTag('p', { class: 'rm-eyebrow' }, slide.smallPrint));
-  content.append(createTag('h1', { class: 'rm-title' }, slide.title));
-
+  const eyebrow = textCol.querySelector('.rm-eyebrow');
+  const bodyPs = [...textCol.querySelectorAll('p')]
+    .filter((p) => !p.querySelector('a') && p !== eyebrow);
   const body = createTag('div', { class: 'rm-body' });
-  slide.description.forEach((text) => body.append(createTag('p', null, text)));
-  content.append(body);
+  bodyPs[0].before(body);
+  bodyPs.forEach((p) => body.append(p));
+};
 
-  const ctas = createTag('div', { class: 'rm-ctas' });
-  if (slide.cta1Label) {
-    ctas.append(createTag('a', {
-      class: 'con-button rm-cta-primary',
-      href: slide.cta1Link,
-    }, slide.cta1Label));
-  }
-  if (slide.cta2Label) {
-    ctas.append(createTag('a', {
-      class: 'con-button',
-      href: slide.cta2Link,
-    }, slide.cta2Label));
-  }
-  content.append(ctas);
+const decorateCtas = (textCol) => {
+  const ctaP = textCol.querySelector('p:has(em)');
+  if (!ctaP) return;
+  ctaP.classList.add('rm-ctas');
+  const primary = ctaP.querySelector('em > strong a');
+  const secondary = ctaP.querySelector('em > a');
+  primary?.classList.add('con-button', 'rm-cta-primary');
+  secondary?.classList.add('con-button');
+  ctaP.replaceChildren(...[primary, secondary].filter(Boolean));
+};
 
-  return content;
+const decorateSlide = (slide) => {
+  const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
+
+  slide.classList.add('rm-slide');
+  imageCol?.classList.add('rm-background');
+  textCol?.classList.add('rm-content');
+  slide.insertBefore(createTag('div', { class: 'rm-overlay' }), textCol);
+
+  if (!textCol) return;
+  decorateText(textCol);
+  decorateCtas(textCol);
 };
 
 const buildCard = (slide) => {
-  const card = createTag('div', { class: 'rm-card' });
+  const link = slide.querySelector('a[href*=".svg"]');
+  if (!link) return null;
 
-  card.append(createTag('img', { class: 'rm-card-icon', src: slide.cardIcon }));
+  const svgHref = link.getAttribute('href');
+  const label = link.textContent.trim();
+  const primaryHref = slide.querySelector('.con-button')?.getAttribute('href') || '';
 
-  const content = createTag('div', { class: 'rm-card-content' });
-  content.append(createTag('span', { class: 'rm-card-label' }, slide.cardLabel));
-  content.append(createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG));
-  card.append(content);
+  link.closest('p')?.remove();
+  link.className = 'rm-card';
+  link.setAttribute('href', primaryHref);
+  link.replaceChildren(
+    createTag('img', {
+      class: 'rm-card-icon',
+      src: getFederatedUrl(svgHref),
+      loading: 'lazy',
+    }),
+    createTag('div', { class: 'rm-card-content' }, [
+      createTag('span', { class: 'rm-card-label' }, label),
+      createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
+    ]),
+    createTag('div', { class: 'rm-card-progress' }, [
+      createTag('div', { class: 'rm-card-progress-bar' }),
+    ]),
+  );
 
-  return card;
+  return link;
+};
+
+const buildCards = (slides) => {
+  const cards = createTag('div', { class: 'rm-cards' });
+  slides.forEach((slide) => {
+    const card = buildCard(slide);
+    if (card) cards.append(card);
+  });
+  return cards;
+};
+
+const reflow = (el) => el?.getBoundingClientRect();
+
+const setBar = (bar, tx, ms, timing = 'linear') => {
+  bar.style.transition = ms > 0 ? `transform ${ms}ms ${timing}` : 'none';
+  bar.style.transform = `translateX(${tx})`;
+};
+
+const slideBar = (bar, from, to, ms, timing = 'linear') => {
+  setBar(bar, from, 0);
+  reflow(bar);
+  setBar(bar, to, ms, timing);
+};
+
+const startAutoplay = (slides, cards) => {
+  const cardEls = [...cards.children];
+  const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
+  let active = 0;
+  let timer = null;
+  let paused = false;
+  let fillAnimation = null;
+  let slideTimer = null;
+  let slideTimer2 = null;
+  let pendingSlide = null;
+
+  const stop = () => {
+    clearTimeout(timer);
+    if (fillAnimation) { fillAnimation.cancel(); fillAnimation = null; }
+  };
+
+  const finishSlideTransition = () => {
+    clearTimeout(slideTimer);
+    clearTimeout(slideTimer2);
+    slideTimer = null;
+    slideTimer2 = null;
+    [...slides].forEach((s) => {
+      s.style.opacity = '';
+      s.style.zIndex = '';
+      s.style.transform = '';
+      s.style.transition = '';
+    });
+    if (pendingSlide) {
+      pendingSlide.classList.add('is-active');
+      pendingSlide = null;
+    }
+  };
+
+  const activate = (index, direction = 1) => {
+    finishSlideTransition();
+
+    const oldSlide = slides[active];
+    const newSlide = slides[index];
+
+    oldSlide.style.opacity = '1';
+    oldSlide.style.zIndex = '1';
+    oldSlide.style.transform = `translateX(${-direction * SLIDE_SHIFT}px)`;
+    oldSlide.classList.remove('is-active');
+
+    pendingSlide = newSlide;
+    slideTimer = setTimeout(() => {
+      oldSlide.style.opacity = '';
+      oldSlide.style.zIndex = '';
+      oldSlide.style.transform = '';
+
+      newSlide.style.transition = 'none';
+      newSlide.style.transform = `translateX(${direction * SLIDE_SHIFT}px)`;
+      newSlide.classList.add('is-active');
+      reflow(newSlide);
+      newSlide.style.transition = `transform ${ENTER_MS}ms ease-out`;
+      newSlide.style.transform = '';
+
+      slideTimer2 = setTimeout(() => {
+        pendingSlide = null;
+        slideTimer = null;
+        slideTimer2 = null;
+      }, ENTER_MS);
+    }, TRANSITION_MS);
+
+    cardEls[active]?.classList.remove('is-active');
+    active = index;
+    cardEls[active]?.classList.add('is-active');
+  };
+
+  const advance = () => {
+    stop();
+    setBar(bars[active], '101%', TRANSITION_MS, 'ease-out');
+    activate((active + 1) % cardEls.length, 1);
+    slideBar(bars[active], '-101%', '0%', AUTOPLAY_MS);
+    timer = setTimeout(advance, AUTOPLAY_MS);
+  };
+
+  const pause = () => {
+    stop();
+    paused = true;
+    setBar(bars[active], '0%', TRANSITION_MS, 'ease-out');
+  };
+
+  cardEls.forEach((card, i) => {
+    card.addEventListener('mouseenter', () => {
+      if (i === active) { pause(); return; }
+      stop();
+      paused = true;
+      const dir = i > active ? 1 : -1;
+      setBar(bars[active], `${dir * 101}%`, TRANSITION_MS, 'ease-out');
+      activate(i, dir);
+      slideBar(bars[i], `${-dir * 101}%`, '0%', TRANSITION_MS, 'ease-out');
+    });
+  });
+
+  cards.addEventListener('mouseleave', () => {
+    if (paused) {
+      paused = false;
+      advance();
+    }
+  });
+
+  const bar = bars[active];
+  setBar(bar, '-101%', 0);
+  reflow(bar);
+  fillAnimation = bar.animate(
+    [{ transform: 'translateX(-101%)' }, { transform: 'translateX(0%)' }],
+    { duration: AUTOPLAY_MS, fill: 'forwards', easing: 'linear' },
+  );
+  fillAnimation.finished.then(() => {
+    fillAnimation?.cancel();
+    fillAnimation = null;
+    advance();
+  }).catch(() => { fillAnimation = null; });
+
+  return { pause };
+};
+
+const buildViewport = (viewport, slides) => {
+  const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
+  slides.forEach((slide) => decorateSlide(slide));
+  slides[0]?.classList.add('is-active');
+  const cards = buildCards(slides);
+  cards.children[0]?.classList.add('is-active');
+  container.append(...slides, cards);
+  return container;
 };
 
 export default function init(el) {
-  const slidesData = getSlidesData(el);
-  const slides = slidesData.desktop;
-  if (!slides?.length) return;
-
-  const activeSlide = slides[0];
-
-  const bg = createTag('div', { class: 'rm-background' });
-  bg.append(createTag('img', { src: activeSlide.backgroundImage, loading: 'eager' }));
-
-  const overlay = createTag('div', { class: 'rm-overlay' });
-
-  const fg = createTag('div', { class: 'rm-foreground' });
-  fg.append(buildContent(activeSlide));
-
-  const cards = createTag('div', { class: 'rm-cards' });
-  slides.forEach((slide) => cards.append(buildCard(slide)));
-  fg.append(cards);
-
-  el.replaceChildren(bg, overlay, fg);
+  const viewports = groupByViewport(el);
+  const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
+  el.replaceChildren(...containers);
+  containers.forEach((container) => {
+    const slides = container.querySelectorAll('.rm-slide');
+    const cards = container.querySelector('.rm-cards');
+    if (slides.length && cards) startAutoplay(slides, cards);
+  });
 }

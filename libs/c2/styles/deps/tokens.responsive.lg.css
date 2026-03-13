@@ -4,14 +4,9 @@
  */
 
 :root {
-  --s2a-grid-container-max-width: 1440px;
-  --s2a-grid-container-padding-inline: 119.99px;
-  --s2a-grid-container-width-percent: 83.4px;
-  --s2a-grid-container-body-max-width: 794px;
-  --s2a-grid-container-content-max-width: 998px;
-  --s2a-grid-breakpoint-max-width: 1440px;
-  --s2a-grid-breakpoint-min-width: 1280px;
-  --s2a-grid-gutter: 8px;
+  --s2a-grid-gutter: var(--s2a-spacing-xs);
+  --s2a-grid-element-gap-sm: var(--s2a-spacing-xl);
+  --s2a-grid-element-gap-lg: var(--s2a-spacing-4xl);
   --s2a-typography-font-size-super: var(--s2a-font-size-10xl);
   --s2a-typography-font-size-title-1: var(--s2a-font-size-9xl);
   --s2a-typography-font-size-title-2: var(--s2a-font-size-6xl);
@@ -48,6 +43,12 @@
   --s2a-typography-line-height-eyebrow: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-label: var(--s2a-font-line-height-xs);
   --s2a-typography-line-height-caption: var(--s2a-font-line-height-2xs);
+  --s2a-section-padding-none: var(--s2a-spacing-none);
+  --s2a-section-padding-xs: var(--s2a-spacing-4xl);
+  --s2a-section-padding-sm: var(--s2a-layout-sm);
+  --s2a-section-padding-md: var(--s2a-layout-lg);
+  --s2a-section-padding-lg: var(--s2a-layout-xl);
+  --s2a-section-padding-xl: var(--s2a-layout-2xl);
 }
 
 }

@@ -14,7 +14,6 @@ import {
 
 import {
   getExperienceName,
-  loadDecorateMenu,
   fetchAndProcessPlainHtml,
   loadBaseStyles,
   yieldToMain,
@@ -23,9 +22,12 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
-  setupKeyboardNav,
-  KEYBOARD_DELAY,
+  loadStyles,
 } from '../../../blocks/global-navigation/utilities/utilities.js';
+import {
+  setupFooterKeyboardNav,
+  KEYBOARD_DELAY,
+} from './footer-keyboard-navigation.js';
 
 import { replaceKey } from '../../../features/placeholders.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
@@ -97,15 +99,32 @@ const base = miloLibs || codeRoot;
 const CONFIG = {
   socialPlatforms: ['facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'],
   delays: { decoration: 3000 },
-  containerBreakpoint: 900,
+  containerBreakpoint: 767,
 };
+
+let cachedDecorateMenu;
+export async function loadDecorateMenu() {
+  if (cachedDecorateMenu) return cachedDecorateMenu;
+
+  let resolve;
+  cachedDecorateMenu = new Promise((_resolve) => {
+    resolve = _resolve;
+  });
+  const url = `${miloLibs || codeRoot}/c2/blocks/global-footer/menu/menu.css`;
+  const [menu] = await Promise.all([
+    import('./menu/menu.js'),
+    loadStyles(url),
+  ]);
+
+  resolve(menu.default);
+  return cachedDecorateMenu;
+}
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
     this.elements = {};
     this.resizeObserver = null;
     this.resizeTimeout = null;
-    this.lastContainerWidth = null;
     this.footerOrderMediaQuery = null;
     this.footerOrderMediaQueryHandler = null;
     this.init();
@@ -228,11 +247,11 @@ class Footer {
       await task();
     }
     const fetchKeyboardNav = () => {
-      setupKeyboardNav(false);
+      setupFooterKeyboardNav();
     };
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
-    this.block.append(this.elements.footer);
+    this.block.append(this.elements.footer, this.elements.footerLogo);
     this.initFooterOptionsOrderSync();
     setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
     const { onFooterReady } = getConfig();
@@ -309,7 +328,7 @@ class Footer {
       featureProductsSection.append(this.decorateHeadline(headline, 0, 'footer'));
     }
 
-    const featuredProductsList = toFragment`<ul></ul>`;
+    const featuredProductsList = toFragment`<ul class="caption"></ul>`;
     featuredProductsContent.querySelectorAll('.link-group').forEach((linkGroup) => {
       featuredProductsList.append(toFragment`<li>${this.decorateLinkGroup(linkGroup)}</li>`);
     });
@@ -521,10 +540,10 @@ class Footer {
   };
 
   decorateFooter = () => {
-    this.elements.footer = toFragment`<div class="feds-footer-wrapper">
+    this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
-    <div class="feds-footer-options">
+    <div class="feds-footer-options caption">
       ${this.elements.regionPicker}
       <div class="feds-footer-miscLinks-legal">
         ${this.elements.legal}
@@ -532,16 +551,16 @@ class Footer {
       </div>
       ${this.elements.social}   
       </div>
-      <div class="feds-footer-logo">
-      <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
-      </div>
     </div>`;
-
+    const footerLogo = toFragment`<div class="feds-footer-logo">
+        <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
+      </div>`;
+    this.elements.footerLogo = footerLogo;
     return this.elements.footer;
   };
 
   isFooterMobileLayout = () => this.block.classList.contains('mobile')
-    || window.matchMedia('(max-width: 899px)').matches;
+    || window.matchMedia('(max-width: 1023px)').matches;
 
   syncFooterOptionsOrder = () => {
     const options = this.elements.footer?.querySelector('.feds-footer-options');
