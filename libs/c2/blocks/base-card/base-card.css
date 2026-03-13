@@ -112,10 +112,6 @@
       display: flex;
     }
   }
-
-  .section.three-up:has(.base-card) {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 @media (width >= 1024px) {
