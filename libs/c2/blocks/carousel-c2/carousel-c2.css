@@ -60,11 +60,22 @@
 
         .rich-content {
           width: 100%;
-          padding-bottom: var(--s2a-spacing-24);
           .foreground {
-            padding-inline: var(--s2a-spacing-24);
+            padding: var(--s2a-spacing-24);
             .content {
               max-width: 477px;
+
+              .opening-quote {
+                position: absolute;
+                transform: translateX(-100%);
+              }
+
+              [class*="body-"]:not(.action-area) {
+                min-width: unset;
+                width: unset;
+                max-width: unset;
+              }
+
               animation:  content-enter var(--animation-curve), content-enter-margin var(--animation-curve);
               animation-timeline: --carousel-wrapper, --carousel-wrapper;
               animation-range: entry 0% entry 100%, entry 0% cover 30%;
