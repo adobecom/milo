@@ -699,7 +699,7 @@ describe('MEP Lingo Fragments', () => {
     expect(section.querySelector('.mep-lingo')).to.not.exist;
   });
 
-  it('removes mep-lingo content on regional page with empty string base', async () => {
+  it('keeps authored content on regional page with empty string base', async () => {
     const regionalLocale = {
       ...mepLingoLocale,
       base: '',
@@ -717,8 +717,8 @@ describe('MEP Lingo Fragments', () => {
     const textBlock = section.querySelector('.text');
     document.body.appendChild(section);
     await getFragment(a);
-    expect(textBlock.dataset.failed).to.equal('true');
-    expect(textBlock.dataset.reason).to.include('Failed loading mep-lingo row');
+    expect(textBlock.textContent).to.include('Authored content');
+    expect(textBlock.textContent).to.not.include('mep-lingo');
   });
 
   it('keeps authored content when no regional targeting (lines 156-161)', async () => {
@@ -1507,83 +1507,87 @@ describe('fetchFragment and fetchMepLingo', () => {
   });
 });
 
-describe('MEP Lingo Prod Fallback (lingo not active)', () => {
+describe('MEP Lingo Fallback (lingo not active)', () => {
   let savedEnv;
-
-  beforeEach(() => {
-    savedEnv = getConfig().env;
-    updateConfig({ ...getConfig(), env: { name: 'prod' } });
-  });
 
   afterEach(() => {
     updateConfig({ ...getConfig(), env: savedEnv });
   });
 
-  it('keeps block and removes only the mep-lingo row on prod', async () => {
-    const section = document.createElement('div');
-    section.className = 'section';
-    section.innerHTML = `
-      <div class="marquee">
-        <div><div>Marquee Content</div></div>
-        <div>
-          <div>mep-lingo</div>
-          <div><a href="/fragments/regional-marquee">swap</a></div>
-        </div>
-      </div>`;
-    document.body.appendChild(section);
-    const a = section.querySelector('a');
+  ['prod', 'stage'].forEach((envName) => {
+    describe(`on ${envName}`, () => {
+      beforeEach(() => {
+        savedEnv = getConfig().env;
+        updateConfig({ ...getConfig(), env: { name: envName } });
+      });
 
-    await getFragment(a);
+      it('keeps block and removes only the mep-lingo row', async () => {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <div class="marquee">
+            <div><div>Marquee Content</div></div>
+            <div>
+              <div>mep-lingo</div>
+              <div><a href="/fragments/regional-marquee">swap</a></div>
+            </div>
+          </div>`;
+        document.body.appendChild(section);
+        const a = section.querySelector('a');
 
-    const marquee = section.querySelector('.marquee');
-    expect(document.body.contains(marquee)).to.be.true;
-    const rows = marquee.querySelectorAll(':scope > div');
-    expect(rows.length).to.equal(1);
-    expect(rows[0].textContent).to.include('Marquee Content');
-    section.remove();
-  });
+        await getFragment(a);
 
-  it('keeps section and removes mep-lingo row from section-metadata on prod', async () => {
-    const section = document.createElement('div');
-    section.className = 'section';
-    section.innerHTML = `
-      <div>Section Content</div>
-      <div class="section-metadata">
-        <div><div>style</div><div>dark</div></div>
-        <div>
-          <div>mep-lingo</div>
-          <div><a href="/fragments/regional-section">swap</a></div>
-        </div>
-      </div>`;
-    document.body.appendChild(section);
-    const a = section.querySelector('a');
+        const marquee = section.querySelector('.marquee');
+        expect(document.body.contains(marquee)).to.be.true;
+        const rows = marquee.querySelectorAll(':scope > div');
+        expect(rows.length).to.equal(1);
+        expect(rows[0].textContent).to.include('Marquee Content');
+        section.remove();
+      });
 
-    await getFragment(a);
+      it('keeps section and removes mep-lingo row from section-metadata', async () => {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <div>Section Content</div>
+          <div class="section-metadata">
+            <div><div>style</div><div>dark</div></div>
+            <div>
+              <div>mep-lingo</div>
+              <div><a href="/fragments/regional-section">swap</a></div>
+            </div>
+          </div>`;
+        document.body.appendChild(section);
+        const a = section.querySelector('a');
 
-    expect(document.body.contains(section)).to.be.true;
-    const sectionMetadata = section.querySelector('.section-metadata');
-    const metaRows = sectionMetadata.querySelectorAll(':scope > div');
-    expect(metaRows.length).to.equal(1);
-    expect(metaRows[0].querySelector('div').textContent).to.equal('style');
-    section.remove();
-  });
+        await getFragment(a);
 
-  it('removes mep-lingo insert block on prod when lingo not active', async () => {
-    const section = document.createElement('div');
-    section.className = 'section';
-    section.innerHTML = `
-      <div class="mep-lingo insert">
-        <div>
-          <div>mep-lingo</div>
-          <div><a href="/fragments/insert-content">swap</a></div>
-        </div>
-      </div>`;
-    document.body.appendChild(section);
-    const a = section.querySelector('a');
+        expect(document.body.contains(section)).to.be.true;
+        const sectionMetadata = section.querySelector('.section-metadata');
+        const metaRows = sectionMetadata.querySelectorAll(':scope > div');
+        expect(metaRows.length).to.equal(1);
+        expect(metaRows[0].querySelector('div').textContent).to.equal('style');
+        section.remove();
+      });
 
-    await getFragment(a);
+      it('removes mep-lingo insert block when lingo not active', async () => {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <div class="mep-lingo insert">
+            <div>
+              <div>mep-lingo</div>
+              <div><a href="/fragments/insert-content">swap</a></div>
+            </div>
+          </div>`;
+        document.body.appendChild(section);
+        const a = section.querySelector('a');
 
-    expect(section.querySelector('.mep-lingo')).to.be.null;
-    section.remove();
+        await getFragment(a);
+
+        expect(section.querySelector('.mep-lingo')).to.be.null;
+        section.remove();
+      });
+    });
   });
 });

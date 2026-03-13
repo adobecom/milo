@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix, lingoActive,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -92,7 +92,7 @@ export const removeMepLingoRow = (container) => {
 };
 
 export default async function init(a) {
-  const { decorateArea, mep, placeholders, locale, env } = getConfig();
+  const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   let url;
   let inline = false;
@@ -144,23 +144,9 @@ export default async function init(a) {
   const isMepLingoInsert = a.dataset.mepLingoInsert === 'true';
   const isMepLingoRemove = a.dataset.mepLingoRemove === 'true';
   const shouldFetchMepLingo = isMepLingoLink && !!await getMepLingoPrefix();
-  const isOnRegionalPage = locale?.base !== undefined;
 
   // Import mep/lingo.js once if this is a mep-lingo link
   const lingoModule = isMepLingoLink ? await import('../../features/mep/lingo.js') : null;
-
-  if (isMepLingoLink && (isOnRegionalPage || (!lingoActive() && env?.name !== 'prod'))) {
-    lingoModule.handleInvalidMepLingo(a, { env });
-    return;
-  }
-
-  if (isMepLingoLink && !lingoActive()) {
-    window.lana?.log(`mep-lingo content on non-lingo page: ${a.href}`, {
-      tags: 'mep-lingo',
-      severity: 'warn',
-      sampleRate: 0.1,
-    });
-  }
 
   let originalBlock;
   const isSectionSwap = a.dataset.mepLingoSectionSwap === 'true';
