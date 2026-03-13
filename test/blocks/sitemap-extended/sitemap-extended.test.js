@@ -30,6 +30,17 @@ const mockIndexResponses = {
       },
     ],
   },
+  'https://stage--da-bacom--adobecom.aem.live/ca-secondary/query-index.json?offset=0&limit=500': {
+    total: 1,
+    offset: 0,
+    limit: 500,
+    data: [
+      {
+        path: '/ca/resources/second-example.html',
+        title: 'Second English Example',
+      },
+    ],
+  },
   'https://stage--da-bacom--adobecom.aem.live/ca_fr/query-index.json?offset=0&limit=500': {
     total: 1,
     offset: 0,
@@ -168,11 +179,15 @@ describe('Sitemap Extended', () => {
     const canada = [...document.querySelectorAll('.sitemap-extended-item')]
       .find((item) => item.querySelector('summary').textContent.trim() === 'Canada');
     const labels = [...canada.querySelectorAll('.language-group h4')].map((heading) => heading.textContent.trim());
+    const englishGroup = [...canada.querySelectorAll('.language-group')]
+      .find((group) => group.querySelector('h4')?.textContent.trim() === 'English');
 
     expect(labels).to.deep.equal(['English', 'French']);
     expect(canada.querySelector('.language-group a[href="https://stage--da-bacom--adobecom.aem.live/ca/resources/example.html"]')).to.exist;
+    expect(canada.querySelector('.language-group a[href="https://stage--da-bacom--adobecom.aem.live/ca/resources/second-example.html"]')).to.exist;
     expect(canada.querySelector('.language-group a[href="https://stage--da-bacom--adobecom.aem.live/ca_fr/resources/exemple.html"]')).to.exist;
     expect(canada.querySelector('.language-group a[href="https://stage--da-bacom--adobecom.aem.live/ca/resources/example.html"]').textContent.trim()).to.equal('English Example');
+    expect(englishGroup.querySelectorAll('li')).to.have.length(2);
   });
 
   it('falls back to a title derived from the path when the query-index title is missing', () => {

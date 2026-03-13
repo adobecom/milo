@@ -2,6 +2,12 @@ import { createTag } from '../../utils/utils.js';
 
 const JSON_URL_PATTERN = /https?:\/\/[^\s<>"']+\.json(?:\?[^\s<>"']*)?/g;
 const NOINDEX_NOFOLLOW_PATTERN = /^noindex\s*,\s*nofollow$/i;
+// At the current measured upper bound (~687 KB per aggregated locale set),
+// 4 concurrent fetches keeps worst-case in-flight transfer near 2.75 MB.
+const MAX_CONCURRENT_FETCHES = 4;
+
+let activeFetches = 0;
+const fetchQueue = [];
 
 function getUrlList(cell) {
   const matches = cell.innerHTML.match(JSON_URL_PATTERN) || [];
@@ -36,6 +42,23 @@ function isNoindexNofollow(item) {
     && NOINDEX_NOFOLLOW_PATTERN.test(item.robots.trim());
 }
 
+async function runWithFetchLimit(task) {
+  if (activeFetches >= MAX_CONCURRENT_FETCHES) {
+    await new Promise((resolve) => {
+      fetchQueue.push(resolve);
+    });
+  }
+
+  activeFetches += 1;
+
+  try {
+    return await task();
+  } finally {
+    activeFetches -= 1;
+    fetchQueue.shift()?.();
+  }
+}
+
 function cleanTitle(title) {
   return title.replace(/\s*\|.*$/, '').trim();
 }
@@ -57,7 +80,7 @@ async function fetchQueryIndexPage(indexUrl, offset = 0, pageSize = 500) {
   url.searchParams.set('offset', offset);
   url.searchParams.set('limit', pageSize);
 
-  const response = await fetch(url.href);
+  const response = await runWithFetchLimit(() => fetch(url.href));
   if (!response.ok) throw new Error(`Failed to fetch ${url.href}: ${response.status}`);
   return response.json();
 }
@@ -82,19 +105,37 @@ async function fetchAllQueryIndexItems(indexUrl) {
   return items;
 }
 
-async function buildLanguageGroup(indexUrl, labelOverride, options = {}) {
-  const items = await fetchAllQueryIndexItems(indexUrl);
-  const filteredItems = options.includeNoindex
-    ? items
-    : items.filter((item) => !isNoindexNofollow(item));
+async function buildLanguageGroup(indexEntries, options = {}) {
+  const [firstEntry] = indexEntries;
+  const groups = await Promise.all(indexEntries.map(async ({ url }) => ({
+    url,
+    items: await fetchAllQueryIndexItems(url),
+  })));
+  const filteredItems = groups
+    .flatMap(({ url, items }) => items.map((item) => ({ sourceUrl: url, item })))
+    .filter(({ item }) => options.includeNoindex || !isNoindexNofollow(item));
+  const seenHrefs = new Set();
 
   return {
-    label: labelOverride || '',
-    items: filteredItems.map((item) => ({
-      href: toPageUrl(indexUrl, item),
+    label: firstEntry?.label || '',
+    items: filteredItems.map(({ sourceUrl, item }) => ({
+      href: toPageUrl(sourceUrl, item),
       title: toPageTitle(item),
-    })).filter((item) => item.href),
+    })).filter((item) => {
+      if (!item.href || seenHrefs.has(item.href)) return false;
+      seenHrefs.add(item.href);
+      return true;
+    }),
   };
+}
+
+function groupIndexEntries(indexEntries) {
+  return Object.values(indexEntries.reduce((acc, entry) => {
+    const key = entry.label || '__default__';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(entry);
+    return acc;
+  }, {}));
 }
 
 function createLanguageSection(group) {
@@ -117,10 +158,11 @@ async function createCountryItem(label, indexEntries, options = {}) {
   const details = createTag('details', { class: 'sitemap-extended-item' });
   const summary = createTag('summary', null, label);
   const body = createTag('div', { class: 'sitemap-extended-body' });
+  const groupedEntries = groupIndexEntries(indexEntries);
 
-  const groups = await Promise.all(indexEntries.map(async ({ url, label: groupLabel }) => {
+  const groups = await Promise.all(groupedEntries.map(async (entries) => {
     try {
-      return await buildLanguageGroup(url, groupLabel, options);
+      return await buildLanguageGroup(entries, options);
     } catch (e) {
       return null;
     }
