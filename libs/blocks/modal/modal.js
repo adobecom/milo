@@ -192,9 +192,18 @@ function addIframeKeydownListener(iframe, dialog) {
   }
 }
 
+function safeQuerySelector(selector) {
+  try {
+    return document.querySelector(selector);
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
   const { id, deepLink } = details || custom;
+  if (dialogLoadingSet.has(id) || safeQuerySelector(`.dialog-modal#${id}`)) return null;
   if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
   const activeElementData = document.activeElement.dataset;
   if (!isDeepLink
@@ -388,13 +397,17 @@ export default async function init(el) {
   return details ? getModal(details) : null;
 }
 
-function safeQuerySelector(selector) {
-  try {
-    return document.querySelector(selector);
-  } catch (e) {
-    return null;
-  }
-}
+document.addEventListener('click', async (e) => {
+  const anchor = e.target.closest('a[data-modal-hash]');
+  if (!anchor) return;
+  const { modalHash } = anchor.dataset;
+  if (window.location.hash !== modalHash) return;
+  e.preventDefault();
+  const id = modalHash.replace('#', '');
+  if (document.querySelector(`div.dialog-modal${modalHash}`) || dialogLoadingSet.has(id)) return;
+  const details = await findDetails(modalHash, anchor);
+  if (details) getModal(details);
+});
 
 // Click-based modal
 window.addEventListener('hashchange', async (e) => {
