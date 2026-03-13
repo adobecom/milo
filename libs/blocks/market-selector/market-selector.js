@@ -170,16 +170,10 @@ function handleLanguageSelect(langOption, config, currentMarketCode, opts = {}) 
   const { openInNewTab = false } = opts;
   const selectedLang = config.languages.find((lang) => (lang.prefix || '') === (langOption.value || ''));
   if (!selectedLang?.supportedRegions) return;
-  const supportedRegions = selectedLang.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
-  const targetMarketCode = supportedRegions.includes(currentMarketCode.toLowerCase())
-    ? currentMarketCode
-    : selectedLang.defaultMarket;
 
-  setMarket(targetMarketCode);
   setInternational(selectedLang.prefix || 'us');
 
   const finalUrl = new URL(langOption.url);
-  finalUrl.searchParams.set('country', targetMarketCode);
 
   handleEvent({
     prefix: selectedLang.prefix,
