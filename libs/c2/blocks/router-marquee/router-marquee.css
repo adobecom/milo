@@ -15,7 +15,6 @@
   inset: 0;
   opacity: 0;
   pointer-events: none;
-  transition: transform 500ms ease-in;
 }
 
 .rm-slide.is-active {
@@ -29,7 +28,11 @@
   inset: 0 -100px;
 }
 
-.rm-background { z-index: 0; }
+.rm-background {
+  z-index: 0;
+  transform: translateX(var(--slide-bg-x, 0)) translateY(var(--parallax-y, 0));
+  will-change: transform;
+}
 .rm-overlay { z-index: 1; }
 
 .rm-background picture {
@@ -306,7 +309,7 @@
   }
 
   .rm-overlay {
-    background: linear-gradient(120deg, rgba(0, 0, 0, 0.56) 0%, rgba(0, 0, 0, 0.22) 99%);
+    background: linear-gradient(108deg, rgba(0, 0, 0, 0.56) 0%, rgba(0, 0, 0, 0.22) 98.86%);;
   }
 
   .rm-content {
