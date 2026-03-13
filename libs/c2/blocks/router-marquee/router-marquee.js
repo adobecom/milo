@@ -1,11 +1,12 @@
-import { createTag, getFederatedUrl } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl, getFederatedContentRoot } from '../../../utils/utils.js';
 
 const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
-const AUTOPLAY_MS = 5000;
+const AUTOPLAY_MS = 15000;
 const TRANSITION_MS = 500;
 const ENTER_MS = 300;
 const SLIDE_SHIFT = 100;
+const RESUME_DELAY = 2000;
 
 const groupByViewport = (el) => {
   const viewports = {};
@@ -31,8 +32,14 @@ const decorateText = (textCol) => {
   heading?.previousElementSibling?.classList.add('rm-eyebrow');
 
   const eyebrow = textCol.querySelector('.rm-eyebrow');
+  const iconP = textCol.querySelector('p a[href*=".svg"]');
+  const labelP = iconP?.parentElement?.querySelector(
+    ':scope > p:has(a[href*=".svg"]) + p',
+  );
   const bodyPs = [...textCol.querySelectorAll('p')]
-    .filter((p) => !p.querySelector('a') && p !== eyebrow);
+    .filter((p) => !p.querySelector('a')
+    && [eyebrow, iconP, labelP].every((el) => el !== p));
+
   const body = createTag('div', { class: 'rm-body' });
   bodyPs[0].before(body);
   bodyPs.forEach((p) => body.append(p));
@@ -57,26 +64,40 @@ const decorateSlide = (slide) => {
   textCol?.classList.add('rm-content');
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), textCol);
 
+  const milo = imageCol?.querySelector('.milo-video');
+  const iframe = milo?.querySelector('iframe');
+  if (iframe?.src?.includes('.mp4')) {
+    const video = createTag('video', { playsinline: '', autoplay: '', muted: '', loop: '' });
+    video.appendChild(createTag('source', { src: iframe.src, type: 'video/mp4' }));
+    milo.replaceWith(video);
+  }
+
   if (!textCol) return;
   decorateText(textCol);
   decorateCtas(textCol);
 };
 
 const buildCard = (slide) => {
-  const link = slide.querySelector('a[href*=".svg"]');
-  if (!link) return null;
+  const iconP = [...slide.querySelectorAll('p')]
+    .find((p) => p.querySelector('img[src*=".svg"]'));
 
-  const svgHref = link.getAttribute('href');
-  const label = link.textContent.trim();
+  const labelP = iconP.nextElementSibling;
+  const iconImg = iconP.querySelector('img[src*=".svg"]');
+  const iconHref = getFederatedUrl(iconImg?.getAttribute('src'));
+  const label = labelP?.textContent.trim();
   const primaryHref = slide.querySelector('.con-button')?.getAttribute('href') || '';
 
-  link.closest('p')?.remove();
-  link.className = 'rm-card';
-  link.setAttribute('href', primaryHref);
-  link.replaceChildren(
+  iconP.remove();
+  labelP?.remove();
+
+  const card = createTag('a', {
+    class: 'rm-card',
+    href: primaryHref,
+  });
+  card.replaceChildren(
     createTag('img', {
       class: 'rm-card-icon',
-      src: getFederatedUrl(svgHref),
+      src: getFederatedUrl(iconHref),
       loading: 'lazy',
     }),
     createTag('div', { class: 'rm-card-content' }, [
@@ -88,7 +109,7 @@ const buildCard = (slide) => {
     ]),
   );
 
-  return link;
+  return card;
 };
 
 const buildCards = (slides) => {
@@ -98,6 +119,27 @@ const buildCards = (slides) => {
     if (card) cards.append(card);
   });
   return cards;
+};
+
+const buildPlayPause = () => {
+  const root = getFederatedContentRoot();
+  return createTag('a', {
+    class: 'rm-pause-play pause-play-wrapper',
+    role: 'button',
+    tabindex: '0',
+    'aria-label': 'Pause',
+  }, createTag('div', { class: 'offset-filler is-playing' }, [
+    createTag('img', {
+      class: 'accessibility-control pause-icon',
+      alt: 'Pause icon',
+      src: `${root}/federal/assets/svgs/accessibility-pause.svg`,
+    }),
+    createTag('img', {
+      class: 'accessibility-control play-icon',
+      alt: 'Play icon',
+      src: `${root}/federal/assets/svgs/accessibility-play.svg`,
+    }),
+  ]));
 };
 
 const reflow = (el) => el?.getBoundingClientRect();
@@ -113,16 +155,29 @@ const slideBar = (bar, from, to, ms, timing = 'linear') => {
   setBar(bar, to, ms, timing);
 };
 
-const startAutoplay = (slides, cards) => {
+const startAutoplay = (slides, cards, container, block) => {
   const cardEls = [...cards.children];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
+  const playPauseBtn = container.querySelector('.rm-pause-play');
+  const filler = playPauseBtn?.querySelector('.offset-filler');
   let active = 0;
   let timer = null;
   let paused = false;
+  let userPaused = false;
   let fillAnimation = null;
   let slideTimer = null;
   let slideTimer2 = null;
   let pendingSlide = null;
+  let leaveTimer = null;
+
+  const setPlayingState = (isPlaying) => {
+    filler?.classList.toggle('is-playing', isPlaying);
+    playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+  };
+
+  const pauseActiveVideo = () => {
+    slides[active]?.querySelector('video')?.pause();
+  };
 
   const stop = () => {
     clearTimeout(timer);
@@ -162,6 +217,7 @@ const startAutoplay = (slides, cards) => {
       oldSlide.style.opacity = '';
       oldSlide.style.zIndex = '';
       oldSlide.style.transform = '';
+      oldSlide.querySelector('video')?.pause();
 
       newSlide.style.transition = 'none';
       newSlide.style.transform = `translateX(${direction * SLIDE_SHIFT}px)`;
@@ -169,6 +225,13 @@ const startAutoplay = (slides, cards) => {
       reflow(newSlide);
       newSlide.style.transition = `transform ${ENTER_MS}ms ease-out`;
       newSlide.style.transform = '';
+
+      // This might need to be removed after I get feedback from design on
+      // whether the video should autoplay on hover or not
+      if (!userPaused && !paused) {
+        const vid = newSlide.querySelector('video');
+        if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+      }
 
       slideTimer2 = setTimeout(() => {
         pendingSlide = null;
@@ -193,11 +256,31 @@ const startAutoplay = (slides, cards) => {
   const pause = () => {
     stop();
     paused = true;
-    setBar(bars[active], '0%', TRANSITION_MS, 'ease-out');
+    setBar(bars[active], '0%', 0);
+    setPlayingState(false);
+    pauseActiveVideo();
+  };
+
+  const cancelLeaveTimer = () => {
+    clearTimeout(leaveTimer);
+    leaveTimer = null;
+  };
+
+  const startLeaveTimer = () => {
+    if (leaveTimer) return;
+    leaveTimer = setTimeout(() => {
+      leaveTimer = null;
+      if (!userPaused && paused) {
+        paused = false;
+        setPlayingState(true);
+        advance();
+      }
+    }, RESUME_DELAY);
   };
 
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
+      cancelLeaveTimer();
       if (i === active) { pause(); return; }
       stop();
       paused = true;
@@ -208,10 +291,43 @@ const startAutoplay = (slides, cards) => {
     });
   });
 
-  cards.addEventListener('mouseleave', () => {
+  container.addEventListener('mouseover', (e) => {
+    if (userPaused) return;
+    const interactive = e.target.closest('a, button');
+    if (interactive && !interactive.classList.contains('rm-pause-play')) {
+      cancelLeaveTimer();
+      if (!paused) pause();
+    }
+  });
+
+  block.addEventListener('mouseenter', cancelLeaveTimer);
+
+  block.addEventListener('mouseleave', () => {
+    if (userPaused) return;
+    if (paused) startLeaveTimer();
+  });
+
+  container.addEventListener('focusin', (e) => {
+    if (userPaused) return;
+    const interactive = e.target.closest('a, button');
+    if (interactive && !interactive.classList.contains('rm-pause-play')) {
+      cancelLeaveTimer();
+      if (!paused) pause();
+    }
+  });
+
+  playPauseBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
     if (paused) {
+      userPaused = false;
+      cancelLeaveTimer();
       paused = false;
+      setPlayingState(true);
       advance();
+    } else {
+      userPaused = true;
+      cancelLeaveTimer();
+      pause();
     }
   });
 
@@ -237,7 +353,7 @@ const buildViewport = (viewport, slides) => {
   slides[0]?.classList.add('is-active');
   const cards = buildCards(slides);
   cards.children[0]?.classList.add('is-active');
-  container.append(...slides, cards);
+  container.append(...slides, cards, buildPlayPause());
   return container;
 };
 
@@ -245,9 +361,13 @@ export default function init(el) {
   const viewports = groupByViewport(el);
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
+  el.querySelectorAll('.rm-background video').forEach((v) => {
+    v.muted = true;
+    v.play().catch(() => {});
+  });
   containers.forEach((container) => {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
-    if (slides.length && cards) startAutoplay(slides, cards);
+    if (slides.length && cards) startAutoplay(slides, cards, container, el);
   });
 }
