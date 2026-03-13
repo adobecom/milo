@@ -1,4 +1,4 @@
-.carousel {
+.carousel-c2 {
   --carousel-slide-width: calc(100% - var(--grid-margin-width) * 2);
   --carousel-hint-slide: calc((100% - min(var(--carousel-slide-width), 1600px)) / 2);
   --carousel-wrapper-offset: calc(min(1600px, var(--carousel-slide-width)) - var(--carousel-hint-slide));
@@ -106,7 +106,7 @@
 }
 
 @media (width >= 768px) {
-  .carousel {
+  .carousel-c2 {
     .carousel-wrapper {
       .carousel-slide {
         min-height: 542px;
@@ -230,7 +230,7 @@
 }
 
 @media (width >= 1280px) {
-  .carousel {
+  .carousel-c2 {
     --carousel-hint-slide: calc((100% - min(var(--carousel-slide-width), 1600px)) / 2);
     --carousel-wrapper-offset: calc(min(1600px, var(--carousel-slide-width)) - var(--carousel-hint-slide));
     .carousel-wrapper {
