@@ -103,6 +103,7 @@ const C1_BLOCKS = [
   'share',
   'susi-light-login',
   'reading-time',
+  'elastic-carousel',
 ];
 
 const C2_BLOCKS = [
