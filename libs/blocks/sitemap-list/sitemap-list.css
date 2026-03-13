@@ -1,5 +1,6 @@
 .sitemap-list {
   padding: var(--spacing-m) 0;
+  text-align: center;
 }
 
 .sitemap-list .sitemap-list-items {
@@ -16,4 +17,10 @@
 
 .sitemap-list .sitemap-list-item {
   margin: 0;
+  line-height: var(--type-body-m-lh);
+}
+
+.sitemap-list .sitemap-list-item a {
+  display: inline-block;
+  padding: var(--spacing-xxs) 0;
 }
