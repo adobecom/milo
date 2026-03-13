@@ -2234,12 +2234,13 @@ async function decorateLanguageBanner() {
   }
 }
 
-function preloadMarketsConfig() {
+function preloadMarketsConfig(callback) {
   const config = getConfig();
+  if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
   if (languageBannerEnabled !== 'on') return;
   const marketsUrl = getMarketsUrl();
-  loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }
 
 async function decorateDocumentExtras() {
