@@ -826,14 +826,13 @@ p {
   --parallax-translate-x: 0;
   --parallax-scale: 1;
   --parallax-blur: 0;
-  --parallax-stagger-factor: 1;
-  --parallax-stagger-drift: 64px;
+  --parallax-stagger-drift: 48px;
 
   /* Default range values */
   --parallax-range-start-name: entry;
   --parallax-range-start-length: 10%;
   --parallax-range-start: var(--parallax-range-start-name) var(--parallax-range-start-length);
-  --parallax-range-end-name: cover;
+  --parallax-range-end-name: contain;
   --parallax-range-end-length: 60%;
   --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
 
@@ -877,19 +876,6 @@ p {
 
 .parallax-opacity {
   --parallax-opacity-from: 0;
-}
-
-/* Staggering only on larger viewports */
-@media (width >= 1024px) {
-  .parallax-stagger-ltr {
-    --parallax-translate-y: calc(sibling-index() * var(--parallax-stagger-factor) * var(--parallax-stagger-drift));
-    --parallax-range-end: cover calc((sibling-index() + 1) * var(--parallax-stagger-factor) * 5%);
-  }
-
-  .parallax-stagger-rtl {
-    --parallax-translate-y: calc((sibling-count() - sibling-index() + 1) * var(--parallax-stagger-factor) * var(--parallax-stagger-drift));
-    --parallax-range-end: cover calc((sibling-count() - sibling-index() + 2) * var(--parallax-stagger-factor) * 5%);
-  }
 }
 
 .parallax-scale-down-grid {
