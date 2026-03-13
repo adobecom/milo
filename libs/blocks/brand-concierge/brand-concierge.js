@@ -222,6 +222,16 @@ async function openChatModal(initialMessage, el) {
       };
     }
 
+    const consentsConfig = window.alloy_all?.data?.adobe_corpnew?.otherConsents?.configuration;
+    const consentConfObject = consentsConfig
+      && Object.keys(consentsConfig).reduce((rdx, key) => {
+        rdx.push({
+          consentStandard: key,
+          consentStringValue: consentsConfig.configuration[key].toString()
+        });
+        return rdx;
+      }, []);
+
     content.xdm = {
       web: { webPageDetails: { URL: surfaceURL } },
       environment: {
@@ -230,6 +240,10 @@ async function openChatModal(initialMessage, el) {
       },
       homeAddress: { region: locale.region },
     };
+
+    if (consentConfObject.length) {
+      content.xdm.consentStrings = consentConfObject;
+    }
   };
 
   if (bootstrapAPIReady) {
