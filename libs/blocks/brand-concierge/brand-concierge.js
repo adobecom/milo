@@ -228,7 +228,7 @@ async function openChatModal(initialMessage, el) {
       && Object.keys(consentsConfig).reduce((rdx, key) => {
         rdx.push({
           consentStandard: key,
-          consentStringValue: consentsConfig.configuration[key].toString(),
+          consentStringValue: consentsConfig[key].toString(),
         });
         return rdx;
       }, []);
