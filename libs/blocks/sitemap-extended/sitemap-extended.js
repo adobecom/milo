@@ -1,6 +1,7 @@
 import { createTag } from '../../utils/utils.js';
 
 const JSON_URL_PATTERN = /https?:\/\/[^\s<>"']+\.json(?:\?[^\s<>"']*)?/g;
+const NOINDEX_NOFOLLOW_PATTERN = /^noindex\s*,\s*nofollow$/i;
 
 function getUrlList(cell) {
   const matches = cell.innerHTML.match(JSON_URL_PATTERN) || [];
@@ -28,6 +29,11 @@ function normalizePayload(payload) {
     offset: payload?.offset,
     limit: payload?.limit,
   };
+}
+
+function isNoindexNofollow(item) {
+  return typeof item?.robots === 'string'
+    && NOINDEX_NOFOLLOW_PATTERN.test(item.robots.trim());
 }
 
 function cleanTitle(title) {
@@ -76,12 +82,15 @@ async function fetchAllQueryIndexItems(indexUrl) {
   return items;
 }
 
-async function buildLanguageGroup(indexUrl, labelOverride) {
+async function buildLanguageGroup(indexUrl, labelOverride, options = {}) {
   const items = await fetchAllQueryIndexItems(indexUrl);
+  const filteredItems = options.includeNoindex
+    ? items
+    : items.filter((item) => !isNoindexNofollow(item));
 
   return {
     label: labelOverride || '',
-    items: items.map((item) => ({
+    items: filteredItems.map((item) => ({
       href: toPageUrl(indexUrl, item),
       title: toPageTitle(item),
     })).filter((item) => item.href),
@@ -104,20 +113,23 @@ function createLanguageSection(group) {
   return createTag('section', { class: 'language-group' }, content);
 }
 
-async function createCountryItem(label, indexEntries) {
+async function createCountryItem(label, indexEntries, options = {}) {
   const details = createTag('details', { class: 'sitemap-extended-item' });
   const summary = createTag('summary', null, label);
   const body = createTag('div', { class: 'sitemap-extended-body' });
 
   const groups = await Promise.all(indexEntries.map(async ({ url, label: groupLabel }) => {
     try {
-      return await buildLanguageGroup(url, groupLabel);
+      return await buildLanguageGroup(url, groupLabel, options);
     } catch (e) {
       return null;
     }
   }));
 
-  groups.filter((group) => group && group.items.length).forEach((group) => {
+  const renderedGroups = groups.filter((group) => group && group.items.length);
+  if (!renderedGroups.length) return null;
+
+  renderedGroups.forEach((group) => {
     body.append(createLanguageSection(group));
   });
 
@@ -166,16 +178,24 @@ function readRows(el) {
     .filter(Boolean);
 }
 
+function shouldIncludeNoindex(el) {
+  if (el.classList.contains('include-noindex')) return true;
+
+  const params = new URLSearchParams(window.location.search);
+  return params.get('sitemap-extended-include-noindex') === 'true';
+}
+
 export default async function init(el) {
   if (el.dataset.blockStatus === 'loaded') return;
 
   const rows = readRows(el);
   const list = createTag('div', { class: 'sitemap-extended-list foreground' });
+  const options = { includeNoindex: shouldIncludeNoindex(el) };
 
   const items = await Promise.all(
-    rows.map((row) => createCountryItem(row.label, row.indexEntries)),
+    rows.map((row) => createCountryItem(row.label, row.indexEntries, options)),
   );
-  items.forEach((item) => list.append(item));
+  items.filter(Boolean).forEach((item) => list.append(item));
 
   el.textContent = '';
   el.className = `sitemap-extended-container ${el.className}`;

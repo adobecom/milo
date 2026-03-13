@@ -4,13 +4,18 @@ import sinon from 'sinon';
 
 const mockIndexResponses = {
   'https://stage--da-bacom--adobecom.aem.live/br/query-index.json?offset=0&limit=500': {
-    total: 1,
+    total: 2,
     offset: 0,
     limit: 500,
     data: [
       {
         path: '/br/customer-success-stories/alpina-case-study.html',
         title: 'Alpina Case Study',
+      },
+      {
+        path: '/br/customer-success-stories/hidden-case-study.html',
+        title: 'Hidden Case Study',
+        robots: ' NoIndex,  NoFollow ',
       },
     ],
   },
@@ -94,6 +99,7 @@ const mockIndexResponses = {
       {
         path: '/mena_en/resources/example.html',
         title: 'MENA Example',
+        robots: 'NOINDEX, NOFOLLOW',
       },
     ],
   },
@@ -101,22 +107,45 @@ const mockIndexResponses = {
 
 describe('Sitemap Extended', () => {
   let init;
+  let originalSearch;
+
+  async function renderBlock(options = {}) {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    const block = document.querySelector('.sitemap-extended');
+
+    if (options.blockClass) {
+      block.classList.add(options.blockClass);
+    }
+
+    if (options.search) {
+      window.history.replaceState({}, '', `${window.location.pathname}${options.search}`);
+    }
+
+    await init(block);
+    return document.querySelector('.sitemap-extended-container');
+  }
 
   before(async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     ({ default: init } = await import('../../../libs/blocks/sitemap-extended/sitemap-extended.js'));
+    originalSearch = window.location.search;
 
     sinon.stub(window, 'fetch').callsFake(async (url) => ({
       ok: true,
       status: 200,
       json: async () => mockIndexResponses[url],
     }));
+  });
 
-    await init(document.querySelector('.sitemap-extended'));
+  beforeEach(async () => {
+    await renderBlock();
   });
 
   after(() => {
     sinon.restore();
+  });
+
+  afterEach(() => {
+    window.history.replaceState({}, '', `${window.location.pathname}${originalSearch}`);
   });
 
   it('renders country accordion items from configured rows', () => {
@@ -124,7 +153,7 @@ describe('Sitemap Extended', () => {
     const items = block.querySelectorAll('.sitemap-extended-item');
 
     expect(block).to.exist;
-    expect(items).to.have.length(7);
+    expect(items).to.have.length(6);
     expect([...items].map((item) => item.querySelector('summary').textContent.trim())).to.deep.equal([
       'Brazil',
       'Canada',
@@ -132,7 +161,6 @@ describe('Sitemap Extended', () => {
       'Denmark',
       'Thailand',
       'Latin America',
-      'Middle East & North Africa',
     ]);
   });
 
@@ -174,6 +202,17 @@ describe('Sitemap Extended', () => {
     expect(brazil.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/br/customer-success-stories/alpina-case-study.html"]')).to.exist;
   });
 
+  it('filters noindex, nofollow entries and removes empty countries by default', () => {
+    const brazil = [...document.querySelectorAll('.sitemap-extended-item')]
+      .find((item) => item.querySelector('summary').textContent.trim() === 'Brazil');
+
+    expect(brazil.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/br/customer-success-stories/hidden-case-study.html"]')).not.to.exist;
+    expect(
+      [...document.querySelectorAll('.sitemap-extended-item')]
+        .find((item) => item.querySelector('summary').textContent.trim() === 'Middle East & North Africa'),
+    ).not.to.exist;
+  });
+
   it('extracts query-index urls from list markup as well as inline text', () => {
     const thailand = [...document.querySelectorAll('.sitemap-extended-item')]
       .find((item) => item.querySelector('summary').textContent.trim() === 'Thailand');
@@ -183,10 +222,26 @@ describe('Sitemap Extended', () => {
   it('uses authored labels for non-country geo groups', () => {
     const latinAmerica = [...document.querySelectorAll('.sitemap-extended-item')]
       .find((item) => item.querySelector('summary').textContent.trim() === 'Latin America');
-    const mena = [...document.querySelectorAll('.sitemap-extended-item')]
-      .find((item) => item.querySelector('summary').textContent.trim() === 'Middle East & North Africa');
 
     expect(latinAmerica.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/la/resources/example.html"]')).to.exist;
+  });
+
+  it('includes noindex entries when the block has include-noindex', async () => {
+    const block = await renderBlock({ blockClass: 'include-noindex' });
+    const brazil = [...block.querySelectorAll('.sitemap-extended-item')]
+      .find((item) => item.querySelector('summary').textContent.trim() === 'Brazil');
+    const mena = [...block.querySelectorAll('.sitemap-extended-item')]
+      .find((item) => item.querySelector('summary').textContent.trim() === 'Middle East & North Africa');
+
+    expect(brazil.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/br/customer-success-stories/hidden-case-study.html"]')).to.exist;
+    expect(mena.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/mena_en/resources/example.html"]')).to.exist;
+  });
+
+  it('includes noindex entries when sitemap-extended-include-noindex=true is set', async () => {
+    const block = await renderBlock({ search: '?sitemap-extended-include-noindex=true' });
+    const mena = [...block.querySelectorAll('.sitemap-extended-item')]
+      .find((item) => item.querySelector('summary').textContent.trim() === 'Middle East & North Africa');
+
     expect(mena.querySelector('a[href="https://stage--da-bacom--adobecom.aem.live/mena_en/resources/example.html"]')).to.exist;
   });
 });
