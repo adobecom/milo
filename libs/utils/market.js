@@ -1,6 +1,6 @@
 import { getConfig, getCookie, getCountry, getMarketsUrl } from './utils.js';
 
-const norm = (c) => (c?.toLowerCase() === 'uk' ? 'gb' : c?.toLowerCase()?.split('_')[0]);
+export const norm = (c) => (c?.toLowerCase() === 'uk' ? 'gb' : c?.toLowerCase()?.split('_')[0]);
 
 export async function getMarketConfig() {
   try {

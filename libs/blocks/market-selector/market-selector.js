@@ -2,12 +2,13 @@
 import {
   createTag,
   getConfig,
+  getCookie,
   getFederatedContentRoot,
   getMetadata,
   setInternational,
   setMarket,
 } from '../../utils/utils.js';
-import { getMarketConfig, getValidatedMarket } from '../../utils/market.js';
+import { getMarketConfig, getValidatedMarket, norm } from '../../utils/market.js';
 
 async function loadMarketsData() {
   try {
@@ -174,6 +175,14 @@ function handleLanguageSelect(langOption, config, currentMarketCode, opts = {}) 
   setInternational(selectedLang.prefix || 'us');
 
   const finalUrl = new URL(langOption.url);
+
+  // When existing country cookie conflicts with selected language, override to language's default
+  const supported = selectedLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
+  const defaultMarket = selectedLang.defaultMarket || 'us';
+  if (getCookie('country') && !supported.includes(norm(currentMarketCode))) {
+    setMarket(defaultMarket);
+    finalUrl.searchParams.set('country', defaultMarket);
+  }
 
   handleEvent({
     prefix: selectedLang.prefix,
