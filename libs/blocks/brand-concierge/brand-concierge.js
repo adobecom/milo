@@ -367,32 +367,32 @@ function decorateFloatingButton(el) {
     if (floatingButtonClicked) return;
     floatingButtonClicked = true;
     openChatModal(null, el);
-    floatingButton.classList.add('modal-open');
-    floatingButton.classList.remove('modal-close');
-    const animationWait = setInterval(() => {
-      const inputContainer = document.querySelector('#brand-concierge-mount .input-container');
-      if (inputContainer) {
-        const modalInputH = inputContainer.getBoundingClientRect().height;
-        const modalInputW = inputContainer.getBoundingClientRect().width;
-        const modalLegalM = parseFloat(window.getComputedStyle(document.querySelector('#brand-concierge-mount .disclaimer-message')).marginTop);
-        const modalLegalH = document.querySelector('#brand-concierge-mount .disclaimer-message').getBoundingClientRect().height;
-        const modalInputTop = (modalLegalM * 2) + modalLegalH + modalInputH;
-        const floatingH = floatingButton.getBoundingClientRect().height;
-        const floatingM = parseFloat(window.getComputedStyle(floatingButton).marginBottom);
-        const floatingB = parseFloat(window.getComputedStyle(floatingButton).bottom);
-        const floatingTop = floatingH + floatingM;
-        const verticalTarget = floatingTop - modalInputTop + floatingB;
+    // floatingButton.classList.add('modal-open');
+    // floatingButton.classList.remove('modal-close');
+    // const animationWait = setInterval(() => {
+    //   const inputContainer = document.querySelector('#brand-concierge-mount .input-container');
+    //   if (inputContainer) {
+    //     const modalInputH = inputContainer.getBoundingClientRect().height;
+    //     const modalInputW = inputContainer.getBoundingClientRect().width;
+    //     const modalLegalM = parseFloat(window.getComputedStyle(document.querySelector('#brand-concierge-mount .disclaimer-message')).marginTop);
+    //     const modalLegalH = document.querySelector('#brand-concierge-mount .disclaimer-message').getBoundingClientRect().height;
+    //     const modalInputTop = (modalLegalM * 2) + modalLegalH + modalInputH;
+    //     const floatingH = floatingButton.getBoundingClientRect().height;
+    //     const floatingM = parseFloat(window.getComputedStyle(floatingButton).marginBottom);
+    //     const floatingB = parseFloat(window.getComputedStyle(floatingButton).bottom);
+    //     const floatingTop = floatingH + floatingM;
+    //     const verticalTarget = floatingTop - modalInputTop + floatingB;
 
-        el.style.setProperty('--bc-floating-anim-target', `${verticalTarget}px`);
-        el.style.setProperty('--bc-floating-anim-width', `${modalInputW - 4}px`);
+    //     el.style.setProperty('--bc-floating-anim-target', `${verticalTarget}px`);
+    //     el.style.setProperty('--bc-floating-anim-width', `${modalInputW - 4}px`);
 
-        clearTimeout(animationWait);
-      }
-    }, 50);
-    const floatingHide = setTimeout(() => {
-      floatingButton.classList.add('floating-hidden');
-      clearTimeout(floatingHide);
-    }, animationMs);
+    //     clearTimeout(animationWait);
+    //   }
+    // }, 50);
+    // const floatingHide = setTimeout(() => {
+    //   floatingButton.classList.add('floating-hidden');
+    //   clearTimeout(floatingHide);
+    // }, animationMs);
   });
 
   window.addEventListener('scroll', () => handleScroll(floatingButton));
