@@ -1,4 +1,5 @@
 /* eslint-disable no-underscore-dangle */
+import { debounce } from '../../utils/action.js';
 import {
   createTag,
   getConfig,
@@ -275,6 +276,8 @@ function createDropdown(
 
   const popover = createTag('div', { class: 'market-selector-popover' });
   const dragHandle = createTag('div', { class: 'market-selector-drag-handle' });
+  const dragHandleBar = createTag('div', { class: 'market-selector-drag-handle-bar' });
+  dragHandle.append(dragHandleBar);
   const searchContainer = createTag('div', { class: 'market-selector-search' });
   const searchInputWrapper = createTag('div', { class: 'search-input-wrapper' });
 
@@ -315,6 +318,8 @@ function createDropdown(
     delete popoverEl.dataset.open;
     popoverEl.classList.remove('fixed-height');
     popoverEl.style.removeProperty('--dropdown-initial-height');
+    popoverEl.style.removeProperty('transform');
+    popoverEl.style.removeProperty('transition');
     const containerEl = popoverEl.parentElement;
     const btn = containerEl?.querySelector('.market-selector-button');
     if (btn) btn.setAttribute('aria-expanded', 'false');
@@ -390,6 +395,8 @@ function createDropdown(
       if (analyticsLabel) sendAnalyticsEvent(`${analyticsLabel}:opened`);
       document.querySelectorAll('.market-selector-popover[data-open="true"]').forEach(closePopoverElement);
       popover.style.display = 'block';
+      popover.style.transform = '';
+      popover.style.transition = '';
       popover.dataset.open = 'true';
       button.setAttribute('aria-expanded', 'true');
       searchInput.value = '';
@@ -434,11 +441,11 @@ function createDropdown(
     searchInputWrapper?.classList.remove('focus-visible');
   });
 
-  searchInput.addEventListener('input', (e) => {
+  searchInput.addEventListener('input', debounce((e) => {
     const searchTerm = normalizeText(e.target.value.trim());
     const filtered = items.filter((item) => filterOptions(item, searchTerm));
     renderItems(filtered);
-  });
+  }, 200));
 
   list.addEventListener('keydown', (e) => {
     const focused = document.activeElement;
@@ -483,6 +490,155 @@ function createDropdown(
       button.focus();
     }
   });
+  // Mobile: drag handle or list-at-top swipe down to close; popover follows finger, then animates
+  const MIN_DRAG_PX = 5;
+  const SWIPE_DOWN_THRESHOLD = 100;
+  const CLOSE_ANIMATION_MS = 300;
+  let dragStartY = 0;
+  let dragTouchId = null;
+  let isDraggingHandle = false;
+  let hasDraggedHandle = false;
+  let listDragStartY = 0;
+  let listTouchId = null;
+  let listDragActive = false;
+  let hasDraggedList = false;
+  const dragListeners = {};
+
+  function removeDragListeners() {
+    document.removeEventListener('touchmove', dragListeners.move);
+    document.removeEventListener('touchend', dragListeners.end);
+    document.removeEventListener('touchcancel', dragListeners.end);
+  }
+
+  function onTouchMove(e) {
+    if (!isDraggingHandle || dragTouchId == null) return;
+    const touch = Array.from(e.touches).find((t) => t.identifier === dragTouchId);
+    if (!touch) return;
+    const deltaY = Math.max(0, touch.clientY - dragStartY);
+    if (deltaY > MIN_DRAG_PX) hasDraggedHandle = true;
+    popover.style.transition = 'none';
+    popover.style.transform = `translateY(${deltaY}px)`;
+  }
+
+  function finishDragGesture(clientY, startY, fromHandle) {
+    const deltaY = Math.max(0, clientY - startY);
+    const hasDragged = fromHandle ? hasDraggedHandle : hasDraggedList;
+    isDraggingHandle = false;
+    dragTouchId = null;
+    listDragActive = false;
+    hasDraggedHandle = false;
+    hasDraggedList = false;
+    if (fromHandle) removeDragListeners();
+
+    popover.style.transition = `transform ${CLOSE_ANIMATION_MS}ms ease`;
+
+    if (hasDragged && deltaY >= SWIPE_DOWN_THRESHOLD) {
+      popover.style.transform = 'translateY(100%)';
+      popover.addEventListener('transitionend', function onClosed() {
+        popover.removeEventListener('transitionend', onClosed);
+        closePopoverElement(popover);
+        button.focus();
+      }, { once: true });
+    } else {
+      popover.style.transform = 'translateY(0)';
+    }
+  }
+
+  function onDragEnd(clientY) {
+    if (!isDraggingHandle) return;
+    finishDragGesture(clientY, dragStartY, true);
+  }
+
+  function onTouchEnd(e) {
+    if (!e.changedTouches?.length || e.changedTouches[0].identifier !== dragTouchId) return;
+    if (popover.dataset.open !== 'true') {
+      isDraggingHandle = false;
+      dragTouchId = null;
+      removeDragListeners();
+      return;
+    }
+    onDragEnd(e.changedTouches[0].clientY);
+  }
+
+  dragListeners.move = onTouchMove;
+  dragListeners.end = onTouchEnd;
+
+  dragHandle.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 0) return;
+    isDraggingHandle = true;
+    hasDraggedHandle = false;
+    dragStartY = e.touches[0].clientY;
+    dragTouchId = e.touches[0].identifier;
+    document.addEventListener('touchmove', dragListeners.move, { passive: true });
+    document.addEventListener('touchend', dragListeners.end, { passive: true });
+    document.addEventListener('touchcancel', dragListeners.end, { passive: true });
+  }, { passive: true });
+
+  dragHandle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isDraggingHandle = true;
+    hasDraggedHandle = false;
+    dragStartY = e.clientY;
+
+    const onMouseMove = (moveEvent) => {
+      if (!isDraggingHandle) return;
+      const deltaY = Math.max(0, moveEvent.clientY - dragStartY);
+      if (deltaY > MIN_DRAG_PX) hasDraggedHandle = true;
+      popover.style.transition = 'none';
+      popover.style.transform = `translateY(${deltaY}px)`;
+    };
+
+    const onMouseUp = (upEvent) => {
+      finishDragGesture(upEvent.clientY, dragStartY, true);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  });
+
+  // List: when scrolled to top, swipe down to close (same animation as handle)
+  function onListTouchMove(e) {
+    if (listTouchId == null) return;
+    const touch = Array.from(e.touches).find((t) => t.identifier === listTouchId);
+    if (!touch) return;
+    const deltaY = touch.clientY - listDragStartY;
+    if (listDragActive) {
+      if (deltaY > MIN_DRAG_PX) hasDraggedList = true;
+      e.preventDefault();
+      popover.style.transition = 'none';
+      popover.style.transform = `translateY(${Math.max(0, deltaY)}px)`;
+    } else if (list.scrollTop === 0 && deltaY > 0) {
+      listDragActive = true;
+      if (deltaY > MIN_DRAG_PX) hasDraggedList = true;
+      e.preventDefault();
+      popover.style.transition = 'none';
+      popover.style.transform = `translateY(${deltaY}px)`;
+    }
+  }
+
+  function onListTouchEnd(e) {
+    if (!e.changedTouches?.length || e.changedTouches[0].identifier !== listTouchId) return;
+    const { clientY } = e.changedTouches[0];
+    listTouchId = null;
+    if (popover.dataset.open !== 'true') return;
+    if (!listDragActive) return;
+    finishDragGesture(clientY, listDragStartY, false);
+  }
+
+  list.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 0) return;
+    listDragStartY = e.touches[0].clientY;
+    listTouchId = e.touches[0].identifier;
+    listDragActive = false;
+    hasDraggedList = false;
+  }, { passive: true });
+
+  list.addEventListener('touchmove', onListTouchMove, { passive: false });
+
+  list.addEventListener('touchend', onListTouchEnd, { passive: true });
+  list.addEventListener('touchcancel', onListTouchEnd, { passive: true });
 
   return { container, updateItems: renderItems, button };
 }
