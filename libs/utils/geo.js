@@ -9,7 +9,12 @@ export const getAkamaiCode = () => new Promise((resolve, reject) => {
   fetch('https://geo2.adobe.com/json/', { cache: 'no-cache' }).then((resp) => {
     if (resp.ok) {
       resp.json().then((data) => {
-        const code = data.country.toLowerCase();
+        const country = data?.country;
+        if (country == null || typeof country !== 'string') {
+          reject(new Error('Something went wrong getting the akamai Code. No country in response'));
+          return;
+        }
+        const code = country.toLowerCase();
         sessionStorage.setItem('akamai', code);
         resolve(code);
       });

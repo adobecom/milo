@@ -31,15 +31,21 @@ export async function getValidatedMarket() {
   const countryFromGeo = await getCountry();
   let detectedMarket = countryParam || akamaiParam || cookieMarket || norm(countryFromGeo);
   if (!detectedMarket) {
-    const { default: getAkamaiCode } = await import('./geo.js');
-    detectedMarket = norm(await getAkamaiCode());
+    try {
+      const { default: getAkamaiCode } = await import('./geo.js');
+      detectedMarket = norm(await getAkamaiCode());
+    } catch {
+      // e.g. fetch disallowed in unit tests or geo service unavailable
+    }
   }
-  if (!config) return detectedMarket || 'us';
+  if (!config?.languages?.length) return detectedMarket || 'us';
   const { locale } = getConfig();
-  const prefix = locale.prefix?.replace('/', '') || '';
-  const currLang = config.languages.find((l) => (l.prefix || '') === prefix) || config.languages[0];
+  const prefix = locale?.prefix?.replace('/', '') || '';
+  const currLang = config.languages.find((l) => (l.prefix || '').replace('/', '') === prefix) || config.languages[0];
+  if (!currLang) return detectedMarket || 'us';
   const market = detectedMarket || currLang.defaultMarket || 'us';
-  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
-  const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
+  const supported = (currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [])
+    .filter(Boolean);
+  const validated = supported.length && supported.includes(market.toLowerCase()) ? market : (currLang.defaultMarket || 'us');
   return validated || 'us';
 }
