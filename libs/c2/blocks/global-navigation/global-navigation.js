@@ -21,7 +21,8 @@ function getFederalDomain(config) {
   }
 
   const env = getEnv(config);
-  if (env.name === 'stage') return 'https://www.stage.adobe.com/federal';
+  // Todo: Fix this to actual stage link
+  if (env.name === 'stage') return `${DEFAULT_FEDERAL_URL}/federal`;
   if (env.name === 'prod') return 'https://www.adobe.com/federal';
   return DEFAULT_FEDERAL_URL;
 }
