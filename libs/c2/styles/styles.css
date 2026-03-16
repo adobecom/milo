@@ -861,9 +861,9 @@ p {
   --parallax-translate-y: 100px;
 }
 
-.parallax-move-up-fast {
+div.section.parallax-move-up-fast {
   --parallax-pull-up: 70vh;
-
+  margin-bottom: -1px;
   animation-name: parallax-pull-up;
   animation-timing-function: linear;
   animation-fill-mode: both;
