@@ -9,9 +9,12 @@
   flex-direction: column;
 }
 
-.feds-navLink--hoverCaret[aria-expanded = "true"]:after,
-.feds-menu-headline[aria-expanded = "true"]:after {
+.feds-navLink--hoverCaret[aria-expanded = "true"]:after {
   transform: rotateZ(-135deg);
+}
+
+.feds-menu-headline[aria-expanded = "true"]:after {
+  transform: rotateZ(225deg);
 }
 
 /* General menu styles */
