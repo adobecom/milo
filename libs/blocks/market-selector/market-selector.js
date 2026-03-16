@@ -618,6 +618,7 @@ function createDropdown(
     }
   }
 
+  // List: when scrolled to top, swipe down to close
   function onListTouchEnd(e) {
     if (!e.changedTouches?.length || e.changedTouches[0].identifier !== listTouchId) return;
     const { clientY } = e.changedTouches[0];
