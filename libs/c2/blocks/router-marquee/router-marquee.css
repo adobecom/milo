@@ -259,7 +259,7 @@
     scrollbar-width: none;
   }
 
-  .section:has(+ .section.parallax-move-up-fast) .rm-cards {
+  .section:has(+ .section.parallax-move-up-fast) .rm-controls {
     inset: auto 24px 64px;
   }
 
