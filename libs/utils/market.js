@@ -1,6 +1,10 @@
 import { getConfig, getCookie, getCountry, getMarketsUrl } from './utils.js';
 
-export const norm = (c) => (c?.toLowerCase() === 'uk' ? 'gb' : c?.toLowerCase()?.split('_')[0]);
+export const norm = (c) => {
+  if (c == null || typeof c !== 'string') return undefined;
+  const lower = c.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+};
 
 export async function getMarketConfig() {
   try {
@@ -24,7 +28,8 @@ export async function getValidatedMarket() {
   const countryParam = norm(params.get('country'));
   const akamaiParam = norm(params.get('akamaiLocale'));
   const cookieMarket = getCookie('country');
-  let detectedMarket = countryParam || akamaiParam || cookieMarket || norm(getCountry());
+  const countryFromGeo = await getCountry();
+  let detectedMarket = countryParam || akamaiParam || cookieMarket || norm(countryFromGeo);
   if (!detectedMarket) {
     const { default: getAkamaiCode } = await import('./geo.js');
     detectedMarket = norm(await getAkamaiCode());
