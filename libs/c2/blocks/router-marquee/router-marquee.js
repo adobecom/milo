@@ -391,23 +391,6 @@ const buildViewport = (viewport, slides) => {
   return container;
 };
 
-/* --- Scroll parallax --- */
-
-const initScrollParallax = (el) => {
-  let ticking = false;
-  const update = () => {
-    ticking = false;
-    const { top, height } = el.getBoundingClientRect();
-    if (top >= 0) { el.style.removeProperty('--parallax-y'); return; }
-    const progress = Math.min(1, -top / height);
-    el.style.setProperty('--parallax-y', `${progress * PARALLAX_VH * window.innerHeight}px`);
-  };
-  window.addEventListener('scroll', () => {
-    if (!ticking) { ticking = true; requestAnimationFrame(update); }
-  }, { passive: true });
-  update();
-};
-
 const initVideos = (el) => {
   el.querySelectorAll('.rm-background video').forEach((v) => {
     v.muted = true;
@@ -427,5 +410,4 @@ export default function init(el) {
     const cards = container.querySelector('.rm-cards');
     startAutoplay(slides, cards, container, el);
   });
-  initScrollParallax(el);
 }
