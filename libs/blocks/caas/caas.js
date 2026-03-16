@@ -15,6 +15,7 @@ import {
 } from '../../utils/utils.js';
 
 const ROOT_MARGIN = 1000;
+const D_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1kZXYuYWRvYmVpb3J1bnRpbWUubmV0L2FwaS92MS93ZWIvY2hpbWVyYS0wLjAuMS9jb2xsZWN0aW9u');
 const P_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 const S_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1zdGFnZS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 
@@ -65,15 +66,25 @@ const loadCaas = async (a) => {
   const caasEndpoint = queryParams.get('caasendpoint');
   const caasContainer = queryParams.get('caascontainer');
 
-  if (host.includes('stage.adobe') || env?.name === 'local' || caasEndpoint === 'stage') {
+  if (host.includes('dev.adobe') || host.startsWith('dev--') || caasEndpoint === 'dev') {
+    chimeraEndpoint = D_CAAS_AIO;
+  } else if (host.includes('stage.adobe') || env?.name === 'local' || caasEndpoint === 'stage') {
     chimeraEndpoint = S_CAAS_AIO;
   } else if (host.includes(`.${SLD}.`) || caasEndpoint === 'prod') {
-    // If invoking URL is not an Acom URL, then switch to AIO
     chimeraEndpoint = P_CAAS_AIO;
   }
 
   if (host.includes(`${SLD}.page`) || env?.name === 'local' || caasContainer === 'draft') {
     state.draftDb = true;
+  }
+
+  const pathname = window.location.pathname;
+  const isEventsPage = pathname.endsWith('/events.html');
+  if (isEventsPage && host.includes('stage.adobe')) {
+    state.draftDb = true;
+  }
+  if (isEventsPage && chimeraEndpoint === P_CAAS_AIO && state.draftDb) {
+    chimeraEndpoint = S_CAAS_AIO;
   }
 
   state.endpoint = chimeraEndpoint;
