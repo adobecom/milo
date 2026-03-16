@@ -396,6 +396,9 @@
   --body-font-family: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
 
+  /* Animation properties */
+  --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
+
   /* Grid sizes */
   --grid-columns: 6;
   --grid-margin-width-base: 24px;
@@ -835,9 +838,6 @@ p {
   --parallax-range-end-name: contain;
   --parallax-range-end-length: 60%;
   --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
-
-  /* Animation properties */
-  --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
 
   animation-name: enable-parallax;
   animation-timing-function: var(--parallax-easing);
