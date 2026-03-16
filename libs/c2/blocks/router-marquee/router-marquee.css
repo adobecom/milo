@@ -119,6 +119,7 @@
 .rm-card {
   display: flex;
   text-decoration: none;
+  --rm-card-fg: white;
   color: white;
   border-radius: 8px;
   overflow: hidden;
@@ -130,7 +131,14 @@
   border: 1px solid rgba(255, 255, 255, 0.11);
 }
 
+.rm-card:hover,
+.rm-card:focus,
+.rm-card:active {
+  color: var(--rm-card-fg);
+}
+
 .rm-card.is-active {
+  --rm-card-fg: black;
   background: white;
   color: black;
   backdrop-filter: blur(156px);
