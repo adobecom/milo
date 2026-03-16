@@ -93,6 +93,10 @@
               }
 
             }
+
+            .action-area {
+              margin-top: var(--s2a-spacing-24);
+            }
           }
 
         }
