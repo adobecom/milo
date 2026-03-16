@@ -6,7 +6,7 @@
   --carousel-wrapper-offset: calc(min(var(--carousel-slide-max-width), var(--carousel-slide-width)) - var(--carousel-hint-slide));
   --carousel-slides-gap: 8px;
   --animation-curve: cubic-bezier(0.42, 0, 0, 1);
-  --carousel-animation-range: entry 10% contain 30%;
+  --carousel-animation-range: entry 10% contain 60%;
   --carousel-text-animation-range: entry 0% cover 30%;
   --carousel-animation-fill: both;
 
@@ -28,7 +28,7 @@
     transition: translate var(--transition-duration) var(--animation-curve);
     cursor: grab;
     will-change: translate;
-    animation: wrapper-enter, var(--animation-curve);
+    animation: wrapper-enter var(--animation-curve);
     animation-timeline: --carousel-wrapper;
     animation-fill-mode: var(--carousel-animation-fill);
     animation-range: var(--carousel-animation-range);
@@ -38,13 +38,13 @@
     }
 
     .carousel-slide {
-      max-width: var(--carousel-slide-max-width);;
+      max-width: var(--carousel-slide-max-width);
       max-height: var(--carousel-slide-max-height);
       height: 542px;
       flex: 1 0 var(--carousel-slide-width);
       overflow: clip;
       border-radius: var(--s2a-border-radius-16);
-      animation:  slide-enter, var(--animation-curve);
+      animation: slide-enter, var(--animation-curve);
       animation-timeline: --carousel-wrapper;
       animation-fill-mode: var(--carousel-animation-fill);
       animation-range: var(--carousel-animation-range);
@@ -76,7 +76,6 @@
               animation-timeline: view();
               animation-fill-mode: var(--carousel-animation-fill);
               animation-range: var(--carousel-text-animation-range);
-
 
               :is(h1, h2, h3, h4, h5, h6) {
                 margin-bottom: 8px;

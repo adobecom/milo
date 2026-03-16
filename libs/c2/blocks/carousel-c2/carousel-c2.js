@@ -244,7 +244,7 @@ function attachListeners(carouselEls) {
   });
 
   const slideToObserve = wrapper.querySelector('.active');
-  const mq = window.matchMedia('(width >= 1440px)');
+  const mq = window.matchMedia('(width >= 1280px)');
   let ro;
   function createObserver() {
     ro?.disconnect();
