@@ -863,13 +863,13 @@ p {
 }
 
 .parallax-move-up-fast {
-  --parallax-pull-up: 50vh;
+  --parallax-pull-up: 70vh;
 
   animation-name: parallax-pull-up;
   animation-timing-function: linear;
   animation-fill-mode: both;
   animation-timeline: view();
-  animation-range: entry 0% cover 40%;
+  animation-range: entry 46px cover 100%;
   position: relative;
   z-index: 2;
   view-timeline-name: --parallax-fast;
@@ -877,8 +877,13 @@ p {
   * {
     animation: text-reveal-up ease-out both;
     animation-timeline: --parallax-fast;
-    animation-range: cover 0% cover 15%;
+    animation-range: cover 0% cover 45%;
   }
+}
+
+.section.parallax-move-up-fast ~ .section {
+  background-color: white;
+  z-index: 1;
 }
 
 .section:has(+ .section.parallax-move-up-fast) {
@@ -900,7 +905,7 @@ p {
 }
 
 @keyframes parallax-pull-up {
-  from { margin-top: 0; }
+  from { margin-top: -46px; }
   to { margin-top: calc(-1 * var(--parallax-pull-up)); }
 }
 
