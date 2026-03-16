@@ -123,6 +123,7 @@
 
 .rm-cards {
   display: flex;
+  width: 100%;
 }
 
 .rm-card {
