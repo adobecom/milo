@@ -26,6 +26,10 @@ const animationMs = 500;
 
 const authoredContent = {};
 const variants = {};
+const params = new URL(document.location).searchParams;
+const webClient = params.get('webclient');
+
+let floatingButtonClicked = false;
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
@@ -77,13 +81,8 @@ function waitForCondition(checkFn, timeout = 5000, interval = 100) {
 function resetFloatingButton(el) {
   const floatingButton = el.querySelector('.bc-floating-button');
   if (floatingButton) {
-    floatingButton.classList.add('modal-close');
-    floatingButton.classList.remove('modal-open');
-    floatingButton.classList.remove('floating-hidden');
-
     const cleanup = setTimeout(() => {
-      floatingButton.classList.remove('modal-close');
-      floatingButton.classList.remove('is-clicked');
+      floatingButtonClicked = false;
       clearTimeout(cleanup);
     }, animationMs);
   }
@@ -102,7 +101,7 @@ async function openChatModal(initialMessage, el) {
     content: innerModal,
     closeCallback: async () => {
       const floatingButton = el.querySelector('.bc-floating-button');
-      if (floatingButton && floatingButton.classList.contains('is-clicked')) {
+      if (floatingButton && floatingButtonClicked) {
         resetFloatingButton(el);
       }
       modal.classList.add('closing');
@@ -123,11 +122,23 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  // New method: Load script and use bootstrap API
   const { env } = getConfig();
-  const src = env.name === 'prod'
-    ? 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js'
-    : 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  let src = stage;
+
+  if (env.name === 'prod') {
+    src = prod;
+  }
+
+  if (webClient === 'prod') {
+    console.log('prod', prod);
+    src = prod;
+  } else if (webClient === 'stage') {
+    console.log('stage', stage);
+    src = stage;
+  }
+
   await loadScript(src);
 
   const bootstrapAPIReady = await waitForCondition(
@@ -318,7 +329,6 @@ function decorateFloatingButton(el) {
   const floatingIcon = createTag('div', { class: 'bc-floating-icon' }, aiIcon('ai-icon-floating', 'floating-icon', chatLabelText, 20));
   const floatingInput = createTag('div', { class: 'bc-floating-input' }, authoredContent.input);
   const floatingSubmit = createTag('div', { class: 'bc-floating-submit' }, submitIcon);
-
   const floatingContainer = createTag('button', { class: 'bc-floating-button-container no-track', 'daa-ll': getAnalyticsLabel('floating-bc') }, [floatingIcon, floatingInput, floatingSubmit]);
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
@@ -353,39 +363,9 @@ function decorateFloatingButton(el) {
   };
 
   floatingButton.addEventListener('click', () => {
+    if (floatingButtonClicked) return;
+    floatingButtonClicked = true;
     openChatModal(null, el);
-    floatingButton.classList.add('modal-open');
-    floatingButton.classList.add('is-clicked');
-    floatingButton.classList.remove('modal-close');
-    const animationWait = setInterval(() => {
-      const inputContainer = document.querySelector('#brand-concierge-mount .input-container');
-      if (inputContainer) {
-        const modalInputH = inputContainer.getBoundingClientRect().height;
-        const modalInputW = inputContainer.getBoundingClientRect().width;
-        const modalLegalM = parseFloat(window.getComputedStyle(document.querySelector('#brand-concierge-mount .disclaimer-message')).marginTop);
-        const modalLegalH = document.querySelector('#brand-concierge-mount .disclaimer-message').getBoundingClientRect().height;
-        const modalInputTop = (modalLegalM * 2) + modalLegalH + modalInputH;
-        const floatingH = floatingButton.getBoundingClientRect().height;
-        const floatingM = parseFloat(window.getComputedStyle(floatingButton).marginBottom);
-        const floatingB = parseFloat(window.getComputedStyle(floatingButton).bottom);
-        const floatingTop = floatingH + floatingM;
-        const verticalTarget = floatingTop - modalInputTop + floatingB;
-        const mount = document.querySelector(`#${mountId}`);
-
-        el.style.setProperty('--bc-floating-anim-target', `${verticalTarget}px`);
-        el.style.setProperty('--bc-floating-anim-width', `${modalInputW - 4}px`);
-        mount.classList.add('input-hidden');
-        mount.classList.add('floating-click');
-
-        clearTimeout(animationWait);
-      }
-    }, 50);
-    const floatingHide = setTimeout(() => {
-      const mount = document.querySelector(`#${mountId}`);
-      floatingButton.classList.add('floating-hidden');
-      mount.classList.remove('input-hidden');
-      clearTimeout(floatingHide);
-    }, animationMs);
   });
 
   window.addEventListener('scroll', () => handleScroll(floatingButton));
