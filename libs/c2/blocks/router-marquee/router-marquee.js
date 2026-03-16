@@ -10,15 +10,33 @@ const TEXT_ENTER_MS = 380;
 const TEXT_ENTER_PX = 28;
 const BG_FADE_MS = 650;
 const BG_SHIFT_PX = 90;
-const HOVER_DELAY_MS = 50;
+const HOVER_DELAY_MS = 200;
 const PARALLAX_VH = 0.4;
 const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const RESUME_DELAY = 2000;
+const TRANSITION_MS = Math.max(BG_FADE_MS, TEXT_EXIT_MS + TEXT_GAP_MS + TEXT_ENTER_MS);
+
+/* --- Utilities --- */
+
+const reflow = (el) => el?.getBoundingClientRect();
+
+const clearInlineStyles = (el, props) => {
+  if (!el) return;
+  props.forEach((p) => { el.style[p] = ''; });
+};
+
+const resetSlide = (slide) => {
+  clearInlineStyles(slide, ['opacity', 'zIndex', 'transition', 'pointerEvents']);
+  clearInlineStyles(slide.querySelector('.rm-content'), ['transform', 'opacity', 'transition']);
+  const bg = slide.querySelector('.rm-background');
+  if (bg) { bg.style.transition = ''; bg.style.removeProperty('--slide-bg-x'); }
+};
+
+/* --- Viewport parsing --- */
 
 const groupByViewport = (el) => {
   const viewports = {};
   let current = null;
-
   [...el.children].forEach((row) => {
     const firstCol = row.querySelector(':scope > div');
     const breakpoint = BREAKPOINTS.find((b) => firstCol?.textContent.trim().toLowerCase() === b);
@@ -29,9 +47,10 @@ const groupByViewport = (el) => {
       viewports[current].push(row);
     }
   });
-
   return viewports;
 };
+
+/* --- Slide decoration --- */
 
 const decorateText = (textCol) => {
   const heading = textCol.querySelector('h1, h2');
@@ -39,44 +58,41 @@ const decorateText = (textCol) => {
   heading?.previousElementSibling?.classList.add('rm-eyebrow');
 
   const eyebrow = textCol.querySelector('.rm-eyebrow');
-  const iconP = textCol.querySelector('p a[href*=".svg"]');
-  const labelP = iconP?.parentElement?.querySelector(
-    ':scope > p:has(a[href*=".svg"]) + p',
-  );
-  const bodyPs = [...textCol.querySelectorAll('p')]
+  const icon = textCol.querySelector('p a[href*=".svg"]');
+  const label = textCol.querySelector(':scope > p:has(a[href*=".svg"]) + p');
+  const body = [...textCol.querySelectorAll('p')]
     .filter((p) => !p.querySelector('a')
-    && [eyebrow, iconP, labelP].every((el) => el !== p));
+    && [eyebrow, icon, label].every((x) => x !== p));
 
-  const body = createTag('div', { class: 'rm-body' });
-  bodyPs[0].before(body);
-  bodyPs.forEach((p) => body.append(p));
+  const bodyEl = createTag('div', { class: 'rm-body' });
+  body[0].before(bodyEl);
+  body.forEach((p) => bodyEl.append(p));
 };
 
 const decorateCtas = (textCol) => {
-  const ctaP = textCol.querySelector('p:has(em)');
-  if (!ctaP) return;
-  ctaP.classList.add('rm-ctas');
-  const primary = ctaP.querySelector('em > strong a');
-  const secondary = ctaP.querySelector('em > a');
+  const cta = textCol.querySelector('p:has(em)');
+  if (!cta) return;
+  cta.classList.add('rm-ctas');
+  const primary = cta.querySelector('em > strong a');
+  const secondary = cta.querySelector('em > a');
   primary?.classList.add('con-button', 'rm-cta-primary');
   secondary?.classList.add('con-button');
-  ctaP.replaceChildren(...[primary, secondary].filter(Boolean));
+  cta.replaceChildren(...[primary, secondary].filter(Boolean));
 };
 
 const decorateSlide = (slide) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
-
   slide.classList.add('rm-slide');
   imageCol?.classList.add('rm-background');
   textCol?.classList.add('rm-content');
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), textCol);
 
-  const milo = imageCol?.querySelector('.milo-video');
-  const iframe = milo?.querySelector('iframe');
+  const miloVideo = imageCol?.querySelector('.milo-video');
+  const iframe = miloVideo?.querySelector('iframe');
   if (iframe?.src?.includes('.mp4')) {
     const video = createTag('video', { playsinline: '', autoplay: '', muted: '', loop: '' });
     video.appendChild(createTag('source', { src: iframe.src, type: 'video/mp4' }));
-    milo.replaceWith(video);
+    miloVideo.replaceWith(video);
   }
 
   if (!textCol) return;
@@ -84,47 +100,36 @@ const decorateSlide = (slide) => {
   decorateCtas(textCol);
 };
 
+/* --- Card & control building --- */
+
 const buildCard = (slide) => {
-  const iconP = [...slide.querySelectorAll('p')]
+  const icon = [...slide.querySelectorAll('p')]
     .find((p) => p.querySelector('img[src*=".svg"]'));
+  const label = icon.nextElementSibling;
+  const iconSrc = getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
+  const labelText = label?.textContent.trim();
+  const href = slide.querySelector('.con-button')?.getAttribute('href') || '';
 
-  const labelP = iconP.nextElementSibling;
-  const iconImg = iconP.querySelector('img[src*=".svg"]');
-  const iconHref = getFederatedUrl(iconImg?.getAttribute('src'));
-  const label = labelP?.textContent.trim();
-  const primaryHref = slide.querySelector('.con-button')?.getAttribute('href') || '';
+  icon.remove();
+  label?.remove();
 
-  iconP.remove();
-  labelP?.remove();
-
-  const card = createTag('a', {
-    class: 'rm-card',
-    href: primaryHref,
-  });
+  const card = createTag('a', { class: 'rm-card', href });
   card.replaceChildren(
-    createTag('img', {
-      class: 'rm-card-icon',
-      src: getFederatedUrl(iconHref),
-      loading: 'lazy',
-    }),
+    createTag('img', { class: 'rm-card-icon', src: iconSrc, loading: 'lazy' }),
     createTag('div', { class: 'rm-card-content' }, [
-      createTag('span', { class: 'rm-card-label' }, label),
+      createTag('span', { class: 'rm-card-label' }, labelText),
       createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
     ]),
     createTag('div', { class: 'rm-card-progress' }, [
       createTag('div', { class: 'rm-card-progress-bar' }),
     ]),
   );
-
   return card;
 };
 
 const buildCards = (slides) => {
   const cards = createTag('div', { class: 'rm-cards' });
-  slides.forEach((slide) => {
-    const card = buildCard(slide);
-    if (card) cards.append(card);
-  });
+  slides.forEach((slide) => cards.append(buildCard(slide)));
   return cards;
 };
 
@@ -149,7 +154,7 @@ const buildPlayPause = () => {
   ]));
 };
 
-const reflow = (el) => el?.getBoundingClientRect();
+/* --- Progress bar helpers --- */
 
 const setBar = (bar, tx, ms, timing = 'linear') => {
   bar.style.transition = ms > 0 ? `transform ${ms}ms ${timing}` : 'none';
@@ -162,29 +167,62 @@ const slideBar = (bar, from, to, ms, timing = 'linear') => {
   setBar(bar, to, ms, timing);
 };
 
+/* --- Slide transition animations --- */
+
+const animateBgShift = (oldBg, newBg, direction) => {
+  const shift = window.matchMedia('(min-width: 1280px)').matches ? BG_SHIFT_PX : 0;
+  if (!shift || !oldBg || !newBg) return;
+
+  oldBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
+  oldBg.style.setProperty('--slide-bg-x', `${-direction * shift}px`);
+
+  newBg.style.transition = 'none';
+  newBg.style.setProperty('--slide-bg-x', `${direction * shift}px`);
+  reflow(newBg);
+  newBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
+  newBg.style.removeProperty('--slide-bg-x');
+};
+
+const animateContentExit = (content, direction) => {
+  if (!content) return;
+  content.style.transition = `transform ${TEXT_EXIT_MS}ms ${EASE}, opacity ${TEXT_EXIT_MS}ms ${EASE}`;
+  content.style.transform = `translateX(${-direction * TEXT_EXIT_PX}px)`;
+  content.style.opacity = '0';
+};
+
+const animateContentEnter = (content, direction) => {
+  if (!content) return null;
+  content.style.transition = 'none';
+  content.style.opacity = '0';
+  content.style.transform = `translateX(${direction * TEXT_ENTER_PX}px)`;
+  reflow(content);
+  return setTimeout(() => {
+    content.style.transition = `transform ${TEXT_ENTER_MS}ms ${EASE}, opacity ${TEXT_ENTER_MS}ms ${EASE}`;
+    content.style.transform = '';
+    content.style.opacity = '';
+  }, TEXT_EXIT_MS + TEXT_GAP_MS);
+};
+
+/* --- Autoplay engine --- */
+
 const startAutoplay = (slides, cards, container, block) => {
   const cardEls = [...cards.children];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
   const filler = playPauseBtn?.querySelector('.offset-filler');
-  let active = 0;
-  let timer = null;
-  let paused = false;
-  let userPaused = false;
-  let fillAnimation = null;
-  let slideTimer = null;
-  let slideTimer2 = null;
-  let pendingSlide = null;
-  let leaveTimer = null;
-  let hoverTimer = null;
+  let active = 0; // index of the current active slide
+  let timer = null; // timer for the autoplay
+  let paused = false; // whether the autoplay is paused
+  let fillAnimation = null; // animation instance for the progress bar
+  let slideTimer = null; // timer for delayed text entry animation
+  let cleanupTimer = null; // cleanup timer that resets temp inline styles
+  let pendingSlide = null; // the slide that is currently transitioning in
+  let leaveTimer = null; // timer for restarting autoplay on block mouse leave
+  let hoverTimer = null; // debounce timer for card hover
 
   const setPlayingState = (isPlaying) => {
     filler?.classList.toggle('is-playing', isPlaying);
     playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
-  };
-
-  const pauseActiveVideo = () => {
-    slides[active]?.querySelector('video')?.pause();
   };
 
   const stop = () => {
@@ -194,21 +232,12 @@ const startAutoplay = (slides, cards, container, block) => {
 
   const finishSlideTransition = () => {
     clearTimeout(slideTimer);
-    clearTimeout(slideTimer2);
+    clearTimeout(cleanupTimer);
     clearTimeout(hoverTimer);
     slideTimer = null;
-    slideTimer2 = null;
+    cleanupTimer = null;
     hoverTimer = null;
-    [...slides].forEach((s) => {
-      s.style.opacity = '';
-      s.style.zIndex = '';
-      s.style.transition = '';
-      s.style.pointerEvents = '';
-      const c = s.querySelector('.rm-content');
-      const b = s.querySelector('.rm-background');
-      if (c) { c.style.transform = ''; c.style.opacity = ''; c.style.transition = ''; }
-      if (b) { b.style.transition = ''; b.style.removeProperty('--slide-bg-x'); }
-    });
+    [...slides].forEach(resetSlide);
     if (pendingSlide) {
       pendingSlide.classList.add('is-active');
       pendingSlide = null;
@@ -220,17 +249,11 @@ const startAutoplay = (slides, cards, container, block) => {
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
-    const oldContent = oldSlide.querySelector('.rm-content');
-    const newContent = newSlide.querySelector('.rm-content');
-    const oldBg = oldSlide.querySelector('.rm-background');
-    const newBg = newSlide.querySelector('.rm-background');
-    const bgShift = window.matchMedia('(min-width: 1280px)').matches ? BG_SHIFT_PX : 0;
 
     oldSlide.classList.remove('is-active');
     oldSlide.style.opacity = '1';
     oldSlide.style.zIndex = '1';
     oldSlide.style.pointerEvents = 'none';
-
     newSlide.style.opacity = '1';
     newSlide.style.pointerEvents = 'auto';
     pendingSlide = newSlide;
@@ -239,66 +262,21 @@ const startAutoplay = (slides, cards, container, block) => {
     oldSlide.style.transition = `opacity ${BG_FADE_MS}ms ${EASE}`;
     oldSlide.style.opacity = '0';
 
-    if (bgShift && oldBg && newBg) {
-      oldBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
-      oldBg.style.setProperty('--slide-bg-x', `${-direction * bgShift}px`);
-
-      newBg.style.transition = 'none';
-      newBg.style.setProperty('--slide-bg-x', `${direction * bgShift}px`);
-      reflow(newBg);
-      newBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
-      newBg.style.removeProperty('--slide-bg-x');
-    }
-
-    if (oldContent) {
-      oldContent.style.transition = `transform ${TEXT_EXIT_MS}ms ${EASE}, opacity ${TEXT_EXIT_MS}ms ${EASE}`;
-      oldContent.style.transform = `translateX(${-direction * TEXT_EXIT_PX}px)`;
-      oldContent.style.opacity = '0';
-    }
-
-    if (newContent) {
-      newContent.style.transition = 'none';
-      newContent.style.opacity = '0';
-      newContent.style.transform = `translateX(${direction * TEXT_ENTER_PX}px)`;
-      reflow(newContent);
-
-      slideTimer = setTimeout(() => {
-        newContent.style.transition = `transform ${TEXT_ENTER_MS}ms ${EASE}, opacity ${TEXT_ENTER_MS}ms ${EASE}`;
-        newContent.style.transform = '';
-        newContent.style.opacity = '';
-      }, TEXT_EXIT_MS + TEXT_GAP_MS);
-    }
+    animateBgShift(
+      oldSlide.querySelector('.rm-background'),
+      newSlide.querySelector('.rm-background'),
+      direction,
+    );
+    animateContentExit(oldSlide.querySelector('.rm-content'), direction);
+    slideTimer = animateContentEnter(newSlide.querySelector('.rm-content'), direction);
 
     oldSlide.querySelector('video')?.pause();
-    if (!userPaused && !paused) {
+    if (!paused) {
       const vid = newSlide.querySelector('video');
       if (vid) { vid.muted = true; vid.play().catch(() => {}); }
     }
 
-    const totalMs = Math.max(BG_FADE_MS, TEXT_EXIT_MS + TEXT_GAP_MS + TEXT_ENTER_MS);
-    slideTimer2 = setTimeout(() => {
-      [oldSlide, newSlide].forEach((s) => {
-        s.style.opacity = '';
-        s.style.zIndex = '';
-        s.style.transition = '';
-        s.style.pointerEvents = '';
-      });
-      [oldContent, newContent].forEach((c) => {
-        if (!c) return;
-        c.style.transform = '';
-        c.style.opacity = '';
-        c.style.transition = '';
-      });
-      [oldBg, newBg].forEach((b) => {
-        if (!b) return;
-        b.style.transition = '';
-        b.style.removeProperty('--slide-bg-x');
-      });
-      newSlide.classList.add('is-active');
-      pendingSlide = null;
-      slideTimer = null;
-      slideTimer2 = null;
-    }, totalMs + 50);
+    cleanupTimer = setTimeout(finishSlideTransition, TRANSITION_MS + 50);
 
     cardEls[active]?.classList.remove('is-active');
     active = index;
@@ -318,7 +296,7 @@ const startAutoplay = (slides, cards, container, block) => {
     paused = true;
     setBar(bars[active], '0%', 0);
     setPlayingState(false);
-    pauseActiveVideo();
+    slides[active]?.querySelector('video')?.pause();
   };
 
   const cancelLeaveTimer = () => {
@@ -330,12 +308,18 @@ const startAutoplay = (slides, cards, container, block) => {
     if (leaveTimer) return;
     leaveTimer = setTimeout(() => {
       leaveTimer = null;
-      if (!userPaused && paused) {
-        paused = false;
-        setPlayingState(true);
-        advance();
-      }
+      paused = false;
+      setPlayingState(true);
+      advance();
     }, RESUME_DELAY);
+  };
+
+  const pauseOnInteraction = (e) => {
+    const target = e.target.closest('a, button');
+    if (target && !target.classList.contains('rm-pause-play')) {
+      cancelLeaveTimer();
+      if (!paused) pause();
+    }
   };
 
   cardEls.forEach((card, i) => {
@@ -355,46 +339,26 @@ const startAutoplay = (slides, cards, container, block) => {
     });
   });
 
-  container.addEventListener('mouseover', (e) => {
-    if (userPaused) return;
-    const interactive = e.target.closest('a, button');
-    if (interactive && !interactive.classList.contains('rm-pause-play')) {
-      cancelLeaveTimer();
-      if (!paused) pause();
-    }
-  });
-
+  container.addEventListener('mouseover', pauseOnInteraction);
+  container.addEventListener('focusin', pauseOnInteraction);
   block.addEventListener('mouseenter', cancelLeaveTimer);
 
   block.addEventListener('mouseleave', () => {
     clearTimeout(hoverTimer);
     hoverTimer = null;
-    if (userPaused) return;
     if (paused) startLeaveTimer();
-  });
-
-  container.addEventListener('focusin', (e) => {
-    if (userPaused) return;
-    const interactive = e.target.closest('a, button');
-    if (interactive && !interactive.classList.contains('rm-pause-play')) {
-      cancelLeaveTimer();
-      if (!paused) pause();
-    }
   });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     clearTimeout(hoverTimer);
     hoverTimer = null;
+    cancelLeaveTimer();
     if (paused) {
-      userPaused = false;
-      cancelLeaveTimer();
       paused = false;
       setPlayingState(true);
       advance();
     } else {
-      userPaused = true;
-      cancelLeaveTimer();
       pause();
     }
   });
@@ -415,6 +379,8 @@ const startAutoplay = (slides, cards, container, block) => {
   return { pause };
 };
 
+/* --- Viewport building --- */
+
 const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   slides.forEach((slide) => decorateSlide(slide));
@@ -424,6 +390,8 @@ const buildViewport = (viewport, slides) => {
   container.append(...slides, cards, buildPlayPause());
   return container;
 };
+
+/* --- Scroll parallax --- */
 
 const initScrollParallax = (el) => {
   let ticking = false;
@@ -440,18 +408,24 @@ const initScrollParallax = (el) => {
   update();
 };
 
-export default function init(el) {
-  const viewports = groupByViewport(el);
-  const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
-  el.replaceChildren(...containers);
+const initVideos = (el) => {
   el.querySelectorAll('.rm-background video').forEach((v) => {
     v.muted = true;
     v.play().catch(() => {});
   });
+};
+
+/* --- Entry point --- */
+
+export default function init(el) {
+  const viewports = groupByViewport(el);
+  const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
+  el.replaceChildren(...containers);
+  initVideos(el);
   containers.forEach((container) => {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
-    if (slides.length && cards) startAutoplay(slides, cards, container, el);
+    startAutoplay(slides, cards, container, el);
   });
   initScrollParallax(el);
 }
