@@ -1,4 +1,4 @@
-import { getEnv, getConfig, getMetadata } from '../../../utils/utils.js';
+import { getEnv, getConfig, getMetadata, localizeLink } from '../../../utils/utils.js';
 
 export default async function init(el) {
   const config = getConfig();
@@ -34,6 +34,7 @@ export default async function init(el) {
 
   const { main } = await import(`${federalDomain}/libs/global-navigation/dist/main.js`);
   main({
+    localizeLink,
     gnavSource: new URL(getMetadata('gnav-source')),
     asideSource: null,
     isLocalNav: false,
