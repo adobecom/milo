@@ -2085,15 +2085,25 @@ export function scrollToHashedElement(hash) {
 export async function loadDeferred(area, blocks, config) {
   if (area === document) {
     setTimeout(() => {
-      const list = getLocalizedLinksList();
+      const firstSection = document.querySelector('main > .section');
+      const firstSectionAnchors = firstSection ? firstSection.querySelectorAll('a') : [];
+      const list = [];
+      Array.from(firstSectionAnchors).forEach((a) => {
+        const source = getLocalizedSource(a.href);
+        if (source) {
+          list.push({ url: a.href, source });
+        }
+      });
       const primaryCount = list.filter((e) => e.source === 'primary').length;
       const otherCount = list.filter((e) => e.source === 'other').length;
       const totalLocalized = list.length;
-      const primaryPercent = totalLocalized > 0 ? Math.round((primaryCount / totalLocalized) * 100) : null;
+      const primaryPercent = totalLocalized > 0
+        ? Math.round((primaryCount / totalLocalized) * 100) : null;
       const statsDetail = { primaryCount, otherCount, totalLocalized, primaryPercent, list };
-      window.dispatchEvent(new CustomEvent(MILO_EVENTS.LINGO_LOCALIZATION_STATS, { detail: statsDetail }));
+      const eventName = MILO_EVENTS.LINGO_LOCALIZATION_STATS;
+      window.dispatchEvent(new CustomEvent(eventName, { detail: statsDetail }));
       console.log('[Milo]', MILO_EVENTS.LINGO_LOCALIZATION_STATS, statsDetail);
-    }, 15000);
+    }, 2000);
   }
 
   area.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
