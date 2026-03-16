@@ -38,7 +38,7 @@ export default {
   },
   disclaimer: {
     text: "Use of this beta AI chatbot is subject to Adobe's {Privacy Policy}. Don't share sensitive data. AI responses are not your Content, may be inaccurate, and any offers provided are non-binding. {Generative AI Terms}.",
-    threadText: 'AI responses may be inaccurate and any offers provided are non-binding. {Terms}.',
+    threadText: 'AI responses may be inaccurate and any offers provided are non-binding. {Generative AI Terms}.',
     links: [
       {
         text: 'Generative AI Terms',
