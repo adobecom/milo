@@ -344,7 +344,11 @@
     opacity: 0;
   }
 
-  40% {
+  10% {
+    opacity: 0;
+  }
+
+  30% {
     opacity: 1;
   }
 
@@ -360,9 +364,18 @@
     max-width: calc(280px - var(--bc-input-border-size) * 2);
   }
 
+  75% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 0;
+  }
+
   100% {
     transform: translateY(var(--bc-floating-anim-target));
     max-width: var(--bc-floating-anim-width);
+    opacity: 0;
   }
 }
 
@@ -410,13 +423,13 @@
 }
 
 .bc-floating-button.modal-open {
-  animation: var(--bc-modal-animation-time) ease-in-out floating-button-in-mobile;
+  animation: var(--bc-modal-animation-time) ease-out floating-button-in-mobile;
   animation-fill-mode: forwards;
   z-index: calc(var(--modal-z-index) + 1);
 }
 
 .bc-floating-button.modal-close {
-  animation: var(--bc-modal-animation-time) ease-in-out floating-button-out-mobile;
+  animation: var(--bc-modal-animation-time) ease-in floating-button-out-mobile;
   animation-fill-mode: forwards;
   z-index: calc(var(--modal-z-index) + 1);
 }
@@ -448,6 +461,10 @@
   border-color: var(--bc-floating-button-border-color-hover);
 }
 
+.bc-floating-button.modal-open:hover::before {
+  border-color: var(--bc-floating-button-border-color);
+}
+
 .bc-floating-button:hover .bc-floating-icon svg {
   height: 22px;
   width: 22px;
@@ -473,26 +490,6 @@
   background: transparent;
   margin-bottom: 8px;
 }
-
-@keyframes modal-input-hide {
-  from {
-    opacity: 0;
-  }
-  
-  to {
-    opacity: 1;
-  }
-}
-
-#brand-concierge-mount.floating-click .input-container {
-  transition: opacity 0s ease;
-}
-
-#brand-concierge-mount.input-hidden .input-container {
-  opacity: 0;
-  animation: modal-input-hide 0s ease var(--bc-modal-animation-time);
-  animation-fill-mode: forwards;
-} 
 
 /* hero */
 .brand-concierge.hero {
