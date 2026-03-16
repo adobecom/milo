@@ -4,8 +4,8 @@ let leaveTimeout;
 
 const onCarouselLeave = (event) => {
   clearTimeout(leaveTimeout);
+  const carousel = event.currentTarget;
   leaveTimeout = setTimeout(() => {
-    const carousel = event.currentTarget;
     carousel.classList.remove('stick-left');
     carousel.classList.remove('stick-right');
   }, 10);
@@ -64,7 +64,7 @@ const buildSlide = ({ slide, index }) => {
         ${slideObj.asset.videoSrc ? `<video src='${slideObj.asset.videoSrc}'/>` : ''}
       </div>
       <div class='elastic-carousel-item-footer'>
-        <h3>${slideObj.footer.title}</h3>
+        <strong>${slideObj.footer.title}</strong>
         <p>${slideObj.footer.text}</p>
       </div>
     </div>
