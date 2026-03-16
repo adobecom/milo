@@ -95,7 +95,7 @@
   .global-footer:not(.mobile) .feds-menu-content {
     display: grid;
     width: 100%;
-    max-width: var(--feds-maxWidth-nav);
+    max-width: var(--grid-max-width-wide);
     grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
     gap: 16px;
   }
