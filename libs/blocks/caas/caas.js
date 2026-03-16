@@ -60,7 +60,7 @@ const loadCaas = async (a) => {
   }
 
   const { env } = getConfig();
-  const { host, search } = window.location;
+  const { host, pathname, search } = window.location;
   let chimeraEndpoint = 'www.adobe.com/chimera-api/collection';
   const queryParams = new URLSearchParams(search);
   const caasEndpoint = queryParams.get('caasendpoint');
@@ -78,7 +78,6 @@ const loadCaas = async (a) => {
     state.draftDb = true;
   }
 
-  const pathname = window.location.pathname;
   const isEventsPage = pathname.endsWith('/events.html');
   if (isEventsPage && host.includes('stage.adobe')) {
     state.draftDb = true;
