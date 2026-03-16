@@ -284,6 +284,7 @@ span.feds-footer-privacyLink-divider {
   line-height: var(--s2a-typography-line-height-eyebrow);
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   padding: var(--s2a-spacing-lg) var(--s2a-spacing-xs);
+  min-height: calc(var(--s2a-typography-line-height-eyebrow) * 2rem);
 }
 
 .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-items {
