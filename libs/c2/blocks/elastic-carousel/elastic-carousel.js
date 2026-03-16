@@ -1,6 +1,8 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 let leaveTimeout;
+
+const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 
 const onCarouselLeave = (event) => {
   clearTimeout(leaveTimeout);
@@ -37,13 +39,14 @@ const onCarouselHover = (event) => {
 
 const buildSlide = ({ slide, index }) => {
   const children = [...slide.children];
+  const assetUrl = children[1].querySelector('img')?.src;
   const slideObj = {
     header: {
       iconSrc: children[0].querySelector('img')?.src,
       title: children[0].querySelector('p:not(:has(img))').innerText,
     },
     asset: {
-      imgSrc: children[1].querySelector('img')?.src,
+      imgSrc: isSvgUrl(assetUrl) ? getFederatedUrl(assetUrl) : assetUrl,
       videoSrc: children[1].querySelector('video')?.src,
     },
     footer: {
@@ -79,20 +82,18 @@ const buildSlide = ({ slide, index }) => {
   return slideEl;
 };
 
-const buildSlides = (carousel) => {
+const decorateCarousel = (carousel) => {
   const slides = [...carousel.children];
   const decoratedSlides = slides.map((slide, index) => buildSlide({ slide, index }));
-  // turn original div into carousel container
+  const carouselContainer = createTag('div', { class: 'elastic-carousel-container' });
+  decoratedSlides.forEach((slide) => carouselContainer.append(slide));
   carousel.replaceChildren();
-  const newCarousel = createTag('div', { class: carousel.className });
-  carousel.append(newCarousel);
-  carousel.className = 'elastic-carousel-container';
-  decoratedSlides.forEach((slide) => newCarousel.append(slide));
-  return newCarousel;
+  carousel.append(carouselContainer);
+  return carousel;
 };
 
 export default async function init(el) {
-  const decoratedCarousel = buildSlides(el);
+  const decoratedCarousel = decorateCarousel(el);
   disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
   decoratedCarousel.addEventListener('mouseover', onCarouselHover);
