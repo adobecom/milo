@@ -38,11 +38,6 @@
     border-radius: var(--s2a-border-radius-lg);
     overflow: clip;
     z-index: 3;
-  }
-
-  &.rounded-corners,
-  &.rounded-corners-top,
-  &.rounded-corners-bottom {
     margin-block: calc(-1 * var(--s2a-border-radius-lg));
   }
 
