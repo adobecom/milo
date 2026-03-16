@@ -32,7 +32,7 @@ import {
 import { replaceKey } from '../../../features/placeholders.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 
-const FOOTER_LOGO_SRC = new URL('./adobe-logo.svg', import.meta.url).href;
+const FOOTER_LOGO_FULL_SRC = new URL('./adobe-logo-full.svg', import.meta.url).href;
 
 const ADOBE_LOGO_DARK = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 179.35 46.86">
   <path fill="#AFAFAF" d="M76.93,30.93l-1.92,5.93c-0.08,0.2-0.2,0.32-0.44,0.32h-4.64c-0.28,0-0.36-0.16-0.32-0.4l8.01-23.1
@@ -553,7 +553,7 @@ class Footer {
       </div>
     </div>`;
     const footerLogo = toFragment`<div class="feds-footer-logo">
-        <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
+        <img src="${FOOTER_LOGO_FULL_SRC}" alt="Footer logo" />
       </div>`;
     this.elements.footerLogo = footerLogo;
     return this.elements.footer;
