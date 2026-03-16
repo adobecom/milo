@@ -4,12 +4,24 @@ const wcsElements = signal([]);
 const masFieldsMultipleFragmentWarnings = signal([]);
 const loading = signal(true);
 
+const ALLOWED_MAS_HOSTS = ['mas.adobe.com'];
+
+function isMasUrl(href) {
+  if (!href) return false;
+  try {
+    const url = new URL(href);
+    return ALLOWED_MAS_HOSTS.includes(url.host);
+  } catch {
+    return false;
+  }
+}
+
 function getFragmentIdFromMasElement(el) {
   if (el.tagName === 'MAS-FIELD') {
     const aem = el.querySelector('aem-fragment');
     return aem?.getAttribute('fragment') || null;
   }
-  if (el.tagName === 'A' && el.href?.includes('mas.adobe.com')) {
+  if (el.tagName === 'A' && isMasUrl(el.href)) {
     try {
       const { hash } = new URL(el.href);
       const sp = new URLSearchParams(hash?.slice(1) || '');
@@ -32,6 +44,12 @@ function getBlockContaining(el, section) {
     parent = parent.parentElement;
   }
   return null;
+}
+
+function getBlockLocation(element) {
+  const rect = element.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  return Math.round(rect.top + scrollTop);
 }
 
 function checkMasFieldsMultipleFragments() {
@@ -141,12 +159,6 @@ function isPromotionActive(promotion, instant, quantity = 1) {
   const endDate = new Date(end);
 
   return now >= startDate && now <= endDate;
-}
-
-function getBlockLocation(element) {
-  const rect = element.getBoundingClientRect();
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  return Math.round(rect.top + scrollTop);
 }
 
 async function checkUrl(url) {
