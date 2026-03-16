@@ -160,6 +160,16 @@ function handleMasonry(text, section) {
   });
 }
 
+function handleStickyFocus(section) {
+  if (!section.classList.contains('parallax-move-up-fast')) return;
+
+  section.addEventListener('focusin', () => {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 0);
+  });
+}
+
 function handleAnchor(anchor, section) {
   if (!anchor || !section) return;
   section.id = anchor.toLowerCase().trim().replaceAll(/\s+/g, '-');
@@ -184,4 +194,5 @@ export default async function init(el) {
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text[0], section);
   if (metadata.layout) handleStyle(metadata.layout.text, section);
+  handleStickyFocus(section);
 }
