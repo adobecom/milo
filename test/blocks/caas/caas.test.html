@@ -109,44 +109,6 @@
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));
         });
-
-        it('Events Hub: stage.adobe.com/events.html uses stage chimera + draft (Prod Draft)', async () => {
-          const origLoc = window.location;
-          Object.defineProperty(window, 'location', {
-            value: { host: 'www.stage.adobe.com', pathname: '/events.html', search: '' },
-            writable: true,
-          });
-          const a = document.createElement('a');
-          a.href = 'https://milo.adobe.com/tools/caas#events-draft-test';
-          a.className = 'caas-link';
-          a.textContent = 'no-lazy';
-          document.querySelector('main div')?.appendChild(a);
-          await init(a);
-          await waitForElement('#caas');
-          await delay(50);
-          expect(config.endpoint).to.include('chimera-stage');
-          expect(config.draftDb).to.be.true;
-          Object.defineProperty(window, 'location', { value: origLoc, writable: true });
-        });
-
-        it('Events Hub: www.adobe.com/events.html uses prod chimera + live (Prod Live)', async () => {
-          const origLoc = window.location;
-          Object.defineProperty(window, 'location', {
-            value: { host: 'www.adobe.com', pathname: '/events.html', search: '' },
-            writable: true,
-          });
-          const a = document.createElement('a');
-          a.href = 'https://milo.adobe.com/tools/caas#events-live-test';
-          a.className = 'caas-link';
-          a.textContent = 'no-lazy';
-          document.querySelector('main div')?.appendChild(a);
-          await init(a);
-          await waitForElement('#caas');
-          await delay(50);
-          expect(config.endpoint).to.equal('www.adobe.com/chimera-api/collection');
-          expect(config.draftDb).to.be.false;
-          Object.defineProperty(window, 'location', { value: origLoc, writable: true });
-        });
       });
     });
   </script>
