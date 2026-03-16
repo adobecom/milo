@@ -829,6 +829,7 @@ describe('Merch Block', () => {
       const upgradeEl = document.createElement('a');
       upgradeEl.classList.add('merch', 'cta');
       upgradeEl.setAttribute('href', '/tools/ost?osi=V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0&type=checkoutUrl&upgrade=true');
+      upgradeEl.setAttribute('aria-label', 'Buy Now Acrobat Studio');
       upgradeEl.textContent = 'Buy Now';
       merchCard.appendChild(upgradeEl);
       document.body.appendChild(merchCard);
@@ -839,6 +840,7 @@ describe('Merch Block', () => {
       await cta.onceSettled();
 
       expect(cta).to.exist;
+      expect(cta.getAttribute('aria-label')).to.equal('Upgrade Now Acrobat Studio');
 
       document.body.removeChild(merchCard);
       document.body.removeChild(upgradeOfferContainer);

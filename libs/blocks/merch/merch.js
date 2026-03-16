@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial,
+  shouldAllowKrTrial, getCountry,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -227,19 +227,7 @@ export function getMiloLocaleSettings(miloLocale) {
 
 export async function getGeoLocaleSettings(miloLocale) {
   const settings = getMiloLocaleSettings(miloLocale);
-  let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
-    || sessionStorage.getItem('akamai');
-  if (!country) {
-    try {
-      const { getAkamaiCode } = await import('../../utils/geo.js');
-      country = await getAkamaiCode(true);
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`, {
-        tags: 'merch',
-        severity: 'error',
-      });
-    }
-  }
+  let country = await getCountry();
   if (country) {
     country = country.toUpperCase();
     settings.country = country;
@@ -1376,6 +1364,60 @@ export async function addAriaLabelToCta(cta) {
   cta.setAttribute('aria-label', ariaLabel);
 }
 
+function escapeRegExp(value = '') {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function syncUpgradeAriaLabel(cta, originalText) {
+  if (!cta?.classList?.contains('upgrade')) return;
+
+  const resolvedText = cta.textContent?.trim();
+  const currentAriaLabel = cta.getAttribute('aria-label')?.trim();
+  const authoredText = originalText?.trim();
+  if (!resolvedText || !currentAriaLabel || !authoredText) return;
+
+  if (currentAriaLabel.toLowerCase().startsWith(resolvedText.toLowerCase())) return;
+
+  const authoredTextPrefix = new RegExp(`^${escapeRegExp(authoredText)}\\b`, 'i');
+  if (!authoredTextPrefix.test(currentAriaLabel)) return;
+
+  cta.setAttribute('aria-label', currentAriaLabel.replace(authoredTextPrefix, resolvedText));
+}
+
+function observeUpgradeAriaLabel(cta, originalText) {
+  let observer;
+  const trySync = () => {
+    syncUpgradeAriaLabel(cta, originalText);
+
+    const resolvedText = cta?.textContent?.trim();
+    const currentAriaLabel = cta?.getAttribute('aria-label')?.trim();
+    if (
+      cta?.classList?.contains('upgrade')
+      && resolvedText
+      && currentAriaLabel?.toLowerCase().startsWith(resolvedText.toLowerCase())
+    ) {
+      observer?.disconnect();
+    }
+  };
+
+  if (typeof MutationObserver === 'undefined') {
+    cta.onceSettled().then(trySync);
+    return;
+  }
+
+  observer = new MutationObserver(trySync);
+  observer.observe(cta, {
+    attributes: true,
+    attributeFilter: ['class', 'aria-label'],
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+
+  cta.onceSettled().then(trySync);
+  setTimeout(() => observer.disconnect(), 5000);
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG'
@@ -1422,6 +1464,7 @@ export async function buildCta(el, params) {
       await addAriaLabelToCta(cta);
     });
   }
+  observeUpgradeAriaLabel(cta, text);
 
   if (getMetadata('mas-ff-copy-cta') === 'on') {
     const { default: addCopyToClipboard } = await import(

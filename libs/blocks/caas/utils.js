@@ -742,12 +742,11 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
       if (countryStr === 'xx') {
         try {
-          geoCountry = getCountry()
+          geoCountry = await getCountry(true)
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
-            const { default: getAkamaiCode } = await import('../../utils/geo.js');
-            geoCountry = await getAkamaiCode(true);
+            geoCountry = await getCountry();
           }
 
           if (geoCountry) {
@@ -1073,6 +1072,9 @@ export const getConfig = async (originalState, strs = {}) => {
           transparent: !!state.bladeCardTransparent,
         },
       }),
+      // Include editorialOpenVariant if necessary
+      ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
+        && { editorialOpenVariant: !!state.editorialCardOpenVariant }),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,
