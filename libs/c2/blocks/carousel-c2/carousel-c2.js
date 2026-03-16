@@ -66,18 +66,27 @@ function decorateNavigation() {
   return [prevBtn, nextBtn];
 }
 
+function setActualSlideWidth(carousel, carouselWidth) {
+  const gridMarginProperty = getComputedStyle(carousel).getPropertyValue('--grid-margin-width');
+  const gridMarginPropertyValue = gridMarginProperty?.endsWith('%') ? parseFloat(gridMarginProperty) / 100 : parseFloat(gridMarginProperty);
+  const actualSlideWidth = carouselWidth - 2 * carouselWidth * gridMarginPropertyValue;
+  carousel.style.setProperty('--actual-slide-width', `${actualSlideWidth}px`);
+}
+
 function getMarginAndSlideWidth(slide) {
   const slideWidth = slide.getBoundingClientRect().width;
-  const carouselWidth = slide.closest('.carousel-c2').getBoundingClientRect().width;
+  const carousel = slide.closest('.carousel-c2');
+  const carouselWidth = carousel.getBoundingClientRect().width;
+  setActualSlideWidth(carousel, carouselWidth);
+
   return { marginWidth: (carouselWidth - slideWidth) / 2, slideWidth };
 }
 
 function goToActive(carouselEls, active) {
-  const { wrapper, marginWidth, slideWidth, allSlides } = carouselEls;
+  const { wrapper, marginWidth, slideWidth } = carouselEls;
   const indexOfActive = [...wrapper.children].indexOf(active);
   const gaps = indexOfActive * carouselGap;
   const translateValue = indexOfActive * slideWidth * -1 + marginWidth - gaps;
-  allSlides?.forEach((slide) => slide.classList.remove('remove-opacity'));
   wrapper.style.transition = 'none';
   wrapper.style.translate = `${translateValue}px`;
   // eslint-disable-next-line
@@ -165,25 +174,28 @@ function moveSlides(carouselEls, direction, e) {
   }
 
   const { allSlides } = carouselEls;
+  allSlides.forEach((slide) => slide.classList.remove('active-clone'));
 
   activeSlide.classList.remove('active');
   activeSlideIndicator.classList.remove('active');
   activeSlideIndicator.removeAttribute('aria-current');
+  let activeClone;
 
   if (direction === 'next') {
-    activeSlide.nextElementSibling?.classList.add('remove-opacity');
+    activeClone = handleNext(activeSlide, allSlides);
     activeSlide = handleNext(activeSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     if (eventType !== 'pointerup') nextBtn.focus();
   }
 
   if (direction === 'prev') {
-    activeSlide.previousElementSibling?.classList.add('remove-opacity');
+    activeClone = handlePrevious(activeSlide, allSlides);
     activeSlide = handlePrevious(activeSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     if (eventType !== 'pointerup') prevBtn.focus();
   }
   activeSlide.classList.add('active');
+  activeClone?.classList.add('active-clone');
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('aria-current', 'location');
   slideAnimation(carouselEls, activeSlide, direction);
