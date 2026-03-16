@@ -40,7 +40,19 @@ const cssPromise = (async () => {
 })();
 
 const plainHTMLPromise = (async () => {
-  const source = await getGnavSource();
+  let source = await getGnavSource();
+  // Event-based gnav: when event-idtest metadata is set, use -registered variant if user is registered (no MEP dependency)
+  const eventIdTest = getMetadata('event-idtest');
+  if (eventIdTest && typeof window.EVENT_DATA_PROMISE?.then === 'function') {
+    try {
+      const eventDetails = await window.EVENT_DATA_PROMISE;
+      if (eventDetails?.isRegistered) {
+        source = source.replace(/(\.plain\.html|\.html)?(#.*)?$/i, '-registered$1$2') || `${source}-registered`;
+      }
+    } catch {
+      // use base source when promise rejects (e.g. not signed in)
+    }
+  }
   const [url] = source.split('#');
   let federatedURL = getFederatedUrl(url);
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
