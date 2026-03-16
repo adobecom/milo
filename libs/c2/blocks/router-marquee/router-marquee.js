@@ -135,7 +135,7 @@ const buildCards = (slides) => {
 const buildPlayPause = () => {
   const root = getFederatedContentRoot();
   return createTag('a', {
-    class: 'rm-pause-play pause-play-wrapper',
+    class: 'rm-pause-play',
     role: 'button',
     tabindex: '0',
     'aria-label': 'Pause',
@@ -386,7 +386,9 @@ const buildViewport = (viewport, slides) => {
   slides[0]?.classList.add('is-active');
   const cards = buildCards(slides);
   cards.children[0]?.classList.add('is-active');
-  container.append(...slides, cards, buildPlayPause());
+  const controls = createTag('div', { class: 'rm-controls' });
+  controls.append(buildPlayPause(), cards);
+  container.append(...slides, controls);
   return container;
 };
 
