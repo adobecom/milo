@@ -205,7 +205,7 @@ export async function getModal(details, custom) {
   }
 
   dialogLoadingSet.add(id);
-  const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
+  const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true, tabindex: 0 });
   const loadedEvent = new Event('milo:modal:loaded');
 
   if (custom && !custom?.title) {
@@ -266,7 +266,7 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  const documentKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
+  const documentKeydownListener = (event) => (event.key === 'Escape') && close.click();
   dialog.addEventListener('keydown', documentKeydownListener);
   dialog._documentKeydownListener = documentKeydownListener;
 
