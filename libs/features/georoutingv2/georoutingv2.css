@@ -291,7 +291,7 @@ html:has(meta[name="foundation"][content="c2"]) {
       margin-top: var(--s2a-spacing-xs);
 
       &.top {
-        bottom: 40px;
+        bottom: var(--s2a-spacing-2xl);
       }
 
       li {
@@ -305,7 +305,6 @@ html:has(meta[name="foundation"][content="c2"]) {
           line-height: var(--s2a-typography-line-height-body-sm);
           letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
           box-sizing: border-box;
-          margin-right: 0;
           margin-inline-end: 0;
           width: 100%;
           text-decoration: none;
