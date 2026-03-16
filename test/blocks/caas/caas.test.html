@@ -35,7 +35,7 @@
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
-    import init from '../../../libs/blocks/caas/caas.js';
+    import init, { getChimeraConfig } from '../../../libs/blocks/caas/caas.js';
     import { loadScript, loadStyle } from '../../../libs/utils/utils.js';
     import { delay, waitForElement } from '../../helpers/waitfor.js';
 
@@ -108,6 +108,27 @@
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));
+        });
+
+        describe('Events Hub chimera mapping (getChimeraConfig)', () => {
+          it('stage.adobe.com/events.html uses stage chimera and draft', () => {
+            const { endpoint, draftDb } = getChimeraConfig('www.stage.adobe.com', '/events.html', '');
+            expect(endpoint).to.include('chimera-stage');
+            expect(draftDb).to.equal(true);
+          });
+
+          it('prod events.html with draft uses stage chimera and draft', () => {
+            const { endpoint, draftDb } = getChimeraConfig('www.adobe.com', '/events.html', '?caasendpoint=prod&caascontainer=draft');
+            expect(endpoint).to.include('chimera-stage');
+            expect(draftDb).to.equal(true);
+          });
+
+          it('prod events.html live uses prod chimera and no draft', () => {
+            const { endpoint, draftDb } = getChimeraConfig('www.adobe.com', '/events.html', '?caasendpoint=prod');
+            expect(endpoint).to.include('chimera.adobeioruntime');
+            expect(endpoint).to.not.include('chimera-stage');
+            expect(draftDb).to.equal(false);
+          });
         });
       });
     });

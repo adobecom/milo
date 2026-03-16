@@ -19,6 +19,43 @@ const D_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1kZXYuYWRvYmVpb3J1bnRpbWUubmV0L2
 const P_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 const S_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1zdGFnZS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 
+const DEFAULT_CHIMERA = 'www.adobe.com/chimera-api/collection';
+
+/**
+ * Returns chimera endpoint and draftDb for given location (used by loadCaas; exported for tests).
+ * @param {string} host - window.location.host
+ * @param {string} pathname - window.location.pathname
+ * @param {string} search - window.location.search
+ * @param {string} [envName] - getConfig()?.env?.name (e.g. 'local')
+ * @returns {{ endpoint: string, draftDb: boolean }}
+ */
+export function getChimeraConfig(host, pathname, search, envName) {
+  let chimeraEndpoint = DEFAULT_CHIMERA;
+  const queryParams = new URLSearchParams(search || '');
+  const caasEndpoint = queryParams.get('caasendpoint');
+  const caasContainer = queryParams.get('caascontainer');
+
+  if (host.includes('dev.adobe') || host.startsWith('dev--') || caasEndpoint === 'dev') {
+    chimeraEndpoint = D_CAAS_AIO;
+  } else if (host.includes('stage.adobe') || envName === 'local' || caasEndpoint === 'stage') {
+    chimeraEndpoint = S_CAAS_AIO;
+  } else if (host.includes(`.${SLD}.`) || caasEndpoint === 'prod') {
+    chimeraEndpoint = P_CAAS_AIO;
+  }
+
+  let draftDb = host.includes(`${SLD}.page`) || envName === 'local' || caasContainer === 'draft';
+
+  const isEventsPage = pathname && pathname.endsWith('/events.html');
+  if (isEventsPage && host.includes('stage.adobe')) {
+    draftDb = true;
+  }
+  if (isEventsPage && chimeraEndpoint === P_CAAS_AIO && draftDb) {
+    chimeraEndpoint = S_CAAS_AIO;
+  }
+
+  return { endpoint: chimeraEndpoint, draftDb };
+}
+
 const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
   if (placeholderUrl) {
     resolve(loadStrings(placeholderUrl));
@@ -61,32 +98,9 @@ const loadCaas = async (a) => {
 
   const { env } = getConfig();
   const { host, pathname, search } = window.location;
-  let chimeraEndpoint = 'www.adobe.com/chimera-api/collection';
-  const queryParams = new URLSearchParams(search);
-  const caasEndpoint = queryParams.get('caasendpoint');
-  const caasContainer = queryParams.get('caascontainer');
-
-  if (host.includes('dev.adobe') || host.startsWith('dev--') || caasEndpoint === 'dev') {
-    chimeraEndpoint = D_CAAS_AIO;
-  } else if (host.includes('stage.adobe') || env?.name === 'local' || caasEndpoint === 'stage') {
-    chimeraEndpoint = S_CAAS_AIO;
-  } else if (host.includes(`.${SLD}.`) || caasEndpoint === 'prod') {
-    chimeraEndpoint = P_CAAS_AIO;
-  }
-
-  if (host.includes(`${SLD}.page`) || env?.name === 'local' || caasContainer === 'draft') {
-    state.draftDb = true;
-  }
-
-  const isEventsPage = pathname.endsWith('/events.html');
-  if (isEventsPage && host.includes('stage.adobe')) {
-    state.draftDb = true;
-  }
-  if (isEventsPage && chimeraEndpoint === P_CAAS_AIO && state.draftDb) {
-    chimeraEndpoint = S_CAAS_AIO;
-  }
-
-  state.endpoint = chimeraEndpoint;
+  const { endpoint, draftDb } = getChimeraConfig(host, pathname, search, env?.name);
+  state.endpoint = endpoint;
+  state.draftDb = draftDb;
 
   initCaas(state, caasStrs, block);
 };
