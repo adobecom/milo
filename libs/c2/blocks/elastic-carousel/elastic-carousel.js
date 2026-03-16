@@ -1,16 +1,21 @@
 import { createTag } from '../../../utils/utils.js';
 
+let leaveTimeout;
+
 const onCarouselLeave = (event) => {
-  const carousel = event.currentTarget;
-  carousel.classList.remove('stick-left');
-  carousel.classList.remove('stick-right');
+  clearTimeout(leaveTimeout);
+  leaveTimeout = setTimeout(() => {
+    const carousel = event.currentTarget;
+    carousel.classList.remove('stick-left');
+    carousel.classList.remove('stick-right');
+  }, 10);
 };
 
 const disableHoverOnScroll = (carousel) => {
   let timer;
   window.addEventListener('scroll', () => {
-    carousel.classList.add('disable-hover');
     clearTimeout(timer);
+    carousel.classList.add('disable-hover');
     timer = setTimeout(() => {
       carousel.classList.remove('disable-hover');
     }, 150);
@@ -18,7 +23,7 @@ const disableHoverOnScroll = (carousel) => {
 };
 
 const onCarouselHover = (event) => {
-  const slide = event.target.closest('.elastic-carousel__item');
+  const slide = event.target.closest('.elastic-carousel-item');
   if (!slide) return;
   const slideIndex = slide.dataset.index * 1;
   const carousel = event.currentTarget;
@@ -45,30 +50,31 @@ const buildSlide = ({ slide, index }) => {
       title: children[2].querySelector('strong').innerText,
       text: children[2].querySelector('p:not(:has(strong))').innerText,
     },
+    link: children[2].querySelector('a').href,
   };
 
   const content = `
-    <div class='elastic-carousel__item-container'>
-      <div class='elastic-carousel__item-header'>
+    <div class='elastic-carousel-item-container'>
+      <div class='elastic-carousel-item-header'>
         <img src='${slideObj.header.iconSrc}'>
         <p>${slideObj.header.title}</p>
       </div>
-      <div class='elastic-carousel__item-media'>
+      <div class='elastic-carousel-item-media'>
         ${slideObj.asset.imgSrc ? `<img src='${slideObj.asset.imgSrc}'/>` : ''}
         ${slideObj.asset.videoSrc ? `<video src='${slideObj.asset.videoSrc}'/>` : ''}
       </div>
-      <div class='elastic-carousel__item-footer'>
+      <div class='elastic-carousel-item-footer'>
         <h3>${slideObj.footer.title}</h3>
         <p>${slideObj.footer.text}</p>
       </div>
     </div>
   `;
-  const slideEl = createTag('div', {
-    class: 'elastic-carousel__item',
+  const slideEl = createTag('a', {
+    class: 'elastic-carousel-item',
     tabindex: 0,
-    'aria-label': 'slide X',
+    href: slideObj.link,
     'data-index': index + 1,
-    'ddl-lh': '',
+    'aria-label': slideObj.header.title,
   }, content);
   return slideEl;
 };

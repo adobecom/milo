@@ -31,66 +31,68 @@
   transition: var(--elastic-carousel-transtions);
 }
 
-.elastic-carousel__item {
+.elastic-carousel-item {
   display: flex;
   flex-direction: column;
   position: relative;
+  text-decoration: none;
+  color: inherit;
   max-width: var(--elastic-carousel-item-max-width);
   width: calc(100vw/calc(var(--slides) - 1));
-  background-color: #F6F6F6;
-  border-radius: 1rem;
+  background-color: var(--s2a-color-gray-75);
+  border-radius: var(--s2a-border-radius-md);
   cursor: pointer;
   transition: var(--elastic-carousel-transtions-slow), background-color .25s ease-in;
 
   &:hover, 
   &:focus-visible {
-    background-color: #000;
+    background-color: var(--s2a-color-gray-1000);
     max-width: 496px;
     width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
     outline: none;
 
-    .elastic-carousel__item-footer p,
-    .elastic-carousel__item-footer h3,
-    .elastic-carousel__item-header p {
-      color: #fff;
+    .elastic-carousel-item-footer p,
+    .elastic-carousel-item-footer h3,
+    .elastic-carousel-item-header p {
+      color: var(--s2a-color-gray-25);
     }
   }
 }
 
-.elastic-carousel__item-header {
+.elastic-carousel-item-header {
   display: flex;
   flex-direction: row;
-  padding: 1rem;
-  gap: 1rem;
+  padding: var(--s2a-spacing-md);
+  gap: var(--s2a-spacing-md);
   img {
     width: 24px;
   }
   p {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: var(--s2a-font-size-sm);
+    font-weight: var(--s2a-font-weight-adobe-clean-bold);
     margin: 0;
     transition: var(--elastic-carousel-transtions);
   }
 }
 
-.elastic-carousel__item-media {
+.elastic-carousel-item-media {
   img {
-    border-radius: 1rem;
+    border-radius: var(--s2a-border-radius-md);
     object-fit: cover;
     height: 394px;
   }
 }
 
-.elastic-carousel__item-footer {
+.elastic-carousel-item-footer {
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: var(--s2a-spacing-md);
   max-width: 270px;
 
   &:after {
     content: '';
     display: block;
-    background: url('./icons/arrow.svg') no-repeat;
+    background: url('../../assets/img/arrow-right.svg') no-repeat;
     width: 24px;
     height: 24px;
     margin: 24px;
@@ -98,14 +100,14 @@
     right: 0;
     bottom: 0;
     opacity: 0;
-    transition: var(--elastic-carousel-transtions);
+    transition: none;
   }
   
   h3 {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: var(--s2a-font-size-md);
+    font-weight: var(--s2a-font-weight-adobe-clean-bold);
     margin: 0;
-    line-height: 20px;
+    line-height: var(--s2a-font-line-height-20);
     transition: var(--elastic-carousel-transtions);
   }
   p {
@@ -119,18 +121,6 @@
     -webkit-line-clamp: 2;
     overflow: hidden;
   }
-}
-
-/** temp helpers */
-.before, .after {
-  height: 0;
-  background-color: #000;
-  margin: 0;
-  color: white;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 32px;
-  padding: 20vh 0;
 }
 
 /** custom media rules */
@@ -154,14 +144,14 @@
   }
   .elastic-carousel-container {
     .elastic-carousel {
-     
+
       --start-margin: 50%;
       /** animation */
       animation: slideIn linear both;
       animation-timeline: view();
       animation-range: entry 0% exit 100%;
-      
-      .elastic-carousel__item {
+
+      .elastic-carousel-item {
         --start-gap: 2rem;
         --end-gap: .25rem;
 
@@ -173,8 +163,13 @@
 
         &:hover, 
         &:focus-visible {
-          .elastic-carousel__item-footer:after {
+          .elastic-carousel-item-footer:after {
             opacity: 1;
+            background-color: white;
+            border-radius: var(--s2a-border-radius-round);
+            background-position: 55% 50%;
+            background-size: 8px;
+            position: absolute;
           }
         }
         &:first-child { margin-left: 0 !important; }
@@ -187,9 +182,9 @@
 /* mobile only */
 @media (width < 768px) {
   .elastic-carousel-container {
-    --offset-adjuster: 60px;
-    --offset-scale: .8;
-    --last-offset: 12rem;
+    --offset-adjuster: 50px;
+    --offset-scale: .75;
+    --last-offset: 4rem;
 
     height: auto;
     overflow: visible;
@@ -202,7 +197,7 @@
       transform: unset;
       display: grid;
       gap: 20vh;
-      .elastic-carousel__item {
+      .elastic-carousel-item {
         position: sticky;
         top: 10%;
         width: 100%;
@@ -215,23 +210,23 @@
         animation-range: entry 0% exit 100%;
         /** if we go with dynamic amount of slides, below stuff can be moved to JS */
         &:nth-child(1) { --stack-offset: 0rem;               z-index:1; --stack-contrast: 0;   --stack-shrink: 4rem; }
-        &:nth-child(2) { --stack-offset: 3rem;               z-index:2; --stack-contrast: .25; --stack-shrink: 3rem; }
-        &:nth-child(3) { --stack-offset: 6rem;               z-index:3; --stack-contrast: .5;  --stack-shrink: 2rem; }
-        &:nth-child(4) { --stack-offset: 9rem;               z-index:4; --stack-contrast: .75; --stack-shrink: 1rem; }
+        &:nth-child(2) { --stack-offset: 1rem;               z-index:2; --stack-contrast: .25; --stack-shrink: 3rem; }
+        &:nth-child(3) { --stack-offset: 2rem;               z-index:3; --stack-contrast: .5;  --stack-shrink: 2rem; }
+        &:nth-child(4) { --stack-offset: 3rem;               z-index:4; --stack-contrast: .75; --stack-shrink: 1rem; }
         &:nth-child(5) { --stack-offset: var(--last-offset); z-index:5; --stack-contrast: 1;   --stack-shrink: 0rem; }
         &:last-child {
           height: auto;
         }
 
-        .elastic-carousel__item-container {
-          background-color: #000;
-          border-radius: 1.5rem;
+        .elastic-carousel-item-container {
+          background-color: var(--s2a-color-gray-1000);
+          border-radius: var(--s2a-border-radius-md);
           animation: shrink linear both;
           animation-timeline: view();
           animation-range: entry 0% exit 100%;
 
-          .elastic-carousel__item-header {
-            padding: 1.5rem;
+          .elastic-carousel-item-header {
+            padding: var(--s2a-spacing-lg);
             &:after {
               content: '';
               display: flex;
@@ -239,13 +234,13 @@
               width: 24px;
               height: 24px;
               margin-left: auto;
-              transition: var(--elastic-carousel-transtions);
+              transition:none
             }
           }
 
-          .elastic-carousel__item-media {
+          .elastic-carousel-item-media {
             img {
-              border-radius: 0;
+              border-radius: var(--s2a-border-radius-0);
             }
           }
         }
