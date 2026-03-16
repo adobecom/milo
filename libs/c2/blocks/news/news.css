@@ -11,13 +11,6 @@
       justify-content: flex-start;
       gap: var(--s2a-spacing-xs);
 
-      & > .headline-text {
-        font-size: var(--s2a-font-size-h3);
-        font-weight: var(--s2a-font-weight-bold);
-        line-height: var(--s2a-line-height-h3);
-        color: var(--s2a-color-content-headline);
-      }
-
       & .icon {
         width: var(--s2a-spacing-24);
         height: var(--s2a-spacing-24);
