@@ -75,6 +75,7 @@ function getTargetUrl(targetPrefix, currentPath) {
 
 const queriedPages = [];
 
+// handles the event for the market selector
 function handleEvent({ prefix, link, callback, fallbackUrl } = {}) {
   if (typeof callback !== 'function') return;
   const { baseSitePath } = getConfig();
