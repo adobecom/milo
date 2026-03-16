@@ -90,6 +90,11 @@
   &.masonry-responsive {
     display: grid;
   }
+
+  &.product-grid[class*='-up'] {
+    align-items: stretch;
+    grid-auto-rows: initial;
+  }
 }
 
 .section[class*='grid-width-'] {
@@ -150,6 +155,10 @@
   .section.one-up-tablet { grid-template-columns: 1fr; }
   .section.three-up-tablet { grid-template-columns: repeat(3, 1fr); }
   .section.four-up-tablet { grid-template-columns: repeat(4, 1fr); }
+
+  .section.product-grid[class*='-up'] {
+    grid-auto-rows: 1fr;
+  }
 }
 
 @media (width >= 1024px) {

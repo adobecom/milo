@@ -1,18 +1,36 @@
-import { getEnv, getConfig, getMetadata } from '../../../utils/utils.js';
+import { getEnv, getConfig, getMetadata, localizeLink } from '../../../utils/utils.js';
+
+const FEDERAL_BRANCH_PATTERN = /^[a-z0-9-]+(?:--[a-z0-9-]+)*$/;
+const DEFAULT_FEDERAL_URL = 'https://stage--federal--adobecom.aem.page';
+
+function getFederalDomain(config) {
+  const queryParams = new URLSearchParams(window.location.search);
+  const federalLibsParam = queryParams.get('federallibs');
+  if (federalLibsParam?.trim()) {
+    const sanitized = federalLibsParam.trim().toLowerCase();
+    if (sanitized === 'local') return 'http://localhost:3000/federal';
+
+    const extension = window.location.hostname.endsWith('.page') ? 'page' : 'live';
+    if (!FEDERAL_BRANCH_PATTERN.test(sanitized)) return DEFAULT_FEDERAL_URL;
+    const segments = sanitized.split('--').filter(Boolean);
+    const branch = (() => {
+      if (segments.length >= 2) return sanitized;
+      return `${sanitized}--federal--adobecom`;
+    })();
+    return `https://${branch}.aem.${extension}`;
+  }
+
+  const env = getEnv(config);
+  // Todo: Fix this to actual stage link
+  if (env.name === 'stage') return `${DEFAULT_FEDERAL_URL}/federal`;
+  if (env.name === 'prod') return 'https://www.adobe.com/federal';
+  return DEFAULT_FEDERAL_URL;
+}
 
 export default async function init(el) {
   const config = getConfig();
-  const federalDomain = (() => {
-    // TO remove after testing
-    const isLocal = new URLSearchParams(window.location.search).get('federal-domain') === 'local';
-    if (isLocal) {
-      return 'http://localhost:3000';
-    }
-    const env = getEnv(config);
-    switch (env.name) {
-      default: return 'https://gnav-redesign--federal--adobecom.aem.page';
-    }
-  })();
+  const federalDomain = getFederalDomain(config);
+  const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders } = await import('../../../features/placeholders.js');
     const placeholders = await fetchPlaceholders({ config });
@@ -24,7 +42,7 @@ export default async function init(el) {
   const mepGnav = config.mep?.inBlock?.['global-navigation'];
   const commands = mepGnav?.commands ?? [];
   const gnavMepCommands = config?.mep?.commands?.filter(
-    (command) => command?.modifiers?.find((modifier) => modifier === 'include-gnav'),
+    (command) => command?.modifiers?.includes('include-gnav'),
   ) || [];
 
   const personalizationHandler = async (cs, root) => {
@@ -32,20 +50,25 @@ export default async function init(el) {
     return handleCommands(cs, root);
   };
 
-  const { main } = await import(`${federalDomain}/libs/global-navigation/dist/main.js`);
+  const { main } = await import(federalGnavUrl);
   main({
+    localizeLink,
     gnavSource: new URL(getMetadata('gnav-source')),
     asideSource: null,
     isLocalNav: false,
     mountpoint: el,
     unavEnabled: getMetadata('unav') === 'on',
     placeholders: placeholdersPromise,
-    miloConfig: getConfig(),
+    miloConfig: config,
     personalization: {
       commands: [...commands, ...gnavMepCommands],
       handleCommands: personalizationHandler,
     },
   }).catch((error) => {
-    console.log(error);
+    window.lana?.log?.('Failed to initialize federal global navigation', {
+      error,
+      tags: 'global-navigation',
+      errorType: 'e',
+    });
   });
 }
