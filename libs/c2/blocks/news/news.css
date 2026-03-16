@@ -53,7 +53,7 @@
       }
   
       & .news-item-link {
-        text-align: left;
+        text-align: start;
         margin-top: auto;
   
         & a.standalone-link::after {
@@ -65,7 +65,7 @@
   }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (width < 768px) {
   .news.three-up, .news.four-up {
     display: flex;
     flex-direction: column;
