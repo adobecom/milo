@@ -62,7 +62,7 @@ document.addEventListener('mousedown', () => {
 
 function getTargetUrl(targetPrefix, currentPath) {
   const { locale } = getConfig();
-  const currentPrefix = locale.prefix || '';
+  const currentPrefix = locale?.prefix || '';
   const pathWithoutPrefix = currentPrefix && currentPath.startsWith(currentPrefix)
     ? currentPath.substring(currentPrefix.length)
     : currentPath;
@@ -76,8 +76,7 @@ const queriedPages = [];
 
 function handleEvent({ prefix, link, callback, fallbackUrl } = {}) {
   if (typeof callback !== 'function') return;
-  const config = getConfig();
-  const { baseSitePath } = config;
+  const { baseSitePath } = getConfig();
   const defaultFallback = `${window.location.origin}${prefix ? `/${prefix}` : ''}${getMetadata('base-site-path') || baseSitePath || ''}/`;
   const resolvedFallback = fallbackUrl || defaultFallback;
   const urlForCheck = link.href;
@@ -104,23 +103,22 @@ function isNameMatch(name, searchNormalized) {
   return name && normalizeText(name).includes(searchNormalized);
 }
 
-function isIetfMatchForPrefix(prefix, searchNormalized) {
-  const { locales } = getConfig();
+function isIetfMatchForPrefix(prefix, searchTerm, locales) {
   if (!locales || !prefix) return false;
   const localeKey = prefix.replace(/^\//, '');
   const fullIetf = locales[localeKey]?.ietf?.toLowerCase();
   const ietfLang = fullIetf?.split('-')[0];
-  return ietfLang && fullIetf?.includes(searchNormalized);
+  return ietfLang && fullIetf?.includes(searchTerm);
 }
 
-function filterMarket(item, term) {
-  return isNameMatch(item.label, term);
+function filterMarket(item, searchTerm) {
+  return isNameMatch(item.label, searchTerm);
 }
 
-function filterLang(item, term) {
-  const labelMatch = isNameMatch(item.label, term);
-  const englishMatch = isNameMatch(item.englishName, term);
-  const ietfMatch = isIetfMatchForPrefix(item.value, term);
+function filterLang(item, searchTerm, locales) {
+  const labelMatch = isNameMatch(item.label, searchTerm);
+  const englishMatch = isNameMatch(item.englishName, searchTerm);
+  const ietfMatch = isIetfMatchForPrefix(item.value, searchTerm, locales);
   return labelMatch || englishMatch || ietfMatch;
 }
 
@@ -206,7 +204,7 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts
     if (sameGroupLang) marketPrefix = sameGroupLang.prefix;
   }
 
-  if (marketPrefix === undefined && locales[regionalPrefix]) {
+  if (marketPrefix === undefined && locales?.[regionalPrefix]) {
     marketPrefix = regionalPrefix;
   }
 
@@ -437,8 +435,8 @@ function createDropdown(
   });
 
   searchInput.addEventListener('input', (e) => {
-    const term = normalizeText(e.target.value.trim());
-    const filtered = items.filter((item) => filterOptions(item, term));
+    const searchTerm = normalizeText(e.target.value.trim());
+    const filtered = items.filter((item) => filterOptions(item, searchTerm));
     renderItems(filtered);
   });
 
@@ -504,8 +502,8 @@ export default async function init(block) {
     noResultMarket: placeholders[3]?.textContent.trim() || 'No results for market',
   };
 
-  const { locale } = getConfig();
-  const currentPrefix = locale.prefix || '';
+  const { locale, locales } = getConfig();
+  const currentPrefix = locale?.prefix || '';
   const currentLang = config.languages.find((lang) => (
     (lang.prefix ? `/${lang.prefix}` : '') === currentPrefix
   )) || config.languages[0];
@@ -525,6 +523,8 @@ export default async function init(block) {
   const marketLangKey = getLangKeyForMarket(currentLang);
   const currentMarketLabel = getMarketLabel(currentMarket, marketLangKey);
 
+  const languageFilter = (item, searchTerm) => filterLang(item, searchTerm, locales);
+
   const langDropdown = createDropdown(
     currentLang.group || currentLang.nativeName || currentLang.langName,
     labels.searchLanguage,
@@ -532,7 +532,7 @@ export default async function init(block) {
     onLanguageSelect,
     labels.noResultLanguage,
     (item) => (item.value ? `/${item.value}` : '') === currentPrefix,
-    filterLang,
+    languageFilter,
     true,
     'language-selector',
     (item) => `language-switch:${item.value || 'us'}`,

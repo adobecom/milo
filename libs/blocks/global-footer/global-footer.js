@@ -182,7 +182,9 @@ class Footer {
     }
 
     const [region, social, market] = ['.region-selector', '.social', '.market-selector'].map((selector) => this.body.querySelector(selector));
-    const [regionParent, socialParent, marketParent] = [region?.parentElement, social?.parentElement, market?.parentElement];
+    const [regionParent, socialParent, marketParent] = [
+      region?.parentElement, social?.parentElement, market?.parentElement,
+    ];
     // We remove and add again the region, social and market elements from the body to make sure
     // they don't get decorated twice
     [regionParent, socialParent, marketParent].forEach((parent) => parent?.replaceChildren());
