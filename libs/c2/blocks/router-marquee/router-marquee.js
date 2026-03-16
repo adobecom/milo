@@ -11,7 +11,6 @@ const TEXT_ENTER_PX = 28;
 const BG_FADE_MS = 650;
 const BG_SHIFT_PX = 90;
 const HOVER_DELAY_MS = 200;
-const PARALLAX_VH = 0.4;
 const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const RESUME_DELAY = 2000;
 const TRANSITION_MS = Math.max(BG_FADE_MS, TEXT_EXIT_MS + TEXT_GAP_MS + TEXT_ENTER_MS);
