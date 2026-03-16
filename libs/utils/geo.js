@@ -7,8 +7,13 @@
 export const getAkamaiCode = () => new Promise((resolve, reject) => {
   /* c8 ignore next 5 */
   fetch('https://geo2.adobe.com/json/', { cache: 'no-cache' }).then((resp) => {
-    if (resp.ok) {
-      resp.json().then((data) => {
+    if (!resp?.ok) {
+      reject(new Error(`Something went wrong getting the akamai Code. Response status text: ${resp?.statusText ?? 'no response'}`));
+      return;
+    }
+    {
+      const jsonPromise = typeof resp.json === 'function' ? resp.json() : Promise.resolve(null);
+      Promise.resolve(jsonPromise).then((data) => {
         const country = data?.country;
         if (country == null || typeof country !== 'string') {
           reject(new Error('Something went wrong getting the akamai Code. No country in response'));
@@ -17,9 +22,7 @@ export const getAkamaiCode = () => new Promise((resolve, reject) => {
         const code = country.toLowerCase();
         sessionStorage.setItem('akamai', code);
         resolve(code);
-      });
-    } else {
-      reject(new Error(`Something went wrong getting the akamai Code. Response status text: ${resp.statusText}`));
+      }).catch((err) => reject(err));
     }
   }).catch((error) => {
     reject(new Error(`Something went wrong getting the akamai Code. ${error.message}`));
