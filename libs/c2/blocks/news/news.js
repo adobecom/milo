@@ -1,8 +1,7 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import { decorateDefaultLinkAnalytics } from '../../../martech/attributes.js';
 
-const BLOCK_CLASS_ADDITIONS = ['section', 'parallax-stagger-ltr'];
+const BLOCK_CLASS_ADDITIONS = ['parallax-stagger-ltr'];
 const BLOCK_SIZING_C2 = ['md', 'md', 'md'];
 
 function isLinkOnlyContent(linkContainer, aTag) {
@@ -50,7 +49,6 @@ export default async function init(el) {
         linkEl.classList.add('standalone-link', `${el.classList.contains('quiet') ? 'quiet' : ''}`);
       } else content.classList.add('news-item-body');
     });
-    decorateDefaultLinkAnalytics(row);
   });
   el.classList.add(`${el.querySelectorAll('.news-item').length % 2 === 0 ? 'four-up' : 'three-up'}`);
 }
