@@ -68,7 +68,7 @@ html[dir="rtl"] {
         flex-direction: row;
         padding: var(--s2a-spacing-lg);
         gap: var(--s2a-spacing-md);
-
+        align-items: center;
         img {
           width: 24px;
           height: 24px;
