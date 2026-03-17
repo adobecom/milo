@@ -48,12 +48,14 @@
         gap: var(--s2a-spacing-md);
         img {
           width: 24px;
+          height: 24px;
         }
         p {
           font-size: var(--s2a-font-size-sm);
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
           margin: 0;
           transition: color .5s ease;
+          line-height: var(--s2a-typography-line-height-label);
         }
       }
       
