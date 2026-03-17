@@ -29,12 +29,10 @@ html[dir="rtl"] {
   --elastic-carousel-container-height-tablet: 560px;
   --elastic-carousel-item-max-width: 294px;
   --elastic-carousel-item-hover-grow-index: 1.75;
-  /* --elastic-carousel-container-max-width: calc(1510px + clac(var(--elastic-carousel-item-max-width) / var(--elastic-carousel-item-hover-grow-index))); */
   --slides: 5;
 
   position: relative;
   overflow: clip;
-  /* max-width: var(--elastic-carousel-container-max-width); */
   height: var(--elastic-carousel-container-height-desktop);
   margin: auto;
 
@@ -182,7 +180,7 @@ html[dir="rtl"] {
   }
 }
 
-/** desktop and tablet */
+/** tablet up */
 @media (width > 768px) {
   .elastic-carousel {
     .elastic-carousel-container {
