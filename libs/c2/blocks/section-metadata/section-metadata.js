@@ -164,9 +164,7 @@ function handleStickyFocus(section) {
   if (!section.classList.contains('parallax-move-up-fast')) return;
 
   section.addEventListener('focusin', () => {
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 0);
+    setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 0);
   });
 }
 
