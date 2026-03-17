@@ -6,6 +6,10 @@
   -webkit-text-size-adjust: none;
 }
 
+html.feds-footer-in-view body {
+  background: var(--s2a-color-gray-1000);
+}
+
 .global-footer ul {
   list-style-type: none;
 }
@@ -394,11 +398,25 @@ span.feds-footer-privacyLink-divider {
     row-gap: var(--s2a-spacing-md);
   }
 
-  /* If there is too much content, float it on multiple rows */
+  /* Default desktop layout: keep all menu columns on one row */
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content {
-    flex-wrap: wrap;
-    width: auto;
+    display: flex;
+    align-items: start;
+    flex-wrap: nowrap;
+    width: 100%;
     column-gap: var(--s2a-spacing-xs);
+    row-gap: 0;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content:not(.feds-menu-content--stacked) > .feds-menu-column {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* When one-row layout overflows, switch to balanced rows: 3 + 3, 3 + 2, etc. */
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content.feds-menu-content--stacked {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     row-gap: var(--s2a-spacing-xl);
   }
 
@@ -517,6 +535,7 @@ span.feds-footer-privacyLink-divider {
 
   .feds-footer-wrapper .feds-menu-content .feds-navLink {
     margin-left: 0;
+    white-space: break-spaces;
   }
 
   .global-footer:not(.mobile) .feds-navLink-image,
