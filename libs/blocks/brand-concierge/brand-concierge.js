@@ -69,6 +69,7 @@ export function getUpdatedChatUIConfig() {
   if (isStage) {
     chatUIConfig.env = 'stage';
     chatUIConfig.behavior.fireflyGalleryWidget.fireflyHostname = 'https://firefly-stage.corp.adobe.com';
+    chatUIConfig.behavior.fireflyGalleryWidget.fireflyEnv = 'stage';
   }
   return chatUIConfig;
 }

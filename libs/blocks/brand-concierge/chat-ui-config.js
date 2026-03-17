@@ -114,6 +114,7 @@ export default {
       videoFraction: 0,
       promoid: 'bc-firefly-widget',
       fireflyHostname: 'https://firefly.adobe.com',
+      fireflyEnv: 'prod',
     },
   },
   arrays: {
