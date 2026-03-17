@@ -158,6 +158,7 @@ const CREATE_CMDS = {
 const COMMANDS_KEYS = {
   remove: 'remove',
   replace: 'replace',
+  analyticIfSeen: 'analyticifseen',
   updateAttribute: 'updateattribute',
 };
 
@@ -261,6 +262,34 @@ export const handleTwpButtons = (el, selector) => {
   }
 };
 
+function fireAnalyticsEvent(val) {
+  window._satellite?.track?.('event', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
+        },
+      },
+    },
+    data:
+      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
+function sendAnalytics(val) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(val);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(val);
+    }, { once: true });
+  }
+}
+
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
@@ -272,6 +301,17 @@ const COMMANDS = {
       'beforebegin',
       await createContent(el, cmd),
     );
+  },
+  [COMMANDS_KEYS.analyticIfSeen]: (el, cmd) => {
+    if (!el || !cmd.content) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        sendAnalytics(`${cmd.content} was seen`);
+        observer.unobserve(el);
+      }
+    });
+    observer.observe(el);
   },
   [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
     const { manifestId, targetManifestId } = cmd;
@@ -1139,36 +1179,6 @@ export function canServeManifest(manifestConfig) {
   if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
 }
-
-/* c8 ignore start */
-function fireAnalyticsEvent(val) {
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data:
-      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
-function sendAnalytics(val) {
-  if (window._satellite?.track) {
-    fireAnalyticsEvent(val);
-  } else {
-    window.addEventListener('alloy_sendEvent', () => {
-      fireAnalyticsEvent(val);
-    }, { once: true });
-  }
-}
-/* c8 ignore stop */
 
 export function sendMktgTracking(fileName, mktgAction) {
   if (!mktgAction?.startsWith('marketing')) return false;
