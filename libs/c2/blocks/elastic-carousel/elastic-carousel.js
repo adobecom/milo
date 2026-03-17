@@ -6,10 +6,10 @@ const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 
 const onCarouselLeave = (event) => {
   clearTimeout(leaveTimeout);
-  const carousel = event.currentTarget;
+  const carouselContainer = event.currentTarget.querySelector('.elastic-carousel-container');
   leaveTimeout = setTimeout(() => {
-    carousel.classList.remove('stick-left');
-    carousel.classList.remove('stick-right');
+    carouselContainer.classList.remove('stick-left');
+    carouselContainer.classList.remove('stick-right');
   }, 10);
 };
 
@@ -28,13 +28,13 @@ const onCarouselHover = (event) => {
   const slide = event.target.closest('.elastic-carousel-item');
   if (!slide) return;
   const slideIndex = slide.dataset.index * 1;
-  const carousel = event.currentTarget;
+  const carouselContainer = event.target.closest('.elastic-carousel').querySelector('.elastic-carousel-container');
 
-  carousel.classList.remove('stick-right');
-  carousel.classList.remove('stick-left');
+  carouselContainer.classList.remove('stick-right');
+  carouselContainer.classList.remove('stick-left');
 
-  if (slideIndex < 3) { carousel.classList.add('stick-left'); }
-  if (slideIndex > 3) { carousel.classList.add('stick-right'); }
+  if (slideIndex < 3) { carouselContainer.classList.add('stick-left'); }
+  if (slideIndex > 3) { carouselContainer.classList.add('stick-right'); }
 };
 
 const buildSlide = ({ slide, index }) => {
@@ -79,6 +79,8 @@ const buildSlide = ({ slide, index }) => {
     'data-index': index + 1,
     'aria-label': slideObj.header.title,
   }, content);
+
+  slideEl.addEventListener('focus', onCarouselHover);
   return slideEl;
 };
 
@@ -97,4 +99,5 @@ export default async function init(el) {
   disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
   decoratedCarousel.addEventListener('mouseover', onCarouselHover);
+  decoratedCarousel.addEventListener('focus', onCarouselHover);
 }

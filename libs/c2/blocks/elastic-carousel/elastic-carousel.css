@@ -2,7 +2,8 @@
 .elastic-carousel {
   --elastic-carousel-transtions: all .5s ease;
   --elastic-carousel-transtions-slow: all .3s ease;
-  --elastic-carousel-container-height: 580px;
+  --elastic-carousel-container-height-desktop: 580px;
+  --elastic-carousel-container-height-tablet: 552px;
   --elastic-carousel-item-max-width: 294px;
   --elastic-carousel-item-hover-grow-index: 1.75;
   --elastic-carousel-container-max-width: calc(1510px + clac(var(--elastic-carousel-item-max-width) / var(--elastic-carousel-item-hover-grow-index)));
@@ -11,7 +12,7 @@
   position: relative;
   overflow: clip;
   max-width: var(--elastic-carousel-container-max-width);
-  height: var(--elastic-carousel-container-height);
+  height: var(--elastic-carousel-container-height-desktop);
   margin: auto;
 
   &.disable-hover {
@@ -27,7 +28,7 @@
     left: 50%;
     transform: translateX(-50%);
     transition: var(--elastic-carousel-transtions);
-    
+
     .elastic-carousel-item {
       display: flex;
       flex-direction: column;
@@ -35,30 +36,31 @@
       text-decoration: none;
       color: inherit;
       max-width: var(--elastic-carousel-item-max-width);
-      width: calc(100vw/calc(var(--slides) - 1));
       background-color: var(--s2a-color-gray-75);
       border-radius: var(--s2a-border-radius-md);
       cursor: pointer;
       transition: var(--elastic-carousel-transtions-slow), background-color .25s ease-in;
-      
+
       .elastic-carousel-item-header {
         display: flex;
         flex-direction: row;
         padding: var(--s2a-spacing-lg);
         gap: var(--s2a-spacing-md);
+
         img {
           width: 24px;
           height: 24px;
         }
+
         p {
           font-size: var(--s2a-font-size-sm);
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
           margin: 0;
           transition: color .5s ease;
-          line-height: var(--s2a-typography-line-height-label);
+          line-height: var(--s2a-font-line-height-18);
         }
       }
-      
+
       .elastic-carousel-item-media {
         img {
           border-radius: var(--s2a-border-radius-md);
@@ -66,7 +68,7 @@
           height: 394px;
         }
       }
-      
+
       .elastic-carousel-item-footer {
         display: flex;
         flex-direction: column;
@@ -74,7 +76,7 @@
         max-width: 270px;
         font-size: var(--s2a-font-size-md);
         line-height: 130%;
-      
+
         &:after {
           content: '';
           display: block;
@@ -88,13 +90,20 @@
           opacity: 0;
           transition: none;
         }
-        
+
         strong {
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
           margin: 0 0 4px 0;
           line-height: var(--s2a-font-line-height-20);
           transition: color .5s ease;
+          display: -webkit-box;
+          line-clamp: 1;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          overflow: hidden;
         }
+
         p {
           opacity: .6;
           margin: 0;
@@ -119,6 +128,7 @@
       left: 0;
       transform: translateX(0%);
     }
+
     &.stick-right {
       left: 100%;
       transform: translateX(-100%);
@@ -127,7 +137,28 @@
 }
 
 /** desktop only */
-@media (width > 768px) {
+@media (1280px <= width) {
+  .elastic-carousel-item {
+    width: calc(100vw/calc(var(--slides) - 1));
+  }
+}
+/** tablet only */
+@media (1280px > width > 767px) {
+  .elastic-carousel {
+    height: var(--elastic-carousel-container-height-tablet);
+
+    .elastic-carousel-item {
+      width: calc(100vw / calc(var(--slides) - 1.5));
+  
+      .elastic-carousel-item-header {
+        padding: var(--s2a-spacing-md) !important;
+      }
+    }
+  }
+}
+
+/** desktop and tablet */
+@media (width > 767px) {
   .elastic-carousel {
     .elastic-carousel-container {
 
@@ -147,18 +178,19 @@
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
-        &:hover, 
+        &:hover,
         &:focus-visible {
           background-color: var(--s2a-color-gray-1000);
           max-width: 496px;
           width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
           outline: none;
-      
+
           .elastic-carousel-item-footer p,
           .elastic-carousel-item-footer strong,
           .elastic-carousel-item-header p {
             color: var(--s2a-color-gray-25);
           }
+
           .elastic-carousel-item-footer:after {
             opacity: 1;
             background-color: white;
@@ -169,8 +201,13 @@
           }
         }
 
-        &:first-child { margin-left: 0 !important; }
-        &:last-child { margin-right: 0 !important; }
+        &:first-child {
+          margin-left: 0 !important;
+        }
+
+        &:last-child {
+          margin-right: 0 !important;
+        }
       }
     }
   }
@@ -187,6 +224,7 @@
     overflow: visible;
     padding-bottom: calc(var(--last-offset) * var(--offset-scale));
     margin-top: calc(var(--offset-adjuster)/10);
+
     .elastic-carousel-container {
       position: relative;
       flex-direction: column;
@@ -194,6 +232,7 @@
       transform: unset;
       display: grid;
       gap: 20vh;
+
       .elastic-carousel-item {
         position: sticky;
         top: 10%;
@@ -205,12 +244,43 @@
         animation: translateY linear both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
+
         /** if we go with dynamic amount of slides, below stuff can be moved to JS */
-        &:nth-child(1) { --stack-offset: 0rem;               z-index:1; --stack-contrast: 0;   --stack-shrink: 4rem; }
-        &:nth-child(2) { --stack-offset: 1rem;               z-index:2; --stack-contrast: .25; --stack-shrink: 3rem; }
-        &:nth-child(3) { --stack-offset: 2rem;               z-index:3; --stack-contrast: .5;  --stack-shrink: 2rem; }
-        &:nth-child(4) { --stack-offset: 3rem;               z-index:4; --stack-contrast: .75; --stack-shrink: 1rem; }
-        &:nth-child(5) { --stack-offset: var(--last-offset); z-index:5; --stack-contrast: 1;   --stack-shrink: 0rem; }
+        &:nth-child(1) {
+          --stack-offset: 0rem;
+          z-index: 1;
+          --stack-contrast: 0;
+          --stack-shrink: 4rem;
+        }
+
+        &:nth-child(2) {
+          --stack-offset: 1rem;
+          z-index: 2;
+          --stack-contrast: .25;
+          --stack-shrink: 3rem;
+        }
+
+        &:nth-child(3) {
+          --stack-offset: 2rem;
+          z-index: 3;
+          --stack-contrast: .5;
+          --stack-shrink: 2rem;
+        }
+
+        &:nth-child(4) {
+          --stack-offset: 3rem;
+          z-index: 4;
+          --stack-contrast: .75;
+          --stack-shrink: 1rem;
+        }
+
+        &:nth-child(5) {
+          --stack-offset: var(--last-offset);
+          z-index: 5;
+          --stack-contrast: 1;
+          --stack-shrink: 0rem;
+        }
+
         &:last-child {
           height: auto;
         }
@@ -224,14 +294,23 @@
 
           .elastic-carousel-item-header {
             padding: var(--s2a-spacing-lg);
+            position: relative;
             &:after {
               content: '';
-              display: flex;
-              background: url('./icons/arrow.svg') no-repeat;
+              display: block;
+              background: url('../../assets/img/arrow-right.svg') no-repeat;
               width: 24px;
               height: 24px;
-              margin-left: auto;
-              transition:none
+              margin: 24px;
+              position: absolute;
+              right: 0;
+              top: 0;
+              opacity: 1;
+              background-color: white;
+              border-radius: var(--s2a-border-radius-round);
+              background-position: 55% 50%;
+              background-size: 8px;
+              transition: none;
             }
           }
 
@@ -257,6 +336,7 @@
     padding-bottom: calc(var(--last-offset) - var(--offset-adjuster));
   }
 }
+
 @keyframes gapShrink {
   0% {
     margin-inline: var(--start-gap);
@@ -265,19 +345,23 @@
   30% {
     margin-inline: var(--end-gap);
   }
+
   100% {
     margin-inline: var(--end-gap);
   }
 }
+
 @keyframes slideIn {
   0% {
     margin-left: var(--start-margin);
   }
+
   30% {
-     margin-left: 0%;
+    margin-left: 0%;
   }
+
   100% {
-     margin-left: 0%;
+    margin-left: 0%;
   }
 }
 
@@ -302,4 +386,3 @@
     margin: 0 var(--stack-shrink);
   }
 }
-
