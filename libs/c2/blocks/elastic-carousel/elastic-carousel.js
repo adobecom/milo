@@ -5,7 +5,29 @@ let leaveTimeout;
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
+const isMobile = () => window.innerWidth <= 768;
 
+const handleMobileAutoplay = (carousel) => {
+  const videos = carousel.querySelectorAll('video');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!isMobile()) return;
+        const video = entry.target;
+
+        if (entry.isIntersecting) {
+          video.play().catch(() => { });
+        } else {
+          video.pause();
+        }
+      });
+    },
+    { threshold: 0.6 }, // play when 60% visible
+  );
+
+  videos.forEach((video) => observer.observe(video));
+};
 
 const disableHoverOnScroll = (carousel) => {
   let timer;
@@ -147,4 +169,5 @@ export default async function init(el) {
   disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
   decoratedCarousel.addEventListener('mouseover', onCarouselHover);
+  handleMobileAutoplay(decoratedCarousel);
 }
