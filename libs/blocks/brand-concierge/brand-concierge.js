@@ -240,7 +240,7 @@ async function openChatModal(initialMessage, el) {
     }
   });
 
-  const { env } = getConfig();
+  const { env, locale } = getConfig();
   const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   let src = stage;
