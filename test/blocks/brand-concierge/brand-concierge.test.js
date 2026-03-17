@@ -213,7 +213,7 @@ describe('Brand Concierge', () => {
     expect(floatingButton).to.exist;
     expect(floatingButton.querySelector('.bc-floating-icon')).to.exist;
     expect(floatingButton.querySelector('.bc-floating-input')).to.exist;
-    expect(floatingButton.querySelector('.bc-floating-input').textContent.trim()).to.equal('Ask a question');
+    expect(floatingButton.querySelector('.bc-floating-input').textContent.trim()).to.equal('Tell us what you\'d like to do or create');
     expect(floatingButton.querySelector('.bc-floating-submit')).to.exist;
 
     floatingButton.click();
@@ -268,6 +268,7 @@ describe('Brand Concierge', () => {
     expect(content.xdm).to.exist;
     expect(content.xdm.web.webPageDetails.URL).to.equal(window.location.href);
     expect(content.xdm.environment.browserDetails.userAgent).to.equal(window.navigator.userAgent);
+    // eslint-disable-next-line no-underscore-dangle
     expect(content.xdm.environment._dc.language).to.equal(window.navigator.language);
 
     // Verify event listener for sign-in is set up on mount element
