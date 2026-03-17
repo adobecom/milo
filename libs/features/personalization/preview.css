@@ -517,7 +517,8 @@ body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not
 }
 
 /* position:relative needed for badge positioning, but exclude gnav elements */
-body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *):not(header.global-navigation *) {
+body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *):not(header.global-navigation *),
+body[data-mep-fragments='true'] [data-fragment-default] {
   position: relative !important;
 }
 

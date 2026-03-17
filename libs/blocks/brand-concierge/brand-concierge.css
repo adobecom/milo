@@ -16,8 +16,6 @@
   --bc-input-border-color: rgba(0 0 0 / 12%);
   --bc-floating-button-border-color: rgba(0 0 0 / 12%);
   --bc-floating-button-border-color-hover: rgba(0 0 0 / 22%);
-  --bc-floating-anim-target: -37px;
-  --bc-floating-anim-width: 772px;
   --bc-button-dimensions: 32px;
   --bc-button-radius: 50%;
   --bc-button-color: #292929;
@@ -325,64 +323,6 @@
 }
 
 /* floating-button */
-@keyframes floating-button-in-mobile {
-  0% {
-    transform: translateY(0);
-    max-width: unset;
-  }
-
-  100% {
-    transform: translateY(var(--bc-floating-anim-target));
-    max-width: var(--bc-floating-anim-width);
-  }
-}
-
-@keyframes floating-button-out-mobile {
-  0% {
-    max-width: var(--bc-floating-anim-width);
-    transform: translateY(var(--bc-floating-anim-target));
-    opacity: 0;
-  }
-
-  40% {
-    opacity: 1;
-  }
-
-  100% {
-    max-width: unset;
-    transform: translateY(0);
-  }
-}
-
-@keyframes floating-button-in {
-  0% {
-    transform: translateY(0);
-    max-width: calc(280px - var(--bc-input-border-size) * 2);
-  }
-
-  100% {
-    transform: translateY(var(--bc-floating-anim-target));
-    max-width: var(--bc-floating-anim-width);
-  }
-}
-
-@keyframes floating-button-out {
-  0% {
-    max-width: var(--bc-floating-anim-width);
-    transform: translateY(var(--bc-floating-anim-target));
-    opacity: 0;
-  }
-
-  40% {
-    opacity: 1;
-  }
-
-  100% {
-    max-width: calc(280px - var(--bc-input-border-size) * 2);
-    transform: translateY(0);
-  }
-}
-
 .bc-floating-button {
   bottom: 0;
   left: 0;
@@ -407,18 +347,6 @@
 
 .bc-floating-button.floating-show {
   opacity: 1;
-}
-
-.bc-floating-button.modal-open {
-  animation: var(--bc-modal-animation-time) ease-in-out floating-button-in-mobile;
-  animation-fill-mode: forwards;
-  z-index: calc(var(--modal-z-index) + 1);
-}
-
-.bc-floating-button.modal-close {
-  animation: var(--bc-modal-animation-time) ease-in-out floating-button-out-mobile;
-  animation-fill-mode: forwards;
-  z-index: calc(var(--modal-z-index) + 1);
 }
 
 .bc-floating-button-container {
@@ -473,26 +401,6 @@
   background: transparent;
   margin-bottom: 8px;
 }
-
-@keyframes modal-input-hide {
-  from {
-    opacity: 0;
-  }
-  
-  to {
-    opacity: 1;
-  }
-}
-
-#brand-concierge-mount.floating-click .input-container {
-  transition: opacity 0s ease;
-}
-
-#brand-concierge-mount.input-hidden .input-container {
-  opacity: 0;
-  animation: modal-input-hide 0s ease var(--bc-modal-animation-time);
-  animation-fill-mode: forwards;
-} 
 
 /* hero */
 .brand-concierge.hero {

@@ -1,7 +1,98 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 
 const wcsElements = signal([]);
+const masFieldsMultipleFragmentWarnings = signal([]);
 const loading = signal(true);
+
+const ALLOWED_MAS_HOSTS = ['mas.adobe.com'];
+
+function isMasUrl(href) {
+  if (!href) return false;
+  try {
+    const url = new URL(href);
+    return ALLOWED_MAS_HOSTS.includes(url.host);
+  } catch {
+    return false;
+  }
+}
+
+function getFragmentIdFromMasElement(el) {
+  if (el.tagName === 'MAS-FIELD') {
+    const aem = el.querySelector('aem-fragment');
+    return aem?.getAttribute('fragment') || null;
+  }
+  if (el.tagName === 'A' && isMasUrl(el.href)) {
+    try {
+      const { hash } = new URL(el.href);
+      const sp = new URLSearchParams(hash?.slice(1) || '');
+      return sp.get('query') || sp.get('fragment') || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+const MAS_MULTIPLE_FRAGMENTS_HIGHLIGHT = 'preflight-mas-multiple-fragments';
+
+function getBlockContaining(el, section) {
+  const conBlock = el.closest('.con-block');
+  if (conBlock && section.contains(conBlock)) return conBlock;
+  let parent = el.parentElement;
+  while (parent && parent !== section) {
+    if (parent.parentElement === section) return parent;
+    parent = parent.parentElement;
+  }
+  return null;
+}
+
+function getBlockLocation(element) {
+  const rect = element.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  return Math.round(rect.top + scrollTop);
+}
+
+function checkMasFieldsMultipleFragments() {
+  const main = document.querySelector('main');
+  main?.querySelectorAll(`.${MAS_MULTIPLE_FRAGMENTS_HIGHLIGHT}`).forEach((el) => el.classList.remove(MAS_MULTIPLE_FRAGMENTS_HIGHLIGHT));
+  const sections = main?.querySelectorAll(':scope > div.section') || [];
+  const warnings = [];
+  sections.forEach((section, index) => {
+    const masFieldEls = section.querySelectorAll('mas-field, a[href*="mas.adobe.com/studio.html"]');
+    const sectionFragmentIds = new Set();
+    const fragmentIdsByBlock = new Map();
+    masFieldEls.forEach((el) => {
+      const id = getFragmentIdFromMasElement(el);
+      if (!id) return;
+      sectionFragmentIds.add(id);
+      const block = getBlockContaining(el, section) || section;
+      if (!fragmentIdsByBlock.has(block)) fragmentIdsByBlock.set(block, new Set());
+      fragmentIdsByBlock.get(block).add(id);
+    });
+    if (sectionFragmentIds.size <= 1) return;
+    fragmentIdsByBlock.forEach((fragmentIds, block) => {
+      if (fragmentIds.size > 1) {
+        if (block !== section) block.classList.add(MAS_MULTIPLE_FRAGMENTS_HIGHLIGHT);
+        warnings.push({
+          sectionIndex: index + 1,
+          section,
+          fragmentIds: [...fragmentIds],
+          location: getBlockLocation(block),
+        });
+      }
+    });
+    if (warnings.filter((w) => w.section === section).length === 0) {
+      const firstBlock = fragmentIdsByBlock.keys().next().value;
+      warnings.push({
+        sectionIndex: index + 1,
+        section,
+        fragmentIds: [...sectionFragmentIds],
+        location: getBlockLocation(firstBlock),
+      });
+    }
+  });
+  masFieldsMultipleFragmentWarnings.value = warnings;
+}
 
 function getService() {
   return document.getElementsByTagName('mas-commerce-service')?.[0];
@@ -68,12 +159,6 @@ function isPromotionActive(promotion, instant, quantity = 1) {
   const endDate = new Date(end);
 
   return now >= startDate && now <= endDate;
-}
-
-function getBlockLocation(element) {
-  const rect = element.getBoundingClientRect();
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  return Math.round(rect.top + scrollTop);
 }
 
 async function checkUrl(url) {
@@ -320,6 +405,43 @@ function WcsElementItem({ wcsElem }) {
   `;
 }
 
+function MasFieldsMultipleFragmentItem({ warning }) {
+  return html`
+    <div class="preflight-item merch-item mas-fields-warning-item">
+      <div class="preflight-item-text">
+        <p class="preflight-item-title">
+          <span class="result-icon orange"></span>
+          Block ${warning.sectionIndex} has multiple M@S fragment IDs
+        </p>
+        <p class="preflight-item-description">
+          Usually all M@S fields in a block should use the same fragment.
+          <br/><strong>Fragment IDs in this block:</strong>
+          <code class="wcs-osi-code">${warning.fragmentIds.join(', ')}</code>
+        </p>
+        <button
+          class="preflight-action merch-scroll-btn"
+          onclick=${() => scrollToElement(warning.location)}>
+          Scroll to block
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function MasFieldsMultipleFragmentSection() {
+  const warnings = masFieldsMultipleFragmentWarnings.value;
+  if (warnings.length === 0) return null;
+  return html`
+    <div class="merch-section">
+      <h3 class="merch-section-title">M@S Fields</h3>
+      <p class="merch-section-description">Blocks with more than one fragment ID (fields should usually share the same fragment).</p>
+      <div class="merch-blocks-list">
+        ${warnings.map((w) => html`<${MasFieldsMultipleFragmentItem} warning=${w} />`)}
+      </div>
+    </div>
+  `;
+}
+
 function MerchSummary() {
   const totalElements = wcsElements.value.length;
   const passedCount = wcsElements.value.filter((elem) => (elem.urlStatus === 'success' || !elem.href)
@@ -328,8 +450,9 @@ function MerchSummary() {
     || elem.promoCodeStatus === 'expired'
     || elem.promoCodeStatus === 'not-found').length;
   const undeterminedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined').length;
+  const masWarningsCount = masFieldsMultipleFragmentWarnings.value.length;
 
-  if (totalElements === 0) {
+  if (totalElements === 0 && masWarningsCount === 0) {
     return html`
       <div class="merch-summary no-blocks">
         <h3>No Merch Elements Found</h3>
@@ -340,28 +463,37 @@ function MerchSummary() {
 
   return html`
     <div class="merch-summary">
-      <div class="merch-summary-stat">
-        <span class="merch-stat-number">${totalElements}</span>
-        <span class="merch-stat-label">Merch Elements</span>
-      </div>
-      <div class="merch-summary-stat">
-        <span class="merch-stat-number">${passedCount}</span>
-        <span class="merch-stat-label">Passed</span>
-      </div>
-      <div class="merch-summary-stat ${failedCount > 0 ? 'has-errors' : ''}">
-        <span class="merch-stat-number">${failedCount}</span>
-        <span class="merch-stat-label">Failed</span>
-      </div>
-      <div class="merch-summary-stat ${undeterminedCount > 0 ? 'has-warnings' : ''}">
-        <span class="merch-stat-number">${undeterminedCount}</span>
-        <span class="merch-stat-label">Undetermined</span>
-      </div>
+      ${totalElements > 0 && html`
+        <div class="merch-summary-stat">
+          <span class="merch-stat-number">${totalElements}</span>
+          <span class="merch-stat-label">Merch Elements</span>
+        </div>
+        <div class="merch-summary-stat">
+          <span class="merch-stat-number">${passedCount}</span>
+          <span class="merch-stat-label">Passed</span>
+        </div>
+        <div class="merch-summary-stat ${failedCount > 0 ? 'has-errors' : ''}">
+          <span class="merch-stat-number">${failedCount}</span>
+          <span class="merch-stat-label">Failed</span>
+        </div>
+        <div class="merch-summary-stat ${undeterminedCount > 0 ? 'has-warnings' : ''}">
+          <span class="merch-stat-number">${undeterminedCount}</span>
+          <span class="merch-stat-label">Undetermined</span>
+        </div>
+      `}
+      ${masWarningsCount > 0 && html`
+        <div class="merch-summary-stat has-warnings">
+          <span class="merch-stat-number">${masWarningsCount}</span>
+          <span class="merch-stat-label">Blocks w/ multiple fragment IDs</span>
+        </div>
+      `}
     </div>
   `;
 }
 
 export default function Merch() {
   useEffect(() => {
+    checkMasFieldsMultipleFragments();
     setTimeout(() => {
       checkWcsElements();
     }, 3000);
@@ -379,6 +511,7 @@ export default function Merch() {
     return html`
       <div class="merch-panel">
         <${MerchSummary} />
+        <${MasFieldsMultipleFragmentSection} />
       </div>
     `;
   }
@@ -386,6 +519,7 @@ export default function Merch() {
   return html`
     <div class="merch-panel">
       <${MerchSummary} />
+      <${MasFieldsMultipleFragmentSection} />
       <div class="merch-section">
         <h3 class="merch-section-title">Elements</h3>
         <div class="merch-blocks-list">
