@@ -1121,7 +1121,8 @@ export async function initService(force = false, attributes = {}) {
       }
 
       const { language, locale, country } = await getLocaleSettings(miloLocale);
-      const validatedMarket = await getValidatedMarket();
+      const useGeoMarket = getMetadata('mas-geo-detection') === 'on';
+      const validatedMarket = useGeoMarket ? await getValidatedMarket() : null;
       const countryFromMarket = validatedMarket ? validatedMarket.toUpperCase() : country;
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
