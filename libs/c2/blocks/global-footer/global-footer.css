@@ -231,12 +231,23 @@
   margin-top: var(--s2a-spacing-xl);
   max-width: var(--grid-max-width-wide);
   margin: auto;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
 }
 
 .global-footer .feds-footer-logo img {
   display: block;
-  width: 100%;
+  width: calc(100% + 56px);
+  max-width: none;
   height: auto;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1920px) {
+  .global-footer .feds-footer-logo img {
+    width: 100%;
+  }
 }
 
 /* Privacy */
@@ -284,6 +295,7 @@ span.feds-footer-privacyLink-divider {
   line-height: var(--s2a-typography-line-height-eyebrow);
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   padding: var(--s2a-spacing-lg) var(--s2a-spacing-xs);
+  min-height: calc(var(--s2a-typography-line-height-eyebrow) * 2rem);
 }
 
 .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-items {
@@ -382,11 +394,25 @@ span.feds-footer-privacyLink-divider {
     row-gap: var(--s2a-spacing-md);
   }
 
-  /* If there is too much content, float it on multiple rows */
+  /* Default desktop layout: keep all menu columns on one row */
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content {
-    flex-wrap: wrap;
-    width: auto;
+    display: flex;
+    align-items: start;
+    flex-wrap: nowrap;
+    width: 100%;
     column-gap: var(--s2a-spacing-xs);
+    row-gap: 0;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content:not(.feds-menu-content--stacked) > .feds-menu-column {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* When one-row layout overflows, switch to balanced rows: 3 + 3, 3 + 2, etc. */
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content.feds-menu-content--stacked {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     row-gap: var(--s2a-spacing-xl);
   }
 
@@ -505,6 +531,7 @@ span.feds-footer-privacyLink-divider {
 
   .feds-footer-wrapper .feds-menu-content .feds-navLink {
     margin-left: 0;
+    white-space: break-spaces;
   }
 
   .global-footer:not(.mobile) .feds-navLink-image,
