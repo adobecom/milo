@@ -3,7 +3,6 @@ import {
   shouldAllowKrTrial, getCountry,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { getValidatedMarket } from '../../utils/market.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -1121,16 +1120,13 @@ export async function initService(force = false, attributes = {}) {
       }
 
       const { language, locale, country } = await getLocaleSettings(miloLocale);
-      const useGeoMarket = getMetadata('mas-geo-detection') === 'on';
-      const validatedMarket = useGeoMarket ? await getValidatedMarket() : null;
-      const countryFromMarket = validatedMarket ? validatedMarket.toUpperCase() : country;
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
           locale,
           language,
-          country: countryFromMarket,
+          country,
           ...attributes,
           ...commerce,
         });
@@ -1155,8 +1151,6 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
-      } else {
-        service.setAttribute('country', countryFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
