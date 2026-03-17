@@ -100,8 +100,6 @@ const onCarouselHover = (event) => {
     carouselContainer.classList.toggle('stick-right', slideIndex > 3);
   }
 };
-
-
 // RTL
 // Alt attr
 
