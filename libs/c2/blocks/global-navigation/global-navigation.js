@@ -22,7 +22,7 @@ function getFederalDomain(config) {
     return `https://${branch}.aem.${extension}`;
   }
 
-  if (extension) return DEFAULT_FEDERAL_URL.replace('aem.page', `aem.${extension}`);
+  if (extension) return `${DEFAULT_FEDERAL_URL.replace('aem.page', `aem.${extension}`)}/federal`;
 
   const env = getEnv(config);
   // Todo: Fix this to actual stage link
@@ -35,6 +35,7 @@ export default async function init(el) {
   const config = getConfig();
   const federalDomain = getFederalDomain(config);
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
+  
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders } = await import('../../../features/placeholders.js');
     const placeholders = await fetchPlaceholders({ config });
