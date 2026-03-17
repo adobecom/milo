@@ -829,6 +829,7 @@ describe('Merch Block', () => {
       const upgradeEl = document.createElement('a');
       upgradeEl.classList.add('merch', 'cta');
       upgradeEl.setAttribute('href', '/tools/ost?osi=V3W0kzf4e6M2Ht1hP9ZAt3dQNmhuDFrmYmEPlE2SlG0&type=checkoutUrl&upgrade=true');
+      upgradeEl.setAttribute('aria-label', 'Buy Now Acrobat Studio');
       upgradeEl.textContent = 'Buy Now';
       merchCard.appendChild(upgradeEl);
       document.body.appendChild(merchCard);
@@ -839,6 +840,7 @@ describe('Merch Block', () => {
       await cta.onceSettled();
 
       expect(cta).to.exist;
+      expect(cta.getAttribute('aria-label')).to.equal('Upgrade Now Acrobat Studio');
 
       document.body.removeChild(merchCard);
       document.body.removeChild(upgradeOfferContainer);
@@ -1538,6 +1540,18 @@ describe('Merch Block', () => {
       // Branch name with -- but not --mas--
       window.history.pushState({}, '', '/?maslibs=feature--other--repo');
       expect(getMasLibsBaseUrl()).to.equal('https://feature--other--repo.aem.live');
+    });
+
+    it('always uses .aem.live (never .aem.page regardless of hostname)', () => {
+      // MWPW-189073: base URL always uses .aem.live, not hostname-based .page vs .live
+      window.history.pushState({}, '', '/?maslibs=main');
+      const url = getMasLibsBaseUrl();
+      expect(url).to.include('.aem.live');
+      expect(url).to.not.include('.aem.page');
+      window.history.pushState({}, '', '/?maslibs=some-branch');
+      const url2 = getMasLibsBaseUrl();
+      expect(url2).to.include('.aem.live');
+      expect(url2).to.not.include('.aem.page');
     });
   });
 

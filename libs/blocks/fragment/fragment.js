@@ -143,7 +143,7 @@ export default async function init(a) {
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   const isMepLingoInsert = a.dataset.mepLingoInsert === 'true';
   const isMepLingoRemove = a.dataset.mepLingoRemove === 'true';
-  const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
+  const shouldFetchMepLingo = isMepLingoLink && !!await getMepLingoPrefix();
   const isOnRegionalPage = locale?.base !== undefined;
 
   // Import mep/lingo.js once if this is a mep-lingo link
@@ -200,7 +200,7 @@ export default async function init(a) {
 
   let usedFallback = false;
 
-  const mepLingoPrefix = getMepLingoPrefix();
+  const mepLingoPrefix = await getMepLingoPrefix();
   if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
     usedFallback = true;
   }

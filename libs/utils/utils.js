@@ -60,7 +60,6 @@ const MILO_BLOCKS = [
   'merch',
   'merch-card',
   'merch-card-autoblock',
-  'merch-card-collection',
   'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
@@ -389,6 +388,10 @@ export const getFederatedContentRoot = () => {
     'https://news.adobe.com',
     'graybox.adobe.com',
   ];
+  const fedContFromMiloDomain = [
+    'https://acrobat.adobe.com',
+    'https://stage.acrobat.adobe.com',
+  ];
   const { allowedOrigins = [], origin: configOrigin } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
   // Non milo consumers will have its origin from config
@@ -400,8 +403,8 @@ export const getFederatedContentRoot = () => {
       ? originNoStage === o
       : originNoStage.endsWith(o);
   });
-
-  federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
+  if (fedContFromMiloDomain.includes(window.location.origin)) federatedContentRoot = 'https://milo.adobe.com';
+  else federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
     federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
@@ -793,11 +796,20 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
-export function getCountry() {
-  return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+export async function getCountry(skipFallback = false) {
+  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  if (country || skipFallback) return country?.toLowerCase();
+
+  try {
+    const { getAkamaiCode } = await import('./geo.js');
+    return await getAkamaiCode();
+  } catch (error) {
+    window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
+    return null;
+  }
 }
 
-export function getMepLingoPrefix() {
+export async function getMepLingoPrefix() {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -805,7 +817,7 @@ export function getMepLingoPrefix() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = getCountry();
+  const country = await getCountry();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -889,7 +901,7 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
 
-  const prefix = lingoActive() && isMepLingoLink ? getMepLingoPrefix() : null;
+  const prefix = lingoActive() && isMepLingoLink ? await getMepLingoPrefix() : null;
   const base = lingoActive() && isMepLingoLink
     ? getConfig()?.locale?.prefix.replace('/', '')
     : null;
@@ -1873,10 +1885,9 @@ async function checkForPageMods() {
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
   if (mepgeolocation && !akamaiCode) {
-    const { default: getAkamaiCode } = await import('./geo.js');
-    countryIPPromise = getAkamaiCode(true);
+    countryIPPromise = getCountry();
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -2126,7 +2137,7 @@ async function decorateLanguageBanner() {
     : navigator.language?.split('-')[0] || null;
 
   const [geoIpCode, marketsConfig] = await Promise.all([
-    getCountry() || import('./geo.js').then((m) => m.default(true)),
+    getCountry(),
     fetch(getMarketsUrl())
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null),
@@ -2355,10 +2366,11 @@ function loadLingoIndexes(area = document) {
     loadQueryIndexes(config.locale.prefix, false, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
-  const prefix = getMepLingoPrefix();
-  if (prefix) {
-    loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
-  }
+  getMepLingoPrefix().then((prefix) => {
+    if (prefix) {
+      loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
+    }
+  });
 }
 
 export async function loadArea(area = document) {
