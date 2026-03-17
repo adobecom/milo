@@ -543,6 +543,11 @@ export function lingoActive() {
   return ['true', 'on'].includes(langFirst);
 }
 
+export function mepLingoSkipQI() {
+  const skip = (PAGE_URL.searchParams.get('mep-lingo-skip-qi') || getMetadata('mep-lingo-skip-qi'))?.toLowerCase();
+  return lingoActive() && ['true', 'on'].includes(skip);
+}
+
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
@@ -750,7 +755,11 @@ function localizeLinkCore(
     const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
     let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
-    if (useAsync && extension !== 'json' && lingoActive()
+    const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
+    const qiResolved = queryIndexes[siteId]?.requestResolved;
+    const skipQueryIndex = isMepLingoFragment
+      && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
+    if (useAsync && extension !== 'json' && lingoActive() && !skipQueryIndex
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
           || (!!locale.regions && isMepLingoFragment))) {
       return (async () => {
@@ -781,6 +790,7 @@ function localizeLinkCore(
       })();
     }
 
+    if (skipQueryIndex && aTag) aTag.dataset.mepLingoSkippedQI = 'true';
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
@@ -1405,10 +1415,15 @@ function setupLinksDecoration(el) {
   return { config, anchors, hostname, href };
 }
 
+const decoratedLinks = new WeakSet();
+
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
+    if (decoratedLinks.has(a)) {
+      return a.classList.contains('link-block') ? a : null;
+    }
     if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
@@ -1420,6 +1435,7 @@ export async function decorateLinksAsync(el) {
         a,
       );
     }
+    decoratedLinks.add(a);
     return processLinkDecoration(a, config, hasDnt);
   });
 
@@ -2324,9 +2340,9 @@ async function resolveHighPriorityFragments(section) {
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
-    const newlyDecoratedSection = await decorateSection(section.el, section.idx);
-    section.blocks = newlyDecoratedSection.blocks;
-    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+    const redecorated = await decorateSection(section.el, section.idx);
+    section.blocks = redecorated.blocks;
+    section.preloadLinks = redecorated.preloadLinks;
   }
 }
 

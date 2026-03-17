@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix, lingoActive,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -92,7 +92,7 @@ export const removeMepLingoRow = (container) => {
 };
 
 export default async function init(a) {
-  const { decorateArea, mep, placeholders, locale, env } = getConfig();
+  const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   let url;
   let inline = false;
@@ -144,15 +144,9 @@ export default async function init(a) {
   const isMepLingoInsert = a.dataset.mepLingoInsert === 'true';
   const isMepLingoRemove = a.dataset.mepLingoRemove === 'true';
   const shouldFetchMepLingo = isMepLingoLink && !!await getMepLingoPrefix();
-  const isOnRegionalPage = locale?.base !== undefined;
 
   // Import mep/lingo.js once if this is a mep-lingo link
   const lingoModule = isMepLingoLink ? await import('../../features/mep/lingo.js') : null;
-
-  if (isMepLingoLink && (isOnRegionalPage || !lingoActive())) {
-    lingoModule.handleInvalidMepLingo(a, { env });
-    return;
-  }
 
   let originalBlock;
   const isSectionSwap = a.dataset.mepLingoSectionSwap === 'true';
@@ -195,10 +189,26 @@ export default async function init(a) {
   const needsFallback = (isMepLingoBlock || isMepLingoFragment)
     && !!a.dataset.originalHref && !isMepLingoInsert && !isMepLingoRemove;
 
-  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
+  const skipQI = a.dataset.mepLingoSkippedQI === 'true';
+  delete a.dataset.mepLingoSkippedQI;
+  const useDualFetch = skipQI && needsFallback;
 
+  let resp;
   let usedFallback = false;
+
+  if (useDualFetch) {
+    const origHref = a.dataset.originalHref;
+    const result = await lingoModule.dualFetchMepLingo(resourcePath, origHref, locale);
+    resp = result.resp;
+    if (result.usedFallback) {
+      usedFallback = true;
+      const { fallbackPath } = result;
+      try { relHref = new URL(fallbackPath).pathname; } catch { relHref = fallbackPath; }
+    }
+  } else {
+    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
+  }
 
   const mepLingoPrefix = await getMepLingoPrefix();
   if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
@@ -227,25 +237,32 @@ export default async function init(a) {
     }
   };
 
-  if (!resp?.ok && attemptedRegionalFetch && canTryFallback) {
+  if (!useDualFetch && !resp?.ok && attemptedRegionalFetch && canTryFallback) {
     const fallback = await lingoModule.tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
       resourcePath,
+      skipQI,
     );
     applyFallback(fallback);
   }
 
-  if (!resp?.ok && isMepLingoRemove && attemptedRegionalFetch && a.dataset.originalHref) {
+  if (!useDualFetch && !resp?.ok && isMepLingoRemove && attemptedRegionalFetch
+    && a.dataset.originalHref) {
     const fallback = await lingoModule.tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
       resourcePath,
+      skipQI,
     );
     applyFallback(fallback);
   }
 
   if (!resp?.ok) {
+    if (isMepLingoLink && !needsFallback) {
+      lingoModule.logMepLingoFallback(resourcePath, skipQI);
+    }
+
     if (isMepLingoInsert) {
       lingoModule.removeMepLingoElement(a, isMepLingoBlock, originalBlock);
       return;
@@ -265,6 +282,9 @@ export default async function init(a) {
       removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
       a.parentElement?.remove();
       return;
+    }
+    if (isMepLingoFragment) {
+      lingoModule.removeMepLingoElement(a, false);
     }
     const message = `Could not get ${shouldFetchMepLingo ? 'mep-lingo ' : ''}fragment: ${resourcePath}.plain.html`;
     window.lana?.log(message, {
