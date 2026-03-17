@@ -101,6 +101,8 @@ const CONFIG = {
   delays: { decoration: 3000 },
   containerBreakpoint: 767,
 };
+const FOOTER_IN_VIEW_CLASS = 'feds-footer-in-view';
+const FOOTER_MENU_STACKED_CLASS = 'feds-menu-content--stacked';
 
 let cachedDecorateMenu;
 export async function loadDecorateMenu() {
@@ -127,7 +129,11 @@ class Footer {
     this.resizeTimeout = null;
     this.footerOrderMediaQuery = null;
     this.footerOrderMediaQueryHandler = null;
+    this.footerVisibilityObserver = null;
+    this.footerMenuResizeObserver = null;
+    this.footerMenuResizeRaf = null;
     this.init();
+    this.initFooterInViewBackground();
   }
 
   init = () => logErrorFor(async () => {
@@ -188,6 +194,64 @@ class Footer {
     this.footerOrderMediaQuery = null;
     this.footerOrderMediaQueryHandler = null;
     this.isMobile = null;
+    this.footerVisibilityObserver?.disconnect();
+    this.footerVisibilityObserver = null;
+    this.footerMenuResizeObserver?.disconnect();
+    this.footerMenuResizeObserver = null;
+    if (this.footerMenuResizeRaf) {
+      window.cancelAnimationFrame(this.footerMenuResizeRaf);
+      this.footerMenuResizeRaf = null;
+    }
+    document.documentElement.classList.remove(FOOTER_IN_VIEW_CLASS);
+  };
+
+  initFooterInViewBackground = () => {
+    this.footerVisibilityObserver = new window.IntersectionObserver((entries) => {
+      const footerVisible = entries.some((entry) => entry.isIntersecting);
+      document.documentElement.classList.toggle(FOOTER_IN_VIEW_CLASS, footerVisible);
+    });
+    this.footerVisibilityObserver.observe(this.block);
+  };
+
+  syncFooterMenuLayout = () => {
+    if (this.isFooterMobileLayout()) {
+      this.elements.footer?.querySelectorAll('.feds-menu-content').forEach((menuContent) => {
+        menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
+      });
+      return;
+    }
+
+    const menuContents = this.elements.footer?.querySelectorAll('.feds-menu-content');
+    if (!menuContents?.length) return;
+
+    menuContents.forEach((menuContent) => {
+      const columnCount = menuContent.querySelectorAll(':scope > .feds-menu-column').length;
+      if (columnCount <= 3) {
+        menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
+        return;
+      }
+
+      menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
+      const hasOverflow = menuContent.scrollWidth > menuContent.clientWidth;
+      menuContent.classList.toggle(FOOTER_MENU_STACKED_CLASS, hasOverflow);
+    });
+  };
+
+  initFooterMenuLayoutSync = () => {
+    this.syncFooterMenuLayout();
+
+    if (this.footerMenuResizeObserver) return;
+    this.footerMenuResizeObserver = new ResizeObserver(() => {
+      if (this.footerMenuResizeRaf) return;
+      this.footerMenuResizeRaf = window.requestAnimationFrame(() => {
+        this.footerMenuResizeRaf = null;
+        this.syncFooterMenuLayout();
+      });
+    });
+
+    // Observe the actual footer wrapper so container-size changes trigger relayout,
+    // even when they are not caused by viewport resizes.
+    this.footerMenuResizeObserver.observe(this.elements.footer);
   };
 
   decorateContent = () => logErrorFor(async () => {
@@ -253,6 +317,7 @@ class Footer {
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
     this.block.append(this.elements.footer, this.elements.footerLogo);
     this.initFooterOptionsOrderSync();
+    this.initFooterMenuLayoutSync();
     setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
     const { onFooterReady } = getConfig();
     onFooterReady?.();
@@ -577,6 +642,7 @@ class Footer {
     } else {
       options.append(region, legal, social);
     }
+    this.syncFooterMenuLayout();
   };
 
   initFooterOptionsOrderSync = () => {
