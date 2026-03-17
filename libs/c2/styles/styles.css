@@ -892,10 +892,16 @@ div.section.parallax-move-up-fast {
     opacity: 0;
     pointer-events: none;
     animation: fade-to-dark linear both;
-    animation-timeline: view();
-    animation-range: entry 0 exit 50%;
+    animation-timeline: scroll(root block);
+    animation-range: 0 80vh;
     z-index: 2;
   }
+}
+
+.section.text-reveal-up * {
+  animation: text-reveal-up ease-out both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 40vh;
 }
 
 .section.parallax-move-up-fast ~ .section {
