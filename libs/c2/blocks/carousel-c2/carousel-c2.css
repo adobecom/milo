@@ -198,7 +198,7 @@
       &.prev {
         --btn-inset: calc(var(--carousel-hint-slide) * 0.1);
         --btn-position: calc(var(--carousel-hint-slide) - var(--btn-dimension) - var(--carousel-slides-gap) - var(--btn-inset));
-        --btn-animation-start: calc(var(--btn-position) - 35%);
+        --btn-animation-start: calc(var(--btn-position) - 70vw);
         left: var(--btn-position);
         transform: translateY(-50%);
 
@@ -214,7 +214,7 @@
       &.next {
         --btn-inset: calc(var(--carousel-hint-slide) * 0.1);
         --btn-position: calc(100% - var(--carousel-hint-slide) + var(--carousel-slides-gap) + var(--btn-inset));
-        --btn-animation-start: calc(var(--btn-position) + 35%);
+        --btn-animation-start: calc(var(--btn-position) + 70vw);
         left: var(--btn-position);
         transform: translateY(-50%);
 
@@ -298,14 +298,14 @@
 
 @keyframes wrapper-enter {
   from {
-    gap: 200px;
+    gap: 50vw;
   }
 }
 
 @keyframes slide-enter {
   from {
     max-height: 1000px;
-    max-width: 100%;
+    max-width: var(--grid-max-width-fluid);
     flex: 1 0 100%;
   }
 }
