@@ -540,7 +540,7 @@ class Footer {
   };
 
   decorateFooter = () => {
-    this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
+    this.elements.footer = toFragment`<div class="feds-footer-wrapper container wide">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
     <div class="feds-footer-options caption">
