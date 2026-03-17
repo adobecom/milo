@@ -1,17 +1,11 @@
+import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 let leaveTimeout;
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 
-const onCarouselLeave = (event) => {
-  clearTimeout(leaveTimeout);
-  const carouselContainer = event.currentTarget.querySelector('.elastic-carousel-container');
-  leaveTimeout = setTimeout(() => {
-    carouselContainer.classList.remove('stick-left');
-    carouselContainer.classList.remove('stick-right');
-  }, 10);
-};
 
 const disableHoverOnScroll = (carousel) => {
   let timer;
@@ -24,63 +18,117 @@ const disableHoverOnScroll = (carousel) => {
   });
 };
 
+const handleVideoPlay = (event) => {
+  const slide = event.target.closest('.elastic-carousel-item');
+  if (!slide) return;
+  const video = slide?.querySelector('video');
+  if (!video) return;
+  video.play().catch(() => { });
+};
+
+const onSlideLeave = (event) => {
+  const video = event?.target?.querySelector('video');
+  if (!video) return;
+  video.pause();
+  let reversing = true;
+  let lastTime = null;
+
+  function reverseAnimate(timestamp) {
+    if (!reversing) return;
+    const now = timestamp || performance.now();
+
+    if (!lastTime) lastTime = now;
+
+    const delta = (now - lastTime) / 1000;
+    lastTime = now;
+
+    // rewind at 1x speed (match normal playback)
+    video.currentTime -= delta * 0.3;
+    if (video.currentTime <= 0) {
+      reversing = false;
+      return;
+    }
+
+    video.currentTime -= 0.03;
+    requestAnimationFrame(reverseAnimate);
+  }
+  reverseAnimate();
+};
+
+const onCarouselLeave = (event) => {
+  clearTimeout(leaveTimeout);
+  const carouselContainer = event.currentTarget.querySelector('.elastic-carousel-container');
+  leaveTimeout = setTimeout(() => {
+    carouselContainer.classList.remove('stick-left', 'stick-right');
+  }, 10);
+};
+
 const onCarouselHover = (event) => {
   const slide = event.target.closest('.elastic-carousel-item');
   if (!slide) return;
+  handleVideoPlay(event);
   const slideIndex = slide.dataset.index * 1;
   const carouselContainer = event.target.closest('.elastic-carousel').querySelector('.elastic-carousel-container');
 
-  carouselContainer.classList.remove('stick-right');
-  carouselContainer.classList.remove('stick-left');
-
-  if (slideIndex < 3) { carouselContainer.classList.add('stick-left'); }
-  if (slideIndex > 3) { carouselContainer.classList.add('stick-right'); }
+  if (isRtl()) {
+    carouselContainer.classList.toggle('stick-right', slideIndex < 3);
+    carouselContainer.classList.toggle('stick-left', slideIndex > 3);
+  } else {
+    carouselContainer.classList.toggle('stick-left', slideIndex < 3);
+    carouselContainer.classList.toggle('stick-right', slideIndex > 3);
+  }
 };
+
+
+// RTL
+// Alt attr
 
 const buildSlide = ({ slide, index }) => {
   const children = [...slide.children];
-  const assetUrl = children[1].querySelector('img')?.src;
-  const slideObj = {
-    header: {
-      iconSrc: children[0].querySelector('img')?.src,
-      title: children[0].querySelector('p:not(:has(img))').innerText,
-    },
-    asset: {
-      imgSrc: isSvgUrl(assetUrl) ? getFederatedUrl(assetUrl) : assetUrl,
-      videoSrc: children[1].querySelector('video')?.src,
-    },
-    footer: {
-      title: children[2].querySelector('strong').innerText,
-      text: children[2].querySelector('p:not(:has(strong))').innerText,
-    },
-    link: children[2].querySelector('a').href,
-  };
+  const left = children[0];
+  const right = children[1];
+
+  const icon = left.children[0]?.querySelector('img');
+  const asset = right.children[0];
+
+  if (asset?.dataset.videoSource) {
+    asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
+    asset.setAttribute('muted', true);
+    asset.removeAttribute('controls');
+  }
+
+  if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
+  if (isSvgUrl(icon?.src)) icon.src = getFederatedUrl(icon.src);
+
+  decorateBlockText(left.children[2]);
+  decorateBlockText(left.children[3]);
 
   const content = `
     <div class='elastic-carousel-item-container'>
       <div class='elastic-carousel-item-header'>
-        <img src='${slideObj.header.iconSrc}'>
-        <p>${slideObj.header.title}</p>
+        ${icon.outerHTML}
+        ${left.children[1]?.outerHTML}
       </div>
       <div class='elastic-carousel-item-media'>
-        ${slideObj.asset.imgSrc ? `<img src='${slideObj.asset.imgSrc}'/>` : ''}
-        ${slideObj.asset.videoSrc ? `<video src='${slideObj.asset.videoSrc}'/>` : ''}
+        ${asset.outerHTML}
       </div>
       <div class='elastic-carousel-item-footer'>
-        <strong>${slideObj.footer.title}</strong>
-        <p>${slideObj.footer.text}</p>
+        ${left.children[2]?.outerHTML}
+        ${left.children[3]?.outerHTML}
       </div>
     </div>
   `;
   const slideEl = createTag('a', {
     class: 'elastic-carousel-item',
     tabindex: 0,
-    href: slideObj.link,
+    href: left.children[4]?.href,
     'data-index': index + 1,
-    'aria-label': slideObj.header.title,
+    'aria-label': left.children[1]?.innerContent,
   }, content);
 
   slideEl.addEventListener('focus', onCarouselHover);
+  slideEl.addEventListener('blur', onCarouselLeave);
+  slideEl.addEventListener('mouseleave', onSlideLeave);
   return slideEl;
 };
 
@@ -88,7 +136,7 @@ const decorateCarousel = (carousel) => {
   const slides = [...carousel.children];
   const decoratedSlides = slides.map((slide, index) => buildSlide({ slide, index }));
   const carouselContainer = createTag('div', { class: 'elastic-carousel-container' });
-  decoratedSlides.forEach((slide) => carouselContainer.append(slide));
+  carouselContainer.append(...decoratedSlides);
   carousel.replaceChildren();
   carousel.append(carouselContainer);
   return carousel;
@@ -99,5 +147,4 @@ export default async function init(el) {
   disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
   decoratedCarousel.addEventListener('mouseover', onCarouselHover);
-  decoratedCarousel.addEventListener('focus', onCarouselHover);
 }

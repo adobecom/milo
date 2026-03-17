@@ -1,17 +1,40 @@
 /** main classes */
+
+html[dir="rtl"] {
+  .elastic-carousel {
+    & .elastic-carousel-container {
+      & .elastic-carousel-item {
+        & .elastic-carousel-item-footer {
+          &:after {
+            transform: rotate(180deg);
+            left: 0;
+            right: unset;
+          }
+        }
+        & .elastic-carousel-item-header {
+          &:after {
+            transform: rotate(180deg);
+            left: 0;
+            right: unset;
+          }
+        }
+      }
+    }
+  }
+}
 .elastic-carousel {
   --elastic-carousel-transtions: all .5s ease;
   --elastic-carousel-transtions-slow: all .3s ease;
   --elastic-carousel-container-height-desktop: 580px;
-  --elastic-carousel-container-height-tablet: 552px;
+  --elastic-carousel-container-height-tablet: 560px;
   --elastic-carousel-item-max-width: 294px;
   --elastic-carousel-item-hover-grow-index: 1.75;
-  --elastic-carousel-container-max-width: calc(1510px + clac(var(--elastic-carousel-item-max-width) / var(--elastic-carousel-item-hover-grow-index)));
+  /* --elastic-carousel-container-max-width: calc(1510px + clac(var(--elastic-carousel-item-max-width) / var(--elastic-carousel-item-hover-grow-index))); */
   --slides: 5;
 
   position: relative;
   overflow: clip;
-  max-width: var(--elastic-carousel-container-max-width);
+  /* max-width: var(--elastic-carousel-container-max-width); */
   height: var(--elastic-carousel-container-height-desktop);
   margin: auto;
 
@@ -22,7 +45,6 @@
   .elastic-carousel-container {
     display: flex;
     height: 100%;
-    flex-direction: row;
     position: absolute;
     top: 0%;
     left: 50%;
@@ -62,7 +84,8 @@
       }
 
       .elastic-carousel-item-media {
-        img {
+        text-align: center;
+        video {
           border-radius: var(--s2a-border-radius-md);
           object-fit: cover;
           height: 394px;
@@ -75,7 +98,7 @@
         padding: var(--s2a-spacing-md);
         max-width: 270px;
         font-size: var(--s2a-font-size-md);
-        line-height: 130%;
+        line-height: var(--s2a-font-line-height-16);
 
         &:after {
           content: '';
@@ -83,7 +106,7 @@
           background: url('../../assets/img/arrow-right.svg') no-repeat;
           width: 24px;
           height: 24px;
-          margin: 24px;
+          margin: var(--s2a-spacing-lg);
           position: absolute;
           right: 0;
           bottom: 0;
@@ -91,9 +114,9 @@
           transition: none;
         }
 
-        strong {
+        h1,h2,h3,h4,h5,h6 {
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
-          margin: 0 0 4px 0;
+          margin: 0 0 var(--s2a-spacing-xs) 0;
           line-height: var(--s2a-font-line-height-20);
           transition: color .5s ease;
           display: -webkit-box;
@@ -146,19 +169,21 @@
 @media (1280px > width > 767px) {
   .elastic-carousel {
     height: var(--elastic-carousel-container-height-tablet);
-
-    .elastic-carousel-item {
-      width: calc(100vw / calc(var(--slides) - 1.5));
-  
-      .elastic-carousel-item-header {
-        padding: var(--s2a-spacing-md) !important;
+    
+    .elastic-carousel-container {
+      .elastic-carousel-item {
+        width: calc(100vw / calc(var(--slides) - 1.5));
+    
+        .elastic-carousel-item-header {
+          padding: var(--s2a-spacing-md);
+        }
       }
     }
   }
 }
 
 /** desktop and tablet */
-@media (width > 767px) {
+@media (width > 768px) {
   .elastic-carousel {
     .elastic-carousel-container {
 
@@ -186,7 +211,7 @@
           outline: none;
 
           .elastic-carousel-item-footer p,
-          .elastic-carousel-item-footer strong,
+          .elastic-carousel-item-footer h1,h2,h3,h4,h5,h6,
           .elastic-carousel-item-header p {
             color: var(--s2a-color-gray-25);
           }
@@ -199,14 +224,6 @@
             background-size: 8px;
             position: absolute;
           }
-        }
-
-        &:first-child {
-          margin-left: 0 !important;
-        }
-
-        &:last-child {
-          margin-right: 0 !important;
         }
       }
     }
@@ -301,12 +318,12 @@
               background: url('../../assets/img/arrow-right.svg') no-repeat;
               width: 24px;
               height: 24px;
-              margin: 24px;
+              margin: var(--s2a-spacing-lg);
               position: absolute;
               right: 0;
               top: 0;
               opacity: 1;
-              background-color: white;
+              background-color: var(--s2a-color-gray-25);
               border-radius: var(--s2a-border-radius-round);
               background-position: 55% 50%;
               background-size: 8px;
@@ -315,8 +332,9 @@
           }
 
           .elastic-carousel-item-media {
-            img {
+            video {
               border-radius: var(--s2a-border-radius-0);
+              width: 100%;
             }
           }
         }
