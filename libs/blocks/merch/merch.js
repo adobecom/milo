@@ -374,15 +374,12 @@ export function getMasLibsBaseUrl() {
     return 'https://main--mas--adobecom.aem.live';
   }
 
-  const { hostname } = window.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
-
   let branch = sanitized;
   if (!sanitized.includes('--')) {
     branch = `${sanitized}--mas--adobecom`;
   }
 
-  return `https://${branch}.aem.${extension}`;
+  return `https://${branch}.aem.live`;
 }
 
 /**
