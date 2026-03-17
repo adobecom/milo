@@ -30,7 +30,10 @@ function stripMiloTypoClassesFromElement(el) {
 function stripMasFieldMiloClasses(masField) {
   stripMiloTypoClassesFromElement(masField.parentElement);
   const root = masField.shadowRoot ?? masField;
-  root.querySelectorAll('[class]').forEach(stripMiloTypoClassesFromElement);
+  root.querySelectorAll('[class]').forEach((el) => {
+    if (el.hasAttribute?.('data-mas-field-preserve-classes')) return;
+    stripMiloTypoClassesFromElement(el);
+  });
 }
 
 function observeMasFieldForStyles(masField) {
@@ -121,6 +124,7 @@ function normalizeBlockFieldWrappers(masField) {
     if (innerHeading) {
       if (parent.id && !innerHeading.id) innerHeading.id = parent.id;
       parent.classList.forEach((className) => innerHeading.classList.add(className));
+      innerHeading.setAttribute('data-mas-field-preserve-classes', '');
     }
   }
 
