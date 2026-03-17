@@ -122,13 +122,16 @@
   }
 }
 
+/* tablet up */
+@media (width >= 768px) {
+  .section.product-grid[class*='-up'] {
+    grid-auto-rows: 1fr;
+  }
+}
+
 @media (768px <= width < 1280px) {
   .section-background .tablet-only {
     display: block;
-  }
-
-  .section.product-grid[class*='-up'] {
-    grid-auto-rows: 1fr;
   }
 }
 
