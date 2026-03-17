@@ -69,16 +69,17 @@
       position: relative;
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
+      margin-inline-end: var(--s2a-spacing-12);
 
       &::after {
         content: url('../../assets/img/arrow-right.svg');
-        display: inline-block;
-        margin-inline-start: var(--s2a-spacing-8);
-        transition: margin-inline-start 0.2s ease;
+        position: absolute;
+        inset-inline-start: calc(100% + var(--s2a-spacing-8));
+        transition: inset-inline-start 0.2s ease;
       }
 
       &:hover::after {
-        margin-inline-start: var(--s2a-spacing-12);
+        inset-inline-start: calc(100% + var(--s2a-spacing-12));
       }
 
       [dir="rtl"] &::after {
