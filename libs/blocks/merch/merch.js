@@ -1152,7 +1152,7 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
-      } else {
+      } else if (validatedMarket) {
         service.setAttribute('country', countryFromMarket);
       }
       if (isAnnualPriceEnabled()) {
