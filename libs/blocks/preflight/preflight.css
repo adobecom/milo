@@ -1275,4 +1275,9 @@ img:hover ~ .asset-meta,
   outline-offset: 2px !important;
 }
 
+/* Highlight blocks with multiple M@S fragment IDs (M@S preflight warning) */
+.preflight-mas-multiple-fragments {
+  border: 3px solid #e68600 !important;
+}
+
 

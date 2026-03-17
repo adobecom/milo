@@ -11,10 +11,40 @@ import {
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
+const MILO_TYPO_CLASS_PATTERN = /^(heading|body|detail|title)-[a-z0-9-]+$/i;
 const seenFragments = new Set();
 let log;
 loadMasComponent(MAS_MERCH_CARD);
 loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
+
+function stripMiloTypoClassesFromElement(el) {
+  if (!el?.classList?.length) return;
+  const toRemove = [...el.classList].filter((c) => MILO_TYPO_CLASS_PATTERN.test(c));
+  toRemove.forEach((c) => el.classList.remove(c));
+}
+
+function stripMasFieldMiloClasses(masField) {
+  stripMiloTypoClassesFromElement(masField.parentElement);
+  const root = masField.shadowRoot ?? masField;
+  root.querySelectorAll('[class]').forEach(stripMiloTypoClassesFromElement);
+}
+
+function observeMasFieldForStyles(masField) {
+  function strip() {
+    stripMasFieldMiloClasses(masField);
+  }
+  strip();
+  const root = masField.shadowRoot ?? masField;
+  const parentObserver = new MutationObserver(strip);
+  const parent = masField.parentElement;
+  if (parent) {
+    parentObserver.observe(parent, { attributes: true, attributeFilter: ['class'] });
+    setTimeout(() => parentObserver.disconnect(), 5000);
+  }
+  const rootObserver = new MutationObserver(strip);
+  rootObserver.observe(root, { childList: true, subtree: true });
+  setTimeout(() => rootObserver.disconnect(), 3000);
+}
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -89,6 +119,7 @@ async function createInline(el, options) {
     el.replaceWith(masField); // keep <p> and surrounding text, replace only the link
   }
   await checkReady(masField);
+  observeMasFieldForStyles(masField);
 }
 
 export default async function init(el) {
