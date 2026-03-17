@@ -900,6 +900,7 @@ div.section.parallax-move-up-fast {
 
 .section.parallax-move-up-fast ~ .section {
   background-color: white;
+  margin-bottom: -1px;
 } 
 
 @keyframes parallax-pull-up {
