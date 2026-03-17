@@ -19,7 +19,7 @@ function getFederalDomain(config) {
       if (segments.length >= 2) return sanitized;
       return `${sanitized}--federal--adobecom`;
     })();
-    return `https://${branch}.aem.${extension}`;
+    return `https://${branch}.aem.${extension}/federal`;
   }
 
   if (extension) return `${DEFAULT_FEDERAL_URL.replace('aem.page', `aem.${extension}`)}/federal`;
