@@ -101,6 +101,7 @@ const CONFIG = {
   delays: { decoration: 3000 },
   containerBreakpoint: 767,
 };
+const FOOTER_IN_VIEW_CLASS = 'feds-footer-in-view';
 
 let cachedDecorateMenu;
 export async function loadDecorateMenu() {
@@ -127,7 +128,9 @@ class Footer {
     this.resizeTimeout = null;
     this.footerOrderMediaQuery = null;
     this.footerOrderMediaQueryHandler = null;
+    this.footerVisibilityObserver = null;
     this.init();
+    this.initFooterInViewBackground();
   }
 
   init = () => logErrorFor(async () => {
@@ -188,6 +191,17 @@ class Footer {
     this.footerOrderMediaQuery = null;
     this.footerOrderMediaQueryHandler = null;
     this.isMobile = null;
+    this.footerVisibilityObserver?.disconnect();
+    this.footerVisibilityObserver = null;
+    document.documentElement.classList.remove(FOOTER_IN_VIEW_CLASS);
+  };
+
+  initFooterInViewBackground = () => {
+    this.footerVisibilityObserver = new window.IntersectionObserver((entries) => {
+      const footerVisible = entries.some((entry) => entry.isIntersecting);
+      document.documentElement.classList.toggle(FOOTER_IN_VIEW_CLASS, footerVisible);
+    });
+    this.footerVisibilityObserver.observe(this.block);
   };
 
   decorateContent = () => logErrorFor(async () => {
