@@ -65,6 +65,7 @@
       font-size: var(--s2a-typography-font-size-body-sm);
       font-weight: var(--s2a-font-weight-adobe-clean-bold);
       line-height: var(--s2a-typography-line-height-body-xs);
+      text-decoration: none;
       position: relative;
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
