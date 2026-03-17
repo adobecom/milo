@@ -232,9 +232,9 @@ html.feds-footer-in-view body {
 
 .global-footer .feds-footer-logo {
   line-height: 0;
-  margin-top: var(--s2a-spacing-xl);
   max-width: var(--grid-max-width-wide);
   margin: auto;
+  margin-top: var(--s2a-spacing-xl);
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -390,6 +390,11 @@ span.feds-footer-privacyLink-divider {
     position: absolute;
     right: 0;
     bottom: 0;
+  }
+
+  [dir = "rtl"] .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+    left: 0;
+    right: auto;
   }
 }
 
