@@ -211,9 +211,7 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts
 
   setMarket(marketItem.value);
   const commerceService = document.head.querySelector('mas-commerce-service');
-  if (commerceService) {
-    commerceService.setAttribute('country', marketItem.value.toUpperCase());
-  }
+  commerceService?.setAttribute('country', marketItem.value.toUpperCase());
 
   let targetPrefix = currentPrefix;
   if (marketPrefix !== undefined) {
@@ -622,6 +620,7 @@ function createDropdown(
     }
   }
 
+  // List: when scrolled to top, swipe down to close
   function onListTouchEnd(e) {
     if (!e.changedTouches?.length || e.changedTouches[0].identifier !== listTouchId) return;
     const { clientY } = e.changedTouches[0];
@@ -670,9 +669,7 @@ export default async function init(block) {
 
   const currentMarketCode = await getValidatedMarket();
   const commerceService = document.head.querySelector('mas-commerce-service');
-  if (commerceService) {
-    commerceService.setAttribute('country', currentMarketCode.toUpperCase());
-  }
+  commerceService?.setAttribute('country', currentMarketCode.toUpperCase());
 
   const currentMarket = getCurrentMarket(markets, currentMarketCode, currentLang);
 
