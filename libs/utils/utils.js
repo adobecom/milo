@@ -1962,7 +1962,7 @@ async function decorateMeta(ignoreNames = []) {
   const contents = document.head.querySelectorAll('[content*=".hlx."]:not([data-localized]), [content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
   await Promise.all(Array.from(contents).map(async (meta) => {
     const name = meta.getAttribute('name') || meta.getAttribute('property');
-    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule')) return;
+    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule') || meta.getAttribute('http-equiv') === 'Content-Security-Policy') return;
     if (ignoreNames.includes(name)) return;
     try {
       const url = new URL(meta.content);
