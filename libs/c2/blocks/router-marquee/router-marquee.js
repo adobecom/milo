@@ -1,16 +1,38 @@
-import { createTag, getFederatedUrl } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl, getFederatedContentRoot } from '../../../utils/utils.js';
 
 const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
-const AUTOPLAY_MS = 5000;
-const TRANSITION_MS = 500;
-const ENTER_MS = 300;
-const SLIDE_SHIFT = 100;
+const AUTOPLAY_MS = 15000;
+const TEXT_EXIT_MS = 260;
+const TEXT_EXIT_PX = 28;
+const TEXT_GAP_MS = 220;
+const TEXT_ENTER_MS = 380;
+const TEXT_ENTER_PX = 28;
+const BG_FADE_MS = 650;
+const BG_SHIFT_PX = 90;
+const HOVER_DELAY_MS = 200;
+const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
+const RESUME_DELAY = 2000;
+const SWIPE_THRESHOLD = 100;
+const TRANSITION_MS = Math.max(BG_FADE_MS, TEXT_EXIT_MS + TEXT_GAP_MS + TEXT_ENTER_MS);
+
+const reflow = (el) => el?.getBoundingClientRect();
+
+const clearInlineStyles = (el, props) => {
+  if (!el) return;
+  props.forEach((p) => { el.style[p] = ''; });
+};
+
+const resetSlide = (slide) => {
+  clearInlineStyles(slide, ['opacity', 'zIndex', 'transition', 'pointerEvents']);
+  clearInlineStyles(slide.querySelector('.rm-content'), ['transform', 'opacity', 'transition']);
+  const bg = slide.querySelector('.rm-background');
+  if (bg) { bg.style.transition = ''; bg.style.removeProperty('--slide-bg-x'); }
+};
 
 const groupByViewport = (el) => {
   const viewports = {};
   let current = null;
-
   [...el.children].forEach((row) => {
     const firstCol = row.querySelector(':scope > div');
     const breakpoint = BREAKPOINTS.find((b) => firstCol?.textContent.trim().toLowerCase() === b);
@@ -21,7 +43,6 @@ const groupByViewport = (el) => {
       viewports[current].push(row);
     }
   });
-
   return viewports;
 };
 
@@ -31,31 +52,45 @@ const decorateText = (textCol) => {
   heading?.previousElementSibling?.classList.add('rm-eyebrow');
 
   const eyebrow = textCol.querySelector('.rm-eyebrow');
-  const bodyPs = [...textCol.querySelectorAll('p')]
-    .filter((p) => !p.querySelector('a') && p !== eyebrow);
-  const body = createTag('div', { class: 'rm-body' });
-  bodyPs[0].before(body);
-  bodyPs.forEach((p) => body.append(p));
+  const icon = textCol.querySelector('p a[href*=".svg"]');
+  const label = textCol.querySelector(':scope > p:has(a[href*=".svg"]) + p');
+  const body = [...textCol.querySelectorAll('p')]
+    .filter((p) => !p.querySelector('a')
+    && [eyebrow, icon, label].every((x) => x !== p));
+
+  const bodyEl = createTag('div', { class: 'rm-body' });
+  body[0].before(bodyEl);
+  body.forEach((p) => bodyEl.append(p));
 };
 
 const decorateCtas = (textCol) => {
-  const ctaP = textCol.querySelector('p:has(em)');
-  if (!ctaP) return;
-  ctaP.classList.add('rm-ctas');
-  const primary = ctaP.querySelector('em > strong a');
-  const secondary = ctaP.querySelector('em > a');
+  const cta = textCol.querySelector('p:has(em)');
+  if (!cta) return;
+  cta.classList.add('rm-ctas');
+  const primary = cta.querySelector('em > strong a');
+  const secondary = cta.querySelector('em > a');
   primary?.classList.add('con-button', 'rm-cta-primary');
   secondary?.classList.add('con-button');
-  ctaP.replaceChildren(...[primary, secondary].filter(Boolean));
+  cta.replaceChildren(...[primary, secondary].filter(Boolean));
 };
 
 const decorateSlide = (slide) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
-
   slide.classList.add('rm-slide');
   imageCol?.classList.add('rm-background');
-  textCol?.classList.add('rm-content');
-  slide.insertBefore(createTag('div', { class: 'rm-overlay' }), textCol);
+  textCol.classList.add('rm-content');
+  const contentWrapper = createTag('div', { class: 'rm-content-wrapper' });
+  slide.insertBefore(contentWrapper, textCol);
+  contentWrapper.append(textCol);
+  slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
+
+  const miloVideo = imageCol?.querySelector('.milo-video');
+  const iframe = miloVideo?.querySelector('iframe');
+  if (iframe?.src?.includes('.mp4')) {
+    const video = createTag('video', { playsinline: '', autoplay: '', muted: '', loop: '' });
+    video.appendChild(createTag('source', { src: iframe.src, type: 'video/mp4' }));
+    miloVideo.replaceWith(video);
+  }
 
   if (!textCol) return;
   decorateText(textCol);
@@ -63,44 +98,56 @@ const decorateSlide = (slide) => {
 };
 
 const buildCard = (slide) => {
-  const link = slide.querySelector('a[href*=".svg"]');
-  if (!link) return null;
+  const icon = [...slide.querySelectorAll('p')]
+    .find((p) => p.querySelector('img[src*=".svg"]'));
+  const label = icon.nextElementSibling;
+  const iconSrc = getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
+  const labelText = label?.textContent.trim();
+  const href = slide.querySelector('.con-button')?.getAttribute('href') || '';
 
-  const svgHref = link.getAttribute('href');
-  const label = link.textContent.trim();
-  const primaryHref = slide.querySelector('.con-button')?.getAttribute('href') || '';
+  icon.remove();
+  label?.remove();
 
-  link.closest('p')?.remove();
-  link.className = 'rm-card';
-  link.setAttribute('href', primaryHref);
-  link.replaceChildren(
-    createTag('img', {
-      class: 'rm-card-icon',
-      src: getFederatedUrl(svgHref),
-      loading: 'lazy',
-    }),
+  const card = createTag('a', { class: 'rm-card', href });
+  card.replaceChildren(
+    createTag('img', { class: 'rm-card-icon', src: iconSrc, loading: 'lazy' }),
     createTag('div', { class: 'rm-card-content' }, [
-      createTag('span', { class: 'rm-card-label' }, label),
+      createTag('span', { class: 'rm-card-label' }, labelText),
       createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
     ]),
     createTag('div', { class: 'rm-card-progress' }, [
       createTag('div', { class: 'rm-card-progress-bar' }),
     ]),
   );
-
-  return link;
+  return card;
 };
 
 const buildCards = (slides) => {
   const cards = createTag('div', { class: 'rm-cards' });
-  slides.forEach((slide) => {
-    const card = buildCard(slide);
-    if (card) cards.append(card);
-  });
+  slides.forEach((slide) => cards.append(buildCard(slide)));
   return cards;
 };
 
-const reflow = (el) => el?.getBoundingClientRect();
+const buildPlayPause = () => {
+  const root = getFederatedContentRoot();
+  return createTag('a', {
+    class: 'rm-pause-play',
+    role: 'button',
+    tabindex: '0',
+    'aria-label': 'Pause',
+  }, createTag('div', { class: 'offset-filler is-playing' }, [
+    createTag('img', {
+      class: 'accessibility-control pause-icon',
+      alt: 'Pause icon',
+      src: `${root}/federal/assets/svgs/accessibility-pause.svg`,
+    }),
+    createTag('img', {
+      class: 'accessibility-control play-icon',
+      alt: 'Play icon',
+      src: `${root}/federal/assets/svgs/accessibility-play.svg`,
+    }),
+  ]));
+};
 
 const setBar = (bar, tx, ms, timing = 'linear') => {
   bar.style.transition = ms > 0 ? `transform ${ms}ms ${timing}` : 'none';
@@ -113,16 +160,59 @@ const slideBar = (bar, from, to, ms, timing = 'linear') => {
   setBar(bar, to, ms, timing);
 };
 
-const startAutoplay = (slides, cards) => {
+const animateBgShift = (oldBg, newBg, direction) => {
+  const shift = window.matchMedia('(min-width: 1280px)').matches ? BG_SHIFT_PX : 0;
+  if (!shift || !oldBg || !newBg) return;
+
+  oldBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
+  oldBg.style.setProperty('--slide-bg-x', `${-direction * shift}px`);
+
+  newBg.style.transition = 'none';
+  newBg.style.setProperty('--slide-bg-x', `${direction * shift}px`);
+  reflow(newBg);
+  newBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
+  newBg.style.removeProperty('--slide-bg-x');
+};
+
+const animateContentExit = (content, direction) => {
+  if (!content) return;
+  content.style.transition = `transform ${TEXT_EXIT_MS}ms ${EASE}, opacity ${TEXT_EXIT_MS}ms ${EASE}`;
+  content.style.transform = `translateX(${-direction * TEXT_EXIT_PX}px)`;
+  content.style.opacity = '0';
+};
+
+const animateContentEnter = (content, direction) => {
+  if (!content) return null;
+  content.style.transition = 'none';
+  content.style.opacity = '0';
+  content.style.transform = `translateX(${direction * TEXT_ENTER_PX}px)`;
+  reflow(content);
+  return setTimeout(() => {
+    content.style.transition = `transform ${TEXT_ENTER_MS}ms ${EASE}, opacity ${TEXT_ENTER_MS}ms ${EASE}`;
+    content.style.transform = '';
+    content.style.opacity = '';
+  }, TEXT_EXIT_MS + TEXT_GAP_MS);
+};
+
+const startAutoplay = (slides, cards, container, block) => {
   const cardEls = [...cards.children];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
-  let active = 0;
-  let timer = null;
-  let paused = false;
-  let fillAnimation = null;
-  let slideTimer = null;
-  let slideTimer2 = null;
-  let pendingSlide = null;
+  const playPauseBtn = container.querySelector('.rm-pause-play');
+  const filler = playPauseBtn?.querySelector('.offset-filler');
+  let active = 0; // index of the current active slide
+  let timer = null; // timer for the autoplay
+  let paused = false; // whether the autoplay is paused
+  let fillAnimation = null; // animation instance for the progress bar
+  let slideTimer = null; // timer for delayed text entry animation
+  let cleanupTimer = null; // cleanup timer that resets temp inline styles
+  let pendingSlide = null; // the slide that is currently transitioning in
+  let leaveTimer = null; // timer for restarting autoplay on block mouse leave
+  let hoverTimer = null; // debounce timer for card hover
+
+  const setPlayingState = (isPlaying) => {
+    filler?.classList.toggle('is-playing', isPlaying);
+    playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+  };
 
   const stop = () => {
     clearTimeout(timer);
@@ -131,15 +221,12 @@ const startAutoplay = (slides, cards) => {
 
   const finishSlideTransition = () => {
     clearTimeout(slideTimer);
-    clearTimeout(slideTimer2);
+    clearTimeout(cleanupTimer);
+    clearTimeout(hoverTimer);
     slideTimer = null;
-    slideTimer2 = null;
-    [...slides].forEach((s) => {
-      s.style.opacity = '';
-      s.style.zIndex = '';
-      s.style.transform = '';
-      s.style.transition = '';
-    });
+    cleanupTimer = null;
+    hoverTimer = null;
+    [...slides].forEach(resetSlide);
     if (pendingSlide) {
       pendingSlide.classList.add('is-active');
       pendingSlide = null;
@@ -152,39 +239,46 @@ const startAutoplay = (slides, cards) => {
     const oldSlide = slides[active];
     const newSlide = slides[index];
 
+    oldSlide.classList.remove('is-active');
     oldSlide.style.opacity = '1';
     oldSlide.style.zIndex = '1';
-    oldSlide.style.transform = `translateX(${-direction * SLIDE_SHIFT}px)`;
-    oldSlide.classList.remove('is-active');
-
+    oldSlide.style.pointerEvents = 'none';
+    newSlide.style.opacity = '1';
+    newSlide.style.pointerEvents = 'auto';
     pendingSlide = newSlide;
-    slideTimer = setTimeout(() => {
-      oldSlide.style.opacity = '';
-      oldSlide.style.zIndex = '';
-      oldSlide.style.transform = '';
 
-      newSlide.style.transition = 'none';
-      newSlide.style.transform = `translateX(${direction * SLIDE_SHIFT}px)`;
-      newSlide.classList.add('is-active');
-      reflow(newSlide);
-      newSlide.style.transition = `transform ${ENTER_MS}ms ease-out`;
-      newSlide.style.transform = '';
+    reflow(oldSlide);
+    oldSlide.style.transition = `opacity ${BG_FADE_MS}ms ${EASE}`;
+    oldSlide.style.opacity = '0';
 
-      slideTimer2 = setTimeout(() => {
-        pendingSlide = null;
-        slideTimer = null;
-        slideTimer2 = null;
-      }, ENTER_MS);
-    }, TRANSITION_MS);
+    animateBgShift(
+      oldSlide.querySelector('.rm-background'),
+      newSlide.querySelector('.rm-background'),
+      direction,
+    );
+    animateContentExit(oldSlide.querySelector('.rm-content'), direction);
+    slideTimer = animateContentEnter(newSlide.querySelector('.rm-content'), direction);
+
+    oldSlide.querySelector('video')?.pause();
+    if (!paused) {
+      const vid = newSlide.querySelector('video');
+      if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+    }
+
+    cleanupTimer = setTimeout(finishSlideTransition, TRANSITION_MS + 50);
 
     cardEls[active]?.classList.remove('is-active');
     active = index;
     cardEls[active]?.classList.add('is-active');
+    if (!window.matchMedia('(min-width: 1280px)').matches) {
+      const scrollTarget = cardEls[active].offsetLeft - cards.offsetLeft;
+      cards.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+    }
   };
 
   const advance = () => {
     stop();
-    setBar(bars[active], '101%', TRANSITION_MS, 'ease-out');
+    setBar(bars[active], '101%', BG_FADE_MS, EASE);
     activate((active + 1) % cardEls.length, 1);
     slideBar(bars[active], '-101%', '0%', AUTOPLAY_MS);
     timer = setTimeout(advance, AUTOPLAY_MS);
@@ -193,27 +287,102 @@ const startAutoplay = (slides, cards) => {
   const pause = () => {
     stop();
     paused = true;
-    setBar(bars[active], '0%', TRANSITION_MS, 'ease-out');
+    setBar(bars[active], '0%', 0);
+    setPlayingState(false);
+    slides[active]?.querySelector('video')?.pause();
+  };
+
+  const cancelLeaveTimer = () => {
+    clearTimeout(leaveTimer);
+    leaveTimer = null;
+  };
+
+  const startLeaveTimer = () => {
+    if (leaveTimer) return;
+    leaveTimer = setTimeout(() => {
+      leaveTimer = null;
+      paused = false;
+      setPlayingState(true);
+      advance();
+    }, RESUME_DELAY);
+  };
+
+  const pauseOnInteraction = (e) => {
+    const target = e.target.closest('a, button');
+    if (target && !target.classList.contains('rm-pause-play')) {
+      cancelLeaveTimer();
+      if (!paused) pause();
+    }
   };
 
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
+      cancelLeaveTimer();
+      clearTimeout(hoverTimer);
       if (i === active) { pause(); return; }
-      stop();
-      paused = true;
-      const dir = i > active ? 1 : -1;
-      setBar(bars[active], `${dir * 101}%`, TRANSITION_MS, 'ease-out');
-      activate(i, dir);
-      slideBar(bars[i], `${-dir * 101}%`, '0%', TRANSITION_MS, 'ease-out');
+      hoverTimer = setTimeout(() => {
+        hoverTimer = null;
+        stop();
+        paused = true;
+        const dir = i > active ? 1 : -1;
+        setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
+        activate(i, dir);
+        slideBar(bars[i], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
+      }, HOVER_DELAY_MS);
     });
   });
 
-  cards.addEventListener('mouseleave', () => {
+  container.addEventListener('mouseover', pauseOnInteraction);
+  container.addEventListener('focusin', pauseOnInteraction);
+  block.addEventListener('mouseenter', cancelLeaveTimer);
+
+  block.addEventListener('mouseleave', () => {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+    if (paused) startLeaveTimer();
+  });
+
+  playPauseBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+    cancelLeaveTimer();
     if (paused) {
       paused = false;
+      setPlayingState(true);
       advance();
+    } else {
+      pause();
     }
   });
+
+  // mobile swipe
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchOnContent = false;
+
+  container.addEventListener('touchstart', (e) => {
+    touchOnContent = !!e.target.closest('.rm-content');
+    if (touchOnContent) return;
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
+  }, { passive: true });
+
+  container.addEventListener('touchend', (e) => {
+    if (touchOnContent) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dy) > Math.abs(dx)) return;
+
+    stop();
+    const dir = dx < 0 ? 1 : -1;
+    const next = (active + dir + cardEls.length) % cardEls.length;
+    setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
+    activate(next, dir);
+    slideBar(bars[next], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
+    paused = true;
+    setPlayingState(false);
+  }, { passive: true });
 
   const bar = bars[active];
   setBar(bar, '-101%', 0);
@@ -237,17 +406,27 @@ const buildViewport = (viewport, slides) => {
   slides[0]?.classList.add('is-active');
   const cards = buildCards(slides);
   cards.children[0]?.classList.add('is-active');
-  container.append(...slides, cards);
+  const controls = createTag('div', { class: 'rm-controls' });
+  controls.append(buildPlayPause(), cards);
+  container.append(...slides, controls);
   return container;
+};
+
+const initVideos = (el) => {
+  el.querySelectorAll('.rm-background video').forEach((v) => {
+    v.muted = true;
+    v.play().catch(() => {});
+  });
 };
 
 export default function init(el) {
   const viewports = groupByViewport(el);
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
+  initVideos(el);
   containers.forEach((container) => {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
-    if (slides.length && cards) startAutoplay(slides, cards);
+    startAutoplay(slides, cards, container, el);
   });
 }

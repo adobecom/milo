@@ -1,8 +1,21 @@
 import { decorateButtons } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
+function hangOpeningQuote(header) {
+  const openingQuotes = /^(\p{Pi})/u;
+  const match = header.textContent.match(openingQuotes);
+  if (!match) return;
+  const quote = match[1];
+  header.textContent = header.textContent.slice(1);
+  const span = createTag('span', { class: 'opening-quote' }, quote);
+  header.prepend(span);
+}
+
 function decorateText(el, config = ['lg', 'l']) {
   const headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+  hangOpeningQuote(headings[0]);
+
   const prevSib = headings[0]?.previousElementSibling;
   prevSib?.classList.add('eyebrow');
 
