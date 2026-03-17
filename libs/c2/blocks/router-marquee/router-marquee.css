@@ -323,8 +323,7 @@
 @media (width <= 767px) {
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
-    min-height: 420px;
-    max-height: 930px;
+    height: 100vh;
   }
 
   .rm-content-wrapper {
@@ -352,8 +351,7 @@
 @media (767px < width < 1280px) {
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
-    min-height: 720px;
-    max-height: 1280px;
+    height: 100vh;
   }
 
   .rm-content-wrapper {
