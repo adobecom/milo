@@ -234,9 +234,22 @@ async function openChatModal(initialMessage, el) {
   }
 
   const { env, locale } = getConfig();
-  const src = env.name === 'prod'
-    ? 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js'
-    : 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  let src = stage;
+
+  if (env.name === 'prod') {
+    src = prod;
+  }
+
+  if (webClient === 'prod') {
+    console.log('prod', prod);
+    src = prod;
+  } else if (webClient === 'stage') {
+    console.log('stage', stage);
+    src = stage;
+  }
+
   await loadScript(src);
 
   const urlParams = new URLSearchParams(window.location.search);

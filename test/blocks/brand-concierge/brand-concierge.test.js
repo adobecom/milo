@@ -213,7 +213,7 @@ describe('Brand Concierge', () => {
     expect(floatingButton).to.exist;
     expect(floatingButton.querySelector('.bc-floating-icon')).to.exist;
     expect(floatingButton.querySelector('.bc-floating-input')).to.exist;
-    expect(floatingButton.querySelector('.bc-floating-input').textContent.trim()).to.equal('Ask a question');
+    expect(floatingButton.querySelector('.bc-floating-input').textContent.trim()).to.equal("Tell us what you'd like to do or create");
     expect(floatingButton.querySelector('.bc-floating-submit')).to.exist;
 
     floatingButton.click();
