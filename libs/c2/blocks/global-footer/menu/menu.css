@@ -9,9 +9,12 @@
   flex-direction: column;
 }
 
-.feds-navLink--hoverCaret[aria-expanded = "true"]:after,
-.feds-menu-headline[aria-expanded = "true"]:after {
+.feds-navLink--hoverCaret[aria-expanded = "true"]:after {
   transform: rotateZ(-135deg);
+}
+
+.feds-menu-headline[aria-expanded = "true"]:after {
+  transform: rotateZ(225deg);
 }
 
 /* General menu styles */
@@ -92,14 +95,6 @@
 }
 
 @media (min-width: 1024px) {
-  .global-footer:not(.mobile) .feds-menu-content {
-    display: grid;
-    width: 100%;
-    max-width: var(--feds-maxWidth-nav);
-    grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
-    gap: 16px;
-  }
-
   .feds-navItem--section .feds-menu-content {
     column-gap: 12px;
   }
