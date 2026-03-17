@@ -58,7 +58,7 @@
   }
 }
 
-@media screen and (width < 768px) {
+@media screen and (max-width: 768px) {
   .news.three-up, .news.four-up {
     display: flex;
     flex-direction: column;
