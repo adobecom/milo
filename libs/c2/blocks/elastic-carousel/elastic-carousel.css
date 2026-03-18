@@ -237,7 +237,7 @@ html[dir="rtl"] {
   .elastic-carousel {
     --offset-adjuster: 50px;
     --offset-scale: .75;
-    --last-offset: 4rem;
+    --last-offset: 2rem;
 
     height: auto;
     overflow: visible;
@@ -254,7 +254,7 @@ html[dir="rtl"] {
 
       .elastic-carousel-item {
         position: sticky;
-        top: 10%;
+        top: 18%;
         width: 100%;
         max-width: none;
         color: white;
@@ -273,21 +273,21 @@ html[dir="rtl"] {
         }
 
         &:nth-child(2) {
-          --stack-offset: 1rem;
+          --stack-offset: .5rem;
           z-index: 2;
           --stack-contrast: .25;
           --stack-shrink: 3rem;
         }
 
         &:nth-child(3) {
-          --stack-offset: 2rem;
+          --stack-offset: 1rem;
           z-index: 3;
           --stack-contrast: .5;
           --stack-shrink: 2rem;
         }
 
         &:nth-child(4) {
-          --stack-offset: 3rem;
+          --stack-offset: 1.5rem;
           z-index: 4;
           --stack-contrast: .75;
           --stack-shrink: 1rem;
@@ -399,6 +399,10 @@ html[dir="rtl"] {
 
 @keyframes shrink {
   0% {
+    margin: 0
+  }
+
+  20% {
     margin: 0
   }
 
