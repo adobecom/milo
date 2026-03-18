@@ -1,4 +1,5 @@
 import { createTag, getFederatedUrl, getFederatedContentRoot } from '../../../utils/utils.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
@@ -13,9 +14,8 @@ const BG_SHIFT_PX = 90;
 const HOVER_DELAY_MS = 200;
 const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const RESUME_DELAY = 2000;
+const SWIPE_THRESHOLD = 100;
 const TRANSITION_MS = Math.max(BG_FADE_MS, TEXT_EXIT_MS + TEXT_GAP_MS + TEXT_ENTER_MS);
-
-/* --- Utilities --- */
 
 const reflow = (el) => el?.getBoundingClientRect();
 
@@ -31,8 +31,6 @@ const resetSlide = (slide) => {
   if (bg) { bg.style.transition = ''; bg.style.removeProperty('--slide-bg-x'); }
 };
 
-/* --- Viewport parsing --- */
-
 const groupByViewport = (el) => {
   const viewports = {};
   let current = null;
@@ -46,10 +44,29 @@ const groupByViewport = (el) => {
       viewports[current].push(row);
     }
   });
+
+  // if breakpoints are missing slides, we clone from the lower breakpoint
+  BREAKPOINTS.slice(1).forEach((breakpoint, idx) => {
+    const lower = BREAKPOINTS[idx];
+    if (!viewports[breakpoint]) {
+      viewports[breakpoint] = viewports[lower].map((s) => s.cloneNode(true));
+      return;
+    }
+    viewports[breakpoint].forEach((slide, j) => {
+      const lowerSlide = viewports[lower][j];
+      if (!lowerSlide) return;
+      const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
+      const lowerCols = lowerSlide.querySelectorAll(':scope > div');
+      [textCol, imageCol].forEach((col, k) => {
+        if (col && !col.children.length && lowerCols[k]) {
+          col.replaceWith(lowerCols[k].cloneNode(true));
+        }
+      });
+    });
+  });
+
   return viewports;
 };
-
-/* --- Slide decoration --- */
 
 const decorateText = (textCol) => {
   const heading = textCol.querySelector('h1, h2');
@@ -83,8 +100,11 @@ const decorateSlide = (slide) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
   slide.classList.add('rm-slide');
   imageCol?.classList.add('rm-background');
-  textCol?.classList.add('rm-content');
-  slide.insertBefore(createTag('div', { class: 'rm-overlay' }), textCol);
+  textCol.classList.add('rm-content');
+  const contentWrapper = createTag('div', { class: 'rm-content-wrapper' });
+  slide.insertBefore(contentWrapper, textCol);
+  contentWrapper.append(textCol);
+  slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
 
   const miloVideo = imageCol?.querySelector('.milo-video');
   const iframe = miloVideo?.querySelector('iframe');
@@ -98,8 +118,6 @@ const decorateSlide = (slide) => {
   decorateText(textCol);
   decorateCtas(textCol);
 };
-
-/* --- Card & control building --- */
 
 const buildCard = (slide) => {
   const icon = [...slide.querySelectorAll('p')]
@@ -135,7 +153,7 @@ const buildCards = (slides) => {
 const buildPlayPause = () => {
   const root = getFederatedContentRoot();
   return createTag('a', {
-    class: 'rm-pause-play pause-play-wrapper',
+    class: 'rm-pause-play',
     role: 'button',
     tabindex: '0',
     'aria-label': 'Pause',
@@ -153,8 +171,6 @@ const buildPlayPause = () => {
   ]));
 };
 
-/* --- Progress bar helpers --- */
-
 const setBar = (bar, tx, ms, timing = 'linear') => {
   bar.style.transition = ms > 0 ? `transform ${ms}ms ${timing}` : 'none';
   bar.style.transform = `translateX(${tx})`;
@@ -165,8 +181,6 @@ const slideBar = (bar, from, to, ms, timing = 'linear') => {
   reflow(bar);
   setBar(bar, to, ms, timing);
 };
-
-/* --- Slide transition animations --- */
 
 const animateBgShift = (oldBg, newBg, direction) => {
   const shift = window.matchMedia('(min-width: 1280px)').matches ? BG_SHIFT_PX : 0;
@@ -201,8 +215,6 @@ const animateContentEnter = (content, direction) => {
     content.style.opacity = '';
   }, TEXT_EXIT_MS + TEXT_GAP_MS);
 };
-
-/* --- Autoplay engine --- */
 
 const startAutoplay = (slides, cards, container, block) => {
   const cardEls = [...cards.children];
@@ -280,6 +292,10 @@ const startAutoplay = (slides, cards, container, block) => {
     cardEls[active]?.classList.remove('is-active');
     active = index;
     cardEls[active]?.classList.add('is-active');
+    if (!window.matchMedia('(min-width: 1280px)').matches) {
+      const scrollTarget = cardEls[active].offsetLeft - cards.offsetLeft;
+      cards.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+    }
   };
 
   const advance = () => {
@@ -362,6 +378,34 @@ const startAutoplay = (slides, cards, container, block) => {
     }
   });
 
+  // mobile swipe
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchOnContent = false;
+
+  container.addEventListener('touchstart', (e) => {
+    touchOnContent = !!e.target.closest('.rm-content');
+    if (touchOnContent) return;
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
+  }, { passive: true });
+
+  container.addEventListener('touchend', (e) => {
+    if (touchOnContent) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dy) > Math.abs(dx)) return;
+
+    stop();
+    const dir = dx < 0 ? 1 : -1;
+    const next = (active + dir + cardEls.length) % cardEls.length;
+    setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
+    activate(next, dir);
+    slideBar(bars[next], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
+    paused = true;
+    setPlayingState(false);
+  }, { passive: true });
+
   const bar = bars[active];
   setBar(bar, '-101%', 0);
   reflow(bar);
@@ -378,15 +422,15 @@ const startAutoplay = (slides, cards, container, block) => {
   return { pause };
 };
 
-/* --- Viewport building --- */
-
 const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   slides.forEach((slide) => decorateSlide(slide));
   slides[0]?.classList.add('is-active');
   const cards = buildCards(slides);
   cards.children[0]?.classList.add('is-active');
-  container.append(...slides, cards, buildPlayPause());
+  const controls = createTag('div', { class: 'rm-controls' });
+  controls.append(buildPlayPause(), cards);
+  container.append(...slides, controls);
   return container;
 };
 
@@ -397,10 +441,23 @@ const initVideos = (el) => {
   });
 };
 
-/* --- Entry point --- */
+const reorderSlidesMaybe = (el, viewports) => {
+  const sectionMeta = el.parentElement?.querySelector('.section-metadata');
+  if (!sectionMeta) return;
+  const metadata = getMetadata(sectionMeta);
+  const startIdx = Number(metadata['starting-marquee']?.text?.[0]) - 1;
+  if (startIdx > 0) {
+    Object.keys(viewports).forEach((vp) => {
+      const slides = viewports[vp];
+      if (startIdx >= slides.length) return;
+      viewports[vp] = [slides[startIdx], ...slides.filter((_, i) => i !== startIdx)];
+    });
+  }
+};
 
 export default function init(el) {
   const viewports = groupByViewport(el);
+  reorderSlidesMaybe(el, viewports);
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
   initVideos(el);

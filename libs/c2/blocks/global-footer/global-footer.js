@@ -32,7 +32,7 @@ import {
 import { replaceKey } from '../../../features/placeholders.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 
-const FOOTER_LOGO_SRC = new URL('./adobe-logo.svg', import.meta.url).href;
+const FOOTER_LOGO_FULL_SRC = new URL('./adobe-logo-full.svg', import.meta.url).href;
 
 const ADOBE_LOGO_DARK = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 179.35 46.86">
   <path fill="#AFAFAF" d="M76.93,30.93l-1.92,5.93c-0.08,0.2-0.2,0.32-0.44,0.32h-4.64c-0.28,0-0.36-0.16-0.32-0.4l8.01-23.1
@@ -101,6 +101,8 @@ const CONFIG = {
   delays: { decoration: 3000 },
   containerBreakpoint: 767,
 };
+const FOOTER_IN_VIEW_CLASS = 'feds-footer-in-view';
+const FOOTER_MENU_STACKED_CLASS = 'feds-menu-content--stacked';
 
 let cachedDecorateMenu;
 export async function loadDecorateMenu() {
@@ -127,7 +129,11 @@ class Footer {
     this.resizeTimeout = null;
     this.footerOrderMediaQuery = null;
     this.footerOrderMediaQueryHandler = null;
+    this.footerVisibilityObserver = null;
+    this.footerMenuResizeObserver = null;
+    this.footerMenuResizeRaf = null;
     this.init();
+    this.initFooterInViewBackground();
   }
 
   init = () => logErrorFor(async () => {
@@ -188,6 +194,64 @@ class Footer {
     this.footerOrderMediaQuery = null;
     this.footerOrderMediaQueryHandler = null;
     this.isMobile = null;
+    this.footerVisibilityObserver?.disconnect();
+    this.footerVisibilityObserver = null;
+    this.footerMenuResizeObserver?.disconnect();
+    this.footerMenuResizeObserver = null;
+    if (this.footerMenuResizeRaf) {
+      window.cancelAnimationFrame(this.footerMenuResizeRaf);
+      this.footerMenuResizeRaf = null;
+    }
+    document.documentElement.classList.remove(FOOTER_IN_VIEW_CLASS);
+  };
+
+  initFooterInViewBackground = () => {
+    this.footerVisibilityObserver = new window.IntersectionObserver((entries) => {
+      const footerVisible = entries.some((entry) => entry.isIntersecting);
+      document.documentElement.classList.toggle(FOOTER_IN_VIEW_CLASS, footerVisible);
+    });
+    this.footerVisibilityObserver.observe(this.block);
+  };
+
+  syncFooterMenuLayout = () => {
+    if (this.isFooterMobileLayout()) {
+      this.elements.footer?.querySelectorAll('.feds-menu-content').forEach((menuContent) => {
+        menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
+      });
+      return;
+    }
+
+    const menuContents = this.elements.footer?.querySelectorAll('.feds-menu-content');
+    if (!menuContents?.length) return;
+
+    menuContents.forEach((menuContent) => {
+      const columnCount = menuContent.querySelectorAll(':scope > .feds-menu-column').length;
+      if (columnCount <= 3) {
+        menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
+        return;
+      }
+
+      menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
+      const hasOverflow = menuContent.scrollWidth > menuContent.clientWidth;
+      menuContent.classList.toggle(FOOTER_MENU_STACKED_CLASS, hasOverflow);
+    });
+  };
+
+  initFooterMenuLayoutSync = () => {
+    this.syncFooterMenuLayout();
+
+    if (this.footerMenuResizeObserver) return;
+    this.footerMenuResizeObserver = new ResizeObserver(() => {
+      if (this.footerMenuResizeRaf) return;
+      this.footerMenuResizeRaf = window.requestAnimationFrame(() => {
+        this.footerMenuResizeRaf = null;
+        this.syncFooterMenuLayout();
+      });
+    });
+
+    // Observe the actual footer wrapper so container-size changes trigger relayout,
+    // even when they are not caused by viewport resizes.
+    this.footerMenuResizeObserver.observe(this.elements.footer);
   };
 
   decorateContent = () => logErrorFor(async () => {
@@ -253,6 +317,7 @@ class Footer {
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
     this.block.append(this.elements.footer, this.elements.footerLogo);
     this.initFooterOptionsOrderSync();
+    this.initFooterMenuLayoutSync();
     setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
     const { onFooterReady } = getConfig();
     onFooterReady?.();
@@ -540,7 +605,7 @@ class Footer {
   };
 
   decorateFooter = () => {
-    this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
+    this.elements.footer = toFragment`<div class="feds-footer-wrapper container wide">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
     <div class="feds-footer-options caption">
@@ -553,7 +618,7 @@ class Footer {
       </div>
     </div>`;
     const footerLogo = toFragment`<div class="feds-footer-logo">
-        <img src="${FOOTER_LOGO_SRC}" alt="Footer logo" />
+        <img src="${FOOTER_LOGO_FULL_SRC}" alt="Footer logo" />
       </div>`;
     this.elements.footerLogo = footerLogo;
     return this.elements.footer;
@@ -577,6 +642,7 @@ class Footer {
     } else {
       options.append(region, legal, social);
     }
+    this.syncFooterMenuLayout();
   };
 
   initFooterOptionsOrderSync = () => {

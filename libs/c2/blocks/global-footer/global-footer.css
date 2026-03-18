@@ -6,6 +6,10 @@
   -webkit-text-size-adjust: none;
 }
 
+html.feds-footer-in-view body {
+  background: var(--s2a-color-gray-1000);
+}
+
 .global-footer ul {
   list-style-type: none;
 }
@@ -228,15 +232,26 @@
 
 .global-footer .feds-footer-logo {
   line-height: 0;
-  margin-top: var(--s2a-spacing-xl);
   max-width: var(--grid-max-width-wide);
   margin: auto;
+  margin-top: var(--s2a-spacing-xl);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
 }
 
 .global-footer .feds-footer-logo img {
   display: block;
-  width: 100%;
+  width: calc(100% + 56px);
+  max-width: none;
   height: auto;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1920px) {
+  .global-footer .feds-footer-logo img {
+    width: 100%;
+  }
 }
 
 /* Privacy */
@@ -375,18 +390,42 @@ span.feds-footer-privacyLink-divider {
     right: 0;
     bottom: 0;
   }
+
+  [dir = "rtl"] .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+    left: 0;
+    right: auto;
+  }
 }
 
 @media (min-width: 1024px) {
+
+  .global-footer {
+    padding-top: var(--s2a-layout-lg);
+  }
+
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: var(--s2a-spacing-md);
   }
 
-  /* If there is too much content, float it on multiple rows */
+  /* Default desktop layout: keep all menu columns on one row */
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content {
-    flex-wrap: wrap;
-    width: auto;
+    display: flex;
+    align-items: start;
+    flex-wrap: nowrap;
+    width: 100%;
     column-gap: var(--s2a-spacing-xs);
+    row-gap: 0;
+  }
+
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content:not(.feds-menu-content--stacked) > .feds-menu-column {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* When one-row layout overflows, switch to balanced rows: 3 + 3, 3 + 2, etc. */
+  .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-content.feds-menu-content--stacked {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     row-gap: var(--s2a-spacing-xl);
   }
 
@@ -396,6 +435,9 @@ span.feds-footer-privacyLink-divider {
     padding-bottom: var(--s2a-spacing-lg);
     margin: 0;
     max-width: 120px;
+    min-height: calc(var(--s2a-typography-line-height-eyebrow) * 2rem);
+    display: flex;
+    align-items: flex-end;
   }
 
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child {
@@ -505,6 +547,7 @@ span.feds-footer-privacyLink-divider {
 
   .feds-footer-wrapper .feds-menu-content .feds-navLink {
     margin-left: 0;
+    white-space: break-spaces;
   }
 
   .global-footer:not(.mobile) .feds-navLink-image,
@@ -515,6 +558,10 @@ span.feds-footer-privacyLink-divider {
 }
 
 @media (min-width: 1440px) {
+  .global-footer {
+    padding-top: var(--s2a-layout-xl);
+  }
+  
   .global-footer:not(.mobile) .feds-footer-options {
     display: grid;
     grid-template-areas: "region legal social";

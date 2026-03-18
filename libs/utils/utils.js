@@ -108,6 +108,7 @@ const C1_BLOCKS = [
 const C2_BLOCKS = [
   'box',
   'carousel-c2',
+  'elastic-carousel',
   'rich-content',
   'router-marquee',
   'section-metadata',
@@ -116,6 +117,7 @@ const C2_BLOCKS = [
   'global-navigation',
   'base-card',
   'region-nav',
+  'news',
 ];
 
 const AUTO_BLOCKS = [
