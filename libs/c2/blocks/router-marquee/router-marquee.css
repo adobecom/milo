@@ -47,6 +47,12 @@
   object-fit: cover;
 }
 
+.rm-content-wrapper {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
 .rm-content {
   position: relative;
   z-index: 2;
@@ -90,20 +96,33 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  padding: 0 24px;
-  border-radius: 75px;
+  padding: 14px 24px;
+  border-radius: 999px;
+  border: 1px solid #fff;
   font-size: 14px;
   font-weight: 700;
   line-height: 18px;
+  letter-spacing: 0;
   text-decoration: none;
   white-space: nowrap;
+  transition: background-color 300ms cubic-bezier(0.42, 0, 0, 1),
+              border-color 300ms cubic-bezier(0.42, 0, 0, 1),
+              color 300ms cubic-bezier(0.42, 0, 0, 1);
 }
 
 .rm-cta-primary {
-  background: #fff;
+  background: rgba(255, 255, 255, 1);
   color: #000;
-  border: none;
+  border-color: transparent;
+}
+
+.rm-cta-primary:hover {
+  background: rgba(255, 255, 255, 0.64);
+  color: #000;
+}
+
+.rm-cta-primary:active {
+  background: rgba(255, 255, 255, 1);
 }
 
 .rm-ctas .con-button:not(.rm-cta-primary) {
@@ -112,13 +131,27 @@
   border: 1px solid #fff;
 }
 
+.rm-ctas .con-button:not(.rm-cta-primary):hover {
+  background: rgba(255, 255, 255, 0.64);
+  color: #000;
+  border-color: transparent;
+}
+
+.rm-ctas .con-button:not(.rm-cta-primary):active {
+  background: rgba(255, 255, 255, 1);
+  color: #000;
+}
+
 .rm-controls {
   position: absolute;
+  inset: auto 0 0;
+  margin: 0 auto;
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 24px;
+  max-width: 1920px;
 }
 
 .rm-cards {
@@ -171,6 +204,7 @@
   font-size: 14px;
   font-weight: 700;
   line-height: 18px;
+  letter-spacing: 0;
 }
 
 .rm-card-chevron {
@@ -237,7 +271,6 @@
   }
 
   .rm-content {
-    padding: calc(var(--s2a-spacing-64) + 24px) 24px 0;
     gap: 8px;
     max-width: 484px;
   }
@@ -250,14 +283,17 @@
     display: none;
   }
 
-  .rm-controls {
-    inset: auto 24px 24px;
-  }
-
   .rm-cards {
     gap: 4px;
     overflow-x: auto;
     scrollbar-width: none;
+  }
+
+  /* this is needed to push the last card on the left side of the screen, on swipe */
+  .rm-cards::after {
+    content: '';
+    flex-shrink: 0;
+    width: 100%;
   }
 
   .rm-cards::-webkit-scrollbar {
@@ -287,6 +323,11 @@
     max-height: 930px;
   }
 
+  .rm-content-wrapper {
+    /* top padding is the height of the gnav + space between gnav and marquee content*/
+    padding: calc(var(--s2a-spacing-64) + 24px)  24px 0 24px;
+  }
+
   .rm-title {
     font-size: 40px;
     line-height: 40px;
@@ -297,6 +338,10 @@
     font-size: 16px;
     line-height: 20px;
   }
+
+  .rm-controls {
+    padding: 0  0 64px 24px;
+  }
 }
 
 /* tablet */
@@ -305,6 +350,10 @@
     display: flex;
     min-height: 720px;
     max-height: 1280px;
+  }
+
+  .rm-content-wrapper {
+    padding: calc(var(--s2a-spacing-64) + 24px) 8.333% 0 8.333%;
   }
 
   .rm-title {
@@ -319,7 +368,7 @@
   }
 
   .rm-controls {
-    inset: auto 24px 104px 24px;
+    padding: 0 0 64px 8.333%;
   }
 }
 
@@ -335,10 +384,11 @@
     background: linear-gradient(108deg, rgba(0, 0, 0, 0.56) 0%, rgba(0, 0, 0, 0.22) 98.86%);;
   }
 
+  .rm-content-wrapper {
+      padding: calc(var(--s2a-spacing-64) + 80px) 8.333% 0;
+  }
+
   .rm-content {
-    /* top padding is the height of the gnav + space between gnav and marquee content*/
-    padding: calc(var(--s2a-spacing-64) + 80px) 0 0;
-    margin-left: 8.333%;
     max-width: 662px;
     gap: 16px;
   }
@@ -356,8 +406,7 @@
   }
 
   .rm-controls {
-    inset: auto 0 0;
-    padding: 0 8.333% 104px;
+    padding: 0 8.333% 64px;
   }
 
   .rm-cards {
