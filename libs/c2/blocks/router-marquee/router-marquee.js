@@ -219,52 +219,16 @@ const animateContentEnter = (content, direction) => {
   }, TEXT_EXIT_MS + TEXT_GAP_MS);
 };
 
-const fireAnalytic = (target, type) => {
-  const index = [...target.parentNode.children].indexOf(target);
-  const label = target.querySelector('.rm-card-label')?.textContent;
-  const analyticText = `${type}-${label}-${index + 1}`;
+const fireAnalytic = (card, type = 'auto') => {
+  const index = [...card.parentNode.children].indexOf(card);
+  const viewport = card.closest('.rm-viewport');
+  const label = card.querySelector('.rm-card-label')?.textContent;
+  const analyticText = `${type}-${processTrackingLabels(label, getConfig(), 15)}-${index + 1}`;
+
+  if (card?.getAttribute('slide-seen') === 'true' || viewport.getAttribute('not-in-view') === 'true') return;
+  card.setAttribute('slide-seen', true);
+  // fire analytic
   console.log(`Analytic Fired: ${analyticText}`);
-};
-
-const setAnalytics = (slides, cards) => {
-  let hovering = false;
-  const observers = [];
-
-  const slideCallback = (el) => {
-    if (!hovering && el.classList.contains('is-active') && !el.hasAttribute('scroll-seen')) {
-      const index = [...el.parentNode.children].indexOf(el);
-      const card = el.parentNode.querySelector('.rm-card.is-active');
-      fireAnalytic(card, 'auto');
-      el?.setAttribute('scroll-seen', 'auto');
-      observers[index].unobserve(el);
-    }
-  };
-
-  slides.forEach((el) => {
-    observers.push(
-      createIntersectionObserver({
-        el,
-        callback: (target) => {
-          slideCallback(target);
-        },
-        once: false,
-      }),
-    );
-  });
-
-  cards.querySelectorAll('.rm-card').forEach((el, index) => {
-    const config = getConfig();
-    const label = el.innerTextContent;
-    const analyticText = `router-marq-btn-click-${label}-${index + 1}`;
-    el.setAttribute('daa-ll', processTrackingLabels(analyticText, config, 20));
-    el.addEventListener('mouseenter', () => {
-      hovering = true;
-      fireAnalytic(el, 'user');
-    });
-    el.addEventListener('mouseleave', () => {
-      hovering = false;
-    });
-  });
 };
 
 const startAutoplay = (slides, cards, container, block) => {
@@ -353,6 +317,7 @@ const startAutoplay = (slides, cards, container, block) => {
     stop();
     setBar(bars[active], '101%', BG_FADE_MS, EASE);
     activate((active + 1) % cardEls.length, 1);
+    fireAnalytic(cardEls[active]);
     slideBar(bars[active], '-101%', '0%', AUTOPLAY_MS);
     timer = setTimeout(advance, AUTOPLAY_MS);
   };
@@ -400,6 +365,7 @@ const startAutoplay = (slides, cards, container, block) => {
         const dir = i > active ? 1 : -1;
         setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
         activate(i, dir);
+        fireAnalytic(cardEls[i], 'user');
         slideBar(bars[i], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
       }, HOVER_DELAY_MS);
     });
@@ -452,10 +418,10 @@ const startAutoplay = (slides, cards, container, block) => {
     const next = (active + dir + cardEls.length) % cardEls.length;
     setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
     activate(next, dir);
+    fireAnalytic(cardEls[active], 'user');
     slideBar(bars[next], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
     paused = true;
     setPlayingState(false);
-    fireAnalytic(cardEls[next], 'auto');
   }, { passive: true });
 
   const bar = bars[active];
@@ -507,6 +473,35 @@ const reorderSlidesMaybe = (el, viewports) => {
   }
 };
 
+const setSlideObserver = (container) => {
+  const callback = (el) => {
+    const card = el.parentNode.querySelector('.rm-card.is-active');
+    fireAnalytic(card);
+  };
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(async (entry) => {
+      if (entry.isIntersecting) {
+        entry.target.removeAttribute('not-in-view');
+        callback(entry.target);
+      } else {
+        entry.target.setAttribute('not-in-view', true);
+      }
+    });
+  });
+
+  io.observe(container);
+};
+
+const setCardAnalytics = (cards) => {
+  cards.querySelectorAll('.rm-card').forEach((el, index) => {
+    const config = getConfig();
+    const label = el.querySelector('.rm-card-label')?.textContent;
+    const analyticText = `${processTrackingLabels(label, config, 20)}-${index + 1}--rm nav`;
+    el.setAttribute('daa-ll', analyticText);
+  });
+};
+
 export default function init(el) {
   const viewports = groupByViewport(el);
   reorderSlidesMaybe(el, viewports);
@@ -516,7 +511,8 @@ export default function init(el) {
   containers.forEach((container) => {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
-    setAnalytics(slides, cards);
+    setSlideObserver(container);
+    setCardAnalytics(cards);
     startAutoplay(slides, cards, container, el);
   });
 }
