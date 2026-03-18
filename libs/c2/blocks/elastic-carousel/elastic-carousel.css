@@ -113,6 +113,7 @@ html[dir="rtl"] {
         }
 
         :is(h1, h2, h3, h4, h5, h6) {
+          /* TODO: remove eyebrow styles if eyebrow class is applied directly to footer headline */
           font-family: var(--body-font-family);
           font-size: var(--s2a-typography-eyebrow);
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
