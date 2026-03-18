@@ -220,13 +220,14 @@ const animateContentEnter = (content, direction) => {
 };
 
 const fireAnalytic = (card, type = 'auto') => {
-  const index = [...card.parentNode.children].indexOf(card);
   const viewport = card.closest('.rm-viewport');
-  const label = card.querySelector('.rm-card-label')?.textContent;
-  const analyticText = `${type}-${processTrackingLabels(label, getConfig(), 15)}-${index + 1}`;
+  if (card.getAttribute('slide-seen') === 'true' || viewport.getAttribute('not-in-view') === 'true') return;
 
-  if (card?.getAttribute('slide-seen') === 'true' || viewport.getAttribute('not-in-view') === 'true') return;
-  card.setAttribute('slide-seen', true);
+  const position = [...card.parentNode.children].indexOf(card) + 1;
+  const label = card.querySelector('.rm-card-label')?.textContent;
+  const analyticText = `${type}-${processTrackingLabels(label, getConfig(), 15)}-${position}`;
+
+  document.querySelectorAll(`.rm-card:nth-child(${position})`).forEach((c) => c.setAttribute('slide-seen', true));
   // fire analytic
   console.log(`Analytic Fired: ${analyticText}`);
 };
