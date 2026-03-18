@@ -1,4 +1,5 @@
-import { createTag, getFederatedUrl, getFederatedContentRoot } from '../../../utils/utils.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
+import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, createIntersectionObserver } from '../../../utils/utils.js';
 
 const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
@@ -138,11 +139,13 @@ const buildPlayPause = () => {
   }, createTag('div', { class: 'offset-filler is-playing' }, [
     createTag('img', {
       class: 'accessibility-control pause-icon',
+      attributes: { 'daa-ll': 'pause--router-marq-play-btn' },
       alt: 'Pause icon',
       src: `${root}/federal/assets/svgs/accessibility-pause.svg`,
     }),
     createTag('img', {
       class: 'accessibility-control play-icon',
+      attributes: { 'daa-ll': 'play--router-marq-play-btn' },
       alt: 'Play icon',
       src: `${root}/federal/assets/svgs/accessibility-play.svg`,
     }),
@@ -192,6 +195,54 @@ const animateContentEnter = (content, direction) => {
     content.style.transform = '';
     content.style.opacity = '';
   }, TEXT_EXIT_MS + TEXT_GAP_MS);
+};
+
+const fireAnalytic = (target, type) => {
+  const index = [...target.parentNode.children].indexOf(target);
+  const label = target.querySelector('.rm-card-label')?.textContent;
+  const analyticText = `${type}-${label}-${index + 1}`;
+  console.log(`Analytic Fired: ${analyticText}`);
+};
+
+const setAnalytics = (slides, cards) => {
+  let hovering = false;
+  const observers = [];
+
+  const slideCallback = (el) => {
+    if (!hovering && el.classList.contains('is-active') && !el.hasAttribute('scroll-seen')) {
+      const index = [...el.parentNode.children].indexOf(el);
+      const card = el.parentNode.querySelector('.rm-card.is-active');
+      fireAnalytic(card, 'auto');
+      el?.setAttribute('scroll-seen', 'auto');
+      observers[index].unobserve(el);
+    }
+  };
+
+  slides.forEach((el) => {
+    observers.push(
+      createIntersectionObserver({
+        el,
+        callback: (target) => {
+          slideCallback(target);
+        },
+        once: false,
+      }),
+    );
+  });
+
+  cards.querySelectorAll('.rm-card').forEach((el, index) => {
+    const config = getConfig();
+    const label = el.innerTextContent;
+    const analyticText = `router-marq-btn-click-${label}-${index + 1}`;
+    el.setAttribute('daa-ll', processTrackingLabels(analyticText, config, 20));
+    el.addEventListener('mouseenter', () => {
+      hovering = true;
+      fireAnalytic(el, 'user');
+    });
+    el.addEventListener('mouseleave', () => {
+      hovering = false;
+    });
+  });
 };
 
 const startAutoplay = (slides, cards, container, block) => {
@@ -382,6 +433,7 @@ const startAutoplay = (slides, cards, container, block) => {
     slideBar(bars[next], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
     paused = true;
     setPlayingState(false);
+    fireAnalytic(cardEls[next], 'auto');
   }, { passive: true });
 
   const bar = bars[active];
@@ -427,6 +479,7 @@ export default function init(el) {
   containers.forEach((container) => {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
+    setAnalytics(slides, cards);
     startAutoplay(slides, cards, container, el);
   });
 }
