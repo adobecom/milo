@@ -37,7 +37,7 @@ html[dir="rtl"] {
   margin: auto;
 
   &.disable-hover {
-    pointer-events: none !important;
+    pointer-events: none;
   }
 
   .elastic-carousel-container {
@@ -59,7 +59,7 @@ html[dir="rtl"] {
       background-color: var(--s2a-color-gray-75);
       border-radius: var(--s2a-border-radius-md);
       cursor: pointer;
-      transition: var(--elastic-carousel-transtions-slow), background-color .25s ease-in;
+      transition: var(--elastic-carousel-transtions-slow), background-color .1s ease-in;
 
       .elastic-carousel-item-header {
         display: flex;
@@ -76,7 +76,7 @@ html[dir="rtl"] {
           font-size: var(--s2a-font-size-sm);
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
           margin: 0;
-          transition: color .5s ease;
+          transition: color .1s ease;
           line-height: var(--s2a-font-line-height-18);
         }
       }
@@ -120,7 +120,7 @@ html[dir="rtl"] {
           line-height: var(--s2a-typography-line-height-eyebrow);
           letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
           margin: 0 0 var(--s2a-spacing-xs) 0;
-          transition: color .5s ease;
+          transition: color .1s ease;
           display: -webkit-box;
           line-clamp: 1;
           box-orient: vertical;
@@ -132,7 +132,7 @@ html[dir="rtl"] {
         p {
           opacity: .6;
           margin: 0;
-          transition: color .5s ease;
+          transition: color .1s ease;
           display: -webkit-box;
           line-clamp: 2;
           box-orient: vertical;
@@ -191,7 +191,7 @@ html[dir="rtl"] {
 
       --start-margin: 50%;
       /** animation */
-      animation: slideIn linear both;
+      animation: elasticCarouselSlideIn linear both;
       animation-timeline: view();
       animation-range: entry 0% exit 100%;
 
@@ -201,7 +201,7 @@ html[dir="rtl"] {
 
         margin-inline: var(--start-gap);
         will-change: margin-inline;
-        animation: gapShrink ease both;
+        animation: elasticItemsGapShrink ease both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
@@ -260,7 +260,7 @@ html[dir="rtl"] {
         color: white;
         background: transparent;
         /** animation */
-        animation: translateY linear both;
+        animation: elasticMobileStackSlides linear both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
@@ -270,6 +270,9 @@ html[dir="rtl"] {
           z-index: 1;
           --stack-contrast: 0;
           --stack-shrink: 4rem;
+          animation: elasticMobileStackSlidesIgnoreOpactity linear both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
         }
 
         &:nth-child(2) {
@@ -307,7 +310,7 @@ html[dir="rtl"] {
         .elastic-carousel-item-container {
           background-color: var(--s2a-color-gray-1000);
           border-radius: var(--s2a-border-radius-md);
-          animation: shrink linear both;
+          animation: elasticItemsShrink linear both;
           animation-timeline: view();
           animation-range: entry 0% exit 100%;
 
@@ -347,17 +350,8 @@ html[dir="rtl"] {
 
 
 /** animations */
-@keyframes paddingGrow {
-  0% {
-    padding-bottom: 0;
-  }
 
-  100% {
-    padding-bottom: calc(var(--last-offset) - var(--offset-adjuster));
-  }
-}
-
-@keyframes gapShrink {
+@keyframes elasticItemsGapShrink {
   0% {
     margin-inline: var(--start-gap);
   }
@@ -371,7 +365,7 @@ html[dir="rtl"] {
   }
 }
 
-@keyframes slideIn {
+@keyframes elasticCarouselSlideIn {
   0% {
     margin-left: var(--start-margin);
   }
@@ -385,7 +379,7 @@ html[dir="rtl"] {
   }
 }
 
-@keyframes translateY {
+@keyframes elasticMobileStackSlidesIgnoreOpactity {
   0% {
     transform: translateY(var(--stack-offset));
     filter: contrast(1);
@@ -396,8 +390,24 @@ html[dir="rtl"] {
     filter: contrast(var(--stack-contrast));
   }
 }
+@keyframes elasticMobileStackSlides {
+  0% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+    opacity: 0;
+  }
 
-@keyframes shrink {
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast));
+  }
+}
+
+@keyframes elasticItemsShrink {
   0% {
     margin: 0
   }
