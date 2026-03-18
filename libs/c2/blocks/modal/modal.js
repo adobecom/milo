@@ -168,14 +168,14 @@ function getCustomModal(custom, dialog) {
 async function getPathModal(path, dialog) {
   let href = path;
   if (path.includes('/federal/')) {
-    const { getFederatedUrl } = await import('../../utils/utils.js');
+    const { getFederatedUrl } = await import('../../../utils/utils.js');
     href = getFederatedUrl(path);
   }
   const block = createTag('a', { href });
   dialog.append(block);
 
   // eslint-disable-next-line import/no-cycle
-  const { default: getFragment } = await import('../fragment/fragment.js');
+  const { default: getFragment } = await import('../../../blocks/fragment/fragment.js');
   await getFragment(block);
 }
 

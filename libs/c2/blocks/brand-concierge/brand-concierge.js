@@ -132,9 +132,11 @@ async function openChatModal(initialMessage, el) {
   }
 
   if (webClient === 'prod') {
+    // eslint-disable-next-line no-console
     console.log('prod', prod);
     src = prod;
   } else if (webClient === 'stage') {
+    // eslint-disable-next-line no-console
     console.log('stage', stage);
     src = stage;
   }
