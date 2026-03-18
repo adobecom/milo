@@ -1,5 +1,5 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
-import { getFederatedUrl } from '../../../utils/utils.js';
+import { getFederatedUrl, getMetadata } from '../../../utils/utils.js';
 
 const VIEWPORT_LABELS = ['mobile', 'tablet', 'desktop'];
 
@@ -31,7 +31,7 @@ function decorateCard(wrapper) {
   if (media.closest('.base-card.featured')) media.classList.add('parallax-featured-card-media');
   media.querySelector('picture').classList.add('parallax-scale-down');
   foreground.classList.add('foreground');
-  decorateBlockText(foreground);
+  decorateBlockText(foreground, ['4', 'md', 'md'], null, getMetadata('foundation') === 'c2');
   markStandaloneLinks(foreground);
   const firstCell = foreground.children[0];
   if (firstCell?.childElementCount !== 1 || firstCell?.firstElementChild?.tagName !== 'PICTURE') return;

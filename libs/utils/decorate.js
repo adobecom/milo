@@ -6,7 +6,6 @@ import {
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
-  getMetadata,
 } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -94,27 +93,30 @@ function elContainsText(el) {
   ));
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
+export function decorateBlockText(el, config, type = null, isC2 = false) {
+  const DEFAULT_CONFIG_C1 = ['m', 's', 'm'];
+  const DEFAULT_CONFIG_C2 = [1, 'sm', 'md'];
+
+  const resolvedConfig = config ?? (isC2 ? DEFAULT_CONFIG_C2 : DEFAULT_CONFIG_C1);
   if (!el.classList.contains('default')) {
     let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
-      const isC2 = getMetadata('foundation') === 'c2';
       headings.forEach((h) => {
         if (isC2) {
-          h.classList.add(`title-${config[0]}`);
+          h.classList.add(`title-${resolvedConfig[0]}`);
           return;
         }
 
-        h.classList.add(`heading-${config[0]}`);
+        h.classList.add(`heading-${resolvedConfig[0]}`);
       });
-      if (config[2]) {
+      if (resolvedConfig[2]) {
         const prevSib = headings[0]?.previousElementSibling;
-        prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
+        prevSib?.classList.toggle(`detail-${resolvedConfig[2]}`, !prevSib.querySelector('picture'));
         decorateIconArea(el);
       }
     }
-    const bodyStyle = `body-${config[1]}`;
+    const bodyStyle = `body-${resolvedConfig[1]}`;
     const emptyEls = el?.querySelectorAll(':is(p, ul, ol, div):not([class])');
     if (emptyEls.length) {
       [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
@@ -122,7 +124,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
       el.classList.add(bodyStyle);
     }
   }
-  const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
+  const buttonSize = resolvedConfig.length > 3 ? `button-${resolvedConfig[3]}` : '';
   decorateButtons(el, buttonSize);
   if (type === 'merch') decorateIconStack(el);
 }
