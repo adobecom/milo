@@ -1,7 +1,6 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-const BLOCK_CLASS_ADDITIONS = ['parallax-stagger-ltr'];
 const BLOCK_SIZING_C2 = ['md', 'md', 'md'];
 
 function isLinkOnlyContent(linkContainer, aTag) {
@@ -30,12 +29,14 @@ function formatHeader(row) {
 }
 
 export default async function init(el) {
-  el.classList.add(...BLOCK_CLASS_ADDITIONS);
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length === 1) return;
   const [head, ...tail] = rows;
   formatHeader(head);
   rows = tail;
+  const upsMap = { 2: 'two-up', 3: 'three-up', 4: 'four-up' };
+  // TODO: Infer parallax class from authoring
+  el.appendChild(createTag('div', { class: `news-items parallax-stagger-ltr ${upsMap[rows.length || 3]}` }, rows));
   rows.forEach((row) => {
     row.classList.add('news-item');
     row.querySelector(':scope > div:not([class])').classList.add('foreground');
@@ -50,5 +51,4 @@ export default async function init(el) {
       } else content.classList.add('news-item-body');
     });
   });
-  el.classList.add(`${el.querySelectorAll('.news-item').length % 2 === 0 ? 'four-up' : 'three-up'}`);
 }

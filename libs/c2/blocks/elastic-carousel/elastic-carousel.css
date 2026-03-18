@@ -1,0 +1,408 @@
+/** main classes */
+
+html[dir="rtl"] {
+  .elastic-carousel {
+    & .elastic-carousel-container {
+      & .elastic-carousel-item {
+        & .elastic-carousel-item-footer {
+          &:after {
+            transform: rotate(180deg);
+            left: 0;
+            right: unset;
+          }
+        }
+        & .elastic-carousel-item-header {
+          &:after {
+            transform: rotate(180deg);
+            left: 0;
+            right: unset;
+          }
+        }
+      }
+    }
+  }
+}
+.elastic-carousel {
+  --elastic-carousel-transtions: all .5s ease;
+  --elastic-carousel-transtions-slow: all .3s ease;
+  --elastic-carousel-container-height-desktop: 580px;
+  --elastic-carousel-container-height-tablet: 560px;
+  --elastic-carousel-item-max-width: 294px;
+  --elastic-carousel-item-hover-grow-index: 1.75;
+  --slides: 5;
+
+  position: relative;
+  overflow: clip;
+  height: var(--elastic-carousel-container-height-desktop);
+  margin: auto;
+
+  &.disable-hover {
+    pointer-events: none !important;
+  }
+
+  .elastic-carousel-container {
+    display: flex;
+    height: 100%;
+    position: absolute;
+    top: 0%;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: var(--elastic-carousel-transtions);
+
+    .elastic-carousel-item {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+      max-width: var(--elastic-carousel-item-max-width);
+      background-color: var(--s2a-color-gray-75);
+      border-radius: var(--s2a-border-radius-md);
+      cursor: pointer;
+      transition: var(--elastic-carousel-transtions-slow), background-color .25s ease-in;
+
+      .elastic-carousel-item-header {
+        display: flex;
+        flex-direction: row;
+        padding: var(--s2a-spacing-lg);
+        gap: var(--s2a-spacing-md);
+        align-items: center;
+        img {
+          width: 24px;
+          height: 24px;
+        }
+
+        p {
+          font-size: var(--s2a-font-size-sm);
+          font-weight: var(--s2a-font-weight-adobe-clean-bold);
+          margin: 0;
+          transition: color .5s ease;
+          line-height: var(--s2a-font-line-height-18);
+        }
+      }
+
+      .elastic-carousel-item-media {
+        text-align: center;
+        video {
+          border-radius: var(--s2a-border-radius-md);
+          object-fit: cover;
+          height: 394px;
+        }
+      }
+
+      .elastic-carousel-item-footer {
+        display: flex;
+        flex-direction: column;
+        padding: var(--s2a-spacing-md);
+        max-width: 270px;
+        font-size: var(--s2a-font-size-md);
+        line-height: var(--s2a-font-line-height-16);
+
+        &:after {
+          content: '';
+          display: block;
+          background: url('../../assets/img/arrow-right.svg') no-repeat;
+          width: 24px;
+          height: 24px;
+          margin: var(--s2a-spacing-lg);
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          opacity: 0;
+          transition: none;
+        }
+
+        :is(h1, h2, h3, h4, h5, h6) {
+          /* TODO: remove eyebrow styles if eyebrow class is applied directly to footer headline */
+          font-family: var(--body-font-family);
+          font-size: var(--s2a-typography-eyebrow);
+          font-weight: var(--s2a-font-weight-adobe-clean-bold);
+          line-height: var(--s2a-typography-line-height-eyebrow);
+          letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+          margin: 0 0 var(--s2a-spacing-xs) 0;
+          transition: color .5s ease;
+          display: -webkit-box;
+          line-clamp: 1;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          overflow: hidden;
+        }
+
+        p {
+          opacity: .6;
+          margin: 0;
+          transition: color .5s ease;
+          display: -webkit-box;
+          line-clamp: 2;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+        }
+      }
+    }
+  }
+}
+
+
+/** custom media rules */
+@media (width < 1700px) {
+  .elastic-carousel-container {
+    &.stick-left {
+      left: 0;
+      transform: translateX(0%);
+    }
+
+    &.stick-right {
+      left: 100%;
+      transform: translateX(-100%);
+    }
+  }
+}
+
+/** desktop only */
+@media (1280px <= width) {
+  .elastic-carousel-item {
+    width: calc(100vw/calc(var(--slides) - 1));
+  }
+}
+/** tablet only */
+ @media (768px <= width < 1280px) {
+  .elastic-carousel {
+    height: var(--elastic-carousel-container-height-tablet);
+    
+    .elastic-carousel-container {
+      .elastic-carousel-item {
+        width: calc(100vw / calc(var(--slides) - 1.5));
+    
+        .elastic-carousel-item-header {
+          padding: var(--s2a-spacing-md);
+        }
+      }
+    }
+  }
+}
+
+/** tablet up */
+@media (width > 768px) {
+  .elastic-carousel {
+    .elastic-carousel-container {
+
+      --start-margin: 50%;
+      /** animation */
+      animation: slideIn linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+
+      .elastic-carousel-item {
+        --start-gap: 2rem;
+        --end-gap: .25rem;
+
+        margin-inline: var(--start-gap);
+        will-change: margin-inline;
+        animation: gapShrink ease both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+
+        &:hover,
+        &:focus-visible {
+          background-color: var(--s2a-color-gray-1000);
+          max-width: 496px;
+          width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
+          outline: none;
+
+          .elastic-carousel-item-footer p,
+          .elastic-carousel-item-footer h1,h2,h3,h4,h5,h6,
+          .elastic-carousel-item-header p {
+            color: var(--s2a-color-gray-25);
+          }
+
+          .elastic-carousel-item-footer:after {
+            opacity: 1;
+            background-color: white;
+            border-radius: var(--s2a-border-radius-round);
+            background-position: 55% 50%;
+            background-size: 8px;
+            position: absolute;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* mobile only */
+@media (width < 768px) {
+  .elastic-carousel {
+    --offset-adjuster: 50px;
+    --offset-scale: .75;
+    --last-offset: 4rem;
+
+    height: auto;
+    overflow: visible;
+    padding-bottom: calc(var(--last-offset) * var(--offset-scale));
+    margin-top: calc(var(--offset-adjuster)/10);
+
+    .elastic-carousel-container {
+      position: relative;
+      flex-direction: column;
+      left: unset;
+      transform: unset;
+      display: grid;
+      gap: 20vh;
+
+      .elastic-carousel-item {
+        position: sticky;
+        top: 10%;
+        width: 100%;
+        max-width: none;
+        color: white;
+        background: transparent;
+        /** animation */
+        animation: translateY linear both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+
+        /** if we go with dynamic amount of slides, below stuff can be moved to JS */
+        &:nth-child(1) {
+          --stack-offset: 0rem;
+          z-index: 1;
+          --stack-contrast: 0;
+          --stack-shrink: 4rem;
+        }
+
+        &:nth-child(2) {
+          --stack-offset: 1rem;
+          z-index: 2;
+          --stack-contrast: .25;
+          --stack-shrink: 3rem;
+        }
+
+        &:nth-child(3) {
+          --stack-offset: 2rem;
+          z-index: 3;
+          --stack-contrast: .5;
+          --stack-shrink: 2rem;
+        }
+
+        &:nth-child(4) {
+          --stack-offset: 3rem;
+          z-index: 4;
+          --stack-contrast: .75;
+          --stack-shrink: 1rem;
+        }
+
+        &:nth-child(5) {
+          --stack-offset: var(--last-offset);
+          z-index: 5;
+          --stack-contrast: 1;
+          --stack-shrink: 0rem;
+        }
+
+        &:last-child {
+          height: auto;
+        }
+
+        .elastic-carousel-item-container {
+          background-color: var(--s2a-color-gray-1000);
+          border-radius: var(--s2a-border-radius-md);
+          animation: shrink linear both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
+
+          .elastic-carousel-item-header {
+            padding: var(--s2a-spacing-lg);
+            position: relative;
+            &:after {
+              content: '';
+              display: block;
+              background: url('../../assets/img/arrow-right.svg') no-repeat;
+              width: 24px;
+              height: 24px;
+              margin: var(--s2a-spacing-lg);
+              position: absolute;
+              right: 0;
+              top: 0;
+              opacity: 1;
+              background-color: var(--s2a-color-gray-25);
+              border-radius: var(--s2a-border-radius-round);
+              background-position: 55% 50%;
+              background-size: 8px;
+              transition: none;
+            }
+          }
+
+          .elastic-carousel-item-media {
+            video {
+              border-radius: var(--s2a-border-radius-0);
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+/** animations */
+@keyframes paddingGrow {
+  0% {
+    padding-bottom: 0;
+  }
+
+  100% {
+    padding-bottom: calc(var(--last-offset) - var(--offset-adjuster));
+  }
+}
+
+@keyframes gapShrink {
+  0% {
+    margin-inline: var(--start-gap);
+  }
+
+  30% {
+    margin-inline: var(--end-gap);
+  }
+
+  100% {
+    margin-inline: var(--end-gap);
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    margin-left: var(--start-margin);
+  }
+
+  30% {
+    margin-left: 0%;
+  }
+
+  100% {
+    margin-left: 0%;
+  }
+}
+
+@keyframes translateY {
+  0% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast));
+  }
+}
+
+@keyframes shrink {
+  0% {
+    margin: 0
+  }
+
+  100% {
+    margin: 0 var(--stack-shrink);
+  }
+}
