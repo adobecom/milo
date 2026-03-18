@@ -584,7 +584,7 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
   }
 }
 
-.heading-super {
+.title-super {
   font-size: var(--s2a-typography-font-size-super);
   line-height: var(--s2a-typography-line-height-super);
   letter-spacing: var(--s2a-typography-letter-spacing-super);

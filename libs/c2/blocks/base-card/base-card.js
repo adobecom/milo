@@ -28,6 +28,7 @@ function decorateCard(wrapper) {
   const [foreground, media] = [...wrapper.children];
   if (!foreground || !media) return;
   media.classList.add('media');
+  if (media.closest('.base-card.featured')) media.classList.add('parallax-featured-card-media');
   media.querySelector('picture').classList.add('parallax-scale-down');
   foreground.classList.add('foreground');
   decorateBlockText(foreground);

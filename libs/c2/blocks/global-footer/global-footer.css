@@ -232,9 +232,9 @@ html.feds-footer-in-view body {
 
 .global-footer .feds-footer-logo {
   line-height: 0;
-  margin-top: var(--s2a-spacing-xl);
   max-width: var(--grid-max-width-wide);
   margin: auto;
+  margin-top: var(--s2a-spacing-xl);
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -299,7 +299,6 @@ span.feds-footer-privacyLink-divider {
   line-height: var(--s2a-typography-line-height-eyebrow);
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   padding: var(--s2a-spacing-lg) var(--s2a-spacing-xs);
-  min-height: calc(var(--s2a-typography-line-height-eyebrow) * 2rem);
 }
 
 .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-items {
@@ -391,9 +390,19 @@ span.feds-footer-privacyLink-divider {
     right: 0;
     bottom: 0;
   }
+
+  [dir = "rtl"] .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+    left: 0;
+    right: auto;
+  }
 }
 
 @media (min-width: 1024px) {
+
+  .global-footer {
+    padding-top: var(--s2a-layout-lg);
+  }
+
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: var(--s2a-spacing-md);
   }
@@ -426,6 +435,9 @@ span.feds-footer-privacyLink-divider {
     padding-bottom: var(--s2a-spacing-lg);
     margin: 0;
     max-width: 120px;
+    min-height: calc(var(--s2a-typography-line-height-eyebrow) * 2rem);
+    display: flex;
+    align-items: flex-end;
   }
 
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child {
@@ -546,6 +558,10 @@ span.feds-footer-privacyLink-divider {
 }
 
 @media (min-width: 1440px) {
+  .global-footer {
+    padding-top: var(--s2a-layout-xl);
+  }
+  
   .global-footer:not(.mobile) .feds-footer-options {
     display: grid;
     grid-template-areas: "region legal social";
