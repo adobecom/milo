@@ -3,6 +3,7 @@ const MILO_TEMPLATES = [
   '404',
   'featured-story',
 ];
+// donde esta c1 blocks?
 const C1_BLOCKS = [
   'accordion',
   'action-item',
