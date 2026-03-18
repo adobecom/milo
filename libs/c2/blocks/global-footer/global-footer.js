@@ -132,6 +132,9 @@ class Footer {
     this.footerVisibilityObserver = null;
     this.footerMenuResizeObserver = null;
     this.footerMenuResizeRaf = null;
+    this.logoScrollHandler = null;
+    this.logoResizeHandler = null;
+    this.logoResizeRaf = null;
     this.init();
     this.initFooterInViewBackground();
   }
@@ -165,6 +168,36 @@ class Footer {
       this.initContainerResponsiveness();
     }
   }, 'Error in global footer init', 'global-footer', 'e');
+
+  animateLogo = (logo) => {
+    if (!logo) return;
+    if (this.logoScrollHandler) {
+      window.removeEventListener('scroll', this.logoScrollHandler);
+    }
+    if (this.logoResizeHandler) {
+      window.removeEventListener('resize', this.logoResizeHandler);
+    }
+    const updateLogoProgress = () => {
+      const prevElement = logo?.previousElementSibling;
+      if (!prevElement) return;
+      const rect = prevElement.getBoundingClientRect();
+      const bottom = rect?.bottom ?? 0;
+      let progress = ((window.innerHeight - bottom) / logo.offsetHeight) * 100;
+      progress = Math.max(0, Math.min(100, progress));
+      logo.style.setProperty('--footer-logo-entry-progress', progress);
+    };
+    this.logoScrollHandler = updateLogoProgress;
+    this.logoResizeHandler = () => {
+      if (this.logoResizeRaf) return;
+      this.logoResizeRaf = requestAnimationFrame(() => {
+        this.logoResizeRaf = null;
+        updateLogoProgress();
+      });
+    };
+    window.addEventListener('scroll', this.logoScrollHandler, { passive: true });
+    window.addEventListener('resize', this.logoResizeHandler);
+    updateLogoProgress();
+  };
 
   initContainerResponsiveness = () => {
     this.destroy();
@@ -201,6 +234,18 @@ class Footer {
     if (this.footerMenuResizeRaf) {
       window.cancelAnimationFrame(this.footerMenuResizeRaf);
       this.footerMenuResizeRaf = null;
+    }
+    if (this.logoScrollHandler) {
+      window.removeEventListener('scroll', this.logoScrollHandler);
+      this.logoScrollHandler = null;
+    }
+    if (this.logoResizeHandler) {
+      window.removeEventListener('resize', this.logoResizeHandler);
+      this.logoResizeHandler = null;
+    }
+    if (this.logoResizeRaf) {
+      window.cancelAnimationFrame(this.logoResizeRaf);
+      this.logoResizeRaf = null;
     }
     document.documentElement.classList.remove(FOOTER_IN_VIEW_CLASS);
   };
@@ -319,6 +364,7 @@ class Footer {
     this.initFooterOptionsOrderSync();
     this.initFooterMenuLayoutSync();
     setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
+    this.animateLogo(this.elements.footerLogo);
     const { onFooterReady } = getConfig();
     onFooterReady?.();
   }, 'Failed to decorate footer content', 'global-footer', 'e');
