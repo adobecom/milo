@@ -129,7 +129,7 @@ function getSidenav(collection) {
   if (!hierarchy?.length) return null;
 
   const titleKey = `${collection.variant}SidenavTitle`;
-  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '' });
+  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '', 'close-text': placeholders?.catalogSidenavClose || '' });
 
   /* Search */
   const searchText = sidenavSettings?.searchText;
