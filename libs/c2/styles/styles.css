@@ -761,15 +761,19 @@ p {
 }
 
 .con-button {
+  box-sizing: border-box;
   background-color: transparent;
   border-radius: var(--s2a-border-radius-md);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-1000);
   color: var(--s2a-color-gray-1000);
-  display: inline-block;
-  font-size: var(--s2a-font-size-14); /* TODO: Replace with a semantic token that scales */
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--s2a-typography-font-size-label);
   font-style: normal;
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  line-height: 16px;
+  line-height: var(--s2a-typography-line-height-label);
+  letter-spacing: var(--s2a-typography-letter-spacing-label);
   padding: 5px 14px;
   text-decoration: none;
 
@@ -782,9 +786,9 @@ p {
 
   &.l-button,
   &.button-l {
-    border-radius: 40px;
-    line-height: var(--s2a-font-line-height-16); /* TODO: Replace with a semantic token that scales */
-    padding: 9px 35px 11px;
+    min-height: var(--s2a-spacing-2xl);
+    border-radius: 75px;
+    padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
   }
 
   &.blue {
@@ -820,7 +824,8 @@ p {
     border-color: var(--s2a-color-gray-25);
 
     &:hover {
-      border-color: var(--s2a-color-gray-1000);
+      color: var(--s2a-color-gray-1000);
+      background-color: var(--s2a-color-gray-25);
     }
   }
 
