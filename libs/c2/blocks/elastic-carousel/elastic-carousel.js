@@ -1,11 +1,14 @@
+/* eslint-disable no-underscore-dangle */
 import { decorateBlockText } from '../../../utils/decorate.js';
-import { createTag, getFederatedUrl } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl, getConfig } from '../../../utils/utils.js';
+import { processTrackingLabels, sendAnalytics } from '../../../martech/attributes.js';
 
 let leaveTimeout;
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.innerWidth <= 768;
+const trackedCardHovers = [];
 
 const handleMobileAutoplay = (carousel) => {
   const videos = carousel.querySelectorAll('video');
@@ -99,6 +102,12 @@ const onCarouselHover = (event) => {
     carouselContainer.classList.toggle('stick-left', slideIndex < 3);
     carouselContainer.classList.toggle('stick-right', slideIndex > 3);
   }
+
+  const slideName = slide.dataset.cardLabel;
+  if (slideName && !trackedCardHovers.includes(slideName)) {
+    trackedCardHovers.push(slideName);
+    sendAnalytics(`hover-${slideName}`);
+  }
 };
 // RTL
 // Alt attr
@@ -108,7 +117,8 @@ const buildSlide = ({ slide, index }) => {
   const left = children[0];
   const right = children[1];
 
-  const icon = left.children[0]?.querySelector('img');
+  const [iconContainer, heading, linkName, description] = left.children;
+  const icon = iconContainer?.querySelector('img');
   const asset = right.children[0];
 
   if (asset?.dataset.videoSource) {
@@ -128,23 +138,26 @@ const buildSlide = ({ slide, index }) => {
     <div class='elastic-carousel-item-container'>
       <div class='elastic-carousel-item-header'>
         ${icon.outerHTML}
-        ${left.children[1]?.outerHTML}
+        ${heading?.outerHTML}
       </div>
       <div class='elastic-carousel-item-media'>
         ${asset.outerHTML}
       </div>
       <div class='elastic-carousel-item-footer'>
-        ${left.children[2]?.outerHTML}
-        ${left.children[3]?.outerHTML}
+        ${linkName?.outerHTML}
+        ${description?.outerHTML}
       </div>
     </div>
   `;
+  const cardName = `${index + 1}--${processTrackingLabels(heading?.textContent, getConfig(), 20)}`;
   const slideEl = createTag('a', {
     class: 'elastic-carousel-item',
     tabindex: 0,
     href: left.children[4]?.querySelector('a')?.href,
     'data-index': index + 1,
     'aria-label': left.children[1]?.innerContent,
+    'daa-ll': `click-${cardName}`,
+    'data-card-label': cardName,
   }, content);
 
   slideEl.addEventListener('focus', onCarouselHover);

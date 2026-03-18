@@ -28,6 +28,7 @@ export default function init(el) {
   const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
   const prodIcon = contentDiv?.querySelector('img');
   const link = contentDiv?.querySelector('a');
+  const heading = contentDiv?.querySelector(':is(h1, h2, h3, h4, h5, h6)');
 
   if (prodIcon && isSvgUrl(prodIcon.src)) {
     prodIcon.src = getFederatedUrl(prodIcon.src);
@@ -41,7 +42,8 @@ export default function init(el) {
   getForegroundContent(foregroundRow, contentDiv, blockName);
 
   if (!link) return;
-  const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href });
+
+  const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href, 'data-tracking-label': heading?.textContent });
   link.remove();
   linkContainer.append(contentDiv);
   firstRow.prepend(linkContainer);
