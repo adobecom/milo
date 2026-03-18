@@ -87,6 +87,7 @@ html[dir="rtl"] {
           border-radius: var(--s2a-border-radius-md);
           object-fit: cover;
           height: 394px;
+          width: 100%;
         }
       }
 
