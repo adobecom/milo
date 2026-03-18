@@ -93,7 +93,7 @@ html[dir="rtl"] {
       .elastic-carousel-item-footer {
         display: flex;
         flex-direction: column;
-        padding: var(--s2a-spacing-md);
+        padding: var(--s2a-spacing-lg);
         max-width: 270px;
         font-size: var(--s2a-font-size-md);
         line-height: var(--s2a-font-line-height-16);
