@@ -883,6 +883,11 @@ div.section.parallax-move-up-fast {
   position: sticky;
   top: 0;
   z-index: 0;
+  animation-name: parallax-move-up-fast;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
 
   &::after {
     content: '';
@@ -912,6 +917,11 @@ div.section.parallax-move-up-fast {
 @keyframes parallax-pull-up {
   from { margin-top: -46px; }
   to { margin-top: calc(-1 * var(--parallax-pull-up)); }
+}
+
+@keyframes parallax-move-up-fast {
+  from { transform: translateY(0); }
+  to { transform: translateY(-35vh); }
 }
 
 @keyframes fade-to-dark {
