@@ -157,7 +157,10 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
+export const MILO_EVENTS = {
+  DEFERRED: 'milo:deferred',
+  QUERY_INDEX_ALL_LOADED: 'milo:query-index:all-loaded',
+};
 const TARGET_TIMEOUT_MS = 4000;
 
 const LANGSTORE = 'langstore';
@@ -180,7 +183,10 @@ let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 let isLoadingQueryIndexes = false;
+/** True once all query indexes (primary + other sites) have finished loading. */
+let queryIndexesAllLoaded = false;
 let siteQueryIndexMapLingo = [];
+let lingoModule = null;
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -614,7 +620,7 @@ function processQueryIndexMap(link, domain) {
     domains: [domain],
   };
 
-  result.pathsRequest = fetch(link)
+  result.pathsRequest = fetch(`${link}?limit=30000`)
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
@@ -634,7 +640,7 @@ const getDomainLingo = (path) => path?.split('/*')[0];
 
 async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   const config = getConfig();
-  const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
+  const queryIndexSuffix = config.env?.name === 'prod' || window.location.host.includes(`${SLD}.live`) ? '' : '-preview';
 
   if (links.length && links.some((link) => link.includes('/federal/')) && !queryIndexes.federal) {
     queryIndexes.federal = processQueryIndexMap(
@@ -715,7 +721,48 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
     }
   })();
 
-  import('./lingo.js');
+  lingoSiteMapping.then(() => {
+    const allIndexPromises = Object.values(queryIndexes).map((q) => q.pathsRequest).filter(Boolean);
+    return Promise.all(allIndexPromises);
+  }).then(() => {
+    queryIndexesAllLoaded = true;
+    window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_ALL_LOADED));
+  });
+
+  import('./lingo.js').then((mod) => { lingoModule = mod; });
+}
+
+function attachLingoPendingListener(a, originalHostname) {
+  const recheck = async () => {
+    if (!a.isConnected) return;
+    const currentUrl = new URL(a.href);
+    const matchingIndexes = Object.values(queryIndexes)
+      .filter((q) => q.domains.includes(originalHostname));
+    const config = getConfig();
+    const base = config.locale?.base;
+    const basePrefix = (base === '' || base === undefined) ? '' : `/${base}`;
+    // eslint-disable-next-line no-use-before-define
+    const regionalPrefix = await getMepLingoPrefix();
+    const { getPathFromIndexes } = await import('./lingo.js');
+    const newPath = await getPathFromIndexes(
+      currentUrl.pathname,
+      basePrefix,
+      regionalPrefix || '',
+      originalHostname,
+      matchingIndexes,
+      baseQueryIndex,
+    );
+    a.href = `${currentUrl.origin}${newPath}${currentUrl.search}${currentUrl.hash}`;
+  };
+  const handler = () => {
+    window.removeEventListener(MILO_EVENTS.QUERY_INDEX_ALL_LOADED, handler);
+    recheck();
+  };
+  if (queryIndexesAllLoaded) {
+    recheck();
+  } else {
+    window.addEventListener(MILO_EVENTS.QUERY_INDEX_ALL_LOADED, handler);
+  }
 }
 
 function localizeLinkCore(
@@ -748,36 +795,74 @@ function localizeLinkCore(
     if (isLocalizedLink) return processedHref;
 
     const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
-    let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
+    const prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
     if (useAsync && extension !== 'json' && lingoActive()
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
-          || (!!locale.regions && isMepLingoFragment))) {
+          || (!!locale.regions && (isMepLingoFragment || !path.includes('/fragments/'))))) {
       return (async () => {
         loadQueryIndexes(prefix, false, [href]);
-        if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
-          await Promise.all([queryIndexes[siteId]?.pathsRequest, lingoSiteMapping].filter(Boolean));
-        }
-        const matchingIndexes = Object.values(queryIndexes)
-          .filter((q) => q.domains.includes(url.hostname));
         const base = overrideBase ?? locale.base;
         const basePrefix = base === '' ? '' : `/${base}`;
-        if (matchingIndexes.length) {
-          const { default: urlInQueryIndex } = await import('./lingo.js');
-          const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
-          const shouldFallbackToBase = isMepLingoFragment
-            ? locale?.regions
-            : (locale.base || locale.base === '');
-          if (!useRegionalPrefix && shouldFallbackToBase) prefix = basePrefix;
-        } else if (
-          siteQueryIndexMapLingo
-            ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
-            ?.length
-        ) {
-          prefix = basePrefix;
+
+        if (!!locale.regions && isMepLingoFragment) {
+          // Fragments: await all indexes, then resolve (unchanged behavior)
+          if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
+            const fragmentRequests = [
+              queryIndexes[siteId]?.pathsRequest,
+              lingoSiteMapping,
+            ].filter(Boolean);
+            await Promise.all(fragmentRequests);
+          }
+          const matchingIndexes = Object.values(queryIndexes)
+            .filter((q) => q.domains.includes(url.hostname));
+          let resolvedPrefix = prefix;
+          if (matchingIndexes.length) {
+            const { default: urlInQueryIndex } = await import('./lingo.js');
+            const useRegionalPrefix = await urlInQueryIndex(
+              `${prefix}${path}`,
+              `${basePrefix}${path}`,
+              url.hostname,
+              matchingIndexes,
+              baseQueryIndex,
+              aTag,
+            );
+            const shouldFallbackToBase = locale?.regions;
+            if (!useRegionalPrefix && shouldFallbackToBase) resolvedPrefix = basePrefix;
+          } else if (
+            siteQueryIndexMapLingo
+              ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
+              ?.length
+          ) {
+            resolvedPrefix = basePrefix;
+          }
+          const urlPath = `${resolvedPrefix}${path}${url.search}${hash}`;
+          return relative ? urlPath : `${url.origin}${urlPath}`;
         }
-        const urlPath = `${prefix}${path}${url.search}${hash}`;
-        return relative ? urlPath : `${url.origin}${urlPath}`;
+
+        const matchingIndexes = Object.values(queryIndexes)
+          .filter((q) => q.domains.includes(url.hostname) && q.requestResolved);
+        let useRegionalPrefix = false;
+        if (matchingIndexes.length && lingoModule) {
+          useRegionalPrefix = await lingoModule.default(
+            `${prefix}${path}`,
+            `${basePrefix}${path}`,
+            url.hostname,
+            matchingIndexes,
+            baseQueryIndex,
+            aTag,
+          );
+        }
+        const finalPrefix = useRegionalPrefix ? prefix : basePrefix;
+        const urlPath = `${finalPrefix}${path}${url.search}${hash}`;
+        const resultUrl = relative ? urlPath : `${url.origin}${urlPath}`;
+        if (finalPrefix !== basePrefix) {
+          return resultUrl;
+        }
+        if (aTag && !queryIndexesAllLoaded) {
+          attachLingoPendingListener(aTag, url.hostname);
+        }
+        return resultUrl;
       })();
     }
 
@@ -901,8 +986,10 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
 
-  const prefix = lingoActive() && isMepLingoLink ? await getMepLingoPrefix() : null;
-  const base = lingoActive() && isMepLingoLink
+  const isBasePage = !!getConfig()?.locale?.regions;
+  const needsOverride = lingoActive() && (isMepLingoLink || isBasePage);
+  const prefix = needsOverride ? await getMepLingoPrefix() : null;
+  const base = needsOverride
     ? getConfig()?.locale?.prefix.replace('/', '')
     : null;
 
@@ -2368,7 +2455,7 @@ function loadLingoIndexes(area = document) {
   }
   getMepLingoPrefix().then((prefix) => {
     if (prefix) {
-      loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
+      loadQueryIndexes(prefix, false, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }
   });
 }

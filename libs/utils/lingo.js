@@ -73,3 +73,27 @@ export default async function urlInQueryIndex(
   await Promise.all(matchingIndexes.map((m) => m.pathsRequest));
   return urlInMatchingIndex(matchingIndexes, sanitizedPath);
 }
+
+export async function getPathFromIndexes(
+  path,
+  basePrefix,
+  regionalPrefix,
+  urlHostname,
+  matchingIndexes,
+  baseQueryIndex,
+) {
+  const basePath = basePrefix ? `${basePrefix}${path}` : path;
+  const regionalPath = regionalPrefix ? `${regionalPrefix}${path}` : path;
+
+  if (!matchingIndexes.length) return basePath;
+
+  const useRegional = await urlInQueryIndex(
+    regionalPath,
+    basePath,
+    urlHostname,
+    matchingIndexes,
+    baseQueryIndex,
+    null,
+  );
+  return useRegional ? regionalPath : basePath;
+}
