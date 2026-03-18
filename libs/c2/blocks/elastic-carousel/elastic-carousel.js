@@ -120,8 +120,9 @@ const buildSlide = ({ slide, index }) => {
   if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
   if (isSvgUrl(icon?.src)) icon.src = getFederatedUrl(icon.src);
 
-  decorateBlockText(left.children[2]);
-  decorateBlockText(left.children[3]);
+  // TODO: update to ensure classes are mapped to C2 variables
+  // TODO: see if eyebrow class can be applied directly to footer headline
+  decorateBlockText(left);
 
   const content = `
     <div class='elastic-carousel-item-container'>

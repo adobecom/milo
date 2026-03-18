@@ -112,10 +112,14 @@ html[dir="rtl"] {
           transition: none;
         }
 
-        h1,h2,h3,h4,h5,h6 {
+        :is(h1, h2, h3, h4, h5, h6) {
+          /* TODO: remove eyebrow styles if eyebrow class is applied directly to footer headline */
+          font-family: var(--body-font-family);
+          font-size: var(--s2a-typography-eyebrow);
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
+          line-height: var(--s2a-typography-line-height-eyebrow);
+          letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
           margin: 0 0 var(--s2a-spacing-xs) 0;
-          line-height: var(--s2a-font-line-height-20);
           transition: color .5s ease;
           display: -webkit-box;
           line-clamp: 1;
