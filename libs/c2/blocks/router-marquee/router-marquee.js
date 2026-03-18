@@ -1,5 +1,6 @@
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, createIntersectionObserver } from '../../../utils/utils.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
@@ -44,6 +45,27 @@ const groupByViewport = (el) => {
       viewports[current].push(row);
     }
   });
+
+  // if breakpoints are missing slides, we clone from the lower breakpoint
+  BREAKPOINTS.slice(1).forEach((breakpoint, idx) => {
+    const lower = BREAKPOINTS[idx];
+    if (!viewports[breakpoint]) {
+      viewports[breakpoint] = viewports[lower].map((s) => s.cloneNode(true));
+      return;
+    }
+    viewports[breakpoint].forEach((slide, j) => {
+      const lowerSlide = viewports[lower][j];
+      if (!lowerSlide) return;
+      const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
+      const lowerCols = lowerSlide.querySelectorAll(':scope > div');
+      [textCol, imageCol].forEach((col, k) => {
+        if (col && !col.children.length && lowerCols[k]) {
+          col.replaceWith(lowerCols[k].cloneNode(true));
+        }
+      });
+    });
+  });
+
   return viewports;
 };
 
@@ -471,8 +493,23 @@ const initVideos = (el) => {
   });
 };
 
+const reorderSlidesMaybe = (el, viewports) => {
+  const sectionMeta = el.parentElement?.querySelector('.section-metadata');
+  if (!sectionMeta) return;
+  const metadata = getMetadata(sectionMeta);
+  const startIdx = Number(metadata['starting-marquee']?.text?.[0]) - 1;
+  if (startIdx > 0) {
+    Object.keys(viewports).forEach((vp) => {
+      const slides = viewports[vp];
+      if (startIdx >= slides.length) return;
+      viewports[vp] = [slides[startIdx], ...slides.filter((_, i) => i !== startIdx)];
+    });
+  }
+};
+
 export default function init(el) {
   const viewports = groupByViewport(el);
+  reorderSlidesMaybe(el, viewports);
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
   initVideos(el);
