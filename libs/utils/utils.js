@@ -732,27 +732,24 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
   import('./lingo.js').then((mod) => { lingoModule = mod; });
 }
 
-function attachLingoPendingListener(a, originalHostname) {
+function attachLingoPendingListener(a, originalHostname, rawPath, basePrefix, regionalPrefix) {
   const recheck = async () => {
     if (!a.isConnected) return;
-    const currentUrl = new URL(a.href);
     const matchingIndexes = Object.values(queryIndexes)
       .filter((q) => q.domains.includes(originalHostname));
-    const config = getConfig();
-    const base = config.locale?.base;
-    const basePrefix = (base === '' || base === undefined) ? '' : `/${base}`;
-    // eslint-disable-next-line no-use-before-define
-    const regionalPrefix = await getMepLingoPrefix();
     const { getPathFromIndexes } = await import('./lingo.js');
     const newPath = await getPathFromIndexes(
-      currentUrl.pathname,
+      rawPath,
       basePrefix,
-      regionalPrefix || '',
+      regionalPrefix,
       originalHostname,
       matchingIndexes,
       baseQueryIndex,
     );
-    a.href = `${currentUrl.origin}${newPath}${currentUrl.search}${currentUrl.hash}`;
+    const currentUrl = new URL(a.href);
+    if (newPath !== currentUrl.pathname) {
+      a.href = `${currentUrl.origin}${newPath}${currentUrl.search}${currentUrl.hash}`;
+    }
   };
   const handler = () => {
     window.removeEventListener(MILO_EVENTS.QUERY_INDEX_ALL_LOADED, handler);
@@ -860,7 +857,7 @@ function localizeLinkCore(
           return resultUrl;
         }
         if (aTag && !queryIndexesAllLoaded) {
-          attachLingoPendingListener(aTag, url.hostname);
+          attachLingoPendingListener(aTag, url.hostname, path, basePrefix, prefix);
         }
         return resultUrl;
       })();
