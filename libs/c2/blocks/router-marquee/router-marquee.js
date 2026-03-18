@@ -1,5 +1,5 @@
-import { processTrackingLabels } from '../../../martech/attributes.js';
-import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, createIntersectionObserver } from '../../../utils/utils.js';
+import { processTrackingLabels, sendAnalytics } from '../../../martech/attributes.js';
+import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -229,7 +229,7 @@ const fireAnalytic = (card, type = 'auto') => {
 
   document.querySelectorAll(`.rm-card:nth-child(${position})`).forEach((c) => c.setAttribute('slide-seen', true));
   // fire analytic
-  console.log(`Analytic Fired: ${analyticText}`);
+  sendAnalytics(analyticText);
 };
 
 const startAutoplay = (slides, cards, container, block) => {
