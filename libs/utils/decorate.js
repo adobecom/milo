@@ -6,6 +6,7 @@ import {
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  getMetadata,
 } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -98,7 +99,15 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
     let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
-      headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
+      const isC2 = getMetadata('foundation') === 'c2';
+      headings.forEach((h) => {
+        if (isC2) {
+          h.classList.add(`title-${config[0]}`);
+          return;
+        }
+
+        h.classList.add(`heading-${config[0]}`);
+      });
       if (config[2]) {
         const prevSib = headings[0]?.previousElementSibling;
         prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
