@@ -110,6 +110,7 @@ const C2_BLOCKS = [
   'brand-concierge',
   'carousel-c2',
   'modal',
+  'elastic-carousel',
   'rich-content',
   'router-marquee',
   'section-metadata',

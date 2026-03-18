@@ -95,8 +95,6 @@
     }
 
     .parallax-featured-card-media {
-      --parallax-range-end-name: contain;
-
       animation-name: grow-featured-card-radius;
       will-change: clip-path;
     }
