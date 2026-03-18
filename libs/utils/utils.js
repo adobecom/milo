@@ -2107,25 +2107,79 @@ function initSidekick() {
   }
 }
 
-let targetMarket = null;
+let targetMarkets = null;
 let langBannerPromise;
-export const getTargetMarket = () => targetMarket;
-export const setTargetMarket = (market) => { targetMarket = market; };
+export const getTargetMarkets = () => targetMarkets;
+export const setTargetMarkets = (markets) => { targetMarkets = markets; };
 
 export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-export function getMarketsUrl() {
-  const { env, marketsSource, contentRoot } = getConfig();
+export function getMarketsSourceKey() {
+  const { env, marketsSource } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
   const allowedMarkets = ['bacom', 'express'];
-  const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
-      || getMetadata('marketssource')
-      || marketsSource;
+  return (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
+    || getMetadata('marketssource')
+    || marketsSource
+    || null;
+}
+
+export function usesBannerFlow() {
+  const onlyBanner = PAGE_URL.searchParams.get('onlybanner') ?? getMetadata('onlybanner') ?? getConfig().onlybanner ?? false;
+  return onlyBanner === true || onlyBanner === 'true';
+}
+export function getMarketsUrl() {
+  const { contentRoot } = getConfig();
+  const marketsSourceKey = getMarketsSourceKey();
   if (marketsSourceKey) return `${contentRoot ?? ''}/assets/supported-markets/supported-markets-${marketsSourceKey}.json`;
   return `${getFederatedContentRoot()}/federal/assets/supported-markets/supported-markets.json`;
+}
+
+const isUsEntry = ({ prefix = '' } = {}) => prefix === '' || prefix === 'us';
+function excludeUsUnlessExplicit(markets, geoIp) {
+  if (markets.length <= 1) return markets;
+  const usEntry = markets.find(isUsEntry);
+  if (!usEntry) return markets;
+  if (!usEntry.regionPriorities) return markets.filter((market) => !isUsEntry(market));
+  const usListsGeo = usEntry.regionPriorities.split(',').some((pair) => {
+    const [region] = pair.trim().split(':');
+    return region.toLowerCase() === geoIp;
+  });
+  return usListsGeo ? markets : markets.filter((market) => !isUsEntry(market));
+}
+
+function getMarketsByRegionPriority(markets, geoIp) {
+  const marketsWithPriority = [];
+  markets.forEach((market) => {
+    if (!market.regionPriorities) return;
+    const priorityMap = new Map(
+      market.regionPriorities.split(',').map((priorityEntry) => {
+        const [region, priority] = priorityEntry.trim().split(':');
+        return [region.toLowerCase(), parseInt(priority, 10)];
+      }),
+    );
+    const priority = priorityMap.get(geoIp);
+    if (priority !== undefined) {
+      marketsWithPriority.push({ market, priority });
+    }
+  });
+  if (marketsWithPriority.length > 0) {
+    marketsWithPriority.sort((a, b) => a.priority - b.priority);
+    return marketsWithPriority.map((item) => item.market);
+  }
+  return null;
+}
+
+function reserveBannerSpace() {
+  document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
+  const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
+  if (existingWrapper) {
+    existingWrapper.remove();
+    document.querySelector('.global-navigation')?.classList.remove('has-promo');
+  }
 }
 
 async function decorateLanguageBanner() {
@@ -2168,6 +2222,8 @@ async function decorateLanguageBanner() {
     candidateMarkets.push(...ms);
   };
 
+  const useBannerFlow = usesBannerFlow();
+  // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
     const prefMarket = languageEntries.find((market) => (
@@ -2181,36 +2237,32 @@ async function decorateLanguageBanner() {
     const marketsForGeo = languageEntries.filter((market) => (
       market.supportedRegions.includes(geoIp)));
     if (!marketsForGeo.length) return;
-
-    let prefMarketForGeo;
-    if (prefLang) {
-      prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
-      if (prefMarketForGeo) addAndShow(prefMarketForGeo);
-    }
-
-    if (!prefMarketForGeo) {
-      const marketsWithPriority = [];
-      marketsForGeo.forEach((market) => {
-        if (market.regionPriorities) {
-          const priorityMap = new Map(
-            market.regionPriorities.split(',').map((p) => {
-              const [region, priority] = p.trim().split(':');
-              return [region.toLowerCase(), parseInt(priority, 10)];
-            }),
-          );
-          const priority = priorityMap.get(geoIp);
-          if (priority) {
-            marketsWithPriority.push({ market, priority });
-          }
-        }
-      });
-
-      if (marketsWithPriority.length) {
-        marketsWithPriority.sort((a, b) => a.priority - b.priority);
+    if (useBannerFlow) {
+      let prefMarketForGeo;
+      if (prefLang) {
+        prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+        if (prefMarketForGeo) addAndShow(prefMarketForGeo);
       }
-      addAndShow(...(marketsWithPriority.length
-        ? marketsWithPriority.map((item) => item.market)
-        : [marketsForGeo[0]]));
+      if (!prefMarketForGeo) {
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeo, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
+      }
+    } else {
+      // ACOM flow: US exclusion + regionPriorities filter, multi-option modal (banner temp)
+      const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
+      if (prefLang) {
+        const marketsWithPrefLang = marketsForGeoFiltered.filter((m) => m.lang === prefLang);
+        if (marketsWithPrefLang.length === 1) {
+          addAndShow(marketsWithPrefLang[0]);
+        } else if (marketsWithPrefLang.length > 1) {
+          const marketsSortedByPriority = getMarketsByRegionPriority(marketsWithPrefLang, geoIp);
+          addAndShow(...(marketsSortedByPriority ?? marketsWithPrefLang));
+        }
+      }
+      if (!showBanner) {
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeoFiltered, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? marketsForGeoFiltered));
+      }
     }
   }
 
@@ -2226,18 +2278,32 @@ async function decorateLanguageBanner() {
       .catch(() => ({ market, ok: false }));
   });
 
-  for (const promise of fetchPromises) {
-    const { market, ok } = await promise;
-    if (ok) { targetMarket = market; break; }
-  }
-
-  if (!targetMarket) return;
-
-  document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
-  const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
-  if (existingWrapper) {
-    existingWrapper.remove();
-    document.querySelector('.global-navigation').classList.remove('has-promo');
+  if (useBannerFlow) {
+    let targetMarket = null;
+    for (const promise of fetchPromises) {
+      const { market, ok } = await promise;
+      if (ok) { targetMarket = market; break; }
+    }
+    if (!targetMarket) return;
+    setTargetMarkets([targetMarket]);
+    reserveBannerSpace();
+  } else {
+    const results = await Promise.all(fetchPromises);
+    const validatedMarkets = results.filter((r) => r.ok).map((r) => r.market);
+    if (!validatedMarkets.length) return;
+    setTargetMarkets(validatedMarkets);
+    if (isSupportedMarket) {
+      reserveBannerSpace();
+    } else {
+      // ACOM Case 4/5: unsupported market, show language modal
+      const languageModalOptions = validatedMarkets.map((m) => ({
+        prefix: m.prefix || '',
+        lang: m.lang,
+        label: m.langName || m.nativeName || m.languageName || m.continueText || 'Continue',
+      }));
+      // eslint-disable-next-line no-console
+      console.log('Language modal – options to show:', languageModalOptions);
+    }
   }
 }
 
