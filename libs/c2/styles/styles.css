@@ -905,15 +905,14 @@ p {
 @keyframes enable-parallax {
   from {
     opacity: var(--parallax-opacity-from);
-    transform: translateY(var(--parallax-translate-y))
-      translateX(var(--parallax-translate-x))
+    transform: translate3d(var(--parallax-translate-x), var(--parallax-translate-y), 0)
       scale(var(--parallax-scale));
     filter: blur(var(--parallax-blur));
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) translateX(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
     filter: blur(0);
   }
 }
@@ -943,35 +942,89 @@ p {
     animation-name: enable-parallax-stagger;
 
     > :not([class*="section-"]) {
-      /* TODO: look into smarter alternatives to eliminate CLS potential */
-      margin-top: calc(var(--parallax-stagger-from) * var(--parallax-stagger-progress));
+      --parallax-stagger-row-index: 0;
+
+      transform: translate3d(0, calc(var(--parallax-stagger-from, 0px) * var(--parallax-stagger-progress)), 0);
+      will-change: transform;
     }
 
+    /* Prolong animation for 2 rows */
+    &.two-up:has(> :nth-child(3 of :not([class*="section-"]))),
+    &.three-up:has(> :nth-child(4 of :not([class*="section-"]))),
+    &.four-up:has(> :nth-child(5 of :not([class*="section-"]))) {
+      --parallax-range-end-name: cover;
+      --parallax-range-end-length: 70%;
+    }
+
+    /* Prolong animation for 3+ rows */
+    &.two-up:has(> :nth-child(5 of :not([class*="section-"]))),
+    &.three-up:has(> :nth-child(7 of :not([class*="section-"]))),
+    &.four-up:has(> :nth-child(9 of :not([class*="section-"]))) {
+      --parallax-range-end-length: 80%;
+    }
+
+    /* Column count per -up class */
     &.two-up { --parallax-stagger-cols: 2; }
     &.three-up { --parallax-stagger-cols: 3; }
     &.four-up { --parallax-stagger-cols: 4; }
 
-    &.two-up > :nth-child(2n+1 of :not([class*="section-"])),
+    /* Column stagger indices per -up class */
+    &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
     &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
-    &.four-up > :nth-child(4n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+    &.four-up  > :nth-child(4n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
 
-    &.two-up > :nth-child(2n of :not([class*="section-"])),
+    &.two-up   > :nth-child(2n of :not([class*="section-"])),
     &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
-    &.four-up > :nth-child(4n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+    &.four-up  > :nth-child(4n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
 
     &.three-up > :nth-child(3n of :not([class*="section-"])),
-    &.four-up > :nth-child(4n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+    &.four-up  > :nth-child(4n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
 
-    &.four-up > :nth-child(4n of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+    &.four-up  > :nth-child(4n of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+
+    /* Row stagger indices per -up class */
+    /* Row 1 */
+    &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 1;
+    }
+
+    /* Row 2 */
+    &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 2;
+    }
+
+    /* Row 3 */
+    &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 3;
+    }
+
+    /* Row 4 */
+    &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
+    &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 4;
+    }
   }
 }
 
 .parallax-stagger-ltr > :not([class*="section-"]) {
-  --parallax-stagger-from: calc(var(--parallax-stagger-index) * var(--parallax-stagger-drift));
+  --parallax-stagger-from: calc(
+    (var(--parallax-stagger-index) + var(--parallax-stagger-row-index))
+    * var(--parallax-stagger-drift)
+  );
 }
 
 .parallax-stagger-rtl > :not([class*="section-"]) {
-  --parallax-stagger-from: calc((var(--parallax-stagger-cols) - 1 - var(--parallax-stagger-index)) * var(--parallax-stagger-drift));
+  --parallax-stagger-from: calc(
+    (var(--parallax-stagger-cols) - 1 - var(--parallax-stagger-index) + var(--parallax-stagger-row-index))
+    * var(--parallax-stagger-drift)
+  );
 }
 
 @keyframes enable-parallax-stagger {
