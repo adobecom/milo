@@ -851,16 +851,16 @@ p {
 
   /* Default range values */
   --parallax-range-start-name: entry;
-  --parallax-range-start-length: 10%;
+  --parallax-range-start-length: 0%;
   --parallax-range-start: var(--parallax-range-start-name) var(--parallax-range-start-length);
-  --parallax-range-end-name: contain;
-  --parallax-range-end-length: 60%;
+  --parallax-range-end-name: entry;
+  --parallax-range-end-length: 100%;
   --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
 
   animation-name: enable-parallax;
   animation-timing-function: var(--parallax-easing);
   animation-fill-mode: both;
-  animation-timeline: view();
+  animation-timeline: view(block 40% 10%);
   animation-range: var(--parallax-range-start) var(--parallax-range-end);
 
   /* Performance optimization */
@@ -914,8 +914,6 @@ p {
 
 /* Grid parallax declarations */
 .parallax-scale-down-grid {
-  --parallax-range-end-name: contain;
-
   animation-name: enable-grid-parallax;
   will-change: padding-inline;
   overflow: clip;
@@ -935,8 +933,6 @@ p {
 
 /* Stagger parallax declarations */
 [class*="parallax-stagger-"] {
-  --parallax-stagger-cols: 1;
-
   @media (width >= 768px) {
     animation-name: enable-parallax-stagger;
 
@@ -945,17 +941,6 @@ p {
       margin-top: calc(var(--parallax-stagger-from) * var(--parallax-stagger-progress));
     }
 
-    &.two-up,
-    &.three-up,
-    &.four-up {
-      --parallax-stagger-cols: 2;
-
-      > :nth-child(2n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
-      > :nth-child(2n of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
-    }
-  }
-
-  @media (width >= 1280px) {
     &.two-up { --parallax-stagger-cols: 2; }
     &.three-up { --parallax-stagger-cols: 3; }
     &.four-up { --parallax-stagger-cols: 4; }
@@ -1040,6 +1025,19 @@ p {
     --grid-width-8: calc(var(--grid-max-width) * 8 / var(--grid-columns));
     --grid-width-10: calc(var(--grid-max-width) * 10 / var(--grid-columns));
   }
+
+  [class*="up"] {
+    &.two-up {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      &.fill-last-row > :nth-child(odd of :not([class*="section-"])):not(:has(~ :not([class*="section-"]))) {
+        grid-column: 1 / -1;
+      }
+    }
+
+    &.three-up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    &.four-up { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
 }
 
 /* tokens.responsive.md and up */
@@ -1071,21 +1069,6 @@ p {
   }
 }
 
-/* Tablet landscape */
-@media (768px <= width < 1280px) {
-  [class*="up"] {
-    &.two-up,
-    &.three-up,
-    &.four-up {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-
-      &.fill-last-row > :nth-child(odd of :not([class*="section-"])):not(:has(~ :not([class*="section-"]))) {
-        grid-column: 1 / -1;
-      }
-    }
-  }
-}
-
 /* tokens.responsive.lg and up */
 @media (width >= 1280px) {
   :root {
@@ -1111,12 +1094,6 @@ p {
     --s2a-section-padding-md: var(--s2a-layout-lg);
     --s2a-section-padding-lg: var(--s2a-layout-xl);
     --s2a-section-padding-xl: var(--s2a-layout-2xl);
-  }
-
-  [class*="up"] {
-    &.two-up { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    &.three-up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    &.four-up { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 }
 
