@@ -25,8 +25,8 @@ html[dir="rtl"] {
 .elastic-carousel {
   --elastic-carousel-transtions: all .5s ease;
   --elastic-carousel-transtions-slow: all .3s ease;
-  --elastic-carousel-container-height-desktop: 580px;
-  --elastic-carousel-container-height-tablet: 560px;
+  --elastic-carousel-container-height-desktop: 590px;
+  --elastic-carousel-container-height-tablet: 572px;
   --elastic-carousel-item-max-width: 294px;
   --elastic-carousel-item-hover-grow-index: 1.75;
   --slides: 5;
