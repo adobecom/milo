@@ -43,7 +43,6 @@
     }
 
     picture:not(.icon) img {
-      border-radius: var(--s2a-border-radius-md);
       width: 100%;
       object-fit: cover;
       aspect-ratio: 4/3;
@@ -90,9 +89,23 @@
     color: var(--s2a-color-transparent-black-64);
   }
 
-  &.full-width .foreground {
-    padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+  &.featured {
+    .foreground {
+      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+    }
+
+    .parallax-featured-card-media {
+      --parallax-range-end-name: contain;
+
+      animation-name: grow-featured-card-radius;
+      will-change: clip-path;
+    }
   }
+}
+
+@keyframes grow-featured-card-radius {
+  from { clip-path: inset(0 round 0); }
+  to { clip-path: inset(0 round var(--s2a-border-radius-md)); }
 }
 
 @media (width < 768px) {
@@ -115,7 +128,6 @@
 }
 
 @media (width >= 1024px) {
-
   .base-card {
     > div[data-viewport="tablet"] {
       display: none;
@@ -129,7 +141,7 @@
       aspect-ratio: 4/3;
     }
 
-    &.full-width {
+    &.featured {
       .foreground {
         display: grid;
         grid-template-columns: repeat(12, 1fr);
@@ -165,7 +177,7 @@
 
 @media (width >= 1280px) {
   .base-card {
-    &.full-width .foreground {
+    &.featured .foreground {
       padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
     }
 
@@ -175,3 +187,8 @@
   }
 }
 
+@media (width >= 2560px) {
+  .base-card.featured .parallax-featured-card-media {
+    animation-name: none;
+  }
+}
