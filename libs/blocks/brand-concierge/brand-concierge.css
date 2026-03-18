@@ -405,6 +405,18 @@
   margin-bottom: 8px;
 }
 
+.dialog-modal.bc-susi-modal {
+  width: var(--bc-susi-modal-width);
+  min-height: var(--bc-susi-min-height);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dialog-modal.bc-susi-modal .bc-susi-modal-title {
+  padding: 20px var(--bc-susi-standard-padding) 12px;
+  margin: 0;
+}
+
 /* hero */
 .brand-concierge.hero {
   padding: 40px 24px 12px;
@@ -621,7 +633,6 @@
     padding: 80px 32px 24px;
   }
 }
-
 
 /* Tablet up */
 @media screen and (min-width: 768px) {
