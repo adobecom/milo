@@ -210,6 +210,8 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts
   }
 
   setMarket(marketItem.value);
+  const commerceService = document.head.querySelector('mas-commerce-service');
+  commerceService?.setAttribute('country', marketItem.value.toUpperCase());
 
   let targetPrefix = currentPrefix;
   if (marketPrefix !== undefined) {
@@ -666,6 +668,8 @@ export default async function init(block) {
   )) || config.languages[0];
 
   const currentMarketCode = await getValidatedMarket();
+  const commerceService = document.head.querySelector('mas-commerce-service');
+  commerceService?.setAttribute('country', currentMarketCode.toUpperCase());
   const currentMarket = getCurrentMarket(markets, currentMarketCode, currentLang);
 
   const onLanguageSelect = (langOption, opts) => (

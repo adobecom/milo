@@ -1120,13 +1120,20 @@ export async function initService(force = false, attributes = {}) {
       }
 
       const { language, locale, country } = await getLocaleSettings(miloLocale);
+      const useGeoMarket = getMetadata('mas-geo-detection') === 'on';
+      let countryFromMarket = country;
+      if (useGeoMarket) {
+        const { getValidatedMarket } = await import('../../utils/market.js');
+        const validatedMarket = await getValidatedMarket();
+        if (validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
           locale,
           language,
-          country,
+          country: countryFromMarket,
           ...attributes,
           ...commerce,
         });
@@ -1151,6 +1158,8 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
+      } else if (useGeoMarket && countryFromMarket !== country) {
+        service.setAttribute('country', countryFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
