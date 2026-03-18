@@ -10,14 +10,9 @@
 
   &.hero {
     height: 640px;
-
-    .eyebrow {
-      color: var(--s2a-color-gray-25);
-    }
   }
 
   &.dark {
-    color: var(--s2a-color-gray-25);
     background-color: unset;
   }
 
@@ -36,10 +31,6 @@
 
   &.center .foreground .content {
     align-items: center;
-  }
-
-  .eyebrow {
-    color: var(--s2a-color-gray-700);
   }
 
   .action-area {
