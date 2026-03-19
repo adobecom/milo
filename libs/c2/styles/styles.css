@@ -912,11 +912,6 @@ div.section.parallax-move-up-fast {
 .section.parallax-move-up-fast ~ .section {
   background-color: white;
   box-shadow: 0 -1px 0 0 white;
-} 
-
-@keyframes parallax-pull-up {
-  from { margin-top: -46px; }
-  to { margin-top: calc(-1 * var(--parallax-pull-up)); }
 }
 
 @keyframes parallax-move-up-fast {
