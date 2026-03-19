@@ -142,7 +142,7 @@ const buildSlide = ({ slide, index }) => {
     tabindex: 0,
     href: left.children[4]?.querySelector('a')?.href,
     'data-index': index + 1,
-    'aria-label': left.children[1]?.innerContent,
+    'aria-label': left.children[1]?.innerText,
   }, content);
 
   slideEl.addEventListener('focus', onCarouselHover);
