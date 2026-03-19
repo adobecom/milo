@@ -893,18 +893,18 @@ div.section:has(~ div.section.parallax-garage-door-reveal) {
 div.section.parallax-garage-door-reveal {
   transform-origin: top center;
   animation: garage-door-grow ease-out both;
-  animation-timeline: view(block 40% 10%);
+  animation-timeline: view(block);
   animation-range: entry 0% cover 50%;
   animation-fill-mode: both;
 
   .foreground {
     animation: garage-door-reveal ease-out both;
-    animation-timeline: view(block 10% 10%);
+    animation-timeline: view(block);
     animation-range: entry 10% cover 100%;
 
     * {
       animation: garage-door-line-height ease-out both;
-      animation-timeline: view(block 10% 10%);
+      animation-timeline: view(block);
       animation-range: entry 10% cover 100%;
     }
   }
