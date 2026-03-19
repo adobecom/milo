@@ -201,17 +201,17 @@ html[dir="rtl"] {
     .elastic-carousel-container {
       --start-margin: 50%;
       /** animation */
-      animation: elasticCarouselSlideIn ease-out both;
+      animation: elasticCarouselSlideIn var(--parallax-easing) both;
       animation-timeline: view();
-      animation-range: entry 0% exit 100%;
+      animation-range: entry 20% exit 100%;
 
       .elastic-carousel-item {
-        --start-gap: 2rem;
+        --start-gap: 3rem;
         --end-gap: .25rem;
 
         margin-inline: var(--start-gap);
         will-change: margin-inline;
-        animation: elasticItemsGapShrink ease both;
+        animation: elasticItemsGapShrink var(--parallax-easing) both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
@@ -224,7 +224,7 @@ html[dir="rtl"] {
           .elastic-carousel-item-footer p,
           .elastic-carousel-item-footer h1,h2,h3,h4,h5,h6,
           .elastic-carousel-item-header p {
-            color: var(--s2a-color-gray-25);
+            color: var(--s2a-color-gray-25);gst
           }
 
           .elastic-carousel-item-footer:after {
@@ -325,7 +325,7 @@ html[dir="rtl"] {
           border-radius: var(--s2a-border-radius-md);
           animation: elasticItemsShrink var(--paralax-easing) both;
           animation-timeline: view();
-          animation-range: entry 20% exit 100%;
+          animation-range: entry 0% exit 100%;
           overflow-x: clip;
 
           .elastic-carousel-item-header {
