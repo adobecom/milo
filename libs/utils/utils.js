@@ -2012,7 +2012,7 @@ async function loadPostLCP(config) {
         language: market.nativeName || market.langName || market.languageName || market.lang || '',
         lang: market.lang || '',
         dir: market.dir || 'ltr',
-        modalHeading: market.modalHeading || 'This adobe site does not match your location',
+        modalTitle: market.modalTitle || 'This adobe site does not match your location',
         modalDescription: market.modalDescription || 'Based on your location, you may prefer another site',
         continueText: market.continueText || 'Continue',
       }));

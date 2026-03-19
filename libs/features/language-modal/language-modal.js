@@ -221,7 +221,7 @@ function buildContent(currentMarket, availableMarkets, currentPagePrefix) {
   const fragment = new DocumentFragment();
   const lang = config.locales?.[currentMarket.prefix || '']?.ietf ?? currentMarket.lang ?? '';
   const dir = currentMarket.dir || 'ltr';
-  const title = createTag('h3', { lang, dir }, currentMarket.modalHeading);
+  const title = createTag('h3', { lang, dir }, currentMarket.modalTitle);
   const text = createTag('p', { class: 'locale-text', lang, dir }, currentMarket.modalDescription);
 
   const mainAction = createTag('a', {

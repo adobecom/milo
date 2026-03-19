@@ -1,6 +1,7 @@
 import {
-  getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational, getCountry,
+  getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational, setMarket, getCountry,
 } from '../../utils/utils.js';
+import { norm } from '../../utils/market.js';
 
 let config;
 
@@ -79,6 +80,8 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
 
   link.addEventListener('click', (e) => {
     setInternational(prefix === '' ? 'us' : prefix);
+    const market = norm(prefix) || 'us';
+    if (market) setMarket(market);
     if (hrefAdapted) return;
     e.preventDefault();
     handleEvent({
