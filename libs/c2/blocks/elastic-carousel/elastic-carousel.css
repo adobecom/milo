@@ -198,14 +198,14 @@ html[dir="rtl"] {
 @media (width > 768px) {
   .elastic-carousel {
     .elastic-carousel-container {
-      --start-margin: 50%;
+      --start-margin: 500px;
       /** animation */
       animation: elasticCarouselSlideIn var(--parallax-easing) both;
       animation-timeline: view();
       animation-range: entry 20% exit 100%;
 
       .elastic-carousel-item {
-        --start-gap: 3rem;
+        --start-gap: 2rem;
         --end-gap: .25rem;
 
         margin-inline: var(--start-gap);
@@ -369,9 +369,6 @@ html[dir="rtl"] {
     margin-inline: var(--start-gap);
   }
 
-  30% {
-    margin-inline: var(--end-gap);
-  }
 
   100% {
     margin-inline: var(--end-gap);
@@ -384,13 +381,13 @@ html[dir="rtl"] {
     opacity: 0;
   }
 
-  30% { 
-    margin-left: 0%;
+  20% { 
     opacity: 1;
+ 
   }
 
   100% {
-    margin-left: 0%;
+    
     opacity: 1;
   }
 }
