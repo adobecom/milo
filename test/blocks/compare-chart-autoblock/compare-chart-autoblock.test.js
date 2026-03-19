@@ -43,8 +43,11 @@ if (!customElements.get('aem-fragment')) {
   customElements.define('aem-fragment', MockAemFragment);
 }
 
-// loadMasComponent checks customElements.get('aem-fragment') first;
-// since MockAemFragment is already registered above, it returns immediately.
+// loadMasComponent checks customElements.get('merch-card') first;
+// since it's already registered, it returns immediately.
+if (!customElements.get('merch-card')) {
+  customElements.define('merch-card', class extends HTMLElement {});
+}
 const { default: init } = await import('../../../libs/blocks/compare-chart-autoblock/compare-chart-autoblock.js');
 
 async function initFragment(fragmentId) {

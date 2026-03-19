@@ -1,5 +1,5 @@
 import { createTag, loadBlock, getConfig } from '../../utils/utils.js';
-import { initService, getOptions, loadMasComponent, MAS_AEM_FRAGMENT } from '../merch/merch.js';
+import { initService, getOptions, loadMasComponent, MAS_MERCH_CARD } from '../merch/merch.js';
 
 const AUTOBLOCK_TIMEOUT = 5000;
 
@@ -318,7 +318,7 @@ export default async function init(el) {
   if (!success) throw new Error('Failed to initialize mas commerce service');
 
   await servicePromise;
-  await loadMasComponent(MAS_AEM_FRAGMENT);
+  await loadMasComponent(MAS_MERCH_CARD);
 
   const data = await fetchFragment(fragment);
   const comparisonTable = buildTable(data);
