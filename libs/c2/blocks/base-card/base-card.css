@@ -1,5 +1,6 @@
 
 .base-card {
+  position: relative;
   height: 100%;
 
   > div[data-viewport] {

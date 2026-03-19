@@ -1,4 +1,5 @@
 .news {
+  position: relative;
   & .news-headline {
     margin-bottom: var(--s2a-spacing-lg);
     grid-column: 1 / -1;
