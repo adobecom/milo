@@ -885,6 +885,11 @@ p {
   --parallax-translate-y: 100px;
 }
 
+div.section:has(~ div.section.parallax-garage-door-reveal) {
+  z-index: 1;
+  background-color: white;
+}
+
 div.section.parallax-garage-door-reveal {
   transform-origin: top center;
   animation: garage-door-grow ease-out both;
