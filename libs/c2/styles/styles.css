@@ -885,6 +885,47 @@ p {
   --parallax-translate-y: 100px;
 }
 
+div.section.parallax-garage-door-reveal {
+  transform-origin: top center;
+  animation: garage-door-grow ease-out both;
+  animation-timeline: view(block 40% 10%);
+  animation-range: entry 0% cover 50%;
+  animation-fill-mode: both;
+
+  .foreground {
+    animation: garage-door-reveal ease-out both;
+    animation-timeline: view(block 10% 10%);
+    animation-range: entry 10% cover 100%;
+
+    * {
+      animation: garage-door-line-height ease-out both;
+      animation-timeline: view(block 10% 10%);
+      animation-range: entry 10% cover 100%;
+    }
+  }
+}
+
+@keyframes garage-door-grow {
+  from {
+    transform: translateY(-50vh) scaleY(0.9);
+  }
+  to {
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes garage-door-reveal {
+  from {
+    margin-top: 180px;
+  }
+}
+
+@keyframes garage-door-line-height {
+  from {
+    line-height: 0.8;
+  }
+}
+
 div.section.parallax-move-up-fast {
   position: sticky;
   top: 0;
