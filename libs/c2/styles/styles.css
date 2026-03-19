@@ -548,17 +548,29 @@ blockquote {
 a {
   color: var(--s2a-color-gray-1000);
 
-  &:hover {
-    color: var(--link-hover-color); /* TODO: Replace with an S2A variable */
 
+
+  &.standalone-link {
     &::after {
-      transform: translateX(var(--s2a-spacing-4));
+      display: inline-block;
+      margin-inline-start: var(--s2a-spacing-8);
+      content: url('../assets/img/arrow-right.svg');
+      transition: transform 0.5s var(--parallax-easing);
     }
-  }
-  
-  &::after {
-    display: inline-block;
-    transition: transform 0.5s var(--parallax-easing);
+
+    [dir="rtl"] &::after {
+      transform: rotate(180deg);
+    }
+
+    &:hover {
+      &::after {
+        transform: translate3d(var(--s2a-spacing-4), 0, 0);
+      }
+
+      [dir="rtl"] &::after {
+        transform: translate3d(calc(var(--s2a-spacing-4) * -1), 0, 0) rotate(180deg);
+      }
+    }
   }
 
   &:is(.auto-block, .fragment) {
