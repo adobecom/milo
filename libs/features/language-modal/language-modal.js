@@ -202,7 +202,7 @@ function getCurrentLanguageLabel() {
   const normalized = prefix || 'us';
   const rawEntries = config.marketsConfig?.languages?.data ?? config.marketsConfig?.data;
   const entry = rawEntries?.find((e) => (e.prefix || 'us') === normalized);
-  return entry?.language ?? normalized;
+  return entry?.nativeName ?? entry?.langName ?? entry?.language ?? normalized;
 }
 
 function decorateCurrentSiteLink(link, currentPagePrefix) {

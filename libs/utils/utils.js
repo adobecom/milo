@@ -182,6 +182,10 @@ let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 let isLoadingQueryIndexes = false;
 let siteQueryIndexMapLingo = [];
+let langRoutingConfig = null;
+let langBannerPromise;
+export const getLangRoutingConfig = () => langRoutingConfig;
+export const setLangRoutingConfig = (config) => { langRoutingConfig = config; };
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -1997,8 +2001,23 @@ async function loadPostLCP(config) {
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
   if (languageBanner === 'on') {
-    const { default: init } = await import('../features/language-banner/language-banner.js');
-    await init();
+    const routingConfig = getLangRoutingConfig();
+    if (routingConfig?.showBanner && routingConfig.markets?.length) {
+      const { default: init } = await import('../features/language-banner/language-banner.js');
+      await init();
+    } else if (routingConfig?.showModal && routingConfig.markets?.length) {
+      const { default: showLanguageModal } = await import('../features/language-modal/language-modal.js');
+      const mappedMarkets = routingConfig.markets.map((market) => ({
+        prefix: market.prefix ?? '',
+        language: market.nativeName || market.langName || market.languageName || market.lang || '',
+        lang: market.lang || '',
+        dir: market.dir || 'ltr',
+        modalHeading: market.modalHeading || 'This adobe site does not match your location',
+        modalDescription: market.modalDescription || 'Based on your location, you may prefer another site',
+        continueText: market.continueText || 'Continue',
+      }));
+      await showLanguageModal(mappedMarkets, config, createTag, loadStyle, loadBlock);
+    }
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
@@ -2106,11 +2125,6 @@ function initSidekick() {
     });
   }
 }
-
-let targetMarkets = null;
-let langBannerPromise;
-export const getTargetMarkets = () => targetMarkets;
-export const setTargetMarkets = (markets) => { targetMarkets = markets; };
 
 export const getCookie = (name) => document.cookie
   .split('; ')
@@ -2268,6 +2282,11 @@ async function decorateLanguageBanner() {
 
   if (!showBanner) return;
 
+  if (!useBannerFlow && !isSupportedMarket) {
+    setLangRoutingConfig({ showBanner: false, showModal: true, markets: candidateMarkets });
+    return;
+  }
+
   const { pathname, origin } = window.location;
   const pagePath = locale.prefix ? pathname.replace(locale.prefix, '') : pathname;
 
@@ -2285,25 +2304,15 @@ async function decorateLanguageBanner() {
       if (ok) { targetMarket = market; break; }
     }
     if (!targetMarket) return;
-    setTargetMarkets([targetMarket]);
+    setLangRoutingConfig({ showBanner: true, showModal: false, markets: [targetMarket] });
     reserveBannerSpace();
   } else {
+    // ACOM Case 2: supported market, HEAD validates, show banner
     const results = await Promise.all(fetchPromises);
     const validatedMarkets = results.filter((r) => r.ok).map((r) => r.market);
     if (!validatedMarkets.length) return;
-    setTargetMarkets(validatedMarkets);
-    if (isSupportedMarket) {
-      reserveBannerSpace();
-    } else {
-      // ACOM Case 4/5: unsupported market, show language modal
-      const languageModalOptions = validatedMarkets.map((m) => ({
-        prefix: m.prefix || '',
-        lang: m.lang,
-        label: m.langName || m.nativeName || m.languageName || m.continueText || 'Continue',
-      }));
-      // eslint-disable-next-line no-console
-      console.log('Language modal – options to show:', languageModalOptions);
-    }
+    setLangRoutingConfig({ showBanner: true, showModal: false, markets: validatedMarkets });
+    reserveBannerSpace();
   }
 }
 

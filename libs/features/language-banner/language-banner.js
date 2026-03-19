@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { getConfig, createTag, loadStyle, getTargetMarkets, getCountry } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle, getLangRoutingConfig, getCountry } from '../../utils/utils.js';
 
 function buildBanner(market, translatedUrl) {
   const banner = document.body.querySelector('.language-banner');
@@ -89,8 +89,8 @@ async function showBanner(market, config) {
 }
 
 export default async function init() {
-  const market = getTargetMarkets()?.[0];
-  if (market) {
-    await showBanner(market, getConfig());
+  const routingConfig = getLangRoutingConfig();
+  if (routingConfig?.showBanner && routingConfig.markets?.length) {
+    await showBanner(routingConfig.markets[0], getConfig());
   }
 }
