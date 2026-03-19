@@ -100,8 +100,6 @@ const onCarouselHover = (event) => {
     carouselContainer.classList.toggle('stick-right', slideIndex > 3);
   }
 };
-// RTL
-// Alt attr
 
 const buildSlide = ({ slide, index }) => {
   const children = [...slide.children];
@@ -144,7 +142,7 @@ const buildSlide = ({ slide, index }) => {
     tabindex: 0,
     href: left.children[4]?.querySelector('a')?.href,
     'data-index': index + 1,
-    'aria-label': left.children[1]?.innerContent,
+    'aria-label': left.children[1]?.innerText,
   }, content);
 
   slideEl.addEventListener('focus', onCarouselHover);

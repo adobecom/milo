@@ -4,6 +4,10 @@ import { setConfig } from '../../../libs/utils/utils.js';
 import { delay } from '../../helpers/waitfor.js';
 import { findFocusableInSection } from '../../../libs/blocks/notification/notification.js';
 
+if (!customElements.get('mas-field')) {
+  customElements.define('mas-field', class extends HTMLElement {});
+}
+
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales, miloLibs: 'http://localhost:2000/libs' };
 setConfig(conf);
@@ -71,6 +75,36 @@ describe('notification', async () => {
       const close = ribbons[0].querySelector('button.close');
       close.dispatchEvent(new MouseEvent('click'));
       expect(close.closest('.notification').style.display).to.equal('none');
+    });
+
+    it('keeps mas-field content grouped in copy-wrap without hoisting nested headings', async () => {
+      const notif = document.createElement('div');
+      notif.className = 'notification ribbon center';
+      notif.innerHTML = `
+        <div><div data-valign="middle"><picture><img alt="" loading="lazy" src=""></picture></div></div>
+        <div><div data-valign="middle">
+          <p><picture><img alt="" loading="lazy" src=""></picture></p>
+          <mas-field field="description">
+            <span data-role="mas-field-content">
+              <h3><strong>Resolved heading</strong></h3>
+              <p>Resolved body text</p>
+            </span>
+          </mas-field>
+          <p><em><a href="https://www.adobe.com/">Action</a></em></p>
+        </div></div>`;
+      document.body.append(notif);
+
+      await init(notif);
+
+      const text = notif.querySelector('.text');
+      const children = [...text.children].map((el) => el.className || el.tagName.toLowerCase());
+      expect(children[0]).to.equal('icon-area');
+      expect(children[1]).to.equal('copy-wrap');
+      expect(children[2]).to.include('action-area');
+      expect(text.querySelector(':scope > .copy-wrap > mas-field')).to.exist;
+      expect(text.querySelector(':scope > mas-field')).to.not.exist;
+      expect(text.querySelector(':scope > .copy-wrap > h3')).to.not.exist;
+      expect(text.querySelector(':scope > .copy-wrap > mas-field [data-role="mas-field-content"] > h3')).to.exist;
     });
   });
 
