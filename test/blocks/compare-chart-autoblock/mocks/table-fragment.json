@@ -1,0 +1,91 @@
+{
+  "id": "test-table-id",
+  "fields": {
+    "block-name": "Table",
+    "fragments": ["tcol-1", "tcol-2"],
+    "sections": ["tsec-1"],
+    "selected-variant-names": ["pricing-bottom", "highlight"]
+  },
+  "references": {
+    "tcol-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "tcol-1",
+        "fields": {
+          "fragment": ["tcard-1"],
+          "fields": ["mnemonicIcon", "cardTitle", "prices", "ctas"],
+          "badge": ""
+        }
+      }
+    },
+    "tcol-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "tcol-2",
+        "fields": {
+          "fragment": ["tcard-2"],
+          "fields": ["mnemonicIcon", "cardTitle", "prices", "ctas"],
+          "badge": "Best Value"
+        }
+      }
+    },
+    "tcard-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "tcard-1",
+        "fields": {
+          "mnemonicIcon": ["https://example.com/ps-icon.svg"],
+          "cardTitle": "Plan A",
+          "prices": { "mimeType": "text/html", "value": "<span>$9.99/mo</span>" },
+          "ctas": { "mimeType": "text/html", "value": "<a class=\"accent\" href=\"https://example.com/buy\">Buy now</a><a class=\"primary-outline\" href=\"https://example.com/try\">Free trial</a>" }
+        }
+      }
+    },
+    "tcard-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "tcard-2",
+        "fields": {
+          "mnemonicIcon": ["https://example.com/ai-icon.svg"],
+          "cardTitle": "Plan B",
+          "prices": { "mimeType": "text/html", "value": "<span>$19.99/mo</span>" },
+          "ctas": { "mimeType": "text/html", "value": "<a class=\"accent\" href=\"https://example.com/buy2\">Buy now</a>" }
+        }
+      }
+    },
+    "tsec-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "tsec-1",
+        "fields": {
+          "sectionTitle": "Features",
+          "rows": ["trow-1"]
+        }
+      }
+    },
+    "trow-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "trow-1",
+        "fields": {
+          "rowTitle": { "mimeType": "text/html", "value": "Cloud storage" },
+          "rowValues": ["tval-1", "tval-2"]
+        }
+      }
+    },
+    "tval-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "tval-1",
+        "fields": { "valueType": "100GB" }
+      }
+    },
+    "tval-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "tval-2",
+        "fields": { "valueType": "1TB" }
+      }
+    }
+  }
+}

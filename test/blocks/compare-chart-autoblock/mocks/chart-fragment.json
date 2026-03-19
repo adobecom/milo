@@ -1,0 +1,195 @@
+{
+  "id": "test-chart-id",
+  "fields": {
+    "fragments": ["col-1", "col-2"],
+    "sections": ["sec-1", "sec-2"]
+  },
+  "references": {
+    "col-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "col-1",
+        "fields": {
+          "fragment": ["card-1"],
+          "fields": ["cardTitle", "prices", "description", "ctas"],
+          "badge": ""
+        }
+      }
+    },
+    "col-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "col-2",
+        "fields": {
+          "fragment": ["card-2"],
+          "fields": ["cardTitle", "prices", "description", "ctas"],
+          "badge": "Best Offer"
+        }
+      }
+    },
+    "card-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "card-1",
+        "fields": {
+          "cardTitle": "Acrobat Standard",
+          "prices": { "mimeType": "text/html", "value": "<span is=\"inline-price\" data-wcs-osi=\"price1\">$12.99/mo</span>" },
+          "description": { "mimeType": "text/html", "value": "<p>Essential PDF tools</p>" },
+          "ctas": { "mimeType": "text/html", "value": "<a href=\"https://example.com\">Buy now</a>" }
+        }
+      }
+    },
+    "card-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "card-2",
+        "fields": {
+          "cardTitle": "Acrobat Pro",
+          "prices": { "mimeType": "text/html", "value": "<span is=\"inline-price\" data-wcs-osi=\"price2\">$19.99/mo</span>" },
+          "description": { "mimeType": "text/html", "value": "<p>Advanced PDF tools</p>" },
+          "ctas": { "mimeType": "text/html", "value": "<a href=\"https://example.com\">Buy now</a>" }
+        }
+      }
+    },
+    "sec-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "sec-1",
+        "fields": {
+          "sectionTitle": "Create PDFs",
+          "rows": ["row-1", "row-2", "row-3"]
+        }
+      }
+    },
+    "sec-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "sec-2",
+        "fields": {
+          "sectionTitle": "Advanced Features",
+          "rows": ["row-4", "row-5"]
+        }
+      }
+    },
+    "row-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "row-1",
+        "fields": {
+          "rowTitle": { "mimeType": "text/html", "value": "Combine files" },
+          "rowValues": ["val-1", "val-2"]
+        }
+      }
+    },
+    "row-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "row-2",
+        "fields": {
+          "rowTitle": { "mimeType": "text/html", "value": "Export to Word" },
+          "rowValues": ["val-3", "val-4"]
+        }
+      }
+    },
+    "row-3": {
+      "type": "content-fragment",
+      "value": {
+        "id": "row-3",
+        "fields": {
+          "rowTitle": "Storage",
+          "rowValues": ["val-5", "val-6"]
+        }
+      }
+    },
+    "row-4": {
+      "type": "content-fragment",
+      "value": {
+        "id": "row-4",
+        "fields": {
+          "rowTitle": { "mimeType": "text/html", "value": "Redact content" },
+          "rowValues": ["val-7", "val-8"]
+        }
+      }
+    },
+    "row-5": {
+      "type": "content-fragment",
+      "value": {
+        "id": "row-5",
+        "fields": {
+          "rowTitle": { "mimeType": "text/html", "value": "Compare files" },
+          "rowValues": ["val-9", "val-10"]
+        }
+      }
+    },
+    "val-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-1",
+        "fields": { "valueType": "true" }
+      }
+    },
+    "val-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-2",
+        "fields": { "valueType": "true" }
+      }
+    },
+    "val-3": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-3",
+        "fields": { "valueType": "true" }
+      }
+    },
+    "val-4": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-4",
+        "fields": { "valueType": "true" }
+      }
+    },
+    "val-5": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-5",
+        "fields": { "valueType": "100GB" }
+      }
+    },
+    "val-6": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-6",
+        "fields": { "valueType": "500GB" }
+      }
+    },
+    "val-7": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-7",
+        "fields": { "valueType": "false" }
+      }
+    },
+    "val-8": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-8",
+        "fields": { "valueType": "true" }
+      }
+    },
+    "val-9": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-9",
+        "fields": { "valueType": "5" }
+      }
+    },
+    "val-10": {
+      "type": "content-fragment",
+      "value": {
+        "id": "val-10",
+        "fields": { "valueType": "50" }
+      }
+    }
+  }
+}

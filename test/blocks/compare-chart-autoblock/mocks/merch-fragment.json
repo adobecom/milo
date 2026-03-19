@@ -1,0 +1,85 @@
+{
+  "id": "test-merch-id",
+  "fields": {
+    "block-name": "Table",
+    "fragments": ["mcol-1", "mcol-2"],
+    "sections": ["msec-1"],
+    "selected-variant-names": ["merch"]
+  },
+  "references": {
+    "mcol-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "mcol-1",
+        "fields": {
+          "fragment": ["mcard-1"],
+          "fields": ["cardTitle"],
+          "badge": ""
+        }
+      }
+    },
+    "mcol-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "mcol-2",
+        "fields": {
+          "fragment": ["mcard-2"],
+          "fields": ["cardTitle"],
+          "badge": ""
+        }
+      }
+    },
+    "mcard-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "mcard-1",
+        "fields": {
+          "cardTitle": "Individual"
+        }
+      }
+    },
+    "mcard-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "mcard-2",
+        "fields": {
+          "cardTitle": "Business"
+        }
+      }
+    },
+    "msec-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "msec-1",
+        "fields": {
+          "sectionTitle": "Plans",
+          "rows": ["mrow-1"]
+        }
+      }
+    },
+    "mrow-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "mrow-1",
+        "fields": {
+          "rowTitle": "Storage",
+          "rowValues": ["mval-1", "mval-2"]
+        }
+      }
+    },
+    "mval-1": {
+      "type": "content-fragment",
+      "value": {
+        "id": "mval-1",
+        "fields": { "valueType": "100GB" }
+      }
+    },
+    "mval-2": {
+      "type": "content-fragment",
+      "value": {
+        "id": "mval-2",
+        "fields": { "valueType": "2TB" }
+      }
+    }
+  }
+}

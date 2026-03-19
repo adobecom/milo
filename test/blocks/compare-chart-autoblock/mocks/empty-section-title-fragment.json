@@ -1,0 +1,73 @@
+{
+  "id": "test-empty-section-id",
+  "fields": {
+    "fragments": ["col-a", "col-b"],
+    "sections": ["sec-empty"]
+  },
+  "references": {
+    "col-a": {
+      "type": "content-fragment",
+      "value": {
+        "id": "col-a",
+        "fields": {
+          "fragment": ["card-a"],
+          "fields": ["cardTitle"],
+          "badge": ""
+        }
+      }
+    },
+    "col-b": {
+      "type": "content-fragment",
+      "value": {
+        "id": "col-b",
+        "fields": {
+          "fragment": ["card-b"],
+          "fields": ["cardTitle"],
+          "badge": ""
+        }
+      }
+    },
+    "card-a": {
+      "type": "content-fragment",
+      "value": {
+        "id": "card-a",
+        "fields": { "cardTitle": "Plan A" }
+      }
+    },
+    "card-b": {
+      "type": "content-fragment",
+      "value": {
+        "id": "card-b",
+        "fields": { "cardTitle": "Plan B" }
+      }
+    },
+    "sec-empty": {
+      "type": "content-fragment",
+      "value": {
+        "id": "sec-empty",
+        "fields": {
+          "sectionTitle": "",
+          "rows": ["row-a"]
+        }
+      }
+    },
+    "row-a": {
+      "type": "content-fragment",
+      "value": {
+        "id": "row-a",
+        "fields": {
+          "rowTitle": "Feature",
+          "rowValues": ["val-a", "val-b"]
+        }
+      }
+    },
+    "val-a": {
+      "type": "content-fragment",
+      "value": { "id": "val-a", "fields": { "valueType": "true" } }
+    },
+    "val-b": {
+      "type": "content-fragment",
+      "value": { "id": "val-b", "fields": { "valueType": "false" } }
+    }
+  }
+}
