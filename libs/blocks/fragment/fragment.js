@@ -91,6 +91,12 @@ export const removeMepLingoRow = (container) => {
   mepLingoRow?.remove();
 };
 
+const preserveAuthored = (a, isBlockSwap, originalBlock, originalSection) => {
+  if (isBlockSwap) removeMepLingoRow(originalBlock);
+  else removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
+  a.parentElement?.remove();
+};
+
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
@@ -223,13 +229,7 @@ export default async function init(a) {
 
   if (usedFallback && !isMepLingoBlock
     && ((isBlockSwap && originalBlock) || (isSectionSwap && originalSection))) {
-    if (isBlockSwap) {
-      removeMepLingoRow(originalBlock);
-      a.parentElement?.remove();
-    } else {
-      removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
-      a.parentElement?.remove();
-    }
+    preserveAuthored(a, isBlockSwap, originalBlock, originalSection);
     return;
   }
 
@@ -285,14 +285,12 @@ export default async function init(a) {
         originalBlock?.remove();
         a.parentElement?.remove();
       } else {
-        removeMepLingoRow(originalBlock);
-        a.parentElement?.remove();
+        preserveAuthored(a, isBlockSwap, originalBlock, originalSection);
       }
       return;
     }
     if (isSectionSwap && originalSection) {
-      removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
-      a.parentElement?.remove();
+      preserveAuthored(a, false, originalBlock, originalSection);
       return;
     }
     if (isMepLingoFragment) {

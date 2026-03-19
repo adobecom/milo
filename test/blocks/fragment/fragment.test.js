@@ -782,7 +782,6 @@ describe('MEP Lingo Fragments', () => {
     document.body.appendChild(section);
 
     const a = marquee.querySelector('a');
-    await simulateDecorateLinks(a);
     await getFragment(a);
 
     expect(marquee.textContent).to.include('Authored marquee content');
@@ -837,13 +836,55 @@ describe('MEP Lingo Fragments', () => {
     document.body.appendChild(section);
 
     const a = sectionMetadata.querySelector('a');
-    await simulateDecorateLinks(a);
     await getFragment(a);
 
     expect(section.textContent).to.include('Authored section content');
     const metaRows = sectionMetadata.querySelectorAll(':scope > div');
     const hasMepLingoRow = [...metaRows].some((r) => r.children[0]?.textContent?.trim() === 'mep-lingo');
     expect(hasMepLingoRow).to.be.false;
+    section.remove();
+  });
+
+  it('uses dual fetch fallback when skipQI is set and regional content 404s', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((resource) => {
+      const mockPath = resource?.resource || resource;
+      if (mockPath?.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      if (mockPath?.includes('lingo-site-mapping.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          'site-query-index-map': { data: [] },
+          'site-locales': { data: [] },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      }
+      if (mockPath?.includes('/ch_de/') && mockPath?.includes('.plain.html')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      return originalFetch(resource);
+    });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const p = document.createElement('p');
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/ch_de/fragments/mep-lingo-test';
+    a.dataset.mepLingo = 'true';
+    a.dataset.mepLingoSkippedQI = 'true';
+    a.dataset.originalHref = '/test/blocks/fragment/mocks/de/fragments/mep-lingo-test';
+    p.appendChild(a);
+    section.appendChild(p);
+    document.body.appendChild(section);
+
+    await getFragment(a);
+
+    const frag = section.querySelector('.fragment');
+    expect(frag).to.exist;
+    expect(frag.dataset.mepLingoFallback).to.exist;
     section.remove();
   });
 
