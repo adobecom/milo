@@ -740,6 +740,113 @@ describe('MEP Lingo Fragments', () => {
     expect(textBlock.textContent).to.not.include('mep-lingo');
   });
 
+  it('keeps authored block when fallback is used for block swap', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((resource) => {
+      const mockPath = resource?.resource || resource;
+      if (mockPath?.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      if (mockPath?.includes('lingo-site-mapping.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          'site-query-index-map': { data: [] },
+          'site-locales': { data: [] },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      }
+      if (mockPath?.includes('/ch_de/')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      return originalFetch(resource);
+    });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const marquee = document.createElement('div');
+    marquee.className = 'marquee';
+    const contentRow = document.createElement('div');
+    contentRow.innerHTML = '<div><p>Authored marquee content</p></div>';
+    marquee.appendChild(contentRow);
+    const mepLingoRow = document.createElement('div');
+    const cell1 = document.createElement('div');
+    cell1.textContent = 'mep-lingo';
+    const cell2 = document.createElement('div');
+    cell2.innerHTML = '<a href="/test/blocks/fragment/mocks/de/fragments/mep-lingo-test#_mep-lingo">swap</a>';
+    mepLingoRow.appendChild(cell1);
+    mepLingoRow.appendChild(cell2);
+    marquee.appendChild(mepLingoRow);
+    section.appendChild(marquee);
+    document.body.appendChild(section);
+
+    const a = marquee.querySelector('a');
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+
+    expect(marquee.textContent).to.include('Authored marquee content');
+    const rows = marquee.querySelectorAll(':scope > div');
+    const hasMepLingoRow = [...rows].some((r) => r.children[0]?.textContent?.trim() === 'mep-lingo');
+    expect(hasMepLingoRow).to.be.false;
+    section.remove();
+  });
+
+  it('keeps authored section when fallback is used for section swap', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale });
+
+    fetchStub.restore();
+    fetchStub = stub(window, 'fetch').callsFake((resource) => {
+      const mockPath = resource?.resource || resource;
+      if (mockPath?.includes('query-index')) {
+        return Promise.resolve(createQueryIndexResponse([]));
+      }
+      if (mockPath?.includes('lingo-site-mapping.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          'site-query-index-map': { data: [] },
+          'site-locales': { data: [] },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      }
+      if (mockPath?.includes('/ch_de/')) {
+        return Promise.resolve(new Response(null, { status: 404, statusText: 'Not Found' }));
+      }
+      return originalFetch(resource);
+    });
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    const content = document.createElement('div');
+    content.innerHTML = '<p>Authored section content</p>';
+    section.appendChild(content);
+    const sectionMetadata = document.createElement('div');
+    sectionMetadata.className = 'section-metadata';
+    const styleRow = document.createElement('div');
+    styleRow.innerHTML = '<div>style</div><div>dark</div>';
+    sectionMetadata.appendChild(styleRow);
+    const mepLingoRow = document.createElement('div');
+    const cell1 = document.createElement('div');
+    cell1.textContent = 'mep-lingo';
+    const cell2 = document.createElement('div');
+    cell2.innerHTML = '<a href="/test/blocks/fragment/mocks/de/fragments/mep-lingo-test#_mep-lingo">swap</a>';
+    mepLingoRow.appendChild(cell1);
+    mepLingoRow.appendChild(cell2);
+    sectionMetadata.appendChild(mepLingoRow);
+    section.appendChild(sectionMetadata);
+    document.body.appendChild(section);
+
+    const a = sectionMetadata.querySelector('a');
+    await simulateDecorateLinks(a);
+    await getFragment(a);
+
+    expect(section.textContent).to.include('Authored section content');
+    const metaRows = sectionMetadata.querySelectorAll(':scope > div');
+    const hasMepLingoRow = [...metaRows].some((r) => r.children[0]?.textContent?.trim() === 'mep-lingo');
+    expect(hasMepLingoRow).to.be.false;
+    section.remove();
+  });
+
   it('removes element when regional content is empty (remove variant)', async () => {
     window.sessionStorage.setItem('akamai', 'ch');
     const currentConfig = getConfig();

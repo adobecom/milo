@@ -221,6 +221,18 @@ export default async function init(a) {
     return;
   }
 
+  if (usedFallback && !isMepLingoBlock
+    && ((isBlockSwap && originalBlock) || (isSectionSwap && originalSection))) {
+    if (isBlockSwap) {
+      removeMepLingoRow(originalBlock);
+      a.parentElement?.remove();
+    } else {
+      removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
+      a.parentElement?.remove();
+    }
+    return;
+  }
+
   const attemptedRegionalFetch = relHref.includes(mepLingoPrefix);
   const canTryFallback = needsFallback && mepLingoPrefix
     && a.dataset.originalHref && !isMepLingoInsert && !isMepLingoRemove;
