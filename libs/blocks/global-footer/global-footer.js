@@ -174,6 +174,7 @@ class Footer {
       error.tags = 'global-footer';
       error.url = url;
       error.errorType = 'e';
+      error.severity = 'error';
       lanaLog({ message: error.message, ...error });
       const { onFooterError } = getConfig();
       onFooterError?.(error);
@@ -272,6 +273,7 @@ class Footer {
         e: `${file.statusText} url: ${file.url}`,
         tags: 'global-footer',
         errorType: 'i',
+        severity: 'error',
       });
     }
     const content = await file.text();
@@ -320,7 +322,11 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'global-footer', errorType: 'e' });
+      lanaLog({
+        message: `Could not create URL for region picker; href: ${regionSelector.href}`,
+        tags: 'global-footer',
+        severity: 'critical',
+      });
       return this.elements.regionPicker;
     }
 
@@ -565,7 +571,12 @@ export default function init(block) {
     if (isDarkMode()) block.classList.add('feds--dark');
     return footer;
   } catch (e) {
-    lanaLog({ message: 'Could not create footer', e });
+    lanaLog({
+      message: 'Could not create footer',
+      e,
+      tags: 'global-footer',
+      severity: 'critical',
+    });
     return null;
   }
 }
