@@ -64,23 +64,26 @@ async function showBanner(market, config) {
     const { setInternational } = await import('../../utils/utils.js');
     setInternational(market.prefix || 'us');
     if (config.lingoProjectSuccessLogging === 'on') {
-      window.lana.log(`Click: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-click', severity: 'i' });
+      const country = await getCountry();
+      window.lana.log(`Click: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-click', severity: 'i' });
     }
     window.open(translatedUrl, '_self');
   });
 
-  banner.querySelector('.language-banner-close').addEventListener('click', () => {
+  banner.querySelector('.language-banner-close').addEventListener('click', async () => {
     const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
     document.cookie = `international=${pagePrefix};path=/;${domain}`;
     if (config.lingoProjectSuccessLogging === 'on') {
-      window.lana.log(`Close: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-close', severity: 'i' });
+      const country = await getCountry();
+      window.lana.log(`Close: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-close', severity: 'i' });
     }
     banner.remove();
   });
 
   sendAnalytics(new Event(eventName));
   if (config.lingoProjectSuccessLogging === 'on') {
-    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-load', severity: 'i' });
+    const country = await getCountry();
+    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-load', severity: 'i' });
   }
 }
 

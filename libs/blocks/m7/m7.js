@@ -41,6 +41,6 @@ export default async function init(el) {
       });
     }
   } catch (e) {
-    window.lana.log(`Cannot generate M7 URL. ${e}`, { tags: 'm7', errorType: 'i' });
+    window.lana.log(`Cannot generate M7 URL. ${e}`, { tags: 'm7', errorType: 'i', severity: 'error' });
   }
 }

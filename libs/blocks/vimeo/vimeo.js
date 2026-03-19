@@ -23,7 +23,10 @@ class LiteVimeo extends HTMLElement {
       const { setDialogAndElementAttributes } = await import('../../scripts/accessibility.js');
       setDialogAndElementAttributes({ element: this.iframeEl, title: data.title });
     } catch (error) {
-      window.lana.log('Error fetching Vimeo video title', { error });
+      window.lana.log(`Error fetching Vimeo video title: ${error?.message || error}`, {
+        tags: 'vimeo',
+        severity: 'error',
+      });
     }
   }
 
@@ -49,7 +52,7 @@ class LiteVimeo extends HTMLElement {
         this.style.backgroundImage = `url("${thumbnailUrl}")`;
       })
       .catch((e) => {
-        window.lana.log(`Error fetching Vimeo thumbnail: ${e}`, { tags: 'vimeo', errorType: 'i' });
+        window.lana.log(`Error fetching Vimeo thumbnail: ${e}`, { tags: 'vimeo', severity: 'error' });
       });
   }
 

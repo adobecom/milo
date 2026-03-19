@@ -144,6 +144,26 @@
   fill: var(--color-white);
 }
 
+/* Disable-buttons: disabled state and pointer-events for all viewports */
+.carousel.dark.disable-circular-nav .carousel-button.disabled:hover,
+.carousel.dark.disable-circular-nav .carousel-button.disabled:active,
+.dark .carousel.disable-circular-nav .carousel-button.disabled:hover,
+.dark .carousel.disable-circular-nav .carousel-button.disabled:active,
+.carousel.disable-circular-nav .carousel-button.disabled:hover,
+.carousel.disable-circular-nav .carousel-button.disabled:active,
+.carousel.dark.disable-circular-nav .carousel-button.disabled,
+.dark .carousel.disable-circular-nav .carousel-button.disabled,
+.carousel.disable-circular-nav .carousel-button.disabled {
+  background-color: var(--carousel-nav-background-dark);
+  pointer-events: none;
+}
+
+.dark .carousel.disable-circular-nav .carousel-button.disabled path,
+.carousel.dark.disable-circular-nav .carousel-button.disabled path,
+.carousel.disable-circular-nav .carousel-button.disabled path {
+  fill: var(--carousel-nav-button-background-active-focus);
+}
+
 .carousel .carousel-previous svg {
   margin-right: 2px;
   transform: rotate(180deg);
@@ -613,6 +633,25 @@ html[dir="rtl"] .carousel .move-indicators {
     transform: translateX(65%);
   }
 
+  .carousel.dark.disable-buttons .carousel-button.disabled:hover,
+  .carousel.dark.disable-buttons .carousel-button.disabled:active,
+  .dark .carousel.disable-buttons .carousel-button.disabled:hover,
+  .dark .carousel.disable-buttons .carousel-button.disabled:active,
+  .carousel.disable-buttons .carousel-button.disabled:hover,
+  .carousel.disable-buttons .carousel-button.disabled:active,
+  .carousel.dark.disable-buttons .carousel-button.disabled,
+  .dark .carousel.disable-buttons .carousel-button.disabled,
+  .carousel.disable-buttons .carousel-button.disabled {
+    background-color: var(--carousel-nav-background-dark);
+    cursor: not-allowed;
+  }
+
+  .dark .carousel.disable-buttons .carousel-button.disabled path,
+  .carousel.dark.disable-buttons .carousel-button.disabled path,
+  .carousel.disable-buttons .carousel-button.disabled path {
+    fill: var(--carousel-nav-button-background-active-focus);
+  }
+
   .carousel.hinting-center-mobile .carousel-slide {
     flex-basis: 75%;
     min-width: 276px;
@@ -631,25 +670,6 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.hinting-center-mobile .carousel-slides.is-ready.is-reversing {
     transform: translateX(calc((0.3rem) * -1));
   }
-
-  .carousel.dark.disable-buttons .carousel-button.disabled:hover,
-  .carousel.dark.disable-buttons .carousel-button.disabled:active,
-  .dark .carousel.disable-buttons .carousel-button.disabled:hover,
-  .dark .carousel.disable-buttons .carousel-button.disabled:active,
-  .carousel.disable-buttons .carousel-button.disabled:hover,
-  .carousel.disable-buttons .carousel-button.disabled:active,
-  .carousel.dark.disable-buttons .carousel-button.disabled,
-  .dark .carousel.disable-buttons .carousel-button.disabled,
-  .carousel.disable-buttons .carousel-button.disabled {
-    background-color: var(--carousel-nav-background-dark);
-  }
-
-  .dark .carousel.disable-buttons .carousel-button.disabled path,
-  .carousel.dark.disable-buttons .carousel-button.disabled path,
-  .carousel.disable-buttons .carousel-button.disabled path {
-    fill: var(--carousel-nav-button-background-active-focus);
-  }
-
 
   .carousel.disable-buttons .carousel-slides {
     align-items: center;

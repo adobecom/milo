@@ -231,6 +231,10 @@
   cursor: pointer;
 }
 
+.rm-pause-play.is-hidden {
+  display: none;
+}
+
 .rm-pause-play .offset-filler {
   display: flex;
   justify-content: center;
@@ -289,6 +293,10 @@
     scrollbar-width: none;
   }
 
+  .section:has(+ .section.parallax-move-up-fast) .rm-controls {
+    inset: auto 24px 64px;
+  }
+  
   /* this is needed to push the last card on the left side of the screen, on swipe */
   .rm-cards::after {
     content: '';
@@ -319,8 +327,7 @@
 @media (width <= 767px) {
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
-    min-height: 420px;
-    max-height: 930px;
+    height: 100vh;
   }
 
   .rm-content-wrapper {
@@ -348,8 +355,7 @@
 @media (767px < width < 1280px) {
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
-    min-height: 720px;
-    max-height: 1280px;
+    height: 100vh;
   }
 
   .rm-content-wrapper {
@@ -376,8 +382,7 @@
 @media (width >= 1280px) {
   .rm-viewport[data-viewport="desktop"] {
     display: flex;
-    min-height: 860px;
-    max-height: 1280px;
+    height: 100vh;
   }
 
   .rm-overlay {

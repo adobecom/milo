@@ -101,8 +101,8 @@ function addMissingContent(con, previous) {
   ];
 
   pairs.forEach(([el, prev]) => {
-    if (el.children.length || el.textContent) return;
-    el.replaceChildren(...[...prev.children].map((c) => c.cloneNode(true)));
+    if (el?.children.length || el?.textContent) return;
+    el?.replaceChildren(...[...prev.children].map((c) => c.cloneNode(true)));
   });
 }
 
