@@ -396,6 +396,12 @@
   --s2a-typography-line-height-eyebrow: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-label: var(--s2a-font-line-height-xs);
   --s2a-typography-line-height-caption: var(--s2a-font-line-height-2xs);
+  --s2a-section-padding-none: var(--s2a-spacing-none);
+  --s2a-section-padding-xs: var(--s2a-spacing-xl);
+  --s2a-section-padding-sm: var(--s2a-spacing-2xl);
+  --s2a-section-padding-md: var(--s2a-layout-4xl);
+  --s2a-section-padding-lg: var(--s2a-layout-sm);
+  --s2a-section-padding-xl: var(--s2a-layout-lg);
 
   /* Milo-specific declarations */
   --scroll-padding-block: 0;
@@ -1138,12 +1144,11 @@ div.section.parallax-move-up-fast {
     --s2a-typography-line-height-title-2: var(--s2a-font-line-height-xl);
     --s2a-typography-line-height-title-3: var(--s2a-font-line-height-lg);
     --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
-    --s2a-section-padding-none: var(--s2a-spacing-none);
-    --s2a-section-padding-xs: var(--s2a-spacing-lg);
-    --s2a-section-padding-sm: var(--s2a-spacing-xl);
-    --s2a-section-padding-md: var(--s2a-spacing-2xl);
-    --s2a-section-padding-lg: var(--s2a-spacing-4xl);
-    --s2a-section-padding-xl: var(--s2a-layout-sm);
+    --s2a-section-padding-xs: var(--s2a-spacing-2xl);
+    --s2a-section-padding-sm: var(--s2a-spacing-4xl);
+    --s2a-section-padding-md: var(--s2a-layout-sm);
+    --s2a-section-padding-lg: var(--s2a-layout-lg);
+    --s2a-section-padding-xl: var(--s2a-layout-xl);
 
     /* Grid definitions */
     --grid-columns: 12;
@@ -1191,11 +1196,6 @@ div.section.parallax-move-up-fast {
     --s2a-typography-line-height-title-2: var(--s2a-font-line-height-xl);
     --s2a-typography-line-height-title-3: var(--s2a-font-line-height-lg);
     --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
-    --s2a-section-padding-xs: var(--s2a-spacing-2xl);
-    --s2a-section-padding-sm: var(--s2a-spacing-4xl);
-    --s2a-section-padding-md: var(--s2a-layout-sm);
-    --s2a-section-padding-lg: var(--s2a-layout-lg);
-    --s2a-section-padding-xl: var(--s2a-layout-xl);
   }
 }
 
