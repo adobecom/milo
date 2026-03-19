@@ -550,6 +550,15 @@ a {
 
   &:hover {
     color: var(--link-hover-color); /* TODO: Replace with an S2A variable */
+
+    &::after {
+      transform: translateX(var(--s2a-spacing-4));
+    }
+  }
+  
+  &::after {
+    display: inline-block;
+    transition: transform 0.5s var(--parallax-easing);
   }
 
   &:is(.auto-block, .fragment) {
