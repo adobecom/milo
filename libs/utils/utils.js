@@ -107,7 +107,9 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'box',
+  'brand-concierge',
   'carousel-c2',
+  'modal',
   'elastic-carousel',
   'rich-content',
   'router-marquee',
