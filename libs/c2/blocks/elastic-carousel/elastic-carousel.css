@@ -31,20 +31,18 @@ html[dir="rtl"] {
   --elastic-carousel-item-hover-grow-index: 1.75;
   --slides: 5;
 
+  height: var(--elastic-carousel-container-height-desktop);
   position: relative;
   overflow: clip;
-  height: var(--elastic-carousel-container-height-desktop);
   margin: auto;
-
+  
   &.disable-hover {
     pointer-events: none;
   }
-
+  
   .elastic-carousel-container {
     display: flex;
-    height: 100%;
     position: absolute;
-    top: 0%;
     left: 50%;
     transform: translateX(-50%);
     transition: var(--elastic-carousel-transtions);
@@ -164,16 +162,21 @@ html[dir="rtl"] {
 
 /** desktop only */
 @media (1280px <= width) {
-  .elastic-carousel-item {
-    width: calc(100vw/calc(var(--slides) - 1));
+  .elastic-carousel-container {
+    max-height: var(--elastic-carousel-container-height-desktop);
+    
+    .elastic-carousel-item {
+      width: calc(100vw/calc(var(--slides) - 1));
+    }
   }
 }
 /** tablet only */
  @media (768px <= width < 1280px) {
   .elastic-carousel {
     height: var(--elastic-carousel-container-height-tablet);
-    
     .elastic-carousel-container {
+      height: 100%;
+      max-height: var(--elastic-carousel-container-height-tablet);
       .elastic-carousel-item {
         width: calc(100vw / calc(var(--slides) - 1.5));
     
@@ -189,7 +192,6 @@ html[dir="rtl"] {
 @media (width > 768px) {
   .elastic-carousel {
     .elastic-carousel-container {
-
       --start-margin: 50%;
       /** animation */
       animation: elasticCarouselSlideIn linear both;
@@ -244,8 +246,10 @@ html[dir="rtl"] {
     overflow: visible;
     padding-bottom: calc(var(--last-offset) * var(--offset-scale));
     margin-top: calc(var(--offset-adjuster)/10);
-
+    margin-inline: var(--s2a-spacing-sm);
     .elastic-carousel-container {
+      top: 0%;
+      height: 100%;
       position: relative;
       flex-direction: column;
       left: unset;
