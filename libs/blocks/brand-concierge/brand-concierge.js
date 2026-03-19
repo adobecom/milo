@@ -233,19 +233,12 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
-    console.log('bc:cta-action', detail);
-    if (detail?.action === 'sign-in') {
-      openSusiLightModal();
-    }
-  });
-
   const { env, locale } = getConfig();
   const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   let src = stage;
 
-  if (env.name === 'prod') {
+  if (env?.name === 'prod') {
     src = prod;
   }
 
@@ -261,7 +254,7 @@ async function openChatModal(initialMessage, el) {
 
   const urlParams = new URLSearchParams(window.location.search);
   const testParam = urlParams.get('test');
-  const useTestInstance = env.name !== 'prod' && (testParam === 'cts' || testParam === 'cjm');
+  const useTestInstance = env?.name !== 'prod' && (testParam === 'cts' || testParam === 'cjm');
   const instanceName = useTestInstance ? 'alloy2' : 'alloy';
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;
