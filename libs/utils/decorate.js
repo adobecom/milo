@@ -2,6 +2,7 @@ import {
   createTag,
   loadStyle,
   getConfig,
+  getMetadata,
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
@@ -93,12 +94,15 @@ function elContainsText(el) {
   ));
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
+const isC2 = getMetadata('foundation') === 'c2';
+const blockTextSizes = isC2 ? ['2', 'md', 'md'] : ['m', 's', 'm'];
+
+export function decorateBlockText(el, config = blockTextSizes, type = null) {
   if (!el.classList.contains('default')) {
     let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
-      headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
+      headings.forEach((h) => h.classList.add(`${isC2 ? 'title' : 'heading'}-${config[0]}`));
       if (config[2]) {
         const prevSib = headings[0]?.previousElementSibling;
         prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
