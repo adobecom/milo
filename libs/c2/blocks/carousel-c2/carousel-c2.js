@@ -227,6 +227,8 @@ function attachListeners(carouselEls) {
   let isDragging = false;
 
   wrapper.addEventListener('pointerdown', (e) => {
+    const { target } = e;
+    if (target.tagName === 'A') return;
     e.preventDefault();
     wrapper.classList.add('grabbing');
     startX = e.clientX;
