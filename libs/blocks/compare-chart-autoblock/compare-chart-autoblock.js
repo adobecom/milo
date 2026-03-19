@@ -1,58 +1,25 @@
 import { createTag, loadBlock, getConfig } from '../../utils/utils.js';
-import { initService, getOptions, getMasLibsBaseUrl } from '../merch/merch.js';
+import { initService, getOptions, loadMasComponent, MAS_AEM_FRAGMENT } from '../merch/merch.js';
 
 const AUTOBLOCK_TIMEOUT = 5000;
-const FRAGMENT_CLIENT_DEFAULT = 'https://mas.adobe.com/studio/libs/fragment-client.js';
-
-/** Mirrors aem-fragment.getFragmentClientUrl() for preview fragment fetching. */
-function getFragmentClientUrl() {
-  const masLibsBase = getMasLibsBaseUrl();
-  if (!masLibsBase) return FRAGMENT_CLIENT_DEFAULT;
-  return `${masLibsBase}/studio/libs/fragment-client.js`;
-}
-
-async function fetchPreviewFragment(id, settings) {
-  const url = getFragmentClientUrl();
-  const { previewFragment } = await import(url);
-  return previewFragment(id, { locale: settings.locale, apiKey: settings.wcsApiKey });
-}
-
-async function fetchPublishedFragment(id, settings) {
-  const { masIOUrl, wcsApiKey, locale, country } = settings;
-  let endpoint = `${masIOUrl}/fragment?id=${id}&api_key=${wcsApiKey}&locale=${locale}`;
-  if (country && !locale.endsWith(`_${country}`)) {
-    endpoint += `&country=${country}`;
-  }
-  const response = await fetch(endpoint);
-  if (!response.ok) throw new Error(`Failed to fetch compare-chart fragment: ${response.status}`);
-  return response.json();
-}
 
 const VARIANT_TABLE = 'Table';
 const VARIANT_COMPARISON = 'Comparison Table';
 
-function kebabToCamel(str) {
-  return str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-}
-
-function normalizeFields(obj) {
-  if (!obj || typeof obj !== 'object') return obj;
-  return Object.entries(obj).reduce((acc, [key, val]) => {
-    acc[kebabToCamel(key)] = val;
-    return acc;
-  }, {});
-}
-
-function normalizeData(data) {
-  if (data.fields) data.fields = normalizeFields(data.fields);
-  if (data.references) {
-    for (const ref of Object.values(data.references)) {
-      if (ref?.value?.fields) {
-        ref.value.fields = normalizeFields(ref.value.fields);
-      }
-    }
-  }
-  return data;
+function fetchFragment(fragmentId) {
+  return new Promise((resolve, reject) => {
+    const aemFragment = createTag('aem-fragment', { fragment: fragmentId });
+    const cleanup = () => aemFragment.remove();
+    aemFragment.addEventListener('aem:load', (e) => {
+      cleanup();
+      resolve(e.detail);
+    }, { once: true });
+    aemFragment.addEventListener('aem:error', (e) => {
+      cleanup();
+      reject(new Error(e.detail?.message || 'Failed to fetch compare-chart fragment'));
+    }, { once: true });
+    document.body.appendChild(aemFragment);
+  });
 }
 
 function getTimeoutPromise() {
@@ -350,12 +317,10 @@ export default async function init(el) {
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) throw new Error('Failed to initialize mas commerce service');
 
-  const service = await servicePromise;
-  const { settings } = service;
-  const raw = settings.preview
-    ? await fetchPreviewFragment(fragment, settings)
-    : await fetchPublishedFragment(fragment, settings);
-  const data = normalizeData(raw);
+  await servicePromise;
+  await loadMasComponent(MAS_AEM_FRAGMENT);
+
+  const data = await fetchFragment(fragment);
   const comparisonTable = buildTable(data);
 
   const parent = el.parentElement;

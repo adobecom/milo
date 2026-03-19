@@ -1,10 +1,10 @@
 {
   "id": "test-merch-id",
   "fields": {
-    "block-name": "Table",
+    "blockName": "Table",
     "fragments": ["mcol-1", "mcol-2"],
     "sections": ["msec-1"],
-    "selected-variant-names": ["merch"]
+    "selectedVariantNames": ["merch"]
   },
   "references": {
     "mcol-1": {

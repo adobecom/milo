@@ -1,5 +1,4 @@
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { initService } from '../../../libs/blocks/merch/merch.js';
 
@@ -13,9 +12,40 @@ mockService.settings = {
 };
 initService.promise = Promise.resolve(mockService);
 
-const { default: init } = await import('../../../libs/blocks/compare-chart-autoblock/compare-chart-autoblock.js');
-
+// Mock aem-fragment custom element before importing the autoblock.
+// On connectedCallback, dispatch aem:load with mock data based on fragment attribute.
 const originalFetch = window.fetch;
+
+class MockAemFragment extends HTMLElement {
+  connectedCallback() {
+    const fragmentId = this.getAttribute('fragment');
+    queueMicrotask(async () => {
+      let url = '/test/blocks/compare-chart-autoblock/mocks/chart-fragment.json';
+      if (fragmentId === 'test-table-id') {
+        url = '/test/blocks/compare-chart-autoblock/mocks/table-fragment.json';
+      } else if (fragmentId === 'test-merch-id') {
+        url = '/test/blocks/compare-chart-autoblock/mocks/merch-fragment.json';
+      } else if (fragmentId === 'test-empty-section-id') {
+        url = '/test/blocks/compare-chart-autoblock/mocks/empty-section-title-fragment.json';
+      }
+      try {
+        const response = await originalFetch(url);
+        const data = await response.json();
+        this.dispatchEvent(new CustomEvent('aem:load', { detail: data }));
+      } catch (err) {
+        this.dispatchEvent(new CustomEvent('aem:error', { detail: { message: err.message } }));
+      }
+    });
+  }
+}
+
+if (!customElements.get('aem-fragment')) {
+  customElements.define('aem-fragment', MockAemFragment);
+}
+
+// loadMasComponent checks customElements.get('aem-fragment') first;
+// since MockAemFragment is already registered above, it returns immediately.
+const { default: init } = await import('../../../libs/blocks/compare-chart-autoblock/compare-chart-autoblock.js');
 
 async function initFragment(fragmentId) {
   setConfig({ codeRoot: '/libs' });
@@ -30,29 +60,7 @@ async function initFragment(fragmentId) {
 }
 
 describe('compare-chart-autoblock', () => {
-  before(() => {
-    sinon.stub(window, 'fetch').callsFake(async (url) => {
-      if (url.includes('/io/fragment')) {
-        if (url.includes('id=test-table-id')) {
-          return originalFetch('/test/blocks/compare-chart-autoblock/mocks/table-fragment.json');
-        }
-        if (url.includes('id=test-merch-id')) {
-          return originalFetch('/test/blocks/compare-chart-autoblock/mocks/merch-fragment.json');
-        }
-        if (url.includes('id=test-empty-section-id')) {
-          return originalFetch('/test/blocks/compare-chart-autoblock/mocks/empty-section-title-fragment.json');
-        }
-        return originalFetch('/test/blocks/compare-chart-autoblock/mocks/chart-fragment.json');
-      }
-      if (url.startsWith('/') || url.startsWith('http://localhost')) {
-        return originalFetch(url);
-      }
-      return new Response('', { status: 404 });
-    });
-  });
-
   afterEach(() => { document.body.innerHTML = ''; });
-  after(() => { window.fetch.restore(); });
 
   describe('Comparison Table variant', () => {
     it('generates comparison-table with correct class', async () => {
