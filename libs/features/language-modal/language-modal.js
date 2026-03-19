@@ -133,9 +133,10 @@ const [pickerKeydownHandler, removePicker, addOutsideClick] = (() => {
 })();
 
 function getPagePath() {
-  const { pathname } = window.location;
+  let path = window.location.href.replace(window.location.origin, '');
   const { prefix } = config.locale;
-  return prefix ? pathname.replace(prefix, '') : pathname;
+  if (path.startsWith(prefix)) path = path.replace(prefix, '');
+  return path;
 }
 
 /** HEAD check only – returns markets where the page exists. No fallback. */
@@ -182,6 +183,10 @@ function openPicker(button, markets, event, currentPagePrefix, dir) {
   markets.forEach((m) => {
     const lang = config.locales?.[m.prefix || '']?.ietf ?? m.lang ?? '';
     const a = createTag('a', { lang, href: m.url || '#' }, m.language);
+    if (a.hash && !window.location.hash) {
+      a.hash = '';
+      a.setAttribute('href', a.href);
+    }
     decoratePickerLink(a, m, currentPagePrefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
@@ -268,7 +273,8 @@ function buildContent(currentMarket, availableMarkets, currentPagePrefix) {
     });
   }
 
-  const currentSiteLink = createTag('a', { lang, href: '#' }, getCurrentLanguageLabel());
+  const currentPageUrl = window.location.hash ? document.location.href : '#';
+  const currentSiteLink = createTag('a', { lang, href: currentPageUrl }, getCurrentLanguageLabel());
   decorateCurrentSiteLink(currentSiteLink, currentPagePrefix);
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(currentSiteLink);

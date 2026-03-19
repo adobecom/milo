@@ -44,12 +44,12 @@ export function sendAnalytics(event) {
 async function showBanner(market, config) {
   if (!market) return;
 
-  const { pathname } = window.location;
+  let path = window.location.href.replace(window.location.origin, '');
   const currentPrefix = config.locale.prefix;
-  const pagePath = currentPrefix ? pathname.replace(currentPrefix, '') : pathname;
+  if (path.startsWith(currentPrefix)) path = path.replace(currentPrefix, '');
   const translatedUrl = market.prefix
-    ? `${window.location.origin}/${market.prefix}${pagePath}`
-    : `${window.location.origin}${pagePath}`;
+    ? `${window.location.origin}/${market.prefix}${path}`
+    : `${window.location.origin}${path}`;
 
   const banner = buildBanner(market, translatedUrl);
   if (!banner) return;
