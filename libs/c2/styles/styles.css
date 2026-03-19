@@ -885,7 +885,7 @@ p {
   --parallax-translate-y: 100px;
 }
 
-div.section:has(~ div.section.parallax-garage-door-reveal) {
+div.section:has(~ div.section.parallax-garage-door-reveal):not([class*="parallax-"]) {
   z-index: 1;
   background-color: white;
 }
@@ -963,7 +963,6 @@ div.section.parallax-move-up-fast {
 
 .section.parallax-move-up-fast ~ .section {
   background-color: white;
-  box-shadow: 0 -1px 0 0 white;
 }
 
 @keyframes parallax-move-up-fast {
