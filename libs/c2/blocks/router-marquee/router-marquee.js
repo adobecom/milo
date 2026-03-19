@@ -4,18 +4,15 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
 const AUTOPLAY_MS = 15000;
-const TEXT_EXIT_MS = 260;
-const TEXT_EXIT_PX = 28;
-const TEXT_GAP_MS = 220;
 const TEXT_ENTER_MS = 380;
-const TEXT_ENTER_PX = 28;
-const BG_FADE_MS = 650;
+const BG_SHIFT_MS = 650;
 const BG_SHIFT_PX = 90;
+const STAGGER_MS = 30;
+const STAGGER_PX = 60;
 const HOVER_DELAY_MS = 200;
 const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const RESUME_DELAY = 2000;
 const SWIPE_THRESHOLD = 100;
-const TRANSITION_MS = Math.max(BG_FADE_MS, TEXT_EXIT_MS + TEXT_GAP_MS + TEXT_ENTER_MS);
 
 const reflow = (el) => el?.getBoundingClientRect();
 
@@ -24,9 +21,15 @@ const clearInlineStyles = (el, props) => {
   props.forEach((p) => { el.style[p] = ''; });
 };
 
+const STAGGER_CHILDREN = ['.rm-eyebrow', '.rm-title', '.rm-body', '.rm-ctas'];
+
 const resetSlide = (slide) => {
-  clearInlineStyles(slide, ['opacity', 'zIndex', 'transition', 'pointerEvents']);
-  clearInlineStyles(slide.querySelector('.rm-content'), ['transform', 'opacity', 'transition']);
+  clearInlineStyles(slide, ['zIndex', 'pointerEvents']);
+  const content = slide.querySelector('.rm-content');
+  clearInlineStyles(content, ['transform', 'transition']);
+  STAGGER_CHILDREN.forEach((sel) => {
+    clearInlineStyles(content?.querySelector(sel), ['transform', 'transition']);
+  });
   const bg = slide.querySelector('.rm-background');
   if (bg) { bg.style.transition = ''; bg.style.removeProperty('--slide-bg-x'); }
 };
@@ -171,49 +174,35 @@ const buildPlayPause = () => {
   ]));
 };
 
-const setBar = (bar, tx, ms, timing = 'linear') => {
-  bar.style.transition = ms > 0 ? `transform ${ms}ms ${timing}` : 'none';
-  bar.style.transform = `translateX(${tx})`;
-};
-
-const slideBar = (bar, from, to, ms, timing = 'linear') => {
-  setBar(bar, from, 0);
-  reflow(bar);
-  setBar(bar, to, ms, timing);
-};
-
 const animateBgShift = (oldBg, newBg, direction) => {
   const shift = window.matchMedia('(min-width: 1280px)').matches ? BG_SHIFT_PX : 0;
   if (!shift || !oldBg || !newBg) return;
 
-  oldBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
+  oldBg.style.transition = `transform ${BG_SHIFT_MS}ms ${EASE}`;
   oldBg.style.setProperty('--slide-bg-x', `${-direction * shift}px`);
 
   newBg.style.transition = 'none';
   newBg.style.setProperty('--slide-bg-x', `${direction * shift}px`);
   reflow(newBg);
-  newBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
+  newBg.style.transition = `transform ${BG_SHIFT_MS}ms ${EASE}`;
   newBg.style.removeProperty('--slide-bg-x');
 };
 
-const animateContentExit = (content, direction) => {
-  if (!content) return;
-  content.style.transition = `transform ${TEXT_EXIT_MS}ms ${EASE}, opacity ${TEXT_EXIT_MS}ms ${EASE}`;
-  content.style.transform = `translateX(${-direction * TEXT_EXIT_PX}px)`;
-  content.style.opacity = '0';
-};
-
 const animateContentEnter = (content, direction) => {
-  if (!content) return null;
-  content.style.transition = 'none';
-  content.style.opacity = '0';
-  content.style.transform = `translateX(${direction * TEXT_ENTER_PX}px)`;
+  if (!content) return;
+  const targets = STAGGER_CHILDREN
+    .map((sel) => content.querySelector(sel))
+    .filter(Boolean);
+  targets.forEach((el) => {
+    el.style.transition = 'none';
+    el.style.transform = `translateX(${direction * STAGGER_PX}px)`;
+  });
   reflow(content);
-  return setTimeout(() => {
-    content.style.transition = `transform ${TEXT_ENTER_MS}ms ${EASE}, opacity ${TEXT_ENTER_MS}ms ${EASE}`;
-    content.style.transform = '';
-    content.style.opacity = '';
-  }, TEXT_EXIT_MS + TEXT_GAP_MS);
+  targets.forEach((el, i) => {
+    const delay = i * STAGGER_MS;
+    el.style.transition = `transform ${TEXT_ENTER_MS}ms ${EASE} ${delay}ms`;
+    el.style.transform = '';
+  });
 };
 
 const startAutoplay = (slides, cards, container, block) => {
@@ -224,8 +213,7 @@ const startAutoplay = (slides, cards, container, block) => {
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
-  let fillAnimation = null; // animation instance for the progress bar
-  let slideTimer = null; // timer for delayed text entry animation
+  let videoPaused = false; // whether the user has paused video via the button
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
   let leaveTimer = null; // timer for restarting autoplay on block mouse leave
@@ -236,16 +224,24 @@ const startAutoplay = (slides, cards, container, block) => {
     playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
   };
 
-  const stop = () => {
-    clearTimeout(timer);
-    if (fillAnimation) { fillAnimation.cancel(); fillAnimation = null; }
+  const clearFill = (i) => {
+    const bar = bars[i];
+    bar.style.transition = 'none';
+    bar.style.transform = 'translateX(-101%)';
+  };
+
+  const startFill = (i) => {
+    const bar = bars[i];
+    bar.style.transition = 'none';
+    bar.style.transform = 'translateX(-101%)';
+    reflow(bar);
+    bar.style.transition = `transform ${AUTOPLAY_MS}ms linear`;
+    bar.style.transform = 'translateX(0%)';
   };
 
   const finishSlideTransition = () => {
-    clearTimeout(slideTimer);
     clearTimeout(cleanupTimer);
     clearTimeout(hoverTimer);
-    slideTimer = null;
     cleanupTimer = null;
     hoverTimer = null;
     [...slides].forEach(resetSlide);
@@ -262,32 +258,32 @@ const startAutoplay = (slides, cards, container, block) => {
     const newSlide = slides[index];
 
     oldSlide.classList.remove('is-active');
-    oldSlide.style.opacity = '1';
     oldSlide.style.zIndex = '1';
     oldSlide.style.pointerEvents = 'none';
-    newSlide.style.opacity = '1';
     newSlide.style.pointerEvents = 'auto';
-    pendingSlide = newSlide;
-
-    reflow(oldSlide);
-    oldSlide.style.transition = `opacity ${BG_FADE_MS}ms ${EASE}`;
-    oldSlide.style.opacity = '0';
+    newSlide.classList.add('is-active');
+    pendingSlide = null;
 
     animateBgShift(
       oldSlide.querySelector('.rm-background'),
       newSlide.querySelector('.rm-background'),
       direction,
     );
-    animateContentExit(oldSlide.querySelector('.rm-content'), direction);
-    slideTimer = animateContentEnter(newSlide.querySelector('.rm-content'), direction);
+    animateContentEnter(newSlide.querySelector('.rm-content'), direction);
 
     oldSlide.querySelector('video')?.pause();
-    if (!paused) {
+    if (!videoPaused) {
       const vid = newSlide.querySelector('video');
       if (vid) { vid.muted = true; vid.play().catch(() => {}); }
     }
 
-    cleanupTimer = setTimeout(finishSlideTransition, TRANSITION_MS + 50);
+    const transitionMs = Math.max(
+      BG_SHIFT_MS,
+      3 * STAGGER_MS + TEXT_ENTER_MS,
+    );
+    cleanupTimer = setTimeout(finishSlideTransition, transitionMs + 50);
+
+    playPauseBtn?.classList.toggle('is-hidden', !newSlide.querySelector('video'));
 
     cardEls[active]?.classList.remove('is-active');
     active = index;
@@ -299,19 +295,17 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const advance = () => {
-    stop();
-    setBar(bars[active], '101%', BG_FADE_MS, EASE);
+    clearTimeout(timer);
+    clearFill(active);
     activate((active + 1) % cardEls.length, 1);
-    slideBar(bars[active], '-101%', '0%', AUTOPLAY_MS);
+    startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
   };
 
   const pause = () => {
-    stop();
+    clearTimeout(timer);
+    clearFill(active);
     paused = true;
-    setBar(bars[active], '0%', 0);
-    setPlayingState(false);
-    slides[active]?.querySelector('video')?.pause();
   };
 
   const cancelLeaveTimer = () => {
@@ -324,14 +318,13 @@ const startAutoplay = (slides, cards, container, block) => {
     leaveTimer = setTimeout(() => {
       leaveTimer = null;
       paused = false;
-      setPlayingState(true);
       advance();
     }, RESUME_DELAY);
   };
 
   const pauseOnInteraction = (e) => {
     const target = e.target.closest('a, button');
-    if (target && !target.classList.contains('rm-pause-play')) {
+    if (target) {
       cancelLeaveTimer();
       if (!paused) pause();
     }
@@ -344,12 +337,11 @@ const startAutoplay = (slides, cards, container, block) => {
       if (i === active) { pause(); return; }
       hoverTimer = setTimeout(() => {
         hoverTimer = null;
-        stop();
+        clearTimeout(timer);
+        clearFill(active);
         paused = true;
         const dir = i > active ? 1 : -1;
-        setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
         activate(i, dir);
-        slideBar(bars[i], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
       }, HOVER_DELAY_MS);
     });
   });
@@ -366,15 +358,14 @@ const startAutoplay = (slides, cards, container, block) => {
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
-    clearTimeout(hoverTimer);
-    hoverTimer = null;
-    cancelLeaveTimer();
-    if (paused) {
-      paused = false;
-      setPlayingState(true);
-      advance();
-    } else {
-      pause();
+    videoPaused = !videoPaused;
+    setPlayingState(!videoPaused);
+    const vid = slides[active]?.querySelector('video');
+    if (videoPaused) {
+      vid?.pause();
+    } else if (vid) {
+      vid.muted = true;
+      vid.play().catch(() => {});
     }
   });
 
@@ -396,30 +387,20 @@ const startAutoplay = (slides, cards, container, block) => {
     const dy = e.changedTouches[0].clientY - touchStartY;
     if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dy) > Math.abs(dx)) return;
 
-    stop();
+    clearTimeout(timer);
+    clearFill(active);
     const dir = dx < 0 ? 1 : -1;
     const next = (active + dir + cardEls.length) % cardEls.length;
-    setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
     activate(next, dir);
-    slideBar(bars[next], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
     paused = true;
-    setPlayingState(false);
   }, { passive: true });
 
-  const bar = bars[active];
-  setBar(bar, '-101%', 0);
-  reflow(bar);
-  fillAnimation = bar.animate(
-    [{ transform: 'translateX(-101%)' }, { transform: 'translateX(0%)' }],
-    { duration: AUTOPLAY_MS, fill: 'forwards', easing: 'linear' },
-  );
-  fillAnimation.finished.then(() => {
-    fillAnimation?.cancel();
-    fillAnimation = null;
-    advance();
-  }).catch(() => { fillAnimation = null; });
+  if (!slides[active]?.querySelector('video')) playPauseBtn?.classList.add('is-hidden');
 
-  return { pause };
+  requestAnimationFrame(() => {
+    startFill(active);
+    timer = setTimeout(advance, AUTOPLAY_MS);
+  });
 };
 
 const buildViewport = (viewport, slides) => {

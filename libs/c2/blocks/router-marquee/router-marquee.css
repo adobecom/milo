@@ -231,6 +231,10 @@
   cursor: pointer;
 }
 
+.rm-pause-play.is-hidden {
+  display: none;
+}
+
 .rm-pause-play .offset-filler {
   display: flex;
   justify-content: center;

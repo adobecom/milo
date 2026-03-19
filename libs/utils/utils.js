@@ -2064,6 +2064,15 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
+  if (getMetadata('foundation') === 'c2') {
+    await Promise.all([
+      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+      loadScript(`${config.base}/deps/lenis.min.js`),
+    ]);
+    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    // eslint-disable-next-line no-unused-vars
+    const lenis = new window.Lenis({ autoRaf: true, lerp });
+  }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
   if (!quickLink || window.adobePrivacy) return;
