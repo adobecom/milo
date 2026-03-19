@@ -78,17 +78,18 @@ const onSlideLeave = (event) => {
 };
 
 const onCarouselLeave = (event) => {
-  clearTimeout(leaveTimeout);
   const carouselContainer = event.currentTarget.querySelector('.elastic-carousel-container');
   leaveTimeout = setTimeout(() => {
     carouselContainer.classList.remove('stick-left', 'stick-right');
-  }, 10);
+  }, 50);
 };
 
 const onCarouselHover = (event) => {
   const slide = event.target.closest('.elastic-carousel-item');
   if (!slide) return;
   handleVideoPlay(event);
+  clearTimeout(leaveTimeout);
+
   const slideIndex = slide.dataset.index * 1;
   const carouselContainer = event.target.closest('.elastic-carousel').querySelector('.elastic-carousel-container');
 
@@ -145,8 +146,6 @@ const buildSlide = ({ slide, index }) => {
     'aria-label': left.children[1]?.innerText,
   }, content);
 
-  slideEl.addEventListener('focus', onCarouselHover);
-  slideEl.addEventListener('blur', onCarouselLeave);
   slideEl.addEventListener('mouseleave', onSlideLeave);
   return slideEl;
 };

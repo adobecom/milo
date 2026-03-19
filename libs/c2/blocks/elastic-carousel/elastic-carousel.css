@@ -29,6 +29,7 @@ html[dir="rtl"] {
   --elastic-carousel-container-height-tablet: 572px;
   --elastic-carousel-item-max-width: 294px;
   --elastic-carousel-item-hover-grow-index: 1.75;
+  --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
   --slides: 5;
 
   height: var(--elastic-carousel-container-height-desktop);
@@ -76,6 +77,12 @@ html[dir="rtl"] {
           margin: 0;
           transition: color .1s ease;
           line-height: var(--s2a-font-line-height-18);
+          display: -webkit-box;
+            line-clamp: 1;
+            box-orient: vertical;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+            overflow: hidden;
         }
       }
 
@@ -194,7 +201,7 @@ html[dir="rtl"] {
     .elastic-carousel-container {
       --start-margin: 50%;
       /** animation */
-      animation: elasticCarouselSlideIn linear both;
+      animation: elasticCarouselSlideIn ease-out both;
       animation-timeline: view();
       animation-range: entry 0% exit 100%;
 
@@ -213,7 +220,6 @@ html[dir="rtl"] {
           background-color: var(--s2a-color-gray-1000);
           max-width: 496px;
           width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
-          outline: none;
 
           .elastic-carousel-item-footer p,
           .elastic-carousel-item-footer h1,h2,h3,h4,h5,h6,
@@ -239,13 +245,13 @@ html[dir="rtl"] {
 @media (width < 768px) {
   .elastic-carousel {
     --offset-adjuster: 50px;
-    --offset-scale: .75;
+    --offset-scale: .85;
     --last-offset: 2rem;
 
     height: auto;
     overflow: visible;
     padding-bottom: calc(var(--last-offset) * var(--offset-scale));
-    margin-top: calc(var(--offset-adjuster)/10);
+    padding-top: calc(var(--offset-adjuster) / var(--slides));
     margin-inline: var(--s2a-spacing-sm);
     .elastic-carousel-container {
       top: 0%;
@@ -264,8 +270,9 @@ html[dir="rtl"] {
         max-width: none;
         color: white;
         background: transparent;
+        
         /** animation */
-        animation: elasticMobileStackSlides linear both;
+        animation: elasticMobileStackSlides var(--paralax-easing) both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
@@ -275,7 +282,7 @@ html[dir="rtl"] {
           z-index: 1;
           --stack-contrast: 0;
           --stack-shrink: 4rem;
-          animation: elasticMobileStackSlidesIgnoreOpactity linear both;
+          animation: elasticMobileStackSlidesIgnoreOpactity var(--paralax-easing) both;
           animation-timeline: view();
           animation-range: entry 0% exit 100%;
         }
@@ -313,11 +320,13 @@ html[dir="rtl"] {
         }
 
         .elastic-carousel-item-container {
+          position: relative;
           background-color: var(--s2a-color-gray-1000);
           border-radius: var(--s2a-border-radius-md);
-          animation: elasticItemsShrink linear both;
+          animation: elasticItemsShrink var(--paralax-easing) both;
           animation-timeline: view();
-          animation-range: entry 0% exit 100%;
+          animation-range: entry 20% exit 100%;
+          overflow-x: clip;
 
           .elastic-carousel-item-header {
             padding: var(--s2a-spacing-lg);
@@ -373,20 +382,27 @@ html[dir="rtl"] {
 @keyframes elasticCarouselSlideIn {
   0% {
     margin-left: var(--start-margin);
+    opacity: 0;
   }
 
-  30% {
+  30% { 
     margin-left: 0%;
+    opacity: 1;
   }
 
   100% {
     margin-left: 0%;
+    opacity: 1;
   }
 }
 
 @keyframes elasticMobileStackSlidesIgnoreOpactity {
   0% {
     transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+  }
+
+  20% {
     filter: contrast(1);
   }
 
@@ -401,23 +417,25 @@ html[dir="rtl"] {
     filter: contrast(1);
     opacity: 0;
   }
+  
 
   10% {
     opacity: 1;
   }
 
+  20% {
+    filter: contrast(1);
+  }
+
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     filter: contrast(var(--stack-contrast));
+    
   }
 }
 
 @keyframes elasticItemsShrink {
   0% {
-    margin: 0
-  }
-
-  20% {
     margin: 0
   }
 
