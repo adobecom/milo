@@ -887,7 +887,6 @@ p {
 
 div.section:has(~ div.section.parallax-garage-door-reveal):not([class*="parallax-"]) {
   z-index: 1;
-  background-color: white;
 }
 
 div.section.parallax-garage-door-reveal {
@@ -959,10 +958,6 @@ div.section.parallax-move-up-fast {
   animation: text-reveal-up ease-out both;
   animation-timeline: view(block);
   animation-range: entry 46px cover 20%;
-}
-
-.section.parallax-move-up-fast ~ .section {
-  background-color: white;
 }
 
 @keyframes parallax-move-up-fast {
