@@ -77,11 +77,11 @@ html[dir="rtl"] {
           transition: color .1s ease;
           line-height: var(--s2a-font-line-height-18);
           display: -webkit-box;
-            line-clamp: 1;
-            box-orient: vertical;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 1;
-            overflow: hidden;
+          line-clamp: 1;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          overflow: hidden;
         }
       }
 
