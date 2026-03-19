@@ -912,7 +912,7 @@ div.section.parallax-garage-door-reveal {
 
 @keyframes garage-door-grow {
   from {
-    transform: translateY(-50vh) scaleY(0.9);
+    transform: translateY(-50vh) scaleY(0.8);
   }
   to {
     transform: translateY(0) scaleY(1);
@@ -921,7 +921,7 @@ div.section.parallax-garage-door-reveal {
 
 @keyframes garage-door-reveal {
   from {
-    margin-top: 180px;
+    margin-top: 35vh;
   }
 }
 
