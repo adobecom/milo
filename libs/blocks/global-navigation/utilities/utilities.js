@@ -64,7 +64,13 @@ export const darkIcons = {
   company: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="22" viewBox="0 0 24 22" fill="none"><path d="M14.2353 21.6209L12.4925 16.7699H8.11657L11.7945 7.51237L17.3741 21.6209H24L15.1548 0.379395H8.90929L0 21.6209H14.2353Z" fill="#FFFFFF"/></svg>',
 };
 
-export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
+export const lanaLog = ({
+  message,
+  e = '',
+  tags = 'default',
+  errorType,
+  severity,
+} = {}) => {
   const { locale = {} } = getConfig();
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
@@ -72,6 +78,7 @@ export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
     sampleRate: 1,
     tags,
     errorType,
+    severity,
   });
 };
 
@@ -117,11 +124,11 @@ export const logPerformance = (
   }
 };
 
-export const logErrorFor = async (fn, message, tags, errorType) => {
+export const logErrorFor = async (fn, message, tags, errorType, severity = 'error') => {
   try {
     await fn();
   } catch (e) {
-    lanaLog({ message, e, tags, errorType });
+    lanaLog({ message, e, tags, errorType, severity });
     throw new Error(e);
   }
 };

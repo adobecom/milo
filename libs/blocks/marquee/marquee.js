@@ -20,8 +20,10 @@ const blockTypeSizes = {
 };
 
 function decorateText(el, size) {
+  if (!el) return;
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
+  if (!heading) return;
   const config = blockTypeSizes.marquee[size];
   const decorate = (headingEl, typeSize) => {
     headingEl.classList.add(`heading-${typeSize[0]}`);
@@ -80,7 +82,10 @@ export async function loadMnemonicList(foreground) {
       .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
     await Promise.all([stylePromise, loadModule]);
   } catch (err) {
-    window.lana?.log(`Failed to load mnemonic list module: ${err}`);
+    window.lana?.log(`Failed to load mnemonic list module: ${err}`, {
+      tags: 'marquee',
+      severity: 'error',
+    });
   }
 }
 
@@ -147,6 +152,7 @@ function handleViewportOrder({ el, foreground, media: image, size }) {
   const isSplit = el.classList.contains('split');
   const content = isSplit ? el : foreground;
   const text = foreground.querySelector(':scope > .text');
+  if (!text) return;
   const mediaCredit = el.querySelector(':scope > .media-credit');
 
   const desktopOrder = [...content.children];
@@ -199,10 +205,17 @@ export default async function init(el) {
     children[0].classList.add('background');
     decorateBlockBg(el, children[0], { useHandleFocalpoint: true });
   }
+  if (!foreground) return;
   foreground.classList.add('foreground', 'container');
   const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
-  const text = headline.closest('div');
-  text.classList.add('text');
+  const foregroundDivs = [...foreground.querySelectorAll(':scope > div')];
+  const text = headline?.closest('div')
+    ?? foregroundDivs.find((div) => {
+      if (div.querySelector('picture, video, a[href*=".mp4"]')) return false;
+      return div.textContent?.trim().length || div.querySelector('mas-field, [is="inline-price"]');
+    })
+    ?? foregroundDivs[0];
+  text?.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
 
   if (media) {
@@ -214,11 +227,13 @@ export default async function init(el) {
   if (firstDivInForeground?.classList.contains('asset')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
-  decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
-  decorateText(text, size);
-  const iconArea = text.querySelector('.icon-area');
-  if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
-  extendButtonsClass(text);
+  if (text) {
+    decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
+    decorateText(text, size);
+    const iconArea = text.querySelector('.icon-area');
+    if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
+    extendButtonsClass(text);
+  }
   if (el.classList.contains('split')) decorateSplit(el, foreground, media);
 
   const promiseArr = [];
@@ -226,7 +241,7 @@ export default async function init(el) {
     promiseArr.push(loadMnemonicList(foreground));
   }
 
-  if (el.classList.contains('countdown-timer')) {
+  if (el.classList.contains('countdown-timer') && text) {
     promiseArr.push(loadCDT(text, el.classList));
   }
 
