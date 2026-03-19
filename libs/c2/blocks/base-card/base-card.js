@@ -31,7 +31,7 @@ function decorateCard(wrapper) {
   if (media.closest('.base-card.featured')) media.classList.add('parallax-featured-card-media');
   media.querySelector('picture').classList.add('parallax-scale-down');
   foreground.classList.add('foreground');
-  decorateBlockText(foreground);
+  decorateBlockText(foreground, ['md', 'md', 'md']);
   markStandaloneLinks(foreground);
   const firstCell = foreground.children[0];
   if (firstCell?.childElementCount !== 1 || firstCell?.firstElementChild?.tagName !== 'PICTURE') return;

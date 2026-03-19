@@ -61,22 +61,28 @@
 
     .standalone-link {
       color: var(--s2a-color-gray-1000);
-      text-decoration: none;
       font-size: var(--s2a-typography-font-size-body-sm);
       font-weight: var(--s2a-font-weight-adobe-clean-bold);
       line-height: var(--s2a-typography-line-height-body-xs);
+      text-decoration: none;
       position: relative;
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
+      margin-inline-end: var(--s2a-spacing-12);
 
       &::after {
         content: url('../../assets/img/arrow-right.svg');
-        display: inline-block;
-        margin-inline-start: var(--s2a-spacing-8);
+        position: absolute;
+        inset-inline-start: calc(100% + var(--s2a-spacing-8));
+        transition: inset-inline-start 0.2s ease;
+      }
+
+      &:hover::after {
+        inset-inline-start: calc(100% + var(--s2a-spacing-12));
       }
 
       [dir="rtl"] &::after {
-        transform: rotate(180deg);
+        transform: rotateY(180deg);
       }
     }
 
