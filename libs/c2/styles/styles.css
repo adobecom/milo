@@ -874,7 +874,8 @@ p {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [class*="parallax-"] {
+  [class*="parallax-"],
+  [class*="parallax-"] * {
     animation: none !important;
   }
 }
@@ -882,6 +883,55 @@ p {
 /* Variant definitions */
 .parallax-move-up {
   --parallax-translate-y: 100px;
+}
+
+div.section.parallax-move-up-fast {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  animation-name: parallax-move-up-fast;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: black;
+    opacity: 0;
+    pointer-events: none;
+    animation: fade-to-dark linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 80vh;
+    z-index: 2;
+  }
+}
+
+.section.text-reveal-up * {
+  animation: text-reveal-up ease-out both;
+  animation-timeline: view(block);
+  animation-range: entry 46px cover 20%;
+}
+
+.section.parallax-move-up-fast ~ .section {
+  background-color: white;
+  box-shadow: 0 -1px 0 0 white;
+}
+
+@keyframes parallax-move-up-fast {
+  from { transform: translateY(0); }
+  to { transform: translateY(-35vh); }
+}
+
+@keyframes fade-to-dark {
+  from { opacity: 0; }
+  to { opacity: 0.75; }
+}
+
+@keyframes text-reveal-up {
+  from { line-height: 4; }
 }
 
 .parallax-scale-up {
