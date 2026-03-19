@@ -921,34 +921,57 @@ div.section.parallax-garage-door-reveal {
   .foreground {
     animation: garage-door-reveal ease-out both;
     animation-timeline: view(block);
-    animation-range: entry 10% cover 100%;
+    animation-range: cover -40% cover 100%;
+    animation-name: garage-door-reveal-mobile;
+
+    @media (width >= 600px) {
+      animation-name: garage-door-reveal-tablet;
+    }
+  
+    @media (width >= 1200px) {
+      animation-name: garage-door-reveal;
+    }
+  
+    @media (width >= 1920px) {
+      animation-name: garage-door-reveal-desktop;
+    }
 
     * {
       animation: garage-door-line-height ease-out both;
       animation-timeline: view(block);
-      animation-range: entry 10% cover 100%;
+      animation-range: cover -40% cover 100%;
     }
   }
 }
 
 @keyframes garage-door-grow {
   from {
-    transform: translateY(-50vh) scaleY(0.8);
+    transform: translateY(-120vh);
   }
   to {
-    transform: translateY(0) scaleY(1);
+    transform: translateY(0);
   }
 }
 
+@keyframes garage-door-reveal-mobile {
+  from { margin-top: 20vh; }
+}
+
+@keyframes garage-door-reveal-tablet {
+  from { margin-top: 40vh; }
+}
+
 @keyframes garage-door-reveal {
-  from {
-    margin-top: 30vh;
-  }
+  from { margin-top: 60vh; }
+}
+
+@keyframes garage-door-reveal-desktop {
+  from { margin-top: 40vh; }
 }
 
 @keyframes garage-door-line-height {
   from {
-    line-height: 0.8;
+    line-height: 0.6;
   }
 }
 
