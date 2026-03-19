@@ -10,6 +10,7 @@ import {
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
 const URL_POSTXDM = 'https://14257-milocaasproxy.adobeio-static.net/api/v1/web/milocaas/postXDM';
+const URL_POSTXDM_DEV = 'https://14257-milocaasproxy-dev.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
@@ -615,18 +616,20 @@ const getCardMetadata = async (options) => {
 };
 
 const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) => {
+  const isDev = new URLSearchParams(window.location.search).get('caas-env') === 'dev';
+  const postXdmUrl = isDev ? URL_POSTXDM_DEV : URL_POSTXDM;
+  const resolvedEnv = isDev ? 'dev' : caasEnv;
   const options = {
     method: 'POST',
     body: JSON.stringify(caasProps),
     headers: {
       Authorization: `Bearer ${accessToken}`,
       draft: !!draftOnly,
-      'caas-env': caasEnv,
+      'caas-env': resolvedEnv,
     },
   };
-
   let response;
-  const res = await fetch(URL_POSTXDM, options);
+  const res = await fetch(postXdmUrl, options);
   if (res !== undefined) {
     const text = await res.text();
 
