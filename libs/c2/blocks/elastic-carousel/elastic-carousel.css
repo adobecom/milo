@@ -223,7 +223,7 @@ html[dir="rtl"] {
           .elastic-carousel-item-footer p,
           .elastic-carousel-item-footer h1,h2,h3,h4,h5,h6,
           .elastic-carousel-item-header p {
-            color: var(--s2a-color-gray-25);gst
+            color: var(--s2a-color-gray-25);
           }
 
           .elastic-carousel-item-footer:after {
