@@ -421,10 +421,6 @@ html[dir="rtl"] {
     margin: 0
   }
 
-  20% {
-    margin: 0
-  }
-
   100% {
     margin: 0 var(--stack-shrink);
   }
