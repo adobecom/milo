@@ -16,6 +16,7 @@
       }
 
       .icon {
+        display: block;
         width: var(--s2a-spacing-24);
         height: var(--s2a-spacing-24);
       }
