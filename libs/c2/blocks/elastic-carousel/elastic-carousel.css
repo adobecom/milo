@@ -36,6 +36,10 @@ html[dir="rtl"] {
   overflow: clip;
   margin: auto;
   
+  &.disable-hover {
+    pointer-events: none;
+  }
+  
   .elastic-carousel-container {
     display: flex;
     position: absolute;
@@ -366,6 +370,10 @@ html[dir="rtl"] {
   }
 
 
+  40% {
+    margin-inline: var(--end-gap);
+  }
+
   100% {
     margin-inline: var(--end-gap);
   }
@@ -377,13 +385,16 @@ html[dir="rtl"] {
     opacity: 0;
   }
 
-  20% { 
+  20% {
     opacity: 1;
- 
+  }
+
+  40% {
+    margin-left: 0;
   }
 
   100% {
-    
+    margin-left: 0;
     opacity: 1;
   }
 }
