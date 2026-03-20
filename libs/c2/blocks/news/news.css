@@ -9,7 +9,11 @@
       flex-direction: row;
       align-items: center;
       justify-content: flex-start;
-      gap: var(--s2a-spacing-xs);
+      gap: var(--s2a-spacing-md);
+
+      .headline-text .eyebrow:is(h1, h2, h3, h4, h5, h6, p) {  
+        font-family: var(--font-family-adobe-clean, "Adobe Clean");
+      }
 
       .icon {
         width: var(--s2a-spacing-24);
@@ -19,8 +23,7 @@
   }
 
   .news-item {
-    padding: var(--s2a-spacing-lg);
-    padding-top: var(--s2a-spacing-0);
+    padding: var(--s2a-spacing-0) var(--s2a-spacing-lg);
     height: 100%;
     box-sizing: border-box;
 
