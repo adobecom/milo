@@ -23,10 +23,10 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
   }
 
   function buildPathTester(sKey) {
-    const excludesDefaultKey = `EXCLUDE_PREVIEW_PATHS_PATTERN`;
-    const excludesKey = `${excludesDefaultKey}_${sKey}`;
+    const excludesKeyDef = `EXCLUDE_PREVIEW_PATHS_PATTERN`;
+    const excludesKey = `${excludesKeyDef}_${sKey}`;
     const includesKey = `INCLUDE_PREVIEW_PATHS_PATTERN_${sKey}`;
-    const excludeRegex = regExFromPattern(process.env[excludesKey]);
+    const excludeRegex = regExFromPattern(process.env[excludesKey] || process.env[excludesKeyDef]);
     const includeRegex = regExFromPattern(process.env[includesKey])
 
     return (path) => {
