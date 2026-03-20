@@ -29,17 +29,6 @@ const handleMobileAutoplay = (carousel) => {
   videos.forEach((video) => observer.observe(video));
 };
 
-const disableHoverOnScroll = (carousel) => {
-  let timer;
-  window.addEventListener('scroll', () => {
-    clearTimeout(timer);
-    carousel.classList.add('disable-hover');
-    timer = setTimeout(() => {
-      carousel.classList.remove('disable-hover');
-    }, 150);
-  });
-};
-
 const handleVideoPlay = (event) => {
   const slide = event.target.closest('.elastic-carousel-item');
   if (!slide) return;
@@ -162,7 +151,6 @@ const decorateCarousel = (carousel) => {
 
 export default async function init(el) {
   const decoratedCarousel = decorateCarousel(el);
-  disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
   decoratedCarousel.addEventListener('mouseover', onCarouselHover);
   handleMobileAutoplay(decoratedCarousel);
