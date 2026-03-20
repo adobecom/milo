@@ -294,7 +294,7 @@
   }
 
   .section:has(+ .section.parallax-move-up-fast) .rm-controls {
-    inset: auto 24px 64px;
+    inset: auto 24px var(--s2a-layout-sm);
   }
   
   /* this is needed to push the last card on the left side of the screen, on swipe */
@@ -347,7 +347,7 @@
   }
 
   .rm-controls {
-    padding: 0  0 64px 24px;
+    padding: 0  0 var(--s2a-layout-sm) 24px;
   }
 }
 
@@ -374,7 +374,7 @@
   }
 
   .rm-controls {
-    padding: 0 0 64px 8.333%;
+    padding: 0 0 var(--s2a-layout-sm) 8.333%;
   }
 }
 
@@ -411,7 +411,7 @@
   }
 
   .rm-controls {
-    padding: 0 8.333% 64px;
+    padding: 0 8.333% var(--s2a-layout-sm);
   }
 
   .rm-cards {
