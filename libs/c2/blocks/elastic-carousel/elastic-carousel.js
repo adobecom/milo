@@ -71,7 +71,7 @@ const onSlideLeave = (event) => {
       }
     }, 30);
   };
-  rewind(1.5);
+  rewind(1);
 };
 
 const onCarouselLeave = (event) => {

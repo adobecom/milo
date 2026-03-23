@@ -54,7 +54,7 @@ html[dir="rtl"] {
       background-color: var(--s2a-color-gray-75);
       border-radius: var(--s2a-border-radius-md);
       cursor: pointer;
-      transition: var(--elastic-carousel-transtions-slow), background-color .1s ease-in;
+      transition: width .1s ease-in, background-color .1s ease-in;
 
       .elastic-carousel-item-header {
         display: flex;
