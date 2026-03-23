@@ -699,7 +699,7 @@ describe('MEP Lingo Fragments', () => {
     expect(section.querySelector('.mep-lingo')).to.not.exist;
   });
 
-  it('removes mep-lingo content on regional page with empty string base', async () => {
+  it('keeps authored content on regional page with empty string base', async () => {
     const regionalLocale = {
       ...mepLingoLocale,
       base: '',
@@ -717,8 +717,8 @@ describe('MEP Lingo Fragments', () => {
     const textBlock = section.querySelector('.text');
     document.body.appendChild(section);
     await getFragment(a);
-    expect(textBlock.dataset.failed).to.equal('true');
-    expect(textBlock.dataset.reason).to.include('mep-lingo: not available');
+    expect(textBlock.textContent).to.include('Authored content');
+    expect(textBlock.textContent).to.not.include('mep-lingo');
   });
 
   it('keeps authored content when no regional targeting (lines 156-161)', async () => {
@@ -968,6 +968,53 @@ describe('MEP Lingo Fragments', () => {
     expect(section.querySelector('a')).to.be.null;
     expect(section.querySelector('.fragment')).to.be.null;
     section.remove();
+  });
+
+  it('block swap through loadArea skips already-decorated links on redecoration', async () => {
+    window.sessionStorage.setItem('akamai', 'ch');
+    stubQueryIndex();
+    const currentConfig = getConfig();
+    updateConfig({ ...currentConfig, locale: mepLingoLocale, useDotHtml: true });
+
+    const area = document.createElement('div');
+    area.innerHTML = `
+      <div>
+        <div class="text">
+          <div>
+            <div><p>Original content</p></div>
+          </div>
+          <div>
+            <div>mep-lingo</div>
+            <div><a href="/fragments/mep-lingo-test">swap</a></div>
+          </div>
+        </div>
+        <div>
+          <p><a href="https://www.youtube.com/watch?v=test123">video link</a></p>
+          <p><a href="http://localhost:2000/customer-success-stories">regular link</a></p>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(area);
+
+    await loadArea(area);
+
+    const section = area.querySelector('.section');
+    expect(section.textContent).to.include('MEP Lingo Fragment Content');
+
+    const ytLink = section.querySelector('a[href*="youtube"]');
+    expect(ytLink).to.exist;
+    expect(ytLink.classList.contains('link-block')).to.be.true;
+
+    const regularLink = section.querySelector('a[href*="customer-success"]');
+    expect(regularLink).to.exist;
+    expect(regularLink.classList.contains('link-block')).to.be.false;
+
+    const fragLink = section.querySelector('.fragment a[href*="customer-success"]');
+    expect(fragLink).to.exist;
+    expect(fragLink.getAttribute('href')).to.include('.html');
+    expect(fragLink.getAttribute('href')).to.not.include('.html.html');
+
+    area.remove();
   });
 });
 
@@ -1286,7 +1333,7 @@ describe('handleInvalidMepLingo', () => {
     handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
 
     expect(section.dataset.failed).to.equal('true');
-    expect(section.dataset.reason).to.include('section swap');
+    expect(section.dataset.reason).to.include('Failed loading mep-lingo row');
     section.remove();
   });
 
@@ -1316,11 +1363,11 @@ describe('handleInvalidMepLingo', () => {
     handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
 
     expect(block.dataset.failed).to.equal('true');
-    expect(block.dataset.reason).to.include('block swap');
+    expect(block.dataset.reason).to.include('Failed loading mep-lingo row');
     block.remove();
   });
 
-  it('marks mep-lingo block as failed without removing parent', () => {
+  it('skips marking mep-lingo block as failed (fallback.js handles it)', () => {
     const block = document.createElement('div');
     block.className = 'mep-lingo';
     const a = document.createElement('a');
@@ -1330,9 +1377,8 @@ describe('handleInvalidMepLingo', () => {
 
     handleInvalidMepLingo(a, { env: { name: 'stage' }, relHref: '/test' });
 
-    expect(block.dataset.failed).to.equal('true');
-    expect(block.dataset.reason).to.include('block');
-    expect(block.contains(a)).to.be.true; // parent not removed for mep-lingo block
+    expect(block.dataset.failed).to.be.undefined;
+    expect(block.contains(a)).to.be.true;
     block.remove();
   });
 
@@ -1360,22 +1406,22 @@ describe('handleInvalidMepLingo', () => {
 
     const failedDiv = parent.querySelector('[data-failed="true"]');
     expect(failedDiv).to.exist;
-    expect(failedDiv.dataset.reason).to.include('fragment not available');
+    expect(failedDiv.dataset.reason).to.include('Failed loading mep-lingo fragment.');
     parent.remove();
   });
 
-  it('includes inline in reason for inline fragments on non-prod', () => {
+  it('uses same reason for inline fragments on non-prod', () => {
     const parent = document.createElement('div');
     const a = document.createElement('a');
     a.href = '/fragments/test#_inline';
-    a.dataset.originalHref = '/fragments/test#_inline'; // Set original href for detection
+    a.dataset.originalHref = '/fragments/test#_inline';
     parent.appendChild(a);
     document.body.appendChild(parent);
 
     handleInvalidMepLingo(a, { env: { name: 'stage' } });
 
     const failedDiv = parent.querySelector('[data-failed="true"]');
-    expect(failedDiv.dataset.reason).to.include('inline');
+    expect(failedDiv.dataset.reason).to.equal('Failed loading mep-lingo fragment.');
     parent.remove();
   });
 });
@@ -1458,5 +1504,90 @@ describe('fetchFragment and fetchMepLingo', () => {
     });
     expect(fragment.dataset.mepLingoRoc).to.equal('/ch_de/fragments/test');
     expect(fragment.dataset.mepLingoRemove).to.equal('true');
+  });
+});
+
+describe('MEP Lingo Fallback (lingo not active)', () => {
+  let savedEnv;
+
+  afterEach(() => {
+    updateConfig({ ...getConfig(), env: savedEnv });
+  });
+
+  ['prod', 'stage'].forEach((envName) => {
+    describe(`on ${envName}`, () => {
+      beforeEach(() => {
+        savedEnv = getConfig().env;
+        updateConfig({ ...getConfig(), env: { name: envName } });
+      });
+
+      it('keeps block and removes only the mep-lingo row', async () => {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <div class="marquee">
+            <div><div>Marquee Content</div></div>
+            <div>
+              <div>mep-lingo</div>
+              <div><a href="/fragments/regional-marquee">swap</a></div>
+            </div>
+          </div>`;
+        document.body.appendChild(section);
+        const a = section.querySelector('a');
+
+        await getFragment(a);
+
+        const marquee = section.querySelector('.marquee');
+        expect(document.body.contains(marquee)).to.be.true;
+        const rows = marquee.querySelectorAll(':scope > div');
+        expect(rows.length).to.equal(1);
+        expect(rows[0].textContent).to.include('Marquee Content');
+        section.remove();
+      });
+
+      it('keeps section and removes mep-lingo row from section-metadata', async () => {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <div>Section Content</div>
+          <div class="section-metadata">
+            <div><div>style</div><div>dark</div></div>
+            <div>
+              <div>mep-lingo</div>
+              <div><a href="/fragments/regional-section">swap</a></div>
+            </div>
+          </div>`;
+        document.body.appendChild(section);
+        const a = section.querySelector('a');
+
+        await getFragment(a);
+
+        expect(document.body.contains(section)).to.be.true;
+        const sectionMetadata = section.querySelector('.section-metadata');
+        const metaRows = sectionMetadata.querySelectorAll(':scope > div');
+        expect(metaRows.length).to.equal(1);
+        expect(metaRows[0].querySelector('div').textContent).to.equal('style');
+        section.remove();
+      });
+
+      it('removes mep-lingo insert block when lingo not active', async () => {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <div class="mep-lingo insert">
+            <div>
+              <div>mep-lingo</div>
+              <div><a href="/fragments/insert-content">swap</a></div>
+            </div>
+          </div>`;
+        document.body.appendChild(section);
+        const a = section.querySelector('a');
+
+        await getFragment(a);
+
+        expect(section.querySelector('.mep-lingo')).to.be.null;
+        section.remove();
+      });
+    });
   });
 });

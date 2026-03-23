@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
@@ -526,5 +527,68 @@ describe('sendMktgTracking', () => {
     const config = getConfig();
     config.mep.consentState = { advertising: true };
     expect(sendMktgTracking('my-manifest', 'marketing decrease')).to.equal('my-manifest was served');
+  });
+});
+
+describe('analyticifseen', () => {
+  let observerCallback;
+  let observeStub;
+  let unobserveStub;
+  let originalIO;
+
+  before(() => {
+    originalIO = window.IntersectionObserver;
+    observeStub = stub();
+    unobserveStub = stub();
+    window.IntersectionObserver = function MockIO(callback) {
+      observerCallback = callback;
+      this.observe = observeStub;
+      this.unobserve = unobserveStub;
+    };
+  });
+
+  afterEach(() => {
+    observeStub.resetHistory();
+    unobserveStub.resetHistory();
+    delete window._satellite;
+  });
+
+  after(() => {
+    window.IntersectionObserver = originalIO;
+  });
+
+  it('should set up IntersectionObserver on target elements', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+    await loadManifestAndSetResponse('./mocks/manifestAnalyticIfSeen.json');
+    await init(mepSettings);
+    expect(observeStub.called).to.be.true;
+  });
+
+  it('should fire analytics and unobserve when element is intersecting', () => {
+    window._satellite = { track: stub() };
+    observerCallback([{ isIntersecting: true }]);
+    expect(window._satellite.track.calledOnce).to.be.true;
+    const [eventName, payload] = window._satellite.track.firstCall.args;
+    expect(eventName).to.equal('event');
+    expect(payload.xdm.web.webInteraction.name).to.equal('my-marquee-tracking was seen');
+    expect(unobserveStub.calledOnce).to.be.true;
+  });
+
+  it('should not fire analytics when element is not intersecting', () => {
+    window._satellite = { track: stub() };
+    observerCallback([{ isIntersecting: false }]);
+    expect(window._satellite.track.called).to.be.false;
+  });
+
+  it('should defer analytics to alloy_sendEvent when _satellite is unavailable', () => {
+    // Flush lingering alloy_sendEvent listeners left by earlier sendMktgTracking tests
+    window.dispatchEvent(new Event('alloy_sendEvent'));
+
+    observerCallback([{ isIntersecting: true }]);
+    window._satellite = { track: stub() };
+    window.dispatchEvent(new Event('alloy_sendEvent'));
+    expect(window._satellite.track.calledOnce).to.be.true;
+    const [, payload] = window._satellite.track.firstCall.args;
+    expect(payload.xdm.web.webInteraction.name).to.equal('my-marquee-tracking was seen');
   });
 });

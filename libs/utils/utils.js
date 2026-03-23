@@ -400,6 +400,10 @@ export const getFederatedContentRoot = () => {
     'https://news.adobe.com',
     'graybox.adobe.com',
   ];
+  const fedContFromMiloDomain = [
+    'https://acrobat.adobe.com',
+    'https://stage.acrobat.adobe.com',
+  ];
   const { allowedOrigins = [], origin: configOrigin } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
   // Non milo consumers will have its origin from config
@@ -411,8 +415,8 @@ export const getFederatedContentRoot = () => {
       ? originNoStage === o
       : originNoStage.endsWith(o);
   });
-
-  federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
+  if (fedContFromMiloDomain.includes(window.location.origin)) federatedContentRoot = 'https://milo.adobe.com';
+  else federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
     federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
@@ -549,6 +553,11 @@ export function isInTextNode(node) {
 export function lingoActive() {
   const langFirst = (PAGE_URL.searchParams.get('langfirst') || getMetadata('langfirst'))?.toLowerCase();
   return ['true', 'on'].includes(langFirst);
+}
+
+export function mepLingoSkipQI() {
+  const skip = (PAGE_URL.searchParams.get('mep-lingo-skip-qi') || getMetadata('mep-lingo-skip-qi'))?.toLowerCase();
+  return lingoActive() && ['true', 'on'].includes(skip);
 }
 
 export function createTag(tag, attributes, html, options = {}) {
@@ -758,7 +767,11 @@ function localizeLinkCore(
     const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
     let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
-    if (useAsync && extension !== 'json' && lingoActive()
+    const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
+    const qiResolved = queryIndexes[siteId]?.requestResolved;
+    const skipQueryIndex = isMepLingoFragment
+      && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
+    if (useAsync && extension !== 'json' && lingoActive() && !skipQueryIndex
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
           || (!!locale.regions && isMepLingoFragment))) {
       return (async () => {
@@ -789,6 +802,7 @@ function localizeLinkCore(
       })();
     }
 
+    if (skipQueryIndex && aTag) aTag.dataset.mepLingoSkippedQI = 'true';
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
@@ -1413,10 +1427,15 @@ function setupLinksDecoration(el) {
   return { config, anchors, hostname, href };
 }
 
+const decoratedLinks = new WeakSet();
+
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
+    if (decoratedLinks.has(a)) {
+      return a.classList.contains('link-block') ? a : null;
+    }
     if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
@@ -1428,6 +1447,7 @@ export async function decorateLinksAsync(el) {
         a,
       );
     }
+    decoratedLinks.add(a);
     return processLinkDecoration(a, config, hasDnt);
   });
 
@@ -1954,7 +1974,7 @@ async function decorateMeta(ignoreNames = []) {
   const contents = document.head.querySelectorAll('[content*=".hlx."]:not([data-localized]), [content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
   await Promise.all(Array.from(contents).map(async (meta) => {
     const name = meta.getAttribute('name') || meta.getAttribute('property');
-    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule')) return;
+    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule') || meta.getAttribute('http-equiv') === 'Content-Security-Policy') return;
     if (ignoreNames.includes(name)) return;
     try {
       const url = new URL(meta.content);
@@ -2409,9 +2429,9 @@ async function resolveHighPriorityFragments(section) {
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
-    const newlyDecoratedSection = await decorateSection(section.el, section.idx);
-    section.blocks = newlyDecoratedSection.blocks;
-    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+    const redecorated = await decorateSection(section.el, section.idx);
+    section.blocks = redecorated.blocks;
+    section.preloadLinks = redecorated.preloadLinks;
   }
 }
 

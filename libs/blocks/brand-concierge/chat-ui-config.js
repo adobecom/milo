@@ -38,7 +38,7 @@ export default {
   },
   disclaimer: {
     text: "Use of this beta AI chatbot is subject to Adobe's {Privacy Policy}. Don't share sensitive data. AI responses are not your Content, may be inaccurate, and any offers provided are non-binding. {Generative AI Terms}.",
-    threadText: 'AI responses may be inaccurate and any offers provided are non-binding. {Terms}.',
+    threadText: 'AI responses may be inaccurate and any offers provided are non-binding. {Generative AI Terms}.',
     links: [
       {
         text: 'Generative AI Terms',
@@ -86,12 +86,6 @@ export default {
       { text: 'How can I make a fillable, signable PDF contract?', icon: 'sparkleAI', backgroundColor: '#FFFFFF' },
       { text: 'How can I set up an online workspace for collaboration?', icon: 'sparkleAI', backgroundColor: '#FFFFFF' },
       { text: 'How can I keep brand assets consistent across teams?', icon: 'sparkleAI', backgroundColor: '#FFFFFF' },
-    ],
-    'welcome.pillExamples': [
-      { text: 'What solutions help with content supply chain demands' },
-      { text: 'How do Adobe products integrate with other solutions' },
-      { text: 'How can I create professional quality videos' },
-      { text: 'How can I add a signature to a PDF' },
     ],
     'feedback.positive.options': [
       'Helpful and relevant recommendations',
