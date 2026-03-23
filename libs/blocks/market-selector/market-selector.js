@@ -138,8 +138,11 @@ function getMarketLabel(market, langKey) {
 }
 
 function getCurrentMarket(markets, currentMarketCode, currentLang) {
-  return markets.find((market) => market.marketCode === currentMarketCode)
-    || markets.find((market) => market.marketCode === currentLang.defaultMarket)
+  const supportedRegions = currentLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
+  return markets.find((market) => (market.marketCode?.toLowerCase() || '') === (currentMarketCode || '').toLowerCase())
+    || markets.find((market) => (market.marketCode?.toLowerCase() || '') === (currentLang.defaultMarket || '').toLowerCase())
+    || markets.find((market) => supportedRegions.includes(market.marketCode?.toLowerCase()))
+    || markets.find((market) => market.marketCode?.toLowerCase() === 'us')
     || markets[0];
 }
 
@@ -705,7 +708,7 @@ export default async function init(block) {
     marketOptions,
     onMarketSelect,
     labels.noResultMarket,
-    (item) => item.value === currentMarketCode,
+    (item) => (item.value?.toLowerCase() || '') === (currentMarket.marketCode?.toLowerCase() || ''),
     filterMarket,
     false,
     'market-selector',
