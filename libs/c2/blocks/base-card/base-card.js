@@ -1,4 +1,4 @@
-import { decorateBlockText } from '../../../utils/decorate.js';
+import { decorateAnchorVideo, decorateBlockText } from '../../../utils/decorate.js';
 import { getFederatedUrl } from '../../../utils/utils.js';
 
 const VIEWPORT_LABELS = ['mobile', 'tablet', 'desktop'];
@@ -29,7 +29,12 @@ function decorateCard(wrapper) {
   if (!foreground || !media) return;
   media.classList.add('media');
   if (media.closest('.base-card.featured')) media.classList.add('parallax-featured-card-media');
-  media.querySelector('picture').classList.add('parallax-scale-down');
+  const videoAnchor = media.querySelector('a[href*=".mp4"]');
+  if (videoAnchor) {
+    videoAnchor.classList.add('hide');
+    decorateAnchorVideo({ src: videoAnchor.href, anchorTag: videoAnchor });
+  }
+  media.querySelector('picture')?.classList.add('parallax-scale-down');
   foreground.classList.add('foreground');
   decorateBlockText(foreground, ['md', 'md', 'md']);
   markStandaloneLinks(foreground);

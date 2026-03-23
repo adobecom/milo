@@ -42,7 +42,8 @@
       height: 100%;
     }
 
-    picture:not(.icon) img {
+    picture:not(.icon) img,
+    video {
       width: 100%;
       object-fit: cover;
       aspect-ratio: 4/3;
@@ -126,7 +127,8 @@
       display: flex;
     }
 
-    .media picture:not(.icon) img {
+    .media picture:not(.icon) img,
+    .media video {
       aspect-ratio: 4/3;
     }
 
@@ -157,7 +159,8 @@
         }
       }
 
-      .media picture:not(.icon) img {
+      .media picture:not(.icon) img,
+      .media video {
         aspect-ratio: 2.2/1;
       }
     }
