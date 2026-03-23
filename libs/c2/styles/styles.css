@@ -619,25 +619,25 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
 
 h1, .title-1 {
   font-size: var(--s2a-typography-font-size-title-1);
-  line-height: var(--s2a-typography-line-height-title-1);
+  /* line-height: var(--s2a-typography-line-height-title-1); */
   letter-spacing: var(--s2a-typography-letter-spacing-title-1);
 }
 
 h2, .title-2 {
   font-size: var(--s2a-typography-font-size-title-2);
-  line-height: var(--s2a-typography-line-height-title-2);
+  /* line-height: var(--s2a-typography-line-height-title-2); */
   letter-spacing: var(--s2a-typography-letter-spacing-title-2);
 }
 
 h3, .title-3 {
   font-size: var(--s2a-typography-font-size-title-3);
-  line-height: var(--s2a-typography-line-height-title-3);
+  /* line-height: var(--s2a-typography-line-height-title-3); */
   letter-spacing: var(--s2a-typography-letter-spacing-title-3);
 }
 
 h4, .title-4 {
   font-size: var(--s2a-typography-font-size-title-4);
-  line-height: var(--s2a-typography-line-height-title-4);
+  /* line-height: var(--s2a-typography-line-height-title-4); */
   letter-spacing: var(--s2a-typography-letter-spacing-title-4);
 }
 
@@ -808,8 +808,7 @@ p {
   }
 
 
-  &.l-button,
-  &.button-l {
+  &.button-lg {
     min-height: var(--s2a-spacing-2xl);
     border-radius: 75px;
     padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);

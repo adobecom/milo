@@ -94,8 +94,8 @@ const decorateCtas = (textCol) => {
   cta.classList.add('rm-ctas', 'dark');
   const primary = cta.querySelector('em > strong a');
   const secondary = cta.querySelector('em > a');
-  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'button-l', 'outline');
-  secondary?.classList.add('con-button', 'button-l', 'outline');
+  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'button-lg', 'outline');
+  secondary?.classList.add('con-button', 'button-lg', 'outline');
   cta.replaceChildren(...[primary, secondary].filter(Boolean));
 };
 
