@@ -7,10 +7,6 @@
   position: relative;
 }
 
-html.feds-footer-in-view body {
-  background: var(--s2a-color-gray-1000);
-}
-
 .global-footer ul {
   list-style-type: none;
 }
