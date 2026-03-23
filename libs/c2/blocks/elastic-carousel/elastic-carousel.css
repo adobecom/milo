@@ -30,6 +30,7 @@ html[dir="rtl"] {
   --elastic-carousel-item-max-width: 294px;
   --elastic-carousel-item-hover-grow-index: 1.75;
   --slides: 5;
+  --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
 
   height: var(--elastic-carousel-container-height-desktop);
   position: relative;
@@ -191,7 +192,7 @@ html[dir="rtl"] {
 }
 
 /** tablet up */
-@media (width > 768px) {
+@media (width >= 768px) {
   .elastic-carousel {
 
     &.disable-hover {
