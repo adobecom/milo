@@ -92,11 +92,11 @@ const decorateText = (textCol) => {
 const decorateCtas = (textCol) => {
   const cta = textCol.querySelector('p:has(em)');
   if (!cta) return;
-  cta.classList.add('rm-ctas');
+  cta.classList.add('rm-ctas', 'dark');
   const primary = cta.querySelector('em > strong a');
   const secondary = cta.querySelector('em > a');
-  primary?.classList.add('con-button', 'rm-cta-primary');
-  secondary?.classList.add('con-button');
+  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'button-lg', 'outline');
+  secondary?.classList.add('con-button', 'button-lg', 'outline');
   cta.replaceChildren(...[primary, secondary].filter(Boolean));
 };
 
@@ -221,6 +221,19 @@ const fireAnalytic = (card, type = 'auto') => {
   sendAnalytics(analyticText);
 };
 
+const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
+
+const setAriaHiddenAndTabIndex = (slides) => {
+  slides.forEach((slide) => {
+    const isActive = slide.classList.contains('is-active');
+    slide.setAttribute('aria-hidden', String(!isActive));
+    slide.setAttribute('tabindex', isActive ? '0' : '-1');
+    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
+      el.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
+  });
+};
+
 const startAutoplay = (slides, cards, container, block) => {
   const cardEls = [...cards.children];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
@@ -279,6 +292,7 @@ const startAutoplay = (slides, cards, container, block) => {
     newSlide.style.pointerEvents = 'auto';
     newSlide.classList.add('is-active');
     pendingSlide = null;
+    setAriaHiddenAndTabIndex([oldSlide, newSlide]);
 
     animateBgShift(
       oldSlide.querySelector('.rm-background'),
@@ -426,6 +440,7 @@ const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   slides.forEach((slide) => decorateSlide(slide));
   slides[0]?.classList.add('is-active');
+  setAriaHiddenAndTabIndex(slides);
   const cards = buildCards(slides);
   cards.children[0]?.classList.add('is-active');
   const controls = createTag('div', { class: 'rm-controls' });

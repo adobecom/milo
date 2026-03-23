@@ -123,6 +123,8 @@ export async function closeModal(modal, shouldFocusTriggerEl = true) {
 
   if (!document.querySelectorAll('.modal-curtain').length) {
     document.body.classList.remove('disable-scroll');
+    /** Restore lenis behaviour on modal close */
+    window.lenis?.start();
   }
 
   [...document.querySelectorAll('header, main, footer')]
@@ -156,7 +158,7 @@ function isElementInView(element) {
 
 function getCustomModal(custom, dialog) {
   const { miloLibs, codeRoot } = getConfig();
-  loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
+  loadStyle(`${miloLibs || codeRoot}/c2/blocks/modal/modal.css`);
   if (custom.id) dialog.id = custom.id;
   if (custom.title) dialog.setAttribute('aria-label', custom.title);
   if (custom.class) dialog.classList.add(custom.class);
@@ -280,6 +282,8 @@ export async function getModal(details, custom) {
 
   if (!dialog.classList.contains('curtain-off')) {
     document.body.classList.add('disable-scroll');
+    /** Stop lenis behaviour on modal open */
+    window.lenis?.stop();
     const curtain = createTag('div', {
       class: 'modal-curtain is-open',
       'daa-ll': `${analyticsEventName}:modalClose:curtainClose`,

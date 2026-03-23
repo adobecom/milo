@@ -65,12 +65,12 @@
         }
 
         .rich-content {
+          --content-gap: 0px;
           width: 100%;
           .foreground {
             padding: var(--s2a-spacing-24);
             .content {
               max-width: 477px;
-              gap: 0;
               transition: opacity .5s ease-in-out;
               animation:  content-enter var(--animation-curve);
               animation-timeline: view();
@@ -99,12 +99,7 @@
                 }
               }
             }
-
-            .action-area {
-              margin-top: var(--s2a-spacing-24);
-            }
           }
-
         }
         .section-background img {
           border-radius: var(--s2a-border-radius-16);
