@@ -246,7 +246,7 @@ html[dir="rtl"] {
   .elastic-carousel {
     --offset-adjuster: 50px;
     --offset-scale: .85;
-    --last-offset: 2rem;
+    --last-offset: 3rem;
 
     height: auto;
     overflow: visible;
@@ -267,7 +267,7 @@ html[dir="rtl"] {
         position: sticky;
         top: 18%;
         width: 100%;
-        max-width: none;
+        max-width: 100%;
         color: white;
         background: transparent;
         
@@ -281,31 +281,31 @@ html[dir="rtl"] {
           --stack-offset: 0rem;
           z-index: 1;
           --stack-contrast: 0;
-          --stack-shrink: 4rem;
+          --stack-shrink: 3rem;
           animation: elasticMobileStackSlidesIgnoreOpactity var(--paralax-easing) both;
           animation-timeline: view();
           animation-range: entry 0% exit 100%;
         }
 
         &:nth-child(2) {
-          --stack-offset: .5rem;
+          --stack-offset: .75rem;
           z-index: 2;
           --stack-contrast: .25;
-          --stack-shrink: 3rem;
+          --stack-shrink: 2.25rem;
         }
 
         &:nth-child(3) {
-          --stack-offset: 1rem;
+          --stack-offset: 1.5rem;
           z-index: 3;
           --stack-contrast: .5;
-          --stack-shrink: 2rem;
+          --stack-shrink: 1.5rem;
         }
 
         &:nth-child(4) {
-          --stack-offset: 1.5rem;
+          --stack-offset: 2.25rem;
           z-index: 4;
           --stack-contrast: .75;
-          --stack-shrink: 1rem;
+          --stack-shrink: .75rem;
         }
 
         &:nth-child(5) {
@@ -404,15 +404,18 @@ html[dir="rtl"] {
   0% {
     transform: translateY(var(--stack-offset));
     filter: contrast(1);
+    opacity: 1;
   }
 
   20% {
     filter: contrast(1);
+    opacity: 1;
   }
 
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     filter: contrast(var(--stack-contrast));
+    opacity: .2;
   }
 }
 @keyframes elasticMobileStackSlides {
