@@ -907,7 +907,7 @@ p {
   --parallax-translate-y: 100px;
 }
 
-div.section:has(~ div.section.parallax-garage-door-reveal):not([class*="parallax-"]) {
+div.section:has(~ div.section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;
 }
 
@@ -922,19 +922,7 @@ div.section.parallax-garage-door-reveal {
     animation: garage-door-reveal ease-out both;
     animation-timeline: view(block);
     animation-range: cover -40% cover 100%;
-    animation-name: garage-door-reveal-mobile;
-
-    @media (width >= 600px) {
-      animation-name: garage-door-reveal-tablet;
-    }
-  
-    @media (width >= 1200px) {
-      animation-name: garage-door-reveal;
-    }
-  
-    @media (width >= 1920px) {
-      animation-name: garage-door-reveal-desktop;
-    }
+    animation-name: garage-door-reveal;
 
     * {
       animation: garage-door-line-height ease-out both;
@@ -953,20 +941,8 @@ div.section.parallax-garage-door-reveal {
   }
 }
 
-@keyframes garage-door-reveal-mobile {
-  from { margin-top: 20vh; }
-}
-
-@keyframes garage-door-reveal-tablet {
-  from { margin-top: 40vh; }
-}
-
 @keyframes garage-door-reveal {
   from { margin-top: 60vh; }
-}
-
-@keyframes garage-door-reveal-desktop {
-  from { margin-top: 40vh; }
 }
 
 @keyframes garage-door-line-height {
