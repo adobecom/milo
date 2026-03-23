@@ -598,15 +598,6 @@ export default async function init(el) {
     decorateCards(el, cards);
     decorateLegal(el, legal);
   }
-  if (variants.isFloatingButton) {
-    decorateFloatingButton(el);
-  }
-  if (variants.isFloatingButtonOnly) {
-    rows.forEach((row) => {
-      el.removeChild(row);
-    });
-    decorateFloatingButton(el);
-  }
 
   // Testing only: Remove before contributing
   const { env } = getConfig();

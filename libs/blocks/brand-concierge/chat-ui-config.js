@@ -63,7 +63,6 @@ export default {
   env: 'prod',
   text: {
     'welcome.heading': 'Find the right app to bring your ideas to life.',
-    'welcome.subheading': 'Choose an option or tell us what interests you and we\'ll point you in the right direction.',
     'input.placeholder': 'Ask a question',
     'input.messageInput.aria': 'Message input',
     'input.send.aria': 'Send message',
