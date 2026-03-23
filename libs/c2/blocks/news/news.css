@@ -9,9 +9,14 @@
       flex-direction: row;
       align-items: center;
       justify-content: flex-start;
-      gap: var(--s2a-spacing-xs);
+      gap: var(--s2a-spacing-md);
+
+      .headline-text .eyebrow:is(h1, h2, h3, h4, h5, h6, p) {  
+        font-family: var(--font-family-adobe-clean, "Adobe Clean");
+      }
 
       .icon {
+        display: block;
         width: var(--s2a-spacing-24);
         height: var(--s2a-spacing-24);
       }
@@ -19,12 +24,11 @@
   }
 
   .news-item {
-    padding: var(--s2a-spacing-lg);
-    padding-top: var(--s2a-spacing-0);
+    padding: var(--s2a-spacing-0) var(--s2a-spacing-lg);
     height: 100%;
     box-sizing: border-box;
 
-    & > .foreground {
+    > .foreground {
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -54,19 +58,23 @@
 }
 
 @media screen and (width < 768px) {
-  .news.three-up, .news.four-up {
+  body .news {
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-2xl);
+    padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
 
     .news-headline {
       padding: var(--s2a-spacing-0);
       margin-bottom: var(--s2a-spacing-0);
     }
 
-    .news-item {
-      max-width: calc(100% - var(--s2a-spacing-lg));
-      padding: var(--s2a-spacing-0);
+    .news-items {
+      gap: var(--s2a-spacing-2xl);
+
+      .news-item {
+        padding: var(--s2a-spacing-0);
+      }
     }
   }
 }
