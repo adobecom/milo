@@ -912,6 +912,7 @@ div.section:has(~ div.section.parallax-garage-door-reveal):not(.parallax-move-up
 }
 
 div.section.parallax-garage-door-reveal {
+  overflow: clip;
   transform-origin: top center;
   animation: garage-door-grow-mobile ease-out both;
   animation-timeline: view(block);
@@ -935,7 +936,7 @@ div.section.parallax-garage-door-reveal {
   .section-background img {
     animation: garage-door-bg-scale ease-out both;
     animation-timeline: view(block);
-    animation-range: entry 0% cover 50%;
+    animation-range: entry 0% cover 100%;
   }
 
   .foreground {
