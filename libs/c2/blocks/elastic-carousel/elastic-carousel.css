@@ -247,6 +247,7 @@ html[dir="rtl"] {
     --offset-adjuster: 50px;
     --offset-scale: .85;
     --last-offset: 2.5rem;
+    --offset-variance-index: -2px;
 
     height: auto;
     overflow: visible;
@@ -278,7 +279,7 @@ html[dir="rtl"] {
 
         /** if we go with dynamic amount of slides, below stuff can be moved to JS */
         &:nth-child(1) {
-          --stack-offset: 0rem;
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 5) - var(--offset-variance-index) * 5);
           --stack-contrast: 0;
           --stack-shrink: 3rem;
           z-index: 1;
@@ -288,28 +289,28 @@ html[dir="rtl"] {
         }
 
         &:nth-child(2) {
-          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4));
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4) - var(--offset-variance-index) * 4);
           z-index: 2;
           --stack-contrast: .25;
           --stack-shrink: 2.25rem;
         }
 
         &:nth-child(3) {
-          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 3));
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 3) - var(--offset-variance-index) * 3);
           z-index: 3;
           --stack-contrast: .5;
           --stack-shrink: 1.5rem;
         }
 
         &:nth-child(4) {
-          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 2));
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 2) - var(--offset-variance-index) * 2);
           z-index: 4;
           --stack-contrast: .75;
           --stack-shrink: .75rem;
         }
 
         &:nth-child(5) {
-          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 1));
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 1) - var(--offset-variance-index));
           z-index: 5;
           --stack-contrast: 1;
           --stack-shrink: 0rem;
