@@ -2073,8 +2073,7 @@ async function loadPostLCP(config) {
     ]);
     const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
-    // eslint-disable-next-line no-unused-vars
-    const lenis = new window.Lenis({
+    window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
