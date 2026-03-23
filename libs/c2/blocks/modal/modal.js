@@ -121,12 +121,6 @@ export async function closeModal(modal, shouldFocusTriggerEl = true) {
     focusTriggerElement(mod.id, shouldFocusTriggerEl);
   });
 
-  if (!document.querySelectorAll('.modal-curtain').length) {
-    document.body.classList.remove('disable-scroll');
-    /** Restore lenis behaviour on modal close */
-    window.lenis?.start();
-  }
-
   [...document.querySelectorAll('header, main, footer')]
     .forEach((element) => element.removeAttribute('aria-disabled'));
 
