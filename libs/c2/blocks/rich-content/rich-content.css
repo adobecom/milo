@@ -24,10 +24,6 @@
     position: relative;
     z-index: 2;
 
-    :is(h1, h2, h3, h4, h5, h6) {
-      line-height: 1;
-    }
-
     [class*="body-"]:not(.action-area) {
       max-width: 680px;
     }
@@ -46,13 +42,19 @@
   }
 }
 
-.section.has-background:has(.rich-content.hero) .section-background {
-  max-width: 100vw;
-  margin: 0 auto;
-  z-index: 1;
+.section {
+  &:has(.rich-content.hero) {
+    box-sizing: border-box;
+    height: 640px;
+    &.has-background .section-background {
+      max-width: 100vw;
+      margin: 0 auto;
+      z-index: 1;
 
-  img {
-    object-position: top center;
+      img {
+        object-position: top center;
+      }
+    }
   }
 }
 
@@ -73,6 +75,10 @@
 }
 
 @media (width >= 1024px) {
+  .section:has(.rich-content.hero) {
+    height: 1040px;
+  }
+
   .rich-content {
     &.hero {
       height: 1040px;

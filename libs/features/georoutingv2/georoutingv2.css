@@ -167,7 +167,7 @@ html:has(meta[name="foundation"][content="c2"]) {
       padding: var(--s2a-spacing-lg);
 
       &:not(:has(.tabs)) {
-        padding: calc(var(--s2a-spacing-lg) + (2 * var(--s2a-spacing-xs)) + var(--locale-modal-close-size)) calc(2 * var(--s2a-spacing-lg)) calc(2* var(--s2a-spacing-lg));
+        padding: calc(var(--s2a-spacing-lg) + (2 * var(--s2a-spacing-xs)) + var(--dialog-modal-close-size)) calc(2 * var(--s2a-spacing-lg)) calc(2* var(--s2a-spacing-lg));
 
         h3 {
           padding-top: var(--s2a-spacing-lg);
@@ -191,13 +191,13 @@ html:has(meta[name="foundation"][content="c2"]) {
     /* c2 styles for tabs */
     .tabs {
       .paddle {
-        top: calc(var(--s2a-spacing-xs) + var(--locale-modal-close-size) + var(--s2a-spacing-lg));
+        top: calc(var(--s2a-spacing-xs) + var(--dialog-modal-close-size) + var(--s2a-spacing-lg));
         margin: 0;
         height: 52px;
       }
 
       div[role="tablist"] {
-        padding: calc(var(--s2a-spacing-xs) + var(--locale-modal-close-size) + var(--s2a-spacing-lg)) 0 var(--s2a-spacing-xs);
+        padding: calc(var(--s2a-spacing-xs) + var(--dialog-modal-close-size) + var(--s2a-spacing-lg)) 0 var(--s2a-spacing-xs);
 
         .tab-list-container {
           margin: 0;
@@ -368,7 +368,7 @@ html:has(meta[name="foundation"][content="c2"]) {
 
         div[role="tablist"] {
           padding: var(--s2a-spacing-xs) 0;
-          width: calc(100% - var(--s2a-spacing-lg) - var(--locale-modal-close-size));
+          width: calc(100% - var(--s2a-spacing-lg) - var(--dialog-modal-close-size));
         }
       }
       /* c2 styles for tabs */

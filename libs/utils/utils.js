@@ -2072,8 +2072,12 @@ async function loadPostLCP(config) {
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
     const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
-    // eslint-disable-next-line no-unused-vars
-    const lenis = new window.Lenis({ autoRaf: true, lerp });
+    const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
+    window.lenis = new window.Lenis({
+      autoRaf: true,
+      lerp,
+      prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
+    });
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
