@@ -912,25 +912,23 @@ div.section:has(~ div.section.parallax-garage-door-reveal):not(.parallax-move-up
 }
 
 div.section.parallax-garage-door-reveal {
+  --gd-grow-from: -50vh;
+  --gd-reveal-from: 20vh;
   overflow: clip;
   transform-origin: top center;
-  animation: garage-door-grow-mobile ease-out both;
+  animation: garage-door-grow ease-out both;
   animation-timeline: view(block);
   animation-range: entry 0% cover 40%;
-  animation-fill-mode: both;
 
   @media (width >= 1280px) {
-    animation: garage-door-grow ease-out both;
-    animation-timeline: view(block);
+    --gd-grow-from: -110vh;
+    --gd-reveal-from: 50vh;
     animation-range: entry 0% cover 50%;
-    animation-fill-mode: both;
   }
 
   @media (width >= 1920px) {
-    animation: garage-door-grow-desktop ease-out both;
-    animation-timeline: view(block);
-    animation-range: entry 0% cover 50%;
-    animation-fill-mode: both;
+    --gd-grow-from: -70vh;
+    --gd-reveal-from: 30vh;
   }
 
   .section-background img {
@@ -942,23 +940,9 @@ div.section.parallax-garage-door-reveal {
   .foreground {
     z-index: 1;
     position: relative;
-    animation: garage-door-reveal-mobile ease-out both;
+    animation: garage-door-reveal ease-out both;
     animation-timeline: view(block);
     animation-range: cover -10% cover 100%;
-
-    @media (width >= 1280px) {
-      animation: garage-door-reveal ease-out both;
-      animation-timeline: view(block);
-      animation-range: cover -10% cover 100%;
-      animation-fill-mode: both;
-    }
-
-    @media (width >= 1920px) {
-      animation: garage-door-reveal-desktop ease-out both;
-      animation-timeline: view(block);
-      animation-range: cover -10% cover 100%;
-      animation-fill-mode: both;
-    }
 
     * {
       animation: garage-door-line-height ease-out both;
@@ -968,43 +952,13 @@ div.section.parallax-garage-door-reveal {
   }
 }
 
-@keyframes garage-door-grow-mobile {
-  from {
-    transform: translateY(-40vh);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
 @keyframes garage-door-grow {
-  from {
-    transform: translateY(-120vh);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes garage-door-grow-desktop {
-  from {
-    transform: translateY(-70vh);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes garage-door-reveal-mobile {
-  from { transform: translateY(20vh); }
+  from { transform: translateY(var(--gd-grow-from)); }
+  to { transform: translateY(0); }
 }
 
 @keyframes garage-door-reveal {
-  from { transform: translateY(60vh); }
-}
-
-@keyframes garage-door-reveal-desktop {
-  from { transform: translateY(30vh); }
+  from { transform: translateY(var(--gd-reveal-from)); }
 }
 
 @keyframes garage-door-bg-scale {
