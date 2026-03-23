@@ -389,6 +389,7 @@ function isSlideVisible(currentIdx, targetIdx, n, isNext) {
   return currentIdx === prev || currentIdx === targetIdx || currentIdx === next;
 }
 
+// Skip focus on touch events to prevent the browser from scrolling the page
 function focusNavButton(button, event) {
   if (event.type === 'touchend') return;
   button.focus({ preventScroll: true });
