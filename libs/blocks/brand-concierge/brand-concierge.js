@@ -605,8 +605,9 @@ export default async function init(el) {
   }
 
   // Testing only: Remove before contributing
-  const { env } = getConfig();
-  if (env.name !== 'prod') {
+
+  const loginTestButton = params.get('susi-test-btn');
+  if (loginTestButton) {
     const button = document.createElement('button');
     button.textContent = 'Click me to open SUSI Light (testing only)';
     button.onclick = openSusiLightModal;
