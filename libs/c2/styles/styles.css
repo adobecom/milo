@@ -947,7 +947,7 @@ div.section.parallax-garage-door-reveal {
     * {
       animation: garage-door-line-height ease-out both;
       animation-timeline: view(block);
-      animation-range: cover -10% cover 100%;
+      animation-range: cover 40% cover 100%;
     }
   }
 }
@@ -968,7 +968,7 @@ div.section.parallax-garage-door-reveal {
 
 @keyframes garage-door-line-height {
   from {
-    line-height: 0.5;
+    line-height: 0.8;
   }
 }
 
