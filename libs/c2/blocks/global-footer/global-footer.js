@@ -486,8 +486,8 @@ class Footer {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
       regionPickerElem.href = url.hash;
-      loadStyle(`${base}/blocks/modal/modal.css`);
-      const { default: initModal } = await import('../../../blocks/modal/modal.js');
+      loadStyle(`${base}/c2/blocks/modal/modal.css`);
+      const { default: initModal } = await import('../../blocks/modal/modal.js');
       const modal = await initModal(regionPickerElem);
 
       const loadRegionNav = async () => {
