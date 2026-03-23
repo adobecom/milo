@@ -808,8 +808,7 @@ p {
   }
 
 
-  &.l-button,
-  &.button-l {
+  &.button-lg {
     min-height: var(--s2a-spacing-2xl);
     border-radius: 75px;
     padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
