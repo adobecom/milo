@@ -185,7 +185,7 @@ function handlePrevious(previousElment, elements) {
   return elements[elements.length - 1];
 }
 
-async function waitImgReady(img) {
+export async function waitImgReady(img) {
   if (!img) return;
 
   if (!img.complete) {
