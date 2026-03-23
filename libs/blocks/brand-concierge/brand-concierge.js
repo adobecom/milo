@@ -252,6 +252,10 @@ async function openChatModal(initialMessage, el) {
 
   await loadScript(src);
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const testParam = urlParams.get('test');
+  const useTestInstance = env?.name !== 'prod' && (testParam === 'cts' || testParam === 'cjm');
+  const instanceName = useTestInstance ? 'alloy2' : 'alloy';
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;
   const { userAgent, language } = window.navigator;
@@ -291,7 +295,7 @@ async function openChatModal(initialMessage, el) {
 
   if (bootstrapAPIReady) {
     window.adobe.concierge.bootstrap({
-      instanceName: 'alloy',
+      instanceName,
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
       onBeforeEventSend,
