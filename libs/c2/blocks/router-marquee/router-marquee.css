@@ -90,56 +90,8 @@
   display: flex;
   gap: 8px;
   margin: 16px 0 0;
-}
 
-.router-marquee .con-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 24px;
-  border-radius: 999px;
-  border: 1px solid #fff;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 18px;
-  letter-spacing: 0;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background-color 300ms cubic-bezier(0.42, 0, 0, 1),
-              border-color 300ms cubic-bezier(0.42, 0, 0, 1),
-              color 300ms cubic-bezier(0.42, 0, 0, 1);
-}
-
-.rm-cta-primary {
-  background: rgba(255, 255, 255, 1);
-  color: #000;
-  border-color: transparent;
-}
-
-.rm-cta-primary:hover {
-  background: rgba(255, 255, 255, 0.64);
-  color: #000;
-}
-
-.rm-cta-primary:active {
-  background: rgba(255, 255, 255, 1);
-}
-
-.rm-ctas .con-button:not(.rm-cta-primary) {
-  background: transparent;
-  color: #fff;
-  border: 1px solid #fff;
-}
-
-.rm-ctas .con-button:not(.rm-cta-primary):hover {
-  background: rgba(255, 255, 255, 0.64);
-  color: #000;
-  border-color: transparent;
-}
-
-.rm-ctas .con-button:not(.rm-cta-primary):active {
-  background: rgba(255, 255, 255, 1);
-  color: #000;
+  &.dark { background-color: unset; }
 }
 
 .rm-controls {

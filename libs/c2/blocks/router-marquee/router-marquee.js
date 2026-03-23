@@ -91,11 +91,11 @@ const decorateText = (textCol) => {
 const decorateCtas = (textCol) => {
   const cta = textCol.querySelector('p:has(em)');
   if (!cta) return;
-  cta.classList.add('rm-ctas');
+  cta.classList.add('rm-ctas', 'dark');
   const primary = cta.querySelector('em > strong a');
   const secondary = cta.querySelector('em > a');
-  primary?.classList.add('con-button', 'rm-cta-primary');
-  secondary?.classList.add('con-button');
+  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'button-l', 'outline');
+  secondary?.classList.add('con-button', 'button-l', 'outline');
   cta.replaceChildren(...[primary, secondary].filter(Boolean));
 };
 
