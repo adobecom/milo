@@ -11,6 +11,13 @@ import {
 } from '../../utils/utils.js';
 import { getMarketConfig, getValidatedMarket, norm } from '../../utils/market.js';
 
+window.addEventListener('pageshow', (event) => {
+  // reload the page to avoid bfcache issues.
+  if (event.persisted && document.querySelector('.market-selector-dropdown')) {
+    window.location.reload();
+  }
+});
+
 async function loadMarketsData() {
   try {
     const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/markets.json`);
