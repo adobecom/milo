@@ -64,6 +64,15 @@ function scrollTabFocusedElIntoView() {
 
     if (shouldntScroll(element, elFromPointTop)
       && shouldntScroll(element, elFromPointBottom)) return;
+    // TODO: There may also be a need to add support for the bottom section,
+    // e.g. parallax-move-down-fast
+    const hasPrallaxMvUp = element.closest('.parallax-move-up-fast.section');
+    if (hasPrallaxMvUp) {
+      const nextSection = hasPrallaxMvUp.nextElementSibling;
+      if (!nextSection) return;
+      const scrollPosition = Math.max(nextSection.offsetTop - window.innerHeight - 1, 0);
+      window.scrollTo({ top: scrollPosition });
+    }
 
     element.scrollIntoView({ behavior: 'instant', block: 'center' });
   }
