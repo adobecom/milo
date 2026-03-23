@@ -85,10 +85,6 @@
         --grid-content-width: var(--grid-width-10);
       }
     }
-
-    .action-area {
-      margin-top: calc(var(--s2a-spacing-32) - var(--content-gap));
-    }
   }
 }
 
