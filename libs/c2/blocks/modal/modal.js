@@ -282,8 +282,6 @@ export async function getModal(details, custom) {
 
   if (!dialog.classList.contains('curtain-off')) {
     document.body.classList.add('disable-scroll');
-    /** Stop lenis behaviour on modal open */
-    window.lenis?.stop();
     const curtain = createTag('div', {
       class: 'modal-curtain is-open',
       'daa-ll': `${analyticsEventName}:modalClose:curtainClose`,
