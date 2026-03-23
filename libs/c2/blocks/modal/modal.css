@@ -29,8 +29,13 @@
   width: 100%;
   user-select: text;
   visibility: visible;
-  overflow: auto;
+  overflow: hidden;
   z-index: var(--modal-z-index);
+}
+
+.dialog-modal > .fragment {
+  overflow-y: auto;
+  max-height: var(--modal-max-height);
 }
 
 .dialog-modal.upgrade-flow-modal,
