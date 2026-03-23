@@ -48,6 +48,11 @@
 
 .brand-concierge.floating-button-only {
   padding: 0;
+
+  /* TODO: likely not all pages will be dark, this needs more granular control */
+  main:has(&) {
+    background: var(--s2a-color-gray-1000);
+  }
 }
 
 .bc-header {
@@ -222,7 +227,7 @@
   transform: translateX(-50%);
   user-select: none;
   z-index: 4;
-} 
+}
 
 .bc-input-tooltip::before {
   border-top: 5px solid var(--bc-button-color);
@@ -614,12 +619,12 @@
     animation: var(--bc-modal-animation-time) ease-in-out floating-button-in;
     animation-fill-mode: forwards;
   }
-  
+
   .bc-floating-button.modal-close {
     animation: var(--bc-modal-animation-time) ease-in-out floating-button-out;
     animation-fill-mode: forwards;
   }
-  
+
   /* hero */
   .brand-concierge.hero {
     padding: 80px 32px 24px;
@@ -711,7 +716,7 @@
     flex-wrap: wrap;
     max-width: 600px;
   }
-  
+
   .hero .prompt-card-button,
   .pill-cards .prompt-card-button {
     flex-direction: row;
