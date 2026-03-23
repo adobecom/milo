@@ -36,10 +36,6 @@ html[dir="rtl"] {
   overflow: clip;
   margin: auto;
   
-  &.disable-hover {
-    pointer-events: none;
-  }
-  
   .elastic-carousel-container {
     display: flex;
     position: absolute;
@@ -197,6 +193,10 @@ html[dir="rtl"] {
 /** tablet up */
 @media (width > 768px) {
   .elastic-carousel {
+
+    &.disable-hover {
+      pointer-events: none;
+    }
     .elastic-carousel-container {
       --start-margin: 500px;
       /** animation */
