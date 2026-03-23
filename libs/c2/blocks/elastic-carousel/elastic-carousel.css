@@ -246,7 +246,7 @@ html[dir="rtl"] {
   .elastic-carousel {
     --offset-adjuster: 50px;
     --offset-scale: .85;
-    --last-offset: 3rem;
+    --last-offset: 2.5rem;
 
     height: auto;
     overflow: visible;
@@ -279,37 +279,37 @@ html[dir="rtl"] {
         /** if we go with dynamic amount of slides, below stuff can be moved to JS */
         &:nth-child(1) {
           --stack-offset: 0rem;
-          z-index: 1;
           --stack-contrast: 0;
           --stack-shrink: 3rem;
+          z-index: 1;
           animation: elasticMobileStackSlidesIgnoreOpactity var(--paralax-easing) both;
           animation-timeline: view();
           animation-range: entry 0% exit 100%;
         }
 
         &:nth-child(2) {
-          --stack-offset: .75rem;
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4));
           z-index: 2;
           --stack-contrast: .25;
           --stack-shrink: 2.25rem;
         }
 
         &:nth-child(3) {
-          --stack-offset: 1.5rem;
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 3));
           z-index: 3;
           --stack-contrast: .5;
           --stack-shrink: 1.5rem;
         }
 
         &:nth-child(4) {
-          --stack-offset: 2.25rem;
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 2));
           z-index: 4;
           --stack-contrast: .75;
           --stack-shrink: .75rem;
         }
 
         &:nth-child(5) {
-          --stack-offset: var(--last-offset);
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 1));
           z-index: 5;
           --stack-contrast: 1;
           --stack-shrink: 0rem;
