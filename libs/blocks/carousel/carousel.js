@@ -35,6 +35,7 @@ const KEY_CODES = {
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
+const isMobileVp = window.matchMedia('(max-width: 599px)');
 
 function getPreviousAriaLabel(currentIndex, totalSlides) {
   return currentIndex === 0 && totalSlides > 0
@@ -49,14 +50,16 @@ function updatePreviousAriaLabel(carouselElements) {
   nextPreviousBtns[0].setAttribute('aria-label', getPreviousAriaLabel(currentActiveIndex, slides.length));
 }
 
+function isHintingTablet(el) {
+  return el.classList.contains('hinting-tablet') && window.matchMedia('(min-width: 600px) and (max-width: 1199px)').matches;
+}
+
 function getCircularNavState(carouselElements) {
   const { el, currentActiveIndex, slides } = carouselElements;
   const atStart = currentActiveIndex === 0;
   if (!el.classList.contains('disable-circular-nav')) return { atStart, atEnd: false };
 
-  const isTabletLayout = el.classList.contains('hinting-tablet')
-    && window.matchMedia('(min-width: 600px) and (max-width: 1199px)').matches;
-  const lastIdx = isTabletLayout ? slides.length - 2 : slides.length - 1;
+  const lastIdx = isHintingTablet(el) ? slides.length - 2 : slides.length - 1;
   const atEnd = currentActiveIndex >= lastIdx;
 
   return { atStart, atEnd };
@@ -378,6 +381,13 @@ function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
     });
   });
 }
+// hinting (tablet/mobile)
+function isSlideVisible(currentIdx, targetIdx, n, isNext) {
+  if (isNext) return currentIdx === targetIdx || currentIdx === (targetIdx + 1) % n;
+  const prev = (targetIdx - 1 + n) % n;
+  const next = (targetIdx + 1) % n;
+  return currentIdx === prev || currentIdx === targetIdx || currentIdx === next;
+}
 
 function moveSlides(event, carouselElements) {
   const {
@@ -408,8 +418,17 @@ function moveSlides(event, carouselElements) {
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
   let activeSlideIndicator = controlsContainer.querySelector('.active');
+  let skipPause = false;
 
-  checkSlideForVideo(activeSlide);
+  // hinting-tablet / hinting-mobile
+  const isHintingMobile = (el.classList.contains('hinting-mobile') || el.classList.contains('hinting-center-mobile')) && isMobileVp.matches;
+  if (isHintingTablet(el) || isHintingMobile) {
+    const n = slides.length;
+    const currentIdx = carouselElements.currentActiveIndex;
+    const targetIdx = isNext ? (currentIdx + 1) % n : (currentIdx - 1 + n) % n;
+    skipPause = isSlideVisible(currentIdx, targetIdx, n, isNext);
+  }
+  if (!skipPause) checkSlideForVideo(activeSlide);
 
   // Track reference slide - last slide initially
   if (!referenceSlide) {
@@ -459,6 +478,16 @@ function moveSlides(event, carouselElements) {
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
+
+  if (isHintingTablet(el) || isHintingMobile) {
+    const video = activeSlide?.querySelector('video');
+    /* c8 ignore start */
+    if (video?.paused && video.readyState >= 2) {
+      video.play().catch(() => {});
+      syncPausePlayIcon(video);
+    }
+    /* c8 ignore end */
+  }
 
   // Update heights dynamically for disable-button
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {

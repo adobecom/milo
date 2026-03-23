@@ -137,7 +137,7 @@ async function toggleDrawer(target, dd, pageId) {
     const loading = dd.querySelector('.loading');
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
     const pageData = await fetchData(`${API_URLS.pageDetails}?id=${pageId}&lastSeen=${SEARCH().lastSeenManifest}&manifestSrc=${SEARCH().manifestSrc}`, DATA_TYPE.JSON);
-    loading.replaceWith(getMepPopup(pageData, true));
+    loading.replaceWith(await getMepPopup(pageData, true));
     dd.classList.add('placeholder-resolved');
   }
 }

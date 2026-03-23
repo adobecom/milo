@@ -11,10 +11,47 @@ import {
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
+const MILO_TYPO_CLASS_PATTERN = /^(heading|body|detail|title)-[a-z0-9-]+$/i;
 const seenFragments = new Set();
 let log;
 loadMasComponent(MAS_MERCH_CARD);
 loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
+
+const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6';
+const BLOCK_CONTENT_SELECTOR = `${HEADING_SELECTOR}, p, div, ul, ol, table, blockquote, pre, figure, section, article, hr`;
+const INLINE_WRAPPER_SELECTOR = 'strong, em, span, b, i, u, small, mark';
+
+function stripMiloTypoClassesFromElement(el) {
+  if (!el?.classList?.length) return;
+  const toRemove = [...el.classList].filter((c) => MILO_TYPO_CLASS_PATTERN.test(c));
+  toRemove.forEach((c) => el.classList.remove(c));
+}
+
+function stripMasFieldMiloClasses(masField) {
+  stripMiloTypoClassesFromElement(masField.parentElement);
+  const root = masField.shadowRoot ?? masField;
+  root.querySelectorAll('[class]').forEach((el) => {
+    if (el.hasAttribute?.('data-mas-field-preserve-classes')) return;
+    stripMiloTypoClassesFromElement(el);
+  });
+}
+
+function observeMasFieldForStyles(masField) {
+  function strip() {
+    stripMasFieldMiloClasses(masField);
+  }
+  strip();
+  const root = masField.shadowRoot ?? masField;
+  const parentObserver = new MutationObserver(strip);
+  const parent = masField.parentElement;
+  if (parent) {
+    parentObserver.observe(parent, { attributes: true, attributeFilter: ['class'] });
+    setTimeout(() => parentObserver.disconnect(), 5000);
+  }
+  const rootObserver = new MutationObserver(strip);
+  rootObserver.observe(root, { childList: true, subtree: true });
+  setTimeout(() => rootObserver.disconnect(), 3000);
+}
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -55,6 +92,47 @@ export async function checkReady(masElement) {
   }
 }
 
+function hasOnlyTargetContent(parent, target) {
+  if (!parent || !target || target.parentElement !== parent) return false;
+  return [...parent.childNodes].every((node) => {
+    if (node === target) return true;
+    return node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '';
+  });
+}
+
+function unwrapInlineWrappers(masField) {
+  let parent = masField.parentElement;
+  while (parent?.matches?.(INLINE_WRAPPER_SELECTOR)
+    && hasOnlyTargetContent(parent, masField)) {
+    parent.replaceWith(masField);
+    parent = masField.parentElement;
+  }
+}
+
+function normalizeBlockFieldWrappers(masField) {
+  const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
+  if (!content?.querySelector(BLOCK_CONTENT_SELECTOR)) return;
+
+  unwrapInlineWrappers(masField);
+
+  const parent = masField.parentElement;
+  if (!parent || !hasOnlyTargetContent(parent, masField)) return;
+
+  if (parent.matches(HEADING_SELECTOR)) {
+    const innerHeading = [...content.children]
+      .find((child) => child.matches?.(HEADING_SELECTOR));
+    if (innerHeading) {
+      if (parent.id && !innerHeading.id) innerHeading.id = parent.id;
+      parent.classList.forEach((className) => innerHeading.classList.add(className));
+      innerHeading.setAttribute('data-mas-field-preserve-classes', '');
+    }
+  }
+
+  if (parent.matches('p') || parent.matches(HEADING_SELECTOR)) {
+    parent.replaceWith(masField);
+  }
+}
+
 export async function createCard(el, options) {
   const attrs = { fragment: options.fragment };
   if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
@@ -89,6 +167,8 @@ async function createInline(el, options) {
     el.replaceWith(masField); // keep <p> and surrounding text, replace only the link
   }
   await checkReady(masField);
+  normalizeBlockFieldWrappers(masField);
+  observeMasFieldForStyles(masField);
 }
 
 export default async function init(el) {
