@@ -187,6 +187,7 @@
   .market-selector-popover .market-selector-list {
     padding: 0 1px 16px 7px;
     max-height: 60vh;
+    min-height: 36vh;
   }
   
   .market-selector-item-text {
