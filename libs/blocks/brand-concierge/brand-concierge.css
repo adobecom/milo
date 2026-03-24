@@ -1,5 +1,8 @@
 :root {
   --bc-modal-animation-time: 500ms;
+  --bc-susi-modal-width: 370px;
+  --bc-susi-min-height: 462px;
+  --bc-susi-standard-padding: 24px;
 }
 
 .brand-concierge {
@@ -402,6 +405,18 @@
   margin-bottom: 8px;
 }
 
+.dialog-modal.bc-susi-modal {
+  width: var(--bc-susi-modal-width);
+  min-height: var(--bc-susi-min-height);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dialog-modal.bc-susi-modal .bc-susi-modal-title {
+  padding: 20px var(--bc-susi-standard-padding) 12px;
+  margin: 0;
+}
+
 /* hero */
 .brand-concierge.hero {
   padding: 40px 24px 12px;
@@ -471,6 +486,14 @@
   to {
     opacity: 0;
   }
+}
+
+#bc-susi-modal {
+  z-index: calc( var(--modal-z-index) + 1);
+}
+
+#bc-susi-modal ~ .modal-curtain {
+  z-index: calc( var(--modal-z-index-curtain) + 1);
 }
 
 #brand-concierge-modal {
@@ -610,7 +633,6 @@
     padding: 80px 32px 24px;
   }
 }
-
 
 /* Tablet up */
 @media screen and (min-width: 768px) {
