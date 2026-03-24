@@ -9,7 +9,6 @@ const BG_SHIFT_MS = 650;
 const BG_SHIFT_PX = 90;
 const STAGGER_MS = 30;
 const STAGGER_PX = 60;
-const HOVER_DELAY_MS = 200;
 const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const RESUME_DELAY = 2000;
 const SWIPE_THRESHOLD = 100;
@@ -284,7 +283,6 @@ const startAutoplay = (slides, cards, container, block) => {
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
   let leaveTimer = null; // timer for restarting autoplay on block mouse leave
-  let hoverTimer = null; // debounce timer for card hover
 
   const setPlayingState = (isPlaying) => {
     filler?.classList.toggle('is-playing', isPlaying);
@@ -308,9 +306,7 @@ const startAutoplay = (slides, cards, container, block) => {
 
   const finishSlideTransition = () => {
     clearTimeout(cleanupTimer);
-    clearTimeout(hoverTimer);
     cleanupTimer = null;
-    hoverTimer = null;
     [...slides].forEach(resetSlide);
     if (pendingSlide) {
       pendingSlide.classList.add('is-active');
@@ -401,16 +397,12 @@ const startAutoplay = (slides, cards, container, block) => {
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
       cancelLeaveTimer();
-      clearTimeout(hoverTimer);
       if (i === active) { pause(); return; }
-      hoverTimer = setTimeout(() => {
-        hoverTimer = null;
-        clearTimeout(timer);
-        clearFill(active);
-        paused = true;
-        const dir = i > active ? 1 : -1;
-        activate(i, dir);
-      }, HOVER_DELAY_MS);
+      clearTimeout(timer);
+      clearFill(active);
+      paused = true;
+      const dir = i > active ? 1 : -1;
+      activate(i, dir);
     });
   });
 
@@ -419,8 +411,6 @@ const startAutoplay = (slides, cards, container, block) => {
   block.addEventListener('mouseenter', cancelLeaveTimer);
 
   block.addEventListener('mouseleave', () => {
-    clearTimeout(hoverTimer);
-    hoverTimer = null;
     if (paused) startLeaveTimer();
   });
 
