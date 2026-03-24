@@ -1,4 +1,5 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
+import { decorateBlockText, decorateTextOverrides } from '../../../utils/decorate.js';
 
 function hasContent(node) {
   return node.textContent?.trim() !== '' || node.querySelector('img, picture, svg, a[href]');
@@ -39,6 +40,8 @@ export default function init(el) {
 
   // Second row: foreground container
   getForegroundContent(foregroundRow, contentDiv, blockName);
+  decorateBlockText(contentDiv, { heading: '4' });
+  decorateTextOverrides(el, undefined, contentDiv);
 
   if (!link) return;
   const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href });
