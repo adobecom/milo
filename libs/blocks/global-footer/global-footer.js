@@ -568,9 +568,8 @@ const footerInstances = new WeakMap();
 
 export default function init(block) {
   try {
-    if (footerInstances.has(block)) {
-      return footerInstances.get(block);
-    }
+    if (footerInstances.has(block)) return footerInstances.get(block);
+
     const footer = new Footer({ block });
     footerInstances.set(block, footer);
     if (isDarkMode()) block.classList.add('feds--dark');
