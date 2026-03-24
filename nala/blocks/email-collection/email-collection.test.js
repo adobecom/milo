@@ -237,7 +237,7 @@ test.describe('Milo Email Collection Block test suite', () => {
 
       await emailCollection.submitMailingListButton.click();
       await marquee.foregroundMessage.waitFor({ state: 'visible', timeout: 60000 });
-      await expect(emailCollection.foregroundHeading).toContainText(data.mailingSubmitedMessage.h2Text);
+      await expect(emailCollection.foregroundHeading).toContainText(data.mailingSubmitedMessage.bodyText);
       await emailCollection.closeForm();
     });
 
