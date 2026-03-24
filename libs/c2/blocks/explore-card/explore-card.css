@@ -93,7 +93,7 @@
     transition: opacity 0.5s ease;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  :is(h1, h2, h3, h4, h5, h6):not([class*="title-"]) {
     font-size: var(--s2a-typography-font-size-title-4);
     line-height: var(--s2a-typography-line-height-title-4);
     letter-spacing: var(--s2a-typography-letter-spacing-title-4);
