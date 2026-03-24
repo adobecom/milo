@@ -619,25 +619,25 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
 
 h1, .title-1 {
   font-size: var(--s2a-typography-font-size-title-1);
-  line-height: var(--s2a-typography-line-height-title-1);
+  /* line-height: var(--s2a-typography-line-height-title-1); */
   letter-spacing: var(--s2a-typography-letter-spacing-title-1);
 }
 
 h2, .title-2 {
   font-size: var(--s2a-typography-font-size-title-2);
-  line-height: var(--s2a-typography-line-height-title-2);
+  /* line-height: var(--s2a-typography-line-height-title-2); */
   letter-spacing: var(--s2a-typography-letter-spacing-title-2);
 }
 
 h3, .title-3 {
   font-size: var(--s2a-typography-font-size-title-3);
-  line-height: var(--s2a-typography-line-height-title-3);
+  /* line-height: var(--s2a-typography-line-height-title-3); */
   letter-spacing: var(--s2a-typography-letter-spacing-title-3);
 }
 
 h4, .title-4 {
   font-size: var(--s2a-typography-font-size-title-4);
-  line-height: var(--s2a-typography-line-height-title-4);
+  /* line-height: var(--s2a-typography-line-height-title-4); */
   letter-spacing: var(--s2a-typography-letter-spacing-title-4);
 }
 
@@ -808,8 +808,7 @@ p {
   }
 
 
-  &.l-button,
-  &.button-l {
+  &.button-lg {
     min-height: var(--s2a-spacing-2xl);
     border-radius: 75px;
     padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
@@ -907,6 +906,71 @@ p {
   --parallax-translate-y: 100px;
 }
 
+div.section:has(~ div.section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+  z-index: 1;
+}
+
+div.section.parallax-garage-door-reveal {
+  --gd-grow-from: -50vh;
+  --gd-reveal-from: 20vh;
+  overflow: clip;
+  transform-origin: top center;
+  animation: garage-door-grow ease-out both;
+  animation-timeline: view(block);
+  animation-range: entry 0% cover 40%;
+
+  @media (width >= 1280px) {
+    --gd-grow-from: -110vh;
+    --gd-reveal-from: 50vh;
+    animation-range: entry 0% cover 50%;
+  }
+
+  @media (width >= 1920px) {
+    --gd-grow-from: -70vh;
+    --gd-reveal-from: 30vh;
+  }
+
+  .section-background img {
+    animation: garage-door-bg-scale ease-out both;
+    animation-timeline: view(block);
+    animation-range: entry 0% cover 100%;
+  }
+
+  .foreground {
+    z-index: 1;
+    position: relative;
+    animation: garage-door-reveal ease-out both;
+    animation-timeline: view(block);
+    animation-range: cover -10% cover 100%;
+
+    * {
+      animation: garage-door-line-height ease-out both;
+      animation-timeline: view(block);
+      animation-range: entry 10% cover 40%;
+    }
+  }
+}
+
+@keyframes garage-door-grow {
+  from { transform: translateY(var(--gd-grow-from)); }
+  to { transform: translateY(0); }
+}
+
+@keyframes garage-door-reveal {
+  from { transform: translateY(var(--gd-reveal-from)); }
+}
+
+@keyframes garage-door-bg-scale {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+@keyframes garage-door-line-height {
+  from {
+    line-height: 0.6;
+  }
+}
+
 div.section.parallax-move-up-fast {
   position: sticky;
   top: 0;
@@ -935,11 +999,6 @@ div.section.parallax-move-up-fast {
   animation: text-reveal-up ease-out both;
   animation-timeline: view(block);
   animation-range: entry 46px cover 20%;
-}
-
-.section.parallax-move-up-fast ~ .section {
-  background-color: white;
-  box-shadow: 0 -1px 0 0 white;
 }
 
 @keyframes parallax-move-up-fast {
