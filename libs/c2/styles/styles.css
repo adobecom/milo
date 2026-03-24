@@ -997,7 +997,7 @@ div.section.parallax-move-up-fast {
 .section.text-reveal-up .foreground {
   animation: text-reveal-up ease-in both;
   animation-timeline: view(block);
-  animation-range: entry 0% cover 70%;
+  animation-range: entry 0% cover 60%;
 }
 
 @keyframes parallax-move-up-fast {
