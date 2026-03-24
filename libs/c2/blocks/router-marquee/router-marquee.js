@@ -490,12 +490,17 @@ const setSlideObserver = (container) => {
   io.observe(container);
 };
 
-const setCardAnalytics = (cards) => {
-  cards.querySelectorAll('.rm-card').forEach((el, index) => {
+const setAnalytics = (slides, cards, el) => {
+  el.setAttribute('data-block-daa-lh', true);
+  slides.querySelectorAll('.rm-slide').forEach((slide, index) => {
+    const analyticText = `b${index + 1}|rm-slide|<mepMartech>`;
+    slide.setAttribute('daa-lh', analyticText);
+  });
+  cards.querySelectorAll('.rm-card').forEach((card, index) => {
     const config = getConfig();
-    const label = el.querySelector('.rm-card-label')?.textContent;
-    const analyticText = `${processTrackingLabels(label, config, 20)}-${index + 1}--rm nav`;
-    el.setAttribute('daa-ll', analyticText);
+    const label = card.closest('h2.rm-title')?.textContent;
+    const analyticText = `rm-nav-${index + 1}|${processTrackingLabels(label, config, 20)}`;
+    card.setAttribute('daa-ll', analyticText);
   });
 };
 
@@ -509,7 +514,7 @@ export default function init(el) {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
     setSlideObserver(container);
-    setCardAnalytics(cards);
+    setAnalytics(slides, cards, el);
     startAutoplay(slides, cards, container, el);
   });
 }
