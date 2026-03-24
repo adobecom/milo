@@ -68,8 +68,11 @@ function decorateNavigation() {
 
 function setActualSlideWidth(carousel, carouselWidth) {
   const gridMarginProperty = getComputedStyle(carousel).getPropertyValue('--grid-margin-width');
-  const gridMarginPropertyValue = gridMarginProperty?.endsWith('%') ? parseFloat(gridMarginProperty) / 100 : parseFloat(gridMarginProperty);
-  const actualSlideWidth = carouselWidth - 2 * carouselWidth * gridMarginPropertyValue;
+  const isGridMarginPer = gridMarginProperty?.endsWith('%');
+  const gridMarginPropertyValue = isGridMarginPer
+    ? parseFloat(gridMarginProperty) / 100 : parseFloat(gridMarginProperty);
+  const actualSlideWidth = carouselWidth - 2
+    * (isGridMarginPer ? carouselWidth : 1) * gridMarginPropertyValue;
   carousel.style.setProperty('--actual-slide-width', `${actualSlideWidth}px`);
 }
 
