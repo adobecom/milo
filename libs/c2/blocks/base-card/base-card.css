@@ -59,9 +59,6 @@
 
     .standalone-link {
       color: var(--s2a-color-gray-1000);
-      font-size: var(--s2a-typography-font-size-body-sm);
-      font-weight: var(--s2a-font-weight-adobe-clean-bold);
-      line-height: var(--s2a-typography-line-height-body-xs);
       text-decoration: none;
       position: relative;
       display: inline-block;
