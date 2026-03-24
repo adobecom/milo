@@ -1,6 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { setConfig } from '../../../libs/utils/utils.js';
 
+setConfig({ defined: [] });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/sitemap-base/sitemap-base.js');
 
