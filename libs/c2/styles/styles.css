@@ -994,11 +994,10 @@ div.section.parallax-move-up-fast {
     z-index: 2;
   }
 }
-
-.section.text-reveal-up * {
-  animation: text-reveal-up ease-out both;
+.section.text-reveal-up .foreground {
+  animation: text-reveal-up ease-in both;
   animation-timeline: view(block);
-  animation-range: entry 20% cover 70%;
+  animation-range: entry 0% cover 70%;
 }
 
 @keyframes parallax-move-up-fast {
@@ -1012,7 +1011,7 @@ div.section.parallax-move-up-fast {
 }
 
 @keyframes text-reveal-up {
-  from { line-height: 4; }
+  from { transform: translateY(60px); }
 }
 
 .parallax-scale-up {
