@@ -335,7 +335,7 @@ function decorateFloatingButton(el) {
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
 
-  if (variants.isHero) {
+  if (variants.isHero || variants.floatingDelay) {
     floatingButton.classList.add('floating-hidden');
   }
 
@@ -348,14 +348,16 @@ function decorateFloatingButton(el) {
     const threshold = (window.scrollY + window.innerHeight - (gnavPosition === 'fixed' ? 0 : gnavHeight));
     const targetStyle = window.getComputedStyle(target);
     const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
+    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
+
     if (threshold > mainHeight) {
       target.style.bottom = `${threshold - mainHeight}px`;
       mainElement.style.paddingBottom = `${targetHeight}px`;
     } else {
       target.style.bottom = '0';
     }
-    if (variants.isHero) {
-      if (window.scrollY > el.scrollHeight) {
+    if (variants.isHero || variants.floatingDelay) {
+      if (window.scrollY > scrollDelay) {
         floatingButton.classList.remove('floating-hidden');
         floatingButton.classList.add('floating-show');
       } else {
@@ -409,6 +411,12 @@ export default async function init(el) {
   } else if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
   }
+  el.classList.forEach((classItem) => {
+    if (classItem.includes('floating-delay')) {
+      variants.floatingDelay = true;
+      variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
+    }
+  });
 
   if (variants.isFloatingButton) {
     decorateFloatingButton(el);
