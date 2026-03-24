@@ -7,9 +7,9 @@ const { default: init } = await import('../../../libs/blocks/sitemap-base/sitema
 describe('Sitemap Base', () => {
   let block;
 
-  before(() => {
+  before(async () => {
     block = document.querySelector('#sitemap-base');
-    init(block);
+    await init(block);
   });
 
   it('adds item classes to each top-level child', () => {

@@ -25,8 +25,6 @@ function isCurrentSitemapLink(anchor) {
 }
 
 export default async function init(el) {
-  if (el.dataset.blockStatus === 'loaded') return;
-
   const items = [...el.querySelectorAll('a[href]')]
     .filter((anchor) => !isCurrentSitemapLink(anchor))
     .map((anchor) => createTag('p', { class: 'sitemap-list-item' }, anchor.cloneNode(true)));
