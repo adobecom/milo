@@ -1,5 +1,6 @@
 
 .base-card {
+  position: relative;
   height: 100%;
 
   > div[data-viewport] {
@@ -64,6 +65,7 @@
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
       margin-inline-end: var(--s2a-spacing-12);
+      margin-bottom: var(--s2a-spacing-4);
     }
   }
 
