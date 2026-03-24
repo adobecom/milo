@@ -1,5 +1,6 @@
 
 .base-card {
+  position: relative;
   height: 100%;
 
   > div[data-viewport] {
@@ -59,14 +60,12 @@
 
     .standalone-link {
       color: var(--s2a-color-gray-1000);
-      font-size: var(--s2a-typography-font-size-body-sm);
-      font-weight: var(--s2a-font-weight-adobe-clean-bold);
-      line-height: var(--s2a-typography-line-height-body-xs);
       text-decoration: none;
       position: relative;
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
       margin-inline-end: var(--s2a-spacing-12);
+      margin-bottom: var(--s2a-spacing-4);
     }
   }
 

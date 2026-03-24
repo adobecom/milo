@@ -4,6 +4,7 @@ import { createTag, getFederatedUrl, getConfig } from '../../../utils/utils.js';
 import { processTrackingLabels, sendAnalytics } from '../../../martech/attributes.js';
 
 let leaveTimeout;
+const rewindIntervals = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
@@ -34,13 +35,15 @@ const handleMobileAutoplay = (carousel) => {
 
 const disableHoverOnScroll = (carousel) => {
   let timer;
+  const controller = new AbortController();
   window.addEventListener('scroll', () => {
     clearTimeout(timer);
     carousel.classList.add('disable-hover');
     timer = setTimeout(() => {
       carousel.classList.remove('disable-hover');
     }, 150);
-  });
+  }, { signal: controller.signal });
+  return controller;
 };
 
 const handleVideoPlay = (event) => {
@@ -55,43 +58,42 @@ const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
   video.pause();
-  let reversing = true;
-  let lastTime = null;
 
-  function reverseAnimate(timestamp) {
-    if (!reversing) return;
-    const now = timestamp || performance.now();
+  const rewind = (rewindSpeed) => {
+    clearInterval(rewindIntervals.get(video));
+    const startSystemTime = new Date().getTime();
+    const startVideoTime = video.currentTime;
 
-    if (!lastTime) lastTime = now;
-
-    const delta = (now - lastTime) / 1000;
-    lastTime = now;
-
-    // rewind at 1x speed (match normal playback)
-    video.currentTime -= delta * 0.3;
-    if (video.currentTime <= 0) {
-      reversing = false;
-      return;
-    }
-
-    video.currentTime -= 0.03;
-    requestAnimationFrame(reverseAnimate);
-  }
-  reverseAnimate();
+    const intervalRewind = setInterval(() => {
+      video.playbackRate = 1.0;
+      if (video.currentTime === 0) {
+        clearInterval(rewindIntervals.get(video));
+        rewindIntervals.delete(video);
+        video.pause();
+      } else {
+        const elapsed = new Date().getTime() - startSystemTime;
+        const val = Math.max(startVideoTime - elapsed * (rewindSpeed / 1000.0), 0);
+        video.currentTime = val;
+      }
+    }, 30);
+    rewindIntervals.set(video, intervalRewind);
+  };
+  rewind(1);
 };
 
 const onCarouselLeave = (event) => {
-  clearTimeout(leaveTimeout);
   const carouselContainer = event.currentTarget.querySelector('.elastic-carousel-container');
   leaveTimeout = setTimeout(() => {
     carouselContainer.classList.remove('stick-left', 'stick-right');
-  }, 10);
+  }, 50);
 };
 
 const onCarouselHover = (event) => {
   const slide = event.target.closest('.elastic-carousel-item');
   if (!slide) return;
   handleVideoPlay(event);
+  clearTimeout(leaveTimeout);
+
   const slideIndex = slide.dataset.index * 1;
   const carouselContainer = event.target.closest('.elastic-carousel').querySelector('.elastic-carousel-container');
 
@@ -150,8 +152,6 @@ const buildSlide = ({ slide, index }) => {
     'aria-label': left.children[1]?.innerText,
   }, content);
 
-  slideEl.addEventListener('focus', onCarouselHover);
-  slideEl.addEventListener('blur', onCarouselLeave);
   slideEl.addEventListener('mouseleave', onSlideLeave);
   return slideEl;
 };
@@ -168,8 +168,15 @@ const decorateCarousel = (carousel) => {
 
 export default async function init(el) {
   const decoratedCarousel = decorateCarousel(el);
-  disableHoverOnScroll(decoratedCarousel);
+  const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
   decoratedCarousel.addEventListener('mouseover', onCarouselHover);
   handleMobileAutoplay(decoratedCarousel);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(el)) {
+      scrollController.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 }

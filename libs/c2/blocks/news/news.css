@@ -1,4 +1,6 @@
 .news {
+  position: relative;
+
   .news-headline {
     margin-bottom: var(--s2a-spacing-lg);
     grid-column: 1 / -1;
@@ -11,8 +13,8 @@
       justify-content: flex-start;
       gap: var(--s2a-spacing-md);
 
-      .headline-text .eyebrow:is(h1, h2, h3, h4, h5, h6, p) {  
-        font-family: var(--font-family-adobe-clean, "Adobe Clean");
+      .headline-text .eyebrow:is(h1, h2, h3, h4, h5, h6, p) {
+        font-family: var(--body-font-family);
       }
 
       .icon {
@@ -58,11 +60,11 @@
 }
 
 @media screen and (width < 768px) {
-  body .news {
+  .news {
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-2xl);
-    padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
+    padding-inline: var(--s2a-spacing-16);
 
     .news-headline {
       padding: var(--s2a-spacing-0);

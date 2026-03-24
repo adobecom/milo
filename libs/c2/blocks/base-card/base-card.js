@@ -18,7 +18,7 @@ function markStandaloneLinks(foreground) {
     if (!parent) return;
     const parentText = parent.textContent?.trim() ?? '';
     const linkText = a.textContent?.trim() ?? '';
-    if (parentText === linkText) a.classList.add('standalone-link');
+    if (parentText === linkText) a.classList.add('standalone-link', 'label');
   });
 }
 
