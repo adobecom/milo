@@ -1757,7 +1757,12 @@ class Gnav {
   };
 }
 
+const gnavInstances = new WeakMap();
+
 export default async function init(block) {
+  if (gnavInstances.has(block)) {
+    return gnavInstances.get(block);
+  }
   const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');

@@ -564,9 +564,13 @@ class Footer {
     }
   };
 }
+const footerInstances = new WeakMap();
 
 export default function init(block) {
   try {
+    if (footerInstances.has(block)) {
+      return footerInstances.get(block);
+    }
     const footer = new Footer({ block });
     if (isDarkMode()) block.classList.add('feds--dark');
     return footer;
