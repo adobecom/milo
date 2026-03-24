@@ -14,18 +14,30 @@ function getUrlList(cell) {
   return [...new Set(matches.map((url) => url.trim()))];
 }
 
-function toPageUrl(indexUrl, item) {
+function isProductionOrigin(origin) {
+  try {
+    return new URL(origin).hostname.endsWith('.adobe.com');
+  } catch {
+    return false;
+  }
+}
+
+function getEffectiveOrigin(indexUrl) {
+  if (isProductionOrigin(window.location.origin)) return window.location.origin;
+  try {
+    return new URL(indexUrl).origin;
+  } catch {
+    return null;
+  }
+}
+
+function toPageUrl(item, effectiveOrigin) {
   if (item.url) return item.url;
   if (item.href) return item.href;
-
-  try {
-    const parsedIndexUrl = new URL(indexUrl);
-    if (item.path) return new URL(item.path, parsedIndexUrl.origin).href;
-  } catch (e) {
-    return item.path || '';
-  }
-
-  return item.path || '';
+  const path = item.path || '';
+  if (!path) return '';
+  if (effectiveOrigin) return new URL(path, effectiveOrigin).href;
+  return path;
 }
 
 function normalizePayload(payload) {
@@ -112,14 +124,17 @@ async function buildLanguageGroup(indexEntries, options = {}) {
     items: await fetchAllQueryIndexItems(url),
   })));
   const filteredItems = groups
-    .flatMap(({ url, items }) => items.map((item) => ({ sourceUrl: url, item })))
+    .flatMap(({ url, items }) => items.map((item) => ({
+      item,
+      effectiveOrigin: getEffectiveOrigin(url),
+    })))
     .filter(({ item }) => options.includeNoindex || !isNoindexNofollow(item));
   const seenHrefs = new Set();
 
   return {
     label: firstEntry?.label || '',
-    items: filteredItems.map(({ sourceUrl, item }) => ({
-      href: toPageUrl(sourceUrl, item),
+    items: filteredItems.map(({ item, effectiveOrigin }) => ({
+      href: toPageUrl(item, effectiveOrigin),
       title: toPageTitle(item),
     })).filter((item) => {
       if (!item.href || seenHrefs.has(item.href)) return false;
