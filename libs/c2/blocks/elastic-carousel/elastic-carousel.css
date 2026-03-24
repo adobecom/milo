@@ -123,7 +123,7 @@ html[dir="rtl"] {
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
           line-height: var(--s2a-typography-line-height-eyebrow);
           letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
-          margin: 0 0 var(--s2a-spacing-xs) 0;
+          margin: 0 0 var(--s2a-spacing-2xs) 0;
           transition: color .1s ease;
           display: -webkit-box;
           line-clamp: 1;
