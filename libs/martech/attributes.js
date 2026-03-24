@@ -90,6 +90,7 @@ export async function decorateSectionAnalytics(section, idx, config) {
   });
   const mepMartech = config?.mep?.martech || '';
   section.querySelectorAll('[data-block]').forEach((block, blockIdx) => {
+    if (block.getAttribute('data-block-daa-lh')) return;
     const lhAtt = block.getAttribute('daa-lh');
     if (lhAtt) {
       block.setAttribute('daa-lh', `${lhAtt}${mepMartech}`);

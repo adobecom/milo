@@ -207,7 +207,6 @@ const fireAnalytic = (card, type = 'auto') => {
   const analyticText = `${type}-${processTrackingLabels(label, getConfig(), 15)}-${position}`;
 
   document.querySelectorAll(`.rm-card:nth-child(${position})`).forEach((c) => c.setAttribute('slide-seen', true));
-  // fire analytic
   sendAnalytics(analyticText);
 };
 
@@ -441,7 +440,7 @@ const startAutoplay = (slides, cards, container, block) => {
       paused = true;
       const dir = i > active ? 1 : -1;
       activate(i, dir);
-        fireAnalytic(cardEls[i], 'user');
+      fireAnalytic(cardEls[i], 'user');
     });
   });
 
@@ -557,15 +556,17 @@ const setSlideObserver = (container) => {
 };
 
 const setAnalytics = (slides, cards, el) => {
+  const config = getConfig();
+  const mepMartech = config?.mep?.martech || '';
+
   el.setAttribute('data-block-daa-lh', true);
-  slides.querySelectorAll('.rm-slide').forEach((slide, index) => {
-    const analyticText = `b${index + 1}|rm-slide|<mepMartech>`;
+  slides.forEach((slide, index) => {
+    const analyticText = `b${index + 1}|rm-slide|${mepMartech}`;
     slide.setAttribute('daa-lh', analyticText);
   });
   cards.querySelectorAll('.rm-card').forEach((card, index) => {
-    const config = getConfig();
-    const label = card.closest('h2.rm-title')?.textContent;
-    const analyticText = `rm-nav-${index + 1}|${processTrackingLabels(label, config, 20)}`;
+    const label = slides[index]?.textContent;
+    const analyticText = `rm-nav${index + 1}|${processTrackingLabels(label, config, 13)}`;
     card.setAttribute('daa-ll', analyticText);
   });
 };
