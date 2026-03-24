@@ -1617,7 +1617,6 @@ describe('Utils', () => {
       pathname: '/ch_de/creativecloud/',
       uniqueSiteId: 'cc',
       contentRoot: '/cc-shared',
-      queryIndexPath: '/assets/lingo/query-index.json',
     };
 
     const setupDefaultFetchStub = () => {
@@ -1674,7 +1673,8 @@ describe('Utils', () => {
 
     it('should use regional prefix when regional page exists in query index', async () => {
       const allLoaded = new Promise((resolve) => {
-        window.addEventListener(lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED, resolve, { once: true });
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
       });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/creativecloud/product';
@@ -1693,7 +1693,8 @@ describe('Utils', () => {
 
     it('should use base prefix when regional page does not exist in query index', async () => {
       const allLoaded = new Promise((resolve) => {
-        window.addEventListener(lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED, resolve, { once: true });
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
       });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/creativecloud/pricing';
@@ -1738,7 +1739,8 @@ describe('Utils', () => {
       });
 
       const allLoaded = new Promise((resolve) => {
-        window.addEventListener(lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED, resolve, { once: true });
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
       });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/creativecloud/pricing';
@@ -1759,7 +1761,8 @@ describe('Utils', () => {
 
     it('should handle links to current subsite, other subsites, and other domains via lingo-site-mapping', async () => {
       const allLoaded = new Promise((resolve) => {
-        window.addEventListener(lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED, resolve, { once: true });
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
       });
 
       const links = [
@@ -1820,7 +1823,8 @@ describe('Utils', () => {
       });
 
       const allLoaded = new Promise((resolve) => {
-        window.addEventListener(lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED, resolve, { once: true });
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
       });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/creativecloud/product';
@@ -1868,7 +1872,8 @@ describe('Utils', () => {
 
     it('should handle relative links on same domain', async () => {
       const allLoaded = new Promise((resolve) => {
-        window.addEventListener(lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED, resolve, { once: true });
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
       });
       const a1 = document.createElement('a');
       a1.href = 'https://localhost/creativecloud/product';
@@ -1898,7 +1903,8 @@ describe('Utils', () => {
 
     it('should handle HTML extensions properly', async () => {
       const allLoaded = new Promise((resolve) => {
-        window.addEventListener(lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED, resolve, { once: true });
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
       });
       const a1 = document.createElement('a');
       a1.href = 'https://www.adobe.com/creativecloud/product.html';
@@ -1928,7 +1934,8 @@ describe('Utils', () => {
 
     it('should handle multiple concurrent link localizations', async () => {
       const allLoaded = new Promise((resolve) => {
-        window.addEventListener(lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED, resolve, { once: true });
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
       });
       const hrefs = [
         'https://www.adobe.com/creativecloud/product',
