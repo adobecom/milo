@@ -235,11 +235,15 @@ export async function getGeoLocaleSettings(miloLocale) {
   return settings;
 }
 
-export async function getLocaleSettings(miloLocale) {
+export function isMasGeoDetectionEnabled() {
   const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
   const metaValue = getMetadata('mas-geo-detection');
   const geoDetection = queryParam ?? metaValue;
-  if (!geoDetection || !['on', 'true'].includes(geoDetection.toLowerCase())) {
+  return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+export async function getLocaleSettings(miloLocale) {
+  if (!isMasGeoDetectionEnabled()) {
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
   }
   return getGeoLocaleSettings(miloLocale);
@@ -1119,7 +1123,7 @@ export async function initService(force = false, attributes = {}) {
       }
 
       const { language, locale, country } = await getLocaleSettings(miloLocale);
-      const useGeoMarket = getMetadata('mas-geo-detection') === 'on';
+      const useGeoMarket = isMasGeoDetectionEnabled();
       let countryFromMarket = country;
       if (useGeoMarket) {
         const { getValidatedMarket } = await import('../../utils/market.js');
