@@ -236,8 +236,10 @@ export async function getGeoLocaleSettings(miloLocale) {
 }
 
 export async function getLocaleSettings(miloLocale) {
-  const geoDetection = getMetadata('mas-geo-detection');
-  if (!geoDetection || !['on', 'true'].includes(geoDetection)) {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const metaValue = getMetadata('mas-geo-detection');
+  const geoDetection = queryParam ?? metaValue;
+  if (!geoDetection || !['on', 'true'].includes(geoDetection.toLowerCase())) {
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
   }
   return getGeoLocaleSettings(miloLocale);
