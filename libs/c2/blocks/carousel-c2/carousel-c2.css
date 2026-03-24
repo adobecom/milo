@@ -297,6 +297,52 @@
   }
 }
 
+:dir(rtl) .carousel-c2 {
+  .carousel-wrapper {
+    translate: calc(var(--carousel-wrapper-offset) + var(--carousel-slides-gap));
+  }
+
+  button {
+    &.prev {
+      left: unset;
+      right: var(--btn-position);
+
+      .arrow-hover { transform: translateX(-100%); }
+      &:hover {
+        .arrow-default { transform: translateX(100%); }
+        .arrow-hover { transform: translateX(0); }
+      }
+    }
+
+    &.next {
+      left: unset;
+      right: var(--btn-position);
+
+      .arrow-hover { transform: translateX(100%); }
+      &:hover {
+        .arrow-default { transform: translateX(-100%); }
+        .arrow-hover { transform: translateX(0); }
+      }
+    }
+
+    svg {
+      scale: -1 1;
+    }
+  }
+
+  .carousel-slide:has(.rich-content) .section-background::after {
+    background: linear-gradient(to left, #000000 0%, rgba(0, 0, 0, 0.09) 100%);
+  }
+
+  .carousel-wrapper .carousel-slide:has(.rich-content) .rich-content .foreground .content {
+    animation-name: content-enter-rtl;
+
+    .opening-quote {
+      transform: translateX(100%);
+    }
+  }
+}
+
 @keyframes wrapper-enter {
   from {
     gap: 50vw;
@@ -333,4 +379,12 @@
 
 @keyframes button-enter {
   from { left: var(--btn-animation-start) };
+}
+
+@keyframes content-enter-rtl {
+  from {
+    transform: translate(5%, 70%);
+  } to {
+    transform: translate(0%, 0%);
+  }
 }
