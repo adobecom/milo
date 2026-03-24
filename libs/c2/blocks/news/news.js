@@ -9,7 +9,6 @@ const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 
 function formatHeader(row) {
   row.classList.add('news-headline');
-  decorateBlockText(row);
   const headlineText = row.querySelector('h1, h2, h3, h4, h5, h6, p:not(:has(picture))');
   const headlinePicture = row.querySelector('picture');
   headlineText.classList.add('eyebrow');
@@ -44,8 +43,8 @@ export default async function init(el) {
       const linkEl = content.querySelector('a');
       if (indx === 0) content.classList.add('news-item-headline');
       else if (isLinkOnlyContent(content, linkEl)) {
-        content.classList.add('news-item-link', 'label');
-        linkEl.classList.add('standalone-link', `${el.classList.contains('quiet') ? 'quiet' : ''}`);
+        content.classList.add('news-item-link');
+        linkEl.classList.add('standalone-link', 'label', `${el.classList.contains('quiet') ? 'quiet' : ''}`);
       } else content.classList.add('news-item-body');
     });
   });
