@@ -120,6 +120,11 @@
   z-index: var(--modal-z-index-curtain);
 }
 
+html[dir="rtl"] .dialog-modal button.dialog-close {
+  left: 5px;
+  right: auto;
+}
+
 .dialog-modal button.dialog-close {
   border: 3px solid transparent;
   position: absolute;
@@ -478,73 +483,3 @@ body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
   z-index: var(--jarvis-z-index-override);
 }
 
-/* c2 stylings for modal */
-html:has(meta[name="foundation"][content="c2"]) {
-  --locale-modal-close-size: 12px;
-  --locale-modal-close-line-width: calc(var(--locale-modal-close-size) * 1.33);
-  --locale-modal-close-line-thickness: 2px;
-
-  .dialog-modal {
-    border-radius: var(--s2a-spacing-md);
-
-    .dialog-close {
-      width: var(--locale-modal-close-size);
-      height: var(--locale-modal-close-size);
-      border: none;
-      right: var(--s2a-spacing-lg);
-      top: var(--s2a-spacing-lg);
-
-      svg {
-        display: none;
-      }
-
-      &::before,
-      &::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: var(--locale-modal-close-line-width);
-        height: var(--locale-modal-close-line-thickness);
-        background: var(--s2a-color-gray-1000);
-        border-radius: var(--locale-modal-close-line-thickness);
-        transform-origin: center;
-      }
-
-      &::before {
-        transform: translate(-50%, -50%) rotate(45deg);
-      }
-
-      &::after {
-        transform: translate(-50%, -50%) rotate(-45deg);
-      }
-    }
-  }
-
-  &[dir="rtl"] {
-    .dialog-modal {
-      .dialog-close {
-        right: auto;
-        left: var(--s2a-spacing-lg);
-      }
-    } 
-  }
-
-  @media (min-width: 1200px) {
-    .dialog-modal {
-      .dialog-close {
-        right: calc(2 * var(--s2a-spacing-lg));
-        top: calc(2 * var(--s2a-spacing-lg));
-      }
-    }
-
-    &[dir="rtl"] {
-      .dialog-modal {
-        .dialog-close {
-          left: calc(2 * var(--s2a-spacing-lg));
-        }
-      }
-    }
-  }
-}
-/* c2 stylings for modal */

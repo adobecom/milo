@@ -90,56 +90,8 @@
   display: flex;
   gap: 8px;
   margin: 16px 0 0;
-}
 
-.router-marquee .con-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 24px;
-  border-radius: 999px;
-  border: 1px solid #fff;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 18px;
-  letter-spacing: 0;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background-color 300ms cubic-bezier(0.42, 0, 0, 1),
-              border-color 300ms cubic-bezier(0.42, 0, 0, 1),
-              color 300ms cubic-bezier(0.42, 0, 0, 1);
-}
-
-.rm-cta-primary {
-  background: rgba(255, 255, 255, 1);
-  color: #000;
-  border-color: transparent;
-}
-
-.rm-cta-primary:hover {
-  background: rgba(255, 255, 255, 0.64);
-  color: #000;
-}
-
-.rm-cta-primary:active {
-  background: rgba(255, 255, 255, 1);
-}
-
-.rm-ctas .con-button:not(.rm-cta-primary) {
-  background: transparent;
-  color: #fff;
-  border: 1px solid #fff;
-}
-
-.rm-ctas .con-button:not(.rm-cta-primary):hover {
-  background: rgba(255, 255, 255, 0.64);
-  color: #000;
-  border-color: transparent;
-}
-
-.rm-ctas .con-button:not(.rm-cta-primary):active {
-  background: rgba(255, 255, 255, 1);
-  color: #000;
+  &.dark { background-color: unset; }
 }
 
 .rm-controls {
@@ -231,6 +183,10 @@
   cursor: pointer;
 }
 
+.rm-pause-play.is-hidden {
+  display: none;
+}
+
 .rm-pause-play .offset-filler {
   display: flex;
   justify-content: center;
@@ -289,6 +245,10 @@
     scrollbar-width: none;
   }
 
+  .section:has(+ .section.parallax-move-up-fast) .rm-controls {
+    inset: auto 24px var(--s2a-layout-sm);
+  }
+  
   /* this is needed to push the last card on the left side of the screen, on swipe */
   .rm-cards::after {
     content: '';
@@ -319,8 +279,7 @@
 @media (width <= 767px) {
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
-    min-height: 420px;
-    max-height: 930px;
+    height: 100vh;
   }
 
   .rm-content-wrapper {
@@ -340,7 +299,7 @@
   }
 
   .rm-controls {
-    padding: 0  0 64px 24px;
+    padding: 0  0 var(--s2a-layout-sm) 24px;
   }
 }
 
@@ -348,8 +307,7 @@
 @media (767px < width < 1280px) {
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
-    min-height: 720px;
-    max-height: 1280px;
+    height: 100vh;
   }
 
   .rm-content-wrapper {
@@ -368,7 +326,7 @@
   }
 
   .rm-controls {
-    padding: 0 0 64px 8.333%;
+    padding: 0 0 var(--s2a-layout-sm) 8.333%;
   }
 }
 
@@ -376,8 +334,7 @@
 @media (width >= 1280px) {
   .rm-viewport[data-viewport="desktop"] {
     display: flex;
-    min-height: 860px;
-    max-height: 1280px;
+    height: 100vh;
   }
 
   .rm-overlay {
@@ -406,7 +363,7 @@
   }
 
   .rm-controls {
-    padding: 0 8.333% 64px;
+    padding: 0 8.333% var(--s2a-layout-sm);
   }
 
   .rm-cards {

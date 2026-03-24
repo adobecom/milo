@@ -80,6 +80,8 @@ const defaultOptions = {
     'horizontal-card': 'Horizontal Card',
     'custom-card': 'Custom Card',
     'blade-card': 'Blade Card',
+    'editorial-card': 'Editorial Card',
+    'blog-card': 'Blog Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -184,6 +186,8 @@ const defaultOptions = {
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title: (A - Z)',
     titleDesc: 'Title: (Z - A)',
+    localFirst: 'Local Region First',
+    localLast: 'Local Region Last',
     random: 'Random',
   },
   source: {
@@ -392,6 +396,12 @@ const UiPanel = () => {
     </div>
   `;
 
+  const editorialCardOptions = html`
+    <div class="nested">
+      <${Input} label="Editorial Open variant" prop="editorialCardOpenVariant" type="checkbox" />
+    </div>
+  `;
+
   return html`
     <${Input} label="Show Total Count" prop="showTotalResults" type="checkbox" />
     <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
@@ -405,6 +415,7 @@ const UiPanel = () => {
     <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
+      ${state.cardStyle === 'editorial-card' && editorialCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
     <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
       ${state.container === 'carousel' && carouselOptions}
@@ -584,6 +595,8 @@ const SortPanel = () => {
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
+      <${Input} label="Local Region First" prop="sortLocalFirst" type="checkbox" />
+      <${Input} label="Local Region Last" prop="sortLocalLast" type="checkbox" />
       <${Input} label="Random" prop="sortRandom" type="checkbox" />
     </div>
 

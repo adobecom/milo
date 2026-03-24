@@ -1,4 +1,4 @@
-import { decorateBlockText } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateTextOverrides } from '../../../utils/decorate.js';
 import { getFederatedUrl } from '../../../utils/utils.js';
 
 const VIEWPORT_LABELS = ['mobile', 'tablet', 'desktop'];
@@ -18,7 +18,7 @@ function markStandaloneLinks(foreground) {
     if (!parent) return;
     const parentText = parent.textContent?.trim() ?? '';
     const linkText = a.textContent?.trim() ?? '';
-    if (parentText === linkText) a.classList.add('standalone-link');
+    if (parentText === linkText) a.classList.add('standalone-link', 'label');
   });
 }
 
@@ -31,7 +31,7 @@ function decorateCard(wrapper) {
   if (media.closest('.base-card.featured')) media.classList.add('parallax-featured-card-media');
   media.querySelector('picture').classList.add('parallax-scale-down');
   foreground.classList.add('foreground');
-  decorateBlockText(foreground);
+  decorateBlockText(foreground, { heading: '4' });
   markStandaloneLinks(foreground);
   const firstCell = foreground.children[0];
   if (firstCell?.childElementCount !== 1 || firstCell?.firstElementChild?.tagName !== 'PICTURE') return;
@@ -62,10 +62,8 @@ export default function init(el) {
     && rows.length % 2 === 0
     && isViewportLabel(getRowLabelText(rows[0]));
 
-  if (hasViewportStructure) {
-    decorateViewportStructure(rows);
-    return;
-  }
+  if (hasViewportStructure) decorateViewportStructure(rows);
+  else decorateCard(rows[0]);
 
-  decorateCard(rows[0]);
+  decorateTextOverrides(el);
 }

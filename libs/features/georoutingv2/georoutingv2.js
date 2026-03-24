@@ -1,5 +1,4 @@
 import { getFederatedContentRoot, getCountry } from '../../utils/utils.js';
-import { getAkamaiCode } from '../../utils/geo.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -144,13 +143,14 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
   const modPrefix = urlPrefix || 'us';
   const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
   link.setAttribute('daa-ll', eventName);
-  link.addEventListener('click', () => {
+  link.addEventListener('click', async () => {
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
-    if (config.lingoProjectSuccessLogging === 'on' && eventType === 'Switch') window.lana?.log(`Click:${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo,lingo-georouting-click', severity: 'i' });
+    const akamaiCode = await getCountry();
+    if (config.lingoProjectSuccessLogging === 'on' && eventType === 'Switch') window.lana?.log(`Click:${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}`, { sampleRate: 10, tags: 'lingo,lingo-georouting-click', severity: 'i' });
     removeOverflow();
   });
 }
@@ -373,11 +373,12 @@ async function getDetails(currentPage, localeMatches, geoData) {
 
 async function showModal(details) {
   const { miloLibs, codeRoot } = config;
+  const isC2Path = isC2Page ? '/c2' : '';
 
   const tabs = details.querySelector('.tabs');
-  const sectionMetaPath = `${miloLibs || codeRoot}${isC2Page ? '/c2' : ''}/blocks/section-metadata/section-metadata.css`;
+  const sectionMetaPath = `${miloLibs || codeRoot}${isC2Path}/blocks/section-metadata/section-metadata.css`;
   const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
-  const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
+  const modalPath = `${miloLibs || codeRoot}${isC2Path}/blocks/modal/modal.css`;
   let tabsPromise = null;
   if (tabs) tabsPromise = isC2Page ? loadC2TabsBlock(tabs) : loadBlock(tabs);
   const promises = [
@@ -389,7 +390,7 @@ async function showModal(details) {
       : null,
     new Promise((resolve) => { loadStyle(georoutingPath, resolve); }),
     new Promise((resolve) => { loadStyle(modalPath, resolve); }),
-    import('../../blocks/modal/modal.js'),
+    import(`../..${isC2Path}/blocks/modal/modal.js`),
   ];
   const result = await Promise.all(promises);
   const { getModal, sendAnalytics } = result[4];
@@ -452,7 +453,8 @@ export default async function loadGeoRouting(
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         handleOverflow(await showModal(details));
-        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`;
+        const akamaiCode = await getCountry();
+        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}`;
         sendAnalyticsFunc(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
@@ -464,14 +466,14 @@ export default async function loadGeoRouting(
 
   // Show modal when derived countries from url locale and akamai disagree
   try {
-    let akamaiCode = await getAkamaiCode();
+    let akamaiCode = await getCountry();
     if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
       const localeMatches = getMatches(json.georouting.data, akamaiCode);
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
-        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`;
+        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}`;
         sendAnalyticsFunc(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });

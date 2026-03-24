@@ -25,26 +25,21 @@ html[dir="rtl"] {
 .elastic-carousel {
   --elastic-carousel-transtions: all .5s ease;
   --elastic-carousel-transtions-slow: all .3s ease;
-  --elastic-carousel-container-height-desktop: 580px;
-  --elastic-carousel-container-height-tablet: 560px;
+  --elastic-carousel-container-height-desktop: 590px;
+  --elastic-carousel-container-height-tablet: 572px;
   --elastic-carousel-item-max-width: 294px;
   --elastic-carousel-item-hover-grow-index: 1.75;
   --slides: 5;
+  --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
 
+  height: var(--elastic-carousel-container-height-desktop);
   position: relative;
   overflow: clip;
-  height: var(--elastic-carousel-container-height-desktop);
   margin: auto;
-
-  &.disable-hover {
-    pointer-events: none !important;
-  }
-
+  
   .elastic-carousel-container {
     display: flex;
-    height: 100%;
     position: absolute;
-    top: 0%;
     left: 50%;
     transform: translateX(-50%);
     transition: var(--elastic-carousel-transtions);
@@ -59,7 +54,7 @@ html[dir="rtl"] {
       background-color: var(--s2a-color-gray-75);
       border-radius: var(--s2a-border-radius-md);
       cursor: pointer;
-      transition: var(--elastic-carousel-transtions-slow), background-color .25s ease-in;
+      transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .1s var(--paralax-easing);
 
       .elastic-carousel-item-header {
         display: flex;
@@ -76,8 +71,14 @@ html[dir="rtl"] {
           font-size: var(--s2a-font-size-sm);
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
           margin: 0;
-          transition: color .5s ease;
+          transition: color .1s ease;
           line-height: var(--s2a-font-line-height-18);
+          display: -webkit-box;
+          line-clamp: 1;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          overflow: hidden;
         }
       }
 
@@ -87,13 +88,14 @@ html[dir="rtl"] {
           border-radius: var(--s2a-border-radius-md);
           object-fit: cover;
           height: 394px;
+          width: 100%;
         }
       }
 
       .elastic-carousel-item-footer {
         display: flex;
         flex-direction: column;
-        padding: var(--s2a-spacing-md);
+        padding: var(--s2a-spacing-lg);
         max-width: 270px;
         font-size: var(--s2a-font-size-md);
         line-height: var(--s2a-font-line-height-16);
@@ -115,11 +117,12 @@ html[dir="rtl"] {
         :is(h1, h2, h3, h4, h5, h6) {
           /* TODO: remove eyebrow styles if eyebrow class is applied directly to footer headline */
           font-family: var(--body-font-family);
-          font-size: var(--s2a-typography-eyebrow);
+          font-size: var(--s2a-typography-font-size-eyebrow);
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
           line-height: var(--s2a-typography-line-height-eyebrow);
           letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
           margin: 0 0 var(--s2a-spacing-xs) 0;
+          line-height: var(--s2a-font-line-height-20);
           transition: color .5s ease;
           display: -webkit-box;
           line-clamp: 1;
@@ -132,7 +135,7 @@ html[dir="rtl"] {
         p {
           opacity: .6;
           margin: 0;
-          transition: color .5s ease;
+          transition: color .1s ease;
           display: -webkit-box;
           line-clamp: 2;
           box-orient: vertical;
@@ -163,16 +166,21 @@ html[dir="rtl"] {
 
 /** desktop only */
 @media (1280px <= width) {
-  .elastic-carousel-item {
-    width: calc(100vw/calc(var(--slides) - 1));
+  .elastic-carousel-container {
+    max-height: var(--elastic-carousel-container-height-desktop);
+    
+    .elastic-carousel-item {
+      width: calc(100vw/calc(var(--slides) - 1));
+    }
   }
 }
 /** tablet only */
  @media (768px <= width < 1280px) {
   .elastic-carousel {
     height: var(--elastic-carousel-container-height-tablet);
-    
     .elastic-carousel-container {
+      height: 100%;
+      max-height: var(--elastic-carousel-container-height-tablet);
       .elastic-carousel-item {
         width: calc(100vw / calc(var(--slides) - 1.5));
     
@@ -185,15 +193,18 @@ html[dir="rtl"] {
 }
 
 /** tablet up */
-@media (width > 768px) {
+@media (width >= 768px) {
   .elastic-carousel {
-    .elastic-carousel-container {
 
-      --start-margin: 50%;
+    &.disable-hover {
+      pointer-events: none;
+    }
+    .elastic-carousel-container {
+      --start-margin: 500px;
       /** animation */
-      animation: slideIn linear both;
+      animation: elasticCarouselSlideIn var(--parallax-easing) both;
       animation-timeline: view();
-      animation-range: entry 0% exit 100%;
+      animation-range: entry 20% exit 100%;
 
       .elastic-carousel-item {
         --start-gap: 2rem;
@@ -201,7 +212,7 @@ html[dir="rtl"] {
 
         margin-inline: var(--start-gap);
         will-change: margin-inline;
-        animation: gapShrink ease both;
+        animation: elasticItemsGapShrink var(--parallax-easing) both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
@@ -210,7 +221,6 @@ html[dir="rtl"] {
           background-color: var(--s2a-color-gray-1000);
           max-width: 496px;
           width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
-          outline: none;
 
           .elastic-carousel-item-footer p,
           .elastic-carousel-item-footer h1,h2,h3,h4,h5,h6,
@@ -236,15 +246,18 @@ html[dir="rtl"] {
 @media (width < 768px) {
   .elastic-carousel {
     --offset-adjuster: 50px;
-    --offset-scale: .75;
-    --last-offset: 4rem;
+    --offset-scale: .85;
+    --last-offset: 2.5rem;
+    --offset-variance-index: -2px;
 
     height: auto;
     overflow: visible;
     padding-bottom: calc(var(--last-offset) * var(--offset-scale));
-    margin-top: calc(var(--offset-adjuster)/10);
-
+    padding-top: calc(var(--offset-adjuster) / var(--slides));
+    margin-inline: var(--s2a-spacing-sm);
     .elastic-carousel-container {
+      top: 0%;
+      height: 100%;
       position: relative;
       flex-direction: column;
       left: unset;
@@ -254,47 +267,51 @@ html[dir="rtl"] {
 
       .elastic-carousel-item {
         position: sticky;
-        top: 10%;
+        top: 18%;
         width: 100%;
-        max-width: none;
+        max-width: 100%;
         color: white;
         background: transparent;
+        
         /** animation */
-        animation: translateY linear both;
+        animation: elasticMobileStackSlides var(--paralax-easing) both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
         /** if we go with dynamic amount of slides, below stuff can be moved to JS */
         &:nth-child(1) {
-          --stack-offset: 0rem;
-          z-index: 1;
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 5) - var(--offset-variance-index) * 5);
           --stack-contrast: 0;
-          --stack-shrink: 4rem;
+          --stack-shrink: 3rem;
+          z-index: 1;
+          animation: elasticMobileStackSlidesIgnoreOpactity var(--paralax-easing) both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
         }
 
         &:nth-child(2) {
-          --stack-offset: 1rem;
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4) - var(--offset-variance-index) * 4);
           z-index: 2;
           --stack-contrast: .25;
-          --stack-shrink: 3rem;
+          --stack-shrink: 2.25rem;
         }
 
         &:nth-child(3) {
-          --stack-offset: 2rem;
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 3) - var(--offset-variance-index) * 3);
           z-index: 3;
           --stack-contrast: .5;
-          --stack-shrink: 2rem;
+          --stack-shrink: 1.5rem;
         }
 
         &:nth-child(4) {
-          --stack-offset: 3rem;
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 2) - var(--offset-variance-index) * 2);
           z-index: 4;
           --stack-contrast: .75;
-          --stack-shrink: 1rem;
+          --stack-shrink: .75rem;
         }
 
         &:nth-child(5) {
-          --stack-offset: var(--last-offset);
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 1) - var(--offset-variance-index));
           z-index: 5;
           --stack-contrast: 1;
           --stack-shrink: 0rem;
@@ -305,11 +322,13 @@ html[dir="rtl"] {
         }
 
         .elastic-carousel-item-container {
+          position: relative;
           background-color: var(--s2a-color-gray-1000);
           border-radius: var(--s2a-border-radius-md);
-          animation: shrink linear both;
+          animation: elasticItemsShrink var(--paralax-easing) both;
           animation-timeline: view();
           animation-range: entry 0% exit 100%;
+          overflow-x: clip;
 
           .elastic-carousel-item-header {
             padding: var(--s2a-spacing-lg);
@@ -347,22 +366,14 @@ html[dir="rtl"] {
 
 
 /** animations */
-@keyframes paddingGrow {
-  0% {
-    padding-bottom: 0;
-  }
 
-  100% {
-    padding-bottom: calc(var(--last-offset) - var(--offset-adjuster));
-  }
-}
-
-@keyframes gapShrink {
+@keyframes elasticItemsGapShrink {
   0% {
     margin-inline: var(--start-gap);
   }
 
-  30% {
+
+  40% {
     margin-inline: var(--end-gap);
   }
 
@@ -371,34 +382,73 @@ html[dir="rtl"] {
   }
 }
 
-@keyframes slideIn {
+@keyframes elasticCarouselSlideIn {
   0% {
     margin-left: var(--start-margin);
+    opacity: 0;
   }
 
-  30% {
-    margin-left: 0%;
+  20% {
+    opacity: 1;
+  }
+
+  40% {
+    margin-left: 0;
   }
 
   100% {
-    margin-left: 0%;
+    margin-left: 0;
+    opacity: 1;
   }
 }
 
-@keyframes translateY {
+@keyframes elasticMobileStackSlidesIgnoreOpactity {
   0% {
     transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+    opacity: 1;
+  }
+
+  20% {
+    filter: contrast(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast));
+    opacity: .2;
+  }
+}
+@keyframes elasticMobileStackSlides {
+  0% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+    opacity: 0;
+  }
+  
+
+  10% {
+    opacity: 1;
+  }
+
+  20% {
     filter: contrast(1);
   }
 
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     filter: contrast(var(--stack-contrast));
+    
   }
 }
 
-@keyframes shrink {
+@keyframes elasticItemsShrink {
   0% {
+    margin: 0
+  }
+
+  20% {
     margin: 0
   }
 

@@ -1,8 +1,6 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-const BLOCK_SIZING_C2 = ['md', 'md', 'md'];
-
 function isLinkOnlyContent(linkContainer, aTag) {
   return aTag && aTag.textContent.trim() === linkContainer.textContent.trim();
 }
@@ -11,7 +9,6 @@ const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 
 function formatHeader(row) {
   row.classList.add('news-headline');
-  decorateBlockText(row, BLOCK_SIZING_C2);
   const headlineText = row.querySelector('h1, h2, h3, h4, h5, h6, p:not(:has(picture))');
   const headlinePicture = row.querySelector('picture');
   headlineText.classList.add('eyebrow');
@@ -40,14 +37,14 @@ export default async function init(el) {
   rows.forEach((row) => {
     row.classList.add('news-item');
     row.querySelector(':scope > div:not([class])').classList.add('foreground');
-    decorateBlockText(row, BLOCK_SIZING_C2);
+    decorateBlockText(row, { heading: '4' });
     const contents = row.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
     contents.forEach((content, indx) => {
       const linkEl = content.querySelector('a');
       if (indx === 0) content.classList.add('news-item-headline');
       else if (isLinkOnlyContent(content, linkEl)) {
-        content.classList.add('news-item-link', 'label');
-        linkEl.classList.add('standalone-link', `${el.classList.contains('quiet') ? 'quiet' : ''}`);
+        content.classList.add('news-item-link');
+        linkEl.classList.add('standalone-link', 'label', `${el.classList.contains('quiet') ? 'quiet' : ''}`);
       } else content.classList.add('news-item-body');
     });
   });

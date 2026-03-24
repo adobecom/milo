@@ -342,7 +342,12 @@ function redirectIfLoggedIn(destURL) {
         /* c8 ignore next */
         if (window.adobeIMS?.isSignedInUser()) goDest();
       })
-      .catch((e) => { window.lana?.log(`Unable to load IMS in susi-light: ${e}`); });
+      .catch((e) => {
+        window.lana?.log(`Unable to load IMS in susi-light: ${e}`, {
+          tags: 'susi-light',
+          severity: 'error',
+        });
+      });
   }
 }
 

@@ -1,4 +1,4 @@
-import { decorateButtons } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateTextOverrides } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 function hangOpeningQuote(header) {
@@ -11,43 +11,18 @@ function hangOpeningQuote(header) {
   header.prepend(span);
 }
 
-function decorateText(el, config = ['lg', 'l']) {
+function decorateText(el) {
+  decorateBlockText(el);
   const headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-
   hangOpeningQuote(headings[0]);
-
-  const prevSib = headings[0]?.previousElementSibling;
-  prevSib?.classList.add('eyebrow');
-
-  const body = `body-${config[0]}`;
-  const bodyEls = el?.querySelectorAll('p:not([class])') || [];
-  bodyEls.forEach((bodyEl) => bodyEl.classList.add(body));
-  decorateButtons(el, config[1] && `button-${config[1]}`);
 }
 
-const blockSizes = {
-  medium: 'md',
-  large: 'lg',
-};
-
-function getBlockSize(block) {
-  const defaultSize = 'large';
-  const size = Object.keys(blockSizes).find((key) => block.classList.contains(key));
-  return blockSizes[size] ?? blockSizes[defaultSize];
-}
-
-function getButtonSize(block) {
-  return [...block.classList].find((c) => c.includes('button'))?.split('-').pop();
-}
-
-function decorate(el, block) {
+function decorate(block) {
   const foreground = block.children[0];
   const content = foreground?.children[0];
   content?.classList.add('content');
   foreground?.classList.add('foreground');
-  const blockSize = getBlockSize(el);
-  const buttonSize = getButtonSize(el);
-  decorateText(content, [blockSize, buttonSize]);
+  decorateText(content);
 }
 
 function decorateMultiViewport(el, viewportContent) {
@@ -101,8 +76,8 @@ function addMissingContent(con, previous) {
   ];
 
   pairs.forEach(([el, prev]) => {
-    if (el.children.length || el.textContent) return;
-    el.replaceChildren(...[...prev.children].map((c) => c.cloneNode(true)));
+    if (el?.children.length || el?.textContent) return;
+    el?.replaceChildren(...[...prev.children].map((c) => c.cloneNode(true)));
   });
 }
 
@@ -141,7 +116,8 @@ export default function init(el) {
   const viewPortConfig = getViewportConfig(el);
   Object.values(viewPortConfig).forEach((value) => {
     const { contentContainer } = value;
-    decorate(el, contentContainer);
+    decorate(contentContainer);
   });
   decorateMultiViewport(el, viewPortConfig);
+  decorateTextOverrides(el);
 }

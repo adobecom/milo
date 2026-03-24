@@ -65,12 +65,12 @@
         }
 
         .rich-content {
+          --content-gap: 0px;
           width: 100%;
           .foreground {
             padding: var(--s2a-spacing-24);
             .content {
               max-width: 477px;
-              gap: 0;
               transition: opacity .5s ease-in-out;
               animation:  content-enter var(--animation-curve);
               animation-timeline: view();
@@ -90,15 +90,16 @@
                 min-width: unset;
                 width: unset;
                 max-width: unset;
+
+                > strong {
+                  color: var(--s2a-color-content-default);
+                  font-size: var(--s2a-typography-font-size-eyebrow);
+                  line-height: var(--s2a-typography-line-height-eyebrow);
+                  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+                }
               }
-
-            }
-
-            .action-area {
-              margin-top: var(--s2a-spacing-24);
             }
           }
-
         }
         .section-background img {
           border-radius: var(--s2a-border-radius-16);
