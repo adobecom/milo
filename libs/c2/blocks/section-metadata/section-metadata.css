@@ -3,8 +3,6 @@
 }
 
 .section {
-  --section-spacing-multiplier: 1;
-
   &.has-background {
     background-color: unset;
   }
@@ -34,17 +32,6 @@
   &.rounded-corners-bottom {
     border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
     margin-top: initial;
-  }
-
-  &.rounded-corners + .section,
-  &.rounded-corners-bottom + .section {
-    /* add spacing to top of next section to avoid content overlap */
-    &::before {
-      content: '';
-      display: block;
-      width: 100%;
-      height: calc(var(--s2a-border-radius-lg) * var(--section-spacing-multiplier));
-    }
   }
 
   &.masonry-layout {

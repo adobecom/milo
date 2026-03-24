@@ -7,10 +7,6 @@
   position: relative;
 }
 
-html.feds-footer-in-view body {
-  background: var(--s2a-color-gray-1000);
-}
-
 .global-footer ul {
   list-style-type: none;
 }
@@ -449,6 +445,7 @@ span.feds-footer-privacyLink-divider {
     min-height: calc(var(--s2a-typography-line-height-eyebrow) * 2rem);
     display: flex;
     align-items: flex-end;
+    height: 40px;
   }
 
   .global-footer:not(.mobile) .feds-footer-wrapper .feds-menu-column:nth-child(-n+3):last-child {

@@ -56,8 +56,6 @@
     :is(h1, h2, h3, h4, h5, h6) {
       margin-bottom: var(--s2a-spacing-8);
       color: var(--s2a-color-gray-1000);
-      font-size: var(--s2a-typography-font-size-title-4);
-      letter-spacing: var(--s2a-typography-letter-spacing-title-4);
     }
 
     .standalone-link {
@@ -70,10 +68,6 @@
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
       margin-inline-end: var(--s2a-spacing-12);
-    }
-
-    p {
-      font-size: var(--s2a-typography-font-size-body-md);
     }
   }
 
