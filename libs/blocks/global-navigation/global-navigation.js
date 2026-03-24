@@ -112,6 +112,15 @@ const {
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
+const replaceOrInsert = (parent, selector, newEl, insertFn) => {
+  const existing = parent.querySelector(selector);
+  if (existing) {
+    existing.replaceWith(newEl);
+  } else {
+    insertFn(newEl);
+  }
+};
+
 function getHelpChildren() {
   const { unav } = getConfig();
   return unav?.unavHelpChildren || [
@@ -684,7 +693,10 @@ class Gnav {
     const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
     const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
     // Skip keyboard navigation on localnav items if it is closed
-    localNav.append(localNavBtn, localNavCurtain, toFragment` <div class="feds-localnav-items" role="list"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    replaceOrInsert(localNav, '.feds-localnav-title', localNavBtn, (el) => localNav.append(el));
+    replaceOrInsert(localNav, '.feds-localnav-curtain', localNavCurtain, (el) => localNav.append(el));
+    replaceOrInsert(localNav, '.feds-localnav-items', toFragment`<div class="feds-localnav-items" role="list"></div>`, (el) => localNav.append(el));
+    replaceOrInsert(localNav, '.feds-sr-only', toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`, (el) => localNav.append(el));
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
     const localNavTitle = document.querySelector('.feds-localnav-title');
@@ -775,9 +787,18 @@ class Gnav {
       </div>
       `;
 
-    this.block.append(
+    replaceOrInsert(
+      this.block,
+      ':scope > .feds-curtain',
       this.elements.curtain,
+      (el) => this.block.prepend(el),
+    );
+
+    replaceOrInsert(
+      this.block,
+      ':scope > .feds-topnav-wrapper',
       this.elements.topnavWrapper,
+      (el) => this.elements.curtain.after(el),
     );
   };
 
@@ -1757,12 +1778,7 @@ class Gnav {
   };
 }
 
-const gnavInstances = new WeakMap();
-
 export default async function init(block) {
-  if (gnavInstances.has(block)) {
-    return gnavInstances.get(block);
-  }
   const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
