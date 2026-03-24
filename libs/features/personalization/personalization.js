@@ -1203,7 +1203,7 @@ async function getManifestConfig(info, variantOverride) {
     event,
     source,
   } = info;
-  if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
+  if (disabled && !variantOverride?.[normalizePath(manifestPath)]) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;
