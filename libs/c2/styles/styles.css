@@ -962,8 +962,8 @@ div.section.parallax-garage-door-reveal {
 }
 
 @keyframes garage-door-bg-scale {
-  from { transform: scale(1.1); }
-  to { transform: scale(1); }
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
 }
 
 @keyframes garage-door-line-height {
