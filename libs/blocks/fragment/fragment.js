@@ -217,7 +217,12 @@ export default async function init(a) {
   }
 
   const mepLingoPrefix = await getMepLingoPrefix();
-  if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
+  const fetchedNonRegionalContent = isMepLingoLink && resp?.ok
+    && !relHref.includes(mepLingoPrefix || '___NONE___');
+  const redirectedRegionalFetch = (isBlockSwap || isSectionSwap) && resp?.redirected
+    && mepLingoPrefix && relHref.includes(mepLingoPrefix);
+
+  if (fetchedNonRegionalContent || redirectedRegionalFetch) {
     usedFallback = true;
   }
 
