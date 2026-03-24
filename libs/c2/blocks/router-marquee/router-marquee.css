@@ -100,10 +100,19 @@
   margin: 0 auto;
   z-index: 2;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  justify-content: space-between;
+  align-items: center;
   gap: 24px;
   max-width: 1920px;
+}
+
+.rm-controls-column {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.rm-pause-play-column {
+  order: -1;
 }
 
 .rm-cards {
@@ -343,6 +352,10 @@
 
   .rm-content-wrapper {
       padding: calc(var(--s2a-spacing-64) + 80px) 8.333% 0;
+  }
+
+  .rm-content-wrapper.rm-compact {
+      padding-top: calc(var(--s2a-spacing-64) + 24px);
   }
 
   .rm-content {

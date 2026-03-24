@@ -15,6 +15,7 @@ const RESUME_DELAY = 2000;
 const SWIPE_THRESHOLD = 100;
 
 const reflow = (el) => el?.getBoundingClientRect();
+const getCssPx = (el, prop) => parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
 
 const clearInlineStyles = (el, props) => {
   if (!el) return;
@@ -218,6 +219,59 @@ const setAriaHiddenAndTabIndex = (slides) => {
   });
 };
 
+const updateControlsLayout = (el) => {
+  const activeSlides = el.querySelectorAll('.rm-slide.is-active');
+  const activeSlide = [...activeSlides].find((s) => s.offsetParent !== null);
+  if (!activeSlide) return;
+  const vp = activeSlide.closest('.rm-viewport');
+  const controls = vp?.querySelector('.rm-controls');
+  const playPause = vp?.querySelector('.rm-pause-play');
+  if (!controls || !playPause) return;
+  const cardsWrapper = vp.querySelector('.rm-cards');
+  const cards = vp.querySelectorAll('.rm-card');
+  // the best thing I could find to determine when the play button is running out of space
+  // is this formula of: (side paddings) + (cards max width) + (cards gaps) + (play button width)
+  // which gives the min total width of the controls section.
+  // If the viewport gets smaller than this min width, I move the play button
+  const needed = (2 * getCssPx(controls, 'padding-left')) + (cards.length * getCssPx(cards[0], 'max-width')) + (cards.length * getCssPx(cardsWrapper, 'gap')) + getCssPx(playPause, 'width');
+  const stacked = needed > window.innerWidth;
+  controls.classList.toggle('rm-controls-column', stacked);
+  playPause.classList.toggle('rm-pause-play-column', stacked);
+};
+
+const updateContentSpacing = (el) => {
+  const activeSlides = el.querySelectorAll('.rm-slide.is-active');
+  const activeSlide = [...activeSlides].find((s) => s.offsetParent !== null);
+  if (!activeSlide) return;
+  const vp = activeSlide.closest('.rm-viewport');
+  const wrapper = activeSlide.querySelector('.rm-content-wrapper');
+  const content = activeSlide.querySelector('.rm-content');
+  const controls = vp?.querySelector('.rm-controls');
+  if (!wrapper || !content || !controls || !vp) return;
+
+  // Set min-height so the viewport never shrinks below what the content needs
+  const lastContentEl = content.lastElementChild;
+  const needed = lastContentEl.getBoundingClientRect().bottom + controls.offsetHeight + 24;
+
+  vp.style.minHeight = `${Math.max(window.innerHeight, needed)}px`;
+  // Compact padding-top when content overlaps controls
+  // Applied to all wrappers to handle slide changes
+  const allWrappers = vp.querySelectorAll('.rm-content-wrapper');
+  const controlsTop = controls.getBoundingClientRect().top - 24;
+  const contentBottom = content.getBoundingClientRect().bottom;
+  const isCompact = wrapper.classList.contains('rm-compact');
+  if (!isCompact && contentBottom >= controlsTop) {
+    allWrappers.forEach((w) => w.classList.add('rm-compact'));
+  } else if (isCompact && contentBottom + 80 < controlsTop) {
+    allWrappers.forEach((w) => w.classList.remove('rm-compact'));
+  }
+};
+
+const dynamicLayoutUpdates = (el) => {
+  updateControlsLayout(el);
+  updateContentSpacing(el);
+};
+
 const startAutoplay = (slides, cards, container, block) => {
   const cardEls = [...cards.children];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
@@ -297,8 +351,6 @@ const startAutoplay = (slides, cards, container, block) => {
     );
     cleanupTimer = setTimeout(finishSlideTransition, transitionMs + 50);
 
-    playPauseBtn?.classList.toggle('is-hidden', !newSlide.querySelector('video'));
-
     cardEls[active]?.classList.remove('is-active');
     active = index;
     cardEls[active]?.classList.add('is-active');
@@ -306,6 +358,8 @@ const startAutoplay = (slides, cards, container, block) => {
       const scrollTarget = cardEls[active].offsetLeft - cards.offsetLeft;
       cards.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     }
+
+    requestAnimationFrame(() => dynamicLayoutUpdates(block));
   };
 
   const advance = () => {
@@ -409,8 +463,6 @@ const startAutoplay = (slides, cards, container, block) => {
     paused = true;
   }, { passive: true });
 
-  if (!slides[active]?.querySelector('video')) playPauseBtn?.classList.add('is-hidden');
-
   requestAnimationFrame(() => {
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
@@ -425,7 +477,7 @@ const buildViewport = (viewport, slides) => {
   const cards = buildCards(slides);
   cards.children[0]?.classList.add('is-active');
   const controls = createTag('div', { class: 'rm-controls' });
-  controls.append(buildPlayPause(), cards);
+  controls.append(cards, buildPlayPause());
   container.append(...slides, controls);
   return container;
 };
@@ -462,4 +514,6 @@ export default function init(el) {
     const cards = container.querySelector('.rm-cards');
     startAutoplay(slides, cards, container, el);
   });
+  requestAnimationFrame(() => dynamicLayoutUpdates(el));
+  window.addEventListener('resize', () => dynamicLayoutUpdates(el));
 }
