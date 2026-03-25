@@ -16,7 +16,6 @@ class RequestHandler {
     if (resp.status === 401) {
       // eslint-disable-next-line no-console
       console.log('Unauthorized access. Please check your access token.');
-      return resp.status;
     }
     return resp;
   }

@@ -6,12 +6,12 @@
  */
 
 class SearchReplace {
-  constructor({ searchType, org, repo, expName }) {
+  constructor({ searchType, org, repo, expName, color }) {
     this.searchType = searchType; // 'floodgate' or 'graybox'
     this.org = org;
     this.repo = repo;
     this.expName = expName;
-    const repoSuffix = searchType === 'floodgate' ? 'pink' : 'graybox';
+    const repoSuffix = searchType === 'floodgate' ? `fg-${color}` : 'graybox';
     this.destRepo = repo.replace(`-${repoSuffix}`, '');
   }
 
@@ -64,8 +64,10 @@ class SearchReplace {
   }
 }
 
-function searchAndReplace({ content, searchType, org, repo, expName }) {
-  const searchReplace = new SearchReplace({ searchType, org, repo, expName });
+function searchAndReplace({
+  content, searchType, org, repo, expName, color,
+}) {
+  const searchReplace = new SearchReplace({ searchType, org, repo, expName, color });
   return searchReplace.searchAndReplace(content);
 }
 

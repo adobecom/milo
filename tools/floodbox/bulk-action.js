@@ -33,9 +33,9 @@ export class BulkAction {
     if (!resp.ok) {
       // eslint-disable-next-line no-console
       console.error(`Failed to ${action} : ${resp.status} :: ${aemUrl}`);
-      this.callback({ statusCode: resp.status, aemUrl, errorMsg: `Failed to ${action}` });
+      this.callback({ statusCode: resp.status, aemUrl, path, errorMsg: `Failed to ${action}` });
     } else {
-      this.callback({ statusCode: resp.status, aemUrl });
+      this.callback({ statusCode: resp.status, aemUrl, path });
     }
   }
 

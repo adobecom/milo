@@ -1,12 +1,14 @@
+/* eslint-disable import/no-unresolved */
+import { Queue } from 'https://da.live/nx/public/utils/tree.js';
 import { DA_ORIGIN } from './constants.js';
 import RequestHandler from './request-handler.js';
 import searchAndReplace from './search-replace.js';
 import { isEditableFile } from './utils.js';
 
-const BATCH_SIZE = 100;
-
 class Promote {
-  constructor(accessToken, org, repo, expName, promoteType, files, callback) {
+  constructor({
+    accessToken, org, repo, expName, promoteType, files, callback, color,
+  }) {
     this.accessToken = accessToken;
     this.org = org;
     this.repo = repo;
@@ -14,9 +16,9 @@ class Promote {
     this.promoteType = promoteType;
     this.filesToPromote = files;
     this.callback = callback;
-
+    this.color = color;
     this.requestHandler = new RequestHandler(accessToken);
-    const destRepo = promoteType === 'graybox' ? repo.replace('-graybox', '') : repo.replace('-pink', '');
+    const destRepo = promoteType === 'graybox' ? repo.replace('-graybox', '') : repo.replace(`-fg-${color}`, '');
     this.srcSitePath = `/${org}/${repo}`;
     this.destSitePath = `/${org}/${destRepo}`;
   }
@@ -32,6 +34,7 @@ class Promote {
           org: this.org,
           repo: this.repo,
           expName: this.expName,
+          color: this.color,
         });
       }
       let destFilePath = file.path.replace(this.srcSitePath, this.destSitePath);
@@ -49,10 +52,8 @@ class Promote {
   }
 
   async promoteFilesInBatches(filePaths) {
-    for (let i = 0; i < filePaths.length; i += BATCH_SIZE) {
-      const batch = filePaths.slice(i, i + BATCH_SIZE);
-      await Promise.all(batch.map((file) => this.processFile(file)));
-    }
+    const queue = new Queue((file) => this.processFile(file), 100);
+    await Promise.allSettled(filePaths.map((file) => queue.push(file)));
   }
 
   async promoteFiles() {
@@ -62,10 +63,8 @@ class Promote {
   }
 }
 
-async function promoteFiles({
-  accessToken, org, repo, expName, promoteType, files, callback,
-}) {
-  const promoter = new Promote(accessToken, org, repo, expName, promoteType, files, callback);
+async function promoteFiles(options) {
+  const promoter = new Promote(options);
   await promoter.promoteFiles();
 }
 

@@ -1,11 +1,18 @@
+/* eslint-disable import/no-unresolved */
+import { Queue } from 'https://da.live/nx/public/utils/tree.js';
 import { DA_ORIGIN } from '../constants.js';
 import RequestHandler from '../request-handler.js';
 import { getFileExtension, getFileName, isEditableFile } from '../utils.js';
 
-const BATCH_SIZE = 100;
-
 class FloodgateCopy {
-  constructor(accessToken, org, repo, paths, callback) {
+  constructor({
+    accessToken,
+    org,
+    repo,
+    paths,
+    callback,
+    fgColor,
+  }) {
     this.accessToken = accessToken;
     this.org = org;
     this.repo = repo;
@@ -13,7 +20,7 @@ class FloodgateCopy {
     this.callback = callback;
 
     this.requestHandler = new RequestHandler(accessToken);
-    this.destRepo = `${repo}-pink`;
+    this.destRepo = `${repo}-fg-${fgColor}`;
     this.srcSitePath = `/${org}/${repo}`;
     this.destSitePath = `/${org}/${this.destRepo}`;
     this.filesToCopy = [];
@@ -44,15 +51,13 @@ class FloodgateCopy {
   }
 
   async copyFilesInBatches() {
-    for (let i = 0; i < this.filesToCopy.length; i += BATCH_SIZE) {
-      const batch = this.filesToCopy.slice(i, i + BATCH_SIZE);
-      await Promise.all(batch.map((file) => this.processFile(file)));
-    }
+    const queue = new Queue((file) => this.processFile(file), 100);
+    await Promise.allSettled(this.filesToCopy.map((file) => queue.push(file)));
   }
 
   async getFilesToCopy() {
     for (const path of this.paths) {
-      if (!path.length > 0) {
+      if (path.length === 0) {
         // eslint-disable-next-line no-continue
         continue;
       }
@@ -74,8 +79,8 @@ class FloodgateCopy {
   }
 }
 
-async function copyFiles({ accessToken, org, repo, paths, callback }) {
-  const copier = new FloodgateCopy(accessToken, org, repo, paths, callback);
+async function copyFiles(options) {
+  const copier = new FloodgateCopy(options);
   await copier.copyFiles();
 }
 

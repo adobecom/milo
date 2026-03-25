@@ -59,4 +59,13 @@ describe('getValidFloodgate', () => {
     expect(cmp.repo).to.equal('fake-repo');
     expect(cmp.token).to.equal('fake-token');
   });
+
+  it('sets org on the element when context includes org', async () => {
+    const fakeDaSdk = Promise.resolve({
+      context: { org: 'fake-org', repo: 'fake-repo' },
+      token: 'fake-token',
+    });
+    const cmp = await getValidFloodgate(fakeDaSdk);
+    expect(cmp.org).to.equal('fake-org');
+  });
 });
