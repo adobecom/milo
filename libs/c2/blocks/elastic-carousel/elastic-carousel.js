@@ -151,6 +151,8 @@ const buildSlide = ({ slide, index }) => {
     href: left.children[4]?.querySelector('a')?.href,
     'data-index': index + 1,
     'aria-label': left.children[1]?.innerText,
+    'daa-ll': `click-${cardName}`,
+    'data-card-label': cardName,
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
