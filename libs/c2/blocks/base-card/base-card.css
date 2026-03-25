@@ -75,8 +75,7 @@
 
   &.featured {
     .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-16) var(--s2a-spacing-40) var(--s2a-spacing-16);
-    }
+      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);    }
 
     .parallax-featured-card-media {
       animation-name: grow-featured-card-radius;
@@ -105,12 +104,6 @@
 
     > div[data-viewport="tablet"] {
       display: flex;
-    }
-
-    &.featured {
-      .foreground {
-        padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
-      }
     }
   }
 }
