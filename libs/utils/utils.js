@@ -2026,19 +2026,9 @@ async function loadPostLCP(config) {
       const { default: init } = await import('../features/language-banner/language-banner.js');
       await init();
     } else if (routingConfig?.showModal && routingConfig.markets?.length) {
-      const { default: showLanguageModal } = await import('../features/language-modal/language-modal.js');
-      const mappedMarkets = routingConfig.markets.map((market) => ({
-        prefix: market.prefix ?? '',
-        language: market.nativeName || market.langName || market.languageName || market.lang || '',
-        lang: market.lang || '',
-        marketLangKey: market.marketLangKey,
-        dir: market.dir || 'ltr',
-        modalTitle: market.modalTitle || 'This adobe site does not match your location',
-        modalDescription: market.modalDescription || 'Based on your location, you may prefer another site',
-        continueText: market.continueText || 'Continue',
-      }));
-      await showLanguageModal(
-        mappedMarkets,
+      const { default: showRegionModal } = await import('../features/region-modal/region-modal.js');
+      await showRegionModal(
+        routingConfig.markets,
         config,
         createTag,
         loadStyle,

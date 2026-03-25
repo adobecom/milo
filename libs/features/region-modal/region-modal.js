@@ -9,6 +9,20 @@ let sendAnalyticsFunc;
 
 const COUNTRY_PLACEHOLDER = /\{country\}/g;
 
+/** Normalizes market entries to the shape expected by the modal UI. */
+function mapLangRoutingMarketsForModal(markets) {
+  return markets.map((market) => ({
+    prefix: market.prefix ?? '',
+    language: market.nativeName || market.langName || market.languageName || market.lang || '',
+    lang: market.lang || '',
+    marketLangKey: market.marketLangKey,
+    dir: market.dir || 'ltr',
+    modalTitle: market.modalTitle || 'This adobe site does not match your location',
+    modalDescription: market.modalDescription || 'Based on your location, you may prefer another site',
+    continueText: market.continueText || 'Continue',
+  }));
+}
+
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
   tabNames.forEach((name) => {
@@ -231,7 +245,7 @@ function appendGeoFlagIcon(mainAction, geoMarketCode) {
 }
 
 function decoratePickerLink(link, market, currentPagePrefix, geoMarketCode) {
-  const eventName = `Switch:${market.prefix || 'us'}-${currentPagePrefix}|language-modal`;
+  const eventName = `Switch:${market.prefix || 'us'}-${currentPagePrefix}|region-modal`;
   link.setAttribute('daa-ll', eventName);
   link.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -252,7 +266,7 @@ function openPicker(
   geoMarketCode,
   pickerCountryLabel,
 ) {
-  if (document.querySelector('.language-modal .picker')) {
+  if (document.querySelector('.region-modal .picker')) {
     return;
   }
   const list = createTag('ul', { class: 'picker', dir: dir || 'ltr' });
@@ -286,7 +300,7 @@ function getCurrentSiteLabel() {
 }
 
 function decorateCurrentSiteLink(link, currentPagePrefix, regionCode) {
-  const eventName = `Stay:${currentPagePrefix}|language-modal`;
+  const eventName = `Stay:${currentPagePrefix}|region-modal`;
   link.setAttribute('daa-ll', eventName);
   link.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -378,7 +392,7 @@ function buildContent(
     mainAction.removeAttribute('role');
     mainAction.removeAttribute('aria-haspopup');
     mainAction.removeAttribute('aria-expanded');
-    mainAction.setAttribute('daa-ll', `Continue:${availableMarkets[0]?.prefix || 'us'}-${currentPagePrefix}|language-modal`);
+    mainAction.setAttribute('daa-ll', `Continue:${availableMarkets[0]?.prefix || 'us'}-${currentPagePrefix}|region-modal`);
     mainAction.addEventListener('click', async (e) => {
       e.preventDefault();
       const m = availableMarkets[0];
@@ -450,14 +464,14 @@ async function showModal(details) {
 
   const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
   const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
-  const languageModalPath = `${miloLibs || codeRoot}/features/language-modal/language-modal.css`;
+  const regionModalPath = `${miloLibs || codeRoot}/features/region-modal/region-modal.css`;
   const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
 
   const promises = [
     hasTabs ? loadBlockFn(details.querySelector('.tabs')) : null,
     hasTabs ? new Promise((resolve) => { loadStyleFn(sectionMetaPath, resolve); }) : null,
     new Promise((resolve) => { loadStyleFn(georoutingPath, resolve); }),
-    new Promise((resolve) => { loadStyleFn(languageModalPath, resolve); }),
+    new Promise((resolve) => { loadStyleFn(regionModalPath, resolve); }),
     new Promise((resolve) => { loadStyleFn(modalPath, resolve); }),
     import('../../blocks/modal/modal.js'),
   ];
@@ -465,14 +479,14 @@ async function showModal(details) {
   const { getModal, sendAnalytics } = result[5];
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, {
-    class: 'language-modal',
-    id: 'language-modal',
+    class: 'region-modal',
+    id: 'region-modal',
     content: details,
     closeEvent: 'closeModal',
   });
 }
 
-export default async function showLanguageModal(
+export default async function showRegionModal(
   suggestedMarkets,
   conf,
   createTagFunc,
@@ -487,7 +501,8 @@ export default async function showLanguageModal(
   loadStyleFn = loadStyleFunc;
   loadBlockFn = loadBlockFunc ?? (() => Promise.resolve());
 
-  let availableMarkets = await getAvailableMarkets(suggestedMarkets);
+  const marketsForModal = mapLangRoutingMarketsForModal(suggestedMarkets);
+  let availableMarkets = await getAvailableMarkets(marketsForModal);
   if (availableMarkets.length === 0) return;
 
   let markets = [];
@@ -506,6 +521,6 @@ export default async function showLanguageModal(
 
   const akamaiCode = await getCountry();
   const topMarket = availableMarkets[0];
-  const eventString = `Load:${topMarket.prefix || 'us'}-${currentPagePrefix}|language-modal|locale:${currentPagePrefix}|country:${akamaiCode}`;
+  const eventString = `Load:${topMarket.prefix || 'us'}-${currentPagePrefix}|region-modal|locale:${currentPagePrefix}|country:${akamaiCode}`;
   if (sendAnalyticsFunc) sendAnalyticsFunc(new Event(eventString));
 }
