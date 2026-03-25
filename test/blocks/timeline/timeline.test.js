@@ -71,15 +71,14 @@ describe('Timeline', () => {
     const rightTexts = right.querySelectorAll('[data-valign]');
     const rightPeriod = right.querySelector('.period');
 
+    const follows = (a, b) => a.compareDocumentPosition(b) === Node.DOCUMENT_POSITION_FOLLOWING;
+
     // Left column: text before period
-    expect(leftText.compareDocumentPosition(leftPeriod)
-      & Node.DOCUMENT_POSITION_FOLLOWING).to.be.ok;
+    expect(follows(leftText, leftPeriod)).to.be.true;
 
     // Right column: Day 8 before period, period before Day 21
-    expect(rightTexts[0].compareDocumentPosition(rightPeriod)
-      & Node.DOCUMENT_POSITION_FOLLOWING).to.be.ok;
-    expect(rightPeriod.compareDocumentPosition(rightTexts[1])
-      & Node.DOCUMENT_POSITION_FOLLOWING).to.be.ok;
+    expect(follows(rightTexts[0], rightPeriod)).to.be.true;
+    expect(follows(rightPeriod, rightTexts[1])).to.be.true;
   });
   it('updates background linear gradient for rtl', async () => {
     const timelineEl = document.querySelector('.timeline');
