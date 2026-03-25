@@ -638,7 +638,7 @@ function processQueryIndexMap(link, domain) {
 }
 const getDomainLingo = (path) => path?.split('/*')[0];
 
-async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
+async function loadQueryIndexes(prefix, links = []) {
   const config = getConfig();
   const suffix = config.env?.name === 'prod' || window.location.host.includes(`${SLD}.live`) ? '' : '-preview';
 
@@ -661,12 +661,9 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
 
   queryIndexes[siteId] = processQueryIndexMap(indexUrl(prefix), host);
 
-  if (onlyCurrentSite) {
-    lingoSiteMapping = Promise.resolve(lingoSiteMappingLoaded = true);
-    return;
-  }
-
-  const basePfx = config.locale.base ? `/${config.locale.base}` : '';
+  const { base: localeBase, prefix: localePrefix } = config.locale;
+  let basePfx = localePrefix ?? '';
+  if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
   baseQueryIndex = processQueryIndexMap(indexUrl(basePfx), host);
 
   Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
@@ -804,7 +801,7 @@ function localizeLinkCore(
 
     if (enterAsync) {
       return (async () => {
-        loadQueryIndexes(prefix, false, [href]);
+        loadQueryIndexes(prefix, [href]);
         const base = overrideBase ?? locale.base;
         const basePrefix = base === '' ? '' : `/${base}`;
         const siteId = uniqueSiteId ?? '';
@@ -2334,7 +2331,7 @@ function preloadMarketsConfig() {
 }
 
 async function decorateDocumentExtras() {
-  decorateMeta();
+  await decorateMeta();
   await decorateHeader();
   langBannerPromise = decorateLanguageBanner();
 }
@@ -2456,12 +2453,12 @@ function loadLingoIndexes(area = document) {
   const config = getConfig();
   const { locale } = config || {};
   if (locale?.base || locale?.base === '') {
-    loadQueryIndexes(config.locale.prefix, false, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
+    loadQueryIndexes(config.locale.prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
   getMepLingoPrefix().then((prefix) => {
     if (prefix) {
-      loadQueryIndexes(prefix, false, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
+      loadQueryIndexes(prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }
   });
 }
