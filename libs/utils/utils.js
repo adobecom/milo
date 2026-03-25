@@ -664,7 +664,7 @@ async function loadQueryIndexes(prefix, links = []) {
   const { base: localeBase, prefix: localePrefix } = config.locale;
   let basePfx = localePrefix ?? '';
   if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
-  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx), host);
+  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx).replace('query-index-preview', 'query-index'), host);
 
   Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
     .then(() => window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED)));
