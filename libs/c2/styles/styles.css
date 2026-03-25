@@ -866,7 +866,7 @@ p {
 }
 
 /* TODO: Parallax styles should be loaded separately and conditionally */
-@supports (animation-timeline: view()) {
+/* @supports (animation-timeline: view()) { */
   /* General parallax declarations */
   [class*="parallax-"] {
     /* Default transition values */
@@ -1168,7 +1168,7 @@ p {
   @keyframes text-reveal-up {
     from { line-height: 3; }
   }
-}
+/* } */
 
 .dark {
   background-color: var(--s2a-color-background-default);
