@@ -821,8 +821,6 @@ function localizeLinkCore(
         const matchingIndexes = Object.values(queryIndexes)
           .filter((q) => q.domains.includes(url.hostname)
             && (isMepLingoFragment || q.requestResolved));
-
-        // Capture before any await to avoid race with index resolution
         const needsListener = !isMepLingoFragment && !queryIndexesAllLoaded;
 
         let resolvedPrefix = basePrefix;
@@ -985,8 +983,8 @@ export async function localizeLinkAsync(
       prefix = (aTag && !isRegularFragment) ? await getMepLingoPrefix() : (locale?.prefix ?? '');
       base = locale?.prefix?.replace('/', '') ?? '';
     } else {
-      const basePfx = locale?.base === '' ? '' : `/${locale?.base}`;
-      prefix = (isFragment || aTag) ? (locale?.prefix || null) : basePfx;
+      const basePrefix = locale?.base === '' ? '' : `/${locale?.base}`;
+      prefix = (isFragment || aTag) ? (locale?.prefix || null) : basePrefix;
       base = locale?.base ?? '';
     }
   }

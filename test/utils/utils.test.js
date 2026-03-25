@@ -1759,6 +1759,51 @@ describe('Utils', () => {
       a.remove();
     });
 
+    it('should use base index race for early decision before slow subsites resolve', async () => {
+      let dcResolved = false;
+
+      fetchStub.callsFake((url) => {
+        if (url.includes('cc-shared') && url.includes('/ch_de/')) {
+          return mockRes({ payload: createQueryIndexData(['/ch_de/creativecloud/product']) });
+        }
+        if (url.includes('cc-shared') && !url.includes('/ch_de/')) {
+          return mockRes({ payload: ccBaseQueryIndex });
+        }
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: lingoSiteMapping });
+        }
+        if (url.includes('dc-shared')) {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              dcResolved = true;
+              resolve({ ok: true, json: () => Promise.resolve(dcRegionalQueryIndex) });
+            }, 200);
+          });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const primaryLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/pricing';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/pricing',
+        'www.adobe.com',
+        false,
+        a,
+      );
+      await primaryLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(dcResolved).to.be.false;
+      expect(new URL(a.href).pathname).to.equal('/de/creativecloud/pricing');
+      a.remove();
+    });
+
     it('should handle links to current subsite, other subsites, and other domains via lingo-site-mapping', async () => {
       const allLoaded = new Promise((resolve) => {
         const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
@@ -2439,19 +2484,38 @@ describe('Utils', () => {
     });
 
     it('should not attach pending listener for #_dnt links', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      // Trigger index loading with a regular link
+      const trigger = document.createElement('a');
+      trigger.href = 'https://www.adobe.com/products/illustrator';
+      document.body.appendChild(trigger);
+      trigger.href = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/products/illustrator',
+        'www.adobe.com',
+        false,
+        trigger,
+      );
+
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/products/photoshop#_dnt';
       document.body.appendChild(a);
 
-      const result = await lingoUtils.localizeLinkAsync(
+      a.href = await lingoUtils.localizeLinkAsync(
         'https://www.adobe.com/products/photoshop#_dnt',
         'www.adobe.com',
         false,
         a,
       );
 
-      expect(result).to.not.include('#_dnt');
-      expect(result).to.not.include('/sg/');
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(a.href).to.not.include('#_dnt');
+      expect(a.href).to.not.include('/sg/');
+      trigger.remove();
       a.remove();
     });
 
