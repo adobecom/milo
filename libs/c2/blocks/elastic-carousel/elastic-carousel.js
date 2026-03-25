@@ -106,9 +106,13 @@ const onCarouselHover = (event) => {
   }
 
   const slideName = slide.dataset.cardLabel;
+  const block = slide.closest('[daa-lh]');
+  const blockName = block?.getAttribute('daa-lh');
+  const section = block?.parentElement?.closest('[daa-lh]');
+  const sectionName = section?.getAttribute('daa-lh');
   if (slideName && !trackedCardHovers.includes(slideName)) {
     trackedCardHovers.push(slideName);
-    sendAnalytics(`hover-${slideName}`);
+    sendAnalytics(`hover-${slideName}|${sectionName}|${blockName}`);
   }
 };
 
