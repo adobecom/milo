@@ -9,6 +9,8 @@ const ORG_MAP = {
   'da-events': 'DA EVENTS',
   'da-cc': 'DA CC',
   upp: 'DA UPP HOMEPAGE',
+  'da-genuine': 'DA GENUINE',
+  'da-federal': 'DA FEDERAL',
 };
 
 (async function init() {
