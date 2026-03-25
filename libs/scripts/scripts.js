@@ -87,6 +87,10 @@ function loadStyles() {
   const skin = getMetadata('skin');
   if (skin) paths.push(`${miloLibs}/styles/skins/${skin}.css`);
 
+  if (getMetadata('foundation') === 'c2' && /Firefox\//.test(navigator.userAgent) && !CSS.supports('animation-timeline: scroll()')) {
+    import(`${miloLibs}/deps/scroll-timeline.js`);
+  }
+
   paths.forEach((path) => {
     const link = document.createElement('link');
     link.setAttribute('rel', 'stylesheet');
