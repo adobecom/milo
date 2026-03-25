@@ -60,15 +60,8 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
         handleEvent({
           prefix,
           link,
-          callback: async (newHref) => {
-            if (config.lingoProjectSuccessLogging === 'on') {
-              const country = await getCountry();
-              window.lana.log(`Click: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, {
-                sampleRate: 10,
-                tags: 'lingo,lingo-region-nav-click',
-                severity: 'i',
-              });
-            }
+          callback: (newHref) => {
+            if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Click: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo,lingo-region-nav-click', severity: 'i' });
             link.href = newHref;
             hrefAdapted = true;
           },
@@ -84,15 +77,8 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
     handleEvent({
       prefix,
       link,
-      callback: async (newHref) => {
-        if (config.lingoProjectSuccessLogging === 'on') {
-          const country = await getCountry();
-          window.lana.log(`Click: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, {
-            sampleRate: 10,
-            tags: 'lingo,lingo-region-nav-click',
-            severity: 'i',
-          });
-        }
+      callback: (newHref) => {
+        if (config.lingoProjectSuccessLogging === 'on') window.lana.log(`Click: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo,lingo-region-nav-click', severity: 'i' });
         window.open(newHref, e.ctrlKey || e.metaKey ? '_blank' : '_self');
       },
     });
@@ -112,7 +98,6 @@ export default async function init(block) {
   const path = location.href.replace(location.origin + (hasPrefix ? prefix : ''), '').replace('#langnav', '');
   links.forEach((link) => decorateLink(link, path, localeToLanguageMap));
   if (config.lingoProjectSuccessLogging === 'on') {
-    const country = await getCountry();
-    window.lana.log(`Load: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo,lingo-region-nav-load', severity: 'i' });
+    window.lana.log(`Load: Region_Nav_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${getCountry()}`, { sampleRate: 10, tags: 'lingo,lingo-region-nav-load', severity: 'i' });
   }
 }

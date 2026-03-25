@@ -120,10 +120,7 @@ async function saveAllToDa(url, blob) {
 
 async function previewOrPublish({ path, action }) {
   const previewUrl = `${AEM_ORIGIN}/${action}/${toOrg}/${toRepo}/main${path}`;
-  const authToken = (process.env.AEM_LIVE_DA_ADMIN_TOKEN || '').trim();
-  const opts = { method: 'POST',
-    ...(authToken && { headers: { Cookie: `auth_token=${authToken}` } }),
-  };
+  const opts = { method: 'POST' };
   const resp = await fetch(previewUrl, opts);
   if (resp.ok && ROLLING_IMPORT_ENABLE_DEBUG_LOGS)
     console.log(
@@ -176,7 +173,7 @@ const projectExclude = {
   ],
   'da-dc': [
     '.json',
-  ],
+  ],  
   'events-milo': [
     '.json',
   ],

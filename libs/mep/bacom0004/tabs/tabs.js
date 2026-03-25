@@ -64,6 +64,7 @@ const generateStorageName = (tabId) => {
 };
 
 const loadActiveTab = (config) => {
+  if (!config['active-tab']) return ''; // force to have no active t ab at all
   if (config.remember !== 'on') return 0;
 
   const tabId = config['tab-id'];
@@ -324,16 +325,16 @@ export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
 
 // mWeb specific
 const hideAllTabs = () => {
-  [...document.querySelectorAll('.tab-content-container .tabpanel.mobile-show')]
-    .forEach((panel) => panel.classList.remove('mobile-show'));
+  [...document.querySelectorAll('.tab-content-container .tabpanel:not(:has([hidden]))')]
+    .forEach((panel) => panel.setAttribute('hidden', true));
 };
 
 const toggleMobileTab = (button) => () => {
   const currentPanel = button.closest('.tabpanel');
-  const isHidden = !currentPanel.classList.contains('mobile-show');
+  const isHidden = currentPanel.getAttribute('hidden') !== null;
   hideAllTabs();
-  if (isHidden) currentPanel.classList.add('mobile-show');
-  else currentPanel.classList.remove('mobile-show');
+  if (isHidden) currentPanel.removeAttribute('hidden');
+  else currentPanel.setAttribute('hidden', true);
 
   setTimeout(() => {
     currentPanel.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });

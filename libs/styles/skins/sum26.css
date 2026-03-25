@@ -1,9 +1,0 @@
-:root:has(meta[name="skin"][content="sum26"]) {
-  .box {
-    background: var(--s2a-color-green-1000);
-  }
-
-  .box.foo-kit {
-    background: var(--s2a-color-blue-900);
-  }
-}

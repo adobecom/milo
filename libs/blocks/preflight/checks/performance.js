@@ -125,7 +125,6 @@ export async function checkVideoPoster(url, area, observeLcp) {
       title: PERFORMANCE_TITLES.VideoPoster,
       status: STATUS.EMPTY,
       description: 'No video as LCP element.',
-      metricsExtra: { performance_video_as_lcp: false },
     };
   }
   const hasPoster = !!videoElement?.poster;
@@ -137,7 +136,6 @@ export async function checkVideoPoster(url, area, observeLcp) {
     description: hasPoster
       ? 'LCP video has a poster attribute.'
       : 'LCP video has no poster attribute.',
-    metricsExtra: { performance_video_as_lcp: true },
   };
 }
 
@@ -168,9 +166,9 @@ export async function checkPlaceholders(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
     return {
-      checkId: PERFORMANCE_IDS.placeholders,
-      severity: PERFORMANCE_SEVERITIES.placeholders,
-      title: PERFORMANCE_TITLES.Placeholders,
+      checkId: PERFORMANCE_IDS.Performance,
+      severity: PERFORMANCE_SEVERITIES.Performance,
+      title: PERFORMANCE_TITLES.Performance,
       status: STATUS.FAIL,
       description: 'No LCP element found.',
     };
@@ -192,8 +190,8 @@ export async function checkIcons(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
     return {
-      checkId: PERFORMANCE_IDS.icons,
-      severity: PERFORMANCE_SEVERITIES.icons,
+      checkId: PERFORMANCE_IDS.Icons,
+      severity: PERFORMANCE_SEVERITIES.Icons,
       title: PERFORMANCE_TITLES.Icons,
       status: STATUS.FAIL,
       description: 'No LCP element found.',
@@ -201,8 +199,8 @@ export async function checkIcons(url, area, observeLcp) {
   }
   const hasIcons = lcp.element.closest('.section')?.querySelector('.icon-milo');
   return {
-    checkId: PERFORMANCE_IDS.icons,
-    severity: PERFORMANCE_SEVERITIES.icons,
+    checkId: PERFORMANCE_IDS.Icons,
+    severity: PERFORMANCE_SEVERITIES.Icons,
     title: PERFORMANCE_TITLES.Icons,
     status: hasIcons ? STATUS.FAIL : STATUS.PASS,
     description: hasIcons

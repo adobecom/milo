@@ -2,14 +2,7 @@ import ctaTextOption from './ctaTextOption.js';
 import {
   getConfig, getLocale, getMetadata, loadScript, loadStyle, createTag,
 } from '../../utils/utils.js';
-import {
-  initService,
-  loadMasComponent,
-  getMasLibs,
-  getMiloLocaleSettings,
-  COMMERCE_LIBRARY,
-  getMasComponentUrl,
-} from '../merch/merch.js';
+import { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, COMMERCE_LIBRARY } from '../merch/merch.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -171,21 +164,20 @@ export async function loadOstEnv() {
   // Get the exports - they might be in different places depending on how it was loaded
   let Log;
   let Defaults;
-  if (masCommerceService?.Log && masCommerceService?.Defaults) {
-    ({ Log, Defaults } = masCommerceService);
-  } else if (getMasLibs() && window.mas?.commerce) {
+  if (getMasLibs() && window.mas?.commerce) {
+    // Loaded from external URL - check global scope
     ({ Log, Defaults } = window.mas.commerce);
   } else {
-    const targetUrl = getMasComponentUrl(COMMERCE_LIBRARY, getMasLibs(), window.location.hostname);
+    // Loaded as module
     // eslint-disable-next-line import/no-unresolved
-    ({ Log, Defaults } = await import(targetUrl));
+    ({ Log, Defaults } = await import('https://www.adobe.com/mas/libs/commerce.js'));
   }
 
   const defaultPlaceholderOptions = Object.fromEntries([
     ['term', 'displayRecurrence', 'true'],
     ['seat', 'displayPerUnit', masDefaultsEnabled ? null : 'true'],
     ['tax', 'displayTax'],
-    ['old', 'displayOldPrice', 'true'],
+    ['old', 'displayOldPrice'],
   ].map(([key, targetKey, defaultValue = false]) => {
     const value = searchParameters.get(key) ?? defaultValue;
     searchParameters.delete(key);
@@ -291,7 +283,7 @@ export async function loadOstEnv() {
       co,
     );
 
-    log.debug(`Use link: ${link.outerHTML}`);
+    log.debug(`Use Link: ${link.outerHTML}`);
     const linkBlob = new Blob([link.outerHTML], { type: 'text/html' });
     const textBlob = new Blob([link.href], { type: 'text/plain' });
     // eslint-disable-next-line no-undef

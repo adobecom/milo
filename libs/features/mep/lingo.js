@@ -44,7 +44,7 @@ export function handleInvalidMepLingo(a, { env }) {
     const section = a.closest('.section');
     if (isProd) { section?.remove(); return; }
     section.dataset.failed = 'true';
-    section.dataset.reason = 'Failed loading mep-lingo row';
+    section.dataset.reason = 'mep-lingo: not available (section swap)';
     a.parentElement?.remove();
     return;
   }
@@ -52,11 +52,10 @@ export function handleInvalidMepLingo(a, { env }) {
   if (mepLingoBlockSwap) {
     const block = a.closest(`.${mepLingoBlockSwap}`);
     if (isProd) { block?.remove(); return; }
-    if (mepLingoBlockSwap !== 'mep-lingo') {
-      block.dataset.failed = 'true';
-      block.dataset.reason = 'Failed loading mep-lingo row';
-      a.parentElement?.remove();
-    }
+    const swapType = mepLingoBlockSwap === 'mep-lingo' ? 'block' : 'block swap';
+    block.dataset.failed = 'true';
+    block.dataset.reason = `mep-lingo: not available (${swapType})`;
+    if (mepLingoBlockSwap !== 'mep-lingo') a.parentElement?.remove();
     return;
   }
 
@@ -67,9 +66,10 @@ export function handleInvalidMepLingo(a, { env }) {
     if (!parent?.children.length && !parent?.textContent?.trim()) parent?.remove();
     return;
   }
+  const isInline = a.dataset.originalHref?.includes('#_inline');
   a.replaceWith(createTag('div', {
     'data-failed': 'true',
-    'data-reason': 'Failed loading mep-lingo fragment.',
+    'data-reason': `mep-lingo: ${isInline ? 'inline ' : ''}fragment not available`,
     style: 'min-height: 40px; margin: 8px 0;',
   }));
 }
@@ -96,13 +96,14 @@ export function removeMepLingoElement(a, isMepLingoBlock, originalBlock) {
   }
 }
 
-export function getMepLingoFallbackPath(originalHref, locale, resourcePath) {
+export async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath) {
+  window.lana?.log(`MEP Lingo: Query-index indicated regional content exists but fetch failed for ${resourcePath}. Falling back to authored locale.`);
+
   let fallbackPath = originalHref;
   try {
     const resourceUrl = new URL(resourcePath);
     const originalUrl = new URL(originalHref);
-    if (locale?.prefix !== undefined
-      && !originalUrl.pathname.startsWith(locale.prefix)) {
+    if (locale?.prefix !== undefined && !originalUrl.pathname.startsWith(locale.prefix)) {
       fallbackPath = `${resourceUrl.origin}${locale.prefix}${originalUrl.pathname}`;
     } else {
       fallbackPath = `${resourceUrl.origin}${originalUrl.pathname}`;
@@ -112,46 +113,7 @@ export function getMepLingoFallbackPath(originalHref, locale, resourcePath) {
       fallbackPath = `${locale.prefix}${fallbackPath}`;
     }
   }
-  return fallbackPath;
-}
 
-export async function dualFetchMepLingo(resourcePath, originalHref, locale) {
-  const fallbackPath = getMepLingoFallbackPath(originalHref, locale, resourcePath);
-  const result = await fetchMepLingo(resourcePath, fallbackPath);
-  if (result.usedFallback) {
-    window.lana?.log(
-      'MEP Lingo: Regional content not found for '
-        + `${resourcePath}. Falling back to base fragment.`,
-      { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 },
-    );
-  }
-  return { ...result, fallbackPath };
-}
-
-export function logMepLingoFallback(resourcePath, skipQI) {
-  const msg = skipQI
-    ? 'MEP Lingo: Regional content not found for '
-      + `${resourcePath}. Keeping authored content.`
-    : 'MEP Lingo: Regional fetch failed for '
-      + `${resourcePath}. Keeping authored content.`;
-  const logOpts = skipQI
-    ? { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 }
-    : { tags: 'mep-lingo', severity: 'error' };
-  window.lana?.log(msg, logOpts);
-}
-
-export async function tryMepLingoFallbackForStaleIndex(originalHref, locale, resourcePath, skipQI) {
-  const msg = skipQI
-    ? 'MEP Lingo: Regional content not found for '
-      + `${resourcePath}. Falling back to base fragment.`
-    : 'MEP Lingo: Query-index indicated regional content exists'
-      + ` but fetch failed for ${resourcePath}. Falling back to base fragment.`;
-  const logOpts = skipQI
-    ? { tags: 'mep-lingo', severity: 'warn', sampleRate: 0.1 }
-    : { tags: 'mep-lingo', severity: 'error' };
-  window.lana?.log(msg, logOpts);
-
-  const fallbackPath = getMepLingoFallbackPath(originalHref, locale, resourcePath);
   const resp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 

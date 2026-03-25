@@ -32,9 +32,9 @@ export const LANA_OPTIONS = {
   tags: 'manage-plan',
 };
 
-export const lanaLog = async (msg, subType, severity) => {
+export const lanaLog = async (msg, subType) => {
   const { userId } = await window.adobeIMS?.getProfile() ?? {};
-  window.lana?.log(`ManagePlan/${subType}/${userId}: ${msg}`, { ...LANA_OPTIONS, severity });
+  window.lana?.log(`ManagePlan/${subType}/${userId}: ${msg}`, LANA_OPTIONS);
 };
 
 let shouldRefetchEntitlements = false;
@@ -95,7 +95,6 @@ export const handleIFrameEvents = ({ data: msgData }) => {
       shouldRefetchEntitlements = true;
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.Error:
-      lanaLog(`ManagePlan error event: ${JSON.stringify(data || {})}`, subType, 'error');
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.Close:
       if (shouldRefetchEntitlements) {
