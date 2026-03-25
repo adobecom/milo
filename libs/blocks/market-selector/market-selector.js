@@ -4,11 +4,11 @@ import {
   createTag,
   getConfig,
   getCookie,
-  getFederatedContentRoot,
   getMetadata,
   setInternational,
   setMarket,
 } from '../../utils/utils.js';
+import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 import { getMarketConfig, getValidatedMarket, norm } from '../../utils/market.js';
 
 window.addEventListener('pageshow', (event) => {
@@ -17,18 +17,6 @@ window.addEventListener('pageshow', (event) => {
     window.location.reload();
   }
 });
-
-async function loadMarketsData() {
-  try {
-    const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/markets.json`);
-    if (!resp.ok) return [];
-    const json = await resp.json();
-    return json?.data || [];
-  } catch (e) {
-    window.lana?.log(`Market selector: failed to load markets data: ${e?.message}`);
-    return [];
-  }
-}
 
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const GLOBE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="market-selector-globe"><path d="M10 19C14.9706 19 19 14.9706 19 10C19 5.02944 14.9706 1 10 1C5.02944 1 1 5.02944 1 10C1 14.9706 5.02944 19 10 19Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 1C12.25 3.5 13.5 6.5 13.5 10C13.5 13.5 12.25 16.5 10 19C7.75 16.5 6.5 13.5 6.5 10C6.5 6.5 7.75 3.5 10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -136,14 +124,6 @@ function getLangKeyForMarket(currentLang) {
   return (typeof langKey === 'string' && langKey.trim()) ? langKey.trim().toLowerCase() : 'en';
 }
 
-function getMarketLabel(market, langKey) {
-  const prefLangLabel = market[langKey];
-  if (typeof prefLangLabel === 'string' && prefLangLabel.trim()) return prefLangLabel.trim();
-  const enLabel = market.en;
-  if (typeof enLabel === 'string' && enLabel.trim()) return enLabel.trim();
-  return market.marketName || '';
-}
-
 function getCurrentMarket(markets, currentMarketCode, currentLang) {
   const supportedRegions = currentLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
   return markets.find((market) => (market.marketCode?.toLowerCase() || '') === (currentMarketCode || '').toLowerCase())
@@ -183,19 +163,20 @@ function handleLanguageSelect(langOption, config, currentMarketCode, opts = {}) 
 
   setInternational(selectedLang.prefix || 'us');
 
-  const finalUrl = new URL(langOption.url);
-
   // When existing country cookie conflicts with selected language, override to language's default
   const supported = selectedLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
   const defaultMarket = selectedLang.defaultMarket || 'us';
+  let href = langOption.url;
   if (getCookie('country') && !supported.includes(norm(currentMarketCode))) {
     setMarket(defaultMarket);
-    finalUrl.searchParams.set('country', defaultMarket);
+    href = appendCountryParam(langOption.url, defaultMarket);
+  } else {
+    href = new URL(langOption.url).toString();
   }
 
   handleEvent({
     prefix: selectedLang.prefix,
-    link: { href: finalUrl.toString() },
+    link: { href },
     callback: (url) => { window.open(url, openInNewTab ? '_blank' : '_self'); },
   });
 }
@@ -232,21 +213,18 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts
     ? getTargetUrl(marketPrefix, window.location.pathname)
     : window.location.href;
 
-  const finalUrl = new URL(targetUrl);
-  finalUrl.searchParams.set('country', marketItem.value);
+  const finalHref = appendCountryParam(targetUrl, marketItem.value);
 
   if (isRedirect) {
-    const currentUrlWithParam = new URL(window.location.href);
-    currentUrlWithParam.searchParams.set('country', marketItem.value);
-
+    const fallbackHref = appendCountryParam(window.location.href, marketItem.value);
     handleEvent({
       prefix: marketPrefix,
-      link: { href: finalUrl.toString() },
+      link: { href: finalHref },
       callback: (url) => { window.open(url, openInNewTab ? '_blank' : '_self'); },
-      fallbackUrl: currentUrlWithParam.toString(),
+      fallbackUrl: fallbackHref,
     });
   } else {
-    window.open(finalUrl.toString(), openInNewTab ? '_blank' : '_self');
+    window.open(finalHref, openInNewTab ? '_blank' : '_self');
   }
 }
 

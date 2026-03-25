@@ -1,10 +1,13 @@
-import { getCountry } from '../../utils/utils.js';
+import { getCountry, setMarket } from '../../utils/utils.js';
+import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 
 let config;
 let createTag;
 let loadStyleFn;
 let loadBlockFn;
 let sendAnalyticsFunc;
+
+const COUNTRY_PLACEHOLDER = /\{country\}/g;
 
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
@@ -162,32 +165,106 @@ async function getAvailableMarkets(suggestedMarkets) {
     .map((r) => r.market);
 }
 
-function decoratePickerLink(link, market, currentPagePrefix) {
+function getPageMarketsEntry(pagePrefix) {
+  const raw = config.marketsConfig?.languages?.data ?? config.marketsConfig?.data;
+  return raw?.find((e) => (e.prefix || 'us') === (pagePrefix || 'us'));
+}
+
+function setIntlCookie(localePrefix) {
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
+  document.cookie = `international=${localePrefix || 'us'};path=/;${domain}`;
+}
+
+function getLangKeyForModalMarket(market) {
+  const raw = market.marketLangKey || market.lang;
+  if (typeof raw === 'string' && raw.trim()) return raw.trim().toLowerCase();
+  return 'en';
+}
+
+function getGeoCountryDisplayName(markets, geoMarketCode, langKey) {
+  let marketLabel = '';
+  if (markets?.length && geoMarketCode) {
+    const lower = geoMarketCode.toLowerCase();
+    const matchingMarket = markets.find((market) => (market.marketCode?.toLowerCase() || '') === lower);
+    marketLabel = getMarketLabel(matchingMarket, langKey);
+  }
+  const trimmed = typeof marketLabel === 'string' ? marketLabel.trim() : '';
+  if (trimmed) {
+    const idx = trimmed.indexOf('-');
+    if (idx !== -1) {
+      const countryName = trimmed.slice(0, idx).trim();
+      if (countryName) return countryName;
+    }
+  }
+  return (geoMarketCode || '').toUpperCase();
+}
+
+function applyCountryPlaceholder(text, countryName) {
+  if (typeof text !== 'string' || !text) return text;
+  return text.replace(COUNTRY_PLACEHOLDER, countryName);
+}
+
+function appendGeoFlagIcon(mainAction, geoMarketCode) {
+  const base = config.miloLibs || config.codeRoot;
+  const iconSpan = createTag('span', { class: 'icon margin-inline-end' });
+  const code = String(geoMarketCode).toLowerCase().replace(/_/g, '-');
+  const flagImg = createTag('img', {
+    class: 'icon-milo',
+    width: 15,
+    height: 15,
+    alt: '',
+    role: 'presentation',
+  });
+  flagImg.addEventListener(
+    'error',
+    () => {
+      flagImg.remove();
+      if (iconSpan.childNodes.length === 0) {
+        iconSpan.remove();
+      }
+    },
+    { once: true },
+  );
+  flagImg.src = `${base}/img/georouting/flag-${code}.svg`;
+  iconSpan.appendChild(flagImg);
+  mainAction.appendChild(iconSpan);
+}
+
+function decoratePickerLink(link, market, currentPagePrefix, geoMarketCode) {
   const eventName = `Switch:${market.prefix || 'us'}-${currentPagePrefix}|language-modal`;
   link.setAttribute('daa-ll', eventName);
   link.addEventListener('click', async (e) => {
     e.preventDefault();
-    const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
-    document.cookie = `international=${market.prefix || 'us'};path=/;${domain}`;
+    if (geoMarketCode) setMarket(geoMarketCode);
+    setIntlCookie(market.prefix || 'us');
     link.closest('.dialog-modal')?.dispatchEvent(new Event('closeModal'));
     removeOverflow();
     window.open(market.url, '_self');
   });
 }
 
-function openPicker(button, markets, event, currentPagePrefix, dir) {
+function openPicker(
+  button,
+  markets,
+  event,
+  currentPagePrefix,
+  dir,
+  geoMarketCode,
+  pickerCountryLabel,
+) {
   if (document.querySelector('.language-modal .picker')) {
     return;
   }
   const list = createTag('ul', { class: 'picker', dir: dir || 'ltr' });
   markets.forEach((m) => {
     const lang = config.locales?.[m.prefix || '']?.ietf ?? m.lang ?? '';
-    const a = createTag('a', { lang, href: m.url || '#' }, m.language);
+    const linkLabel = pickerCountryLabel ? `${pickerCountryLabel} - ${m.language}` : m.language;
+    const a = createTag('a', { lang, href: m.url || '#' }, linkLabel);
     if (a.hash && !window.location.hash) {
       a.hash = '';
       a.setAttribute('href', a.href);
     }
-    decoratePickerLink(a, m, currentPagePrefix);
+    decoratePickerLink(a, m, currentPagePrefix, geoMarketCode);
     const li = createTag('li', {}, a);
     list.appendChild(li);
   });
@@ -202,32 +279,56 @@ function openPicker(button, markets, event, currentPagePrefix, dir) {
   addOutsideClick(event);
 }
 
-function getCurrentLanguageLabel() {
+function getCurrentSiteLabel() {
   const prefix = config.locale.prefix?.replace('/', '') || 'us';
-  const normalized = prefix || 'us';
-  const rawEntries = config.marketsConfig?.languages?.data ?? config.marketsConfig?.data;
-  const entry = rawEntries?.find((e) => (e.prefix || 'us') === normalized);
-  return entry?.nativeName ?? entry?.langName ?? entry?.language ?? normalized;
+  const entry = getPageMarketsEntry(prefix);
+  return entry?.nativeName ?? entry?.langName ?? entry?.language ?? prefix;
 }
 
-function decorateCurrentSiteLink(link, currentPagePrefix) {
+function decorateCurrentSiteLink(link, currentPagePrefix, regionCode) {
   const eventName = `Stay:${currentPagePrefix}|language-modal`;
   link.setAttribute('daa-ll', eventName);
   link.addEventListener('click', async (e) => {
     e.preventDefault();
-    const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
-    document.cookie = `international=${currentPagePrefix};path=/;${domain}`;
+    if (regionCode) {
+      setMarket(regionCode);
+      try {
+        window.history.replaceState(null, '', appendCountryParam(window.location.href, regionCode));
+      } catch {
+        /* ignore invalid URL */
+      }
+    }
+    setIntlCookie(currentPagePrefix);
     link.closest('.dialog-modal')?.dispatchEvent(new Event('closeModal'));
     removeOverflow();
   });
 }
 
-function buildContent(currentMarket, availableMarkets, currentPagePrefix) {
+function buildContent(
+  currentMarket,
+  availableMarkets,
+  currentPagePrefix,
+  geoMarketCode,
+  markets,
+) {
   const fragment = new DocumentFragment();
   const lang = config.locales?.[currentMarket.prefix || '']?.ietf ?? currentMarket.lang ?? '';
   const dir = currentMarket.dir || 'ltr';
-  const title = createTag('h3', { lang, dir }, currentMarket.modalTitle);
-  const text = createTag('p', { class: 'locale-text', lang, dir }, currentMarket.modalDescription);
+  const useGeo = Boolean(geoMarketCode);
+  const langKey = getLangKeyForModalMarket(currentMarket);
+  const countryDisplayName = useGeo
+    ? getGeoCountryDisplayName(markets, geoMarketCode, langKey)
+    : '';
+
+  const titleText = useGeo
+    ? applyCountryPlaceholder(currentMarket.modalTitle, countryDisplayName)
+    : currentMarket.modalTitle;
+  const descText = useGeo
+    ? applyCountryPlaceholder(currentMarket.modalDescription, countryDisplayName)
+    : currentMarket.modalDescription;
+
+  const title = createTag('h3', { lang, dir }, titleText);
+  const text = createTag('p', { class: 'locale-text', lang, dir }, descText);
 
   const mainAction = createTag('a', {
     class: 'con-button blue button-l',
@@ -237,20 +338,36 @@ function buildContent(currentMarket, availableMarkets, currentPagePrefix) {
     'aria-expanded': 'false',
     href: '#',
   });
-  mainAction.append(currentMarket.language);
+  const labelText = useGeo ? countryDisplayName : currentMarket.language;
+  const hasPicker = availableMarkets.length > 1;
+  const base = config.miloLibs || config.codeRoot;
 
-  if (availableMarkets.length > 1) {
-    const downArrow = createTag('img', {
+  if (useGeo) {
+    appendGeoFlagIcon(mainAction, geoMarketCode);
+  }
+  mainAction.append(labelText);
+  if (hasPicker) {
+    mainAction.appendChild(createTag('img', {
       class: 'icon-milo down-arrow',
-      src: `${config.miloLibs || config.codeRoot}/ui/img/chevron.svg`,
+      src: `${base}/ui/img/chevron.svg`,
       role: 'presentation',
       width: 15,
       height: 15,
-    });
-    mainAction.appendChild(downArrow);
+    }));
+  }
+
+  if (availableMarkets.length > 1) {
     const openPickerHandler = (e) => {
       e.preventDefault();
-      openPicker(mainAction, availableMarkets, e, currentPagePrefix, dir);
+      openPicker(
+        mainAction,
+        availableMarkets,
+        e,
+        currentPagePrefix,
+        dir,
+        geoMarketCode,
+        useGeo ? countryDisplayName : '',
+      );
     };
     mainAction.addEventListener('keydown', (e) => {
       if (e.code === 'Space') openPickerHandler(e);
@@ -265,28 +382,41 @@ function buildContent(currentMarket, availableMarkets, currentPagePrefix) {
     mainAction.addEventListener('click', async (e) => {
       e.preventDefault();
       const m = availableMarkets[0];
-      const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com;' : '';
-      document.cookie = `international=${m.prefix || 'us'};path=/;${domain}`;
+      if (geoMarketCode) setMarket(geoMarketCode);
+      setIntlCookie(m.prefix || 'us');
       mainAction.closest('.dialog-modal')?.dispatchEvent(new Event('closeModal'));
       removeOverflow();
       window.open(m.url, '_self');
     });
   }
 
+  const currentEntry = getPageMarketsEntry(currentPagePrefix);
+  const regionCode = useGeo && currentEntry
+    ? String(currentEntry.defaultMarket || currentPagePrefix || 'us').toLowerCase()
+    : '';
+  const stayLabel = useGeo && regionCode && markets?.length
+    ? getGeoCountryDisplayName(markets, regionCode, getLangKeyForModalMarket(currentEntry))
+    : getCurrentSiteLabel();
   const currentPageUrl = window.location.hash ? document.location.href : '#';
-  const currentSiteLink = createTag('a', { lang, href: currentPageUrl }, getCurrentLanguageLabel());
-  decorateCurrentSiteLink(currentSiteLink, currentPagePrefix);
+  const currentSiteLink = createTag('a', { lang, href: currentPageUrl }, stayLabel);
+  decorateCurrentSiteLink(currentSiteLink, currentPagePrefix, regionCode);
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(currentSiteLink);
   fragment.append(title, text, linkWrapper);
   return fragment;
 }
 
-function getDetails(availableMarkets, currentPagePrefix) {
+function getDetails(availableMarkets, currentPagePrefix, geoMarketCode, markets) {
   const wrapper = createTag('div', { class: 'georouting-wrapper fragment' });
 
   if (availableMarkets.length === 1) {
-    const content = buildContent(availableMarkets[0], availableMarkets, currentPagePrefix);
+    const content = buildContent(
+      availableMarkets[0],
+      availableMarkets,
+      currentPagePrefix,
+      geoMarketCode,
+      markets,
+    );
     wrapper.appendChild(content);
     return wrapper;
   }
@@ -296,7 +426,13 @@ function getDetails(availableMarkets, currentPagePrefix) {
   wrapper.appendChild(tabsContainer);
 
   sortedMarkets.forEach((market) => {
-    const content = buildContent(market, sortedMarkets, currentPagePrefix);
+    const content = buildContent(
+      market,
+      sortedMarkets,
+      currentPagePrefix,
+      geoMarketCode,
+      markets,
+    );
     const tab = createTab(content, market.language);
     wrapper.appendChild(tab);
   });
@@ -337,6 +473,7 @@ export default async function showLanguageModal(
   createTagFunc,
   loadStyleFunc,
   loadBlockFunc,
+  geoMarketCode,
 ) {
   if (!suggestedMarkets?.length) return;
 
@@ -345,11 +482,20 @@ export default async function showLanguageModal(
   loadStyleFn = loadStyleFunc;
   loadBlockFn = loadBlockFunc ?? (() => Promise.resolve());
 
-  const availableMarkets = await getAvailableMarkets(suggestedMarkets);
+  let availableMarkets = await getAvailableMarkets(suggestedMarkets);
   if (availableMarkets.length === 0) return;
 
+  let markets = [];
+  if (geoMarketCode) {
+    markets = await loadMarketsData();
+    availableMarkets = availableMarkets.map((market) => ({
+      ...market,
+      url: appendCountryParam(market.url, geoMarketCode),
+    }));
+  }
+
   const currentPagePrefix = config.locale.prefix?.replace('/', '') || 'us';
-  const details = getDetails(availableMarkets, currentPagePrefix);
+  const details = getDetails(availableMarkets, currentPagePrefix, geoMarketCode, markets);
   const modal = await showModal(details);
   handleOverflow(modal);
 

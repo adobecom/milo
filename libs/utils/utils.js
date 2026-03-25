@@ -2031,12 +2031,20 @@ async function loadPostLCP(config) {
         prefix: market.prefix ?? '',
         language: market.nativeName || market.langName || market.languageName || market.lang || '',
         lang: market.lang || '',
+        marketLangKey: market.marketLangKey,
         dir: market.dir || 'ltr',
         modalTitle: market.modalTitle || 'This adobe site does not match your location',
         modalDescription: market.modalDescription || 'Based on your location, you may prefer another site',
         continueText: market.continueText || 'Continue',
       }));
-      await showLanguageModal(mappedMarkets, config, createTag, loadStyle, loadBlock);
+      await showLanguageModal(
+        mappedMarkets,
+        config,
+        createTag,
+        loadStyle,
+        loadBlock,
+        routingConfig.geoMarketCode,
+      );
     }
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
@@ -2303,7 +2311,12 @@ async function decorateLanguageBanner() {
   if (!showBanner) return;
 
   if (!useBannerFlow && !isSupportedMarket) {
-    setLangRoutingConfig({ showBanner: false, showModal: true, markets: candidateMarkets });
+    setLangRoutingConfig({
+      showBanner: false,
+      showModal: true,
+      markets: candidateMarkets,
+      geoMarketCode: geoIp,
+    });
     return;
   }
 
