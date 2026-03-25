@@ -61,6 +61,9 @@ export const decorateURL = async (destination, baseURL = window.location) => {
     let destinationUrl = new URL(destination, baseURL.origin);
     const { hostname, pathname, search, hash } = destinationUrl;
 
+    const { htmlExclude } = getConfig();
+    const exclude = htmlExclude?.some((excludeRe) => excludeRe.test(destinationUrl));
+
     /* c8 ignore next 3 */
     if (!hostname) {
       throw new Error('URL does not have a valid host');
@@ -70,7 +73,7 @@ export const decorateURL = async (destination, baseURL = window.location) => {
       destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
     }
 
-    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html') && !pathname.endsWith('/')) {
+    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html') && !pathname.endsWith('/') && !exclude) {
       destinationUrl.pathname = `${pathname}.html`;
     }
 
