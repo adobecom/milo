@@ -30,8 +30,6 @@ const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
 
 let floatingButtonClicked = false;
-
-// let bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
 let bcToken;
 
 function getBetaLabel() {
