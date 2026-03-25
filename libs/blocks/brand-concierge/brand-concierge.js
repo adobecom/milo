@@ -165,6 +165,7 @@ async function openSusiLightModal() {
   const susiConfig = { consentProfile: 'free', fullWidth: true };
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
+    window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
     const token = detail;
     if (!bcToken) {
       bcToken = token;
@@ -539,6 +540,10 @@ export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+  window.addEventListener('signIn:decorateNav', async () => {
+    await window.adobeIMS.refreshToken();
+    window.UniversalNav.reload();
+  });
 
   const rows = el.querySelectorAll(':scope > div');
 
