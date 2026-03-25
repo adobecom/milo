@@ -117,13 +117,13 @@ export const normalizePath = (p, localize = true) => {
       || path.includes('.adobe.')
       || path.includes('localhost:')) {
       if (!localize
-        || config.locale.ietf === 'en-US'
-        || hash.includes(mepHash)
+        || config.locale?.ietf === 'en-US'
+        || hash?.includes(mepHash)
         || firstFolder in config.locales
-        || path.includes('.json')) {
+        || path?.includes('.json')) {
         path = pathname;
       } else {
-        path = `${config.locale.prefix}${pathname}`;
+        path = `${config.locale.prefix}${normalizePath(pathname)}`;
       }
     }
     path = isFederal ? getFederatedUrl(path) : path;
@@ -338,6 +338,7 @@ const COMMANDS = {
       }
     } else {
       value = cmd.content;
+      if (attribute === 'href') value = normalizePath(value);
     }
 
     if (value) {
@@ -1202,7 +1203,7 @@ async function getManifestConfig(info, variantOverride) {
     event,
     source,
   } = info;
-  if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
+  if (disabled && !variantOverride?.[normalizePath(manifestPath)]) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;

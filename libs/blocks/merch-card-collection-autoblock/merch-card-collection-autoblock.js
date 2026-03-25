@@ -29,6 +29,14 @@ const SINGLE_APP_FILTER_MAP = {
   lightroom_1tb: 'photography',
 };
 
+function hasOnlyTargetContent(parent, target) {
+  if (!parent || !target || target.parentElement !== parent) return false;
+  return [...parent.childNodes].every((node) => {
+    if (node === target) return true;
+    return node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '';
+  });
+}
+
 function getTimeoutPromise(timeout) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(false), timeout);
@@ -121,7 +129,7 @@ function getSidenav(collection) {
   if (!hierarchy?.length) return null;
 
   const titleKey = `${collection.variant}SidenavTitle`;
-  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '' });
+  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '', 'close-text': placeholders?.catalogSidenavClose || '' });
 
   /* Search */
   const searchText = sidenavSettings?.searchText;
@@ -302,10 +310,10 @@ export async function createCollection(el, options) {
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
-  let toReplace = el;
-  const contentParent = el.closest('.content');
-  const paragraph = contentParent?.querySelector(':scope > p');
-  if (paragraph) toReplace = paragraph;
+  const paragraph = el.parentElement;
+  const toReplace = paragraph?.tagName === 'P' && hasOnlyTargetContent(paragraph, el)
+    ? paragraph
+    : el;
   toReplace.replaceWith(container);
 
   const success = await collection.checkReady();

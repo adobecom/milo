@@ -2,11 +2,11 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { setConfig, getConfig } from '../../../libs/utils/utils.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init, updateReplicatedValue } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const { default: init, updateReplicatedValue, getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
 
 describe('Brand Concierge', () => {
   it('decorates default variant with header, cards, input and legal, and sets background', async () => {
@@ -175,25 +175,63 @@ describe('Brand Concierge', () => {
     });
   });
 
-  it('uses bootstrap API to initialize chat', async () => {
-    setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
+  it('getUpdatedChatUIConfig returns config with authored content', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+    await init(block);
+
+    const config = getUpdatedChatUIConfig();
+    expect(config).to.exist;
+    expect(config.text['welcome.heading']).to.equal('AI Assistant');
+    expect(config.text['welcome.subheading']).to.equal('How can we help?');
+    expect(config.text['input.placeholder']).to.equal("Tell us what you'd like to do or create");
+    expect(config.arrays['welcome.examples']).to.be.an('array');
+    expect(config.arrays['welcome.examples'].length).to.equal(2);
+    expect(config.arrays['welcome.examples'][0].text).to.equal('Prompt one');
+    expect(config.arrays['welcome.examples'][1].text).to.equal('Prompt two');
+  });
+
+  it('removes query parameters from background image URL', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/background-image.html' });
+    const block = document.querySelector('.brand-concierge');
+    await init(block);
+
+    expect(block.classList.contains('has-bg-image')).to.be.true;
+    const bgValue = block.style.getPropertyValue('--brand-concierge-bg');
+    expect(bgValue).to.contain('url(');
+    expect(bgValue).to.contain('https://example.com/image.jpg');
+    expect(bgValue).to.not.contain('?width=200');
+    expect(bgValue).to.not.contain('&height=300');
+  });
+
+  it('decorates floating button with correct structure and opens modal on click', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/floating-button.html' });
+    const block = document.querySelector('.brand-concierge.floating-button');
+    await init(block);
+
+    const floatingButton = block.querySelector('.bc-floating-button');
+    expect(floatingButton).to.exist;
+    expect(floatingButton.querySelector('.bc-floating-icon')).to.exist;
+    expect(floatingButton.querySelector('.bc-floating-input')).to.exist;
+    expect(floatingButton.querySelector('.bc-floating-input').textContent.trim()).to.equal('Tell us what you\'d like to do or create');
+    expect(floatingButton.querySelector('.bc-floating-submit')).to.exist;
+
+    floatingButton.click();
+
+    const modal = await waitForElement('#brand-concierge-modal');
+    expect(modal).to.exist;
+    const mount = modal.querySelector('#brand-concierge-mount');
+    expect(mount).to.exist;
+    expect(mount.dataset.initialMessage).to.be.undefined;
+  });
+
+  it('sets up bootstrap API parameters, onBeforeEventSend callback, and event handlers correctly', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 
-    window.adobe = window.adobe || {};
-    window.adobe.concierge = { bootstrap: sinon.spy() };
-
-    // Pre-load script to bypass loadScript await
-    const { env } = getConfig();
-    const src = env.name === 'prod'
-      ? 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js'
-      : 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-    // Remove stale script tags left by previous tests so loadScript finds the pre-loaded one
-    document.querySelectorAll(`head > script[src="${src}"]`).forEach((s) => s.remove());
-    const script = document.createElement('script');
-    script.src = src;
-    script.dataset.loaded = 'true';
-    document.head.append(script);
+    // Mock window.adobe.concierge.bootstrap to be available immediately
+    const bootstrapSpy = sinon.spy();
+    window.adobe = { concierge: { bootstrap: bootstrapSpy } };
 
     await init(block);
 
@@ -205,24 +243,128 @@ describe('Brand Concierge', () => {
     const modal = await waitForElement('#brand-concierge-modal');
     expect(modal).to.exist;
 
-    // Wait for openChatModal
+    // Wait for bootstrap to be called (waitForCondition checks for API availability)
     await new Promise((resolve) => {
-      const check = () => {
-        if (window.adobe.concierge.bootstrap.calledOnce) resolve();
-        else setTimeout(check, 10);
+      const checkBootstrap = () => {
+        if (bootstrapSpy.called) {
+          resolve();
+        } else {
+          setTimeout(checkBootstrap, 50);
+        }
       };
-      check();
+      setTimeout(() => resolve(), 2000);
+      checkBootstrap();
     });
 
-    // Verify bootstrap was called
-    expect(window.adobe.concierge.bootstrap.calledOnce).to.be.true;
-    expect(window.adobe.concierge.bootstrap.firstCall.args[0]).to.deep.include({
-      selector: '#brand-concierge-mount',
-      instanceName: 'alloy',
+    const bootstrapArgs = bootstrapSpy.firstCall.args[0];
+    expect(bootstrapArgs.instanceName).to.equal('alloy');
+    expect(bootstrapArgs.selector).to.equal('#brand-concierge-mount');
+    expect(bootstrapArgs.stylingConfigurations).to.exist;
+    expect(bootstrapArgs.onBeforeEventSend).to.be.a('function');
+
+    // Verify onBeforeEventSend callback sets up XDM data correctly
+    const content = {};
+    bootstrapArgs.onBeforeEventSend(content);
+    expect(content.xdm).to.exist;
+    expect(content.xdm.web.webPageDetails.URL).to.equal(window.location.href);
+    expect(content.xdm.environment.browserDetails.userAgent).to.equal(window.navigator.userAgent);
+    // eslint-disable-next-line no-underscore-dangle
+    expect(content.xdm.environment._dc.language).to.equal(window.navigator.language);
+
+    // Verify event listener for sign-in is set up on mount element
+    const mount = modal.querySelector('#brand-concierge-mount');
+    expect(mount).to.exist;
+    // Event listener is attached (mount element can receive events)
+    const signInEvent = new CustomEvent('bc:cta-action', {
+      detail: { action: 'sign-in' },
+      bubbles: true,
     });
+    mount.dispatchEvent(signInEvent);
 
     // Clean up
-    script.remove();
-    delete window.adobe.concierge;
+    delete window.adobe;
+  });
+
+  it('createSusiComponentForModal creates SUSI component with correct properties and event listeners', () => {
+    const onCloseRedirect = sinon.spy();
+    const onSuccessfulToken = sinon.spy();
+    const originalLana = window.lana;
+    window.lana = { log: sinon.spy() };
+
+    const authParams = {
+      dt: false,
+      locale: 'en-us',
+      response_type: 'token',
+      client_id: 'test-client-id',
+    };
+    const config = { consentProfile: 'free', fullWidth: true };
+    const variant = 'standard';
+    const redirectUrl = 'https://example.com/redirect';
+    const isStage = true;
+    const popup = true;
+
+    const susi = createSusiComponentForModal({
+      authParams,
+      config,
+      variant,
+      redirectUrl,
+      isStage,
+      popup,
+      onCloseRedirect,
+      onSuccessfulToken,
+    });
+
+    // Verify element is created
+    expect(susi.tagName.toLowerCase()).to.equal('susi-sentry-light');
+
+    // Verify properties are set correctly
+    expect(susi.authParams).to.deep.include({ ...authParams, redirect_uri: redirectUrl });
+    expect(susi.config).to.equal(config);
+    expect(susi.variant).to.equal(variant);
+    expect(susi.popup).to.be.true;
+    expect(susi.stage).to.equal('true');
+
+    // Test redirect event with popup
+    const redirectEvent = new CustomEvent('redirect', { detail: 'https://example.com/auth' });
+    susi.dispatchEvent(redirectEvent);
+    expect(onCloseRedirect.calledOnce).to.be.true;
+
+    // Test error event
+    const errorEvent = new CustomEvent('on-error', { detail: { error: 'test error' } });
+    susi.dispatchEvent(errorEvent);
+    expect(window.lana.log.calledWith('SUSI Light error:', errorEvent)).to.be.true;
+
+    // Test analytics event
+    const analyticsEvent = new CustomEvent('on-analytics');
+    susi.dispatchEvent(analyticsEvent);
+    // Analytics handler is a no-op, just verify it doesn't throw
+
+    // Test successful token event
+    const tokenEvent = new CustomEvent('on-token', { detail: 'test-token' });
+    susi.dispatchEvent(tokenEvent);
+    expect(onSuccessfulToken.calledOnce).to.be.true;
+    expect(onSuccessfulToken.firstCall.args[0].detail).to.equal('test-token');
+
+    // Test auth failed event
+    const authFailedEvent = new CustomEvent('on-auth-failed');
+    susi.dispatchEvent(authFailedEvent);
+    // Auth failed handler is a no-op, just verify it doesn't throw
+
+    // Test without onSuccessfulToken
+    const susiNoToken = createSusiComponentForModal({
+      authParams,
+      config,
+      variant,
+      redirectUrl,
+      isStage: false,
+      popup: true,
+      onCloseRedirect,
+    });
+    const tokenEventNoHandler = new CustomEvent('on-token', { detail: 'test-token' });
+    susiNoToken.dispatchEvent(tokenEventNoHandler);
+    // Should not throw even without onSuccessfulToken handler
+
+    // Clean up
+    window.lana = originalLana;
   });
 });

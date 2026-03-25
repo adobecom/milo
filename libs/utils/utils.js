@@ -549,6 +549,11 @@ export function lingoActive() {
   return ['true', 'on'].includes(langFirst);
 }
 
+export function mepLingoSkipQI() {
+  const skip = (PAGE_URL.searchParams.get('mep-lingo-skip-qi') || getMetadata('mep-lingo-skip-qi'))?.toLowerCase();
+  return lingoActive() && ['true', 'on'].includes(skip);
+}
+
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
@@ -797,12 +802,16 @@ function localizeLinkCore(
     };
 
     const isLingoPage = locale.base !== undefined || !!locale.regions;
-    const enterAsync = useAsync && aTag && extension !== 'json'
+    const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
+    const siteId = uniqueSiteId ?? '';
+    const qiResolved = queryIndexes[siteId]?.requestResolved;
+    const skipQueryIndex = isMepLingoFragment
+        && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
+    const enterAsync = useAsync && aTag && extension !== 'json' && !skipQueryIndex
       && lingoActive() && isLingoPage
       && (!isFragment || (isMepLingoFragment && !!locale.regions));
 
     if (enterAsync) {
-      const siteId = uniqueSiteId ?? '';
       return (async () => {
         loadQueryIndexes(prefix, [href]);
         const base = overrideBase ?? locale.base;
@@ -850,6 +859,7 @@ function localizeLinkCore(
       })();
     }
 
+    if (skipQueryIndex && aTag) aTag.dataset.mepLingoSkippedQI = 'true';
     return buildUrl(prefix);
   } catch (error) {
     return href;
@@ -1494,10 +1504,15 @@ function setupLinksDecoration(el) {
   return { config, anchors, hostname, href };
 }
 
+const decoratedLinks = new WeakSet();
+
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
+    if (decoratedLinks.has(a)) {
+      return a.classList.contains('link-block') ? a : null;
+    }
     if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
@@ -1509,6 +1524,7 @@ export async function decorateLinksAsync(el) {
         a,
       );
     }
+    decoratedLinks.add(a);
     return processLinkDecoration(a, config, hasDnt);
   });
 
@@ -2035,7 +2051,7 @@ async function decorateMeta() {
   const contents = document.head.querySelectorAll('[content*=".hlx."]:not([data-localized]), [content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
   await Promise.all(Array.from(contents).map(async (meta) => {
     const name = meta.getAttribute('name') || meta.getAttribute('property');
-    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule')) return;
+    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule') || meta.getAttribute('http-equiv') === 'Content-Security-Policy') return;
     try {
       const url = new URL(meta.content);
       const localizedLink = await localizeLinkAsync(`${origin}${url.pathname}`);
@@ -2410,9 +2426,9 @@ async function resolveHighPriorityFragments(section) {
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
-    const newlyDecoratedSection = await decorateSection(section.el, section.idx);
-    section.blocks = newlyDecoratedSection.blocks;
-    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+    const redecorated = await decorateSection(section.el, section.idx);
+    section.blocks = redecorated.blocks;
+    section.preloadLinks = redecorated.preloadLinks;
   }
 }
 

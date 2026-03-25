@@ -10,6 +10,17 @@ import { setConfig } from '../../../libs/utils/utils.js';
 if (!customElements.get('mas-field')) {
   customElements.define('mas-field', class extends HTMLElement {
     checkReady() {
+      if (!this.querySelector('[data-role="mas-field-content"]')) {
+        const content = document.createElement('span');
+        content.setAttribute('data-role', 'mas-field-content');
+        const field = this.getAttribute('field');
+        if (field === 'description') {
+          content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a>';
+        } else {
+          content.textContent = 'Resolved inline value';
+        }
+        this.append(content);
+      }
       return Promise.resolve(Boolean(this));
     }
   });
@@ -190,6 +201,48 @@ describe('merch-card-autoblock autoblock', () => {
       expect(masField).to.exist;
       expect(masField.parentElement).to.equal(p);
       expect(p.querySelector('span')).to.exist;
+    });
+
+    it('unwraps heading wrappers when inline fragment resolves to block content', async () => {
+      const heading = document.createElement('h3');
+      heading.id = 'inline-fragment-heading';
+      heading.classList.add('heading-xxl');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=heading-unwrap-1&field=description';
+      a.textContent = '[[heading-unwrap-test:description]]';
+      strong.append(a);
+      heading.append(strong);
+      document.body.append(heading);
+
+      await init(a);
+
+      const masField = document.querySelector('mas-field');
+      expect(masField).to.exist;
+      expect(masField.parentElement).to.equal(document.body);
+      expect(document.querySelector('#inline-fragment-heading > mas-field')).to.not.exist;
+      const resolvedHeading = masField.querySelector('[data-role="mas-field-content"] h3');
+      expect(resolvedHeading).to.exist;
+      expect(resolvedHeading.id).to.equal('inline-fragment-heading');
+      expect(resolvedHeading.classList.contains('heading-xxl')).to.be.true;
+    });
+
+    it('preserves heading wrappers when inline fragment stays inline', async () => {
+      const heading = document.createElement('h3');
+      heading.id = 'inline-price-heading';
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=heading-inline-1&field=prices';
+      a.textContent = '[[heading-inline-test:prices]]';
+      strong.append(a);
+      heading.append(strong);
+      document.body.append(heading);
+
+      await init(a);
+
+      const masField = document.querySelector('mas-field');
+      expect(masField).to.exist;
+      expect(masField.closest('#inline-price-heading')).to.exist;
     });
   });
 
