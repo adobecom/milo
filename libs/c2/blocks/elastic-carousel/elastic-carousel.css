@@ -123,7 +123,7 @@ html[dir="rtl"] {
           font-weight: var(--s2a-font-weight-adobe-clean-bold);
           line-height: var(--s2a-typography-line-height-eyebrow);
           letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
-          margin: 0 0 var(--s2a-spacing-xs) 0;
+          margin: 0 0 var(--s2a-spacing-2xs) 0;
           transition: color .1s ease;
           display: -webkit-box;
           line-clamp: 1;
@@ -201,15 +201,31 @@ html[dir="rtl"] {
       pointer-events: none;
     }
     .elastic-carousel-container {
-      --start-margin: 500px;
+      --start-margin: 200px;
       /** animation */
       animation: elasticCarouselSlideIn var(--parallax-easing) both;
       animation-timeline: view();
       animation-range: entry 20% exit 100%;
 
       .elastic-carousel-item {
-        --start-gap: 2rem;
+        --start-gap: 2.75rem;
         --end-gap: .25rem;
+
+        &:nth-child(2) {
+          --start-gap: 2.25rem;
+        }
+
+        &:nth-child(3) {
+          --start-gap: 1.75rem;
+        }
+
+        &:nth-child(4) {
+          --start-gap: 1rem;
+        }
+
+        &:nth-child(5) {
+          --start-gap: .5rem;
+        }
 
         margin-inline: var(--start-gap);
         will-change: margin-inline;
