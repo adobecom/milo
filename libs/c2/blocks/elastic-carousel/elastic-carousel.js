@@ -2,6 +2,7 @@ import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 let leaveTimeout;
+const rewindIntervals = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
@@ -31,13 +32,15 @@ const handleMobileAutoplay = (carousel) => {
 
 const disableHoverOnScroll = (carousel) => {
   let timer;
+  const controller = new AbortController();
   window.addEventListener('scroll', () => {
     clearTimeout(timer);
     carousel.classList.add('disable-hover');
     timer = setTimeout(() => {
       carousel.classList.remove('disable-hover');
     }, 150);
-  });
+  }, { signal: controller.signal });
+  return controller;
 };
 
 const handleVideoPlay = (event) => {
@@ -52,17 +55,17 @@ const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
   video.pause();
-  let intervalRewind;
 
   const rewind = (rewindSpeed) => {
-    clearInterval(intervalRewind);
+    clearInterval(rewindIntervals.get(video));
     const startSystemTime = new Date().getTime();
     const startVideoTime = video.currentTime;
 
-    intervalRewind = setInterval(() => {
+    const intervalRewind = setInterval(() => {
       video.playbackRate = 1.0;
       if (video.currentTime === 0) {
-        clearInterval(intervalRewind);
+        clearInterval(rewindIntervals.get(video));
+        rewindIntervals.delete(video);
         video.pause();
       } else {
         const elapsed = new Date().getTime() - startSystemTime;
@@ -70,6 +73,7 @@ const onSlideLeave = (event) => {
         video.currentTime = val;
       }
     }, 30);
+    rewindIntervals.set(video, intervalRewind);
   };
   rewind(1);
 };
@@ -159,8 +163,15 @@ const decorateCarousel = (carousel) => {
 
 export default async function init(el) {
   const decoratedCarousel = decorateCarousel(el);
-  disableHoverOnScroll(decoratedCarousel);
+  const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
   decoratedCarousel.addEventListener('mouseover', onCarouselHover);
   handleMobileAutoplay(decoratedCarousel);
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(el)) {
+      scrollController.abort();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 }
