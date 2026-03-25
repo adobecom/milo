@@ -388,7 +388,7 @@ export const getFederatedContentRoot = () => {
     'https://news.adobe.com',
     'graybox.adobe.com',
   ];
-  const { allowedOrigins = [], origin: configOrigin, fedContentOrigin } = getConfig();
+  const { allowedOrigins = [], origin: configOrigin, fedContentBaseUrl } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
   // Non milo consumers will have its origin from config
   const origin = configOrigin || window.location.origin;
@@ -399,7 +399,7 @@ export const getFederatedContentRoot = () => {
       ? originNoStage === o
       : originNoStage.endsWith(o);
   });
-  federatedContentRoot = fedContentOrigin ?? (isAllowedOrigin ? origin : 'https://www.adobe.com');
+  federatedContentRoot = fedContentBaseUrl ?? (isAllowedOrigin ? origin : 'https://www.adobe.com');
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
     federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
