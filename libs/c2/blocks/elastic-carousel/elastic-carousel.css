@@ -36,7 +36,7 @@ html[dir="rtl"] {
   position: relative;
   overflow: clip;
   margin: auto;
-  
+
   .elastic-carousel-container {
     display: flex;
     position: absolute;
@@ -62,7 +62,7 @@ html[dir="rtl"] {
         padding: var(--s2a-spacing-lg);
         gap: var(--s2a-spacing-md);
         align-items: center;
-        
+
         img {
           width: 24px;
           height: 24px;
@@ -169,7 +169,7 @@ html[dir="rtl"] {
 @media (1280px <= width) {
   .elastic-carousel-container {
     max-height: var(--elastic-carousel-container-height-desktop);
-    
+
     .elastic-carousel-item {
       width: calc(100vw/calc(var(--slides) - 1));
     }
@@ -184,7 +184,7 @@ html[dir="rtl"] {
       max-height: var(--elastic-carousel-container-height-tablet);
       .elastic-carousel-item {
         width: calc(100vw / calc(var(--slides) - 1.5));
-    
+
         .elastic-carousel-item-header {
           padding: var(--s2a-spacing-md);
         }
@@ -196,20 +196,37 @@ html[dir="rtl"] {
 /** tablet up */
 @media (width >= 768px) {
   .elastic-carousel {
+    padding: 2px 0;
 
     &.disable-hover {
       pointer-events: none;
     }
     .elastic-carousel-container {
-      --start-margin: 500px;
+      --start-margin: 200px;
       /** animation */
       animation: elasticCarouselSlideIn var(--parallax-easing) both;
       animation-timeline: view();
       animation-range: entry 20% exit 100%;
 
       .elastic-carousel-item {
-        --start-gap: 2rem;
+        --start-gap: 2.75rem;
         --end-gap: .25rem;
+
+        &:nth-child(2) {
+          --start-gap: 2.25rem;
+        }
+
+        &:nth-child(3) {
+          --start-gap: 1.75rem;
+        }
+
+        &:nth-child(4) {
+          --start-gap: 1rem;
+        }
+
+        &:nth-child(5) {
+          --start-gap: .5rem;
+        }
 
         margin-inline: var(--start-gap);
         will-change: margin-inline;
@@ -273,7 +290,7 @@ html[dir="rtl"] {
         max-width: 100%;
         color: var(--s2a-color-gray-25);
         background: transparent;
-        
+
         /** animation */
         animation: elasticMobileStackSlides var(--paralax-easing) both;
         animation-timeline: view();
@@ -334,7 +351,7 @@ html[dir="rtl"] {
           .elastic-carousel-item-header {
             padding: var(--s2a-spacing-lg);
             position: relative;
-            
+
             &:after {
               content: '';
               display: block;
@@ -432,7 +449,7 @@ html[dir="rtl"] {
     filter: contrast(1);
     opacity: 0;
   }
-  
+
 
   10% {
     opacity: 1;
@@ -445,7 +462,7 @@ html[dir="rtl"] {
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     filter: contrast(var(--stack-contrast));
-    
+
   }
 }
 

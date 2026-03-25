@@ -513,7 +513,6 @@ class Footer {
       regionPickerElem.addEventListener('click', () => {
         if (!isRegionPickerExpanded()) {
           regionPickerElem.setAttribute('aria-expanded', 'true');
-          // wait for the modal to load before we load the region nav
           window.addEventListener('milo:modal:loaded', loadRegionNav, { once: true });
         }
       });

@@ -13,7 +13,7 @@ async function getJson(url) {
     }
     return await resp.json();
   } catch (error) {
-    window.lana?.log(error.message, { tags: 'block-notifications', severity: 'error' });
+    window.lana?.log(error.message);
     return null;
   }
 }

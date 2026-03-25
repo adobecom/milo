@@ -866,301 +866,308 @@ p {
 }
 
 /* TODO: Parallax styles should be loaded separately and conditionally */
-/* General parallax declarations */
-[class*="parallax-"] {
-  /* Default transition values */
-  --parallax-opacity-from: 1;
-  --parallax-translate-y: 0;
-  --parallax-translate-x: 0;
-  --parallax-scale: 1;
-  --parallax-blur: 0;
-  --parallax-stagger-drift: 48px;
+@supports (animation-timeline: view()) {
+  /* General parallax declarations */
+  [class*="parallax-"] {
+    /* Default transition values */
+    --parallax-opacity-from: 1;
+    --parallax-translate-y: 0;
+    --parallax-translate-x: 0;
+    --parallax-scale: 1;
+    --parallax-blur: 0;
+    --parallax-stagger-drift: 48px;
 
-  /* Default range values */
-  --parallax-range-start-name: entry;
-  --parallax-range-start-length: 0%;
-  --parallax-range-start: var(--parallax-range-start-name) var(--parallax-range-start-length);
-  --parallax-range-end-name: entry;
-  --parallax-range-end-length: 100%;
-  --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
+    /* Default range values */
+    --parallax-range-start-name: entry;
+    --parallax-range-start-length: 0%;
+    --parallax-range-start: var(--parallax-range-start-name) var(--parallax-range-start-length);
+    --parallax-range-end-name: entry;
+    --parallax-range-end-length: 100%;
+    --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
 
-  animation-name: enable-parallax;
-  animation-timing-function: var(--parallax-easing);
-  animation-fill-mode: both;
-  animation-timeline: view(block 40% 10%);
-  animation-range: var(--parallax-range-start) var(--parallax-range-end);
+    animation-name: enable-parallax;
+    animation-timing-function: var(--parallax-easing);
+    animation-fill-mode: both;
+    animation-timeline: view(block 40% 10%);
+    animation-range: var(--parallax-range-start) var(--parallax-range-end);
 
-  /* Performance optimization */
-  will-change: opacity, transform, filter;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [class*="parallax-"],
-  [class*="parallax-"] * {
-    animation: none !important;
-  }
-}
-
-/* Variant definitions */
-.parallax-move-up {
-  --parallax-translate-y: 100px;
-}
-
-div.section:has(~ div.section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
-  z-index: 1;
-}
-
-div.section.parallax-garage-door-reveal {
-  --gd-grow-from: -50vh;
-  --gd-reveal-from: 20vh;
-  overflow: clip;
-  transform-origin: top center;
-  animation: garage-door-grow ease-out both;
-  animation-timeline: view(block);
-  animation-range: entry 0% cover 40%;
-
-  @media (width >= 1280px) {
-    --gd-grow-from: -110vh;
-    --gd-reveal-from: 50vh;
-    animation-range: entry 0% cover 50%;
+    /* Performance optimization */
+    will-change: opacity, transform, filter;
   }
 
-  @media (width >= 1920px) {
-    --gd-grow-from: -70vh;
-    --gd-reveal-from: 30vh;
-  }
-
-  .section-background img {
-    animation: garage-door-bg-scale ease-out both;
-    animation-timeline: view(block);
-    animation-range: entry 0% cover 100%;
-  }
-
-  .foreground {
-    z-index: 1;
-    position: relative;
-    animation: garage-door-reveal ease-out both;
-    animation-timeline: view(block);
-    animation-range: cover -10% cover 100%;
-
-    * {
-      animation: garage-door-line-height ease-out both;
-      animation-timeline: view(block);
-      animation-range: entry 10% cover 40%;
+  @media (prefers-reduced-motion: reduce) {
+    [class*="parallax-"],
+    [class*="parallax-"] * {
+      animation: none !important;
     }
   }
-}
 
-@keyframes garage-door-grow {
-  from { transform: translateY(var(--gd-grow-from)); }
-  to { transform: translateY(0); }
-}
-
-@keyframes garage-door-reveal {
-  from { transform: translateY(var(--gd-reveal-from)); }
-}
-
-@keyframes garage-door-bg-scale {
-  from { transform: scale(1); }
-  to { transform: scale(1.1); }
-}
-
-@keyframes garage-door-line-height {
-  from {
-    line-height: 0.6;
+  /* Variant definitions */
+  .parallax-move-up {
+    --parallax-translate-y: 100px;
   }
-}
 
-div.section.parallax-move-up-fast {
-  position: sticky;
-  top: 0;
-  z-index: 0;
-  animation-name: parallax-move-up-fast;
-  animation-timeline: scroll(root block);
-  animation-range: 0 80vh;
-  animation-timing-function: ease-out;
-  animation-fill-mode: both;
+  .parallax-scale-up {
+    --parallax-scale: 0.9;
+  }
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: black;
-    opacity: 0;
-    pointer-events: none;
-    animation: fade-to-dark linear both;
+  /* When scaling down, check whether you need to use clipping
+    to prevent the element from exceeding the viewport */
+  .parallax-scale-down {
+    --parallax-scale: 1.1;
+  }
+
+  .parallax-blur {
+    --parallax-blur: 10px;
+  }
+
+  .parallax-opacity {
+    --parallax-opacity-from: 0;
+  }
+
+  @keyframes enable-parallax {
+    from {
+      opacity: var(--parallax-opacity-from);
+      transform: translate3d(var(--parallax-translate-x), var(--parallax-translate-y), 0)
+        scale(var(--parallax-scale));
+      filter: blur(var(--parallax-blur));
+    }
+
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  /* Grid parallax declarations */
+  .parallax-scale-down-grid {
+    animation-name: enable-grid-parallax;
+    will-change: padding-inline;
+    overflow: clip;
+  }
+
+  @keyframes enable-grid-parallax {
+    from {
+      --grid-max-width: var(--grid-max-width-fluid);
+      --grid-margin-width: 0px;
+    }
+
+    to {
+      --grid-max-width: var(--grid-max-width-target);
+      --grid-margin-width: var(--grid-margin-width-target);
+    }
+  }
+
+  /* Stagger parallax declarations */
+  [class*="parallax-stagger-"] {
+    @media (width >= 768px) {
+      animation-name: enable-parallax-stagger;
+
+      > :not([class*="section-"]) {
+        --parallax-stagger-row-index: 0;
+
+        transform: translate3d(0, calc(var(--parallax-stagger-from, 0px) * var(--parallax-stagger-progress)), 0);
+        will-change: transform;
+      }
+
+      /* Prolong animation for 2 rows */
+      &.two-up:has(> :nth-child(3 of :not([class*="section-"]))),
+      &.three-up:has(> :nth-child(4 of :not([class*="section-"]))),
+      &.four-up:has(> :nth-child(5 of :not([class*="section-"]))) {
+        --parallax-range-end-name: cover;
+        --parallax-range-end-length: 70%;
+      }
+
+      /* Prolong animation for 3+ rows */
+      &.two-up:has(> :nth-child(5 of :not([class*="section-"]))),
+      &.three-up:has(> :nth-child(7 of :not([class*="section-"]))),
+      &.four-up:has(> :nth-child(9 of :not([class*="section-"]))) {
+        --parallax-range-end-length: 80%;
+      }
+
+      /* Column count per -up class */
+      &.two-up { --parallax-stagger-cols: 2; }
+      &.three-up { --parallax-stagger-cols: 3; }
+      &.four-up { --parallax-stagger-cols: 4; }
+
+      /* Column stagger indices per -up class */
+      &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
+      &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
+      &.four-up  > :nth-child(4n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+
+      &.two-up   > :nth-child(2n of :not([class*="section-"])),
+      &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
+      &.four-up  > :nth-child(4n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+
+      &.three-up > :nth-child(3n of :not([class*="section-"])),
+      &.four-up  > :nth-child(4n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+
+      &.four-up  > :nth-child(4n of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+
+      /* Row stagger indices per -up class */
+      /* Row 1 */
+      &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
+      &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+      &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])) {
+        --parallax-stagger-row-index: 1;
+      }
+
+      /* Row 2 */
+      &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+      &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
+      &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
+        --parallax-stagger-row-index: 2;
+      }
+
+      /* Row 3 */
+      &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+      &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+      &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])) {
+        --parallax-stagger-row-index: 3;
+      }
+
+      /* Row 4 */
+      &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
+      &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
+      &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])) {
+        --parallax-stagger-row-index: 4;
+      }
+    }
+  }
+
+  .parallax-stagger-ltr > :not([class*="section-"]) {
+    --parallax-stagger-from: calc(
+      (var(--parallax-stagger-index) + var(--parallax-stagger-row-index))
+      * var(--parallax-stagger-drift)
+    );
+  }
+
+  .parallax-stagger-rtl > :not([class*="section-"]) {
+    --parallax-stagger-from: calc(
+      (var(--parallax-stagger-cols) - 1 - var(--parallax-stagger-index) + var(--parallax-stagger-row-index))
+      * var(--parallax-stagger-drift)
+    );
+  }
+
+  @keyframes enable-parallax-stagger {
+    from { --parallax-stagger-progress: 1; }
+    to { --parallax-stagger-progress: 0; }
+  }
+
+  /* Garage door parallax (rich content over section w/ bkg) declarations */
+  /* TODO: decide if this is general enough to be global */
+  .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+    z-index: 1;
+  }
+
+  .section.parallax-garage-door-reveal {
+    --gd-grow-from: -50vh;
+    --gd-reveal-from: 20vh;
+
+    overflow: clip;
+    transform-origin: top center;
+    animation: garage-door-grow ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 40%;
+
+    @media (width >= 1280px) {
+      --gd-grow-from: -110vh;
+      --gd-reveal-from: 50vh;
+      animation-range: entry 0% cover 50%;
+    }
+
+    @media (width >= 1920px) {
+      --gd-grow-from: -70vh;
+      --gd-reveal-from: 30vh;
+    }
+
+    .section-background img {
+      animation: garage-door-bg-scale ease-out both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 100%;
+    }
+
+    .foreground {
+      z-index: 1;
+      position: relative;
+      animation: garage-door-reveal ease-out both;
+      animation-timeline: view();
+      animation-range: cover -10% cover 100%;
+
+      * {
+        animation: garage-door-line-height ease-out both;
+        animation-timeline: view();
+        animation-range: entry 10% cover 40%;
+      }
+    }
+  }
+
+  @keyframes garage-door-grow {
+    from { transform: translateY(var(--gd-grow-from)); }
+    to { transform: translateY(0); }
+  }
+
+  @keyframes garage-door-reveal {
+    from { transform: translateY(var(--gd-reveal-from)); }
+  }
+
+  @keyframes garage-door-bg-scale {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+  }
+
+  @keyframes garage-door-line-height {
+    from { line-height: 0.6; }
+  }
+
+  /* Section 1 to section 2 parallax declarations */
+  /* TODO: decide if this is general enough to be a global class */
+  .section.parallax-move-up-fast {
+    position: sticky;
+    top: 0;
+    z-index: 0;
+    animation-name: parallax-move-up-fast;
     animation-timeline: scroll(root block);
     animation-range: 0 80vh;
-    z-index: 2;
-  }
-}
+    animation-timing-function: ease-out;
 
-.section.text-reveal-up * {
-  animation: text-reveal-up ease-out both;
-  animation-timeline: view(block);
-  animation-range: entry 46px cover 20%;
-}
-
-@keyframes parallax-move-up-fast {
-  from { transform: translateY(0); }
-  to { transform: translateY(-35vh); }
-}
-
-@keyframes fade-to-dark {
-  from { opacity: 0; }
-  to { opacity: 0.75; }
-}
-
-@keyframes text-reveal-up {
-  from { line-height: 4; }
-}
-
-.parallax-scale-up {
-  --parallax-scale: 0.9;
-}
-
-/* When scaling down, check whether you need to use clipping
-   to prevent the element from exceeding the viewport */
-.parallax-scale-down {
-  --parallax-scale: 1.1;
-}
-
-.parallax-blur {
-  --parallax-blur: 10px;
-}
-
-.parallax-opacity {
-  --parallax-opacity-from: 0;
-}
-
-@keyframes enable-parallax {
-  from {
-    opacity: var(--parallax-opacity-from);
-    transform: translate3d(var(--parallax-translate-x), var(--parallax-translate-y), 0)
-      scale(var(--parallax-scale));
-    filter: blur(var(--parallax-blur));
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
-  }
-}
-
-/* Grid parallax declarations */
-.parallax-scale-down-grid {
-  animation-name: enable-grid-parallax;
-  will-change: padding-inline;
-  overflow: clip;
-}
-
-@keyframes enable-grid-parallax {
-  from {
-    --grid-max-width: var(--grid-max-width-fluid);
-    --grid-margin-width: 0px;
-  }
-
-  to {
-    --grid-max-width: var(--grid-max-width-target);
-    --grid-margin-width: var(--grid-margin-width-target);
-  }
-}
-
-/* Stagger parallax declarations */
-[class*="parallax-stagger-"] {
-  @media (width >= 768px) {
-    animation-name: enable-parallax-stagger;
-
-    > :not([class*="section-"]) {
-      --parallax-stagger-row-index: 0;
-
-      transform: translate3d(0, calc(var(--parallax-stagger-from, 0px) * var(--parallax-stagger-progress)), 0);
-      will-change: transform;
-    }
-
-    /* Prolong animation for 2 rows */
-    &.two-up:has(> :nth-child(3 of :not([class*="section-"]))),
-    &.three-up:has(> :nth-child(4 of :not([class*="section-"]))),
-    &.four-up:has(> :nth-child(5 of :not([class*="section-"]))) {
-      --parallax-range-end-name: cover;
-      --parallax-range-end-length: 70%;
-    }
-
-    /* Prolong animation for 3+ rows */
-    &.two-up:has(> :nth-child(5 of :not([class*="section-"]))),
-    &.three-up:has(> :nth-child(7 of :not([class*="section-"]))),
-    &.four-up:has(> :nth-child(9 of :not([class*="section-"]))) {
-      --parallax-range-end-length: 80%;
-    }
-
-    /* Column count per -up class */
-    &.two-up { --parallax-stagger-cols: 2; }
-    &.three-up { --parallax-stagger-cols: 3; }
-    &.four-up { --parallax-stagger-cols: 4; }
-
-    /* Column stagger indices per -up class */
-    &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
-    &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
-    &.four-up  > :nth-child(4n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
-
-    &.two-up   > :nth-child(2n of :not([class*="section-"])),
-    &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
-    &.four-up  > :nth-child(4n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
-
-    &.three-up > :nth-child(3n of :not([class*="section-"])),
-    &.four-up  > :nth-child(4n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
-
-    &.four-up  > :nth-child(4n of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
-
-    /* Row stagger indices per -up class */
-    /* Row 1 */
-    &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
-    &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
-    &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])) {
-      --parallax-stagger-row-index: 1;
-    }
-
-    /* Row 2 */
-    &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
-    &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
-    &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
-      --parallax-stagger-row-index: 2;
-    }
-
-    /* Row 3 */
-    &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
-    &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
-    &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])) {
-      --parallax-stagger-row-index: 3;
-    }
-
-    /* Row 4 */
-    &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
-    &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
-    &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])) {
-      --parallax-stagger-row-index: 4;
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: black;
+      opacity: 0;
+      pointer-events: none;
+      animation: parallax-fade-to-dark linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 80vh;
+      z-index: 2;
     }
   }
-}
 
-.parallax-stagger-ltr > :not([class*="section-"]) {
-  --parallax-stagger-from: calc(
-    (var(--parallax-stagger-index) + var(--parallax-stagger-row-index))
-    * var(--parallax-stagger-drift)
-  );
-}
+  @keyframes parallax-move-up-fast {
+    from { transform: translateY(0); }
+    to { transform: translateY(-35vh); }
+  }
 
-.parallax-stagger-rtl > :not([class*="section-"]) {
-  --parallax-stagger-from: calc(
-    (var(--parallax-stagger-cols) - 1 - var(--parallax-stagger-index) + var(--parallax-stagger-row-index))
-    * var(--parallax-stagger-drift)
-  );
-}
+  @keyframes parallax-fade-to-dark {
+    from { opacity: 0; }
+    to { opacity: 0.75; }
+  }
 
-@keyframes enable-parallax-stagger {
-  from { --parallax-stagger-progress: 1; }
-  to { --parallax-stagger-progress: 0; }
+  /* Line height parallax declarations */
+  /* TODO: Adapt authoring to move and rename class */
+  .parallax-line-height * {
+    animation: text-reveal-up var(--parallax-easing) both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 40%;
+    will-change: line-height;
+  }
+
+  @keyframes text-reveal-up {
+    from { line-height: 3; }
+  }
 }
 
 .dark {

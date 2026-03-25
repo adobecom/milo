@@ -12,6 +12,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  getCountry,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -33,7 +34,7 @@ const cssPromise = (async () => {
       clientId: 'feds-milo',
       sampleRate: 1,
       tags: 'utilities',
-      severity: 'error',
+      errorType: 'info',
     });
   }
 })();
@@ -55,15 +56,13 @@ const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/asi
 
 const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
-const [utilities, placeholders, merch, { processTrackingLabels }] = await Promise.all([
+const [utilities, placeholders, { processTrackingLabels }] = await Promise.all([
   import('./utilities/utilities.js'),
   import('../../features/placeholders.js'),
-  import('../merch/merch.js'),
   import('../../martech/attributes.js'),
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings } = merch;
 
 const {
   closeAllDropdowns,
@@ -170,87 +169,6 @@ const getMessageEventListener = () => {
   };
 };
 
-const handleSignIn = async () => {
-  const { getModal } = await import('../modal/modal.js');
-  const details = document.createElement('div');
-  details.className = 'feds-signin-modal-content';
-
-  const { env } = getConfig();
-  const lib = `https://auth-light.identity${env.name === 'prod' ? '' : '-stage'}.adobe.com/sentry/wrapper.js`;
-  await loadScript(lib);
-
-  const sentry = document.createElement('susi-sentry-light');
-  if (env.name !== 'prod') sentry.stage = true;
-  sentry.variant = 'standard';
-
-  // Map to SUSI authParams cleanly
-  const { locale, imsClientId, imsScope } = getConfig();
-
-  let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
-  try {
-    const url = new URL(redirectUri);
-    url.searchParams.set('from_ims', 'true');
-    redirectUri = url.toString();
-  } catch (e) {
-    // Fallback if URL parsing fails
-  }
-
-  sentry.authParams = {
-    client_id: imsClientId || SIGNIN_CONTEXT.client_id,
-    scope: imsScope || SIGNIN_CONTEXT.scope || 'AdobeID,openid,gnav',
-    response_type: 'token',
-    redirect_uri: redirectUri,
-    locale: locale?.ietf || 'en-US',
-  };
-
-  const dctxId = getMetadata('susi-light-dctx-id');
-  if (dctxId) sentry.authParams.dctx_id = dctxId;
-
-  sentry.config = { consentProfile: 'free' };
-  sentry.popup = true;
-
-  sentry.addEventListener('on-token', () => {
-    window.location.reload();
-  });
-
-  sentry.addEventListener('on-error', (e) => {
-    window.lana?.log('GNav Sign-In Modal: SUSI Light Error: ', e);
-  });
-
-  // Basic styling to ensure it fits in modal
-  details.innerHTML = `
-    <style>
-      .feds-signin-modal-content {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 48px 0px;
-      }
-      #signin-modal {
-        width: 400px;
-        border-radius: 16px;
-        display: flex;
-        justify-content: center;
-      }
-      #signin-modal .dialog-close {
-        display: block;
-        top: 12px;
-        right: 12px;
-        width: 32px;
-        height: 32px;
-        background-color: transparent;
-      }
-      susi-sentry-light {
-        width: 100%;
-      }
-    </style>
-  `;
-
-  details.append(sentry);
-
-  return getModal(null, { content: details, id: 'signin-modal' });
-};
-
 const getSignInCtaStyle = () => {
   const isPrimary = (
     getMetadata('signin-cta-style') === 'primary'
@@ -288,8 +206,8 @@ export const CONFIG = {
                   trace: () => {},
                   debug: () => {},
                   info: () => {},
-                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', severity: 'warning' }),
-                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
+                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav,warn' }),
+                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
                 },
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
@@ -302,13 +220,7 @@ export const CONFIG = {
           signInCtaStyle: getSignInCtaStyle(),
           isSignUpRequired: false,
           callbacks: {
-            onSignIn: () => {
-              if (getConfig().useSusiModal) {
-                handleSignIn();
-              } else {
-                window.adobeIMS?.signIn(SIGNIN_CONTEXT);
-              }
-            },
+            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
@@ -371,7 +283,7 @@ export const LANGMAP = {
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
-    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav', severity: 'warning' });
+    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav,warn' });
     return;
   }
   window.adobeIMS.signIn(options);
@@ -407,7 +319,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         signIn(SIGNIN_CONTEXT);
       });
     } else {
-      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav', severity: 'warning' });
+      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav,warn' });
     }
 
     decoratedElem.append(dropdownElem);
@@ -614,7 +526,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'i', severity: 'error' });
+      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'i' });
     }));
 
   decorateProductEntryCTA = () => {
@@ -654,7 +566,7 @@ class Gnav {
     if (!this.isLocalNav()) {
       const localNavWrapper = document.querySelector('.feds-localnav');
       if (localNavWrapper) {
-        lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav', severity: 'warning' });
+        lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav,warn' });
         localNavWrapper.remove();
       }
       return;
@@ -662,7 +574,7 @@ class Gnav {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
     const firstElem = localNavItems?.[0]?.querySelector('a, button') || localNavItems?.[0];
     if (!firstElem) {
-      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i', severity: 'error' });
+      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i' });
       return;
     }
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
@@ -672,7 +584,6 @@ class Gnav {
         message: 'GNAV: Localnav does not include \'localnav\' in its name.',
         tags: 'gnav',
         errorType: 'i',
-        severity: 'warning',
       });
       localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
@@ -850,7 +761,7 @@ class Gnav {
 
         resolve();
       } catch (e) {
-        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav', severity: 'error' });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav,warn' });
         resolve();
       }
     });
@@ -876,7 +787,6 @@ class Gnav {
         tags: 'gnav',
         errorType: 'i',
         message: `GNAV: issues within imsReady - ${this.useUniversalNav ? 'decorateUniversalNav' : 'decorateProfile'}`,
-        severity: 'error',
       });
     }
   };
@@ -917,7 +827,6 @@ class Gnav {
         e: `${profileData.statusText} url: ${profileData.url}`,
         tags: 'gnav',
         errorType: 'i',
-        severity: 'error',
       });
       return;
     }
@@ -1003,7 +912,7 @@ class Gnav {
       target: this.blocks.universalNav,
       env: environment,
       locale,
-      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
+      countryCode: getCountry() || 'US',
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
@@ -1276,7 +1185,7 @@ class Gnav {
     fedsPromoWrapper.append(this.elements.aside);
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
-      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i', severity: 'warning' });
+      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
     }
     this.updateGnavTop();
     this.promoResizeObserver?.disconnect();
@@ -1772,7 +1681,6 @@ export default async function init(block) {
     error.tags = 'gnav';
     error.url = url;
     error.errorType = 'e';
-    error.severity = 'error';
     lanaLog({ message: error.message, ...error });
     throw error;
   }

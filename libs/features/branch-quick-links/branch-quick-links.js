@@ -37,7 +37,7 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
     const data = await window.alloy_getIdentity;
     ecid = data?.identity?.ECID;
   } catch (e) {
-    window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links', severity: 'error' });
+    window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
   if (ecid && hasConsent && !a.href.includes('ecid')) {
     urlObj.searchParams.set('ecid', ecid);
@@ -86,7 +86,7 @@ export default function processQuickLink(a) {
     if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
     const hasConsent = await waitForConsent();
     if (loader) loader.replaceWith(a);
-    const isNewTab = (e.metaKey || e.ctrlKey || a.getAttribute('target') === '_blank');
+    const isNewTab = (e.metaKey || e.ctrlKey);
     decorateQuickLink(a, hasConsent, isNewTab);
   });
 }
