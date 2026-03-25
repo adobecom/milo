@@ -275,6 +275,8 @@ const startAutoplay = (slides, cards, container, block) => {
   let leaveTimer = null; // timer for restarting autoplay on block mouse leave
 
   const isMobile = () => !window.matchMedia('(min-width: 1280px)').matches;
+  const isDesktopSmallVp = isMobile()
+    && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   const trackXForCard = (i) => {
     if (i <= 0) return 0;
@@ -322,7 +324,7 @@ const startAutoplay = (slides, cards, container, block) => {
     }
   };
 
-  const activate = (index, direction = 1) => {
+  const activate = (index, direction = 1, { skipTrack = false } = {}) => {
     finishSlideTransition();
 
     const oldSlide = slides[active];
@@ -361,7 +363,7 @@ const startAutoplay = (slides, cards, container, block) => {
     cardEls[active]?.classList.remove('is-active');
     active = index;
     cardEls[active]?.classList.add('is-active');
-    if (isMobile()) {
+    if (isMobile() && !skipTrack) {
       setTrackX(trackXForCard(active), true);
     }
 
@@ -423,7 +425,7 @@ const startAutoplay = (slides, cards, container, block) => {
       clearFill(active);
       paused = true;
       const dir = i > active ? 1 : -1;
-      activate(i, dir);
+      activate(i, dir, { skipTrack: isDesktopSmallVp });
     });
   });
 
@@ -435,6 +437,33 @@ const startAutoplay = (slides, cards, container, block) => {
     paused = true;
     activate(0, -1);
   });
+
+  // this is to handle the use case where the user is on desktop, but shrinks
+  // the viewport to tablet/mobile size. This was causing the next card to be
+  // tracked incorrectly.
+  const handleDesktopSmallVp = () => {
+    if (!isDesktopSmallVp) return;
+    resetBtn?.remove();
+    const playPause = container.querySelector('.rm-pause-play');
+    const nextBtn = createTag('button', {
+      class: 'rm-arrow-next',
+      type: 'button',
+      'aria-label': 'Next card',
+    }, RESET_SVG);
+    const controlsTop = createTag('div', { class: 'rm-controls-top' });
+    playPause.before(controlsTop);
+    controlsTop.append(playPause, nextBtn);
+    nextBtn.addEventListener('click', () => {
+      const next = (active + 1) % cardEls.length;
+      clearTimeout(timer);
+      clearFill(active);
+      paused = true;
+      setPlayingState(false);
+      activate(next, 1);
+    });
+  };
+
+  handleDesktopSmallVp();
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', pauseOnInteraction);
@@ -475,6 +504,7 @@ const startAutoplay = (slides, cards, container, block) => {
     const next = (active + dir + cardEls.length) % cardEls.length;
     activate(next, dir);
     paused = true;
+    setPlayingState(false);
   }, { passive: true });
 
   requestAnimationFrame(() => {
