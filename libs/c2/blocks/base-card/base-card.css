@@ -75,7 +75,7 @@
 
   &.featured {
     .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+      padding: var(--s2a-spacing-24) var(--s2a-spacing-16) var(--s2a-spacing-40) var(--s2a-spacing-16);
     }
 
     .parallax-featured-card-media {
@@ -105,6 +105,12 @@
 
     > div[data-viewport="tablet"] {
       display: flex;
+    }
+
+    &.featured {
+      .foreground {
+        padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+      }
     }
   }
 }
