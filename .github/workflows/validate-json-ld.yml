@@ -1,0 +1,30 @@
+name: Validate JSON-LD Schema
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to validate against'
+        required: false
+        default: 'https://main--milo--adobecom.aem.live'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-json-ld:
+    name: Validate JSON-LD for Phase 1 markets
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
+        with:
+          node-version: '20.x'
+
+      - name: Run JSON-LD validation
+        run: node tools/validate-json-ld.js ${{ inputs.base_url || 'https://main--milo--adobecom.aem.live' }}

@@ -1,5 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
+import { injectJsonLd } from '../merch/json-ld.js';
 import {
   initService,
   getOptions,
@@ -133,6 +134,27 @@ function normalizeBlockFieldWrappers(masField) {
   }
 }
 
+async function createJsonLd(el, options) {
+  const attrs = { fragment: options.fragment };
+  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
+  seenFragments.add(options.fragment);
+  const aemFragment = createTag('aem-fragment', attrs);
+  const merchCard = createTag('merch-card', { consonant: '', hidden: '' }, aemFragment);
+  document.body.appendChild(merchCard);
+  await checkReady(merchCard);
+  const fragmentEl = merchCard.querySelector('aem-fragment');
+  const fields = fragmentEl?.data?.fields;
+  const priceEl = merchCard.querySelector('[is="inline-price"][data-template="price"]')
+    ?? merchCard.querySelector('[is="inline-price"]:not([data-template="strikethrough"]):not([data-template="legal"])');
+  const strikethroughEl = merchCard.querySelector('[is="inline-price"][data-template="strikethrough"]');
+  const offer = priceEl?.value?.[0];
+  const regularOffer = strikethroughEl?.value?.[0];
+  const country = priceEl?.options?.country ?? getConfig().locale?.region;
+  injectJsonLd(fields, offer, regularOffer, country, document.location.href);
+  merchCard.remove();
+  el.remove();
+}
+
 export async function createCard(el, options) {
   const attrs = { fragment: options.fragment };
   if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
@@ -177,7 +199,9 @@ export default async function init(el) {
   if (!fragment) return;
   options = overrideOptions(fragment, options);
   await loadCoreDependencies();
-  if (options.field) {
+  if (options.jsonld) {
+    await createJsonLd(el, options);
+  } else if (options.field) {
     await loadInlineDependencies();
     await createInline(el, options);
   } else {
