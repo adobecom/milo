@@ -32,6 +32,8 @@ selectors.popupItems = `
   ${selectors.privacyLink}
 `;
 
+const firstFocusableInSection = '.feds-navLink, .feds-cta--button, .feds-cta--link';
+
 const isElementVisible = (elem) => !!(
   elem
   && elem instanceof HTMLElement
@@ -53,11 +55,6 @@ const getPreviousVisibleItemPosition = (position, items) => {
   return -1;
 };
 
-const closeFooterHeadlines = () => {
-  const open = [...document.querySelectorAll(`${selectors.globalFooter} ${selectors.headline}[aria-expanded="true"]`)];
-  open.forEach((el) => el.setAttribute('aria-expanded', 'false'));
-};
-
 const setActiveDropdown = (elem) => {
   const activeClass = 'feds-dropdown--active';
   [...document.querySelectorAll(`${selectors.globalFooter} .${activeClass}`)]
@@ -72,6 +69,12 @@ const setActiveDropdown = (elem) => {
     }
     return false;
   });
+};
+
+const closeFooterHeadlines = () => {
+  const open = [...document.querySelectorAll(`${selectors.globalFooter} ${selectors.headline}[aria-expanded="true"]`)];
+  open.forEach((el) => el.setAttribute('aria-expanded', 'false'));
+  if (open[0]) setActiveDropdown(open[0]);
 };
 
 const closeAllFooterDropdowns = () => {
@@ -91,9 +94,38 @@ const openHeadline = ({ headline, focus } = {}) => {
     || headline.closest(selectors.featuredProducts);
   const items = [...(section?.querySelectorAll(selectors.popupItems) || [])]
     .filter((el) => isElementVisible(el));
-  if (!items.length) return;
-  if (focus === 'first') items[0].focus();
-  if (focus === 'last') items[items.length - 1].focus();
+  if (focus === 'first' && items.length) items[0].focus();
+  if (focus === 'last' && items.length) items[items.length - 1].focus();
+};
+
+const getPopupState = (element) => {
+  if (!element) return { popupItems: [] };
+  const popupItems = [...element.querySelectorAll(selectors.popupItems)];
+  const allHeadlines = [...element.querySelectorAll(selectors.headline)]
+    .filter((el) => isElementVisible(el));
+
+  const section = document.activeElement.closest(selectors.section)
+    || document.activeElement.closest(selectors.column);
+
+  const currentHeadline = section?.querySelector(selectors.headline);
+  const currentHeadlineIdx = allHeadlines.findIndex((node) => node.isEqualNode(currentHeadline));
+
+  return {
+    firstHeadline: allHeadlines[0],
+    lastHeadline: allHeadlines[allHeadlines.length - 1],
+    prevHeadline: allHeadlines[currentHeadlineIdx - 1],
+    nextHeadline: allHeadlines[currentHeadlineIdx + 1],
+    popupItems,
+  };
+};
+
+const getSectionIndexWithin = (element) => {
+  const section = document.activeElement.closest(selectors.section)
+    || document.activeElement.closest(selectors.column);
+  let allSections = [...element.querySelectorAll(selectors.section)];
+  if (!allSections.length) allSections = [...element.querySelectorAll(selectors.column)];
+  const visibleSections = allSections.filter((el) => isElementVisible(el));
+  return visibleSections.findIndex((node) => node.isEqualNode(section));
 };
 
 const getDesktopState = ({ e, element } = {}) => {
@@ -111,26 +143,6 @@ const getDesktopState = ({ e, element } = {}) => {
     next: getNextVisibleItemPosition(curr, popupItems),
     prevColumn: visibleColumns[currentColumn - 1],
     nextColumn: visibleColumns[currentColumn + 1],
-  };
-};
-
-const getMobileState = (element) => {
-  if (!element) return { popupItems: [] };
-  const popupItems = [...element.querySelectorAll(selectors.popupItems)];
-  const section = document.activeElement.closest(selectors.section)
-    || document.activeElement.closest(selectors.column);
-  let allSections = [...element.querySelectorAll(selectors.section)];
-  if (!allSections.length) allSections = [...element.querySelectorAll(selectors.column)];
-  const visibleSections = allSections.filter((el) => isElementVisible(el));
-  const currentSection = visibleSections.findIndex((node) => node.isEqualNode(section));
-  const prevHeadline = visibleSections[currentSection - 1]?.querySelector(selectors.headline);
-  const nextHeadline = visibleSections[currentSection + 1]?.querySelector(selectors.headline);
-
-  return {
-    popupItems,
-    currentSection,
-    prevHeadline,
-    nextHeadline,
   };
 };
 
@@ -202,66 +214,204 @@ class FooterKeyboardNavigation {
   };
 
   mobileArrowUp = ({ prev, curr, element }) => {
-    const state = getMobileState(element);
-    const { currentSection, popupItems, prevHeadline } = state;
+    if (element) {
+      const section = document.activeElement.closest(selectors.section)
+        || document.activeElement.closest(selectors.column);
+
+      if (section) {
+        const headline = section.querySelector(selectors.headline);
+        const sectionItems = [...section.querySelectorAll(selectors.popupItems)]
+          .filter((el) => isElementVisible(el));
+
+        if (sectionItems.length > 0 && sectionItems[0] === document.activeElement) {
+          if (headline) {
+            headline.focus();
+            return;
+          }
+        }
+      } else if (curr === 0) {
+        const headline = document.activeElement.closest(selectors.section)
+          ?.querySelector(selectors.headline)
+          || document.activeElement.closest(selectors.column)
+            ?.querySelector(selectors.headline);
+        if (headline) {
+          headline.focus();
+          return;
+        }
+      }
+    }
+
+    const state = getPopupState(element);
+    const { popupItems } = state;
+    const sectionIdxBefore = getSectionIndexWithin(element);
     if (prev !== -1 && curr - 1 === prev) {
       popupItems[prev].focus();
-      if (currentSection !== getMobileState(element).currentSection) closeFooterHeadlines();
+      if (sectionIdxBefore !== getSectionIndexWithin(element)) closeFooterHeadlines();
       return;
     }
+
+    const { prevHeadline } = getPopupState(element);
     if (!prevHeadline) {
       const prevElement = element?.previousElementSibling;
       const allHeadlines = [...(prevElement?.querySelectorAll(selectors.headline) || [])];
-      const prevHeadlineItem = allHeadlines[allHeadlines.length - 1];
-      if (prevHeadlineItem) openHeadline({ headline: prevHeadlineItem, focus: 'last' });
+      if (allHeadlines.length && allHeadlines[allHeadlines.length - 1]) {
+        closeFooterHeadlines();
+        openHeadline({ headline: allHeadlines[allHeadlines.length - 1], focus: 'last' });
+      }
       return;
     }
+
     openHeadline({ headline: prevHeadline, focus: 'last' });
   };
 
   mobileArrowDown = ({ next, element }) => {
-    const state = getMobileState(element);
-    const { currentSection, popupItems, nextHeadline } = state;
+    if (element) {
+      const { popupItems } = getPopupState(element);
+      if (next === -1 || next >= popupItems.length) {
+        const currentHeadline = document.activeElement.closest(selectors.section)
+          ?.querySelector(selectors.headline)
+          || document.activeElement.closest(selectors.column)
+            ?.querySelector(selectors.headline);
+
+        if (currentHeadline) {
+          const footer = document.querySelector(selectors.globalFooter);
+          const allHeadlines = [...footer.querySelectorAll(selectors.headline)]
+            .filter((h) => isElementVisible(h));
+          const idx = allHeadlines.indexOf(currentHeadline);
+          if (idx !== -1 && idx < allHeadlines.length - 1) {
+            const nextHeadline = allHeadlines[idx + 1];
+            openHeadline({ headline: nextHeadline, focus: null });
+            nextHeadline.focus();
+            return;
+          }
+        }
+      }
+    }
+
+    const state = getPopupState(element);
+    const { popupItems } = state;
+    const sectionIdxBefore = getSectionIndexWithin(element);
     if (next !== -1) {
       popupItems[next].focus();
-      if (currentSection !== getMobileState(element).currentSection) closeFooterHeadlines();
+      if (sectionIdxBefore !== getSectionIndexWithin(element)) closeFooterHeadlines();
       return;
     }
+
+    const { nextHeadline } = getPopupState(element);
     if (!nextHeadline) {
       const nextElement = element?.nextElementSibling;
       const headline = nextElement?.querySelector(selectors.headline);
       closeFooterHeadlines();
-      if (headline) openHeadline({ headline, focus: 'first' });
-      else nextElement?.querySelector('a')?.focus();
+      if (headline) {
+        openHeadline({ headline, focus: 'first' });
+      } else {
+        nextElement?.querySelector('a')?.focus();
+      }
       return;
     }
+
     openHeadline({ headline: nextHeadline, focus: 'first' });
   };
 
   handleMobileKeyDown = (e, element) => {
     const popupItems = [...element.querySelectorAll(selectors.popupItems)];
     const curr = popupItems.findIndex((el) => el === e.target);
-    if (!popupItems.length || curr === -1) return;
-
     const prev = getPreviousVisibleItemPosition(curr, popupItems);
     const next = getNextVisibleItemPosition(curr, popupItems);
+
+    if (e.code === 'Tab') return;
+
     e.preventDefault();
     e.stopPropagation();
 
     switch (e.code) {
-      case 'Tab':
-        if (e.shiftKey) this.mobileArrowUp({ prev, curr, element });
-        else this.mobileArrowDown({ next, element });
+      case 'Enter':
+      case 'Space': {
+        const headline = e.target.closest(selectors.headline);
+        if (headline) {
+          const isExpanded = headline.getAttribute('aria-expanded') === 'true';
+          if (isExpanded) {
+            closeFooterHeadlines();
+          } else {
+            openHeadline({ headline, focus: null });
+          }
+        }
         break;
+      }
       case 'Escape':
         closeAllFooterDropdowns();
         break;
-      case 'ArrowUp':
+      case 'ArrowLeft': {
+        const { prevHeadline, nextHeadline } = getPopupState(element);
+        const headline = document.dir !== 'rtl' ? prevHeadline : nextHeadline;
+        if (!headline) break;
+        openHeadline({ headline, focus: 'first' });
+        break;
+      }
+      case 'ArrowUp': {
+        if (e.target.closest(selectors.headline)) {
+          const headline = e.target.closest(selectors.headline);
+          const expanded = headline.getAttribute('aria-expanded') === 'true';
+          const footer = document.querySelector(selectors.globalFooter);
+          const allHeadlines = [...footer.querySelectorAll(selectors.headline)]
+            .filter((h) => isElementVisible(h));
+          const idx = allHeadlines.indexOf(headline);
+          if (expanded) {
+            if (idx > 0) {
+              const previousHeadline = allHeadlines[idx - 1];
+              openHeadline({ headline: previousHeadline, focus: 'last' });
+              break;
+            }
+          } else if (idx > 0) {
+            const previousHeadline = allHeadlines[idx - 1];
+            previousHeadline.focus();
+            break;
+          }
+        }
         this.mobileArrowUp({ prev, curr, element });
         break;
-      case 'ArrowDown':
+      }
+      case 'ArrowRight': {
+        const { prevHeadline, nextHeadline } = getPopupState(element);
+        const headline = document.dir !== 'rtl' ? nextHeadline : prevHeadline;
+        if (!headline) break;
+        openHeadline({ headline, focus: 'first' });
+        break;
+      }
+      case 'ArrowDown': {
+        if (e.target.closest(selectors.headline)) {
+          const headline = e.target.closest(selectors.headline);
+          const expanded = headline.getAttribute('aria-expanded') === 'true';
+
+          if (expanded) {
+            const section = headline.closest(selectors.section)
+              || headline.closest(selectors.column);
+            const firstLink = section?.querySelector(firstFocusableInSection);
+            if (firstLink) {
+              firstLink.focus();
+              break;
+            }
+          }
+
+          const { nextHeadline } = getPopupState(element);
+          if (nextHeadline) {
+            nextHeadline.focus();
+            break;
+          }
+          const footer = document.querySelector(selectors.globalFooter);
+          const allHeadlines = [...footer.querySelectorAll(selectors.headline)]
+            .filter((h) => isElementVisible(h));
+          const current = e.target.closest(selectors.headline);
+          const idx = allHeadlines.indexOf(current);
+          if (idx !== -1 && idx < allHeadlines.length - 1) {
+            allHeadlines[idx + 1].focus();
+            break;
+          }
+          break;
+        }
         this.mobileArrowDown({ next, element });
         break;
+      }
       default:
         break;
     }
@@ -296,14 +446,6 @@ class FooterKeyboardNavigation {
       && (isFirstNavLink || isFirstHeadline)
       && !e.target.closest(selectors.featuredProducts);
     if (shiftTabOutOfFooter) return;
-
-    const headline = e.target.closest(selectors.headline);
-    if (headline) {
-      openHeadline({ headline, focus: 'first' });
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
 
     this.handleMobileKeyDown(e, element);
   };
