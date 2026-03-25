@@ -373,11 +373,12 @@ async function getDetails(currentPage, localeMatches, geoData) {
 
 async function showModal(details) {
   const { miloLibs, codeRoot } = config;
+  const isC2Path = isC2Page ? '/c2' : '';
 
   const tabs = details.querySelector('.tabs');
-  const sectionMetaPath = `${miloLibs || codeRoot}${isC2Page ? '/c2' : ''}/blocks/section-metadata/section-metadata.css`;
+  const sectionMetaPath = `${miloLibs || codeRoot}${isC2Path}/blocks/section-metadata/section-metadata.css`;
   const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
-  const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
+  const modalPath = `${miloLibs || codeRoot}${isC2Path}/blocks/modal/modal.css`;
   let tabsPromise = null;
   if (tabs) tabsPromise = isC2Page ? loadC2TabsBlock(tabs) : loadBlock(tabs);
   const promises = [
@@ -389,7 +390,7 @@ async function showModal(details) {
       : null,
     new Promise((resolve) => { loadStyle(georoutingPath, resolve); }),
     new Promise((resolve) => { loadStyle(modalPath, resolve); }),
-    import('../../blocks/modal/modal.js'),
+    import(`../..${isC2Path}/blocks/modal/modal.js`),
   ];
   const result = await Promise.all(promises);
   const { getModal, sendAnalytics } = result[4];

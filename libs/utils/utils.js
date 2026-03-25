@@ -107,18 +107,20 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'base-card',
   'box',
+  'brand-concierge',
   'carousel-c2',
   'elastic-carousel',
-  'rich-content',
-  'router-marquee',
-  'section-metadata',
   'explore-card',
   'global-footer',
   'global-navigation',
-  'base-card',
-  'region-nav',
+  'modal',
   'news',
+  'region-nav',
+  'rich-content',
+  'router-marquee',
+  'section-metadata',
 ];
 
 const AUTO_BLOCKS = [
@@ -2013,6 +2015,19 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
+  }
+  if (getMetadata('foundation') === 'c2') {
+    await Promise.all([
+      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+      loadScript(`${config.base}/deps/lenis.min.js`),
+    ]);
+    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
+    window.lenis = new window.Lenis({
+      autoRaf: true,
+      lerp,
+      prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
+    });
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');

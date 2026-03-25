@@ -1,34 +1,35 @@
 import { createTag, getFederatedUrl, getFederatedContentRoot } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
-const CHEVRON_SVG = '<svg width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CHEVRON_SVG = '<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const RESET_SVG = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><g clip-path="url(#clip0_3399_7947)"><rect x="0.333984" y="2" width="1" height="8" rx="0.5" fill="white"/><path d="M7.10412 1.28574C7.36448 1.02559 7.78654 1.02546 8.04682 1.28574C8.30711 1.54602 8.30698 1.96808 8.04682 2.22845L4.94201 5.33327H11.3326C11.7008 5.33327 11.9993 5.63174 11.9993 5.99993C11.9993 6.36812 11.7008 6.6666 11.3326 6.6666H4.94201L8.04682 9.77142C8.30698 10.0318 8.30711 10.4538 8.04682 10.7141C7.78654 10.9744 7.36448 10.9743 7.10412 10.7141L2.86128 6.47129C2.60093 6.21094 2.60093 5.78893 2.86128 5.52858L7.10412 1.28574Z" fill="white"/></g><defs><clipPath id="clip0_3399_7947"><rect width="12" height="12" fill="white"/></clipPath></defs></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
 const AUTOPLAY_MS = 15000;
-const TEXT_EXIT_MS = 260;
-const TEXT_EXIT_PX = 28;
-const TEXT_GAP_MS = 220;
-const TEXT_ENTER_MS = 380;
-const TEXT_ENTER_PX = 28;
-const BG_FADE_MS = 650;
-const BG_SHIFT_PX = 90;
-const HOVER_DELAY_MS = 200;
+const SLIDE_MS = 300;
+const STAGGER_MS = 1000;
+const STAGGER_BASE = 60;
+const STAGGER_STEP = 20;
 const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const RESUME_DELAY = 2000;
 const SWIPE_THRESHOLD = 100;
-const TRANSITION_MS = Math.max(BG_FADE_MS, TEXT_EXIT_MS + TEXT_GAP_MS + TEXT_ENTER_MS);
 
 const reflow = (el) => el?.getBoundingClientRect();
+const getCssPx = (el, prop) => parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
 
 const clearInlineStyles = (el, props) => {
   if (!el) return;
   props.forEach((p) => { el.style[p] = ''; });
 };
 
+const STAGGER_CHILDREN = ['.rm-eyebrow', '.rm-title', '.rm-body', '.rm-ctas'];
+
 const resetSlide = (slide) => {
-  clearInlineStyles(slide, ['opacity', 'zIndex', 'transition', 'pointerEvents']);
-  clearInlineStyles(slide.querySelector('.rm-content'), ['transform', 'opacity', 'transition']);
-  const bg = slide.querySelector('.rm-background');
-  if (bg) { bg.style.transition = ''; bg.style.removeProperty('--slide-bg-x'); }
+  clearInlineStyles(slide, ['zIndex', 'pointerEvents', 'transform', 'transition']);
+  const content = slide.querySelector('.rm-content');
+  clearInlineStyles(content, ['transform', 'transition']);
+  STAGGER_CHILDREN.forEach((sel) => {
+    clearInlineStyles(content?.querySelector(sel), ['transform', 'transition']);
+  });
 };
 
 const groupByViewport = (el) => {
@@ -88,11 +89,11 @@ const decorateText = (textCol) => {
 const decorateCtas = (textCol) => {
   const cta = textCol.querySelector('p:has(em)');
   if (!cta) return;
-  cta.classList.add('rm-ctas');
+  cta.classList.add('rm-ctas', 'dark', 'action-area');
   const primary = cta.querySelector('em > strong a');
   const secondary = cta.querySelector('em > a');
-  primary?.classList.add('con-button', 'rm-cta-primary');
-  secondary?.classList.add('con-button');
+  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'button-lg', 'outline');
+  secondary?.classList.add('con-button', 'button-lg', 'outline');
   cta.replaceChildren(...[primary, secondary].filter(Boolean));
 };
 
@@ -132,7 +133,7 @@ const buildCard = (slide) => {
 
   const card = createTag('a', { class: 'rm-card', href });
   card.replaceChildren(
-    createTag('img', { class: 'rm-card-icon', src: iconSrc, loading: 'lazy' }),
+    createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' }),
     createTag('div', { class: 'rm-card-content' }, [
       createTag('span', { class: 'rm-card-label' }, labelText),
       createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
@@ -144,9 +145,16 @@ const buildCard = (slide) => {
   return card;
 };
 
+const buildReset = () => createTag('button', {
+  class: 'rm-card-reset',
+  type: 'button',
+  'aria-label': 'Back to first',
+}, RESET_SVG);
+
 const buildCards = (slides) => {
   const cards = createTag('div', { class: 'rm-cards' });
   slides.forEach((slide) => cards.append(buildCard(slide)));
+  cards.append(buildReset());
   return cards;
 };
 
@@ -171,83 +179,144 @@ const buildPlayPause = () => {
   ]));
 };
 
-const setBar = (bar, tx, ms, timing = 'linear') => {
-  bar.style.transition = ms > 0 ? `transform ${ms}ms ${timing}` : 'none';
-  bar.style.transform = `translateX(${tx})`;
-};
-
-const slideBar = (bar, from, to, ms, timing = 'linear') => {
-  setBar(bar, from, 0);
-  reflow(bar);
-  setBar(bar, to, ms, timing);
-};
-
-const animateBgShift = (oldBg, newBg, direction) => {
-  const shift = window.matchMedia('(min-width: 1280px)').matches ? BG_SHIFT_PX : 0;
-  if (!shift || !oldBg || !newBg) return;
-
-  oldBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
-  oldBg.style.setProperty('--slide-bg-x', `${-direction * shift}px`);
-
-  newBg.style.transition = 'none';
-  newBg.style.setProperty('--slide-bg-x', `${direction * shift}px`);
-  reflow(newBg);
-  newBg.style.transition = `transform ${BG_FADE_MS}ms ${EASE}`;
-  newBg.style.removeProperty('--slide-bg-x');
-};
-
-const animateContentExit = (content, direction) => {
-  if (!content) return;
-  content.style.transition = `transform ${TEXT_EXIT_MS}ms ${EASE}, opacity ${TEXT_EXIT_MS}ms ${EASE}`;
-  content.style.transform = `translateX(${-direction * TEXT_EXIT_PX}px)`;
-  content.style.opacity = '0';
-};
-
 const animateContentEnter = (content, direction) => {
-  if (!content) return null;
-  content.style.transition = 'none';
-  content.style.opacity = '0';
-  content.style.transform = `translateX(${direction * TEXT_ENTER_PX}px)`;
+  if (!content) return;
+  const targets = STAGGER_CHILDREN
+    .map((sel) => content.querySelector(sel))
+    .filter(Boolean);
+  targets.forEach((el, i) => {
+    el.style.transition = 'none';
+    el.style.transform = `translateX(${direction * (STAGGER_BASE + i * STAGGER_STEP)}px)`;
+  });
   reflow(content);
-  return setTimeout(() => {
-    content.style.transition = `transform ${TEXT_ENTER_MS}ms ${EASE}, opacity ${TEXT_ENTER_MS}ms ${EASE}`;
-    content.style.transform = '';
-    content.style.opacity = '';
-  }, TEXT_EXIT_MS + TEXT_GAP_MS);
+  targets.forEach((el) => {
+    el.style.transition = `transform ${STAGGER_MS}ms ${EASE}`;
+    el.style.transform = 'translateX(0)';
+  });
+};
+
+const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
+
+const setAriaHiddenAndTabIndex = (slides) => {
+  slides.forEach((slide) => {
+    const isActive = slide.classList.contains('is-active');
+    slide.setAttribute('aria-hidden', String(!isActive));
+    slide.setAttribute('tabindex', isActive ? '0' : '-1');
+    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
+      el.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
+  });
+};
+
+const updateControlsLayout = (el) => {
+  const activeSlides = el.querySelectorAll('.rm-slide.is-active');
+  const activeSlide = [...activeSlides].find((s) => s.offsetParent !== null);
+  if (!activeSlide) return;
+  const vp = activeSlide.closest('.rm-viewport');
+  const controls = vp?.querySelector('.rm-controls');
+  const playPause = vp?.querySelector('.rm-pause-play');
+  if (!controls || !playPause) return;
+  const cardsWrapper = vp.querySelector('.rm-cards');
+  const cards = vp.querySelectorAll('.rm-card');
+  // the best thing I could find to determine when the play button is running out of space
+  // is this formula of: (side paddings) + (cards max width) + (cards gaps) + (play button width)
+  // which gives the min total width of the controls section.
+  // If the viewport gets smaller than this min width, I move the play button
+  const needed = (2 * getCssPx(controls, 'padding-left')) + (cards.length * getCssPx(cards[0], 'max-width')) + (cards.length * getCssPx(cardsWrapper, 'gap')) + getCssPx(playPause, 'width');
+  const stacked = needed > window.innerWidth;
+  controls.classList.toggle('rm-controls-column', stacked);
+  playPause.classList.toggle('rm-pause-play-column', stacked);
+};
+
+const updateContentSpacing = (el) => {
+  const activeSlides = el.querySelectorAll('.rm-slide.is-active');
+  const activeSlide = [...activeSlides].find((s) => s.offsetParent !== null);
+  if (!activeSlide) return;
+  const vp = activeSlide.closest('.rm-viewport');
+  const wrapper = activeSlide.querySelector('.rm-content-wrapper');
+  const content = activeSlide.querySelector('.rm-content');
+  const controls = vp?.querySelector('.rm-controls');
+  if (!wrapper || !content || !controls || !vp) return;
+
+  // Set min-height so the viewport never shrinks below what the content needs
+  const lastContentEl = content.lastElementChild;
+  const needed = lastContentEl.getBoundingClientRect().bottom + controls.offsetHeight + 24;
+
+  vp.style.minHeight = `${Math.max(window.innerHeight, needed)}px`;
+  // Compact padding-top when content overlaps controls
+  // Applied to all wrappers to handle slide changes
+  const allWrappers = vp.querySelectorAll('.rm-content-wrapper');
+  const controlsTop = controls.getBoundingClientRect().top - 24;
+  const contentBottom = content.getBoundingClientRect().bottom;
+  const isCompact = wrapper.classList.contains('rm-compact');
+  if (!isCompact && contentBottom >= controlsTop) {
+    allWrappers.forEach((w) => w.classList.add('rm-compact'));
+  } else if (isCompact && contentBottom + 80 < controlsTop) {
+    allWrappers.forEach((w) => w.classList.remove('rm-compact'));
+  }
+};
+
+const dynamicLayoutUpdates = (el) => {
+  updateControlsLayout(el);
+  updateContentSpacing(el);
 };
 
 const startAutoplay = (slides, cards, container, block) => {
-  const cardEls = [...cards.children];
+  const cardEls = [...cards.querySelectorAll('.rm-card')];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
   const filler = playPauseBtn?.querySelector('.offset-filler');
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
-  let fillAnimation = null; // animation instance for the progress bar
-  let slideTimer = null; // timer for delayed text entry animation
+  let userPaused = false; // whether the user explicitly paused via the play/pause button
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
   let leaveTimer = null; // timer for restarting autoplay on block mouse leave
-  let hoverTimer = null; // debounce timer for card hover
+
+  const isMobile = () => !window.matchMedia('(min-width: 1280px)').matches;
+  const isDesktopSmallVp = isMobile()
+    && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  const trackXForCard = (i) => {
+    if (i <= 0) return 0;
+    const card = cardEls[i];
+    return -(card.offsetLeft - cardEls[0].offsetLeft);
+  };
+
+  const setTrackX = (x, animated) => {
+    if (!isMobile()) {
+      cards.style.transition = '';
+      cards.style.transform = '';
+      return;
+    }
+    cards.style.transition = animated ? `transform ${SLIDE_MS}ms ${EASE}` : 'none';
+    cards.style.transform = `translateX(${x}px)`;
+  };
 
   const setPlayingState = (isPlaying) => {
     filler?.classList.toggle('is-playing', isPlaying);
     playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
   };
 
-  const stop = () => {
-    clearTimeout(timer);
-    if (fillAnimation) { fillAnimation.cancel(); fillAnimation = null; }
+  const clearFill = (i) => {
+    const bar = bars[i];
+    bar.style.transition = 'none';
+    bar.style.transform = 'translateX(-101%)';
+  };
+
+  const startFill = (i) => {
+    const bar = bars[i];
+    bar.style.transition = 'none';
+    bar.style.transform = 'translateX(-101%)';
+    reflow(bar);
+    bar.style.transition = `transform ${AUTOPLAY_MS}ms linear`;
+    bar.style.transform = 'translateX(0%)';
   };
 
   const finishSlideTransition = () => {
-    clearTimeout(slideTimer);
     clearTimeout(cleanupTimer);
-    clearTimeout(hoverTimer);
-    slideTimer = null;
     cleanupTimer = null;
-    hoverTimer = null;
     [...slides].forEach(resetSlide);
     if (pendingSlide) {
       pendingSlide.classList.add('is-active');
@@ -255,63 +324,76 @@ const startAutoplay = (slides, cards, container, block) => {
     }
   };
 
-  const activate = (index, direction = 1) => {
+  const activate = (index, direction = 1, { skipTrack = false } = {}) => {
     finishSlideTransition();
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
 
+    oldSlide.style.transition = 'none';
+    oldSlide.style.transform = 'translateX(0%)';
+    newSlide.style.transition = 'none';
+    newSlide.style.transform = `translateX(${direction * 100}%)`;
+
     oldSlide.classList.remove('is-active');
-    oldSlide.style.opacity = '1';
-    oldSlide.style.zIndex = '1';
-    oldSlide.style.pointerEvents = 'none';
-    newSlide.style.opacity = '1';
-    newSlide.style.pointerEvents = 'auto';
-    pendingSlide = newSlide;
+    newSlide.classList.add('is-active');
+    pendingSlide = null;
+    setAriaHiddenAndTabIndex([oldSlide, newSlide]);
 
-    reflow(oldSlide);
-    oldSlide.style.transition = `opacity ${BG_FADE_MS}ms ${EASE}`;
-    oldSlide.style.opacity = '0';
+    reflow(newSlide);
 
-    animateBgShift(
-      oldSlide.querySelector('.rm-background'),
-      newSlide.querySelector('.rm-background'),
-      direction,
-    );
-    animateContentExit(oldSlide.querySelector('.rm-content'), direction);
-    slideTimer = animateContentEnter(newSlide.querySelector('.rm-content'), direction);
+    oldSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
+    oldSlide.style.transform = `translateX(${-direction * 100}%)`;
+    newSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
+    newSlide.style.transform = 'translateX(0%)';
+
+    animateContentEnter(newSlide.querySelector('.rm-content'), direction);
 
     oldSlide.querySelector('video')?.pause();
+    const vid = newSlide.querySelector('video');
     if (!paused) {
-      const vid = newSlide.querySelector('video');
       if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+    } else {
+      vid?.pause();
     }
 
-    cleanupTimer = setTimeout(finishSlideTransition, TRANSITION_MS + 50);
+    const transitionMs = Math.max(SLIDE_MS, STAGGER_MS);
+    cleanupTimer = setTimeout(finishSlideTransition, transitionMs + 50);
 
     cardEls[active]?.classList.remove('is-active');
     active = index;
     cardEls[active]?.classList.add('is-active');
-    if (!window.matchMedia('(min-width: 1280px)').matches) {
-      const scrollTarget = cardEls[active].offsetLeft - cards.offsetLeft;
-      cards.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+    if (isMobile() && !skipTrack) {
+      setTrackX(trackXForCard(active), true);
     }
+
+    requestAnimationFrame(() => dynamicLayoutUpdates(block));
   };
 
   const advance = () => {
-    stop();
-    setBar(bars[active], '101%', BG_FADE_MS, EASE);
+    clearTimeout(timer);
+    clearFill(active);
     activate((active + 1) % cardEls.length, 1);
-    slideBar(bars[active], '-101%', '0%', AUTOPLAY_MS);
+    startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
   };
 
   const pause = () => {
-    stop();
+    clearTimeout(timer);
+    clearFill(active);
     paused = true;
-    setBar(bars[active], '0%', 0);
     setPlayingState(false);
     slides[active]?.querySelector('video')?.pause();
+  };
+
+  const resume = () => {
+    paused = false;
+    userPaused = false;
+    setPlayingState(true);
+    startFill(active);
+    timer = setTimeout(advance, AUTOPLAY_MS);
+    const vid = slides[active]?.querySelector('video');
+    if (vid) { vid.muted = true; vid.play().catch(() => {}); }
   };
 
   const cancelLeaveTimer = () => {
@@ -320,18 +402,16 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const startLeaveTimer = () => {
-    if (leaveTimer) return;
+    if (leaveTimer || userPaused) return;
     leaveTimer = setTimeout(() => {
       leaveTimer = null;
-      paused = false;
-      setPlayingState(true);
-      advance();
+      resume();
     }, RESUME_DELAY);
   };
 
   const pauseOnInteraction = (e) => {
     const target = e.target.closest('a, button');
-    if (target && !target.classList.contains('rm-pause-play')) {
+    if (target && !target.closest('.rm-pause-play')) {
       cancelLeaveTimer();
       if (!paused) pause();
     }
@@ -340,40 +420,66 @@ const startAutoplay = (slides, cards, container, block) => {
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
       cancelLeaveTimer();
-      clearTimeout(hoverTimer);
       if (i === active) { pause(); return; }
-      hoverTimer = setTimeout(() => {
-        hoverTimer = null;
-        stop();
-        paused = true;
-        const dir = i > active ? 1 : -1;
-        setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
-        activate(i, dir);
-        slideBar(bars[i], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
-      }, HOVER_DELAY_MS);
+      clearTimeout(timer);
+      clearFill(active);
+      paused = true;
+      const dir = i > active ? 1 : -1;
+      activate(i, dir, { skipTrack: isDesktopSmallVp });
     });
   });
+
+  const resetBtn = cards.querySelector('.rm-card-reset');
+  resetBtn?.addEventListener('click', () => {
+    if (active === 0) return;
+    clearTimeout(timer);
+    clearFill(active);
+    paused = true;
+    activate(0, -1);
+  });
+
+  // this is to handle the use case where the user is on desktop, but shrinks
+  // the viewport to tablet/mobile size. This was causing the next card to be
+  // tracked incorrectly.
+  const handleDesktopSmallVp = () => {
+    if (!isDesktopSmallVp) return;
+    resetBtn?.remove();
+    const playPause = container.querySelector('.rm-pause-play');
+    const nextBtn = createTag('button', {
+      class: 'rm-arrow-next',
+      type: 'button',
+      'aria-label': 'Next card',
+    }, RESET_SVG);
+    const controlsTop = createTag('div', { class: 'rm-controls-top' });
+    playPause.before(controlsTop);
+    controlsTop.append(playPause, nextBtn);
+    nextBtn.addEventListener('click', () => {
+      const next = (active + 1) % cardEls.length;
+      clearTimeout(timer);
+      clearFill(active);
+      paused = true;
+      setPlayingState(false);
+      activate(next, 1);
+    });
+  };
+
+  handleDesktopSmallVp();
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', pauseOnInteraction);
   block.addEventListener('mouseenter', cancelLeaveTimer);
 
   block.addEventListener('mouseleave', () => {
-    clearTimeout(hoverTimer);
-    hoverTimer = null;
     if (paused) startLeaveTimer();
   });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
-    clearTimeout(hoverTimer);
-    hoverTimer = null;
     cancelLeaveTimer();
     if (paused) {
-      paused = false;
-      setPlayingState(true);
-      advance();
+      resume();
     } else {
+      userPaused = true;
       pause();
     }
   });
@@ -381,55 +487,41 @@ const startAutoplay = (slides, cards, container, block) => {
   // mobile swipe
   let touchStartX = 0;
   let touchStartY = 0;
-  let touchOnContent = false;
 
   container.addEventListener('touchstart', (e) => {
-    touchOnContent = !!e.target.closest('.rm-content');
-    if (touchOnContent) return;
     touchStartX = e.changedTouches[0].clientX;
     touchStartY = e.changedTouches[0].clientY;
   }, { passive: true });
 
   container.addEventListener('touchend', (e) => {
-    if (touchOnContent) return;
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
     if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dy) > Math.abs(dx)) return;
 
-    stop();
+    clearTimeout(timer);
+    clearFill(active);
     const dir = dx < 0 ? 1 : -1;
     const next = (active + dir + cardEls.length) % cardEls.length;
-    setBar(bars[active], `${dir * 101}%`, BG_FADE_MS, EASE);
     activate(next, dir);
-    slideBar(bars[next], `${-dir * 101}%`, '0%', BG_FADE_MS, EASE);
     paused = true;
     setPlayingState(false);
   }, { passive: true });
 
-  const bar = bars[active];
-  setBar(bar, '-101%', 0);
-  reflow(bar);
-  fillAnimation = bar.animate(
-    [{ transform: 'translateX(-101%)' }, { transform: 'translateX(0%)' }],
-    { duration: AUTOPLAY_MS, fill: 'forwards', easing: 'linear' },
-  );
-  fillAnimation.finished.then(() => {
-    fillAnimation?.cancel();
-    fillAnimation = null;
-    advance();
-  }).catch(() => { fillAnimation = null; });
-
-  return { pause };
+  requestAnimationFrame(() => {
+    startFill(active);
+    timer = setTimeout(advance, AUTOPLAY_MS);
+  });
 };
 
 const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   slides.forEach((slide) => decorateSlide(slide));
   slides[0]?.classList.add('is-active');
+  setAriaHiddenAndTabIndex(slides);
   const cards = buildCards(slides);
   cards.children[0]?.classList.add('is-active');
   const controls = createTag('div', { class: 'rm-controls' });
-  controls.append(buildPlayPause(), cards);
+  controls.append(cards, buildPlayPause());
   container.append(...slides, controls);
   return container;
 };
@@ -466,4 +558,6 @@ export default function init(el) {
     const cards = container.querySelector('.rm-cards');
     startAutoplay(slides, cards, container, el);
   });
+  requestAnimationFrame(() => dynamicLayoutUpdates(el));
+  window.addEventListener('resize', () => dynamicLayoutUpdates(el));
 }

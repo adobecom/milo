@@ -68,8 +68,11 @@ function decorateNavigation() {
 
 function setActualSlideWidth(carousel, carouselWidth) {
   const gridMarginProperty = getComputedStyle(carousel).getPropertyValue('--grid-margin-width');
-  const gridMarginPropertyValue = gridMarginProperty?.endsWith('%') ? parseFloat(gridMarginProperty) / 100 : parseFloat(gridMarginProperty);
-  const actualSlideWidth = carouselWidth - 2 * carouselWidth * gridMarginPropertyValue;
+  const isGridMarginPer = gridMarginProperty?.endsWith('%');
+  const gridMarginPropertyValue = isGridMarginPer
+    ? parseFloat(gridMarginProperty) / 100 : parseFloat(gridMarginProperty);
+  const actualSlideWidth = carouselWidth - 2
+    * (isGridMarginPer ? carouselWidth : 1) * gridMarginPropertyValue;
   carousel.style.setProperty('--actual-slide-width', `${actualSlideWidth}px`);
 }
 
@@ -82,11 +85,22 @@ function getMarginAndSlideWidth(slide) {
   return { marginWidth: (carouselWidth - slideWidth) / 2, slideWidth };
 }
 
+function isRTL() {
+  return document.documentElement.dir === 'rtl';
+}
+
+function getDirection(direction) {
+  if (!isRTL()) return direction;
+  return direction === 'next' ? 'prev' : 'next';
+}
+
 function goToActive(carouselEls, active) {
   const { wrapper, marginWidth, slideWidth } = carouselEls;
   const indexOfActive = [...wrapper.children].indexOf(active);
   const gaps = indexOfActive * carouselGap;
-  const translateValue = indexOfActive * slideWidth * -1 + marginWidth - gaps;
+  const translateValue = isRTL()
+    ? indexOfActive * slideWidth - marginWidth + gaps
+    : indexOfActive * slideWidth * -1 + marginWidth - gaps;
   wrapper.style.transition = 'none';
   wrapper.style.translate = `${translateValue}px`;
   // eslint-disable-next-line
@@ -104,8 +118,9 @@ function cloneSlides(carouselEls, activeSlide) {
   });
   const allSlides = [...cloneFront, ...slides, ...cloneBack];
   allSlides.forEach((slide) => {
-    const img = slide.querySelector('img');
-    img?.setAttribute('loading', 'eager');
+    slide.querySelectorAll('img').forEach((img) => {
+      img?.setAttribute('loading', 'eager');
+    });
   });
   wrapper.replaceChildren(...allSlides);
   const { marginWidth, slideWidth } = getMarginAndSlideWidth(activeSlide);
@@ -141,7 +156,7 @@ function slideAnimation(carouselEls, active, direction) {
     wrapper.style.setProperty('--transition-duration', `${eventInterval}ms`);
     duration = eventInterval;
   }
-  const negate = direction === 'next' ? -1 : 1;
+  const negate = (direction === 'next') !== isRTL() ? -1 : 1;
   const translateValue = alreadyTranslated + (negate * slideWidth) + (negate * carouselGap);
   wrapper.style.transition = 'translate var(--transition-duration) var(--animation-curve)';
   wrapper.style.translate = `${translateValue}px`;
@@ -211,8 +226,8 @@ function attachListeners(carouselEls) {
   nextBtn.addEventListener('click', (e) => moveSlides(carouselEls, 'next', e));
 
   el.addEventListener('keydown', (e) => {
-    if (e.code === 'ArrowLeft') moveSlides(carouselEls, 'prev', e);
-    if (e.code === 'ArrowRight') moveSlides(carouselEls, 'next', e);
+    if (e.code === 'ArrowLeft') moveSlides(carouselEls, getDirection('prev'), e);
+    if (e.code === 'ArrowRight') moveSlides(carouselEls, getDirection('next'), e);
     if (e.code === 'Enter' || e.code === 'Space') {
       const { activeElement } = document;
       if (activeElement?.tagName === 'BUTTON'
@@ -227,6 +242,8 @@ function attachListeners(carouselEls) {
   let isDragging = false;
 
   wrapper.addEventListener('pointerdown', (e) => {
+    const { target } = e;
+    if (target.tagName === 'A') return;
     e.preventDefault();
     wrapper.classList.add('grabbing');
     startX = e.clientX;
@@ -240,7 +257,7 @@ function attachListeners(carouselEls) {
     isDragging = false;
     const diff = e.clientX - startX;
     if (Math.abs(diff) <= 100) return;
-    moveSlides(carouselEls, diff < 0 ? 'next' : 'prev', e);
+    moveSlides(carouselEls, getDirection(diff < 0 ? 'next' : 'prev'), e);
   });
 
   const slideToObserve = wrapper.querySelector('.active');
@@ -287,11 +304,11 @@ export default function init(el) {
     return rdx;
   }, []);
 
-  const indicatorsContainer = createTag('div', { class: 'indicators-container' });
+  const indicatorsContainer = createTag('ul', { class: 'indicators-container' });
   slides.forEach((slide, index) => {
     slide.setAttribute('role', 'group');
     slide.setAttribute('aria-roledescription', 'slide');
-    const indicator = createTag('div', { class: 'slide-indicator', 'aria-label': `Slide ${index + 1} of ${slides.length}` });
+    const indicator = createTag('li', { class: 'slide-indicator', 'aria-label': `Slide ${index + 1} of ${slides.length}` });
     indicatorsContainer.appendChild(indicator);
   });
 
@@ -301,7 +318,7 @@ export default function init(el) {
     'aria-atomic': 'true',
   });
 
-  const wrapper = createTag('div', { class: 'carousel-wrapper is-ready' });
+  const wrapper = createTag('div', { class: 'carousel-wrapper' });
   wrapper.style.setProperty('--transition-duration', `${MAX_SLIDE_TRANISTION_DURATION}ms`);
   const lastSlide = slides.pop();
   slides.unshift(lastSlide);
