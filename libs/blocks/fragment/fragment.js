@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix, lingoActive,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -92,7 +92,7 @@ export const removeMepLingoRow = (container) => {
 };
 
 export default async function init(a) {
-  const { decorateArea, mep, placeholders, locale } = getConfig();
+  const { decorateArea, mep, placeholders, locale, env } = getConfig();
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   let url;
   let inline = false;
@@ -127,10 +127,7 @@ export default async function init(a) {
   }
 
   if (isCircularRef(relHref)) {
-    window.lana?.log(`Fragment Circular Reference loading ${a.href}`, {
-      tags: 'fragment',
-      severity: 'error',
-    });
+    window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
   }
 
@@ -143,10 +140,16 @@ export default async function init(a) {
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   const isMepLingoInsert = a.dataset.mepLingoInsert === 'true';
   const isMepLingoRemove = a.dataset.mepLingoRemove === 'true';
-  const shouldFetchMepLingo = isMepLingoLink && !!await getMepLingoPrefix();
+  const shouldFetchMepLingo = isMepLingoLink && !!getMepLingoPrefix();
+  const isOnRegionalPage = locale?.base !== undefined;
 
   // Import mep/lingo.js once if this is a mep-lingo link
   const lingoModule = isMepLingoLink ? await import('../../features/mep/lingo.js') : null;
+
+  if (isMepLingoLink && (isOnRegionalPage || !lingoActive())) {
+    lingoModule.handleInvalidMepLingo(a, { env });
+    return;
+  }
 
   let originalBlock;
   const isSectionSwap = a.dataset.mepLingoSectionSwap === 'true';
@@ -189,28 +192,12 @@ export default async function init(a) {
   const needsFallback = (isMepLingoBlock || isMepLingoFragment)
     && !!a.dataset.originalHref && !isMepLingoInsert && !isMepLingoRemove;
 
-  const skipQI = a.dataset.mepLingoSkippedQI === 'true';
-  delete a.dataset.mepLingoSkippedQI;
-  const useDualFetch = skipQI && needsFallback;
+  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
 
-  let resp;
   let usedFallback = false;
 
-  if (useDualFetch) {
-    const origHref = a.dataset.originalHref;
-    const result = await lingoModule.dualFetchMepLingo(resourcePath, origHref, locale);
-    resp = result.resp;
-    if (result.usedFallback) {
-      usedFallback = true;
-      const { fallbackPath } = result;
-      try { relHref = new URL(fallbackPath).pathname; } catch { relHref = fallbackPath; }
-    }
-  } else {
-    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-      .catch(() => ({}));
-  }
-
-  const mepLingoPrefix = await getMepLingoPrefix();
+  const mepLingoPrefix = getMepLingoPrefix();
   if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
     usedFallback = true;
   }
@@ -237,32 +224,25 @@ export default async function init(a) {
     }
   };
 
-  if (!useDualFetch && !resp?.ok && attemptedRegionalFetch && canTryFallback) {
+  if (!resp?.ok && attemptedRegionalFetch && canTryFallback) {
     const fallback = await lingoModule.tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
       resourcePath,
-      skipQI,
     );
     applyFallback(fallback);
   }
 
-  if (!useDualFetch && !resp?.ok && isMepLingoRemove && attemptedRegionalFetch
-    && a.dataset.originalHref) {
+  if (!resp?.ok && isMepLingoRemove && attemptedRegionalFetch && a.dataset.originalHref) {
     const fallback = await lingoModule.tryMepLingoFallbackForStaleIndex(
       a.dataset.originalHref,
       locale,
       resourcePath,
-      skipQI,
     );
     applyFallback(fallback);
   }
 
   if (!resp?.ok) {
-    if (isMepLingoLink && !needsFallback) {
-      lingoModule.logMepLingoFallback(resourcePath, skipQI);
-    }
-
     if (isMepLingoInsert) {
       lingoModule.removeMepLingoElement(a, isMepLingoBlock, originalBlock);
       return;
@@ -283,14 +263,8 @@ export default async function init(a) {
       a.parentElement?.remove();
       return;
     }
-    if (isMepLingoFragment) {
-      lingoModule.removeMepLingoElement(a, false);
-    }
     const message = `Could not get ${shouldFetchMepLingo ? 'mep-lingo ' : ''}fragment: ${resourcePath}.plain.html`;
-    window.lana?.log(message, {
-      tags: 'fragment',
-      severity: 'error',
-    });
+    window.lana?.log(message);
     return;
   }
 
@@ -301,10 +275,7 @@ export default async function init(a) {
 
   const sections = doc.querySelectorAll('body > div');
   if (!sections.length) {
-    window.lana?.log(`Could not make fragment: ${resourcePath}.plain.html`, {
-      tags: 'fragment',
-      severity: 'error',
-    });
+    window.lana?.log(`Could not make fragment: ${resourcePath}.plain.html`);
     return;
   }
 

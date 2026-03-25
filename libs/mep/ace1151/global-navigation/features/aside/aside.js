@@ -6,11 +6,7 @@ export default async function decorateAside({ headerElem, fedsPromoWrapper, prom
   const onError = () => {
     fedsPromoWrapper?.remove();
     headerElem?.classList.remove('has-promo');
-    lanaLog({
-      message: 'Gnav Promo fragment not replaced, potential CLS',
-      tags: 'aside',
-      severity: 'warning',
-    });
+    lanaLog({ message: 'Gnav Promo fragment not replaced, potential CLS' });
     return '';
   };
 
