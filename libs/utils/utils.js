@@ -106,20 +106,20 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'base-card',
   'box',
   'brand-concierge',
   'carousel-c2',
-  'modal',
   'elastic-carousel',
-  'rich-content',
-  'router-marquee',
-  'section-metadata',
   'explore-card',
   'global-footer',
   'global-navigation',
-  'base-card',
-  'region-nav',
+  'modal',
   'news',
+  'region-nav',
+  'rich-content',
+  'router-marquee',
+  'section-metadata',
 ];
 
 const AUTO_BLOCKS = [
