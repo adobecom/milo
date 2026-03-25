@@ -82,12 +82,13 @@ const eagerLoad = (img) => {
 
 function loadStyles() {
   const paths = [];
-  const stylesPrefix = getMetadata('foundation') === 'c2' ? '/c2' : '';
+  const foundation = getMetadata('foundation');
+  const stylesPrefix = foundation === 'c2' ? '/c2' : '';
   paths.push(`${miloLibs}${stylesPrefix}/styles/styles.css`);
   const skin = getMetadata('skin');
   if (skin) paths.push(`${miloLibs}/styles/skins/${skin}.css`);
 
-  if (getMetadata('foundation') === 'c2' && /Firefox\//.test(navigator.userAgent) && !CSS.supports('animation-timeline: scroll()')) {
+  if (foundation === 'c2' && /Firefox\//.test(navigator.userAgent) && !CSS.supports('animation-timeline: scroll()')) {
     import(`${miloLibs}/deps/scroll-timeline.js`);
   }
 
