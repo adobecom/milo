@@ -76,6 +76,7 @@ export async function createCompareChart(el, options) {
 
 export default async function init(el) {
   const { base } = getConfig();
+  loadStyle(`${base}/blocks/merch/merch.css`);
   loadStyle(`${base}/blocks/comparison-table/comparison-table.css`);
   let options = getOptions(el);
   const { fragment } = options;
