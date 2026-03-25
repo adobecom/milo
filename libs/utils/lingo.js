@@ -33,7 +33,7 @@ async function tryEarlyDecisionUsingBaseIndex(
   return urlExistsInBase ? false : null;
 }
 
-export default async function urlInQueryIndex(
+async function urlInQueryIndex(
   regionalPath,
   basePath,
   urlHostname,
@@ -74,26 +74,29 @@ export default async function urlInQueryIndex(
   return urlInMatchingIndex(matchingIndexes, sanitizedPath);
 }
 
-export async function getPathFromIndexes(
+// eslint-disable-next-line import/prefer-default-export
+export async function resolveLingoPrefix(
   path,
+  prefix,
   basePrefix,
-  regionalPrefix,
-  urlHostname,
+  hostname,
   matchingIndexes,
   baseQueryIndex,
+  aTag,
+  { isMepLingo = false, domainInSiteMap = false } = {},
 ) {
-  const basePath = basePrefix ? `${basePrefix}${path}` : path;
-  const regionalPath = regionalPrefix ? `${regionalPrefix}${path}` : path;
-
-  if (!matchingIndexes.length) return basePath;
+  if (!matchingIndexes.length) {
+    if (isMepLingo && !domainInSiteMap) return prefix;
+    return basePrefix;
+  }
 
   const useRegional = await urlInQueryIndex(
-    regionalPath,
-    basePath,
-    urlHostname,
+    `${prefix}${path}`,
+    `${basePrefix}${path}`,
+    hostname,
     matchingIndexes,
     baseQueryIndex,
-    null,
+    aTag,
   );
-  return useRegional ? regionalPath : basePath;
+  return useRegional ? prefix : basePrefix;
 }

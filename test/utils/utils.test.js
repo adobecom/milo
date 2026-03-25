@@ -2393,22 +2393,22 @@ describe('Utils', () => {
     });
 
     it('should set base prefix initially and upgrade to regional when primary indexes load', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/products/photoshop';
       document.body.appendChild(a);
 
-      const result = await lingoUtils.localizeLinkAsync(
+      a.href = await lingoUtils.localizeLinkAsync(
         'https://www.adobe.com/products/photoshop',
         'www.adobe.com',
         false,
         a,
       );
-      a.href = result;
 
-      await new Promise((resolve) => {
-        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
-        window.addEventListener(evt, resolve, { once: true });
-      });
+      await allLoaded;
       await new Promise((resolve) => { setTimeout(resolve, 50); });
 
       expect(a.href).to.include('/sg/products/photoshop');
@@ -2416,22 +2416,22 @@ describe('Utils', () => {
     });
 
     it('should keep base prefix when regional path does not exist in index', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/products/premiere';
       document.body.appendChild(a);
 
-      const result = await lingoUtils.localizeLinkAsync(
+      a.href = await lingoUtils.localizeLinkAsync(
         'https://www.adobe.com/products/premiere',
         'www.adobe.com',
         false,
         a,
       );
-      a.href = result;
 
-      await new Promise((resolve) => {
-        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
-        window.addEventListener(evt, resolve, { once: true });
-      });
+      await allLoaded;
       await new Promise((resolve) => { setTimeout(resolve, 50); });
 
       expect(a.href).to.not.include('/sg/');
@@ -2483,22 +2483,22 @@ describe('Utils', () => {
     });
 
     it('should not update href when path has not changed', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/products/premiere';
       document.body.appendChild(a);
 
-      const result = await lingoUtils.localizeLinkAsync(
+      a.href = await lingoUtils.localizeLinkAsync(
         'https://www.adobe.com/products/premiere',
         'www.adobe.com',
         false,
         a,
       );
-      a.href = result;
 
-      await new Promise((resolve) => {
-        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
-        window.addEventListener(evt, resolve, { once: true });
-      });
+      await allLoaded;
       await new Promise((resolve) => { setTimeout(resolve, 50); });
 
       expect(new URL(a.href).pathname).to.equal('/products/premiere');
@@ -2506,46 +2506,46 @@ describe('Utils', () => {
     });
 
     it('should clean up listener when element is disconnected', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/products/photoshop';
       document.body.appendChild(a);
 
-      const result = await lingoUtils.localizeLinkAsync(
+      a.href = await lingoUtils.localizeLinkAsync(
         'https://www.adobe.com/products/photoshop',
         'www.adobe.com',
         false,
         a,
       );
-      a.href = result;
 
       a.remove();
 
-      await new Promise((resolve) => {
-        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
-        window.addEventListener(evt, resolve, { once: true });
-      });
+      await allLoaded;
       await new Promise((resolve) => { setTimeout(resolve, 50); });
 
       expect(a.href).to.not.include('/sg/');
     });
 
     it('should preserve origin and query/hash when upgrading path', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
       const a = document.createElement('a');
       a.href = 'https://www.adobe.com/products/photoshop?trackingid=123#section';
       document.body.appendChild(a);
 
-      const result = await lingoUtils.localizeLinkAsync(
+      a.href = await lingoUtils.localizeLinkAsync(
         'https://www.adobe.com/products/photoshop?trackingid=123#section',
         'www.adobe.com',
         false,
         a,
       );
-      a.href = result;
 
-      await new Promise((resolve) => {
-        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
-        window.addEventListener(evt, resolve, { once: true });
-      });
+      await allLoaded;
       await new Promise((resolve) => { setTimeout(resolve, 50); });
 
       const updatedUrl = new URL(a.href);

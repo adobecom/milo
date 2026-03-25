@@ -657,14 +657,14 @@ async function loadQueryIndexes(prefix, links = []) {
   const contentRoot = config.contentRoot ?? '';
   const siteId = config.uniqueSiteId ?? '';
   const host = window.location.hostname;
-  const indexUrl = (pfx) => `${origin}${pfx}${contentRoot}/assets/lingo/query-index${suffix}.json`;
+  const indexUrl = (pfx, sfx = suffix) => `${origin}${pfx}${contentRoot}/assets/lingo/query-index${sfx}.json`;
 
   queryIndexes[siteId] = processQueryIndexMap(indexUrl(prefix), host);
 
   const { base: localeBase, prefix: localePrefix } = config.locale;
   let basePfx = localePrefix ?? '';
   if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
-  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx).replace('query-index-preview', 'query-index'), host);
+  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx, ''), host);
 
   Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
     .then(() => window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED)));
@@ -703,14 +703,15 @@ async function loadQueryIndexes(prefix, links = []) {
     }
   })();
 
-  lingoSiteMapping.then(() => Promise.all(
-    Object.values(queryIndexes).map((q) => q.pathsRequest).filter(Boolean),
-  )).then(() => {
+  const lingoImport = import('./lingo.js').then((mod) => { lingoModule = mod; });
+
+  lingoSiteMapping.then(() => Promise.all([
+    ...Object.values(queryIndexes).map((q) => q.pathsRequest).filter(Boolean),
+    lingoImport,
+  ])).then(() => {
     queryIndexesAllLoaded = true;
     window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_ALL_LOADED));
   });
-
-  import('./lingo.js').then((mod) => { lingoModule = mod; });
 }
 
 function attachLingoPendingListener(a, hostname, rawPath, basePrefix, regionalPrefix) {
@@ -731,19 +732,20 @@ function attachLingoPendingListener(a, hostname, rawPath, basePrefix, regionalPr
       return;
     }
     (lingoModule ? Promise.resolve(lingoModule) : import('./lingo.js'))
-      .then((mod) => mod.getPathFromIndexes(
+      .then((mod) => mod.resolveLingoPrefix(
         rawPath,
-        basePrefix,
         regionalPrefix,
+        basePrefix,
         hostname,
         indexes,
         baseQueryIndex,
+        null,
       ))
-      .then((newPath) => {
-        const currentUrl = new URL(a.href);
-        if (newPath !== currentUrl.pathname) {
-          const { origin, search, hash } = currentUrl;
-          a.href = `${origin}${newPath}${search}${hash}`;
+      .then((newPrefix) => {
+        if (!a.isConnected) { cleanup(); return; }
+        if (newPrefix !== basePrefix) {
+          const { origin, search, hash } = new URL(a.href);
+          a.href = `${origin}${newPrefix}${rawPath}${search}${hash}`;
           cleanup();
         } else if (isFinal) {
           cleanup();
@@ -786,7 +788,8 @@ function localizeLinkCore(
       || (url.hostname && getFederatedContentRoot().includes(url.hostname));
     if (!isLocalizable || isLocalizedPath(path, locales)) return processedHref;
 
-    const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
+    const isFragment = path.includes('/fragments/');
+    const isMepLingoFragment = isFragment && aTag?.dataset.mepLingo === 'true';
     const prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const buildUrl = (pfx) => {
       const urlPath = `${pfx}${path}${url.search}${url.hash}`;
@@ -794,59 +797,54 @@ function localizeLinkCore(
     };
 
     const isLingoPage = locale.base !== undefined || !!locale.regions;
-    const isFragment = path.includes('/fragments/');
     const enterAsync = useAsync && aTag && extension !== 'json'
       && lingoActive() && isLingoPage
       && (!isFragment || (isMepLingoFragment && !!locale.regions));
 
     if (enterAsync) {
+      const siteId = uniqueSiteId ?? '';
       return (async () => {
         loadQueryIndexes(prefix, [href]);
         const base = overrideBase ?? locale.base;
         const basePrefix = base === '' ? '' : `/${base}`;
-        const siteId = uniqueSiteId ?? '';
 
         if (isMepLingoFragment) {
-          const resolved = queryIndexes[siteId]?.requestResolved;
-          if (!(resolved || lingoSiteMappingLoaded)) {
+          if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
             await Promise.all([
               queryIndexes[siteId]?.pathsRequest,
               lingoSiteMapping,
             ].filter(Boolean));
           }
+          if (!lingoModule) lingoModule = await import('./lingo.js');
         }
 
         const matchingIndexes = Object.values(queryIndexes)
           .filter((q) => q.domains.includes(url.hostname)
             && (isMepLingoFragment || q.requestResolved));
 
-        let resolvedPrefix = isMepLingoFragment ? prefix : basePrefix;
-        if (matchingIndexes.length) {
-          if (!lingoModule) lingoModule = await import('./lingo.js');
-          const useRegional = await lingoModule.default(
-            `${prefix}${path}`,
-            `${basePrefix}${path}`,
+        // Capture before any await to avoid race with index resolution
+        const needsListener = !isMepLingoFragment && !queryIndexesAllLoaded;
+
+        let resolvedPrefix = basePrefix;
+        if (lingoModule && matchingIndexes.length) {
+          resolvedPrefix = await lingoModule.resolveLingoPrefix(
+            path,
+            prefix,
+            basePrefix,
             url.hostname,
             matchingIndexes,
             baseQueryIndex,
             aTag,
+            {
+              isMepLingo: isMepLingoFragment,
+              domainInSiteMap: isMepLingoFragment && siteQueryIndexMapLingo?.some(
+                (i) => getDomainLingo(i?.queryIndexWebPath) === url.hostname,
+              ),
+            },
           );
-          if (isMepLingoFragment && !useRegional) {
-            resolvedPrefix = basePrefix;
-          }
-          if (!isMepLingoFragment && useRegional) {
-            resolvedPrefix = prefix;
-          }
-        } else if (isMepLingoFragment
-          && siteQueryIndexMapLingo?.some(
-            (i) => getDomainLingo(i?.queryIndexWebPath) === url.hostname,
-          )) {
-          resolvedPrefix = basePrefix;
         }
 
-        if (!isMepLingoFragment
-          && resolvedPrefix === basePrefix
-          && !queryIndexesAllLoaded) {
+        if (needsListener && resolvedPrefix === basePrefix) {
           attachLingoPendingListener(aTag, url.hostname, path, basePrefix, prefix);
         }
 
@@ -2460,7 +2458,7 @@ function loadLingoIndexes(area = document) {
     if (prefix) {
       loadQueryIndexes(prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }
-  });
+  }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
 export async function loadArea(area = document) {
