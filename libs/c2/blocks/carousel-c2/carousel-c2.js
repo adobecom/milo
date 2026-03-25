@@ -304,11 +304,11 @@ export default function init(el) {
     return rdx;
   }, []);
 
-  const indicatorsContainer = createTag('div', { class: 'indicators-container' });
+  const indicatorsContainer = createTag('ul', { class: 'indicators-container' });
   slides.forEach((slide, index) => {
     slide.setAttribute('role', 'group');
     slide.setAttribute('aria-roledescription', 'slide');
-    const indicator = createTag('div', { class: 'slide-indicator', 'aria-label': `Slide ${index + 1} of ${slides.length}` });
+    const indicator = createTag('li', { class: 'slide-indicator', 'aria-label': `Slide ${index + 1} of ${slides.length}` });
     indicatorsContainer.appendChild(indicator);
   });
 
