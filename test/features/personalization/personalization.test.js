@@ -156,6 +156,32 @@ describe('Functional Test', () => {
     expect(fragment).to.be.null;
   });
 
+  it('disabled manifest should stay disabled even when variantOverride exists for another manifest', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: { '/other/manifest.json': 'default' },
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+    };
+    const promoMepSettings = [
+      {
+        manifestPath: '/promos/blackfriday/manifest.json',
+        disabled: true,
+        event: { name: 'blackfriday', start: new Date('2022-11-24T13:00:00+00:00'), end: new Date('2022-11-24T13:00:00+00:00') },
+      },
+    ];
+    await loadManifestAndSetResponse('./mocks/manifestScheduledInactive.json');
+    expect(document.querySelector('a[href="/fragments/insertafter4"]')).to.be.null;
+    await applyPers({ manifests: promoMepSettings });
+
+    const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
+    expect(fragment).to.be.null;
+  });
+
   it('test or promo manifest', async () => {
     let config = getConfig();
     config.mep = {};
