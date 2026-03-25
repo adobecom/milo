@@ -994,10 +994,11 @@ div.section.parallax-move-up-fast {
     z-index: 2;
   }
 }
-.section.text-reveal-up .foreground {
-  animation: text-reveal-up ease-in both;
+
+.section.text-reveal-up * {
+  animation: text-reveal-up ease-out both;
   animation-timeline: view(block);
-  animation-range: entry 0% cover 60%;
+  animation-range: entry 46px cover 20%;
 }
 
 @keyframes parallax-move-up-fast {
