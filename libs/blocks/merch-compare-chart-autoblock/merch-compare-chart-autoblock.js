@@ -7,8 +7,6 @@ import {
   loadMasComponent,
 } from '../merch/merch.js';
 
-
-
 const MAS_COMPARISON_TABLE = 'mas-comparison-table';
 const MAS_TABLE = 'mas-table';
 
