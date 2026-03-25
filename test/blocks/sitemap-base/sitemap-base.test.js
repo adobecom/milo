@@ -27,3 +27,26 @@ describe('Sitemap Base', () => {
     expect(headings).to.deep.equal(['AI & Agents', 'Content Workflow', 'Creative & Design']);
   });
 });
+
+describe('Sitemap Base align-headings', () => {
+  let block;
+
+  before(async () => {
+    block = document.querySelector('#sitemap-base-align');
+    await init(block);
+  });
+
+  it('inserts a spacer in items without a heading', () => {
+    const items = block.querySelectorAll(':scope > .sitemap-base-item');
+    const spacer = items[1].querySelector('.sitemap-base-spacer');
+    expect(spacer).to.exist;
+    expect(spacer.classList.contains('heading-m')).to.be.true;
+    expect(spacer.getAttribute('aria-hidden')).to.equal('true');
+  });
+
+  it('does not insert a spacer in items that have a heading', () => {
+    const items = block.querySelectorAll(':scope > .sitemap-base-item');
+    const spacer = items[0].querySelector('.sitemap-base-spacer');
+    expect(spacer).to.not.exist;
+  });
+});

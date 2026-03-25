@@ -12,6 +12,17 @@
   min-width: 0;
 }
 
+.sitemap-base-spacer {
+  display: none;
+  visibility: hidden;
+}
+
+@media (min-width: 600px) {
+  .sitemap-base-spacer {
+    display: block;
+  }
+}
+
 @media (min-width: 600px) {
   .sitemap-base {
     grid-template-columns: repeat(2, minmax(0, 1fr));
