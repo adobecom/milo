@@ -23,8 +23,6 @@ const loadScript = () => Promise.resolve();
 
 const loadStyle = () => Promise.resolve();
 
-const getCountry = () => Promise.resolve();
-
 const createTag = (tag, attributes = {}) => {
   const element = document.createElement(tag);
   Object.entries(attributes).forEach(([key, value]) => {
@@ -143,7 +141,6 @@ export {
   loadArea,
   loadScript,
   loadStyle,
-  getCountry,
   localizeLinkAsync,
   loadLink,
   mockOstDeps,

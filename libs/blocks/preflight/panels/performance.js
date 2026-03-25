@@ -1,6 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import preflightApi from '../checks/preflightApi.js';
-import { STATUS_TO_ICON_MAP } from '../checks/constants.js';
+import { STATUS } from '../checks/constants.js';
 
 const { getLcpEntry, runChecks } = preflightApi.performance;
 
@@ -34,7 +34,12 @@ async function getResults() {
     const signalResult = signals[index];
     return Promise.resolve(resultOrPromise)
       .then((result) => {
-        const icon = STATUS_TO_ICON_MAP[result.status] ?? 'orange';
+        const statusToIconMap = {
+          [STATUS.PASS]: 'green',
+          [STATUS.FAIL]: 'red',
+          [STATUS.EMPTY]: 'empty',
+        };
+        const icon = statusToIconMap[result.status] ?? 'orange';
         signalResult.value = {
           icon,
           title: result.title.replace('Performance - ', ''),

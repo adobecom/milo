@@ -137,7 +137,7 @@ async function toggleDrawer(target, dd, pageId) {
     const loading = dd.querySelector('.loading');
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
     const pageData = await fetchData(`${API_URLS.pageDetails}?id=${pageId}&lastSeen=${SEARCH().lastSeenManifest}&manifestSrc=${SEARCH().manifestSrc}`, DATA_TYPE.JSON);
-    loading.replaceWith(await getMepPopup(pageData, true));
+    loading.replaceWith(getMepPopup(pageData, true));
     dd.classList.add('placeholder-resolved');
   }
 }
@@ -147,8 +147,7 @@ function createButtonDetailsPair(mmmEl, page) {
   const triggerId = `mmm-trigger-${pageId}`;
   const panelId = `mmm-content-${pageId}`;
   const icon = createTag('span', { class: 'mmm-icon' });
-  const anchor = createTag('a', { href: url }, url);
-  const hTag = createTag('h5', false, anchor);
+  const hTag = createTag('h5', false, url);
   const activitiesNum = createTag(
     'span',
     { class: 'mmm-page_item-subtext' },
@@ -182,7 +181,6 @@ function createButtonDetailsPair(mmmEl, page) {
       </svg>`,
   );
   const dd = createTag('dd', { id: panelId, hidden: true }, loading);
-  anchor.addEventListener('click', (e) => { e.stopPropagation(); });
   button.addEventListener('click', (e) => { toggleDrawer(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);
 }

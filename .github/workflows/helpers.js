@@ -95,34 +95,6 @@ const isWithinPrePostRCP = ({ offset = 7 } = {}) => {
   });
 };
 
-/**
- * Tests whether a file path matches a gitignore-style pattern.
- *
- * Plain paths (no glob characters) are matched as prefixes, preserving the
- * existing behaviour where a directory name covers all files beneath it.
- *
- * Supported glob syntax:
- * - `*`  — matches any sequence of characters except `/`
- * - `**` — matches any sequence of characters including `/`
- * - `?`  — matches any single character except `/`
- *
- * @param {string} filename - The file path to test (e.g. `'libs/utils/foo.js'`).
- * @param {string} pattern  - A plain path or glob pattern (e.g. `'*.md'`, `'**\/*.test.js'`).
- * @returns {boolean} `true` when `filename` matches `pattern`.
- */
-const matchesPattern = (filename, pattern) => {
-  if (!pattern.includes('*') && !pattern.includes('?')) {
-    return filename.startsWith(pattern);
-  }
-  const regexStr = pattern
-    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-    .replace(/\*\*/g, '\x00')
-    .replace(/\*/g, '[^/]*')
-    .replace(/\?/g, '[^/]')
-    .replace(/\x00/g, '.*');
-  return new RegExp(`^${regexStr}$`).test(filename);
-};
-
 const getLocalConfigs = () => {
   if (!owner || !repo || !auth) {
     throw new Error(`Create a .env file on the root of the project with credentials.
@@ -231,7 +203,6 @@ const isStageFreezeActive = (now = new Date()) => {
 };
 
 module.exports = {
-  matchesPattern,
   getLocalConfigs,
   slackNotification,
   pulls: { addLabels, addFiles, getChecks, getReviews },

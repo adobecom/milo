@@ -1,6 +1,5 @@
-const { getLocalConfigs, matchesPattern } = require('./helpers.js');
-
-const zeroImpactPaths = [
+const { getLocalConfigs } = require('./helpers.js');
+const zeroImpactDirs = [
   '.github',
   '.kodiak',
   '.vscode',
@@ -16,9 +15,7 @@ const zeroImpactPaths = [
   'package-lock.json',
   'test',
   'libs/mep',
-  'nala',
-  '*.md',
-  '**/*.md',
+  'nala'
 ];
 const zeroImpactLabel = 'zero-impact';
 
@@ -36,7 +33,7 @@ const main = async ({ github, context }) => {
     });
 
     const isZeroImpactPR = files.every(({ filename }) =>
-      zeroImpactPaths.some((pattern) => matchesPattern(filename, pattern))
+      zeroImpactDirs.some((dir) => filename.startsWith(dir))
     );
     console.log(`PR ${number} is zero impact: ${isZeroImpactPR}.`);
     if (isZeroImpactPR) {

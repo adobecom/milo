@@ -333,7 +333,7 @@ span.preflight-time {
 
 /* GENERAL */
 .preflight-structure-title {
-  margin: 0 0 24px;
+  margin: 0;
   font-weight: 700;
   font-size: 32px;
   line-height: 1;
@@ -341,7 +341,7 @@ span.preflight-time {
 }
 
 .preflight-structure-columns {
-  margin: 0 48px 24px;
+  margin: 24px 48px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
@@ -1273,11 +1273,6 @@ img:hover ~ .asset-meta,
 .preflight-merch-error {
   outline: 3px solid #ff4444 !important;
   outline-offset: 2px !important;
-}
-
-/* Highlight blocks with multiple M@S fragment IDs (M@S preflight warning) */
-.preflight-mas-multiple-fragments {
-  border: 3px solid #e68600 !important;
 }
 
 

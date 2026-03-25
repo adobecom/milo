@@ -28,10 +28,7 @@ async function customAccessibilityChecks(config = {}) {
     );
     return results.flat();
   } catch (error) {
-    window.lana.log(`Error running custom accessibility checks: ${error.message}`, {
-      tags: 'preflight',
-      severity: 'error',
-    });
+    window.lana.log(`Error running custom accessibility checks: ${error.message}`);
     return [];
   }
 }

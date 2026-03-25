@@ -659,5 +659,6 @@
 
 .link-list a {
   display: inline-block;
-  margin: 5px 10px;
+  margin-left: 10px;
+  margin-right: 10px;
 }

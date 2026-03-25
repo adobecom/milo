@@ -1,8 +1,6 @@
 import { getConfig, getFederatedContentRoot } from '../../../utils/utils.js';
 import { fetchPreflightChecks, asoCache } from './asoApi.js';
 import { isViewportTooSmall, checkImageDimensions, runChecks as runChecksAssets } from './assets.js';
-import runChecksAccessibility from './accessibility.js';
-import captureMetrics from './captureMetrics.js';
 import {
   getLcpEntry,
   checkSingleBlock,
@@ -34,7 +32,6 @@ let checksSuite = null;
 const globalPreflightCache = new Map();
 
 export default {
-  accessibility: { runChecks: runChecksAccessibility },
   assets: {
     isViewportTooSmall,
     checkImageDimensions,
@@ -103,18 +100,11 @@ const isUrlExcluded = (url, exclusionPatterns = {}) => {
 
 const runChecks = async (url, area, injectVisualMetadata = false) => {
   const isASO = (await getChecksSuite()) === 'ASO';
-  const accessibility = await Promise.all(runChecksAccessibility({ area }));
   const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
   const performance = await Promise.all(runChecksPerformance(url, area));
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   const structure = await Promise.all(runChecksStructure({ area }));
-  return {
-    accessibility,
-    assets,
-    performance,
-    seo,
-    structure,
-  };
+  return { assets, performance, seo, structure };
 };
 
 function generateCacheKey(url, injectVisualMetadata, isASO, asoAuthed) {
@@ -145,7 +135,6 @@ export async function getPreflightResults(options = {}) {
 
   const res = await runChecks(url, area, injectVisualMetadata);
   const allResults = [
-    ...(res.accessibility || []),
     ...(res.assets || []),
     ...(res.performance || []),
     ...(res.seo || []),
@@ -157,8 +146,6 @@ export async function getPreflightResults(options = {}) {
     runChecks: res,
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
-
-  captureMetrics(res).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
 
   if (useCache) globalPreflightCache.set(cacheKey, result);
 

@@ -145,9 +145,7 @@ const setupEntitlementCallback = () => {
 };
 
 function isProxied() {
-  const { hostname } = window.location;
-  return ['acrobat.adobe.com', 'stage.acrobat.adobe.com'].includes(hostname)
-    || /^(www|milo|business|blog|news)(\.stage)?\.adobe\.com$/.test(hostname);
+  return /^(www|milo|business|blog|news)(\.stage)?\.adobe\.com$/.test(window.location.hostname);
 }
 
 let filesLoadedPromise = false;

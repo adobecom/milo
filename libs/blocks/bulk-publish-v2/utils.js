@@ -49,42 +49,17 @@ const sticky = () => {
   };
 };
 
-const AEM_PAGE_HOST_REGEX = /^([^.]+\.)*[^.]+\.aem\.(?:page|live)$/;
-const getAemUrl = (url) => {
-  const segment = url.hostname.split('.').find((s) => s.includes('--'));
-  return segment ? segment.split('--') : [];
-};
-const getInvalidUrlReason = (str) => {
-  const trimmed = typeof str === 'string' ? str.trim() : '';
-  const preParse = [
-    [!trimmed.startsWith('https://'), 'Invalid URL (must start with https://)'],
-    [trimmed.length > 8 && trimmed[8] === '/', 'Invalid URL (use exactly two slashes after https:)'],
-  ];
-  const preFail = preParse.find(([fail]) => fail);
-  if (preFail) return preFail[1];
-
+const getAemUrl = (url) => url.hostname.split('.')[0].split('--');
+const isValidUrl = (str) => {
   let url;
   try {
     url = new URL(str);
   } catch (_) {
-    return 'Invalid URL';
+    return false;
   }
-
   const [ref, repo, owner] = getAemUrl(url);
-  const postParse = [
-    [url.protocol !== 'https:', 'Must use HTTPS'],
-    [!url.hostname, 'Invalid URL (missing hostname)'],
-    [!url.hostname || !AEM_PAGE_HOST_REGEX.test(url.hostname), 'Invalid host (expected *.aem.page or *.aem.live)'],
-    [!ref || !repo || !owner, 'Invalid host (missing ref, repo, or owner)'],
-    [repo === 'bacom', 'Old Bacom project is not supported, use new DA project instead'],
-    [url.pathname.includes('//'), 'Invalid URL (path must not contain //)'],
-    [url.pathname.toLowerCase().endsWith('.html'), 'URL must not end with .html'],
-  ];
-  const postFail = postParse.find(([fail]) => fail);
-  return postFail ? postFail[1] : null;
+  return url.protocol === 'https:' && ref && repo && owner;
 };
-
-const isValidUrl = (str) => !getInvalidUrlReason(str);
 
 const editEntry = (el, str) => {
   if (el?.value) {
@@ -241,7 +216,6 @@ export {
   getStatusProps,
   updateJobUrls,
   sticky,
-  getInvalidUrlReason,
   isValidUrl,
   delay,
   setJobTime,

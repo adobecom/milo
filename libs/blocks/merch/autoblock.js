@@ -1,16 +1,5 @@
-import { decorateLinksAsync, getConfig, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
+import { decorateLinksAsync, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
 import { addAriaLabelToCta } from './merch.js';
-
-let iconsLoaded;
-function loadBadgeIcons(cards) {
-  if (iconsLoaded) return;
-  const hasBadgeIcon = cards.some((card) => card.querySelector('merch-badge[icon^="sp-icon-"]'));
-  if (hasBadgeIcon) {
-    iconsLoaded = true;
-    const { base } = getConfig();
-    import(`${base}/features/spectrum-web-components/dist/icons-workflow.js`);
-  }
-}
 
 export async function localizePreviewLinks(el) {
   const anchors = el.getElementsByTagName('a');
@@ -21,10 +10,7 @@ export async function localizePreviewLinks(el) {
         const url = new URL(href);
         a.href = await localizeLinkAsync(href, url.hostname);
       } catch (e) {
-        window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`, {
-          tags: 'merch-autoblock',
-          severity: 'error',
-        });
+        window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`);
       }
     }
   }
@@ -106,31 +92,19 @@ export function enableAnalytics(card) {
   });
 }
 
-async function postProcessCard(card) {
-  await decorateLinksAsync(card);
-  await localizePreviewLinks(card);
-  card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
-  decorateCardCtasWithA11y(card);
-  enableAnalytics(card);
-}
-
 export async function postProcessAutoblock(autoblockEl, isCard = false) {
   cleanupTabsAnalytics(autoblockEl);
   const cards = isCard ? [autoblockEl] : Array.from(autoblockEl.querySelectorAll('merch-card'));
-  loadBadgeIcons(cards);
   const processPromises = cards.map(async (card) => {
     try {
-      const cardReady = await card.checkReady();
-      if (cardReady) {
-        postProcessCard(card);
-      } else {
-        card.addEventListener('mas:ready', () => postProcessCard(card));
-      }
+      await card.checkReady();
+      await decorateLinksAsync(card);
+      await localizePreviewLinks(card);
+      card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
+      decorateCardCtasWithA11y(card);
+      enableAnalytics(card);
     } catch (e) {
-      window.lana?.log(`Error processing autoblock element: ${e.toString()}`, {
-        tags: 'merch-autoblock',
-        severity: 'error',
-      });
+      window.lana?.log(`Error processing autoblock element: ${e.toString()}`);
     }
   });
   return Promise.allSettled(processPromises);

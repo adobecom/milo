@@ -60,6 +60,7 @@ const C1_BLOCKS = [
   'merch',
   'merch-card',
   'merch-card-autoblock',
+  'merch-card-collection',
   'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
@@ -406,10 +407,6 @@ export const getFederatedContentRoot = () => {
     'https://news.adobe.com',
     'graybox.adobe.com',
   ];
-  const fedContFromMiloDomain = [
-    'https://acrobat.adobe.com',
-    'https://stage.acrobat.adobe.com',
-  ];
   const { allowedOrigins = [], origin: configOrigin } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
   // Non milo consumers will have its origin from config
@@ -421,8 +418,8 @@ export const getFederatedContentRoot = () => {
       ? originNoStage === o
       : originNoStage.endsWith(o);
   });
-  if (fedContFromMiloDomain.includes(window.location.origin)) federatedContentRoot = 'https://milo.adobe.com';
-  else federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
+
+  federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
     federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
@@ -438,10 +435,7 @@ export const getFederatedUrl = (url = '') => {
     const { pathname, search, hash } = new URL(url);
     return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
   } catch (e) {
-    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
-      tags: 'utils',
-      severity: 'error',
-    });
+    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`);
   }
   return url;
 };
@@ -484,10 +478,7 @@ export async function loadLanguageConfig() {
 
     return langConfig;
   } catch (e) {
-    window.lana?.log(`Failed to load language-config.json: ${e}`, {
-      tags: 'utils',
-      severity: 'error',
-    });
+    window.lana?.log('Failed to load language-config.json:', e);
   }
 
   return {};
@@ -559,11 +550,6 @@ export function isInTextNode(node) {
 export function lingoActive() {
   const langFirst = (PAGE_URL.searchParams.get('langfirst') || getMetadata('langfirst'))?.toLowerCase();
   return ['true', 'on'].includes(langFirst);
-}
-
-export function mepLingoSkipQI() {
-  const skip = (PAGE_URL.searchParams.get('mep-lingo-skip-qi') || getMetadata('mep-lingo-skip-qi'))?.toLowerCase();
-  return lingoActive() && ['true', 'on'].includes(skip);
 }
 
 export function createTag(tag, attributes, html, options = {}) {
@@ -641,10 +627,7 @@ function processQueryIndexMap(link, domain) {
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
-      window.lana?.log(`Failed to load query index: ${link} | ${error}`, {
-        tags: 'utils',
-        severity: 'error',
-      });
+      window.lana?.log(`Failed to load query index: ${link}`, error);
       return [];
     })
     .finally(() => {
@@ -729,10 +712,7 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
           queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
         });
     } catch (e) {
-      window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, {
-        tags: 'utils',
-        severity: 'error',
-      });
+      window.lana?.log('Failed to load lingo-site-mapping.json:', e);
     } finally {
       lingoSiteMappingLoaded = true;
     }
@@ -773,11 +753,7 @@ function localizeLinkCore(
     const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
     let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
     const siteId = uniqueSiteId ?? '';
-    const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
-    const qiResolved = queryIndexes[siteId]?.requestResolved;
-    const skipQueryIndex = isMepLingoFragment
-      && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
-    if (useAsync && extension !== 'json' && lingoActive() && !skipQueryIndex
+    if (useAsync && extension !== 'json' && lingoActive()
         && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
           || (!!locale.regions && isMepLingoFragment))) {
       return (async () => {
@@ -808,7 +784,6 @@ function localizeLinkCore(
       })();
     }
 
-    if (skipQueryIndex && aTag) aTag.dataset.mepLingoSkippedQI = 'true';
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
@@ -824,20 +799,11 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
-export async function getCountry(skipFallback = false) {
-  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
-  if (country || skipFallback) return country?.toLowerCase();
-
-  try {
-    const { getAkamaiCode } = await import('./geo.js');
-    return await getAkamaiCode();
-  } catch (error) {
-    window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
-    return null;
-  }
+export function getCountry() {
+  return PAGE_URL.searchParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
 }
 
-export async function getMepLingoPrefix() {
+export function getMepLingoPrefix() {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -845,7 +811,7 @@ export async function getMepLingoPrefix() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = await getCountry();
+  const country = getCountry();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -929,7 +895,7 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
 
-  const prefix = lingoActive() && isMepLingoLink ? await getMepLingoPrefix() : null;
+  const prefix = lingoActive() && isMepLingoLink ? getMepLingoPrefix() : null;
   const base = lingoActive() && isMepLingoLink
     ? getConfig()?.locale?.prefix.replace('/', '')
     : null;
@@ -1031,10 +997,7 @@ export function appendHtmlToLink(link) {
         : linkUrl.href);
     }
   } catch (e) {
-    window.lana?.log(`Error while attempting to append '.html' to ${link}: ${e}`, {
-      tags: 'utils',
-      severity: 'error',
-    });
+    window.lana?.log(`Error while attempting to append '.html' to ${link}: ${e}`);
   }
 }
 
@@ -1119,10 +1082,7 @@ function getBlockData(block) {
       });
       if (match?.base) base = match.base;
     } catch (error) {
-      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`, {
-        tags: 'utils',
-        severity: 'error',
-      });
+      window.lana?.log(`Invalid externalLibs configuration: ${error.message || error}`);
     }
   }
 
@@ -1266,10 +1226,7 @@ export function decorateAutoBlock(a) {
   try {
     url = new URL(a.href);
   } catch (e) {
-    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`, {
-      tags: 'utils',
-      severity: 'error',
-    });
+    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`);
     return false;
   }
 
@@ -1445,15 +1402,10 @@ function setupLinksDecoration(el) {
   return { config, anchors, hostname, href };
 }
 
-const decoratedLinks = new WeakSet();
-
 export async function decorateLinksAsync(el) {
   const { config, anchors, hostname, href } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
-    if (decoratedLinks.has(a)) {
-      return a.classList.contains('link-block') ? a : null;
-    }
     if (a.href.startsWith('https://#')) a.href = a.href.replace('https://', '');
     appendHtmlToLink(a);
     const hasDnt = a.href.includes('#_dnt');
@@ -1465,7 +1417,6 @@ export async function decorateLinksAsync(el) {
         a,
       );
     }
-    decoratedLinks.add(a);
     return processLinkDecoration(a, config, hasDnt);
   });
 
@@ -1932,9 +1883,10 @@ async function checkForPageMods() {
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
+  const akamaiCode = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
   if (mepgeolocation && !akamaiCode) {
-    countryIPPromise = getCountry();
+    const { default: getAkamaiCode } = await import('./geo.js');
+    countryIPPromise = getAkamaiCode(true);
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1993,7 +1945,7 @@ async function decorateMeta(ignoreNames = []) {
   const contents = document.head.querySelectorAll('[content*=".hlx."]:not([data-localized]), [content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
   await Promise.all(Array.from(contents).map(async (meta) => {
     const name = meta.getAttribute('name') || meta.getAttribute('property');
-    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule') || meta.getAttribute('http-equiv') === 'Content-Security-Policy') return;
+    if (name === 'hlx:proxyUrl' || name?.endsWith('schedule')) return;
     if (ignoreNames.includes(name)) return;
     try {
       const url = new URL(meta.content);
@@ -2002,10 +1954,7 @@ async function decorateMeta(ignoreNames = []) {
       meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
       meta.dataset.localized = 'true';
     } catch (e) {
-      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`, {
-        tags: 'utils',
-        severity: 'error',
-      });
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
   }));
 }
@@ -2094,10 +2043,7 @@ export function scrollToHashedElement(hash) {
   try {
     targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   } catch (e) {
-    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`, {
-      tags: 'utils',
-      severity: 'error',
-    });
+    window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`);
   }
   if (!targetElement) return;
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
@@ -2197,7 +2143,7 @@ async function decorateLanguageBanner() {
     : navigator.language?.split('-')[0] || null;
 
   const [geoIpCode, marketsConfig] = await Promise.all([
-    getCountry(),
+    getCountry() || import('./geo.js').then((m) => m.default(true)),
     fetch(getMarketsUrl())
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null),
@@ -2384,9 +2330,9 @@ async function resolveHighPriorityFragments(section) {
   const hadInlineFrags = await loadFragments(section.el, 'a[href*="#_inline"]');
 
   if (hadSectionSwaps || hadBlockSwaps || hadInlineFrags) {
-    const redecorated = await decorateSection(section.el, section.idx);
-    section.blocks = redecorated.blocks;
-    section.preloadLinks = redecorated.preloadLinks;
+    const newlyDecoratedSection = await decorateSection(section.el, section.idx);
+    section.blocks = newlyDecoratedSection.blocks;
+    section.preloadLinks = newlyDecoratedSection.preloadLinks;
   }
 }
 
@@ -2426,11 +2372,10 @@ function loadLingoIndexes(area = document) {
     loadQueryIndexes(config.locale.prefix, false, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
-  getMepLingoPrefix().then((prefix) => {
-    if (prefix) {
-      loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
-    }
-  });
+  const prefix = getMepLingoPrefix();
+  if (prefix) {
+    loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
+  }
 }
 
 export async function loadArea(area = document) {
@@ -2516,7 +2461,7 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i', severity: 'error' });
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
   };
 
   window.lana = {
