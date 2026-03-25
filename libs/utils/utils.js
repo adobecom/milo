@@ -2019,7 +2019,8 @@ async function loadPostLCP(config) {
     await Promise.all([
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
-    ]);
+      !CSS.supports('animation-timeline: scroll()') && loadScript(`${config.base}/deps/scroll-timeline.js`),
+    ].filter(Boolean));
     const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
     window.lenis = new window.Lenis({
