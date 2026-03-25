@@ -225,6 +225,36 @@ describe('json-ld', () => {
             expect(scripts.length).to.equal(1);
         });
 
+        it('uses priceWithoutDiscount from offer when regularOffer has same price (same OSI)', () => {
+            const offer = { priceDetails: { price: 662.9, priceWithoutDiscount: 779.88 }, commitment: 'YEAR', term: 'ANNUAL' };
+            const regularOffer = { priceDetails: { price: 662.9 }, commitment: 'YEAR', term: 'ANNUAL' };
+            injectJsonLd(FIELDS, offer, regularOffer, COUNTRY, PAGE_URL);
+            const { priceSpecification } = JSON.parse(
+                document.head.querySelector('script[type="application/ld+json"]').textContent,
+            ).offers[0];
+            expect(priceSpecification.price).to.equal('662.9');
+            expect(priceSpecification.priceWithoutDiscount).to.equal('779.88');
+        });
+
+        it('uses priceWithoutDiscount from offer when no regularOffer (data-display-old-price pattern)', () => {
+            const offer = { priceDetails: { price: 34.99, priceWithoutDiscount: 69.99 }, commitment: 'YEAR', term: 'MONTHLY' };
+            injectJsonLd(FIELDS, offer, null, COUNTRY, PAGE_URL);
+            const { priceSpecification } = JSON.parse(
+                document.head.querySelector('script[type="application/ld+json"]').textContent,
+            ).offers[0];
+            expect(priceSpecification.price).to.equal('34.99');
+            expect(priceSpecification.priceWithoutDiscount).to.equal('69.99');
+        });
+
+        it('omits priceWithoutDiscount when offer.priceDetails.priceWithoutDiscount equals price', () => {
+            const offer = { priceDetails: { price: 22.99, priceWithoutDiscount: 22.99 }, commitment: 'YEAR', term: 'MONTHLY' };
+            injectJsonLd(FIELDS, offer, null, COUNTRY, PAGE_URL);
+            const { priceSpecification } = JSON.parse(
+                document.head.querySelector('script[type="application/ld+json"]').textContent,
+            ).offers[0];
+            expect(priceSpecification.priceWithoutDiscount).to.be.undefined;
+        });
+
         it('normalises country to uppercase in eligibleRegion', () => {
             injectJsonLd(FIELDS, OFFER, null, 'gb', PAGE_URL);
             const script = document.head.querySelector('script[type="application/ld+json"]');

@@ -73,7 +73,7 @@ export function injectJsonLd(fields, offer, regularOffer, country, pageUrl) {
     billingIncrement: 1,
   };
 
-  const regularPrice = regularOffer?.priceDetails?.price;
+  const regularPrice = offer?.priceDetails?.priceWithoutDiscount ?? regularOffer?.priceDetails?.price;
   if (regularPrice != null && regularPrice !== price) {
     priceSpecification.priceWithoutDiscount = String(regularPrice);
   }
