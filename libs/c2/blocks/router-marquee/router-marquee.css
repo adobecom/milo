@@ -147,7 +147,7 @@
   color: #000;
   backdrop-filter: blur(156px);
   -webkit-backdrop-filter: blur(156px);
-  border: none;
+  border: 1px solid transparent;
 }
 
 .rm-card-icon {
