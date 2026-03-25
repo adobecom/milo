@@ -1012,7 +1012,7 @@ div.section.parallax-move-up-fast {
 }
 
 @keyframes text-reveal-up {
-  from { transform: translateY(60px); }
+  from { line-height: 4; }
 }
 
 .parallax-scale-up {
