@@ -13,9 +13,18 @@ export function appendCountryParam(urlString, countryCode) {
   }
 }
 
-export function getMarketLabel(market, langKey) {
+function normalizeMarketLabelPrefix(prefix) {
+  if (prefix == null || prefix === '') return '';
+  return String(prefix).replace(/^\//, '').trim().toLowerCase();
+}
+
+export function getMarketLabel(market, langKey, prefix) {
   if (!market) return '';
-  const prefLangLabel = market[langKey];
+  const key = typeof langKey === 'string' ? langKey.trim().toLowerCase() : '';
+  const normPrefix = normalizeMarketLabelPrefix(prefix);
+  const prefLangLabel = key
+    ? (market[key] || (normPrefix ? market[`${key}-${normPrefix}`] : ''))
+    : '';
   if (typeof prefLangLabel === 'string' && prefLangLabel.trim()) return prefLangLabel.trim();
   const enLabel = market.en;
   if (typeof enLabel === 'string' && enLabel.trim()) return enLabel.trim();

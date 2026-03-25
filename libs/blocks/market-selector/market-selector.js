@@ -234,7 +234,7 @@ function getMarketOptions(markets, currentLang) {
   return markets
     .filter((market) => supportedRegions.includes(market.marketCode?.toLowerCase()))
     .map((market) => ({
-      label: getMarketLabel(market, langKey),
+      label: getMarketLabel(market, langKey, currentLang.prefix),
       value: market.marketCode,
       marketCode: market.marketCode,
       prefix: market.prefix,
@@ -670,7 +670,7 @@ export default async function init(block) {
   const languageOptions = getLanguageOptions(config.languages, currentLang);
   const marketOptions = getMarketOptions(markets, currentLang);
   const marketLangKey = getLangKeyForMarket(currentLang);
-  const currentMarketLabel = getMarketLabel(currentMarket, marketLangKey);
+  const currentMarketLabel = getMarketLabel(currentMarket, marketLangKey, currentLang.prefix);
 
   const languageFilter = (item, searchTerm) => filterLang(item, searchTerm, locales);
 

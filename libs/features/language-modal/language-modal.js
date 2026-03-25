@@ -181,12 +181,12 @@ function getLangKeyForModalMarket(market) {
   return 'en';
 }
 
-function getGeoCountryDisplayName(markets, geoMarketCode, langKey) {
+function getGeoCountryDisplayName(markets, geoMarketCode, langKey, pagePrefix) {
   let marketLabel = '';
   if (markets?.length && geoMarketCode) {
     const lower = geoMarketCode.toLowerCase();
     const matchingMarket = markets.find((market) => (market.marketCode?.toLowerCase() || '') === lower);
-    marketLabel = getMarketLabel(matchingMarket, langKey);
+    marketLabel = getMarketLabel(matchingMarket, langKey, pagePrefix);
   }
   const trimmed = typeof marketLabel === 'string' ? marketLabel.trim() : '';
   if (trimmed) {
@@ -317,7 +317,7 @@ function buildContent(
   const useGeo = Boolean(geoMarketCode);
   const langKey = getLangKeyForModalMarket(currentMarket);
   const countryDisplayName = useGeo
-    ? getGeoCountryDisplayName(markets, geoMarketCode, langKey)
+    ? getGeoCountryDisplayName(markets, geoMarketCode, langKey, currentMarket.prefix)
     : '';
 
   const titleText = useGeo
@@ -395,7 +395,12 @@ function buildContent(
     ? String(currentEntry.defaultMarket || currentPagePrefix || 'us').toLowerCase()
     : '';
   const stayLabel = useGeo && regionCode && markets?.length
-    ? getGeoCountryDisplayName(markets, regionCode, getLangKeyForModalMarket(currentEntry))
+    ? getGeoCountryDisplayName(
+      markets,
+      regionCode,
+      getLangKeyForModalMarket(currentEntry),
+      currentEntry.prefix,
+    )
     : getCurrentSiteLabel();
   const currentPageUrl = window.location.hash ? document.location.href : '#';
   const currentSiteLink = createTag('a', { lang, href: currentPageUrl }, stayLabel);
