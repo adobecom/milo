@@ -132,6 +132,10 @@
     }
   }
 
+  ul.indicators-container {
+    display: none;
+  }
+
   .aria-live-container {
     position: absolute;
     width: 0;
@@ -239,15 +243,18 @@
 
     }
 
-    .indicators-container {
+    ul.indicators-container {
       display: flex;
       gap: var(--carousel-slides-gap);
       position: absolute;
       left: 50%;
       bottom: var(--s2a-spacing-24);
       transform: translateX(-50%);
+      list-style: none;
+      margin: 0;
+      padding: 0;
 
-      .slide-indicator {
+      li.slide-indicator {
         width: var(--s2a-spacing-8);
         height: var(--s2a-spacing-8);
         border-radius: var(--s2a-border-radius-round);
