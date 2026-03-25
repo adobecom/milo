@@ -114,6 +114,7 @@ const buildSlide = ({ slide, index }) => {
   if (asset?.dataset.videoSource) {
     asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
     asset.setAttribute('muted', true);
+    asset.setAttribute('tabindex', '-1');
     asset.removeAttribute('controls');
   }
 
@@ -153,6 +154,7 @@ const buildSlide = ({ slide, index }) => {
 
 const decorateCarousel = (carousel) => {
   const slides = [...carousel.children];
+  if (isRtl()) slides.reverse();
   const decoratedSlides = slides.map((slide, index) => buildSlide({ slide, index }));
   const carouselContainer = createTag('div', { class: 'elastic-carousel-container' });
   carouselContainer.append(...decoratedSlides);
