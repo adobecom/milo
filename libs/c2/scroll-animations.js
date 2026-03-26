@@ -169,9 +169,67 @@ function initScaleDownGrid() {
   });
 }
 
+function getColCount(section) {
+  if (section.classList.contains('four-up')) return 4;
+  if (section.classList.contains('three-up')) return 3;
+  if (section.classList.contains('two-up')) return 2;
+  return 1;
+}
+
+function getEndRange(cols, childCount) {
+  const row2Start = { 2: 3, 3: 4, 4: 5 };
+  const row3Start = { 2: 5, 3: 7, 4: 9 };
+  if (childCount >= (row3Start[cols] || Infinity)) {
+    return { eType: 'cover', ePct: 0.8 };
+  }
+  if (childCount >= (row2Start[cols] || Infinity)) {
+    return { eType: 'cover', ePct: 0.7 };
+  }
+  return { eType: 'entry', ePct: 1 };
+}
+
+function initStagger() {
+  const drift = 48;
+  const allSections = [...document.querySelectorAll('.section')];
+  const staggerSections = allSections.filter(
+    (s) => sectionHasStyle(s, 'parallax stagger ltr')
+      || sectionHasStyle(s, 'parallax stagger rtl'),
+  );
+
+  staggerSections.forEach((section) => {
+    const isRtl = section.classList.contains('parallax stagger rtl')
+      || sectionHasStyle(section, 'parallax stagger rtl');
+    const cols = getColCount(section);
+    const children = [...section.children].filter(
+      (c) => !c.className.match(/section-/),
+    );
+    const { eType, ePct } = getEndRange(cols, children.length);
+
+    const childData = children.map((child, i) => {
+      const colIndex = (i % cols) + 0.5;
+      const rowIndex = Math.floor(i / cols);
+      const staggerIndex = isRtl
+        ? (cols - 1 - colIndex + rowIndex)
+        : (colIndex + rowIndex);
+      const from = staggerIndex * drift;
+      return { el: child, from };
+    });
+
+    window.lenis.on('scroll', ({ scroll }) => {
+      const m = getScrollMetrics(scroll, section, 0.4, 0.1);
+      const t = viewRange(m, 'entry', 0, eType, ePct);
+      const progress = 1 - t;
+      childData.forEach(({ el, from }) => {
+        el.style.transform = `translate3d(0, ${from * progress}px, 0)`;
+      });
+    });
+  });
+}
+
 export default function init() {
   initMoveUpFast();
   initGarageDoorReveal();
   initParallaxLineHeight();
   initScaleDownGrid();
+  initStagger();
 }
