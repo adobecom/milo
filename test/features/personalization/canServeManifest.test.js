@@ -71,6 +71,9 @@ describe('canServeManifest', () => {
   it('should return true if mktgAction is core services/non-marketing', () => {
     expect(canServeManifest({ mktgAction: 'core services/non-marketing', manifestPath: '/test/test.json' })).to.be.true;
   });
+  it('should return true if mktgAction is core services (legacy name)', () => {
+    expect(canServeManifest({ mktgAction: 'core services', manifestPath: '/test/test.json' })).to.be.true;
+  });
   it('should return true if mktgAction is non-marketing and performance is true', () => {
     expect(canServeManifest({ mktgAction: 'non-marketing', manifestPath: '/test/test.json' })).to.be.true;
   });

@@ -1198,7 +1198,7 @@ export function getManifestMarketingAction(mktgAction, source) {
 export function canServeManifest(manifestConfig) {
   if (!getGeoRestriction(manifestConfig)) return false;
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
-  if (mktgAction === 'core services/non-marketing') return true;
+  if (mktgAction?.includes('core services')) return true;
 
   const { performance, advertising } = getConfig().mep.consentState;
 
