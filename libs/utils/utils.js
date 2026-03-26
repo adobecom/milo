@@ -2081,7 +2081,7 @@ async function loadPostLCP(config) {
           };
 
           // garage-door-grow: translateY(-50vh → 0), entry 0% cover 40%/50%
-          const growT = range('entry', 0, 'cover', isDesktop ? 0.5 : 0.4);
+          const growT = range('entry', 0, 'cover', isDesktop ? 0.4 : 0.3);
           gdSection.style.transform = `translateY(${-80 * (1 - growT)}vh)`;
 
           // garage-door-bg-scale: scale(1 → 1.1), entry 0% entry 100%
@@ -2097,15 +2097,15 @@ async function loadPostLCP(config) {
           if (foreground) {
             let revealFrom = 20;
             if (window.innerWidth >= 1280) revealFrom = 30;
-            const revealT = range('entry', 0, 'entry', 1);
+            const revealT = range('entry', 0.3, 'entry', 0.7);
             foreground.style.transform = `translateY(${revealFrom * (1 - revealT)}vh)`;
           }
 
           // // garage-door-line-height: line-height(0.6 → normal), entry 10% cover 40%
-          // const lhT = range('entry', 0.4, 'entry', 0.7);
-          // childLHData.forEach(({ el, target }) => {
-          //   el.style.lineHeight = lhT >= 1 ? '' : String(0.6 + (target - 0.6) * lhT);
-          // });
+          const lhT = range('entry', 0.3, 'entry', 0.7);
+          childLHData.forEach(({ el, target }) => {
+            el.style.lineHeight = lhT >= 1 ? '' : String(0.6 + (target - 0.6) * lhT);
+          });
         });
       });
     }
