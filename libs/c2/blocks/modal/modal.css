@@ -282,48 +282,44 @@
   --dialog-modal-close-line-width: calc(var(--dialog-modal-close-size) * 1.33);
   --dialog-modal-close-line-thickness: 2px;
   border-radius: var(--s2a-spacing-md);
-
-  button.dialog-close {
-    width: var(--dialog-modal-close-size);
-    height: var(--dialog-modal-close-size);
-    border: none;
-    right: var(--s2a-spacing-lg);
-    top: var(--s2a-spacing-lg);
-
-    svg {
-      display: none;
-    }
-
-    &::before,
-    &::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: var(--dialog-modal-close-line-width);
-      height: var(--dialog-modal-close-line-thickness);
-      background: var(--s2a-color-gray-1000);
-      border-radius: var(--dialog-modal-close-line-thickness);
-      transform-origin: center;
-    }
-
-    &::before {
-      transform: translate(-50%, -50%) rotate(45deg);
-    }
-
-    &::after {
-      transform: translate(-50%, -50%) rotate(-45deg);
-    }
-  }
 }
 
-[dir="rtl"] {
-  .dialog-modal {
-    button.dialog-close {
-      right: auto;
-      left: var(--s2a-spacing-lg);
-    }
-  } 
+.dialog-modal button.dialog-close {
+  width: var(--dialog-modal-close-size);
+  height: var(--dialog-modal-close-size);
+  border: none;
+  right: var(--s2a-spacing-lg);
+  top: var(--s2a-spacing-lg);
+}
+
+.dialog-modal button.dialog-close svg {
+  display: none;
+}
+
+.dialog-modal button.dialog-close::before,
+.dialog-modal button.dialog-close::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--dialog-modal-close-line-width);
+  height: var(--dialog-modal-close-line-thickness);
+  background: var(--s2a-color-gray-1000);
+  border-radius: var(--dialog-modal-close-line-thickness);
+  transform-origin: center;
+}
+
+.dialog-modal button.dialog-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.dialog-modal button.dialog-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+[dir="rtl"] .dialog-modal button.dialog-close {
+  right: auto;
+  left: var(--s2a-spacing-lg);
 }
 
 @media (min-width: 600px) {
@@ -489,19 +485,13 @@
     width: 1280px;
   }
 
-  .dialog-modal {
-    button.dialog-close {
-      right: calc(2 * var(--s2a-spacing-lg));
-      top: calc(2 * var(--s2a-spacing-lg));
-    }
+  .dialog-modal button.dialog-close {
+    right: calc(2 * var(--s2a-spacing-lg));
+    top: calc(2 * var(--s2a-spacing-lg));
   }
 
-  [dir="rtl"] {
-    .dialog-modal {
-      button.dialog-close {
-        left: calc(2 * var(--s2a-spacing-lg));
-      }
-    }
+  [dir="rtl"] .dialog-modal button.dialog-close {
+    left: calc(2 * var(--s2a-spacing-lg));
   }
 }
 

@@ -90,9 +90,9 @@
   display: flex;
   gap: 8px;
   margin: 16px 0 0;
-
-  &.dark { background-color: unset; }
 }
+
+.rm-ctas.dark { background-color: unset; }
 
 .rm-controls {
   position: absolute;

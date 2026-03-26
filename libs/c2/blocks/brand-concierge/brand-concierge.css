@@ -48,11 +48,11 @@
 
 .brand-concierge.floating-button-only {
   padding: 0;
+}
 
-  /* TODO: likely not all pages will be dark, this needs more granular control */
-  main:has(&) {
-    background: var(--s2a-color-gray-1000);
-  }
+/* TODO: likely not all pages will be dark, this needs more granular control */
+main:has(.brand-concierge.floating-button-only) {
+  background: var(--s2a-color-gray-1000);
 }
 
 .bc-header {
