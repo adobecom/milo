@@ -103,7 +103,7 @@ const onCarouselHover = (event) => {
   }
 };
 
-const buildSlide = ({ slide, index }) => {
+const buildSlide = ({ slide, index, slidesTotal }) => {
   const children = [...slide.children];
   const left = children[0];
   const right = children[1];
@@ -145,7 +145,9 @@ const buildSlide = ({ slide, index }) => {
     tabindex: 0,
     href: left.children[4]?.querySelector('a')?.href,
     'data-index': index + 1,
-    'aria-label': left.children[1]?.innerText,
+    role: 'link',
+    'aria-roledescription': 'slide',
+    'aria-label': `${index + 1} of ${slidesTotal}`,
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
@@ -155,11 +157,17 @@ const buildSlide = ({ slide, index }) => {
 const decorateCarousel = (carousel) => {
   const slides = [...carousel.children];
   if (isRtl()) slides.reverse();
-  const decoratedSlides = slides.map((slide, index) => buildSlide({ slide, index }));
+  const decoratedSlides = slides.map((slide, index) => buildSlide(
+    { slide, index, slidesTotal: slides.length },
+  ));
   const carouselContainer = createTag('div', { class: 'elastic-carousel-container' });
   carouselContainer.append(...decoratedSlides);
   carousel.replaceChildren();
   carousel.append(carouselContainer);
+  carousel.dataset.role = 'group';
+  carousel.dataset.ariaRoledescription = 'carousel';
+  carousel.dataset.ariaLabel = 'Adobe products';
+  carousel.dataset.ariaRole = 'group';
   return carousel;
 };
 
