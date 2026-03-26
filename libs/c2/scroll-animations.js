@@ -189,6 +189,7 @@ function getEndRange(cols, childCount) {
 }
 
 function initStagger() {
+  if (window.innerWidth < 768) return;
   const drift = 48;
   const allSections = [...document.querySelectorAll('.section')];
   const staggerSections = allSections.filter(
