@@ -642,7 +642,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     const lingoData = {
       langFirst: lingoActive() ? 'on' : 'off',
       geoFolder: page.geo || 'Us (None)',
-      userCountry: await getCountry(),
+      userCountry: (await getCountry())?.replace(/[<>"'&]/g, '') || '',
       geoUser: await getGeoUserSupport(),
       updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
       total: regionalFragments.length + fallbackFragments.length,
