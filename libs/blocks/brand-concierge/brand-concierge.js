@@ -174,6 +174,15 @@ async function openSusiLightModal() {
       }
     }
   };
+  const onError = (e) => {
+    const mountEl = document.getElementById(mountId);
+    if (mountEl) {
+      mountEl.dispatchEvent(
+        new CustomEvent('bc:cta-action-error', { detail: { message: 'Something went wrong signing in. Please try again in a moment.' } }),
+      );
+    }
+    closeSusiModal();
+  };
   const susiEl = createSusiComponentForModal({
     authParams,
     config: susiConfig,
@@ -183,6 +192,7 @@ async function openSusiLightModal() {
     popup: true,
     onCloseRedirect: closeSusiModal,
     onSuccessfulToken,
+    onError,
   });
   const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
   const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
