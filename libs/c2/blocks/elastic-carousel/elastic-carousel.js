@@ -8,6 +8,8 @@ const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.innerWidth <= 768;
 
+const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || '';
+
 const handleMobileAutoplay = (carousel) => {
   const videos = carousel.querySelectorAll('video');
 
@@ -110,6 +112,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
 
   const icon = left.children[0]?.querySelector('img');
   const asset = right.children[0];
+  const link = left.children[4]?.querySelector('a');
 
   if (asset?.dataset.videoSource) {
     asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
@@ -140,14 +143,19 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       </div>
     </div>
   `;
+
+  let ariaLabel = `${index + 1} of ${slidesTotal}`;
+  // assign unique label to the first slide
+  if (index === 0) ariaLabel = `${getCarouselName(link)}, carousel. ${ariaLabel}`;
+
   const slideEl = createTag('a', {
     class: 'elastic-carousel-item',
     tabindex: 0,
-    href: left.children[4]?.querySelector('a')?.href,
+    href: link?.href,
     'data-index': index + 1,
     role: 'link',
     'aria-roledescription': 'slide',
-    'aria-label': `${index + 1} of ${slidesTotal}`,
+    'aria-label': ariaLabel,
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
@@ -166,7 +174,7 @@ const decorateCarousel = (carousel) => {
   carousel.append(carouselContainer);
   carousel.dataset.role = 'group';
   carousel.dataset.ariaRoledescription = 'carousel';
-  carousel.dataset.ariaLabel = 'Adobe products';
+  carousel.dataset.ariaLabel = getCarouselName(slides[0]?.querySelector('a'));
   carousel.dataset.ariaRole = 'group';
   return carousel;
 };
