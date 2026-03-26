@@ -656,8 +656,7 @@ export default async function init(block) {
 
   const { locale, locales } = getConfig();
   const currentPrefix = locale?.prefix || '';
-  const currentLang = marketsLangForLocale(config.languages, locale)
-    || config.languages[0];
+  const currentLang = marketsLangForLocale(config, locale) || config.languages[0];
 
   const currentMarketCode = await getValidatedMarket();
   const commerceService = document.head.querySelector('mas-commerce-service');
@@ -684,7 +683,7 @@ export default async function init(block) {
     languageOptions,
     onLanguageSelect,
     labels.noResultLanguage,
-    (item) => (item.value ? `/${item.value}` : '') === currentPrefix,
+    (item) => (item.value || '') === (currentLang.prefix || ''),
     languageFilter,
     true,
     'language-selector',
