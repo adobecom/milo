@@ -541,8 +541,8 @@ export default async function init(el) {
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
   window.addEventListener('signIn:decorateNav', async () => {
-    await window.adobeIMS.refreshToken();
-    window.UniversalNav.reload();
+    await window.adobeIMS?.refreshToken();
+    window.UniversalNav?.reload();
   });
 
   const rows = el.querySelectorAll(':scope > div');
