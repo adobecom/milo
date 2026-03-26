@@ -1,22 +1,29 @@
 const vh = window.innerHeight;
 
-const getDocTop = (el) => {
+function getDocTop(el) {
   let top = el.offsetTop;
-  let parent = el.offsetParent;
-  while (parent) { top += parent.offsetTop; parent = parent.offsetParent; }
+  let { offsetParent } = el;
+  while (offsetParent) {
+    top += offsetParent.offsetTop;
+    offsetParent = offsetParent.offsetParent;
+  }
   return top;
-};
+}
 
-const viewRange = (scroll, el, sType, sPct, eType, ePct) => {
-  const sHeight = el.offsetHeight;
+function getScrollMetrics(scroll, el) {
+  const elHeight = el.offsetHeight;
   const dist = (scroll + vh) - getDocTop(el);
-  const total = sHeight + vh;
-  const s = sType === 'entry' ? sHeight * sPct : total * sPct;
-  const e = eType === 'entry' ? sHeight * ePct : total * ePct;
-  return Math.max(0, Math.min(1, (dist - s) / (e - s)));
-};
+  const total = elHeight + vh;
+  return { elHeight, dist, total };
+}
 
-const sectionHasStyle = (section, style) => {
+function viewRange({ elHeight, dist, total }, sType, sPct, eType, ePct) {
+  const s = sType === 'entry' ? elHeight * sPct : total * sPct;
+  const e = eType === 'entry' ? elHeight * ePct : total * ePct;
+  return Math.max(0, Math.min(1, (dist - s) / (e - s)));
+}
+
+function sectionHasStyle(section, style) {
   if (section.classList.contains(style)) return true;
   if (section.querySelector(`.${style}`)) return true;
   const smBlock = section.querySelector('.section-metadata');
@@ -27,17 +34,21 @@ const sectionHasStyle = (section, style) => {
   );
   return styleRow?.children?.[1]?.textContent
     .toLowerCase().includes(style);
-};
+}
 
-const cacheLineHeights = (elements) => elements
-  .filter((el) => el instanceof Element)
-  .map((child) => {
-    const computed = getComputedStyle(child)?.lineHeight;
-    const fontSize = parseFloat(getComputedStyle(child)?.fontSize) || 16;
-    const target = computed === 'normal'
-      ? 1.2 : parseFloat(computed) / fontSize;
-    return { el: child, target };
-  });
+function cacheLineHeights(elements) {
+  return elements
+    .filter((el) => el instanceof Element)
+    .map((child) => {
+      const computed = getComputedStyle(child)?.lineHeight;
+      const fontSize = parseFloat(
+        getComputedStyle(child)?.fontSize,
+      ) || 16;
+      const target = computed === 'normal'
+        ? 1.2 : parseFloat(computed) / fontSize;
+      return { el: child, target };
+    });
+}
 
 function initMoveUpFast() {
   const vh80px = vh * 0.8;
@@ -62,63 +73,39 @@ function initGarageDoorReveal() {
   const gdSections = allSections.filter(
     (s) => sectionHasStyle(s, 'parallax-garage-door-reveal'),
   );
+  const isDesktop = window.innerWidth >= 1280;
+
   gdSections.forEach((gdSection) => {
     const foreground = gdSection.querySelector('.rich-content > div');
     const bgImg = gdSection.querySelectorAll('img');
-    const isDesktop = window.innerWidth >= 1280;
     const childLHData = foreground
-      ? cacheLineHeights([...foreground.querySelectorAll('*')]) : [];
+      ? cacheLineHeights([...foreground.querySelectorAll('*')])
+      : [];
+    const revealFrom = isDesktop ? 30 : 20;
 
     window.lenis.on('scroll', ({ scroll }) => {
-      const growT = viewRange(
-        scroll,
-        gdSection,
-        'entry',
-        0,
-        'cover',
-        isDesktop ? 0.4 : 0.3,
-      );
+      const m = getScrollMetrics(scroll, gdSection);
+
+      const coverEnd = isDesktop ? 0.4 : 0.3;
+      const growT = viewRange(m, 'entry', 0, 'cover', coverEnd);
       gdSection.style.transform = `translateY(${-80 * (1 - growT)}vh)`;
 
       if (bgImg.length > 0) {
-        const scaleT = viewRange(
-          scroll,
-          gdSection,
-          'entry',
-          0,
-          'entry',
-          0.8,
-        );
+        const scaleT = viewRange(m, 'entry', 0, 'entry', 0.8);
         bgImg.forEach((img) => {
           img.style.transform = `scale(${1 + 0.1 * scaleT})`;
         });
       }
 
+      const innerT = viewRange(m, 'entry', 0.3, 'entry', 0.7);
+
       if (foreground) {
-        let revealFrom = 20;
-        if (window.innerWidth >= 1280) revealFrom = 30;
-        const revealT = viewRange(
-          scroll,
-          gdSection,
-          'entry',
-          0.3,
-          'entry',
-          0.7,
-        );
-        foreground.style.transform = `translateY(${revealFrom * (1 - revealT)}vh)`;
+        foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
       }
 
-      const lhT = viewRange(
-        scroll,
-        gdSection,
-        'entry',
-        0.3,
-        'entry',
-        0.7,
-      );
       childLHData.forEach(({ el, target }) => {
-        el.style.lineHeight = lhT >= 1
-          ? '' : String(0.6 + (target - 0.6) * lhT);
+        el.style.lineHeight = innerT >= 1
+          ? '' : String(0.6 + (target - 0.6) * innerT);
       });
     });
   });
@@ -134,14 +121,8 @@ function initParallaxLineHeight() {
     );
 
     window.lenis.on('scroll', ({ scroll }) => {
-      const t = viewRange(
-        scroll,
-        container,
-        'entry',
-        0.1,
-        'cover',
-        0.4,
-      );
+      const m = getScrollMetrics(scroll, container);
+      const t = viewRange(m, 'entry', 0.1, 'cover', 0.4);
       childData.forEach(({ el, target }) => {
         el.style.lineHeight = t >= 1
           ? '' : String(3 + (target - 3) * t);
