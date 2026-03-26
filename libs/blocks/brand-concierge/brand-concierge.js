@@ -174,6 +174,7 @@ async function openSusiLightModal() {
       }
     }
   };
+  // eslint-disable-next-line no-unused-vars
   const onError = (e) => {
     const mountEl = document.getElementById(mountId);
     if (mountEl) {
@@ -246,6 +247,7 @@ async function openChatModal(initialMessage, el) {
   const { env, locale } = getConfig();
   const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const dishasStage = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js?adobe-brand-concierge-acom-brand-concierge-web-agent_version=PR-63-0a1ec2d6c2d69c94d8834046d816f49e4e2d7f7c';
   let src = stage;
 
   if (env?.name === 'prod') {
@@ -260,7 +262,7 @@ async function openChatModal(initialMessage, el) {
     src = stage;
   }
 
-  await loadScript(src);
+  await loadScript(dishasStage);
 
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;

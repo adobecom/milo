@@ -21,6 +21,10 @@ export default {
     chat: {
       messageAlignment: 'normal',
       messageWidth: '100%',
+      widgetsInMessageContentTypes: [
+        'cta-actions',
+        'firefly-community-gallery',
+      ],
     },
     privacyNotice: {
       title: '',
@@ -396,8 +400,9 @@ export default {
     '--message-user-background': '#EBEEFF',
     '--message-user-text': '#292929',
     '--message-text-order': '1',
-    '--message-multimodal-order': '3',
-    '--message-footer-order': '2',
+    '--message-multimodal-order': '2',
+    '--message-widget-order': '3',
+    '--message-footer-order': '4',
     '--mobile-message-font-size': '16px',
     '--multimodal-card-box-shadow': 'none',
     '--privacy-notice-background': '#FFFFFF',
