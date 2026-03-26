@@ -22,6 +22,19 @@ export async function getMarketConfig() {
   }
 }
 
+// use base for regional paths
+export function marketsLangForLocale(languages, locale) {
+  if (!Array.isArray(languages) || !locale) return null;
+  const pagePrefix = locale.prefix?.replace(/^\//, '') || '';
+  const byPrefix = languages.find((lang) => (lang.prefix || '') === pagePrefix);
+  if (byPrefix) return byPrefix;
+  if (locale.base !== undefined) {
+    const byBase = languages.find((lang) => (lang.prefix || '') === locale.base);
+    if (byBase) return byBase;
+  }
+  return null;
+}
+
 export async function getValidatedMarket() {
   const config = await getMarketConfig();
   const params = new URLSearchParams(window.location.search);
@@ -36,8 +49,15 @@ export async function getValidatedMarket() {
   }
   if (!config) return detectedMarket || 'us';
   const { locale } = getConfig();
-  const prefix = locale.prefix?.replace('/', '') || '';
-  const currLang = config.languages.find((l) => (l.prefix || '') === prefix) || config.languages[0];
+  const pagePrefix = locale.prefix?.replace(/^\//, '') || '';
+  const currLang = marketsLangForLocale(config.languages, locale)
+    || config.languages[0];
+  const pathImpliedMarket = (pagePrefix && (currLang.prefix || '') !== pagePrefix && locale.region)
+    ? norm(String(locale.region))
+    : undefined;
+  if (!countryParam && !akamaiParam && pathImpliedMarket) {
+    detectedMarket = pathImpliedMarket;
+  }
   const market = detectedMarket || currLang.defaultMarket || 'us';
   const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
   const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;

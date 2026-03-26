@@ -9,7 +9,12 @@ import {
   setMarket,
 } from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
-import { getMarketConfig, getValidatedMarket, norm } from '../../utils/market.js';
+import {
+  getMarketConfig,
+  getValidatedMarket,
+  marketsLangForLocale,
+  norm,
+} from '../../utils/market.js';
 
 window.addEventListener('pageshow', (event) => {
   // reload the page to avoid bfcache issues.
@@ -651,9 +656,8 @@ export default async function init(block) {
 
   const { locale, locales } = getConfig();
   const currentPrefix = locale?.prefix || '';
-  const currentLang = config.languages.find((lang) => (
-    (lang.prefix ? `/${lang.prefix}` : '') === currentPrefix
-  )) || config.languages[0];
+  const currentLang = marketsLangForLocale(config.languages, locale)
+    || config.languages[0];
 
   const currentMarketCode = await getValidatedMarket();
   const commerceService = document.head.querySelector('mas-commerce-service');
