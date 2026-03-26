@@ -49,7 +49,7 @@ function loadMpc(asset) {
 
 async function loadAssets(assets) {
   const loadedAssets = assets.map((asset) => {
-    if (asset.tagName === 'IMG') return loadImage(asset);
+    if (asset.tagName === 'IMG' && !asset.src.includes('.svg')) return loadImage(asset);
     if (asset.tagName === 'VIDEO') return loadVideo(asset);
     if (asset.tagName === 'IFRAME') return loadMpc(asset);
 
