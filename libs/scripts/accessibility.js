@@ -25,7 +25,7 @@ function removeScrollPadding() {
 
 function getElementFromPoint(x, y) {
   let elFromPoint = document.elementFromPoint(x, y);
-  while (elFromPoint.shadowRoot) {
+  while (elFromPoint?.shadowRoot) {
     const el = elFromPoint.shadowRoot.elementFromPoint(x, y);
     if (el === elFromPoint) break;
     elFromPoint = el;
