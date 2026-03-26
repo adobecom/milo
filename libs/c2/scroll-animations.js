@@ -141,7 +141,6 @@ function initScaleDownGrid() {
   const grids = allSections.filter(
     (s) => sectionHasStyle(s, 'parallax-scale-down-grid'),
   );
-  console.log('grids', grids);
   grids.forEach((grid) => {
     const container = grid.closest('.container') || grid.parentElement;
     const cs = getComputedStyle(container);
