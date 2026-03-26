@@ -374,6 +374,8 @@ const getSortOptions = (state, strs) => {
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
+    localFirst: 'Local Region First',
+    localLast: 'Local Region Last',
     random: 'Random',
   };
 
@@ -678,7 +680,10 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
       });
     return lingoSiteMapping;
   } catch (e) {
-    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+    window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, {
+      tags: 'caas',
+      severity: 'error',
+    });
   }
   return lingoSiteMapping;
 }
@@ -737,12 +742,11 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
       if (countryStr === 'xx') {
         try {
-          geoCountry = getCountry()
+          geoCountry = await getCountry(true)
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
-            const { default: getAkamaiCode } = await import('../../utils/geo.js');
-            geoCountry = await getAkamaiCode(true);
+            geoCountry = await getCountry();
           }
 
           if (geoCountry) {
@@ -960,6 +964,25 @@ export const getConfig = async (originalState, strs = {}) => {
     ? `${state.paginationAnimationStyle}-light`
     : state.paginationAnimationStyle;
 
+  const currentPage = `${window.location.hostname}${window.location.pathname}`;
+  let currentPageUuid = null;
+  try {
+    currentPageUuid = await getUuid(currentPage);
+  } catch (error) {
+    window.lana?.log(`Could not get UUID for current page: ${currentPage}`, error);
+  }
+
+  let excludedCardsWithCurrent;
+  if (currentPageUuid) {
+    if (excludedCards) {
+      excludedCardsWithCurrent = `${excludedCards}%2C${currentPageUuid}`;
+    } else {
+      excludedCardsWithCurrent = currentPageUuid;
+    }
+  } else {
+    excludedCardsWithCurrent = excludedCards;
+  }
+
   const config = {
     collection: {
       mode: state.theme,
@@ -981,7 +1004,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&language=${language
       }&country=${country
       }&complexQuery=${complexQuery
-      }&excludeIds=${excludedCards
+      }&excludeIds=${excludedCardsWithCurrent
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow
@@ -1049,6 +1072,9 @@ export const getConfig = async (originalState, strs = {}) => {
           transparent: !!state.bladeCardTransparent,
         },
       }),
+      // Include editorialOpenVariant if necessary
+      ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
+        && { editorialOpenVariant: !!state.editorialCardOpenVariant }),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,
