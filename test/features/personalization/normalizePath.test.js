@@ -38,6 +38,11 @@ describe('normalizePath function', () => {
     expect(path).to.equal('/path/to/fragment.plain.html#noActiveItem');
   });
 
+  it('should retain params and hash when normalizing path', async () => {
+    const paramPath = 'https://main--cc--adobecom.aem.page/products/photoshop-lightroom?mep&sheet=%27testsheet%27#testhash';
+    expect(normalizePath(paramPath)).to.equal('/products/photoshop-lightroom?mep&sheet=%27testsheet%27#testhash');
+  });
+
   it('does localize otherwise', async () => {
     config.locales = {
       de: {

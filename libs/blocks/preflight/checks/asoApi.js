@@ -22,7 +22,7 @@ const lanaLog = (message) => {
   window.lana.log(message, {
     sampleRate: 100,
     tags: 'preflight',
-    errorType: 'e',
+    severity: 'error',
   });
 };
 

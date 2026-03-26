@@ -23,7 +23,8 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     setNavLayout();
     if (blockConfig.isLocalNav) {
       const localNavWrapper = createTag('div', { class: 'feds-localnav' });
-      document.querySelector('header').after(localNavWrapper);
+      const header = document.querySelector('header.global-navigation') || document.querySelector('header');
+      header?.after(localNavWrapper);
     }
   } else if (blockConfig.isContainerResponsive) {
     document.querySelector('footer.global-footer').classList.add('responsive-container');
