@@ -271,6 +271,7 @@ function attachListeners(carouselEls) {
       moveSlides(carouselEls, getDirection('next'), e);
     }
     if (e.code === 'Enter' || e.code === 'Space') {
+      if (carouselFocused) return;
       e.preventDefault();
       const activeSlide = wrapper.querySelector('.active');
       allSlidesFocusable(wrapper);
