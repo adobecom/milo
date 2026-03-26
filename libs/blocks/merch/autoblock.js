@@ -30,6 +30,26 @@ export async function localizePreviewLinks(el) {
   }
 }
 
+const MERCH_ICON_HREF_RE = /^http[s]?:\/\/\S*\.((hlx|aem)\.(page|live)|adobe\.com)\//;
+
+export async function localizeMerchIcons(el) {
+  const merchIcons = el.querySelectorAll('merch-icon');
+  for (const a of merchIcons) {
+    const { href } = a;
+    const hostMatch = href?.match(MERCH_ICON_HREF_RE);
+    if (hostMatch) {
+      try {
+        a.href = await localizeLinkAsync(href);
+      } catch (e) {
+        window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`, {
+          tags: 'merch-autoblock',
+          severity: 'error',
+        });
+      }
+    }
+  }
+}
+
 export function decorateCardCtasWithA11y(card) {
   card.querySelectorAll('a[href]').forEach((link) => {
     if (link.getAttribute('aria-label')) return;
@@ -109,6 +129,7 @@ export function enableAnalytics(card) {
 async function postProcessCard(card) {
   await decorateLinksAsync(card);
   await localizePreviewLinks(card);
+  await localizeMerchIcons(card);
   card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
   decorateCardCtasWithA11y(card);
   enableAnalytics(card);
