@@ -199,18 +199,36 @@ const animateContentEnter = (content, direction) => {
 };
 
 const fireAnalytic = (card, type = 'auto') => {
-  const viewport = card.closest('.rm-viewport');
-  if (card.getAttribute('slide-seen') === 'true' || viewport.getAttribute('not-in-view') === 'true') return;
+  const viewport = card.closest('.router-marquee');
 
-  const position = [...card.parentNode.children].indexOf(card) + 1;
-  const section = card.parentNode.closest('.section[daa-lh]');
-  const sectionName = section?.getAttribute('daa-lh');
-  const blockName = `b${position}`;
-  const cardLabel = card.querySelector('.rm-card-label');
-  const cardName = cardLabel?.textContent;
+  if (card.dataset.slideSeen || viewport.dataset.inView === 'false') return;
 
-  document.querySelectorAll(`.rm-card:nth-child(${position})`).forEach((c) => c.setAttribute('slide-seen', true));
-  sendAnalytics(`${type}--slideseen--${processTrackingLabels(cardName, getConfig(), 15)}-${position}|${sectionName}|${blockName}`);
+  const section = card.parentNode.closest('.section');
+
+  const fireSendAnalytics = () => {
+    const position = [...card.parentNode.children].indexOf(card) + 1;
+    const slideName = card.dataset.parentLabel;
+    const sectionName = section?.getAttribute('daa-lh');
+    const blockName = `b${position}`;
+    const analytic = `${type}--slideseen-${position}--${processTrackingLabels(slideName, getConfig(), 15)}|${sectionName}|${blockName}`;
+
+    console.log(analytic); // debug
+    sendAnalytics(analytic);
+
+    document.querySelectorAll(`.rm-card:nth-child(${position})`).forEach((c) => c.setAttribute('data-slide-seen', 'true'));
+  };
+
+  if (section?.getAttribute('daa-lh')) {
+    fireSendAnalytics();
+  } else if (section) {
+    const observer = new MutationObserver(() => {
+      if (section.getAttribute('daa-lh')) {
+        fireSendAnalytics();
+        observer.disconnect();
+      }
+    });
+    observer.observe(section, { attributes: true, attributeFilter: ['daa-lh'] });
+  }
 };
 
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
@@ -568,24 +586,23 @@ const reorderSlidesMaybe = (el, viewports) => {
   }
 };
 
-const setSlideObserver = (container) => {
-  const callback = (el) => {
-    const card = el.parentNode.querySelector('.rm-card.is-active');
+const setSlideObserver = (el) => {
+  const callback = (targetEl) => {
+    const card = targetEl.querySelector('.rm-card.is-active');
     fireAnalytic(card);
   };
 
   const io = new IntersectionObserver((entries) => {
     entries.forEach(async (entry) => {
-      if (entry.isIntersecting) {
-        entry.target.removeAttribute('not-in-view');
+      const isHidden = getComputedStyle(entry.target).display === 'none';
+      entry.target.setAttribute('data-in-view', String(entry.isIntersecting));
+      if (entry.isIntersecting && !isHidden) {
         callback(entry.target);
-      } else {
-        entry.target.setAttribute('not-in-view', true);
       }
     });
   });
 
-  io.observe(container);
+  io.observe(el);
 };
 
 const setAnalytics = (slides, cards, el) => {
@@ -598,9 +615,10 @@ const setAnalytics = (slides, cards, el) => {
     slide.setAttribute('daa-lh', analyticText);
   });
   cards.querySelectorAll('.rm-card').forEach((card, index) => {
-    const label = slides[index]?.textContent;
+    const label = slides[index]?.querySelector('.rm-title')?.textContent;
     const analyticText = `rm-nav${index + 1}|${processTrackingLabels(label, config, 13)}`;
     card.setAttribute('daa-ll', analyticText);
+    card.setAttribute('data-parent-label', label);
   });
 };
 
@@ -610,10 +628,10 @@ export default function init(el) {
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
   initVideos(el);
+  setSlideObserver(el);
   containers.forEach((container) => {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
-    setSlideObserver(container);
     setAnalytics(slides, cards, el);
     startAutoplay(slides, cards, container, el);
   });
