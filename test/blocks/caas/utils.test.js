@@ -180,7 +180,7 @@ describe('getConfig', () => {
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
         endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=1fffd42e-9a20-5118-89eb-fae87a84665b&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         hideDateInterval: false,
         totalCardsToShow: 10,
@@ -454,7 +454,7 @@ describe('getConfig', () => {
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
         endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=1fffd42e-9a20-5118-89eb-fae87a84665b&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         hideDateInterval: false,
         totalCardsToShow: 10,
@@ -928,7 +928,7 @@ describe('getFloodgateCaasConfig', () => {
         collectionButtonStyle: 'primary',
         resultsPerPage: 5,
         endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
+          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=1fffd42e-9a20-5118-89eb-fae87a84665b&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
         hideDateInterval: false,
         totalCardsToShow: 10,

@@ -87,9 +87,18 @@ describe('updateAttribute action', async () => {
     setFetchResponse(manifestJson);
     await init(mepSettings);
     config.placeholders = { 'my-aria-test': 'Hello world!' };
+    config.codeRoot = 'https://main--da-dc--adobecom.aem.page';
+    config.locales = {
+      ar: {
+        ietf: 'es-AR',
+        tk: 'oln4yqj.css',
+      },
+    };
+    config.locale = { prefix: '' };
     await handleCommands(manifestJson.data, undefined, true, true);
     expect(document.querySelector('.marquee h2').getAttribute('class')).to.equal('added-class');
     expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('https://www.google.com/?osi=new-parameter');
+    expect(document.querySelector('.marquee em a').getAttribute('href')).to.equal('/pods/my-link');
     expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
     expect(document.querySelector('#placeholder-replace').getAttribute('aria-label')).to.equal('Hello world!');
   });

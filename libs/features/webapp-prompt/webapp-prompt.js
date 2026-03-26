@@ -140,7 +140,7 @@ export class AppPrompt {
           message: 'Error on getting anchor state',
           e,
           tags: 'pep',
-          errorType: 'e',
+          severity: 'error',
         });
         return {};
       }));
@@ -175,7 +175,7 @@ export class AppPrompt {
         message: `Error fetching content for prompt: ${this.promptPath}.plain.html`,
         e: `Status ${res.status} when trying to fetch content for prompt`,
         tags: 'pep',
-        errorType: 'e',
+        severity: 'critical',
       });
       return '';
     }
@@ -217,7 +217,7 @@ export class AppPrompt {
           message: 'Error fetching user profile',
           e,
           tags: 'pep',
-          errorType: 'e',
+          severity: 'critical',
         });
       });
 
@@ -374,7 +374,7 @@ export default async function init(config) {
     if (!appPrompt.initializationQueued) await appPrompt.init();
     return appPrompt;
   } catch (e) {
-    lanaLog({ message: 'Could not initialize PEP', e, tags: 'pep', errorType: 'e' });
+    lanaLog({ message: 'Could not initialize PEP', e, tags: 'pep', severity: 'critical' });
     return null;
   }
 }
