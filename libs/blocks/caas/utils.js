@@ -374,6 +374,8 @@ const getSortOptions = (state, strs) => {
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
+    localFirst: 'Local Region First',
+    localLast: 'Local Region Last',
     random: 'Random',
   };
 
@@ -538,12 +540,15 @@ const getCategoryMappings = async (state) => {
   return {};
 };
 
-const isLocaleInRegionalSites = (regionalSites, locStr) => {
+const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
   if (!regionalSites) return false;
-  return regionalSites
+  const sites = regionalSites
     .split(',')
-    .map((site) => site.trim().replace(/^\//, ''))
-    .includes(locStr);
+    .map((site) => site.trim().replace(/^\//, ''));
+  return (
+    sites.includes(locStr)
+    || (Boolean(langStr) && sites.includes(`${locStr}_${langStr}`))
+  );
 };
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
@@ -568,20 +573,18 @@ async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com
       const baseLocale = baseSite?.split('/')[1];
       const matchesBase = country === baseLocale;
       const langMatchesBase = language === baseLocale;
-      const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
+      const matchesRegional = isLocaleInRegionalSites(regionalSites, country, language);
       return matchesBase || matchesRegional || langMatchesBase;
     });
 
     if (isKnownLingoSiteLocale) {
       // determine if the country is allowed to be used for the langauge
       const baseSiteLocale = language === 'en' ? '' : language;
-      const altLocale = `${country}_${language}`;
       siteLocalesData
         .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
         .forEach(({ baseSite, regionalSites }) => {
           if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
-            const regionalMap = regionalSites.split(',').map((site) => site.trim().replace(/^\//, ''));
-            if (country === 'xx' || regionalMap.includes(country) || regionalMap.includes(altLocale)) {
+            if (country === 'xx' || isLocaleInRegionalSites(regionalSites, country, language)) {
               isPermittedLingoSiteLocale = true;
             }
           }
@@ -678,7 +681,10 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
       });
     return lingoSiteMapping;
   } catch (e) {
-    window.lana?.log('Failed to load lingo-site-mapping.json:', e);
+    window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, {
+      tags: 'caas',
+      severity: 'error',
+    });
   }
   return lingoSiteMapping;
 }
@@ -737,12 +743,11 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
       if (countryStr === 'xx') {
         try {
-          geoCountry = getCountry()
+          geoCountry = await getCountry(true)
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
-            const { default: getAkamaiCode } = await import('../../utils/geo.js');
-            geoCountry = await getAkamaiCode(true);
+            geoCountry = await getCountry();
           }
 
           if (geoCountry) {
@@ -960,6 +965,25 @@ export const getConfig = async (originalState, strs = {}) => {
     ? `${state.paginationAnimationStyle}-light`
     : state.paginationAnimationStyle;
 
+  const currentPage = `${window.location.hostname}${window.location.pathname}`;
+  let currentPageUuid = null;
+  try {
+    currentPageUuid = await getUuid(currentPage);
+  } catch (error) {
+    window.lana?.log(`Could not get UUID for current page: ${currentPage}`, error);
+  }
+
+  let excludedCardsWithCurrent;
+  if (currentPageUuid) {
+    if (excludedCards) {
+      excludedCardsWithCurrent = `${excludedCards}%2C${currentPageUuid}`;
+    } else {
+      excludedCardsWithCurrent = currentPageUuid;
+    }
+  } else {
+    excludedCardsWithCurrent = excludedCards;
+  }
+
   const config = {
     collection: {
       mode: state.theme,
@@ -981,7 +1005,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&language=${language
       }&country=${country
       }&complexQuery=${complexQuery
-      }&excludeIds=${excludedCards
+      }&excludeIds=${excludedCardsWithCurrent
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow
@@ -1049,6 +1073,9 @@ export const getConfig = async (originalState, strs = {}) => {
           transparent: !!state.bladeCardTransparent,
         },
       }),
+      // Include editorialOpenVariant if necessary
+      ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
+        && { editorialOpenVariant: !!state.editorialCardOpenVariant }),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,

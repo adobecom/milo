@@ -201,6 +201,9 @@ html[dir="rtl"] {
     &.disable-hover {
       pointer-events: none;
     }
+    html[dir="rtl"] .elastic-carousel-container {
+      --start-margin: -200px;
+    }
     .elastic-carousel-container {
       --start-margin: 200px;
       /** animation */

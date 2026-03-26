@@ -68,6 +68,43 @@ describe('marquee', () => {
     });
   });
 
+  describe('marquee with no heading in text content', () => {
+    it('does not throw and still marks a text container', async () => {
+      const host = document.createElement('div');
+      host.innerHTML = `
+        <div class="marquee" id="no-heading">
+          <div>
+            <div>
+              <picture>
+                <source media="(max-width: 400px)" srcset="./">
+                <img alt="mock" loading="lazy" src="">
+              </picture>
+            </div>
+          </div>
+          <div>
+            <div>
+              <p>Detail copy only</p>
+              <mas-field field="description"></mas-field>
+              <p><a href="https://www.adobe.com/">Action</a></p>
+            </div>
+            <div>
+              <picture>
+                <source media="(max-width: 400px)" srcset="./">
+                <img alt="mock" loading="lazy" src="">
+              </picture>
+            </div>
+          </div>
+        </div>`;
+      const marquee = host.querySelector('#no-heading');
+      document.body.append(marquee);
+
+      await init(marquee);
+
+      expect(marquee.querySelector('.foreground > .text')).to.exist;
+      marquee.remove();
+    });
+  });
+
   describe('supports videos', () => {
     before(() => {
       document.body.innerHTML = video;

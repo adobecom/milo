@@ -108,7 +108,7 @@ export const normalizePath = (p, localize = true) => {
 
   try {
     const url = new URL(path);
-    const { hash, pathname } = url;
+    const { hash, pathname, search } = url;
     const firstFolder = pathname.split('/')[1];
     const mepHash = '#_dnt';
 
@@ -118,17 +118,17 @@ export const normalizePath = (p, localize = true) => {
       || path.includes('.adobe.')
       || path.includes('localhost:')) {
       if (!localize
-        || config.locale.ietf === 'en-US'
-        || hash.includes(mepHash)
+        || config.locale?.ietf === 'en-US'
+        || hash?.includes(mepHash)
         || firstFolder in config.locales
-        || path.includes('.json')) {
+        || path?.includes('.json')) {
         path = pathname;
       } else {
-        path = `${config.locale.prefix}${pathname}`;
+        path = `${config.locale.prefix}${normalizePath(pathname)}`;
       }
     }
     path = isFederal ? getFederatedUrl(path) : path;
-    return `${path}${hash.replace(mepHash, '')}`;
+    return `${path}${search}${hash.replace(mepHash, '')}`;
   } catch (e) {
     path = isFederal ? getFederatedUrl(path) : path;
     return path;
@@ -160,6 +160,7 @@ const CREATE_CMDS = {
 const COMMANDS_KEYS = {
   remove: 'remove',
   replace: 'replace',
+  analyticIfSeen: 'analyticifseen',
   updateAttribute: 'updateattribute',
 };
 
@@ -263,6 +264,34 @@ export const handleTwpButtons = (el, selector) => {
   }
 };
 
+function fireAnalyticsEvent(val) {
+  window._satellite?.track?.('event', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
+        },
+      },
+    },
+    data:
+      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
+function sendAnalytics(val) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(val);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(val);
+    }, { once: true });
+  }
+}
+
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
@@ -274,6 +303,17 @@ const COMMANDS = {
       'beforebegin',
       await createContent(el, cmd),
     );
+  },
+  [COMMANDS_KEYS.analyticIfSeen]: (el, cmd) => {
+    if (!el || !cmd.content) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        sendAnalytics(`${cmd.content} was seen`);
+        observer.unobserve(el);
+      }
+    });
+    observer.observe(el);
   },
   [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
     const { manifestId, targetManifestId } = cmd;
@@ -300,6 +340,7 @@ const COMMANDS = {
       }
     } else {
       value = cmd.content;
+      if (attribute === 'href') value = normalizePath(value);
     }
 
     if (value) {
@@ -885,8 +926,8 @@ function hasCountryMatch(str, config) {
   }
   return false;
 }
-/* c8 ignore start */
-export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+
+export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const { countryIP, countryChoice } = config.mep || {};
   const valueNames = [
@@ -907,15 +948,23 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
   });
   const key = keyVal?.[0];
 
+  const seenKeys = new Set();
+  const filteredPlaceholders = placeholders.filter((item) => {
+    const pageFilter = item['page filter'] || item['page filter (optional)'];
+    if (seenKeys.has(item.key) || (pageFilter && !matchGlob(pageFilter, pathname))) return false;
+    seenKeys.add(item.key);
+    return true;
+  });
+
   if (key) {
-    const results = placeholders.reduce((res, item) => {
+    const results = filteredPlaceholders.reduce((res, item) => {
       res[item.key] = item[key];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, key);
+  createMartechMetadata(filteredPlaceholders, config, key);
 
   return config;
 }
@@ -993,7 +1042,7 @@ function normCountry(country) {
 async function setMepCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  const akamaiCode = getCountry();
+  const akamaiCode = await getCountry(true);
   config.mep = config.mep || {};
   if (country) {
     config.mep.countryChoice = normCountry(country);
@@ -1156,6 +1205,15 @@ export function canServeManifest(manifestConfig) {
   return true;
 }
 
+export function sendMktgTracking(fileName, mktgAction) {
+  if (!mktgAction?.startsWith('marketing')) return false;
+  const { advertising } = getConfig().mep.consentState;
+  if (!advertising) return false;
+  const eventName = `${fileName} was served`;
+  sendAnalytics(eventName);
+  return eventName;
+}
+
 async function getManifestConfig(info, variantOverride) {
   const {
     name,
@@ -1169,7 +1227,7 @@ async function getManifestConfig(info, variantOverride) {
     event,
     source,
   } = info;
-  if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
+  if (disabled && !variantOverride?.[normalizePath(manifestPath)]) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;
@@ -1198,11 +1256,12 @@ async function getManifestConfig(info, variantOverride) {
     'manifest-type': ['Personalization', 'Promo', 'Test'],
     'manifest-execution-order': ['First', 'Normal', 'Last'],
   };
+  const fileName = getFileName(manifestPath).replace('.json', '');
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
     if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
       manifestConfig.manifestOverrideName = manifestOverrideName;
-      const analytics = manifestOverrideName || getFileName(manifestPath).replace('.json', '');
+      const analytics = manifestOverrideName || fileName;
       manifestConfig.analyticsTitle = analytics.trim().slice(0, 15);
     }
     const executionOrder = {
@@ -1228,8 +1287,11 @@ async function getManifestConfig(info, variantOverride) {
   manifestConfig.manifestPath = normalizePath(manifestPath);
   const isAllowed = canServeManifest(manifestConfig);
   if (!isAllowed) {
+    overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
+  } else {
+    sendMktgTracking(fileName, manifestConfig.mktgAction);
   }
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1532,24 +1594,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
   const timeoutTime = roundToQuarter(timeoutLocal);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  // eslint-disable-next-line no-underscore-dangle
-  window.addEventListener('alloy_sendEvent', () => {
-    window._satellite?.track?.('event', {
-      documentUnloading: true,
-      xdm: {
-        eventType: 'web.webinteraction.linkClicks',
-        web: {
-          webInteraction: {
-            linkClicks: { value: 1 },
-            type: 'other',
-            name: val,
-          },
-        },
-      },
-      data:
-        { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-    });
-  }, { once: true });
+  sendAnalytics(val);
 }
 
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))

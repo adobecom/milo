@@ -221,6 +221,7 @@ label[for='urls'] i {
 .urls {
   position: relative;
   display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
@@ -228,6 +229,7 @@ label[for='urls'] i {
   display: block;
   width: 100%;
   max-height: 60vh;
+  height: 100%;
   font-size: 0.75em;
   padding: 10px 35px 15px 13px;
   box-sizing: border-box;
@@ -446,6 +448,34 @@ label[for='urls'] i {
 .process select:focus-visible {
   outline: none;
   border-color: var(--accent);
+}
+
+.malformed-urls {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background-color: rgba(219 68 55 / 0.12);
+  border: 1px solid var(--error);
+  border-radius: 6px;
+  font-size: 0.75em;
+  max-height: 50%;
+}
+
+.malformed-urls strong {
+  color: var(--error);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.malformed-list {
+  margin: 0;
+  padding-left: 18px;
+  max-height: 80%;
+  overflow-y: auto;
+}
+
+.malformed-list li {
+  word-break: break-all;
+  margin-bottom: 2px;
 }
 
 .urls.invalid textarea {

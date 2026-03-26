@@ -14,6 +14,7 @@ const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([
 const MIN_SLIDE_TRANISTION_DURATION = 100;
 const MAX_SLIDE_TRANISTION_DURATION = 500;
 let carouselGap = 8;
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function handlePrevious(previousElment, elements) {
   const indexOfActive = elements.indexOf(previousElment);
@@ -182,6 +183,12 @@ function slideAnimation(carouselEls, active, direction) {
   const negate = (direction === 'next') !== isRTL() ? -1 : 1;
   const translateValue = alreadyTranslated + (negate * slideWidth) + (negate * carouselGap);
   wrapper.style.transition = 'translate var(--transition-duration) var(--animation-curve)';
+
+  if (prefersReducedMotion()) {
+    wrapper.style.transition = 'none';
+    duration = 20;
+  }
+
   wrapper.style.translate = `${translateValue}px`;
 
   /* eslint-disable */
