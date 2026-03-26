@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
@@ -5,6 +6,7 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
+  sendMktgTracking,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -134,6 +136,32 @@ describe('Functional Test', () => {
       handleFragmentCommand,
       preview: false,
       variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+    };
+    const promoMepSettings = [
+      {
+        manifestPath: '/promos/blackfriday/manifest.json',
+        disabled: true,
+        event: { name: 'blackfriday', start: new Date('2022-11-24T13:00:00+00:00'), end: new Date('2022-11-24T13:00:00+00:00') },
+      },
+    ];
+    await loadManifestAndSetResponse('./mocks/manifestScheduledInactive.json');
+    expect(document.querySelector('a[href="/fragments/insertafter4"]')).to.be.null;
+    await applyPers({ manifests: promoMepSettings });
+
+    const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
+    expect(fragment).to.be.null;
+  });
+
+  it('disabled manifest should stay disabled even when variantOverride exists for another manifest', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: { '/other/manifest.json': 'default' },
       highlight: false,
       targetEnabled: false,
       experiments: [],
@@ -642,5 +670,90 @@ describe('MEP Utils', () => {
       ftLinks = [...allLinks].filter((link) => link.innerHTML.toLowerCase().match(/free.trial/));
       expect(ftLinks.length).to.equal(0);
     });
+  });
+});
+describe('sendMktgTracking', () => {
+  it('should return false if advertising is false and mktgAction is marketing increase', async () => {
+    const config = getConfig();
+    config.mep.consentState = { advertising: false };
+    expect(sendMktgTracking('my-manifest', 'marketing increase')).to.be.false;
+  });
+  it('should return false if advertising is true and mktgAction is non-marketing', async () => {
+    const config = getConfig();
+    config.mep.consentState = { advertising: true };
+    expect(sendMktgTracking(true, 'my-manifest', 'non-marketing')).to.be.false;
+  });
+  it('should send return event name if advertising is true and mktgAction is marketing increase', async () => {
+    const config = getConfig();
+    config.mep.consentState = { advertising: true };
+    expect(sendMktgTracking('my-manifest', 'marketing increase')).to.equal('my-manifest was served');
+  });
+  it('should send return event name if advertising is true and mktgAction is marketing decrease', async () => {
+    const config = getConfig();
+    config.mep.consentState = { advertising: true };
+    expect(sendMktgTracking('my-manifest', 'marketing decrease')).to.equal('my-manifest was served');
+  });
+});
+
+describe('analyticifseen', () => {
+  let observerCallback;
+  let observeStub;
+  let unobserveStub;
+  let originalIO;
+
+  before(() => {
+    originalIO = window.IntersectionObserver;
+    observeStub = stub();
+    unobserveStub = stub();
+    window.IntersectionObserver = function MockIO(callback) {
+      observerCallback = callback;
+      this.observe = observeStub;
+      this.unobserve = unobserveStub;
+    };
+  });
+
+  afterEach(() => {
+    observeStub.resetHistory();
+    unobserveStub.resetHistory();
+    delete window._satellite;
+  });
+
+  after(() => {
+    window.IntersectionObserver = originalIO;
+  });
+
+  it('should set up IntersectionObserver on target elements', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+    await loadManifestAndSetResponse('./mocks/manifestAnalyticIfSeen.json');
+    await init(mepSettings);
+    expect(observeStub.called).to.be.true;
+  });
+
+  it('should fire analytics and unobserve when element is intersecting', () => {
+    window._satellite = { track: stub() };
+    observerCallback([{ isIntersecting: true }]);
+    expect(window._satellite.track.calledOnce).to.be.true;
+    const [eventName, payload] = window._satellite.track.firstCall.args;
+    expect(eventName).to.equal('event');
+    expect(payload.xdm.web.webInteraction.name).to.equal('my-marquee-tracking was seen');
+    expect(unobserveStub.calledOnce).to.be.true;
+  });
+
+  it('should not fire analytics when element is not intersecting', () => {
+    window._satellite = { track: stub() };
+    observerCallback([{ isIntersecting: false }]);
+    expect(window._satellite.track.called).to.be.false;
+  });
+
+  it('should defer analytics to alloy_sendEvent when _satellite is unavailable', () => {
+    // Flush lingering alloy_sendEvent listeners left by earlier sendMktgTracking tests
+    window.dispatchEvent(new Event('alloy_sendEvent'));
+
+    observerCallback([{ isIntersecting: true }]);
+    window._satellite = { track: stub() };
+    window.dispatchEvent(new Event('alloy_sendEvent'));
+    expect(window._satellite.track.calledOnce).to.be.true;
+    const [, payload] = window._satellite.track.firstCall.args;
+    expect(payload.xdm.web.webInteraction.name).to.equal('my-marquee-tracking was seen');
   });
 });

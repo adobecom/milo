@@ -478,6 +478,19 @@
   /* New tokens get added here, move them to the correct location above */
 }
 
+/* TODO: Consolidate all visually hidden content that's needed for accessibility / screen readers */
+sr-only, .sr-only, .feds-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 html {
   scroll-padding-block: var(--scroll-padding-block);
 }
@@ -897,8 +910,14 @@ p {
 
   @media (prefers-reduced-motion: reduce) {
     [class*="parallax-"],
-    [class*="parallax-"] * {
+    [class*="parallax-"] *,
+    [class*="parallax-"]::before,
+    [class*="parallax-"]::after {
       animation: none !important;
+    }
+
+    .section.parallax-move-up-fast {
+      position: static !important;
     }
   }
 

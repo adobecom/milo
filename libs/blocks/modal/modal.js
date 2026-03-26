@@ -106,7 +106,7 @@ export async function closeModal(modal, shouldFocusTriggerEl = true) {
   }
 
   if (modal._documentKeydownListener) {
-    modal.removeEventListener('keydown', modal._documentKeydownListener);
+    document.removeEventListener('keydown', modal._documentKeydownListener);
     delete modal._documentKeydownListener;
   }
 
@@ -266,8 +266,13 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  const documentKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
-  dialog.addEventListener('keydown', documentKeydownListener);
+  const documentKeydownListener = (event) => {
+    if (event.key === 'Escape') {
+      close.setAttribute('daa-ll', `${analyticsEventName}:modalClose:escapeClose`);
+      close.click();
+    }
+  };
+  document.addEventListener('keydown', documentKeydownListener);
   dialog._documentKeydownListener = documentKeydownListener;
 
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());

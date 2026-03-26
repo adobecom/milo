@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial,
+  shouldAllowKrTrial, getCountry,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -14,6 +14,7 @@ export const MAS_MERCH_QUANTITY_SELECT = 'merch-quantity-select';
 export const MAS_MERCH_SECURE_TRANSACTION = 'merch-secure-transaction';
 export const MAS_MERCH_SIDENAV = 'merch-sidenav';
 export const MAS_MERCH_WHATS_INCLUDED = 'merch-whats-included';
+export const MAS_FIELD = 'mas-field';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
@@ -226,16 +227,7 @@ export function getMiloLocaleSettings(miloLocale) {
 
 export async function getGeoLocaleSettings(miloLocale) {
   const settings = getMiloLocaleSettings(miloLocale);
-  let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
-    || sessionStorage.getItem('akamai');
-  if (!country) {
-    try {
-      const { getAkamaiCode } = await import('../../utils/geo.js');
-      country = await getAkamaiCode(true);
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`);
-    }
-  }
+  let country = await getCountry();
   if (country) {
     country = country.toUpperCase();
     settings.country = country;
@@ -244,8 +236,10 @@ export async function getGeoLocaleSettings(miloLocale) {
 }
 
 export async function getLocaleSettings(miloLocale) {
-  const geoDetection = getMetadata('mas-geo-detection');
-  if (!geoDetection || !['on', 'true'].includes(geoDetection)) {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const metaValue = getMetadata('mas-geo-detection');
+  const geoDetection = queryParam ?? metaValue;
+  if (!geoDetection || !['on', 'true'].includes(geoDetection.toLowerCase())) {
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
   }
   return getGeoLocaleSettings(miloLocale);
@@ -382,15 +376,12 @@ export function getMasLibsBaseUrl() {
     return 'https://main--mas--adobecom.aem.live';
   }
 
-  const { hostname } = window.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
-
   let branch = sanitized;
   if (!sanitized.includes('--')) {
     branch = `${sanitized}--mas--adobecom`;
   }
 
-  return `https://${branch}.aem.${extension}`;
+  return `https://${branch}.aem.live`;
 }
 
 /**
@@ -798,7 +789,10 @@ export function appendDexterParameters(url, extraOptions, el) {
       isRelativePath ? `${window.location.origin}${url}` : url,
     );
   } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    window.lana?.log(`Invalid URL ${url} : ${err}`, {
+      tags: 'merch',
+      severity: 'error',
+    });
     return url;
   }
   absoluteUrl = applyPromo(absoluteUrl);
@@ -964,7 +958,7 @@ export async function openModal(e, urlParam, offerType, hash, extraOptions, el) 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
   let columnName;
-  if (el.dataset.modal === 'crm') {
+  if (el.dataset.modal === 'crm' && !el.isOpen3in1Modal) {
     columnName = CRM_HASH;
   } else {
     columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH;
@@ -1005,6 +999,8 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
       offerType,
       productArrangementCode,
       productArrangement: { productCode, productFamily: offerFamily } = {},
+      customerSegment,
+      marketSegments,
     },
   ] = offers ?? [{}];
   const checkoutLinkConfig = await getCheckoutLinkConfig(
@@ -1015,7 +1011,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   );
   if (!checkoutLinkConfig) return undefined;
   let columnName;
-  if (el?.dataset.modal === 'crm') {
+  if (el?.dataset.modal === 'crm' && !el?.isOpen3in1Modal) {
     columnName = CRM_PATH;
   } else {
     columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
@@ -1023,24 +1019,21 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
 
-  if (url?.includes('|')) {
-    const urls = url.split('|');
-    const tabpanel = el.closest('.tabpanel');
-    if (tabpanel) {
-      const index = [...tabpanel.parentElement.children].indexOf(tabpanel);
-      if (urls[index]) {
-        url = urls[index].trim();
-      }
-    } else {
-      url = urls[0].trim();
-    }
+  if (url?.includes('|') && !el?.isOpen3in1Modal) {
+    const segment = el?.isCheckoutLink ? `${customerSegment}_${marketSegments?.[0]}` : '';
+    const segments = ['INDIVIDUAL_COM', 'TEAM_COM', 'INDIVIDUAL_EDU', 'TEAM_EDU'];
+    const index = segments.indexOf(segment) || 0;
+    url = url.split('|')[index].trim();
   }
 
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
-  url = isInternalModal(url) || prodModalUrl
-    ? await localizeLinkAsync(url)
-    : url;
+  if (isInternalModal(url) || prodModalUrl) {
+    const localized = await localizeLinkAsync(url);
+    url = prodModalUrl && !localized.startsWith('http')
+      ? `${new URL(url).origin}${localized}`
+      : localized;
+  }
   url = isMiloPreview && prodModalUrl ? url.replace('https://www.adobe.com', 'https://www.stage.adobe.com') : url;
   return {
     url,
@@ -1206,6 +1199,42 @@ function getHardcodedFallbackStep(wcsOsi, checkoutClientId) {
     x0LkInr7lGkqK8dcTFS_Pc6oHauo_g7N_4yWT_gLn20: 'recommendation',
     SfkorgyrBAsqBVpyKddQQEn6jR0ItBohpXc74sZcKHg: 'recommendation',
     'PVhDPYXq4fsy15OdlEE-XyIlvcxaPMxGs73pw39Cx-s': 'recommendation',
+    gW9NJdpWgZIt7aqMhaXWOZDGxw7fXoNWDidbAlbxmkM: 'recommendation',
+    PSR1sIFrfnd7GbeJoMVM5xPg2QaBubKxyIaDFGXTqoM: 'recommendation',
+    SaDEVpzcaBu6JtP_RjK0EJbNRSwiNX_UIaG8F4Lf8yI: 'recommendation',
+    cOOJwqv72rJWtLKhSHlrhrnVABtxdfjQ4lNcF1y5X2Q: 'recommendation',
+    KpLJEx0tFMmVCW4KU4bppGQg7o3OAebp8KNOnGLNgiw: 'recommendation',
+    'SBiUQ3H21rpQGs31u0-pGHX-jcpvjJSJYNxmFeEGDj8': 'recommendation',
+    F7YL_Ablk1mj4MF4FT32jzS7u_hNUsqt_UoaUEZkexk: 'recommendation',
+    'qwBmdeAU9yPBtbmSrO-TnwapD9-z6F4jIq1dHVUfIJk': 'recommendation',
+    mi2GqN0SGzU9eWxF1vn1MtsIQ7pP5PTSSKT5HnXi3Vg: 'recommendation',
+    eNe5xAVMmF6WtNDSifrDSsSfkmZxND76o060E1C6lJs: 'recommendation',
+    KtBGnaQbFxqhj1oFfUhfBv5ekrjjs6RNhsdUdpepncs: 'recommendation',
+    qrMZa9oQONjCdGbfO6JR1J9Bn_LLkrdnRAJNX4uFhxo: 'recommendation',
+    'ES77iNtc3eI6yGyTX448vllSQin-gkfD3Vqlismwk6g': 'recommendation',
+    'X_7yAluJ1_Y_sCBlmn5X9SMbPvgm-13QKiHQ3sP24Po': 'recommendation',
+    XCxvvwhW4bTMvdhQOqT2aKDhyKEK3RvWijc1ufcNXu8: 'recommendation',
+    'AxowWN4uq06O9UebM8yS1Nc6_DfFLkIsbSJvob-puoA': 'recommendation',
+    JbcIubaMmXtJqaArGtYvyUme1xZnchhMnuewoypvFGY: 'recommendation',
+    tB1vslYEbXdKzXW7m1EM2Yu1TaJimAtDdCO7ZgjnSC0: 'recommendation',
+    aiUTLe7MdD_Wkuzs_uyAH7wuQf0Ssv5ju0ab87rIG6A: 'recommendation',
+    'PXATerSqqGE5cZ4wN3_4fT6hwZ7enxL1LuLWn5CJ-Po': 'recommendation',
+    MPq85MQytgz4DH3qsgomuI0tzNxVJf1TuuqDHaMi_wc: 'recommendation',
+    zuIsmHec4TP5H2IIh1oGUn3roG_HRFiHh6LNsG5bwgY: 'recommendation',
+    'WqJNINLwUkui0QA0NTv-OxkqY0TP2KnZedACEvnfh6g': 'recommendation',
+    OmPhlAOindqQ4fvV4adVu1S44qcO5yVpzuWTUWDXPAo: 'recommendation',
+    '68YcfYFAr5FmEmynFDMYRMcHStNJkxYCPBBsUWh1qpQ': 'recommendation',
+    'yh5S74XAlRdtheBS1Q8avyBi-Ui400fgM5MYyCPhlaQ': 'recommendation',
+    BFbVVIHlzzEGqwBdqwIF5k6N0V_od5k9UVpFONYC7aQ: 'recommendation',
+    'oa-bRVTTC_EXxFaOlhZNYAfUHsNDJRJIxAN2cHU_lnw': 'recommendation',
+    'JzM9USGjYmbUcdPX-WoVwt458J81NkYz8KdL2hmB6ZY': 'recommendation',
+    'IGqwOFux-_4f56UGf1ilJS-rnsCjt0LrWfH7Csw7yF4': 'recommendation',
+    '_rYETpAnWKeCdn5GtQTZiuSUPQ9--uAXilfF1KMky68': 'recommendation',
+    I4tApjavP11Z52iores5zt_Az3eyzxlZHQchQHbN6zo: 'recommendation',
+    Z6Xvxln8V31ZfAF5lJnKM6bA3hpNaLRRotOjtVTXhVE: 'recommendation',
+    _nP3vmyJ78JBBnUtmSukdgWTnLAsNvGuITms2uRrJTo: 'recommendation',
+    '_oXYwJY-EaBPhYSlVuyYeWu9M8ADuiHwtQo64vHhHUM': 'recommendation',
+    'b2wqN8pAXvqJmrRKecLoiJjAZ_yPMsJgHpo-eAu8BDk': 'recommendation',
   };
   return osiToStepMap[wcsOsi];
 }
@@ -1334,6 +1363,60 @@ export async function addAriaLabelToCta(cta) {
   cta.setAttribute('aria-label', ariaLabel);
 }
 
+function escapeRegExp(value = '') {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function syncUpgradeAriaLabel(cta, originalText) {
+  if (!cta?.classList?.contains('upgrade')) return;
+
+  const resolvedText = cta.textContent?.trim();
+  const currentAriaLabel = cta.getAttribute('aria-label')?.trim();
+  const authoredText = originalText?.trim();
+  if (!resolvedText || !currentAriaLabel || !authoredText) return;
+
+  if (currentAriaLabel.toLowerCase().startsWith(resolvedText.toLowerCase())) return;
+
+  const authoredTextPrefix = new RegExp(`^${escapeRegExp(authoredText)}\\b`, 'i');
+  if (!authoredTextPrefix.test(currentAriaLabel)) return;
+
+  cta.setAttribute('aria-label', currentAriaLabel.replace(authoredTextPrefix, resolvedText));
+}
+
+function observeUpgradeAriaLabel(cta, originalText) {
+  let observer;
+  const trySync = () => {
+    syncUpgradeAriaLabel(cta, originalText);
+
+    const resolvedText = cta?.textContent?.trim();
+    const currentAriaLabel = cta?.getAttribute('aria-label')?.trim();
+    if (
+      cta?.classList?.contains('upgrade')
+      && resolvedText
+      && currentAriaLabel?.toLowerCase().startsWith(resolvedText.toLowerCase())
+    ) {
+      observer?.disconnect();
+    }
+  };
+
+  if (typeof MutationObserver === 'undefined') {
+    cta.onceSettled().then(trySync);
+    return;
+  }
+
+  observer = new MutationObserver(trySync);
+  observer.observe(cta, {
+    attributes: true,
+    attributeFilter: ['class', 'aria-label'],
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+
+  cta.onceSettled().then(trySync);
+  setTimeout(() => observer.disconnect(), 5000);
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG'
@@ -1380,6 +1463,7 @@ export async function buildCta(el, params) {
       await addAriaLabelToCta(cta);
     });
   }
+  observeUpgradeAriaLabel(cta, text);
 
   if (getMetadata('mas-ff-copy-cta') === 'on') {
     const { default: addCopyToClipboard } = await import(
@@ -1436,6 +1520,7 @@ export function getOptions(el) {
   for (const [key, value] of searchParams.entries()) {
     if (key === 'sidenav') options.sidenav = value === 'true';
     else if (key === 'fragment' || key === 'query') options.fragment = value;
+    else if (key === 'field') options.field = value;
   }
   return options;
 }

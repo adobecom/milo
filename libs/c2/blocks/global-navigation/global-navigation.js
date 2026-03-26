@@ -1,6 +1,6 @@
 import { getEnv, getConfig, getMetadata, localizeLink } from '../../../utils/utils.js';
 
-const FEDERAL_BRANCH_PATTERN = /^[a-z0-9-]+(?:--[a-z0-9-]+)*$/;
+const FEDERAL_BRANCH_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
 function getFederalDomain(config) {

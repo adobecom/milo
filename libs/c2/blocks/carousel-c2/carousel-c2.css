@@ -15,7 +15,11 @@
   overflow: clip;
   view-timeline: --carousel-wrapper block;
 
-  button { display: none };
+  button { display: none }
+
+  ul.indicators-container {
+    display: none;
+  }
 
   .carousel-wrapper {
     --transition-duration: 500ms;
@@ -77,7 +81,7 @@
               animation-fill-mode: var(--carousel-animation-fill);
               animation-range: var(--carousel-text-animation-range);
 
-              :is(h1, h2, h3, h4, h5, h6) {
+              :is([class*="title-"]) {
                 margin-bottom: 8px;
               }
 
@@ -130,10 +134,6 @@
         }
       }
     }
-  }
-
-  ul.indicators-container {
-    display: none;
   }
 
   .aria-live-container {
@@ -394,5 +394,12 @@
     transform: translate(5%, 70%);
   } to {
     transform: translate(0%, 0%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-c2 * {
+    animation: none !important;
+    transition: none !important;
   }
 }
