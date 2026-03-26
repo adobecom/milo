@@ -806,13 +806,9 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
-const VALID_COUNTRY_CODE = /^[a-z]{2,3}(_[a-z]{2,4})?$/i;
-
 export async function getCountry(skipFallback = false) {
-  const raw = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
-  const country = raw && VALID_COUNTRY_CODE.test(raw) ? raw : null;
-  if (country) return country.toLowerCase();
-  if (skipFallback) return null;
+  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  if (country || skipFallback) return country?.toLowerCase();
 
   try {
     const { getAkamaiCode } = await import('./geo.js');
@@ -1905,9 +1901,7 @@ async function checkForPageMods() {
   loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
-  const rawAkamai = getMepEnablement('akamaiLocale');
-  const akamaiCode = (rawAkamai && VALID_COUNTRY_CODE.test(rawAkamai) ? rawAkamai : null)
-    || await getCountry(true);
+  const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
   if (mepgeolocation && !akamaiCode) {
     countryIPPromise = getCountry();
   }

