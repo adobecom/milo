@@ -17,24 +17,35 @@ const lingoConfigMap = await getLingoConfigMap();
 
 const queue = new PQueue({ concurrency: Number(process.env.PREVIEW_INDEXER_CONCURRENCY || '1') });
 const filteredRepos = reposToProcess.filter((repo) => !SITE || repo === SITE);
+const errors = [];
 
 for (const repo of filteredRepos) {
   await queue.add(async () => {
     console.log(`Initiating incremental index for ${ORG}/${repo}`);
-    const indexer = await initIndexer(
-      ORG,
-      repo,
-      lingoConfigMap,
-      {
-        savePreviewIndexJson: saveJsonToDa,
-        getPreviewIndexJson: getJsonFromDa,
-      }
-    );
-    const siteRegionPaths = indexer.normalizeRegionPaths(SITE_REGION_PATHS);
-    return indexer.incremental(siteRegionPaths);
+    try {
+      const indexer = await initIndexer(
+        ORG,
+        repo,
+        lingoConfigMap,
+        {
+          savePreviewIndexJson: saveJsonToDa,
+          getPreviewIndexJson: getJsonFromDa,
+        }
+      );
+      const siteRegionPaths = indexer.normalizeRegionPaths(SITE_REGION_PATHS);
+      return indexer.incremental(siteRegionPaths);
+    } catch (error) {
+      console.error(`Error initiating incremental index for ${ORG}/${repo}: ${error}`);
+      errors.push(`${ORG}/${repo}: ${error}`);
+    }
+    return {};
   });
 }
 
 await queue.onIdle();
 
 console.log('All repos processed');
+
+if (errors.length > 0) {
+  throw new Error(`Errors occurred during incremental indexing:\n${errors.join('\n')}`);
+}

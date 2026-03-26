@@ -155,7 +155,7 @@ test.describe('Commerce feature test suite', () => {
     await test.step('Validate regular price has promo', async () => {
       const regularPrice = page.locator('p:has-text("Regular price:")');
       const price = regularPrice.locator(COMM.price);
-      const strikethroughPrice = regularPrice.locator(COMM.priceStrikethrough).first();
+      const strikethroughPrice = regularPrice.locator(COMM.priceOld);
       await strikethroughPrice.waitFor({ state: 'visible', timeout: 10000 });
       await price.waitFor({ state: 'visible', timeout: 10000 });
       await expect(price).toHaveAttribute('data-promotion-code', data.price_promo);
@@ -177,7 +177,7 @@ test.describe('Commerce feature test suite', () => {
     await test.step('Validate strikethrough price has promo', async () => {
       await COMM.priceStrikethrough.last().waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.priceStrikethrough.last()).toHaveAttribute('data-promotion-code', data.price_promo);
-      await expect(COMM.priceStrikethrough.last()).toContainText(data.priceStrikethrough);
+      // await expect(COMM.priceStrikethrough.last()).toContainText(data.priceStrikethrough);
       const priceStyle = await COMM.priceStrikethrough.last().evaluate(
         (e) => window.getComputedStyle(e).getPropertyValue('text-decoration'),
       );

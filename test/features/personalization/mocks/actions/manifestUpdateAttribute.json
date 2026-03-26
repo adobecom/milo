@@ -21,6 +21,14 @@
     },
     {
       "action": "updateattribute",
+      "selector": "marquee em a href",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "content": "https://main--da-dc--adobecom.aem.live/pods/my-link"
+    },
+    {
+      "action": "updateattribute",
       "selector": "marquee em a new-attribute",
       "page filter (optional)": "",
       "param-newoffer=123": "",

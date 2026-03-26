@@ -1,4 +1,5 @@
-import { createTag, getFederatedUrl, getFederatedContentRoot } from '../../../utils/utils.js';
+import { processTrackingLabels, sendAnalytics } from '../../../martech/attributes.js';
+import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const CHEVRON_SVG = '<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -168,11 +169,13 @@ const buildPlayPause = () => {
   }, createTag('div', { class: 'offset-filler is-playing' }, [
     createTag('img', {
       class: 'accessibility-control pause-icon',
+      attributes: { 'daa-ll': 'pause--router-marq-play-btn' },
       alt: 'Pause icon',
       src: `${root}/federal/assets/svgs/accessibility-pause.svg`,
     }),
     createTag('img', {
       class: 'accessibility-control play-icon',
+      attributes: { 'daa-ll': 'play--router-marq-play-btn' },
       alt: 'Play icon',
       src: `${root}/federal/assets/svgs/accessibility-play.svg`,
     }),
@@ -193,6 +196,21 @@ const animateContentEnter = (content, direction) => {
     el.style.transition = `transform ${STAGGER_MS}ms ${EASE}`;
     el.style.transform = 'translateX(0)';
   });
+};
+
+const fireAnalytic = (card, type = 'auto') => {
+  const viewport = card.closest('.rm-viewport');
+  if (card.getAttribute('slide-seen') === 'true' || viewport.getAttribute('not-in-view') === 'true') return;
+
+  const position = [...card.parentNode.children].indexOf(card) + 1;
+  const section = card.parentNode.closest('.section[daa-lh]');
+  const sectionName = section?.getAttribute('daa-lh');
+  const blockName = `b${position}`;
+  const cardLabel = card.querySelector('.rm-card-label');
+  const cardName = cardLabel?.textContent;
+
+  document.querySelectorAll(`.rm-card:nth-child(${position})`).forEach((c) => c.setAttribute('slide-seen', true));
+  sendAnalytics(`${type}--slideseen--${processTrackingLabels(cardName, getConfig(), 15)}-${position}|${sectionName}|${blockName}`);
 };
 
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
@@ -374,6 +392,7 @@ const startAutoplay = (slides, cards, container, block) => {
     clearTimeout(timer);
     clearFill(active);
     activate((active + 1) % cardEls.length, 1);
+    fireAnalytic(cardEls[active]);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
   };
@@ -426,6 +445,7 @@ const startAutoplay = (slides, cards, container, block) => {
       paused = true;
       const dir = i > active ? 1 : -1;
       activate(i, dir, { skipTrack: isDesktopSmallVp });
+      fireAnalytic(cardEls[i], 'user');
     });
   });
 
@@ -503,6 +523,7 @@ const startAutoplay = (slides, cards, container, block) => {
     const dir = dx < 0 ? 1 : -1;
     const next = (active + dir + cardEls.length) % cardEls.length;
     activate(next, dir);
+    fireAnalytic(cardEls[active], 'user');
     paused = true;
     setPlayingState(false);
   }, { passive: true });
@@ -547,6 +568,42 @@ const reorderSlidesMaybe = (el, viewports) => {
   }
 };
 
+const setSlideObserver = (container) => {
+  const callback = (el) => {
+    const card = el.parentNode.querySelector('.rm-card.is-active');
+    fireAnalytic(card);
+  };
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(async (entry) => {
+      if (entry.isIntersecting) {
+        entry.target.removeAttribute('not-in-view');
+        callback(entry.target);
+      } else {
+        entry.target.setAttribute('not-in-view', true);
+      }
+    });
+  });
+
+  io.observe(container);
+};
+
+const setAnalytics = (slides, cards, el) => {
+  const config = getConfig();
+  const mepMartech = config?.mep?.martech || '';
+
+  el.setAttribute('data-block-daa-lh', true);
+  slides.forEach((slide, index) => {
+    const analyticText = `b${index + 1}|rm-slide${mepMartech}`;
+    slide.setAttribute('daa-lh', analyticText);
+  });
+  cards.querySelectorAll('.rm-card').forEach((card, index) => {
+    const label = slides[index]?.textContent;
+    const analyticText = `rm-nav${index + 1}|${processTrackingLabels(label, config, 13)}`;
+    card.setAttribute('daa-ll', analyticText);
+  });
+};
+
 export default function init(el) {
   const viewports = groupByViewport(el);
   reorderSlidesMaybe(el, viewports);
@@ -556,6 +613,8 @@ export default function init(el) {
   containers.forEach((container) => {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
+    setSlideObserver(container);
+    setAnalytics(slides, cards, el);
     startAutoplay(slides, cards, container, el);
   });
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
