@@ -146,7 +146,9 @@ export default async function init(el) {
   }
   if (el.classList.contains('link-spacer')) {
     el.querySelectorAll('[class^="body-"]').forEach((bodyElem) => {
-      if ([...bodyElem.childNodes].every((n) => (n.nodeType === 1 && n.tagName === 'A' && !n.className)
+      const isAllowedLink = (n) => n.nodeType === 1 && n.tagName === 'A'
+        && (!n.className || (n.classList.contains('modal') && n.classList.contains('link-block')));
+      if ([...bodyElem.childNodes].every((n) => isAllowedLink(n)
         || (n.nodeType === 3 && n.textContent.trim() === ''))) {
         bodyElem.classList.add('link-list');
       }

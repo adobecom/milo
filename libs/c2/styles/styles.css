@@ -594,7 +594,7 @@ a {
   }
 }
 
-h1, h2, h3, h4, h5, h6, [class*="heading-"], [class*="title-"] {
+h1, h2, h3, h4, h5, h6, [class*="title-"] {
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);

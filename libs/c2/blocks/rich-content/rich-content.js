@@ -2,6 +2,7 @@ import { decorateBlockText, decorateTextOverrides } from '../../../utils/decorat
 import { createTag } from '../../../utils/utils.js';
 
 function hangOpeningQuote(header) {
+  if (!header) return;
   const openingQuotes = /^(\p{Pi})/u;
   const match = header.textContent.match(openingQuotes);
   if (!match) return;
@@ -95,12 +96,14 @@ function getViewportConfig(el) {
   const children = [...el.children];
   const delimiterEls = [];
   const delimiters = ['mobile', 'tablet', 'desktop'];
+  const suffix = '-viewport';
   delimiters.forEach((delimiter, index) => {
     const delimiterIndex = children
-      .findIndex((child) => child.textContent.toLowerCase().includes(delimiter));
+      .findIndex((child) => child.textContent.trim().toLowerCase().startsWith(delimiter + suffix));
     if (delimiterIndex < 0) return;
     const nextDelimiterIndex = children
-      .findIndex((child) => child.textContent.toLowerCase().includes(delimiters[index + 1]));
+      .findIndex((child) => child.textContent
+        .trim().toLowerCase().startsWith(delimiters[index + 1] + suffix));
     const content = children
       .slice(delimiterIndex + 1, nextDelimiterIndex < 0 ? children.length : nextDelimiterIndex);
     addMissingContent(content, viewportContent[delimiters[index - 1]]);

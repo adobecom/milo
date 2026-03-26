@@ -254,16 +254,31 @@ function buildSelectedFilter(name) {
   a.classList.add('selected-filter');
   a.setAttribute('tabindex', 0);
   a.textContent = name;
+  a.setAttribute('aria-label', `Remove ${name} filter`);
   return a;
+}
+
+function announceFilterChange(message) {
+  const ariaLive = document.querySelector('.article-feed-live-container');
+  if (ariaLive) ariaLive.remove();
+
+  const alert = createTag('div', {
+    class: 'article-feed-live-container',
+    role: 'alert',
+  });
+  alert.textContent = message;
+  document.body.appendChild(alert);
 }
 
 function clearFilter(e, block) {
   const { target } = e;
+  const filterName = target.textContent;
   const checked = document
-    .querySelector(`input[name='${target.textContent}']`);
+    .querySelector(`input[name='${filterName}']`);
   if (checked) { checked.checked = false; }
   delete blogIndex.config.selectedProducts;
   delete blogIndex.config.selectedIndustries;
+  announceFilterChange(`Removed ${filterName} filter`);
   // eslint-disable-next-line no-use-before-define
   applyCurrentFilters(block);
 }
@@ -318,6 +333,24 @@ function applyCurrentFilters(block, close) {
     selectedContainer.classList.remove('hide');
   } else {
     selectedContainer.classList.add('hide');
+    // Move focus when filters are cleared only if no dropdown is expanded (e.g. Clear all).
+    setTimeout(() => {
+      const dropdownExpanded = document.querySelector('.filter-button[aria-expanded="true"]');
+      if (dropdownExpanded) return;
+
+      const filterContainer = document.querySelector('.filter-container');
+      const firstFilterButton = filterContainer?.querySelector('.filter-button');
+      if (firstFilterButton) {
+        firstFilterButton.focus();
+      } else {
+        const articleFeed = document.querySelector('.article-feed');
+        if (articleFeed) {
+          articleFeed.setAttribute('tabindex', '-1');
+          articleFeed.focus();
+          articleFeed.removeAttribute('tabindex');
+        }
+      }
+    }, 300);
   }
   if (block) {
     block.innerHTML = '';
@@ -326,19 +359,25 @@ function applyCurrentFilters(block, close) {
   }
 }
 
-function clearFilters(e, block) {
+async function clearFilters(e, block) {
   const type = e.target.classList[e.target.classList.length - 1];
   let target = document;
   if (type === 'reset') {
     target = e.target.parentNode.parentNode;
+    announceFilterChange(`${await replacePlaceholder('reset')} ${target.getAttribute('id')}`);
   }
   const dropdowns = target.querySelectorAll('.filter-options');
+  let hadFilters = false;
   dropdowns.forEach((dropdown) => {
     const checked = dropdown.querySelectorAll('input:checked');
+    if (checked.length) hadFilters = true;
     checked.forEach((box) => { box.checked = false; });
   });
   delete blogIndex.config.selectedProducts;
   delete blogIndex.config.selectedIndustries;
+  if (hadFilters && type === 'clear') {
+    announceFilterChange('All filters cleared');
+  }
   applyCurrentFilters(block);
 }
 
@@ -545,7 +584,13 @@ async function decorateArticleFeed(
   const container = createTag('div', { class: 'article-cards-empty' });
 
   // display spinner
-  const spinner = createTag('div', { class: 'spinner' });
+  const spinner = createTag('div', {
+    class: 'spinner',
+    role: 'alert',
+    'aria-live': 'assertive',
+    'aria-label': 'loading',
+    'aria-atomic': 'true',
+  });
   container.append(spinner);
   articleCards.append(container);
 
@@ -559,18 +604,25 @@ async function decorateArticleFeed(
   } else if (blogIndex.config.selectedProducts || blogIndex.config.selectedIndustries) {
     // no user filtered results were found
     spinner.remove();
+    const noMatchesText = await replacePlaceholder('no-matches');
     const noMatches = document.createElement('p');
-    noMatches.innerHTML = `<strong>${await replacePlaceholder('no-matches')}</strong>`;
+    noMatches.innerHTML = `<strong>${noMatchesText}</strong>`;
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
-    userHelp.textContent = await replacePlaceholder('user-help');
+    const userHelpText = await replacePlaceholder('user-help');
+    userHelp.textContent = userHelpText;
+    container.setAttribute('tabindex', '-1');
     container.append(noMatches, userHelp);
+    container.focus();
   } else {
     // no results were found
     spinner.remove();
+    const noResultsText = await replacePlaceholder('no-results');
     const noResults = document.createElement('p');
-    noResults.innerHTML = `<strong>${await replacePlaceholder('no-results')}</strong>`;
+    noResults.innerHTML = `<strong>${noResultsText}</strong>`;
     container.append(noResults);
+    // Use the live region to ensure VoiceOver re-announces on repeated filter changes
+    announceFilterChange(noResultsText);
   }
   const max = pageEnd > articles.length ? articles.length : pageEnd;
   for (let i = offset; i < max; i += 1) {
@@ -630,6 +682,7 @@ async function decorateFeedFilter(articleFeedEl) {
   const clearBtn = document.createElement('a');
   clearBtn.classList.add('button', 'small', 'clear');
   clearBtn.href = '#';
+  clearBtn.setAttribute('tabindex', '0');
   clearBtn.textContent = await replacePlaceholder('clear-all');
   const handleClearFilters = (e) => {
     e.preventDefault();

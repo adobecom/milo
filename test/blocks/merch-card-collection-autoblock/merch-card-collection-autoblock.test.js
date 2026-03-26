@@ -59,6 +59,29 @@ describe('merch-card-collection autoblock', () => {
       expect(collection.className).to.include('plans');
     });
 
+    it('replaces only the link paragraph when there are other paragraphs in content', async () => {
+      const content = document.createElement('div');
+      content.classList.add('content');
+      const intro = document.createElement('p');
+      intro.textContent = 'Intro paragraph';
+      const linkParagraph = document.createElement('p');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368');
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      linkParagraph.append(a);
+      const outro = document.createElement('p');
+      outro.textContent = 'Outro paragraph';
+      content.append(intro, linkParagraph, outro);
+      document.body.append(content);
+
+      await init(a);
+
+      const children = [...content.children];
+      expect(children[0]).to.equal(intro);
+      expect(children[1].classList.contains('collection-container')).to.be.true;
+      expect(children[2]).to.equal(outro);
+    });
+
     it('creates sidenav by default', async () => {
       const content = document.createElement('div');
       content.classList.add('content');
