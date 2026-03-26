@@ -2078,6 +2078,9 @@ async function loadPostLCP(config) {
       lerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
+    if (!CSS.supports('animation-timeline', 'view()')) {
+      import('../c2/scripts/parallax-polyfill.js').then((mod) => mod.default());
+    }
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
