@@ -2020,7 +2020,6 @@ async function loadPostLCP(config) {
     await Promise.all([
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
-      needsScrollPolyfill && loadScript(`${config.base}/deps/scroll-timeline.js`),
     ].filter(Boolean));
     const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
@@ -2091,12 +2090,12 @@ async function loadPostLCP(config) {
             });
           }
 
-          // garage-door-reveal: translateY(20vh → 0), cover -10% cover 100%
+          // garage-door-reveal: translateY(revealFrom → 0), starts only once section is visible
           if (foreground) {
             let revealFrom = 20;
             if (window.innerWidth >= 1920) revealFrom = 30;
             else if (window.innerWidth >= 1280) revealFrom = 50;
-            const revealT = range('entry', 0, 'entry', 0.8);
+            const revealT = range('entry', 0.4, 'entry', 0.7);
             foreground.style.transform = `translateY(${revealFrom * (1 - revealT)}vh)`;
           }
 
