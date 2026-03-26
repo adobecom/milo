@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   check-token-expiry:
+    if: github.event_name != 'schedule' || github.repository == 'adobecom/milo'
     runs-on: ubuntu-latest
     steps:
       - name: Check JWT token expiration
@@ -54,6 +55,7 @@ jobs:
             exit 1
           fi
   check-last-run:
+    if: github.event_name != 'schedule' || github.repository == 'adobecom/milo'
     runs-on: ubuntu-latest
     outputs:
       workflow-id: ${{ steps.workflow-id.outputs.WORKFLOW_ID }}
@@ -147,6 +149,7 @@ jobs:
           echo "LAST_CREATED_AT_UNIX=$LAST_CREATED_AT_UNIX" >> $GITHUB_OUTPUT
           echo "Previous build created at: $LAST_CREATED_AT_ISO"
   poll-log:
+    if: github.event_name != 'schedule' || github.repository == 'adobecom/milo'
     runs-on: ubuntu-latest
     needs: check-last-run
     steps:

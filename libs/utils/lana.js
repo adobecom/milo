@@ -15,7 +15,13 @@
     isProdDomain: false,
   };
 
-  const VALID_SEVERITIES = new Set(['d', 'debug', 'i', 'info', 'w', 'warn', 'e', 'error', 'c', 'critical']);
+  const VALID_SEVERITIES = new Set([
+    'd', 'debug',
+    'i', 'info',
+    'w', 'warning',
+    'e', 'error',
+    'c', 'critical',
+  ]);
 
   const w = window;
 
@@ -130,8 +136,20 @@
     }
   }
 
-  function sendUnhandledError(e) {
-    log(e.reason || e.error || e.message, { errorType: 'i' });
+  function sendUnhandledError(type, e) {
+    const error = e.reason || e.error || e.message;
+    let stack = error?.stack;
+
+    if (!stack) {
+      const o = {};
+      Error.captureStackTrace?.(o, sendUnhandledError);
+      stack = o.stack;
+    }
+
+    log(
+      `${type}: ${String(error)} : ${stack || 'no stack'}`,
+      { errorType: 'i', severity: 'error' },
+    );
   }
 
   w.lana = {
@@ -144,6 +162,6 @@
   if (hasDebugParam()) w.lana.debug = true;
   if (isLocalhost()) w.lana.localhost = true;
 
-  w.addEventListener('error', sendUnhandledError);
-  w.addEventListener('unhandledrejection', sendUnhandledError);
+  w.addEventListener('error', (e) => sendUnhandledError('unhandled-error', e));
+  w.addEventListener('unhandledrejection', (e) => sendUnhandledError('unhandled-rejection', e));
 }());

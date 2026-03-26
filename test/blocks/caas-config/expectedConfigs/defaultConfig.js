@@ -10,7 +10,7 @@ const defaultConfig = {
     collectionButtonStyle: 'primary',
     resultsPerPage: 5,
     endpoint:
-      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
+      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=26e0051d-8836-5822-aba0-d26631ce43a4&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
     fallbackEndpoint: '',
     hideDateInterval: false,
     totalCardsToShow: 10,
