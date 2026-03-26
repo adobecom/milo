@@ -2016,10 +2016,11 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
+    const needsScrollPolyfill = !CSS.supports('animation-timeline: scroll()');
     await Promise.all([
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
-      !CSS.supports('animation-timeline: scroll()') && loadScript(`${config.base}/deps/scroll-timeline.js`),
+      needsScrollPolyfill && loadScript(`${config.base}/deps/scroll-timeline.js`),
     ].filter(Boolean));
     const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
@@ -2028,6 +2029,52 @@ async function loadPostLCP(config) {
       lerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
+    if (needsScrollPolyfill) {
+      // parallax-move-up-fast: driven by lenis scroll (matches scroll(root block) 0→80vh range)
+      const vh80px = window.innerHeight * 0.8;
+      const moveUpSections = [...document.querySelectorAll('.section.parallax-move-up-fast')];
+      moveUpSections.forEach((section) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:absolute;inset:0;background:black;opacity:0;pointer-events:none;z-index:2;';
+        section.appendChild(overlay);
+        window.lenis.on('scroll', ({ scroll }) => {
+          const t = Math.max(0, Math.min(1, scroll / vh80px));
+          section.style.transform = `translateY(${-35 * t}vh)`;
+          overlay.style.opacity = 0.75 * t;
+        });
+      });
+      // garage door: ViewTimeline WAAPI (same pattern as flackr demo)
+      document.querySelectorAll('.section.parallax-garage-door-reveal').forEach((section) => {
+        const sectionStyle = getComputedStyle(section);
+        const growFrom = sectionStyle.getPropertyValue('--gd-grow-from').trim();
+        const revealFrom = sectionStyle.getPropertyValue('--gd-reveal-from').trim();
+        const vt = (el) => ({ fill: 'both', timeline: new window.ViewTimeline({ subject: el }) });
+        section.animate(
+          [{ transform: `translateY(${growFrom})` }, { transform: 'translateY(0)' }],
+          { ...vt(section), rangeStart: 'entry 0%', rangeEnd: 'cover 40%' },
+        );
+        const bgImg = section.querySelector('.section-background img');
+        if (bgImg) {
+          bgImg.animate(
+            [{ transform: 'scale(1)' }, { transform: 'scale(1.1)' }],
+            { ...vt(bgImg), rangeStart: 'entry 0%', rangeEnd: 'cover 100%' },
+          );
+        }
+        const foreground = section.querySelector('.foreground');
+        if (foreground) {
+          foreground.animate(
+            [{ transform: `translateY(${revealFrom})` }, { transform: 'translateY(0)' }],
+            { ...vt(foreground), rangeStart: 'cover 0%', rangeEnd: 'cover 100%' },
+          );
+          foreground.querySelectorAll('*').forEach((child) => {
+            child.animate(
+              [{ lineHeight: '0.6' }, {}],
+              { ...vt(child), rangeStart: 'entry 10%', rangeEnd: 'cover 40%' },
+            );
+          });
+        }
+      });
+    }
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');

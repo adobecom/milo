@@ -885,9 +885,7 @@ p {
     --parallax-range-end-length: 100%;
     --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
 
-    animation-name: enable-parallax;
-    animation-timing-function: var(--parallax-easing);
-    animation-fill-mode: both;
+    animation: enable-parallax var(--parallax-easing) both;
     animation-timeline: view(block 40% 10%);
     animation-range: var(--parallax-range-start) var(--parallax-range-end);
 
@@ -1064,17 +1062,14 @@ p {
   .section.parallax-garage-door-reveal {
     --gd-grow-from: -50vh;
     --gd-reveal-from: 20vh;
+    animation: none;
 
     overflow: clip;
     transform-origin: top center;
-    animation: garage-door-grow ease-out both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 40%;
 
     @media (width >= 1280px) {
       --gd-grow-from: -110vh;
       --gd-reveal-from: 50vh;
-      animation-range: entry 0% cover 50%;
     }
 
     @media (width >= 1920px) {
@@ -1082,24 +1077,39 @@ p {
       --gd-reveal-from: 30vh;
     }
 
-    .section-background img {
+    .foreground {
+      z-index: 1;
+      position: relative;
+    }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .section.parallax-garage-door-reveal {
+      animation: garage-door-grow ease-out both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+
+      @media (width >= 1280px) {
+        animation-range: entry 0% cover 50%;
+      }
+    }
+
+    .section.parallax-garage-door-reveal .section-background img {
       animation: garage-door-bg-scale ease-out both;
       animation-timeline: view();
       animation-range: entry 0% cover 100%;
     }
 
-    .foreground {
-      z-index: 1;
-      position: relative;
+    .section.parallax-garage-door-reveal .foreground {
       animation: garage-door-reveal ease-out both;
       animation-timeline: view();
       animation-range: cover -10% cover 100%;
+    }
 
-      * {
-        animation: garage-door-line-height ease-out both;
-        animation-timeline: view();
-        animation-range: entry 10% cover 40%;
-      }
+    .section.parallax-garage-door-reveal .foreground * {
+      animation: garage-door-line-height ease-out both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 40%;
     }
   }
 
@@ -1127,10 +1137,7 @@ p {
     position: sticky;
     top: 0;
     z-index: 0;
-    animation-name: parallax-move-up-fast;
-    animation-timeline: scroll(root block);
-    animation-range: 0 80vh;
-    animation-timing-function: ease-out;
+    animation: none;
 
     &::after {
       content: '';
@@ -1139,10 +1146,21 @@ p {
       background: black;
       opacity: 0;
       pointer-events: none;
+      z-index: 2;
+    }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .section.parallax-move-up-fast {
+      animation: parallax-move-up-fast ease-out both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 80vh;
+    }
+
+    .section.parallax-move-up-fast::after {
       animation: parallax-fade-to-dark linear both;
       animation-timeline: scroll(root block);
       animation-range: 0 80vh;
-      z-index: 2;
     }
   }
 
