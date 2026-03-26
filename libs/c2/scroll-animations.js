@@ -113,16 +113,20 @@ function initGarageDoorReveal() {
 
 function initParallaxLineHeight() {
   const containers = [
-    ...document.querySelectorAll('.parallax-line-height'),
+    ...document.querySelectorAll('.parallax-line-height:not(.section)'),
   ];
-  containers.forEach((container) => {
-    const childData = cacheLineHeights(
-      [...container.querySelectorAll('*')],
-    );
+  const textSelector = 'h1, h2, h3, h4, h5, h6, p, li, a, span';
+  containers.forEach((block) => {
+    let childData = null;
 
     window.lenis.on('scroll', ({ scroll }) => {
-      const m = getScrollMetrics(scroll, container);
-      const t = viewRange(m, 'entry', 0.1, 'cover', 0.4);
+      if (!childData) {
+        const textEls = [...block.querySelectorAll(textSelector)];
+        if (!textEls.length) return;
+        childData = cacheLineHeights(textEls);
+      }
+      const m = getScrollMetrics(scroll, block);
+      const t = viewRange(m, 'entry', 0.2, 'cover', 0.6);
       childData.forEach(({ el, target }) => {
         el.style.lineHeight = t >= 1
           ? '' : String(3 + (target - 3) * t);
