@@ -90,10 +90,10 @@ export async function decorateSectionAnalytics(section, idx, config) {
   });
   const mepMartech = config?.mep?.martech || '';
   section.querySelectorAll('[data-block]').forEach((block, blockIdx) => {
-    if (block.getAttribute('data-block-daa-lh')) return;
     const lhAtt = block.getAttribute('daa-lh');
+    const { blockDaaLh } = block.dataset;
     if (lhAtt) {
-      block.setAttribute('daa-lh', `${lhAtt}${mepMartech}`);
+      if (!blockDaaLh) block.setAttribute('daa-lh', `${lhAtt}${mepMartech}`);
     } else {
       const blockName = block.classList[0] || '';
       let closest = block;
@@ -104,7 +104,7 @@ export async function decorateSectionAnalytics(section, idx, config) {
           nestedLH = `${closest.getAttribute('data-nested-lh')}--${nestedLH}`;
         }
       }
-      block.setAttribute('daa-lh', `b${blockIdx + 1}|${nestedLH}${blockName.slice(0, 15)}${mepMartech}`);
+      if (!blockDaaLh) block.setAttribute('daa-lh', `b${blockIdx + 1}|${nestedLH}${blockName.slice(0, 15)}${mepMartech}`);
       decorateDefaultLinkAnalytics(block, config);
     }
     block.removeAttribute('data-block');

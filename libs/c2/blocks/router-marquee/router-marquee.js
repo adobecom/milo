@@ -203,11 +203,14 @@ const fireAnalytic = (card, type = 'auto') => {
   if (card.getAttribute('slide-seen') === 'true' || viewport.getAttribute('not-in-view') === 'true') return;
 
   const position = [...card.parentNode.children].indexOf(card) + 1;
-  const label = card.querySelector('.rm-card-label')?.textContent;
-  const analyticText = `${type}-${processTrackingLabels(label, getConfig(), 15)}-${position}`;
+  const section = card.parentNode.closest('.section[daa-lh]');
+  const sectionName = section?.getAttribute('daa-lh');
+  const blockName = `b${position}`;
+  const cardLabel = card.querySelector('.rm-card-label');
+  const cardName = cardLabel?.textContent;
 
   document.querySelectorAll(`.rm-card:nth-child(${position})`).forEach((c) => c.setAttribute('slide-seen', true));
-  sendAnalytics(analyticText);
+  sendAnalytics(`${type}--slideseen--${processTrackingLabels(cardName, getConfig(), 15)}-${position}|${sectionName}|${blockName}`);
 };
 
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
@@ -591,7 +594,7 @@ const setAnalytics = (slides, cards, el) => {
 
   el.setAttribute('data-block-daa-lh', true);
   slides.forEach((slide, index) => {
-    const analyticText = `b${index + 1}|rm-slide|${mepMartech}`;
+    const analyticText = `b${index + 1}|rm-slide${mepMartech}`;
     slide.setAttribute('daa-lh', analyticText);
   });
   cards.querySelectorAll('.rm-card').forEach((card, index) => {
