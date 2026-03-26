@@ -30,8 +30,7 @@ const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
 
 let floatingButtonClicked = false;
-
-let bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+let bcToken;
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
@@ -258,6 +257,10 @@ async function openChatModal(initialMessage, el) {
   const { userAgent, language } = window.navigator;
 
   const onBeforeEventSend = (content) => {
+    if (!bcToken) {
+      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+    }
+
     if (bcToken) {
       content.data = {
         type: 'auth',
