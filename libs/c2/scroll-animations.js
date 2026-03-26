@@ -187,51 +187,80 @@ function getEndRange(cols, childCount) {
   }
   return { eType: 'entry', ePct: 1 };
 }
+function setupStaggerEl(section) {
+  const drift = 48;
+  const isRtl = section.classList.contains('parallax-stagger-rtl');
+  let childData = null;
+  let endRange = null;
+
+  window.lenis.on('scroll', ({ scroll }) => {
+    if (!childData) {
+      const cols = getColCount(section);
+      const children = [...section.children].filter(
+        (c) => !c.className.match(/section-/),
+      );
+      if (!children.length) return;
+      endRange = getEndRange(cols, children.length);
+      childData = children.map((child, i) => {
+        const colIndex = (i % cols) + 0.5;
+        const rowIndex = Math.floor(i / cols);
+        const idx = isRtl
+          ? (cols - 1 - colIndex + rowIndex)
+          : (colIndex + rowIndex);
+        return { el: child, from: idx * drift };
+      });
+    }
+    const m = getScrollMetrics(scroll, section, 0.4, 0.1);
+    const { eType, ePct } = endRange;
+    const t = viewRange(m, 'entry', 0, eType, ePct);
+    childData.forEach(({ el, from }) => {
+      el.style.transform = `translate3d(0, ${from * (1 - t)}px, 0)`;
+    });
+  });
+}
+
 function initStagger() {
   if (window.innerWidth < 768) return;
 
-  const STAGGER_LTR = 'parallax-stagger-ltr';
-  const STAGGER_RTL = 'parallax-stagger-rtl';
-  const toMeta = (s) => s.replaceAll('-', ' ');
-  const drift = 48;
+  const STAGGER_RE = /parallax-stagger-(ltr|rtl)/;
+  const initialized = new WeakSet();
 
-  // Find by class on any element or by section-metadata style
-  const byClass = [...document.querySelectorAll(
-    `.${STAGGER_LTR}, .${STAGGER_RTL}`,
-  )];
-  const byMeta = [...document.querySelectorAll('.section')].filter(
-    (s) => sectionHasStyle(s, toMeta(STAGGER_LTR))
-      || sectionHasStyle(s, toMeta(STAGGER_RTL)),
-  );
-  const staggerEls = [...new Set([...byClass, ...byMeta])];
+  const setup = (el) => {
+    console.log('el', el);
+    if (initialized.has(el)) return;
+    initialized.add(el);
+    setupStaggerEl(el);
+  };
 
-  console.log('staggerEls', staggerEls);
-  staggerEls.forEach((section) => {
-    const isRtl = section.classList.contains(STAGGER_RTL)
-      || sectionHasStyle(section, toMeta(STAGGER_RTL));
-    const cols = getColCount(section);
-    const children = [...section.children].filter(
-      (c) => !c.className.match(/section-/),
-    );
-    const { eType, ePct } = getEndRange(cols, children.length);
+  // Init any already present
+  document.querySelectorAll(
+    '[class*="parallax-stagger-ltr"],'
+    + '[class*="parallax-stagger-rtl"]',
+  ).forEach(setup);
 
-    const childData = children.map((child, i) => {
-      const colIndex = (i % cols) + 0.5;
-      const rowIndex = Math.floor(i / cols);
-      const staggerIndex = isRtl
-        ? (cols - 1 - colIndex + rowIndex)
-        : (colIndex + rowIndex);
-      const from = staggerIndex * drift;
-      return { el: child, from };
+  // Watch for new elements or class changes inside sections
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes') {
+        const { target } = mutation;
+        if (STAGGER_RE.test(target.className)) setup(target);
+      }
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType !== 1) return;
+          if (STAGGER_RE.test(node.className)) setup(node);
+          node.querySelectorAll?.('[class*="parallax-stagger-"]')
+            .forEach(setup);
+        });
+      }
     });
-
-    window.lenis.on('scroll', ({ scroll }) => {
-      const m = getScrollMetrics(scroll, section, 0.4, 0.1);
-      const t = viewRange(m, 'entry', 0, eType, ePct);
-      const progress = 1 - t;
-      childData.forEach(({ el, from }) => {
-        el.style.transform = `translate3d(0, ${from * progress}px, 0)`;
-      });
+  });
+  document.querySelectorAll('.section').forEach((s) => {
+    observer.observe(s, {
+      attributes: true,
+      attributeFilter: ['class'],
+      childList: true,
+      subtree: true,
     });
   });
 }
