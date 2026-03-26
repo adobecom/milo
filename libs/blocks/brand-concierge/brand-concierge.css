@@ -405,7 +405,6 @@
   margin-bottom: 8px;
 }
 
-<<<<<<< HEAD
 .dialog-modal.bc-susi-modal {
   width: var(--bc-susi-modal-width);
   min-height: var(--bc-susi-min-height);
@@ -418,8 +417,6 @@
   margin: 0;
 }
 
-=======
->>>>>>> ef0c500e4 (Bc m2 bug fixes (#5579))
 /* hero */
 .brand-concierge.hero {
   padding: 40px 24px 12px;

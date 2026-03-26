@@ -41,6 +41,12 @@ export default {
         tabletLandscape: 1199,
       },
     },
+    chatTranscript: {
+      enabled: true,
+      maxSessions: 10,
+      maxMessagesPerSession: 100,
+      cleanupInterval: 24,
+    },
   },
   disclaimer: {
     text: "Use of this beta AI chatbot is subject to Adobe's {Privacy Policy}. Don't share sensitive data. AI responses are not your Content, may be inaccurate, and any offers provided are non-binding. {Generative AI Terms}.",
