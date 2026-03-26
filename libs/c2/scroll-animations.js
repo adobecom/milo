@@ -1,4 +1,10 @@
 const vh = window.innerHeight;
+const STAGGER_RE = /parallax-stagger-(ltr|rtl)/;
+const STAGGER_SELECTOR = '[class*="parallax-stagger-ltr"],'
+  + '[class*="parallax-stagger-rtl"]';
+const TEXT_SELECTOR = 'h1, h2, h3, h4, h5, h6, p, li, a, span';
+
+/* ── Shared helpers ─────────────────────────────── */
 
 function getDocTop(el) {
   let top = el.offsetTop;
@@ -11,10 +17,9 @@ function getDocTop(el) {
 }
 
 function getScrollMetrics(scroll, el, insetTop = 0, insetBottom = 0) {
-  const effectiveVh = vh * (1 - insetTop - insetBottom);
   const elHeight = el.offsetHeight;
   const dist = (scroll + vh * (1 - insetBottom)) - getDocTop(el);
-  const total = elHeight + effectiveVh;
+  const total = elHeight + vh * (1 - insetTop - insetBottom);
   return { elHeight, dist, total };
 }
 
@@ -37,19 +42,30 @@ function sectionHasStyle(section, style) {
     .toLowerCase().includes(style);
 }
 
+function findSectionsByStyle(style) {
+  return [...document.querySelectorAll('.section')].filter(
+    (s) => sectionHasStyle(s, style),
+  );
+}
+
 function cacheLineHeights(elements) {
   return elements
     .filter((el) => el instanceof Element)
     .map((child) => {
-      const computed = getComputedStyle(child)?.lineHeight;
-      const fontSize = parseFloat(
-        getComputedStyle(child)?.fontSize,
-      ) || 16;
+      const styles = getComputedStyle(child);
+      const fontSize = parseFloat(styles?.fontSize) || 16;
+      const computed = styles?.lineHeight;
       const target = computed === 'normal'
         ? 1.2 : parseFloat(computed) / fontSize;
       return { el: child, target };
     });
 }
+
+function lerp(from, to, t) {
+  return t >= 1 ? '' : String(from + (to - from) * t);
+}
+
+/* ── Move-up-fast ───────────────────────────────── */
 
 function initMoveUpFast() {
   const vh80px = vh * 0.8;
@@ -69,12 +85,11 @@ function initMoveUpFast() {
   });
 }
 
+/* ── Garage-door reveal ─────────────────────────── */
+
 function initGarageDoorReveal() {
-  const allSections = [...document.querySelectorAll('.section')];
-  const gdSections = allSections.filter(
-    (s) => sectionHasStyle(s, 'parallax-garage-door-reveal'),
-  );
   const isDesktop = window.innerWidth >= 1280;
+  const gdSections = findSectionsByStyle('parallax-garage-door-reveal');
 
   gdSections.forEach((gdSection) => {
     const foreground = gdSection.querySelector('.rich-content > div');
@@ -83,15 +98,15 @@ function initGarageDoorReveal() {
       ? cacheLineHeights([...foreground.querySelectorAll('*')])
       : [];
     const revealFrom = isDesktop ? 30 : 20;
+    const coverEnd = isDesktop ? 0.4 : 0.3;
 
     window.lenis.on('scroll', ({ scroll }) => {
       const m = getScrollMetrics(scroll, gdSection);
 
-      const coverEnd = isDesktop ? 0.4 : 0.3;
       const growT = viewRange(m, 'entry', 0, 'cover', coverEnd);
       gdSection.style.transform = `translateY(${-80 * (1 - growT)}vh)`;
 
-      if (bgImg.length > 0) {
+      if (bgImg.length) {
         const scaleT = viewRange(m, 'entry', 0, 'entry', 0.8);
         bgImg.forEach((img) => {
           img.style.transform = `scale(${1 + 0.1 * scaleT})`;
@@ -105,116 +120,109 @@ function initGarageDoorReveal() {
       }
 
       childLHData.forEach(({ el, target }) => {
-        el.style.lineHeight = innerT >= 1
-          ? '' : String(0.6 + (target - 0.6) * innerT);
+        el.style.lineHeight = lerp(0.6, target, innerT);
       });
     });
   });
 }
 
+/* ── Parallax line-height ───────────────────────── */
+
 function initParallaxLineHeight() {
-  const containers = [
+  const blocks = [
     ...document.querySelectorAll('.parallax-line-height:not(.section)'),
   ];
-  const textSelector = 'h1, h2, h3, h4, h5, h6, p, li, a, span';
-  containers.forEach((block) => {
+  blocks.forEach((block) => {
     let childData = null;
 
     window.lenis.on('scroll', ({ scroll }) => {
       if (!childData) {
-        const textEls = [...block.querySelectorAll(textSelector)];
+        const textEls = [...block.querySelectorAll(TEXT_SELECTOR)];
         if (!textEls.length) return;
         childData = cacheLineHeights(textEls);
       }
       const m = getScrollMetrics(scroll, block);
       const t = viewRange(m, 'entry', 0.2, 'cover', 0.6);
       childData.forEach(({ el, target }) => {
-        el.style.lineHeight = t >= 1
-          ? '' : String(3 + (target - 3) * t);
+        el.style.lineHeight = lerp(3, target, t);
       });
     });
   });
 }
 
+/* ── Scale-down grid ────────────────────────────── */
+
 function initScaleDownGrid() {
-  const allSections = [...document.querySelectorAll('.section')];
-  const grids = allSections.filter(
-    (s) => sectionHasStyle(s, 'parallax-scale-down-grid'),
-  );
+  const grids = findSectionsByStyle('parallax-scale-down-grid');
+
   grids.forEach((grid) => {
     const container = grid.closest('.container') || grid.parentElement;
     const cs = getComputedStyle(container);
     const targetMaxW = parseFloat(
       cs.getPropertyValue('--grid-max-width-target'),
     ) || 1440;
-    const marginTarget = parseFloat(
-      cs.getPropertyValue('--grid-margin-width-target'),
-    ) || 24;
-
-    const marginStr = cs.getPropertyValue('--grid-margin-width-target').trim();
+    const marginStr = cs.getPropertyValue(
+      '--grid-margin-width-target',
+    ).trim();
+    const marginVal = parseFloat(marginStr) || 24;
     const isPercent = marginStr.includes('%');
 
     window.lenis.on('scroll', ({ scroll }) => {
-      // view(block 40% 10%) = 40% inset top, 10% inset bottom
       const m = getScrollMetrics(scroll, grid, 0.4, 0.1);
       const t = viewRange(m, 'entry', 0, 'entry', 1);
       const width = grid.offsetWidth;
-      const margin = isPercent
-        ? (parseFloat(marginStr) / 100) * width
-        : marginTarget;
-      const targetPad = Math.max(margin, (width - targetMaxW) / 2);
-      const pad = targetPad * t;
+      const margin = isPercent ? (marginVal / 100) * width : marginVal;
+      const pad = Math.max(margin, (width - targetMaxW) / 2) * t;
       grid.style.paddingInline = `${pad}px`;
     });
   });
 }
 
-function getColCount(section) {
-  if (section.classList.contains('four-up')) return 4;
-  if (section.classList.contains('three-up')) return 3;
-  if (section.classList.contains('two-up')) return 2;
+/* ── Stagger ────────────────────────────────────── */
+
+function getColCount(el) {
+  if (el.classList.contains('four-up')) return 4;
+  if (el.classList.contains('three-up')) return 3;
+  if (el.classList.contains('two-up')) return 2;
   return 1;
 }
 
-function getEndRange(cols, childCount) {
-  const row2Start = { 2: 3, 3: 4, 4: 5 };
-  const row3Start = { 2: 5, 3: 7, 4: 9 };
-  if (childCount >= (row3Start[cols] || Infinity)) {
-    return { eType: 'cover', ePct: 0.8 };
-  }
-  if (childCount >= (row2Start[cols] || Infinity)) {
-    return { eType: 'cover', ePct: 0.7 };
-  }
+function getEndRange(cols, count) {
+  const row3 = { 2: 5, 3: 7, 4: 9 };
+  const row2 = { 2: 3, 3: 4, 4: 5 };
+  if (count >= (row3[cols] || Infinity)) return { eType: 'cover', ePct: 0.8 };
+  if (count >= (row2[cols] || Infinity)) return { eType: 'cover', ePct: 0.7 };
   return { eType: 'entry', ePct: 1 };
 }
-function setupStaggerEl(section) {
+
+function setupStaggerEl(el) {
   const drift = 48;
-  const isRtl = section.classList.contains('parallax-stagger-rtl');
+  const isRtl = el.classList.contains('parallax-stagger-rtl');
   let childData = null;
-  let endRange = null;
+  let eType = null;
+  let ePct = null;
 
   window.lenis.on('scroll', ({ scroll }) => {
     if (!childData) {
-      const cols = getColCount(section);
-      const children = [...section.children].filter(
+      const cols = getColCount(el);
+      const children = [...el.children].filter(
         (c) => !c.className.match(/section-/),
       );
       if (!children.length) return;
-      endRange = getEndRange(cols, children.length);
+      ({ eType, ePct } = getEndRange(cols, children.length));
       childData = children.map((child, i) => {
-        const colIndex = (i % cols) + 0.5;
-        const rowIndex = Math.floor(i / cols);
+        const colIdx = (i % cols) + 0.5;
+        const rowIdx = Math.floor(i / cols);
         const idx = isRtl
-          ? (cols - 1 - colIndex + rowIndex)
-          : (colIndex + rowIndex);
-        return { el: child, from: idx * drift };
+          ? (cols - 1 - colIdx + rowIdx)
+          : (colIdx + rowIdx);
+        return { child, from: idx * drift };
       });
     }
-    const m = getScrollMetrics(scroll, section, 0.4, 0.1);
-    const { eType, ePct } = endRange;
+    const m = getScrollMetrics(scroll, el, 0.4, 0.1);
     const t = viewRange(m, 'entry', 0, eType, ePct);
-    childData.forEach(({ el, from }) => {
-      el.style.transform = `translate3d(0, ${from * (1 - t)}px, 0)`;
+    childData.forEach(({ child, from }) => {
+      child.style.transform = `translate3d(0, ${from * (1 - t)}px, 0)`;
     });
   });
 }
@@ -222,39 +230,34 @@ function setupStaggerEl(section) {
 function initStagger() {
   if (window.innerWidth < 768) return;
 
-  const STAGGER_RE = /parallax-stagger-(ltr|rtl)/;
   const initialized = new WeakSet();
-
-  const setup = (el) => {
-    console.log('el', el);
-    if (initialized.has(el)) return;
-    initialized.add(el);
-    setupStaggerEl(el);
+  const setup = (target) => {
+    if (initialized.has(target)) return;
+    initialized.add(target);
+    setupStaggerEl(target);
   };
 
   // Init any already present
-  document.querySelectorAll(
-    '[class*="parallax-stagger-ltr"],'
-    + '[class*="parallax-stagger-rtl"]',
-  ).forEach(setup);
+  document.querySelectorAll(STAGGER_SELECTOR).forEach(setup);
 
-  // Watch for new elements or class changes inside sections
+  // Watch for elements added or class-changed later
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.type === 'attributes') {
-        const { target } = mutation;
-        if (STAGGER_RE.test(target.className)) setup(target);
+        if (STAGGER_RE.test(mutation.target.className)) {
+          setup(mutation.target);
+        }
+        return;
       }
-      if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType !== 1) return;
+      [...mutation.addedNodes]
+        .filter((node) => node.nodeType === 1)
+        .forEach((node) => {
           if (STAGGER_RE.test(node.className)) setup(node);
-          node.querySelectorAll?.('[class*="parallax-stagger-"]')
-            .forEach(setup);
+          node.querySelectorAll?.(STAGGER_SELECTOR).forEach(setup);
         });
-      }
     });
   });
+
   document.querySelectorAll('.section').forEach((s) => {
     observer.observe(s, {
       attributes: true,
@@ -264,6 +267,8 @@ function initStagger() {
     });
   });
 }
+
+/* ── Entry point ────────────────────────────────── */
 
 export default function init() {
   initMoveUpFast();
