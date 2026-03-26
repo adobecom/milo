@@ -187,19 +187,20 @@ function getEndRange(cols, childCount) {
   }
   return { eType: 'entry', ePct: 1 };
 }
-
 function initStagger() {
   if (window.innerWidth < 768) return;
+
+  const STAGGER_LTR = 'parallax stagger ltr';
+  const STAGGER_RTL = 'parallax stagger rtl';
   const drift = 48;
   const allSections = [...document.querySelectorAll('.section')];
   const staggerSections = allSections.filter(
-    (s) => sectionHasStyle(s, 'parallax stagger ltr')
-      || sectionHasStyle(s, 'parallax stagger rtl'),
+    (s) => sectionHasStyle(s, STAGGER_LTR)
+      || sectionHasStyle(s, STAGGER_RTL),
   );
 
   staggerSections.forEach((section) => {
-    const isRtl = section.classList.contains('parallax stagger rtl')
-      || sectionHasStyle(section, 'parallax stagger rtl');
+    const isRtl = sectionHasStyle(section, STAGGER_RTL);
     const cols = getColCount(section);
     const children = [...section.children].filter(
       (c) => !c.className.match(/section-/),
