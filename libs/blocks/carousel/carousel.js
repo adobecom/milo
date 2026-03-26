@@ -33,6 +33,7 @@ const KEY_CODES = {
   TAB: 'Tab',
 };
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
+const USER_PAUSED_ATTR = 'data-user-paused';
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
 const isMobileVp = window.matchMedia('(max-width: 599px)');
@@ -482,7 +483,9 @@ function moveSlides(event, carouselElements) {
   if (isHintingTablet(el) || isHintingMobile) {
     const video = activeSlide?.querySelector('video');
     /* c8 ignore start */
-    if (video?.paused && video.readyState >= 2) {
+    if (video?.paused
+      && video.readyState >= 2
+      && video.getAttribute(USER_PAUSED_ATTR) !== 'true') {
       video.play().catch(() => {});
       syncPausePlayIcon(video);
     }
