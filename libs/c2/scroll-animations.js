@@ -190,17 +190,25 @@ function getEndRange(cols, childCount) {
 function initStagger() {
   if (window.innerWidth < 768) return;
 
-  const STAGGER_LTR = 'parallax stagger ltr';
-  const STAGGER_RTL = 'parallax stagger rtl';
+  const STAGGER_LTR = 'parallax-stagger-ltr';
+  const STAGGER_RTL = 'parallax-stagger-rtl';
+  const toMeta = (s) => s.replaceAll('-', ' ');
   const drift = 48;
-  const allSections = [...document.querySelectorAll('.section')];
-  const staggerSections = allSections.filter(
-    (s) => sectionHasStyle(s, STAGGER_LTR)
-      || sectionHasStyle(s, STAGGER_RTL),
-  );
 
-  staggerSections.forEach((section) => {
-    const isRtl = sectionHasStyle(section, STAGGER_RTL);
+  // Find by class on any element or by section-metadata style
+  const byClass = [...document.querySelectorAll(
+    `.${STAGGER_LTR}, .${STAGGER_RTL}`,
+  )];
+  const byMeta = [...document.querySelectorAll('.section')].filter(
+    (s) => sectionHasStyle(s, toMeta(STAGGER_LTR))
+      || sectionHasStyle(s, toMeta(STAGGER_RTL)),
+  );
+  const staggerEls = [...new Set([...byClass, ...byMeta])];
+
+  console.log('staggerEls', staggerEls);
+  staggerEls.forEach((section) => {
+    const isRtl = section.classList.contains(STAGGER_RTL)
+      || sectionHasStyle(section, toMeta(STAGGER_RTL));
     const cols = getColCount(section);
     const children = [...section.children].filter(
       (c) => !c.className.match(/section-/),
