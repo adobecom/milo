@@ -270,7 +270,7 @@ function attachListeners(carouselEls) {
       if (carouselFocused) return;
       moveSlides(carouselEls, getDirection('next'), e);
     }
-    if (e.code === 'Enter' || e.code === 'Space') {
+    if (e.code === 'Enter') {
       if (carouselFocused) return;
       e.preventDefault();
       const activeSlide = wrapper.querySelector('.active');
