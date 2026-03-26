@@ -1,0 +1,81 @@
+.claude-block {
+
+  > div {
+    display: flex;
+    flex-direction: column-reverse; /* .media (DOM 2nd) renders above .foreground (DOM 1st) */
+    gap: var(--s2a-spacing-lg);
+  }
+
+  .media {
+    position: relative;
+    aspect-ratio: 4 / 3; /* fluid mobile card — relies on container width, no hardcoded height */
+    clip-path: inset(0 round var(--s2a-border-radius-md));
+    overflow: clip;
+
+    .background-image {
+      position: absolute;
+      inset: 0;
+      display: block;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+    }
+
+    .icon {
+      position: absolute;
+      block-size: 24px;
+      inline-size: 24px;
+      inset-block-start: var(--s2a-spacing-md);
+      inset-inline-start: var(--s2a-spacing-md);
+      display: block;
+
+      img {
+        block-size: 24px;
+        inline-size: 24px;
+        display: block;
+      }
+    }
+  }
+
+  .foreground {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-lg);
+    padding-inline: var(--s2a-spacing-md);
+
+    .text-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2a-spacing-xs);
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .claude-block {
+
+    > div {
+      gap: 0; /* spacing comes from foreground's padding-block-start */
+    }
+
+    .media {
+      aspect-ratio: 1480 / 670; /* widescreen ratio for tablet+ */
+    }
+
+    .foreground {
+      flex-direction: row;
+      align-items: flex-start;
+      padding-block-start: var(--s2a-spacing-lg);
+      padding-inline: var(--s2a-spacing-lg);
+      gap: var(--s2a-spacing-lg);
+
+      .text-group {
+        flex: 1;
+      }
+    }
+  }
+}

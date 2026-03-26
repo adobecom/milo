@@ -1,15 +1,6 @@
-
 .base-card {
   position: relative;
   height: 100%;
-
-  > div[data-viewport] {
-    display: none;
-  }
-
-  > div[data-viewport="mobile"] {
-    display: flex;
-  }
 
   > div {
     display: flex;
@@ -99,14 +90,6 @@
 
 @media (width >= 768px) {
   .base-card {
-    > div[data-viewport="mobile"] {
-      display: none;
-    }
-
-    > div[data-viewport="tablet"] {
-      display: flex;
-    }
-
     &.featured {
       .foreground {
         padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
@@ -115,22 +98,19 @@
   }
 }
 
-@media (width >= 1024px) {
+@media (width >= 1280px) {
   .base-card {
-    > div[data-viewport="tablet"] {
-      display: none;
-    }
-
-    > div[data-viewport="desktop"] {
-      display: flex;
-    }
-
     .media picture:not(.icon) img {
       aspect-ratio: 4/3;
     }
 
+    .foreground {
+      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) 0 var(--s2a-spacing-24);
+    }
+
     &.featured {
       .foreground {
+        padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
         display: grid;
         grid-template-columns: repeat(12, 1fr);
 
@@ -159,18 +139,6 @@
       .media picture:not(.icon) img {
         aspect-ratio: 2.2/1;
       }
-    }
-  }
-}
-
-@media (width >= 1280px) {
-  .base-card {
-    &.featured .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
-    }
-
-    .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) 0 var(--s2a-spacing-24);
     }
   }
 }
