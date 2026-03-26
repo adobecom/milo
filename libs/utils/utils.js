@@ -2066,10 +2066,12 @@ async function loadPostLCP(config) {
             return { el: child, target };
           }) : [];
 
-        window.lenis.on('scroll', () => {
-          const rect = gdSection.getBoundingClientRect();
-          const sHeight = rect.height;
-          const dist = vh - rect.top;
+        window.lenis.on('scroll', ({ scroll }) => {
+          const sHeight = gdSection.offsetHeight;
+          let sTop = gdSection.offsetTop;
+          let parent = gdSection.offsetParent;
+          while (parent) { sTop += parent.offsetTop; parent = parent.offsetParent; }
+          const dist = (scroll + vh) - sTop;
           const total = sHeight + vh;
 
           const range = (sType, sPct, eType, ePct) => {
@@ -2086,24 +2088,24 @@ async function loadPostLCP(config) {
           if (bgImg.length > 0) {
             const scaleT = range('entry', 0, 'entry', 0.8);
             bgImg.forEach((img) => {
+              console.log('img', img);
               img.style.transform = `scale(${1 + 0.1 * scaleT})`;
             });
           }
 
           // garage-door-reveal: translateY(revealFrom → 0), starts only once section is visible
-          if (foreground) {
-            let revealFrom = 20;
-            if (window.innerWidth >= 1920) revealFrom = 30;
-            else if (window.innerWidth >= 1280) revealFrom = 50;
-            const revealT = range('entry', 0.4, 'entry', 0.7);
-            foreground.style.transform = `translateY(${revealFrom * (1 - revealT)}vh)`;
-          }
+          // if (foreground) {
+          //   let revealFrom = 20;
+          //   if (window.innerWidth >= 1280) revealFrom = 30;
+          //   const revealT = range('entry', 0, 'entry', 1);
+          //   foreground.style.transform = `translateY(${revealFrom * (1 - revealT)}vh)`;
+          // }
 
-          // garage-door-line-height: line-height(0.6 → normal), entry 10% cover 40%
-          const lhT = range('entry', 0.1, 'cover', 0.4);
-          childLHData.forEach(({ el, target }) => {
-            el.style.lineHeight = lhT >= 1 ? '' : String(0.6 + (target - 0.6) * lhT);
-          });
+          // // garage-door-line-height: line-height(0.6 → normal), entry 10% cover 40%
+          // const lhT = range('entry', 0.4, 'entry', 0.7);
+          // childLHData.forEach(({ el, target }) => {
+          //   el.style.lineHeight = lhT >= 1 ? '' : String(0.6 + (target - 0.6) * lhT);
+          // });
         });
       });
     }
