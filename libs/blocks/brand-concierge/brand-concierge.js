@@ -1,4 +1,4 @@
-import { getModal } from '../modal/modal.js';
+import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -31,6 +31,8 @@ const webClient = params.get('webclient');
 
 let floatingButtonClicked = false;
 
+let bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
 }
@@ -59,6 +61,16 @@ export function getUpdatedChatUIConfig() {
   if (authoredContent.header.subTitle) chatUIConfig.text['welcome.subheading'] = authoredContent.header.subTitle;
   if (authoredContent.cards) chatUIConfig.arrays['welcome.examples'] = authoredContent.cards;
   if (authoredContent.input) chatUIConfig.text['input.placeholder'] = authoredContent.input;
+
+  // For stage, override specific env variables
+  const config = getConfig();
+  const { env } = config || {};
+  const isStage = env?.name !== 'prod';
+  if (isStage) {
+    chatUIConfig.env = 'stage';
+    chatUIConfig.behavior.fireflyGalleryWidget.fireflyHostname = 'https://firefly-stage.corp.adobe.com';
+    chatUIConfig.behavior.fireflyGalleryWidget.fireflyEnv = 'stage';
+  }
   return chatUIConfig;
 }
 
@@ -88,12 +100,109 @@ function resetFloatingButton(el) {
   }
 }
 
+/**
+ * Creates the SUSI Light component for the sign-in modal.
+ * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
+ * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
+ */
+export function createSusiComponentForModal({
+  authParams, config, variant, redirectUrl, isStage, popup, onCloseRedirect, onSuccessfulToken,
+}) {
+  const susi = createTag('susi-sentry-light');
+  susi.authParams = {
+    ...authParams,
+    redirect_uri: redirectUrl,
+  };
+  susi.config = config;
+  susi.variant = variant;
+  susi.popup = !!popup;
+  if (isStage) susi.stage = 'true';
+
+  const onRedirect = (e) => {
+    if (popup && typeof onCloseRedirect === 'function') {
+      onCloseRedirect();
+    } else if (!popup) {
+      window.location.assign(e.detail);
+    }
+  };
+  const onError = (e) => { window.lana?.log('SUSI Light error:', e); };
+  const onAnalytics = () => { /* TODO: send analytics from e.detail (type, event, client_id) */ };
+  const onAuthFailed = () => { /* TODO: handle auth failed (e.detail) */ };
+
+  susi.addEventListener('redirect', onRedirect);
+  susi.addEventListener('on-error', onError);
+  susi.addEventListener('on-analytics', onAnalytics);
+  if (onSuccessfulToken) {
+    susi.addEventListener('on-token', onSuccessfulToken);
+  }
+  susi.addEventListener('on-auth-failed', onAuthFailed);
+  return susi;
+}
+
+async function openSusiLightModal() {
+  const config = getConfig();
+  const { env, locale, imsClientId } = config || {};
+  const isStage = env?.name !== 'prod';
+  const redirectUrl = window.location.href;
+  const clientId = imsClientId;
+  const localeIetf = (locale?.ietf || 'en-US').toLowerCase();
+
+  const CDN_URL = `https://auth-light.identity${isStage ? '-stage' : ''}.adobe.com/sentry/wrapper.js`;
+  await loadScript(CDN_URL);
+
+  const SUSI_MODAL_ID = 'bc-susi-modal';
+  const closeSusiModal = () => {
+    const modal = document.getElementById(SUSI_MODAL_ID);
+    if (modal) closeModal(modal);
+  };
+  const authParams = {
+    dt: false,
+    locale: localeIetf,
+    response_type: 'token',
+    client_id: clientId,
+    scope: 'AdobeID,openid,gnav,pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read',
+  };
+  const susiConfig = { consentProfile: 'free', fullWidth: true };
+  const onSuccessfulToken = ({ detail }) => {
+    closeSusiModal();
+    const token = detail;
+    if (!bcToken) {
+      bcToken = token;
+      const mountEl = document.getElementById(mountId);
+      if (mountEl) {
+        mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
+      }
+    }
+  };
+  const susiEl = createSusiComponentForModal({
+    authParams,
+    config: susiConfig,
+    variant: 'standard',
+    redirectUrl,
+    isStage,
+    popup: true,
+    onCloseRedirect: closeSusiModal,
+    onSuccessfulToken,
+  });
+  const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
+  const fragment = new DocumentFragment();
+
+  fragment.append(title, wrapper);
+  await getModal(null, {
+    id: SUSI_MODAL_ID,
+    class: 'bc-susi-modal',
+    content: fragment,
+  });
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
   const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
   const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
   const mountEl = createTag('div', { id: mountId });
+
   if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
@@ -113,21 +222,23 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   updateModalHeight();
+
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
   const submitButton = el.querySelector('.input-field-button');
+
   if (textareaWrapper && textarea && submitButton) {
     textarea.value = '';
     submitButton.disabled = true;
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  const { env } = getConfig();
+  const { env, locale } = getConfig();
   const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   let src = stage;
 
-  if (env.name === 'prod') {
+  if (env?.name === 'prod') {
     src = prod;
   }
 
@@ -141,21 +252,59 @@ async function openChatModal(initialMessage, el) {
 
   await loadScript(src);
 
-  const bootstrapAPIReady = await waitForCondition(
-    () => !!window.adobe?.concierge?.bootstrap,
-    5000, // 5 seconds max wait
-    100, // Check every 100ms
-  );
+  const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
+  const surfaceURL = window.location.href;
+  const { userAgent, language } = window.navigator;
+
+  const onBeforeEventSend = (content) => {
+    if (bcToken) {
+      content.data = {
+        type: 'auth',
+        payload: { token: bcToken },
+      };
+    }
+
+    // eslint-disable-next-line no-underscore-dangle
+    const consentsConfig = window.alloy_all?.data?._adobe_corpnew?.otherConsents?.configuration;
+    const consentConfObject = consentsConfig
+      && Object.keys(consentsConfig).reduce((rdx, key) => {
+        rdx.push({
+          consentStandard: key,
+          consentStringValue: consentsConfig[key].toString(),
+        });
+        return rdx;
+      }, []);
+
+    content.xdm = {
+      web: { webPageDetails: { URL: surfaceURL } },
+      environment: {
+        browserDetails: { userAgent },
+        _dc: { language },
+      },
+      homeAddress: { region: locale.region },
+    };
+
+    if (consentConfObject?.length) {
+      content.xdm.consentStrings = consentConfObject;
+    }
+  };
 
   if (bootstrapAPIReady) {
     window.adobe.concierge.bootstrap({
       instanceName: 'alloy',
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
+      onBeforeEventSend,
     });
   } else {
     window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
   }
+
+  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
+    if (detail?.action === 'sign-in') {
+      openSusiLightModal();
+    }
+  });
 
   const handleViewportResize = () => updateModalHeight();
   const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
@@ -221,6 +370,7 @@ function decorateHeader(el, header) {
   const hTag = header.querySelector('h1, h2, h3, h4, h5, h6');
   const subTitle = header.querySelector('p');
   const headerSection = createTag('section', { class: 'bc-header' });
+
   if (hTag) {
     hTag.classList.add('bc-header-title');
     headerSection.append(hTag);
@@ -232,6 +382,7 @@ function decorateHeader(el, header) {
   if (!hTag && !subTitle) {
     headerSection.append(createTag('p', { class: 'bc-header-subtitle' }, header.textContent.trim()));
   }
+
   el.append(headerSection);
   el.removeChild(header);
 }
@@ -275,7 +426,9 @@ function decorateInput(el, input) {
     tabindex: 0,
   }, `${aiIcon('ai-icon-input', 'input-icon', chatLabelText, 20)}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, chatLabelText);
+
   fieldLabel.append(fieldLabelToolTip);
+
   const fieldInput = createTag('textarea', {
     id: 'bc-input-field',
     rows: 1,
@@ -289,6 +442,7 @@ function decorateInput(el, input) {
   }, submitIcon);
   const textareaWrapper = createTag('div', { class: 'bc-textarea-grow-wrap' }, fieldInput);
   const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, fieldLabelToolTip, textareaWrapper, fieldButton]);
+
   fieldSection.append(fieldContainer);
   el.append(fieldSection);
   el.removeChild(input);
@@ -339,6 +493,7 @@ function decorateFloatingButton(el) {
 
   const mainElement = document.querySelector('main');
   const gnavElement = document.querySelector('header.global-navigation');
+
   const handleScroll = (target) => {
     const mainHeight = mainElement.scrollHeight;
     const gnavHeight = gnavElement.offsetHeight;
@@ -438,5 +593,13 @@ export default async function init(el) {
     decorateInput(el, input);
     decorateCards(el, cards);
     decorateLegal(el, legal);
+  }
+
+  const loginTestButton = params.get('susi-test-btn');
+  if (loginTestButton) {
+    const button = document.createElement('button');
+    button.textContent = 'Click me to open SUSI Light (testing only)';
+    button.onclick = openSusiLightModal;
+    el.appendChild(button);
   }
 }

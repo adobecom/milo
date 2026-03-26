@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import init, { setPreferences, decorateURL, FORM_PARAM, handleIframeTimeout } from '../../../libs/blocks/marketo/marketo.js';
 
 const ogFetch = window.fetch;
@@ -104,6 +104,19 @@ describe('marketo decorateURL', () => {
     const baseURL = new URL('https://business.adobe.com/marketo-block.html');
     const result = await decorateURL('https://business.adobe.com/', baseURL);
     expect(result).to.equal('https://business.adobe.com/');
+  });
+
+  it('Does not add .html to ending slash when htmlExclude is set', async () => {
+    const { htmlExclude: savedHtmlExclude } = getConfig();
+    try {
+      setConfig({ htmlExclude: [/experience\.adobe\.com(\/.*)?/] });
+      const excludeUrl = 'https://experience.adobe.com/solutions/GenStudio-Adobe-genstudio/trial/welcome';
+      const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+      const result = await decorateURL(excludeUrl, baseURL);
+      expect(result).to.equal('https://experience.adobe.com/solutions/GenStudio-Adobe-genstudio/trial/welcome');
+    } finally {
+      setConfig({ htmlExclude: savedHtmlExclude });
+    }
   });
 
   it('localizes URL with .html base URL', async () => {
