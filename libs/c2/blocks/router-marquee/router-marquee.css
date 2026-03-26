@@ -60,6 +60,16 @@
   flex-direction: column;
   color: var(--s2a-color-gray-25);
   width: 100%;
+
+  /* Temp fix for plain links in rm-content */
+  a:not(.con-button) {
+    color: inherit;
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
 }
 
 .rm-eyebrow {
