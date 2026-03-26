@@ -2043,36 +2043,67 @@ async function loadPostLCP(config) {
           overlay.style.opacity = 0.75 * t;
         });
       });
-      // garage door: ViewTimeline WAAPI (same pattern as flackr demo)
-      document.querySelectorAll('.section.parallax-garage-door-reveal').forEach((section) => {
-        const sectionStyle = getComputedStyle(section);
-        const growFrom = sectionStyle.getPropertyValue('--gd-grow-from').trim();
-        const revealFrom = sectionStyle.getPropertyValue('--gd-reveal-from').trim();
-        const vt = (el) => ({ fill: 'both', timeline: new window.ViewTimeline({ subject: el }) });
-        section.animate(
-          [{ transform: `translateY(${growFrom})` }, { transform: 'translateY(0)' }],
-          { ...vt(section), rangeStart: 'entry 0%', rangeEnd: 'cover 40%' },
-        );
-        const bgImg = section.querySelector('.section-background img');
-        if (bgImg) {
-          bgImg.animate(
-            [{ transform: 'scale(1)' }, { transform: 'scale(1.1)' }],
-            { ...vt(bgImg), rangeStart: 'entry 0%', rangeEnd: 'cover 100%' },
-          );
-        }
-        const foreground = section.querySelector('.foreground');
-        if (foreground) {
-          foreground.animate(
-            [{ transform: `translateY(${revealFrom})` }, { transform: 'translateY(0)' }],
-            { ...vt(foreground), rangeStart: 'cover 0%', rangeEnd: 'cover 100%' },
-          );
-          foreground.querySelectorAll('*').forEach((child) => {
-            child.animate(
-              [{ lineHeight: '0.6' }, {}],
-              { ...vt(child), rangeStart: 'entry 10%', rangeEnd: 'cover 40%' },
-            );
+
+      // parallax-garage-door-reveal: polyfill for view()-driven animations
+      const gdSections = [...document.querySelectorAll('.section')].filter((s) => {
+        if (s.classList.contains('parallax-garage-door-reveal')) return true;
+        const smBlock = s.querySelector('.section-metadata');
+        if (!smBlock) return false;
+        const rows = [...smBlock.children];
+        const styleRow = rows.find((r) => r.children?.[0]?.textContent.trim().toLowerCase() === 'style');
+        return styleRow?.children?.[1]?.textContent.toLowerCase().includes('parallax-garage-door-reveal');
+      });
+      const vh = window.innerHeight;
+      gdSections.forEach((gdSection) => {
+        const foreground = gdSection.querySelector('.foreground');
+        const bgImg = gdSection.querySelectorAll('img');
+        const isDesktop = window.innerWidth >= 1280;
+
+        const childLHData = foreground
+          ? [...foreground.querySelectorAll('*')].map((child) => {
+            const computed = getComputedStyle(child).lineHeight;
+            const fontSize = parseFloat(getComputedStyle(child).fontSize) || 16;
+            const target = computed === 'normal' ? 1.2 : parseFloat(computed) / fontSize;
+            return { el: child, target };
+          }) : [];
+
+        window.lenis.on('scroll', () => {
+          const rect = gdSection.getBoundingClientRect();
+          const sHeight = rect.height;
+          const dist = vh - rect.top;
+          const total = sHeight + vh;
+
+          const range = (sType, sPct, eType, ePct) => {
+            const s = sType === 'entry' ? sHeight * sPct : total * sPct;
+            const e = eType === 'entry' ? sHeight * ePct : total * ePct;
+            return Math.max(0, Math.min(1, (dist - s) / (e - s)));
+          };
+
+          // garage-door-grow: translateY(-50vh → 0), entry 0% cover 40%/50%
+          const growT = range('entry', 0, 'cover', isDesktop ? 0.5 : 0.4);
+          gdSection.style.transform = `translateY(${-50 * (1 - growT)}vh)`;
+
+          // garage-door-bg-scale: scale(1 → 1.1), entry 0% entry 100%
+          if (bgImg.length > 0) {
+            const scaleT = range('entry', 0, 'entry', 0.8);
+            bgImg.forEach((img) => {
+              img.style.transform = `scale(${1 + 0.1 * scaleT})`;
+            });
+          }
+
+          // garage-door-reveal: translateY(20vh → 0), cover -10% cover 100%
+          if (foreground) {
+            console.log('foreground', foreground);
+            const revealT = range('cover', -0.1, 'cover', 1);
+            foreground.style.transform = `translateY(${20 * (1 - revealT)}vh)`;
+          }
+
+          // garage-door-line-height: line-height(0.6 → normal), entry 10% cover 40%
+          const lhT = range('entry', 0.1, 'cover', 0.4);
+          childLHData.forEach(({ el, target }) => {
+            el.style.lineHeight = lhT >= 1 ? '' : String(0.6 + (target - 0.6) * lhT);
           });
-        }
+        });
       });
     }
   }
