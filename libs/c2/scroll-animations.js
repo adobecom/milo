@@ -10,10 +10,11 @@ function getDocTop(el) {
   return top;
 }
 
-function getScrollMetrics(scroll, el) {
+function getScrollMetrics(scroll, el, insetTop = 0, insetBottom = 0) {
+  const effectiveVh = vh * (1 - insetTop - insetBottom);
   const elHeight = el.offsetHeight;
-  const dist = (scroll + vh) - getDocTop(el);
-  const total = elHeight + vh;
+  const dist = (scroll + vh * (1 - insetBottom)) - getDocTop(el);
+  const total = elHeight + effectiveVh;
   return { elHeight, dist, total };
 }
 
@@ -135,8 +136,43 @@ function initParallaxLineHeight() {
   });
 }
 
+function initScaleDownGrid() {
+  const allSections = [...document.querySelectorAll('.section')];
+  const grids = allSections.filter(
+    (s) => sectionHasStyle(s, 'parallax-scale-down-grid'),
+  );
+  console.log('grids', grids);
+  grids.forEach((grid) => {
+    const container = grid.closest('.container') || grid.parentElement;
+    const cs = getComputedStyle(container);
+    const targetMaxW = parseFloat(
+      cs.getPropertyValue('--grid-max-width-target'),
+    ) || 1440;
+    const marginTarget = parseFloat(
+      cs.getPropertyValue('--grid-margin-width-target'),
+    ) || 24;
+
+    const marginStr = cs.getPropertyValue('--grid-margin-width-target').trim();
+    const isPercent = marginStr.includes('%');
+
+    window.lenis.on('scroll', ({ scroll }) => {
+      // view(block 40% 10%) = 40% inset top, 10% inset bottom
+      const m = getScrollMetrics(scroll, grid, 0.4, 0.1);
+      const t = viewRange(m, 'entry', 0, 'entry', 1);
+      const width = grid.offsetWidth;
+      const margin = isPercent
+        ? (parseFloat(marginStr) / 100) * width
+        : marginTarget;
+      const targetPad = Math.max(margin, (width - targetMaxW) / 2);
+      const pad = targetPad * t;
+      grid.style.paddingInline = `${pad}px`;
+    });
+  });
+}
+
 export default function init() {
   initMoveUpFast();
   initGarageDoorReveal();
   initParallaxLineHeight();
+  initScaleDownGrid();
 }
