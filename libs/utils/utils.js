@@ -2055,7 +2055,7 @@ async function loadPostLCP(config) {
       });
       const vh = window.innerHeight;
       gdSections.forEach((gdSection) => {
-        const foreground = gdSection.querySelector('.foreground');
+        const foreground = gdSection.querySelector('.rich-content > div');
         const bgImg = gdSection.querySelectorAll('img');
         const isDesktop = window.innerWidth >= 1280;
 
@@ -2093,9 +2093,11 @@ async function loadPostLCP(config) {
 
           // garage-door-reveal: translateY(20vh → 0), cover -10% cover 100%
           if (foreground) {
-            console.log('foreground', foreground);
-            const revealT = range('cover', -0.1, 'cover', 1);
-            foreground.style.transform = `translateY(${20 * (1 - revealT)}vh)`;
+            let revealFrom = 20;
+            if (window.innerWidth >= 1920) revealFrom = 30;
+            else if (window.innerWidth >= 1280) revealFrom = 50;
+            const revealT = range('entry', 0, 'entry', 0.8);
+            foreground.style.transform = `translateY(${revealFrom * (1 - revealT)}vh)`;
           }
 
           // garage-door-line-height: line-height(0.6 → normal), entry 10% cover 40%
