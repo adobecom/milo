@@ -897,8 +897,14 @@ p {
 
   @media (prefers-reduced-motion: reduce) {
     [class*="parallax-"],
-    [class*="parallax-"] * {
+    [class*="parallax-"] *,
+    [class*="parallax-"]::before,
+    [class*="parallax-"]::after {
       animation: none !important;
+    }
+
+    .section.parallax-move-up-fast {
+      position: static !important;
     }
   }
 

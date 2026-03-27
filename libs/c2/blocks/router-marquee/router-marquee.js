@@ -79,6 +79,7 @@ const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const RESUME_DELAY = 2000;
 const SWIPE_THRESHOLD = 100;
 
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const reflow = (el) => el?.getBoundingClientRect();
 const getCssPx = (el, prop) => parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
 
@@ -143,10 +144,11 @@ const decorateText = (textCol) => {
   const eyebrow = textCol.querySelector('.rm-eyebrow');
   const icon = textCol.querySelector('p a[href*=".svg"]');
   const label = textCol.querySelector(':scope > p:has(a[href*=".svg"]) + p');
+  const cta = textCol.querySelector('p:has(em)');
   const body = [...textCol.querySelectorAll('p')]
-    .filter((p) => !p.querySelector('a')
-    && [eyebrow, icon, label].every((x) => x !== p));
+    .filter((p) => [eyebrow, icon?.closest('p'), label, cta].every((x) => x !== p));
 
+  if (!body.length) return;
   const bodyEl = createTag('div', { class: 'rm-body' });
   body[0].before(bodyEl);
   body.forEach((p) => bodyEl.append(p));
@@ -173,12 +175,19 @@ const decorateSlide = (slide) => {
   contentWrapper.append(textCol);
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
 
-  const miloVideo = imageCol?.querySelector('.milo-video');
-  const iframe = miloVideo?.querySelector('iframe');
-  if (iframe?.src?.includes('.mp4')) {
-    const video = createTag('video', { playsinline: '', autoplay: '', muted: '', loop: '' });
-    video.appendChild(createTag('source', { src: iframe.src, type: 'video/mp4' }));
-    miloVideo.replaceWith(video);
+  const videoContainer = imageCol?.querySelector('.video-container');
+  const video = videoContainer?.querySelector('video');
+
+  if (video) {
+    ['playsinline', 'autoplay', 'muted', 'loop'].forEach((attr) => {
+      video.setAttribute(attr, '');
+    });
+    video.muted = true;
+    const src = video.dataset.videoSource || video.src;
+    if (src && !video.querySelector('source')) video.appendChild(createTag('source', { src, type: 'video/mp4' }));
+    videoContainer.querySelector('.pause-play-wrapper')?.remove();
+    videoContainer.replaceWith(video);
+    video.load();
   }
 
   if (!textCol) return;
@@ -193,11 +202,13 @@ const buildCard = (slide) => {
   const iconSrc = getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
   const labelText = label?.textContent.trim();
   const href = slide.querySelector('.con-button')?.getAttribute('href') || '';
+  const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
+  const ariaLabel = eyebrowText ? `${eyebrowText}, ${labelText}` : labelText;
 
   icon.remove();
   label?.remove();
 
-  const card = createTag('a', { class: 'rm-card', href });
+  const card = createTag('a', { class: 'rm-card', href, 'aria-label': ariaLabel });
   card.replaceChildren(
     createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' }),
     createTag('div', { class: 'rm-card-content' }, [
@@ -248,7 +259,7 @@ const buildPlayPause = () => {
 };
 
 const animateContentEnter = (content, direction) => {
-  if (!content) return;
+  if (!content || prefersReducedMotion()) return;
   const targets = STAGGER_CHILDREN
     .map((sel) => content.querySelector(sel))
     .filter(Boolean);
@@ -263,16 +274,12 @@ const animateContentEnter = (content, direction) => {
   });
 };
 
-const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
-
 const setAriaHiddenAndTabIndex = (slides) => {
   slides.forEach((slide) => {
     const isActive = slide.classList.contains('is-active');
     slide.setAttribute('aria-hidden', String(!isActive));
+    slide.toggleAttribute('inert', !isActive);
     slide.setAttribute('tabindex', isActive ? '0' : '-1');
-    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
-      el.setAttribute('tabindex', isActive ? '0' : '-1');
-    });
   });
 };
 
@@ -397,25 +404,34 @@ const startAutoplay = (slides, cards, container, block) => {
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
-
-    oldSlide.style.transition = 'none';
-    oldSlide.style.transform = 'translateX(0%)';
-    newSlide.style.transition = 'none';
-    newSlide.style.transform = `translateX(${direction * 100}%)`;
+    const reducedMotion = prefersReducedMotion();
 
     oldSlide.classList.remove('is-active');
     newSlide.classList.add('is-active');
     pendingSlide = null;
     setAriaHiddenAndTabIndex([oldSlide, newSlide]);
 
-    reflow(newSlide);
+    if (reducedMotion) {
+      resetSlide(oldSlide);
+      resetSlide(newSlide);
+    } else {
+      oldSlide.style.transition = 'none';
+      oldSlide.style.transform = 'translateX(0%)';
+      newSlide.style.transition = 'none';
+      newSlide.style.transform = `translateX(${direction * 100}%)`;
 
-    oldSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
-    oldSlide.style.transform = `translateX(${-direction * 100}%)`;
-    newSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
-    newSlide.style.transform = 'translateX(0%)';
+      reflow(newSlide);
 
-    animateContentEnter(newSlide.querySelector('.rm-content'), direction);
+      oldSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
+      oldSlide.style.transform = `translateX(${-direction * 100}%)`;
+      newSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
+      newSlide.style.transform = 'translateX(0%)';
+
+      animateContentEnter(newSlide.querySelector('.rm-content'), direction);
+
+      const transitionMs = Math.max(SLIDE_MS, STAGGER_MS);
+      cleanupTimer = setTimeout(finishSlideTransition, transitionMs + 50);
+    }
 
     oldSlide.querySelector('video')?.pause();
     const vid = newSlide.querySelector('video');
@@ -425,14 +441,11 @@ const startAutoplay = (slides, cards, container, block) => {
       vid?.pause();
     }
 
-    const transitionMs = Math.max(SLIDE_MS, STAGGER_MS);
-    cleanupTimer = setTimeout(finishSlideTransition, transitionMs + 50);
-
     cardEls[active]?.classList.remove('is-active');
     active = index;
     cardEls[active]?.classList.add('is-active');
     if (isMobile() && !skipTrack) {
-      setTrackX(trackXForCard(active), true);
+      setTrackX(trackXForCard(active), !reducedMotion);
     }
 
     requestAnimationFrame(() => dynamicLayoutUpdates(block));

@@ -58,13 +58,16 @@
   }
 }
 
-.section:not(.has-background) .rich-content.hero::after,
 .section.has-background:has(.rich-content.hero) .section-background picture::after {
   content: '';
   position: absolute;
   background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%);
   inset: 0;
   z-index: 1;
+}
+
+.section:not(.has-background):has(.rich-content.hero) {
+  background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%), var(--s2a-color-background-default);
 }
 
 @media (width >= 768px) {

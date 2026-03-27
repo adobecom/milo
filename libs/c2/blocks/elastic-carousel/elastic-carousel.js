@@ -9,7 +9,8 @@ const rewindIntervals = new WeakMap();
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.innerWidth <= 768;
-const trackedCardHovers = [];
+
+const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || '';
 
 const handleMobileAutoplay = (carousel) => {
   const videos = carousel.querySelectorAll('video');
@@ -106,7 +107,7 @@ const onCarouselHover = (event) => {
   }
 };
 
-const buildSlide = ({ slide, index }) => {
+const buildSlide = ({ slide, index, slidesTotal }) => {
   const children = [...slide.children];
   const left = children[0];
   const right = children[1];
@@ -114,6 +115,7 @@ const buildSlide = ({ slide, index }) => {
   const [iconContainer, heading, linkName, description] = left.children;
   const icon = iconContainer?.querySelector('img');
   const asset = right.children[0];
+  const link = left.children[4]?.querySelector('a');
 
   if (asset?.dataset.videoSource) {
     asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
@@ -144,15 +146,19 @@ const buildSlide = ({ slide, index }) => {
       </div>
     </div>
   `;
-  const cardName = `${index + 1}--${processTrackingLabels(heading?.textContent, getConfig(), 20)}`;
+
+  let ariaLabel = `${index + 1} of ${slidesTotal}`;
+  // assign unique label to the first slide
+  if (index === 0) ariaLabel = `${getCarouselName(link)}, carousel. ${ariaLabel}`;
+
   const slideEl = createTag('a', {
     class: 'elastic-carousel-item',
     tabindex: 0,
-    href: left.children[4]?.querySelector('a')?.href,
+    href: link?.href,
     'data-index': index + 1,
-    'aria-label': left.children[1]?.innerText,
-    'daa-ll': `click-${cardName}`,
-    'data-card-label': cardName,
+    role: 'link',
+    'aria-roledescription': 'slide',
+    'aria-label': ariaLabel,
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
@@ -162,11 +168,17 @@ const buildSlide = ({ slide, index }) => {
 const decorateCarousel = (carousel) => {
   const slides = [...carousel.children];
   if (isRtl()) slides.reverse();
-  const decoratedSlides = slides.map((slide, index) => buildSlide({ slide, index }));
+  const decoratedSlides = slides.map((slide, index) => buildSlide(
+    { slide, index, slidesTotal: slides.length },
+  ));
   const carouselContainer = createTag('div', { class: 'elastic-carousel-container' });
   carouselContainer.append(...decoratedSlides);
   carousel.replaceChildren();
   carousel.append(carouselContainer);
+  carousel.dataset.role = 'group';
+  carousel.dataset.ariaRoledescription = 'carousel';
+  carousel.dataset.ariaLabel = getCarouselName(slides[0]?.querySelector('a'));
+  carousel.dataset.ariaRole = 'group';
   return carousel;
 };
 
