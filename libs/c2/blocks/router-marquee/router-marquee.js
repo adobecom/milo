@@ -109,12 +109,19 @@ const decorateSlide = (slide) => {
   contentWrapper.append(textCol);
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
 
-  const miloVideo = imageCol?.querySelector('.milo-video');
-  const iframe = miloVideo?.querySelector('iframe');
-  if (iframe?.src?.includes('.mp4')) {
-    const video = createTag('video', { playsinline: '', autoplay: '', muted: '', loop: '' });
-    video.appendChild(createTag('source', { src: iframe.src, type: 'video/mp4' }));
-    miloVideo.replaceWith(video);
+  const videoContainer = imageCol?.querySelector('.video-container');
+  const video = videoContainer?.querySelector('video');
+
+  if (video) {
+    ['playsinline', 'autoplay', 'muted', 'loop'].forEach((attr) => {
+      video.setAttribute(attr, '');
+    });
+    video.muted = true;
+    const src = video.dataset.videoSource || video.src;
+    if (src && !video.querySelector('source')) video.appendChild(createTag('source', { src, type: 'video/mp4' }));
+    videoContainer.querySelector('.pause-play-wrapper')?.remove();
+    videoContainer.replaceWith(video);
+    video.load();
   }
 
   if (!textCol) return;
