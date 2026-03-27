@@ -1,4 +1,4 @@
-import { getCountry, setMarket } from '../../utils/utils.js';
+import { getCountry, setMarket, pageExist } from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 import { marketsLangForLocale, norm } from '../../utils/market.js';
 
@@ -157,20 +157,15 @@ function getPagePath() {
   return path;
 }
 
-/** HEAD check only – returns markets where the page exists. No fallback. */
+/** HEAD with GET fallback – returns markets where the page exists. No fallback. */
 async function getAvailableMarkets(suggestedMarkets) {
   const pagePath = getPagePath();
   const results = await Promise.all(
     suggestedMarkets.map(async (market, index) => {
       const locPath = market.prefix ? `/${market.prefix}${pagePath}` : pagePath;
       const fullUrl = `${window.location.origin}${locPath}`;
-      try {
-        const resp = await fetch(fullUrl, { method: 'HEAD' });
-        if (resp.ok) {
-          const withUrl = { ...market, url: fullUrl };
-          return { index, market: withUrl };
-        }
-      } catch (_) { /* ignore */ }
+      const ok = await pageExist(fullUrl);
+      if (ok) return { index, market: { ...market, url: fullUrl } };
       return { index, market: null };
     }),
   );

@@ -7,6 +7,7 @@ import {
   getMetadata,
   setInternational,
   setMarket,
+  pageExist,
 } from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 import {
@@ -86,13 +87,10 @@ function handleEvent({ prefix, link, callback, fallbackUrl } = {}) {
     callback(existingPage.ok ? link.href : resolvedFallback);
     return;
   }
-  fetch(urlForCheck, { method: 'HEAD' }).then((resp) => {
-    queriedPages.push({ href: urlForCheck, ok: resp.ok });
-    if (!resp.ok) throw new Error('request failed');
-    callback(link.href);
-  }).catch(() => {
-    queriedPages.push({ href: urlForCheck, ok: false });
-    callback(resolvedFallback);
+
+  pageExist(urlForCheck).then((ok) => {
+    queriedPages.push({ href: urlForCheck, ok });
+    callback(ok ? link.href : resolvedFallback);
   });
 }
 

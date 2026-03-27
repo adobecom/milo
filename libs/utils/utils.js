@@ -2196,6 +2196,13 @@ function reserveBannerSpace() {
   }
 }
 
+export async function pageExist(url) {
+  const headResp = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
+  if (headResp?.status !== 401) return headResp?.ok ?? false;
+  const res = await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null);
+  return res?.ok ?? false;
+}
+
 async function decorateLanguageBanner() {
   const { locale, locales, languageBanner } = getConfig();
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || languageBanner);
@@ -2297,9 +2304,7 @@ async function decorateLanguageBanner() {
 
   const fetchPromises = candidateMarkets.map((market) => {
     const url = `${origin}${market.prefix ? `/${market.prefix}` : ''}${pagePath}`;
-    return fetch(url, { method: 'HEAD' })
-      .then((res) => ({ market, ok: res.ok }))
-      .catch(() => ({ market, ok: false }));
+    return pageExist(url).then((ok) => ({ market, ok }));
   });
 
   if (useBannerFlow) {
