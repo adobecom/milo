@@ -119,6 +119,7 @@ const C2_BLOCKS = [
   'rich-content',
   'router-marquee',
   'section-metadata',
+  'visually-hidden',
 ];
 
 const AUTO_BLOCKS = [
