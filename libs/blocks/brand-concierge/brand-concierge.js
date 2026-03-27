@@ -184,7 +184,7 @@ async function openSusiLightModal() {
 
   const onError = (e) => {
     const mountEl = document.getElementById(mountId);
-    window.lana?.log('SUSI Light error:', e);
+    window.lana?.log(`SUSI Light error: ${e}`, { tags: 'brand-concierge', severity: 'error' });
     if (mountEl) {
       mountEl.dispatchEvent(
         new CustomEvent('bc:cta-action-error', { detail: { message: 'Something went wrong signing in. Please try again in a moment.' } }),
