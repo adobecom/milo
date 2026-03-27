@@ -14,8 +14,16 @@ function hangOpeningQuote(header) {
 
 function decorateText(el) {
   decorateBlockText(el);
-  const headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  hangOpeningQuote(headings[0]);
+  const firstText = el?.querySelector('h1, h2, h3, h4, h5, h6, p');
+  hangOpeningQuote(firstText);
+}
+
+function promoteParagraphTitle(content, headingSize = '2') {
+  if (!content || content.querySelector('h1, h2, h3, h4, h5, h6')) return;
+  const firstP = content.querySelector('p');
+  if (!firstP) return;
+  const bodyClass = [...firstP.classList].find((c) => c.startsWith('body-'));
+  if (bodyClass) firstP.classList.replace(bodyClass, `title-${headingSize}`);
 }
 
 function decorate(block) {
@@ -24,6 +32,7 @@ function decorate(block) {
   content?.classList.add('content');
   foreground?.classList.add('foreground');
   decorateText(content);
+  promoteParagraphTitle(content);
 }
 
 function decorateMultiViewport(el, viewportContent) {
