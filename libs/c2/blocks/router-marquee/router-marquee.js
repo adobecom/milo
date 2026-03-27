@@ -20,7 +20,7 @@ const fireAnalytic = (card) => {
 
     const analytic = `${USER_ACTION ? 'user' : 'auto'}-slideseen-${index + 1}--${processTrackingLabels(label, getConfig(), 15)}|${section?.getAttribute('daa-lh')}|b${index + 1}`;
     SLIDE_ANALYTICS[viewport][index].seen = true;
-    console.log(analytic); //debug
+
     sendAnalytics(analytic);
     USER_ACTION = false;
   };
