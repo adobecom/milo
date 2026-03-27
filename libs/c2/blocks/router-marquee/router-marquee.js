@@ -2,12 +2,13 @@ import { processTrackingLabels, sendAnalytics } from '../../../martech/attribute
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
+let USER_ACTION = false;
 const SLIDE_ANALYTICS = [];
 
 const getViewport = (el) => el.closest('.rm-viewport')?.dataset.viewport;
 const getIndex = (el) => [...el.parentNode.children].indexOf(el);
 
-const fireAnalytic = (card, type = 'auto') => {
+const fireAnalytic = (card) => {
   const section = card.parentNode.closest('.section');
 
   const fireSendAnalytics = () => {
@@ -17,20 +18,23 @@ const fireAnalytic = (card, type = 'auto') => {
 
     if (seen || !visible) return;
 
-    const analytic = `${type}-slideseen-${index + 1}--${processTrackingLabels(label, getConfig(), 15)}|${section?.getAttribute('daa-lh')}|b${index + 1}`;
+    const analytic = `${USER_ACTION ? 'user' : 'auto'}-slideseen-${index + 1}--${processTrackingLabels(label, getConfig(), 15)}|${section?.getAttribute('daa-lh')}|b${index + 1}`;
     SLIDE_ANALYTICS[viewport][index].seen = true;
     console.log(analytic); //debug
     sendAnalytics(analytic);
+    USER_ACTION = false;
   };
 
-  const observer = new MutationObserver(() => {
-    if (section?.getAttribute('daa-lh')) {
-      fireSendAnalytics();
-      observer.disconnect();
-    }
-  });
-  observer.observe(section, { attributes: true, attributeFilter: ['daa-lh'] });
   if (section?.getAttribute('daa-lh')) fireSendAnalytics();
+  else {
+    const observer = new MutationObserver(() => {
+      if (section?.getAttribute('daa-lh')) {
+        fireSendAnalytics();
+        observer.disconnect();
+      }
+    });
+    observer.observe(section, { attributes: true, attributeFilter: ['daa-lh'] });
+  }
 };
 
 const setSlideObserver = (slides) => {
@@ -42,7 +46,8 @@ const setSlideObserver = (slides) => {
         const index = getIndex(slide);
         SLIDE_ANALYTICS[viewport][index].visible = entry.isIntersecting;
         if (entry.isIntersecting && slide.classList.contains('is-active')) {
-          fireAnalytic(slide.closest('.rm-viewport').querySelector('.rm-card.is-active'));
+          const card = slide.closest('.rm-viewport').querySelector('.rm-card.is-active');
+          fireAnalytic(card);
         }
       });
     }, { threshold: 1.0 });
@@ -455,9 +460,9 @@ const startAutoplay = (slides, cards, container, block) => {
     clearTimeout(timer);
     clearFill(active);
     activate((active + 1) % cardEls.length, 1);
-    fireAnalytic(cardEls[active]);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
+    USER_ACTION = false;
   };
 
   const pause = () => {
@@ -508,7 +513,7 @@ const startAutoplay = (slides, cards, container, block) => {
       paused = true;
       const dir = i > active ? 1 : -1;
       activate(i, dir, { skipTrack: isDesktopSmallVp });
-      fireAnalytic(cardEls[i], 'user');
+      USER_ACTION = true;
     });
   });
 
@@ -586,9 +591,9 @@ const startAutoplay = (slides, cards, container, block) => {
     const dir = dx < 0 ? 1 : -1;
     const next = (active + dir + cardEls.length) % cardEls.length;
     activate(next, dir);
-    fireAnalytic(cardEls[active], 'user');
     paused = true;
     setPlayingState(false);
+    USER_ACTION = true;
   }, { passive: true });
 
   requestAnimationFrame(() => {
