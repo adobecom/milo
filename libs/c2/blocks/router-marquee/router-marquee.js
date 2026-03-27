@@ -18,7 +18,7 @@ const fireAnalytic = (card) => {
 
     if (seen || !visible) return;
 
-    const analytic = `${USER_ACTION ? 'user' : 'auto'}-slideseen-${index + 1}--${processTrackingLabels(label, getConfig(), 15)}|${section?.getAttribute('daa-lh')}|b${index + 1}`;
+    const analytic = `${USER_ACTION ? 'user' : 'auto'}-slideseen-${index + 1}--${processTrackingLabels(label, getConfig(), 20)}|${section?.getAttribute('daa-lh')}|b${index + 1}`;
     SLIDE_ANALYTICS[viewport][index].seen = true;
 
     sendAnalytics(analytic);
@@ -68,7 +68,7 @@ const setAnalytics = (slides, cards, container, el) => {
   });
   cards.querySelectorAll('.rm-card').forEach((card, index) => {
     const { label } = SLIDE_ANALYTICS[container.dataset.viewport][index];
-    card.setAttribute('daa-ll', `rm-nav${index + 1}|${processTrackingLabels(label, config, 13)}`);
+    card.setAttribute('daa-ll', `rm-nav-${index + 1}--${processTrackingLabels(label, config, 20)}`);
   });
 };
 
