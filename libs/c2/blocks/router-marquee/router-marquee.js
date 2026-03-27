@@ -2,6 +2,71 @@ import { processTrackingLabels, sendAnalytics } from '../../../martech/attribute
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
+const SLIDE_ANALYTICS = [];
+
+const getViewport = (el) => el.closest('.rm-viewport')?.dataset.viewport;
+const getIndex = (el) => [...el.parentNode.children].indexOf(el);
+
+const fireAnalytic = (card, type = 'auto') => {
+  const section = card.parentNode.closest('.section');
+
+  const fireSendAnalytics = () => {
+    const index = getIndex(card);
+    const viewport = getViewport(card);
+    const { label, seen, visible } = SLIDE_ANALYTICS[viewport][index] || {};
+
+    if (seen || !visible) return;
+
+    const analytic = `${type}-slideseen-${index + 1}--${processTrackingLabels(label, getConfig(), 15)}|${section?.getAttribute('daa-lh')}|b${index + 1}`;
+    SLIDE_ANALYTICS[viewport][index].seen = true;
+    console.log(analytic); //debug
+    sendAnalytics(analytic);
+  };
+
+  const observer = new MutationObserver(() => {
+    if (section?.getAttribute('daa-lh')) {
+      fireSendAnalytics();
+      observer.disconnect();
+    }
+  });
+  observer.observe(section, { attributes: true, attributeFilter: ['daa-lh'] });
+  if (section?.getAttribute('daa-lh')) fireSendAnalytics();
+};
+
+const setSlideObserver = (slides) => {
+  slides.forEach((slide) => {
+    const titleEl = slide.querySelector('.rm-title');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const viewport = getViewport(entry.target);
+        const index = getIndex(slide);
+        SLIDE_ANALYTICS[viewport][index].visible = entry.isIntersecting;
+        if (entry.isIntersecting && slide.classList.contains('is-active')) {
+          fireAnalytic(slide.closest('.rm-viewport').querySelector('.rm-card.is-active'));
+        }
+      });
+    }, { threshold: 1.0 });
+    io.observe(titleEl);
+  });
+};
+
+const setAnalytics = (slides, cards, container, el) => {
+  const config = getConfig();
+  const mepMartech = config?.mep?.martech || '';
+  SLIDE_ANALYTICS[container.dataset.viewport] = {};
+
+  el.setAttribute('data-block-daa-lh', true);
+  slides.forEach((slide, index) => {
+    const label = slide.querySelector('.rm-title')?.textContent;
+    SLIDE_ANALYTICS[container.dataset.viewport][index] = { visible: false, label };
+    slide.setAttribute('daa-lh', `b${index + 1}|rm-slide${mepMartech}`);
+  });
+  cards.querySelectorAll('.rm-card').forEach((card, index) => {
+    const { label } = SLIDE_ANALYTICS[container.dataset.viewport][index];
+    card.setAttribute('daa-ll', `rm-nav${index + 1}|${processTrackingLabels(label, config, 13)}`);
+  });
+};
+
 const CHEVRON_SVG = '<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const RESET_SVG = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><g clip-path="url(#clip0_3399_7947)"><rect x="0.333984" y="2" width="1" height="8" rx="0.5" fill="white"/><path d="M7.10412 1.28574C7.36448 1.02559 7.78654 1.02546 8.04682 1.28574C8.30711 1.54602 8.30698 1.96808 8.04682 2.22845L4.94201 5.33327H11.3326C11.7008 5.33327 11.9993 5.63174 11.9993 5.99993C11.9993 6.36812 11.7008 6.6666 11.3326 6.6666H4.94201L8.04682 9.77142C8.30698 10.0318 8.30711 10.4538 8.04682 10.7141C7.78654 10.9744 7.36448 10.9743 7.10412 10.7141L2.86128 6.47129C2.60093 6.21094 2.60093 5.78893 2.86128 5.52858L7.10412 1.28574Z" fill="white"/></g><defs><clipPath id="clip0_3399_7947"><rect width="12" height="12" fill="white"/></clipPath></defs></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
@@ -196,39 +261,6 @@ const animateContentEnter = (content, direction) => {
     el.style.transition = `transform ${STAGGER_MS}ms ${EASE}`;
     el.style.transform = 'translateX(0)';
   });
-};
-
-const fireAnalytic = (card, type = 'auto') => {
-  const viewport = card.closest('.router-marquee');
-
-  if (card.dataset.slideSeen || viewport.dataset.inView === 'false') return;
-
-  const section = card.parentNode.closest('.section');
-
-  const fireSendAnalytics = () => {
-    const position = [...card.parentNode.children].indexOf(card) + 1;
-    const slideName = card.dataset.parentLabel;
-    const sectionName = section?.getAttribute('daa-lh');
-    const blockName = `b${position}`;
-    const analytic = `${type}--slideseen-${position}--${processTrackingLabels(slideName, getConfig(), 15)}|${sectionName}|${blockName}`;
-
-    console.log(analytic); // debug
-    sendAnalytics(analytic);
-
-    document.querySelectorAll(`.rm-card:nth-child(${position})`).forEach((c) => c.setAttribute('data-slide-seen', 'true'));
-  };
-
-  if (section?.getAttribute('daa-lh')) {
-    fireSendAnalytics();
-  } else if (section) {
-    const observer = new MutationObserver(() => {
-      if (section.getAttribute('daa-lh')) {
-        fireSendAnalytics();
-        observer.disconnect();
-      }
-    });
-    observer.observe(section, { attributes: true, attributeFilter: ['daa-lh'] });
-  }
 };
 
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
@@ -586,53 +618,17 @@ const reorderSlidesMaybe = (el, viewports) => {
   }
 };
 
-const setSlideObserver = (el) => {
-  const callback = (targetEl) => {
-    const card = targetEl.querySelector('.rm-card.is-active');
-    fireAnalytic(card);
-  };
-
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(async (entry) => {
-      const isHidden = getComputedStyle(entry.target).display === 'none';
-      entry.target.setAttribute('data-in-view', String(entry.isIntersecting));
-      if (entry.isIntersecting && !isHidden) {
-        callback(entry.target);
-      }
-    });
-  });
-
-  io.observe(el);
-};
-
-const setAnalytics = (slides, cards, el) => {
-  const config = getConfig();
-  const mepMartech = config?.mep?.martech || '';
-
-  el.setAttribute('data-block-daa-lh', true);
-  slides.forEach((slide, index) => {
-    const analyticText = `b${index + 1}|rm-slide${mepMartech}`;
-    slide.setAttribute('daa-lh', analyticText);
-  });
-  cards.querySelectorAll('.rm-card').forEach((card, index) => {
-    const label = slides[index]?.querySelector('.rm-title')?.textContent;
-    const analyticText = `rm-nav${index + 1}|${processTrackingLabels(label, config, 13)}`;
-    card.setAttribute('daa-ll', analyticText);
-    card.setAttribute('data-parent-label', label);
-  });
-};
-
 export default function init(el) {
   const viewports = groupByViewport(el);
   reorderSlidesMaybe(el, viewports);
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
   initVideos(el);
-  setSlideObserver(el);
   containers.forEach((container) => {
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
-    setAnalytics(slides, cards, el);
+    setSlideObserver(slides);
+    setAnalytics(slides, cards, container, el);
     startAutoplay(slides, cards, container, el);
   });
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
