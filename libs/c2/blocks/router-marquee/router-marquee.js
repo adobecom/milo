@@ -13,6 +13,7 @@ const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const RESUME_DELAY = 2000;
 const SWIPE_THRESHOLD = 100;
 
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const reflow = (el) => el?.getBoundingClientRect();
 const getCssPx = (el, prop) => parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
 
@@ -127,11 +128,13 @@ const buildCard = (slide) => {
   const iconSrc = getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
   const labelText = label?.textContent.trim();
   const href = slide.querySelector('.con-button')?.getAttribute('href') || '';
+  const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
+  const ariaLabel = eyebrowText ? `${eyebrowText}, ${labelText}` : labelText;
 
   icon.remove();
   label?.remove();
 
-  const card = createTag('a', { class: 'rm-card', href });
+  const card = createTag('a', { class: 'rm-card', href, 'aria-label': ariaLabel });
   card.replaceChildren(
     createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' }),
     createTag('div', { class: 'rm-card-content' }, [
@@ -180,7 +183,7 @@ const buildPlayPause = () => {
 };
 
 const animateContentEnter = (content, direction) => {
-  if (!content) return;
+  if (!content || prefersReducedMotion()) return;
   const targets = STAGGER_CHILDREN
     .map((sel) => content.querySelector(sel))
     .filter(Boolean);
@@ -195,16 +198,12 @@ const animateContentEnter = (content, direction) => {
   });
 };
 
-const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
-
 const setAriaHiddenAndTabIndex = (slides) => {
   slides.forEach((slide) => {
     const isActive = slide.classList.contains('is-active');
     slide.setAttribute('aria-hidden', String(!isActive));
+    slide.toggleAttribute('inert', !isActive);
     slide.setAttribute('tabindex', isActive ? '0' : '-1');
-    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
-      el.setAttribute('tabindex', isActive ? '0' : '-1');
-    });
   });
 };
 
@@ -329,25 +328,34 @@ const startAutoplay = (slides, cards, container, block) => {
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
-
-    oldSlide.style.transition = 'none';
-    oldSlide.style.transform = 'translateX(0%)';
-    newSlide.style.transition = 'none';
-    newSlide.style.transform = `translateX(${direction * 100}%)`;
+    const reducedMotion = prefersReducedMotion();
 
     oldSlide.classList.remove('is-active');
     newSlide.classList.add('is-active');
     pendingSlide = null;
     setAriaHiddenAndTabIndex([oldSlide, newSlide]);
 
-    reflow(newSlide);
+    if (reducedMotion) {
+      resetSlide(oldSlide);
+      resetSlide(newSlide);
+    } else {
+      oldSlide.style.transition = 'none';
+      oldSlide.style.transform = 'translateX(0%)';
+      newSlide.style.transition = 'none';
+      newSlide.style.transform = `translateX(${direction * 100}%)`;
 
-    oldSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
-    oldSlide.style.transform = `translateX(${-direction * 100}%)`;
-    newSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
-    newSlide.style.transform = 'translateX(0%)';
+      reflow(newSlide);
 
-    animateContentEnter(newSlide.querySelector('.rm-content'), direction);
+      oldSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
+      oldSlide.style.transform = `translateX(${-direction * 100}%)`;
+      newSlide.style.transition = `transform ${SLIDE_MS}ms ${EASE}`;
+      newSlide.style.transform = 'translateX(0%)';
+
+      animateContentEnter(newSlide.querySelector('.rm-content'), direction);
+
+      const transitionMs = Math.max(SLIDE_MS, STAGGER_MS);
+      cleanupTimer = setTimeout(finishSlideTransition, transitionMs + 50);
+    }
 
     oldSlide.querySelector('video')?.pause();
     const vid = newSlide.querySelector('video');
@@ -357,14 +365,11 @@ const startAutoplay = (slides, cards, container, block) => {
       vid?.pause();
     }
 
-    const transitionMs = Math.max(SLIDE_MS, STAGGER_MS);
-    cleanupTimer = setTimeout(finishSlideTransition, transitionMs + 50);
-
     cardEls[active]?.classList.remove('is-active');
     active = index;
     cardEls[active]?.classList.add('is-active');
     if (isMobile() && !skipTrack) {
-      setTrackX(trackXForCard(active), true);
+      setTrackX(trackXForCard(active), !reducedMotion);
     }
 
     requestAnimationFrame(() => dynamicLayoutUpdates(block));
