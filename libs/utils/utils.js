@@ -2027,14 +2027,7 @@ async function loadPostLCP(config) {
       await init();
     } else if (routingConfig?.showModal && routingConfig.markets?.length) {
       const { default: showRegionModal } = await import('../features/region-modal/region-modal.js');
-      await showRegionModal(
-        routingConfig.markets,
-        config,
-        createTag,
-        loadStyle,
-        loadBlock,
-        routingConfig.geoMarketCode,
-      );
+      await showRegionModal(routingConfig, config, createTag, loadStyle, loadBlock);
     }
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
@@ -2161,7 +2154,7 @@ export function getMarketsSourceKey() {
 
 export function usesBannerFlow() {
   const onlyBanner = PAGE_URL.searchParams.get('onlybanner') ?? getMetadata('onlybanner') ?? getConfig().onlybanner ?? false;
-  return onlyBanner === true || onlyBanner === 'true';
+  return onlyBanner === true || ['true', 'on'].includes(String(onlyBanner).toLowerCase());
 }
 export function getMarketsUrl() {
   const { contentRoot } = getConfig();
@@ -2176,10 +2169,8 @@ function excludeUsUnlessExplicit(markets, geoIp) {
   const usEntry = markets.find(isUsEntry);
   if (!usEntry) return markets;
   if (!usEntry.regionPriorities) return markets.filter((market) => !isUsEntry(market));
-  const usListsGeo = usEntry.regionPriorities.split(',').some((pair) => {
-    const [region] = pair.trim().split(':');
-    return region.toLowerCase() === geoIp;
-  });
+  const usListsGeo = usEntry.regionPriorities
+    .split(',').some((pair) => pair.trim().split(':')[0].toLowerCase() === geoIp);
   return usListsGeo ? markets : markets.filter((market) => !isUsEntry(market));
 }
 
@@ -2187,22 +2178,13 @@ function getMarketsByRegionPriority(markets, geoIp) {
   const marketsWithPriority = [];
   markets.forEach((market) => {
     if (!market.regionPriorities) return;
-    const priorityMap = new Map(
-      market.regionPriorities.split(',').map((priorityEntry) => {
-        const [region, priority] = priorityEntry.trim().split(':');
-        return [region.toLowerCase(), parseInt(priority, 10)];
-      }),
-    );
-    const priority = priorityMap.get(geoIp);
-    if (priority !== undefined) {
-      marketsWithPriority.push({ market, priority });
-    }
+    const match = market.regionPriorities.split(',')
+      .find((e) => e.trim().split(':')[0].toLowerCase() === geoIp);
+    if (match) marketsWithPriority.push({ market, priority: parseInt(match.trim().split(':')[1], 10) });
   });
-  if (marketsWithPriority.length > 0) {
-    marketsWithPriority.sort((a, b) => a.priority - b.priority);
-    return marketsWithPriority.map((item) => item.market);
-  }
-  return null;
+  if (!marketsWithPriority.length) return null;
+  marketsWithPriority.sort((a, b) => a.priority - b.priority);
+  return marketsWithPriority.map(({ market }) => market);
 }
 
 function reserveBannerSpace() {
