@@ -158,7 +158,20 @@ const decorateSlide = (slide) => {
   contentWrapper.append(textCol);
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
 
-  prepareVideo(imageCol);
+  const videoContainer = imageCol?.querySelector('.video-container');
+  const video = videoContainer?.querySelector('video');
+
+  if (video) {
+    ['playsinline', 'autoplay', 'muted', 'loop'].forEach((attr) => {
+      video.setAttribute(attr, '');
+    });
+    video.muted = true;
+    const src = video.dataset.videoSource || video.src;
+    if (src && !video.querySelector('source')) video.appendChild(createTag('source', { src, type: 'video/mp4' }));
+    videoContainer.querySelector('.pause-play-wrapper')?.remove();
+    videoContainer.replaceWith(video);
+    video.load();
+  }
 
   if (!textCol) return;
   decorateText(textCol);
@@ -373,8 +386,6 @@ const startAutoplay = (slides, cards, container, block) => {
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
-    const vid = newSlide.querySelector('video');
-    loadVideo(vid);
     const reducedMotion = prefersReducedMotion();
 
     oldSlide.classList.remove('is-active');
