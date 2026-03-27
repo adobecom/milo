@@ -243,7 +243,14 @@ export function isMasGeoDetectionEnabled() {
 }
 
 export async function getLocaleSettings(miloLocale) {
+<<<<<<< HEAD
   if (!isMasGeoDetectionEnabled()) {
+=======
+  const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const metaValue = getMetadata('mas-geo-detection');
+  const geoDetection = queryParam ?? metaValue;
+  if (!geoDetection || !['on', 'true'].includes(geoDetection.toLowerCase())) {
+>>>>>>> stage
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
   }
   return getGeoLocaleSettings(miloLocale);

@@ -27,6 +27,12 @@ export default {
       text: 'Welcome! Thank you for trying out this initial release. The experience is still evolving and will continue to improve over time.',
     },
     productCard: { actionButtonSize: 'S' },
+    fireflyGalleryWidget: {
+      videoFraction: 0,
+      promoid: 'bc-firefly-widget',
+      fireflyHostname: 'https://firefly.adobe.com',
+      fireflyEnv: 'prod',
+    },
     disclaimer: { attachWithInput: false },
     responsive: {
       breakpoints: {
@@ -54,6 +60,7 @@ export default {
       },
     ],
   },
+  env: 'prod',
   text: {
     'welcome.heading': 'Find the right app to bring your ideas to life.',
     'input.placeholder': 'Ask a question',
@@ -79,6 +86,10 @@ export default {
     'feedback.toast.success': 'Thank you for the feedback.',
     'feedback.thumbsUp.aria': 'Thumbs up',
     'feedback.thumbsDown.aria': 'Thumbs down',
+    'widget.firefly-gallery.preamble-markdown': 'To see what you can do, check out these images from the [Firefly](https://firefly.adobe.com/gallery) community of creators:',
+    'widget.firefly-gallery.title': 'Adobe Firefly gallery',
+    'widget.firefly-gallery.view-item-text': 'View',
+    'widget.firefly-gallery.view-more-text': 'More in Firefly gallery',
   },
   arrays: {
     'welcome.examples': [
@@ -181,6 +192,66 @@ export default {
       sparkleAI: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><defs><linearGradient id="sparkle_gradient_acom_m2" x1="0" y1="0" x2="1" y2="0.1" gradientUnits="objectBoundingBox"><stop stop-color="#D73220"/><stop offset="0.33" stop-color="#D92361"/><stop offset="1" stop-color="#7155FA"/></linearGradient></defs><path d="M7.93452 10.5994C7.75952 10.5994 7.58296 10.5541 7.42358 10.4619C7.03842 10.2393 6.84389 9.79787 6.93842 9.3635L7.52045 6.66428L5.66576 4.61818C5.36732 4.2885 5.31576 3.80881 5.53842 3.42366C5.76108 3.03772 6.20639 2.84318 6.63686 2.9385L9.33608 3.52053L11.3822 1.66584C11.7126 1.36584 12.1923 1.31662 12.5767 1.5385C12.9619 1.76115 13.1564 2.20256 13.0619 2.63694L12.4798 5.33615L14.3345 7.38225C14.633 7.71115 14.6837 8.19084 14.4619 8.576C14.2392 8.96038 13.7994 9.15647 13.3642 9.06272L10.665 8.47913L8.61812 10.3346C8.42515 10.5096 8.1806 10.5994 7.93452 10.5994ZM8.71342 6.82679L8.22983 9.06663L9.92748 7.52756C10.1697 7.30803 10.504 7.2174 10.8251 7.28615L13.0665 7.77053L11.5275 6.07287C11.3072 5.82912 11.2173 5.4924 11.2876 5.17209L11.7705 2.93381L10.0728 4.47287C9.82905 4.69318 9.49312 4.78225 9.17202 4.71271L6.93374 4.2299L8.4728 5.92755C8.69312 6.17052 8.78296 6.50647 8.71342 6.82679Z" fill="url(#sparkle_gradient_acom_m2)"/><path d="M2.67658 14.6014C2.57345 14.6014 2.47033 14.5748 2.37658 14.5209C2.15079 14.3905 2.03517 14.1295 2.08986 13.8748L2.33517 12.7405L1.55548 11.8811C1.38048 11.6881 1.35001 11.4037 1.48048 11.178C1.61095 10.9522 1.87345 10.8397 2.12658 10.8912L3.26095 11.1366L4.12033 10.3569C4.31408 10.1811 4.59689 10.1514 4.82346 10.2819C5.04924 10.4123 5.16486 10.6733 5.11018 10.928L4.86486 12.0623L5.64455 12.9217C5.81955 13.1147 5.85002 13.3991 5.71955 13.6248C5.58908 13.8506 5.3258 13.9616 5.07346 13.9116L3.93908 13.6662L3.0797 14.4459C2.96642 14.5483 2.82189 14.6014 2.67658 14.6014Z" fill="url(#sparkle_gradient_acom_m2)"/></svg>',
     },
   },
+  meetingForm: {
+    fieldsPerRow: 2,
+    fieldLayoutRules: {
+      textInputs: {
+        allowTwoColumns: true,
+        fieldTypes: ['string', 'email', 'tel', 'number'],
+      },
+      dropdowns: {
+        allowTwoColumns: false,
+        fieldTypes: ['select'],
+        identifyBy: 'hasOptions',
+      },
+      checkboxes: {
+        allowTwoColumns: false,
+        fieldTypes: ['boolean', 'checkbox'],
+      },
+    },
+    title: {
+      text: '',
+      alignment: 'left',
+    },
+    subtitle: {
+      text: "To connect you with the right person for a demo, I'll need a few details. Please provide the following:",
+      alignment: 'left',
+    },
+    buttons: {
+      submit: {
+        text: 'Schedule a meeting',
+        alignment: 'left',
+      },
+      cancel: {
+        text: 'Cancel',
+        alignment: 'left',
+      },
+    },
+  },
+  calendarWidget: {
+    title: {
+      text: '',
+      alignment: 'left',
+    },
+    subtitle: {
+      text: 'Thanks for providing your contact information! Please select a meeting date and time.',
+      alignment: 'left',
+    },
+    postTitle: {
+      text: '',
+      alignment: 'left',
+    },
+    buttons: {
+      confirm: {
+        text: 'Schedule a meeting',
+        alignment: 'left',
+      },
+      cancel: {
+        text: 'Cancel',
+        alignment: 'left',
+      },
+    },
+  },
   theme: {
     '--border-radius-card': '16px',
     '--button-disabled-background': 'transparent',
@@ -193,6 +264,12 @@ export default {
     '--button-secondary-border-width': '2px',
     '--button-secondary-hover': '#000',
     '--button-secondary-text': '#2C2C2C',
+    '--button-hover-background': '#E1E1E1',
+    '--button-action-background': '#222222',
+    '--button-action-border-width': '2px',
+    '--button-action-hover': '#000000',
+    '--button-action-text': '#FFFFFF',
+    '--button-action-hover-text': '#FFFFFF',
     '--card-shadow-width': '1px',
     '--card-shadow-color': '#0000001F',
     '--card-shadow-color-hover': 'rgba(0, 0, 0, 0.22)',
@@ -231,6 +308,7 @@ export default {
     '--chat-history-bottom-padding': '0',
     '--chat-history-padding': '28px',
     '--chat-history-padding-top-expanded': '0',
+    '--chat-interface-max-width': '832px',
     '--chat-history-padding-mobile': '24px',
     '--chat-history-padding-tablet': '32px',
     '--color-button-secondary-hover-text': '#FFFFFF',
@@ -252,6 +330,7 @@ export default {
     '--disclaimer-padding-mobile': '14px',
     '--disclaimer-min-height': 'calc(var(--disclaimer-font-size) * var(--disclaimer-text-line-height) * 2)',
     '--feedback-container-gap': '4px',
+    '--feedback-button-border-radius': '8px',
     '--feedback-button-height': '32px',
     '--feedback-button-active-color': '#292929',
     '--feedback-button-icon-size': '20px',
@@ -262,6 +341,9 @@ export default {
     '--input-container-ai-chat-padding-right': '8px',
     '--input-background': '#FFFFFF',
     '--input-background-fill': 'linear-gradient(#FFFFFF, #FFFFFF)',
+    '--input-bar-line-height-mobile': '1.5',
+    '--input-max-height': '244px',
+    '--input-max-height-mobile': '35vh',
     '--input-border-radius': '9999px',
     '--input-border-radius-mobile': '9999px',
     '--input-button-border-radius': '50%',
@@ -287,6 +369,12 @@ export default {
     '--input-text-color': '#292929',
     '--line-height-body': '1.75',
     '--loading-dot-background': '#6338EE',
+    '--link-button-primary-background': '#292929',
+    '--link-button-primary-text-color': '#FFFFFF',
+    '--link-button-primary-hover': '#131313',
+    '--link-button-secondary-background': '#E9E9E9',
+    '--link-button-secondary-text': '#292929',
+    '--link-button-secondary-hover': '#D9D9D9',
     '--loading-message-background': '#F8F8F8',
     '--main-container-background': '#FFFFFF',
     '--main-container-bottom-background': '#FFFFFF',
