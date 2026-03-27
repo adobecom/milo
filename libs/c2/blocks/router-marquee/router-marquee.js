@@ -78,10 +78,11 @@ const decorateText = (textCol) => {
   const eyebrow = textCol.querySelector('.rm-eyebrow');
   const icon = textCol.querySelector('p a[href*=".svg"]');
   const label = textCol.querySelector(':scope > p:has(a[href*=".svg"]) + p');
+  const cta = textCol.querySelector('p:has(em)');
   const body = [...textCol.querySelectorAll('p')]
-    .filter((p) => !p.querySelector('a')
-    && [eyebrow, icon, label].every((x) => x !== p));
+    .filter((p) => [eyebrow, icon?.closest('p'), label, cta].every((x) => x !== p));
 
+  if (!body.length) return;
   const bodyEl = createTag('div', { class: 'rm-body' });
   body[0].before(bodyEl);
   body.forEach((p) => bodyEl.append(p));
