@@ -8,7 +8,7 @@ const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.innerWidth <= 768;
 
-const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || '';
+const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
 const handleMobileAutoplay = (carousel) => {
   const videos = carousel.querySelectorAll('video');
@@ -145,7 +145,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   `;
 
   let ariaLabel = `${index + 1} of ${slidesTotal}`;
-  // assign unique label to the first slide
+  // assign unique aria-label to the first slide
   if (index === 0) ariaLabel = `${getCarouselName(link)}, carousel. ${ariaLabel}`;
 
   const slideEl = createTag('a', {
