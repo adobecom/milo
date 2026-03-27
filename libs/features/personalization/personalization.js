@@ -11,7 +11,7 @@ import {
   localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
-  getCountry,
+  resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 
@@ -461,7 +461,7 @@ function updateFramework(updateFrameworkList) {
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
-  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice') && !modifiedStr.includes('previouspage')) {
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('previouspage')) {
     return modifiedStr.replace(RE_KEY_REPLACE, '');
   }
   return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')', '/', '*'].includes(char) ? char : ''));
@@ -897,32 +897,29 @@ export async function createMartechMetadata(placeholders, config, column) {
     });
   });
 }
-const matchesCountryChoiceOrIP = (name, config) => {
-  if (!name.includes('countrychoice') && !name.includes('countryip')) return false;
+const matchesCountryIP = (name, config) => {
+  if (!name.includes('countryip')) return false;
   const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
   if (!countryList?.length) return false;
-  const { countryChoice, countryIP } = config.mep;
-  const testCountry = name.includes('countrychoice') ? countryChoice : countryIP;
-  return countryList.includes(testCountry);
+  return countryList.includes(config.mep?.countryIP);
 };
 
 function hasCountryMatch(str, config) {
-  if (str.includes('countrychoice') || str.includes('countryip')) {
+  if (str.includes('countryip')) {
     const modifiedStr = str.replace('uk', 'gb');
-    return matchesCountryChoiceOrIP(modifiedStr, config);
+    return matchesCountryIP(modifiedStr, config);
   }
   return false;
 }
 
 export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
-  const { countryIP, countryChoice } = config.mep || {};
+  const { countryIP } = config.mep || {};
   const valueNames = [
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
     config.locale.region.toLowerCase(),
     ...(countryIP ? [`countryip(${countryIP})`] : []),
-    ...(countryChoice ? [`countrychoice(${countryChoice})`] : []),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
     'value',
@@ -1023,33 +1020,11 @@ export const getEntitlements = async (data) => {
   });
 };
 
-function normCountry(country) {
-  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
-}
 async function setMepCountry(config) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  const akamaiCode = await getCountry(true);
+  const resolvedCountry = await resolveDetectedMarketCountry();
   config.mep = config.mep || {};
-  if (country) {
-    config.mep.countryChoice = normCountry(country);
-  }
-  if (akamaiCode) {
-    config.mep.countryIP = normCountry(akamaiCode);
-  }
-  if (!config.mep.countryChoice && config.mep.countryIP) {
-    config.mep.countryChoice = config.mep.countryIP;
-  } else if (!config.mep.countryIP && config.mep.countryIPPromise) {
-    try {
-      let countryIP = await config.mep.countryIPPromise;
-      if (countryIP) {
-        countryIP = countryIP === 'uk' ? 'gb' : countryIP.split('_')[0];
-        config.mep.countryIP = countryIP;
-        if (!config.mep.countryChoice) config.mep.countryChoice = countryIP;
-      }
-    } catch (e) {
-      log('MEP Error: Unable to get user country');
-    }
+  if (resolvedCountry) {
+    config.mep.countryIP = resolvedCountry;
   }
 }
 
