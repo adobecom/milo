@@ -488,13 +488,13 @@ async function showModal(details) {
 }
 
 export default async function showRegionModal(
-  suggestedMarkets,
+  routingConfig,
   conf,
   createTagFunc,
   loadStyleFunc,
   loadBlockFunc,
-  geoMarketCode,
 ) {
+  const { markets: suggestedMarkets, geoMarketCode } = routingConfig || {};
   if (!suggestedMarkets?.length) return;
 
   config = conf;
