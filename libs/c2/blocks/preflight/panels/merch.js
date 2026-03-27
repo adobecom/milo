@@ -1,4 +1,4 @@
-import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { html, signal, useEffect } from '../../../../deps/htm-preact.js';
 
 const wcsElements = signal([]);
 const loading = signal(true);

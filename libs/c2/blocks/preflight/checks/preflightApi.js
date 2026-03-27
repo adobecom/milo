@@ -1,4 +1,4 @@
-import { getConfig, getFederatedContentRoot } from '../../../utils/utils.js';
+import { getConfig, getFederatedContentRoot } from '../../../../utils/utils.js';
 import { fetchPreflightChecks, asoCache } from './asoApi.js';
 import { isViewportTooSmall, checkImageDimensions, runChecks as runChecksAssets } from './assets.js';
 import {

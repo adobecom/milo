@@ -1,4 +1,4 @@
-import { getConfig, getFederatedContentRoot } from '../../../utils/utils.js';
+import { getConfig, getFederatedContentRoot } from '../../../../utils/utils.js';
 
 export default async function checkVideoCaptions(elements = [], config = {}) {
   if (!config?.checks?.includes('video-captions')) return [];

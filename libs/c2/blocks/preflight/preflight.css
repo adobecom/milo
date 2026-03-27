@@ -58,7 +58,7 @@ div.preflight-tab-button-group {
 button.preflight-tab-button {
   border: none;
   background: none;
-  font-family: var(--body-font-family);
+  font-family: var(--body-font-family, var(--s2a-font-family-adobe-clean, adobe-clean, sans-serif));
   color: #FFF;
   font-size: 24px;
   margin: 0 18px 0 0;
@@ -1261,7 +1261,7 @@ img:hover ~ .asset-meta,
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  font-family: var(--body-font-family);
+  font-family: var(--body-font-family, var(--s2a-font-family-adobe-clean, adobe-clean, sans-serif));
   transition: background 0.2s;
 }
 

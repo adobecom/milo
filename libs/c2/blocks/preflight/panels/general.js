@@ -1,7 +1,7 @@
-import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { html, signal, useEffect } from '../../../../deps/htm-preact.js';
 import { STATUS, STRUCTURE_TITLES } from '../checks/constants.js';
 import { runChecks as runStructureChecks } from '../checks/structure.js';
-import userCanPublishPage from '../../../tools/utils/publish.js';
+import userCanPublishPage from '../../../../tools/utils/publish.js';
 
 const DEF_NOT_FOUND = 'Not found';
 const DEF_NEVER = 'Never';

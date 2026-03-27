@@ -1,13 +1,16 @@
 import { STATUS, STRUCTURE_IDS, STRUCTURE_TITLES, STRUCTURE_SEVERITIES } from './constants.js';
-import { getConfig, getMetadata, isLocalNav } from '../../../utils/utils.js';
+import { getConfig, getMetadata, isLocalNav } from '../../../../utils/utils.js';
 
 function getElementStatus({ area, metaKey, selector }) {
   const metaValue = getMetadata(metaKey, area);
   const element = area.querySelector(selector);
 
   const enabled = metaValue !== 'off';
-  const loaded = enabled
-    && (element?.classList.contains('ready') || element?.dataset.blockStatus === 'loaded');
+  // C2 components (e.g. global-footer) do not emit blockStatus/ready signals.
+  // Fall back to content presence: if the element has child nodes and text it is loaded.
+  const hasSignal = element?.classList.contains('ready') || element?.dataset.blockStatus === 'loaded';
+  const hasContent = !!(element && element.querySelectorAll('*').length > 3 && element.textContent.trim().length > 0);
+  const loaded = enabled && (hasSignal || hasContent);
 
   return { element, enabled, loaded };
 }
@@ -122,9 +125,12 @@ function checkRegionSelector(area) {
     );
   }
 
-  const regionAnchor = footerEl.querySelector('.region-selector a') || footerEl.querySelector('.feds-regionPicker-wrapper a');
+  // C2 may use a standalone region-nav block instead of (or alongside) the footer picker.
+  const regionAnchor = footerEl.querySelector('.region-selector a')
+    || footerEl.querySelector('.feds-regionPicker-wrapper a')
+    || area.querySelector('.region-nav a');
   const isModalConfigured = !!regionAnchor?.dataset?.modalPath || (regionAnchor?.hash && regionAnchor.hash !== '' && regionAnchor.hash !== '#_dnt');
-  const isDropdownConfigured = regionAnchor?.closest('.region-selector')?.querySelector('.fragment, [data-path]');
+  const isDropdownConfigured = regionAnchor?.closest('.region-selector, .region-nav')?.querySelector('.fragment, [data-path]');
   const regSelectorLoaded = !!(isModalConfigured || isDropdownConfigured);
 
   // If footer is enabled and region selector is not available -> fail

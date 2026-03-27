@@ -1,4 +1,4 @@
-import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { html, signal, useEffect } from '../../../../deps/htm-preact.js';
 import preflightApi from '../checks/preflightApi.js';
 import { STATUS } from '../checks/constants.js';
 

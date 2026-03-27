@@ -1,4 +1,4 @@
-import { getConfig, loadScript } from '../../../utils/utils.js';
+import { getConfig, loadScript } from '../../../../utils/utils.js';
 import { loadImage } from '../checks/assets.js';
 
 // Calculates the relative luminance of an RGB color.

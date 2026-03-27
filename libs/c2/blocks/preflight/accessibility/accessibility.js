@@ -1,5 +1,5 @@
-import { html, useState, useEffect } from '../../../deps/htm-preact.js';
-import '../../../deps/axe.min.js';
+import { html, useState, useEffect } from '../../../../deps/htm-preact.js';
+import '../../../../deps/axe.min.js';
 import { AXE_CORE_CONFIG, CUSTOM_CHECKS_CONFIG } from './accessibility-config.js';
 import customAccessibilityChecks from './accessibility-custom-checks.js';
 import AuditImageAltText from './audit-image-alt-text.js';

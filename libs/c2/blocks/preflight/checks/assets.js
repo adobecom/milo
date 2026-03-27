@@ -1,5 +1,5 @@
 import { STATUS, SEVERITY, ASSETS_TITLES, ASSETS_IDS, ASSETS_SEVERITIES } from './constants.js';
-import { createTag } from '../../../utils/utils.js';
+import { createTag } from '../../../../utils/utils.js';
 import { displayPreflightVisuals } from '../visual-metadata.js';
 
 const maxFullWidth = 1920;

@@ -1,8 +1,8 @@
 import {
   STATUS, SEO_TITLES, SEO_IDS, SEO_DESCRIPTIONS, SEO_SEVERITIES, SEO_CHECK_IDS,
 } from './constants.js';
-import getServiceConfig from '../../../utils/service-config.js';
-import { getConfig, updateConfig } from '../../../utils/utils.js';
+import getServiceConfig from '../../../../utils/service-config.js';
+import { getConfig, updateConfig } from '../../../../utils/utils.js';
 
 const KNOWN_BAD_URLS = ['news.adobe.com'];
 const SPIDY_URL_FALLBACK = 'https://spidy.gwp.corp.adobe.com';

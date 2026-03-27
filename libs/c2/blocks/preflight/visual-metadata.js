@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag } from '../../../utils/utils.js';
 
 export function addAssetMetadata(asset, assetData) {
   let parent;

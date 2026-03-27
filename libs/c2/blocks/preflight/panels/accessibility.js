@@ -1,5 +1,5 @@
-import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { createTag } from '../../../utils/utils.js';
+import { html, signal, useEffect } from '../../../../deps/htm-preact.js';
+import { createTag } from '../../../../utils/utils.js';
 
 const DEF_DESC = 'Checking...';
 const decorativeImages = signal([]);

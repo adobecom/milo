@@ -1,4 +1,4 @@
-import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { html, signal, useEffect } from '../../../../deps/htm-preact.js';
 import { asoCache, getASOToken } from '../checks/asoApi.js';
 import { SEO_IDS, SEO_TITLES, STATUS, ASO_TIMEOUT_MS, ASO_POLL_INTERVAL_MS } from '../checks/constants.js';
 import { getChecksSuite, getPreflightResults } from '../checks/preflightApi.js';

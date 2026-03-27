@@ -1,5 +1,5 @@
 import { STATUS, PERFORMANCE_TITLES, PERFORMANCE_IDS, PERFORMANCE_SEVERITIES } from './constants.js';
-import { getMetadata } from '../../../utils/utils.js';
+import { getMetadata } from '../../../../utils/utils.js';
 
 const lcpCache = new Map();
 
