@@ -22,6 +22,17 @@ export async function getMarketConfig() {
   }
 }
 
+export function marketsLangForLocale(marketsConfig, locale) {
+  if (!marketsConfig?.languages?.length) return undefined;
+  const { languages } = marketsConfig;
+  const pagePrefix = locale?.prefix?.replace(/^\//, '') || '';
+  let languageEntry = languages.find((lang) => (lang.prefix || '') === pagePrefix);
+  if (!languageEntry && locale?.base) {
+    languageEntry = languages.find((lang) => (lang.prefix || '') === locale.base);
+  }
+  return languageEntry || languages[0];
+}
+
 export async function getValidatedMarket() {
   const config = await getMarketConfig();
   const params = new URLSearchParams(window.location.search);
@@ -30,14 +41,15 @@ export async function getValidatedMarket() {
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
   let detectedMarket = countryParam || akamaiParam || cookieMarket || norm(countryFromGeo);
+
   if (!detectedMarket) {
     const { default: getAkamaiCode } = await import('./geo.js');
     detectedMarket = norm(await getAkamaiCode());
   }
   if (!config) return detectedMarket || 'us';
   const { locale } = getConfig();
-  const prefix = locale.prefix?.replace('/', '') || '';
-  const currLang = config.languages.find((l) => (l.prefix || '') === prefix) || config.languages[0];
+  const currLang = marketsLangForLocale(config, locale);
+  if (!currLang) return detectedMarket || 'us';
   const market = detectedMarket || currLang.defaultMarket || 'us';
   const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
   const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
