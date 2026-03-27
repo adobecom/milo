@@ -18,8 +18,8 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   defaultUrl = `${baseURL}${features[0].data.defaultURL}${miloLibs}`;
   const linkToAdobe = page.locator('a[href="https://www.adobe.com/"]');
   const linkToAcrobat = page.locator('a[href="https://acrobat.adobe.com/"]');
-  const insertionBeforeRegularFragment = page.locator("[data-manifest-id='all-elements.json'] + div:has([data-path*='repeated-fragment'])");
-  const insertionAfterRegularFragment = page.locator("div div:has([data-path*='repeat-fragment']) + [data-manifest-id='all-elements.json']");
+  const insertionBeforeRegularFragment = page.locator("[data-manifest-id*='all-elements.json'] + div:has([data-path*='repeated-fragment'])");
+  const insertionAfterRegularFragment = page.locator("div div:has([data-path*='repeat-fragment']) + [data-manifest-id*='all-elements.json']");
 
   await test.step('step-1: Verify default test page', async () => {
     console.info(`[Test Page]: ${defaultUrl}`);

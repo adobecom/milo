@@ -13,26 +13,28 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
     return lingoConfigMap[previewIndexKey] || [];
   }
 
-  function loadExcludePaths() {
-    const excludesKey = `EXCLUDE_PREVIEW_PATHS_${key}`;
-    const excludePathsStr = process.env[excludesKey] || '';
-    const excludePaths = excludePathsStr.split(',')
-      .map((path) => path.trim())
-      .filter(Boolean);
-    excludePaths.push('/target-preview/');
-    return excludePaths;
-  }
-
-  function buildExcludeRegex(excludePaths) {
-    if (!excludePaths.length) {
+  function regExFromPattern(pattern) {
+    try {
+      return pattern ? new RegExp(pattern) : null;
+    } catch (error) {
+      console.error(`Error creating regex from pattern ${pattern}: ${error}`);
       return null;
     }
+  }
 
-    const escapedPaths = excludePaths.map((path) =>
-      path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    );
+  function buildPathTester(sKey) {
+    const excludesKeyDef = `EXCLUDE_PREVIEW_PATHS_PATTERN`;
+    const excludesKey = `${excludesKeyDef}_${sKey}`;
+    const includesKey = `INCLUDE_PREVIEW_PATHS_PATTERN_${sKey}`;
+    const excludeRegex = regExFromPattern(process.env[excludesKey] || process.env[excludesKeyDef]);
+    const includeRegex = regExFromPattern(process.env[includesKey])
 
-    return new RegExp(escapedPaths.join('|'));
+    return (path) => {
+      if (excludeRegex?.test(path)) {
+        return false;
+      }
+      return includeRegex ? includeRegex.test(path) : true;
+    };
   }
 
   function loadPreviewIndexFilePath() {
@@ -51,8 +53,7 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
 
   const adminToken = loadAdminToken();
   const previewRoots = loadPreviewRoots();
-  const excludePaths = loadExcludePaths();
-  const excludePathsRegex = buildExcludeRegex(excludePaths);
+  const canIncludePath = buildPathTester(key);
   const previewIndexFilePath = loadPreviewIndexFilePath();
 
   return {
@@ -62,8 +63,7 @@ export default function SiteConfig(org, repo, lingoConfigMap) {
     lingoConfigMap,
     adminToken,
     previewRoots,
-    excludePaths,
-    excludePathsRegex,
+    canIncludePath,
     previewIndexFilePath,
 
     filterPreviewRoots(requestedRegionPaths) {

@@ -36,7 +36,7 @@ html[dir="rtl"] {
   position: relative;
   overflow: clip;
   margin: auto;
-  
+
   .elastic-carousel-container {
     display: flex;
     position: absolute;
@@ -62,7 +62,7 @@ html[dir="rtl"] {
         padding: var(--s2a-spacing-lg);
         gap: var(--s2a-spacing-md);
         align-items: center;
-        
+
         img {
           width: 24px;
           height: 24px;
@@ -169,7 +169,7 @@ html[dir="rtl"] {
 @media (1280px <= width) {
   .elastic-carousel-container {
     max-height: var(--elastic-carousel-container-height-desktop);
-    
+
     .elastic-carousel-item {
       width: calc(100vw/calc(var(--slides) - 1));
     }
@@ -184,7 +184,7 @@ html[dir="rtl"] {
       max-height: var(--elastic-carousel-container-height-tablet);
       .elastic-carousel-item {
         width: calc(100vw / calc(var(--slides) - 1.5));
-    
+
         .elastic-carousel-item-header {
           padding: var(--s2a-spacing-md);
         }
@@ -196,9 +196,13 @@ html[dir="rtl"] {
 /** tablet up */
 @media (width >= 768px) {
   .elastic-carousel {
+    padding: 2px 0;
 
     &.disable-hover {
       pointer-events: none;
+    }
+    html[dir="rtl"] .elastic-carousel-container {
+      --start-margin: -200px;
     }
     .elastic-carousel-container {
       --start-margin: 200px;
@@ -289,7 +293,7 @@ html[dir="rtl"] {
         max-width: 100%;
         color: var(--s2a-color-gray-25);
         background: transparent;
-        
+
         /** animation */
         animation: elasticMobileStackSlides var(--paralax-easing) both;
         animation-timeline: view();
@@ -350,7 +354,7 @@ html[dir="rtl"] {
           .elastic-carousel-item-header {
             padding: var(--s2a-spacing-lg);
             position: relative;
-            
+
             &:after {
               content: '';
               display: block;
@@ -448,7 +452,7 @@ html[dir="rtl"] {
     filter: contrast(1);
     opacity: 0;
   }
-  
+
 
   10% {
     opacity: 1;
@@ -461,7 +465,7 @@ html[dir="rtl"] {
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     filter: contrast(var(--stack-contrast));
-    
+
   }
 }
 

@@ -2,6 +2,7 @@ import { decorateBlockText, decorateTextOverrides } from '../../../utils/decorat
 import { createTag } from '../../../utils/utils.js';
 
 function hangOpeningQuote(header) {
+  if (!header) return;
   const openingQuotes = /^(\p{Pi})/u;
   const match = header.textContent.match(openingQuotes);
   if (!match) return;
@@ -13,8 +14,16 @@ function hangOpeningQuote(header) {
 
 function decorateText(el) {
   decorateBlockText(el);
-  const headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  hangOpeningQuote(headings[0]);
+  const firstText = el?.querySelector('h1, h2, h3, h4, h5, h6, p');
+  hangOpeningQuote(firstText);
+}
+
+function promoteParagraphTitle(content, headingSize = '2') {
+  if (!content || content.querySelector('h1, h2, h3, h4, h5, h6')) return;
+  const firstP = content.querySelector('p');
+  if (!firstP) return;
+  const bodyClass = [...firstP.classList].find((c) => c.startsWith('body-'));
+  if (bodyClass) firstP.classList.replace(bodyClass, `title-${headingSize}`);
 }
 
 function decorate(block) {
@@ -23,6 +32,7 @@ function decorate(block) {
   content?.classList.add('content');
   foreground?.classList.add('foreground');
   decorateText(content);
+  promoteParagraphTitle(content);
 }
 
 function decorateMultiViewport(el, viewportContent) {
@@ -86,12 +96,14 @@ function getViewportConfig(el) {
   const children = [...el.children];
   const delimiterEls = [];
   const delimiters = ['mobile', 'tablet', 'desktop'];
+  const suffix = '-viewport';
   delimiters.forEach((delimiter, index) => {
     const delimiterIndex = children
-      .findIndex((child) => child.textContent.toLowerCase().includes(delimiter));
+      .findIndex((child) => child.textContent.trim().toLowerCase().startsWith(delimiter + suffix));
     if (delimiterIndex < 0) return;
     const nextDelimiterIndex = children
-      .findIndex((child) => child.textContent.toLowerCase().includes(delimiters[index + 1]));
+      .findIndex((child) => child.textContent
+        .trim().toLowerCase().startsWith(delimiters[index + 1] + suffix));
     const content = children
       .slice(delimiterIndex + 1, nextDelimiterIndex < 0 ? children.length : nextDelimiterIndex);
     addMissingContent(content, viewportContent[delimiters[index - 1]]);

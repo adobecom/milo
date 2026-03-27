@@ -6,7 +6,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta', 'useSusiModal'],
   },
   {
     key: 'footer',
@@ -192,7 +192,7 @@ export default async function loadBlock(configs, customLib) {
           window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
             clientId: 'feds-milo',
             tags: 'standalone-gnav',
-            errorType: e.errorType,
+            severity: 'error',
           });
         }
       }
@@ -217,7 +217,7 @@ export default async function loadBlock(configs, customLib) {
           window.lana.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {
             clientId: 'feds-milo',
             tags: 'standalone-footer',
-            errorType: e.errorType,
+            severity: 'error',
           });
         }
       }

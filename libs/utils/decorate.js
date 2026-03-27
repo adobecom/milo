@@ -219,7 +219,8 @@ function applyTextOverrides(el, override, targetEl) {
   const type = isC2 ? parts[0] : parts[1];
   const modifier = isC2 ? parts[1] : parts[0];
   const scopeEl = targetEl !== false ? targetEl : el;
-  const els = scopeEl.querySelectorAll(`[class^="${type}"]`);
+  const els = [...scopeEl.querySelectorAll('[class]')]
+    .filter((elOfType) => [...elOfType.classList].some((cls) => cls.startsWith(type)));
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
@@ -227,7 +228,7 @@ function applyTextOverrides(el, override, targetEl) {
   });
 }
 
-const textOverridesConfig = isC2 ? ['title-', 'body-'] : ['-heading', '-body', '-detail'];
+const textOverridesConfig = isC2 ? ['title-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
 
 export function decorateTextOverrides(el, options = textOverridesConfig, target = false) {
   const overrides = [...el.classList]
@@ -456,7 +457,7 @@ export async function loadCDT(el, classList) {
         .then(({ default: initCDT }) => initCDT(el, classList)),
     ]);
   } catch (error) {
-    window.lana?.log(`WARN: Failed to load countdown timer: ${error}`, { tags: 'errorType=warn,module=countdown-timer' });
+    window.lana?.log(`Failed to load countdown timer: ${error}`, { tags: 'countdown-timer', severity: 'error' });
   }
 }
 
