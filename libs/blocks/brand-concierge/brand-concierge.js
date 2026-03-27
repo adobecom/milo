@@ -204,7 +204,7 @@ async function openSusiLightModal() {
     onError,
   });
   const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
-  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in or create and account');
   const fragment = new DocumentFragment();
 
   fragment.append(title, wrapper);
