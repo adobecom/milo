@@ -105,6 +105,16 @@ const onCarouselHover = (event) => {
     carouselContainer.classList.toggle('stick-left', slideIndex < 3);
     carouselContainer.classList.toggle('stick-right', slideIndex > 3);
   }
+
+  const slideName = slide.dataset.cardLabel;
+  const block = slide.closest('[daa-lh]');
+  const blockName = block?.getAttribute('daa-lh');
+  const section = block?.parentElement?.closest('[daa-lh]');
+  const sectionName = section?.getAttribute('daa-lh');
+  if (slideName && !trackedCardHovers.includes(slideName)) {
+    trackedCardHovers.push(slideName);
+    sendAnalytics(`hover-${slideName}|${sectionName}|${blockName}`);
+  }
 };
 
 const buildSlide = ({ slide, index, slidesTotal }) => {
