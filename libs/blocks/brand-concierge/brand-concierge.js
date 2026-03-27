@@ -264,17 +264,6 @@ async function openChatModal(initialMessage, el) {
       };
     }
 
-    // eslint-disable-next-line no-underscore-dangle
-    const consentsConfig = window.alloy_all?.data?._adobe_corpnew?.otherConsents?.configuration;
-    const consentConfObject = consentsConfig
-      && Object.keys(consentsConfig).reduce((rdx, key) => {
-        rdx.push({
-          consentStandard: key,
-          consentStringValue: consentsConfig[key].toString(),
-        });
-        return rdx;
-      }, []);
-
     content.xdm = {
       web: { webPageDetails: { URL: surfaceURL } },
       environment: {
@@ -284,8 +273,21 @@ async function openChatModal(initialMessage, el) {
       homeAddress: { region: locale.region },
     };
 
-    if (consentConfObject?.length) {
-      content.xdm.consentStrings = consentConfObject;
+    if (env?.name === 'stage') {
+      // eslint-disable-next-line no-underscore-dangle
+      const consentsConfig = window.alloy_all?.data?._adobe_corpnew?.otherConsents?.configuration;
+      const consentConfObject = consentsConfig
+      && Object.keys(consentsConfig).reduce((rdx, key) => {
+        rdx.push({
+          consentStandard: key,
+          consentStringValue: consentsConfig[key].toString(),
+        });
+        return rdx;
+      }, []);
+
+      if (consentConfObject?.length) {
+        content.xdm.consentStrings = consentConfObject;
+      }
     }
   };
 
