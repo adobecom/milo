@@ -105,7 +105,15 @@ function resetFloatingButton(el) {
  * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
  */
 export function createSusiComponentForModal({
-  authParams, config, variant, redirectUrl, isStage, popup, onCloseRedirect, onSuccessfulToken,
+  authParams,
+  config,
+  variant,
+  redirectUrl,
+  isStage,
+  popup,
+  onCloseRedirect,
+  onSuccessfulToken,
+  onError,
 }) {
   const susi = createTag('susi-sentry-light');
   susi.authParams = {
@@ -124,7 +132,6 @@ export function createSusiComponentForModal({
       window.location.assign(e.detail);
     }
   };
-  const onError = (e) => { window.lana?.log('SUSI Light error:', e); };
   const onAnalytics = () => { /* TODO: send analytics from e.detail (type, event, client_id) */ };
   const onAuthFailed = () => { /* TODO: handle auth failed (e.detail) */ };
 
@@ -174,6 +181,17 @@ async function openSusiLightModal() {
       }
     }
   };
+
+  const onError = (e) => {
+    const mountEl = document.getElementById(mountId);
+    window.lana?.log(`SUSI Light error: ${e}`, { tags: 'brand-concierge', severity: 'error' });
+    if (mountEl) {
+      mountEl.dispatchEvent(
+        new CustomEvent('bc:cta-action-error', { detail: { message: 'Something went wrong signing in. Please try again in a moment.' } }),
+      );
+    }
+    closeSusiModal();
+  };
   const susiEl = createSusiComponentForModal({
     authParams,
     config: susiConfig,
@@ -183,9 +201,10 @@ async function openSusiLightModal() {
     popup: true,
     onCloseRedirect: closeSusiModal,
     onSuccessfulToken,
+    onError,
   });
   const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
-  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in or create an account');
   const fragment = new DocumentFragment();
 
   fragment.append(title, wrapper);
