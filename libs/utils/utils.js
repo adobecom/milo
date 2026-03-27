@@ -2199,6 +2199,8 @@ function reserveBannerSpace() {
 export async function pageExist(url) {
   const headResp = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
   if (headResp?.status !== 401) return headResp?.ok ?? false;
+  const isAemEnv = url.includes('.aem.page') || url.includes('.aem.live');
+  if (!isAemEnv) return headResp?.ok ?? false;
   const res = await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null);
   return res?.ok ?? false;
 }
