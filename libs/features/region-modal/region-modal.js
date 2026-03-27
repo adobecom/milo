@@ -1,5 +1,6 @@
 import { getCountry, setMarket } from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
+import { marketsLangForLocale, norm } from '../../utils/market.js';
 
 let config;
 let createTag;
@@ -179,9 +180,9 @@ async function getAvailableMarkets(suggestedMarkets) {
     .map((r) => r.market);
 }
 
-function getPageMarketsEntry(pagePrefix) {
-  const raw = config.marketsConfig?.languages?.data ?? config.marketsConfig?.data;
-  return raw?.find((e) => (e.prefix || 'us') === (pagePrefix || 'us'));
+function getMarketsLangEntry() {
+  const languages = config.marketsConfig?.languages?.data ?? config.marketsConfig?.data ?? [];
+  return marketsLangForLocale({ languages }, config.locale);
 }
 
 function setIntlCookie(localePrefix) {
@@ -295,7 +296,7 @@ function openPicker(
 
 function getCurrentSiteLabel() {
   const prefix = config.locale.prefix?.replace('/', '') || 'us';
-  const entry = getPageMarketsEntry(prefix);
+  const entry = getMarketsLangEntry();
   return entry?.nativeName ?? entry?.langName ?? entry?.language ?? prefix;
 }
 
@@ -404,16 +405,16 @@ function buildContent(
     });
   }
 
-  const currentEntry = getPageMarketsEntry(currentPagePrefix);
-  const regionCode = useGeo && currentEntry
-    ? String(currentEntry.defaultMarket || currentPagePrefix || 'us').toLowerCase()
-    : '';
+  const currentEntry = getMarketsLangEntry();
+  const siteCountry = norm(currentPagePrefix) || 'us';
+  const regionCode = useGeo ? siteCountry : '';
+  const stayLangKey = getLangKeyForModalMarket(currentEntry || {});
   const stayLabel = useGeo && regionCode && markets?.length
     ? getGeoCountryDisplayName(
       markets,
       regionCode,
-      getLangKeyForModalMarket(currentEntry),
-      currentEntry.prefix,
+      stayLangKey,
+      siteCountry,
     )
     : getCurrentSiteLabel();
   const currentPageUrl = window.location.hash ? document.location.href : '#';
