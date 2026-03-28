@@ -25,6 +25,7 @@ export default {
         'cta-actions',
         'firefly-community-gallery',
       ],
+      renderAllWidgetsInMessageContent: true,
     },
     privacyNotice: {
       title: '',
