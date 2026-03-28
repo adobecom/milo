@@ -17,8 +17,8 @@ import {
   norm,
 } from '../../utils/market.js';
 
+// reload the page to avoid bfcache issues.
 window.addEventListener('pageshow', (event) => {
-  // reload the page to avoid bfcache issues.
   if (event.persisted && document.querySelector('.market-selector-dropdown')) {
     window.location.reload();
   }
@@ -102,7 +102,7 @@ function isNameMatch(name, searchNormalized) {
   return name && normalizeText(name).includes(searchNormalized);
 }
 
-function isIetfMatchForPrefix(prefix, searchTerm, locales) {
+export function isIetfMatchForPrefix(prefix, searchTerm, locales) {
   if (!locales || !prefix) return false;
   const localeKey = prefix.replace(/^\//, '');
   const fullIetf = locales[localeKey]?.ietf?.toLowerCase();
@@ -114,7 +114,7 @@ function filterMarket(item, searchTerm) {
   return isNameMatch(item.label, searchTerm);
 }
 
-function filterLang(item, searchTerm, locales) {
+export function filterLang(item, searchTerm, locales) {
   const labelMatch = isNameMatch(item.label, searchTerm);
   const englishMatch = isNameMatch(item.englishName, searchTerm);
   const ietfMatch = isIetfMatchForPrefix(item.value, searchTerm, locales);

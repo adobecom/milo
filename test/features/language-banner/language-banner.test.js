@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, setTargetMarket } from '../../../libs/utils/utils.js';
+import { setConfig, setLangRoutingConfig } from '../../../libs/utils/utils.js';
 
 const { default: init, sendAnalytics } = await import('../../../libs/features/language-banner/language-banner.js');
 
@@ -44,7 +44,7 @@ describe('Language Banner', () => {
     document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     sessionStorage.clear();
     delete window._satellite;
-    setTargetMarket(null);
+    setLangRoutingConfig(null);
     document.dir = 'ltr';
     document.documentElement.removeAttribute('dir');
   });
@@ -57,14 +57,14 @@ describe('Language Banner', () => {
 
   it('does not show banner if no target market is set', async () => {
     setConfigForTest();
-    setTargetMarket(null);
+    setLangRoutingConfig(null);
     await init();
     expect(document.querySelector('.language-banner').childElementCount).to.equal(0);
   });
 
   it('shows banner when target market is set', async () => {
     setConfigForTest();
-    setTargetMarket(mockMarkets.de);
+    setLangRoutingConfig({ showBanner: true, markets: [mockMarkets.de] });
     await init();
     expect(document.querySelector('.language-banner').childElementCount).to.be.greaterThan(0);
   });
@@ -72,14 +72,14 @@ describe('Language Banner', () => {
   it('does not build banner if the placeholder element is missing', async () => {
     document.body.innerHTML = ''; // remove the banner placeholder
     setConfigForTest();
-    setTargetMarket(mockMarkets.de);
+    setLangRoutingConfig({ showBanner: true, markets: [mockMarkets.de] });
     await init();
     expect(document.querySelector('.language-banner')).to.be.null;
   });
 
   it('shows banner with correct market information', async () => {
     setConfigForTest();
-    setTargetMarket(mockMarkets.de);
+    setLangRoutingConfig({ showBanner: true, markets: [mockMarkets.de] });
 
     await init();
 
@@ -97,7 +97,7 @@ describe('Language Banner', () => {
       text: 'このページを日本語で表示する',
       continueText: '続く',
     };
-    setTargetMarket(customMarket);
+    setLangRoutingConfig({ showBanner: true, markets: [customMarket] });
 
     await init();
 
@@ -114,7 +114,7 @@ describe('Language Banner', () => {
       continueText: 'متابعة',
       dir: 'rtl',
     };
-    setTargetMarket(customMarket);
+    setLangRoutingConfig({ showBanner: true, markets: [customMarket] });
 
     await init();
 
@@ -126,7 +126,7 @@ describe('Language Banner', () => {
 
   it('shows banner for French market', async () => {
     setConfigForTest();
-    setTargetMarket(mockMarkets.fr);
+    setLangRoutingConfig({ showBanner: true, markets: [mockMarkets.fr] });
 
     await init();
 
@@ -172,7 +172,7 @@ describe('Language Banner', () => {
     beforeEach(async () => {
       openStub = sandbox.stub(window, 'open');
       setConfigForTest();
-      setTargetMarket(mockMarkets.de);
+      setLangRoutingConfig({ showBanner: true, markets: [mockMarkets.de] });
       await init();
     });
 
