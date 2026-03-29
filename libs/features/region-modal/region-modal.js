@@ -218,6 +218,7 @@ function appendGeoFlagIcon(mainAction, geoMarketCode) {
   const base = config.miloLibs || config.codeRoot;
   const iconSpan = createTag('span', { class: 'icon margin-inline-end' });
   const code = String(geoMarketCode).toLowerCase().replace(/_/g, '-');
+  const flagCode = code === 'gb' ? 'uk' : code;
   const flagImg = createTag('img', {
     class: 'icon-milo',
     width: 15,
@@ -235,7 +236,7 @@ function appendGeoFlagIcon(mainAction, geoMarketCode) {
     },
     { once: true },
   );
-  flagImg.src = `${base}/img/georouting/flag-${code}.svg`;
+  flagImg.src = `${base}/img/georouting/flag-${flagCode}.svg`;
   iconSpan.appendChild(flagImg);
   mainAction.appendChild(iconSpan);
 }
