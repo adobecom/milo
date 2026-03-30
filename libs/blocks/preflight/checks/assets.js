@@ -24,17 +24,19 @@ async function loadVideo(asset) {
   if (!source) asset.appendChild(createTag('source', { src: dataSource, type: 'video/mp4' }));
 
   asset.load();
-  await Promise.race(['loadedmetadata', 'error']
-    .map((event) => new Promise((resolve) => {
+  await Promise.race([
+    ...['loadedmetadata', 'error'].map((event) => new Promise((resolve) => {
       asset.addEventListener(event, resolve, { once: true });
-    })));
+    })),
+    new Promise((resolve) => { setTimeout(resolve, 5000); }),
+  ]);
 }
 
 function loadMpc(asset) {
   return new Promise((resolve) => {
     const idMatch = asset.src.match(/\/v\/(\d+)/);
     const videoId = idMatch ? idMatch[1] : null;
-    if (!videoId) resolve();
+    if (!videoId) { resolve(); return; }
 
     window.fetch(`https://video.tv.adobe.com/v/${videoId}?format=json`)
       .then((res) => res.json())
@@ -43,7 +45,8 @@ function loadMpc(asset) {
         asset.setAttribute('data-video-width', activeSource.width);
         asset.setAttribute('data-video-height', activeSource.height);
         resolve();
-      });
+      })
+      .catch(resolve);
   });
 }
 
