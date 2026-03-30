@@ -46,17 +46,11 @@ function sendAnalyticsEvent(eventName, type = 'click') {
   }
 }
 
+const FOCUS_KEYS = ['Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+
 let miloLangIsKeyboard = false;
 document.addEventListener('keydown', (e) => {
-  if (
-    e.key === 'Tab'
-    || e.key === 'ArrowLeft'
-    || e.key === 'ArrowRight'
-    || e.key === 'ArrowUp'
-    || e.key === 'ArrowDown'
-  ) {
-    miloLangIsKeyboard = true;
-  }
+  if (FOCUS_KEYS.includes(e.key)) miloLangIsKeyboard = true;
 });
 document.addEventListener('mousedown', () => {
   miloLangIsKeyboard = false;

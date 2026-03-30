@@ -35,7 +35,10 @@ export default async function loadMarketsData() {
   if (!marketsPromise) {
     const url = `${getFederatedContentRoot()}/federal/assets/markets.json`;
     marketsPromise = fetch(url)
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (!res.ok) throw new Error(`markets.json fetch failed with status ${res.status}`);
+        return res.json();
+      })
       .then((json) => (Array.isArray(json?.data) ? json.data : []))
       .catch((e) => {
         window.lana?.log(`marketHelper: failed to load markets data: ${e?.message}`);

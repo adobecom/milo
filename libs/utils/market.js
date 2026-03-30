@@ -47,7 +47,8 @@ export async function getValidatedMarket() {
       const { default: getAkamaiCode } = await import('./geo.js');
       detectedMarket = norm(await getAkamaiCode());
     } catch {
-      /* geo service or fetch failed; keep detectedMarket falsy and fall through to defaults */
+      window.lana?.log('Error getting Akamai code', { severity: 'error' });
+      return null;
     }
   }
   if (!config) return detectedMarket || 'us';
