@@ -1131,19 +1131,19 @@ p {
     animation-timeline: scroll(root block);
     animation-range: 0 80vh;
     animation-timing-function: ease-out;
+  }
 
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: black;
-      opacity: 0;
-      pointer-events: none;
-      animation: parallax-fade-to-dark linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0 80vh;
-      z-index: 2;
-    }
+  .section.parallax-move-up-fast::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: black;
+    opacity: 0;
+    pointer-events: none;
+    animation: parallax-fade-to-dark linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 80vh;
+    z-index: 2;
   }
 
   @keyframes parallax-move-up-fast {
