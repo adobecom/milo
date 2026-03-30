@@ -1,11 +1,11 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
-import { injectJsonLd } from '../merch/json-ld.js';
 import {
   initService,
   getOptions,
   overrideOptions,
   loadMasComponent,
+  COMMERCE_LIBRARY,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
   MAS_FIELD,
@@ -149,8 +149,8 @@ async function createJsonLd(el, options) {
   const strikethroughEl = merchCard.querySelector('[is="inline-price"][data-template="strikethrough"]');
   const offer = priceEl?.value?.[0];
   const regularOffer = strikethroughEl?.value?.[0];
-  const country = priceEl?.options?.country ?? getConfig().locale?.region;
-  injectJsonLd(fields, offer, regularOffer, country, document.location.href);
+  const { injectJsonLd } = await loadMasComponent(COMMERCE_LIBRARY);
+  injectJsonLd(fields, offer, regularOffer, document.location.href);
   merchCard.remove();
   el.remove();
 }
