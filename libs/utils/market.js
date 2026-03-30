@@ -48,7 +48,6 @@ export async function getValidatedMarket() {
       detectedMarket = norm(await getAkamaiCode());
     } catch {
       window.lana?.log('Error getting Akamai code', { severity: 'error' });
-      return null;
     }
   }
   if (!config) return detectedMarket || 'us';
