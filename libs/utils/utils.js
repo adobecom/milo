@@ -2078,8 +2078,9 @@ async function loadPostLCP(config) {
       lerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
-    if (!CSS.supports('animation-timeline', 'view()')) {
-      import('../c2/scripts/parallax-polyfill.js').then((mod) => mod.default());
+    if (!CSS.supports('animation-timeline: scroll()')) {
+      const { default: initPolyfill } = await import('../c2/parallax-polyfill.js');
+      await initPolyfill(config, loadScript);
     }
   }
   // load privacy here if quick-link is present in first section
