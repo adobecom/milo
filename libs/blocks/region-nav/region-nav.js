@@ -1,5 +1,5 @@
 import {
-  getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational, getCountry, createTag
+  getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational, getCountry, createTag,
 } from '../../utils/utils.js';
 
 let config;
