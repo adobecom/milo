@@ -45,14 +45,6 @@ const disableHoverOnScroll = (carousel) => {
   return controller;
 };
 
-const handleVideoPlay = (event) => {
-  const slide = event.target.closest('.elastic-carousel-item');
-  if (!slide) return;
-  const video = slide?.querySelector('video');
-  if (!video) return;
-  video.play().catch(() => { });
-};
-
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
@@ -85,24 +77,6 @@ const onCarouselLeave = (event) => {
   leaveTimeout = setTimeout(() => {
     carouselContainer.classList.remove('stick-left', 'stick-right');
   }, 50);
-};
-
-const onCarouselHover = (event) => {
-  const slide = event.target.closest('.elastic-carousel-item');
-  if (!slide) return;
-  handleVideoPlay(event);
-  clearTimeout(leaveTimeout);
-
-  const slideIndex = slide.dataset.index * 1;
-  const carouselContainer = event.target.closest('.elastic-carousel').querySelector('.elastic-carousel-container');
-
-  if (isRtl()) {
-    carouselContainer.classList.toggle('stick-right', slideIndex < 3);
-    carouselContainer.classList.toggle('stick-left', slideIndex > 3);
-  } else {
-    carouselContainer.classList.toggle('stick-left', slideIndex < 3);
-    carouselContainer.classList.toggle('stick-right', slideIndex > 3);
-  }
 };
 
 const buildSlide = ({ slide, index, slidesTotal }) => {
@@ -159,6 +133,24 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
+  slideEl.addEventListener('mouseenter', () => {
+    clearTimeout(leaveTimeout);
+
+    const video = slideEl.querySelector('video');
+    if (video) video.play().catch(() => {});
+
+    const slideIndex = slideEl.dataset.index * 1;
+    const container = slideEl.parentElement;
+    if (!container) return;
+
+    if (isRtl()) {
+      container.classList.toggle('stick-right', slideIndex < 3);
+      container.classList.toggle('stick-left', slideIndex > 3);
+    } else {
+      container.classList.toggle('stick-left', slideIndex < 3);
+      container.classList.toggle('stick-right', slideIndex > 3);
+    }
+  });
   return slideEl;
 };
 
@@ -183,7 +175,6 @@ export default async function init(el) {
   const decoratedCarousel = decorateCarousel(el);
   const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
-  decoratedCarousel.addEventListener('mouseover', onCarouselHover);
   handleMobileAutoplay(decoratedCarousel);
 
   new MutationObserver((_, observer) => {

@@ -40,9 +40,9 @@ html[dir="rtl"] {
   .elastic-carousel-container {
     display: flex;
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: var(--elastic-carousel-transtions);
+    left: 0;
+    transform: translateX(calc(50vw - 50%));
+    transition: transform .5s ease;
 
     .elastic-carousel-item {
       display: flex;
@@ -54,7 +54,8 @@ html[dir="rtl"] {
       background-color: var(--s2a-color-gray-75);
       border-radius: var(--s2a-border-radius-md);
       cursor: pointer;
-      transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .1s var(--paralax-easing);
+      will-change: width, max-width;
+      transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s ease;
 
       .elastic-carousel-item-header {
         display: flex;
@@ -154,13 +155,11 @@ html[dir="rtl"] {
 @media (width < 1700px) {
   .elastic-carousel-container {
     &.stick-left {
-      left: 0;
-      transform: translateX(0%);
+      transform: translateX(0);
     }
 
     &.stick-right {
-      left: 100%;
-      transform: translateX(-100%);
+      transform: translateX(calc(100vw - 100%));
     }
   }
 }
