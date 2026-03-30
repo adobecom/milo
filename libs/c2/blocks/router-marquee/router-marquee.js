@@ -4,7 +4,7 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 const CHEVRON_SVG = '<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const RESET_SVG = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><g clip-path="url(#clip0_3399_7947)"><rect x="0.333984" y="2" width="1" height="8" rx="0.5" fill="white"/><path d="M7.10412 1.28574C7.36448 1.02559 7.78654 1.02546 8.04682 1.28574C8.30711 1.54602 8.30698 1.96808 8.04682 2.22845L4.94201 5.33327H11.3326C11.7008 5.33327 11.9993 5.63174 11.9993 5.99993C11.9993 6.36812 11.7008 6.6666 11.3326 6.6666H4.94201L8.04682 9.77142C8.30698 10.0318 8.30711 10.4538 8.04682 10.7141C7.78654 10.9744 7.36448 10.9743 7.10412 10.7141L2.86128 6.47129C2.60093 6.21094 2.60093 5.78893 2.86128 5.52858L7.10412 1.28574Z" fill="white"/></g><defs><clipPath id="clip0_3399_7947"><rect width="12" height="12" fill="white"/></clipPath></defs></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
-const AUTOPLAY_MS = 15000;
+const AUTOPLAY_MS = 6000;
 const SLIDE_MS = 300;
 const STAGGER_MS = 1000;
 const STAGGER_BASE = 60;
@@ -99,6 +99,55 @@ const decorateCtas = (textCol) => {
   cta.replaceChildren(...[primary, secondary].filter(Boolean));
 };
 
+const prepareVideo = (imageCol) => {
+  const videoContainer = imageCol?.querySelector('.video-container');
+  const video = videoContainer?.querySelector('video');
+  if (!video) return;
+  // data-hoverplay is used as an opt out from the decoration logic in decorate.js
+  ['playsinline', 'muted', 'loop', 'data-hoverplay'].forEach((attr) => {
+    video.setAttribute(attr, '');
+  });
+  video.muted = true;
+  video.removeAttribute('autoplay');
+  const src = video.dataset.videoSource || video.src;
+  video.removeAttribute('src');
+  video.querySelectorAll('source').forEach((s) => s.remove());
+  video.dataset.lazySrc = src;
+  videoContainer.querySelector('.pause-play-wrapper')?.remove();
+  videoContainer.replaceWith(video);
+};
+
+const getActiveViewport = () => {
+  if (window.matchMedia('(width >= 1280px)').matches) return 'desktop';
+  if (window.matchMedia('(width > 767px)').matches) return 'tablet';
+  return 'mobile';
+};
+
+const loadVideo = (video) => {
+  if (!video || video.dataset.loaded) return;
+  const src = video.dataset.lazySrc;
+  if (src && !video.querySelector('source')) {
+    video.appendChild(createTag('source', { src, type: 'video/mp4' }));
+  }
+  video.load();
+  video.dataset.loaded = 'true';
+};
+
+const loadViewportVideos = (el) => {
+  const active = getActiveViewport();
+  el.querySelectorAll('.rm-viewport').forEach((vp) => {
+    const isActive = vp.dataset.viewport === active;
+    vp.querySelectorAll('.rm-background video').forEach((v) => {
+      if (!isActive) return;
+      const isActiveSlide = v.closest('.rm-slide')?.classList.contains('is-active');
+      if (isActiveSlide) {
+        loadVideo(v);
+        v.play().catch(() => {});
+      }
+    });
+  });
+};
+
 const decorateSlide = (slide) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
   slide.classList.add('rm-slide');
@@ -109,20 +158,7 @@ const decorateSlide = (slide) => {
   contentWrapper.append(textCol);
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
 
-  const videoContainer = imageCol?.querySelector('.video-container');
-  const video = videoContainer?.querySelector('video');
-
-  if (video) {
-    ['playsinline', 'autoplay', 'muted', 'loop'].forEach((attr) => {
-      video.setAttribute(attr, '');
-    });
-    video.muted = true;
-    const src = video.dataset.videoSource || video.src;
-    if (src && !video.querySelector('source')) video.appendChild(createTag('source', { src, type: 'video/mp4' }));
-    videoContainer.querySelector('.pause-play-wrapper')?.remove();
-    videoContainer.replaceWith(video);
-    video.load();
-  }
+  prepareVideo(imageCol);
 
   if (!textCol) return;
   decorateText(textCol);
@@ -246,8 +282,9 @@ const updateContentSpacing = (el) => {
   if (!wrapper || !content || !controls || !vp) return;
 
   // Set min-height so the viewport never shrinks below what the content needs
-  const lastContentEl = content.lastElementChild;
-  const needed = lastContentEl.getBoundingClientRect().bottom + controls.offsetHeight + 24;
+  const wrapperPadTop = getCssPx(wrapper, 'padding-top');
+  const contentH = content.offsetHeight;
+  const needed = wrapperPadTop + contentH + 24 + controls.offsetHeight;
 
   vp.style.minHeight = `${Math.max(window.innerHeight, needed)}px`;
   // Compact padding-top when content overlaps controls
@@ -336,6 +373,8 @@ const startAutoplay = (slides, cards, container, block) => {
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
+    const vid = newSlide.querySelector('video');
+    loadVideo(vid);
     const reducedMotion = prefersReducedMotion();
 
     oldSlide.classList.remove('is-active');
@@ -366,9 +405,9 @@ const startAutoplay = (slides, cards, container, block) => {
     }
 
     oldSlide.querySelector('video')?.pause();
-    const vid = newSlide.querySelector('video');
+    if (vid) vid.currentTime = 0;
     if (!paused) {
-      if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+      vid?.play().catch(() => {});
     } else {
       vid?.pause();
     }
@@ -405,8 +444,7 @@ const startAutoplay = (slides, cards, container, block) => {
     setPlayingState(true);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
-    const vid = slides[active]?.querySelector('video');
-    if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+    slides[active]?.querySelector('video')?.play().catch(() => {});
   };
 
   const cancelLeaveTimer = () => {
@@ -539,13 +577,6 @@ const buildViewport = (viewport, slides) => {
   return container;
 };
 
-const initVideos = (el) => {
-  el.querySelectorAll('.rm-background video').forEach((v) => {
-    v.muted = true;
-    v.play().catch(() => {});
-  });
-};
-
 const reorderSlidesMaybe = (el, viewports) => {
   const sectionMeta = el.parentElement?.querySelector('.section-metadata');
   if (!sectionMeta) return;
@@ -565,12 +596,24 @@ export default function init(el) {
   reorderSlidesMaybe(el, viewports);
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
-  initVideos(el);
-  containers.forEach((container) => {
+  const initializedVps = new Set();
+  const initViewportAutoplay = () => {
+    const activeVp = getActiveViewport();
+    if (initializedVps.has(activeVp)) return;
+    initializedVps.add(activeVp);
+    const container = containers.find((c) => c.dataset.viewport === activeVp);
+    if (!container) return;
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
     startAutoplay(slides, cards, container, el);
-  });
+  };
+
+  loadViewportVideos(el);
+  initViewportAutoplay();
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
-  window.addEventListener('resize', () => dynamicLayoutUpdates(el));
+  window.addEventListener('resize', () => {
+    dynamicLayoutUpdates(el);
+    loadViewportVideos(el);
+    initViewportAutoplay();
+  });
 }
