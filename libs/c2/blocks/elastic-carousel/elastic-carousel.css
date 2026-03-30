@@ -171,7 +171,7 @@ html[dir="rtl"] {
 }
 
 /** desktop only */
-@media (1280px <=width) {
+@media (1280px <= width) {
   .elastic-carousel-container {
     max-height: var(--elastic-carousel-container-height-desktop);
 
@@ -182,7 +182,7 @@ html[dir="rtl"] {
 }
 
 /** tablet only */
-@media (768px <=width < 1280px) {
+@media (768px <= width < 1280px) {
   .elastic-carousel {
     height: var(--elastic-carousel-container-height-tablet);
 
@@ -202,7 +202,7 @@ html[dir="rtl"] {
 }
 
 /** tablet up */
-@media (width >=768px) {
+@media (width >= 768px) {
   .elastic-carousel {
     padding: 2px 0;
 
