@@ -11,6 +11,7 @@ html[dir="rtl"] {
             right: unset;
           }
         }
+
         & .elastic-carousel-item-header {
           &:after {
             transform: rotate(180deg);
@@ -22,9 +23,9 @@ html[dir="rtl"] {
     }
   }
 }
+
 .elastic-carousel {
   --elastic-carousel-transtions: all .5s ease;
-  --elastic-carousel-transtions-slow: all .3s ease;
   --elastic-carousel-container-height-desktop: 590px;
   --elastic-carousel-container-height-tablet: 572px;
   --elastic-carousel-item-max-width: 294px;
@@ -86,6 +87,7 @@ html[dir="rtl"] {
 
       .elastic-carousel-item-media {
         text-align: center;
+
         video {
           border-radius: var(--s2a-border-radius-md);
           object-fit: cover;
@@ -153,6 +155,9 @@ html[dir="rtl"] {
 /** custom media rules */
 @media (width < 1700px) {
   .elastic-carousel-container {
+    left: 50%;
+    transform: translateX(-50%);
+
     &.stick-left {
       left: 0;
       transform: translateX(0%);
@@ -166,7 +171,7 @@ html[dir="rtl"] {
 }
 
 /** desktop only */
-@media (1280px <= width) {
+@media (1280px <=width) {
   .elastic-carousel-container {
     max-height: var(--elastic-carousel-container-height-desktop);
 
@@ -175,13 +180,16 @@ html[dir="rtl"] {
     }
   }
 }
+
 /** tablet only */
- @media (768px <= width < 1280px) {
+@media (768px <=width < 1280px) {
   .elastic-carousel {
     height: var(--elastic-carousel-container-height-tablet);
+
     .elastic-carousel-container {
       height: 100%;
       max-height: var(--elastic-carousel-container-height-tablet);
+
       .elastic-carousel-item {
         width: calc(100vw / calc(var(--slides) - 1.5));
 
@@ -194,16 +202,18 @@ html[dir="rtl"] {
 }
 
 /** tablet up */
-@media (width >= 768px) {
+@media (width >=768px) {
   .elastic-carousel {
     padding: 2px 0;
 
     &.disable-hover {
       pointer-events: none;
     }
+
     html[dir="rtl"] .elastic-carousel-container {
       --start-margin: -200px;
     }
+
     .elastic-carousel-container {
       --start-margin: 200px;
       /** animation */
@@ -237,14 +247,19 @@ html[dir="rtl"] {
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
-        &:hover,
+        &.hovered,
         &:focus-visible {
           background-color: var(--s2a-color-gray-1000);
           max-width: 496px;
           width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
 
           .elastic-carousel-item-footer p,
-          .elastic-carousel-item-footer h1,h2,h3,h4,h5,h6,
+          .elastic-carousel-item-footer h1,
+          h2,
+          h3,
+          h4,
+          h5,
+          h6,
           .elastic-carousel-item-header p {
             color: var(--s2a-color-gray-25);
           }
@@ -276,13 +291,12 @@ html[dir="rtl"] {
     padding-bottom: calc(var(--last-offset) * var(--offset-scale));
     padding-top: calc(var(--offset-adjuster) / var(--slides));
     margin-inline: var(--s2a-spacing-sm);
+
     .elastic-carousel-container {
       top: 0%;
       height: 100%;
       position: relative;
       flex-direction: column;
-      left: unset;
-      transform: unset;
       display: grid;
       gap: 20vh;
 
@@ -446,6 +460,7 @@ html[dir="rtl"] {
     opacity: .2;
   }
 }
+
 @keyframes elasticMobileStackSlides {
   0% {
     transform: translateY(var(--stack-offset));
