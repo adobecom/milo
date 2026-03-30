@@ -105,10 +105,10 @@ html[dir="rtl"] {
         &:after {
           content: '';
           display: block;
-          background: url('../../assets/img/arrow-right.svg') no-repeat;
+          background: url('/libs/c2/assets/img/arrow-right.svg') no-repeat;
           width: 24px;
           height: 24px;
-          margin: var(--s2a-spacing-lg);
+          margin: var(--s2a-spacing-lg)x`x`;
           position: absolute;
           right: 0;
           bottom: 0;
@@ -358,7 +358,7 @@ html[dir="rtl"] {
             &:after {
               content: '';
               display: block;
-              background: url('../../assets/img/arrow-right.svg') no-repeat;
+              background: url('/libs/c2/assets/img/arrow-right.svg') no-repeat;
               width: 24px;
               height: 24px;
               margin: var(--s2a-spacing-lg);
