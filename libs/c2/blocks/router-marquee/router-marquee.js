@@ -4,7 +4,7 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 const CHEVRON_SVG = '<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const RESET_SVG = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><g clip-path="url(#clip0_3399_7947)"><rect x="0.333984" y="2" width="1" height="8" rx="0.5" fill="white"/><path d="M7.10412 1.28574C7.36448 1.02559 7.78654 1.02546 8.04682 1.28574C8.30711 1.54602 8.30698 1.96808 8.04682 2.22845L4.94201 5.33327H11.3326C11.7008 5.33327 11.9993 5.63174 11.9993 5.99993C11.9993 6.36812 11.7008 6.6666 11.3326 6.6666H4.94201L8.04682 9.77142C8.30698 10.0318 8.30711 10.4538 8.04682 10.7141C7.78654 10.9744 7.36448 10.9743 7.10412 10.7141L2.86128 6.47129C2.60093 6.21094 2.60093 5.78893 2.86128 5.52858L7.10412 1.28574Z" fill="white"/></g><defs><clipPath id="clip0_3399_7947"><rect width="12" height="12" fill="white"/></clipPath></defs></svg>';
 const BREAKPOINTS = ['mobile', 'tablet', 'desktop'];
-const AUTOPLAY_MS = 15000;
+const AUTOPLAY_MS = 6000;
 const SLIDE_MS = 300;
 const STAGGER_MS = 1000;
 const STAGGER_BASE = 60;
