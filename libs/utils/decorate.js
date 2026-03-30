@@ -2,6 +2,7 @@ import {
   createTag,
   loadStyle,
   getConfig,
+  getMetadata,
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
@@ -93,19 +94,26 @@ function elContainsText(el) {
   ));
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
+const isC2 = getMetadata('foundation') === 'c2';
+const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'lg' } : ['m', 's', 'm'];
+
+export function decorateBlockText(el, config = blockTextConfig, type = null) {
+  const sizeMap = Array.isArray(config)
+    ? { heading: config[0], body: config[1], detail: config[2], button: config[3] }
+    : { ...blockTextConfig, ...config };
+
   if (!el.classList.contains('default')) {
     let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
-      headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
-      if (config[2]) {
+      headings.forEach((h) => h.classList.add(`${isC2 ? 'title' : 'heading'}-${sizeMap.heading}`));
+      if (sizeMap.detail || isC2) {
         const prevSib = headings[0]?.previousElementSibling;
-        prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
+        prevSib?.classList.toggle(isC2 ? 'eyebrow' : `detail-${sizeMap.detail}`, !prevSib.querySelector('picture'));
         decorateIconArea(el);
       }
     }
-    const bodyStyle = `body-${config[1]}`;
+    const bodyStyle = `body-${sizeMap.body}`;
     const emptyEls = el?.querySelectorAll(':is(p, ul, ol, div):not([class])');
     if (emptyEls.length) {
       [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
@@ -113,8 +121,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
       el.classList.add(bodyStyle);
     }
   }
-  const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
-  decorateButtons(el, buttonSize);
+  decorateButtons(el, sizeMap.button ? `button-${sizeMap.button}` : '');
   if (type === 'merch') decorateIconStack(el);
 }
 
@@ -209,19 +216,25 @@ export const decorateBlockHrs = (el) => {
 
 function applyTextOverrides(el, override, targetEl) {
   const parts = override.split('-');
-  const type = parts[1];
-  const scopeEl = (targetEl !== false) ? targetEl : el;
-  const els = scopeEl.querySelectorAll(`[class^="${type}"]`);
+  const type = isC2 ? parts[0] : parts[1];
+  const modifier = isC2 ? parts[1] : parts[0];
+  const scopeEl = targetEl !== false ? targetEl : el;
+  const els = [...scopeEl.querySelectorAll('[class]')]
+    .filter((elOfType) => [...elOfType.classList].some((cls) => cls.startsWith(type)));
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
-    elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
+    elem.classList.replace(replace, `${type}-${modifier}`);
   });
 }
 
-export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail'], target = false) {
+const textOverridesConfig = isC2 ? ['title-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
+
+export function decorateTextOverrides(el, options = textOverridesConfig, target = false) {
   const overrides = [...el.classList]
-    .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
+    .filter((elClass) => options.some((ovClass) => (
+      isC2 ? elClass.startsWith(ovClass) : elClass.endsWith(ovClass)
+    )));
   if (!overrides.length) return;
   overrides.forEach((override) => {
     applyTextOverrides(el, override, target);
@@ -542,4 +555,16 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
+}
+
+/* NOTE: Experimental logic to substitute authored classes
+   with centralized kit classes */
+export function decorateBlockKit(el, kits = []) {
+  const kitClass = [...el.classList].find((cls) => cls.endsWith('-kit'));
+  if (!kitClass || !Object.keys(kits).includes(kitClass)) return;
+
+  const blockClass = [...el.classList][0];
+  const kitClasses = kits[kitClass];
+  el.className = blockClass;
+  el.classList.add(kitClass, ...kitClasses);
 }
