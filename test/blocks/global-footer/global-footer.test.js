@@ -451,20 +451,18 @@ describe('global footer', () => {
         if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
         if (url.includes('icons.svg')) return mockRes({ payload: icons });
         if (url.includes('supported-markets')) {
-          return mockRes({
-            payload: JSON.stringify({
-              languages: { data: [{ prefix: '', nativeName: 'English', langName: 'English', supportedRegions: 'us', defaultMarket: 'us' }] },
-            }),
-          });
+          const langRow = { prefix: '', nativeName: 'English', langName: 'English', supportedRegions: 'us', defaultMarket: 'us' };
+          const supportedMarketsPayload = JSON.stringify({ languages: { data: [langRow] } });
+          return mockRes({ payload: supportedMarketsPayload });
         }
         if (url.includes('markets.json')) {
-          return mockRes({
-            payload: JSON.stringify({ data: [{ marketCode: 'us', en: 'United States' }] }),
-          });
+          const marketsPayload = JSON.stringify({ data: [{ marketCode: 'us', en: 'United States' }] });
+          return mockRes({ payload: marketsPayload });
         }
         return mockRes({ payload: '', ok: true });
       });
-      // Market-only footers never get .feds-regionPicker / wrapper; waitForFooterToDecorate would hang.
+      // Market-only footers never get .feds-regionPicker / wrapper;
+      // waitForFooterToDecorate would hang.
       const selectorsWithoutRegionPicker = { ...allSelectors };
       delete selectorsWithoutRegionPicker.regionPicker;
       delete selectorsWithoutRegionPicker.regionPickerWrapper;

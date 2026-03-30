@@ -522,7 +522,6 @@ describe('Region modal feature', () => {
     const pickerLinks = picker.querySelectorAll('a');
     expect(pickerLinks.length).to.equal(2);
     pickerLinks[0].dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true }));
-    console.log(document.body.outerHTML);
     expect(modal.querySelector('.picker')).to.be.null;
   });
 
@@ -623,11 +622,20 @@ describe('Region modal feature', () => {
       ],
     };
 
+    const parseTestFetchUrl = (req) => {
+      const href = typeof req === 'string' ? req : (req?.url ?? '');
+      try {
+        const parsed = new URL(String(href), window.location.origin);
+        return { hostname: parsed.hostname, pathname: parsed.pathname };
+      } catch {
+        return { hostname: '', pathname: '' };
+      }
+    };
+
     const defaultFetchForLanguageBanner = (marketPayload, headOk = true) => (url, opts) => {
-      const href = typeof url === 'string' ? url : (url?.url ?? '');
-      const u = String(href);
+      const { hostname, pathname } = parseTestFetchUrl(url);
       const method = opts?.method ?? (url instanceof Request ? url.method : 'GET') ?? 'GET';
-      if (u.includes('supported-markets')) {
+      if (pathname.includes('supported-markets')) {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve(JSON.parse(JSON.stringify(marketPayload))),
@@ -636,10 +644,10 @@ describe('Region modal feature', () => {
       if (method === 'HEAD') {
         return Promise.resolve({ ok: headOk, status: headOk ? 200 : 404 });
       }
-      if (u.includes('lingo-site-mapping')) {
+      if (pathname.includes('lingo-site-mapping')) {
         return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) });
       }
-      if (u.includes('geo2.adobe.com')) {
+      if (hostname === 'geo2.adobe.com') {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({ country: 'DE' }),

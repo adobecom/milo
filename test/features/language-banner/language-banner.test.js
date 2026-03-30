@@ -250,11 +250,20 @@ describe('Language Banner', () => {
       ],
     };
 
+    const parseTestFetchUrl = (req) => {
+      const href = typeof req === 'string' ? req : (req?.url ?? '');
+      try {
+        const parsed = new URL(String(href), window.location.origin);
+        return { hostname: parsed.hostname, pathname: parsed.pathname };
+      } catch {
+        return { hostname: '', pathname: '' };
+      }
+    };
+
     const defaultFetchForLanguageBanner = (marketPayload, headOk = true) => (url, opts) => {
-      const href = typeof url === 'string' ? url : (url?.url ?? '');
-      const u = String(href);
+      const { hostname, pathname } = parseTestFetchUrl(url);
       const method = opts?.method ?? (url instanceof Request ? url.method : 'GET') ?? 'GET';
-      if (u.includes('supported-markets')) {
+      if (pathname.includes('supported-markets')) {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve(JSON.parse(JSON.stringify(marketPayload))),
@@ -263,10 +272,10 @@ describe('Language Banner', () => {
       if (method === 'HEAD') {
         return Promise.resolve({ ok: headOk, status: headOk ? 200 : 404 });
       }
-      if (u.includes('lingo-site-mapping')) {
+      if (pathname.includes('lingo-site-mapping')) {
         return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) });
       }
-      if (u.includes('geo2.adobe.com')) {
+      if (hostname === 'geo2.adobe.com') {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({ country: 'DE' }),
@@ -312,8 +321,8 @@ describe('Language Banner', () => {
     it('returns when geo country cannot be resolved', async () => {
       sessionStorage.removeItem('akamai');
       fetchStub.callsFake((url, opts) => {
-        const u = String(typeof url === 'string' ? url : (url?.url ?? ''));
-        if (u.includes('geo2.adobe.com')) {
+        const { hostname } = parseTestFetchUrl(url);
+        if (hostname === 'geo2.adobe.com') {
           return Promise.resolve({ ok: false, statusText: 'err' });
         }
         return defaultFetchForLanguageBanner(mockMarketsData, true)(url, opts);
@@ -326,8 +335,8 @@ describe('Language Banner', () => {
 
     it('returns when markets config fetch fails', async () => {
       fetchStub.callsFake((url, opts) => {
-        const u = String(typeof url === 'string' ? url : (url?.url ?? ''));
-        if (u.includes('supported-markets')) return Promise.resolve({ ok: false });
+        const { pathname } = parseTestFetchUrl(url);
+        if (pathname.includes('supported-markets')) return Promise.resolve({ ok: false });
         return defaultFetchForLanguageBanner(mockMarketsData, true)(url, opts);
       });
       setPathConfig('/de/page');
@@ -337,8 +346,8 @@ describe('Language Banner', () => {
 
     it('returns when markets data is empty', async () => {
       fetchStub.callsFake((url, opts) => {
-        const u = String(typeof url === 'string' ? url : (url?.url ?? ''));
-        if (u.includes('supported-markets')) {
+        const { pathname } = parseTestFetchUrl(url);
+        if (pathname.includes('supported-markets')) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) });
         }
         return defaultFetchForLanguageBanner(mockMarketsData, true)(url, opts);
@@ -388,16 +397,15 @@ describe('Language Banner', () => {
       `;
       sessionStorage.setItem('akamai', 'ch');
       fetchStub.callsFake((url, opts) => {
-        const href = typeof url === 'string' ? url : (url?.url ?? '');
-        const u = String(href);
+        const { pathname } = parseTestFetchUrl(url);
         const method = opts?.method ?? (url instanceof Request ? url.method : 'GET') ?? 'GET';
-        if (u.includes('supported-markets')) {
+        if (pathname.includes('supported-markets')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(JSON.parse(JSON.stringify(mockMarketsData))),
           });
         }
-        if (u.includes('lingo-site-mapping')) {
+        if (pathname.includes('lingo-site-mapping')) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) });
         }
         if (method === 'HEAD') {
