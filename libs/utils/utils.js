@@ -2205,7 +2205,7 @@ export async function pageExist(url) {
   return res?.ok ?? false;
 }
 
-async function decorateLanguageBanner() {
+export async function decorateLanguageBanner() {
   const { locale, locales, languageBanner } = getConfig();
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || languageBanner);
   if (languageBannerEnabled !== 'on') return;

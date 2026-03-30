@@ -2,7 +2,15 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
 import showRegionModal from '../../../libs/features/region-modal/region-modal.js';
-import { createTag, setConfig, getConfig, loadStyle } from '../../../libs/utils/utils.js';
+import {
+  createTag,
+  setConfig,
+  getConfig,
+  loadStyle,
+  decorateLanguageBanner,
+  getLangRoutingConfig,
+  setLangRoutingConfig,
+} from '../../../libs/utils/utils.js';
 
 const baseConfig = {
   locales: {
@@ -584,5 +592,89 @@ describe('Region modal feature', () => {
     pickerButton.click();
     const pickers = modal.querySelectorAll('.picker');
     expect(pickers.length).to.equal(1);
+  });
+
+  describe('decorateLanguageBanner', () => {
+    const routingLocales = {
+      '': { ietf: 'en-US', prefix: '' },
+      de: { ietf: 'de-DE', prefix: '/de' },
+      fr: { ietf: 'fr-FR', prefix: '/fr' },
+      it: { ietf: 'it-IT', prefix: '/it' },
+      jp: { ietf: 'ja-JP', prefix: '/jp' },
+    };
+
+    const mockMarketsData = {
+      data: [
+        {
+          prefix: '', lang: 'en', languageName: 'English', text: 'This page is also available in', continueText: 'Continue', supportedRegions: 'us, gb',
+        },
+        {
+          prefix: 'de', lang: 'de', languageName: 'Deutsch', text: 'Diese Seite ist auch auf', continueText: 'Weiter', supportedRegions: 'de, at, ch, us', regionPriorities: 'ch:1, lu:2',
+        },
+        {
+          prefix: 'fr', lang: 'fr', languageName: 'Français', text: 'Cette page est également disponible en', continueText: 'Continuer', supportedRegions: 'fr, ch', regionPriorities: 'ch:2, lu:1',
+        },
+        {
+          prefix: 'it', lang: 'it', languageName: 'Italiano', text: 'Visualizza questa pagina in', continueText: 'Continuare', supportedRegions: 'it, ch', regionPriorities: 'ch:3',
+        },
+        {
+          prefix: 'jp', lang: 'jp', languageName: '日本語', text: 'このページは次の言語でもご覧いただけます', continueText: '続行', supportedRegions: 'jp',
+        },
+      ],
+    };
+
+    const defaultFetchForLanguageBanner = (marketPayload, headOk = true) => (url, opts) => {
+      const href = typeof url === 'string' ? url : (url?.url ?? '');
+      const u = String(href);
+      const method = opts?.method ?? (url instanceof Request ? url.method : 'GET') ?? 'GET';
+      if (u.includes('supported-markets')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(JSON.parse(JSON.stringify(marketPayload))),
+        });
+      }
+      if (method === 'HEAD') {
+        return Promise.resolve({ ok: headOk, status: headOk ? 200 : 404 });
+      }
+      if (u.includes('lingo-site-mapping')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) });
+      }
+      if (u.includes('geo2.adobe.com')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ country: 'DE' }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    };
+
+    const setPathConfig = (pathname = '/') => {
+      setConfig({
+        imsClientId: 'milo',
+        codeRoot: '/libs',
+        contentRoot: window.location.origin,
+        locales: routingLocales,
+        pathname,
+      });
+    };
+
+    beforeEach(() => {
+      setLangRoutingConfig(null);
+      document.head.innerHTML = '<meta name="languagebanner" content="on">';
+      document.body.innerHTML = '';
+      sessionStorage.setItem('akamai', 'ch');
+      sinon.stub(window, 'fetch').callsFake(defaultFetchForLanguageBanner(mockMarketsData, true));
+      setPathConfig('/');
+    });
+
+    it('sets modal routing for ACOM flow when page market is not supported for geo', async () => {
+      Object.defineProperty(navigator, 'language', { value: 'en-US', configurable: true });
+      await decorateLanguageBanner();
+      const cfg = getLangRoutingConfig();
+      expect(cfg?.showModal).to.equal(true);
+      expect(cfg?.showBanner).to.equal(false);
+      expect(cfg?.geoMarketCode).to.equal('ch');
+      expect(cfg?.markets?.length).to.be.greaterThan(0);
+    });
   });
 });
