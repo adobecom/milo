@@ -97,8 +97,8 @@ const onCarouselLeave = (event) => {
 
 const onCarouselHover = (event) => {
   const slide = event.target.closest('.elastic-carousel-item');
-  if (!slide) return;
   removeHovered(event?.target?.closest('.elastic-carousel'));
+  if (!slide) return;
   slide.classList.add('hovered');
   handleVideoPlay(event);
   clearTimeout(leaveTimeout);
