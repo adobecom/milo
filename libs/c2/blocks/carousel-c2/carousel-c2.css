@@ -15,7 +15,11 @@
   overflow: clip;
   view-timeline: --carousel-wrapper block;
 
-  button { display: none };
+  button { display: none }
+
+  ul.indicators-container {
+    display: none;
+  }
 
   .carousel-wrapper {
     --transition-duration: 500ms;
@@ -130,10 +134,6 @@
         }
       }
     }
-  }
-
-  ul.indicators-container {
-    display: none;
   }
 
   .aria-live-container {
@@ -394,5 +394,12 @@
     transform: translate(5%, 70%);
   } to {
     transform: translate(0%, 0%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-c2 * {
+    animation: none !important;
+    transition: none !important;
   }
 }
