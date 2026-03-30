@@ -43,10 +43,6 @@
 
 .feds-menu-headline {
   position: relative;
-  padding: 12px 44px 12px 32px;
-  border-bottom: 1px solid var(--feds-borderColor-menu);
-  color: var(--feds-color-headline);
-  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
 }

@@ -51,7 +51,7 @@
 /* Menu */
 .feds-footer-wrapper .feds-menu-headline {
   color: var(--s2a-color-gray-25);
-  border-color: var(--s2a-color-transparent-white-12);
+  border-bottom: 1px solid var(--s2a-color-transparent-white-12);
 }
 
 .feds-footer-wrapper .feds-menu-headline::after {
@@ -226,9 +226,19 @@
   color: var(--s2a-color-gray-25);
 }
 
-.footer-logo-image svg {
-  height: 13px;
-  display: block;
+.footer-logo-image {
+  svg {
+    height: 13px;
+    display: block;
+  }
+
+  &.dark-logo svg {
+    fill: var(--s2a-color-gray-1000);
+  }
+
+  &.light-logo svg {
+    fill: var(--s2a-color-transparent-white-64);
+  }
 }
 
 .global-footer .feds-footer-logo {
@@ -285,8 +295,8 @@
 }
 
 span.feds-footer-privacyLink-divider {
-    display: inline-block;
-    margin: 0 5px;
+  display: inline-block;
+  margin: 0 5px;
 }
 
 .feds-footer-privacyLink:hover {
