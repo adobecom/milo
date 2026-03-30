@@ -85,6 +85,29 @@ const onCarouselLeave = (event) => {
   }, 10);
 };
 
+const onHover = (event) => {
+  const slideEl = event.target;
+  clearTimeout(leaveTimeout);
+
+  const video = slideEl.querySelector('video');
+  if (video) video.play().catch(() => { });
+
+  const slideIndex = slideEl.dataset.index * 1;
+  const container = slideEl.parentElement;
+  if (!container) return;
+
+  removeHovered(slideEl.closest('.elastic-carousel'));
+  slideEl.classList.add('hovered');
+
+  if (isRtl()) {
+    container.classList.toggle('stick-right', slideIndex <= 3);
+    container.classList.toggle('stick-left', slideIndex === 5);
+  } else {
+    container.classList.toggle('stick-left', slideIndex <= 3);
+    container.classList.toggle('stick-right', slideIndex === 5);
+  }
+};
+
 const buildSlide = ({ slide, index, slidesTotal }) => {
   const children = [...slide.children];
   const left = children[0];
@@ -139,27 +162,8 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
-  slideEl.addEventListener('mouseenter', () => {
-    clearTimeout(leaveTimeout);
-
-    const video = slideEl.querySelector('video');
-    if (video) video.play().catch(() => {});
-
-    const slideIndex = slideEl.dataset.index * 1;
-    const container = slideEl.parentElement;
-    if (!container) return;
-
-    removeHovered(slideEl.closest('.elastic-carousel'));
-    slideEl.classList.add('hovered');
-
-    if (isRtl()) {
-      container.classList.toggle('stick-right', slideIndex <= 3);
-      container.classList.toggle('stick-left', slideIndex === 5);
-    } else {
-      container.classList.toggle('stick-left', slideIndex <= 3);
-      container.classList.toggle('stick-right', slideIndex === 5);
-    }
-  });
+  slideEl.addEventListener('mouseenter', onHover)
+  slideEl.addEventListener('focus', onHover)
   return slideEl;
 };
 
