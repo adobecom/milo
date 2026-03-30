@@ -45,16 +45,6 @@ const disableHoverOnScroll = (carousel) => {
   return controller;
 };
 
-const handleVideoPlay = (event) => {
-  const slide = event.target.closest('.elastic-carousel-item');
-  if (!slide) return;
-  const video = slide?.querySelector('video');
-  if (!video) return;
-  clearInterval(rewindIntervals.get(video));
-  rewindIntervals.delete(video);
-  video.play().catch(() => { });
-};
-
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
@@ -88,26 +78,11 @@ const removeHovered = (carousel) => {
 };
 
 const onCarouselLeave = (event) => {
-  const carouselContainer = event.currentTarget.querySelector('.elastic-carousel-container');
+  const carouselContainer = event.target;
   leaveTimeout = setTimeout(() => {
     carouselContainer.classList.remove('stick-left', 'stick-right');
     removeHovered(event.target);
   }, 10);
-};
-
-const onCarouselHover = (event) => {
-  const slide = event.target.closest('.elastic-carousel-item');
-  removeHovered(event?.target?.closest('.elastic-carousel'));
-  if (!slide) return;
-  slide.classList.add('hovered');
-  handleVideoPlay(event);
-  clearTimeout(leaveTimeout);
-
-  const slideIndex = slide.dataset.index * 1;
-  const carouselContainer = event.target.closest('.elastic-carousel').querySelector('.elastic-carousel-container');
-
-  carouselContainer.classList.toggle(isRtl() ? 'stick-right' : 'stick-left', slideIndex < 3);
-  carouselContainer.classList.toggle(isRtl() ? 'stick-left' : 'stick-right', slideIndex > 3);
 };
 
 const buildSlide = ({ slide, index, slidesTotal }) => {
@@ -164,6 +139,27 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
+  slideEl.addEventListener('mouseenter', () => {
+    clearTimeout(leaveTimeout);
+
+    const video = slideEl.querySelector('video');
+    if (video) video.play().catch(() => {});
+
+    const slideIndex = slideEl.dataset.index * 1;
+    const container = slideEl.parentElement;
+    if (!container) return;
+
+    removeHovered(slideEl.closest('.elastic-carousel'));
+    slideEl.classList.add('hovered');
+
+    if (isRtl()) {
+      container.classList.toggle('stick-right', slideIndex <= 3);
+      container.classList.toggle('stick-left', slideIndex === 5);
+    } else {
+      container.classList.toggle('stick-left', slideIndex <= 3);
+      container.classList.toggle('stick-right', slideIndex === 5);
+    }
+  });
   return slideEl;
 };
 
@@ -187,8 +183,7 @@ const decorateCarousel = (carousel) => {
 export default async function init(el) {
   const decoratedCarousel = decorateCarousel(el);
   const scrollController = disableHoverOnScroll(decoratedCarousel);
-  decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
-  decoratedCarousel.addEventListener('mouseover', onCarouselHover);
+  decoratedCarousel.querySelector('.elastic-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   handleMobileAutoplay(decoratedCarousel);
 
   new MutationObserver((_, observer) => {
