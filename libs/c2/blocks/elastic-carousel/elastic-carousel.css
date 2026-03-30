@@ -31,7 +31,10 @@ html[dir="rtl"] {
   --elastic-carousel-item-max-width: 294px;
   --elastic-carousel-item-hover-grow-index: 1.75;
   --slides: 5;
+  --start-gap: 2.75rem;
+  --end-gap: .25rem;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
+  --elastic-carousel-container-width: calc((var(--slides) * var(--elastic-carousel-item-max-width)) + (var(--slides) * (var(--end-gap) * 2)));
 
   height: var(--elastic-carousel-container-height-desktop);
   position: relative;
@@ -44,6 +47,7 @@ html[dir="rtl"] {
     left: 50%;
     transform: translateX(-50%);
     transition: var(--elastic-carousel-transtions);
+    max-width: var(--elastic-carousel-container-width);
 
     .elastic-carousel-item {
       display: flex;
@@ -51,6 +55,7 @@ html[dir="rtl"] {
       position: relative;
       text-decoration: none;
       color: inherit;
+      width: var(--elastic-carousel-item-max-width);
       max-width: var(--elastic-carousel-item-max-width);
       background-color: var(--s2a-color-gray-75);
       border-radius: var(--s2a-border-radius-md);
@@ -222,8 +227,6 @@ html[dir="rtl"] {
       animation-range: entry 20% exit 100%;
 
       .elastic-carousel-item {
-        --start-gap: 2.75rem;
-        --end-gap: .25rem;
 
         &:nth-child(2) {
           --start-gap: 2.25rem;
