@@ -99,6 +99,55 @@ const decorateCtas = (textCol) => {
   cta.replaceChildren(...[primary, secondary].filter(Boolean));
 };
 
+const prepareVideo = (imageCol) => {
+  const videoContainer = imageCol?.querySelector('.video-container');
+  const video = videoContainer?.querySelector('video');
+  if (!video) return;
+  // data-hoverplay is used as an opt out from the decoration logic in decorate.js
+  ['playsinline', 'muted', 'loop', 'data-hoverplay'].forEach((attr) => {
+    video.setAttribute(attr, '');
+  });
+  video.muted = true;
+  video.removeAttribute('autoplay');
+  const src = video.dataset.videoSource || video.src;
+  video.removeAttribute('src');
+  video.querySelectorAll('source').forEach((s) => s.remove());
+  video.dataset.lazySrc = src;
+  videoContainer.querySelector('.pause-play-wrapper')?.remove();
+  videoContainer.replaceWith(video);
+};
+
+const getActiveViewport = () => {
+  if (window.matchMedia('(width >= 1280px)').matches) return 'desktop';
+  if (window.matchMedia('(width > 767px)').matches) return 'tablet';
+  return 'mobile';
+};
+
+const loadVideo = (video) => {
+  if (!video || video.dataset.loaded) return;
+  const src = video.dataset.lazySrc;
+  if (src && !video.querySelector('source')) {
+    video.appendChild(createTag('source', { src, type: 'video/mp4' }));
+  }
+  video.load();
+  video.dataset.loaded = 'true';
+};
+
+const loadViewportVideos = (el) => {
+  const active = getActiveViewport();
+  el.querySelectorAll('.rm-viewport').forEach((vp) => {
+    const isActive = vp.dataset.viewport === active;
+    vp.querySelectorAll('.rm-background video').forEach((v) => {
+      if (!isActive) return;
+      const isActiveSlide = v.closest('.rm-slide')?.classList.contains('is-active');
+      if (isActiveSlide) {
+        loadVideo(v);
+        v.play().catch(() => {});
+      }
+    });
+  });
+};
+
 const decorateSlide = (slide) => {
   const [textCol, imageCol] = slide.querySelectorAll(':scope > div');
   slide.classList.add('rm-slide');
@@ -109,20 +158,7 @@ const decorateSlide = (slide) => {
   contentWrapper.append(textCol);
   slide.insertBefore(createTag('div', { class: 'rm-overlay' }), contentWrapper);
 
-  const videoContainer = imageCol?.querySelector('.video-container');
-  const video = videoContainer?.querySelector('video');
-
-  if (video) {
-    ['playsinline', 'autoplay', 'muted', 'loop'].forEach((attr) => {
-      video.setAttribute(attr, '');
-    });
-    video.muted = true;
-    const src = video.dataset.videoSource || video.src;
-    if (src && !video.querySelector('source')) video.appendChild(createTag('source', { src, type: 'video/mp4' }));
-    videoContainer.querySelector('.pause-play-wrapper')?.remove();
-    videoContainer.replaceWith(video);
-    video.load();
-  }
+  prepareVideo(imageCol);
 
   if (!textCol) return;
   decorateText(textCol);
@@ -246,8 +282,9 @@ const updateContentSpacing = (el) => {
   if (!wrapper || !content || !controls || !vp) return;
 
   // Set min-height so the viewport never shrinks below what the content needs
-  const lastContentEl = content.lastElementChild;
-  const needed = lastContentEl.getBoundingClientRect().bottom + controls.offsetHeight + 24;
+  const wrapperPadTop = getCssPx(wrapper, 'padding-top');
+  const contentH = content.offsetHeight;
+  const needed = wrapperPadTop + contentH + 24 + controls.offsetHeight;
 
   vp.style.minHeight = `${Math.max(window.innerHeight, needed)}px`;
   // Compact padding-top when content overlaps controls
@@ -336,6 +373,8 @@ const startAutoplay = (slides, cards, container, block) => {
 
     const oldSlide = slides[active];
     const newSlide = slides[index];
+    const vid = newSlide.querySelector('video');
+    loadVideo(vid);
     const reducedMotion = prefersReducedMotion();
 
     oldSlide.classList.remove('is-active');
@@ -366,9 +405,9 @@ const startAutoplay = (slides, cards, container, block) => {
     }
 
     oldSlide.querySelector('video')?.pause();
-    const vid = newSlide.querySelector('video');
+    if (vid) vid.currentTime = 0;
     if (!paused) {
-      if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+      vid?.play().catch(() => {});
     } else {
       vid?.pause();
     }
@@ -405,8 +444,7 @@ const startAutoplay = (slides, cards, container, block) => {
     setPlayingState(true);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
-    const vid = slides[active]?.querySelector('video');
-    if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+    slides[active]?.querySelector('video')?.play().catch(() => {});
   };
 
   const cancelLeaveTimer = () => {
@@ -539,13 +577,6 @@ const buildViewport = (viewport, slides) => {
   return container;
 };
 
-const initVideos = (el) => {
-  el.querySelectorAll('.rm-background video').forEach((v) => {
-    v.muted = true;
-    v.play().catch(() => {});
-  });
-};
-
 const reorderSlidesMaybe = (el, viewports) => {
   const sectionMeta = el.parentElement?.querySelector('.section-metadata');
   if (!sectionMeta) return;
@@ -565,12 +596,24 @@ export default function init(el) {
   reorderSlidesMaybe(el, viewports);
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
-  initVideos(el);
-  containers.forEach((container) => {
+  const initializedVps = new Set();
+  const initViewportAutoplay = () => {
+    const activeVp = getActiveViewport();
+    if (initializedVps.has(activeVp)) return;
+    initializedVps.add(activeVp);
+    const container = containers.find((c) => c.dataset.viewport === activeVp);
+    if (!container) return;
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
     startAutoplay(slides, cards, container, el);
-  });
+  };
+
+  loadViewportVideos(el);
+  initViewportAutoplay();
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
-  window.addEventListener('resize', () => dynamicLayoutUpdates(el));
+  window.addEventListener('resize', () => {
+    dynamicLayoutUpdates(el);
+    loadViewportVideos(el);
+    initViewportAutoplay();
+  });
 }
