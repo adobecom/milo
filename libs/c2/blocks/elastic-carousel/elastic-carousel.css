@@ -24,7 +24,6 @@ html[dir="rtl"] {
 }
 .elastic-carousel {
   --elastic-carousel-transtions: all .5s ease;
-  --elastic-carousel-transtions-slow: all .3s ease;
   --elastic-carousel-container-height-desktop: 590px;
   --elastic-carousel-container-height-tablet: 572px;
   --elastic-carousel-item-max-width: 294px;
@@ -153,6 +152,8 @@ html[dir="rtl"] {
 /** custom media rules */
 @media (width < 1700px) {
   .elastic-carousel-container {
+    left: 50%;
+    transform: translateX(-50%);
     &.stick-left {
       left: 0;
       transform: translateX(0%);
@@ -237,7 +238,7 @@ html[dir="rtl"] {
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
-        &:hover,
+        &.hovered,
         &:focus-visible {
           background-color: var(--s2a-color-gray-1000);
           max-width: 496px;
@@ -281,8 +282,6 @@ html[dir="rtl"] {
       height: 100%;
       position: relative;
       flex-direction: column;
-      left: unset;
-      transform: unset;
       display: grid;
       gap: 20vh;
 
