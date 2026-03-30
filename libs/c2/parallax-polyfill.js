@@ -7,28 +7,30 @@
  * 3. Runs scroll-animations.js for effects the polyfill can't handle
  */
 
-const STYLES_SELECTOR = 'link[href*="c2/styles/styles.css"]';
-
-const extractSupportsContent = (css) => css.match(
-  /@supports\s*\(animation-timeline:\s*view\(\)\)\s*\{([\s\S]*)\}/,
-)?.[1] ?? null;
-
-async function injectParallaxStyles() {
-  const link = document.querySelector(STYLES_SELECTOR);
-  if (!link) return;
-
-  const cssText = await fetch(link.href).then((r) => r.text());
-  const rules = extractSupportsContent(cssText);
-  if (!rules) return;
-
-  const style = document.createElement('style');
-  style.textContent = rules;
-  document.head.appendChild(style);
+function extractSupportsContent(css) {
+  const open = css.indexOf('{', css.indexOf('@supports (animation-timeline: view())'));
+  if (open === -1) return null;
+  let depth = 1;
+  for (let i = open + 1; i < css.length; i += 1) {
+    depth += (css[i] === '{') - (css[i] === '}');
+    if (depth === 0) return css.slice(open + 1, i);
+  }
+  return null;
 }
 
 export default async function init(config, loadScript) {
   await loadScript(`${config.base}/deps/scroll-timeline.js`);
-  await injectParallaxStyles();
+
+  const link = document.querySelector('link[href*="c2/styles/styles.css"]');
+  if (link) {
+    const css = await fetch(link.href).then((r) => r.text());
+    const rules = extractSupportsContent(css);
+    if (rules) {
+      const style = document.createElement('style');
+      style.textContent = rules;
+      document.head.appendChild(style);
+    }
+  }
 
   const { default: initScrollAnimations } = await import('./scroll-animations.js');
   initScrollAnimations();
