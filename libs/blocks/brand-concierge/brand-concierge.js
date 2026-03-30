@@ -247,7 +247,7 @@ async function openChatModal(initialMessage, el) {
   const { env, locale } = getConfig();
   const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  const dishasStage = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js?adobe-brand-concierge-acom-brand-concierge-web-agent_version=PR-63-0a1ec2d6c2d69c94d8834046d816f49e4e2d7f7c';
+  const dishasStage = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js?adobe-brand-concierge-acom-brand-concierge-web-agent_version=PR-63-bcb5cb1f0d38b7a84fe721e7b33291f287d9d670';
   let src = stage;
 
   if (env?.name === 'prod') {
