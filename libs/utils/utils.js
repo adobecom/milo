@@ -739,54 +739,58 @@ async function loadQueryIndexes(prefix, links = []) {
   });
 }
 
-function attachLingoPendingListener(a, hostname, rawPath, basePrefix, regionalPrefix) {
+function attachLingoPendingListener(a, hostname, rawPath, basePrefix, regionalPrefix, isBasePage) {
   let primaryHandler;
   let allHandler;
+  let cleaned = false;
 
   const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
     window.removeEventListener(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED, primaryHandler);
     window.removeEventListener(MILO_EVENTS.QUERY_INDEX_ALL_LOADED, allHandler);
   };
 
-  const tryLocalize = (isFinal) => {
+  const handle = (isFinal) => {
     if (!a.isConnected) { cleanup(); return; }
-    const indexes = Object.values(queryIndexes)
-      .filter((q) => q.domains.includes(hostname) && q.requestResolved);
-    if (!indexes.length || (!lingoModule && !isFinal)) {
-      if (isFinal) cleanup();
-      return;
-    }
     (lingoModule ? Promise.resolve(lingoModule) : import('./lingo.js'))
-      .then((mod) => mod.resolveLingoPrefix(
-        rawPath,
-        regionalPrefix,
-        basePrefix,
+      .then((mod) => mod.tryLocalizeLink(
+        a,
         hostname,
-        indexes,
+        rawPath,
+        basePrefix,
+        regionalPrefix,
+        isBasePage,
+        Object.values(queryIndexes),
         baseQueryIndex,
-        null,
+        isFinal,
       ))
-      .then((newPrefix) => {
-        if (!a.isConnected) { cleanup(); return; }
-        if (newPrefix !== basePrefix) {
-          const { origin, search, hash } = new URL(a.href);
-          a.href = `${origin}${newPrefix}${rawPath}${search}${hash}`;
-          cleanup();
-        } else if (isFinal) {
-          cleanup();
-        }
-      })
+      .then((done) => { if (done) cleanup(); })
       .catch(() => { if (isFinal) cleanup(); });
   };
 
-  primaryHandler = () => tryLocalize(false);
-  allHandler = () => tryLocalize(true);
+  primaryHandler = () => handle(false);
+  allHandler = () => handle(true);
 
   if (queryIndexesAllLoaded) {
-    tryLocalize(true);
+    handle(true);
   } else {
     window.addEventListener(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED, primaryHandler);
     window.addEventListener(MILO_EVENTS.QUERY_INDEX_ALL_LOADED, allHandler);
+    if (lingoSiteMapping) {
+      lingoSiteMapping.then(() => {
+        if (cleaned || !a.isConnected) return;
+        const hasIndex = Object.values(queryIndexes)
+          .some((q) => q.domains.includes(hostname));
+        if (!hasIndex) {
+          if (!isBasePage && regionalPrefix !== basePrefix) {
+            const { origin, search, hash } = new URL(a.href);
+            a.href = `${origin}${regionalPrefix}${rawPath}${search}${hash}`;
+          }
+          cleanup();
+        }
+      });
+    }
   }
 }
 
@@ -852,8 +856,12 @@ function localizeLinkCore(
             && (isMepLingoFragment || q.requestResolved));
         const needsListener = !isMepLingoFragment && !queryIndexesAllLoaded;
 
+        const domainInSiteMap = !lingoSiteMappingLoaded
+          || Object.values(queryIndexes).some((q) => q.domains.includes(url.hostname));
+        const isBasePage = !!locale.regions;
+
         let resolvedPrefix = basePrefix;
-        if (lingoModule && matchingIndexes.length) {
+        if (lingoModule) {
           resolvedPrefix = await lingoModule.resolveLingoPrefix(
             path,
             prefix,
@@ -862,17 +870,12 @@ function localizeLinkCore(
             matchingIndexes,
             baseQueryIndex,
             aTag,
-            {
-              isMepLingo: isMepLingoFragment,
-              domainInSiteMap: isMepLingoFragment && siteQueryIndexMapLingo?.some(
-                (i) => getDomainLingo(i?.queryIndexWebPath) === url.hostname,
-              ),
-            },
+            { isMepLingo: isMepLingoFragment, domainInSiteMap, isBasePage },
           );
         }
 
         if (needsListener && resolvedPrefix === basePrefix) {
-          attachLingoPendingListener(aTag, url.hostname, path, basePrefix, prefix);
+          attachLingoPendingListener(aTag, url.hostname, path, basePrefix, prefix, isBasePage);
         }
 
         return buildUrl(resolvedPrefix);

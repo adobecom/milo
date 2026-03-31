@@ -1886,6 +1886,33 @@ describe('Utils', () => {
       a.remove();
     });
 
+    it('should revert to regional prefix for domains not configured in lingo site mapping', async () => {
+      lingoUtils.setConfig({
+        ...defaultTestConfig,
+        prodDomains: ['www.adobe.com', 'business.adobe.com', 'stock.adobe.com'],
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://stock.adobe.com/photos/sunset';
+      document.body.appendChild(a);
+      await lingoUtils.localizeLinkAsync(
+        'https://stock.adobe.com/photos/sunset',
+        'www.adobe.com',
+        false,
+        a,
+      );
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      // stock.adobe.com is not in lingo-site-mapping, listener reverts to regional
+      expect(new URL(a.href).pathname).to.equal('/ch_de/photos/sunset');
+      a.remove();
+    });
+
     it('should not apply lingo logic when locale has no base', async () => {
       lingoUtils.setConfig({
         ...defaultTestConfig,

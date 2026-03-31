@@ -74,7 +74,11 @@ async function urlInQueryIndex(
   return urlInMatchingIndex(matchingIndexes, sanitizedPath);
 }
 
-// eslint-disable-next-line import/prefer-default-export
+function setLinkHref(a, prefix, rawPath) {
+  const { origin, search, hash } = new URL(a.href);
+  a.href = `${origin}${prefix}${rawPath}${search}${hash}`;
+}
+
 export async function resolveLingoPrefix(
   path,
   prefix,
@@ -83,10 +87,11 @@ export async function resolveLingoPrefix(
   matchingIndexes,
   baseQueryIndex,
   aTag,
-  { isMepLingo = false, domainInSiteMap = false } = {},
+  { isMepLingo = false, domainInSiteMap = false, isBasePage = false } = {},
 ) {
   if (!matchingIndexes.length) {
     if (isMepLingo && !domainInSiteMap) return prefix;
+    if (!domainInSiteMap) return isBasePage ? basePrefix : prefix;
     return basePrefix;
   }
 
@@ -99,4 +104,51 @@ export async function resolveLingoPrefix(
     aTag,
   );
   return useRegional ? prefix : basePrefix;
+}
+
+export async function tryLocalizeLink(
+  a,
+  hostname,
+  rawPath,
+  basePrefix,
+  regionalPrefix,
+  isBasePage,
+  allQueryIndexes,
+  baseQueryIndex,
+  isFinal,
+) {
+  if (!a.isConnected) return true;
+
+  const indexes = allQueryIndexes
+    .filter((q) => q.domains.includes(hostname) && q.requestResolved);
+
+  if (!indexes.length) {
+    if (isFinal) {
+      const hasIndex = allQueryIndexes.some((q) => q.domains.includes(hostname));
+      if (!hasIndex && !isBasePage && regionalPrefix !== basePrefix) {
+        setLinkHref(a, regionalPrefix, rawPath);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  const newPrefix = await resolveLingoPrefix(
+    rawPath,
+    regionalPrefix,
+    basePrefix,
+    hostname,
+    indexes,
+    baseQueryIndex,
+    null,
+  );
+
+  if (!a.isConnected) return true;
+
+  if (newPrefix !== basePrefix) {
+    setLinkHref(a, newPrefix, rawPath);
+    return true;
+  }
+
+  return isFinal;
 }
