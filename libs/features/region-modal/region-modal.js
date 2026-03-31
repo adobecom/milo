@@ -460,20 +460,18 @@ async function showModal(details) {
   const hasTabs = details.querySelector('.tabs');
 
   const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
-  const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
   const regionModalPath = `${miloLibs || codeRoot}/features/region-modal/region-modal.css`;
   const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
 
   const promises = [
     hasTabs ? loadBlockFn(details.querySelector('.tabs')) : null,
     hasTabs ? new Promise((resolve) => { loadStyleFn(sectionMetaPath, resolve); }) : null,
-    new Promise((resolve) => { loadStyleFn(georoutingPath, resolve); }),
     new Promise((resolve) => { loadStyleFn(regionModalPath, resolve); }),
     new Promise((resolve) => { loadStyleFn(modalPath, resolve); }),
     import('../../blocks/modal/modal.js'),
   ];
   const result = await Promise.all(promises);
-  const { getModal, sendAnalytics } = result[5];
+  const { getModal, sendAnalytics } = result[4];
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, {
     class: 'region-modal',

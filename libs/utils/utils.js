@@ -2271,7 +2271,7 @@ export async function decorateLanguageBanner() {
         addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
       }
     } else {
-      // ACOM flow: US exclusion + regionPriorities filter, multi-option modal (banner temp)
+      // ACOM flow: US exclusion + regionPriorities filter, multi-option modal
       const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
       if (prefLang) {
         const marketsWithPrefLang = marketsForGeoFiltered.filter((m) => m.lang === prefLang);
