@@ -7,6 +7,8 @@ const ADMIN_STATUS = 'https://admin.hlx.page/status/';
 const EDIT_URL = 'https://da.live/edit#/';
 const ROOT_LANG = 'en';
 const ROOT_PATH = '/';
+const DEFAULT_LANG_CONFIG = '.da/translate-v2.json';
+const LANG_CONFIG = new URLSearchParams(window.location.search).get('config') || DEFAULT_LANG_CONFIG;
 
 function extractPaths(languages) {
   const langPaths = languages.data.reduce((acc, { location, locales }) => {
@@ -24,7 +26,7 @@ function extractPaths(languages) {
 
 async function fetchLangPaths({ org, repo }, token) {
   const opts = { headers: { Authorization: `Bearer ${token}` } };
-  const langConfigUrl = `${ADMIN_SOURCE}${org}/${repo}/.da/translate-v2.json`;
+  const langConfigUrl = `${ADMIN_SOURCE}${org}/${repo}/${LANG_CONFIG}`;
 
   try {
     const resp = await fetch(langConfigUrl, opts);
