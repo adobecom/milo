@@ -32,7 +32,7 @@ function enableInActiveFocus(slides, activeSlide) {
   }));
 }
 
-function allSlidesFocusable(wrapper) {
+function allFocusable(wrapper) {
   const tabIndex = '0';
   [...wrapper.children].forEach((slide) => {
     slide.setAttribute('aria-hidden', false);
@@ -241,9 +241,13 @@ function moveSlides(carouselEls, direction, e) {
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('aria-current', 'location');
   slideAnimation(carouselEls, activeSlide, direction);
-  if (key === 'Tab') enableInActiveFocus(slides, activeSlide);
-  else activeSlideFocusable(wrapper);
-  activeSlide.focus();
+  if (key === 'Tab') {
+    enableInActiveFocus(slides, activeSlide);
+    activeSlide.focus();
+  } else {
+    activeSlideFocusable(wrapper);
+    activeSlide.focus();
+  }
 
   updateAriaLive(carouselEls);
 }
@@ -274,9 +278,8 @@ function attachListeners(carouselEls) {
       if (carouselFocused) return;
       e.preventDefault();
       const activeSlide = wrapper.querySelector('.active');
-      allSlidesFocusable(wrapper);
+      allFocusable(wrapper);
       carouselFocused = true;
-      activeSlide.removeAttribute('aria-label');
       activeSlide.querySelector(FOCUSABLE_SELECTOR)?.focus();
     }
 
@@ -312,9 +315,8 @@ function attachListeners(carouselEls) {
     const { relatedTarget } = e;
     if (el.contains(relatedTarget)) return;
     const activeSlide = wrapper.querySelector('.active');
-    const index = parseInt(activeSlide.getAttribute('data-index'), 10);
     const activeText = getActiveSlideText(activeSlide);
-    activeSlide.setAttribute('aria-label', [`Slide ${index + 1} of ${slides.length}`, activeText].filter(Boolean).join(', '));
+    activeSlide.setAttribute('aria-label', activeText);
   });
 
   let startX = 0;
