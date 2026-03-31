@@ -296,6 +296,7 @@ async function openChatModal(initialMessage, el) {
         rdx.push({
           consentStandard: key,
           consentStringValue: consentsConfig[key].toString(),
+          consentStandardVersion: '2.0',
         });
         return rdx;
       }, []);

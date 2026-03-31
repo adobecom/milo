@@ -21,6 +21,10 @@ export default {
     chat: {
       messageAlignment: 'normal',
       messageWidth: '100%',
+      widgetsInMessageContentTypes: [
+        'cta-actions',
+        'firefly-community-gallery',
+      ],
     },
     privacyNotice: {
       title: '',
@@ -40,12 +44,6 @@ export default {
         tablet: 767,
         tabletLandscape: 1199,
       },
-    },
-    chatTranscript: {
-      enabled: true,
-      maxSessions: 10,
-      maxMessagesPerSession: 100,
-      cleanupInterval: 24,
     },
   },
   disclaimer: {
@@ -92,8 +90,8 @@ export default {
     'feedback.toast.success': 'Thank you for the feedback.',
     'feedback.thumbsUp.aria': 'Thumbs up',
     'feedback.thumbsDown.aria': 'Thumbs down',
-    'widget.firefly-gallery.preamble-markdown': "If you're not ready to sign in, you can explore the Firefly community gallery to get inspired and discover prompts to remix.",
-    'widget.firefly-gallery.title': 'Adobe Firefly',
+    'widget.firefly-gallery.preamble-markdown': 'To see what you can do, check out these images from the [Firefly](https://firefly.adobe.com/gallery) community of creators:',
+    'widget.firefly-gallery.title': 'Adobe Firefly gallery',
     'widget.firefly-gallery.view-item-text': 'View',
     'widget.firefly-gallery.view-more-text': 'More in Firefly gallery',
   },
@@ -396,8 +394,9 @@ export default {
     '--message-user-background': '#EBEEFF',
     '--message-user-text': '#292929',
     '--message-text-order': '1',
-    '--message-multimodal-order': '3',
-    '--message-footer-order': '2',
+    '--message-multimodal-order': '2',
+    '--message-widget-order': '3',
+    '--message-footer-order': '4',
     '--mobile-message-font-size': '16px',
     '--multimodal-card-box-shadow': 'none',
     '--privacy-notice-background': '#FFFFFF',
