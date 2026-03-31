@@ -496,13 +496,13 @@ let fedsPlaceholderConfig;
 export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
 
-  const { locale, placeholders } = getConfig();
+  const { locale, placeholders, fedContentBaseUrl } = getConfig();
   const libOrigin = getFederatedContentRoot();
-
+  const newOrigin = fedContentBaseUrl ?? libOrigin;
   fedsPlaceholderConfig = {
     locale: {
       ...locale,
-      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
+      contentRoot: `${newOrigin}${locale.prefix}/federal/globalnav`,
     },
     placeholders,
   };
