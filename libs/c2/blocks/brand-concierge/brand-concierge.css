@@ -1,12 +1,15 @@
 :root {
   --bc-modal-animation-time: 500ms;
+  --bc-susi-modal-width: 370px;
+  --bc-susi-min-height: 462px;
+  --bc-susi-standard-padding: 24px;
 }
 
 .brand-concierge {
   --bc-header-font-size: 36px;
   --bc-header-line-height: 45px;
-  --bc-header-subtitle-font-size: 18px;
-  --bc-header-subtitle-line-height: 22.5px;
+  --bc-header-subtitle-font-size: 16px;
+  --bc-header-subtitle-line-height: 24px;
   --bc-header-margin-bottom: 32px;
   --bc-header-padding: 0 24px;
   --bc-header-color: #131313;
@@ -419,6 +422,18 @@
   margin-bottom: 8px;
 }
 
+.dialog-modal.bc-susi-modal {
+  width: var(--bc-susi-modal-width);
+  min-height: var(--bc-susi-min-height);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dialog-modal.bc-susi-modal .bc-susi-modal-title {
+  padding: 20px var(--bc-susi-standard-padding) 12px;
+  margin: 0;
+}
+
 /* hero */
 .brand-concierge.hero {
   padding: 40px 24px 12px;
@@ -490,6 +505,14 @@
   }
 }
 
+#bc-susi-modal {
+  z-index: calc( var(--modal-z-index) + 1);
+}
+
+#bc-susi-modal ~ .modal-curtain {
+  z-index: calc( var(--modal-z-index-curtain) + 1);
+}
+
 #brand-concierge-modal {
   --modal-header-height: 57px;
 }
@@ -550,7 +573,7 @@
   right: 16px;
 }
 
-#brand-concierge-modal  .dialog-close:focus-visible {
+#brand-concierge-modal .dialog-close:focus-visible {
   outline: 2px solid #5574F7;
   outline-offset: 2px;
   border-radius: 8px;
@@ -630,7 +653,6 @@
     padding: 80px 32px 24px;
   }
 }
-
 
 /* Tablet up */
 @media screen and (min-width: 768px) {
@@ -716,7 +738,7 @@
     flex-wrap: wrap;
     max-width: 600px;
   }
-
+  
   .hero .prompt-card-button,
   .pill-cards .prompt-card-button {
     flex-direction: row;

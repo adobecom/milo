@@ -530,13 +530,20 @@ function decorateFloatingButton(el) {
     const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
 
     if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
-      mainElement.style.paddingBottom = `${targetHeight}px`;
+      if (variants.isFloatingAnchorHide) {
+        floatingButton.classList.add('floating-hidden');
+        floatingButton.classList.remove('floating-show');
+      } else {
+        target.style.bottom = `${threshold - mainHeight}px`;
+        mainElement.style.paddingBottom = `${targetHeight}px`;
+      }
     } else {
       target.style.bottom = '0';
+      floatingButton.classList.remove('floating-hidden');
+      floatingButton.classList.add('floating-show');
     }
     if (variants.isHero || variants.floatingDelay) {
-      if (window.scrollY > scrollDelay) {
+      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
         floatingButton.classList.remove('floating-hidden');
         floatingButton.classList.add('floating-show');
       } else {
@@ -593,6 +600,10 @@ export default async function init(el) {
     variants.isFloatingButton = true;
   } else if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
+  }
+
+  if (el.classList.contains('floating-anchor-hide')) {
+    variants.isFloatingAnchorHide = true;
   }
 
   el.classList.forEach((classItem) => {
