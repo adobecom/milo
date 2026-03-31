@@ -11,26 +11,66 @@ const isMobile = () => window.innerWidth <= 768;
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
+const rewindVideo = (video) => {
+  clearInterval(rewindIntervals.get(video));
+  video.pause();
+  const startSystemTime = new Date().getTime();
+  const startVideoTime = video.currentTime;
+  const intervalRewind = setInterval(() => {
+    video.playbackRate = 1.0;
+    if (video.currentTime === 0) {
+      clearInterval(rewindIntervals.get(video));
+      rewindIntervals.delete(video);
+      video.load();
+    } else {
+      const elapsed = new Date().getTime() - startSystemTime;
+      video.currentTime = Math.max(startVideoTime - elapsed * (1 / 1000.0), 0);
+    }
+  }, 30);
+  rewindIntervals.set(video, intervalRewind);
+};
+
 const handleMobileAutoplay = (carousel) => {
-  const videos = carousel.querySelectorAll('video');
+  const slides = [...carousel.querySelectorAll('.elastic-carousel-item')];
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
+  slides.forEach((slide, index) => {
+    const video = slide.querySelector('video');
+    if (!video) return;
+
+    const nextSlide = slides[index + 1];
+
+    // Play when this slide enters view — but not if the next slide is already covering it
+    new IntersectionObserver(
+      ([entry]) => {
         if (!isMobile()) return;
-        const video = entry.target;
-
         if (entry.isIntersecting) {
-          video.play().catch(() => { });
-        } else {
-          video.pause();
+          const nextRect = nextSlide?.getBoundingClientRect();
+          const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
+          if (!isCovered) video.play().catch(() => { });
         }
-      });
-    },
-    { threshold: 0.6 }, // play when 60% visible
-  );
+      },
+      { threshold: 0.6 },
+    ).observe(slide);
 
-  videos.forEach((video) => observer.observe(video));
+    if (!nextSlide) return;
+
+    // Rewind when the next slide starts covering this one;
+    // play again when it uncovers (user scrolls back up)
+    new IntersectionObserver(
+      ([entry]) => {
+        if (!isMobile()) return;
+        if (entry.isIntersecting) {
+          rewindVideo(video);
+        } else {
+          const rect = slide.getBoundingClientRect();
+          if (rect.top >= 0 && rect.top <= window.innerHeight) {
+            video.play().catch(() => { });
+          }
+        }
+      },
+      { threshold: 0.6 },
+    ).observe(nextSlide);
+  });
 };
 
 const disableHoverOnScroll = (carousel) => {
