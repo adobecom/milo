@@ -414,12 +414,11 @@ export const getFederatedContentRoot = () => {
 
 export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
-  const root = getFederatedContentRoot();
-  if (url.startsWith('/')) return `${root}${url}`;
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
   try {
     const { fedContentPrefix } = getConfig();
     const { pathname, search, hash } = new URL(url);
-    return `${root}${pathname.startsWith(fedContentPrefix) ? pathname.replace(fedContentPrefix, '') : pathname}${search}${hash}`;
+    return `${getFederatedContentRoot()}${pathname.startsWith(fedContentPrefix) ? pathname.replace(fedContentPrefix, '') : pathname}${search}${hash}`;
   } catch (e) {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
       tags: 'utils',
