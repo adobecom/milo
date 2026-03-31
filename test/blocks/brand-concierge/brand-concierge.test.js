@@ -288,8 +288,7 @@ describe('Brand Concierge', () => {
   it('createSusiComponentForModal creates SUSI component with correct properties and event listeners', () => {
     const onCloseRedirect = sinon.spy();
     const onSuccessfulToken = sinon.spy();
-    const originalLana = window.lana;
-    window.lana = { log: sinon.spy() };
+    const onError = sinon.spy();
 
     const authParams = {
       dt: false,
@@ -312,6 +311,7 @@ describe('Brand Concierge', () => {
       popup,
       onCloseRedirect,
       onSuccessfulToken,
+      onError,
     });
 
     // Verify element is created
@@ -332,7 +332,8 @@ describe('Brand Concierge', () => {
     // Test error event
     const errorEvent = new CustomEvent('on-error', { detail: { error: 'test error' } });
     susi.dispatchEvent(errorEvent);
-    expect(window.lana.log.calledWith('SUSI Light error:', errorEvent)).to.be.true;
+    expect(onError.calledOnce).to.be.true;
+    expect(onError.firstCall.args[0]).to.equal(errorEvent);
 
     // Test analytics event
     const analyticsEvent = new CustomEvent('on-analytics');
@@ -363,8 +364,5 @@ describe('Brand Concierge', () => {
     const tokenEventNoHandler = new CustomEvent('on-token', { detail: 'test-token' });
     susiNoToken.dispatchEvent(tokenEventNoHandler);
     // Should not throw even without onSuccessfulToken handler
-
-    // Clean up
-    window.lana = originalLana;
   });
 });

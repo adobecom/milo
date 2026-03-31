@@ -3,7 +3,7 @@ const MILO_TEMPLATES = [
   '404',
   'featured-story',
 ];
-const MILO_BLOCKS = [
+const C1_BLOCKS = [
   'accordion',
   'action-item',
   'action-scroller',
@@ -103,6 +103,26 @@ const MILO_BLOCKS = [
   'susi-light-login',
   'reading-time',
 ];
+
+const C2_BLOCKS = [
+  'base-card',
+  'box',
+  'brand-concierge',
+  'carousel-c2',
+  'elastic-carousel',
+  'explore-card',
+  'global-footer',
+  'global-navigation',
+  'martech-metadata',
+  'modal',
+  'news',
+  'region-nav',
+  'rich-content',
+  'router-marquee',
+  'section-metadata',
+  'visually-hidden',
+];
+
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
   { gist: 'gist.github.com' },
@@ -1081,6 +1101,12 @@ export async function loadTemplate() {
 function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
+  const isC2Page = getMetadata('foundation') === 'c2';
+  const isC1Block = C1_BLOCKS.includes(name);
+  const isC2Block = C2_BLOCKS.includes(name);
+  const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
+
+  if (isC2Page && isC1Block && !isC2Block && !isAutoBlock) return { name, isInvalid: true };
 
   let base = codeRoot;
   if (externalLibs) {
@@ -1102,7 +1128,8 @@ function getBlockData(block) {
     }
   }
 
-  if (miloLibs && MILO_BLOCKS.includes(name)) base = miloLibs;
+  if (miloLibs && isC1Block && (!isC2Page || isAutoBlock)) base = miloLibs;
+  if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -1117,7 +1144,12 @@ export async function loadBlock(block) {
     block.remove();
     return null;
   }
-  const { name, blockPath, hasStyles } = getBlockData(block);
+  const { name, blockPath, hasStyles, isInvalid } = getBlockData(block);
+  if (isInvalid) {
+    block.dataset.failed = 'true';
+    block.dataset.reason = `${name} is a C1 block and cannot be used on C2 pages`;
+    return block;
+  }
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
@@ -1670,12 +1702,13 @@ async function decorateSection(section, idx) {
   const { doNotInline } = getConfig();
   const blockLinks = [...blocks].reduce((blkLinks, block) => {
     const blockName = block.classList[0];
+    const blocksList = getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS;
     links.filter((link) => block.contains(link))
       .forEach((link) => {
         if (link.classList.contains('fragment') && link.href.includes('#_replacecell')) {
           link.href = link.href.replace('#_replacecell', '');
         } else if (link.classList.contains('fragment')
-          && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
+          && blocksList.includes(blockName) // do not inline consumer blocks (for now)
           && !doNotInline.includes(blockName)
           && link.dataset.mepLingo !== 'true') {
           if (!link.href.includes('#_inline')) {
@@ -2034,6 +2067,19 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
+  }
+  if (getMetadata('foundation') === 'c2') {
+    await Promise.all([
+      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+      loadScript(`${config.base}/deps/lenis.min.js`),
+    ]);
+    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
+    window.lenis = new window.Lenis({
+      autoRaf: true,
+      lerp,
+      prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
+    });
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
