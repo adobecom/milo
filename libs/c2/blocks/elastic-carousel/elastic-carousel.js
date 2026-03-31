@@ -163,7 +163,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
   slideEl.addEventListener('mouseenter', onHover);
-  slideEl.addEventListener('focus', onHover)
+  slideEl.addEventListener('focus', onHover);
   return slideEl;
 };
 

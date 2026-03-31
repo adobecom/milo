@@ -301,6 +301,8 @@ html[dir="rtl"] {
       flex-direction: column;
       display: grid;
       gap: 20vh;
+      /* TODO: review the property, it should flow from mobile to desktop, not the other way around */
+      transform: translateX(calc(50vw - 50% - var(--s2a-spacing-sm)));
 
       .elastic-carousel-item {
         position: sticky;
