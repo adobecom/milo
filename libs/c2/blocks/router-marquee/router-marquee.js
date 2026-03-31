@@ -171,7 +171,7 @@ const buildCard = (slide) => {
   const label = icon.nextElementSibling;
   const iconSrc = getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
   const labelText = label?.textContent.trim();
-  const href = slide.querySelector('.con-button')?.getAttribute('href') || '';
+  const href = label?.querySelector('a')?.getAttribute('href') || '';
   const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
   const ariaLabel = eyebrowText ? `${eyebrowText}, ${labelText}` : labelText;
 
