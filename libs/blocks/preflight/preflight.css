@@ -1301,4 +1301,15 @@ img:hover ~ .asset-meta,
   border: 3px solid #e68600 !important;
 }
 
+.dialog-modal#preflight button.dialog-close svg {
+  display: block;
+}
 
+.dialog-modal#preflight button.dialog-close::before,
+.dialog-modal#preflight button.dialog-close::after {
+  display: none;
+}
+
+.dialog-modal#preflight .dialog-close line {
+  stroke: var(--color-white, #fff);
+}
