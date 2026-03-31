@@ -132,7 +132,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   decorateBlockText(left);
 
   const content = `
-    <div class='elastic-carousel-item-container'>
+    <div class='elastic-carousel-item-container' id='elastic-carousel-slide-${index + 1}'>
       <div class='elastic-carousel-item-header'>
         ${icon.outerHTML}
         ${left.children[1]?.outerHTML}
@@ -157,8 +157,11 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     href: link?.href,
     'data-index': index + 1,
     role: 'link',
-    'aria-roledescription': 'slide',
-    'aria-label': ariaLabel,
+    ...(isMobile() && {
+      'aria-roledescription': 'slide',
+      'aria-label': ariaLabel,
+    }),
+    'aria-describedby': `elastic-carousel-slide-${index + 1}`,
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
