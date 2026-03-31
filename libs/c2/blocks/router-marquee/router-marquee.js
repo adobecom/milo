@@ -569,7 +569,10 @@ const startAutoplay = (slides, cards, container, block) => {
 
 const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
-  slides.forEach((slide) => decorateSlide(slide));
+  slides.forEach((slide, i) => {
+    decorateSlide(slide);
+    if (i > 0) slide.querySelector('video')?.removeAttribute('poster');
+  });
   slides[0]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);
   const cards = buildCards(slides);
