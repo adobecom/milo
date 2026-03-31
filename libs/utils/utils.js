@@ -407,8 +407,6 @@ export const getFederatedContentRoot = () => {
     'https://milo.adobe.com',
     'https://news.adobe.com',
     'graybox.adobe.com',
-  ];
-  const fedContFromMiloDomain = [
     'https://acrobat.adobe.com',
     'https://stage.acrobat.adobe.com',
   ];
@@ -423,8 +421,7 @@ export const getFederatedContentRoot = () => {
       ? originNoStage === o
       : originNoStage.endsWith(o);
   });
-  if (fedContFromMiloDomain.includes(window.location.origin)) federatedContentRoot = 'https://milo.adobe.com';
-  else federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
+  federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
     federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
