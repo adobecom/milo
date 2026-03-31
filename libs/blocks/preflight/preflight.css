@@ -1335,4 +1335,15 @@ img:hover ~ .asset-meta,
   line-height: 2.5;
 }
 
+.dialog-modal#preflight button.dialog-close svg {
+  display: block;
+}
 
+.dialog-modal#preflight button.dialog-close::before,
+.dialog-modal#preflight button.dialog-close::after {
+  display: none;
+}
+
+.dialog-modal#preflight .dialog-close line {
+  stroke: var(--color-white, #fff);
+}

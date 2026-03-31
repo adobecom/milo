@@ -24,10 +24,12 @@ async function loadVideo(asset) {
   if (!source) asset.appendChild(createTag('source', { src: dataSource, type: 'video/mp4' }));
 
   asset.load();
-  await Promise.race(['loadedmetadata', 'error']
-    .map((event) => new Promise((resolve) => {
+  await Promise.race([
+    ...['loadedmetadata', 'error'].map((event) => new Promise((resolve) => {
       asset.addEventListener(event, resolve, { once: true });
-    })));
+    })),
+    new Promise((resolve) => { setTimeout(resolve, 5000); }),
+  ]);
 }
 
 function loadMpc(asset) {
