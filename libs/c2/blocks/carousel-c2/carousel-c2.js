@@ -26,44 +26,14 @@ function handleNext(nextElement, elements) {
   return elements[indexOfActive + 1] ?? elements[0];
 }
 
-function enableInActiveFocus(slides, activeSlide) {
-  slides.forEach((slide) => slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
-    el.setAttribute('tabindex', slide === activeSlide ? '0' : '-1');
-  }));
-}
-
-function allSlidesFocusable(wrapper) {
-  const tabIndex = '0';
-  [...wrapper.children].forEach((slide) => {
-    slide.setAttribute('aria-hidden', false);
-    slide.setAttribute('tabindex', tabIndex);
-  });
-}
-
-function activeSlideFocusable(wrapper) {
-  const activeSlide = wrapper.querySelector('.active');
-  [...wrapper.children].forEach((slide) => {
+function setAriaHiddenAndTabIndex(slides, activeSlide) {
+  slides.forEach((slide) => {
     const isActive = slide === activeSlide;
     slide.setAttribute('aria-hidden', String(!isActive));
-    slide.setAttribute('tabindex', isActive ? '0' : '-1');
     slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
-      el.setAttribute('tabindex', '-1');
+      el.setAttribute('tabindex', isActive ? '0' : '-1');
     });
   });
-}
-
-function getActiveSlideText(slide) {
-  let text = '';
-  if (!slide) return text;
-  slide.querySelectorAll(':scope > :not(.section-metadata)').forEach((el, i) => {
-    text += `${i ? ' ' : ''}${el.textContent.trim()}`;
-  });
-  if (!text) {
-    const media = slide.querySelector('img[alt], video[title]');
-    text = media?.getAttribute('alt') || media?.getAttribute('title') || '';
-  }
-
-  return text;
 }
 
 function updateAriaLive(carouselEls) {
@@ -71,19 +41,26 @@ function updateAriaLive(carouselEls) {
   const activeSlide = slides.find((slide) => slide.classList.contains('active'));
   ariaLive.textContent = '';
   const index = parseInt(activeSlide.getAttribute('data-index'), 10);
-  const text = getActiveSlideText(activeSlide);
+  let text = '';
+  activeSlide.querySelectorAll(':scope > :not(.section-metadata)').forEach((el, i) => {
+    text += `${i ? ' ' : ''}${el.textContent.trim()}`;
+  });
+  if (!text) {
+    const media = activeSlide.querySelector('img[alt], video[title]');
+    text = media?.getAttribute('alt') || media?.getAttribute('title') || '';
+  }
   ariaLive.textContent = [`Slide ${index + 1} of ${slides.length}`, text].filter(Boolean).join(', ');
 }
 
 function decorateNavigation() {
   const prevBtn = createTag(
     'button',
-    { class: 'prev', 'aria-label': 'Previous slide', tabindex: '-1' },
+    { class: 'prev', 'aria-label': 'Previous slide' },
     `<span class="arrow-default">${PREV}</span><span class="arrow-hover">${PREV}</span>`,
   );
   const nextBtn = createTag(
     'button',
-    { class: 'next', 'aria-label': 'Next slide', tabindex: '-1' },
+    { class: 'next', 'aria-label': 'Next slide' },
     `<span class="arrow-default">${NEXT}</span><span class="arrow-hover">${NEXT}</span>`,
   );
   return [prevBtn, nextBtn];
@@ -138,7 +115,6 @@ function cloneSlides(carouselEls, activeSlide) {
     slide.setAttribute('data-cloned', 'true');
     slide.removeAttribute('data-index');
     slide.classList.remove('active');
-    slide.removeAttribute('aria-label');
   });
   const allSlides = [...cloneFront, ...slides, ...cloneBack];
   allSlides.forEach((slide) => {
@@ -203,8 +179,10 @@ function moveSlides(carouselEls, direction, e) {
     slides,
     indicatorsContainer,
     slideIndicators,
+    prevBtn,
+    nextBtn,
   } = carouselEls;
-  const { timeStamp, key } = e;
+  const { timeStamp, type: eventType } = e;
 
   eventTimeStamp.set(wrapper, timeStamp);
   const eventTimeStampDiff = eventTimeStamp.diff(wrapper);
@@ -220,7 +198,6 @@ function moveSlides(carouselEls, direction, e) {
   allSlides.forEach((slide) => slide.classList.remove('active-clone'));
 
   activeSlide.classList.remove('active');
-  activeSlide.removeAttribute('aria-label');
   activeSlideIndicator.classList.remove('active');
   activeSlideIndicator.removeAttribute('aria-current');
   let activeClone;
@@ -229,92 +206,42 @@ function moveSlides(carouselEls, direction, e) {
     activeClone = handleNext(activeSlide, allSlides);
     activeSlide = handleNext(activeSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
+    if (eventType !== 'pointerup') nextBtn.focus();
   }
 
   if (direction === 'prev') {
     activeClone = handlePrevious(activeSlide, allSlides);
     activeSlide = handlePrevious(activeSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
+    if (eventType !== 'pointerup') prevBtn.focus();
   }
   activeSlide.classList.add('active');
   activeClone?.classList.add('active-clone');
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('aria-current', 'location');
   slideAnimation(carouselEls, activeSlide, direction);
-  if (key === 'Tab') enableInActiveFocus(slides, activeSlide);
-  else activeSlideFocusable(wrapper);
-  activeSlide.focus();
 
+  setAriaHiddenAndTabIndex(allSlides, activeSlide);
   updateAriaLive(carouselEls);
 }
 
 function attachListeners(carouselEls) {
-  const { el, prevBtn, nextBtn, wrapper, slides } = carouselEls;
+  const { el, prevBtn, nextBtn, wrapper } = carouselEls;
 
   prevBtn.addEventListener('click', (e) => moveSlides(carouselEls, 'prev', e));
   nextBtn.addEventListener('click', (e) => moveSlides(carouselEls, 'next', e));
 
-  const visitedSlidesTab = new Set();
-  let carouselFocused = false;
-
-  function isTabNavigationEnd() {
-    return visitedSlidesTab.size === slides.length;
-  }
-
   el.addEventListener('keydown', (e) => {
-    if (e.code === 'ArrowLeft') {
-      if (carouselFocused) return;
-      moveSlides(carouselEls, getDirection('prev'), e);
-    }
-    if (e.code === 'ArrowRight') {
-      if (carouselFocused) return;
-      moveSlides(carouselEls, getDirection('next'), e);
-    }
-    if (e.code === 'Enter') {
-      if (carouselFocused) return;
-      e.preventDefault();
-      const activeSlide = wrapper.querySelector('.active');
-      allSlidesFocusable(wrapper);
-      carouselFocused = true;
-      activeSlide.removeAttribute('aria-label');
-      activeSlide.querySelector(FOCUSABLE_SELECTOR)?.focus();
-    }
-
-    if (e.code === 'Tab') {
-      if (!isTabNavigationEnd()) return;
-      activeSlideFocusable(wrapper);
-      visitedSlidesTab.clear();
-      carouselFocused = false;
-    }
-
-    if (e.code === 'Escape') {
-      const activeSlide = wrapper.querySelector('.active');
-      activeSlideFocusable(wrapper);
-      carouselFocused = false;
-      visitedSlidesTab.clear();
-      activeSlide.focus();
-    }
+    if (e.code === 'ArrowLeft') moveSlides(carouselEls, getDirection('prev'), e);
+    if (e.code === 'ArrowRight') moveSlides(carouselEls, getDirection('next'), e);
   });
 
   el.addEventListener('keyup', (e) => {
-    if (e.code === 'Tab') {
-      const { activeElement: focusedSlide } = document;
-      const activeSlide = wrapper.querySelector('.active');
-      if (activeSlide === focusedSlide || !focusedSlide.classList.contains('carousel-slide')) return;
-      const direction = e.shiftKey ? 'prev' : 'next';
-      visitedSlidesTab.add(activeSlide);
-
-      moveSlides(carouselEls, getDirection(direction), e);
-    }
-  });
-
-  el.addEventListener('focusout', (e) => {
-    const { relatedTarget } = e;
-    if (el.contains(relatedTarget)) return;
-    const activeSlide = wrapper.querySelector('.active');
-    const index = parseInt(activeSlide.getAttribute('data-index'), 10);
-    const activeText = getActiveSlideText(activeSlide);
-    activeSlide.setAttribute('aria-label', [`Slide ${index + 1} of ${slides.length}`, activeText].filter(Boolean).join(', '));
+    const { code, target } = e;
+    if (prefersReducedMotion() || code !== 'Tab' || !target.matches('button.prev')) return;
+    const wrapperAnimation = wrapper.getAnimations().find((a) => a.animationName === 'wrapper-enter');
+    if (!wrapperAnimation || wrapperAnimation.playState === 'finished') return;
+    wrapper.scrollIntoView({ block: 'center' });
   });
 
   let startX = 0;
@@ -402,15 +329,13 @@ export default function init(el) {
   const lastSlide = slides.pop();
   slides.unshift(lastSlide);
   slides[1].classList.add('active');
-  const activeSlideText = getActiveSlideText(slides[1]);
-  slides[1].setAttribute('aria-label', [`Slide 1 of ${slides.length}`, activeSlideText].filter(Boolean).join(', '));
   indicatorsContainer.children[0]?.classList.add('active');
   indicatorsContainer.children[0]?.setAttribute('aria-current', 'location');
 
   el.textContent = '';
   wrapper.append(...slides);
   const [prevBtn, nextBtn] = decorateNavigation();
-  el.append(wrapper, ariaLive, prevBtn, nextBtn, indicatorsContainer);
+  el.append(ariaLive, prevBtn, wrapper, nextBtn, indicatorsContainer);
 
   const carouselEls = {
     el,
@@ -424,6 +349,6 @@ export default function init(el) {
     carouselAriaLabel,
   };
 
-  activeSlideFocusable(wrapper);
+  setAriaHiddenAndTabIndex(slides, slides[1]);
   attachListeners(carouselEls);
 }
