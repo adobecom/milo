@@ -50,7 +50,10 @@ function addSearch({ content, list, type }) {
       }
 
       switch (type) {
-        case 'blocks':
+        case 'c1-blocks':
+          loadBlocks({ content, list, query, type });
+          break;
+        case 'c2-blocks':
           loadBlocks({ content, list, query, type });
           break;
         case 'templates':
@@ -68,7 +71,10 @@ function addSearch({ content, list, type }) {
       const query = e.target.value;
 
       switch (type) {
-        case 'blocks':
+        case 'c1-blocks':
+          loadBlocks({ content, list, query, type });
+          break;
+        case 'c2-blocks':
           loadBlocks({ content, list, query, type });
           break;
         case 'templates':
@@ -92,7 +98,11 @@ async function loadList(type, content, list) {
   list.innerHTML = '';
   const query = list.closest('.sk-library').querySelector('.sk-library-search-input')?.value;
   switch (type) {
-    case 'blocks':
+    case 'c1-blocks':
+      addSearch({ content, list, type });
+      loadBlocks({ content, list, query, type });
+      break;
+    case 'c2-blocks':
       addSearch({ content, list, type });
       loadBlocks({ content, list, query, type });
       break;
@@ -156,7 +166,8 @@ async function combineLibraries(base, supplied) {
 
   const library = {
     assets: await fetchAssetsData(assetsPath),
-    blocks: base.blocks.data,
+    'c1-blocks': base['c1-blocks']?.data,
+    'c2-blocks': base['c2-blocks']?.data,
     templates: base.templates?.data,
     icons: base.icons?.data,
     MEP_personalization: base.personalization?.data,
@@ -164,8 +175,12 @@ async function combineLibraries(base, supplied) {
   };
 
   if (supplied) {
-    if (supplied.blocks.data.length > 0) {
-      library.blocks.push(...supplied.blocks.data);
+    if (supplied['c1-blocks']?.data?.length > 0) {
+      library['c1-blocks'].push(...supplied['c1-blocks'].data);
+    }
+
+    if (supplied['c2-blocks']?.data?.length > 0) {
+      library['c2-blocks'].push(...supplied['c2-blocks'].data);
     }
 
     if (supplied.placeholders.data.length > 0) {

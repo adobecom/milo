@@ -412,6 +412,145 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
   });
 
+  it('updateFramework should create new framework stylesheet link', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
+  it('updateFramework should no-op when already on target foundation', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', 'c2');
+    const c2Link = document.createElement('link');
+    c2Link.rel = 'stylesheet';
+    c2Link.href = `${libsPath}/c2/styles/styles.css`;
+    document.head.appendChild(c2Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
+  it('updateFramework should no-op when value is undefined', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    delete manifestJson.data[0].all;
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.not.be.null;
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+  });
+
+  it('updateFramework should no-op when value is empty string', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson.data[0].all = '';
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.not.be.null;
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+  });
+
+  it('updateFramework should no-op for invalid values', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson.data[0].all = 'banana';
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.not.be.null;
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+  });
+
+  it('updateFramework should create C1 stylesheet link when switching from C2', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c2Link = document.createElement('link');
+    c2Link.rel = 'stylesheet';
+    c2Link.href = `${libsPath}/c2/styles/styles.css`;
+    document.head.appendChild(c2Link);
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', 'c2');
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson.data[0].all = 'c1';
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
+  it('updateFramework should handle case-insensitive values', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson.data[0].all = 'C2';
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
   it('will add id to the section div', async () => {
     addSectionAnchors(document);
     const sectionWithId = document.querySelector('#marquee-container');

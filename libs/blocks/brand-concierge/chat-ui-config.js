@@ -41,6 +41,12 @@ export default {
         tabletLandscape: 1199,
       },
     },
+    chatTranscript: {
+      enabled: true,
+      maxSessions: 10,
+      maxMessagesPerSession: 100,
+      cleanupInterval: 24,
+    },
   },
   disclaimer: {
     text: "Use of this beta AI chatbot is subject to Adobe's {Privacy Policy}. Don't share sensitive data. AI responses are not your Content, may be inaccurate, and any offers provided are non-binding. {Generative AI Terms}.",
@@ -86,8 +92,8 @@ export default {
     'feedback.toast.success': 'Thank you for the feedback.',
     'feedback.thumbsUp.aria': 'Thumbs up',
     'feedback.thumbsDown.aria': 'Thumbs down',
-    'widget.firefly-gallery.preamble-markdown': 'To see what you can do, check out these images from the [Firefly](https://firefly.adobe.com/gallery) community of creators:',
-    'widget.firefly-gallery.title': 'Adobe Firefly gallery',
+    'widget.firefly-gallery.preamble-markdown': "If you're not ready to sign in, you can explore the Firefly community gallery to get inspired and discover prompts to remix.",
+    'widget.firefly-gallery.title': 'Adobe Firefly',
     'widget.firefly-gallery.view-item-text': 'View',
     'widget.firefly-gallery.view-more-text': 'More in Firefly gallery',
   },
