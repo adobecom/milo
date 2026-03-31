@@ -89,19 +89,16 @@ const getInvalidUrlReason = (str) => {
 const isValidUrl = (str) => !getInvalidUrlReason(str);
 
 const getMixedProjectError = (urls) => {
-  const validUrls = urls.filter((url) => isValidUrl(url));
-  if (validUrls.length < 2) return null;
+  if (urls.length < 2) return null;
   const projects = new Set();
-  validUrls.forEach((str) => {
-    try {
-      const url = new URL(str);
-      const [, repo, owner] = getAemUrl(url);
-      if (repo && owner) projects.add(`${repo}--${owner}`);
-    } catch (_) { /* skip invalid */ }
+  urls.forEach((str) => {
+    if (!isValidUrl(str)) return;
+    const seg = str.split('/')[2]?.replace(/[\u2013\u2014]/g, '--').split('.').find((s) => s.includes('--'));
+    const [, repo, owner] = seg?.split('--') ?? [];
+    if (repo && owner) projects.add(`${repo}--${owner}`);
   });
   if (projects.size > 1) {
-    const names = [...projects].join(', ');
-    return `All URLs must belong to the same project. Found multiple projects: ${names}`;
+    return `All URLs must belong to the same project. Found multiple projects: ${[...projects].join(', ')}`;
   }
   return null;
 };
