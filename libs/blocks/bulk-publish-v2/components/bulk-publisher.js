@@ -134,11 +134,12 @@ class BulkPublish2 extends LitElement {
   }
 
   validateUrls() {
-    if (this.jobErrors?.mixedProject) this.jobErrors = false;
     const malformed = this.urls.filter((url) => url.length && !isValidUrl(url));
     this.invalidUrls = malformed;
     let errors = [];
-    const invalids = this.jobErrors?.urls?.length
+    const { jobErrors } = this;
+    const hasApiErrors = jobErrors && !jobErrors.mixedProject && jobErrors.urls?.length;
+    const invalids = hasApiErrors
       ? this.urls.filter((url) => this.jobErrors.urls.includes(url))
       : malformed;
 
