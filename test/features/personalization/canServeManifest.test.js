@@ -45,6 +45,9 @@ describe('getManifestMarketingAction', () => {
   it('should return the same action if it is in the allowed list', () => {
     expect(getManifestMarketingAction('marketing increase', 'promo')).to.be.equal('marketing increase');
   });
+  it('should normalize core services to core services/non-marketing', () => {
+    expect(getManifestMarketingAction('core services', 'pzn')).to.be.equal('core services/non-marketing');
+  });
   it('should return core services/non-marketing if the action is promo and the action is undefined', () => {
     expect(getManifestMarketingAction(undefined, 'promo')).to.be.equal('core services/non-marketing');
   });

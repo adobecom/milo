@@ -1189,9 +1189,11 @@ export const getGeoRestriction = (manifestConfig) => {
 };
 
 export function getManifestMarketingAction(mktgAction, source) {
-  const allowedServices = ['core services/non-marketing', 'non-marketing', 'marketing decrease', 'marketing increase'];
-  if (allowedServices.includes(mktgAction)) return mktgAction;
-  if (source?.includes('promo')) return 'core services/non-marketing';
+  const coreServicesNonMarketing = 'core services/non-marketing';
+  const allowedServices = [coreServicesNonMarketing, 'non-marketing', 'marketing decrease', 'marketing increase'];
+  const normalizedMktgAction = mktgAction === 'core services' ? coreServicesNonMarketing : mktgAction;
+  if (allowedServices.includes(normalizedMktgAction)) return normalizedMktgAction;
+  if (source?.includes('promo')) return coreServicesNonMarketing;
   return 'marketing increase';
 }
 
