@@ -18,7 +18,8 @@
     "build:htm-preact": "microbundle ./build/htm-preact.js -o ./libs/deps/htm-preact.js -f modern --no-sourcemap --target web; mv ./libs/deps/htm-preact.modern.mjs ./libs/deps/htm-preact.js",
     "build:preact-debug": "microbundle ./build/htm-preact-debug.js -o ./libs/deps/htm-preact-debug.js -f modern --no-sourcemap --target web; mv ./libs/deps/htm-preact-debug.modern.mjs ./libs/deps/htm-preact-debug.js",
     "build:gnav-profile": "microbundle ./libs/blocks/global-navigation/blocks/profile/profile-wrapper.js -o ./build/profile-wrapper-build.js -f umd --external none --no-sourcemap --target web; mv ./build/profile-wrapper-build.umd.js ./build/profile.js",
-    "build:echarts": "cp node_modules/echarts/dist/echarts.common.min.js libs/deps/echarts.common.min.js"
+    "build:echarts": "cp node_modules/echarts/dist/echarts.common.min.js libs/deps/echarts.common.min.js",
+    "build:s2a": "node .github/workflows/update-s2a-styles.js"
   },
   "repository": {
     "type": "git",
@@ -63,6 +64,8 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "microbundle": "0.15.1",
     "playwright": "^1.44.1",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
     "sinon": "13.0.1",
     "stylelint": "14.6.0",
     "stylelint-config-prettier": "9.0.3",

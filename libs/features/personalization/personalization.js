@@ -5,6 +5,7 @@
 import {
   createTag,
   getConfig,
+  getMetadata,
   loadLink,
   loadScript,
   localizeLinkAsync,
@@ -144,6 +145,7 @@ const isInLcpSection = (el) => {
 const GLOBAL_CMDS = [
   'insertscript',
   'replacepage',
+  'updateframework',
   'updatemetadata',
   'useblockcode',
 ];
@@ -338,7 +340,10 @@ const COMMANDS = {
       }
     } else {
       value = cmd.content;
-      if (attribute === 'href') value = normalizePath(value);
+      if (attribute === 'href'
+        && (!value.startsWith('http') || /\.(hlx|aem)\.|localhost:/.test(value))) {
+        value = normalizePath(value);
+      }
     }
 
     if (value) {
@@ -447,6 +452,28 @@ const setMetadata = (metadata) => {
   }
   metaEl.setAttribute('content', val);
 };
+
+function updateFramework(updateFrameworkList) {
+  if (!updateFrameworkList?.length) return;
+  const fwVal = updateFrameworkList[0].val?.trim().toLowerCase();
+  if (!/^c\d+$/.test(fwVal)) return;
+  const currentFoundation = getMetadata('foundation') || 'c1';
+  if (currentFoundation === fwVal) return;
+  const { miloLibs, codeRoot } = getConfig();
+  const libsPath = miloLibs || codeRoot;
+  const existing = document.head.querySelector(
+    `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
+  );
+  const stylesPrefix = fwVal === 'c1' ? '' : `/${fwVal}`;
+  loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, {
+    rel: 'stylesheet',
+    callback: (status) => {
+      if (status !== 'load') return;
+      existing?.remove();
+      setMetadata({ selector: 'foundation', val: fwVal });
+    },
+  });
+}
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
@@ -1306,6 +1333,10 @@ export async function categorizeActions(experiment, config) {
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
+  if (selectedVariant.updateframework?.length) {
+    [config.mep.updateframework] = selectedVariant.updateframework;
+  }
+
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
   return {
@@ -1441,6 +1472,10 @@ export async function applyPers({ manifests }) {
   config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
   config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+  if (config.mep.updateframework) {
+    updateFramework([config.mep.updateframework]);
+  }
 
   const main = document.querySelector('main');
   if (config.mep.replacepage && !isPostLCP && main) {

@@ -1232,12 +1232,15 @@ describe('getGrayboxExperienceId', () => {
 
 describe('isLocaleInRegionalSites helper function tests', () => {
   // This tests the helper function logic inline since it's not exported
-  const isLocaleInRegionalSites = (regionalSites, localeStr) => {
+  const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
     if (!regionalSites) return false;
-    return regionalSites
+    const sites = regionalSites
       .split(',')
-      .map((site) => site.trim().replace(/^\//, ''))
-      .includes(localeStr);
+      .map((site) => site.trim().replace(/^\//, ''));
+    return (
+      sites.includes(locStr)
+      || (Boolean(langStr) && sites.includes(`${locStr}_${langStr}`))
+    );
   };
 
   describe('Locale examples', () => {
@@ -1263,6 +1266,16 @@ describe('isLocaleInRegionalSites helper function tests', () => {
 
     it('should NOT match "fr" in "/ca_fr, /be_fr, /ch_fr" (suffix bug)', () => {
       const result = isLocaleInRegionalSites('/ca_fr, /be_fr, /ch_fr', 'fr');
+      expect(result).to.be.false;
+    });
+
+    it('should match compound locale when locStr and langStr combine to a list entry', () => {
+      const result = isLocaleInRegionalSites('/ca_fr, /ch_fr', 'ca', 'fr');
+      expect(result).to.be.true;
+    });
+
+    it('should not match compound when langStr is omitted and list only has combined codes', () => {
+      const result = isLocaleInRegionalSites('/ca_fr', 'ca');
       expect(result).to.be.false;
     });
   });
