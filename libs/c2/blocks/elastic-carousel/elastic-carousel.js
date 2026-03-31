@@ -1,7 +1,7 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-let leaveTimeout;
+const leaveTimeouts = new WeakMap();
 const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
 
@@ -11,20 +11,23 @@ const isMobile = () => window.innerWidth <= 768;
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
-const rewindVideo = (video) => {
+const stopRewind = (video) => {
   clearInterval(rewindIntervals.get(video));
+  rewindIntervals.delete(video);
+};
+
+const rewindVideo = (video) => {
+  stopRewind(video);
   video.pause();
-  const startSystemTime = new Date().getTime();
+  const startSystemTime = Date.now();
   const startVideoTime = video.currentTime;
   const intervalRewind = setInterval(() => {
-    video.playbackRate = 1.0;
     if (video.currentTime === 0) {
-      clearInterval(rewindIntervals.get(video));
-      rewindIntervals.delete(video);
+      stopRewind(video);
       video.load();
     } else {
-      const elapsed = new Date().getTime() - startSystemTime;
-      video.currentTime = Math.max(startVideoTime - elapsed * (1 / 1000.0), 0);
+      const elapsed = Date.now() - startSystemTime;
+      video.currentTime = Math.max(startVideoTime - elapsed / 1000, 0);
     }
   }, 30);
   rewindIntervals.set(video, intervalRewind);
@@ -92,27 +95,7 @@ const onSlideLeave = (event) => {
 
   clearTimeout(slideLeaveTimeouts.get(video));
   slideLeaveTimeouts.set(video, setTimeout(() => {
-    video.pause();
-    const rewind = (rewindSpeed) => {
-      clearInterval(rewindIntervals.get(video));
-      const startSystemTime = new Date().getTime();
-      const startVideoTime = video.currentTime;
-
-      const intervalRewind = setInterval(() => {
-        video.playbackRate = 1.0;
-        if (video.currentTime === 0) {
-          clearInterval(rewindIntervals.get(video));
-          rewindIntervals.delete(video);
-          video.load();
-        } else {
-          const elapsed = new Date().getTime() - startSystemTime;
-          const val = Math.max(startVideoTime - elapsed * (rewindSpeed / 1000.0), 0);
-          video.currentTime = val;
-        }
-      }, 30);
-      rewindIntervals.set(video, intervalRewind);
-    };
-    rewind(1);
+    rewindVideo(video);
   }, 100));
 };
 
@@ -123,20 +106,26 @@ const removeHovered = (carousel) => {
 
 const onCarouselLeave = (event) => {
   const carouselContainer = event.target;
-  leaveTimeout = setTimeout(() => {
+  clearTimeout(leaveTimeouts.get(carouselContainer));
+  leaveTimeouts.set(carouselContainer, setTimeout(() => {
     carouselContainer.classList.remove('stick-left', 'stick-right');
-    removeHovered(event.target);
-  }, 10);
+    removeHovered(carouselContainer.closest('.elastic-carousel'));
+  }, 10));
 };
 
 const onHover = (event) => {
   const slideEl = event.target;
-  clearTimeout(leaveTimeout);
+  const carouselContainer = slideEl.closest('.elastic-carousel-container');
+  clearTimeout(leaveTimeouts.get(carouselContainer));
 
   const video = slideEl.querySelector('video');
   clearTimeout(slideLeaveTimeouts.get(video));
+  slideLeaveTimeouts.delete(video);
 
-  if (video) video.play().catch(() => { });
+  if (video) {
+    stopRewind(video);
+    video.play().catch(() => { });
+  }
 
   const slideIndex = slideEl.dataset.index * 1;
   const container = slideEl.parentElement;
