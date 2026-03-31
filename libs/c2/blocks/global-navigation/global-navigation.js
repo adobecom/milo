@@ -5,7 +5,9 @@ const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
 function getFederalDomain(config) {
   const { hostname } = window.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
+  let extension;
+  if (hostname.endsWith('.aem.page')) extension = 'page';
+  else if (hostname.endsWith('.aem.live')) extension = 'live';
 
   const queryParams = new URLSearchParams(window.location.search);
   const federalLibsParam = queryParams.get('federallibs');
@@ -19,7 +21,8 @@ function getFederalDomain(config) {
       if (segments.length >= 2) return sanitized;
       return `${sanitized}--federal--adobecom`;
     })();
-    return `https://${branch}.aem.${extension}/federal`;
+    const aemExtension = extension ?? 'page';
+    return `https://${branch}.aem.${aemExtension}/federal`;
   }
 
   if (extension) return `${DEFAULT_FEDERAL_URL.replace('aem.page', `aem.${extension}`)}/federal`;
@@ -56,9 +59,11 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
+  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
+
   main({
     localizeLink,
-    gnavSource: new URL(getMetadata('gnav-source')),
+    gnavSource: gnavUrl,
     asideSource: null,
     isLocalNav: false,
     mountpoint: el,
