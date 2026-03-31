@@ -10,6 +10,7 @@ import {
   getJobErrorText,
   getProcessedCount,
   getInvalidUrlReason,
+  getMixedProjectError,
   isValidUrl,
   processJobResult,
   PROCESS_TYPES,
@@ -74,6 +75,12 @@ class BulkPublish2 extends LitElement {
   }
 
   async updated() {
+    const errorBar = this.renderRoot.querySelector('.error-bar');
+    const urlsInput = this.renderRoot.querySelector('#Urls');
+    if (urlsInput) {
+      const height = errorBar?.offsetHeight ?? 0;
+      urlsInput.style.paddingTop = height > 0 ? `${height + 6}px` : '';
+    }
     const prefs = sticky();
     if (prefs.get('mode') !== this.mode) {
       prefs.set('mode', this.mode);
@@ -133,6 +140,7 @@ class BulkPublish2 extends LitElement {
   }
 
   validateUrls() {
+    if (this.jobErrors?.mixedProject) this.jobErrors = false;
     const malformed = this.urls.filter((url) => url.length && !isValidUrl(url));
     this.invalidUrls = malformed;
     let errors = [];
@@ -142,6 +150,13 @@ class BulkPublish2 extends LitElement {
 
     if (invalids?.length) {
       errors = [...errors, ...invalids];
+    }
+    if (!errors.length) {
+      const mixedError = getMixedProjectError(this.urls);
+      if (mixedError) {
+        this.jobErrors = { urls: this.urls, messages: [mixedError], mixedProject: true };
+        errors = [...this.urls];
+      }
     }
     if (errors.length === 0) {
       errors = this.urls.length === 0;
@@ -428,20 +443,24 @@ class BulkPublish2 extends LitElement {
   async submit() {
     if (!this.isDisabled()) {
       this.processing = 'started';
-      const { authorized, unauthorized } = await getPublishable(this);
-      const job = await startJob({
-        urls: authorized,
-        process: this.process.toLowerCase(),
-        useBulk: this.user.permissions[this.process]?.useBulk ?? false,
-      });
-      const { complete, error } = processJobResult(job);
-      this.jobs = [...this.jobs, ...complete];
-      this.processing = complete.length ? 'job' : false;
-      if (error.length || unauthorized.length) {
-        this.setJobErrors(error, unauthorized);
-      } else {
-        if (this.mode === 'full') this.openJobs = true;
-        this.reset();
+      try {
+        const { authorized, unauthorized } = await getPublishable(this);
+        const job = await startJob({
+          urls: authorized,
+          process: this.process.toLowerCase(),
+          useBulk: this.user.permissions[this.process]?.useBulk ?? false,
+        });
+        const { complete, error } = processJobResult(job);
+        this.jobs = [...this.jobs, ...complete];
+        this.processing = complete.length ? 'job' : false;
+        if (error.length || unauthorized.length) {
+          this.setJobErrors(error, unauthorized);
+        } else {
+          if (this.mode === 'full') this.openJobs = true;
+          this.reset();
+        }
+      } catch (e) {
+        this.processing = false;
       }
     }
   }

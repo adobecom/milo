@@ -71,11 +71,13 @@ const getInvalidUrlReason = (str) => {
   }
 
   const [ref, repo, owner] = getAemUrl(url);
+  const tld = url.hostname.endsWith('.aem.live') ? 'aem.live' : 'aem.page';
   const postParse = [
     [url.protocol !== 'https:', 'Must use HTTPS'],
     [!url.hostname, 'Invalid URL (missing hostname)'],
     [!url.hostname || !AEM_PAGE_HOST_REGEX.test(url.hostname), 'Invalid host (expected *.aem.page or *.aem.live)'],
     [!ref || !repo || !owner, 'Invalid host (missing ref, repo, or owner)'],
+    [ref && repo && owner && url.hostname !== `${ref}--${repo}--${owner}.${tld}`, 'Invalid host format (expected ref--repo--owner.aem.page or .aem.live)'],
     [repo === 'bacom', 'Old Bacom project is not supported, use new DA project instead'],
     [url.pathname.includes('//'), 'Invalid URL (path must not contain //)'],
     [url.pathname.toLowerCase().endsWith('.html'), 'URL must not end with .html'],
@@ -85,6 +87,24 @@ const getInvalidUrlReason = (str) => {
 };
 
 const isValidUrl = (str) => !getInvalidUrlReason(str);
+
+const getMixedProjectError = (urls) => {
+  const validUrls = urls.filter((url) => isValidUrl(url));
+  if (validUrls.length < 2) return null;
+  const projects = new Set();
+  validUrls.forEach((str) => {
+    try {
+      const url = new URL(str);
+      const [, repo, owner] = getAemUrl(url);
+      if (repo && owner) projects.add(`${repo}--${owner}`);
+    } catch (_) { /* skip invalid */ }
+  });
+  if (projects.size > 1) {
+    const names = [...projects].join(', ');
+    return `All URLs must belong to the same project. Found multiple projects: ${names}`;
+  }
+  return null;
+};
 
 const editEntry = (el, str) => {
   if (el?.value) {
@@ -242,6 +262,7 @@ export {
   updateJobUrls,
   sticky,
   getInvalidUrlReason,
+  getMixedProjectError,
   isValidUrl,
   delay,
   setJobTime,

@@ -247,6 +247,8 @@ label[for='urls'] i {
   width: 100%;
   background-color: var(--error);
   color: white;
+  border-radius: 6px 6px 0 0;
+  z-index: 1;
 }
 
 .error-bar .btn {
@@ -476,10 +478,6 @@ label[for='urls'] i {
 .malformed-list li {
   word-break: break-all;
   margin-bottom: 2px;
-}
-
-.urls.invalid textarea {
-  padding-top: 56px;
 }
 
 .urls.invalid textarea,
