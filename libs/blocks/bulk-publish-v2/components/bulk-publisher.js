@@ -75,12 +75,6 @@ class BulkPublish2 extends LitElement {
   }
 
   async updated() {
-    const errorBar = this.renderRoot.querySelector('.error-bar');
-    const urlsInput = this.renderRoot.querySelector('#Urls');
-    if (urlsInput) {
-      const height = errorBar?.offsetHeight ?? 0;
-      urlsInput.style.paddingTop = height > 0 ? `${height + 6}px` : '';
-    }
     const prefs = sticky();
     if (prefs.get('mode') !== this.mode) {
       prefs.set('mode', this.mode);
