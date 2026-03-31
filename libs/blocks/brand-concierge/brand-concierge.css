@@ -52,7 +52,7 @@
 .brand-concierge.floating-button-only {
   padding: 0;
 
-  /* TODO: likely not all pages will be dark, this needs more granular control */
+  /* TODO: Likely not all pages will be dark, this needs more granular control */
   main:has(&) {
     background: var(--s2a-color-gray-1000);
   }
