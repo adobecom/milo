@@ -819,7 +819,9 @@ function setCountry() {
 }
 
 export async function getCountry(skipFallback = false) {
-  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
+  const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
+  const country = akamaiLocale || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
   try {

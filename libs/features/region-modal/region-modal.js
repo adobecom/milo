@@ -338,9 +338,10 @@ function buildContent(
     ? applyCountryPlaceholder(currentMarket.modalDescription, countryDisplayName)
     : currentMarket.modalDescription;
 
-  const title = createTag('h3', { lang, dir }, titleText);
-  const text = createTag('p', { class: 'locale-text', lang, dir }, descText);
-
+  const title = createTag('h3', { lang, dir });
+  title.textContent = titleText;
+  const text = createTag('p', { class: 'locale-text', lang, dir });
+  text.textContent = descText;
   const mainAction = createTag('a', {
     class: 'con-button blue button-l',
     lang,
