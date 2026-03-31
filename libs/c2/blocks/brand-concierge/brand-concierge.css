@@ -350,7 +350,7 @@
   margin: var(--bc-floating-button-spacing) auto;
   max-height: var(--bc-floating-button-height);
   position: fixed;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.25s ease;
   width: calc(100% - var(--bc-floating-button-spacing) * 2 - var(--bc-input-border-size) * 2);
   z-index: 4;
 }
