@@ -375,7 +375,6 @@ export default {
     '--input-outline-width': '2px',
     '--input-placeholder-color': '#292929',
     '--input-section-padding': '14px',
-    '--input-section-max-width': 'var(--content-width-desktop)',
     '--input-text-color': '#292929',
     '--line-height-body': '1.75',
     '--loading-dot-background': '#6338EE',
