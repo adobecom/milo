@@ -2319,7 +2319,7 @@ export async function decorateLanguageBanner() {
     setLangRoutingConfig({ showBanner: true, showModal: false, markets: [targetMarket] });
     reserveBannerSpace();
   } else {
-    // ACOM Case 2: supported market, HEAD validates, show banner
+    // ACOM : supported market, show banner
     const results = await Promise.all(fetchPromises);
     const validatedMarkets = results.filter((r) => r.ok).map((r) => r.market);
     if (!validatedMarkets.length) return;
