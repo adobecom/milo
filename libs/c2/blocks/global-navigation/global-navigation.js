@@ -7,7 +7,7 @@ function getFederalDomain(config) {
   const { hostname } = window.location;
   let extension;
   if (hostname.endsWith('.aem.page')) extension = 'page';
-  else if (hostname.endsWith('.aem.live')) extension = 'live';
+  if (hostname.endsWith('.aem.live')) extension = 'live';
 
   const queryParams = new URLSearchParams(window.location.search);
   const federalLibsParam = queryParams.get('federallibs');
