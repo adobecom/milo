@@ -7,7 +7,7 @@ const ADMIN_STATUS = 'https://admin.hlx.page/status/';
 const EDIT_URL = 'https://da.live/edit#/';
 const ROOT_LANG = 'en';
 const ROOT_PATH = '/';
-const DEFAULT_LANG_CONFIG = '.da/translate-v2.json';
+const DEFAULT_LANG_CONFIG = '.da/translate.json';
 const LANG_CONFIG = new URLSearchParams(window.location.search).get('config') || DEFAULT_LANG_CONFIG;
 
 function extractPaths(languages) {
