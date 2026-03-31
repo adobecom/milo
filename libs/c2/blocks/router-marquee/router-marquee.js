@@ -74,7 +74,7 @@ const decorateText = (textCol) => {
   const heading = textCol.querySelector('h1, h2');
   heading?.classList.add('rm-title');
   heading?.previousElementSibling?.classList.add('rm-eyebrow');
-
+  heading.textContent = 'test 1';
   const eyebrow = textCol.querySelector('.rm-eyebrow');
   const icon = textCol.querySelector('p a[href*=".svg"]');
   const label = textCol.querySelector(':scope > p:has(a[href*=".svg"]) + p');
