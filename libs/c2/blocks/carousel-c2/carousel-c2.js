@@ -234,14 +234,6 @@ function attachListeners(carouselEls) {
   el.addEventListener('keydown', (e) => {
     if (e.code === 'ArrowLeft') moveSlides(carouselEls, getDirection('prev'), e);
     if (e.code === 'ArrowRight') moveSlides(carouselEls, getDirection('next'), e);
-    if (e.code === 'Enter' || e.code === 'Space') {
-      const { activeElement } = document;
-      if (activeElement?.tagName === 'BUTTON'
-        && (activeElement?.classList.contains('prev') || activeElement?.classList.contains('next'))) return;
-      e.preventDefault();
-      const activeSlide = wrapper.querySelector('.active');
-      activeSlide.querySelector(FOCUSABLE_SELECTOR)?.focus();
-    }
   });
 
   let startX = 0;
