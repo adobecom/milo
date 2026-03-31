@@ -361,8 +361,6 @@
 
 .bc-floating-button.floating-hidden {
   opacity: 0;
-  top: 100vh;
-  visibility: hidden;
 }
 
 .bc-floating-button.floating-show {
