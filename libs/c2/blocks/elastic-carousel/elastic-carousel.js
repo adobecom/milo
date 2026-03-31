@@ -35,6 +35,7 @@ const rewindVideo = (video) => {
 
 const handleMobileAutoplay = (carousel) => {
   const slides = [...carousel.querySelectorAll('.elastic-carousel-item')];
+  const observers = [];
 
   slides.forEach((slide, index) => {
     const video = slide.querySelector('video');
@@ -43,7 +44,7 @@ const handleMobileAutoplay = (carousel) => {
     const nextSlide = slides[index + 1];
 
     // Play when this slide enters view — but not if the next slide is already covering it
-    new IntersectionObserver(
+    const slideObserver = new IntersectionObserver(
       ([entry]) => {
         if (!isMobile()) return;
         if (entry.isIntersecting) {
@@ -53,13 +54,15 @@ const handleMobileAutoplay = (carousel) => {
         }
       },
       { threshold: 0.6 },
-    ).observe(slide);
+    );
+    slideObserver.observe(slide);
+    observers.push(slideObserver);
 
     if (!nextSlide) return;
 
     // Rewind when the next slide starts covering this one;
     // play again when it uncovers (user scrolls back up)
-    new IntersectionObserver(
+    const nextSlideObserver = new IntersectionObserver(
       ([entry]) => {
         if (!isMobile()) return;
         if (entry.isIntersecting) {
@@ -72,8 +75,12 @@ const handleMobileAutoplay = (carousel) => {
         }
       },
       { threshold: 0.6 },
-    ).observe(nextSlide);
+    );
+    nextSlideObserver.observe(nextSlide);
+    observers.push(nextSlideObserver);
   });
+
+  return observers;
 };
 
 const disableHoverOnScroll = (carousel) => {
@@ -116,6 +123,7 @@ const onCarouselLeave = (event) => {
 const onHover = (event) => {
   const slideEl = event.target;
   const carouselContainer = slideEl.closest('.elastic-carousel-container');
+  if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
 
   const video = slideEl.querySelector('video');
@@ -226,11 +234,12 @@ export default async function init(el) {
   const decoratedCarousel = decorateCarousel(el);
   const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.querySelector('.elastic-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
-  handleMobileAutoplay(decoratedCarousel);
+  const mobileObservers = handleMobileAutoplay(decoratedCarousel);
 
   new MutationObserver((_, observer) => {
     if (!document.contains(el)) {
       scrollController.abort();
+      mobileObservers.forEach((o) => o.disconnect());
       observer.disconnect();
     }
   }).observe(document.body, { childList: true, subtree: true });
