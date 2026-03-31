@@ -171,7 +171,7 @@ const buildCard = (slide) => {
   const label = icon.nextElementSibling;
   const iconSrc = getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
   const labelText = label?.textContent.trim();
-  const href = slide.querySelector('.con-button')?.getAttribute('href') || '';
+  const href = label?.querySelector('a')?.getAttribute('href') || '';
   const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
   const ariaLabel = eyebrowText ? `${eyebrowText}, ${labelText}` : labelText;
 
@@ -468,8 +468,11 @@ const startAutoplay = (slides, cards, container, block) => {
     }
   };
 
+  const noHover = () => window.matchMedia('(hover: none)').matches;
+
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
+      if (noHover()) return;
       cancelLeaveTimer();
       if (i === active) { pause(); return; }
       clearTimeout(timer);
@@ -518,10 +521,10 @@ const startAutoplay = (slides, cards, container, block) => {
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', pauseOnInteraction);
-  block.addEventListener('mouseenter', cancelLeaveTimer);
+  block.addEventListener('mouseenter', () => { if (!noHover()) cancelLeaveTimer(); });
 
   block.addEventListener('mouseleave', () => {
-    if (paused) startLeaveTimer();
+    if (!noHover() && paused) startLeaveTimer();
   });
 
   playPauseBtn?.addEventListener('click', (e) => {
