@@ -30,7 +30,6 @@ function setAriaHiddenAndTabIndex(slides, activeSlide) {
   slides.forEach((slide) => {
     const isActive = slide === activeSlide;
     slide.setAttribute('aria-hidden', String(!isActive));
-    slide.setAttribute('tabindex', isActive ? '0' : '-1');
     slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
       el.setAttribute('tabindex', isActive ? '0' : '-1');
     });
@@ -38,7 +37,7 @@ function setAriaHiddenAndTabIndex(slides, activeSlide) {
 }
 
 function updateAriaLive(carouselEls) {
-  const { ariaLive, slides, carouselAriaLabel } = carouselEls;
+  const { ariaLive, slides } = carouselEls;
   const activeSlide = slides.find((slide) => slide.classList.contains('active'));
   ariaLive.textContent = '';
   const index = parseInt(activeSlide.getAttribute('data-index'), 10);
@@ -50,7 +49,7 @@ function updateAriaLive(carouselEls) {
     const media = activeSlide.querySelector('img[alt], video[title]');
     text = media?.getAttribute('alt') || media?.getAttribute('title') || '';
   }
-  ariaLive.textContent = [carouselAriaLabel, 'carousel', `Slide ${index + 1} of ${slides.length}`, text].filter(Boolean).join(', ');
+  ariaLive.textContent = [`Slide ${index + 1} of ${slides.length}`, text].filter(Boolean).join(', ');
 }
 
 function decorateNavigation() {
@@ -336,7 +335,7 @@ export default function init(el) {
   el.textContent = '';
   wrapper.append(...slides);
   const [prevBtn, nextBtn] = decorateNavigation();
-  el.append(wrapper, ariaLive, prevBtn, nextBtn, indicatorsContainer);
+  el.append(prevBtn, wrapper, ariaLive, nextBtn, indicatorsContainer);
 
   const carouselEls = {
     el,
