@@ -643,7 +643,7 @@ class Gnav {
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
-         ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
+        ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
