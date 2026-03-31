@@ -276,8 +276,6 @@ async function openChatModal(initialMessage, el) {
     src = forkProd;
   }
 
-  console.log('bc');
-
   await loadScript(src);
 
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
