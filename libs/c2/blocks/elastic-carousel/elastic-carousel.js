@@ -3,6 +3,7 @@ import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 let leaveTimeout;
 const rewindIntervals = new WeakMap();
+const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
@@ -48,28 +49,31 @@ const disableHoverOnScroll = (carousel) => {
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
-  video.pause();
 
-  const rewind = (rewindSpeed) => {
-    clearInterval(rewindIntervals.get(video));
-    const startSystemTime = new Date().getTime();
-    const startVideoTime = video.currentTime;
+  clearTimeout(slideLeaveTimeouts.get(video));
+  slideLeaveTimeouts.set(video, setTimeout(() => {
+    video.pause();
+    const rewind = (rewindSpeed) => {
+      clearInterval(rewindIntervals.get(video));
+      const startSystemTime = new Date().getTime();
+      const startVideoTime = video.currentTime;
 
-    const intervalRewind = setInterval(() => {
-      video.playbackRate = 1.0;
-      if (video.currentTime === 0) {
-        clearInterval(rewindIntervals.get(video));
-        rewindIntervals.delete(video);
-        video.pause();
-      } else {
-        const elapsed = new Date().getTime() - startSystemTime;
-        const val = Math.max(startVideoTime - elapsed * (rewindSpeed / 1000.0), 0);
-        video.currentTime = val;
-      }
-    }, 30);
-    rewindIntervals.set(video, intervalRewind);
-  };
-  rewind(1);
+      const intervalRewind = setInterval(() => {
+        video.playbackRate = 1.0;
+        if (video.currentTime === 0) {
+          clearInterval(rewindIntervals.get(video));
+          rewindIntervals.delete(video);
+          video.load();
+        } else {
+          const elapsed = new Date().getTime() - startSystemTime;
+          const val = Math.max(startVideoTime - elapsed * (rewindSpeed / 1000.0), 0);
+          video.currentTime = val;
+        }
+      }, 30);
+      rewindIntervals.set(video, intervalRewind);
+    };
+    rewind(1);
+  }, 100));
 };
 
 const removeHovered = (carousel) => {
@@ -90,6 +94,8 @@ const onHover = (event) => {
   clearTimeout(leaveTimeout);
 
   const video = slideEl.querySelector('video');
+  clearTimeout(slideLeaveTimeouts.get(video));
+
   if (video) video.play().catch(() => { });
 
   const slideIndex = slideEl.dataset.index * 1;
