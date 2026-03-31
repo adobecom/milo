@@ -236,6 +236,14 @@ function attachListeners(carouselEls) {
     if (e.code === 'ArrowRight') moveSlides(carouselEls, getDirection('next'), e);
   });
 
+  el.addEventListener('keyup', (e) => {
+    const { code, target } = e;
+    if (prefersReducedMotion() || code !== 'Tab' || !target.matches('button.prev')) return;
+    const wrapperAnimation = wrapper.getAnimations().find((a) => a.animationName === 'wrapper-enter');
+    if (!wrapperAnimation || wrapperAnimation.playState === 'finished') return;
+    wrapper.scrollIntoView({ block: 'center' });
+  });
+
   let startX = 0;
   let isDragging = false;
 
@@ -327,7 +335,7 @@ export default function init(el) {
   el.textContent = '';
   wrapper.append(...slides);
   const [prevBtn, nextBtn] = decorateNavigation();
-  el.append(prevBtn, wrapper, ariaLive, nextBtn, indicatorsContainer);
+  el.append(ariaLive, prevBtn, wrapper, nextBtn, indicatorsContainer);
 
   const carouselEls = {
     el,
