@@ -118,6 +118,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const link = left.lastElementChild?.querySelector('a');
 
   if (asset?.dataset.videoSource) {
+    asset.setAttribute('preload', 'none');
     asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
     asset.setAttribute('muted', true);
     asset.setAttribute('tabindex', '-1');
@@ -184,8 +185,22 @@ const decorateCarousel = (carousel) => {
   return carousel;
 };
 
+const upgradeVideoPreload = (carousel) => {
+  const videos = [...carousel.querySelectorAll('video')];
+  if (!videos.length) return;
+  const controller = new AbortController();
+  const upgrade = () => {
+    videos.forEach((video) => { video.preload = 'metadata'; });
+    controller.abort();
+  };
+  ['scroll', 'mousemove', 'touchstart', 'keydown'].forEach((event) => {
+    window.addEventListener(event, upgrade, { signal: controller.signal, once: true });
+  });
+};
+
 export default async function init(el) {
   const decoratedCarousel = decorateCarousel(el);
+  upgradeVideoPreload(decoratedCarousel);
   const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.querySelector('.elastic-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   handleMobileAutoplay(decoratedCarousel);
