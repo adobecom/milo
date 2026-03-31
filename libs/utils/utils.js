@@ -413,7 +413,10 @@ export const getFederatedUrl = (url = '') => {
   if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
   try {
     const { pathname, search, hash } = new URL(url);
-    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
+    const root = getFederatedContentRoot();
+    const rootPath = new URL(root).pathname.replace(/\/$/, '');
+    const cleanPathname = rootPath && pathname.startsWith(rootPath) ? pathname.slice(rootPath.length) : pathname;
+    return `${root}${cleanPathname}${search}${hash}`;
   } catch (e) {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
       tags: 'utils',
