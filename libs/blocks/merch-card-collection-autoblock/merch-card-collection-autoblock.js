@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, localizeLinkAsync } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import {
@@ -123,7 +123,7 @@ function generateCheckboxGroups(checkboxGroups) {
   return groups;
 }
 
-function getSidenav(collection) {
+async function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders, sidenavSettings } = collection.data;
   if (!hierarchy?.length) return null;
@@ -198,6 +198,7 @@ function getSidenav(collection) {
 
   /* Resources List */
   if (sidenavSettings?.linksTitle && sidenavSettings?.link) {
+    const localizedLink = await localizeLinkAsync(sidenavSettings.link);
     const resourcesSpSidenav = createTag('sp-sidenav', { manageTabIndex: true, label: placeholders?.sidenavResources || '' });
     resourcesSpSidenav.classList.add('resources');
 
@@ -207,7 +208,7 @@ function getSidenav(collection) {
     }, resourcesSpSidenav);
 
     const resourceItem = createTag('sp-sidenav-item', {
-      href: sidenavSettings.link,
+      href: localizedLink,
       target: '_blank',
       'aria-label': placeholders?.catalogSpecialOffersAlt,
     });
@@ -335,7 +336,7 @@ export async function createCollection(el, options) {
       const newUrl = `${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
       window.history.pushState({}, '', newUrl);
     }
-    const sidenav = getSidenav(collection);
+    const sidenav = await getSidenav(collection);
     if (sidenav) {
       collection.attachSidenav(sidenav);
     }

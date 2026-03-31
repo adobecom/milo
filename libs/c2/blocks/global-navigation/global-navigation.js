@@ -5,7 +5,9 @@ const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
 function getFederalDomain(config) {
   const { hostname } = window.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
+  let extension;
+  if (hostname.endsWith('.aem.page')) extension = 'page';
+  if (hostname.endsWith('.aem.live') || hostname.endsWith('.aem.reviews')) extension = 'live';
 
   const queryParams = new URLSearchParams(window.location.search);
   const federalLibsParam = queryParams.get('federallibs');
@@ -13,22 +15,30 @@ function getFederalDomain(config) {
     const sanitized = federalLibsParam.trim().toLowerCase();
     if (sanitized === 'local') return 'http://localhost:3000/federal';
 
-    if (!FEDERAL_BRANCH_PATTERN.test(sanitized)) return DEFAULT_FEDERAL_URL;
+    if (!FEDERAL_BRANCH_PATTERN.test(sanitized)) return `${DEFAULT_FEDERAL_URL}/federal`;
     const segments = sanitized.split('--').filter(Boolean);
     const branch = (() => {
       if (segments.length >= 2) return sanitized;
       return `${sanitized}--federal--adobecom`;
     })();
-    return `https://${branch}.aem.${extension}/federal`;
+    const aemExt = extension ?? 'page';
+    return `https://${branch}.aem.${aemExt}/federal`;
+  }
+
+  const federalBranch = queryParams.get('fedsbranch');
+  if (federalBranch?.trim()) {
+    const sanitized = federalBranch.trim().toLowerCase();
+    if (sanitized === 'local') return 'http://localhost:3000/federal';
+    const aemExt = extension ?? 'page';
+    return `https://${sanitized}--federal--adobecom.aem.${aemExt}/federal`;
   }
 
   if (extension) return `${DEFAULT_FEDERAL_URL.replace('aem.page', `aem.${extension}`)}/federal`;
 
   const env = getEnv(config);
-  // Todo: Fix this to actual stage link
   if (env.name === 'stage') return 'https://www.stage.adobe.com/federal';
   if (env.name === 'prod') return 'https://www.adobe.com/federal';
-  return DEFAULT_FEDERAL_URL;
+  return `${DEFAULT_FEDERAL_URL}/federal`;
 }
 
 export default async function init(el) {
@@ -56,9 +66,11 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
+  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
+
   main({
     localizeLink,
-    gnavSource: new URL(getMetadata('gnav-source')),
+    gnavSource: gnavUrl,
     asideSource: null,
     isLocalNav: false,
     mountpoint: el,

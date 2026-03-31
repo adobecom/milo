@@ -308,6 +308,14 @@ function attachListeners(carouselEls) {
     }
   });
 
+  el.addEventListener('keyup', (e) => {
+    const { code, target } = e;
+    if (prefersReducedMotion() || code !== 'Tab' || !target.matches('button.prev')) return;
+    const wrapperAnimation = wrapper.getAnimations().find((a) => a.animationName === 'wrapper-enter');
+    if (!wrapperAnimation || wrapperAnimation.playState === 'finished') return;
+    wrapper.scrollIntoView({ block: 'center' });
+  });
+
   el.addEventListener('focusout', (e) => {
     const { relatedTarget } = e;
     if (el.contains(relatedTarget)) return;

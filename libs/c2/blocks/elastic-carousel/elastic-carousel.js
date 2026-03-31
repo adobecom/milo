@@ -38,22 +38,19 @@ const handleMobileAutoplay = (carousel) => {
 const disableHoverOnScroll = (carousel) => {
   let timer;
   const controller = new AbortController();
-  window.addEventListener('scroll', () => {
+  window.addEventListener('wheel', () => {
     clearTimeout(timer);
     carousel.classList.add('disable-hover');
     timer = setTimeout(() => {
       carousel.classList.remove('disable-hover');
-    }, 150);
+    }, 100);
   }, { signal: controller.signal });
   return controller;
 };
 
-const handleVideoPlay = (event) => {
-  const slide = event.target.closest('.elastic-carousel-item');
-  if (!slide) return;
-  const video = slide?.querySelector('video');
-  if (!video) return;
-  video.play().catch(() => { });
+const removeHovered = (carousel) => {
+  const slides = carousel?.querySelectorAll('.elastic-carousel-item');
+  [...slides]?.forEach((sld) => sld.classList.remove('hovered'));
 };
 
 const onSlideLeave = (event) => {
@@ -84,32 +81,38 @@ const onSlideLeave = (event) => {
 };
 
 const onCarouselLeave = (event) => {
-  const carouselContainer = event.currentTarget.querySelector('.elastic-carousel-container');
+  const carouselContainer = event.target;
   leaveTimeout = setTimeout(() => {
     carouselContainer.classList.remove('stick-left', 'stick-right');
-  }, 50);
+    removeHovered(event.target);
+  }, 10);
 };
 
-const onCarouselHover = (event) => {
-  const slide = event.target.closest('.elastic-carousel-item');
-  if (!slide) return;
-  handleVideoPlay(event);
+const onHover = (event) => {
+  const slideEl = event.target;
   clearTimeout(leaveTimeout);
 
-  const slideIndex = slide.dataset.index * 1;
-  const carouselContainer = event.target.closest('.elastic-carousel').querySelector('.elastic-carousel-container');
+  const video = slideEl.querySelector('video');
+  if (video) video.play().catch(() => { });
+
+  const slideIndex = slideEl.dataset.index * 1;
+  const container = slideEl.parentElement;
+  if (!container) return;
+
+  removeHovered(slideEl.closest('.elastic-carousel'));
+  slideEl.classList.add('hovered');
 
   if (isRtl()) {
-    carouselContainer.classList.toggle('stick-right', slideIndex < 3);
-    carouselContainer.classList.toggle('stick-left', slideIndex > 3);
+    container.classList.toggle('stick-right', slideIndex <= 3);
+    container.classList.toggle('stick-left', slideIndex === 5);
   } else {
-    carouselContainer.classList.toggle('stick-left', slideIndex < 3);
-    carouselContainer.classList.toggle('stick-right', slideIndex > 3);
+    container.classList.toggle('stick-left', slideIndex <= 3);
+    container.classList.toggle('stick-right', slideIndex === 5);
   }
 
   if (!hoverTracked) {
     hoverTracked = true;
-    const block = slide.closest('[daa-lh]');
+    const block = slideEl.closest('[daa-lh]');
     const blockName = block?.getAttribute('daa-lh');
     const section = block?.parentElement?.closest('[daa-lh]');
     const sectionName = section?.getAttribute('daa-lh');
@@ -125,7 +128,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const [iconContainer, heading, linkName, description] = left.children;
   const icon = iconContainer?.querySelector('img');
   const asset = right.children[0];
-  const link = left.children[4]?.querySelector('a');
+  const link = left.children[4]?.querySelector('a') ?? left.lastElementChild?.querySelector('a');
 
   if (asset?.dataset.videoSource) {
     asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
@@ -141,24 +144,28 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   // TODO: see if eyebrow class can be applied directly to footer headline
   decorateBlockText(left);
 
+  const headingHtml = heading?.outerHTML ?? left.children[1]?.outerHTML ?? '';
+  const footerPrimary = linkName?.outerHTML ?? left.children[2]?.outerHTML ?? '';
+  const footerSecondary = description?.outerHTML ?? left.children[3]?.outerHTML ?? '';
+
   const content = `
-    <div class='elastic-carousel-item-container'>
+    <div class='elastic-carousel-item-container' id='elastic-carousel-slide-${index + 1}'>
       <div class='elastic-carousel-item-header'>
-        ${icon.outerHTML}
-        ${heading?.outerHTML}
+        ${icon?.outerHTML ?? ''}
+        ${headingHtml}
       </div>
       <div class='elastic-carousel-item-media'>
-        ${asset.outerHTML}
+        ${asset?.outerHTML ?? ''}
       </div>
       <div class='elastic-carousel-item-footer'>
-        ${linkName?.outerHTML}
-        ${description?.outerHTML}
+        ${footerPrimary}
+        ${footerSecondary}
       </div>
     </div>
   `;
 
   let ariaLabel = `${index + 1} of ${slidesTotal}`;
-  // assign unique label to the first slide
+  // assign unique aria-label to the first slide
   if (index === 0) ariaLabel = `${getCarouselName(link)}, carousel. ${ariaLabel}`;
 
   const slideEl = createTag('a', {
@@ -167,11 +174,16 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     href: link?.href,
     'data-index': index + 1,
     role: 'link',
-    'aria-roledescription': 'slide',
-    'aria-label': ariaLabel,
+    ...(isMobile() && {
+      'aria-roledescription': 'slide',
+      'aria-label': ariaLabel,
+    }),
+    'aria-describedby': `elastic-carousel-slide-${index + 1}`,
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
+  slideEl.addEventListener('mouseenter', onHover);
+  slideEl.addEventListener('focus', onHover);
   return slideEl;
 };
 
@@ -195,8 +207,7 @@ const decorateCarousel = (carousel) => {
 export default async function init(el) {
   const decoratedCarousel = decorateCarousel(el);
   const scrollController = disableHoverOnScroll(decoratedCarousel);
-  decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
-  decoratedCarousel.addEventListener('mouseover', onCarouselHover);
+  decoratedCarousel.querySelector('.elastic-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   handleMobileAutoplay(decoratedCarousel);
 
   new MutationObserver((_, observer) => {

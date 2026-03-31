@@ -30,8 +30,7 @@ const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
 
 let floatingButtonClicked = false;
-
-let bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+let bcToken;
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
@@ -106,7 +105,15 @@ function resetFloatingButton(el) {
  * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
  */
 export function createSusiComponentForModal({
-  authParams, config, variant, redirectUrl, isStage, popup, onCloseRedirect, onSuccessfulToken,
+  authParams,
+  config,
+  variant,
+  redirectUrl,
+  isStage,
+  popup,
+  onCloseRedirect,
+  onSuccessfulToken,
+  onError,
 }) {
   const susi = createTag('susi-sentry-light');
   susi.authParams = {
@@ -125,7 +132,6 @@ export function createSusiComponentForModal({
       window.location.assign(e.detail);
     }
   };
-  const onError = (e) => { window.lana?.log('SUSI Light error:', e); };
   const onAnalytics = () => { /* TODO: send analytics from e.detail (type, event, client_id) */ };
   const onAuthFailed = () => { /* TODO: handle auth failed (e.detail) */ };
 
@@ -165,6 +171,7 @@ async function openSusiLightModal() {
   const susiConfig = { consentProfile: 'free', fullWidth: true };
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
+    window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
     const token = detail;
     if (!bcToken) {
       bcToken = token;
@@ -173,6 +180,17 @@ async function openSusiLightModal() {
         mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
       }
     }
+  };
+
+  const onError = (e) => {
+    const mountEl = document.getElementById(mountId);
+    window.lana?.log(`SUSI Light error: ${e}`, { tags: 'brand-concierge', severity: 'error' });
+    if (mountEl) {
+      mountEl.dispatchEvent(
+        new CustomEvent('bc:cta-action-error', { detail: { message: 'Something went wrong signing in. Please try again in a moment.' } }),
+      );
+    }
+    closeSusiModal();
   };
   const susiEl = createSusiComponentForModal({
     authParams,
@@ -183,9 +201,10 @@ async function openSusiLightModal() {
     popup: true,
     onCloseRedirect: closeSusiModal,
     onSuccessfulToken,
+    onError,
   });
   const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
-  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in or create an account');
   const fragment = new DocumentFragment();
 
   fragment.append(title, wrapper);
@@ -243,9 +262,11 @@ async function openChatModal(initialMessage, el) {
   }
 
   if (webClient === 'prod') {
+    // eslint-disable-next-line no-console
     console.log('prod', prod);
     src = prod;
   } else if (webClient === 'stage') {
+    // eslint-disable-next-line no-console
     console.log('stage', stage);
     src = stage;
   }
@@ -257,6 +278,10 @@ async function openChatModal(initialMessage, el) {
   const { userAgent, language } = window.navigator;
 
   const onBeforeEventSend = (content) => {
+    if (!bcToken) {
+      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+    }
+
     if (bcToken) {
       content.data = {
         type: 'auth',
@@ -484,10 +509,11 @@ function decorateFloatingButton(el) {
   const floatingInput = createTag('div', { class: 'bc-floating-input' }, authoredContent.input);
   const floatingSubmit = createTag('div', { class: 'bc-floating-submit' }, submitIcon);
   const floatingContainer = createTag('button', { class: 'bc-floating-button-container no-track', 'daa-ll': getAnalyticsLabel('floating-bc') }, [floatingIcon, floatingInput, floatingSubmit]);
+
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
 
-  if (variants.isHero) {
+  if (variants.isHero || variants.floatingDelay) {
     floatingButton.classList.add('floating-hidden');
   }
 
@@ -497,17 +523,20 @@ function decorateFloatingButton(el) {
   const handleScroll = (target) => {
     const mainHeight = mainElement.scrollHeight;
     const gnavHeight = gnavElement.offsetHeight;
-    const threshold = (window.scrollY + window.innerHeight - gnavHeight);
+    const gnavPosition = window.getComputedStyle(gnavElement).position;
+    const threshold = (window.scrollY + window.innerHeight - (gnavPosition === 'fixed' ? 0 : gnavHeight));
     const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2);
+    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
+    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
+
     if (threshold > mainHeight) {
       target.style.bottom = `${threshold - mainHeight}px`;
       mainElement.style.paddingBottom = `${targetHeight}px`;
     } else {
       target.style.bottom = '0';
     }
-    if (variants.isHero) {
-      if (window.scrollY > el.scrollHeight) {
+    if (variants.isHero || variants.floatingDelay) {
+      if (window.scrollY > scrollDelay) {
         floatingButton.classList.remove('floating-hidden');
         floatingButton.classList.add('floating-show');
       } else {
@@ -539,6 +568,10 @@ export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+  window.addEventListener('signIn:decorateNav', async () => {
+    await window.adobeIMS?.refreshToken();
+    window.UniversalNav?.reload();
+  });
 
   const rows = el.querySelectorAll(':scope > div');
 
@@ -561,6 +594,13 @@ export default async function init(el) {
   } else if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
   }
+
+  el.classList.forEach((classItem) => {
+    if (classItem.includes('floating-delay')) {
+      variants.floatingDelay = true;
+      variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
+    }
+  });
 
   if (variants.isFloatingButton) {
     decorateFloatingButton(el);
