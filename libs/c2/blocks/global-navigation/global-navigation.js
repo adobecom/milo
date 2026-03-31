@@ -14,7 +14,7 @@ function getFederalDomain(config) {
   const { hostname } = window.location;
   let extension;
   if (hostname.endsWith('.aem.page')) extension = 'page';
-  if (hostname.endsWith('.aem.live')) extension = 'live';
+  if (hostname.endsWith('.aem.live') || hostname.endsWith('.aem.reviews')) extension = 'live';
 
   if (extension) return `${DEFAULT_FEDERAL_URL.replace('aem.page', `aem.${extension}`)}/federal`;
 
