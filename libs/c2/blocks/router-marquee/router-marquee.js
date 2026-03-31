@@ -468,8 +468,11 @@ const startAutoplay = (slides, cards, container, block) => {
     }
   };
 
+  const noHover = () => window.matchMedia('(hover: none)').matches;
+
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
+      if (noHover()) return;
       cancelLeaveTimer();
       if (i === active) { pause(); return; }
       clearTimeout(timer);
@@ -518,10 +521,10 @@ const startAutoplay = (slides, cards, container, block) => {
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', pauseOnInteraction);
-  block.addEventListener('mouseenter', cancelLeaveTimer);
+  block.addEventListener('mouseenter', () => { if (!noHover()) cancelLeaveTimer(); });
 
   block.addEventListener('mouseleave', () => {
-    if (paused) startLeaveTimer();
+    if (!noHover() && paused) startLeaveTimer();
   });
 
   playPauseBtn?.addEventListener('click', (e) => {
