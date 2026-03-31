@@ -130,33 +130,3 @@ export const analyticsDecorateList = (li, idx) => {
 
   link.setAttribute('daa-ll', `${analyticsGetLabel(label)}-${idx + 1}`);
 };
-
-function fireAnalyticsEvent(val) {
-  /* eslint-disable no-underscore-dangle */
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data:
-      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
-export async function sendAnalytics(val) {
-  /* eslint-disable no-underscore-dangle */
-  if (window._satellite?.track) {
-    fireAnalyticsEvent(val);
-  } else {
-    window.addEventListener('alloy_sendEvent', () => {
-      fireAnalyticsEvent(val);
-    }, { once: true });
-  }
-}

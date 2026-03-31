@@ -1,4 +1,5 @@
-import { processTrackingLabels, sendAnalytics } from '../../../martech/attributes.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
+import { sendAnalytics } from '../../../martech/helpers.js';
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 

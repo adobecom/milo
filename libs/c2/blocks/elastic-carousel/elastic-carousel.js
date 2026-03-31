@@ -1,9 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 import { decorateBlockText } from '../../../utils/decorate.js';
-import { createTag, getFederatedUrl, getConfig } from '../../../utils/utils.js';
-import { processTrackingLabels, sendAnalytics } from '../../../martech/attributes.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
+import { sendAnalytics } from '../../../martech/helpers.js';
 
 let leaveTimeout;
+let hoverTracked = false;
 const rewindIntervals = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
@@ -106,14 +107,13 @@ const onCarouselHover = (event) => {
     carouselContainer.classList.toggle('stick-right', slideIndex > 3);
   }
 
-  const slideName = slide.dataset.cardLabel;
-  const block = slide.closest('[daa-lh]');
-  const blockName = block?.getAttribute('daa-lh');
-  const section = block?.parentElement?.closest('[daa-lh]');
-  const sectionName = section?.getAttribute('daa-lh');
-  if (slideName && !trackedCardHovers.includes(slideName)) {
-    trackedCardHovers.push(slideName);
-    sendAnalytics(`hover-${slideName}|${sectionName}|${blockName}`);
+  if (!hoverTracked) {
+    hoverTracked = true;
+    const block = slide.closest('[daa-lh]');
+    const blockName = block?.getAttribute('daa-lh');
+    const section = block?.parentElement?.closest('[daa-lh]');
+    const sectionName = section?.getAttribute('daa-lh');
+    sendAnalytics(`user-hover|${sectionName}|${blockName}`);
   }
 };
 
