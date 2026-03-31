@@ -101,6 +101,9 @@ describe('updateAttribute action', async () => {
     expect(document.querySelector('.marquee em a').getAttribute('href')).to.equal('/pods/my-link');
     expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
     expect(document.querySelector('#placeholder-replace').getAttribute('aria-label')).to.equal('Hello world!');
+    expect(document.querySelector('#commerce-href-test').getAttribute('href')).to.equal(
+      'https://commerce.adobe.com/store/email?cli=doc_cloud',
+    );
   });
 });
 
