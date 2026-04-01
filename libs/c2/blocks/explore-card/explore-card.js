@@ -45,7 +45,6 @@ export default function init(el) {
   decorateTextOverrides(el, undefined, contentDiv);
 
   if (!link) return;
-
   const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href, 'data-tracking-label': heading?.textContent });
   link.remove();
   linkContainer.append(contentDiv);
