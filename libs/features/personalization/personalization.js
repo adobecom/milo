@@ -13,7 +13,7 @@ import {
   isSignedOut,
   getCountry,
 } from '../../utils/utils.js';
-import { getMepConsentConfig } from '../../martech/helpers.js';
+import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -275,7 +275,7 @@ const COMMANDS = {
 
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
-        import('../../martech/helpers.js').then(({ sendAnalytics }) => sendAnalytics(`${cmd.content} was seen`));
+        sendAnalytics(`${cmd.content} was seen`);
         observer.unobserve(el);
       }
     });
@@ -1161,7 +1161,7 @@ export function sendMktgTracking(fileName, mktgAction) {
   const { advertising } = getConfig().mep.consentState;
   if (!advertising) return false;
   const eventName = `${fileName} was served`;
-  import('../../martech/helpers.js').then(({ sendAnalytics }) => sendAnalytics(eventName));
+  sendAnalytics(eventName);
   return eventName;
 }
 
@@ -1545,7 +1545,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
   const timeoutTime = roundToQuarter(timeoutLocal);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  import('../../martech/helpers.js').then(({ sendAnalytics }) => sendAnalytics(val));
+  sendAnalytics(val);
 }
 
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
