@@ -129,8 +129,6 @@ async function buildFromGnav(el) {
 
   // Resolve {{placeholder}} tokens in rendered content
   el.innerHTML = await replaceText(el.innerHTML, placeholderConfig);
-  // Strip any remaining images
-  el.querySelectorAll('img, svg, picture').forEach((img) => img.remove());
 }
 
 const HEADING_CLASS_MAP = {
@@ -181,4 +179,9 @@ export default async function init(el) {
   if (el.classList.contains('align-headings')) alignItems(el);
 
   await decorateLinksAsync(el);
+
+  if (params.get('sitemap-source') === 'gnav') {
+    // Clean up images added by decorateLinksAsync (e.g. SVG icons turned into <picture>)
+    el.querySelectorAll('picture, img, svg').forEach((img) => img.closest('li')?.remove() || img.remove());
+  }
 }
