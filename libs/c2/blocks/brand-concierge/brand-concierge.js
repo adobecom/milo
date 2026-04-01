@@ -539,7 +539,8 @@ function decorateFloatingButton(el) {
 
     if (threshold > mainHeight) {
       target.style.bottom = `${threshold - mainHeight}px`;
-      target.setAttribute('tab-index', '-1');
+      floatingContainer.setAttribute('tab-index', '-1');
+      floatingContainer.blur();
       if (variants.isFloatingAnchorHide) {
         floatingButton.classList.add('floating-hidden');
         floatingButton.classList.remove('floating-show');
@@ -547,7 +548,7 @@ function decorateFloatingButton(el) {
         mainElement.style.paddingBottom = `${targetHeight}px`;
       }
     } else {
-      target.removeAttribute('tab-index');
+      floatingContainer.removeAttribute('tab-index');
       target.style.bottom = '0';
       floatingButton.classList.remove('floating-hidden');
       floatingButton.classList.add('floating-show');
