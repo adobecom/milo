@@ -80,7 +80,8 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
 
   link.addEventListener('click', (e) => {
     setInternational(prefix === '' ? 'us' : prefix);
-    const market = norm(prefix) || 'us';
+    const resolved = norm(prefix) || 'us';
+    const market = resolved === 'la' ? 'latam' : resolved;
     if (market) setMarket(market);
     if (hrefAdapted) return;
     e.preventDefault();
