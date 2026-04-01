@@ -14,20 +14,29 @@ async function fetchFragment(url) {
 function extractContent(doc) {
   const items = [];
   const body = doc.querySelector('body') || doc.documentElement;
+  const seen = new Set();
 
-  // Sub-headings are heading tags (h5, h6, etc.) -- extract text, ignore bookmark link wrappers
-  body.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
-    const text = h.textContent.trim();
-    if (text) items.push({ type: 'subheading', text });
-  });
+  // Walk the DOM in document order to preserve heading/link interleaving
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_ELEMENT);
+  let node = walker.nextNode();
+  while (node) {
+    if (/^H[1-6]$/.test(node.tagName) && !seen.has(node)) {
+      const text = node.textContent.trim();
+      if (text) items.push({ type: 'subheading', text });
+      seen.add(node);
+    } else if (node.tagName === 'A' && node.href && !seen.has(node)) {
+      // Only include links that are direct content (inside .link-group or top-level <p>)
+      const inLinkGroup = node.closest('.link-group');
+      const inTopP = node.parentElement?.tagName === 'P' || node.parentElement?.tagName === 'STRONG';
+      if (inLinkGroup || inTopP) {
+        const text = node.textContent.trim();
+        if (text) items.push({ type: 'link', href: node.href, text });
+        seen.add(node);
+      }
+    }
+    node = walker.nextNode();
+  }
 
-  // Links are <a> tags inside .link-group or directly in the body
-  body.querySelectorAll('.link-group a[href], :scope > p > a[href], :scope > p > strong > a[href]').forEach((a) => {
-    const text = a.textContent.trim();
-    if (text) items.push({ type: 'link', href: a.href, text });
-  });
-
-  // Descriptions in <p> tags after links are intentionally excluded
   return items;
 }
 
