@@ -14,13 +14,20 @@ async function fetchFragment(url) {
 function extractContent(doc) {
   const items = [];
   const body = doc.querySelector('body') || doc.documentElement;
-  body.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a[href]').forEach((el) => {
-    if (el.tagName === 'A') {
-      items.push({ type: 'link', href: el.href, text: el.textContent.trim() });
-    } else if (!el.querySelector('a') && el.textContent.trim()) {
-      items.push({ type: 'subheading', text: el.textContent.trim() });
-    }
+
+  // Sub-headings are heading tags (h5, h6, etc.) -- extract text, ignore bookmark link wrappers
+  body.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
+    const text = h.textContent.trim();
+    if (text) items.push({ type: 'subheading', text });
   });
+
+  // Links are <a> tags inside .link-group or directly in the body
+  body.querySelectorAll('.link-group a[href], :scope > p > a[href], :scope > p > strong > a[href]').forEach((a) => {
+    const text = a.textContent.trim();
+    if (text) items.push({ type: 'link', href: a.href, text });
+  });
+
+  // Descriptions in <p> tags after links are intentionally excluded
   return items;
 }
 
