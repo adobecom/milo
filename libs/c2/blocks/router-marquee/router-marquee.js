@@ -422,12 +422,18 @@ const startAutoplay = (slides, cards, container, block) => {
     requestAnimationFrame(() => dynamicLayoutUpdates(block));
   };
 
+  const preloadNextVideo = () => {
+    const nextIdx = (active + 1) % slides.length;
+    loadVideo(slides[nextIdx]?.querySelector('video'));
+  };
+
   const advance = () => {
     clearTimeout(timer);
     clearFill(active);
     activate((active + 1) % cardEls.length, 1);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
+    preloadNextVideo();
   };
 
   const pause = () => {
@@ -564,12 +570,16 @@ const startAutoplay = (slides, cards, container, block) => {
   requestAnimationFrame(() => {
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
+    preloadNextVideo();
   });
 };
 
 const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
-  slides.forEach((slide) => decorateSlide(slide));
+  slides.forEach((slide, i) => {
+    decorateSlide(slide);
+    if (i > 0) slide.querySelector('video')?.removeAttribute('poster');
+  });
   slides[0]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);
   const cards = buildCards(slides);
