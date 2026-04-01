@@ -2,12 +2,26 @@ import { createTag, getConfig, getMetadata, getFederatedContentRoot, getFedsPlac
 import { replaceText } from '../../features/placeholders.js';
 
 const FEDERAL_GNAV_PATH = '/federal/globalnav/acom/acom-gnav';
+const EXCLUDED_SECTIONS = ['section-menu-dx'];
 
 async function fetchFragment(url) {
   const res = await fetch(`${url}.plain.html`);
   if (!res.ok) return null;
   const html = await res.text();
   return new DOMParser().parseFromString(html, 'text/html');
+}
+
+function extractContent(doc) {
+  const items = [];
+  const body = doc.querySelector('body') || doc.documentElement;
+  body.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a[href]').forEach((el) => {
+    if (el.tagName === 'A') {
+      items.push({ type: 'link', href: el.href, text: el.textContent.trim() });
+    } else if (!el.querySelector('a') && el.textContent.trim()) {
+      items.push({ type: 'subheading', text: el.textContent.trim() });
+    }
+  });
+  return items;
 }
 
 async function fetchGnavSection(origin, sectionPath) {
@@ -26,10 +40,10 @@ async function fetchGnavSection(origin, sectionPath) {
         return fetchFragment(`${origin}${colPath}`);
       }),
     );
-    return columnDocs.filter(Boolean).flatMap((d) => [...d.querySelectorAll('a[href]')]);
+    return columnDocs.filter(Boolean).flatMap((d) => extractContent(d));
   }
 
-  return [...doc.querySelectorAll('a[href]')];
+  return extractContent(doc);
 }
 
 async function resolveGnav(prefix) {
@@ -56,14 +70,19 @@ async function resolveGnav(prefix) {
   return null;
 }
 
-function parseSections(gnavDoc, prefix) {
+function isExcludedSection(path) {
+  return EXCLUDED_SECTIONS.some((s) => path.includes(s));
+}
+
+function parseSections(gnavDoc) {
   // Try headings with links first (federal pattern)
   const fromHeadings = [...gnavDoc.querySelectorAll('h1, h2, h3, h4, h5, h6')]
     .filter((h) => h.querySelector('a[href]'))
     .map((h) => {
       const link = h.querySelector('a[href]');
       return { heading: link.textContent.trim(), sectionPath: new URL(link.href).pathname };
-    });
+    })
+    .filter(({ sectionPath }) => !isExcludedSection(sectionPath));
   if (fromHeadings.length) return fromHeadings;
 
   // Flat link structure (e.g. da-bacom): <a> pointing to /fragments/gnav/*
@@ -86,7 +105,7 @@ async function buildFromGnav(el) {
   if (!resolved) return;
   const { doc: gnavDoc, origin } = resolved;
 
-  const sections = parseSections(gnavDoc, prefix);
+  const sections = parseSections(gnavDoc);
   if (!sections.length) return;
 
   el.innerHTML = '';
@@ -100,21 +119,22 @@ async function buildFromGnav(el) {
 
   const placeholderConfig = getFedsPlaceholderConfig();
 
-  sectionData.forEach(({ heading, links }) => {
-    const filtered = links.filter((a) => {
-      const text = a.textContent.trim();
-      if (!text || a.href.includes('#_inline') || a.href.includes('bookmark://')) return false;
-      // Skip image-only links (SVGs, icons)
-      if (a.querySelector('img, svg, picture') && !text.replace(/\s/g, '')) return false;
+  sectionData.forEach(({ heading, links: items }) => {
+    const filtered = items.filter((item) => {
+      if (!item.text) return false;
+      if (item.type === 'link' && (item.href.includes('#_inline') || item.href.includes('bookmark://'))) return false;
       return true;
     });
     if (!filtered.length) return;
 
     const ul = createTag('ul');
-    filtered.forEach((a) => {
+    filtered.forEach((item) => {
       const li = createTag('li');
-      const link = createTag('a', { href: a.href }, a.textContent.trim());
-      li.append(link);
+      if (item.type === 'link') {
+        li.append(createTag('a', { href: item.href }, item.text));
+      } else {
+        li.append(createTag('strong', {}, item.text));
+      }
       ul.append(li);
     });
 
