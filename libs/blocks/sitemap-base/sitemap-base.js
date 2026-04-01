@@ -13,6 +13,21 @@ async function fetchGnavSection(origin, sectionPath) {
   const url = sectionPath.startsWith('http') ? sectionPath : `${origin}${sectionPath}`;
   const doc = await fetchFragment(url);
   if (!doc) return [];
+
+  // Check for #_inline fragment references (federal column pattern)
+  const inlineRefs = [...doc.querySelectorAll('a[href*="#_inline"]')]
+    .filter((a) => !a.href.includes('promo'));
+
+  if (inlineRefs.length) {
+    const columnDocs = await Promise.all(
+      inlineRefs.map((a) => {
+        const colPath = new URL(a.href).pathname;
+        return fetchFragment(`${origin}${colPath}`);
+      }),
+    );
+    return columnDocs.filter(Boolean).flatMap((d) => [...d.querySelectorAll('a[href]')]);
+  }
+
   return [...doc.querySelectorAll('a[href]')];
 }
 
