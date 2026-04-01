@@ -130,7 +130,8 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
-    const market = norm(modPrefix) || 'us';
+    const resolved = norm(modPrefix) || 'us';
+    const market = resolved === 'la' ? 'latam' : resolved;
     if (market) setMarket(market);
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
     const akamaiCode = await getCountry();
