@@ -25,10 +25,11 @@ function extractContent(doc) {
       if (text) items.push({ type: 'subheading', text });
       seen.add(node);
     } else if (node.tagName === 'A' && node.href && !seen.has(node)) {
-      // Only include links that are direct content (inside .link-group or top-level <p>)
+      // Include links inside .link-group, <p>, <strong>, or <li> -- but not bare description <p> text
       const inLinkGroup = node.closest('.link-group');
-      const inTopP = node.parentElement?.tagName === 'P' || node.parentElement?.tagName === 'STRONG';
-      if (inLinkGroup || inTopP) {
+      const inList = node.closest('li');
+      const inP = node.parentElement?.tagName === 'P' || node.parentElement?.tagName === 'STRONG';
+      if (inLinkGroup || inList || inP) {
         const text = node.textContent.trim();
         if (text) items.push({ type: 'link', href: node.href, text });
         seen.add(node);
