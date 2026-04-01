@@ -1,7 +1,7 @@
-/* eslint-disable no-underscore-dangle */
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
 
 let leaveTimeout;
 let hoverTracked = false;
@@ -11,7 +11,7 @@ const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.innerWidth <= 768;
 
-const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || '';
+const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
 const handleMobileAutoplay = (carousel) => {
   const videos = carousel.querySelectorAll('video');
@@ -48,11 +48,6 @@ const disableHoverOnScroll = (carousel) => {
   return controller;
 };
 
-const removeHovered = (carousel) => {
-  const slides = carousel?.querySelectorAll('.elastic-carousel-item');
-  [...slides]?.forEach((sld) => sld.classList.remove('hovered'));
-};
-
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
@@ -78,6 +73,11 @@ const onSlideLeave = (event) => {
     rewindIntervals.set(video, intervalRewind);
   };
   rewind(1);
+};
+
+const removeHovered = (carousel) => {
+  const slides = carousel?.querySelectorAll('.elastic-carousel-item');
+  [...slides]?.forEach((sld) => sld.classList.remove('hovered'));
 };
 
 const onCarouselLeave = (event) => {
@@ -128,7 +128,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const [iconContainer, heading, linkName, description] = left.children;
   const icon = iconContainer?.querySelector('img');
   const asset = right.children[0];
-  const link = left.children[4]?.querySelector('a') ?? left.lastElementChild?.querySelector('a');
+  const link = left.lastElementChild?.querySelector('a');
 
   if (asset?.dataset.videoSource) {
     asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
@@ -144,22 +144,18 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   // TODO: see if eyebrow class can be applied directly to footer headline
   decorateBlockText(left);
 
-  const headingHtml = heading?.outerHTML ?? left.children[1]?.outerHTML ?? '';
-  const footerPrimary = linkName?.outerHTML ?? left.children[2]?.outerHTML ?? '';
-  const footerSecondary = description?.outerHTML ?? left.children[3]?.outerHTML ?? '';
-
   const content = `
     <div class='elastic-carousel-item-container' id='elastic-carousel-slide-${index + 1}'>
       <div class='elastic-carousel-item-header'>
-        ${icon?.outerHTML ?? ''}
-        ${headingHtml}
+        ${icon.outerHTML}
+        ${heading?.outerHTML}
       </div>
       <div class='elastic-carousel-item-media'>
-        ${asset?.outerHTML ?? ''}
+        ${asset.outerHTML}
       </div>
       <div class='elastic-carousel-item-footer'>
-        ${footerPrimary}
-        ${footerSecondary}
+        ${linkName?.outerHTML}
+        ${description?.outerHTML}
       </div>
     </div>
   `;
@@ -179,6 +175,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       'aria-label': ariaLabel,
     }),
     'aria-describedby': `elastic-carousel-slide-${index + 1}`,
+    'daa-ll': `${processTrackingLabels(linkName?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
