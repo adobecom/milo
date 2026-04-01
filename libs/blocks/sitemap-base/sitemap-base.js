@@ -1,4 +1,6 @@
-import { createTag, getConfig, getMetadata, decorateLinksAsync } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, getFederatedContentRoot, decorateLinksAsync } from '../../utils/utils.js';
+
+const FEDERAL_GNAV_PATH = '/federal/globalnav/acom/acom-gnav';
 
 async function fetchFragment(url) {
   const res = await fetch(`${url}.plain.html`);
@@ -7,47 +9,68 @@ async function fetchFragment(url) {
   return new DOMParser().parseFromString(html, 'text/html');
 }
 
-function getGnavOrigin() {
-  const { origin } = window.location;
-  if (origin.includes('localhost') || origin.includes('.aem.')) return origin;
-  return origin;
-}
-
 async function fetchGnavSection(origin, sectionPath) {
-  const doc = await fetchFragment(`${origin}${sectionPath}`);
+  const url = sectionPath.startsWith('http') ? sectionPath : `${origin}${sectionPath}`;
+  const doc = await fetchFragment(url);
   if (!doc) return [];
   return [...doc.querySelectorAll('a[href]')];
 }
 
-async function buildFromGnav(el) {
-  const { locale } = getConfig();
-  const prefix = locale?.prefix || '';
-  const origin = getGnavOrigin();
-  const gnavSource = getMetadata('gnav-source') || `${prefix}/gnav`;
-  const gnavUrl = gnavSource.startsWith('http') ? gnavSource : `${origin}${gnavSource}`;
+async function resolveGnav(prefix) {
+  const gnavSource = getMetadata('gnav-source');
 
-  const gnavDoc = await fetchFragment(gnavUrl);
-  if (!gnavDoc) return;
+  // 1. Explicit gnav-source metadata
+  if (gnavSource) {
+    const url = gnavSource.startsWith('http') ? gnavSource : `${window.location.origin}${gnavSource}`;
+    const doc = await fetchFragment(url);
+    if (doc) return { doc, origin: new URL(url).origin };
+  }
 
-  // GNAV fragments vary: some use headings with links, others use plain <a> in the body.
-  // Try headings first (federal pattern), then fall back to top-level links (da-bacom pattern).
-  let sections = [...gnavDoc.querySelectorAll('h1, h2, h3, h4, h5, h6')]
+  // 2. Site-local /gnav (e.g. da-bacom)
+  const localUrl = `${window.location.origin}${prefix}/gnav`;
+  const localDoc = await fetchFragment(localUrl);
+  if (localDoc) return { doc: localDoc, origin: window.location.origin };
+
+  // 3. Federal GNAV fallback (e.g. da-cc/www)
+  const fedRoot = getFederatedContentRoot();
+  const fedUrl = `${fedRoot}${prefix}${FEDERAL_GNAV_PATH}`;
+  const fedDoc = await fetchFragment(fedUrl);
+  if (fedDoc) return { doc: fedDoc, origin: fedRoot };
+
+  return null;
+}
+
+function parseSections(gnavDoc, prefix) {
+  // Try headings with links first (federal pattern)
+  const fromHeadings = [...gnavDoc.querySelectorAll('h1, h2, h3, h4, h5, h6')]
     .filter((h) => h.querySelector('a[href]'))
     .map((h) => {
       const link = h.querySelector('a[href]');
       return { heading: link.textContent.trim(), sectionPath: new URL(link.href).pathname };
     });
+  if (fromHeadings.length) return fromHeadings;
 
-  if (!sections.length) {
-    // Flat link structure (e.g. da-bacom): each <a> points to a section fragment
-    const navLinks = [...gnavDoc.querySelectorAll('a[href]')]
-      .filter((a) => a.pathname?.startsWith('/fragments/') || a.pathname?.startsWith(`${prefix}/fragments/`));
-    sections = navLinks.map((a) => ({
-      heading: a.textContent.trim(),
-      sectionPath: new URL(a.href).pathname,
-    }));
-  }
+  // Flat link structure (e.g. da-bacom): <a> pointing to /fragments/gnav/*
+  const navLinks = [...gnavDoc.querySelectorAll('a[href]')]
+    .filter((a) => {
+      const path = a.pathname || '';
+      return path.includes('/fragments/');
+    });
+  return navLinks.map((a) => ({
+    heading: a.textContent.trim(),
+    sectionPath: new URL(a.href).pathname,
+  }));
+}
 
+async function buildFromGnav(el) {
+  const { locale } = getConfig();
+  const prefix = locale?.prefix || '';
+
+  const resolved = await resolveGnav(prefix);
+  if (!resolved) return;
+  const { doc: gnavDoc, origin } = resolved;
+
+  const sections = parseSections(gnavDoc, prefix);
   if (!sections.length) return;
 
   el.innerHTML = '';
