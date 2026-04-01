@@ -536,11 +536,13 @@ function decorateFloatingButton(el) {
     const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
 
     if (threshold > mainHeight) {
+      target.style.bottom = `${threshold - mainHeight}px`;
+      target.setAttribute('tab-index', '-1');
       if (variants.isFloatingAnchorHide) {
         floatingButton.classList.add('floating-hidden');
         floatingButton.classList.remove('floating-show');
       } else {
-        target.style.bottom = `${threshold - mainHeight}px`;
+        target.removeAttribute('tab-index');
         mainElement.style.paddingBottom = `${targetHeight}px`;
       }
     } else {
