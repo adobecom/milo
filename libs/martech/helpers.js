@@ -1,4 +1,4 @@
-import { getMepEnablement, getConfig, isSignedOut } from '../utils/utils.js';
+import { getMepEnablement, isSignedOut } from '../utils/utils.js';
 
 /* eslint-disable no-underscore-dangle */
 export const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
