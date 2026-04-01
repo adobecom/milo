@@ -1,4 +1,5 @@
-import { createTag, getConfig, getMetadata, getFederatedContentRoot, decorateLinksAsync } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, getFederatedContentRoot, getFedsPlaceholderConfig, decorateLinksAsync } from '../../utils/utils.js';
+import { replaceText } from '../../features/placeholders.js';
 
 const FEDERAL_GNAV_PATH = '/federal/globalnav/acom/acom-gnav';
 
@@ -97,8 +98,16 @@ async function buildFromGnav(el) {
     }),
   );
 
+  const placeholderConfig = getFedsPlaceholderConfig();
+
   sectionData.forEach(({ heading, links }) => {
-    const filtered = links.filter((a) => a.textContent.trim() && !a.href.includes('#_inline'));
+    const filtered = links.filter((a) => {
+      const text = a.textContent.trim();
+      if (!text || a.href.includes('#_inline')) return false;
+      // Skip image-only links (SVGs, icons)
+      if (a.querySelector('img, svg, picture') && !text.replace(/\s/g, '')) return false;
+      return true;
+    });
     if (!filtered.length) return;
 
     const ul = createTag('ul');
@@ -117,6 +126,11 @@ async function buildFromGnav(el) {
     item.append(inner);
     el.append(item);
   });
+
+  // Resolve {{placeholder}} tokens in rendered content
+  el.innerHTML = await replaceText(el.innerHTML, placeholderConfig);
+  // Strip any remaining images
+  el.querySelectorAll('img, svg, picture').forEach((img) => img.remove());
 }
 
 const HEADING_CLASS_MAP = {
