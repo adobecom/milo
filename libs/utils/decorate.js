@@ -285,22 +285,24 @@ export function getVideoAttrs(hash, dataset) {
 }
 
 export function syncPausePlayIcon(video, event) {
-  if (!video.getAttributeNames().includes('data-hoverplay')) {
-    const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
-    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
-    const anchorTag = video.closest('.video-holder').querySelector('a');
-    offsetFiller?.classList.toggle('is-playing');
-    const isPlaying = offsetFiller?.classList.contains('is-playing');
-    const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
-    const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
-    anchorTag?.setAttribute('title', `${ariaLabel}`);
-    anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
-    anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
-    const daaLL = anchorTag.getAttribute('daa-ll');
-    if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
-  }
+  if (!video?.closest) return;
+  if (video.hasAttribute('data-hoverplay')) return;
+  const holder = video.closest('.video-holder');
+  if (!holder) return;
+  const offsetFiller = holder.querySelector('.offset-filler');
+  if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
+  const anchorTag = holder.querySelector('a.pause-play-wrapper') || holder.querySelector('a');
+  offsetFiller?.classList.toggle('is-playing');
+  const isPlaying = offsetFiller?.classList.contains('is-playing');
+  const indexOfVideo = (anchorTag?.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag?.getAttribute('video-index');
+  const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
+  anchorTag?.setAttribute('title', `${ariaLabel}`);
+  anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
+  anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+  const daaLL = anchorTag?.getAttribute('daa-ll');
+  if (daaLL && anchorTag) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
 }
 
 export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {

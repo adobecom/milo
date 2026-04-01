@@ -310,7 +310,7 @@ function checkSlideForVideo(activeSlide) {
   /* c8 ignore start */
   if (video?.played.length > 0 && !video?.paused) {
     video.pause();
-    if (video.closest('.video-holder')) syncPausePlayIcon(video);
+    syncPausePlayIcon(video);
   }
   /* c8 ignore end */
 }
@@ -484,7 +484,7 @@ function moveSlides(event, carouselElements) {
     /* c8 ignore start */
     if (video?.paused && video.readyState >= 2) {
       video.play().catch(() => {});
-      if (video.closest('.video-holder')) syncPausePlayIcon(video);
+      syncPausePlayIcon(video);
     }
     /* c8 ignore end */
   }
