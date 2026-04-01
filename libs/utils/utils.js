@@ -2147,7 +2147,7 @@ export const getCookie = (name) => document.cookie
 export function getMarketsSourceKey() {
   const { env, marketsSource } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
-  const allowedMarkets = ['bacom', 'express'];
+  const allowedMarkets = ['express'];
   return (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
     || getMetadata('marketssource')
     || marketsSource
@@ -2170,9 +2170,7 @@ function excludeUsUnlessExplicit(markets, geoIp) {
   if (markets.length <= 1) return markets;
   const usEntry = markets.find(isUsEntry);
   if (!usEntry) return markets;
-  if (!usEntry.regionPriorities) return markets.filter((market) => !isUsEntry(market));
-  const usListsGeo = usEntry.regionPriorities
-    .split(',').some((pair) => pair.trim().split(':')[0].toLowerCase() === geoIp);
+  const usListsGeo = usEntry.regionPriorities?.split(',').some((pair) => pair.trim().split(':')[0].toLowerCase() === geoIp);
   return usListsGeo ? markets : markets.filter((market) => !isUsEntry(market));
 }
 
@@ -2201,10 +2199,8 @@ function reserveBannerSpace() {
 export async function pageExist(url) {
   const headResp = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
   if (headResp?.status !== 401) return headResp?.ok ?? false;
-  const isAemEnv = url.includes('.aem.page') || url.includes('.aem.live');
-  if (!isAemEnv) return headResp?.ok ?? false;
-  const res = await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null);
-  return res?.ok ?? false;
+  if (!(url.includes('.aem.page') || url.includes('.aem.live'))) return false;
+  return (await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null))?.ok ?? false;
 }
 
 export async function decorateLanguageBanner() {
