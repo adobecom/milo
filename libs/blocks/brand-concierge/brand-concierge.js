@@ -253,8 +253,8 @@ async function openChatModal(initialMessage, el) {
   }
 
   const { env, locale } = getConfig();
-  const forkProd = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   let src = stage;
 
@@ -270,10 +270,10 @@ async function openChatModal(initialMessage, el) {
     // eslint-disable-next-line no-console
     console.log('stage', stage);
     src = stage;
-  } else if (webClient === 'forkProd') {
+  } else if (webClient === 'baseProd') {
     // eslint-disable-next-line no-console
-    console.log('forkProd', forkProd);
-    src = forkProd;
+    console.log('baseProd', baseProd);
+    src = baseProd;
   }
 
   await loadScript(src);
@@ -536,11 +536,13 @@ function decorateFloatingButton(el) {
     const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
 
     if (threshold > mainHeight) {
+      target.style.bottom = `${threshold - mainHeight}px`;
+      target.setAttribute('tab-index', '-1');
       if (variants.isFloatingAnchorHide) {
         floatingButton.classList.add('floating-hidden');
         floatingButton.classList.remove('floating-show');
       } else {
-        target.style.bottom = `${threshold - mainHeight}px`;
+        target.removeAttribute('tab-index');
         mainElement.style.paddingBottom = `${targetHeight}px`;
       }
     } else {
