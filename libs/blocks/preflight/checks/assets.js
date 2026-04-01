@@ -6,13 +6,13 @@ const maxFullWidth = 1920;
 
 function waitForNetworkIdle(idleMs = 3000) {
   return new Promise((resolve) => {
-    const done = () => { observer.disconnect(); clearTimeout(timer); resolve(); };
-    let timer = setTimeout(done, idleMs);
+    let timer;
     const observer = new PerformanceObserver(() => {
       clearTimeout(timer);
-      timer = setTimeout(done, idleMs);
+      timer = setTimeout(() => { observer.disconnect(); resolve(); }, idleMs);
     });
     observer.observe({ entryTypes: ['resource'] });
+    timer = setTimeout(() => { observer.disconnect(); resolve(); }, idleMs);
   });
 }
 
