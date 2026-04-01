@@ -69,7 +69,7 @@ async function fetchStatus({ org, repo }, locPath) {
     return;
   }
 
-  const currLang = langPaths.find((lang) => aemPath.startsWith(lang));
+  const currLang = langPaths.find((lang) => lang === ROOT_PATH || aemPath.startsWith(`${lang}/`));
   const langPathList = langPaths.map((lang) => {
     const code = lang === ROOT_PATH ? ROOT_LANG : lang.replace(ROOT_PATH, '');
     const currLocation = lang === ROOT_PATH ? '' : lang;
