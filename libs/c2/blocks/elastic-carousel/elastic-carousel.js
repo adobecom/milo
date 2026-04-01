@@ -1,8 +1,9 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-let leaveTimeout;
+const leaveTimeouts = new WeakMap();
 const rewindIntervals = new WeakMap();
+const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
@@ -10,26 +11,76 @@ const isMobile = () => window.innerWidth <= 768;
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
+const stopRewind = (video) => {
+  clearInterval(rewindIntervals.get(video));
+  rewindIntervals.delete(video);
+};
+
+const rewindVideo = (video) => {
+  stopRewind(video);
+  video.pause();
+  const startSystemTime = Date.now();
+  const startVideoTime = video.currentTime;
+  const intervalRewind = setInterval(() => {
+    if (video.currentTime === 0) {
+      stopRewind(video);
+      video.load();
+    } else {
+      const elapsed = Date.now() - startSystemTime;
+      video.currentTime = Math.max(startVideoTime - elapsed / 1000, 0);
+    }
+  }, 30);
+  rewindIntervals.set(video, intervalRewind);
+};
+
 const handleMobileAutoplay = (carousel) => {
-  const videos = carousel.querySelectorAll('video');
+  const slides = [...carousel.querySelectorAll('.elastic-carousel-item')];
+  const observers = [];
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
+  slides.forEach((slide, index) => {
+    const video = slide.querySelector('video');
+    if (!video) return;
+
+    const nextSlide = slides[index + 1];
+
+    // Play when this slide enters view — but not if the next slide is already covering it
+    const slideObserver = new IntersectionObserver(
+      ([entry]) => {
         if (!isMobile()) return;
-        const video = entry.target;
-
         if (entry.isIntersecting) {
-          video.play().catch(() => { });
-        } else {
-          video.pause();
+          const nextRect = nextSlide?.getBoundingClientRect();
+          const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
+          if (!isCovered) video.play().catch(() => { });
         }
-      });
-    },
-    { threshold: 0.6 }, // play when 60% visible
-  );
+      },
+      { threshold: 0.6 },
+    );
+    slideObserver.observe(slide);
+    observers.push(slideObserver);
 
-  videos.forEach((video) => observer.observe(video));
+    if (!nextSlide) return;
+
+    // Rewind when the next slide starts covering this one;
+    // play again when it uncovers (user scrolls back up)
+    const nextSlideObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (!isMobile()) return;
+        if (entry.isIntersecting) {
+          rewindVideo(video);
+        } else {
+          const rect = slide.getBoundingClientRect();
+          if (rect.top >= 0 && rect.top <= window.innerHeight) {
+            video.play().catch(() => { });
+          }
+        }
+      },
+      { threshold: 0.6 },
+    );
+    nextSlideObserver.observe(nextSlide);
+    observers.push(nextSlideObserver);
+  });
+
+  return observers;
 };
 
 const disableHoverOnScroll = (carousel) => {
@@ -48,28 +99,11 @@ const disableHoverOnScroll = (carousel) => {
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
-  video.pause();
 
-  const rewind = (rewindSpeed) => {
-    clearInterval(rewindIntervals.get(video));
-    const startSystemTime = new Date().getTime();
-    const startVideoTime = video.currentTime;
-
-    const intervalRewind = setInterval(() => {
-      video.playbackRate = 1.0;
-      if (video.currentTime === 0) {
-        clearInterval(rewindIntervals.get(video));
-        rewindIntervals.delete(video);
-        video.pause();
-      } else {
-        const elapsed = new Date().getTime() - startSystemTime;
-        const val = Math.max(startVideoTime - elapsed * (rewindSpeed / 1000.0), 0);
-        video.currentTime = val;
-      }
-    }, 30);
-    rewindIntervals.set(video, intervalRewind);
-  };
-  rewind(1);
+  clearTimeout(slideLeaveTimeouts.get(video));
+  slideLeaveTimeouts.set(video, setTimeout(() => {
+    rewindVideo(video);
+  }, 100));
 };
 
 const removeHovered = (carousel) => {
@@ -79,18 +113,27 @@ const removeHovered = (carousel) => {
 
 const onCarouselLeave = (event) => {
   const carouselContainer = event.target;
-  leaveTimeout = setTimeout(() => {
+  clearTimeout(leaveTimeouts.get(carouselContainer));
+  leaveTimeouts.set(carouselContainer, setTimeout(() => {
     carouselContainer.classList.remove('stick-left', 'stick-right');
-    removeHovered(event.target);
-  }, 10);
+    removeHovered(carouselContainer.closest('.elastic-carousel'));
+  }, 10));
 };
 
 const onHover = (event) => {
   const slideEl = event.target;
-  clearTimeout(leaveTimeout);
+  const carouselContainer = slideEl.closest('.elastic-carousel-container');
+  if (!carouselContainer) return;
+  clearTimeout(leaveTimeouts.get(carouselContainer));
 
   const video = slideEl.querySelector('video');
-  if (video) video.play().catch(() => { });
+  clearTimeout(slideLeaveTimeouts.get(video));
+  slideLeaveTimeouts.delete(video);
+
+  if (video) {
+    stopRewind(video);
+    video.play().catch(() => { });
+  }
 
   const slideIndex = slideEl.dataset.index * 1;
   const container = slideEl.parentElement;
@@ -206,11 +249,12 @@ export default async function init(el) {
   upgradeVideoPreload(decoratedCarousel);
   const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.querySelector('.elastic-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
-  handleMobileAutoplay(decoratedCarousel);
+  const mobileObservers = handleMobileAutoplay(decoratedCarousel);
 
   new MutationObserver((_, observer) => {
     if (!document.contains(el)) {
       scrollController.abort();
+      mobileObservers.forEach((o) => o.disconnect());
       observer.disconnect();
     }
   }).observe(document.body, { childList: true, subtree: true });

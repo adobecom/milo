@@ -159,7 +159,7 @@ html[dir="rtl"] {
 
 
 /** custom media rules */
-@media (width < 1700px) {
+@media (768px <= width < 1700px) {
   .elastic-carousel-container {
     left: 50%;
     transform: translateX(-50%);
@@ -255,9 +255,21 @@ html[dir="rtl"] {
           max-width: 496px;
           width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
 
-          .elastic-carousel-item-footer :is(p, h1, h2, h3, h4, h5, h6),
+          .elastic-carousel-item-footer p,
           .elastic-carousel-item-header p {
             color: var(--s2a-color-gray-25);
+          }
+
+          .elastic-carousel-item-footer {
+
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+              color: var(--s2a-color-gray-25);
+            }
           }
 
           .elastic-carousel-item-footer:after {
@@ -292,11 +304,10 @@ html[dir="rtl"] {
       top: 0%;
       height: 100%;
       position: relative;
+      transform: unset;
       flex-direction: column;
       display: grid;
       gap: 20vh;
-      /* TODO: review the property, it should flow from mobile to desktop, not the other way around */
-      transform: translateX(calc(50vw - 50% - var(--s2a-spacing-sm)));
 
       .elastic-carousel-item {
         position: sticky;
