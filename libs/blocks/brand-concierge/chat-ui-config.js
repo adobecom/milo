@@ -21,6 +21,10 @@ export default {
     chat: {
       messageAlignment: 'normal',
       messageWidth: '100%',
+      widgetsInMessageContentTypes: [
+        'cta-actions',
+        'firefly-community-gallery',
+      ],
     },
     privacyNotice: {
       title: '',
@@ -40,12 +44,6 @@ export default {
         tablet: 767,
         tabletLandscape: 1199,
       },
-    },
-    chatTranscript: {
-      enabled: true,
-      maxSessions: 10,
-      maxMessagesPerSession: 100,
-      cleanupInterval: 24,
     },
   },
   disclaimer: {
@@ -371,7 +369,6 @@ export default {
     '--input-outline-width': '2px',
     '--input-placeholder-color': '#292929',
     '--input-section-padding': '14px',
-    '--input-section-max-width': 'var(--content-width-desktop)',
     '--input-text-color': '#292929',
     '--line-height-body': '1.75',
     '--loading-dot-background': '#6338EE',
@@ -396,8 +393,9 @@ export default {
     '--message-user-background': '#EBEEFF',
     '--message-user-text': '#292929',
     '--message-text-order': '1',
-    '--message-multimodal-order': '3',
-    '--message-footer-order': '2',
+    '--message-multimodal-order': '2',
+    '--message-widget-order': '3',
+    '--message-footer-order': '4',
     '--mobile-message-font-size': '16px',
     '--multimodal-card-box-shadow': 'none',
     '--privacy-notice-background': '#FFFFFF',

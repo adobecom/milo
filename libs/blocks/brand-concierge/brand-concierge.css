@@ -350,7 +350,7 @@
   margin: var(--bc-floating-button-spacing) auto;
   max-height: var(--bc-floating-button-height);
   position: fixed;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.25s ease;
   width: calc(100% - var(--bc-floating-button-spacing) * 2 - var(--bc-input-border-size) * 2);
   z-index: 4;
 }
@@ -361,8 +361,7 @@
 
 .bc-floating-button.floating-hidden {
   opacity: 0;
-  top: 100vh;
-  visibility: hidden;
+  pointer-events: none;
 }
 
 .bc-floating-button.floating-show {
@@ -561,7 +560,7 @@
   }
 }
 
-#brand-concierge-modal  .dialog-close {
+#brand-concierge-modal .dialog-close {
   z-index: 2;
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTkuNzU0ODggMTMuMjQzMkMxMC4wNDIgMTIuOTQ0NCAxMC41MTY2IDEyLjkzNDYgMTAuODE0NSAxMy4yMjI3TDE1Ljk5OCAxOC4yMDlMMjEuMTk1MyAxMy4yMUMyMS40OTMyIDEyLjkyMTkgMjEuOTY3OCAxMi45MzE3IDIyLjI1NDkgMTMuMjMwNUMyMi41NDIgMTMuNTI3NCAyMi41MzMyIDE0LjAwMyAyMi4yMzQ0IDE0LjI5MDFMMTYuNTE3NiAxOS43OTAxQzE2LjIyNzUgMjAuMDcwMyAxNS43Njg2IDIwLjA3MDMgMTUuNDc4NSAxOS43OTAxTDkuNzc1MzkgMTQuMzAyOEM5LjYyMjA3IDE0LjE1NjMgOS41NDQ5MiAxMy45NTkgOS41NDQ5MiAxMy43NjI3QzkuNTQ0OTIgMTMuNTc1MiA5LjYxNDI2IDEzLjM4NzcgOS43NTQ4OCAxMy4yNDMyWiIgZmlsbD0iIzI5MjkyOSIvPgo8L3N2Zz4=');
   background-repeat: no-repeat;
@@ -573,12 +572,14 @@
   right: 16px;
 }
 
-#brand-concierge-modal  .dialog-close:focus-visible {
+#brand-concierge-modal .dialog-close:focus-visible {
   outline: 2px solid #5574F7;
   outline-offset: 2px;
   border-radius: 8px;
 }
 
+#brand-concierge-modal  .dialog-close::before,
+#brand-concierge-modal  .dialog-close::after,
 #brand-concierge-modal  .dialog-close svg {
   display: none;
 }
@@ -601,6 +602,7 @@
 
 .bc-modal-title {
   font-size: 16px;
+  letter-spacing: -0.9px;
   line-height: 32px;
   font-weight: 900;
   color: #000;
@@ -639,12 +641,12 @@
     animation: var(--bc-modal-animation-time) ease-in-out floating-button-in;
     animation-fill-mode: forwards;
   }
-  
+
   .bc-floating-button.modal-close {
     animation: var(--bc-modal-animation-time) ease-in-out floating-button-out;
     animation-fill-mode: forwards;
   }
-  
+
   /* hero */
   .brand-concierge.hero {
     padding: 80px 32px 24px;
