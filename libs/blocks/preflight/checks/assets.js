@@ -4,6 +4,18 @@ import { displayPreflightVisuals } from '../visual-metadata.js';
 
 const maxFullWidth = 1920;
 
+function waitForNetworkIdle(idleMs = 3000) {
+  return new Promise((resolve) => {
+    const done = () => { observer.disconnect(); clearTimeout(timer); resolve(); };
+    let timer = setTimeout(done, idleMs);
+    const observer = new PerformanceObserver(() => {
+      clearTimeout(timer);
+      timer = setTimeout(done, idleMs);
+    });
+    observer.observe({ entryTypes: ['resource'] });
+  });
+}
+
 export function loadImage(asset) {
   if (asset.complete) return Promise.resolve();
   asset.setAttribute('loading', 'eager');
@@ -24,11 +36,14 @@ async function loadVideo(asset) {
   if (!source) asset.appendChild(createTag('source', { src: dataSource, type: 'video/mp4' }));
 
   asset.load();
+
+  if (asset.readyState >= 1) return;
+
   await Promise.race([
     ...['loadedmetadata', 'error'].map((event) => new Promise((resolve) => {
       asset.addEventListener(event, resolve, { once: true });
     })),
-    new Promise((resolve) => { setTimeout(resolve, 5000); }),
+    waitForNetworkIdle(),
   ]);
 }
 
