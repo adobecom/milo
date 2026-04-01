@@ -119,7 +119,6 @@ export default function init(el) {
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
     handleBtnState(items, buttons);
-    if (!items.querySelectorAll('a').length) items.setAttribute('tabindex', 0);
     allActionScrollers.push({ scroller: items, buttons });
     import('../../utils/action.js').then(({ debounce }) => {
       items.addEventListener('scroll', debounce(() => handleBtnState(items, buttons), 50));
@@ -129,5 +128,10 @@ export default function init(el) {
     });
   }
   items.setAttribute('role', 'list');
-  actions.forEach((action) => action.setAttribute('role', 'listitem'));
+  actions.forEach((action) => {
+    action.setAttribute('role', 'listitem');
+    if (!action.querySelector('a')) {
+      action.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
+    }
+  });
 }
