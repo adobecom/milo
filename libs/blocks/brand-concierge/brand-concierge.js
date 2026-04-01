@@ -302,6 +302,8 @@ async function openChatModal(initialMessage, el) {
           consentStandard: key,
           consentStringValue: consentsConfig[key].toString(),
           consentStandardVersion: '2.0',
+          gdprApplies: true,
+          containsPersonalData: true,
         });
         return rdx;
       }, []);
