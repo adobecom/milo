@@ -306,7 +306,10 @@ const COMMANDS = {
       }
     } else {
       value = cmd.content;
-      if (attribute === 'href') value = normalizePath(value);
+      if (attribute === 'href'
+        && (!value.startsWith('http') || /\.(hlx|aem)\.|localhost:/.test(value))) {
+        value = normalizePath(value);
+      }
     }
 
     if (value) {
