@@ -544,10 +544,10 @@ function decorateFloatingButton(el) {
         floatingButton.classList.add('floating-hidden');
         floatingButton.classList.remove('floating-show');
       } else {
-        target.removeAttribute('tab-index');
         mainElement.style.paddingBottom = `${targetHeight}px`;
       }
     } else {
+      target.removeAttribute('tab-index');
       target.style.bottom = '0';
       floatingButton.classList.remove('floating-hidden');
       floatingButton.classList.add('floating-show');
