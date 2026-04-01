@@ -11,7 +11,7 @@ import {
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
-const USER_PAUSED_ATTR = 'data-user-paused';
+export const USER_PAUSED_ATTR = 'data-user-paused';
 let firstVideo = null;
 let videoLabels = {
   playMotion: 'Play',
@@ -341,7 +341,7 @@ export function handlePause(event) {
     if (isVideoReady(video)) { video.play(); }
   } else {
     video.pause();
-    if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, 'true');
+    if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, '');
   }
   syncPausePlayIcon(video);
 }
@@ -408,7 +408,7 @@ function getVideoIntersectionObserver() {
         const { intersectionRatio, target: video } = entry;
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
-        const isUserPaused = video.getAttribute(USER_PAUSED_ATTR) === 'true';
+        const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
 

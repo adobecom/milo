@@ -1,5 +1,5 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
-import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
+import { decorateAnchorVideo, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../utils/decorate.js';
 import { debounce } from '../../utils/action.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -33,7 +33,6 @@ const KEY_CODES = {
   TAB: 'Tab',
 };
 const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
-const USER_PAUSED_ATTR = 'data-user-paused';
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
 const isMobileVp = window.matchMedia('(max-width: 599px)');
@@ -485,7 +484,7 @@ function moveSlides(event, carouselElements) {
     /* c8 ignore start */
     if (video?.paused
       && video.readyState >= 2
-      && video.getAttribute(USER_PAUSED_ATTR) !== 'true') {
+      && !video.hasAttribute(USER_PAUSED_ATTR)) {
       video.play().catch(() => {});
       syncPausePlayIcon(video);
     }
