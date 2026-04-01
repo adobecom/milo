@@ -144,20 +144,24 @@ async function buildFromGnav(el) {
     });
     if (!filtered.length) return;
 
-    const ul = createTag('ul');
-    filtered.forEach((item) => {
-      const li = createTag('li');
-      if (item.type === 'link') {
-        li.append(createTag('a', { href: item.href }, item.text));
-      } else {
-        li.append(createTag('strong', {}, item.text));
-      }
-      ul.append(li);
-    });
-
     const inner = createTag('div');
     inner.append(createTag('h3', {}, heading));
-    inner.append(ul);
+
+    let ul = null;
+    filtered.forEach((item) => {
+      if (item.type === 'subheading') {
+        inner.append(createTag('h4', {}, item.text));
+        ul = null;
+      } else {
+        if (!ul) {
+          ul = createTag('ul');
+          inner.append(ul);
+        }
+        const li = createTag('li');
+        li.append(createTag('a', { href: item.href }, item.text));
+        ul.append(li);
+      }
+    });
 
     const item = createTag('div');
     item.append(inner);
