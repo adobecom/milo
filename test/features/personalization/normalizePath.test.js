@@ -54,4 +54,28 @@ describe('normalizePath function', () => {
     const path = await normalizePath('https://main--milo--adobecom.aem.page/path/to/fragment.plain.html');
     expect(path).to.equal('/de/path/to/fragment.plain.html');
   });
+
+  it('localizes federal URLs with locale prefix and preserves federal origin', async () => {
+    config.locales = {
+      de: {
+        ietf: 'de-DE',
+        prefix: '/de',
+      },
+    };
+    config.locale = config.locales.de;
+    const federalUrl = 'https://main--federal--adobecom.aem.page/federal/globalnav/acom/fragments/promos/test-promo';
+    const path = await normalizePath(federalUrl);
+    expect(path).to.include('/de/federal/globalnav/acom/fragments/promos/test-promo');
+    expect(path).to.include('federal--adobecom.aem.page');
+    expect(path).not.to.include('/de/https://');
+  });
+
+  it('does not localize federal URLs for en-US locale', async () => {
+    config.locale = { ietf: 'en-US', prefix: '' };
+    const federalUrl = 'https://main--federal--adobecom.aem.page/federal/globalnav/acom/fragments/promos/test-promo';
+    const path = await normalizePath(federalUrl);
+    expect(path).to.include('federal--adobecom.aem.page');
+    expect(path).to.include('/federal/globalnav/acom/fragments/promos/test-promo');
+    expect(path).not.to.include('/de/');
+  });
 });
