@@ -39,12 +39,11 @@ async function fetchLangPaths({ org, repo }, token) {
   }
 }
 
-async function fetchStatus({ org, repo }, locPath, token) {
+async function fetchStatus({ org, repo }, locPath) {
   // locPath will have slash prefixed
   const statusUrl = `${ADMIN_STATUS}${org}/${repo}/main${locPath}`;
-  const opts = { headers: { Authorization: `Bearer ${token}` } };
   try {
-    const res = await fetch(statusUrl, opts);
+    const res = await fetch(statusUrl);
     if (!res.ok) { throw new Error(res.status); }
     const data = await res.json();
     return { preview: data.preview.status, live: data.live.status };
@@ -99,7 +98,7 @@ async function fetchStatus({ org, repo }, locPath, token) {
   document.body.querySelector('main').replaceChildren(tagBrowser);
 
   Object.keys(status).forEach((locPath) => {
-    fetchStatus(context, locPath, token).then((stat) => {
+    fetchStatus(context, locPath).then((stat) => {
       status[locPath] = stat;
       tagBrowser.status = { ...status };
     });
