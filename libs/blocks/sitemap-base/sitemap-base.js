@@ -103,7 +103,7 @@ async function buildFromGnav(el) {
   sectionData.forEach(({ heading, links }) => {
     const filtered = links.filter((a) => {
       const text = a.textContent.trim();
-      if (!text || a.href.includes('#_inline')) return false;
+      if (!text || a.href.includes('#_inline') || a.href.includes('bookmark://')) return false;
       // Skip image-only links (SVGs, icons)
       if (a.querySelector('img, svg, picture') && !text.replace(/\s/g, '')) return false;
       return true;
