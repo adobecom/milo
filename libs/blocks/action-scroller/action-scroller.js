@@ -128,18 +128,14 @@ export default function init(el) {
     });
   }
   const hasLinks = !!items.querySelectorAll('a').length;
+  const labels = [];
   actions.forEach((action) => {
     action.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
+    const label = action.querySelector('img[alt]')?.alt || action.querySelector('a')?.textContent?.trim();
+    if (label) labels.push(label);
     if (!hasLinks) action.setAttribute('aria-hidden', 'true');
   });
 
-  if (!hasLinks) {
-    const labels = [...actions].reduce((acc, action) => {
-      const label = action.querySelector('img[alt]')?.alt;
-      if (label) acc.push(label);
-      return acc;
-    }, []);
-    if (labels.length) items.setAttribute('aria-label', labels.join(', '));
-    items.setAttribute('tabindex', '0');
-  }
+  if (labels.length) items.setAttribute('aria-label', labels.join(', '));
+  items.setAttribute('tabindex', '0');
 }
