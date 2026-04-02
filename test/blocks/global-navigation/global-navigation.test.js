@@ -741,6 +741,17 @@ describe('global navigation', () => {
     });
   });
 
+  describe('Client whats new feature in global navigation', () => {
+    it('should append the feds-client-whatsnew div when whatsNew is on', async () => {
+      await createFullGlobalNavigation({ customConfig: { whatsNew: 'on' } });
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-client-whatsnew')).to.exist;
+    });
+
+    it('should not append the feds-client-whatsnew div when whatsNew is not set', async () => {
+      await createFullGlobalNavigation({});
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-client-whatsnew')).to.not.exist;
+    });
+  });
   describe('Product Entry CTA feature in global navigation', () => {
     it('should not append the feds-product-entry-cta class when product entry cta is disabled', async () => {
       document.head.innerHTML = '<meta name="product-entry-cta" content="off"/>';
