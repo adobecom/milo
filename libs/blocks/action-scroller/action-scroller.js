@@ -136,6 +136,9 @@ export default function init(el) {
     if (!hasLinks) action.setAttribute('aria-hidden', 'true');
   });
 
-  if (labels.length) items.setAttribute('aria-label', labels.join(', '));
-  items.setAttribute('tabindex', '0');
+  if (labels.length) {
+    items.setAttribute('aria-label', labels.join(', '));
+    items.setAttribute('role', 'group');
+    items.setAttribute('tabindex', '0');
+  }
 }
