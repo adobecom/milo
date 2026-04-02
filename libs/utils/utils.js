@@ -1106,7 +1106,8 @@ function getBlockData(block) {
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
 
-  const isPageAgnostic = name === 'preflight';
+  const PAGE_AGNOSTIC_BLOCKS = ['preflight'];
+  const isPageAgnostic = PAGE_AGNOSTIC_BLOCKS.includes(name);
   if (isC2Page && isC1Block && !isC2Block && !isAutoBlock && !isPageAgnostic) {
     return { name, isInvalid: true };
   }
