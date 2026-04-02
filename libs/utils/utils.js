@@ -2193,7 +2193,7 @@ export const getCookie = (name) => document.cookie
 export function getMarketsSourceKey() {
   const { env, marketsSource } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
-  const allowedMarkets = ['express'];
+  const allowedMarkets = ['express']; // TODO: remove allowedMarkets once feature is stable
   return (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
     || getMetadata('marketssource')
     || marketsSource
