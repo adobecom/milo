@@ -119,6 +119,7 @@ export default function init(el) {
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
     handleBtnState(items, buttons);
+    if (!items.querySelectorAll('a').length) items.setAttribute('tabindex', 0);
     allActionScrollers.push({ scroller: items, buttons });
     import('../../utils/action.js').then(({ debounce }) => {
       items.addEventListener('scroll', debounce(() => handleBtnState(items, buttons), 50));
@@ -127,18 +128,6 @@ export default function init(el) {
       window.addEventListener('resize', debounce(handleResize, 50));
     });
   }
-  const hasLinks = !!items.querySelectorAll('a').length;
-  const labels = [];
-  actions.forEach((action) => {
-    action.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
-    const label = action.querySelector('img[alt]')?.alt || action.querySelector('a')?.textContent?.trim();
-    if (label) labels.push(label);
-    if (!hasLinks) action.setAttribute('aria-hidden', 'true');
-  });
-
-  if (labels.length) {
-    items.setAttribute('aria-label', labels.join(', '));
-    items.setAttribute('role', 'group');
-    items.setAttribute('tabindex', '0');
-  }
+  items.setAttribute('role', 'list');
+  actions.forEach((action) => action.setAttribute('role', 'listitem'));
 }

@@ -20,7 +20,7 @@ describe('action scrollers', () => {
     ]);
   });
 
-  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility):not(.no-links)');
+  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility)');
   actionScroller.forEach((scroller) => {
     init(scroller);
 
@@ -61,55 +61,6 @@ describe('action scrollers', () => {
           expect(scrolledBack).to.be.true;
         });
       }
-    });
-  });
-
-  describe('action scroller a11y (WCAG 1.3.2)', () => {
-    let noLinksEl;
-    let noLinksScroller;
-    let linkedEl;
-    let linkedScroller;
-
-    before(() => {
-      noLinksEl = document.querySelector('.action-scroller.no-links');
-      init(noLinksEl);
-      noLinksScroller = noLinksEl.querySelector('.scroller');
-
-      linkedEl = document.querySelector('.action-scroller.navigation.grid-align-end');
-      linkedScroller = linkedEl.querySelector('.scroller');
-    });
-
-    it('scroller has tabindex="0" so the section is a single tab stop', () => {
-      expect(noLinksScroller.getAttribute('tabindex')).to.equal('0');
-    });
-
-    it('scroller aria-label contains all image names so NVDA reads them all on focus', () => {
-      expect(noLinksScroller.getAttribute('aria-label')).to.equal('LinkedIn, Dropbox, Slack, Google');
-    });
-
-    it('individual items are aria-hidden to prevent double-announcement', () => {
-      noLinksScroller.querySelectorAll('.action-item').forEach((item) => {
-        expect(item.getAttribute('aria-hidden')).to.equal('true');
-      });
-    });
-
-    it('nav buttons are present and focusable for keyboard users', () => {
-      const prevBtn = noLinksEl.querySelector('.previous-button');
-      const nextBtn = noLinksEl.querySelector('.next-button');
-      expect(prevBtn).to.exist;
-      expect(nextBtn).to.exist;
-      expect(prevBtn.getAttribute('tabindex')).to.not.equal('-1');
-      expect(nextBtn.getAttribute('tabindex')).to.not.equal('-1');
-    });
-
-    it('images in link-free items load eagerly so alt text is in the accessibility tree', () => {
-      expect(noLinksScroller.querySelectorAll('img[loading="lazy"]').length).to.equal(0);
-      expect(noLinksScroller.querySelectorAll('img[loading="eager"]').length).to.be.greaterThan(0);
-    });
-
-    it('images in linked items also load eagerly so NVDA announces "graphic" consistently', () => {
-      expect(linkedScroller.querySelectorAll('img[loading="lazy"]').length).to.equal(0);
-      expect(linkedScroller.querySelectorAll('img[loading="eager"]').length).to.be.greaterThan(0);
     });
   });
 
