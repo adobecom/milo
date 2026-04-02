@@ -127,9 +127,19 @@ export default function init(el) {
       window.addEventListener('resize', debounce(handleResize, 50));
     });
   }
-  items.setAttribute('role', 'list');
+  items.setAttribute('aria-hidden', 'true');
   actions.forEach((action) => {
-    action.setAttribute('role', 'listitem');
     action.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
   });
+
+  const srList = createTag('ul', { class: 'sr-only' });
+  actions.forEach((action) => {
+    const img = action.querySelector('img[alt]');
+    const link = action.querySelector('a');
+    const label = img?.alt || link?.textContent?.trim();
+    if (!label) return;
+    const li = createTag('li', {}, label);
+    srList.append(li);
+  });
+  if (srList.children.length) el.append(srList);
 }

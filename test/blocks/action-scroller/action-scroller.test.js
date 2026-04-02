@@ -83,14 +83,21 @@ describe('action scrollers', () => {
       expect(noLinksScroller.hasAttribute('tabindex')).to.be.false;
     });
 
-    it('scroller has role="list"', () => {
-      expect(noLinksScroller.getAttribute('role')).to.equal('list');
+    it('visual scroller is hidden from AT to avoid scroll-clipping issues', () => {
+      expect(noLinksScroller.getAttribute('aria-hidden')).to.equal('true');
     });
 
-    it('each action item has role="listitem"', () => {
-      noLinksScroller.querySelectorAll('.action-item').forEach((item) => {
-        expect(item.getAttribute('role')).to.equal('listitem');
-      });
+    it('a sr-only list is appended with one item per action', () => {
+      const srList = noLinksEl.querySelector('ul.sr-only');
+      expect(srList).to.exist;
+      const actions = noLinksEl.querySelectorAll('.action-item');
+      expect(srList.children.length).to.equal(actions.length);
+    });
+
+    it('sr-only list items contain the image alt text', () => {
+      const srList = noLinksEl.querySelector('ul.sr-only');
+      const labels = [...srList.children].map((li) => li.textContent);
+      expect(labels).to.deep.equal(['LinkedIn', 'Dropbox', 'Slack', 'Google']);
     });
 
     it('nav buttons are present and focusable for keyboard users', () => {
