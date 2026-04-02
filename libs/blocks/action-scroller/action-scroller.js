@@ -130,8 +130,6 @@ export default function init(el) {
   items.setAttribute('role', 'list');
   actions.forEach((action) => {
     action.setAttribute('role', 'listitem');
-    if (!action.querySelector('a')) {
-      action.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
-    }
+    action.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
   });
 }

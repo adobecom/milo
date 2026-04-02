@@ -20,7 +20,7 @@ describe('action scrollers', () => {
     ]);
   });
 
-  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility)');
+  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility):not(.no-links)');
   actionScroller.forEach((scroller) => {
     init(scroller);
 
@@ -61,6 +61,55 @@ describe('action scrollers', () => {
           expect(scrolledBack).to.be.true;
         });
       }
+    });
+  });
+
+  describe('action scroller a11y (WCAG 1.3.2)', () => {
+    let noLinksEl;
+    let noLinksScroller;
+    let linkedEl;
+    let linkedScroller;
+
+    before(() => {
+      noLinksEl = document.querySelector('.action-scroller.no-links');
+      init(noLinksEl);
+      noLinksScroller = noLinksEl.querySelector('.scroller');
+
+      linkedEl = document.querySelector('.action-scroller.navigation.grid-align-end');
+      linkedScroller = linkedEl.querySelector('.scroller');
+    });
+
+    it('scroller without links does not have tabindex', () => {
+      expect(noLinksScroller.hasAttribute('tabindex')).to.be.false;
+    });
+
+    it('scroller has role="list"', () => {
+      expect(noLinksScroller.getAttribute('role')).to.equal('list');
+    });
+
+    it('each action item has role="listitem"', () => {
+      noLinksScroller.querySelectorAll('.action-item').forEach((item) => {
+        expect(item.getAttribute('role')).to.equal('listitem');
+      });
+    });
+
+    it('nav buttons are present and focusable for keyboard users', () => {
+      const prevBtn = noLinksEl.querySelector('.previous-button');
+      const nextBtn = noLinksEl.querySelector('.next-button');
+      expect(prevBtn).to.exist;
+      expect(nextBtn).to.exist;
+      expect(prevBtn.getAttribute('tabindex')).to.not.equal('-1');
+      expect(nextBtn.getAttribute('tabindex')).to.not.equal('-1');
+    });
+
+    it('images in link-free items load eagerly so alt text is in the accessibility tree', () => {
+      expect(noLinksScroller.querySelectorAll('img[loading="lazy"]').length).to.equal(0);
+      expect(noLinksScroller.querySelectorAll('img[loading="eager"]').length).to.be.greaterThan(0);
+    });
+
+    it('images in linked items also load eagerly so NVDA announces "graphic" consistently', () => {
+      expect(linkedScroller.querySelectorAll('img[loading="lazy"]').length).to.equal(0);
+      expect(linkedScroller.querySelectorAll('img[loading="eager"]').length).to.be.greaterThan(0);
     });
   });
 
