@@ -207,6 +207,7 @@
         --btn-animation-start: calc(var(--btn-position) - 70vw);
         left: var(--btn-position);
         transform: translateY(-50%);
+        z-index: 1;
 
         .arrow-hover {
           transform: translateX(100%);

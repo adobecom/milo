@@ -13,13 +13,7 @@ import {
   isSignedOut,
   getCountry,
 } from '../../utils/utils.js';
-import {
-  getConsentState,
-  parseOptanonConsent,
-  getAllCookies,
-  KNDCTR_CONSENT_COOKIE,
-  OPT_ON_AND_CONSENT_COOKIE,
-} from '../../martech/helpers.js';
+import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -263,34 +257,6 @@ export const handleTwpButtons = (el, selector) => {
     }
   }
 };
-
-function fireAnalyticsEvent(val) {
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data:
-      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
-function sendAnalytics(val) {
-  if (window._satellite?.track) {
-    fireAnalyticsEvent(val);
-  } else {
-    window.addEventListener('alloy_sendEvent', () => {
-      fireAnalyticsEvent(val);
-    }, { once: true });
-  }
-}
 
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
@@ -1155,21 +1121,6 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-
-export function getMepConsentConfig() {
-  const cookies = getAllCookies();
-  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
-  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
-  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
-
-  if (!optOnConsentCookie || consentState === 'pre') {
-    return {
-      performance: true,
-      advertising: isSignedOut() && consentState !== 'pre',
-    };
-  }
-  return parseOptanonConsent(optOnConsentCookie).configuration;
-}
 
 export const overrideVariant = (manifestPath, variantName) => {
   const config = getConfig();

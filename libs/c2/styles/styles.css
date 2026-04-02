@@ -1104,7 +1104,7 @@ p {
     .section-background img {
       animation: garage-door-bg-scale ease-out both;
       animation-timeline: view();
-      animation-range: entry 0% cover 100%;
+      animation-range: entry 0% cover 70%;
     }
 
     .foreground {
@@ -1112,7 +1112,7 @@ p {
       position: relative;
       animation: garage-door-reveal ease-out both;
       animation-timeline: view();
-      animation-range: cover -10% cover 100%;
+      animation-range: cover -10% cover 70%;
 
       * {
         animation: garage-door-line-height ease-out both;
