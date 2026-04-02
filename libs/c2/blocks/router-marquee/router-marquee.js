@@ -314,6 +314,7 @@ const startAutoplay = (slides, cards, container, block) => {
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
   let userPaused = false; // whether the user explicitly paused via the play/pause button
+  let offscreen = false; // whether the block is outside the viewport
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
   let leaveTimer = null; // timer for restarting autoplay on block mouse leave
@@ -428,6 +429,7 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const advance = () => {
+    if (paused) return;
     clearTimeout(timer);
     clearFill(active);
     activate((active + 1) % cardEls.length, 1);
@@ -436,8 +438,17 @@ const startAutoplay = (slides, cards, container, block) => {
     preloadNextVideo();
   };
 
+  const cancelLeaveTimer = () => {
+    clearTimeout(leaveTimer);
+    leaveTimer = null;
+  };
+
   const pause = () => {
     clearTimeout(timer);
+    clearTimeout(cleanupTimer);
+    cleanupTimer = null;
+    cancelLeaveTimer();
+    finishSlideTransition();
     clearFill(active);
     paused = true;
     setPlayingState(false);
@@ -445,21 +456,19 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const resume = () => {
+    if (offscreen) return;
     paused = false;
     userPaused = false;
     setPlayingState(true);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
-    slides[active]?.querySelector('video')?.play().catch(() => {});
-  };
-
-  const cancelLeaveTimer = () => {
-    clearTimeout(leaveTimer);
-    leaveTimer = null;
+    const vid = slides[active]?.querySelector('video');
+    loadVideo(vid);
+    vid?.play().catch(() => {});
   };
 
   const startLeaveTimer = () => {
-    if (leaveTimer || userPaused) return;
+    if (leaveTimer || userPaused || offscreen) return;
     leaveTimer = setTimeout(() => {
       leaveTimer = null;
       resume();
@@ -568,10 +577,23 @@ const startAutoplay = (slides, cards, container, block) => {
   }, { passive: true });
 
   requestAnimationFrame(() => {
+    if (paused) return;
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
   });
+
+  return {
+    setVisible: (isVisible) => {
+      if (!isVisible) {
+        offscreen = true;
+        pause();
+      } else {
+        offscreen = false;
+        if (!userPaused && paused) resume();
+      }
+    },
+  };
 };
 
 const buildViewport = (viewport, slides) => {
@@ -610,6 +632,7 @@ export default function init(el) {
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
   const initializedVps = new Set();
+  const autoplayControllers = [];
   const initViewportAutoplay = () => {
     const activeVp = getActiveViewport();
     if (initializedVps.has(activeVp)) return;
@@ -618,7 +641,7 @@ export default function init(el) {
     if (!container) return;
     const slides = container.querySelectorAll('.rm-slide');
     const cards = container.querySelector('.rm-cards');
-    startAutoplay(slides, cards, container, el);
+    autoplayControllers.push(startAutoplay(slides, cards, container, el));
   };
 
   loadViewportVideos(el);
@@ -629,4 +652,33 @@ export default function init(el) {
     loadViewportVideos(el);
     initViewportAutoplay();
   });
+
+  // Pause/resume based on scroll position. The router-marquee fills the viewport at
+  // the top of the page. Once the user has scrolled past half the viewport height,
+  // the block is considered offscreen. window.scrollY is reliable regardless of
+  // whether Lenis or native scroll is driving the animation.
+  let visibilityPaused = false;
+
+  const checkVisibility = () => {
+    const isVisible = window.scrollY < window.innerHeight / 2;
+    if (!isVisible && !visibilityPaused) {
+      visibilityPaused = true;
+      autoplayControllers.forEach((ctrl) => ctrl.setVisible(false));
+    } else if (isVisible && visibilityPaused) {
+      visibilityPaused = false;
+      autoplayControllers.forEach((ctrl) => ctrl.setVisible(true));
+    }
+  };
+
+  // Lenis loads after blocks, so window.lenis isn't set at init() time.
+  // On the first native scroll event, swap to lenis.on() if available so
+  // subsequent visibility checks run inside Lenis's RAF loop.
+  function onScroll() {
+    if (window.lenis) {
+      window.removeEventListener('scroll', onScroll);
+      window.lenis.on('scroll', checkVisibility);
+    }
+    checkVisibility();
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
 }
