@@ -1,7 +1,10 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
+import { sendAnalytics } from '../../../martech/helpers.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
 
 const leaveTimeouts = new WeakMap();
+let hoverTracked = false;
 const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
 
@@ -149,6 +152,15 @@ const onHover = (event) => {
     container.classList.toggle('stick-left', slideIndex <= 3);
     container.classList.toggle('stick-right', slideIndex === 5);
   }
+
+  if (!hoverTracked) {
+    hoverTracked = true;
+    const block = slideEl.closest('[daa-lh]');
+    const blockName = block?.getAttribute('daa-lh');
+    const section = block?.parentElement?.closest('[daa-lh]');
+    const sectionName = section?.getAttribute('daa-lh');
+    sendAnalytics(`user-hover|${sectionName}|${blockName}`);
+  }
 };
 
 const buildSlide = ({ slide, index, slidesTotal }) => {
@@ -156,7 +168,8 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const left = children[0];
   const right = children[1];
 
-  const icon = left.children[0]?.querySelector('img');
+  const [iconContainer, heading, linkName, description] = left.children;
+  const icon = iconContainer?.querySelector('img');
   const asset = right.children[0];
   const link = left.lastElementChild?.querySelector('a');
 
@@ -179,14 +192,14 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     <div class='elastic-carousel-item-container' id='elastic-carousel-slide-${index + 1}'>
       <div class='elastic-carousel-item-header'>
         ${icon.outerHTML}
-        ${left.children[1]?.outerHTML}
+        ${heading?.outerHTML}
       </div>
       <div class='elastic-carousel-item-media'>
         ${asset.outerHTML}
       </div>
       <div class='elastic-carousel-item-footer'>
-        ${left.children[2]?.outerHTML}
-        ${left.children[3]?.outerHTML}
+        ${linkName?.outerHTML}
+        ${description?.outerHTML}
       </div>
     </div>
   `;
@@ -206,6 +219,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       'aria-label': ariaLabel,
     }),
     'aria-describedby': `elastic-carousel-slide-${index + 1}`,
+    'daa-ll': `${processTrackingLabels(linkName?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
