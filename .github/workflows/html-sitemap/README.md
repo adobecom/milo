@@ -18,20 +18,61 @@ This work is especially important alongside **Project Lingo**, which is consolid
 | **Base Geo** | Primary region/locale with a dedicated `sitemap.html` page |
 | **Extended Geo** | Secondary region/locale whose pages surface inside a base geo's page; no dedicated sitemap page |
 
+## Requirements
+
+- **Performance**: Pages must be fast. Googlebot penalizes slow pages, and slow CrUX scores defeat the purpose. Humans may also visit.
+- **Full automation**: Authors must not be required to author or maintain anything that can be automated. Pages are generated entirely from live data sources -- no manual curation, no spreadsheets to maintain, no per-geo authoring.
+- **Static production URLs**: Generated pages contain hardcoded production URLs. Client-side JavaScript rewrites URLs in non-production environments.
+
+## Page Structure
+
+Each generated sitemap page has three stacked sections:
+
+```mermaid
+graph TD
+    subgraph page["Sitemap"]
+        direction TB
+        S1["<b>Base Geo Links</b><br/><br/><small>Product & feature links from the global navigation</small>"]
+        S2["<b>Other Sitemap Links</b><br/><br/><small>Cross-links to every other locale's sitemap</small>"]
+        S3["<b>Extended Geo Links</b><br/><br/><small>Region-specific pages unique to extended geos</small>"]
+        S1 ~~~ S2 ~~~ S3
+    end
+```
+
+### Section 1: Base Geo Links
+
+The main event. Product and feature links organized by category -- the same structure visitors see in the site's global navigation, flattened into a browsable list. Section headings (H3) group top-level categories like "Creativity & Design" or "Products"; sub-headings (H4) break them into groups like "Featured products" or "Online tools".
+
+Sourced from GNAV fragments -- see [GNAV Sources](#gnav-sources) and [Content Rendering Rules](#content-rendering-rules).
+
+### Section 2: Other Sitemap Links
+
+A flat list of links to every other base geo's `sitemap.html` in the same domain (the current page is excluded). This is how crawlers and humans hop between localized sitemaps.
+
+Auto-generated from the [geo map](#geo-map) -- no authoring required.
+
+### Section 3: Extended Geo Links
+
+Pages that only exist in extended geos, grouped by region (e.g. "Belgium (fr)", "Canada (fr)"). If an extended geo URL shares a path with something already in the base geo's index, it's dropped -- only genuinely unique content shows up here.
+
+Sourced from query index JSON files -- see [Query Index Sources](#query-index-sources).
+
 ## Scope
 
-Each of Adobe's two primary subdomains gets its own set of HTML sitemaps. Each base geo within a subdomain gets a localized sitemap page.
+Each of Adobe's two primary subdomains gets its own set of HTML sitemaps. Each base geo within a subdomain gets a localized sitemap page. Each subdomain requires a DA site to host the sitemap pages.
 
-| Subdomain | DA Host | NOT in scope |
-|---|---|---|
-| business.adobe.com | [da-bacom](https://da.live/sheet#/adobecom/da-bacom/) | |
-| www.adobe.com | [da-cc](https://da.live/sheet#/adobecom/da-cc/) | genuine (only in-app), upp (only homepage) |
+| Subdomain | DA Host |
+|---|---|
+| business.adobe.com | [da-bacom](https://da.live/sheet#/adobecom/da-bacom/) |
+| www.adobe.com | [da-cc](https://da.live/sheet#/adobecom/da-cc/) |
 
 Output pages: `https://{subdomain}/sitemap.html` and `https://{subdomain}/{baseGeo}/sitemap.html` for each base geo with indexable content.
 
 ### Query Index Sources
 
 Each site contributes a query index per geo. The generator fetches `/{geo}/{queryIndexPath}` from each site.
+
+Out of scope for www: `genuine` (only in-app) and `upp` (only homepage).
 
 Note: cc is missing `title, robots`.
 
@@ -113,62 +154,6 @@ www	vn_vi	vi
 www	zh	zh
 ```
 
-## Page Structure
-
-Each generated sitemap page has three sections. Each section maps to a distinct data source and pipeline stage.
-
-```
-┌─────────────────────────────────────────────────────┐
-│  Section 1: Base Geo Links (sitemap-base)           │
-│  Source: GNAV fragments                             │
-│                                                     │
-│  H3 section headings with H4 sub-headings and       │
-│  link groups from the site's global navigation.     │
-│  e.g. "Creativity & Design > Featured products"    │
-├─────────────────────────────────────────────────────┤
-│  Section 2: Other Sitemap Links (sitemap-list)      │
-│  Source: generated from geo map                     │
-│                                                     │
-│  Links to the sitemap.html of every other base geo  │
-│  in the same domain. Excludes the current page.     │
-│  e.g. "France", "Germany", "Japan", ...             │
-├─────────────────────────────────────────────────────┤
-│  Section 3: Extended Geo Links (sitemap-extended)   │
-│  Source: query index JSON files                     │
-│                                                     │
-│  Links unique to each extended geo grouped by       │
-│  region. Only URLs not already present in the       │
-│  base geo are included (deduplicated by path).      │
-│  e.g. "Belgium (fr)" > /be_fr/products/acrobat     │
-└─────────────────────────────────────────────────────┘
-```
-
-### Section 1: Base Geo Links
-
-Sourced from GNAV fragments. Contains the main navigation links organized by section heading (H3) and sub-heading (H4) with grouped link lists. This is the primary content of the page -- the same product/feature links that appear in the site's global navigation, rendered as a flat sitemap.
-
-See [GNAV Sources](#gnav-sources) and [Content Rendering Rules](#content-rendering-rules) for full details.
-
-### Section 2: Other Sitemap Links
-
-Auto-generated from the geo map. A list of links to the `sitemap.html` page of every other active base geo in the same domain. The current page's own geo is excluded. This allows crawlers and users to navigate between all localized sitemaps.
-
-### Section 3: Extended Geo Links
-
-Sourced from query index JSON files. For each extended geo mapped to the current base geo, fetch the query index from each site and collect the URLs.
-
-**Deduplication**: Extended geos often contain URLs that duplicate the base geo's content (same path, different geo prefix). These are excluded. The deduplication rule: for each extended geo URL, strip the geo prefix to get the path. If that path exists in any of the base geo's query indices, the URL is dropped. Only URLs unique to the extended geo are included. This ensures the extended section surfaces content that is region-specific and not already represented in the base geo's GNAV links or query index.
-
-The remaining unique URLs are grouped by extended geo (e.g. "Belgium (fr)", "Canada (fr)", "Switzerland (fr)" under the `fr` base geo).
-
-## Requirements
-
-- **Performance**: Pages must be fast. Googlebot penalizes slow pages, and slow CrUX scores defeat the purpose. Humans may also visit.
-- **Extended geo automation**: Authors cannot manually maintain lists of pages across dozens of geos. Extended geo content must be fully automated.
-- **Lingo compatibility**: As Lingo rolls out in phases (French first), sitemap pages will need updating based on which query indices are available at the time.
-- **Static production URLs**: Generated pages contain hardcoded production URLs. Client-side JavaScript rewrites URLs in non-production environments.
-- **Monitoring**: Both the generation process and the resulting pages will be monitored.
-
 ## Architecture
 
 ### Data Sources
@@ -186,9 +171,8 @@ The remaining unique URLs are grouped by extended geo (e.g. "Belgium (fr)", "Can
    No additional placeholder keys are needed beyond what the GNAV already uses.
 
 4. **Query Index JSON** (per site, per geo):
-   Provides localized URLs and page titles for each region.
+   Provides localized URLs and page titles for each region, as well as robots tag.
    URL pattern: `https://main--{repo}--adobecom.aem.live/{geo}/{query-index-path}`
-   - Uses the standard `query-index.json` (not the lingo variant)
 
 ### GNAV Sources
 
@@ -297,16 +281,23 @@ flowchart LR
         JSON[Page JSON\nper geo]
     end
 
-    subgraph Load
+    subgraph Push
         DADOC[DA-compatible\ndocument]
         DA[DA PUT]
-        AEM[AEM Preview\n+ Publish]
+    end
+
+    subgraph Preview
+        PREV[AEM Preview]
+    end
+
+    subgraph Publish
+        PUB[AEM Publish]
     end
 
     GNAV --> GEN
     QI --> GEN
     SC --> GEN
-    GEN --> JSON --> DADOC --> DA --> AEM
+    GEN --> JSON --> DADOC --> DA --> PREV --> PUB
 ```
 
 ### Generator Logic
@@ -346,21 +337,6 @@ For each domain (business, www) and for each base geo in the geo map:
 
 > **TODO**: Document the DA page format -- how to represent an HTML page as a DA-compatible document for upload via the DA Admin API. This will be informed by DA documentation and iteration on the pipeline's Load stage.
 
-### Output
-
-Each generated sitemap page contains three sections:
-
-1. **GNAV-sourced links in the base geo** grouped by localized section heading
-2. **Links to the HTML sitemap of every other base geo** in the same subdomain
-3. **Links from each extended/regional geo** related to the base geo
-
-### Page Hosting
-
-| Subdomain | Host Repo | DA Authoring |
-|---|---|---|
-| business.adobe.com | da-bacom | da-bacom |
-| www.adobe.com | da-cc | da-cc |
-
 ### Scheduling
 
 The generator runs on a recurring schedule. Options:
@@ -390,8 +366,10 @@ node --env-file=.env generate.ts [stage] [options]
 
 Stages:
   extract       Fetch config, GNAV fragments, and query index files
-  transform     Convert extracted data into DA-compatible documents
-  load          Push documents to DA, trigger AEM preview and publish
+  transform     Convert extracted data into DA-compatible pages and other assets
+  push          Push pages to DA
+  preview       AEM preview pages
+  publish       AEM publish pages
   (none)        Run all stages in sequence
 
 Options:
@@ -402,7 +380,7 @@ Options:
 
 ### Stages
 
-The pipeline has a clear auth boundary: **extract** and **transform** require no authentication and can be run and verified locally. **load** requires IMS and AEM admin tokens to mutate production.
+**Auth boundary**: `extract` and `transform` require no authentication and can be run and verified locally. `push`, `preview`, and `publish` require IMS and AEM admin tokens to mutate production.
 
 #### `extract`
 
@@ -431,15 +409,24 @@ Converts extracted data into DA-compatible page documents. No auth required.
 3. Transform page structure into DA-compatible JSON document (see [DA Document Format](#da-document-format))
 4. Write output documents (JSON)
 
-#### `load`
+#### `push`
 
-Pushes documents to DA and triggers AEM preview/publish. **Requires authentication.**
+Uploads transformed documents to DA. **Requires IMS authentication.**
 
 1. Read transform output documents
-2. For each document:
-   - PUT to DA via the DA Admin API (IMS-authenticated)
-   - Trigger AEM preview via Helix Admin API
-   - Trigger AEM publish via Helix Admin API
+2. For each document: PUT to DA via the DA Admin API (IMS-authenticated)
+
+#### `preview`
+
+Triggers AEM preview for all pushed pages. **Requires AEM admin token.**
+
+1. For each page: trigger preview via the Helix Admin API
+
+#### `publish`
+
+Triggers AEM publish for all previewed pages. **Requires AEM admin token.**
+
+1. For each page: trigger publish via the Helix Admin API
 
 ### Examples
 
@@ -454,8 +441,10 @@ node --env-file=.env generate.ts transform --domain www --geo fr
 # Full pipeline, single domain
 node --env-file=.env generate.ts --domain business
 
-# Load only (after extract + transform have run)
-node --env-file=.env generate.ts load --domain www --geo fr
+# Push, preview, publish individually (after extract + transform)
+node --env-file=.env generate.ts push --domain www --geo fr
+node --env-file=.env generate.ts preview --domain www --geo fr
+node --env-file=.env generate.ts publish --domain www --geo fr
 ```
 
 ### GitHub Actions Workflow Inputs
@@ -464,7 +453,7 @@ The workflow exposes the same parameters as the CLI:
 
 | Input | Description | Default |
 |---|---|---|
-| `stage` | Pipeline stage: `extract`, `transform`, `load`, or blank for all | (all) |
+| `stage` | Pipeline stage: `extract`, `transform`, `push`, `preview`, `publish`, or blank for all | (all) |
 | `domain` | Filter to domain: `www`, `business`, or blank for all | (all) |
 | `geo` | Filter to base geo prefix, or blank for all | (all) |
 
@@ -509,37 +498,9 @@ Default location: `./sitemap-config.json` (hardcoded in the repo for now). When 
 
 The full data for both sheets is defined in the [Scope](#scope) section TSVs and should be kept in sync.
 
-### Environment Variables
-
-Only required for the `load` stage.
-
-#### Authentication (DA Access)
-
-| Variable | Description |
-|---|---|
-| `ROLLING_IMPORT_IMS_URL` | Adobe IMS authentication URL |
-| `ROLLING_IMPORT_CLIENT_ID` | IMS OAuth client ID |
-| `ROLLING_IMPORT_CLIENT_SECRET` | IMS OAuth client secret |
-| `ROLLING_IMPORT_CODE` | IMS OAuth authorization code |
-| `ROLLING_IMPORT_GRANT_TYPE` | IMS OAuth grant type |
-
-#### AEM Admin API
-
-| Variable | Description |
-|---|---|
-| `AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM` | Helix admin API token for da-bacom preview/publish |
-| `AEM_ADMIN_TOKEN_ADOBECOM_DA_CC` | Helix admin API token for da-cc preview/publish |
-
-#### Other
-
-| Variable | Description |
-|---|---|
-| `GITHUB_TOKEN` | GitHub API token (automatically provided) |
-
 ### Prerequisites
 
 - Node.js 24 or higher (supports native TypeScript execution)
-- Auth env vars only needed for the `load` stage
 
 ### Setup
 
@@ -548,22 +509,21 @@ cd .github/workflows/html-sitemap
 npm install
 ```
 
-Create a `.env` file with required environment variables (only needed for `load`):
+Create a `.env` file for local runs. Only the `load` stage requires auth -- `extract` and `transform` run without credentials.
 
 ```bash
-# Authentication (DA Access)
+# Adobe IMS authentication endpoint for DA
 ROLLING_IMPORT_IMS_URL=https://...
 ROLLING_IMPORT_CLIENT_ID=...
 ROLLING_IMPORT_CLIENT_SECRET=...
 ROLLING_IMPORT_CODE=...
 ROLLING_IMPORT_GRANT_TYPE=authorization_code
 
-# AEM Admin
+# Helix admin token for da-bacom and da-cc preview/publish
 AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
 AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
 
-# Optional
-LOCAL_RUN=true
+# GITHUB_TOKEN is provided automatically in Actions; set manually for local runs if needed
 ```
 
 ## Open Questions
