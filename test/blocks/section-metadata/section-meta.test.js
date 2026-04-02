@@ -136,8 +136,10 @@ describe('Section Metdata', () => {
     [...sec.children].forEach((child) => {
       if (child.classList.contains('section-metadata')) {
         expect(child.getAttribute('role')).to.be.null;
+        expect(child.getAttribute('aria-hidden')).to.be.null;
       } else {
-        expect(child.getAttribute('role')).to.be.equal('listitem');
+        expect(child.getAttribute('role')).to.equal('listitem');
+        expect(child.getAttribute('aria-hidden')).to.equal('true');
       }
     });
   });

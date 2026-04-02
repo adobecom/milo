@@ -153,10 +153,11 @@ function addListAttrToSection(section) {
   const labels = [];
   [...section.children].forEach((child) => {
     if (child.classList.contains('section-metadata')) return;
-    child.setAttribute('role', 'listitem');
     child.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
     const label = child.querySelector('img[alt]')?.alt;
     if (label) labels.push(label);
+    child.setAttribute('role', 'listitem');
+    child.setAttribute('aria-hidden', 'true');
   });
   section.setAttribute('role', 'group');
   if (labels.length) section.setAttribute('aria-label', labels.join(', '));
