@@ -548,6 +548,24 @@ cd .github/workflows/html-sitemap
 npm install
 ```
 
+Create a `.env` file with required environment variables (only needed for `load`):
+
+```bash
+# Authentication (DA Access)
+ROLLING_IMPORT_IMS_URL=https://...
+ROLLING_IMPORT_CLIENT_ID=...
+ROLLING_IMPORT_CLIENT_SECRET=...
+ROLLING_IMPORT_CODE=...
+ROLLING_IMPORT_GRANT_TYPE=authorization_code
+
+# AEM Admin
+AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
+AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
+
+# Optional
+LOCAL_RUN=true
+```
+
 ## Open Questions
 
 - [ ] Scheduling frequency: hourly? daily?
