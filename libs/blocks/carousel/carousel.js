@@ -389,6 +389,12 @@ function isSlideVisible(currentIdx, targetIdx, n, isNext) {
   return currentIdx === prev || currentIdx === targetIdx || currentIdx === next;
 }
 
+// Skip focus on touch events to prevent the browser from scrolling the page
+function focusNavButton(button, event) {
+  if (event.type === 'touchend') return;
+  button.focus({ preventScroll: true });
+}
+
 function moveSlides(event, carouselElements) {
   const {
     el,
@@ -448,7 +454,7 @@ function moveSlides(event, carouselElements) {
   if ((event.currentTarget).dataset.toggle === 'next'
     || event.key === KEY_CODES.ARROW_RIGHT
     || (direction === 'left' && event.type === 'touchend')) {
-    nextPreviousBtns[1].focus();
+    focusNavButton(nextPreviousBtns[1], event);
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
@@ -460,7 +466,7 @@ function moveSlides(event, carouselElements) {
   if ((event.currentTarget).dataset.toggle === 'previous'
     || event.key === KEY_CODES.ARROW_LEFT
     || (direction === 'right' && event.type === 'touchend')) {
-    nextPreviousBtns[0].focus();
+    focusNavButton(nextPreviousBtns[0], event);
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
