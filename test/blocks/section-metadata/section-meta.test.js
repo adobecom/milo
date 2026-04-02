@@ -131,16 +131,17 @@ describe('Section Metdata', () => {
     const sec = document.querySelector('.section.to-list');
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
-    expect(sec.getAttribute('role')).to.be.equal('list');
+    // tabindex set immediately
     expect(sec.getAttribute('tabindex')).to.equal('0');
+    // simulate the framework setting data-block-status="loaded" on each block child
+    [...sec.children]
+      .filter((child) => !child.classList.contains('section-metadata'))
+      .forEach((child) => child.setAttribute('data-block-status', 'loaded'));
+    // wait for MutationObserver to fire
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(sec.getAttribute('aria-label')).to.equal('Adobe, Microsoft, Google');
     [...sec.children].forEach((child) => {
-      if (child.classList.contains('section-metadata')) {
-        expect(child.getAttribute('role')).to.be.null;
-        expect(child.getAttribute('aria-hidden')).to.be.null;
-      } else {
-        expect(child.getAttribute('role')).to.equal('listitem');
-        expect(child.getAttribute('aria-hidden')).to.equal('true');
-      }
+      expect(child.getAttribute('aria-hidden')).to.equal('true');
     });
   });
 

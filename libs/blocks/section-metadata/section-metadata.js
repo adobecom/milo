@@ -150,18 +150,33 @@ function addListAttrToSection(section) {
   const hasAllowedChildren = [...section.children]
     .every((child) => allowedBlocks.some((block) => child.classList.contains(block)));
   if (!isSectionUp || hasHeader || !hasAllowedChildren) return;
-  const labels = [];
-  [...section.children].forEach((child) => {
-    if (child.classList.contains('section-metadata')) return;
-    child.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
-    const label = child.querySelector('img[alt]')?.alt;
-    if (label) labels.push(label);
-    child.setAttribute('role', 'listitem');
-    child.setAttribute('aria-hidden', 'true');
-  });
-  section.setAttribute('role', 'list');
-  if (labels.length) section.setAttribute('aria-label', labels.join(', '));
+
   section.setAttribute('tabindex', '0');
+
+  const applyLabels = () => {
+    const labels = [];
+    [...section.children].forEach((child) => {
+      if (child.classList.contains('section-metadata')) {
+        child.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      child.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
+      const label = child.querySelector('img[alt]')?.alt;
+      if (label) labels.push(label);
+      child.setAttribute('aria-hidden', 'true');
+    });
+    if (labels.length) section.setAttribute('aria-label', labels.join(', '));
+  };
+
+  const observer = new MutationObserver(() => {
+    const blockChildren = [...section.children].filter((c) => !c.classList.contains('section-metadata'));
+    const allLoaded = blockChildren.every((c) => c.dataset.blockStatus === 'loaded');
+    if (!allLoaded) return;
+    observer.disconnect();
+    applyLabels();
+  });
+  observer.observe(section, { subtree: true, attributeFilter: ['data-block-status'] });
+  applyLabels();
 }
 
 export default async function init(el) {
