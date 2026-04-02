@@ -235,11 +235,15 @@ export async function getGeoLocaleSettings(miloLocale) {
   return settings;
 }
 
-export async function getLocaleSettings(miloLocale) {
+export function isMasGeoDetectionEnabled() {
   const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
   const metaValue = getMetadata('mas-geo-detection');
   const geoDetection = queryParam ?? metaValue;
-  if (!geoDetection || !['on', 'true'].includes(geoDetection.toLowerCase())) {
+  return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+export async function getLocaleSettings(miloLocale) {
+  if (!isMasGeoDetectionEnabled()) {
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
   }
   return getGeoLocaleSettings(miloLocale);
@@ -1119,13 +1123,20 @@ export async function initService(force = false, attributes = {}) {
       }
 
       const { language, locale, country } = await getLocaleSettings(miloLocale);
+      const useGeoMarket = isMasGeoDetectionEnabled();
+      let countryFromMarket = country;
+      if (useGeoMarket) {
+        const { getValidatedMarket } = await import('../../utils/market.js');
+        const validatedMarket = await getValidatedMarket();
+        if (validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
           locale,
           language,
-          country,
+          country: countryFromMarket,
           ...attributes,
           ...commerce,
         });
@@ -1150,6 +1161,8 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
+      } else if (useGeoMarket && countryFromMarket !== country) {
+        service.setAttribute('country', countryFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);

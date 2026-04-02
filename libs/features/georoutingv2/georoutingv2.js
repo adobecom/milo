@@ -1,4 +1,5 @@
-import { getFederatedContentRoot, getCountry } from '../../utils/utils.js';
+import { getFederatedContentRoot, getCountry, setMarket } from '../../utils/utils.js';
+import { norm } from '../../utils/market.js';
 
 const OLD_GEOROUTING = 'oldgeorouting';
 
@@ -148,6 +149,9 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
+    const resolved = norm(modPrefix) || 'us';
+    const market = resolved === 'la' ? 'latam' : resolved;
+    if (market) setMarket(market);
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
     const akamaiCode = await getCountry();
     if (config.lingoProjectSuccessLogging === 'on' && eventType === 'Switch') window.lana?.log(`Click:${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}`, { sampleRate: 10, tags: 'lingo,lingo-georouting-click', severity: 'i' });

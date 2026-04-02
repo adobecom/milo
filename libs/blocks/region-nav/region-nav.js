@@ -1,6 +1,14 @@
 import {
-  getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational, getCountry, createTag,
+  getConfig,
+  getLanguage,
+  getLocale,
+  loadLanguageConfig,
+  setInternational,
+  getCountry,
+  createTag,
+  setMarket,
 } from '../../utils/utils.js';
+import { norm } from '../../utils/market.js';
 
 let config;
 
@@ -79,6 +87,9 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
 
   link.addEventListener('click', (e) => {
     setInternational(prefix === '' ? 'us' : prefix);
+    const resolved = norm(prefix) || 'us';
+    const market = resolved === 'la' ? 'latam' : resolved; // TODO: remove this fallback after ACOM consumes market-selector
+    if (market) setMarket(market);
     if (hrefAdapted) return;
     e.preventDefault();
     handleEvent({
