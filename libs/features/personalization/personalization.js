@@ -5,6 +5,7 @@
 import {
   createTag,
   getConfig,
+  getMetadata,
   loadLink,
   loadScript,
   localizeLinkAsync,
@@ -144,6 +145,7 @@ const isInLcpSection = (el) => {
 const GLOBAL_CMDS = [
   'insertscript',
   'replacepage',
+  'updateframework',
   'updatemetadata',
   'useblockcode',
 ];
@@ -338,7 +340,10 @@ const COMMANDS = {
       }
     } else {
       value = cmd.content;
-      if (attribute === 'href') value = normalizePath(value);
+      if (attribute === 'href'
+        && (!value.startsWith('http') || /\.(hlx|aem)\.|localhost:/.test(value))) {
+        value = normalizePath(value);
+      }
     }
 
     if (value) {
@@ -447,6 +452,28 @@ const setMetadata = (metadata) => {
   }
   metaEl.setAttribute('content', val);
 };
+
+function updateFramework(updateFrameworkList) {
+  if (!updateFrameworkList?.length) return;
+  const fwVal = updateFrameworkList[0].val?.trim().toLowerCase();
+  if (!/^c\d+$/.test(fwVal)) return;
+  const currentFoundation = getMetadata('foundation') || 'c1';
+  if (currentFoundation === fwVal) return;
+  const { miloLibs, codeRoot } = getConfig();
+  const libsPath = miloLibs || codeRoot;
+  const existing = document.head.querySelector(
+    `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
+  );
+  const stylesPrefix = fwVal === 'c1' ? '' : `/${fwVal}`;
+  loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, {
+    rel: 'stylesheet',
+    callback: (status) => {
+      if (status !== 'load') return;
+      existing?.remove();
+      setMetadata({ selector: 'foundation', val: fwVal });
+    },
+  });
+}
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
@@ -1162,32 +1189,31 @@ export const getGeoRestriction = (manifestConfig) => {
 };
 
 export function getManifestMarketingAction(mktgAction, source) {
-  const allowedServices = ['core services', 'non-marketing', 'marketing decrease', 'marketing increase'];
-  if (allowedServices.includes(mktgAction)) return mktgAction;
-  if (source?.includes('promo')) return 'core services';
+  const coreServicesNonMarketing = 'core services/non-marketing';
+  const allowedServices = [coreServicesNonMarketing, 'non-marketing', 'marketing decrease', 'marketing increase'];
+  const normalizedMktgAction = mktgAction === 'core services' ? coreServicesNonMarketing : mktgAction;
+  if (allowedServices.includes(normalizedMktgAction)) return normalizedMktgAction;
+  if (source?.includes('promo')) return coreServicesNonMarketing;
   return 'marketing increase';
 }
 
 export function canServeManifest(manifestConfig) {
   if (!getGeoRestriction(manifestConfig)) return false;
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
-  if (mktgAction === 'core services') return true;
+  if (mktgAction?.includes('core services')) return true;
 
   const { performance, advertising } = getConfig().mep.consentState;
+
+  if (mktgAction?.startsWith('marketing') && performance && advertising) {
+    const fileName = getFileName(manifestPath)?.replace('.json', '');
+    sendAnalytics(`${fileName} was served`);
+  }
+
   if (mktgAction === 'non-marketing') return performance;
   if (mktgAction === 'marketing increase') return advertising;
 
   if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
-}
-
-export function sendMktgTracking(fileName, mktgAction) {
-  if (!mktgAction?.startsWith('marketing')) return false;
-  const { advertising } = getConfig().mep.consentState;
-  if (!advertising) return false;
-  const eventName = `${fileName} was served`;
-  sendAnalytics(eventName);
-  return eventName;
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1266,8 +1292,6 @@ async function getManifestConfig(info, variantOverride) {
     overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
-  } else {
-    sendMktgTracking(fileName, manifestConfig.mktgAction);
   }
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1305,6 +1329,10 @@ export async function categorizeActions(experiment, config) {
 
   selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
+
+  if (selectedVariant.updateframework?.length) {
+    [config.mep.updateframework] = selectedVariant.updateframework;
+  }
 
   selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
 
@@ -1441,6 +1469,10 @@ export async function applyPers({ manifests }) {
   config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
   config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
+
+  if (config.mep.updateframework) {
+    updateFramework([config.mep.updateframework]);
+  }
 
   const main = document.querySelector('main');
   if (config.mep.replacepage && !isPostLCP && main) {

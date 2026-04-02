@@ -64,6 +64,8 @@ const config = {
   // taxonomyRoot: '/your-path-here',
 };
 
+const miloLibs = '/libs';
+
 const eagerLoad = (img) => {
   img?.setAttribute('loading', 'eager');
   img?.setAttribute('fetchpriority', 'high');
@@ -78,7 +80,23 @@ const eagerLoad = (img) => {
   }
 }());
 
+function loadStyles() {
+  const paths = [];
+  const stylesPrefix = getMetadata('foundation') === 'c2' ? '/c2' : '';
+  paths.push(`${miloLibs}${stylesPrefix}/styles/styles.css`);
+  const skin = getMetadata('skin');
+  if (skin) paths.push(`${miloLibs}/styles/skins/${skin}.css`);
+
+  paths.forEach((path) => {
+    const link = document.createElement('link');
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('href', path);
+    document.head.appendChild(link);
+  });
+}
+
 (async function loadPage() {
+  loadStyles();
   if (getMetadata('template') === '404') window.SAMPLE_PAGEVIEWS_AT_RATE = 'high';
   performance.mark('loadpage');
   setConfig(config);
