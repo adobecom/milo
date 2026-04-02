@@ -155,7 +155,7 @@ function addListAttrToSection(section) {
     if (child.classList.contains('section-metadata')) return;
     child.setAttribute('role', 'listitem');
     child.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
-    const label = child.querySelector('img[alt]')?.alt || child.querySelector('a')?.textContent?.trim();
+    const label = child.querySelector('img[alt]')?.alt;
     if (label) labels.push(label);
   });
   section.setAttribute('role', 'group');
