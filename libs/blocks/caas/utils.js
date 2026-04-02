@@ -1065,6 +1065,9 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
+      ...((state.cardStyle === '1:2' && state.oneHalfRoundedCorners) && {
+        oneHalfRoundedCorners: !!state.oneHalfRoundedCorners,
+      }),
       // Only include bladeCard when explicitly configured
       ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent) && {
         bladeCard: {
@@ -1196,6 +1199,7 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
+  console.log('config', config);
   return config;
 };
 

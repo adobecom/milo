@@ -68,20 +68,21 @@ const defaultOptions = {
     6: '6',
   },
   cardStyle: {
-    '1:2': '1/2 Card',
+    '1:2': '1/2 Card...',
     '3:4': '3/4 Card',
     'half-height': '1/2 Height Card',
-    'full-card': 'Full Card',
+    'blade-card': 'Blade Card',
+    'blog-card': 'Blog Card',
+    'button-card': 'Button Card',
+    'custom-card': 'Custom Card',
     'double-wide': 'Double Width Card',
-    product: 'Product Card',
-    'text-card': 'Text Card',
+    'editorial-card': 'Editorial Card...',
+    'full-card': 'Full Card',
+    'horizontal-card': 'Horizontal Card',
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
-    'horizontal-card': 'Horizontal Card',
-    'custom-card': 'Custom Card',
-    'blade-card': 'Blade Card',
-    'editorial-card': 'Editorial Card',
-    'blog-card': 'Blog Card',
+    product: 'Product Card',
+    'text-card': 'Text Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -195,7 +196,7 @@ const defaultOptions = {
     doccloud: 'DocCloud',
     events: 'Events',
     experienceleague: 'Experience League',
-    hawks: 'Hawks',
+    hawks: 'Creative Cloud (Hawks)',
     magento: 'Magento',
     marketo: 'Marketo',
     milo: 'Milo',
@@ -377,7 +378,13 @@ const BasicsPanel = ({ tagsData }) => {
 
 const UiPanel = () => {
   const { state } = useContext(ConfiguratorContext);
-  const bladeCardOptions = html`
+  const oneHalfOptions = html`
+    <div class="nested">
+      <${Input} label="Use Rounded Corners" prop="oneHalfRoundedCorners" type="checkbox" />
+    </div>
+  `;
+
+const bladeCardOptions = html`
     <div class="blade-card-options">
       <${Input} label="Reverse direction" prop="bladeCardReverse" class="blade-card-option" type="checkbox" />
       <${Input} label="Light text" prop="bladeCardLightText" class="blade-card-option" type="checkbox" />
@@ -414,6 +421,7 @@ const UiPanel = () => {
     <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
     <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
+      ${state.cardStyle === '1:2' && oneHalfOptions}
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
       ${state.cardStyle === 'editorial-card' && editorialCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
