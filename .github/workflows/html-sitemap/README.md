@@ -336,9 +336,15 @@ For each domain (business, www) and for each base geo in the geo map:
    - Links from each extended geo related to this base geo
    - All links use hardcoded production URLs (`business.adobe.com` for da-bacom repos, `www.adobe.com` for all others)
    - Strip images/SVGs that may have been generated from URL decoration
-8. **Transform** the page structure into a DA-compatible document
+8. **Transform** the page structure into a DA-compatible document (see [DA Document Format](#da-document-format))
 9. **Push** the document to DA via the DA Admin API (IMS-authenticated)
 10. **Trigger** AEM preview and publish via the Helix Admin API
+
+**Query index title fallback**: When a query index entry is missing a `title` field (e.g. the cc site), generate a title from the URL slug: split on hyphens, capitalize each word. Naive but better than a blank entry.
+
+### DA Document Format
+
+> **TODO**: Document the DA page format -- how to represent an HTML page as a DA-compatible document for upload via the DA Admin API. This will be informed by DA documentation and iteration on the pipeline's Load stage.
 
 ### Output
 
@@ -406,7 +412,7 @@ The sitemap config (query index sources and geo map) is hardcoded in the generat
 
 ### Prerequisites
 
-- Node.js 21 or higher
+- Node.js 24 or higher (supports native TypeScript execution)
 - Access to required secrets and environment variables
 
 ### Setup
@@ -438,19 +444,20 @@ LOCAL_RUN=true
 
 ```bash
 cd .github/workflows/html-sitemap
-node --env-file=../../../.env generate.js
+node --env-file=../../../.env generate.ts
 ```
 
 ## Open Questions
 
 - [ ] Scheduling frequency: hourly? daily?
 - [ ] Should this live in milo or a separate repo?
-- [ ] Reuse preview-indexer's DA client and IMS auth modules, or fresh implementation?
+- [ ] Reuse preview-indexer's DA/IMS/Helix client modules (`internal/da-client.js`, `internal/helix-client.js`) or rewrite in TypeScript?
 - [ ] OpenWhisk cron vs. GitHub Actions scheduled trigger?
 
 ## Dependencies
 
 TBD -- expected to be similar to preview-indexer:
+- **typescript**: Native execution via Node 24 (no build step)
 - **axios** / **axios-retry**: HTTP client with retry logic
 - **form-data**: Multipart form data for DA uploads
 
