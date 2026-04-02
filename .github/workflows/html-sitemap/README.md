@@ -379,9 +379,139 @@ A client-side prototype of the GNAV extraction is implemented in the `sitemap-ba
 
 The prototype activates via `?sitemap-source=gnav` and implements the same GNAV resolution fallback chain, placeholder resolution, and content filtering described above. The production pipeline will replicate this logic server-side in Node.js, generating static HTML with hardcoded production links instead of client-side rendering.
 
-## Configuration
+## CLI
+
+The generator is a Node.js CLI that follows the ETL pipeline. Each stage can be run independently or as part of the full pipeline. The same interface maps to both local execution and GitHub Actions workflow inputs.
+
+### Usage
+
+```
+node --env-file=.env generate.ts [stage] [options]
+
+Stages:
+  extract       Fetch config, GNAV fragments, and query index files
+  transform     Convert extracted data into DA-compatible documents
+  load          Push documents to DA, trigger AEM preview and publish
+  (none)        Run all stages in sequence
+
+Options:
+  --config <url|path>   Sitemap config JSON (default: ./sitemap-config.json)
+  --domain <name>       Filter to a single domain: www | business
+  --geo <prefix>        Filter to a single base geo (e.g. fr, de, "")
+```
+
+### Stages
+
+The pipeline has a clear auth boundary: **extract** and **transform** require no authentication and can be run and verified locally. **load** requires IMS and AEM admin tokens to mutate production.
+
+#### `extract`
+
+Fetches all source data for the specified scope. No auth required.
+
+1. Read the sitemap config (query index sources + geo map)
+2. For each domain/geo in scope:
+   - Fetch GNAV fragments (resolve source, follow section/column refs)
+   - Fetch query index JSON for the base geo from each site
+   - Fetch query index JSON for each extended geo from each site (warn on 404)
+3. Write extracted data to an intermediate output (JSON)
+
+The smallest unit of work is a single domain + base geo pair (e.g. `--domain www --geo fr`).
+
+#### `transform`
+
+Converts extracted data into DA-compatible page documents. No auth required.
+
+1. Read intermediate extracted data
+2. For each domain/geo in scope:
+   - Build Section 1 (base geo links) from GNAV data, applying rendering rules
+   - Build Section 2 (other sitemap links) from the geo map
+   - Build Section 3 (extended geo links) from query index data, with deduplication
+   - Resolve `{{placeholder}}` tokens
+   - Assemble into page structure (H3 > H4 > UL)
+3. Transform page structure into DA-compatible JSON document (see [DA Document Format](#da-document-format))
+4. Write output documents (JSON)
+
+#### `load`
+
+Pushes documents to DA and triggers AEM preview/publish. **Requires authentication.**
+
+1. Read transform output documents
+2. For each document:
+   - PUT to DA via the DA Admin API (IMS-authenticated)
+   - Trigger AEM preview via Helix Admin API
+   - Trigger AEM publish via Helix Admin API
+
+### Examples
+
+```bash
+# Full pipeline, all domains and geos
+node --env-file=.env generate.ts
+
+# Extract + transform only (no auth needed), single geo
+node --env-file=.env generate.ts extract --domain www --geo fr
+node --env-file=.env generate.ts transform --domain www --geo fr
+
+# Full pipeline, single domain
+node --env-file=.env generate.ts --domain business
+
+# Load only (after extract + transform have run)
+node --env-file=.env generate.ts load --domain www --geo fr
+```
+
+### GitHub Actions Workflow Inputs
+
+The workflow exposes the same parameters as the CLI:
+
+| Input | Description | Default |
+|---|---|---|
+| `stage` | Pipeline stage: `extract`, `transform`, `load`, or blank for all | (all) |
+| `domain` | Filter to domain: `www`, `business`, or blank for all | (all) |
+| `geo` | Filter to base geo prefix, or blank for all | (all) |
+
+### Sitemap Config File
+
+The config file uses AEM spreadsheet JSON format (multi-sheet) so it can be authored as a DA spreadsheet and served as JSON. The schema matches the data in the [Scope](#scope) section.
+
+Default location: `./sitemap-config.json` (hardcoded in the repo for now). When promoted to a DA spreadsheet, it will live in the [federal](https://github.com/adobecom/federal) repo alongside the [lingo site mapping](https://main--federal--adobecom.aem.live/federal/assets/data/lingo-site-mapping.json).
+
+```json
+{
+  "query-index-map": {
+    "total": 7,
+    "offset": 0,
+    "limit": 7,
+    "data": [
+      { "domain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" },
+      { "domain": "www", "site": "cc", "queryIndexPath": "/cc-shared/assets/query-index.json" },
+      { "domain": "www", "site": "da-cc", "queryIndexPath": "/cc-shared/assets/query-index.json" },
+      { "domain": "www", "site": "da-dc", "queryIndexPath": "/dc-shared/assets/query-index.json" },
+      { "domain": "www", "site": "da-events", "queryIndexPath": "/events/query-index.json" },
+      { "domain": "www", "site": "da-express-milo", "queryIndexPath": "/express/query-index.json" },
+      { "domain": "www", "site": "edu", "queryIndexPath": "/edu-shared/assets/query-index.json" }
+    ]
+  },
+  "geo-map": {
+    "total": 57,
+    "offset": 0,
+    "limit": 57,
+    "data": [
+      { "domain": "business", "baseGeo": "", "language": "en", "extendedGeos": "" },
+      { "domain": "business", "baseGeo": "au", "language": "en", "extendedGeos": "" },
+      { "domain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en, africa, be_en, ca, ..." },
+      { "domain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr, ca_fr, ch_fr, lu_fr" }
+    ]
+  },
+  ":version": 3,
+  ":names": ["query-index-map", "geo-map"],
+  ":type": "multi-sheet"
+}
+```
+
+The full data for both sheets is defined in the [Scope](#scope) section TSVs and should be kept in sync.
 
 ### Environment Variables
+
+Only required for the `load` stage.
 
 #### Authentication (DA Access)
 
@@ -406,45 +536,16 @@ The prototype activates via `?sitemap-source=gnav` and implements the same GNAV 
 |---|---|
 | `GITHUB_TOKEN` | GitHub API token (automatically provided) |
 
-The sitemap config (query index sources and geo map) is hardcoded in the generator for now. When promoted to a spreadsheet, it will live in the [federal](https://github.com/adobecom/federal) repo alongside the [lingo site mapping](https://main--federal--adobecom.aem.live/federal/assets/data/lingo-site-mapping.json) -- not in milo, which is reserved for test files.
-
-## Local Development
-
 ### Prerequisites
 
 - Node.js 24 or higher (supports native TypeScript execution)
-- Access to required secrets and environment variables
+- Auth env vars only needed for the `load` stage
 
 ### Setup
 
 ```bash
 cd .github/workflows/html-sitemap
 npm install
-```
-
-### Running Locally
-
-Create a `.env` file with required environment variables:
-
-```bash
-# Authentication
-ROLLING_IMPORT_IMS_URL=https://...
-ROLLING_IMPORT_CLIENT_ID=...
-ROLLING_IMPORT_CLIENT_SECRET=...
-ROLLING_IMPORT_CODE=...
-ROLLING_IMPORT_GRANT_TYPE=authorization_code
-
-# AEM Admin
-AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
-AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
-
-# Optional
-LOCAL_RUN=true
-```
-
-```bash
-cd .github/workflows/html-sitemap
-node --env-file=../../../.env generate.ts
 ```
 
 ## Open Questions
