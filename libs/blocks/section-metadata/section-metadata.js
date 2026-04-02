@@ -159,7 +159,7 @@ function addListAttrToSection(section) {
     child.setAttribute('role', 'listitem');
     child.setAttribute('aria-hidden', 'true');
   });
-  section.setAttribute('role', 'group');
+  section.setAttribute('role', 'list');
   if (labels.length) section.setAttribute('aria-label', labels.join(', '));
   section.setAttribute('tabindex', '0');
 }
