@@ -87,17 +87,10 @@ describe('action scrollers', () => {
       expect(noLinksScroller.getAttribute('aria-hidden')).to.equal('true');
     });
 
-    it('a sr-only list is appended with one item per action', () => {
-      const srList = noLinksEl.querySelector('ul.sr-only');
-      expect(srList).to.exist;
-      const actions = noLinksEl.querySelectorAll('.action-item');
-      expect(srList.children.length).to.equal(actions.length);
-    });
-
-    it('sr-only list items contain the image alt text', () => {
-      const srList = noLinksEl.querySelector('ul.sr-only');
-      const labels = [...srList.children].map((li) => li.textContent);
-      expect(labels).to.deep.equal(['LinkedIn', 'Dropbox', 'Slack', 'Google']);
+    it('a sr-only paragraph is appended with all image names for single-pass AT reading', () => {
+      const srP = noLinksEl.querySelector('p.sr-only');
+      expect(srP).to.exist;
+      expect(srP.textContent).to.equal('LinkedIn, Dropbox, Slack, Google');
     });
 
     it('nav buttons are present and focusable for keyboard users', () => {
