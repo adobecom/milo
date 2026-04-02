@@ -131,7 +131,8 @@ describe('Section Metdata', () => {
     const sec = document.querySelector('.section.to-list');
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
-    expect(sec.getAttribute('role')).to.be.equal('list');
+    expect(sec.getAttribute('role')).to.be.equal('group');
+    expect(sec.getAttribute('tabindex')).to.equal('0');
     [...sec.children].forEach((child) => {
       if (child.classList.contains('section-metadata')) {
         expect(child.getAttribute('role')).to.be.null;

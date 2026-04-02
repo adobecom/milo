@@ -150,11 +150,17 @@ function addListAttrToSection(section) {
   const hasAllowedChildren = [...section.children]
     .every((child) => allowedBlocks.some((block) => child.classList.contains(block)));
   if (!isSectionUp || hasHeader || !hasAllowedChildren) return;
-  section.setAttribute('role', 'list');
+  const labels = [];
   [...section.children].forEach((child) => {
     if (child.classList.contains('section-metadata')) return;
     child.setAttribute('role', 'listitem');
+    child.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
+    const label = child.querySelector('img[alt]')?.alt || child.querySelector('a')?.textContent?.trim();
+    if (label) labels.push(label);
   });
+  section.setAttribute('role', 'group');
+  if (labels.length) section.setAttribute('aria-label', labels.join(', '));
+  section.setAttribute('tabindex', '0');
 }
 
 export default async function init(el) {
