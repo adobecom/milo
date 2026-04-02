@@ -113,6 +113,62 @@ www	vn_vi	vi
 www	zh	zh
 ```
 
+## Page Structure
+
+Each generated sitemap page has three sections. Each section maps to a distinct data source and pipeline stage.
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Section 1: Base Geo Links (sitemap-base)           │
+│  Source: GNAV fragments                             │
+│                                                     │
+│  H3 section headings with H4 sub-headings and       │
+│  link groups from the site's global navigation.     │
+│  e.g. "Creativity & Design > Featured products"    │
+├─────────────────────────────────────────────────────┤
+│  Section 2: Other Sitemap Links (sitemap-list)      │
+│  Source: generated from geo map                     │
+│                                                     │
+│  Links to the sitemap.html of every other base geo  │
+│  in the same domain. Excludes the current page.     │
+│  e.g. "France", "Germany", "Japan", ...             │
+├─────────────────────────────────────────────────────┤
+│  Section 3: Extended Geo Links (sitemap-extended)   │
+│  Source: query index JSON files                     │
+│                                                     │
+│  Links unique to each extended geo grouped by       │
+│  region. Only URLs not already present in the       │
+│  base geo are included (deduplicated by path).      │
+│  e.g. "Belgium (fr)" > /be_fr/products/acrobat     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Section 1: Base Geo Links
+
+Sourced from GNAV fragments. Contains the main navigation links organized by section heading (H3) and sub-heading (H4) with grouped link lists. This is the primary content of the page -- the same product/feature links that appear in the site's global navigation, rendered as a flat sitemap.
+
+See [GNAV Sources](#gnav-sources) and [Content Rendering Rules](#content-rendering-rules) for full details.
+
+### Section 2: Other Sitemap Links
+
+Auto-generated from the geo map. A list of links to the `sitemap.html` page of every other active base geo in the same domain. The current page's own geo is excluded. This allows crawlers and users to navigate between all localized sitemaps.
+
+### Section 3: Extended Geo Links
+
+Sourced from query index JSON files. For each extended geo mapped to the current base geo, fetch the query index from each site and collect the URLs.
+
+**Deduplication**: Extended geos often contain URLs that duplicate the base geo's content (same path, different geo prefix). These are excluded. The deduplication rule: for each extended geo URL, strip the geo prefix to get the path. If that path exists in any of the base geo's query indices, the URL is dropped. Only URLs unique to the extended geo are included. This ensures the extended section surfaces content that is region-specific and not already represented in the base geo's GNAV links or query index.
+
+The remaining unique URLs are grouped by extended geo (e.g. "Belgium (fr)", "Canada (fr)", "Switzerland (fr)" under the `fr` base geo).
+
+## Requirements
+
+- **Performance**: Pages must be fast. Googlebot penalizes slow pages, and slow CrUX scores defeat the purpose. Humans may also visit.
+- **Extended geo automation**: Authors cannot manually maintain lists of pages across dozens of geos. Extended geo content must be fully automated.
+- **Lingo compatibility**: As Lingo rolls out in phases (French first), sitemap pages will need updating based on which query indices are available at the time.
+- **Static production URLs**: Generated pages contain hardcoded production URLs. Client-side JavaScript rewrites URLs in non-production environments.
+- **Monitoring**: Both the generation process and the resulting pages will be monitored.
+
 ## Architecture
 
 ### Data Sources
@@ -345,14 +401,6 @@ The prototype activates via `?sitemap-source=gnav` and implements the same GNAV 
 | `GITHUB_TOKEN` | GitHub API token (automatically provided) |
 
 The sitemap config (query index sources and geo map) is hardcoded in the generator for now. When promoted to a spreadsheet, it will live in the [federal](https://github.com/adobecom/federal) repo alongside the [lingo site mapping](https://main--federal--adobecom.aem.live/federal/assets/data/lingo-site-mapping.json) -- not in milo, which is reserved for test files.
-
-## Requirements
-
-- **Performance**: Pages must be fast. Googlebot penalizes slow pages, and slow CrUX scores defeat the purpose. Humans may also visit.
-- **Extended geo automation**: Authors cannot manually maintain lists of pages across dozens of geos. Extended geo content must be fully automated.
-- **Lingo compatibility**: As Lingo rolls out in phases (French first), sitemap pages will need updating based on which query indices are available at the time.
-- **Static production URLs**: Generated pages contain hardcoded production URLs. Client-side JavaScript rewrites URLs in non-production environments.
-- **Monitoring**: Both the generation process and the resulting pages will be monitored.
 
 ## Local Development
 
