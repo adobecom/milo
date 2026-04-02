@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle, import/no-unresolved */
 import { html, nothing } from 'https://da.live/deps/lit/dist/index.js';
 import * as floodbox from '../floodbox.js';
 

@@ -10,6 +10,61 @@ import { getFileExtension, getFileName } from '../utils.js';
 
 const EXISTENCE_CHECK_BATCH = 10;
 
+async function findFragments(cmp, org, repo, operation) {
+  if (operation === 'copy') {
+    const htmlPaths = cmp._filesToProcess
+      .filter((p) => !p.endsWith('/') && !p.includes('.'));
+    cmp._fragmentsAssets = await findFragmentsAndAssets({
+      accessToken: cmp.token,
+      htmlPaths,
+      org,
+      repo,
+    });
+    cmp._filesToProcess.push(...cmp._fragmentsAssets);
+  } else {
+    const fgRepo = `${repo}-fg-${cmp._selectedColor}`;
+    const fgPaths = cmp._filesToProcess.map((p) => p.replace(`/${org}/${repo}`, `/${org}/${fgRepo}`));
+    const fgFragments = await findFragmentsAndAssets({
+      accessToken: cmp.token,
+      htmlPaths: fgPaths.filter((p) => !p.endsWith('/') && !p.includes('.')),
+      org,
+      repo: fgRepo,
+    });
+    cmp._fragmentsAssets = new Set(
+      [...fgFragments].map((p) => p.replace(`-fg-${cmp._selectedColor}`, '')),
+    );
+    cmp._filesToProcess.push(...cmp._fragmentsAssets);
+  }
+  cmp._filesToProcess = [...new Set(cmp._filesToProcess)];
+}
+
+async function validatePathsExist(cmp, userPaths, org, repo, operation) {
+  const reqHandler = new RequestHandler(cmp.token);
+  const notFound = [];
+
+  for (let i = 0; i < userPaths.length; i += EXISTENCE_CHECK_BATCH) {
+    const batch = userPaths.slice(i, i + EXISTENCE_CHECK_BATCH);
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.all(batch.map(async (path) => {
+      let checkPath = path;
+      if (operation !== 'copy') {
+        const fgRepo = `${repo}-fg-${cmp._selectedColor}`;
+        checkPath = path.replace(`/${org}/${repo}`, `/${org}/${fgRepo}`);
+      }
+      const ext = getFileExtension(checkPath);
+      const fullPath = ext ? checkPath : `${checkPath}.html`;
+
+      const resp = await reqHandler.daFetch(`${DA_ORIGIN}/source${fullPath}`, { method: 'HEAD' });
+      const status = typeof resp === 'number' ? resp : resp.status;
+      if (status === 404) {
+        notFound.push({ href: path, status: 'Not Found' });
+      }
+    }));
+  }
+
+  return notFound;
+}
+
 /**
  * Expand wildcards, validate path existence, and discover fragments/assets.
  * Mutates component state (_filesToProcess, _notFoundPaths, _fragmentsAssets).
@@ -50,61 +105,6 @@ export async function runFindStep(cmp) {
     cmp.requestUpdate();
     await findFragments(cmp, org, repo, operation);
   }
-}
-
-async function validatePathsExist(cmp, userPaths, org, repo, operation) {
-  const reqHandler = new RequestHandler(cmp.token);
-  const notFound = [];
-
-  for (let i = 0; i < userPaths.length; i += EXISTENCE_CHECK_BATCH) {
-    const batch = userPaths.slice(i, i + EXISTENCE_CHECK_BATCH);
-    // eslint-disable-next-line no-await-in-loop
-    await Promise.all(batch.map(async (path) => {
-      let checkPath = path;
-      if (operation !== 'copy') {
-        const fgRepo = `${repo}-fg-${cmp._selectedColor}`;
-        checkPath = path.replace(`/${org}/${repo}`, `/${org}/${fgRepo}`);
-      }
-      const ext = getFileExtension(checkPath);
-      const fullPath = ext ? checkPath : `${checkPath}.html`;
-
-      const resp = await reqHandler.daFetch(`${DA_ORIGIN}/source${fullPath}`, { method: 'HEAD' });
-      const status = typeof resp === 'number' ? resp : resp.status;
-      if (status === 404) {
-        notFound.push({ href: path, status: 'Not Found' });
-      }
-    }));
-  }
-
-  return notFound;
-}
-
-async function findFragments(cmp, org, repo, operation) {
-  if (operation === 'copy') {
-    const htmlPaths = cmp._filesToProcess
-      .filter((p) => !p.endsWith('/') && !p.includes('.'));
-    cmp._fragmentsAssets = await findFragmentsAndAssets({
-      accessToken: cmp.token,
-      htmlPaths,
-      org,
-      repo,
-    });
-    cmp._filesToProcess.push(...cmp._fragmentsAssets);
-  } else {
-    const fgRepo = `${repo}-fg-${cmp._selectedColor}`;
-    const fgPaths = cmp._filesToProcess.map((p) => p.replace(`/${org}/${repo}`, `/${org}/${fgRepo}`));
-    const fgFragments = await findFragmentsAndAssets({
-      accessToken: cmp.token,
-      htmlPaths: fgPaths.filter((p) => !p.endsWith('/') && !p.includes('.')),
-      org,
-      repo: fgRepo,
-    });
-    cmp._fragmentsAssets = new Set(
-      [...fgFragments].map((p) => p.replace(`-fg-${cmp._selectedColor}`, '')),
-    );
-    cmp._filesToProcess.push(...cmp._fragmentsAssets);
-  }
-  cmp._filesToProcess = [...new Set(cmp._filesToProcess)];
 }
 
 // --- Copy ---
@@ -225,6 +225,7 @@ export async function executePreview(cmp, org, repo, paths) {
         cmp._previewedFilesCount += 1;
         cmp._previewedUrls.push(status.aemUrl);
       } else {
+        // eslint-disable-next-line max-len
         cmp._previewErrorList.push({ href: status.aemUrl, status: status.statusCode, path: status.path });
       }
       cmp.requestUpdate();
@@ -249,6 +250,7 @@ export async function executePublish(cmp, org, repo, paths) {
         cmp._publishedFilesCount += 1;
         cmp._publishedUrls.push(status.aemUrl);
       } else {
+        // eslint-disable-next-line max-len
         cmp._publishErrorList.push({ href: status.aemUrl, status: status.statusCode, path: status.path });
       }
       cmp.requestUpdate();

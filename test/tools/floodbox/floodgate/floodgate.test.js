@@ -1,9 +1,7 @@
+/* eslint-disable no-underscore-dangle, object-curly-newline */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-// We test the component class by importing it.
-// Top-level awaits (getStyle) resolve because the test server serves the CSS files.
-import MiloFloodgate from '../../../../tools/floodbox/floodgate/floodgate.js';
 import {
   readPromoteIgnorePaths,
   applyPromoteIgnore,
@@ -15,6 +13,43 @@ import {
   getDoneSteps,
   stripAdminPreviewPrefixForDisplay,
 } from '../../../../tools/floodbox/floodgate/floodgate-render.js';
+
+/** Mock da.live fetches; avoids WTR disallowed-external-fetch console errors. */
+function mockDaLiveFetchResponse(url) {
+  const u = String(url);
+  if (u.includes('.css') || u.includes('/styles/')) {
+    return new Response('/* mock */', { status: 200, headers: { 'Content-Type': 'text/css' } });
+  }
+  if (u.endsWith('.svg') || u.includes('/icons/') || u.includes('Smock_')) {
+    return new Response('<svg xmlns="http://www.w3.org/2000/svg"></svg>', { status: 200, headers: { 'Content-Type': 'image/svg+xml' } });
+  }
+  if (u.includes('floodgate/config.json') || u.includes('.milo/floodgate')) {
+    return new Response(JSON.stringify({ data: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+  return new Response('', { status: 200 });
+}
+
+function resolveFetchUrl(input) {
+  if (typeof input === 'string') return input;
+  if (input instanceof Request) return input.url;
+  return String(input?.url ?? input ?? '');
+}
+
+function installDaLiveFetchStub() {
+  const passThrough = window.fetch.bind(window);
+  sinon.stub(window, 'fetch').callsFake((input, init) => {
+    const s = resolveFetchUrl(input);
+    if (s.includes('da.live') || s.includes('admin.da.live')) {
+      return Promise.resolve(mockDaLiveFetchResponse(s));
+    }
+    return passThrough(input, init);
+  });
+}
+
+before(async () => {
+  installDaLiveFetchStub();
+  await import('../../../../tools/floodbox/floodgate/floodgate.js');
+});
 
 function createComponent() {
   const el = document.createElement('milo-floodgate');
@@ -33,8 +68,10 @@ describe('MiloFloodgate', () => {
 
   afterEach(() => {
     removeComponent(el);
+    document.querySelectorAll('milo-floodgate').forEach((node) => node.remove());
     el = null;
     sinon.restore();
+    installDaLiveFetchStub();
     sessionStorage.removeItem('floodgate-paths');
   });
 

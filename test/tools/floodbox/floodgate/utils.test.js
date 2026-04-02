@@ -38,8 +38,8 @@ describe('validatePaths', () => {
     expect(result).to.eql({ valid: false, org: '', repo: '' });
   });
 
-  it('returns valid false for repo containing "-pink"', () => {
-    const paths = ['/org1/repo1-pink/path1', '/org1/repo1-pink/path2'];
+  it('returns valid false for repo containing "-fg-" (floodgate repo)', () => {
+    const paths = ['/org1/repo1-fg-pink/path1', '/org1/repo1-fg-pink/path2'];
     const result = validatePaths(paths);
     expect(result).to.eql({ valid: false, org: '', repo: '' });
   });

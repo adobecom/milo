@@ -7,6 +7,7 @@ describe('FloodgateCopy', () => {
   const accessToken = 'test-token';
   const org = 'test-org';
   const repo = 'test-repo';
+  const fgColor = 'pink';
   const paths = ['/test-org/test-repo/path1', '/test-org/test-repo/path2'];
   let requestHandlerStub;
   let callbackStub;
@@ -29,7 +30,9 @@ describe('FloodgateCopy', () => {
     });
     RequestHandler.prototype.uploadContent.resolves({ statusCode: 200 });
 
-    await copyFiles({ accessToken, org, repo, paths, callback: callbackStub });
+    await copyFiles({
+      accessToken, org, repo, paths, callback: callbackStub, fgColor,
+    });
 
     expect(callbackStub.callCount).to.equal(2);
     expect(callbackStub.firstCall.args[0]).to.eql({ statusCode: 200 });
@@ -38,7 +41,9 @@ describe('FloodgateCopy', () => {
   it('handles fetch errors gracefully', async () => {
     requestHandlerStub.resolves({ ok: false, status: 404 });
 
-    await copyFiles({ accessToken, org, repo, paths, callback: callbackStub });
+    await copyFiles({
+      accessToken, org, repo, paths, callback: callbackStub, fgColor,
+    });
 
     expect(callbackStub.callCount).to.equal(2);
     expect(callbackStub.firstCall.args[0]).to.eql({ statusCode: 404, filePath: '/test-org/test-repo/path1.html', errorMsg: 'Failed to fetch' });
@@ -51,9 +56,11 @@ describe('FloodgateCopy', () => {
     });
     RequestHandler.prototype.uploadContent.resolves({ statusCode: 200 });
 
-    await copyFiles({ accessToken, org, repo, paths, callback: callbackStub });
+    await copyFiles({
+      accessToken, org, repo, paths, callback: callbackStub, fgColor,
+    });
 
-    expect(RequestHandler.prototype.uploadContent.firstCall.args[1]).to.include('--test-repo-pink--test-org.');
+    expect(RequestHandler.prototype.uploadContent.firstCall.args[1]).to.include('--test-repo-fg-pink--test-org.');
   });
 
   it('processes non-editable files correctly', async () => {
@@ -63,20 +70,26 @@ describe('FloodgateCopy', () => {
     });
     RequestHandler.prototype.uploadContent.resolves({ statusCode: 200 });
 
-    await copyFiles({ accessToken, org, repo, paths: ['/test-org/test-repo/image.png'], callback: callbackStub });
+    await copyFiles({
+      accessToken, org, repo, paths: ['/test-org/test-repo/image.png'], callback: callbackStub, fgColor,
+    });
 
     expect(callbackStub.callCount).to.equal(1);
     expect(callbackStub.firstCall.args[0]).to.eql({ statusCode: 200 });
   });
 
   it('handles empty paths array', async () => {
-    await copyFiles({ accessToken, org, repo, paths: [], callback: callbackStub });
+    await copyFiles({
+      accessToken, org, repo, paths: [], callback: callbackStub, fgColor,
+    });
 
     expect(callbackStub.callCount).to.equal(0);
   });
 
   it('ignores path with empty string', async () => {
-    await copyFiles({ accessToken, org, repo, paths: [''], callback: callbackStub });
+    await copyFiles({
+      accessToken, org, repo, paths: [''], callback: callbackStub, fgColor,
+    });
 
     expect(callbackStub.callCount).to.equal(0);
   });
