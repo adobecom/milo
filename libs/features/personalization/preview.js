@@ -1,7 +1,20 @@
 import {
-  createTag, getConfig, getMetadata, loadStyle, lingoActive, getCountry, getMepLingoPrefix,
+  createTag,
+  getConfig,
+  getCountry,
+  getMetadata,
+  getMepLingoPrefix,
+  loadStyle,
+  lingoActive,
 } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
+
+export function escapeHtml(str) {
+  if (str == null || str === '') return str;
+  const el = document.createElement('span');
+  el.textContent = String(str);
+  return el.innerHTML;
+}
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
@@ -642,7 +655,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     const lingoData = {
       langFirst: lingoActive() ? 'on' : 'off',
       geoFolder: page.geo || 'Us (None)',
-      userCountry: await getCountry(),
+      userCountry: escapeHtml(await getCountry()) ?? '',
       geoUser: await getGeoUserSupport(),
       updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
       total: regionalFragments.length + fallbackFragments.length,

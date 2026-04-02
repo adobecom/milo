@@ -253,7 +253,8 @@ async function openChatModal(initialMessage, el) {
   }
 
   const { env, locale } = getConfig();
-  const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   let src = stage;
 
@@ -269,6 +270,10 @@ async function openChatModal(initialMessage, el) {
     // eslint-disable-next-line no-console
     console.log('stage', stage);
     src = stage;
+  } else if (webClient === 'baseProd') {
+    // eslint-disable-next-line no-console
+    console.log('baseProd', baseProd);
+    src = baseProd;
   }
 
   await loadScript(src);
@@ -296,6 +301,9 @@ async function openChatModal(initialMessage, el) {
         rdx.push({
           consentStandard: key,
           consentStringValue: consentsConfig[key].toString(),
+          consentStandardVersion: '2.0',
+          gdprApplies: true,
+          containsPersonalData: true,
         });
         return rdx;
       }, []);
@@ -531,12 +539,22 @@ function decorateFloatingButton(el) {
 
     if (threshold > mainHeight) {
       target.style.bottom = `${threshold - mainHeight}px`;
-      mainElement.style.paddingBottom = `${targetHeight}px`;
+      floatingContainer.setAttribute('tab-index', '-1');
+      floatingContainer.blur();
+      if (variants.isFloatingAnchorHide) {
+        floatingButton.classList.add('floating-hidden');
+        floatingButton.classList.remove('floating-show');
+      } else {
+        mainElement.style.paddingBottom = `${targetHeight}px`;
+      }
     } else {
+      floatingContainer.removeAttribute('tab-index');
       target.style.bottom = '0';
+      floatingButton.classList.remove('floating-hidden');
+      floatingButton.classList.add('floating-show');
     }
     if (variants.isHero || variants.floatingDelay) {
-      if (window.scrollY > scrollDelay) {
+      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
         floatingButton.classList.remove('floating-hidden');
         floatingButton.classList.add('floating-show');
       } else {
@@ -593,6 +611,10 @@ export default async function init(el) {
     variants.isFloatingButton = true;
   } else if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
+  }
+
+  if (el.classList.contains('floating-anchor-hide')) {
+    variants.isFloatingAnchorHide = true;
   }
 
   el.classList.forEach((classItem) => {

@@ -6,6 +6,7 @@ import experiments from './mocks/preview.js';
 document.body.innerHTML = await readFile({ path: './mocks/postPersonalization.html' });
 const {
   default: decoratePreviewMode,
+  escapeHtml,
   parsePageAndUrl,
 } = await import('../../../libs/features/personalization/preview.js');
 const { setConfig, updateConfig, MILO_EVENTS, createTag } = await import('../../../libs/utils/utils.js');
@@ -67,6 +68,34 @@ const config = {
   env: { name: 'stage' },
 };
 setConfig(config);
+
+describe('escapeHtml', () => {
+  it('returns null and undefined unchanged', () => {
+    expect(escapeHtml(null)).to.equal(null);
+    expect(escapeHtml(undefined)).to.equal(undefined);
+  });
+
+  it('returns empty string unchanged', () => {
+    expect(escapeHtml('')).to.equal('');
+  });
+
+  it('leaves plain country codes unchanged', () => {
+    expect(escapeHtml('de')).to.equal('de');
+    expect(escapeHtml('lu')).to.equal('lu');
+  });
+
+  it('encodes HTML metacharacters for safe insertion into HTML', () => {
+    const malicious = '<img src=x onerror=alert(1)>';
+    const out = escapeHtml(malicious);
+    expect(out).to.include('&lt;');
+    expect(out).to.include('&gt;');
+    expect(out).to.not.include('<img');
+  });
+
+  it('stringifies non-string input before escaping', () => {
+    expect(escapeHtml(42)).to.equal('42');
+  });
+});
 
 describe('preview feature', () => {
   beforeEach(() => {
@@ -276,6 +305,44 @@ describe('MEP Lingo region select with lingo param', () => {
 
     const previewLink = popup.querySelector('a[title="Preview above choices"]');
     expect(previewLink.getAttribute('href')).to.not.include('akamaiLocale');
+  });
+
+  it('escapes userCountry in Lingo summary so markup is not parsed (XSS)', async () => {
+    sessionStorage.setItem('akamai', '<img src=x onerror=alert(1)>');
+    const lingoConfig = {
+      ...config,
+      mep: {
+        ...config.mep,
+        akamaiCode: 'de',
+        consentState: { performance: true, advertising: true },
+      },
+      locale: {
+        ...config.locale,
+        prefix: '/de',
+        base: '',
+        regions: { ch_de: { prefix: '/ch_de' } },
+      },
+    };
+    updateConfig(lingoConfig);
+    await decoratePreviewMode();
+
+    const popups = document.querySelectorAll('.mep-popup');
+    const popup = popups[popups.length - 1];
+    const lingoSection = [...popup?.querySelectorAll('.mep-section') || []].find(
+      (sec) => sec.querySelector('h6.mep-section-header')?.textContent.trim() === 'Lingo',
+    );
+    const spans = lingoSection?.querySelectorAll('.mep-section-data span');
+    let userCountrySpan = null;
+    spans?.forEach((span, i) => {
+      if (span.textContent.trim() === 'User Country' && spans[i + 1]) {
+        userCountrySpan = spans[i + 1];
+      }
+    });
+    expect(userCountrySpan).to.exist;
+    expect(userCountrySpan.querySelector('img')).to.be.null;
+    expect(userCountrySpan.children.length).to.equal(0);
+    expect(userCountrySpan.innerHTML).to.match(/&lt;|&#60;|&#x3c;/i);
+    sessionStorage.removeItem('akamai');
   });
 });
 

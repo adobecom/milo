@@ -1521,6 +1521,7 @@ export function getOptions(el) {
     if (key === 'sidenav') options.sidenav = value === 'true';
     else if (key === 'fragment' || key === 'query') options.fragment = value;
     else if (key === 'field') options.field = value;
+    else if (key === 'jsonld') options.jsonld = value === 'on';
   }
   return options;
 }

@@ -13,13 +13,7 @@ import {
   isSignedOut,
   getCountry,
 } from '../../utils/utils.js';
-import {
-  getConsentState,
-  parseOptanonConsent,
-  getAllCookies,
-  KNDCTR_CONSENT_COOKIE,
-  OPT_ON_AND_CONSENT_COOKIE,
-} from '../../martech/helpers.js';
+import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -263,34 +257,6 @@ export const handleTwpButtons = (el, selector) => {
     }
   }
 };
-
-function fireAnalyticsEvent(val) {
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data:
-      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
-function sendAnalytics(val) {
-  if (window._satellite?.track) {
-    fireAnalyticsEvent(val);
-  } else {
-    window.addEventListener('alloy_sendEvent', () => {
-      fireAnalyticsEvent(val);
-    }, { once: true });
-  }
-}
 
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
@@ -1156,21 +1122,6 @@ export const addMepAnalytics = (config, header) => {
   });
 };
 
-export function getMepConsentConfig() {
-  const cookies = getAllCookies();
-  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
-  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
-  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
-
-  if (!optOnConsentCookie || consentState === 'pre') {
-    return {
-      performance: true,
-      advertising: isSignedOut() && consentState !== 'pre',
-    };
-  }
-  return parseOptanonConsent(optOnConsentCookie).configuration;
-}
-
 export const overrideVariant = (manifestPath, variantName) => {
   const config = getConfig();
   if (!config.mep.variantOverride) config.mep.variantOverride = {};
@@ -1189,32 +1140,31 @@ export const getGeoRestriction = (manifestConfig) => {
 };
 
 export function getManifestMarketingAction(mktgAction, source) {
-  const allowedServices = ['core services', 'non-marketing', 'marketing decrease', 'marketing increase'];
-  if (allowedServices.includes(mktgAction)) return mktgAction;
-  if (source?.includes('promo')) return 'core services';
+  const coreServicesNonMarketing = 'core services/non-marketing';
+  const allowedServices = [coreServicesNonMarketing, 'non-marketing', 'marketing decrease', 'marketing increase'];
+  const normalizedMktgAction = mktgAction === 'core services' ? coreServicesNonMarketing : mktgAction;
+  if (allowedServices.includes(normalizedMktgAction)) return normalizedMktgAction;
+  if (source?.includes('promo')) return coreServicesNonMarketing;
   return 'marketing increase';
 }
 
 export function canServeManifest(manifestConfig) {
   if (!getGeoRestriction(manifestConfig)) return false;
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
-  if (mktgAction === 'core services') return true;
+  if (mktgAction?.includes('core services')) return true;
 
   const { performance, advertising } = getConfig().mep.consentState;
+
+  if (mktgAction?.startsWith('marketing') && performance && advertising) {
+    const fileName = getFileName(manifestPath)?.replace('.json', '');
+    sendAnalytics(`${fileName} was served`);
+  }
+
   if (mktgAction === 'non-marketing') return performance;
   if (mktgAction === 'marketing increase') return advertising;
 
   if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
-}
-
-export function sendMktgTracking(fileName, mktgAction) {
-  if (!mktgAction?.startsWith('marketing')) return false;
-  const { advertising } = getConfig().mep.consentState;
-  if (!advertising) return false;
-  const eventName = `${fileName} was served`;
-  sendAnalytics(eventName);
-  return eventName;
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1293,8 +1243,6 @@ async function getManifestConfig(info, variantOverride) {
     overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
-  } else {
-    sendMktgTracking(fileName, manifestConfig.mktgAction);
   }
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(

@@ -1,12 +1,15 @@
 
 .region-nav > div:nth-of-type(2) > div > p,
+.region-nav > div:nth-of-type(2) > div > h3,
 .region-nav > div:nth-of-type(2) > div > ul li {
   line-height: 1.7;
 }
 
-.region-nav > div:nth-of-type(2) > div > p {
+.region-nav > div:nth-of-type(2) > div > p,
+.region-nav > div:nth-of-type(2) > div > h3 {
   font-size: 16px;
-  margin-bottom: 0;
+  margin: 0 0 0;
+  font-weight: bold;
 }
 
 .region-nav > div:first-of-type {
@@ -19,19 +22,26 @@
   position: relative;
 }
 
-.region-nav > div:first-of-type > div > p {
+.region-nav > div:first-of-type > div > p,
+.region-nav > div:first-of-type > div > h2 {
   margin: 0 0 4px;
 }
-
-.region-nav > div:first-of-type > div > p:first-of-type {
+.region-nav > div:first-of-type h2 {
   font-size: 24px;
+  font-weight: bold;
+}
+
+.region-nav > div:first-of-type h2 + p {
+  font-size: 16px;
+  font-weight: normal;
 }
 
 .region-nav > div:first-of-type > p:last-of-type {
   margin-bottom: 0;
 }
 
-.region-nav > div:nth-of-type(2) > div > p:first-of-type {
+.region-nav > div:nth-of-type(2) > div > p:first-of-type,
+.region-nav > div:nth-of-type(2) > div > h3:first-of-type {
   margin-top: 0;
 }
 
