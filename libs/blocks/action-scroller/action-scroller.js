@@ -127,17 +127,19 @@ export default function init(el) {
       window.addEventListener('resize', debounce(handleResize, 50));
     });
   }
-  items.setAttribute('aria-hidden', 'true');
+  const hasLinks = !!items.querySelectorAll('a').length;
   actions.forEach((action) => {
     action.querySelectorAll('img[loading="lazy"]').forEach((img) => img.setAttribute('loading', 'eager'));
+    if (!hasLinks) action.setAttribute('aria-hidden', 'true');
   });
 
-  const labels = [...actions].reduce((acc, action) => {
-    const img = action.querySelector('img[alt]');
-    const link = action.querySelector('a');
-    const label = img?.alt || link?.textContent?.trim();
-    if (label) acc.push(label);
-    return acc;
-  }, []);
-  if (labels.length) el.append(createTag('p', { class: 'sr-only' }, labels.join(', ')));
+  if (!hasLinks) {
+    const labels = [...actions].reduce((acc, action) => {
+      const label = action.querySelector('img[alt]')?.alt;
+      if (label) acc.push(label);
+      return acc;
+    }, []);
+    if (labels.length) items.setAttribute('aria-label', labels.join(', '));
+    items.setAttribute('tabindex', '0');
+  }
 }

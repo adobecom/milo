@@ -79,18 +79,18 @@ describe('action scrollers', () => {
       linkedScroller = linkedEl.querySelector('.scroller');
     });
 
-    it('scroller without links does not have tabindex', () => {
-      expect(noLinksScroller.hasAttribute('tabindex')).to.be.false;
+    it('scroller has tabindex="0" so the section is a single tab stop', () => {
+      expect(noLinksScroller.getAttribute('tabindex')).to.equal('0');
     });
 
-    it('visual scroller is hidden from AT to avoid scroll-clipping issues', () => {
-      expect(noLinksScroller.getAttribute('aria-hidden')).to.equal('true');
+    it('scroller aria-label contains all image names so NVDA reads them all on focus', () => {
+      expect(noLinksScroller.getAttribute('aria-label')).to.equal('LinkedIn, Dropbox, Slack, Google');
     });
 
-    it('a sr-only paragraph is appended with all image names for single-pass AT reading', () => {
-      const srP = noLinksEl.querySelector('p.sr-only');
-      expect(srP).to.exist;
-      expect(srP.textContent).to.equal('LinkedIn, Dropbox, Slack, Google');
+    it('individual items are aria-hidden to prevent double-announcement', () => {
+      noLinksScroller.querySelectorAll('.action-item').forEach((item) => {
+        expect(item.getAttribute('aria-hidden')).to.equal('true');
+      });
     });
 
     it('nav buttons are present and focusable for keyboard users', () => {
