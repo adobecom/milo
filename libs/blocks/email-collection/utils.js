@@ -1,4 +1,4 @@
-import { createTag, getConfig, getFederatedUrl, localizeLinkAsync, loadIms } from '../../utils/utils.js';
+import { createTag, getConfig, getFederatedUrl, localizeLinkAsync, loadIms, getLocale } from '../../utils/utils.js';
 import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
@@ -12,6 +12,7 @@ const FORM_METADATA = {
   'subscription-name': 'subscriptionName',
   'sign-in': 'signIn',
   'runtime-endpoint': 'runtimeEndpoint',
+  'consent-id': 'consentId',
 };
 
 export async function localizeFederatedUrl(url) {
@@ -20,7 +21,7 @@ export async function localizeFederatedUrl(url) {
 }
 
 const FEDERAL_ROOT = '/federal/email-collection';
-const CONSENT_URL_PROMISE = localizeFederatedUrl(`${FEDERAL_ROOT}/consents/cs4.plain.html`);
+const DEFAULT_CONSENT_ID = 'cs4';
 const PLACEHOLDER_URL_PROMISE = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=placeholders`);
 
 export const FORM_FIELDS = {
@@ -75,7 +76,61 @@ export const FORM_FIELDS = {
     url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=states&limit=2000`),
     attributes: { required: true },
   },
+  'phone-number': {
+    tag: 'input',
+    attributes: {
+      type: 'tel',
+      required: true,
+      autocomplete: 'tel',
+    },
+  },
+  'phone-country-code': {
+    tag: 'input',
+    attributes: {
+      type: 'tel',
+      required: true,
+      disabled: '',
+    },
+  },
 };
+
+function getPhoneIconUrl(name) {
+  const { base } = getConfig();
+  return `${base}/blocks/email-collection/icons/${name}`;
+}
+
+export function getPageLocale() {
+  const { locales } = getConfig() || {};
+  return getLocale(locales)?.region;
+}
+
+const PHONE_FIELD_CONFIG = {
+  br: {
+    code: '+55',
+    validationPattern: /^\(?\d{2}\)?[\s-]?9\d{4}[-\s]?\d{4}$/,
+    icon: getPhoneIconUrl('br-flag.svg'),
+    countryCode: 'BR',
+    format: (number) => {
+      const digits = number.replace(/\D/g, '');
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    },
+  },
+};
+
+export function getPhoneFieldConfig() {
+  return PHONE_FIELD_CONFIG[getPageLocale()];
+}
+
+export function removePhoneNumberFormat(number) {
+  return number?.replace(/\D/g, '');
+}
+
+export function validatePhoneNumber(number) {
+  if (!number) return false;
+  const regex = getPhoneFieldConfig()?.validationPattern ?? null;
+  if (!regex) return false;
+  return regex.test(number);
+}
 
 export async function getIMS() {
   if (window.adobeIMS) return window.adobeIMS;
@@ -211,9 +266,10 @@ async function fetchFormConfig(sheets) {
   return config;
 }
 
-export async function fetchConsentString() {
+export async function fetchConsentString(metadataConsentId) {
   try {
-    const consentUrl = await CONSENT_URL_PROMISE;
+    const id = metadataConsentId?.toLowerCase() ?? DEFAULT_CONSENT_ID;
+    const consentUrl = await localizeFederatedUrl(`${FEDERAL_ROOT}/consents/${id}.plain.html`);
     const stringReq = await fetch(consentUrl);
     if (!stringReq.ok) return {};
 
@@ -238,7 +294,6 @@ export const [getFormData, setFormData] = (() => {
       formData = {
         fields: {},
         metadata: {},
-        consent: fetchConsentString(),
       };
       const fetchConfigParams = [];
       const { fields, metadata } = formData;
@@ -259,8 +314,14 @@ export const [getFormData, setFormData] = (() => {
 
       if (!fields.email
         || !metadata.mpsSname
-        || !metadata.subscriptionName) return 'Section metadata is missing email/mps-sname/subscription-name field';
+        || (!metadata.subscriptionName && !metadata.consentId)) return 'Section metadata is missing email/mps-sname/subscription-name/consent-id field';
 
+      if ((fields['phone-number'] && !fields['phone-country-code'])
+      || (!fields['phone-number'] && fields['phone-country-code'])) {
+        return 'Phone number field is missing phone country code field';
+      }
+
+      formData.consent = fetchConsentString(formData.metadata.consentId);
       formData.config = fetchFormConfig(fetchConfigParams);
 
       return null;
@@ -381,3 +442,4 @@ export async function isUserGuest() {
   const ims = await getIMS();
   return !ims?.isSignedInUser();
 }
+

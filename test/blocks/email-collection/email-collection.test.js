@@ -3,9 +3,12 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 import { restoreFetch, mockFetch } from './mocks/fetchMock.js';
-import { setFormData, getFormData } from '../../../libs/blocks/email-collection/utils.js';
+import { setFormData, getFormData, validatePhoneNumber, removePhoneNumberFormat, getPhoneFieldConfig } from '../../../libs/blocks/email-collection/utils.js';
 
-const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const locales = {
+  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  br: { ietf: 'en-US', tk: 'hah7vzn.css' },
+};
 const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
@@ -121,6 +124,7 @@ describe('Email collection', () => {
         placeholders: {
           required: 'This field is required.',
           email: 'Enter a valid email.',
+          phone: 'Enter a valid phone number.',
         },
       },
       consent: { consentId: 'consent-id' },
@@ -496,5 +500,167 @@ describe('Email collection', () => {
 
     const subscribed = text[1].querySelector('.subscribed-email');
     expect(subscribed.classList.contains('hidden')).to.be.false;
+  });
+});
+
+describe('Phone utils', () => {
+  let originalPathname;
+
+  beforeEach(() => {
+    originalPathname = window.location.pathname;
+    const newUrl = new URL(window.location.href);
+    newUrl.pathname = '/br/';
+    window.history.replaceState({}, '', newUrl.toString());
+    setConfig(config);
+  });
+
+  afterEach(() => {
+    const newUrl = new URL(window.location.href);
+    newUrl.pathname = originalPathname;
+    window.history.replaceState({}, '', newUrl.toString());
+    setConfig(config);
+  });
+
+  it('removePhoneNumberFormat should strip non-digit characters', () => {
+    expect(removePhoneNumberFormat('(11) 91234-5678')).to.equal('11912345678');
+    expect(removePhoneNumberFormat('+55 (11) 91234-5678')).to.equal('5511912345678');
+    expect(removePhoneNumberFormat('11912345678')).to.equal('11912345678');
+  });
+
+  it('removePhoneNumberFormat should handle undefined', () => {
+    expect(removePhoneNumberFormat(undefined)).to.be.undefined;
+  });
+
+  it('validatePhoneNumber should return true for valid BR mobile numbers', () => {
+    expect(validatePhoneNumber('(11) 91234-5678')).to.be.true;
+    expect(validatePhoneNumber('11 91234-5678')).to.be.true;
+    expect(validatePhoneNumber('11912345678')).to.be.true;
+  });
+
+  it('validatePhoneNumber should return false for invalid numbers', () => {
+    expect(validatePhoneNumber('123')).to.be.false;
+    expect(validatePhoneNumber('invalid')).to.be.false;
+    expect(validatePhoneNumber('(11) 1234-5678')).to.be.false;
+  });
+
+  it('validatePhoneNumber should return false for empty or null values', () => {
+    expect(validatePhoneNumber('')).to.be.false;
+    expect(validatePhoneNumber(null)).to.be.false;
+    expect(validatePhoneNumber(undefined)).to.be.false;
+  });
+
+  it('getPhoneFieldConfig should return BR config for BR locale', () => {
+    const phoneConfig = getPhoneFieldConfig();
+    expect(phoneConfig).to.exist;
+    expect(phoneConfig.code).to.equal('+55');
+    expect(phoneConfig.countryCode).to.equal('BR');
+    expect(phoneConfig.validationPattern).to.be.instanceOf(RegExp);
+    expect(typeof phoneConfig.format).to.equal('function');
+  });
+
+  it('getPhoneFieldConfig format should format BR phone number correctly', () => {
+    const phoneConfig = getPhoneFieldConfig();
+    expect(phoneConfig.format('11912345678')).to.equal('(11) 91234-5678');
+  });
+});
+
+describe('Phone fields rendering', () => {
+  const BR_CONSENT_URL = 'https://main--federal--adobecom.aem.page/br/federal/email-collection/consents/cs8a.plain.html';
+  let originalPathname;
+
+  beforeEach(async () => {
+    originalPathname = window.location.pathname;
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    setGetIdentity();
+    setAdobePrivacy();
+    setAlloyAll();
+    setIms();
+    const newUrl = new URL(window.location.href);
+    newUrl.pathname = '/br/';
+    window.history.replaceState({}, '', newUrl.toString());
+    setConfig(config);
+    mockFetch({ consentUrl: BR_CONSENT_URL, subscribed: false });
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+    restoreFetch();
+    const newUrl = new URL(window.location.href);
+    newUrl.pathname = originalPathname;
+    window.history.replaceState({}, '', newUrl.toString());
+    setConfig(config);
+  });
+
+  it('Should group phone fields inside a phone-container', async () => {
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const phoneContainer = block.querySelector('.phone-container');
+    expect(phoneContainer).to.exist;
+    expect(phoneContainer.querySelector('#phone-number')).to.exist;
+    expect(phoneContainer.querySelector('#phone-country-code')).to.exist;
+  });
+
+  it('Should render flag icon as img element', async () => {
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const flagIcon = block.querySelector('.phone-country-icon');
+    expect(flagIcon).to.exist;
+    expect(flagIcon.tagName).to.equal('IMG');
+    expect(flagIcon.getAttribute('aria-hidden')).to.equal('true');
+  });
+
+  it('Should set country code value to +55 and mark it disabled', async () => {
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const phoneCountryCode = block.querySelector('#phone-country-code');
+    expect(phoneCountryCode.value).to.equal('+55');
+    expect(phoneCountryCode.getAttribute('disabled')).to.not.be.null;
+  });
+
+  it('Should not add error element to disabled phone-country-code input', async () => {
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const countryCodeContainer = block.querySelector('#phone-country-code').closest('.input-container');
+    const errorEl = countryCodeContainer.querySelector('[id^="error-"]');
+    expect(errorEl).to.not.exist;
+  });
+
+  it('Should show phone validation error for invalid phone number', async () => {
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const emailInput = block.querySelector('#email');
+    emailInput.value = 'test@test.com';
+    const phoneInput = block.querySelector('#phone-number');
+    phoneInput.value = '123';
+    block.querySelector('button[type="submit"]').click();
+    await sleep(50);
+    const phoneError = block.querySelector('[id="error-phone-number"]');
+    expect(phoneError.classList.contains('hidden')).to.be.false;
+    expect(phoneInput.classList.contains('invalid')).to.be.true;
+  });
+
+  it('Should include phone data in form submission body', async () => {
+    const fetchSpy = sinon.spy(window, 'fetch');
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const emailInput = block.querySelector('#email');
+    emailInput.value = 'test@test.com';
+    const phoneInput = block.querySelector('#phone-number');
+    phoneInput.value = '(11) 91234-5678';
+    block.querySelector('button[type="submit"]').click();
+    await sleep(50);
+    const submitCall = fetchSpy.getCalls().find((call) => String(call.args[0]).includes('form-submit'));
+    expect(submitCall).to.exist;
+    const body = JSON.parse(submitCall.args[1].body);
+    expect(body.phoneNumber).to.equal('11912345678');
+    expect(body.phoneExtension).to.equal('+55');
+    expect(body.phoneCountryCode).to.equal('BR');
+    fetchSpy.restore();
   });
 });
