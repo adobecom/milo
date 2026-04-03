@@ -540,15 +540,12 @@ const getCategoryMappings = async (state) => {
   return {};
 };
 
-const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
+const isLocaleInRegionalSites = (regionalSites, locStr) => {
   if (!regionalSites) return false;
-  const sites = regionalSites
+  return regionalSites
     .split(',')
-    .map((site) => site.trim().replace(/^\//, ''));
-  return (
-    sites.includes(locStr)
-    || (Boolean(langStr) && sites.includes(`${locStr}_${langStr}`))
-  );
+    .map((site) => site.trim().replace(/^\//, ''))
+    .includes(locStr);
 };
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
@@ -573,18 +570,20 @@ async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com
       const baseLocale = baseSite?.split('/')[1];
       const matchesBase = country === baseLocale;
       const langMatchesBase = language === baseLocale;
-      const matchesRegional = isLocaleInRegionalSites(regionalSites, country, language);
+      const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
       return matchesBase || matchesRegional || langMatchesBase;
     });
 
     if (isKnownLingoSiteLocale) {
       // determine if the country is allowed to be used for the langauge
       const baseSiteLocale = language === 'en' ? '' : language;
+      const altLocale = `${country}_${language}`;
       siteLocalesData
         .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
         .forEach(({ baseSite, regionalSites }) => {
           if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
-            if (country === 'xx' || isLocaleInRegionalSites(regionalSites, country, language)) {
+            const regionalMap = regionalSites.split(',').map((site) => site.trim().replace(/^\//, ''));
+            if (country === 'xx' || regionalMap.includes(country) || regionalMap.includes(altLocale)) {
               isPermittedLingoSiteLocale = true;
             }
           }
