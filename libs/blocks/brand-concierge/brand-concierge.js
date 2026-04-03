@@ -256,6 +256,7 @@ async function openChatModal(initialMessage, el) {
   const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const test = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js?adobe-brand-concierge-acom-brand-concierge-web-agent_version=PR-84-2d1a3c456b664f590a244c3be9b3daf64ada8e25';
   let src = stage;
 
   if (env?.name === 'prod') {
@@ -276,7 +277,7 @@ async function openChatModal(initialMessage, el) {
     src = baseProd;
   }
 
-  await loadScript(src);
+  await loadScript(test);
 
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;
