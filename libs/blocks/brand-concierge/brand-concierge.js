@@ -28,6 +28,7 @@ const authoredContent = {};
 const variants = {};
 const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
+const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
 let bcToken;
@@ -172,12 +173,16 @@ async function openSusiLightModal() {
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
     window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
+    console.log('Running in onSuccessfulToken\n---------\n');
+    console.log(`Token provided by event ${detail}\n-------\n`);
     const token = detail;
     if (!bcToken) {
       bcToken = token;
       const mountEl = document.getElementById(mountId);
+      console.log(`Checking for SUSI mount element: ${mountEl}`);
       if (mountEl) {
         mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
+        console.log('bc:cta-action-handled has fired');
       }
     }
   };
@@ -185,6 +190,8 @@ async function openSusiLightModal() {
   const onError = (e) => {
     const mountEl = document.getElementById(mountId);
     window.lana?.log(`SUSI Light error: ${e}`, { tags: 'brand-concierge', severity: 'error' });
+    console.log('Running in onError\n---------\n');
+    console.log('Error:', e);
     if (mountEl) {
       mountEl.dispatchEvent(
         new CustomEvent('bc:cta-action-error', { detail: { message: 'Something went wrong signing in. Please try again in a moment.' } }),
@@ -256,7 +263,7 @@ async function openChatModal(initialMessage, el) {
   const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  const test = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js?adobe-brand-concierge-acom-brand-concierge-web-agent_version=PR-84-2d1a3c456b664f590a244c3be9b3daf64ada8e25';
+
   let src = stage;
 
   if (env?.name === 'prod') {
@@ -277,7 +284,13 @@ async function openChatModal(initialMessage, el) {
     src = baseProd;
   }
 
-  await loadScript(test);
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
+  }
+
+  await loadScript(src);
 
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;
