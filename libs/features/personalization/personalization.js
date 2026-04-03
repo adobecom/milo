@@ -430,13 +430,12 @@ function updateFramework(updateFrameworkList) {
   const existing = document.head.querySelector(
     `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
   );
+  setMetadata({ selector: 'foundation', val: fwVal });
   const stylesPrefix = fwVal === 'c1' ? '' : `/${fwVal}`;
   loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, {
     rel: 'stylesheet',
     callback: (status) => {
-      if (status !== 'load') return;
-      existing?.remove();
-      setMetadata({ selector: 'foundation', val: fwVal });
+      if (status === 'load') existing?.remove();
     },
   });
 }
