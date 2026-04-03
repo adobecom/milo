@@ -932,9 +932,9 @@ export const getCookie = (name) => document.cookie
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-export function normCountryCode(c) {
-  if (c == null || typeof c !== 'string') return undefined;
-  const lower = c.toLowerCase();
+export function normCountryCode(country) {
+  if (country == null || typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
   return lower === 'uk' ? 'gb' : lower.split('_')[0];
 }
 
@@ -945,7 +945,6 @@ export function computeDetectedMarketCountry(search, cookieCountry, countryFromG
   return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
 }
 
-// country param > akamaiLocale param > country cookie > geo-ip
 export async function resolveDetectedMarketCountry() {
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
