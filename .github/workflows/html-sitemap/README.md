@@ -2,32 +2,81 @@
 
 A GitHub Actions-based Node.js pipeline that generates localized HTML sitemap pages for Adobe's international sites and publishes them via DA and the AEM Admin API.
 
-See [SPEC.md](./SPEC.md) for background, requirements, page structure, and snapshot-dated **GNAV** and **query index / geo** sections (update those together when live data changes).
+See [SPEC.md](./SPEC.md) for background, requirements, page structure, and stage semantics.
+
+## Prerequisites
+
+- Node.js 24 or higher
+
+## Setup
+
+```bash
+cd .github/workflows/html-sitemap
+npm install
+
+# or from repo root
+# npm --prefix .github/workflows/html-sitemap install
+```
+
+### Environment
+
+Ensure the following env vars are defined for DA and AEM related commands. `.env` also supported.
+
+```bash
+# DA auth for service account (production)
+ROLLING_IMPORT_IMS_URL=https://...
+ROLLING_IMPORT_CLIENT_ID=...
+ROLLING_IMPORT_CLIENT_SECRET=...
+ROLLING_IMPORT_CODE=...
+ROLLING_IMPORT_GRANT_TYPE=authorization_code
+
+# DA auth personal (dev)
+DA_SOURCE_TOKEN=...
+
+# AEM admin tokens for preview + publish
+# Use the raw auth_token cookie value from https://admin.hlx.page/profile (dev)
+AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
+AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
+```
 
 ## CLI
 
-The generator is a Node.js CLI that follows an ETL pipeline. Each stage can be run independently or as part of the full pipeline. The same interface maps to both local execution and GitHub Actions workflow inputs.
+The generator is a Node.js CLI that follows an ETL pipeline. Each stage can be run independently or as part of a selected sequence. The same interface maps to both local execution and GitHub Actions workflow inputs.
 
 ### Usage
 
 ```
-node --env-file=.env generate.ts [stage] [options]
+$ node .github/workflows/html-sitemap/generate.ts --help
+HTML Sitemap Generator
+
+Usage:
+  node --env-file=.env generate.ts [stage] [mode] [options]
+  node --env-file=.env generate.ts --stages <list> [options]
 
 Stages:
-  extract       Fetch config, GNAV fragments, and query index files
-  transform     Convert extracted data into DA-compatible pages and other assets
-  push          Push pages to DA
-  preview       AEM preview pages
-  publish       AEM publish pages
-  clean         Delete generated output data under --output
-  (none)        Run all stages in sequence
+  clean            Delete generated output data under --output
+  extract          Fetch config, GNAV fragments, and query index files
+  transform-data   Build normalized sitemap.json from extracted inputs
+  transform-da     Build sitemap.html from sitemap.json
+  push             Upload sitemap.html to DA under --da-root
+  preview          Trigger AEM preview for pushed pages
+  publish          Trigger AEM publish for previewed pages
 
 Options:
   --config <url|path>   Sitemap config JSON (default: https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json)
-  --output <dir>        Root directory for all generated files (default: tmp/html-sitemap)
+  --output <dir>        Root directory for generated files (default: tmp/html-sitemap)
   --domain <name>       Filter to a single domain: www | business
   --geo <prefix>        Filter to a single base geo (e.g. fr, de, default)
-  --da-root <path>      Remote DA folder root for push (e.g. /drafts/hgpa/html-sitemap)
+  --da-root <path>      Remote DA folder root for push/preview/publish
+  --stages <list>       Comma-separated stage ids
+  -h, --help            Show this help
+
+Examples:
+  node --env-file=.env generate.ts --stages extract,transform-data,transform-da  --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+  node --env-file=.env generate.ts push --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+  node --env-file=.env generate.ts preview --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+  node --env-file=.env generate.ts publish --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+  node --env-file=.env generate.ts --stages extract,transform-data,transform-da,push,preview,publish
 ```
 
 ## Input
@@ -36,7 +85,7 @@ The generator uses a config file that defines the query index sources and geo ma
 
 Use `--geo default` (or `--geo root`) to target the root sitemap for a domain. Those aliases normalize to the empty base-geo key internally.
 
-The file uses format compatible with [AEM multi-sheet JSON](https://www.aem.live/developer/spreadsheets#multi-sheet-format), so config data can reside and any compatible backends (DA/Sharepoint).
+The file uses format compatible with [AEM multi-sheet JSON](https://www.aem.live/developer/spreadsheets#multi-sheet-format), so config data can reside in any compatible backend (DA, Sharepoint).
 
 Example:
 
@@ -71,7 +120,6 @@ Example:
 }
 ```
 
-The full source-of-truth data is in [SPEC.md](./SPEC.md#scope).
 See [Scope in SPEC.md](./SPEC.md#scope).
 
 ### Output
@@ -82,18 +130,18 @@ Example layout:
 
 ```
 /html-sitemap
-  html-sitemap.json               # config file (extract)
+  html-sitemap.json                # copy of config file (extract)
   /business
-    /_extract
-      /gnav                        # GNAV raw HTML (extract)
+    /_extract                      # raw data folder (extract)
+      /gnav                        # GNAV raw HTML
         gnav.html                  # top-level GNAV
         products.html              # section fragment
         ai.html                    # section fragment
         ...
         manifest.json              # source/path/type map for saved GNAV files
-      placeholders.json            # globalnav placeholders (extract)
+      placeholders.json            # globalnav placeholders
       /da-bacom
-        query-index.json           # base geo query index (extract)
+        query-index.json           # base geo query index
     sitemap.json                   # normalized data JSON (transform data)
     sitemap.html                   # DA source HTML (transform da)
     /de
@@ -148,6 +196,11 @@ If a base geo's GNAV cannot be resolved, extract logs a warning, skips GNAV outp
 - In this summary, "with sitemap output" means `extract` found enough base-geo query-index data for transform to consider emitting `sitemap.html`.
 
 See [SPEC.md](./SPEC.md) for details.
+
+Plain `transform` is a convenience alias that runs both atomic transform stages in order:
+
+1. `transform-data`
+2. `transform-da`
 
 #### `transform (data|da)`
 
@@ -242,78 +295,16 @@ Triggers AEM publish for all previewed pages.
 
 1. For each page: trigger publish via the Helix Admin API
 
-### Examples
-
-```bash
-# Full pipeline, all domains and geos
-node --env-file=.env generate.ts
-
-# Remove generated local output
-node --env-file=.env generate.ts clean
-
-# Extract + transform only (no auth needed), single geo
-node --env-file=.env generate.ts extract --domain www --geo fr
-node --env-file=.env generate.ts transform data --domain www --geo fr
-
-# Full pipeline, single domain
-node --env-file=.env generate.ts --domain business
-
-# Push, preview, publish individually (after extract + transform)
-node --env-file=.env generate.ts push --domain www --geo fr
-node --env-file=.env generate.ts preview --domain www --geo fr
-node --env-file=.env generate.ts publish --domain www --geo fr
-```
-
 ### GitHub Actions Workflow Inputs
 
 The workflow exposes the same parameters as the CLI:
 
 | Input | Description | Default |
 |---|---|---|
-| `stage` | Pipeline stage: `extract`, `transform`, `push`, `preview`, `publish`, `clean`, or blank for all | (all) |
+| `stages` | Comma-separated canonical stage ids: `extract`, `transform-data`, `transform-da`, `push`, `preview`, `publish`, `clean` | |
 | `output` | Output root directory (same as CLI `--output`) | `tmp/html-sitemap` |
 | `domain` | Filter to domain: `www`, `business`, or blank for all | (all) |
 | `geo` | Filter to base geo prefix, or blank for all | (all) |
-
-## Prerequisites
-
-- Node.js 24 or higher (supports native TypeScript execution)
-
-## Setup
-
-```bash
-cd .github/workflows/html-sitemap
-npm install
-```
-
-If you prefer to stay at the repo root, use npm's `--prefix` form to run this package in place:
-
-```bash
-npm --prefix .github/workflows/html-sitemap install
-npm --prefix .github/workflows/html-sitemap run typecheck
-npm --prefix .github/workflows/html-sitemap run test
-```
-
-Create a `.env` file for local runs. Only `push` (DA), `preview`, and `publish` (AEM) require auth.
-
-```bash
-# Production DA token source (used in Actions / shared automation)
-ROLLING_IMPORT_IMS_URL=https://...
-ROLLING_IMPORT_CLIENT_ID=...
-ROLLING_IMPORT_CLIENT_SECRET=...
-ROLLING_IMPORT_CODE=...
-ROLLING_IMPORT_GRANT_TYPE=authorization_code
-
-# Local short-lived DA override token
-# Useful for personal testing; not the long-term production contract
-DA_SOURCE_TOKEN=...
-
-# AEM/Helix admin tokens for preview + publish
-# Use the raw auth_token cookie value from admin.hlx.page/profile
-# Do not prefix with Bearer or token; the CLI adds `Authorization: token ...`
-AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
-AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
-```
 
 ## Dependencies
 

@@ -300,6 +300,32 @@ Whether a page is emitted at all also depends on query-index data — see **Page
 
 ## Architecture
 
+### Stage Model
+
+The canonical atomic stage ids are:
+
+- `clean`
+- `extract`
+- `transform-data`
+- `transform-da`
+- `push`
+- `preview`
+- `publish`
+
+CLI positional shortcuts may alias to those atomic stages:
+
+- `transform data` -> `transform-data`
+- `transform da` -> `transform-da`
+- `transform` -> `transform-data` then `transform-da`
+
+When multiple stages are selected, execution order is normalized in code to the pipeline order above.
+
+Stage dependencies are not declared separately in workflow metadata. They are enforced in the generator by:
+
+- fixed execution ordering when multiple stages are selected
+- required flags for specific stages (for example `--da-root`)
+- artifact availability from previous stages when a downstream stage is run by itself
+
 ### Data Sources
 
 1. **Sitemap [Config](#config)** — Subdomain → site mapping, production domains, `extendedSitemap` mode. Will eventually be backed by a DA spreadsheet.
