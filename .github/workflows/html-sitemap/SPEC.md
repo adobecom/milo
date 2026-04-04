@@ -65,12 +65,22 @@ Sourced from query index JSON files -- see [Query Index Sources](#query-index-so
 
 Each of Adobe's two primary subdomains gets its own set of HTML sitemaps. Each base geo within a subdomain gets a localized sitemap page.
 
-| Subdomain | DA Host |
-|---|---|
-| business.adobe.com | [da-bacom](https://da.live/sheet#/adobecom/da-bacom/) |
-| www.adobe.com | [da-cc](https://da.live/sheet#/adobecom/da-cc/) |
+Output pages: `https://{domain}/sitemap.html` and `https://{domain}/{baseGeo}/sitemap.html` for each base geo with indexable content.
 
-Output pages: `https://{subdomain}/sitemap.html` and `https://{subdomain}/{baseGeo}/sitemap.html` for each base geo with indexable content.
+### Config
+
+Maps each subdomain to the AEM site that hosts its generated pages, the production domain for hardcoded links, and the extended geo display mode.
+
+```tsv
+subdomain	domain	site	extendedSitemap
+business	business.adobe.com	da-bacom	all
+www	www.adobe.com	da-cc	language
+```
+
+- `subdomain` — Logical subdomain name. Matches the `domain` column in `geo-map` and `query-index-map`.
+- `domain` — Production domain for all rendered links. Replaces AEM `.aem.live` origins in output.
+- `site` — AEM repo used for local GNAV fallback (step 2 of the [fallback chain](#gnav-resolution-fallback-chain)), DA push target, and AEM preview/publish.
+- `extendedSitemap` — How extended geos are included on each base geo's page: `all` (every extended geo in the subdomain) or `language` (only language-matched extended geos mapped to the base geo).
 
 ### Query Index Sources
 
@@ -93,7 +103,11 @@ www	edu	/edu-shared/assets/query-index.json
 
 ### Geo Map
 
-Each row defines a base geo and its extended geos. Extended geos share the base geo's language -- their pages appear on the base geo's sitemap. Not every extended geo will have a query index for every site -- the generator warns and continues on 404.
+Each row defines a base geo and its extended geos. Not every extended geo will have a query index for every site -- the generator warns and continues on 404.
+
+Extended geos are mapped to the base geo that shares their language. Extract fetches query indices for all extended geos listed in the geo map for the subdomain. The `extendedSitemap` column in the [Config](#config) sheet controls how transform assembles them into pages:
+- `language` (default): Each base geo page includes only its own mapped extended geos (language-matched).
+- `all`: Each base geo page includes all extended geos from every base geo row in the subdomain.
 
 A sitemap page is only generated for a base geo when **at least one query index from any site returns indexable URLs** for that geo. If all indices for a base geo are 404 or contain no indexable URLs (e.g. all pages are noindex/nofollow), the page is skipped. This means new geos automatically get sitemap pages the moment content is published, and empty geos are never produced.
 
@@ -228,8 +242,8 @@ Links resolve to `www.adobe.com` or `business.adobe.com` in production.
 #### GNAV Resolution Fallback Chain
 
 The generator resolves the GNAV source using this chain:
-1. `gnav-source` page metadata (if present)
-2. Local `/{geo}/gnav` on the site's own repo
+1. `gnav-source` page metadata (if present) — client-side prototype only; skipped in the server-side pipeline (no page context to read metadata from)
+2. Local `/{geo}/gnav` on the subdomain's host site (see [Config](#config))
 3. Federal `/{geo}/federal/globalnav/acom/acom-gnav` (fallback)
 
 #### Link Domain Mapping
@@ -308,10 +322,9 @@ flowchart LR
 
 For each domain (business, www) and for each base geo in the geo map:
 
-1. **Resolve GNAV source** for the base geo using the fallback chain:
-   1. `gnav-source` page metadata (if present)
-   2. Local `/{geo}/gnav` on the host repo (e.g. da-bacom)
-   3. Federal `/{geo}/federal/globalnav/acom/acom-gnav` (fallback)
+1. **Resolve GNAV source** for the base geo using the [fallback chain](#gnav-resolution-fallback-chain):
+   1. Local `/{geo}/gnav` on the subdomain's host site (see [Config](#config))
+   2. Federal `/{geo}/federal/globalnav/acom/acom-gnav` (fallback)
 2. **Parse top-level sections** from the GNAV document:
    - Federal pattern: heading tags containing `<a>` links to section sub-fragment paths
    - Local pattern: flat `<a>` links with paths containing `/fragments/`
@@ -328,7 +341,7 @@ For each domain (business, www) and for each base geo in the geo map:
 7. **Build page structure** (H3 section heading > H4 sub-headings > UL link groups):
    - GNAV sections with localized headings and sub-headings
    - Links to HTML sitemaps of every other base geo in the same domain
-   - Links from each extended geo related to this base geo
+   - Extended geo links: scoped by `extendedSitemap` config (`language` = this base geo's mapped extended geos; `all` = every extended geo in the subdomain)
    - All links use hardcoded production URLs (`business.adobe.com` for da-bacom repos, `www.adobe.com` for all others)
    - Strip images/SVGs that may have been generated from URL decoration
 8. **Transform** the page structure into a DA-compatible document (see [DA Document Format](#da-document-format))

@@ -37,6 +37,12 @@ Example:
 
 ```json
 {
+  "config": {
+    "data": [
+      { "subdomain": "business", "domain": "business.adobe.com", "site": "da-bacom", "extendedSitemap": "all" },
+      { "subdomain": "www", "domain": "www.adobe.com", "site": "da-cc", "extendedSitemap": "language" }
+    ]
+  },
   "query-index-map": {
     "data": [
       { "domain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" },
@@ -50,7 +56,7 @@ Example:
   },
   "geo-map": {
     "data": [
-      { "domain": "business", "baseGeo": "", "language": "en", "extendedGeos": "" },
+      { "domain": "business", "baseGeo": "", "language": "en", "extendedGeos": "br, ca, ca_fr, ch_de, ..." },
       { "domain": "business", "baseGeo": "au", "language": "en", "extendedGeos": "" },
       { "domain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en, africa, be_en, ca, ..." },
       { "domain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr, ca_fr, ch_fr, lu_fr" }
@@ -65,38 +71,56 @@ See [Scope in SPEC.md](./SPEC.md#scope).
 
 ### Output
 
-Data is outputed to `tmp/html-sitemap/{subdomain}/{baseGeo}` by default with a structure resembling the DA/Sharepoint location. Example:
+Data is output to `tmp/html-sitemap/` by default. Example:
 
 ```
 /html-sitemap
-  html-sitemap.json       # config file
+  html-sitemap.json               # config file (extract)
   /business
     /raw
-      /da-bacom
-        query-index.json  # https://main--federal--adobecom.aem.live/federal/assets/data/lingo-site-mapping.json
-    sitemap.da.json       # DA JSON Document
-    sitemap.data.json     # HTML Sitemap data
-    /de/
-      /raw
+      /gnav                        # GNAV raw HTML (extract)
+        gnav.html                  # top-level GNAV
+        products.html              # section fragment
+        ai.html                    # section fragment
         ...
-    sitemap.da.json
-    sitemap.data.json
-    /es/
-    /de/
-    # etc
+      placeholders.json            # globalnav placeholders (extract)
+      /da-bacom
+        query-index.json           # base geo query index (extract)
+    sitemap.data.json              # page data JSON (transform data)
+    sitemap.da.json                # DA document JSON (transform da)
+    /de
+      /raw
+        /gnav
+          gnav.html                # localized GNAV for de
+          ...
+        placeholders.json
+        /da-bacom
+          query-index.json
+      sitemap.data.json
+      sitemap.da.json
+    /extended                      # extended geo query indices (extract)
+      /br
+        /da-bacom
+          query-index.json
+      /ca
+        /da-bacom
+          query-index.json
+      # etc
 ```
 
 ### Stages
 
 #### `extract`
 
-Fetches all source data for the specified scope:
+Fetches all source data for the specified scope and writes raw files to disk:
 
 - html-sitemap config file
-- resolved gnav fragments and `placeholders.json` for each base geo
-- `query-index.json` for each base geo and their extended geos
+- GNAV fragments (raw `.plain.html`) and `placeholders.json` for each base geo
+- `query-index.json` for each base geo and their extended geos from each site
 
-The smallest unit of work is a single domain + base geo pair (e.g. `--domain www --geo fr`). See [SPEC.md](./SPEC.md) for details.
+The smallest unit of work is a single subdomain + base geo pair (e.g. `--domain www --geo fr`). The `--geo` flag scopes GNAV fetching to the specified base geo. Query indices are always fetched for all extended geos listed in the geo map for the subdomain (so transform has complete data regardless of `extendedSitemap` mode).
+
+See [SPEC.md](./SPEC.md) for details.
 
 #### `transform (data|da)`
 
@@ -106,8 +130,8 @@ For each domain/geo in scope:
 
 1. `data` Transform extracted data into single generic data JSON
    - `base-geo-links` (Section 1) from GNAV data, applying selection rules
-   - `other-sitemap-links` (Sector 2) from the geo map
-   - `extended-geo-links` (Section 3) from query index data, with deduplication
+   - `other-sitemap-links` (Section 2) from the geo map
+   - `extended-geo-links` (Section 3) from query index data, with deduplication — scoped by `extendedSitemap` config (`language` = base geo's mapped extended geos; `all` = every extended geo in the subdomain)
    - Resolve `{{placeholder}}` tokens
 2. `da` Transform generic data JSON into DA-compatible JSON
    - Assemble into page structure (H3 > H4 > UL)
@@ -196,6 +220,7 @@ See [preview-indexer](../preview-indexer/README.md) for reuseable DA, SP and AEM
 
 - **typescript**: Native execution via Node 24 (no build step)
 - **axios** / **axios-retry**: HTTP client with retry logic
+- **linkedom**: Server-side DOM for parsing GNAV `.plain.html` fragments
 - **form-data**: Multipart form data for DA uploads
 
 ## Related
