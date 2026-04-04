@@ -1,8 +1,21 @@
 # HTML Sitemap Generator
 
-A GitHub Actions-based Node.js pipeline that generates localized HTML sitemap pages for Adobe's international sites and publishes them via DA and the AEM Admin API.
+A Node.js pipeline that builds localized HTML sitemap pages for Adobe sites and promotes them through DA and AEM.
 
-See [SPEC.md](./SPEC.md) for background, requirements, page structure, and stage semantics.
+`README.md` documents the public interface:
+
+- CLI usage
+- canonical stages
+- required inputs
+- output files and directories
+- auth/env contract
+
+See [SPEC.md](./SPEC.md) for the behavioral contract behind those stages:
+
+- source-of-truth site and geo inventory
+- GNAV and query-index discovery rules
+- transform rules and page semantics
+- fallback behavior and warning conditions
 
 ## Prerequisites
 
@@ -13,79 +26,126 @@ See [SPEC.md](./SPEC.md) for background, requirements, page structure, and stage
 ```bash
 cd .github/workflows/html-sitemap
 npm install
-
-# or from repo root
-# npm --prefix .github/workflows/html-sitemap install
 ```
 
-### Environment
-
-Ensure the following env vars are defined for DA and AEM related commands. `.env` also supported.
+From the repo root:
 
 ```bash
-# DA auth for service account (production)
+npm --prefix .github/workflows/html-sitemap install
+npm --prefix .github/workflows/html-sitemap run typecheck
+npm --prefix .github/workflows/html-sitemap run test
+```
+
+## Environment
+
+Only `push`, `preview`, and `publish` require auth.
+
+```bash
+# DA auth for service account / production automation
 ROLLING_IMPORT_IMS_URL=https://...
 ROLLING_IMPORT_CLIENT_ID=...
 ROLLING_IMPORT_CLIENT_SECRET=...
 ROLLING_IMPORT_CODE=...
 ROLLING_IMPORT_GRANT_TYPE=authorization_code
 
-# DA auth personal (dev)
+# Short-lived local DA override token
 DA_SOURCE_TOKEN=...
 
 # AEM admin tokens for preview + publish
-# Use the raw auth_token cookie value from https://admin.hlx.page/profile (dev)
+# Use the raw auth_token cookie value from https://admin.hlx.page/profile
 AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
 AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
 ```
 
 ## CLI
 
-The generator is a Node.js CLI that follows an ETL pipeline. Each stage can be run independently or as part of a selected sequence. The same interface maps to both local execution and GitHub Actions workflow inputs.
+Run help:
 
-### Usage
-
+```bash
+node .github/workflows/html-sitemap/generate.ts --help
 ```
-$ node .github/workflows/html-sitemap/generate.ts --help
-HTML Sitemap Generator
 
 Usage:
-  node --env-file=.env generate.ts [stage] [mode] [options]
-  node --env-file=.env generate.ts --stages <list> [options]
 
-Stages:
-  clean            Delete generated output data under --output
-  extract          Fetch config, GNAV fragments, and query index files
-  transform-data   Build normalized sitemap.json from extracted inputs
-  transform-da     Build sitemap.html from sitemap.json
-  push             Upload sitemap.html to DA under --da-root
-  preview          Trigger AEM preview for pushed pages
-  publish          Trigger AEM publish for previewed pages
-
-Options:
-  --config <url|path>   Sitemap config JSON (default: https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json)
-  --output <dir>        Root directory for generated files (default: tmp/html-sitemap)
-  --domain <name>       Filter to a single domain: www | business
-  --geo <prefix>        Filter to a single base geo (e.g. fr, de, default)
-  --da-root <path>      Remote DA folder root for push/preview/publish
-  --stages <list>       Comma-separated stage ids
-  -h, --help            Show this help
-
-Examples:
-  node --env-file=.env generate.ts --stages extract,transform-data,transform-da  --domain business --geo default --da-root /drafts/hgpa/html-sitemap
-  node --env-file=.env generate.ts push --domain business --geo default --da-root /drafts/hgpa/html-sitemap
-  node --env-file=.env generate.ts preview --domain business --geo default --da-root /drafts/hgpa/html-sitemap
-  node --env-file=.env generate.ts publish --domain business --geo default --da-root /drafts/hgpa/html-sitemap
-  node --env-file=.env generate.ts --stages extract,transform-data,transform-da,push,preview,publish
+```text
+node --env-file=.env generate.ts [stage] [mode] [options]
+node --env-file=.env generate.ts --stages <list> [options]
 ```
 
-## Input
+Canonical stage ids:
 
-The generator uses a config file that defines the query index sources and geo map. Default location: https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json. Pass a different path or URL with `--config`.
+- `clean`
+- `extract`
+- `transform-data`
+- `transform-da`
+- `push`
+- `preview`
+- `publish`
 
-Use `--geo default` (or `--geo root`) to target the root sitemap for a domain. Those aliases normalize to the empty base-geo key internally.
+Convenience shortcuts:
 
-The file uses format compatible with [AEM multi-sheet JSON](https://www.aem.live/developer/spreadsheets#multi-sheet-format), so config data can reside in any compatible backend (DA, Sharepoint).
+- `transform data` -> `transform-data`
+- `transform da` -> `transform-da`
+- `transform` -> `transform-data`, then `transform-da`
+
+Rules:
+
+- Positional stage mode and `--stages` are mutually exclusive.
+- `--stages` accepts comma-separated canonical stage ids.
+- Multi-stage execution order is normalized in code.
+- No stage selection prints help and exits non-zero.
+
+Options:
+
+- `--config <url|path>`: sitemap config JSON
+- `--output <dir>`: local output root
+- `--domain <name>`: filter to `www` or `business`
+- `--geo <prefix>`: filter to a single base geo
+- `--da-root <path>`: remote DA/AEM document root for `push`, `preview`, `publish`
+- `--stages <list>`: comma-separated canonical stage ids
+- `-h`, `--help`: print help
+
+`--geo default` and `--geo root` both target the empty/root base geo.
+
+Examples:
+
+```bash
+# Extract + transform locally
+node --env-file=.env .github/workflows/html-sitemap/generate.ts extract --domain www --geo fr
+node --env-file=.env .github/workflows/html-sitemap/generate.ts transform --domain www --geo fr
+
+# Explicit multi-stage run
+node --env-file=.env .github/workflows/html-sitemap/generate.ts --stages extract,transform-data,transform-da --domain business
+
+# Delivery stages
+node --env-file=.env .github/workflows/html-sitemap/generate.ts push --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+node --env-file=.env .github/workflows/html-sitemap/generate.ts preview --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+node --env-file=.env .github/workflows/html-sitemap/generate.ts publish --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+```
+
+## Input Contract
+
+The generator reads a multi-sheet JSON config file. Default:
+
+- `https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json`
+
+Override with `--config <url|path>`.
+
+Expected top-level sheets:
+
+- `config`
+- `query-index-map`
+- `geo-map`
+
+Expected roles:
+
+- `config`: subdomain, production domain, host site, extended sitemap mode
+- `query-index-map`: per-site query-index path inventory
+- `geo-map`: base geos, languages, and extended-geo mappings
+
+The format is compatible with AEM multi-sheet JSON:
+
+- https://www.aem.live/developer/spreadsheets#multi-sheet-format
 
 Example:
 
@@ -99,226 +159,248 @@ Example:
   },
   "query-index-map": {
     "data": [
-      { "subdomain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" },
-      { "subdomain": "www", "site": "cc", "queryIndexPath": "/cc-shared/assets/query-index.json" },
-      { "subdomain": "www", "site": "da-cc", "queryIndexPath": "/cc-shared/assets/query-index.json" },
-      { "subdomain": "www", "site": "da-dc", "queryIndexPath": "/dc-shared/assets/query-index.json" },
-      { "subdomain": "www", "site": "da-events", "queryIndexPath": "/events/query-index.json" },
-      { "subdomain": "www", "site": "da-express-milo", "queryIndexPath": "/express/query-index.json" },
-      { "subdomain": "www", "site": "edu", "queryIndexPath": "/edu-shared/assets/query-index.json" }
+      { "subdomain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" }
     ]
   },
   "geo-map": {
     "data": [
-      { "subdomain": "business", "baseGeo": "", "language": "en", "extendedGeos": "br, ca, ca_fr, ch_de, ..." },
-      { "subdomain": "business", "baseGeo": "au", "language": "en", "extendedGeos": "" },
-      { "subdomain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en, africa, be_en, ca, ..." },
-      { "subdomain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr, ca_fr, ch_fr, lu_fr" }
-      // etc.
+      { "subdomain": "business", "baseGeo": "", "language": "en", "extendedGeos": "ca, nl" },
+      { "subdomain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "ca_fr, ch_fr" }
     ]
   }
 }
 ```
 
-See [Scope in SPEC.md](./SPEC.md#scope).
+See [SPEC.md](./SPEC.md#scope) for the current live inventory and meaning of those sheets.
 
-### Output
+## Output Contract
 
-All stages read and write under a single output root. By default that is `tmp/html-sitemap/` (relative to the current working directory). Override with `--output <dir>` (for example a CI artifact path or another disk location). Paths below are relative to that root.
+All stages read and write under a single local output root. Default:
 
-Example layout:
+- `tmp/html-sitemap`
 
-```
+Paths below are relative to that root.
+
+Representative layout:
+
+```text
 /html-sitemap
-  html-sitemap.json                # copy of config file (extract)
+  html-sitemap.json
   /business
-    /_extract                      # raw data folder (extract)
-      /gnav                        # GNAV raw HTML
-        gnav.html                  # top-level GNAV
-        products.html              # section fragment
-        ai.html                    # section fragment
-        ...
-        manifest.json              # source/path/type map for saved GNAV files
-      placeholders.json            # globalnav placeholders
+    /_extract
+      /gnav
+        gnav.html
+        products.html
+        manifest.json
+      placeholders.json
       /da-bacom
-        query-index.json           # base geo query index
-    sitemap.json                   # normalized data JSON (transform data)
-    sitemap.html                   # DA source HTML (transform da)
-    /de
+        query-index.json
+    sitemap.json
+    sitemap.html
+    /fr
       /_extract
         /gnav
-          gnav.html                # localized GNAV for de
-          ...
+          gnav.html
+          manifest.json
         placeholders.json
         /da-bacom
           query-index.json
         /extended
-          /at
-            /da-bacom
-              query-index.json
-          /ch_de
+          /ca_fr
             /da-bacom
               query-index.json
       sitemap.json
       sitemap.html
 ```
 
-### Stages
+### File Formats
 
-#### `extract`
+`html-sitemap.json`
 
-Fetches all source data for the specified scope and writes raw files to disk:
+- Local copy of the resolved config input
+- Written by `extract`
 
-- html-sitemap config file
-- GNAV fragments (raw `.plain.html`) and `placeholders.json` under `_extract` for each base geo
-- GNAV `manifest.json` for each base geo, mapping saved local files back to source URLs/paths and fragment roles
-- `query-index.json` for each base geo and its mapped extended geos from each site, colocated under that base geo's `_extract` tree
+`_extract/gnav/*.html`
 
-The smallest unit of work is a single subdomain + base geo pair (e.g. `--domain www --geo fr`). The `--geo` flag scopes GNAV fetching to the specified base geo. Query indices are always fetched for all extended geos listed in the geo map for the subdomain (so transform has complete data regardless of `extendedSitemap` mode).
+- Raw GNAV fragment HTML persisted from source `.plain.html`
+- Written by `extract`
 
-If a base geo's GNAV cannot be resolved, extract logs a warning, skips GNAV output for that base geo, and continues with the rest of the run. Missing query indices already follow the same warn-and-continue model.
+`_extract/gnav/manifest.json`
 
-##### Current Extract Semantics
+- Directory-level manifest for persisted GNAV artifacts
+- Maps local files back to source provenance and fragment role
+- Written by `extract`
 
-- A base geo is treated as having sitemap output only when at least one base-geo query index succeeds and returns rows.
-- Base geos that do not meet that rule leave no per-geo output folder behind.
-- GNAV fragments and placeholders are only persisted for base geos that qualify for sitemap output.
+`_extract/placeholders.json`
 
-##### Output Conventions
+- Raw placeholders payload used later by transform
+- Written by `extract`
 
-- `_extract` is internal pipeline state, not publishable content.
-- A base-geo folder under the output root corresponds to a geo that currently qualifies to produce `sitemap.html` during transform.
-- Extended-geo query indices are nested under the owning base geo's `_extract/extended/` subtree so each base geo is self-contained for transform.
+`_extract/**/query-index.json`
 
-##### Run Summary
+- Raw query-index payloads fetched per site and geo
+- Written by `extract`
 
-- `extract` prints a final summary listing the base geos with sitemap output and the base geos without it.
-- In this summary, "with sitemap output" means `extract` found enough base-geo query-index data for transform to consider emitting `sitemap.html`.
+`sitemap.json`
 
-See [SPEC.md](./SPEC.md) for details.
+- Normalized intermediate data for one sitemap page
+- Written by `transform-data`
+- Consumed by `transform-da`
 
-Plain `transform` is a convenience alias that runs both atomic transform stages in order:
+Current top-level shape:
 
-1. `transform-data`
-2. `transform-da`
-
-#### `transform (data|da)`
-
-Converts extracted data into DA-compatible page documents. No auth required.
-
-For each domain/geo in scope:
-
-1. `data` Transform extracted data into single generic data JSON
-   - `base-geo-links` (Section 1) from GNAV data, applying selection rules
-   - `other-sitemap-links` (Section 2) from the geo map, but only for sibling base geos that currently have sitemap output
-   - `extended-geo-links` (Section 3) from query index data, with deduplication on canonical paths after removing the geo prefix from both base-geo and extended-geo URLs — scoped by `extendedSitemap` config (`language` = base geo's mapped extended geos; `all` = every extended geo in the subdomain)
-   - Resolve `{{placeholder}}` tokens
-2. `da` Transform generic data JSON into a DA-compatible HTML source document
-   - Assemble into page structure and write `sitemap.html`
-
-See [SPEC.md](./SPEC.md) for details.
-
-`transform data` reads only previously extracted local artifacts under each eligible base geo's `_extract` tree and writes `sitemap.json` next to that geo folder:
-
-- `business/sitemap.json`
-- `business/fr/sitemap.json`
-
-The generated data file currently contains:
-
-- `sections.baseGeoLinks`
-- `sections.otherSitemapLinks`
-- `sections.extendedGeoLinks`
-
-`transform data` is also responsible for resolving placeholder tokens using the extracted `placeholders.json` data. That resolution applies to GNAV-derived labels and GNAV-derived links before the normalized data file is written.
-
-Query-index titles are also normalized during `transform data`: title fallback is derived from the URL slug without any file extension, and trailing Adobe branding suffixes such as `- Adobe` or `| Adobe` are removed.
-
-At the end of the run, `transform data` prints a summary of which base geos were transformed and which were skipped because no eligible `_extract` subtree was present.
-
-#### `transform da`
-
-Current DA source inspection indicates that DA stores the page source as plain HTML, not as a separate DA-specific page schema. `transform da` therefore reads `sitemap.json`, generates `sitemap.html`, and keeps the work local-only.
-
-The current renderer:
-
-- writes a full HTML source document
-- uses a simple shell: `<body><header></header><main>...</main><footer></footer></body>`
-- renders Milo-compatible authored markup for the primary sitemap sections inside `<main>`
-- appends a metadata block in the source document
-
-The renderer remains code-driven in TypeScript. A general-purpose templating engine is not used.
-
-Current page-copy contract:
-
-- H1 defaults to `Sitemap`
-- metadata `title` matches the page title
-- metadata `description` is a localized short description of the page
-- page copy is localized by the base geo's configured language, with English fallback when no localized string is defined
-
-Current section rendering contract:
-
-- Intro uses authored `text` markup
-- Section 1 uses authored `sitemap-base` markup
-- Section 2 uses authored `sitemap-list` markup
-- Section 3 uses authored `accordion` markup and retains the `sitemap-extended` class for preview parity with the draft reference
-
-#### `push`
-
-Uploads transformed documents to DA.
-
-1. Read local transform output documents, e.g. `sitemap.html`, from `--output`
-2. Map them to remote DA paths under `--da-root`
-3. Create any missing folders beneath the provided DA root
-4. Upload the HTML source document via the DA Source API (IMS-authenticated)
-
-Example:
-
-```bash
-node --env-file=.env generate.ts push --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+```json
+{
+  "subdomain": "business",
+  "baseGeo": "",
+  "domain": "business.adobe.com",
+  "sections": {
+    "baseGeoLinks": [],
+    "otherSitemapLinks": [],
+    "extendedGeoLinks": []
+  }
+}
 ```
 
-Current scope is additive only: the pipeline creates or updates generated sitemap pages, but does not automatically remove or unpublish pages that fall out of scope. Cleanup is manual for now.
+`sitemap.html`
 
-#### `clean`
+- DA-compatible HTML source document for one sitemap page
+- Written by `transform-da`
+- Consumed by `push`, `preview`, and `publish`
 
-Deletes the generated output directory at `--output` recursively. This is for local cleanup of extracted/transformed artifacts only; it does not remove anything from DA or AEM.
+## Stage Contract
 
-#### `preview`
+### `clean`
 
-Triggers AEM preview for all pushed pages.
+Reads:
 
-1. For each page: trigger preview via the Helix Admin API
+- nothing
 
-#### `publish`
+Writes:
 
-Triggers AEM publish for all previewed pages.
+- removes the local `--output` directory
 
-1. For each page: trigger publish via the Helix Admin API
+Conditions:
 
-### GitHub Actions Workflow Inputs
+- local-only
+- does not remove anything from DA or AEM
 
-The workflow exposes the same parameters as the CLI:
+### `extract`
 
-| Input | Description | Default |
-|---|---|---|
-| `stages` | Comma-separated canonical stage ids: `extract`, `transform-data`, `transform-da`, `push`, `preview`, `publish`, `clean` | |
-| `output` | Output root directory (same as CLI `--output`) | `tmp/html-sitemap` |
-| `domain` | Filter to domain: `www`, `business`, or blank for all | (all) |
-| `geo` | Filter to base geo prefix, or blank for all | (all) |
+Reads:
 
-## Dependencies
+- config from `--config`
+- remote GNAV, placeholders, and query-index sources
 
-See [preview-indexer](../preview-indexer/README.md) for related DA, SP and AEM admin integration patterns.
+Writes:
 
-- **typescript**: Local typechecking
-- **parse5**: Server-side HTML parsing for GNAV transforms
+- `html-sitemap.json`
+- `_extract/gnav/*.html`
+- `_extract/gnav/manifest.json`
+- `_extract/placeholders.json`
+- `_extract/**/query-index.json`
+
+Conditions that affect output:
+
+- A base geo gets a local output folder only if at least one base-geo query index succeeds and returns rows.
+- Extended-geo query indices are written under the owning base geo’s `_extract/extended/...`.
+- Missing remote resources warn and continue.
+
+### `transform-data`
+
+Reads:
+
+- previously extracted `_extract` artifacts for each eligible base geo
+
+Writes:
+
+- `sitemap.json`
+
+Conditions that affect output:
+
+- runs only for base geos that already have eligible extracted input
+- sibling sitemap links include only base geos that currently have sitemap output
+- extended-geo links are subject to deduplication and `extendedSitemap` rules
+
+### `transform-da`
+
+Reads:
+
+- `sitemap.json`
+
+Writes:
+
+- `sitemap.html`
+
+Conditions that affect output:
+
+- runs only where `sitemap.json` exists
+- output is a DA HTML source document, not a DA-specific JSON format
+
+### `push`
+
+Reads:
+
+- local `sitemap.html`
+
+Writes:
+
+- remote DA source document rooted at `--da-root`
+
+Conditions that affect output:
+
+- requires `--da-root`
+- requires DA auth env vars
+- skips geos with no local `sitemap.html`
+
+### `preview`
+
+Reads:
+
+- local `sitemap.html` to determine which geos are eligible
+
+Writes:
+
+- AEM preview state for the corresponding remote document path under `--da-root`
+
+Conditions that affect output:
+
+- requires `--da-root`
+- requires AEM admin token env vars
+- skips geos with no local `sitemap.html`
+
+### `publish`
+
+Reads:
+
+- local `sitemap.html` to determine which geos are eligible
+
+Writes:
+
+- AEM live/publish state for the corresponding remote document path under `--da-root`
+
+Conditions that affect output:
+
+- requires `--da-root`
+- requires AEM admin token env vars
+- skips geos with no local `sitemap.html`
+
+## GitHub Actions Inputs
+
+The workflow should expose the same interface as the CLI:
+
+- `stages`
+- `config`
+- `output`
+- `domain`
+- `geo`
+- `da-root`
 
 ## Related
 
-- [SPEC.md](./SPEC.md): Background, requirements, page structure, architecture, source-of-truth data, and **reference implementation** (browser GNAV prototype vs server pipeline).
-- [Preview Indexer](../preview-indexer/README.md): Similar GitHub Actions-based system for maintaining preview indexes. Shares authentication patterns and DA/AEM API integration.
-- **GNAV reference (browser)**: Implemented in [`libs/blocks/sitemap-base/sitemap-base.js`](../../../libs/blocks/sitemap-base/sitemap-base.js) (unit tests: [`sitemap-base.test.js`](../../../test/blocks/sitemap-base/sitemap-base.test.js)). That block is the behavioral spec for GNAV resolution, section discovery, `#_inline` column fetching, exclusions, and placeholders. The [`sitemap-gnav-proto`](https://github.com/adobecom/milo/tree/sitemap-gnav-proto) branch is used to **preview** the same block on draft pages via `milolibs=…`; it is not the sole location of the source—the canonical file paths are under `libs/blocks/sitemap-base/` on whichever branch you have checked out.
-- [Federal repo](https://github.com/adobecom/federal): Hosts shared GNAV fragments and placeholders used by www.adobe.com.
+- [SPEC.md](./SPEC.md)
+- [Preview Indexer](../preview-indexer/README.md)
+- [Federal repo](https://github.com/adobecom/federal)
 
 ## License
 
