@@ -23,9 +23,9 @@ This work is especially important alongside **Project Lingo**, which is consolid
 ## Requirements
 
 - **Performance**: Pages must be fast. Googlebot penalizes slow pages, and slow CrUX scores defeat the purpose. Humans may also visit.
+- **Static production URLs**: Generated pages contain hardcoded production URLs. We need bots to see this in HTML on first pass. Client-side JavaScript rewrites URLs in non-production environments to support development.
 - **Full automation**: Authors must not be required to author or maintain anything that can be automated. Pages are generated entirely from live data sources -- no manual curation, no spreadsheets to maintain, no per-geo authoring.
 - **Lingo compatibility**: As Lingo rolls out in phases (French first), sitemap pages will need updating based on which query indices are available at the time.
-- **Static production URLs**: Generated pages contain hardcoded production URLs. Client-side JavaScript rewrites URLs in non-production environments.
 - **Monitoring**: Both the generation process and the resulting pages will be monitored.
 
 ## Page Structure
