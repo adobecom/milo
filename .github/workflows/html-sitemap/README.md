@@ -86,6 +86,7 @@ Example layout:
         products.html              # section fragment
         ai.html                    # section fragment
         ...
+        manifest.json              # source/path/type map for saved GNAV files
       placeholders.json            # globalnav placeholders (extract)
       /da-bacom
         query-index.json           # base geo query index (extract)
@@ -119,9 +120,12 @@ Fetches all source data for the specified scope and writes raw files to disk:
 
 - html-sitemap config file
 - GNAV fragments (raw `.plain.html`) and `placeholders.json` for each base geo
+- GNAV `manifest.json` for each base geo, mapping saved local files back to source URLs/paths and fragment roles
 - `query-index.json` for each base geo and their extended geos from each site
 
 The smallest unit of work is a single subdomain + base geo pair (e.g. `--domain www --geo fr`). The `--geo` flag scopes GNAV fetching to the specified base geo. Query indices are always fetched for all extended geos listed in the geo map for the subdomain (so transform has complete data regardless of `extendedSitemap` mode).
+
+If a base geo's GNAV cannot be resolved, extract logs a warning, skips GNAV output for that base geo, and continues with the rest of the run. Missing query indices already follow the same warn-and-continue model.
 
 See [SPEC.md](./SPEC.md) for details.
 
@@ -147,6 +151,8 @@ Uploads transformed documents to DA.
 
 1. Read transform output documents, e.g. `sitemap.da.json`
 2. For each document: PUT to DA via the DA Admin API (IMS-authenticated)
+
+Current scope is additive only: the pipeline creates or updates generated sitemap pages, but does not automatically remove or unpublish pages that fall out of scope. Cleanup is manual for now.
 
 #### `preview`
 

@@ -302,7 +302,7 @@ Whether a page is emitted at all also depends on query-index data — see **Page
 
 1. **Sitemap [Config](#config)** — Subdomain → site mapping, production domains, `extendedSitemap` mode. Will eventually be backed by a DA spreadsheet.
 2. **[Query index and geo map (snapshot)](#query-index-and-geo-map-snapshot)** — Per-site query-index paths and base/extended geo rows; **extract** downloads JSON; **transform** applies scope and deduplication.
-3. **[GNAV (snapshot)](#gnav-snapshot)** — Fragment paths, placeholders, fallback chain, rendering rules; **extract** stores raw `.plain.html`; **transform** parses into Section 1.
+3. **[GNAV (snapshot)](#gnav-snapshot)** — Fragment paths, placeholders, fallback chain, rendering rules; **extract** stores raw `.plain.html` plus a per-geo manifest that maps saved files back to source URLs and fragment roles; **transform** parses into Section 1.
 
 ### Pipeline
 
@@ -345,6 +345,7 @@ For each domain (business, www) and for each base geo in the geo map:
 1. **Resolve GNAV source** for the base geo using the [fallback chain](#gnav-resolution-fallback-chain):
    1. Local `/{geo}/gnav` on the subdomain's host site (see [Config](#config))
    2. Federal `/{geo}/federal/globalnav/acom/acom-gnav` (fallback)
+   - If no GNAV source resolves for the base geo, log a warning, skip GNAV extraction for that base geo, and continue the run.
 2. **Parse top-level sections** from the GNAV document:
    - Federal pattern: heading tags containing `<a>` links to section sub-fragment paths
    - Local pattern: flat `<a>` links with paths containing `/fragments/`
@@ -355,6 +356,7 @@ For each domain (business, www) and for each base geo in the geo map:
    - Links inside `.link-group`, `<li>`, `<p>`, or `<strong>` become links
    - Description `<p>` text after links is discarded
    - `bookmark://` links are discarded
+   - Persist a manifest alongside raw GNAV files so local filenames can remain implementation-defined while retaining exact source provenance (`sourceUrl`, `sourcePath`, fragment role, and parent relationship when applicable).
 4. **Resolve placeholders** (`{{key}}` tokens) via federal globalnav placeholders for the geo
 5. **Fetch query index JSON** for the base geo (and its extended geos) from each site in the query index map. Warn and skip on 404 or empty results.
 6. **Check page generation rule**: if no site returned indexable URLs for this base geo, skip -- do not produce a page.
@@ -381,6 +383,8 @@ The generator runs on a recurring schedule. Options:
 - External cron (e.g. Adobe I/O Runtime / OpenWhisk action) triggering via `repository_dispatch`
 
 Full rebuild on each run (no incremental state management needed). The entire dataset is processed from scratch each time.
+
+Current operational scope is additive only: the pipeline creates or updates generated sitemap pages, but does not automatically remove or unpublish pages that become ineligible. Cleanup is manual until explicit removal behavior is specified.
 
 ## Reference implementation (browser)
 
