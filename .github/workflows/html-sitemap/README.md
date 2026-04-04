@@ -19,6 +19,7 @@ Stages:
   push          Push pages to DA
   preview       AEM preview pages
   publish       AEM publish pages
+  clean         Delete generated output data under --output
   (none)        Run all stages in sequence
 
 Options:
@@ -46,21 +47,21 @@ Example:
   },
   "query-index-map": {
     "data": [
-      { "domain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" },
-      { "domain": "www", "site": "cc", "queryIndexPath": "/cc-shared/assets/query-index.json" },
-      { "domain": "www", "site": "da-cc", "queryIndexPath": "/cc-shared/assets/query-index.json" },
-      { "domain": "www", "site": "da-dc", "queryIndexPath": "/dc-shared/assets/query-index.json" },
-      { "domain": "www", "site": "da-events", "queryIndexPath": "/events/query-index.json" },
-      { "domain": "www", "site": "da-express-milo", "queryIndexPath": "/express/query-index.json" },
-      { "domain": "www", "site": "edu", "queryIndexPath": "/edu-shared/assets/query-index.json" }
+      { "subdomain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" },
+      { "subdomain": "www", "site": "cc", "queryIndexPath": "/cc-shared/assets/query-index.json" },
+      { "subdomain": "www", "site": "da-cc", "queryIndexPath": "/cc-shared/assets/query-index.json" },
+      { "subdomain": "www", "site": "da-dc", "queryIndexPath": "/dc-shared/assets/query-index.json" },
+      { "subdomain": "www", "site": "da-events", "queryIndexPath": "/events/query-index.json" },
+      { "subdomain": "www", "site": "da-express-milo", "queryIndexPath": "/express/query-index.json" },
+      { "subdomain": "www", "site": "edu", "queryIndexPath": "/edu-shared/assets/query-index.json" }
     ]
   },
   "geo-map": {
     "data": [
-      { "domain": "business", "baseGeo": "", "language": "en", "extendedGeos": "br, ca, ca_fr, ch_de, ..." },
-      { "domain": "business", "baseGeo": "au", "language": "en", "extendedGeos": "" },
-      { "domain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en, africa, be_en, ca, ..." },
-      { "domain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr, ca_fr, ch_fr, lu_fr" }
+      { "subdomain": "business", "baseGeo": "", "language": "en", "extendedGeos": "br, ca, ca_fr, ch_de, ..." },
+      { "subdomain": "business", "baseGeo": "au", "language": "en", "extendedGeos": "" },
+      { "subdomain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en, africa, be_en, ca, ..." },
+      { "subdomain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr, ca_fr, ch_fr, lu_fr" }
       // etc.
     ]
   }
@@ -80,7 +81,7 @@ Example layout:
 /html-sitemap
   html-sitemap.json               # config file (extract)
   /business
-    /raw
+    /_extract
       /gnav                        # GNAV raw HTML (extract)
         gnav.html                  # top-level GNAV
         products.html              # section fragment
@@ -93,23 +94,22 @@ Example layout:
     sitemap.data.json              # page data JSON (transform data)
     sitemap.da.json                # DA document JSON (transform da)
     /de
-      /raw
+      /_extract
         /gnav
           gnav.html                # localized GNAV for de
           ...
         placeholders.json
         /da-bacom
           query-index.json
+        /extended
+          /at
+            /da-bacom
+              query-index.json
+          /ch_de
+            /da-bacom
+              query-index.json
       sitemap.data.json
       sitemap.da.json
-    /extended                      # extended geo query indices (extract)
-      /br
-        /da-bacom
-          query-index.json
-      /ca
-        /da-bacom
-          query-index.json
-      # etc
 ```
 
 ### Stages
@@ -119,13 +119,30 @@ Example layout:
 Fetches all source data for the specified scope and writes raw files to disk:
 
 - html-sitemap config file
-- GNAV fragments (raw `.plain.html`) and `placeholders.json` for each base geo
+- GNAV fragments (raw `.plain.html`) and `placeholders.json` under `_extract` for each base geo
 - GNAV `manifest.json` for each base geo, mapping saved local files back to source URLs/paths and fragment roles
-- `query-index.json` for each base geo and their extended geos from each site
+- `query-index.json` for each base geo and its mapped extended geos from each site, colocated under that base geo's `_extract` tree
 
 The smallest unit of work is a single subdomain + base geo pair (e.g. `--domain www --geo fr`). The `--geo` flag scopes GNAV fetching to the specified base geo. Query indices are always fetched for all extended geos listed in the geo map for the subdomain (so transform has complete data regardless of `extendedSitemap` mode).
 
 If a base geo's GNAV cannot be resolved, extract logs a warning, skips GNAV output for that base geo, and continues with the rest of the run. Missing query indices already follow the same warn-and-continue model.
+
+##### Current Extract Semantics
+
+- A base geo is treated as having sitemap output only when at least one base-geo query index succeeds and returns rows.
+- Base geos that do not meet that rule leave no per-geo output folder behind.
+- GNAV fragments and placeholders are only persisted for base geos that qualify for sitemap output.
+
+##### Output Conventions
+
+- `_extract` is internal pipeline state, not publishable content.
+- A base-geo folder under the output root corresponds to a geo that currently qualifies to produce `sitemap.html` during transform.
+- Extended-geo query indices are nested under the owning base geo's `_extract/extended/` subtree so each base geo is self-contained for transform.
+
+##### Run Summary
+
+- `extract` prints a final summary listing the base geos with sitemap output and the base geos without it.
+- In this summary, "with sitemap output" means `extract` found enough base-geo query-index data for transform to consider emitting `sitemap.html`.
 
 See [SPEC.md](./SPEC.md) for details.
 
@@ -138,12 +155,34 @@ For each domain/geo in scope:
 1. `data` Transform extracted data into single generic data JSON
    - `base-geo-links` (Section 1) from GNAV data, applying selection rules
    - `other-sitemap-links` (Section 2) from the geo map
-   - `extended-geo-links` (Section 3) from query index data, with deduplication — scoped by `extendedSitemap` config (`language` = base geo's mapped extended geos; `all` = every extended geo in the subdomain)
+   - `extended-geo-links` (Section 3) from query index data, with deduplication on canonical paths after removing the geo prefix from both base-geo and extended-geo URLs — scoped by `extendedSitemap` config (`language` = base geo's mapped extended geos; `all` = every extended geo in the subdomain)
    - Resolve `{{placeholder}}` tokens
 2. `da` Transform generic data JSON into DA-compatible JSON
    - Assemble into page structure (H3 > H4 > UL)
 
 See [SPEC.md](./SPEC.md) for details.
+
+Current implementation status:
+
+- `transform data` is implemented
+- `transform da` is not implemented yet
+
+`transform data` reads only previously extracted local artifacts under each eligible base geo's `_extract` tree and writes `sitemap.data.json` next to that geo folder:
+
+- `business/sitemap.data.json`
+- `business/fr/sitemap.data.json`
+
+The generated data file currently contains:
+
+- `sections.baseGeoLinks`
+- `sections.otherSitemapLinks`
+- `sections.extendedGeoLinks`
+
+`transform data` is also responsible for resolving placeholder tokens using the extracted `placeholders.json` data. That resolution applies to GNAV-derived labels and GNAV-derived links before the normalized data file is written.
+
+Query-index titles are also normalized during `transform data`: title fallback is derived from the URL slug without any file extension, and trailing Adobe branding suffixes such as `- Adobe` or `| Adobe` are removed.
+
+At the end of the run, `transform data` prints a summary of which base geos were transformed and which were skipped because no eligible `_extract` subtree was present.
 
 #### `push`
 
@@ -153,6 +192,10 @@ Uploads transformed documents to DA.
 2. For each document: PUT to DA via the DA Admin API (IMS-authenticated)
 
 Current scope is additive only: the pipeline creates or updates generated sitemap pages, but does not automatically remove or unpublish pages that fall out of scope. Cleanup is manual for now.
+
+#### `clean`
+
+Deletes the generated output directory at `--output` recursively. This is for local cleanup of extracted/transformed artifacts only; it does not remove anything from DA or AEM.
 
 #### `preview`
 
@@ -172,9 +215,12 @@ Triggers AEM publish for all previewed pages.
 # Full pipeline, all domains and geos
 node --env-file=.env generate.ts
 
+# Remove generated local output
+node --env-file=.env generate.ts clean
+
 # Extract + transform only (no auth needed), single geo
 node --env-file=.env generate.ts extract --domain www --geo fr
-node --env-file=.env generate.ts transform --domain www --geo fr
+node --env-file=.env generate.ts transform data --domain www --geo fr
 
 # Full pipeline, single domain
 node --env-file=.env generate.ts --domain business
@@ -191,7 +237,7 @@ The workflow exposes the same parameters as the CLI:
 
 | Input | Description | Default |
 |---|---|---|
-| `stage` | Pipeline stage: `extract`, `transform`, `push`, `preview`, `publish`, or blank for all | (all) |
+| `stage` | Pipeline stage: `extract`, `transform`, `push`, `preview`, `publish`, `clean`, or blank for all | (all) |
 | `output` | Output root directory (same as CLI `--output`) | `tmp/html-sitemap` |
 | `domain` | Filter to domain: `www`, `business`, or blank for all | (all) |
 | `geo` | Filter to base geo prefix, or blank for all | (all) |
@@ -205,6 +251,14 @@ The workflow exposes the same parameters as the CLI:
 ```bash
 cd .github/workflows/html-sitemap
 npm install
+```
+
+If you prefer to stay at the repo root, use npm's `--prefix` form to run this package in place:
+
+```bash
+npm --prefix .github/workflows/html-sitemap install
+npm --prefix .github/workflows/html-sitemap run typecheck
+npm --prefix .github/workflows/html-sitemap run test
 ```
 
 Create a `.env` file for local runs. Only `push` (DA), `preview`, and `publish` (AEM) require auth.

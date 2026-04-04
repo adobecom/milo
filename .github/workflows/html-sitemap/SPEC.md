@@ -57,7 +57,7 @@ Auto-generated from the [geo map](#geo-map) -- no authoring required.
 
 ### Section 3: Extended Geo Links
 
-Pages that only exist in extended geos, grouped by region (e.g. "Belgium (fr)", "Canada (fr)"). **Deduplication** (e.g. dropping extended-geo URLs whose path already appears in the base geo's index) is applied in **`transform`**, not in **`extract`**. **Extract** only downloads raw `query-index.json` per site and geo.
+Pages that only exist in extended geos, grouped by region (e.g. "Belgium (fr)", "Canada (fr)"). **Deduplication** is applied in **`transform`**, not in **`extract`**. The comparison is done on canonical paths with the geo prefix removed from both the base-geo path and the extended-geo path. If an extended-geo URL canonicalizes to a path that already exists in the base geo, the extended-geo entry is dropped. **Extract** only downloads raw `query-index.json` per site and geo.
 
 Sourced from query index JSON files — see [Query index and geo map (snapshot)](#query-index-and-geo-map-snapshot).
 
@@ -77,7 +77,7 @@ business	business.adobe.com	da-bacom	all
 www	www.adobe.com	da-cc	language
 ```
 
-- `subdomain` — Logical subdomain name. Matches the `domain` column in `geo-map` and `query-index-map`.
+- `subdomain` — Logical subdomain name. Matches the `subdomain` column in `geo-map` and `query-index-map`.
 - `domain` — Production domain for all rendered links. Replaces AEM `.aem.live` origins in output.
 - `site` — AEM repo used for local GNAV fallback (step 2 of the [fallback chain](#gnav-resolution-fallback-chain)), DA push target, and AEM preview/publish.
 - `extendedSitemap` — How extended geos are included on each base geo's page: `all` (every extended geo in the subdomain) or `language` (only language-matched extended geos mapped to the base geo).
@@ -99,7 +99,7 @@ Out of scope for www: `genuine` (only in-app) and `upp` (only homepage).
 Note: cc is missing `title, robots` (see [Generator logic](#generator-logic) for title fallback).
 
 ```tsv
-domain	site	queryIndexPath
+subdomain	site	queryIndexPath
 business	da-bacom	/query-index.json
 www	cc	/cc-shared/assets/query-index.json
 www	da-cc	/cc-shared/assets/query-index.json
@@ -121,7 +121,7 @@ Extended geos are mapped to the base geo that shares their language. **Extract**
 **Page generation rule** (evaluated in **transform**): A sitemap page is only produced for a base geo when **at least one query index from any site returns indexable URLs** for that geo. If all indices for a base geo are 404 or contain no indexable URLs (e.g. all pages are noindex/nofollow), the page is skipped.
 
 ```tsv
-domain	baseGeo	language	extendedGeos
+subdomain	baseGeo	language	extendedGeos
 business		en
 business	au	en
 business	de	de
@@ -302,7 +302,14 @@ Whether a page is emitted at all also depends on query-index data — see **Page
 
 1. **Sitemap [Config](#config)** — Subdomain → site mapping, production domains, `extendedSitemap` mode. Will eventually be backed by a DA spreadsheet.
 2. **[Query index and geo map (snapshot)](#query-index-and-geo-map-snapshot)** — Per-site query-index paths and base/extended geo rows; **extract** downloads JSON; **transform** applies scope and deduplication.
-3. **[GNAV (snapshot)](#gnav-snapshot)** — Fragment paths, placeholders, fallback chain, rendering rules; **extract** stores raw `.plain.html` plus a per-geo manifest that maps saved files back to source URLs and fragment roles; **transform** parses into Section 1.
+3. **[GNAV (snapshot)](#gnav-snapshot)** — Fragment paths, placeholders, fallback chain, rendering rules; **extract** stores raw `.plain.html` under a per-geo `_extract` tree plus a per-geo manifest that maps saved files back to source URLs and fragment roles; **transform** parses into Section 1.
+
+### Extract Output Conventions
+
+- `_extract` is internal pipeline state only. It is not a publishable content path and does not correspond to a final sitemap document.
+- A base-geo folder is created only when that geo qualifies for sitemap output based on its base-geo query-index data.
+- Extended-geo query indices are stored under the owning base geo's `_extract/extended/` subtree so each base geo's transform inputs remain self-contained.
+- For non-root geos, localized GNAV extraction follows geo-prefixed fragment paths so section and inline fragment content matches the base geo being processed.
 
 ### Pipeline
 
@@ -360,17 +367,53 @@ For each domain (business, www) and for each base geo in the geo map:
 4. **Resolve placeholders** (`{{key}}` tokens) via federal globalnav placeholders for the geo
 5. **Fetch query index JSON** for the base geo (and its extended geos) from each site in the query index map. Warn and skip on 404 or empty results.
 6. **Check page generation rule**: if no site returned indexable URLs for this base geo, skip -- do not produce a page.
+   - In the current implementation, `extract` treats a base geo as eligible for sitemap output when at least one base-geo query index succeeds and returns rows.
+   - If that rule is not met, `extract` leaves no per-geo output subtree behind for that base geo.
 7. **Build page structure** (H3 section heading > H4 sub-headings > UL link groups):
    - GNAV sections with localized headings and sub-headings
    - Links to HTML sitemaps of every other base geo in the same domain
-   - Extended geo links: scoped by `extendedSitemap` config (`language` = this base geo's mapped extended geos; `all` = every extended geo in the subdomain); **deduplicate** against the base geo's query-index paths per [Section 3](#section-3-extended-geo-links) / [Geo map](#geo-map)
+   - Extended geo links: scoped by `extendedSitemap` config (`language` = this base geo's mapped extended geos; `all` = every extended geo in the subdomain); **deduplicate** against the base geo's query-index paths using canonical paths with the geo prefix removed, per [Section 3](#section-3-extended-geo-links) / [Geo map](#geo-map)
    - All links use hardcoded production URLs (`business.adobe.com` for da-bacom repos, `www.adobe.com` for all others)
    - Strip images/SVGs that may have been generated from URL decoration
 8. **Transform** the page structure into a DA-compatible document (see [DA Document Format](#da-document-format))
 9. **Push** the document to DA via the DA Admin API (IMS-authenticated)
 10. **Trigger** AEM preview and publish via the Helix Admin API
 
-**Query index title fallback**: When a query index entry is missing a `title` field (e.g. the cc site), generate a title from the URL slug: split on hyphens, capitalize each word. Naive but better than a blank entry.
+**Query index title fallback**: When a query index entry is missing a `title` field (e.g. the cc site), generate a title from the URL slug: remove any file extension, split on hyphens, and capitalize each word. Naive but better than a blank entry.
+
+**Query index title cleanup**: During `transform data`, strip trailing Adobe branding suffixes such as `- Adobe` or `| Adobe` from normalized titles.
+
+### Transform Data Contract
+
+`transform data` is a local-only stage. It reads previously extracted `_extract` artifacts for each eligible base geo and writes a normalized `sitemap.data.json` file for that geo.
+
+The current normalized data contract contains:
+
+- `sections.baseGeoLinks`
+- `sections.otherSitemapLinks`
+- `sections.extendedGeoLinks`
+
+Placeholder resolution occurs in `transform data`, using the extracted `placeholders.json` file. That resolution applies to GNAV-derived labels and GNAV-derived links before the normalized output is written.
+
+### Extract Summary
+
+At the end of an `extract` run, the generator prints a rollup of:
+
+- base geos processed
+- base geos with sitemap output
+- base geos without sitemap output
+- warning-derived gaps such as missing base query indices
+
+This summary is intended to reflect the effective output set for downstream `transform`, not just raw fetch attempts.
+
+### Transform Summary
+
+At the end of a `transform data` run, the generator prints a rollup of:
+
+- base geos transformed
+- base geos skipped because no eligible extracted subtree was present
+
+This summary is intended to reflect which geos produced normalized data files in the current run.
 
 ### DA Document Format
 
@@ -383,6 +426,8 @@ The generator runs on a recurring schedule. Options:
 - External cron (e.g. Adobe I/O Runtime / OpenWhisk action) triggering via `repository_dispatch`
 
 Full rebuild on each run (no incremental state management needed). The entire dataset is processed from scratch each time.
+
+Local cleanup of generated artifacts is handled by a separate `clean` CLI stage that deletes the configured output directory. It only affects local disk output, not DA or AEM state.
 
 Current operational scope is additive only: the pipeline creates or updates generated sitemap pages, but does not automatically remove or unpublish pages that become ineligible. Cleanup is manual until explicit removal behavior is specified.
 
