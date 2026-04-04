@@ -47,7 +47,7 @@ graph TD
 
 The main event. Product and feature links organized by category -- the same structure visitors see in the site's global navigation, flattened into a browsable list. Section headings (H3) group top-level categories like "Creativity & Design" or "Products"; sub-headings (H4) break them into groups like "Featured products" or "Online tools".
 
-Sourced from GNAV fragments -- see [GNAV Sources](#gnav-sources) and [Content Rendering Rules](#content-rendering-rules).
+Sourced from GNAV fragments — see [GNAV (snapshot)](#gnav-snapshot) and [Content rendering rules](#content-rendering-rules).
 
 ### Section 2: Other Sitemap Links
 
@@ -57,9 +57,9 @@ Auto-generated from the [geo map](#geo-map) -- no authoring required.
 
 ### Section 3: Extended Geo Links
 
-Pages that only exist in extended geos, grouped by region (e.g. "Belgium (fr)", "Canada (fr)"). If an extended geo URL shares a path with something already in the base geo's index, it's dropped -- only genuinely unique content shows up here.
+Pages that only exist in extended geos, grouped by region (e.g. "Belgium (fr)", "Canada (fr)"). **Deduplication** (e.g. dropping extended-geo URLs whose path already appears in the base geo's index) is applied in **`transform`**, not in **`extract`**. **Extract** only downloads raw `query-index.json` per site and geo.
 
-Sourced from query index JSON files -- see [Query Index Sources](#query-index-sources).
+Sourced from query index JSON files — see [Query index and geo map (snapshot)](#query-index-and-geo-map-snapshot).
 
 ## Scope
 
@@ -82,13 +82,21 @@ www	www.adobe.com	da-cc	language
 - `site` — AEM repo used for local GNAV fallback (step 2 of the [fallback chain](#gnav-resolution-fallback-chain)), DA push target, and AEM preview/publish.
 - `extendedSitemap` — How extended geos are included on each base geo's page: `all` (every extended geo in the subdomain) or `language` (only language-matched extended geos mapped to the base geo).
 
-### Query Index Sources
+Per-site query-index paths and the full geo map live in [Query index and geo map (snapshot)](#query-index-and-geo-map-snapshot).
 
-Each site contributes a query index per geo. The generator fetches `/{geo}/{queryIndexPath}` from each site.
+## Query index and geo map (snapshot)
+
+These paths and locale rows are **live** data: they change on AEM/repo schedules, not with this pipeline. A renamed path or missing index can break **extract** or **transform** without a coordinated release—re-verify when behavior drifts.
+
+**Catalog snapshot: 2026-03-30** — The query-index path list and geo map below were checked against live `main--{site}--adobecom.aem.live` endpoints at that time. **Bump the date and revise the TSVs** when you re-audit after index or routing changes. GNAV-specific inventory lives in [GNAV (snapshot)](#gnav-snapshot).
+
+### Query index sources
+
+Each site contributes a query index per geo. **Extract** fetches `https://main--{site}--adobecom.aem.live/{geo}/{queryIndexPath}` for each row (and for each geo in scope — base + extended — per `geo-map`).
 
 Out of scope for www: `genuine` (only in-app) and `upp` (only homepage).
 
-Note: cc is missing `title, robots`.
+Note: cc is missing `title, robots` (see [Generator logic](#generator-logic) for title fallback).
 
 ```tsv
 domain	site	queryIndexPath
@@ -101,15 +109,16 @@ www	da-express-milo	/express/query-index.json
 www	edu	/edu-shared/assets/query-index.json
 ```
 
-### Geo Map
+### Geo map
 
-Each row defines a base geo and its extended geos. Not every extended geo will have a query index for every site -- the generator warns and continues on 404.
+Each row defines a base geo and its extended geos. Not every extended geo will have a query index for every site — the generator warns and continues on 404.
 
-Extended geos are mapped to the base geo that shares their language. Extract fetches query indices for all extended geos listed in the geo map for the subdomain. The `extendedSitemap` column in the [Config](#config) sheet controls how transform assembles them into pages:
+Extended geos are mapped to the base geo that shares their language. **Extract** downloads query indices for all extended geos listed in the geo map for the subdomain (so **transform** has complete data). The `extendedSitemap` column in [Config](#config) controls how **transform** assembles Section 3 into pages:
+
 - `language` (default): Each base geo page includes only its own mapped extended geos (language-matched).
 - `all`: Each base geo page includes all extended geos from every base geo row in the subdomain.
 
-A sitemap page is only generated for a base geo when **at least one query index from any site returns indexable URLs** for that geo. If all indices for a base geo are 404 or contain no indexable URLs (e.g. all pages are noindex/nofollow), the page is skipped. This means new geos automatically get sitemap pages the moment content is published, and empty geos are never produced.
+**Page generation rule** (evaluated in **transform**): A sitemap page is only produced for a base geo when **at least one query index from any site returns indexable URLs** for that geo. If all indices for a base geo are 404 or contain no indexable URLs (e.g. all pages are noindex/nofollow), the page is skipped.
 
 ```tsv
 domain	baseGeo	language	extendedGeos
@@ -172,31 +181,25 @@ www	vn_vi	vi
 www	zh	zh
 ```
 
-## Architecture
 
-### Data Sources
+## GNAV (snapshot)
 
-1. **Sitemap Config** (source of truth for this generator):
-   Query index sources and geo maps defined in the [Scope](#scope) section above. Will eventually be backed by a DA spreadsheet.
-
-2. **GNAV Fragments** (section headings and link groupings):
-   The global navigation provides localized section headings and categorized product/page links. Each subdomain sources its GNAV differently. See [GNAV Sources](#gnav-sources) for the full mapping.
-
-3. **GNAV Placeholders** (localized UI strings):
-   The GNAV fragments use `{{placeholder}}` tokens for certain link labels (e.g. `{{premiere}}` resolves to "Premiere"). These are resolved via the federal globalnav placeholders:
-   [`/federal/globalnav/placeholders.json`](https://main--federal--adobecom.aem.live/federal/globalnav/placeholders.json) (English) |
-   [`/fr/federal/globalnav/placeholders.json`](https://main--federal--adobecom.aem.live/fr/federal/globalnav/placeholders.json) (French example)
-   No additional placeholder keys are needed beyond what the GNAV already uses.
-
-4. **Query Index JSON** (per site, per geo):
-   Provides localized URLs and page titles for each region, as well as robots tag.
-   URL pattern: `https://main--{repo}--adobecom.aem.live/{geo}/{query-index-path}`
-
-### GNAV Sources
+**Catalog snapshot: 2026-03-30** — Fragment paths and link counts below were verified against live `.aem.live` and [`libs/blocks/sitemap-base/sitemap-base.js`](../../../libs/blocks/sitemap-base/sitemap-base.js) at that time (same review window as [Query index and geo map (snapshot)](#query-index-and-geo-map-snapshot)). Federal and da-bacom navigation changes independently of this repo—**edit this section first** when GNAV shape or URLs drift, then align the reference block if behavior changes.
 
 The two subdomains use different GNAV structures and origins.
 
-#### business.adobe.com (da-bacom)
+### GNAV placeholders
+
+GNAV fragments use `{{placeholder}}` tokens for some link labels (e.g. `{{premiere}}` → "Premiere"). **Extract** should fetch and store `placeholders.json` per geo; **transform** resolves tokens the same way as the browser block.
+
+| | URL (append for each base geo via `/{geo}/…` when not English) |
+|---|---|
+| English | [`/federal/globalnav/placeholders.json`](https://main--federal--adobecom.aem.live/federal/globalnav/placeholders.json) |
+| Example (localized) | [`/fr/federal/globalnav/placeholders.json`](https://main--federal--adobecom.aem.live/fr/federal/globalnav/placeholders.json) |
+
+No keys beyond those already used by GNAV are required.
+
+### business.adobe.com (da-bacom)
 
 **Source**: Local GNAV in the [da-bacom](https://github.com/adobecom/da-bacom) repo.
 
@@ -213,7 +216,7 @@ The two subdomains use different GNAV structures and origins.
 All fragment paths are relative to the da-bacom repo origin (`https://main--da-bacom--adobecom.aem.live`).
 Links resolve to `business.adobe.com` in production.
 
-#### www.adobe.com (da-cc)
+### www.adobe.com (da-cc)
 
 **Source**: [Federal](https://github.com/adobecom/federal) repo (da-cc has no local `/gnav`).
 
@@ -239,14 +242,23 @@ Links resolve to `www.adobe.com` or `business.adobe.com` in production.
 **Localization**: Localized GNAV fragments are fetched by prepending the geo prefix, e.g.:
 [`/fr/federal/globalnav/acom/acom-gnav`](https://main--federal--adobecom.aem.live/fr/federal/globalnav/acom/acom-gnav.plain.html) (French)
 
-#### GNAV Resolution Fallback Chain
+**Catalog vs runtime discovery (www)**:
+
+- The table above is a **human-readable catalog** of the federal GNAV shape (top-level → section → optional `#_inline` column fragments). It is **not** a fixed list hardcoded in the browser reference implementation.
+- [Reference implementation](#reference-implementation-browser) (`milo` `libs/blocks/sitemap-base/sitemap-base.js`): loads **one** top-level GNAV (`acom-gnav`), parses section headings and links, then **fetches each section** `.plain.html` and, when present, follows each `#_inline` link (excluding promos) to fetch column fragments. **Additional URLs** are discovered from the live DOM; if federal adds or renames sections, the prototype picks them up without a code change.
+- **`extract` can ship** by mirroring that same strategy: fetch top-level → discover section paths → fetch each section → fetch column targets from `#_inline` links (same URL set as the browser, modulo caching). Alternatively, a **prefetch list** derived from this table can be used for validation or offline tooling; it may drift if federal changes before this spec is updated.
+- **Transform / HTML rendering** (server-side) reuses the **same parsing rules** as the prototype: walk headings and links in order, merge column content, apply exclusions and placeholders. That logic belongs in `transform`, not in `extract`; `extract` only needs to persist enough raw `.plain.html` (and placeholders) so `transform` is deterministic.
+
+See [Reference implementation](#reference-implementation-browser) for file paths and draft test URLs.
+
+### GNAV Resolution Fallback Chain
 
 The generator resolves the GNAV source using this chain:
 1. `gnav-source` page metadata (if present) — client-side prototype only; skipped in the server-side pipeline (no page context to read metadata from)
 2. Local `/{geo}/gnav` on the subdomain's host site (see [Config](#config))
 3. Federal `/{geo}/federal/globalnav/acom/acom-gnav` (fallback)
 
-#### Link Domain Mapping
+### Link Domain Mapping
 
 All rendered links use production URLs. The domain mapping:
 
@@ -257,7 +269,7 @@ All rendered links use production URLs. The domain mapping:
 
 Links to external domains (helpx.adobe.com, experienceleague.adobe.com, etc.) are preserved as-is.
 
-#### Content Rendering Rules
+### Content Rendering Rules
 
 Each GNAV section fragment produces a block of content within the sitemap page. The rendering follows these rules:
 
@@ -273,7 +285,7 @@ Each GNAV section fragment produces a block of content within the sitemap page. 
 - `<a>` tags within `.link-group`, `<li>`, `<p>`, or `<strong>` elements become links.
 - Description text in `<p>` tags after links (e.g. "Image editing and design", "AI-powered content creation") is **discarded** -- these are GNAV mega-menu descriptions, not sitemap content.
 
-**Placeholders**: `{{placeholder}}` tokens in link text (e.g. `{{premiere}}`) are resolved via [`/federal/globalnav/placeholders.json`](https://main--federal--adobecom.aem.live/federal/globalnav/placeholders.json). Only placeholders already used by the GNAV are needed.
+**Placeholders**: Resolve `{{placeholder}}` tokens using the JSON from [GNAV placeholders](#gnav-placeholders).
 
 **Excluded content**:
 - `bookmark://` links (internal GNAV anchor plumbing, not navigable URLs)
@@ -282,7 +294,15 @@ Each GNAV section fragment produces a block of content within the sitemap page. 
 - Promo fragments (promotional aside content within column references)
 - Marketing & Commerce section (`section-menu-dx`) on www (all links point to business.adobe.com -- hardcoded exclusion)
 
-**Page generation rule**: A sitemap page is only produced for a base geo when at least one query index from any site returns indexable URLs. Empty or all-noindex geos are skipped.
+Whether a page is emitted at all also depends on query-index data — see **Page generation rule** under [Geo map](#geo-map).
+
+## Architecture
+
+### Data Sources
+
+1. **Sitemap [Config](#config)** — Subdomain → site mapping, production domains, `extendedSitemap` mode. Will eventually be backed by a DA spreadsheet.
+2. **[Query index and geo map (snapshot)](#query-index-and-geo-map-snapshot)** — Per-site query-index paths and base/extended geo rows; **extract** downloads JSON; **transform** applies scope and deduplication.
+3. **[GNAV (snapshot)](#gnav-snapshot)** — Fragment paths, placeholders, fallback chain, rendering rules; **extract** stores raw `.plain.html`; **transform** parses into Section 1.
 
 ### Pipeline
 
@@ -341,7 +361,7 @@ For each domain (business, www) and for each base geo in the geo map:
 7. **Build page structure** (H3 section heading > H4 sub-headings > UL link groups):
    - GNAV sections with localized headings and sub-headings
    - Links to HTML sitemaps of every other base geo in the same domain
-   - Extended geo links: scoped by `extendedSitemap` config (`language` = this base geo's mapped extended geos; `all` = every extended geo in the subdomain)
+   - Extended geo links: scoped by `extendedSitemap` config (`language` = this base geo's mapped extended geos; `all` = every extended geo in the subdomain); **deduplicate** against the base geo's query-index paths per [Section 3](#section-3-extended-geo-links) / [Geo map](#geo-map)
    - All links use hardcoded production URLs (`business.adobe.com` for da-bacom repos, `www.adobe.com` for all others)
    - Strip images/SVGs that may have been generated from URL decoration
 8. **Transform** the page structure into a DA-compatible document (see [DA Document Format](#da-document-format))
@@ -362,15 +382,25 @@ The generator runs on a recurring schedule. Options:
 
 Full rebuild on each run (no incremental state management needed). The entire dataset is processed from scratch each time.
 
-## Prototype
+## Reference implementation (browser)
 
-A client-side prototype of the GNAV extraction is implemented in the `sitemap-base` block on the `sitemap-gnav-proto` branch. It demonstrates the GNAV-sourced rendering using the same CSS and layout as the authored sitemap pages.
+Canonical **behavior** for GNAV resolution, discovery, `#_inline` columns, exclusions, and placeholders is described in [GNAV (snapshot)](#gnav-snapshot) and implemented in:
 
-**Test URLs** (append `&cache=bust` if seeing stale content):
+| | |
+|---|---|
+| Block | [`libs/blocks/sitemap-base/sitemap-base.js`](../../../libs/blocks/sitemap-base/sitemap-base.js) |
+| Tests | [`test/blocks/sitemap-base/sitemap-base.test.js`](../../../test/blocks/sitemap-base/sitemap-base.test.js) |
+
+The [`sitemap-gnav-proto`](https://github.com/adobecom/milo/tree/sitemap-gnav-proto) branch is only for **draft preview** (`milolibs=…`); source of truth is `libs/blocks/sitemap-base/` on your branch.
+
+**Activation**: `?sitemap-source=gnav` on a page that uses the sitemap block.
+
+**Draft URLs** (append `&cache=bust` if stale):
+
 - business: `https://main--da-bacom--adobecom.aem.live/drafts/hgpa/sitemap?milolibs=sitemap-gnav-proto--milo--adobecom&sitemap-source=gnav`
 - www: `https://main--da-cc--adobecom.aem.live/drafts/hgpa/sitemap?milolibs=sitemap-gnav-proto--milo--adobecom&sitemap-source=gnav`
 
-The prototype activates via `?sitemap-source=gnav` and implements the same GNAV resolution fallback chain, placeholder resolution, and content filtering described above. The production pipeline will replicate this logic server-side in Node.js, generating static HTML with hardcoded production links instead of client-side rendering.
+The Node pipeline should stay aligned with this block; **bump the Catalog snapshot dates** in [GNAV (snapshot)](#gnav-snapshot) and [Query index and geo map (snapshot)](#query-index-and-geo-map-snapshot) when re-verifying against live endpoints or when the block changes.
 
 ## Open Questions
 

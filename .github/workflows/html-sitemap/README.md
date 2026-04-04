@@ -2,7 +2,7 @@
 
 A GitHub Actions-based Node.js pipeline that generates localized HTML sitemap pages for Adobe's international sites and publishes them via DA and the AEM Admin API.
 
-See [SPEC.md](./SPEC.md) for background, requirements, page structure, data sources, architecture, and the geo map.
+See [SPEC.md](./SPEC.md) for background, requirements, page structure, and snapshot-dated **GNAV** and **query index / geo** sections (update those together when live data changes).
 
 ## CLI
 
@@ -23,6 +23,7 @@ Stages:
 
 Options:
   --config <url|path>   Sitemap config JSON (default: https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json)
+  --output <dir>        Root directory for all generated files (default: tmp/html-sitemap)
   --domain <name>       Filter to a single domain: www | business
   --geo <prefix>        Filter to a single base geo (e.g. fr, de, "")
 ```
@@ -71,7 +72,9 @@ See [Scope in SPEC.md](./SPEC.md#scope).
 
 ### Output
 
-Data is output to `tmp/html-sitemap/` by default. Example:
+All stages read and write under a single output root. By default that is `tmp/html-sitemap/` (relative to the current working directory). Override with `--output <dir>` (for example a CI artifact path or another disk location). Paths below are relative to that root.
+
+Example layout:
 
 ```
 /html-sitemap
@@ -183,6 +186,7 @@ The workflow exposes the same parameters as the CLI:
 | Input | Description | Default |
 |---|---|---|
 | `stage` | Pipeline stage: `extract`, `transform`, `push`, `preview`, `publish`, or blank for all | (all) |
+| `output` | Output root directory (same as CLI `--output`) | `tmp/html-sitemap` |
 | `domain` | Filter to domain: `www`, `business`, or blank for all | (all) |
 | `geo` | Filter to base geo prefix, or blank for all | (all) |
 
@@ -225,9 +229,9 @@ See [preview-indexer](../preview-indexer/README.md) for reuseable DA, SP and AEM
 
 ## Related
 
-- [SPEC.md](./SPEC.md): Background, requirements, page structure, architecture, and source-of-truth data for this generator.
+- [SPEC.md](./SPEC.md): Background, requirements, page structure, architecture, source-of-truth data, and **reference implementation** (browser GNAV prototype vs server pipeline).
 - [Preview Indexer](../preview-indexer/README.md): Similar GitHub Actions-based system for maintaining preview indexes. Shares authentication patterns and DA/AEM API integration.
-- [Sitemap Base Block](../../../libs/blocks/sitemap-base/): Client-side block that renders sitemap content. The [`sitemap-gnav-proto`](https://github.com/adobecom/milo/tree/sitemap-gnav-proto) branch contains the GNAV prototype.
+- **GNAV reference (browser)**: Implemented in [`libs/blocks/sitemap-base/sitemap-base.js`](../../../libs/blocks/sitemap-base/sitemap-base.js) (unit tests: [`sitemap-base.test.js`](../../../test/blocks/sitemap-base/sitemap-base.test.js)). That block is the behavioral spec for GNAV resolution, section discovery, `#_inline` column fetching, exclusions, and placeholders. The [`sitemap-gnav-proto`](https://github.com/adobecom/milo/tree/sitemap-gnav-proto) branch is used to **preview** the same block on draft pages via `milolibs=…`; it is not the sole location of the source—the canonical file paths are under `libs/blocks/sitemap-base/` on whichever branch you have checked out.
 - [Federal repo](https://github.com/adobecom/federal): Hosts shared GNAV fragments and placeholders used by www.adobe.com.
 
 ## License
