@@ -26,12 +26,15 @@ Options:
   --config <url|path>   Sitemap config JSON (default: https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json)
   --output <dir>        Root directory for all generated files (default: tmp/html-sitemap)
   --domain <name>       Filter to a single domain: www | business
-  --geo <prefix>        Filter to a single base geo (e.g. fr, de, "")
+  --geo <prefix>        Filter to a single base geo (e.g. fr, de, default)
+  --da-root <path>      Remote DA folder root for push (e.g. /drafts/hgpa/html-sitemap)
 ```
 
 ## Input
 
 The generator uses a config file that defines the query index sources and geo map. Default location: https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json. Pass a different path or URL with `--config`.
+
+Use `--geo default` (or `--geo root`) to target the root sitemap for a domain. Those aliases normalize to the empty base-geo key internally.
 
 The file uses format compatible with [AEM multi-sheet JSON](https://www.aem.live/developer/spreadsheets#multi-sheet-format), so config data can reside and any compatible backends (DA/Sharepoint).
 
@@ -91,8 +94,8 @@ Example layout:
       placeholders.json            # globalnav placeholders (extract)
       /da-bacom
         query-index.json           # base geo query index (extract)
-    sitemap.data.json              # page data JSON (transform data)
-    sitemap.da.json                # DA document JSON (transform da)
+    sitemap.json                   # normalized data JSON (transform data)
+    sitemap.html                   # DA source HTML (transform da)
     /de
       /_extract
         /gnav
@@ -108,8 +111,8 @@ Example layout:
           /ch_de
             /da-bacom
               query-index.json
-      sitemap.data.json
-      sitemap.da.json
+      sitemap.json
+      sitemap.html
 ```
 
 ### Stages
@@ -154,23 +157,18 @@ For each domain/geo in scope:
 
 1. `data` Transform extracted data into single generic data JSON
    - `base-geo-links` (Section 1) from GNAV data, applying selection rules
-   - `other-sitemap-links` (Section 2) from the geo map
+   - `other-sitemap-links` (Section 2) from the geo map, but only for sibling base geos that currently have sitemap output
    - `extended-geo-links` (Section 3) from query index data, with deduplication on canonical paths after removing the geo prefix from both base-geo and extended-geo URLs — scoped by `extendedSitemap` config (`language` = base geo's mapped extended geos; `all` = every extended geo in the subdomain)
    - Resolve `{{placeholder}}` tokens
-2. `da` Transform generic data JSON into DA-compatible JSON
-   - Assemble into page structure (H3 > H4 > UL)
+2. `da` Transform generic data JSON into a DA-compatible HTML source document
+   - Assemble into page structure and write `sitemap.html`
 
 See [SPEC.md](./SPEC.md) for details.
 
-Current implementation status:
+`transform data` reads only previously extracted local artifacts under each eligible base geo's `_extract` tree and writes `sitemap.json` next to that geo folder:
 
-- `transform data` is implemented
-- `transform da` is not implemented yet
-
-`transform data` reads only previously extracted local artifacts under each eligible base geo's `_extract` tree and writes `sitemap.data.json` next to that geo folder:
-
-- `business/sitemap.data.json`
-- `business/fr/sitemap.data.json`
+- `business/sitemap.json`
+- `business/fr/sitemap.json`
 
 The generated data file currently contains:
 
@@ -184,12 +182,47 @@ Query-index titles are also normalized during `transform data`: title fallback i
 
 At the end of the run, `transform data` prints a summary of which base geos were transformed and which were skipped because no eligible `_extract` subtree was present.
 
+#### `transform da`
+
+Current DA source inspection indicates that DA stores the page source as plain HTML, not as a separate DA-specific page schema. `transform da` therefore reads `sitemap.json`, generates `sitemap.html`, and keeps the work local-only.
+
+The current renderer:
+
+- writes a full HTML source document
+- uses a simple shell: `<body><header></header><main>...</main><footer></footer></body>`
+- renders Milo-compatible authored markup for the primary sitemap sections inside `<main>`
+- appends a metadata block in the source document
+
+The renderer remains code-driven in TypeScript. A general-purpose templating engine is not used.
+
+Current page-copy contract:
+
+- H1 defaults to `Sitemap`
+- metadata `title` matches the page title
+- metadata `description` is a localized short description of the page
+- page copy is localized by the base geo's configured language, with English fallback when no localized string is defined
+
+Current section rendering contract:
+
+- Intro uses authored `text` markup
+- Section 1 uses authored `sitemap-base` markup
+- Section 2 uses authored `sitemap-list` markup
+- Section 3 uses authored `accordion` markup and retains the `sitemap-extended` class for preview parity with the draft reference
+
 #### `push`
 
 Uploads transformed documents to DA.
 
-1. Read transform output documents, e.g. `sitemap.da.json`
-2. For each document: PUT to DA via the DA Admin API (IMS-authenticated)
+1. Read local transform output documents, e.g. `sitemap.html`, from `--output`
+2. Map them to remote DA paths under `--da-root`
+3. Create any missing folders beneath the provided DA root
+4. Upload the HTML source document via the DA Source API (IMS-authenticated)
+
+Example:
+
+```bash
+node --env-file=.env generate.ts push --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+```
 
 Current scope is additive only: the pipeline creates or updates generated sitemap pages, but does not automatically remove or unpublish pages that fall out of scope. Cleanup is manual for now.
 
@@ -264,28 +297,30 @@ npm --prefix .github/workflows/html-sitemap run test
 Create a `.env` file for local runs. Only `push` (DA), `preview`, and `publish` (AEM) require auth.
 
 ```bash
-# Adobe IMS authentication endpoint for DA
+# Production DA token source (used in Actions / shared automation)
 ROLLING_IMPORT_IMS_URL=https://...
 ROLLING_IMPORT_CLIENT_ID=...
 ROLLING_IMPORT_CLIENT_SECRET=...
 ROLLING_IMPORT_CODE=...
 ROLLING_IMPORT_GRANT_TYPE=authorization_code
 
-# Helix admin token sfor da-bacom/da-cc preview/publish
+# Local short-lived DA override token
+# Useful for personal testing; not the long-term production contract
+DA_SOURCE_TOKEN=...
+
+# AEM/Helix admin tokens for preview + publish
+# Use the raw auth_token cookie value from admin.hlx.page/profile
+# Do not prefix with Bearer or token; the CLI adds `Authorization: token ...`
 AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
 AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
-
-# GITHUB_TOKEN is provided automatically in Actions; set manually for local runs if needed
 ```
 
 ## Dependencies
 
-See [preview-indexer](../preview-indexer/README.md) for reuseable DA, SP and AEM clients and utilities.
+See [preview-indexer](../preview-indexer/README.md) for related DA, SP and AEM admin integration patterns.
 
-- **typescript**: Native execution via Node 24 (no build step)
-- **axios** / **axios-retry**: HTTP client with retry logic
-- **linkedom**: Server-side DOM for parsing GNAV `.plain.html` fragments
-- **form-data**: Multipart form data for DA uploads
+- **typescript**: Local typechecking
+- **parse5**: Server-side HTML parsing for GNAV transforms
 
 ## Related
 

@@ -53,6 +53,8 @@ Sourced from GNAV fragments — see [GNAV (snapshot)](#gnav-snapshot) and [Conte
 
 A flat list of links to every other base geo's `sitemap.html` in the same domain (the current page is excluded). This is how crawlers and humans hop between localized sitemaps.
 
+Only include sibling base geos that currently have sitemap output. If a sibling base geo did not produce a sitemap in the current pipeline state, do not link to it.
+
 Auto-generated from the [geo map](#geo-map) -- no authoring required.
 
 ### Section 3: Extended Geo Links
@@ -385,7 +387,7 @@ For each domain (business, www) and for each base geo in the geo map:
 
 ### Transform Data Contract
 
-`transform data` is a local-only stage. It reads previously extracted `_extract` artifacts for each eligible base geo and writes a normalized `sitemap.data.json` file for that geo.
+`transform data` is a local-only stage. It reads previously extracted `_extract` artifacts for each eligible base geo and writes a normalized `sitemap.json` file for that geo.
 
 The current normalized data contract contains:
 
@@ -394,6 +396,74 @@ The current normalized data contract contains:
 - `sections.extendedGeoLinks`
 
 Placeholder resolution occurs in `transform data`, using the extracted `placeholders.json` file. That resolution applies to GNAV-derived labels and GNAV-derived links before the normalized output is written.
+
+`sections.otherSitemapLinks` is presence-aware: it includes only sibling base geos that currently have sitemap output in the local pipeline state.
+
+### Transform DA Contract
+
+Current DA source inspection indicates that the upload target for this pipeline should be a plain HTML source document rather than a DA-specific intermediate page schema.
+
+`transform da` therefore:
+
+- read `sitemap.json`
+- generate a full HTML source document
+- write `sitemap.html`
+- use a simple document shell (`body > header + main + footer`)
+- render Milo-compatible block/class structure inside `main`
+- append metadata in the source document
+
+The renderer remains code-driven in TypeScript. A minimal shared wrapper template may be used for the outer shell, but section rendering, looping, and conditional behavior should stay in code rather than in a general-purpose templating system.
+
+Current page structure contract:
+
+- H1 defaults to `Sitemap`
+- metadata `title` matches the page title
+- metadata `description` is a localized summary of the page
+- page copy is localized by the base geo language with English fallback
+
+Current section rendering contract:
+
+- Section 1 renders authored `sitemap-base` markup
+- Section 2 renders authored `sitemap-list` markup
+- Section 3 renders authored `accordion` markup
+
+Illustrative source shape:
+
+```html
+<body>
+  <header></header>
+  <main>
+    <div>
+      <h1>Sitemap</h1>
+      <p>Browse pages across this site by section, locale, and region.</p>
+    </div>
+    <div>
+      <div class="sitemap-base align-headings">...</div>
+    </div>
+    <div>
+      <h2>Other Sitemaps</h2>
+      <div class="sitemap-list">...</div>
+    </div>
+    <div>
+      <h2>Additional Localized Pages</h2>
+      <div class="accordion">...</div>
+    </div>
+    <div>
+      <div class="metadata">
+        <div><div>title</div><div>Sitemap</div></div>
+        <div><div>description</div><div>Browse pages across this site by section, locale, and region.</div></div>
+        <div><div>locale</div><div>global</div></div>
+      </div>
+    </div>
+  </main>
+  <footer></footer>
+</body>
+```
+
+Localized variants follow the same structure with localized copy. Example for French:
+
+- H1 / title: `Plan du site`
+- description: `Parcourez les pages de ce site par section, langue et région.`
 
 ### Extract Summary
 
@@ -412,6 +482,11 @@ At the end of a `transform data` run, the generator prints a rollup of:
 
 - base geos transformed
 - base geos skipped because no eligible extracted subtree was present
+
+At the end of a `transform da` run, the generator prints a rollup of:
+
+- base geos rendered for DA
+- base geos skipped because no `sitemap.json` input was present
 
 This summary is intended to reflect which geos produced normalized data files in the current run.
 
