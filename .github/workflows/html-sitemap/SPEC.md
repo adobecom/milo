@@ -230,7 +230,11 @@ This sheet is the source of truth for page copy.
 
 ## Source Inventory
 
-The following sections are intentionally source-heavy and may change independently of this repo. They should be updated when live source behavior changes.
+The live config JSON is the source of truth for query-index paths, geo mappings, and page copy:
+
+- [`html-sitemap.json`](https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json)
+
+The snapshots below are for architectural context only. Refer to the live config for current data.
 
 There are two different source models in play:
 

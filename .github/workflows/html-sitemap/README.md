@@ -55,6 +55,12 @@ DA_TOKEN=...
 
 # AEM admin tokens for preview + publish
 # Use the raw auth_token cookie value from https://admin.hlx.page/profile
+# Resolved per site in this order (first match wins):
+#   AEM_ADMIN_TOKEN_ADOBECOM_{SITE}  (e.g. AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM)
+#   AEM_ADMIN_TOKEN_{SITE}           (e.g. AEM_ADMIN_TOKEN_DA_BACOM)
+#   AEM_ADMIN_TOKEN                  (shared fallback)
+#   AEM_TOKEN                        (shared fallback)
+#   HLX_ADMIN_TOKEN                  (legacy fallback)
 AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
 AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
 ```
@@ -257,8 +263,12 @@ Representative layout:
 
 `_extract/regions.html`
 
-- Raw region-nav fragment HTML used later for geo display labels
+- Raw region-nav fragment HTML fetched from the host site's regions fragment
 - Written by `extract`
+- Used by `transform-data` to derive display labels for section 2 (other sitemaps) and section 3 (extended geos)
+- Contains `<a>` elements whose `href` maps to a geo prefix and whose link text provides the authored geo label
+- Any trailing ` - <language>` suffix in the link text is stripped before use
+- Falls back to `Intl.DisplayNames`-generated labels when the fragment is unavailable or a geo is not represented
 
 `_extract/**/query-index.json`
 
