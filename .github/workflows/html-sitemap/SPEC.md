@@ -439,6 +439,19 @@ Warning behavior:
 - missing query-index files warn and continue
 - paginated query-index responses must be fetched to completion using `total`, `offset`, and `limit`; extraction should not stop at the first response page
 
+#### Query-index pagination
+
+The merge algorithm for paginated query-index responses:
+
+1. First page is fetched at `https://main--{site}--adobecom.aem.live/{geo}{queryIndexPath}`
+2. If the response lacks a `data` array, it is treated as success with zero indexable rows
+3. `total` defaults to the first-page data length when absent
+4. `limit` (page size) defaults to the first-page data length when absent or zero
+5. Next-page offset = current offset + rows received; falls back to page size when zero rows are returned
+6. Loop continues while merged row count < total
+7. Loop breaks on: HTTP error (returns error, not partial data), non-paged response body, or empty data array
+8. The merged result preserves first-page metadata with `data` replaced by the full merged array
+
 ### Transform-Data
 
 `transform-data` converts extracted raw inputs into normalized page data.
@@ -454,6 +467,18 @@ Output semantics:
 - includes only sibling sitemap links that currently exist
 - dedupes extended-geo entries against base-geo canonical paths
 - strips any trailing ` - <language>` suffix from region-nav-derived geo labels
+
+#### Query-index row selection
+
+- Each row is read from the `path` field; falls back to `url` when `path` is absent
+- Rows where `robots` contains `noindex` or `nofollow` are excluded (either value triggers exclusion)
+
+#### Extended-geo deduplication
+
+1. Build the base-geo canonical path set: for each base-geo query-index row, strip the geo prefix to produce a canonical path
+2. For each extended geo, normalize its query-index rows the same way
+3. Drop any extended-geo entry whose canonical path already exists in the base-geo set
+4. Within a single extended geo, also drop entries whose canonical path was already seen in that geo
 
 The resulting `sitemap.json` contains:
 
@@ -541,19 +566,101 @@ Expected summary intent:
 - `preview`: which base geos were previewed
 - `publish`: which base geos were published
 
-## GNAV Extraction Notes
+## Transform Rules
 
-The current browser sitemap implementation is useful as historical context, but it is not the normative page contract for this generator.
+These rules are shared across GNAV transform and query-index normalization.
 
-The practical reference split is:
+### URL normalization
 
-- GNAV extraction rules come from the extraction behavior captured here
-- normalized page structure comes from `sitemap.json`
-- rendered page composition comes from the DA HTML document emitted by `transform-da`
+All URLs in sitemap output should be canonical production URLs:
 
-GNAV extraction behavior should preserve:
+- Relative paths (`/foo`) resolve to `https://{domain}/foo` using the subdomain's production domain
+- AEM repo hosts (`main--{site}--adobecom.aem.live`) remap to the production domain for that site using the `siteDomains` mapping derived from config
+- Other absolute URLs pass through unchanged
 
-- section discovery from heading-linked federal navigation or flat fragment links
-- `#_inline` fragment traversal for federal column patterns
-- exclusions such as `section-menu-dx`
-- placeholder resolution
+### Title normalization
+
+- Strip trailing Adobe branding: case-insensitive match on `- Adobe` or `| Adobe` at end of string (regex: `\s*[-|]\s*Adobe\s*$`)
+- Collapse internal whitespace to a single space
+- Fallback when title is empty: take the last path segment, strip any file extension, split on `-`, and capitalize each word
+
+### Placeholder resolution
+
+Placeholders use the pattern `{{key}}`:
+
+- Regex: `\{\{([^}]+)\}\}` with the key trimmed before lookup
+- Unresolved placeholders (no matching key) pass through verbatim
+- Applied to: GNAV headings, GNAV link text and hrefs, page-copy strings
+
+## GNAV Transform Rules
+
+The GNAV extraction behavior documented earlier in this spec describes how raw GNAV HTML is discovered and persisted. This section describes how that raw HTML is transformed into the section 1 links in `sitemap.json`.
+
+### Structural link filter
+
+Not every `<a>` element in GNAV section HTML becomes a sitemap link. A link is included only when it appears inside one of these structural contexts:
+
+- an ancestor element with class `.link-group`
+- an `<li>` ancestor
+- a direct child of `<p>` or `<strong>`
+
+Links outside these contexts (decorative card images, standalone anchors in layout divs) are ignored.
+
+### Exclusion rules
+
+The following hrefs are skipped during GNAV link grouping:
+
+- `#_inline` and `bookmark://` references (navigation plumbing, not user-facing links)
+- Decorative asset hrefs matching image extensions: `.svg`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.avif`
+
+### Subheading grouping algorithm
+
+Section HTML is parsed into a flat sequence of items: headings (`h1`–`h6`) and links.
+
+1. Each heading starts a new group with the heading text as `subheading`
+2. Links following a heading are collected into that group until the next heading
+3. Groups with zero links after exclusion filtering are dropped
+4. If a GNAV section has inline-column children (recorded in `manifest.json`), those inline-column files are parsed instead of the parent section file
+
+Placeholders are resolved in both heading text and link text/hrefs before grouping.
+
+## Template Language
+
+The DA template renderer (`lib/render/template.ts`) evaluates a lightweight template language over the normalized render model derived from `sitemap.json`.
+
+### Syntax
+
+| Pattern | Behavior |
+|---------|----------|
+| `{{key}}` | Value interpolation, HTML-escaped |
+| `{{key.nested}}` | Dot-notation property access |
+| `{{.}}` or `{{this}}` | Current scope reference |
+| `{{#if key}}...{{/if}}` | Conditional block |
+| `{{#each key}}...{{/each}}` | Iteration block |
+
+### Scope chain
+
+- The root scope is the render model object
+- Each `#each` iteration pushes the current array item as a new scope
+- Lookups traverse inner-to-outer: a key in the current `#each` item shadows the same key in the parent scope
+- Parent scope values remain accessible from nested blocks
+
+### Truthiness
+
+- Arrays: truthy when non-empty
+- All other values: `Boolean(value)`
+
+### Escaping
+
+- All interpolated scalar values are HTML-escaped: `&`, `<`, `>`, `"`, `'`
+- Literal HTML in the template (text nodes) is not escaped
+
+### Standalone control lines
+
+Lines containing only a control tag (`#if`, `/if`, `#each`, `/each`) plus optional whitespace are stripped from output to prevent blank lines.
+
+### Error behavior
+
+- Mismatched or missing closing tags throw
+- `#each` on a non-array value warns and produces empty output
+- Rendering an object as a scalar throws
