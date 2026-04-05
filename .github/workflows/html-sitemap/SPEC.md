@@ -86,6 +86,8 @@ This section links to sibling base-geo sitemap pages in the same subdomain.
 Rule:
 
 - include only sibling base geos that currently have sitemap output
+- geo labels should prefer the authored region-nav fragment label for that geo when available
+- any trailing ` - <language>` suffix should be removed from the displayed geo label
 
 ### Section 3: Extended Geo Links
 
@@ -96,6 +98,7 @@ Deduplication rule:
 - compare canonical paths after removing the geo prefix from both the base-geo path and the extended-geo path
 - if the canonical path already exists in the base geo, drop the extended-geo entry
 - dedupe is based on exact canonical path equivalence, not broader content equivalence or future consolidation rules
+- geo labels should follow the same region-nav-derived labeling rule as section 2
 
 ## Architecture
 
@@ -412,6 +415,7 @@ What `extract` persists:
 - resolved config snapshot
 - raw GNAV fragments
 - GNAV manifest
+- region-nav fragment HTML
 - placeholders payload
 - base-geo query indices
 - extended-geo query indices
@@ -427,6 +431,7 @@ Warning behavior:
 
 - missing GNAV for a base geo warns and continues
 - missing placeholders warn and continue
+- missing region-nav fragment HTML warns and continues
 - missing query-index files warn and continue
 - paginated query-index responses must be fetched to completion using `total`, `offset`, and `limit`; extraction should not stop at the first response page
 
@@ -438,11 +443,13 @@ Output semantics:
 
 - writes `sitemap.json`
 - resolves placeholder tokens using extracted placeholders
+- resolves section 2 and section 3 geo labels from extracted region-nav fragment links when available
 - normalizes query-index titles
 - strips trailing Adobe branding such as `- Adobe` or `| Adobe`
 - derives fallback titles from URL slugs without file extensions
 - includes only sibling sitemap links that currently exist
 - dedupes extended-geo entries against base-geo canonical paths
+- strips any trailing ` - <language>` suffix from region-nav-derived geo labels
 
 The resulting `sitemap.json` contains:
 

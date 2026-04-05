@@ -97,6 +97,9 @@ Rules:
 - Positional stage mode and `--stages` are mutually exclusive.
 - `--stages` accepts comma-separated canonical stage ids.
 - Multi-stage execution order is normalized in code.
+- Delivery stages are fail-fast in multi-stage runs:
+  - a `push` failure stops the pipeline before `preview` or `publish`
+  - a `preview` failure stops the pipeline before `publish`
 - No stage selection prints help and exits non-zero.
 
 Options:
@@ -198,15 +201,16 @@ Representative layout:
 ```text
 /html-sitemap
   html-sitemap.json
-  /business
-    /_extract
-      /gnav
-        gnav.html
-        products.html
-        manifest.json
-      placeholders.json
-      /da-bacom
-        query-index.json
+    /business
+      /_extract
+        /gnav
+          gnav.html
+          products.html
+          manifest.json
+        regions.html
+        placeholders.json
+        /da-bacom
+          query-index.json
     sitemap.json
     sitemap.html
     /fr
@@ -214,6 +218,7 @@ Representative layout:
         /gnav
           gnav.html
           manifest.json
+        regions.html
         placeholders.json
         /da-bacom
           query-index.json
@@ -248,6 +253,11 @@ Representative layout:
 - Raw placeholders payload used later by transform
 - Written by `extract`
 
+`_extract/regions.html`
+
+- Raw region-nav fragment HTML used later for geo display labels
+- Written by `extract`
+
 `_extract/**/query-index.json`
 
 - Raw query-index payloads fetched per site and geo
@@ -259,6 +269,7 @@ Representative layout:
 - Written by `transform-data`
 - Consumed by `transform-da`
 - Defines the render contract for the final sitemap page
+- Uses extracted `regions.html` labels for `otherSitemapLinks[*].title` and `extendedGeoLinks[*].title` when available, stripping any trailing ` - <language>` suffix
 
 Current top-level shape:
 
@@ -316,6 +327,7 @@ Writes:
 - `html-sitemap.json`
 - `_extract/gnav/*.html`
 - `_extract/gnav/manifest.json`
+- `_extract/regions.html`
 - `_extract/placeholders.json`
 - `_extract/**/query-index.json`
 
@@ -324,6 +336,7 @@ Conditions that affect output:
 - A base geo gets local output only if at least one base-geo query index succeeds and returns indexable rows.
 - Extended-geo query indices are written under the owning base geo’s `_extract/extended/...`.
 - Paginated query-index responses are fully fetched using `total`, `offset`, and `limit` before the merged payload is written locally.
+- Region-nav fragment extraction is best-effort and may warn/skip without aborting extraction.
 - Missing remote resources warn and continue.
 
 ### `transform-data`
@@ -341,6 +354,7 @@ Conditions that affect output:
 - runs only for base geos that already have eligible extracted input
 - sibling sitemap links include only base geos that currently have sitemap output
 - extended-geo links are subject to deduplication and `extendedSitemap` rules
+- geo labels for section 2 and section 3 prefer extracted `regions.html` link text and strip any trailing ` - <language>` suffix before falling back to generated labels
 
 ### `transform-da`
 

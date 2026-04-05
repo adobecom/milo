@@ -15,7 +15,7 @@
     </div>
     {{#if baseGeoSections}}
     <div>
-      <div class="sitemap-base align-headings contained static-links">
+      <div class="grid align-headings contained static-links">
         {{#each baseGeoSections}}
         <div>
           <div>
@@ -34,7 +34,8 @@
         {{/each}}
       </div>
     </div>
-    {{/if}} {{#if otherSitemaps}}
+    {{/if}}
+    {{#if otherSitemaps}}
     <div>
       <div
         class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
@@ -47,17 +48,18 @@
       </div>
     </div>
     <div>
-      <div class="sitemap-list align-headings contained">
+      <div class="text static-links contained center xxl-spacing max-width-8-desktop">
         <div>
           <div>
             {{#each otherSitemaps}}
-            <p><a href="{{url}}">{{title}}</a></p>
+            <a href="{{url}}">{{title}}</a>
             {{/each}}
           </div>
         </div>
       </div>
     </div>
-    {{/if}} {{#if extendedGeoGroups}}
+    {{/if}}
+    {{#if extendedGeoGroups}}
     <div>
       <div
         class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
@@ -70,7 +72,7 @@
       </div>
     </div>
     <div>
-      <div class="accordion sitemap-extended">
+      <div class="accordion">
         {{#each extendedGeoGroups}}
         <div>
           <div>{{title}}</div>
