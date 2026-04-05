@@ -439,6 +439,16 @@ Warning behavior:
 - missing query-index files warn and continue
 - paginated query-index responses must be fetched to completion using `total`, `offset`, and `limit`; extraction should not stop at the first response page
 
+#### Fetch retry policy
+
+All HTTP fetches during extraction use a shared retry strategy:
+
+- Up to 2 retries (3 total attempts)
+- Retryable status codes: 429, 500, 502, 503, 504
+- Non-retryable failures (4xx other than 429) are returned immediately
+- Backoff delay: 250ms * 2^attempt (250ms, 500ms)
+- Network errors (fetch throws) are retried with the same policy
+
 #### Query-index pagination
 
 The merge algorithm for paginated query-index responses:
@@ -545,13 +555,31 @@ Auth contract:
 - local or manual runs may authenticate with a direct DA bearer token such as `DA_SOURCE_TOKEN` or `DA_TOKEN`
 - production workflow automation may exchange the `ROLLING_IMPORT_*` IMS credentials for a DA bearer token before upload
 
-Preview triggers AEM preview for the document path corresponding to each eligible local `sitemap.html`.
+#### DA upload contract
 
-Preview output should include the corresponding `.page` document URLs for the promoted paths.
+Push uses the DA admin source API:
 
-Publish triggers AEM live/publish for the document path corresponding to each eligible local `sitemap.html`.
+- Origin: `https://admin.da.live/source`
+- Org: `adobecom`
+- Folder creation: `POST /source/{org}/{repo}/{path}` with auth header; 409 Conflict is treated as success (folder already exists)
+- Hierarchical folder creation: parent folders are created top-down; paths under `drafts/` skip the first two segments (assumed to exist)
+- File upload: `POST /source/{org}/{repo}/{path}` with `FormData` body containing a `data` field with the HTML content as a `Blob` (`type: text/html`)
+- Edit URLs follow the pattern `https://da.live/edit#/{org}/{repo}/{path}`
 
-Publish output should include the corresponding `.live` document URLs for the promoted paths.
+#### AEM promotion contract
+
+Preview and publish use the AEM admin API:
+
+- Origin: `https://admin.hlx.page`
+- Org: `adobecom`, ref: `main`
+- Preview endpoint: `POST /{preview|live}/{org}/{repo}/{ref}/*` with JSON body `{ paths, forceUpdate: true }`
+- Auth header format: `token {value}` (not `Bearer`)
+- Job status: poll the `links.self` URL from the start response (append `/details` if needed)
+- Poll interval: 2 seconds, up to 30 attempts (60 seconds max)
+- Job is complete when `stopTime` is present in the status response
+- Per-resource status is extracted from `data.resources[].status`; 200 and 204 are treated as success
+- Preview output URLs: `https://main--{repo}--adobecom.aem.page/{path}`
+- Publish output URLs: `https://main--{repo}--adobecom.aem.live/{path}`
 
 ## Summary Semantics
 
@@ -591,6 +619,18 @@ Placeholders use the pattern `{{key}}`:
 - Regex: `\{\{([^}]+)\}\}` with the key trimmed before lookup
 - Unresolved placeholders (no matching key) pass through verbatim
 - Applied to: GNAV headings, GNAV link text and hrefs, page-copy strings
+
+### Geo label resolution
+
+Sections 2 and 3 need display labels for each geo. Resolution order:
+
+1. **Region-nav label**: if the extracted `regions.html` contains a link whose href maps to the geo, use that link text after stripping any trailing ` - <language>` suffix (regex: `\s+-\s+.+$`)
+2. **Intl.DisplayNames fallback**: if no region-nav label is available, generate one using `Intl.DisplayNames` with locale `en`:
+   - Split the geo on `_` to get region and optional language codes
+   - Format the region code as a display name (e.g., `fr` → `France`, `be` → `Belgium`)
+   - Append the language only when the same region appears in multiple geo variants within the subdomain (e.g., `be_en` and `be_fr` both exist, so `Belgium (english)` and `Belgium (français)`)
+   - If the region has only one variant, omit the language suffix
+3. **Empty/root geo**: always renders as `Global`
 
 ## GNAV Transform Rules
 
