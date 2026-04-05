@@ -17,6 +17,8 @@ This document owns the behavioral and architectural contract behind the HTML sit
 - flags and env vars
 - input/output file contracts
 
+This spec defines the intended generator and page contract. The implementation should converge to this document; only explicitly marked future work should remain out of sync.
+
 ## Why
 
 Crawlers and LLM agents need a navigable, indexable HTML entry point for Adobe’s localized pages. XML sitemaps alone do not provide human-readable titles, regional grouping, or easy movement between localized surfaces.
@@ -93,6 +95,7 @@ Deduplication rule:
 
 - compare canonical paths after removing the geo prefix from both the base-geo path and the extended-geo path
 - if the canonical path already exists in the base geo, drop the extended-geo entry
+- dedupe is based on exact canonical path equivalence, not broader content equivalence or future consolidation rules
 
 ## Architecture
 
@@ -201,12 +204,26 @@ www	www.adobe.com	da-cc	language
 
 Maps each site to its query-index path.
 
+- `enabled` is optional and defaults to enabled
+- disabled rows are ignored by planning and extraction
+
 ### `geo-map`
 
 Maps each base geo to:
 
 - language
 - extended geos assigned to that base geo
+
+### `page-copy`
+
+Maps each base geo to render-time page strings:
+
+- page title
+- page description
+- sibling sitemap section heading
+- extended-geo section heading
+
+This sheet is the source of truth for page copy.
 
 ## Source Inventory
 
@@ -411,6 +428,7 @@ Warning behavior:
 - missing GNAV for a base geo warns and continues
 - missing placeholders warn and continue
 - missing query-index files warn and continue
+- paginated query-index responses must be fetched to completion using `total`, `offset`, and `limit`; extraction should not stop at the first response page
 
 ### Transform-Data
 
@@ -431,6 +449,8 @@ The resulting `sitemap.json` contains:
 - `sections.baseGeoLinks`
 - `sections.otherSitemapLinks`
 - `sections.extendedGeoLinks`
+
+This `sitemap.json` document is the normalized render contract for a sitemap page. Downstream rendering should consume this document rather than re-reading raw extracted GNAV or query-index inputs.
 
 ### Transform-DA
 
@@ -453,23 +473,48 @@ Expected shell:
 
 Section rendering contract:
 
-- Section 1: authored `sitemap-base`
-- Section 2: authored `sitemap-list`
-- Section 3: authored `accordion`
+- Section 1: grouped navigation links rendered as a generic multi-column or grid-like layout
+- Section 2: a simple authored list of sibling sitemap links; a dedicated block is not required
+- Section 3: grouped extended-geo links rendered as an expandable or otherwise compact grouped layout
+
+Rendering notes:
+
+- block choice is an implementation detail and may change without changing page semantics
+- the old browser-specific sitemap blocks are not the normative contract for this generator
+- the normalized `sitemap.json` contract and the DA/AEM page structure emitted by `transform-da` are the source of truth for page composition
+- `transform-da` should behave like a render step over normalized page data, not like a second extraction step
+- the editable DA template should be able to express most page structure directly, including simple conditional and repeated sections over normalized data
+- `templates/da-sitemap.html` is the reference DA page artifact for structure and section layout
+- template choice may vary by subdomain through config, but `da-sitemap.html` is the default contract when no override is provided
+- generated links should use canonical production URLs
+- non-production URL rewriting may be added by page-level client JS later, but it is optional and not required for the base generator contract
 
 Page-copy contract:
 
 - H1 defaults to `Sitemap`
 - metadata `title` matches the page title
 - metadata `description` is localized with English fallback
+- page-copy strings may contain `{{variable}}` placeholders, resolved using the extracted placeholder map for that base geo
+- the DA document shell should remain editable as template HTML rather than being buried entirely in string assembly code
 
 ### Push / Preview / Publish
 
 Push uploads local `sitemap.html` to DA under the remote document root specified by `--da-root`.
 
+Push output should include the corresponding DA edit URLs for uploaded documents.
+
+Auth contract:
+
+- local or manual runs may authenticate with a direct DA bearer token such as `DA_SOURCE_TOKEN` or `DA_TOKEN`
+- production workflow automation may exchange the `ROLLING_IMPORT_*` IMS credentials for a DA bearer token before upload
+
 Preview triggers AEM preview for the document path corresponding to each eligible local `sitemap.html`.
 
+Preview output should include the corresponding `.page` document URLs for the promoted paths.
+
 Publish triggers AEM live/publish for the document path corresponding to each eligible local `sitemap.html`.
+
+Publish output should include the corresponding `.live` document URLs for the promoted paths.
 
 ## Summary Semantics
 
@@ -484,15 +529,19 @@ Expected summary intent:
 - `preview`: which base geos were previewed
 - `publish`: which base geos were published
 
-## Reference Implementation
+## GNAV Extraction Notes
 
-The browser reference for GNAV behavior is:
+The current browser sitemap implementation is useful as historical context, but it is not the normative page contract for this generator.
 
-- [`libs/blocks/sitemap-base/sitemap-base.js`](../../../libs/blocks/sitemap-base/sitemap-base.js)
+The practical reference split is:
 
-That reference remains the source for:
+- GNAV extraction rules come from the extraction behavior captured here
+- normalized page structure comes from `sitemap.json`
+- rendered page composition comes from the DA HTML document emitted by `transform-da`
 
-- section discovery behavior
-- `#_inline` fragment traversal
-- exclusions
-- placeholder usage
+GNAV extraction behavior should preserve:
+
+- section discovery from heading-linked federal navigation or flat fragment links
+- `#_inline` fragment traversal for federal column patterns
+- exclusions such as `section-menu-dx`
+- placeholder resolution

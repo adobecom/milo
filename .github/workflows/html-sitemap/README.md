@@ -42,14 +42,16 @@ Only `push`, `preview`, and `publish` require auth.
 
 ```bash
 # DA auth for service account / production automation
+# Used when no direct DA bearer token override is provided.
 ROLLING_IMPORT_IMS_URL=https://...
 ROLLING_IMPORT_CLIENT_ID=...
 ROLLING_IMPORT_CLIENT_SECRET=...
 ROLLING_IMPORT_CODE=...
 ROLLING_IMPORT_GRANT_TYPE=authorization_code
 
-# Short-lived local DA override token
+# Direct DA bearer token for local/manual runs
 DA_SOURCE_TOKEN=...
+DA_TOKEN=...
 
 # AEM admin tokens for preview + publish
 # Use the raw auth_token cookie value from https://admin.hlx.page/profile
@@ -71,6 +73,8 @@ Usage:
 node --env-file=.env generate.ts [stage] [mode] [options]
 node --env-file=.env generate.ts --stages <list> [options]
 ```
+
+`--env-file` is resolved relative to the current shell working directory, not relative to `.github/workflows/html-sitemap/`.
 
 Canonical stage ids:
 
@@ -136,12 +140,14 @@ Expected top-level sheets:
 - `config`
 - `query-index-map`
 - `geo-map`
+- `page-copy`
 
 Expected roles:
 
-- `config`: subdomain, production domain, host site, extended sitemap mode
-- `query-index-map`: per-site query-index path inventory
+- `config`: subdomain, production domain, host site, extended sitemap mode, optional DA template name
+- `query-index-map`: per-site query-index path inventory with optional `enabled` opt-out
 - `geo-map`: base geos, languages, and extended-geo mappings
+- `page-copy`: base-geo page title, description, and section headings
 
 The format is compatible with AEM multi-sheet JSON:
 
@@ -154,18 +160,24 @@ Example:
   "config": {
     "data": [
       { "subdomain": "business", "domain": "business.adobe.com", "site": "da-bacom", "extendedSitemap": "all" },
-      { "subdomain": "www", "domain": "www.adobe.com", "site": "da-cc", "extendedSitemap": "language" }
+      { "subdomain": "www", "domain": "www.adobe.com", "site": "da-cc", "extendedSitemap": "language", "template": "da-sitemap.html" }
     ]
   },
   "query-index-map": {
     "data": [
-      { "subdomain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" }
+      { "subdomain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" },
+      { "subdomain": "www", "site": "cc", "queryIndexPath": "/cc-shared/assets/query-index.json", "enabled": "false" }
     ]
   },
   "geo-map": {
     "data": [
       { "subdomain": "business", "baseGeo": "", "language": "en", "extendedGeos": "ca, nl" },
       { "subdomain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "ca_fr, ch_fr" }
+    ]
+  },
+  "page-copy": {
+    "data": [
+      { "subdomain": "business", "baseGeo": "", "pageTitle": "Sitemap", "pageDescription": "Browse pages across this site by section, locale, and region.", "otherSitemapsHeading": "Other Regions", "extendedPagesHeading": "Additional Localized Pages" }
     ]
   }
 }
@@ -246,6 +258,7 @@ Representative layout:
 - Normalized intermediate data for one sitemap page
 - Written by `transform-data`
 - Consumed by `transform-da`
+- Defines the render contract for the final sitemap page
 
 Current top-level shape:
 
@@ -267,6 +280,12 @@ Current top-level shape:
 - DA-compatible HTML source document for one sitemap page
 - Written by `transform-da`
 - Consumed by `push`, `preview`, and `publish`
+- This HTML document is the reference render output for the generator
+- Old browser-specific sitemap blocks are not the normative contract here
+- The editable template at `templates/da-sitemap.html` is the primary DA page reference
+- The template supports simple `{{value}}`, `{{#if ...}}`, and `{{#each ...}}` blocks over normalized `sitemap.json` data
+- The lightweight renderer that evaluates those blocks lives in `lib/render/template.ts`
+- Template selection may be set per subdomain in the `config` sheet; if omitted it defaults to `da-sitemap.html`
 
 ## Stage Contract
 
@@ -302,8 +321,9 @@ Writes:
 
 Conditions that affect output:
 
-- A base geo gets a local output folder only if at least one base-geo query index succeeds and returns rows.
+- A base geo gets local output only if at least one base-geo query index succeeds and returns indexable rows.
 - Extended-geo query indices are written under the owning base geo’s `_extract/extended/...`.
+- Paginated query-index responses are fully fetched using `total`, `offset`, and `limit` before the merged payload is written locally.
 - Missing remote resources warn and continue.
 
 ### `transform-data`
@@ -336,6 +356,8 @@ Conditions that affect output:
 
 - runs only where `sitemap.json` exists
 - output is a DA HTML source document, not a DA-specific JSON format
+- render semantics come from `sitemap.json` plus the DA page shell, not from old browser-specific sitemap blocks
+- page copy comes from the `page-copy` sheet and can resolve `{{variable}}` placeholders against extracted placeholders data
 
 ### `push`
 
@@ -346,6 +368,7 @@ Reads:
 Writes:
 
 - remote DA source document rooted at `--da-root`
+- DA edit URLs for uploaded documents in stage output
 
 Conditions that affect output:
 
@@ -362,6 +385,7 @@ Reads:
 Writes:
 
 - AEM preview state for the corresponding remote document path under `--da-root`
+- `.page` URLs for previewed documents in stage output
 
 Conditions that affect output:
 
@@ -378,12 +402,23 @@ Reads:
 Writes:
 
 - AEM live/publish state for the corresponding remote document path under `--da-root`
+- `.live` URLs for published documents in stage output
 
 Conditions that affect output:
 
 - requires `--da-root`
 - requires AEM admin token env vars
 - skips geos with no local `sitemap.html`
+
+## Package Layout
+
+Implementation modules are grouped shallowly by responsibility:
+
+- `lib/planning/`: config parsing, unit planning, and output availability
+- `lib/extract/`: raw GNAV, placeholders, and query-index extraction
+- `lib/transform/`: normalized sitemap data and DA HTML rendering
+- `lib/delivery/`: DA upload and AEM preview/publish integration
+- `lib/`: shared helpers used across those areas
 
 ## GitHub Actions Inputs
 

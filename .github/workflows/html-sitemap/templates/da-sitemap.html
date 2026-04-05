@@ -1,0 +1,103 @@
+<body>
+  <header></header>
+  <main>
+    <div>
+      <div
+        class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
+      >
+        <div>
+          <div>
+            <h1>{{pageTitle}}</h1>
+            <p>{{pageDescription}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{#if baseGeoSections}}
+    <div>
+      <div class="sitemap-base align-headings contained static-links">
+        {{#each baseGeoSections}}
+        <div>
+          <div>
+            <h3>{{heading}}</h3>
+            {{#each groups}} {{#if subheading}}
+            <h4>{{subheading}}</h4>
+            {{/if}}
+            <ul>
+              {{#each links}}
+              <li><a href="{{url}}">{{title}}</a></li>
+              {{/each}}
+            </ul>
+            {{/each}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}} {{#if otherSitemaps}}
+    <div>
+      <div
+        class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
+      >
+        <div>
+          <div>
+            <h2>{{otherSitemapsHeading}}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="sitemap-list align-headings contained">
+        <div>
+          <div>
+            {{#each otherSitemaps}}
+            <p><a href="{{url}}">{{title}}</a></p>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    </div>
+    {{/if}} {{#if extendedGeoGroups}}
+    <div>
+      <div
+        class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
+      >
+        <div>
+          <div>
+            <h2>{{extendedPagesHeading}}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="accordion sitemap-extended">
+        {{#each extendedGeoGroups}}
+        <div>
+          <div>{{title}}</div>
+        </div>
+        <div>
+          <div>
+            <ul>
+              {{#each links}}
+              <li><a href="{{url}}">{{title}}</a></li>
+              {{/each}}
+            </ul>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+    <div>
+      <div class="metadata">
+        {{#each metadataRows}}
+        <div>
+          <div>{{key}}</div>
+          <div>{{value}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </main>
+  <footer></footer>
+</body>
