@@ -92,12 +92,21 @@
     {{/if}}
     <div>
       <div class="metadata">
-        {{#each metadataRows}}
         <div>
-          <div>{{key}}</div>
-          <div>{{value}}</div>
+          <div>title</div>
+          <div>{{pageTitle}}</div>
         </div>
-        {{/each}}
+        <div>
+          <div>description</div>
+          <div>{{pageDescription}}</div>
+        </div>
+        <div>
+          <div>locale</div>
+          <div>{{locale}}</div>
+        </div>
+        <!-- TODO: remove later -->
+        <div>robots</div>
+        <div>noindex,nofollow</div>
       </div>
     </div>
   </main>

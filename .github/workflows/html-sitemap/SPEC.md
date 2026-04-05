@@ -499,8 +499,9 @@ Rendering notes:
 Page-copy contract:
 
 - H1 defaults to `Sitemap`
-- metadata `title` matches the page title
-- metadata `description` is localized with English fallback
+- metadata `title` and `description` are rendered directly in the editable DA template from `pageTitle` and `pageDescription`
+- metadata `locale` is rendered directly in the editable DA template from the current base geo, with root rendered as `global`
+- metadata rows may be authored literally in the DA template; they are not required to come from a preassembled metadata array in code
 - page-copy strings may contain `{{variable}}` placeholders, resolved using the extracted placeholder map for that base geo
 - the DA document shell should remain editable as template HTML rather than being buried entirely in string assembly code
 

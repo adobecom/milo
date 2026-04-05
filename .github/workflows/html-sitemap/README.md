@@ -188,6 +188,8 @@ Example:
 
 See [SPEC.md](./SPEC.md#scope) for the current live inventory and meaning of those sheets.
 
+`pageTitle`, `pageDescription`, and `locale` are exposed directly to the DA template. The metadata block in `templates/da-sitemap.html` is authored explicitly from those values rather than being assembled from prebuilt metadata rows in code.
+
 ## Output Contract
 
 All stages read and write under a single local output root. Default:
