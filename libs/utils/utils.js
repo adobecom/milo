@@ -39,6 +39,7 @@ const MILO_BLOCKS = [
   'global-footer',
   'global-navigation',
   'graybox',
+  'grid',
   'footer',
   'gnav',
   'hero-marquee',
@@ -100,9 +101,6 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
-  'sitemap-base',
-  'sitemap-extended',
-  'sitemap-list',
   'susi-light-login',
   'reading-time',
 ];
