@@ -6,7 +6,6 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  sendMktgTracking,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -672,28 +671,6 @@ describe('MEP Utils', () => {
     });
   });
 });
-describe('sendMktgTracking', () => {
-  it('should return false if advertising is false and mktgAction is marketing increase', async () => {
-    const config = getConfig();
-    config.mep.consentState = { advertising: false };
-    expect(sendMktgTracking('my-manifest', 'marketing increase')).to.be.false;
-  });
-  it('should return false if advertising is true and mktgAction is non-marketing', async () => {
-    const config = getConfig();
-    config.mep.consentState = { advertising: true };
-    expect(sendMktgTracking(true, 'my-manifest', 'non-marketing')).to.be.false;
-  });
-  it('should send return event name if advertising is true and mktgAction is marketing increase', async () => {
-    const config = getConfig();
-    config.mep.consentState = { advertising: true };
-    expect(sendMktgTracking('my-manifest', 'marketing increase')).to.equal('my-manifest was served');
-  });
-  it('should send return event name if advertising is true and mktgAction is marketing decrease', async () => {
-    const config = getConfig();
-    config.mep.consentState = { advertising: true };
-    expect(sendMktgTracking('my-manifest', 'marketing decrease')).to.equal('my-manifest was served');
-  });
-});
 
 describe('analyticifseen', () => {
   let observerCallback;
@@ -746,7 +723,6 @@ describe('analyticifseen', () => {
   });
 
   it('should defer analytics to alloy_sendEvent when _satellite is unavailable', () => {
-    // Flush lingering alloy_sendEvent listeners left by earlier sendMktgTracking tests
     window.dispatchEvent(new Event('alloy_sendEvent'));
 
     observerCallback([{ isIntersecting: true }]);
