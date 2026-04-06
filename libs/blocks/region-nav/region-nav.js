@@ -124,12 +124,22 @@ export default async function init(block) {
       titleP.replaceWith(h2);
     }
   }
-  const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
+  /*const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
   regionHeaders.forEach((strong) => {
     if (strong.querySelector('a')) return;
     const p = strong.parentElement;
     if (p.nextElementSibling?.tagName !== 'UL') return;
     const h3 = createTag('h3', { class: `tracking-header ${strong.className}`.trim() }, strong.textContent);
+    p.replaceWith(h3);
+  });*/
+  regionHeaders.forEach((strong) => {
+    const p = strong.parentElement;
+    const parentDiv = p.parentElement;
+    // Only convert if this is the first <p><strong> in its column div
+    const firstStrong = parentDiv.querySelector(':scope > p > strong');
+    if (firstStrong !== strong) return;
+    const h3 = createTag('h3', { class: `tracking-header ${strong.className}`.trim() });
+    h3.innerHTML = strong.innerHTML; // preserve links
     p.replaceWith(h3);
   });
   const links = divs[1].querySelectorAll('a');
