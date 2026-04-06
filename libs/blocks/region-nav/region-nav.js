@@ -131,7 +131,9 @@ export default async function init(block) {
     if (p.nextElementSibling?.tagName !== 'UL') return;
     const h3 = createTag('h3', { class: `tracking-header ${strong.className}`.trim() }, strong.textContent);
     p.replaceWith(h3);
-  });*/
+  });*/ /**...previous code  */
+  
+  /**below is new trial code */
   regionHeaders.forEach((strong) => {
     const p = strong.parentElement;
     const parentDiv = p.parentElement;
