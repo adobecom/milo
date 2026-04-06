@@ -30,25 +30,6 @@ describe('Region Nav Block', async () => {
     sinon.restore();
   });
 
-  it('converts modal title <strong> to <h2> for accessibility', () => {
-    const h2 = block.querySelector(':scope > div:first-of-type h2');
-    expect(h2).to.exist;
-    expect(h2.textContent.trim()).to.equal('Choose your region');
-  });
-
-  it('converts region group <p><strong> headers to <h3> for accessibility', () => {
-    const h3s = [...block.querySelectorAll(':scope > div:nth-of-type(2) h3')];
-    expect(h3s).to.have.length(3);
-    expect(h3s[0].textContent.trim()).to.equal('Americas');
-    expect(h3s[1].textContent.trim()).to.equal('Europe, Middle East and Africa');
-    expect(h3s[2].textContent.trim()).to.equal('Asia Pacific');
-  });
-
-  it('does not leave any <p><strong> region headers after init', () => {
-    const remainingStrongHeaders = block.querySelectorAll(':scope > div:nth-of-type(2) p > strong');
-    expect(remainingStrongHeaders).to.have.length(0);
-  });
-
   it('sets links correctly', () => {
     const { contentRoot } = getConfig().locale;
     window.location.hash = 'langnav';
