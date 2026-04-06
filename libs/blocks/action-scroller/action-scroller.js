@@ -119,6 +119,7 @@ export default function init(el) {
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
     handleBtnState(items, buttons);
+    if (!items.querySelectorAll('a').length) items.setAttribute('aria-hidden', 'true');
     allActionScrollers.push({ scroller: items, buttons });
     import('../../utils/action.js').then(({ debounce }) => {
       items.addEventListener('scroll', debounce(() => handleBtnState(items, buttons), 50));
@@ -127,10 +128,9 @@ export default function init(el) {
       window.addEventListener('resize', debounce(handleResize, 50));
     });
   }
+
   if (items.querySelectorAll('a').length) {
     items.setAttribute('role', 'list');
     actions.forEach((action) => action.setAttribute('role', 'listitem'));
-  } else {
-    items.setAttribute('aria-hidden', 'true');
   }
 }

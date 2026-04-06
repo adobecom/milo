@@ -70,7 +70,7 @@ describe('action scrollers', () => {
       init(el);
       const scroller = el.querySelector('.scroller');
       expect(scroller.getAttribute('aria-hidden')).to.equal('true');
-      expect(scroller.getAttribute('tabindex')).to.be.null;
+      expect(scroller.getAttribute('tabindex')).to.equal('-1');
     });
   });
 
