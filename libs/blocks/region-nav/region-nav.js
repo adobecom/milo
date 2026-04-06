@@ -124,8 +124,8 @@ export default async function init(block) {
       titleP.replaceWith(h2);
     }
   }
-  /*const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
-  regionHeaders.forEach((strong) => {
+  const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
+  /*regionHeaders.forEach((strong) => {
     if (strong.querySelector('a')) return;
     const p = strong.parentElement;
     if (p.nextElementSibling?.tagName !== 'UL') return;
