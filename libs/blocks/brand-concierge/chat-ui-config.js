@@ -312,7 +312,6 @@ export default {
     '--chat-history-bottom-padding': '0',
     '--chat-history-padding': '28px',
     '--chat-history-padding-top-expanded': '0',
-    '--chat-interface-max-width': '832px',
     '--chat-history-padding-mobile': '24px',
     '--chat-history-padding-tablet': '32px',
     '--color-button-secondary-hover-text': '#FFFFFF',
@@ -340,6 +339,7 @@ export default {
     '--feedback-button-icon-size': '20px',
     '--feedback-button-spacing': '4px',
     '--font-family': "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
+    '--input-section-max-width': 'var(--content-width-desktop)',
     '--input-ai-chat-label-padding': '6px',
     '--input-container-ai-chat-padding-left': '8px',
     '--input-container-ai-chat-padding-right': '8px',
@@ -454,5 +454,6 @@ export default {
     '--welcome-container-padding': '16px',
     '--welcome-container-padding-mobile': '24px',
     '--welcome-container-padding-tablet': '32px',
+    '--z-index-base': '-1',
   },
 };
