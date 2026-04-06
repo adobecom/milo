@@ -115,14 +115,13 @@ export default async function init(block) {
   config = getConfig();
   const divs = block.querySelectorAll(':scope > div');
   if (divs.length < 2) return;
-  const titleStrong = divs[0].querySelector('strong');
-  const titleP = titleStrong?.closest('p');
-  if (titleStrong && !divs[0].querySelector('h2')) {
-    const h2 = createTag('h2', { class: `tracking-header ${titleStrong.className}`.trim() }, titleStrong.textContent);
+  const titleDiv = divs[0];
+  if (!titleDiv.querySelector('h2')) {
+    const titleStrong = titleDiv.querySelector('strong');
+    const titleP = titleStrong ? titleStrong.closest('p') : titleDiv.querySelector('p');
     if (titleP) {
+      const h2 = createTag('h2', { class: 'tracking-header' }, titleP.textContent.trim());
       titleP.replaceWith(h2);
-    } else {
-      titleStrong.replaceWith(h2);
     }
   }
   const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
