@@ -64,6 +64,15 @@ describe('action scrollers', () => {
     });
   });
 
+  describe('action scroller no-links', () => {
+    it('does not set tabindex on scroller when there are no links', () => {
+      const el = document.querySelector('.action-scroller.no-links');
+      init(el);
+      const scroller = el.querySelector('.scroller');
+      expect(scroller.getAttribute('tabindex')).to.be.null;
+    });
+  });
+
   describe('Helper functions', () => {
     it('Should return element style properties', () => {
       const el = document.querySelector('.action-scroller.utility');
