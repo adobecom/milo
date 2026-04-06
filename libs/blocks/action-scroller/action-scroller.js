@@ -127,6 +127,10 @@ export default function init(el) {
       window.addEventListener('resize', debounce(handleResize, 50));
     });
   }
-  items.setAttribute('role', 'list');
-  actions.forEach((action) => action.setAttribute('role', 'listitem'));
+  if (items.querySelectorAll('a').length) {
+    items.setAttribute('role', 'list');
+    actions.forEach((action) => action.setAttribute('role', 'listitem'));
+  } else {
+    items.setAttribute('tabindex', 0);
+  }
 }
