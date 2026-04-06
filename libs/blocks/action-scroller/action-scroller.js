@@ -131,6 +131,6 @@ export default function init(el) {
     items.setAttribute('role', 'list');
     actions.forEach((action) => action.setAttribute('role', 'listitem'));
   } else {
-    items.setAttribute('tabindex', 0);
+    items.setAttribute('aria-hidden', 'true');
   }
 }

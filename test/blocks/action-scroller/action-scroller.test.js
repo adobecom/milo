@@ -65,15 +65,12 @@ describe('action scrollers', () => {
   });
 
   describe('action scroller no-links', () => {
-    it('sets tabindex but no list role when there are no links', () => {
+    it('hides scroller from accessibility tree when there are no links', () => {
       const el = document.querySelector('.action-scroller.no-links');
       init(el);
       const scroller = el.querySelector('.scroller');
-      expect(scroller.getAttribute('tabindex')).to.equal('0');
-      expect(scroller.getAttribute('role')).to.be.null;
-      scroller.querySelectorAll('.action-item').forEach((item) => {
-        expect(item.getAttribute('role')).to.be.null;
-      });
+      expect(scroller.getAttribute('aria-hidden')).to.equal('true');
+      expect(scroller.getAttribute('tabindex')).to.be.null;
     });
   });
 
