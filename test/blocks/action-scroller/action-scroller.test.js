@@ -20,7 +20,7 @@ describe('action scrollers', () => {
     ]);
   });
 
-  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility)');
+  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility):not(.no-links)');
   actionScroller.forEach((scroller) => {
     init(scroller);
 
