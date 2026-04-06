@@ -650,6 +650,11 @@ export default async function init(el) {
     el.appendChild(button);
   }
 
+  const logWebClient = (text, src) => {
+    // eslint-disable-next-line no-console
+    console.log(text, src);
+  };
+
   const { env } = getConfig();
   const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
   const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
@@ -662,20 +667,16 @@ export default async function init(el) {
   }
 
   if (webClient === 'prod') {
-    // eslint-disable-next-line no-console
-    console.log('prod', prod);
+    logWebClient('prod', prod);
     src = prod;
   } else if (webClient === 'stage') {
-    // eslint-disable-next-line no-console
-    console.log('stage', stage);
+    logWebClient('stage', stage);
     src = stage;
   } else if (webClient === 'baseProd') {
-    // eslint-disable-next-line no-console
-    console.log('baseProd', baseProd);
+    logWebClient('baseProd', baseProd);
     src = baseProd;
   } else if (webClient === 'baseStage') {
-    // eslint-disable-next-line no-console
-    console.log('baseStage', baseStage);
+    logWebClient('baseStage', baseStage);
     src = baseStage;
   }
 
