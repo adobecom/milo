@@ -17,7 +17,7 @@
     <div>
       <div class="grid align-headings contained static-links">
         {{#each baseGeoSections}}
-        <div>
+        <div data-section-index="{{@index}}">
           <div>
             <h3>{{heading}}</h3>
             {{#each groups}} {{#if subheading}}
@@ -25,7 +25,7 @@
             {{/if}}
             <ul>
               {{#each links}}
-              <li><a href="{{url}}">{{title}}</a></li>
+              <li><a href="{{url}}" data-link-index="{{@index}}">{{title}}</a></li>
               {{/each}}
             </ul>
             {{/each}}
@@ -52,7 +52,7 @@
         <div>
           <div>
             {{#each otherSitemaps}}
-            <a href="{{url}}">{{title}}</a>
+            <a href="{{url}}" data-geo-index="{{@index}}">{{title}}</a>
             {{/each}}
           </div>
         </div>
@@ -74,14 +74,14 @@
     <div>
       <div class="accordion">
         {{#each extendedGeoGroups}}
-        <div>
+        <div data-group-index="{{@index}}">
           <div>{{title}}</div>
         </div>
         <div>
           <div>
             <ul>
               {{#each links}}
-              <li><a href="{{url}}">{{title}}</a></li>
+              <li><a href="{{url}}" data-link-index="{{@index}}">{{title}}</a></li>
               {{/each}}
             </ul>
           </div>

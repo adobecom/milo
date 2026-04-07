@@ -151,18 +151,68 @@ Expected top-level sheets:
 - `geo-map`
 - `page-copy`
 
-Expected roles:
-
-- `config`: subdomain, production domain, host site, extended sitemap mode, optional DA template name
-- `query-index-map`: per-site query-index path inventory with optional `enabled` opt-out
-- `geo-map`: base geos, languages, and extended-geo mappings
-- `page-copy`: base-geo page title, description, and section headings
-
 The format is compatible with AEM multi-sheet JSON:
 
 - https://www.aem.live/developer/spreadsheets#multi-sheet-format
 
-Example:
+### `config`
+
+Maps each subdomain to its production domain, host site, and behavior settings.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `subdomain` | yes | Short name used as the output directory and filter key (`business`, `www`) |
+| `domain` | yes | Production domain (`business.adobe.com`, `www.adobe.com`) |
+| `site` | yes | Host site / repo name for AEM origin URLs (`da-bacom`, `da-cc`) |
+| `extendedSitemap` | yes | `language` — include only the base geo's mapped extended geos; `all` — include every extended geo in the subdomain |
+| `template` | no | DA template filename; defaults to `da-sitemap.html` |
+
+### `query-index-map`
+
+Maps each site to its query-index path.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `subdomain` | yes | Subdomain this row belongs to (falls back to `domain` field if absent) |
+| `site` | yes | Site / repo name (`da-bacom`, `cc`, `edu`, etc.) |
+| `queryIndexPath` | yes | Path to the query-index JSON on the site origin |
+| `enabled` | no | Defaults to enabled; set to `false`, `0`, `no`, or `off` to exclude from extraction |
+
+### `geo-map`
+
+Maps each base geo to its language and extended-geo assignments.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `subdomain` | yes | Subdomain this row belongs to (falls back to `domain` field if absent) |
+| `baseGeo` | no | Geo code for the base geo; empty string or omitted for the root geo |
+| `language` | yes | Language code for this base geo (`en`, `fr`, `ja`, etc.) |
+| `extendedGeos` | no | Comma-separated list of extended geo codes assigned to this base geo |
+| `deploy` | no | Set to `true` to mark this geo for deployment; defaults to disabled when empty or omitted |
+
+`deploy` controls two things:
+
+- **Section 2 links**: only geos marked `deploy: true` appear in the "Other Sitemaps" section of any page, preventing links to pages that don't exist in production
+- **Delivery stages**: `push`, `preview`, and `publish` only promote geos marked `deploy: true`
+
+All geos are still extracted and transformed regardless of `deploy` status. This preserves full data, manifests, and the ability to inspect any geo locally.
+
+### `page-copy`
+
+Maps each base geo to render-time page strings.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `subdomain` | yes | Subdomain this row belongs to (falls back to `domain` field if absent) |
+| `baseGeo` | no | Geo code; empty string or omitted for the root geo |
+| `pageTitle` | yes | Page `<h1>` and metadata title; defaults to `Sitemap` if row is missing |
+| `pageDescription` | yes | Metadata description |
+| `otherSitemapsHeading` | no | Section 2 heading (sibling sitemaps) |
+| `extendedPagesHeading` | no | Section 3 heading (extended geos) |
+
+Page-copy strings may contain `{{variable}}` placeholders resolved from the extracted placeholder map. `pageTitle`, `pageDescription`, and `locale` are exposed directly to the DA template.
+
+### Example
 
 ```json
 {
@@ -181,7 +231,7 @@ Example:
   "geo-map": {
     "data": [
       { "subdomain": "business", "baseGeo": "", "language": "en", "extendedGeos": "ca, nl" },
-      { "subdomain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "ca_fr, ch_fr" }
+      { "subdomain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "ca_fr, ch_fr", "deploy": "true" }
     ]
   },
   "page-copy": {
@@ -192,9 +242,7 @@ Example:
 }
 ```
 
-See [SPEC.md](./SPEC.md#scope) for the current live inventory and meaning of those sheets.
-
-`pageTitle`, `pageDescription`, and `locale` are exposed directly to the DA template. The metadata block in `templates/da-sitemap.html` is authored explicitly from those values rather than being assembled from prebuilt metadata rows in code.
+See [SPEC.md](./SPEC.md#source-inventory) for the live catalog snapshots showing current site and geo data.
 
 ## Output Contract
 
@@ -285,7 +333,7 @@ Representative layout:
 - Defines the render contract for the final sitemap page
 - Uses extracted `regions.html` labels for `otherSitemapLinks[*].title` and `extendedGeoLinks[*].title` when available, stripping any trailing ` - <language>` suffix
 
-Current top-level shape:
+Shape:
 
 ```json
 {
@@ -293,12 +341,38 @@ Current top-level shape:
   "baseGeo": "",
   "domain": "business.adobe.com",
   "sections": {
-    "baseGeoLinks": [],
-    "otherSitemapLinks": [],
-    "extendedGeoLinks": []
+    "baseGeoLinks": [
+      {
+        "heading": "Products",
+        "groups": [
+          {
+            "subheading": "Featured",
+            "links": [{ "title": "Adobe Commerce", "url": "https://business.adobe.com/products/commerce", "path": "/products/commerce" }]
+          }
+        ]
+      }
+    ],
+    "otherSitemapLinks": [
+      { "geo": "fr", "title": "France", "url": "https://business.adobe.com/fr/sitemap.html" }
+    ],
+    "extendedGeoLinks": [
+      {
+        "geo": "br",
+        "title": "Brazil",
+        "links": [{ "title": "Adobe Firefly", "url": "https://business.adobe.com/br/products/firefly", "path": "/br/products/firefly" }]
+      }
+    ]
   }
 }
 ```
+
+| Section | Structure |
+|---------|-----------|
+| `baseGeoLinks` | Array of GNAV sections, each with a `heading` and `groups[]` of `{ subheading, links[] }` |
+| `otherSitemapLinks` | Flat array of `{ geo, title, url }` for sibling sitemap pages |
+| `extendedGeoLinks` | Array of `{ geo, title, links[] }` groups for extended-geo pages |
+
+Each `link` has `title`, `url` (canonical production URL), and `path` (URL pathname).
 
 `sitemap.html`
 
@@ -306,11 +380,20 @@ Current top-level shape:
 - Written by `transform-da`
 - Consumed by `push`, `preview`, and `publish`
 - This HTML document is the reference render output for the generator
-- Old browser-specific sitemap blocks are not the normative contract here
 - The editable template at `templates/da-sitemap.html` is the primary DA page reference
-- The template supports simple `{{value}}`, `{{#if ...}}`, and `{{#each ...}}` blocks over normalized `sitemap.json` data
-- The lightweight renderer that evaluates those blocks lives in `lib/render/template.ts`
 - Template selection may be set per subdomain in the `config` sheet; if omitted it defaults to `da-sitemap.html`
+- See [Template Language](#template-language) for the template syntax reference
+
+The rendered HTML includes `data-*` attributes on iterated elements for monitoring and programmatic access:
+
+| Attribute | Location | Value |
+|-----------|----------|-------|
+| `data-section-index` | GNAV section container (`baseGeoLinks`) | Zero-based section index |
+| `data-link-index` | Individual `<a>` elements within sections and extended geo groups | Zero-based link index within its parent loop |
+| `data-geo-index` | Sibling sitemap `<a>` elements (`otherSitemapLinks`) | Zero-based geo index |
+| `data-group-index` | Extended geo group container (`extendedGeoLinks`) | Zero-based group index |
+
+These attributes are stable for the same inputs and can be used to locate specific items by position without parsing the full DOM.
 
 `manifest.json`
 
@@ -457,6 +540,7 @@ Conditions that affect output:
 - requires `--da-root`
 - requires DA auth env vars
 - skips geos with no local `sitemap.html`
+- skips geos not marked `deploy: true` in `geo-map`
 
 ### `preview`
 
@@ -474,6 +558,7 @@ Conditions that affect output:
 - requires `--da-root`
 - requires AEM admin token env vars
 - skips geos with no local `sitemap.html`
+- skips geos not marked `deploy: true` in `geo-map`
 
 ### `publish`
 
@@ -491,6 +576,69 @@ Conditions that affect output:
 - requires `--da-root`
 - requires AEM admin token env vars
 - skips geos with no local `sitemap.html`
+- skips geos not marked `deploy: true` in `geo-map`
+
+## Template Language
+
+The DA template at `templates/da-sitemap.html` uses a lightweight template language evaluated by `lib/render/template.ts` over the normalized render model derived from `sitemap.json`.
+
+The syntax is a subset of [Handlebars](https://handlebarsjs.com/). Any valid template for this generator is also valid Handlebars, but only the features below are supported:
+
+| Handlebars feature | Supported |
+|--------------------|-----------|
+| `{{value}}` interpolation | yes |
+| `{{#if}}...{{/if}}` | yes |
+| `{{else}}` | yes |
+| `{{#unless}}...{{/unless}}` | yes |
+| `{{#each}}...{{/each}}` | yes |
+| `{{@index}}` / `{{@key}}` | yes |
+| `{{.}}` / `{{this}}` | yes |
+| Dot notation `{{a.b}}` | yes |
+| HTML escaping by default | yes |
+| `{{{raw}}}` triple-stash (no escape) | no |
+| Partials `{{> partial}}` | no |
+| Helpers `{{formatDate x}}` | no |
+
+### Syntax
+
+| Pattern | Behavior |
+|---------|----------|
+| `{{key}}` | Value interpolation, HTML-escaped |
+| `{{key.nested}}` | Dot-notation property access |
+| `{{.}}` or `{{this}}` | Current scope reference |
+| `{{#if key}}...{{/if}}` | Conditional block |
+| `{{#if key}}...{{else}}...{{/if}}` | Conditional with else branch |
+| `{{#unless key}}...{{/unless}}` | Inverted conditional (renders when falsy) |
+| `{{#each key}}...{{/each}}` | Iteration block |
+| `{{@index}}` | Zero-based iteration index (inside `#each`) |
+| `{{@key}}` | String key of current iteration item (inside `#each`) |
+
+### Scope chain
+
+- The root scope is the render model object
+- Each `#each` iteration pushes the current array item as a new scope
+- Lookups traverse inner-to-outer: a key in the current `#each` item shadows the same key in the parent scope
+- Parent scope values remain accessible from nested blocks
+
+### Truthiness
+
+- Arrays: truthy when non-empty
+- All other values: `Boolean(value)`
+
+### Escaping
+
+- All interpolated scalar values are HTML-escaped: `&`, `<`, `>`, `"`, `'`
+- Literal HTML in the template (text nodes) is not escaped
+
+### Standalone control lines
+
+Lines containing only a control tag (`#if`, `/if`, `#each`, `/each`) plus optional whitespace are stripped from output to prevent blank lines.
+
+### Error behavior
+
+- Mismatched or missing closing tags throw
+- `#each` on a non-array value warns and produces empty output
+- Rendering an object as a scalar throws
 
 ## Package Layout
 

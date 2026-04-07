@@ -184,49 +184,9 @@ but only for base geos that satisfy the page-emission rule above.
 
 ## Config Semantics
 
-### `config`
+See [README.md](./README.md#input-contract) for the full schema of each config sheet (`config`, `query-index-map`, `geo-map`, `page-copy`) including field definitions, required/optional status, and example JSON.
 
-Maps each subdomain to:
-
-- production domain
-- host site / repo
-- extended sitemap mode
-
-```tsv
-subdomain	domain	site	extendedSitemap
-business	business.adobe.com	da-bacom	all
-www	www.adobe.com	da-cc	language
-```
-
-`extendedSitemap` semantics:
-
-- `language`: include only the base geo’s mapped extended geos
-- `all`: include every extended geo in the subdomain
-
-### `query-index-map`
-
-Maps each site to its query-index path.
-
-- `enabled` is optional and defaults to enabled
-- disabled rows are ignored by planning and extraction
-
-### `geo-map`
-
-Maps each base geo to:
-
-- language
-- extended geos assigned to that base geo
-
-### `page-copy`
-
-Maps each base geo to render-time page strings:
-
-- page title
-- page description
-- sibling sitemap section heading
-- extended-geo section heading
-
-This sheet is the source of truth for page copy.
+This section covers operational semantics not captured by the schema alone.
 
 ## Source Inventory
 
@@ -679,41 +639,4 @@ Placeholders are resolved in both heading text and link text/hrefs before groupi
 
 ## Template Language
 
-The DA template renderer (`lib/render/template.ts`) evaluates a lightweight template language over the normalized render model derived from `sitemap.json`.
-
-### Syntax
-
-| Pattern | Behavior |
-|---------|----------|
-| `{{key}}` | Value interpolation, HTML-escaped |
-| `{{key.nested}}` | Dot-notation property access |
-| `{{.}}` or `{{this}}` | Current scope reference |
-| `{{#if key}}...{{/if}}` | Conditional block |
-| `{{#each key}}...{{/each}}` | Iteration block |
-
-### Scope chain
-
-- The root scope is the render model object
-- Each `#each` iteration pushes the current array item as a new scope
-- Lookups traverse inner-to-outer: a key in the current `#each` item shadows the same key in the parent scope
-- Parent scope values remain accessible from nested blocks
-
-### Truthiness
-
-- Arrays: truthy when non-empty
-- All other values: `Boolean(value)`
-
-### Escaping
-
-- All interpolated scalar values are HTML-escaped: `&`, `<`, `>`, `"`, `'`
-- Literal HTML in the template (text nodes) is not escaped
-
-### Standalone control lines
-
-Lines containing only a control tag (`#if`, `/if`, `#each`, `/each`) plus optional whitespace are stripped from output to prevent blank lines.
-
-### Error behavior
-
-- Mismatched or missing closing tags throw
-- `#each` on a non-array value warns and produces empty output
-- Rendering an object as a scalar throws
+See [README.md](./README.md#template-language) for the full template language reference (syntax, scope chain, truthiness, escaping, error behavior).
