@@ -418,6 +418,7 @@ Top-level shape:
     {
       "baseGeo": "",
       "domain": "business.adobe.com",
+      "deploy": true,
       "sha256": "a1b2c3d4...",
       "baseGeoSectionCount": 6,
       "baseGeoLinkCount": 42,
@@ -436,6 +437,7 @@ Page entry fields:
 |-------|---------|
 | `baseGeo` | Geo code for this page (empty string = root) |
 | `domain` | Production domain |
+| `deploy` | Whether this geo is marked for deployment in `geo-map` |
 | `sha256` | SHA-256 hash of the `sitemap.html` content (UTF-8 bytes) |
 | `baseGeoSectionCount` | Number of GNAV navigation sections (section 1 groups) |
 | `baseGeoLinkCount` | Total links across all section 1 groups |
