@@ -181,9 +181,17 @@ export const formSuccess = (formEl, formData) => {
   window.mktoSubmitted = true;
 
   if (getMetadata('marketo-ims')) {
+    const data = window.mcz_marketoForm_pref || {};
+    const isRedirect = data?.form?.success?.type === 'redirect';
+    const redirect = data?.form?.success?.content;
+    const config = {};
+
     const emailInput = formEl.querySelector('input[name="Email"]');
-    const email = emailInput?.value;
-    window.adobeIMS?.signIn({ puser: email });
+    config.puser = emailInput?.value;
+
+    if (isRedirect && redirect) config.redirect_uri = redirect;
+
+    window.adobeIMS?.signIn(config);
     return true;
   }
 
