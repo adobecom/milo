@@ -1,4 +1,4 @@
-import { getErrorMessage } from './stage.ts';
+import { getErrorMessage } from './stages.ts';
 
 const DEFAULT_RETRIES = 2;
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);

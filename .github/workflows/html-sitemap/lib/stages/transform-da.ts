@@ -7,7 +7,7 @@ import { getBaseGeoExtractDir, getBaseGeoHtmlFile, writeText } from '../util/fil
 import { getPageCopy } from '../data/page-copy.ts';
 import { hasSitemapDataDocument } from '../config/availability.ts';
 import { readSitemapDataDocument, type SitemapDataDocument } from '../data/sitemap.ts';
-import { formatStageGeo, getErrorMessage, type UnitStageEntry, type UnitStageResult } from '../util/stage.ts';
+import { formatStageGeo, getErrorMessage, type UnitStageEntry, type UnitStageResult } from '../util/stages.ts';
 import { loadPlaceholderMap } from '../sources/placeholders.ts';
 import { renderHtmlTemplate } from '../render/template.ts';
 import { writeSubdomainManifests } from '../output/manifest.ts';

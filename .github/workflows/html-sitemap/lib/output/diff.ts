@@ -7,7 +7,7 @@ import { getBaseGeoHtmlFile, pathExists } from '../util/files.ts';
 import { normalizeDaRoot, getRemoteHtmlFilePath } from '../remote/paths.ts';
 import { getDaAuthHeader } from '../remote/da-auth.ts';
 import { fetchRemoteHtml } from '../remote/da-source.ts';
-import { formatStageGeo, getErrorMessage, type UnitStageResult } from '../util/stage.ts';
+import { formatStageGeo, getErrorMessage, type UnitStageResult } from '../util/stages.ts';
 
 const UNIT_CONCURRENCY = 2;
 

@@ -3,7 +3,7 @@ import { planExtractUnits } from '../config/scope.ts';
 import { mapWithConcurrency } from '../util/concurrency.ts';
 import { collectTransformableBaseGeos, makeBaseGeoKey } from '../config/availability.ts';
 import { buildSitemapDataDocument, type TransformDataSummary } from '../data/sitemap.ts';
-import { formatStageGeo, getErrorMessage, type UnitStageEntry, type UnitStageResult } from '../util/stage.ts';
+import { formatStageGeo, getErrorMessage, type UnitStageEntry, type UnitStageResult } from '../util/stages.ts';
 
 const UNIT_CONCURRENCY = 2;
 

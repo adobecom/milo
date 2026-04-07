@@ -1,11 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {
-  formatGeoLabelFromInventory,
-  normalizeQueryIndexData,
-  type GeoLabelInventoryEntry,
-  type NormalizedLink,
-} from './normalize.ts';
+import { normalizeQueryIndexData, type NormalizedLink } from './normalize.ts';
+import { formatGeoLabelFromInventory, type GeoLabelInventoryEntry } from './geo-labels.ts';
 import { relevantExtendedGeos, type ExtractUnit } from '../config/scope.ts';
 import type { HtmlSitemapConfig } from '../config/config.ts';
 import { getBaseGeoExtractDir, getExtendedGeoDir } from '../util/files.ts';

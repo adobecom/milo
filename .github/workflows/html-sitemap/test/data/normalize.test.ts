@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   cleanTitle,
-  formatGeoLabel,
-  formatGeoLabelFromInventory,
   normalizeQueryIndexData,
   toProductionUrl,
 } from '../../lib/data/normalize.ts';
+import {
+  formatGeoLabel,
+  formatGeoLabelFromInventory,
+} from '../../lib/data/geo-labels.ts';
 
 test('normalizeQueryIndexData filters non-indexable rows and falls back title from slug', () => {
   const links = normalizeQueryIndexData({

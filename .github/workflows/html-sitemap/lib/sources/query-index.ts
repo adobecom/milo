@@ -1,5 +1,5 @@
 import { fetchJson } from '../util/fetch.ts';
-import { getErrorMessage } from '../util/stage.ts';
+import { getErrorMessage } from '../util/stages.ts';
 
 type QueryIndexJson = {
   total?: number;

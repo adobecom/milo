@@ -13,7 +13,7 @@ import {
   startJob,
   type PromoteAction,
 } from '../remote/aem-admin.ts';
-import { formatStageGeo, getErrorMessage, type UnitStageResult } from '../util/stage.ts';
+import { formatStageGeo, getErrorMessage, type UnitStageResult } from '../util/stages.ts';
 
 const GROUP_CONCURRENCY = 2;
 

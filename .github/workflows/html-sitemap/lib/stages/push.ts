@@ -10,7 +10,7 @@ import {
 } from '../remote/paths.ts';
 import { getDaAuthHeader } from '../remote/da-auth.ts';
 import { fetchRemoteHtml, getDaLiveEditUrl, uploadHtmlFile } from '../remote/da-source.ts';
-import { formatStageGeo, getErrorMessage, type UnitStageEntry, type UnitStageResult } from '../util/stage.ts';
+import { formatStageGeo, getErrorMessage, type UnitStageEntry, type UnitStageResult } from '../util/stages.ts';
 const UNIT_CONCURRENCY = 2;
 
 type PushSummary = {
