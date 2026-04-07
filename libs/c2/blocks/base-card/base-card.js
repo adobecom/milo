@@ -12,17 +12,42 @@ function isViewportLabel(text) {
   return VIEWPORT_LABELS.includes(text);
 }
 
-function markStandaloneLinks(foreground) {
+const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+
+function wrapCardInLink(cardEl, ctaLink, heading) {
+  const link = document.createElement('a');
+  link.href = ctaLink.href;
+  if (ctaLink.target) link.target = ctaLink.target;
+  link.classList.add('base-card-link');
+  if (heading) link.setAttribute('aria-label', heading.textContent.trim());
+  cardEl.parentElement.insertBefore(link, cardEl);
+  link.appendChild(cardEl);
+}
+
+function replaceCtaWithSpan(ctaLink) {
+  const span = document.createElement('span');
+  [...ctaLink.classList].forEach((c) => span.classList.add(c));
+  span.innerHTML = ctaLink.innerHTML;
+  ctaLink.replaceWith(span);
+}
+
+function decorateStandaloneLinks(foreground, cardEl) {
+  let wrapped = false;
   foreground.querySelectorAll('a').forEach((a) => {
     const parent = a.parentElement;
     if (!parent) return;
     const parentText = parent.textContent?.trim() ?? '';
     const linkText = a.textContent?.trim() ?? '';
-    if (parentText === linkText) a.classList.add('standalone-link', 'label');
+    if (parentText !== linkText) return;
+    a.classList.add('standalone-link', 'label');
+    if (!wrapped && !cardEl.closest('a.base-card-link')) {
+      const heading = foreground.querySelector(':is(h1,h2,h3,h4,h5,h6)');
+      wrapCardInLink(cardEl, a, heading);
+      wrapped = true;
+    }
+    replaceCtaWithSpan(a);
   });
 }
-
-const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 
 function decorateCard(wrapper) {
   const [foreground, media] = [...wrapper.children];
@@ -32,7 +57,8 @@ function decorateCard(wrapper) {
   media.querySelector('picture').classList.add('parallax-scale-down');
   foreground.classList.add('foreground');
   decorateBlockText(foreground, { heading: '4' });
-  markStandaloneLinks(foreground);
+  decorateStandaloneLinks(foreground, wrapper.parentElement);
+
   const firstCell = foreground.children[0];
   if (firstCell?.childElementCount !== 1 || firstCell?.firstElementChild?.tagName !== 'PICTURE') return;
 

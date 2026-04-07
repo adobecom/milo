@@ -90,6 +90,48 @@
   to { clip-path: inset(0 round var(--s2a-border-radius-md)); }
 }
 
+a.base-card-link {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--s2a-border-radius-md);
+      box-shadow: inset 0 0 0 2px var(--s2a-color-focus-ring-default);
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
+  span.standalone-link::after {
+    display: inline-block;
+    margin-inline-start: var(--s2a-spacing-8);
+    content: url('../../assets/img/arrow-right.svg');
+    transition: transform 0.5s var(--parallax-easing);
+  }
+
+  [dir="rtl"] span.standalone-link::after {
+    transform: rotate(180deg);
+  }
+
+  &:hover span.standalone-link::after {
+    transform: translate3d(var(--s2a-spacing-4), 0, 0);
+  }
+
+  [dir="rtl"] &:hover span.standalone-link::after {
+    transform: translate3d(calc(var(--s2a-spacing-4) * -1), 0, 0) rotate(180deg);
+  }
+}
+
+
 @media (width < 768px) {
   div.section.base-card-section {
     grid-template-columns: 1fr;
@@ -139,7 +181,7 @@
           grid-column: 1 / span 5;
         }
 
-        p:has(> a) {
+        p:has(> .standalone-link) {
           grid-row: 1;
           grid-column: 6 / -1;
           align-self: center;
@@ -147,11 +189,11 @@
           justify-content: flex-end;
         }
 
-        p:not(:has(> a)) {
+        p:not(:has(> .standalone-link)) {
           grid-column: 1 / span 5;
         }
 
-        p:has(> a) a {
+        p:has(> .standalone-link) .standalone-link {
           margin-top: 0;
         }
       }
