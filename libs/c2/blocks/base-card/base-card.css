@@ -217,6 +217,21 @@ a.base-card-link {
   }
 }
 
+a.base-card-link:has(> .base-card.featured):focus-visible {
+  &::after {
+    display: none;
+  }
+
+  .parallax-featured-card-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 2px var(--s2a-color-focus-ring-default);
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
 @media (width >= 2560px) {
   .base-card.featured .parallax-featured-card-media {
     animation-name: none;
