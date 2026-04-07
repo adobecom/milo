@@ -2241,12 +2241,12 @@ async function loadPostLCP(config) {
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
-    let fsScrollTimer;
+    let fastScrollTimer;
     window.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > fsThreshold) {
-        window.lenis.options.lerp = fsFactor;
-        clearTimeout(fsScrollTimer);
-        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+      if (Math.abs(e.deltaY) > 90) {
+        window.lenis.options.lerp = 0.4;
+        clearTimeout(fastScrollTimer);
+        fastScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, 300);
       }
     }, { passive: true });
   }
