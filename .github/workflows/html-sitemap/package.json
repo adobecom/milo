@@ -1,0 +1,16 @@
+{
+  "name": "html-sitemap",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test ./test/*.test.ts",
+    "typecheck": "tsc --noEmit -p ./tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "parse5": "^7.3.0"
+  }
+}
