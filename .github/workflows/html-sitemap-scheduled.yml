@@ -23,9 +23,9 @@ jobs:
         working-directory: .github/workflows/html-sitemap
         run: npm ci
 
-      - name: Typecheck
+      - name: Lint
         working-directory: .github/workflows/html-sitemap
-        run: npm run typecheck
+        run: npm run lint
 
       - name: Run tests
         working-directory: .github/workflows/html-sitemap
@@ -42,7 +42,7 @@ jobs:
           AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM }}
           AEM_ADMIN_TOKEN_ADOBECOM_DA_CC: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_CC }}
         run: |
-          node generate.ts \
+          node generate.js \
             --stages extract,transform,diff,push,preview,publish \
             --output tmp/html-sitemap \
             --da-root /

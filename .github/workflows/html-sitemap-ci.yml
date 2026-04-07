@@ -24,9 +24,9 @@ jobs:
         working-directory: .github/workflows/html-sitemap
         run: npm ci
 
-      - name: Typecheck
+      - name: Lint
         working-directory: .github/workflows/html-sitemap
-        run: npm run typecheck
+        run: npm run lint
 
       - name: Run tests
         working-directory: .github/workflows/html-sitemap

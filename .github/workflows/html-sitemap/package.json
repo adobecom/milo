@@ -4,12 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test ./test/**/*.test.ts",
-    "typecheck": "tsc --noEmit -p ./tsconfig.json"
+    "test": "node --test ./test/**/*.test.js",
+    "lint": "npx eslint ."
   },
   "devDependencies": {
-    "@types/node": "^25.5.2",
-    "typescript": "^5.8.3"
+    "eslint": "^9.27.0"
   },
   "dependencies": {
     "parse5": "^7.3.0"

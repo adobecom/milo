@@ -62,7 +62,7 @@ module.exports = {
     '/tools/loc/*',
     '/libs/features/spectrum-web-components/*',
     '/libs/navigation/dist/*',
-    '**/*.ts',
+    '/.github/workflows/html-sitemap/**',
   ],
   plugins: [
     'chai-friendly',
