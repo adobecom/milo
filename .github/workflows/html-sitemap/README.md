@@ -38,7 +38,7 @@ npm --prefix .github/workflows/html-sitemap run test
 
 ## Environment
 
-Only `push`, `preview`, and `publish` require auth.
+Only `diff`, `push`, `preview`, and `publish` require auth.
 
 ```bash
 # DA auth for service account / production automation
@@ -88,6 +88,7 @@ Canonical stage ids:
 - `extract`
 - `transform-data`
 - `transform-da`
+- `diff`
 - `push`
 - `preview`
 - `publish`
@@ -527,6 +528,29 @@ Conditions that affect output:
 - output is a DA HTML source document, not a DA-specific JSON format
 - render semantics come from `sitemap.json` plus the DA page shell, not from old browser-specific sitemap blocks
 - page copy comes from the `page-copy` sheet and can resolve `{{variable}}` placeholders against extracted placeholders data
+
+### `diff`
+
+Reads:
+
+- local `sitemap.html` for each eligible geo
+- remote DA source document at the corresponding `--da-root` path
+
+Writes:
+
+- nothing (read-only comparison)
+- prints per-geo status: `changed`, `unchanged`, or `new` (not yet in DA)
+
+Conditions that affect output:
+
+- requires `--da-root`
+- requires DA auth env vars
+- skips geos with no local `sitemap.html`
+- skips geos not marked `deploy: true` in `geo-map`
+- compares the SHA-256 hash of local content against remote content fetched from DA
+- a missing remote document is reported as `new`, not as an error
+
+This stage is a dry-run companion to `push` — it shows what would change without writing anything. In multi-stage runs, `diff` can precede `push` to log which pages will be updated.
 
 ### `push`
 
