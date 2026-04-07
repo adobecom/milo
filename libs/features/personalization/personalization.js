@@ -750,8 +750,8 @@ export async function handleCommands(
           }
         }
       }
-      if ((els.length && !cmd.modifiers.includes(FLAGS.all))
-        || !cmd.modifiers.includes(FLAGS.includeFragments)) {
+      if ((els?.length && !cmd.modifiers?.includes(FLAGS.all))
+        || !cmd.modifiers?.includes(FLAGS.includeFragments)) {
         cmd.completed = true;
       }
     }
