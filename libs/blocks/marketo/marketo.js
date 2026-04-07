@@ -184,14 +184,11 @@ export const formSuccess = (formEl, formData) => {
     const data = window.mcz_marketoForm_pref || {};
     const isRedirect = data?.form?.success?.type === 'redirect';
     const redirect = data?.form?.success?.content;
-    const config = {};
 
     const emailInput = formEl.querySelector('input[name="Email"]');
-    config.puser = emailInput?.value;
+    const email = emailInput?.value;
 
-    if (isRedirect && redirect) config.redirect_uri = redirect;
-
-    window.adobeIMS?.signIn(config);
+    window.adobeIMS?.signIn({ puser: email, redirect_uri: redirect });
     return true;
   }
 
