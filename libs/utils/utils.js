@@ -448,9 +448,11 @@ export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
   if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
   try {
-    const { fedContentPrefix } = getConfig();
+    const { fedContentPrefix, locale } = getConfig();
     const { pathname, search, hash } = new URL(url);
-    return `${getFederatedContentRoot()}${pathname.startsWith(fedContentPrefix)
+    const hasPrefix = fedContentPrefix && (pathname.startsWith(fedContentPrefix)
+      || pathname.startsWith(`${locale.prefix}${fedContentPrefix}`));
+    return `${getFederatedContentRoot()}${hasPrefix
       ? pathname.replace(fedContentPrefix, '') : pathname}${search}${hash}`;
   } catch (e) {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
