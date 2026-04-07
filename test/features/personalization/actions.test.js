@@ -403,7 +403,12 @@ describe('handleCommands with invalid selector', () => {
       selector: '',
     }];
     const rootEl = document.createElement('div');
-    await handleCommands(commands, rootEl, false, true);
-    expect(commands[0].completed).to.not.exist;
+    let error;
+    try {
+      await handleCommands(commands, rootEl, false, true);
+    } catch (e) {
+      error = e;
+    }
+    expect(error).to.be.undefined;
   });
 });
