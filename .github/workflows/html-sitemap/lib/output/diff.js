@@ -93,8 +93,10 @@ export async function runDiff({
       /** @type {string | undefined} */
       let remoteHash;
 
-      if (!remote.ok) {
+      if (!remote.ok && remote.status === 404) {
         status = 'new';
+      } else if (!remote.ok) {
+        throw new Error(`Failed to fetch remote document: HTTP ${remote.status}`);
       } else {
         remoteHash = sha256(remote.html);
         status = localHash === remoteHash ? 'unchanged' : 'changed';

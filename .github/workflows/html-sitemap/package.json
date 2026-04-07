@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test ./test/**/*.test.js",
-    "lint": "npx eslint ."
+    "lint": "eslint ."
   },
   "devDependencies": {
     "eslint": "^9.27.0"

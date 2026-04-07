@@ -133,19 +133,21 @@ Examples:
 
 ```mermaid
 flowchart LR
-  subgraph Inputs
-    C["Config JSON\n(config / query-index-map / geo-map)"]
-    G["GNAV + placeholders"]
-    Q["Query indices"]
+  subgraph Inputs["Remote sources"]
+    C["Config JSON\n(config / query-index-map\ngeo-map / page-copy)"]
+    G["GNAV fragments\n+ placeholders"]
+    Q["Query indices\n(per site × geo)"]
+    R["Region-nav\nfragment"]
   end
 
-  subgraph LocalArtifacts["Local output root"]
-    E["extract\nhtml-sitemap.json\n_extract/..."]
+  subgraph Local["Local output root"]
+    E["extract\n_extract/..."]
     D["transform-data\nsitemap.json"]
-    H["transform-da\nsitemap.html"]
+    H["transform-da\nsitemap.html\n+ manifest"]
   end
 
   subgraph Remote["Remote delivery"]
+    DIFF["diff\ncompare local ↔ DA"]
     DA["push\nDA source document"]
     P["preview\nAEM preview"]
     L["publish\nAEM live"]
@@ -154,22 +156,24 @@ flowchart LR
   C --> E
   G --> E
   Q --> E
+  R --> E
   E --> D
   D --> H
-  H --> DA
-  H --> P
-  H --> L
+  H --> DIFF
+  DIFF -.->|changed or new| DA
   DA --> P
   P --> L
 ```
 
 Interpretation:
 
-- `extract` persists deterministic local inputs
-- `transform-data` converts those inputs into normalized sitemap page data
-- `transform-da` converts normalized data into a DA-compatible HTML source document
-- `push` uploads that HTML to DA
+- `extract` fetches remote sources and persists them locally for deterministic downstream transforms
+- `transform-data` converts extracted inputs into normalized sitemap page data (`sitemap.json`)
+- `transform-da` renders HTML from normalized data and writes per-subdomain manifests
+- `diff` compares local HTML against what is currently in DA; read-only
+- `push` uploads changed pages to DA; skips unchanged pages unless `--force` is set
 - `preview` and `publish` promote the corresponding remote document path in AEM
+- Only geos marked `deploy: true` in the config appear in sibling links and are eligible for delivery
 
 ## Scope
 

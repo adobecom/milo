@@ -103,6 +103,9 @@ export async function runPush({
         const localHtml = await fs.readFile(localFile, 'utf8');
         const localHash = sha256(localHtml);
         const remote = await fetchRemoteHtml(unit.hostSite, remoteFile, authHeader, fetchImpl);
+        if (!remote.ok && remote.status !== 404) {
+          throw new Error(`Failed to fetch remote document for diff: HTTP ${remote.status}`);
+        }
         if (remote.ok && sha256(remote.html) === localHash) {
           console.log(`[push] ${unit.subdomain}/${formatStageGeo(unit.baseGeo)}: unchanged, skipping`);
           return {
