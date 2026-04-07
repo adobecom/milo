@@ -2379,7 +2379,9 @@ export function preloadMarketsConfig(callback) {
   const config = getConfig();
   if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
-  if (languageBannerEnabled !== 'on') return;
+  const masGeoDetect = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
+  const isMasGeoDetectionEnabled = ['on', 'true'].includes(masGeoDetect?.toLowerCase());
+  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled) return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }
