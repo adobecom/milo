@@ -31,7 +31,9 @@ const selectors = {
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
   featuredProducts: '.feds-featuredProducts',
   regionPicker: '.feds-regionPicker',
+  marketSelector: '.market-selector-button',
   languagePicker: '.language-dropdown',
+  marketPicker: '.market-selector-popover',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
   menuContent: '.feds-menu-content',
@@ -66,6 +68,7 @@ selectors.popupItems = `
   ${selectors.imagePromo},
   ${selectors.cta},
   ${selectors.regionPicker},
+  ${selectors.marketSelector},
   ${selectors.socialLink},
   ${selectors.privacyLink}
 `;

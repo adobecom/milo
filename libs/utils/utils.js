@@ -48,6 +48,7 @@ const C1_BLOCKS = [
   'instagram',
   'language-selector',
   'language-banner',
+  'market-selector',
   'locui',
   'locui-create',
   'm7',
@@ -201,6 +202,10 @@ let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 let isLoadingQueryIndexes = false;
 let siteQueryIndexMapLingo = [];
+let langRoutingConfig = null;
+let langBannerPromise;
+export const getLangRoutingConfig = () => langRoutingConfig;
+export const setLangRoutingConfig = (config) => { langRoutingConfig = config; };
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -321,6 +326,13 @@ export function setInternational(prefix) {
   const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
   document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
   sessionStorage.setItem('international', prefix);
+}
+
+export function setMarket(marketCode) {
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+  const maxAge = 365 * 24 * 60 * 60;
+  document.cookie = `country=${marketCode};max-age=${maxAge};path=/;${domain}`;
+  sessionStorage.setItem('market', marketCode);
 }
 
 export function getMetadata(name, doc = document) {
@@ -827,7 +839,9 @@ function setCountry() {
 }
 
 export async function getCountry(skipFallback = false) {
-  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
+  const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
+  const country = akamaiLocale || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
   try {
@@ -2042,8 +2056,14 @@ async function loadPostLCP(config) {
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
   if (languageBanner === 'on') {
-    const { default: init } = await import('../features/language-banner/language-banner.js');
-    await init();
+    const routingConfig = getLangRoutingConfig();
+    if (routingConfig?.showBanner && routingConfig.markets?.length) {
+      const { default: init } = await import('../features/language-banner/language-banner.js');
+      await init();
+    } else if (routingConfig?.showModal && routingConfig.markets?.length) {
+      const { default: showRegionModal } = await import('../features/region-modal/region-modal.js');
+      await showRegionModal(routingConfig, config, createTag, loadStyle, loadBlock);
+    }
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
@@ -2165,28 +2185,71 @@ function initSidekick() {
   }
 }
 
-let targetMarket = null;
-let langBannerPromise;
-export const getTargetMarket = () => targetMarket;
-export const setTargetMarket = (market) => { targetMarket = market; };
-
-const getCookie = (name) => document.cookie
+export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-function getMarketsUrl() {
+export function getMarketsSourceKey() {
   const { env, marketsSource } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
-  const allowedMarkets = ['bacom'];
-  const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
-      || getMetadata('marketssource')
-      || marketsSource;
-
-  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSourceKey ? `-${marketsSourceKey}` : ''}.json`;
+  const allowedMarkets = ['express']; // TODO: remove allowedMarkets once feature is stable
+  return (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
+    || getMetadata('marketssource')
+    || marketsSource
+    || null;
 }
 
-async function decorateLanguageBanner() {
+export function usesBannerFlow() {
+  const onlyBanner = PAGE_URL.searchParams.get('onlybanner') ?? getMetadata('onlybanner') ?? getConfig().onlybanner ?? false;
+  return onlyBanner === true || ['true', 'on'].includes(String(onlyBanner).toLowerCase());
+}
+export function getMarketsUrl() {
+  const { contentRoot } = getConfig();
+  const marketsSourceKey = getMarketsSourceKey();
+  if (marketsSourceKey) return `${contentRoot ?? ''}/assets/supported-markets/supported-markets-${marketsSourceKey}.json`;
+  return `${getFederatedContentRoot()}/federal/assets/supported-markets/supported-markets.json`;
+}
+
+const isUsEntry = ({ prefix = '' } = {}) => prefix === '' || prefix === 'us';
+function excludeUsUnlessExplicit(markets, geoIp) {
+  if (markets.length <= 1) return markets;
+  const usEntry = markets.find(isUsEntry);
+  if (!usEntry) return markets;
+  const usListsGeo = usEntry.regionPriorities?.split(',').some((pair) => pair.trim().split(':')[0].toLowerCase() === geoIp);
+  return usListsGeo ? markets : markets.filter((market) => !isUsEntry(market));
+}
+
+function getMarketsByRegionPriority(markets, geoIp) {
+  const marketsWithPriority = [];
+  markets.forEach((market) => {
+    if (!market.regionPriorities) return;
+    const match = market.regionPriorities.split(',')
+      .find((e) => e.trim().split(':')[0].toLowerCase() === geoIp);
+    if (match) marketsWithPriority.push({ market, priority: parseInt(match.trim().split(':')[1], 10) });
+  });
+  if (!marketsWithPriority.length) return null;
+  marketsWithPriority.sort((a, b) => a.priority - b.priority);
+  return marketsWithPriority.map(({ market }) => market);
+}
+
+function reserveBannerSpace() {
+  document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
+  const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
+  if (existingWrapper) {
+    existingWrapper.remove();
+    document.querySelector('.global-navigation')?.classList.remove('has-promo');
+  }
+}
+
+export async function pageExist(url) {
+  const headResp = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
+  if (headResp?.status !== 401) return headResp?.ok ?? false;
+  if (!(url.includes('.aem.page') || url.includes('.aem.live'))) return false;
+  return (await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null))?.ok ?? false;
+}
+
+export async function decorateLanguageBanner() {
   const { locale, locales, languageBanner } = getConfig();
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || languageBanner);
   if (languageBannerEnabled !== 'on') return;
@@ -2206,13 +2269,18 @@ async function decorateLanguageBanner() {
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
+  getConfig().marketsConfig = marketsConfig;
+  const rawEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  if (!rawEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
-  marketsConfig.data.forEach((market) => {
-    market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
-  });
+  const languageEntries = rawEntries.map((entry) => ({
+    ...entry,
+    supportedRegions: entry.supportedRegions.split(',').map((r) => r.trim().toLowerCase()),
+    dir: locales?.[entry.prefix || '']?.dir || 'ltr',
+  }));
   const pagePrefix = locale.prefix?.replace('/', '') || '';
-  const pageMarket = marketsConfig.data.find((m) => m.prefix === pagePrefix)
-    ?? marketsConfig.data.find((m) => m.prefix === locale.base);
+  const pageMarket = languageEntries.find((m) => m.prefix === pagePrefix)
+    ?? languageEntries.find((m) => m.prefix === locale.base);
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
@@ -2221,9 +2289,11 @@ async function decorateLanguageBanner() {
     candidateMarkets.push(...ms);
   };
 
+  const useBannerFlow = usesBannerFlow();
+  // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = marketsConfig.data.find((market) => (
+    const prefMarket = languageEntries.find((market) => (
       market.lang === prefLang
       && market.supportedRegions.includes(geoIp)
     ));
@@ -2231,75 +2301,84 @@ async function decorateLanguageBanner() {
     else return;
   } else {
     // Unsupported Market Path
-    const marketsForGeo = marketsConfig.data.filter((market) => (
+    const marketsForGeo = languageEntries.filter((market) => (
       market.supportedRegions.includes(geoIp)));
     if (!marketsForGeo.length) return;
-
-    let prefMarketForGeo;
-    if (prefLang) {
-      prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
-      if (prefMarketForGeo) addAndShow(prefMarketForGeo);
-    }
-
-    if (!prefMarketForGeo) {
-      const marketsWithPriority = [];
-      marketsForGeo.forEach((market) => {
-        if (market.regionPriorities) {
-          const priorityMap = new Map(
-            market.regionPriorities.split(',').map((p) => {
-              const [region, priority] = p.trim().split(':');
-              return [region.toLowerCase(), parseInt(priority, 10)];
-            }),
-          );
-          const priority = priorityMap.get(geoIp);
-          if (priority) {
-            marketsWithPriority.push({ market, priority });
-          }
-        }
-      });
-
-      if (marketsWithPriority.length) {
-        marketsWithPriority.sort((a, b) => a.priority - b.priority);
+    if (useBannerFlow) {
+      let prefMarketForGeo;
+      if (prefLang) {
+        prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+        if (prefMarketForGeo) addAndShow(prefMarketForGeo);
       }
-      addAndShow(...(marketsWithPriority.length
-        ? marketsWithPriority.map((item) => item.market)
-        : [marketsForGeo[0]]));
+      if (!prefMarketForGeo) {
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeo, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
+      }
+    } else {
+      // ACOM flow: US exclusion + regionPriorities filter, multi-option modal
+      const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
+      if (prefLang) {
+        const marketsWithPrefLang = marketsForGeoFiltered.filter((m) => m.lang === prefLang);
+        if (marketsWithPrefLang.length === 1) {
+          addAndShow(marketsWithPrefLang[0]);
+        } else if (marketsWithPrefLang.length > 1) {
+          const marketsSortedByPriority = getMarketsByRegionPriority(marketsWithPrefLang, geoIp);
+          addAndShow(...(marketsSortedByPriority ?? marketsWithPrefLang));
+        }
+      }
+      if (!showBanner) {
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeoFiltered, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? marketsForGeoFiltered));
+      }
     }
   }
 
   if (!showBanner) return;
+
+  if (!useBannerFlow && !isSupportedMarket) {
+    setLangRoutingConfig({
+      showBanner: false,
+      showModal: true,
+      markets: candidateMarkets,
+      geoMarketCode: geoIp,
+    });
+    return;
+  }
 
   const { pathname, origin } = window.location;
   const pagePath = locale.prefix ? pathname.replace(locale.prefix, '') : pathname;
 
   const fetchPromises = candidateMarkets.map((market) => {
     const url = `${origin}${market.prefix ? `/${market.prefix}` : ''}${pagePath}`;
-    return fetch(url, { method: 'HEAD' })
-      .then((res) => ({ market, ok: res.ok }))
-      .catch(() => ({ market, ok: false }));
+    return pageExist(url).then((ok) => ({ market, ok }));
   });
 
-  for (const promise of fetchPromises) {
-    const { market, ok } = await promise;
-    if (ok) { targetMarket = market; break; }
-  }
-
-  if (!targetMarket) return;
-
-  document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
-  const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
-  if (existingWrapper) {
-    existingWrapper.remove();
-    document.querySelector('.global-navigation').classList.remove('has-promo');
+  if (useBannerFlow) {
+    let targetMarket = null;
+    for (const promise of fetchPromises) {
+      const { market, ok } = await promise;
+      if (ok) { targetMarket = market; break; }
+    }
+    if (!targetMarket) return;
+    setLangRoutingConfig({ showBanner: true, showModal: false, markets: [targetMarket] });
+    reserveBannerSpace();
+  } else {
+    // ACOM : supported market, show banner
+    const results = await Promise.all(fetchPromises);
+    const validatedMarkets = results.filter((r) => r.ok).map((r) => r.market);
+    if (!validatedMarkets.length) return;
+    setLangRoutingConfig({ showBanner: true, showModal: false, markets: validatedMarkets });
+    reserveBannerSpace();
   }
 }
 
-function preloadMarketsConfig() {
+export function preloadMarketsConfig(callback) {
   const config = getConfig();
+  if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
   if (languageBannerEnabled !== 'on') return;
   const marketsUrl = getMarketsUrl();
-  loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }
 
 async function decorateDocumentExtras() {
@@ -2440,7 +2519,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
-    if (lingoActive()) preloadMarketsConfig();
+    preloadMarketsConfig();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();

@@ -628,7 +628,7 @@ class Gnav {
   };
 
   decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
+    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false, whatsNew } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -641,6 +641,7 @@ class Gnav {
         ${this.elements.navWrapper}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
+        ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
