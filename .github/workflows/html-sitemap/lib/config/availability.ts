@@ -21,8 +21,15 @@ export async function hasExtractedInput(
   baseGeo: string,
 ): Promise<boolean> {
   try {
-    const siteDirs = await fs.readdir(getBaseGeoExtractDir(outputDir, subdomain, baseGeo));
-    return siteDirs.some((entry) => entry !== 'gnav' && entry !== 'extended' && !entry.endsWith('.json'));
+    const extractDir = getBaseGeoExtractDir(outputDir, subdomain, baseGeo);
+    const entries = await fs.readdir(extractDir, { withFileTypes: true });
+    const siteDirs = entries.filter(
+      (entry) => entry.isDirectory() && entry.name !== 'gnav' && entry.name !== 'extended',
+    );
+    const checks = await Promise.all(
+      siteDirs.map((entry) => pathExists(path.join(extractDir, entry.name, 'query-index.json'))),
+    );
+    return checks.some(Boolean);
   } catch {
     return false;
   }

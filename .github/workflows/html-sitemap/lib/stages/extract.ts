@@ -4,6 +4,7 @@ import { loadConfig } from '../config/config.ts';
 import { planExtractUnits, relevantExtendedGeos, type ExtractUnit } from '../config/scope.ts';
 import {
   ensureDir,
+  getBaseGeoDir,
   getBaseGeoExtractDir,
   getExtendedGeoDir,
   writeJson,
@@ -186,7 +187,12 @@ async function runExtractUnit(
 
   const sitemapEligible = baseQueryResults.some((result) => result.ok && result.indexableCount > 0);
   if (!sitemapEligible) {
-    await fs.rm(path.join(outputDir, unit.subdomain, unit.baseGeo), { recursive: true, force: true });
+    const geoDir = getBaseGeoDir(outputDir, unit.subdomain, unit.baseGeo);
+    await Promise.all([
+      fs.rm(path.join(geoDir, '_extract'), { recursive: true, force: true }),
+      fs.rm(path.join(geoDir, 'sitemap.json'), { force: true }),
+      fs.rm(path.join(geoDir, 'sitemap.html'), { force: true }),
+    ]);
     return {
       subdomain: unit.subdomain,
       baseGeo: unit.baseGeo,
