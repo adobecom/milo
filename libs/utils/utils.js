@@ -39,6 +39,7 @@ const C1_BLOCKS = [
   'global-footer',
   'global-navigation',
   'graybox',
+  'grid',
   'footer',
   'gnav',
   'hero-marquee',

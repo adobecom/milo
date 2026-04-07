@@ -1,0 +1,59 @@
+{
+  "config": {
+    "data": [
+      { "subdomain": "business", "domain": "business.adobe.com", "site": "da-bacom", "extendedSitemap": "all" },
+      { "subdomain": "www", "domain": "www.adobe.com", "site": "da-cc", "extendedSitemap": "language", "template": "da-sitemap.html" }
+    ]
+  },
+  "query-index-map": {
+    "data": [
+      { "domain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json", "enabled": "true" },
+      { "domain": "www", "site": "da-cc", "queryIndexPath": "/cc-shared/assets/query-index.json", "enabled": "false" },
+      { "domain": "www", "site": "edu", "queryIndexPath": "/edu-shared/assets/query-index.json", "enabled": "true" }
+    ]
+  },
+  "geo-map": {
+    "data": [
+      { "domain": "business", "baseGeo": "", "language": "en", "extendedGeos": "br,ca", "deploy": "true" },
+      { "domain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr", "deploy": "true" },
+      { "domain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en", "deploy": "true" },
+      { "domain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr,ca_fr", "deploy": "true" }
+    ]
+  },
+  "page-copy": {
+    "data": [
+      {
+        "domain": "business",
+        "baseGeo": "",
+        "pageTitle": "Sitemap",
+        "pageDescription": "Browse pages across this site by section, locale, and {{region-label}}.",
+        "otherSitemapsHeading": "Other {{regions-label}}",
+        "extendedPagesHeading": "Additional Localized Pages"
+      },
+      {
+        "domain": "business",
+        "baseGeo": "fr",
+        "pageTitle": "Plan du site",
+        "pageDescription": "Parcourez les pages de ce site par section, langue et {{region-fr}}.",
+        "otherSitemapsHeading": "Autres régions",
+        "extendedPagesHeading": "Pages localisées supplémentaires"
+      },
+      {
+        "domain": "www",
+        "baseGeo": "",
+        "pageTitle": "Sitemap",
+        "pageDescription": "Browse pages across this site by section, locale, and {{region-label}}.",
+        "otherSitemapsHeading": "Other {{regions-label}}",
+        "extendedPagesHeading": "Additional Localized Pages"
+      },
+      {
+        "domain": "www",
+        "baseGeo": "fr",
+        "pageTitle": "Plan du site",
+        "pageDescription": "Parcourez les pages de ce site par section, langue et {{region-fr}}.",
+        "otherSitemapsHeading": "Autres régions",
+        "extendedPagesHeading": "Pages localisées supplémentaires"
+      }
+    ]
+  }
+}

@@ -1,0 +1,86 @@
+name: HTML Sitemap Generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      stages:
+        description: 'Comma-separated stage ids (e.g. extract,transform,push,preview,publish)'
+        required: true
+        default: 'extract,transform,diff'
+      config:
+        description: 'Config JSON URL or path'
+        required: false
+      output:
+        description: 'Local output root directory'
+        required: false
+        default: 'tmp/html-sitemap'
+      subdomain:
+        description: 'Filter to a single subdomain (www or business). Omit to run both.'
+        required: false
+      geo:
+        description: 'Filter to a single base geo (development use only)'
+        required: false
+      da-root:
+        description: 'Remote DA/AEM document root for diff/push/preview/publish'
+        required: false
+        default: '/'
+      force:
+        description: 'Push even if remote content is unchanged'
+        type: boolean
+        default: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: .github/workflows/html-sitemap
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: .github/workflows/html-sitemap
+        run: npm run typecheck
+
+      - name: Run tests
+        working-directory: .github/workflows/html-sitemap
+        run: npm test
+
+      - name: Run pipeline
+        working-directory: .github/workflows/html-sitemap
+        env:
+          ROLLING_IMPORT_IMS_URL: ${{ secrets.ROLLING_IMPORT_IMS_URL }}
+          ROLLING_IMPORT_CLIENT_ID: ${{ secrets.ROLLING_IMPORT_CLIENT_ID }}
+          ROLLING_IMPORT_CLIENT_SECRET: ${{ secrets.ROLLING_IMPORT_CLIENT_SECRET }}
+          ROLLING_IMPORT_CODE: ${{ secrets.ROLLING_IMPORT_CODE }}
+          ROLLING_IMPORT_GRANT_TYPE: ${{ secrets.ROLLING_IMPORT_GRANT_TYPE }}
+          AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM }}
+          AEM_ADMIN_TOKEN_ADOBECOM_DA_CC: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_CC }}
+        run: |
+          ARGS="--stages ${{ inputs.stages }} --output ${{ inputs.output }} --da-root ${{ inputs.da-root }}"
+
+          if [ -n "${{ inputs.config }}" ]; then
+            ARGS="$ARGS --config ${{ inputs.config }}"
+          fi
+
+          if [ -n "${{ inputs.subdomain }}" ]; then
+            ARGS="$ARGS --subdomain ${{ inputs.subdomain }}"
+          fi
+
+          if [ -n "${{ inputs.geo }}" ]; then
+            ARGS="$ARGS --geo ${{ inputs.geo }}"
+          fi
+
+          if [ "${{ inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+
+          echo "Running: node generate.ts $ARGS"
+          node generate.ts $ARGS
