@@ -420,11 +420,7 @@ export const getFederatedContentRoot = () => {
     'https://news.adobe.com',
     'graybox.adobe.com',
   ];
-  const fedContFromMiloDomain = [
-    'https://acrobat.adobe.com',
-    'https://stage.acrobat.adobe.com',
-  ];
-  const { allowedOrigins = [], origin: configOrigin } = getConfig();
+  const { allowedOrigins = [], origin: configOrigin, fedContentPrefix } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
   // Non milo consumers will have its origin from config
   const origin = configOrigin || window.location.origin;
@@ -435,11 +431,14 @@ export const getFederatedContentRoot = () => {
       ? originNoStage === o
       : originNoStage.endsWith(o);
   });
-  if (fedContFromMiloDomain.includes(window.location.origin)) federatedContentRoot = 'https://milo.adobe.com';
-  else federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
+  federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
     federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
+  }
+
+  if (fedContentPrefix) {
+    federatedContentRoot = `${federatedContentRoot}${fedContentPrefix}`;
   }
 
   return federatedContentRoot;
@@ -449,8 +448,10 @@ export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
   if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
   try {
+    const { fedContentPrefix } = getConfig();
     const { pathname, search, hash } = new URL(url);
-    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
+    return `${getFederatedContentRoot()}${pathname.startsWith(fedContentPrefix)
+      ? pathname.replace(fedContentPrefix, '') : pathname}${search}${hash}`;
   } catch (e) {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
       tags: 'utils',
