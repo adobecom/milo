@@ -534,10 +534,22 @@ Push uses the DA admin source API:
 
 - Origin: `https://admin.da.live/source`
 - Org: `adobecom`
-- Folder creation: `POST /source/{org}/{repo}/{path}` with auth header; 409 Conflict is treated as success (folder already exists)
-- Hierarchical folder creation: parent folders are created top-down; paths under `drafts/` skip the first two segments (assumed to exist)
 - File upload: `POST /source/{org}/{repo}/{path}` with `FormData` body containing a `data` field with the HTML content as a `Blob` (`type: text/html`)
+- DA auto-creates intermediate folders on upload; no explicit folder creation is needed
+- File read: `GET /source/{org}/{repo}/{path}` with auth header; used by `diff` and push change detection
 - Edit URLs follow the pattern `https://da.live/edit#/{org}/{repo}/{path}`
+
+#### Change detection
+
+Push compares local content against the remote DA document before uploading:
+
+- Fetches the current remote document via `GET`
+- Computes SHA-256 of both local and remote content
+- Skips the upload if hashes match, preserving the remote document's `lastModified` timestamp
+- A missing remote document (404) is treated as a new page and always uploaded
+- `--force` bypasses change detection entirely
+
+The `diff` stage uses the same comparison logic but never writes.
 
 #### AEM promotion contract
 
@@ -563,7 +575,8 @@ Expected summary intent:
 - `extract`: which base geos produced sitemap-eligible extracted state
 - `transform-data`: which base geos produced normalized data
 - `transform-da`: which base geos produced HTML
-- `push`: which base geos were uploaded
+- `diff`: which base geos are changed, unchanged, or new
+- `push`: which base geos were uploaded (unchanged pages skipped unless `--force`)
 - `preview`: which base geos were previewed
 - `publish`: which base geos were published
 

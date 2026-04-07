@@ -115,7 +115,8 @@ Options:
 - `--output <dir>`: local output root
 - `--subdomain <name>`: filter to `www` or `business`
 - `--geo <prefix>`: filter to a single base geo (development use; see note below)
-- `--da-root <path>`: remote DA/AEM document root for `push`, `preview`, `publish`
+- `--da-root <path>`: remote DA/AEM document root for `diff`, `push`, `preview`, `publish`
+- `--force`: push even if remote content is unchanged (bypasses change detection)
 - `--stages <list>`: comma-separated canonical stage ids
 - `-h`, `--help`: print help
 
@@ -557,6 +558,7 @@ This stage is a dry-run companion to `push` — it shows what would change witho
 Reads:
 
 - local `sitemap.html`
+- remote DA source document (for change detection)
 
 Writes:
 
@@ -569,6 +571,8 @@ Conditions that affect output:
 - requires DA auth env vars
 - skips geos with no local `sitemap.html`
 - skips geos not marked `deploy: true` in `geo-map`
+- compares local content hash against remote before uploading; skips unchanged pages to preserve remote document timestamps
+- `--force` bypasses the change detection and always uploads
 
 ### `preview`
 
