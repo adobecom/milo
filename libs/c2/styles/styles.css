@@ -1002,7 +1002,7 @@ p {
       &.two-up:has(> :nth-child(5 of :not([class*="section-"]))),
       &.three-up:has(> :nth-child(7 of :not([class*="section-"]))),
       &.four-up:has(> :nth-child(9 of :not([class*="section-"]))) {
-        --parallax-range-end-length: 80%;
+        --parallax-range-end-length: 50%;
       }
 
       /* Column count per -up class */
