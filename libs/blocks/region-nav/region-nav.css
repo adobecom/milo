@@ -30,8 +30,6 @@
 .region-nav > div:first-of-type h2 {
   font-size: 24px;
   font-weight: bold;
-  line-height: 1.7;
-  display: inline;
 }
 
 .region-nav > div:first-of-type h2 + p {
