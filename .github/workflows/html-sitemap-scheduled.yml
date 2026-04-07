@@ -1,10 +1,11 @@
 name: HTML Sitemap Generator (Scheduled)
 
-# TODO: decide on schedule (hourly or daily)
-# on:
-#   schedule:
-#     - cron: '0 */1 * * *'  # hourly
-#     - cron: '0 6 * * *'    # daily at 6am UTC
+on:
+  workflow_dispatch: # manual trigger until schedule cadence is decided
+  # TODO: decide on schedule (hourly or daily)
+  # schedule:
+  #   - cron: '0 */1 * * *'  # hourly
+  #   - cron: '0 6 * * *'    # daily at 6am UTC
 
 jobs:
   generate:
