@@ -676,13 +676,16 @@ Lines containing only a control tag (`#if`, `/if`, `#each`, `/each`) plus option
 
 ## Package Layout
 
-Implementation modules are grouped shallowly by responsibility:
+Implementation modules are organized by concern:
 
-- `lib/planning/`: config parsing, unit planning, and output availability
-- `lib/extract/`: raw GNAV, placeholders, and query-index extraction
-- `lib/transform/`: normalized sitemap data and DA HTML rendering
-- `lib/delivery/`: DA upload and AEM preview/publish integration
-- `lib/`: shared helpers used across those areas
+- `lib/config/`: config parsing, scope planning, and availability checks
+- `lib/sources/`: raw data fetching (GNAV, placeholders, query-index, regions)
+- `lib/data/`: data normalization, GNAV section grouping, link building, page copy
+- `lib/render/`: template engine
+- `lib/remote/`: DA and AEM admin API integration (auth, read/write, paths)
+- `lib/output/`: build artifacts (manifest, diff)
+- `lib/stages/`: stage orchestrators (extract, transform, push, promote, clean)
+- `lib/util/`: shared helpers (fetch, files, concurrency, hashing)
 
 ## GitHub Actions Inputs
 

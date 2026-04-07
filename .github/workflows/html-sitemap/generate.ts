@@ -3,15 +3,15 @@
 import process from 'node:process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runExtract } from './lib/extract/extract.ts';
-import { runClean } from './lib/clean.ts';
-import { runTransformData } from './lib/transform/transform-data.ts';
-import { runTransformDa } from './lib/transform/transform-da.ts';
-import { runDiff } from './lib/delivery/diff.ts';
-import { runPush } from './lib/delivery/push.ts';
-import { runPromote } from './lib/delivery/promote.ts';
-import { parsePositionalStages, parseStagesOption } from './lib/stages.ts';
-import type { StageId } from './lib/stages.ts';
+import { runExtract } from './lib/stages/extract.ts';
+import { runClean } from './lib/stages/clean.ts';
+import { runTransformData } from './lib/stages/transform-data.ts';
+import { runTransformDa } from './lib/stages/transform-da.ts';
+import { runDiff } from './lib/output/diff.ts';
+import { runPush } from './lib/stages/push.ts';
+import { runPromote } from './lib/stages/promote.ts';
+import { parsePositionalStages, parseStagesOption } from './lib/util/stages.ts';
+import type { StageId } from './lib/util/stages.ts';
 
 const DEFAULT_CONFIG = 'https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json';
 const DEFAULT_OUTPUT = 'tmp/html-sitemap';
