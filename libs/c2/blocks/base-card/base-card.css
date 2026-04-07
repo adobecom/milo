@@ -61,11 +61,16 @@
     .standalone-link {
       color: var(--s2a-color-gray-1000);
       text-decoration: none;
-      position: relative;
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
       margin-inline-end: var(--s2a-spacing-12);
       margin-bottom: var(--s2a-spacing-4);
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+      }
     }
   }
 
