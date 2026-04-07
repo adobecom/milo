@@ -544,6 +544,19 @@ Page-copy contract:
 - page-copy strings may contain `{{variable}}` placeholders, resolved using the extracted placeholder map for that base geo
 - the DA document shell should remain editable as template HTML rather than being buried entirely in string assembly code
 
+#### Manifest
+
+After all geos are rendered, `transform-da` writes a per-subdomain manifest summarizing the build:
+
+- One `manifest.json` and one `manifest.csv` per subdomain
+- Contains every page that produced a `sitemap.html`, sorted by `baseGeo`
+- Each entry includes the content hash (SHA-256 of the UTF-8 sitemap.html bytes) and link counts derived from `sitemap.json`
+- Determinism contract: the manifest contains no timestamps or non-deterministic data; identical extracted inputs must produce an identical manifest
+- Pages that were skipped (no `sitemap.html`) are excluded from the manifest
+- The CSV is a flat mirror of the JSON pages array for stakeholder consumption
+
+The manifest enables diffing across runs: a hash change means the page content changed; a missing or new entry means a page was removed or added; unchanged link counts confirm structural stability.
+
 ### Push / Preview / Publish
 
 Push uploads local `sitemap.html` to DA under the remote document root specified by `--da-root`.

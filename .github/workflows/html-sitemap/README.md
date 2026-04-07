@@ -221,6 +221,8 @@ Representative layout:
           query-index.json
     sitemap.json
     sitemap.html
+    manifest.json
+    manifest.csv
     /fr
       /_extract
         /gnav
@@ -310,6 +312,58 @@ Current top-level shape:
 - The lightweight renderer that evaluates those blocks lives in `lib/render/template.ts`
 - Template selection may be set per subdomain in the `config` sheet; if omitted it defaults to `da-sitemap.html`
 
+`manifest.json`
+
+- Per-subdomain build manifest summarizing every generated page
+- Written by `transform-da` at `{subdomain}/manifest.json`
+- Deterministic: same inputs always produce the same manifest, safe to diff across runs
+- Diffing two manifests reveals which pages changed (hash differs), were added, or removed
+
+Top-level shape:
+
+```json
+{
+  "subdomain": "business",
+  "pageCount": 11,
+  "pages": [
+    {
+      "baseGeo": "",
+      "domain": "business.adobe.com",
+      "sha256": "a1b2c3d4...",
+      "baseGeoSectionCount": 6,
+      "baseGeoLinkCount": 42,
+      "otherSitemapLinkCount": 10,
+      "extendedGeoGroupCount": 3,
+      "extendedGeoLinkCount": 15,
+      "totalLinkCount": 67
+    }
+  ]
+}
+```
+
+Page entry fields:
+
+| Field | Meaning |
+|-------|---------|
+| `baseGeo` | Geo code for this page (empty string = root) |
+| `domain` | Production domain |
+| `sha256` | SHA-256 hash of the `sitemap.html` content (UTF-8 bytes) |
+| `baseGeoSectionCount` | Number of GNAV navigation sections (section 1 groups) |
+| `baseGeoLinkCount` | Total links across all section 1 groups |
+| `otherSitemapLinkCount` | Number of sibling sitemap links (section 2) |
+| `extendedGeoGroupCount` | Number of extended geo groups (section 3) |
+| `extendedGeoLinkCount` | Total links across all section 3 groups |
+| `totalLinkCount` | Sum of all link counts |
+
+Pages are sorted by `baseGeo` for stable ordering. Pages that were skipped (no `sitemap.html`) are excluded.
+
+`manifest.csv`
+
+- CSV mirror of the `manifest.json` pages array
+- Written by `transform-da` at `{subdomain}/manifest.csv`
+- One header row followed by one row per page, same sort order as JSON
+- Intended for stakeholders who prefer tabular data over JSON
+
 ## Stage Contract
 
 ### `clean`
@@ -377,6 +431,8 @@ Reads:
 Writes:
 
 - `sitemap.html`
+- `manifest.json` (per subdomain)
+- `manifest.csv` (per subdomain)
 
 Conditions that affect output:
 
