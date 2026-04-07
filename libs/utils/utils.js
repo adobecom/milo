@@ -2229,6 +2229,15 @@ async function loadPostLCP(config) {
       lerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
+    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+    let fastScrollTimer;
+    window.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > 90) {
+        window.lenis.options.lerp = 0.4;
+        clearTimeout(fastScrollTimer);
+        fastScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, 300);
+      }
+    }, { passive: true });
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
