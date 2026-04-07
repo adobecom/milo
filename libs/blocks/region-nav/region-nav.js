@@ -129,12 +129,12 @@ export default async function init(block) {
   }
   const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
   regionHeaders.forEach((strong) => {
-  if (strong.querySelector('a')) return;
-  const p = strong.parentElement;
-  if (p.nextElementSibling?.tagName !== 'UL') return;
-  const h3 = createTag('h3', { class: `tracking-header ${strong.className}`.trim() }, strong.textContent);
-  p.replaceWith(h3);
-});
+    if (strong.querySelector('a')) return;
+    const p = strong.parentElement;
+    if (p.nextElementSibling?.tagName !== 'UL') return;
+    const h3 = createTag('h3', { class: `tracking-header ${strong.className}`.trim() }, strong.textContent);
+    p.replaceWith(h3);
+  });
   const links = divs[1].querySelectorAll('a');
   if (!links.length) return;
   const { prefix } = config.locale;
