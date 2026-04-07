@@ -118,7 +118,9 @@ export const normalizePath = (p, localize = true) => {
         || path?.includes('.json')) {
         path = pathname;
       } else {
-        path = `${config.locale.prefix}${normalizePath(pathname)}`;
+        path = isFederal
+          ? `${config.locale.prefix}${pathname}`
+          : `${config.locale.prefix}${normalizePath(pathname)}`;
       }
     }
     path = isFederal ? getFederatedUrl(path) : path;
