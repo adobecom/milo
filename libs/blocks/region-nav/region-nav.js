@@ -1,6 +1,13 @@
 import {
-  getConfig, getLanguage, getLocale, loadLanguageConfig, setInternational, getCountry, createTag,
+  getConfig,
+  getLanguage,
+  getLocale,
+  loadLanguageConfig,
+  setInternational,
+  getCountry,
+  setMarket,
 } from '../../utils/utils.js';
+import { norm } from '../../utils/market.js';
 
 let config;
 
@@ -79,6 +86,9 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
 
   link.addEventListener('click', (e) => {
     setInternational(prefix === '' ? 'us' : prefix);
+    const resolved = norm(prefix) || 'us';
+    const market = resolved === 'la' ? 'latam' : resolved; // TODO: remove this fallback after ACOM consumes market-selector
+    if (market) setMarket(market);
     if (hrefAdapted) return;
     e.preventDefault();
     handleEvent({
@@ -104,23 +114,6 @@ export default async function init(block) {
   config = getConfig();
   const divs = block.querySelectorAll(':scope > div');
   if (divs.length < 2) return;
-  const titleStrong = divs[0].querySelector('strong');
-  const titleP = titleStrong?.closest('p');
-  if (titleStrong && !divs[0].querySelector('h2')) {
-    const h2 = createTag('h2', { class: titleStrong.className }, titleStrong.textContent);
-    if (titleP) {
-      titleP.replaceWith(h2);
-    } else {
-      titleStrong.replaceWith(h2);
-    }
-  }
-  // Convert region group headers from <p><strong> to <h3>
-  const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
-  regionHeaders.forEach((strong) => {
-    const p = strong.parentElement;
-    const h3 = createTag('h3', { class: `tracking-header ${strong.className}`.trim() }, strong.textContent);
-    p.replaceWith(h3);
-  });
   const links = divs[1].querySelectorAll('a');
   if (!links.length) return;
   const { prefix } = config.locale;

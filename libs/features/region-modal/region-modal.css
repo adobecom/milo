@@ -1,0 +1,146 @@
+/* Matches georoutingv2 structure: tabs, heading, description, picker (dropdown), current site link */
+.dialog-modal.region-modal {
+  overflow: visible;
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+.dialog-modal.region-modal .georouting-wrapper {
+  padding: 56px 24px 40px;
+}
+
+.dialog-modal.region-modal h3 {
+  margin: 16px 0;
+}
+
+.dialog-modal.region-modal .locale-text {
+  margin: 16px 0 26px;
+}
+
+.dialog-modal.region-modal .link-wrapper {
+  line-height: 48px;
+  position: relative;
+}
+
+.dialog-modal.region-modal a:first-child {
+  margin-inline-end: 24px;
+}
+
+.dialog-modal.region-modal .link-wrapper a:last-child {
+  white-space: nowrap;
+}
+
+.dialog-modal.region-modal span.icon {
+  vertical-align: middle;
+}
+
+.dialog-modal.region-modal img.icon-milo {
+  top: 1px;
+}
+
+.dialog-modal.region-modal .icon-milo.down-arrow {
+  float: right;
+  margin-left: 4px;
+  top: 3px;
+  filter: brightness(0) invert(1);
+}
+
+.dialog-modal.region-modal .picker {
+  position: fixed;
+  margin-top: 2px;
+  background: #FFF 0 0 no-repeat padding-box;
+  box-shadow: 0 1px 4px #00000026;
+  border: 1px solid #B1B1B1;
+  border-radius: 4px;
+  opacity: 1;
+  padding-inline-start: 0;
+  min-width: 176px;
+  margin-bottom: 8px;
+  z-index: 10;
+}
+
+.dialog-modal.region-modal .picker.top {
+  bottom: 41px;
+  position: absolute;
+}
+
+.dialog-modal.region-modal .picker li {
+  list-style-type: none;
+}
+
+.dialog-modal.region-modal .picker li a {
+  width: calc(100% - 12px);
+  display: block;
+  padding-inline-start: 12px;
+  color: #222;
+  font-size: 14px;
+}
+
+.dialog-modal.region-modal .picker li a:hover {
+  background-color: rgb(229 229 229);
+  text-decoration: none;
+}
+
+/* Tabs – same as georoutingv2 */
+.dialog-modal.region-modal .tabs div[role="tablist"] {
+  box-shadow: initial;
+  background: initial;
+  margin: 0;
+}
+
+.dialog-modal.region-modal .tabs div[role="tablist"] .tab-list-container {
+  padding: initial;
+  margin: 2px;
+}
+
+.dialog-modal.region-modal .tabs .paddle {
+  margin: 2px 0;
+  background: var(--tabs-active-bg-color);
+  border-width: 0 0 2px;
+}
+
+.dialog-modal.region-modal .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
+  border-bottom-color: var(--tabs-active-text-color);
+}
+
+.dialog-modal.region-modal .tabs .paddle:disabled {
+  display: none;
+}
+
+.dialog-modal.region-modal .tabs button {
+  border-radius: 0;
+}
+
+.dialog-modal.region-modal .tabs button:focus-visible {
+  outline: 2px solid var(--color-accent-focus-ring);
+  text-decoration: none;
+}
+
+.dialog-modal.region-modal .tabs.quiet div[role="tablist"] button:not(:first-of-type) {
+  margin-inline-start: 24px;
+}
+
+.dialog-modal.region-modal .tabs .tab-content {
+  border-bottom: initial;
+  padding: initial;
+}
+
+@media (min-width: 600px) {
+  .dialog-modal.region-modal .georouting-wrapper {
+    padding: 56px 56px 40px;
+  }
+
+  .dialog-modal.region-modal {
+    max-width: calc((100% - 6px) - 2em);
+  }
+}
+
+@media (min-width: 760px) {
+  .dialog-modal.region-modal {
+    max-width: 720px;
+  }
+}
+
+body:has(.dialog-modal:not(.region-modal)) #region-modal,
+body:has(.dialog-modal:not(.region-modal, .curtain-off)) #region-modal + .modal-curtain.is-open {
+  display: none;
+}

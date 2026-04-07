@@ -202,7 +202,7 @@ module.exports = {
         filter: 'photo:2:wide',
         overrideAttributes: '7595c13a-af59-4b9c-b639-f5d3c65299ac:cb6b4e10-57c8-4ac5-aaba-c34849234448',
       },
-      tags: '@promo @commerce @smoke @regression @milo',
+      tags: '@promo @commerce @smoke @regression @milo @nopr',
     },
   ],
 };

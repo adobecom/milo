@@ -671,6 +671,7 @@ describe('MEP Utils', () => {
     });
   });
 });
+
 describe('analyticifseen', () => {
   let observerCallback;
   let observeStub;
