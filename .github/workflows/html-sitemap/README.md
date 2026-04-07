@@ -112,28 +112,32 @@ Options:
 
 - `--config <url|path>`: sitemap config JSON
 - `--output <dir>`: local output root
-- `--domain <name>`: filter to `www` or `business`
-- `--geo <prefix>`: filter to a single base geo
+- `--subdomain <name>`: filter to `www` or `business`
+- `--geo <prefix>`: filter to a single base geo (development use; see note below)
 - `--da-root <path>`: remote DA/AEM document root for `push`, `preview`, `publish`
 - `--stages <list>`: comma-separated canonical stage ids
 - `-h`, `--help`: print help
 
 `--geo default` and `--geo root` both target the empty/root base geo.
 
+`--subdomain` is safe to use in production — subdomains are independent and have separate manifests and output directories.
+
+`--geo` is intended for local development and debugging. Section 2 sibling links are driven by the config `deploy` flag (not disk state), so they are consistent regardless of which geos were extracted. However, the per-subdomain manifest will only reflect the geos generated in that run. Production runs should omit `--geo` to generate complete manifests and let the config `deploy` flag control which pages get promoted.
+
 Examples:
 
 ```bash
 # Extract + transform locally
-node --env-file=.env .github/workflows/html-sitemap/generate.ts extract --domain www --geo fr
-node --env-file=.env .github/workflows/html-sitemap/generate.ts transform --domain www --geo fr
+node --env-file=.env .github/workflows/html-sitemap/generate.ts extract --subdomain www --geo fr
+node --env-file=.env .github/workflows/html-sitemap/generate.ts transform --subdomain www --geo fr
 
 # Explicit multi-stage run
-node --env-file=.env .github/workflows/html-sitemap/generate.ts --stages extract,transform-data,transform-da --domain business
+node --env-file=.env .github/workflows/html-sitemap/generate.ts --stages extract,transform-data,transform-da --subdomain business
 
 # Delivery stages
-node --env-file=.env .github/workflows/html-sitemap/generate.ts push --domain business --geo default --da-root /drafts/hgpa/html-sitemap
-node --env-file=.env .github/workflows/html-sitemap/generate.ts preview --domain business --geo default --da-root /drafts/hgpa/html-sitemap
-node --env-file=.env .github/workflows/html-sitemap/generate.ts publish --domain business --geo default --da-root /drafts/hgpa/html-sitemap
+node --env-file=.env .github/workflows/html-sitemap/generate.ts push --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
+node --env-file=.env .github/workflows/html-sitemap/generate.ts preview --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
+node --env-file=.env .github/workflows/html-sitemap/generate.ts publish --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
 ```
 
 ## Input Contract
@@ -176,7 +180,7 @@ Maps each site to its query-index path.
 | `subdomain` | yes | Subdomain this row belongs to (falls back to `domain` field if absent) |
 | `site` | yes | Site / repo name (`da-bacom`, `cc`, `edu`, etc.) |
 | `queryIndexPath` | yes | Path to the query-index JSON on the site origin |
-| `enabled` | no | Defaults to enabled; set to `false`, `0`, `no`, or `off` to exclude from extraction |
+| `enabled` | no | Set to `true`, `1`, `yes`, or `on` to include in extraction; defaults to disabled when empty or omitted |
 
 ### `geo-map`
 
@@ -501,7 +505,7 @@ Writes:
 Conditions that affect output:
 
 - runs only for base geos that already have eligible extracted input
-- sibling sitemap links include only base geos that currently have sitemap output
+- sibling sitemap links include only base geos marked `deploy: true` in the config, regardless of local disk state
 - extended-geo links are subject to deduplication and `extendedSitemap` rules
 - geo labels for section 2 and section 3 prefer extracted `regions.html` link text and strip any trailing ` - <language>` suffix before falling back to generated labels
 
@@ -657,7 +661,7 @@ The workflow should expose the same interface as the CLI:
 - `stages`
 - `config`
 - `output`
-- `domain`
+- `subdomain`
 - `geo`
 - `da-root`
 
