@@ -20,6 +20,7 @@ import {
   localizeLinkAsync,
   createTag,
   getConfig,
+  getMetadata,
   createIntersectionObserver,
   SLD,
   MILO_EVENTS,
@@ -178,6 +179,13 @@ export const formSuccess = (formEl, formData) => {
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
+
+  if (getMetadata('marketo-ims')) {
+    const emailInput = formEl.querySelector('input[name="Email"]');
+    const email = emailInput?.value;
+    window.adobeIMS?.signIn({ puser: email });
+    return true;
+  }
 
   /* c8 ignore next 5 */
   if (parentModal) {
