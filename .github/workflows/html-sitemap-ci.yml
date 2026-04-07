@@ -1,0 +1,33 @@
+name: HTML Sitemap CI
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/html-sitemap/**'
+      - '.github/workflows/html-sitemap.yml'
+      - '.github/workflows/html-sitemap-scheduled.yml'
+      - '.github/workflows/html-sitemap-ci.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: .github/workflows/html-sitemap
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: .github/workflows/html-sitemap
+        run: npm run typecheck
+
+      - name: Run tests
+        working-directory: .github/workflows/html-sitemap
+        run: npm test
