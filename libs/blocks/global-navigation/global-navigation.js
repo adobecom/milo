@@ -295,7 +295,10 @@ export const CONFIG = {
                 ...getConfig().unav?.profile?.managePeopleConfig,
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
-              ...getConfig().unav?.profile?.config,
+              managePeopleConfig: {
+                enableWorkflow: true,
+                ...getConfig().unav?.profile?.managePeopleConfig,
+              },
             },
             messageEventListener: getMessageEventListener(),
           },
