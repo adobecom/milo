@@ -38,9 +38,11 @@
   font-size: 24px;
   font-weight: bold;
   margin: 0 0 4px;
+  line-height: 1.3;
+  margin-block: 0 4px;
 }
 
-.region-nav > div:first-of-type h2 + p {
+.region-nav > div:first-of-type > div > h2 + p:first-of-type {
   font-size: 16px;
   font-weight: normal;
   margin-top: 0;

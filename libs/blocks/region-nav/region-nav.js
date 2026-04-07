@@ -119,12 +119,9 @@ export default async function init(block) {
   if (!titleDiv.querySelector('h2')) {
     const titleStrong = titleDiv.querySelector('strong');
     const titleP = titleStrong ? titleStrong.closest('p') : titleDiv.querySelector('p');
-    if (titleStrong && titleP) {
+    if (titleP) {
       const h2 = createTag('h2', { class: 'tracking-header' }, titleP.textContent.trim());
       titleP.replaceWith(h2);
-    } else if (titleP) {
-      titleP.setAttribute('role', 'heading');
-      titleP.setAttribute('aria-level', '2');
     }
   }
   const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
