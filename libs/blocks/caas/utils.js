@@ -551,14 +551,16 @@ const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
   );
 };
 
-let lingoSiteMappingCache;
-async function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
-  if (!lingoSiteMappingCache) {
-    const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    lingoSiteMappingCache = await response.json();
+let lingoSiteMappingPromise;
+function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
+  if (!lingoSiteMappingPromise) {
+    lingoSiteMappingPromise = fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      });
   }
-  return lingoSiteMappingCache;
+  return lingoSiteMappingPromise;
 }
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
