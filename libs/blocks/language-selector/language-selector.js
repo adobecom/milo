@@ -1,6 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 import {
-  createTag, getConfig, getLanguage, loadLanguageConfig, setInternational, getMetadata, getCountry,
+  createTag,
+  getConfig,
+  getLanguage,
+  loadLanguageConfig,
+  setInternational,
+  getMetadata,
+  getCountry,
+  pageExist,
 } from '../../utils/utils.js';
 
 function sendAnalyticsEvent(eventName, type = 'click') {
@@ -70,12 +77,9 @@ function handleEvent({ prefix, link, callback } = {}) {
       : fallbackUrl);
     return;
   }
-  fetch(urlForCheck, { method: 'HEAD' }).then((resp) => {
-    queriedPages.push({ href: urlForCheck, ok: resp.ok });
-    if (!resp.ok) throw new Error('request failed');
-    callback(link.href);
-  }).catch(() => {
-    callback(fallbackUrl);
+  pageExist(urlForCheck).then((ok) => {
+    queriedPages.push({ href: urlForCheck, ok });
+    callback(ok ? link.href : fallbackUrl);
   });
 }
 

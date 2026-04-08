@@ -280,8 +280,9 @@ describe('GeoRouting', () => {
     restoreFetch();
   });
   afterEach(() => {
-    document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
-    document.cookie = 'georouting=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    document.cookie = 'georouting=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     closeModal();
   });
 
@@ -606,6 +607,7 @@ describe('GeoRouting', () => {
     expect(links[0].text).to.be.equal(mockGeoroutingJson.georouting.data.find((d) => d.prefix === 'ch_de').button);
     links[1].click();
     expect(getCookie('international')).to.be.equal('us');
+    expect(getCookie('country')).to.be.equal('us');
   });
 
   it('Does not open georouting modal if georouting hide is active', async () => {

@@ -89,6 +89,21 @@ describe('Region Nav Block', async () => {
     expect(getCookie('international')).to.equal(chdePrefix);
   });
 
+  it('sets the country cookie via setMarket on click', async () => {
+    sinon.stub(window, 'fetch').callsFake(() => new Promise((resolve) => {
+      resolve({ status: 200, ok: true });
+    }));
+    sinon.stub(window, 'open').callsFake(() => {});
+    document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+
+    const deLink = document.querySelector('a[href*="/de/"]');
+    if (deLink) {
+      deLink.click();
+      await clock.runAllAsync();
+      expect(getCookie('country')).to.equal('de');
+    }
+  });
+
   it('handles click event for 404 pages', async () => {
     sinon.stub(window, 'fetch').callsFake(() => new Promise((resolve) => {
       resolve({

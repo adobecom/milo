@@ -1,0 +1,140 @@
+:host {
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+
+  --local-padding: 0 6px;
+}
+
+.locale-selector {
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.locale-selector .locale-header {
+  background-color: #f8f8f8;
+  display: flex;
+  justify-content: space-between;
+  padding: var(--local-padding);
+  line-height: 36px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.locale-selector .actions {
+  display: grid;
+  grid-template-columns: 48px 60px 48px;
+  text-align: center;
+}
+
+.locale-selector .action {
+  height: 42px;
+  width: 42px;
+  margin: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.locale-selector .detail {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--local-padding);
+  line-height: 46px;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.locale-selector li::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: #d1d1d1;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.locale-selector .action .details {
+  border: 0;
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.locale-selector .action .icon {
+  height: 26px;
+  width: 26px;
+}
+
+.locale-selector .action .icon-html {
+  background: url('/tools/da/locale-nav/img/Smock_FileHTML_18_N.svg') center / 26px no-repeat;
+}
+
+.locale-selector .action .icon-aem {
+  border-radius: 5px;
+  background-color: #959595;
+  background-image: url('/tools/da/locale-nav/img/Smock_ExperienceCloud_24_N.svg');
+}
+
+.locale-selector .action .icon-aem.status-200 {
+  background-color: #fa0f00;
+}
+
+.locale-selector .action .icon-aem.status-404 {
+  cursor: default;
+  background-color: #fa0f00;
+  opacity: 0.25;
+}
+
+.locale-selector ul.locales {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.locale-selector .locale-search-wrapper {
+  position: relative;
+}
+
+.locale-selector .locale-search {
+  width: 100%;
+  background-color: #f8f8f8;
+  display: block;
+  font-family: var(--body-font-family);
+  border: none;
+  margin: 0;
+  padding: var(--local-padding);
+  line-height: 36px;
+  text-transform: uppercase;
+  font-weight: 700;
+  box-sizing: border-box;
+  transition: padding .2s ease-in-out;
+}
+
+.locale-selector .locale-search-icon {
+  position: absolute;
+  content: '';
+  width: 36px;
+  height: 36px;
+  left: -36px;
+  top: 0;
+  background: url('/tools/da/locale-nav/img/spectrum-search.svg') center / 24px no-repeat;
+  transition: left .2s ease-in-out;
+}
+
+.locale-selector .locale-search:hover + .locale-search-icon,
+.locale-selector .locale-search:focus + .locale-search-icon {
+  left: 6px;
+}
+
+.locale-selector .locale-search:hover,
+.locale-selector .locale-search:focus {
+  padding: 0 42px;
+}
+
+.locale-selector .locale-search::placeholder {
+  color: #676767;
+}
