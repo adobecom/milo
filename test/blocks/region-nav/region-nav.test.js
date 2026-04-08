@@ -148,12 +148,14 @@ describe('Region Nav Block', async () => {
       locales: {
         '': { ietf: 'en-US', tk: 'hah7vzn.css' },
         africa: { ietf: 'en', tk: 'hah7vzn.css' },
+        // Notice we do NOT include 'ar' or 'at' here so that prefix is considered "not in locales".
       },
     });
 
     const link = createTag('a', { href: 'https://adobe.com/ar/' });
     decorateLink(link, '/path/to/some/page');
-
+    
+    // Assert that the href has been transformed from '/ar/' to '/es/' due to languageMap
     expect(link.href).to.equal('https://adobe.com/es/path/to/some/page');
   });
 
@@ -170,7 +172,8 @@ describe('Region Nav Block', async () => {
 
     const link = createTag('a', { href: 'https://adobe.com/ar/' });
     decorateLink(link, '/some-page');
-
+    
+    // Because `ar` is mapped to an empty string, the code replaces `"/ar"` with `""`
     expect(link.href).to.equal('https://adobe.com/some-page');
   });
 
@@ -182,7 +185,8 @@ describe('Region Nav Block', async () => {
 
     const link = createTag('a', { href: 'https://adobe.com/ar/some-page' });
     decorateLink(link, '');
-
+    
+    // Since 'ar' is in locales, we should NOT transform
     expect(link.href).to.equal('https://adobe.com/ar/some-page');
   });
 
@@ -192,6 +196,7 @@ describe('Region Nav Block', async () => {
     const link = createTag('a', { href: 'https://adobe.com/ar/some-page' });
     decorateLink(link, '');
 
+    // No languageMap means no transformation
     expect(link.href).to.equal('https://adobe.com/ar/some-page');
   });
 });
