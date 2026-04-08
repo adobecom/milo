@@ -284,7 +284,7 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
-                enableManagePeople: true,
+                enableManagePeople: getConfig().unav?.profile?.enableManagePeople ?? true,
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -292,13 +292,12 @@ export const CONFIG = {
                   warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', severity: 'warning' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
-                ...getConfig().unav?.profile?.managePeopleConfig,
+                managePeopleConfig: {
+                  enableWorkflow: true,
+                  ...getConfig().unav?.profile?.managePeopleConfig,
+                },
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
-              managePeopleConfig: {
-                enableWorkflow: true,
-                ...getConfig().unav?.profile?.managePeopleConfig,
-              },
             },
             messageEventListener: getMessageEventListener(),
           },
