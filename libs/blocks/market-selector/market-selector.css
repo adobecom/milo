@@ -77,26 +77,6 @@
   padding: 0 8px 8px;
 }
 
-.search-input-wrapper {
-  display: flex;
-  align-items: center;
-  height: 32px;
-  box-sizing: border-box;
-  border-radius: 16px;
-  border: 2px solid #DADADA;
-  background: #FFF;
-  padding: 0 14px;
-  transition: border-color 0.2s;
-}
-
-.search-input-wrapper:hover {
-  border-color: #C6C6C6;
-}
-
-.search-input-wrapper:focus-within {
-  border-color: #131313;
-}
-
 .search-icon {
   width: 16px;
   height: 16px;
