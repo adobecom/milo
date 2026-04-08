@@ -180,7 +180,7 @@ describe('Region Nav Block', async () => {
   it('does NOT modify href if prefix is in locales (even if present in languageMap)', () => {
     setConfig({
       languageMap: { ar: 'es' },
-      locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, ar: { ietf: 'ar', tk: 'lpk1hwn.css', dir: 'rtl' } },
+      locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, ar: { ietf: 'ar', tk: 'lpk1hwn.css', dir: 'rtl' } }, // Now "ar" is a valid locale
     });
 
     const link = createTag('a', { href: 'https://adobe.com/ar/some-page' });
