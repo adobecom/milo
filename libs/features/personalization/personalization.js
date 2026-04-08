@@ -88,6 +88,22 @@ const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
 
+const TRUSTED_DOMAINS = ['.adobe.com', '.hlx.page', '.hlx.live', '.aem.page', '.aem.live'];
+
+export function isTrustedUrl(url) {
+  if (!url) return false;
+  if (url.startsWith('/') && !url.startsWith('//')) return true;
+  try {
+    const { hostname, protocol } = new URL(url);
+    if (protocol !== 'https:') return false;
+    return TRUSTED_DOMAINS.some(
+      (domain) => hostname === domain.slice(1) || hostname.endsWith(domain),
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
@@ -1279,7 +1295,13 @@ export async function categorizeActions(experiment, config) {
   // eslint-disable-next-line prefer-destructuring
   if (selectedVariant.replacepage?.length) config.mep.replacepage = replacepage[0];
 
-  selectedVariant.insertscript?.map((script) => loadScript(script.val));
+  selectedVariant.insertscript?.forEach((script) => {
+    if (isTrustedUrl(script.val)) {
+      loadScript(script.val);
+    } else {
+      log(`Blocked untrusted insertscript URL: ${script.val}`);
+    }
+  });
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
   if (selectedVariant.updateframework?.length) {
@@ -1499,6 +1521,10 @@ export const combineMepSources = async (
 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!isTrustedUrl(manifestPath)) {
+        log(`Blocked untrusted mep manifest URL: ${manifestPath}`);
+        return;
+      }
       if (!persManifestPaths.includes(manifestPath)) {
         persManifests.push({ manifestPath, source: ['mep param'] });
       }

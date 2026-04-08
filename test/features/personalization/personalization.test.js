@@ -6,6 +6,7 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
+  isTrustedUrl,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -627,6 +628,54 @@ describe('MEP Utils', () => {
       expect(manifests[2].manifestPath).to.equal('/black-friday.json');
       expect(manifests[3].manifestPath).to.equal('/mep-param/manifest1.json');
       expect(manifests[4].manifestPath).to.equal('/mep-param/manifest2.json');
+    });
+    it('blocks untrusted external manifest URLs from mep param', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        'https://attacker.com/manifest.json--all---https://evil.github.io/manifest--all',
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('allows trusted manifest URLs from mep param', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        '/path/manifest.json--all',
+      );
+      expect(manifests.length).to.equal(1);
+    });
+  });
+  describe('isTrustedUrl', () => {
+    it('allows relative paths', () => {
+      expect(isTrustedUrl('/path/to/script.js')).to.be.true;
+      expect(isTrustedUrl('/content/dam/cc/test.js')).to.be.true;
+    });
+    it('allows trusted Adobe domains', () => {
+      expect(isTrustedUrl('https://www.adobe.com/content/dam/cc/test.js')).to.be.true;
+      expect(isTrustedUrl('https://main--milo--adobecom.aem.page/script.js')).to.be.true;
+      expect(isTrustedUrl('https://main--milo--adobecom.aem.live/script.js')).to.be.true;
+      expect(isTrustedUrl('https://main--milo--adobecom.hlx.page/script.js')).to.be.true;
+      expect(isTrustedUrl('https://main--milo--adobecom.hlx.live/script.js')).to.be.true;
+    });
+    it('blocks untrusted external URLs', () => {
+      expect(isTrustedUrl('https://attacker.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https://evil.github.io/script.js')).to.be.false;
+      expect(isTrustedUrl('https://attacker.com/content/dam/fake.js')).to.be.false;
+    });
+    it('blocks non-https protocols', () => {
+      expect(isTrustedUrl('http://www.adobe.com/script.js')).to.be.false;
+      expect(isTrustedUrl('data:text/javascript,alert(1)')).to.be.false;
+    });
+    it('blocks null/empty values', () => {
+      expect(isTrustedUrl(null)).to.be.false;
+      expect(isTrustedUrl(undefined)).to.be.false;
+      expect(isTrustedUrl('')).to.be.false;
+    });
+    it('blocks protocol-relative URLs', () => {
+      expect(isTrustedUrl('//evil.com/script.js')).to.be.false;
     });
   });
   describe('cleanAndSortManifestList', async () => {
