@@ -154,7 +154,7 @@ describe('Region Nav Block', async () => {
 
     const link = createTag('a', { href: 'https://adobe.com/ar/' });
     decorateLink(link, '/path/to/some/page');
-    
+
     // Assert that the href has been transformed from '/ar/' to '/es/' due to languageMap
     expect(link.href).to.equal('https://adobe.com/es/path/to/some/page');
   });
@@ -172,7 +172,7 @@ describe('Region Nav Block', async () => {
 
     const link = createTag('a', { href: 'https://adobe.com/ar/' });
     decorateLink(link, '/some-page');
-    
+
     // Because `ar` is mapped to an empty string, the code replaces `"/ar"` with `""`
     expect(link.href).to.equal('https://adobe.com/some-page');
   });
@@ -185,7 +185,7 @@ describe('Region Nav Block', async () => {
 
     const link = createTag('a', { href: 'https://adobe.com/ar/some-page' });
     decorateLink(link, '');
-    
+
     // Since 'ar' is in locales, we should NOT transform
     expect(link.href).to.equal('https://adobe.com/ar/some-page');
   });
