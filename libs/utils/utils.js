@@ -2223,6 +2223,9 @@ async function loadPostLCP(config) {
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
     const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const fsThreshold = parseFloat(PAGE_URL.searchParams.get('fsThreshold')) || 90;
+    const fsFactor = parseFloat(PAGE_URL.searchParams.get('fsFactor')) || 0.4;
+    const fsDelay = parseFloat(PAGE_URL.searchParams.get('fsDelay')) || 300;
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
     window.lenis = new window.Lenis({
       autoRaf: true,
@@ -2232,10 +2235,10 @@ async function loadPostLCP(config) {
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
     let fastScrollTimer;
     window.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > 90) {
-        window.lenis.options.lerp = 0.4;
+      if (Math.abs(e.deltaY) > fsThreshold) {
+        window.lenis.options.lerp = fsFactor;
         clearTimeout(fastScrollTimer);
-        fastScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, 300);
+        fastScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
       }
     }, { passive: true });
   }
