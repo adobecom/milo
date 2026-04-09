@@ -71,13 +71,20 @@ function initMoveUpFast() {
   const sections = [
     ...document.querySelectorAll('.section.parallax-move-up-fast'),
   ];
+  if (!sections.length) return;
+
+  const style = document.createElement('style');
+  style.textContent = '.section.parallax-move-up-fast::after { animation: none; }';
+  document.head.appendChild(style);
+
   sections.forEach((section) => {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:absolute;inset:0;background:black;'
       + 'opacity:0;pointer-events:none;z-index:2;';
     section.appendChild(overlay);
+    const sectionTop = getDocTop(section);
     window.lenis.on('scroll', ({ scroll }) => {
-      const t = Math.max(0, Math.min(1, scroll / vh80px));
+      const t = Math.max(0, Math.min(1, (scroll - sectionTop) / vh80px));
       section.style.transform = `translateY(${-35 * t}vh)`;
       overlay.style.opacity = 0.75 * t;
     });
