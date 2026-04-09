@@ -47,7 +47,12 @@
       width: 100%;
       object-fit: cover;
       aspect-ratio: 4/3;
+      transition: transform 0.3s ease;
     }
+  }
+
+  &:hover .media picture:not(.icon) img {
+    transform: scale(1.05);
   }
 
   .foreground {
