@@ -123,10 +123,6 @@ function initGarageDoorReveal() {
       if (foreground) {
         foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
       }
-
-      childLHData.forEach(({ el, target }) => {
-        el.style.lineHeight = lerp(0.6, target, innerT);
-      });
     });
   });
 }
