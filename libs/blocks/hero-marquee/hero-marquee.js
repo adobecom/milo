@@ -295,6 +295,14 @@ export default async function init(el) {
   await decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
+  copy.querySelectorAll('mas-field').forEach((masField) => {
+    if (masField.querySelector('[data-role="mas-field-content"]')?.firstChild) {
+      extendButtonsClass(copy);
+    } else {
+      masField.querySelector('aem-fragment')?.addEventListener('aem:load', () => extendButtonsClass(copy), { once: true });
+    }
+  });
+
   /* c8 ignore next 2 */
   const containsClassFromArray = () => breakpointThemeClasses.some(
     (className) => el.classList.contains(className),

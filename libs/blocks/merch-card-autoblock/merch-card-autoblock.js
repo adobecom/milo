@@ -12,7 +12,6 @@ import {
 } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
-const MILO_TYPO_CLASS_PATTERN = /^(heading|body|detail|title)-[a-z0-9-]+$/i;
 const seenFragments = new Set();
 let log;
 loadMasComponent(MAS_MERCH_CARD);
@@ -21,38 +20,6 @@ loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
 const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6';
 const BLOCK_CONTENT_SELECTOR = `${HEADING_SELECTOR}, p, div, ul, ol, table, blockquote, pre, figure, section, article, hr`;
 const INLINE_WRAPPER_SELECTOR = 'strong, em, span, b, i, u, small, mark';
-
-function stripMiloTypoClassesFromElement(el) {
-  if (!el?.classList?.length) return;
-  const toRemove = [...el.classList].filter((c) => MILO_TYPO_CLASS_PATTERN.test(c));
-  toRemove.forEach((c) => el.classList.remove(c));
-}
-
-function stripMasFieldMiloClasses(masField) {
-  stripMiloTypoClassesFromElement(masField.parentElement);
-  const root = masField.shadowRoot ?? masField;
-  root.querySelectorAll('[class]').forEach((el) => {
-    if (el.hasAttribute?.('data-mas-field-preserve-classes')) return;
-    stripMiloTypoClassesFromElement(el);
-  });
-}
-
-function observeMasFieldForStyles(masField) {
-  function strip() {
-    stripMasFieldMiloClasses(masField);
-  }
-  strip();
-  const root = masField.shadowRoot ?? masField;
-  const parentObserver = new MutationObserver(strip);
-  const parent = masField.parentElement;
-  if (parent) {
-    parentObserver.observe(parent, { attributes: true, attributeFilter: ['class'] });
-    setTimeout(() => parentObserver.disconnect(), 5000);
-  }
-  const rootObserver = new MutationObserver(strip);
-  rootObserver.observe(root, { childList: true, subtree: true });
-  setTimeout(() => rootObserver.disconnect(), 3000);
-}
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -125,7 +92,6 @@ function normalizeBlockFieldWrappers(masField) {
     if (innerHeading) {
       if (parent.id && !innerHeading.id) innerHeading.id = parent.id;
       parent.classList.forEach((className) => innerHeading.classList.add(className));
-      innerHeading.setAttribute('data-mas-field-preserve-classes', '');
     }
   }
 
@@ -179,18 +145,11 @@ async function createInline(el, options) {
   const aemFragment = createTag('aem-fragment', attrs);
   // mas-field listens for aem:load from aem-fragment and renders the field content.
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
-  const parent = el.parentElement;
-  const isWrappedInParagraph = parent?.tagName === 'P';
-  const isOnlyChild = parent?.children.length === 1;
-  const hasNoSurroundingText = parent?.textContent.trim() === el.textContent.trim();
-  if (isWrappedInParagraph && isOnlyChild && hasNoSurroundingText) {
-    parent.replaceWith(masField); // remove empty <p>, replace with mas-field
-  } else {
-    el.replaceWith(masField); // keep <p> and surrounding text, replace only the link
-  }
+  // Always replace only the link, preserving the parent wrapper and its Milo classes.
+  // normalizeBlockFieldWrappers will remove the wrapper if the rendered content is block-level.
+  el.replaceWith(masField);
   await checkReady(masField);
   normalizeBlockFieldWrappers(masField);
-  observeMasFieldForStyles(masField);
 }
 
 export default async function init(el) {

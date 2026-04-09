@@ -54,10 +54,13 @@ function decorateMultipleIconArea(iconArea) {
   });
 }
 
-function extendButtonsClass(text) {
+function extendButtonsClass(text, size) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
+  buttons.forEach((button) => {
+    button.classList.add('button-justified-mobile');
+    if (size) button.classList.add(size);
+  });
 }
 
 const decorateImage = (media) => {
@@ -228,11 +231,20 @@ export default async function init(el) {
 
   const size = getBlockSize(el);
   if (text) {
-    decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
+    const buttonSize = size === 'large' ? 'button-xl' : 'button-l';
+    decorateButtons(text, buttonSize);
     decorateText(text, size);
     const iconArea = text.querySelector('.icon-area');
     if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
-    extendButtonsClass(text);
+    extendButtonsClass(text, buttonSize);
+
+    text.querySelectorAll('mas-field').forEach((masField) => {
+      if (masField.querySelector('[data-role="mas-field-content"]')?.firstChild) {
+        extendButtonsClass(text, buttonSize);
+      } else {
+        masField.querySelector('aem-fragment')?.addEventListener('aem:load', () => extendButtonsClass(text, buttonSize), { once: true });
+      }
+    });
   }
   if (el.classList.contains('split')) decorateSplit(el, foreground, media);
 

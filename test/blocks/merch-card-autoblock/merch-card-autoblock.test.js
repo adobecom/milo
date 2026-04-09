@@ -173,7 +173,7 @@ describe('merch-card-autoblock autoblock', () => {
       expect(masField).to.not.exist;
     });
 
-    it('unwraps parent <p> for inline fragment when link is only child', async () => {
+    it('unwraps parent <p> when inline fragment resolves to block content', async () => {
       const p = document.createElement('p');
       const a = document.createElement('a');
       a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=unwrap-789&field=description';
@@ -185,6 +185,21 @@ describe('merch-card-autoblock autoblock', () => {
       expect(masField).to.exist;
       expect(masField.parentElement).to.equal(document.body);
       expect(document.querySelector('p')).to.not.exist;
+    });
+
+    it('preserves parent <p> and its Milo classes when inline fragment renders inline content', async () => {
+      const p = document.createElement('p');
+      p.classList.add('body-m');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=inline-body-1&field=prices';
+      a.textContent = '[[inline-body-test:prices]]';
+      p.append(a);
+      document.body.append(p);
+      await init(a);
+      const masField = document.querySelector('mas-field');
+      expect(masField).to.exist;
+      expect(masField.parentElement).to.equal(p);
+      expect(p.classList.contains('body-m')).to.be.true;
     });
 
     it('preserves parent <p> for inline fragment when link has siblings', async () => {
@@ -243,6 +258,23 @@ describe('merch-card-autoblock autoblock', () => {
       const masField = document.querySelector('mas-field');
       expect(masField).to.exist;
       expect(masField.closest('#inline-price-heading')).to.exist;
+    });
+
+    it('preserves Milo typography classes on parent heading when inline fragment stays inline', async () => {
+      const heading = document.createElement('h1');
+      heading.id = 'heading-milo-class-test';
+      heading.classList.add('heading-xxxl');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=milo-class-inline-1&field=prices';
+      a.textContent = '[[milo-class-inline-test:prices]]';
+      heading.append(a);
+      document.body.append(heading);
+
+      await init(a);
+
+      const heading1 = document.querySelector('#heading-milo-class-test');
+      expect(heading1).to.exist;
+      expect(heading1.classList.contains('heading-xxxl')).to.be.true;
     });
   });
 
