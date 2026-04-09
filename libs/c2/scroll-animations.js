@@ -97,12 +97,11 @@ function initGarageDoorReveal() {
       ? cacheLineHeights([...foreground.querySelectorAll('*')])
       : [];
     const revealFrom = isDesktop ? 30 : 20;
-    const coverEnd = isDesktop ? 0.4 : 0.3;
 
     window.lenis.on('scroll', ({ scroll }) => {
       const m = getScrollMetrics(scroll, gdSection);
 
-      const growT = viewRange(m, 'entry', 0, 'cover', coverEnd);
+      const growT = viewRange(m, 'entry', 0, 'cover', 1);
       gdSection.style.transform = `translateY(${-80 * (1 - growT)}vh)`;
 
       if (bgImg.length) {
