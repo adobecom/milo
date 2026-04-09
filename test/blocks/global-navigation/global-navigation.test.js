@@ -752,6 +752,7 @@ describe('global navigation', () => {
       expect(document.querySelector(selectors.topNav).querySelector('.feds-client-whatsnew')).to.not.exist;
     });
   });
+
   describe('Product Entry CTA feature in global navigation', () => {
     it('should not append the feds-product-entry-cta class when product entry cta is disabled', async () => {
       document.head.innerHTML = '<meta name="product-entry-cta" content="off"/>';
