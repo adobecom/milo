@@ -129,41 +129,147 @@ Examples:
 - `push`, `preview`, and `publish` depend on local `sitemap.html`
 - `push`, `preview`, and `publish` also depend on `--da-root`
 
-### Pipeline Overview
+### Inputs and Outputs
 
 ```mermaid
+%%{
+  init: {
+    "theme": "base",
+    "flowchart": {
+      "htmlLabels": false,
+      "padding": 24,
+      "nodeSpacing": 40,
+      "rankSpacing": 70
+    },
+    "themeVariables": {
+      "fontSize": "15px",
+      "lineColor": "#555555",
+      "primaryTextColor": "#2C2C2C",
+      "clusterBkg": "#FAFAFA",
+      "clusterBorder": "#CCCCCC",
+      "titleColor": "#555555"
+    }
+  }
+}%%
 flowchart LR
-  subgraph Inputs["Remote sources"]
-    C["Config JSON\n(config / query-index-map\ngeo-map / page-copy)"]
-    G["GNAV fragments\n+ placeholders"]
-    Q["Query indices\n(per site × geo)"]
-    R["Region-nav\nfragment"]
+
+  subgraph Federal["Federal Site"]
+    Config(["config"])
   end
 
-  subgraph Local["Local output root"]
-    E["extract\n_extract/..."]
-    D["transform-data\nsitemap.json"]
-    H["transform-da\nsitemap.html\n+ manifest"]
+  subgraph HostSite["Host Sites"]
+    GNAV(["GNAV"])
+    RegNav(["region-nav"])
   end
 
-  subgraph Remote["Remote delivery"]
-    DIFF["diff\ncompare local ↔ DA"]
-    DA["push\nDA source document"]
-    P["preview\nAEM preview"]
-    L["publish\nAEM live"]
+  subgraph SiteGeo["Sites"]
+    Indices(["/{geo}/query-index.json"])
   end
 
-  C --> E
-  G --> E
-  Q --> E
-  R --> E
-  E --> D
-  D --> H
-  H --> DIFF
-  DIFF -.->|changed or new| DA
-  DA --> P
-  P --> L
+  Generator["html-sitemap-generator"]
+  Output(["/{baseGeo}/sitemap.html"])
+
+  Config   --> Generator
+  GNAV     --> Generator
+  RegNav   --> Generator
+  Indices  --> Generator
+  Generator --> Output
+
+  linkStyle default stroke:#AAAAAA,stroke-width:1.5px
+
+  style Config    fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
+  style GNAV      fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
+  style Indices   fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
+  style RegNav    fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
+  style Generator fill:#C8C8C8,stroke:#999999,stroke-width:1.5px,color:#2C2C2C
+  style Output    fill:#E50914,stroke:#B00000,stroke-width:1.5px,color:#FFFFFF
+
+  style Federal  fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
+  style HostSite fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
+  style SiteGeo  fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
 ```
+
+### Pipeline Overview
+
+The diagram below is intentionally minimal: **stage names and flow only**. File names, config keys, and other artifacts are listed in [Stage details (artifacts)](#stage-details-artifacts) so the graph stays easy to read in editors and exports.
+
+```mermaid
+%%{
+  init: {
+    "theme": "base",
+    "flowchart": {
+      "htmlLabels": false,
+      "padding": 24,
+      "nodeSpacing": 50,
+      "rankSpacing": 52
+    },
+    "themeVariables": {
+      "fontSize": "15px",
+      "lineColor": "#555555",
+      "primaryTextColor": "#2C2C2C",
+      "clusterBkg": "#FAFAFA",
+      "clusterBorder": "#CCCCCC",
+      "titleColor": "#555555",
+      "edgeLabelBackground": "#FFFFFF",
+      "edgeLabelColor": "#555555"
+    }
+  }
+}%%
+flowchart LR
+
+  subgraph GHA["GitHub"]
+    Extract["extract\nGNAV · query indices · region-nav"]
+    TransformData["transform-data\nsitemap.json"]
+    TransformDA["transform-da\nsitemap.html"]
+    Diff["diff\nlocal ↔ DA"]
+  end
+
+  subgraph DA["DA"]
+    Push["push\nda.live"]
+  end
+
+  subgraph AEM["AEM"]
+    Preview["preview\naem.page"]
+    Publish["publish\naem.live"]
+  end
+
+  Extract       --> TransformData
+  TransformData --> TransformDA
+  TransformDA   --> Diff
+  Diff          -.-> Push
+  Push          --> Preview
+  Preview       --> Publish
+
+  linkStyle default stroke:#AAAAAA,stroke-width:1.5px
+
+  style Extract       fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
+  style TransformData fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
+  style TransformDA   fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
+  style Diff          fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
+  style Push          fill:#C8C8C8,stroke:#999999,stroke-width:1.5px,color:#2C2C2C
+  style Preview       fill:#C8C8C8,stroke:#999999,stroke-width:1.5px,color:#2C2C2C
+  style Publish       fill:#E50914,stroke:#B00000,stroke-width:1.5px,color:#FFFFFF
+
+  style GHA fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
+  style DA  fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
+  style AEM fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
+```
+
+#### Stage details (artifacts)
+
+| Stage | Artifacts / focus |
+|-------|-------------------|
+| **Config** | `config`, `query-index-map`, `geo-map`, `page-copy` |
+| **GNAV** | `fragments`, `placeholders` |
+| **Query indices** | `query-index.json` paths (per site × geo) |
+| **Region-nav** | `regions.html` fragment |
+| **extract** | Config snapshot; GNAV fragments + manifest; placeholders; query indices; region-nav HTML; persisted under `_extract/` |
+| **transform-data** | `sitemap.json` |
+| **transform-da** | `sitemap.html`; `manifest.json`; `manifest.csv` (per subdomain) |
+| **diff** | Read-only: compares local `sitemap.html` to DA |
+| **push** | Uploads `sitemap.html` to DA |
+| **preview** | Promotes path in AEM preview |
+| **publish** | Promotes path in AEM live |
 
 Interpretation:
 
