@@ -11,6 +11,14 @@
 
 import { getConfig, loadMartech } from '../../utils/utils.js';
 
+/** Escapes strings for safe insertion into HTML text or double-quoted attributes. */
+const escapeHtml = (str) => String(str ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 const SURVEY_VERSION = '0.0.1';
 const RTL_LANG_PREFIXES = ['ar', 'he', 'fa', 'ur'];
 const NPS_DIGIT_BUFFER_TIMEOUT = 500;
@@ -40,10 +48,10 @@ class NpsPicker extends HTMLElement {
         <div
           class="nps-popover-item"
           role="option"
-          data-value="${option.value}"
+          data-value="${escapeHtml(option.value)}"
           tabindex="${index === 0 ? '0' : '-1'}"
           aria-selected="false"
-        >${option.text}</div>
+        >${escapeHtml(option.text)}</div>
       `).join('');
 
     this.innerHTML = `
@@ -53,12 +61,12 @@ class NpsPicker extends HTMLElement {
         popovertarget="${uid}"
         aria-haspopup="listbox"
         aria-expanded="false"
-        ${labelledby ? `aria-labelledby="${labelledby}"` : ''}
+        ${labelledby ? `aria-labelledby="${escapeHtml(labelledby)}"` : ''}
       >
-        <span class="nps-picker-label">${placeholder}</span>
+        <span class="nps-picker-label">${escapeHtml(placeholder)}</span>
         <span class="nps-picker-chevron" aria-hidden="true"></span>
       </button>
-      <div id="${uid}" class="nps-popover" popover="auto" role="listbox" ${labelledby ? `aria-labelledby="${labelledby}"` : ''}>
+      <div id="${uid}" class="nps-popover" popover="auto" role="listbox" ${labelledby ? `aria-labelledby="${escapeHtml(labelledby)}"` : ''}>
         ${items}
       </div>
       <input type="hidden" name="feedback" value="" ${this.hasAttribute('required') ? 'required' : ''} />
@@ -260,24 +268,24 @@ const buildForm = ({
 }) => `
   <form id="nps" novalidate>
     ${displayCross ? '<button type="button" class="nps-close" aria-label="Close">&times;</button>' : ''}
-    <h2>${title}</h2>
+    <h2>${escapeHtml(title)}</h2>
     <fieldset class="nps-radio-group" aria-required="true" aria-describedby="feedback-error">
-      <legend id="nps-question-label">${radioGroupLabel} *</legend>
+      <legend id="nps-question-label">${escapeHtml(radioGroupLabel)} *</legend>
       <div class="radio-options">
         ${options(radioGroup, npsOptions)}
       </div>
       <div class="error-message" id="feedback-error" aria-live="polite" aria-hidden="true">
         <span class="error-icon">⚠</span>
-        <span class="error-text">${errorText}</span>
+        <span class="error-text">${escapeHtml(errorText)}</span>
       </div>
     </fieldset>
     <fieldset class="nps-feedback-area">
-      <legend>${feedbackLabel}</legend>
+      <legend>${escapeHtml(feedbackLabel)}</legend>
       <textarea
         id="explanation-input"
         name="explanation"
-        placeholder="${textboxPlaceholder}"
-        aria-label="${feedbackLabel}"
+        placeholder="${escapeHtml(textboxPlaceholder)}"
+        aria-label="${escapeHtml(feedbackLabel)}"
         rows="4"
       ></textarea>
     </fieldset>
@@ -288,12 +296,12 @@ const buildForm = ({
           id="contact-me"
           name="contact-me"
         />
-        ${contactMeString}
+        ${escapeHtml(contactMeString)}
       </label>
     </fieldset>
     <fieldset class="nps-submit-area">
-      <button type="button" aria-label="Cancel" class="nps-cancel">${cancelText}</button>
-      <button type="submit" aria-label="Submit" class="nps-submit">${submitText}</button>
+      <button type="button" aria-label="Cancel" class="nps-cancel">${escapeHtml(cancelText)}</button>
+      <button type="submit" aria-label="Submit" class="nps-submit">${escapeHtml(submitText)}</button>
     </fieldset>
   </form>
   `;
@@ -308,27 +316,27 @@ const options = (radioGroup, npsOptions) => {
     const lowestOption = scoreOptions[scoreOptions.length - 1];
     return `
       <div class="desktop-nps-radio">
-         <span class="nps-scale-label nps-scale-label--low">${lowestOption?.label ?? ''}</span>
+         <span class="nps-scale-label nps-scale-label--low">${escapeHtml(lowestOption?.label ?? '')}</span>
          <div class="radio-options">
            ${scoreOptions.slice().reverse().map((scoreOption) => `
              <div class="radio-item">
-               <label for="nps-${scoreOption.value}"><span>${scoreOption.display}</span></label>
+               <label for="nps-${escapeHtml(scoreOption.value)}"><span>${escapeHtml(scoreOption.display)}</span></label>
                <input
                  type="radio"
-                 id="nps-${scoreOption.value}"
+                 id="nps-${escapeHtml(scoreOption.value)}"
                  name="feedback"
-                 value="${scoreOption.value}"
-                 data-display="${scoreOption.display}"
+                 value="${escapeHtml(scoreOption.value)}"
+                 data-display="${escapeHtml(scoreOption.display)}"
                  required
                />
              </div>
            `).join('')}
          </div>
-         <span class="nps-scale-label nps-scale-label--high">${highestOption?.label ?? ''}</span>
+         <span class="nps-scale-label nps-scale-label--high">${escapeHtml(highestOption?.label ?? '')}</span>
       </div>
       <div class="mobile-nps-select">
-        <nps-picker class="nps-picker" placeholder="${defaultSelectOption}" aria-labelledby="nps-question-label" required>
-          ${scoreOptions.map((scoreOption) => `<nps-picker-option value="${scoreOption.value}">${scoreOption.label ? `${scoreOption.display} – ${scoreOption.label}` : scoreOption.display}</nps-picker-option>`).join('')}
+        <nps-picker class="nps-picker" placeholder="${escapeHtml(defaultSelectOption)}" aria-labelledby="nps-question-label" required>
+          ${scoreOptions.map((scoreOption) => `<nps-picker-option value="${escapeHtml(scoreOption.value)}">${escapeHtml(scoreOption.label ? `${scoreOption.display} – ${scoreOption.label}` : scoreOption.display)}</nps-picker-option>`).join('')}
         </nps-picker>
       </div>
     `;
@@ -340,12 +348,12 @@ const radio = (label) => {
   const id = createIdForLabel(label);
   return `
   <div class="radio-item">
-    <label for="${id}"><span>${label}</span></label>
+    <label for="${escapeHtml(id)}"><span>${escapeHtml(label)}</span></label>
     <input
       type="radio"
-      id="${id}"
+      id="${escapeHtml(id)}"
       name="feedback"
-      value="${id}"
+      value="${escapeHtml(id)}"
       required
     />
   </div>
