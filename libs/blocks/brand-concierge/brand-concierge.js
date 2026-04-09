@@ -241,7 +241,7 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  updateModalHeight(modalHeight);
+  // updateModalHeight(modalHeight);
 
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
@@ -316,21 +316,21 @@ async function openChatModal(initialMessage, el) {
     }
   });
 
-  const handleViewportResize = () => updateModalHeight(modalHeight);
-  const handleOrientationChange = () => setTimeout(() => { updateModalHeight(modalHeight); }, 100);
-  window.visualViewport?.addEventListener('resize', handleViewportResize);
-  window.addEventListener('resize', handleViewportResize);
-  window.addEventListener('orientationchange', handleOrientationChange);
-  const cleanup = () => {
-    window.visualViewport?.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('orientationchange', handleOrientationChange);
-  };
-  const handleBCModalClose = () => {
-    cleanup();
-    window.removeEventListener('milo:modal:closed', handleBCModalClose);
-  };
-  window.addEventListener('milo:modal:closed', handleBCModalClose);
+  // const handleViewportResize = () => updateModalHeight(modalHeight);
+  // const handleOrientationChange = () => setTimeout(() => { updateModalHeight(modalHeight); }, 100);
+  // window.visualViewport?.addEventListener('resize', handleViewportResize);
+  // window.addEventListener('resize', handleViewportResize);
+  // window.addEventListener('orientationchange', handleOrientationChange);
+  // const cleanup = () => {
+  //   window.visualViewport?.removeEventListener('resize', handleViewportResize);
+  //   window.removeEventListener('resize', handleViewportResize);
+  //   window.removeEventListener('orientationchange', handleOrientationChange);
+  // };
+  // const handleBCModalClose = () => {
+  //   cleanup();
+  //   window.removeEventListener('milo:modal:closed', handleBCModalClose);
+  // };
+  // window.addEventListener('milo:modal:closed', handleBCModalClose);
 }
 
 // sets values that will be used to overwrite json config values before invoking chat
