@@ -40,14 +40,15 @@ function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
 }
 
-function updateModalHeight() {
+const isMobile = window.innerWidth < 768;
+const marginTop = isMobile ? 22 : 32;
+const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+const modalHeight = Math.min(viewportHeight - marginTop, window.innerHeight - marginTop);
+
+function updateModalHeight(currentModalHeight) {
   const modal = document.getElementById('brand-concierge-modal');
   if (!modal) return;
-  const isMobile = window.innerWidth < 768;
-  const marginTop = isMobile ? 22 : 32;
-  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  const modalHeight = Math.min(viewportHeight - marginTop, window.innerHeight - marginTop);
-  modal.style.height = `${modalHeight}px`;
+  modal.style.height = `${currentModalHeight}px`;
 }
 
 export function updateReplicatedValue(textareaWrapper, textarea) {
@@ -240,7 +241,7 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  updateModalHeight();
+  updateModalHeight(modalHeight);
 
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
@@ -315,8 +316,8 @@ async function openChatModal(initialMessage, el) {
     }
   });
 
-  const handleViewportResize = () => updateModalHeight();
-  const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
+  const handleViewportResize = () => updateModalHeight(modalHeight);
+  const handleOrientationChange = () => setTimeout(() => { updateModalHeight(modalHeight); }, 100);
   window.visualViewport?.addEventListener('resize', handleViewportResize);
   window.addEventListener('resize', handleViewportResize);
   window.addEventListener('orientationchange', handleOrientationChange);
