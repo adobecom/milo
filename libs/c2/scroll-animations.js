@@ -47,23 +47,6 @@ function findSectionsByStyle(style) {
   );
 }
 
-function cacheLineHeights(elements) {
-  return elements
-    .filter((el) => el instanceof Element)
-    .map((child) => {
-      const styles = getComputedStyle(child);
-      const fontSize = parseFloat(styles?.fontSize) || 16;
-      const computed = styles?.lineHeight;
-      const target = computed === 'normal'
-        ? 1.2 : parseFloat(computed) / fontSize;
-      return { el: child, target };
-    });
-}
-
-function lerp(from, to, t) {
-  return t >= 1 ? '' : String(from + (to - from) * t);
-}
-
 /* ── Move-up-fast ───────────────────────────────── */
 
 function initMoveUpFast() {
@@ -100,9 +83,6 @@ function initGarageDoorReveal() {
   gdSections.forEach((gdSection) => {
     const foreground = gdSection.querySelector('.rich-content > div');
     const bgImg = gdSection.querySelectorAll('img');
-    const childLHData = foreground
-      ? cacheLineHeights([...foreground.querySelectorAll('*')])
-      : [];
     const revealFrom = isDesktop ? 30 : 20;
 
     window.lenis.on('scroll', ({ scroll }) => {
