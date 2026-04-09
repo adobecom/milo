@@ -120,15 +120,24 @@ function decorateText(el, classes) {
   el.classList.add('norm');
   wrapInnerHTMLInPTag(el);
   const btnClass = classes?.find((c) => c.endsWith('-button'));
+  let buttonSize = 'button-xl';
   if (btnClass) {
     const [theme, size] = btnClass.split('-').reverse();
     el.classList.remove(btnClass);
-    decorateButtons(el, `${theme}-${size}`);
-  } else {
-    decorateButtons(el, 'button-xl');
+    buttonSize = `${theme}-${size}`;
   }
+  decorateButtons(el, buttonSize);
   decorateBlockText(el, textDefault);
   decorateTextOverrides(el, ['-heading', '-body', '-detail']);
+
+  el.querySelectorAll('mas-field').forEach((masField) => {
+    const apply = () => el.querySelectorAll('.con-button').forEach((btn) => btn.classList.add(buttonSize));
+    if (masField.querySelector('[data-role="mas-field-content"]')?.firstChild) {
+      apply();
+    } else {
+      masField.querySelector('aem-fragment')?.addEventListener('aem:load', apply, { once: true });
+    }
+  });
 }
 
 function decorateSup(el, classes) {
