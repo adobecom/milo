@@ -35,30 +35,6 @@
       </div>
     </div>
     {{/if}}
-    {{#if otherSitemaps}}
-    <div>
-      <div
-        class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
-      >
-        <div>
-          <div>
-            <h2>{{otherSitemapsHeading}}</h2>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="text static-links contained center xxl-spacing max-width-8-desktop">
-        <div>
-          <div>
-            {{#each otherSitemaps}}
-            <a href="{{url}}" data-geo-index="{{@index}}">{{title}}</a>
-            {{/each}}
-          </div>
-        </div>
-      </div>
-    </div>
-    {{/if}}
     {{#if extendedGeoGroups}}
     <div>
       <div
@@ -90,6 +66,30 @@
       </div>
     </div>
     {{/if}}
+    {{#if otherSitemaps}}
+    <div>
+      <div
+        class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
+      >
+        <div>
+          <div>
+            <h2>{{otherSitemapsHeading}}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="text static-links contained center xxl-spacing max-width-8-desktop">
+        <div>
+          <div>
+            {{#each otherSitemaps}}
+            <a href="{{url}}" data-geo-index="{{@index}}">{{title}}</a>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    </div>
+    {{/if}}
     <div>
       <div class="metadata">
         <div>
@@ -105,8 +105,10 @@
           <div>{{locale}}</div>
         </div>
         <!-- TODO: remove later -->
-        <div>robots</div>
-        <div>noindex,nofollow</div>
+        <div>
+          <div>robots</div>
+          <div>noindex,nofollow</div>
+        </div>
       </div>
     </div>
   </main>
