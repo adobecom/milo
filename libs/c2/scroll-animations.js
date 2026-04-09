@@ -85,7 +85,7 @@ function initMoveUpFast() {
     const sectionTop = getDocTop(section);
     window.lenis.on('scroll', ({ scroll }) => {
       const t = Math.max(0, Math.min(1, (scroll - sectionTop) / vh80px));
-      section.style.transform = `translateY(${-35 * t}vh)`;
+      section.style.top = `${-35 * t}vh`;
       overlay.style.opacity = 0.75 * t;
     });
   });
