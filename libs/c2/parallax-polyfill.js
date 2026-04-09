@@ -53,7 +53,21 @@ function resolveRules(rules) {
   });
 }
 
+function guardCurrentTimeSetter() {
+  const desc = Object.getOwnPropertyDescriptor(Animation.prototype, 'currentTime');
+  if (!desc?.set) return;
+  Object.defineProperty(Animation.prototype, 'currentTime', {
+    ...desc,
+    set(val) {
+      if (Number.isFinite(val)) desc.set.call(this, val);
+    },
+  });
+}
+
 export default async function init(config, loadScript) {
+  // Patch Animation.currentTime before loading the polyfill so it doesn't
+  // throw when computing NaN progress (e.g. zero-length animation-range).
+  guardCurrentTimeSetter();
   await loadScript(`${config.base}/deps/scroll-timeline.js`);
 
   const link = document.querySelector('link[href*="c2/styles/styles.css"]');
