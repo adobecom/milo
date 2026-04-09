@@ -826,8 +826,9 @@ function localizeLinkCore(
     if (!['', 'html', 'json'].includes(extension)) return processedHref;
     const { locale, locales, languages, prodDomains, uniqueSiteId } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
+    const isAdobeProd = prodDomains?.includes(url.hostname);
     const isLocalizable = relative
-      || (url.hostname && prodDomains?.includes(url.hostname))
+      || (url.hostname && isAdobeProd)
       || overrideDomain
       || (url.hostname && getFederatedContentRoot().includes(url.hostname));
     if (!isLocalizable || isLocalizedPath(path, locales)) return processedHref;
@@ -847,7 +848,7 @@ function localizeLinkCore(
     const skipQueryIndex = isMepLingoFragment
         && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
     const enterAsync = useAsync && aTag && extension !== 'json' && !skipQueryIndex
-      && lingoActive() && isLingoPage
+      && lingoActive() && isLingoPage && !isAdobeProd
       && (!isFragment || (isMepLingoFragment && !!locale.regions));
 
     if (enterAsync) {
