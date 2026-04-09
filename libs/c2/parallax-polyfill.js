@@ -2,9 +2,10 @@
  * Firefox polyfill for scroll-driven animations.
  *
  * 1. Loads the vendored scroll-timeline polyfill
- * 2. Extracts CSS from @supports (animation-timeline: view()) and injects it
- *    so the polyfill can process view()-based animations automatically
- * 3. Runs scroll-animations.js for effects the polyfill can't handle
+ * 2. Extracts CSS from @supports (animation-timeline: view()), resolves CSS
+ *    custom properties per-selector (the polyfill cannot parse var() in
+ *    animation-range values), then injects the resolved rules
+ * 3. Runs scroll-animations.js for JS-driven effects the polyfill can't handle
  */
 
 function extractSupportsContent(css) {
@@ -18,6 +19,40 @@ function extractSupportsContent(css) {
   return null;
 }
 
+const VAR_RE = /var\(--([^,)]+)(?:,\s*([^)]+))?\)/g;
+
+function resolveRules(rules) {
+  // Process one rule block at a time so we can resolve vars against the
+  // element matched by each selector.
+  return rules.replace(/([^{}]+)\{([^{}]+)\}/g, (match, selector, body) => {
+    if (!body.includes('var(')) return match;
+
+    let el = document.documentElement;
+    try {
+      const found = document.querySelector(selector.trim().split(',')[0].trim());
+      if (found) el = found;
+    } catch (e) { /* invalid selector — fall back to :root */ }
+
+    const elStyles = getComputedStyle(el);
+    const rootStyles = getComputedStyle(document.documentElement);
+    const resolvedBody = body.replace(VAR_RE, (_, prop, fallback) => {
+      const name = prop.trim();
+      return elStyles.getPropertyValue(name).trim()
+        || rootStyles.getPropertyValue(name).trim()
+        || fallback?.trim()
+        || '';
+    });
+
+    // Drop any declaration whose value is still empty after resolution
+    const cleanBody = resolvedBody.replace(/[\w-]+\s*:[^;]*;/g, (decl) => {
+      if (/:\s*;/.test(decl) || decl.includes('var(')) return '';
+      return decl;
+    });
+
+    return `${selector}{${cleanBody}}`;
+  });
+}
+
 export default async function init(config, loadScript) {
   await loadScript(`${config.base}/deps/scroll-timeline.js`);
 
@@ -27,7 +62,7 @@ export default async function init(config, loadScript) {
     const rules = extractSupportsContent(css);
     if (rules) {
       const style = document.createElement('style');
-      style.textContent = rules;
+      style.textContent = resolveRules(rules);
       document.head.appendChild(style);
     }
   }
