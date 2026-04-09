@@ -88,7 +88,8 @@ const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
 
-const TRUSTED_DOMAINS = ['.adobe.com', '.hlx.page', '.hlx.live', '.aem.page', '.aem.live'];
+const TRUSTED_DOMAINS = ['.adobe.com'];
+const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
 
 export function isTrustedUrl(url) {
   if (!url) return false;
@@ -98,7 +99,7 @@ export function isTrustedUrl(url) {
     if (protocol !== 'https:') return false;
     return TRUSTED_DOMAINS.some(
       (domain) => hostname === domain.slice(1) || hostname.endsWith(domain),
-    );
+    ) || TRUSTED_AEM_PATTERN.test(hostname);
   } catch {
     return false;
   }

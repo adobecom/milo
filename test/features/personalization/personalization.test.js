@@ -665,6 +665,11 @@ describe('MEP Utils', () => {
       expect(isTrustedUrl('https://evil.github.io/script.js')).to.be.false;
       expect(isTrustedUrl('https://attacker.com/content/dam/fake.js')).to.be.false;
     });
+    it('blocks non-adobecom aem/hlx domains', () => {
+      expect(isTrustedUrl('https://evil--project--inc.aem.page/manifest.json')).to.be.false;
+      expect(isTrustedUrl('https://evil--project--inc.hlx.live/script.js')).to.be.false;
+      expect(isTrustedUrl('https://evildomainadobecom.hlx.page/script.js')).to.be.false;
+    });
     it('blocks non-https protocols', () => {
       expect(isTrustedUrl('http://www.adobe.com/script.js')).to.be.false;
       expect(isTrustedUrl('data:text/javascript,alert(1)')).to.be.false;
