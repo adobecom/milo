@@ -71,10 +71,10 @@ describe('mobile', () => {
       expect(document.activeElement).to.equal(navLinks[1]);
     });
     it('shifts focus from the last popup item, to the next trigger', async () => {
-      const section = navLinks[navLinks.length - 2].closest(selectors.section);
+      const section = navLinks[navLinks.length - 1].closest(selectors.section);
       const headline = section.querySelector(selectors.headline);
       headline.setAttribute('aria-expanded', true);
-      navLinks[navLinks.length - 2].focus();
+      navLinks[navLinks.length - 1].focus();
       await sendKeys({ press: 'Tab' });
       expect(document.activeElement).to.equal(triggerTwo);
     });
@@ -104,10 +104,10 @@ describe('mobile', () => {
       expect(document.activeElement.innerText).to.equal('second-column-first-section-first-item');
     });
     it('shifts focus from the last popup item to the next trigger', async () => {
-      const section = navLinks[navLinks.length - 2].closest(selectors.section);
+      const section = navLinks[navLinks.length - 1].closest(selectors.section);
       const headline = section.querySelector(selectors.headline);
       headline.setAttribute('aria-expanded', true);
-      navLinks[navLinks.length - 2].focus();
+      navLinks[navLinks.length - 1].focus();
       await sendKeys({ press: 'ArrowRight' });
       expect(document.activeElement).to.equal(triggerTwo);
     });
@@ -190,10 +190,10 @@ describe('mobile', () => {
       expect(document.activeElement).to.equal(navLinks[1]);
     });
     it('shifts focus from the last popup item, to the next trigger', async () => {
-      const section = navLinks[navLinks.length - 2].closest(selectors.section);
+      const section = navLinks[navLinks.length - 1].closest(selectors.section);
       const headline = section.querySelector(selectors.headline);
       headline.setAttribute('aria-expanded', true);
-      navLinks[navLinks.length - 2].focus();
+      navLinks[navLinks.length - 1].focus();
       await sendKeys({ press: 'ArrowDown' });
       expect(document.activeElement).to.equal(triggerTwo);
     });
