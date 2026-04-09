@@ -1522,8 +1522,8 @@ export const combineMepSources = async (
 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
-      if (!isTrustedUrl(manifestPath)) {
-        log(`Blocked untrusted mep manifest URL: ${manifestPath}`);
+      if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) {
+        log(`Blocked external mep manifest URL: ${manifestPath}`);
         return;
       }
       if (!persManifestPaths.includes(manifestPath)) {

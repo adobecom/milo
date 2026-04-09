@@ -629,7 +629,7 @@ describe('MEP Utils', () => {
       expect(manifests[3].manifestPath).to.equal('/mep-param/manifest1.json');
       expect(manifests[4].manifestPath).to.equal('/mep-param/manifest2.json');
     });
-    it('blocks untrusted external manifest URLs from mep param', async () => {
+    it('blocks absolute manifest URLs from mep param', async () => {
       const manifests = await combineMepSources(
         undefined,
         undefined,
@@ -638,7 +638,25 @@ describe('MEP Utils', () => {
       );
       expect(manifests.length).to.equal(0);
     });
-    it('allows trusted manifest URLs from mep param', async () => {
+    it('blocks trusted absolute manifest URLs from mep param', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        'https://www.adobe.com/manifest.json--all',
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('blocks protocol-relative manifest URLs from mep param', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        '//evil.com/manifest.json--all',
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('allows relative path manifest URLs from mep param', async () => {
       const manifests = await combineMepSources(
         undefined,
         undefined,
@@ -646,6 +664,17 @@ describe('MEP Utils', () => {
         '/path/manifest.json--all',
       );
       expect(manifests.length).to.equal(1);
+    });
+    it('allows federal manifest via mep param alongside repo manifests', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        '/homepage/fragments/tests/site-redesign.json--target-var1---/federal/tests/mep/ace1151/ace1151-gnav-and-banners.json--all',
+      );
+      expect(manifests.length).to.equal(2);
+      expect(manifests[0].manifestPath).to.equal('/homepage/fragments/tests/site-redesign.json');
+      expect(manifests[1].manifestPath).to.equal('/federal/tests/mep/ace1151/ace1151-gnav-and-banners.json');
     });
   });
   describe('isTrustedUrl', () => {
