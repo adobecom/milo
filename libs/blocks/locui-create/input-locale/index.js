@@ -302,16 +302,21 @@ export default function useInputLocale() {
   };
 
   const selectLanguage = (lang) => {
-    const languageCodes = lang.livecopies.split(',');
-    const isDeselecting = languageCodes.every((code) => selectedLocaleSet.has(`${lang.languagecode}|${code}`));
+    const allLivecopies = lang.livecopies.split(',');
+    const defaultCodes = (lang.defaultlocales || lang.livecopies).split(',');
+    const isDeselecting = allLivecopies.some((code) => selectedLocaleSet.has(`${lang.languagecode}|${code}`));
     const updatedLocale = isDeselecting
       ? selectedLocale.filter((localeKey) => {
         const [langCode, locale] = parseLocaleKey(localeKey);
-        return langCode !== lang.languagecode || !languageCodes.includes(locale);
+        return langCode !== lang.languagecode || !allLivecopies.includes(locale);
       })
-      : [...selectedLocale, ...languageCodes.map((code) => `${lang.languagecode}|${code}`)];
+      : [...selectedLocale, ...allLivecopies.map((code) => `${lang.languagecode}|${code}`)];
     setSelectedLocale(updatedLocale);
-    updateActiveLocales(languageCodes, isDeselecting, lang.languagecode);
+    updateActiveLocales(
+      isDeselecting ? allLivecopies : defaultCodes,
+      isDeselecting,
+      lang.languagecode,
+    );
   };
 
   const toggleLocale = (localeKey) => {
