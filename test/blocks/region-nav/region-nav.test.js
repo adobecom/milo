@@ -201,13 +201,7 @@ describe('Region Nav Block', async () => {
   });
 
   it('sets lang attribute on links with valid ietf values', () => {
-    setConfig({
-      locales: {
-        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-        ar: { ietf: 'es-AR', tk: 'hah7vzn.css' },
-        br: { ietf: 'pt-BR', tk: 'hah7vzn.css' },
-      },
-    });
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, ar: { ietf: 'es-AR', tk: 'hah7vzn.css' }, br: { ietf: 'pt-BR', tk: 'hah7vzn.css' } } });
 
     const arLink = createTag('a', { href: 'https://adobe.com/ar/' });
     decorateLink(arLink, '/some-page');
@@ -219,9 +213,7 @@ describe('Region Nav Block', async () => {
   });
 
   it('does not set lang attribute when ietf is none (localeToLanguageMap)', () => {
-    setConfig({
-      locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
-    });
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
 
     const link = createTag('a', { href: 'https://adobe.com/xx/' });
     decorateLink(link, '/some-page', [{ locale: 'xx' }]);
@@ -230,13 +222,7 @@ describe('Region Nav Block', async () => {
   });
 
   it('does not set lang attribute when locale omits ietf', () => {
-    setConfig({
-      locales: {
-        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-        zz: { tk: 'hah7vzn.css' },
-      },
-    });
-
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, zz: { tk: 'hah7vzn.css' } } });
     const link = createTag('a', { href: 'https://adobe.com/zz/' });
     decorateLink(link, '');
 
