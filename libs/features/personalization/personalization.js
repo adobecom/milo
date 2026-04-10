@@ -123,11 +123,13 @@ export const normalizePath = (p, localize = true) => {
     const firstFolder = pathname.split('/')[1];
     const mepHash = '#_dnt';
 
-    if (path.startsWith(config.codeRoot)
+    const isKnownOrigin = path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
       || path.includes('.aem.')
       || path.includes('.adobe.')
-      || path.includes('localhost:')) {
+      || path.includes('localhost:');
+
+    if (isKnownOrigin) {
       if (!localize
         || config.locale?.ietf === 'en-US'
         || hash?.includes(mepHash)
@@ -141,7 +143,12 @@ export const normalizePath = (p, localize = true) => {
       }
     }
     path = isFederal ? getFederatedUrl(path) : path;
-    return `${path}${search}${hash.replace(mepHash, '')}`;
+    if (isKnownOrigin) {
+      return `${path}${search}${hash.replace(mepHash, '')}`;
+    }
+    const normalizedUrl = new URL(path);
+    normalizedUrl.hash = normalizedUrl.hash.replace(mepHash, '');
+    return normalizedUrl.toString();
   } catch (e) {
     path = isFederal ? getFederatedUrl(path) : path;
     return path;
