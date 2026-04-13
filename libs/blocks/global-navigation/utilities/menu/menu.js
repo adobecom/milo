@@ -246,7 +246,7 @@ const decoratePromo = async (elem, index) => {
     let promoImageElem;
 
     if (linkElem instanceof HTMLElement) {
-      promoImageElem = toFragment`<a class="feds-promo-image" href="${linkElem.href}" daa-ll="promo-image">
+      promoImageElem = toFragment`<a class="feds-promo-image" href="${linkElem.href}" daa-ll="promo-image" aria-hidden="true" tabindex="-1">
           ${imageElem}
         </a>`;
     } else {
