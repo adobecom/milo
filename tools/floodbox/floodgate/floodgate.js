@@ -38,6 +38,9 @@ const ICONS = [
   'https://da.live/nx/public/icons/Smock_ChevronDown_18_N.svg',
 ];
 
+const FLOODGATE_HELP_DOC_URL = 'https://main--da-events--adobecom.aem.page/drafts/docs/floodgate';
+const FLOODGATE_HELP_ICON_URL = new URL('./help.svg', import.meta.url).href;
+
 const LARGE_OP_THRESHOLD = 50;
 const PATHS_STORAGE_KEY = 'floodgate-paths';
 
@@ -791,7 +794,18 @@ export default class MiloFloodgate extends LitElement {
   render() {
     const isRunning = this._startCopy || this._startPromote || this._startUnpublish;
     return html`
-      <h1>Floodgate</h1>
+      <div class="floodgate-title-row">
+        <h1>Floodgate</h1>
+        <a
+          class="floodgate-help-link"
+          href=${FLOODGATE_HELP_DOC_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Floodgate documentation (opens in new tab)"
+        >
+          <img src=${FLOODGATE_HELP_ICON_URL} width="18" height="18" alt="" />
+        </a>
+      </div>
       <h3>Content administration for pre-/post-Floodgate events.</h3>
       ${!this._tabUiStart && this._invalidPathLineIndices.size > 0 ? html`
         <p class="invalid-paths-hint">Invalid paths are highlighted in red.</p>

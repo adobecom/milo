@@ -3,6 +3,35 @@ body {
   margin: 0 var(--spacing-1000);
 }
 
+.floodgate-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.floodgate-title-row h1 {
+  margin: 0;
+}
+
+.floodgate-help-link {
+  display: inline-flex;
+  line-height: 0;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.floodgate-help-link:hover img,
+.floodgate-help-link:focus-visible img {
+  opacity: 0.85;
+}
+
+.floodgate-help-link:focus-visible {
+  outline: 2px solid var(--s2-blue-600, #0d66c4);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 /* Workflow replaces textarea — sits directly under the page title */
 
 .workflow-shell {
