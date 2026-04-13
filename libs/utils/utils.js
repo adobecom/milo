@@ -1694,7 +1694,7 @@ async function decorateIcons(area, config) {
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
-    if (getMetadata('theme') === 'max25') {
+    if (['doodlebug', 'max25'].includes(getMetadata('theme'))) {
       // TODO: Remove after correcting core logic
       const includeIcons = [...icons].filter((icon) => !iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`)));
       if (!includeIcons.length) return;
