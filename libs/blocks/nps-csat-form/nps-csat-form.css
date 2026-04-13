@@ -452,11 +452,11 @@ body:has(.nps-csat-form.dark.match-background) {
 }
 
 .nps-csat-form.eleven-point-nps .nps-close {
-  top: -9px;
-  right: -9px;
-  width: 24px;
-  height: 24px;
-  font-size: 20px;
+  top: -5px;
+  right: -5px;
+  width: 12px;
+  height: 12px;
+  font-size: 24px;
 }
 
 .nps-csat-form.eleven-point-nps .nps-feedback-area textarea {
@@ -672,14 +672,6 @@ body:has(.nps-csat-form.dark.match-background) {
   .nps-csat-form.eleven-point-nps {
     border-radius: 16px;
     padding: 32px;
-  }
-
-  .nps-csat-form.eleven-point-nps .nps-close {
-    top: -25px;
-    right: -25px;
-    width: 32px;
-    height: 32px;
-    font-size: 24px;
   }
 
   .nps-csat-form.eleven-point-nps #nps {
