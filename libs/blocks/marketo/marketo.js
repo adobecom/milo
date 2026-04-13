@@ -182,14 +182,17 @@ export const formSuccess = (formEl, formData) => {
 
   if (getMetadata('marketo-ims')) {
     const data = window.mcz_marketoForm_pref || {};
-    const isRedirect = data?.form?.success?.type === 'redirect';
     const redirect = data?.form?.success?.content;
 
     const emailInput = formEl.querySelector('input[name="Email"]');
     const email = emailInput?.value;
 
-    window.adobeIMS?.signIn({ puser: email, redirect_uri: redirect });
-    return true;
+    if (email && redirect) {
+      window.adobeIMS?.signIn({ puser: email, redirect_uri: redirect });
+    } else {
+      window?.lana.log('Marketo IMS failure, missing data', { tags: 'marketo', severity: 'e' });
+    }
+    return false;
   }
 
   /* c8 ignore next 5 */
