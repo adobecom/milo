@@ -28,6 +28,7 @@ const authoredContent = {};
 const variants = {};
 const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
+const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
 let bcToken;
@@ -172,6 +173,7 @@ async function openSusiLightModal() {
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
     window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
+    window?.lana.log('SUSI login success', { tags: 'brand-concierge', severity: 'info' });
     const token = detail;
     if (!bcToken) {
       bcToken = token;
@@ -678,6 +680,12 @@ export default async function init(el) {
   } else if (webClient === 'baseStage') {
     logWebClient('baseStage', baseStage);
     src = baseStage;
+  }
+
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
   }
 
   loadScript(src);
