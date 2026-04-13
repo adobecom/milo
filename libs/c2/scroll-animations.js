@@ -292,6 +292,77 @@ function initElasticCarousel() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
+/* ── Carousel C2 ────────────────────────────────── */
+
+function initCarouselC2() {
+  const initialized = new WeakSet();
+  let cssInjected = false;
+
+  const setupCarousel = (el) => {
+    if (initialized.has(el)) return;
+    const wrapper = el.querySelector('.carousel-wrapper');
+    if (!wrapper) return;
+    initialized.add(el);
+
+    if (!cssInjected) {
+      cssInjected = true;
+      const style = document.createElement('style');
+      style.textContent = '.carousel-c2 .carousel-wrapper,'
+        + '.carousel-c2 .carousel-slide { animation: none !important; }';
+      document.head.appendChild(style);
+    }
+
+    const slides = [...wrapper.querySelectorAll('.carousel-slide')];
+    // el.offsetWidth may be 0 if block hasn't laid out yet — use window.innerWidth
+    const startWidth = window.innerWidth;
+    slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
+
+    let targetWidth = null;
+    let top = null;
+
+    window.lenis.on('scroll', ({ scroll }) => {
+      // Read target width lazily on first tick — layout is guaranteed ready by then
+      if (targetWidth === null) {
+        slides.forEach((s) => { s.style.flexBasis = ''; });
+        targetWidth = slides[0]?.getBoundingClientRect().width || startWidth;
+        slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
+      }
+
+      if (top === null) top = getDocTop(el);
+      const m = getScrollMetrics(scroll, el, 0.1, 0.1);
+      const t = viewRange(m, 'entry', 0, 'entry', 0.8);
+
+      const w = startWidth + (targetWidth - startWidth) * t;
+      slides.forEach((s) => { s.style.flexBasis = `${w}px`; });
+
+      // Keep active slide centered as its width changes
+      const carouselWidth = window.innerWidth;
+      const margin = (carouselWidth - w) / 2;
+      const activeIdx = [...wrapper.children].indexOf(wrapper.querySelector('.active'));
+      wrapper.style.transition = 'none';
+      wrapper.style.translate = `${-(activeIdx * w) + margin - activeIdx * 8}px`;
+    });
+  };
+
+  document.querySelectorAll('.carousel-c2').forEach(setupCarousel);
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      [...mutation.addedNodes]
+        .filter((n) => n.nodeType === 1)
+        .forEach((n) => {
+          if (n.classList?.contains('carousel-c2')) setupCarousel(n);
+          if (n.classList?.contains('carousel-wrapper')) {
+            const carouselEl = n.closest('.carousel-c2');
+            if (carouselEl) setupCarousel(carouselEl);
+          }
+          n.querySelectorAll?.('.carousel-c2').forEach(setupCarousel);
+        });
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 /* ── Entry point ────────────────────────────────── */
 
 export default function init() {
@@ -300,4 +371,5 @@ export default function init() {
   initScaleDownGrid();
   initStagger();
   initElasticCarousel();
+  initCarouselC2();
 }
