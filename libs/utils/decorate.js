@@ -11,6 +11,7 @@ import {
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
+export const USER_PAUSED_ATTR = 'data-user-paused';
 let firstVideo = null;
 let videoLabels = {
   playMotion: 'Play',
@@ -285,22 +286,25 @@ export function getVideoAttrs(hash, dataset) {
 }
 
 export function syncPausePlayIcon(video, event) {
-  if (!video.getAttributeNames().includes('data-hoverplay')) {
-    const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
-    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
-    const anchorTag = video.closest('.video-holder').querySelector('a');
-    offsetFiller?.classList.toggle('is-playing');
-    const isPlaying = offsetFiller?.classList.contains('is-playing');
-    const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
-    const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
-    anchorTag?.setAttribute('title', `${ariaLabel}`);
-    anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
-    anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
-    const daaLL = anchorTag.getAttribute('daa-ll');
-    if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
-  }
+  if (!video || video.hasAttribute('data-hoverplay')) return;
+  const holder = video.closest('.video-holder');
+  if (!holder) return;
+  const offsetFiller = holder.querySelector('.offset-filler');
+  if (!offsetFiller) return;
+  const anchorTag = holder.querySelector('a.pause-play-wrapper') || holder.querySelector('a');
+  if (!anchorTag) return;
+  if (event?.type === 'playing' && offsetFiller.classList.contains('is-playing')) return;
+  offsetFiller.classList.toggle('is-playing');
+  const isPlaying = offsetFiller.classList.contains('is-playing');
+  const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
+  const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
+  anchorTag.setAttribute('title', `${ariaLabel}`);
+  anchorTag.setAttribute('aria-label', ariaLabel);
+  anchorTag.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+  const daaLL = anchorTag.getAttribute('daa-ll');
+  if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
 }
 
 export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
@@ -332,12 +336,15 @@ export function handlePause(event) {
   event.preventDefault();
   event.stopPropagation();
   const video = event.target.closest('.video-holder').parentElement.querySelector('video');
+  const isManualToggle = event.type === 'click' || event.code === 'Enter' || event.code === 'Space';
   if (event.type === 'blur') {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
+    if (isManualToggle) video.removeAttribute(USER_PAUSED_ATTR);
     if (isVideoReady(video)) { video.play(); }
   } else {
     video.pause();
+    if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, '');
   }
   syncPausePlayIcon(video);
 }
@@ -404,12 +411,13 @@ function getVideoIntersectionObserver() {
         const { intersectionRatio, target: video } = entry;
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
+        const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (intersectionRatio <= 0.8) {
           video.pause();
-        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
         }
       });

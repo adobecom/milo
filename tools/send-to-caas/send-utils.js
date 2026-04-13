@@ -298,15 +298,47 @@ const isPagePublished = async () => {
   return false;
 };
 
-const getBulkPublishLangAttr = async (options) => {
-  let { getLocale } = getConfig();
-  if (options.languageFirst) {
-    const { country, lang } = await getLanguageFirstCountryAndLang(
+const MAX_LANG_FIRST_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
+
+const delay = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+
+/**
+ * Runs the language-first retry loop. Only retries when the resolver returns the
+ * default (en/xx) because of an error (fromFallback: true), e.g. mapping fetch failed.
+ * When the result is a real success (or default without error), returns immediately.
+ * Used by getBulkPublishLangAttr; exported for tests.
+ * @param {object} options - prodUrl, repo, host
+ * @param {Function} getLangFirst - async (prodUrl, repo, host) => { country, lang, fromFallback? }
+ * @param {{ retryDelayMs?: number }} [retryOpts] - optional; use in tests to avoid delay
+ * @returns {Promise<string>} lang-country e.g. 'de-xx'
+ */
+export async function runLanguageFirstRetry(options, getLangFirst, retryOpts = {}) {
+  const { retryDelayMs = RETRY_DELAY_MS } = retryOpts;
+
+  let lastResult;
+  for (let attempt = 0; attempt <= MAX_LANG_FIRST_RETRIES; attempt += 1) {
+    if (attempt > 0) await delay(retryDelayMs);
+
+    const result = await getLangFirst(
       options.prodUrl,
       options.repo,
       options.host,
     );
-    return `${lang}-${country}`;
+    const { country, lang, fromFallback } = result;
+    lastResult = `${lang}-${country}`;
+
+    const gotDefault = lang === 'en' && country === 'xx';
+    if (!gotDefault || !fromFallback) return lastResult;
+  }
+
+  return lastResult;
+}
+
+const getBulkPublishLangAttr = async (options) => {
+  let { getLocale } = getConfig();
+  if (options.languageFirst) {
+    return runLanguageFirstRetry(options, getLanguageFirstCountryAndLang);
   }
   if (!getLocale) {
     // This is only imported from the bulk publisher so there is no dependency cycle
