@@ -647,11 +647,13 @@ body:has(.nps-csat-form.dark.match-background) {
 }
 
 .nps-csat-form.eleven-point-nps .nps-popover-item {
+  position: relative;
   display: flex;
   align-items: center;
   min-height: 24px;
   border-radius: 4px;
-  padding: 4px 9px 4px 28px;
+  padding-block: 4px;
+  padding-inline: 28px 9px;
   color: #292929;
   font-size: 12px;
   font-weight: 500;
@@ -666,6 +668,25 @@ body:has(.nps-csat-form.dark.match-background) {
 
 .nps-csat-form.eleven-point-nps .nps-popover-item[aria-selected="true"] {
   background: #e1e1e1;
+}
+
+.nps-csat-form.eleven-point-nps .nps-popover-item[aria-selected="true"]::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  background-color: rgba(59, 99, 251, 1);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 10px 10px;
+  mask-size: 10px 10px;
 }
 
 @media (min-width: 480px) {
