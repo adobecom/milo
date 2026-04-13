@@ -106,6 +106,9 @@ class NpsPicker extends HTMLElement {
       this.#trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       if (isOpen) {
         this.#positionPopover();
+        this.#attachPopoverResize();
+      } else {
+        this.#detachPopoverResize();
       }
     });
   }
@@ -147,6 +150,20 @@ class NpsPicker extends HTMLElement {
 
   #escapeHandler = null;
 
+  #popoverResizeHandler = null;
+
+  #detachPopoverResize() {
+    if (!this.#popoverResizeHandler) return;
+    window.removeEventListener('resize', this.#popoverResizeHandler);
+    this.#popoverResizeHandler = null;
+  }
+
+  #attachPopoverResize() {
+    this.#detachPopoverResize();
+    this.#popoverResizeHandler = () => this.#positionPopover();
+    window.addEventListener('resize', this.#popoverResizeHandler);
+  }
+
   #onItemKeydown(event, item) {
     const index = this.#items.indexOf(item);
     if (index === -1) return;
@@ -187,12 +204,14 @@ class NpsPicker extends HTMLElement {
   #closePopover() {
     if (this.#supportsPopoverApi && typeof this.#popover.hidePopover === 'function') {
       if (this.#popover.matches(':popover-open')) {
+        this.#detachPopoverResize();
         this.#popover.hidePopover();
       } else {
         this.#trigger.setAttribute('aria-expanded', 'false');
       }
       return;
     }
+    this.#detachPopoverResize();
     this.#popover.hidden = true;
     this.#trigger.setAttribute('aria-expanded', 'false');
     if (this.#outsideClickHandler) {
@@ -209,6 +228,7 @@ class NpsPicker extends HTMLElement {
     this.#popover.hidden = false;
     this.#trigger.setAttribute('aria-expanded', 'true');
     this.#positionPopover();
+    this.#attachPopoverResize();
     this.#outsideClickHandler = (event) => {
       if (!this.contains(event.target)) {
         this.#closePopover();

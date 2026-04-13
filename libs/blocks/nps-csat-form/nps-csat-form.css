@@ -633,6 +633,8 @@ body:has(.nps-csat-form.dark.match-background) {
 }
 
 .nps-csat-form.eleven-point-nps .nps-popover {
+  box-sizing: border-box;
+  min-width: 0;
   border: none;
   border-radius: 10px;
   padding: 8px;
@@ -650,6 +652,7 @@ body:has(.nps-csat-form.dark.match-background) {
   position: relative;
   display: flex;
   align-items: center;
+  min-width: 0;
   min-height: 24px;
   border-radius: 4px;
   padding-block: 4px;
@@ -658,6 +661,7 @@ body:has(.nps-csat-form.dark.match-background) {
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
+  overflow-wrap: break-word;
 }
 
 .nps-csat-form.eleven-point-nps .nps-popover-item:hover,
