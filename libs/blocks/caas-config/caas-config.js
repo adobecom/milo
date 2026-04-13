@@ -71,7 +71,7 @@ const defaultOptions = {
     '1:2': '1/2 Card...',
     '3:4': '3/4 Card',
     'half-height': '1/2 Height Card',
-    'blade-card': 'Blade Card',
+    'blade-card': 'Blade Card...',
     'blog-card': 'Blog Card',
     'button-card': 'Button Card',
     'custom-card': 'Custom Card',
@@ -378,13 +378,8 @@ const BasicsPanel = ({ tagsData }) => {
 
 const UiPanel = () => {
   const { state } = useContext(ConfiguratorContext);
-  const oneHalfOptions = html`
-    <div class="nested">
-      <${Input} label="Use Rounded Corners" prop="oneHalfRoundedCorners" type="checkbox" />
-    </div>
-  `;
 
-const bladeCardOptions = html`
+  const bladeCardOptions = html`
     <div class="blade-card-options">
       <${Input} label="Reverse direction" prop="bladeCardReverse" class="blade-card-option" type="checkbox" />
       <${Input} label="Light text" prop="bladeCardLightText" class="blade-card-option" type="checkbox" />
@@ -418,10 +413,10 @@ const bladeCardOptions = html`
     <${Input} label="Hide Date for On-Demand Content" prop="hideDateInterval" type="checkbox" />
     <${Input} label="Hide Card Banners" prop="disableBanners" type="checkbox" />
     <${Input} label="Use Center Video Play Button" prop="useCenterVideoPlay" type="checkbox" />
-    <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
     <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+    <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
+    <${Input} label="Use Rounded Corners [new]" prop="useRoundedCorners" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
-      ${state.cardStyle === '1:2' && oneHalfOptions}
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
       ${state.cardStyle === 'editorial-card' && editorialCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />

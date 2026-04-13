@@ -1065,8 +1065,8 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
-      ...((state.cardStyle === '1:2' && state.oneHalfRoundedCorners) && {
-        oneHalfRoundedCorners: !!state.oneHalfRoundedCorners,
+      ...(state.useRoundedCorners && {
+        useRoundedCorners: !!state.useRoundedCorners,
       }),
       // Only include bladeCard when explicitly configured
       ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent) && {
@@ -1199,7 +1199,6 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
-  console.log('config', config);
   return config;
 };
 
@@ -1317,9 +1316,10 @@ export const defaultState = {
   detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
+  useCenterVideoPlay: false,
   useLightText: false,
   useOverlayLinks: false,
-  useCenterVideoPlay: false,
+  useRoundedCorners: false,
   collectionButtonStyle: 'primary',
   userInfo: [],
 };
