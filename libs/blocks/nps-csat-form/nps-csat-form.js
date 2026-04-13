@@ -415,7 +415,7 @@ const initKeyboardAccessibility = (form, sendMessage) => {
 
   const onElevenPointFormEnterCapture = (event) => {
     if (event.key !== 'Enter') return;
-    const target = event.target;
+    const { target } = event;
     if (target instanceof HTMLTextAreaElement) return;
     if (target instanceof HTMLButtonElement && target.type === 'submit') return;
     if (target instanceof HTMLButtonElement && target.type === 'button') return;
@@ -437,7 +437,6 @@ const initKeyboardAccessibility = (form, sendMessage) => {
     if (target instanceof HTMLElement && target.classList.contains('nps-picker-trigger')) {
       event.preventDefault();
       target.click();
-      return;
     }
   };
 
