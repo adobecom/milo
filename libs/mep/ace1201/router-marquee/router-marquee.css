@@ -7,6 +7,7 @@
   display: none;
   position: relative;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -348,6 +349,7 @@
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
     height: 100vh;
+    height: 100dvh;
   }
 
   .rm-content-wrapper {
@@ -380,6 +382,7 @@
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
     height: 100vh;
+    height: 100dvh;
   }
 
   .rm-content-wrapper {
@@ -411,6 +414,7 @@
   .rm-viewport[data-viewport="desktop"] {
     display: flex;
     height: 100vh;
+    height: 100dvh;
   }
 
   .rm-overlay {
