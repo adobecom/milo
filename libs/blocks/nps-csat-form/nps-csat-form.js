@@ -389,9 +389,37 @@ const initKeyboardAccessibility = (form, sendMessage) => {
   const radioButtons = Array.from(form.querySelectorAll('input[type="radio"][name="feedback"]'));
   const checkbox = form.querySelector('#contact-me');
   const npsRadioButtons = Array.from(form.querySelectorAll('.desktop-nps-radio input[type="radio"][name="feedback"]'));
-  const isNPS = !!form.closest('.nps-csat-form.eleven-point-nps');
+  const isElevenPointForm = !!form.closest('.nps-csat-form.eleven-point-nps');
   let npsDigitBuffer = '';
   let npsDigitBufferTimeout;
+
+  const onElevenPointFormEnterCapture = (event) => {
+    if (event.key !== 'Enter') return;
+    const target = event.target;
+    if (target instanceof HTMLTextAreaElement) return;
+    if (target instanceof HTMLButtonElement && target.type === 'submit') return;
+    if (target instanceof HTMLButtonElement && target.type === 'button') return;
+    if (target instanceof HTMLElement && target.classList.contains('nps-popover-item')) return;
+
+    if (target instanceof HTMLInputElement && target.type === 'radio' && target.name === 'feedback') {
+      event.preventDefault();
+      if (!target.checked) {
+        target.checked = true;
+        target.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      return;
+    }
+    if (target instanceof HTMLInputElement && target.type === 'checkbox' && target.id === 'contact-me') {
+      event.preventDefault();
+      target.checked = !target.checked;
+      return;
+    }
+    if (target instanceof HTMLElement && target.classList.contains('nps-picker-trigger')) {
+      event.preventDefault();
+      target.click();
+      return;
+    }
+  };
 
   const getTargetIndex = (key, index) => {
     switch (key) {
@@ -425,9 +453,13 @@ const initKeyboardAccessibility = (form, sendMessage) => {
     });
   }
 
+  if (isElevenPointForm) {
+    form.addEventListener('keydown', onElevenPointFormEnterCapture, true);
+  }
+
   form.addEventListener('keydown', (e) => {
     if (
-      isNPS
+      isElevenPointForm
       && /^\d$/.test(e.key)
       && !(e.target instanceof HTMLTextAreaElement)
       && !(e.target instanceof HTMLInputElement && e.target.type !== 'radio')
@@ -460,6 +492,9 @@ const initKeyboardAccessibility = (form, sendMessage) => {
 
   return () => {
     clearTimeout(npsDigitBufferTimeout);
+    if (isElevenPointForm) {
+      form.removeEventListener('keydown', onElevenPointFormEnterCapture, true);
+    }
   };
 };
 
