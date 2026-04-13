@@ -51,6 +51,11 @@
 
     .pause-play-wrapper {
       z-index: 1;
+
+      .offset-filler {
+        height: 24px;
+        width: 24px;
+      }
     }
   }
 
