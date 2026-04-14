@@ -59,8 +59,9 @@ function getViewportConfig(el) {
     const delimiterEl = children[delimiterIndex];
     const classes = delimiterEl.textContent.toLowerCase().trim().match(/\(([^)]+)\)/)?.[1];
     delimiterEls.push(delimiterEl);
-    const contentContainer = createTag('div');
+    const contentContainer = createTag('div', { 'data-viewport': delimiter });
     contentContainer.append(...content);
+    el.append(contentContainer);
     viewportContent[delimiter] = {
       contentContainer,
       classes: classes?.split(',').map((classStr) => classStr.trim()) ?? [],
@@ -95,14 +96,12 @@ function decorateMultiViewport(el, viewportContent) {
   const allClasses = Object.values(viewportContent).flatMap(({ classes }) => classes ?? []);
   Object.entries(viewportContent).forEach(([viewport, value]) => {
     if (!viewportsPoints[viewport]) return;
-    const { contentContainer, classes } = value;
-    const contentChildren = [...contentContainer.children];
+    const { classes } = value;
     const mq = window.matchMedia(viewportsPoints[viewport]);
     const setContent = () => {
       if (!mq.matches) return;
       el.classList.remove(...allClasses);
       el.classList.add(...classes);
-      el.replaceChildren(...contentChildren);
     };
     setContent();
     mq.addEventListener('change', setContent);

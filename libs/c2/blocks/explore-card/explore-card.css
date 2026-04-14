@@ -1,3 +1,11 @@
+.explore-card > div[data-viewport] {
+  display: none;
+}
+
+.explore-card > div[data-viewport="mobile"] {
+  display: block;
+}
+
 .explore-card {
   --color-accent-focus-ring: var(--s2a-color-blue-800);
 }
