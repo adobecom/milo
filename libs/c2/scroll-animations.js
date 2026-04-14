@@ -119,14 +119,10 @@ function initScaleDownGrid() {
       if (endPad === null) {
         grid.style.paddingInline = '';
         endPad = parseFloat(getComputedStyle(grid).paddingInlineStart) || 0;
-        // eslint-disable-next-line no-console
-        console.log('[scaleDownGrid] endPad read:', endPad);
       }
       const m = getScrollMetrics(scroll, grid, 0.4, 0.1);
       const t = viewRange(m, 'entry', 0, 'entry', 1);
       if (t >= 1) {
-        // eslint-disable-next-line no-console
-        console.log('[scaleDownGrid] t>=1, clearing inline. endPad:', endPad, 'computed now:', getComputedStyle(grid).paddingInlineStart);
         grid.style.paddingInline = '';
         return;
       }
