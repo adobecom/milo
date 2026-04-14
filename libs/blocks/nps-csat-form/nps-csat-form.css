@@ -437,6 +437,7 @@ body:has(.nps-csat-form.dark.match-background) {
   font-size: 18px;
   line-height: 20px;
   font-weight: 700;
+  padding-right: 24px;
 }
 
 .nps-csat-form.eleven-point-nps legend,
