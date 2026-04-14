@@ -309,15 +309,24 @@ function initCarouselC2() {
     }
 
     const slides = [...wrapper.querySelectorAll('.carousel-slide')];
-    // el.offsetWidth may be 0 if block hasn't laid out yet — use window.innerWidth
-    const startWidth = window.innerWidth;
-    slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
 
+    let startWidth = window.innerWidth;
     let targetWidth = null;
     let top = null;
 
+    slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
+
+    window.addEventListener('resize', () => {
+      slides.forEach((s) => { s.style.flexBasis = ''; });
+      wrapper.style.transition = '';
+      wrapper.style.translate = '';
+      startWidth = window.innerWidth;
+      targetWidth = null;
+      top = null;
+      slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
+    });
+
     window.lenis.on('scroll', ({ scroll }) => {
-      // Read target width lazily on first tick — layout is guaranteed ready by then
       if (targetWidth === null) {
         slides.forEach((s) => { s.style.flexBasis = ''; });
         targetWidth = slides[0]?.getBoundingClientRect().width || startWidth;
@@ -328,12 +337,17 @@ function initCarouselC2() {
       const m = getScrollMetrics(scroll, el, 0.1, 0.1);
       const t = viewRange(m, 'entry', 0, 'entry', 0.8);
 
+      if (t >= 1) {
+        slides.forEach((s) => { s.style.flexBasis = ''; });
+        wrapper.style.transition = '';
+        wrapper.style.translate = '';
+        return;
+      }
+
       const w = startWidth + (targetWidth - startWidth) * t;
       slides.forEach((s) => { s.style.flexBasis = `${w}px`; });
 
-      // Keep active slide centered as its width changes
-      const carouselWidth = window.innerWidth;
-      const margin = (carouselWidth - w) / 2;
+      const margin = (window.innerWidth - w) / 2;
       const activeIdx = [...wrapper.children].indexOf(wrapper.querySelector('.active'));
       wrapper.style.transition = 'none';
       wrapper.style.translate = `${-(activeIdx * w) + margin - activeIdx * 8}px`;
