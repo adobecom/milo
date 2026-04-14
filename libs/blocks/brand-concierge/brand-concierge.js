@@ -504,7 +504,7 @@ function decorateFloatingButton(el) {
 
   const hideFloatingButton = () => {
     floatingContainer.setAttribute('aria-hidden', 'true');
-    floatingContainer.setAttribute('tab-index', '-1');
+    floatingContainer.setAttribute('tabindex', '-1');
     floatingContainer.blur();
     floatingButton.classList.add('floating-hidden');
     floatingButton.classList.remove('floating-show');
@@ -512,7 +512,7 @@ function decorateFloatingButton(el) {
 
   const showFloatingButton = () => {
     floatingContainer.removeAttribute('aria-hidden');
-    floatingContainer.removeAttribute('tab-index');
+    floatingContainer.removeAttribute('tabindex');
     floatingButton.classList.remove('floating-hidden');
     floatingButton.classList.add('floating-show');
   };
