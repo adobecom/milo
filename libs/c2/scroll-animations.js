@@ -309,21 +309,34 @@ function initCarouselC2() {
     }
 
     const slides = [...wrapper.querySelectorAll('.carousel-slide')];
+    const allChildren = [...wrapper.children];
 
     let startWidth = window.innerWidth;
     let targetWidth = null;
     let top = null;
+    let activeIdx = allChildren.indexOf(wrapper.querySelector('.active'));
 
+    // Keep activeIdx fresh without querying every scroll tick
+    const idxObserver = new MutationObserver(() => {
+      activeIdx = allChildren.indexOf(wrapper.querySelector('.active'));
+    });
+    idxObserver.observe(wrapper, { subtree: true, attributeFilter: ['class'], attributes: true });
+
+    slides.forEach((s) => { s.style.willChange = 'flex-basis'; });
     slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
 
-    window.addEventListener('resize', () => {
-      slides.forEach((s) => { s.style.flexBasis = ''; });
+    const resetStyles = () => {
+      slides.forEach((s) => { s.style.flexBasis = ''; s.style.willChange = ''; });
       wrapper.style.transition = '';
       wrapper.style.translate = '';
+    };
+
+    window.addEventListener('resize', () => {
+      resetStyles();
       startWidth = window.innerWidth;
       targetWidth = null;
       top = null;
-      slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
+      slides.forEach((s) => { s.style.willChange = 'flex-basis'; s.style.flexBasis = `${startWidth}px`; });
     });
 
     window.lenis.on('scroll', ({ scroll }) => {
@@ -338,17 +351,15 @@ function initCarouselC2() {
       const t = viewRange(m, 'entry', 0, 'entry', 0.8);
 
       if (t >= 1) {
-        slides.forEach((s) => { s.style.flexBasis = ''; });
-        wrapper.style.transition = '';
-        wrapper.style.translate = '';
+        resetStyles();
         return;
       }
 
       const w = startWidth + (targetWidth - startWidth) * t;
-      slides.forEach((s) => { s.style.flexBasis = `${w}px`; });
+      const wPx = `${w}px`;
+      slides.forEach((s) => { s.style.flexBasis = wPx; });
 
       const margin = (window.innerWidth - w) / 2;
-      const activeIdx = [...wrapper.children].indexOf(wrapper.querySelector('.active'));
       wrapper.style.transition = 'none';
       wrapper.style.translate = `${-(activeIdx * w) + margin - activeIdx * 8}px`;
     });
