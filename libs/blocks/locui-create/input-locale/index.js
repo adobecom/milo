@@ -132,11 +132,14 @@ export default function useInputLocale() {
         groupedLocales[language].push(locale);
       }
     });
-    return Object.entries(groupedLocales).map(([language, localeList]) => ({
-      language,
-      locales: project.value.type === PROJECT_TYPES.translation ? [] : localeList,
-      langCode: languageCodes[language],
-    }));
+    return Object.entries(groupedLocales).map(([language, localeList]) => {
+      if (project.value.type === PROJECT_TYPES.translation) {
+        const langDetails = languagesList.find((l) => l.languagecode === languageCodes[language]);
+        const defaultLocales = langDetails?.defaultlocales ? langDetails.defaultlocales.split(',') : [];
+        return { language, locales: defaultLocales, langCode: languageCodes[language] };
+      }
+      return { language, locales: localeList, langCode: languageCodes[language] };
+    });
   };
 
   const updateActiveLocales = (localesToUpdate, isDeselecting = false, languageCode = null) => {
