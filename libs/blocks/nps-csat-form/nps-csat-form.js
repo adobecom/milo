@@ -87,9 +87,45 @@ class NpsPicker extends HTMLElement {
       if (this.#supportsPopoverApi) return;
       event.preventDefault();
       if (this.#popover.hidden) {
-        this.#openFallbackPopover();
+        this.#openPopover();
       } else {
         this.#closePopover();
+      }
+    });
+    this.#trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'Tab' && this.#isPopoverOpen()) {
+        this.#closePopover();
+        return;
+      }
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+        event.preventDefault();
+        if (this.#isPopoverOpen()) {
+          this.#focusSelectedItemOrFallback(0);
+        } else {
+          this.#focusItemOnOpenIndex = 0;
+          this.#openPopover();
+        }
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (this.#isPopoverOpen()) {
+          this.#focusSelectedItemOrFallback(0);
+        } else {
+          this.#focusItemOnOpenIndex = 0;
+          this.#openPopover();
+        }
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (this.#isPopoverOpen()) {
+          this.#focusSelectedItemOrFallback(this.#items.length - 1);
+        } else {
+          this.#focusItemOnOpenIndex = this.#items.length - 1;
+          this.#openPopover();
+        }
+        return;
       }
     });
 
@@ -101,13 +137,25 @@ class NpsPicker extends HTMLElement {
       item.addEventListener('keydown', (event) => this.#onItemKeydown(event, item));
     });
 
+    this.addEventListener('focusout', (event) => this.#onFocusOut(event));
+
     this.#popover.addEventListener('toggle', (event) => {
       const isOpen = event.newState === 'open';
       this.#trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       if (isOpen) {
         this.#positionPopover();
         this.#attachPopoverResize();
+        if (Number.isInteger(this.#focusItemOnOpenIndex)) {
+          const focusIndex = this.#focusItemOnOpenIndex;
+          this.#focusItemOnOpenIndex = null;
+          queueMicrotask(() => {
+            if (this.#isPopoverOpen()) {
+              this.#focusSelectedItemOrFallback(focusIndex);
+            }
+          });
+        }
       } else {
+        this.#focusItemOnOpenIndex = null;
         this.#detachPopoverResize();
       }
     });
@@ -152,6 +200,56 @@ class NpsPicker extends HTMLElement {
 
   #popoverResizeHandler = null;
 
+  #focusItemOnOpenIndex = null;
+
+  #focusSelectedItemOrFallback(fallbackIndex) {
+    const selectedItem = this.#items.find((item) => item.getAttribute('aria-selected') === 'true');
+    const clampedIndex = Math.max(0, Math.min(fallbackIndex, this.#items.length - 1));
+    const fallbackItem = this.#items[clampedIndex];
+    (selectedItem ?? fallbackItem)?.focus();
+  }
+
+  #focusNextElementAfterTrigger() {
+    const focusRoot = this.closest('form') ?? document;
+    const focusableSelector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
+    const focusableElements = Array.from(focusRoot.querySelectorAll(focusableSelector))
+      .filter((element) => element === this.#trigger || !this.contains(element));
+    const triggerIndex = focusableElements.indexOf(this.#trigger);
+    focusableElements[triggerIndex + 1]?.focus();
+  }
+
+  #openPopover() {
+    if (this.#supportsPopoverApi && typeof this.#popover.showPopover === 'function') {
+      if (!this.#popover.matches(':popover-open')) {
+        this.#popover.showPopover();
+      }
+      return;
+    }
+    if (this.#popover.hidden) {
+      this.#openFallbackPopover();
+    }
+  }
+
+  #isPopoverOpen() {
+    if (this.#supportsPopoverApi && typeof this.#popover.matches === 'function') {
+      return this.#popover.matches(':popover-open');
+    }
+    return !this.#popover.hidden;
+  }
+
+  #onFocusOut(event) {
+    if (!this.#isPopoverOpen()) return;
+
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && this.contains(nextTarget)) return;
+
+    queueMicrotask(() => {
+      const activeElement = document.activeElement;
+      if (activeElement instanceof Node && this.contains(activeElement)) return;
+      this.#closePopover();
+    });
+  }
+
   #detachPopoverResize() {
     if (!this.#popoverResizeHandler) return;
     window.removeEventListener('resize', this.#popoverResizeHandler);
@@ -167,6 +265,17 @@ class NpsPicker extends HTMLElement {
   #onItemKeydown(event, item) {
     const index = this.#items.indexOf(item);
     if (index === -1) return;
+
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      this.#closePopover();
+      if (event.shiftKey) {
+        this.#trigger.focus();
+      } else {
+        this.#focusNextElementAfterTrigger();
+      }
+      return;
+    }
 
     if (event.key === 'ArrowDown') {
       event.preventDefault();
@@ -415,7 +524,7 @@ const initKeyboardAccessibility = (form, sendMessage) => {
 
   const onElevenPointFormEnterCapture = (event) => {
     if (event.key !== 'Enter') return;
-    const { target } = event;
+    const target = event.target;
     if (target instanceof HTMLTextAreaElement) return;
     if (target instanceof HTMLButtonElement && target.type === 'submit') return;
     if (target instanceof HTMLButtonElement && target.type === 'button') return;
@@ -434,10 +543,7 @@ const initKeyboardAccessibility = (form, sendMessage) => {
       target.checked = !target.checked;
       return;
     }
-    if (target instanceof HTMLElement && target.classList.contains('nps-picker-trigger')) {
-      event.preventDefault();
-      target.click();
-    }
+    if (target instanceof HTMLElement && target.classList.contains('nps-picker-trigger')) return;
   };
 
   const getTargetIndex = (key, index) => {

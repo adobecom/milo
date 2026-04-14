@@ -153,6 +153,24 @@
       }, timeoutMs);
     });
 
+    const waitForCondition = (predicate, timeoutMs = 200) => new Promise((resolve, reject) => {
+      const startTime = Date.now();
+
+      const check = () => {
+        if (predicate()) {
+          resolve();
+          return;
+        }
+        if (Date.now() - startTime >= timeoutMs) {
+          reject(new Error('Timed out waiting for condition'));
+          return;
+        }
+        setTimeout(check, 5);
+      };
+
+      check();
+    });
+
     runTests(() => {
       describe('NPS CSAT Form - Message Handling', () => {
         let block;
@@ -451,6 +469,152 @@
 
             second.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
             expect(picker.value).to.equal(second.getAttribute('data-value'));
+          });
+
+          it('should close the picker when focus tabs away from the open dropdown', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const form = block.querySelector('#nps');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const popover = picker.querySelector('.nps-popover');
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+            const submitButton = form.querySelector('.nps-submit');
+
+            if (typeof popover.showPopover === 'function' && !popover.matches(':popover-open')) {
+              popover.showPopover();
+            } else {
+              trigger.click();
+            }
+
+            firstItem.focus();
+            firstItem.dispatchEvent(new FocusEvent('focusout', {
+              bubbles: true,
+              cancelable: true,
+              relatedTarget: submitButton,
+            }));
+            submitButton.focus();
+            await Promise.resolve();
+
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+          });
+
+          it('should close the picker on the first tab press from the trigger', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const popover = picker.querySelector('.nps-popover');
+
+            if (typeof popover.showPopover === 'function' && !popover.matches(':popover-open')) {
+              popover.showPopover();
+            } else {
+              trigger.click();
+            }
+
+            trigger.focus();
+            trigger.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'Tab',
+              bubbles: true,
+              cancelable: true,
+            }));
+
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+          });
+
+          it('should move focus into the dropdown when opened from the keyboard', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+
+            trigger.focus();
+            trigger.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'ArrowDown',
+              bubbles: true,
+              cancelable: true,
+            }));
+            await waitForCondition(() => document.activeElement === firstItem);
+
+            expect(document.activeElement).to.equal(firstItem);
+          });
+
+          it('should close the picker and move focus to textarea on tab from an option', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+            const textarea = block.querySelector('#explanation-input');
+
+            trigger.focus();
+            trigger.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'ArrowDown',
+              bubbles: true,
+              cancelable: true,
+            }));
+            await waitForCondition(() => document.activeElement === firstItem);
+
+            firstItem.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'Tab',
+              bubbles: true,
+              cancelable: true,
+            }));
+
+            await waitForCondition(() => (
+              trigger.getAttribute('aria-expanded') === 'false'
+              && document.activeElement === textarea
+            ));
+
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+            expect(document.activeElement).to.equal(textarea);
+          });
+
+          it('should close the picker and move focus back to the trigger on shift-tab from an option', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+
+            trigger.focus();
+            trigger.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'ArrowDown',
+              bubbles: true,
+              cancelable: true,
+            }));
+            await waitForCondition(() => document.activeElement === firstItem);
+
+            firstItem.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'Tab',
+              shiftKey: true,
+              bubbles: true,
+              cancelable: true,
+            }));
+
+            await waitForCondition(() => (
+              trigger.getAttribute('aria-expanded') === 'false'
+              && document.activeElement === trigger
+            ));
+
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+            expect(document.activeElement).to.equal(trigger);
           });
 
           it('should show and clear submit error for picker selection flow', async () => {
