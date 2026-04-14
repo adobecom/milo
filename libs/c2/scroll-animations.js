@@ -113,24 +113,21 @@ function initScaleDownGrid() {
   const grids = findSectionsByStyle('parallax-scale-down-grid');
 
   grids.forEach((grid) => {
-    const container = grid.closest('.container') || grid.parentElement;
-    const cs = getComputedStyle(container);
-    const targetMaxW = parseFloat(
-      cs.getPropertyValue('--grid-max-width-target'),
-    ) || 1440;
-    const marginStr = cs.getPropertyValue(
-      '--grid-margin-width-target',
-    ).trim();
-    const marginVal = parseFloat(marginStr) || 24;
-    const isPercent = marginStr.includes('%');
+    let endPad = null;
 
     window.lenis.on('scroll', ({ scroll }) => {
+      if (endPad === null) {
+        // Read natural end value lazily — clear inline first so CSS resolves fully
+        grid.style.paddingInline = '';
+        endPad = parseFloat(getComputedStyle(grid).paddingInlineStart) || 0;
+      }
       const m = getScrollMetrics(scroll, grid, 0.4, 0.1);
       const t = viewRange(m, 'entry', 0, 'entry', 1);
-      const width = grid.offsetWidth;
-      const margin = isPercent ? (marginVal / 100) * width : marginVal;
-      const pad = Math.max(margin, (width - targetMaxW) / 2) * t;
-      grid.style.paddingInline = `${pad}px`;
+      if (t >= 1) {
+        grid.style.paddingInline = '';
+        return;
+      }
+      grid.style.paddingInline = `${endPad * t}px`;
     });
   });
 }
