@@ -28,6 +28,7 @@ const authoredContent = {};
 const variants = {};
 const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
+const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
 let bcToken;
@@ -172,6 +173,7 @@ async function openSusiLightModal() {
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
     window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
+    window?.lana.log('SUSI login success', { tags: 'brand-concierge', severity: 'info' });
     const token = detail;
     if (!bcToken) {
       bcToken = token;
@@ -502,7 +504,7 @@ function decorateFloatingButton(el) {
 
   const hideFloatingButton = () => {
     floatingContainer.setAttribute('aria-hidden', 'true');
-    floatingContainer.setAttribute('tab-index', '-1');
+    floatingContainer.setAttribute('tabindex', '-1');
     floatingContainer.blur();
     floatingButton.classList.add('floating-hidden');
     floatingButton.classList.remove('floating-show');
@@ -510,7 +512,7 @@ function decorateFloatingButton(el) {
 
   const showFloatingButton = () => {
     floatingContainer.removeAttribute('aria-hidden');
-    floatingContainer.removeAttribute('tab-index');
+    floatingContainer.removeAttribute('tabindex');
     floatingButton.classList.remove('floating-hidden');
     floatingButton.classList.add('floating-show');
   };
@@ -678,6 +680,12 @@ export default async function init(el) {
   } else if (webClient === 'baseStage') {
     logWebClient('baseStage', baseStage);
     src = baseStage;
+  }
+
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
   }
 
   loadScript(src);
