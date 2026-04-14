@@ -252,31 +252,7 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  const { env, locale } = getConfig();
-  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  let src = stage;
-
-  if (env?.name === 'prod') {
-    src = prod;
-  }
-
-  if (webClient === 'prod') {
-    // eslint-disable-next-line no-console
-    console.log('prod', prod);
-    src = prod;
-  } else if (webClient === 'stage') {
-    // eslint-disable-next-line no-console
-    console.log('stage', stage);
-    src = stage;
-  } else if (webClient === 'baseProd') {
-    // eslint-disable-next-line no-console
-    console.log('baseProd', baseProd);
-    src = baseProd;
-  }
-
-  await loadScript(src);
+  const { locale } = getConfig();
 
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;
@@ -521,12 +497,27 @@ function decorateFloatingButton(el) {
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
 
-  if (variants.isHero || variants.floatingDelay) {
-    floatingButton.classList.add('floating-hidden');
-  }
-
   const mainElement = document.querySelector('main');
   const gnavElement = document.querySelector('header.global-navigation');
+
+  const hideFloatingButton = () => {
+    floatingContainer.setAttribute('aria-hidden', 'true');
+    floatingContainer.setAttribute('tab-index', '-1');
+    floatingContainer.blur();
+    floatingButton.classList.add('floating-hidden');
+    floatingButton.classList.remove('floating-show');
+  };
+
+  const showFloatingButton = () => {
+    floatingContainer.removeAttribute('aria-hidden');
+    floatingContainer.removeAttribute('tab-index');
+    floatingButton.classList.remove('floating-hidden');
+    floatingButton.classList.add('floating-show');
+  };
+
+  if (variants.isHero || variants.floatingDelay) {
+    hideFloatingButton();
+  }
 
   const handleScroll = (target) => {
     const mainHeight = mainElement.scrollHeight;
@@ -539,27 +530,21 @@ function decorateFloatingButton(el) {
 
     if (threshold > mainHeight) {
       target.style.bottom = `${threshold - mainHeight}px`;
-      floatingContainer.setAttribute('tab-index', '-1');
-      floatingContainer.blur();
       if (variants.isFloatingAnchorHide) {
-        floatingButton.classList.add('floating-hidden');
-        floatingButton.classList.remove('floating-show');
+        hideFloatingButton();
       } else {
         mainElement.style.paddingBottom = `${targetHeight}px`;
       }
     } else {
-      floatingContainer.removeAttribute('tab-index');
+      showFloatingButton();
       target.style.bottom = '0';
-      floatingButton.classList.remove('floating-hidden');
-      floatingButton.classList.add('floating-show');
     }
     if (variants.isHero || variants.floatingDelay) {
       if (window.scrollY > scrollDelay && threshold <= mainHeight) {
-        floatingButton.classList.remove('floating-hidden');
-        floatingButton.classList.add('floating-show');
-      } else {
-        floatingButton.classList.add('floating-hidden');
-        floatingButton.classList.remove('floating-show');
+        showFloatingButton();
+      }
+      if (window.scrollY < scrollDelay) {
+        hideFloatingButton();
       }
     }
   };
@@ -664,4 +649,36 @@ export default async function init(el) {
     button.onclick = openSusiLightModal;
     el.appendChild(button);
   }
+
+  const logWebClient = (text, src) => {
+    // eslint-disable-next-line no-console
+    console.log(text, src);
+  };
+
+  const { env } = getConfig();
+  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  let src = stage;
+
+  if (env?.name === 'prod') {
+    src = prod;
+  }
+
+  if (webClient === 'prod') {
+    logWebClient('prod', prod);
+    src = prod;
+  } else if (webClient === 'stage') {
+    logWebClient('stage', stage);
+    src = stage;
+  } else if (webClient === 'baseProd') {
+    logWebClient('baseProd', baseProd);
+    src = baseProd;
+  } else if (webClient === 'baseStage') {
+    logWebClient('baseStage', baseStage);
+    src = baseStage;
+  }
+
+  loadScript(src);
 }
