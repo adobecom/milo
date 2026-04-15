@@ -120,6 +120,11 @@
   z-index: var(--modal-z-index-curtain);
 }
 
+html[dir="rtl"] .dialog-modal button.dialog-close {
+  left: 5px;
+  right: auto;
+}
+
 .dialog-modal button.dialog-close {
   border: 3px solid transparent;
   position: absolute;

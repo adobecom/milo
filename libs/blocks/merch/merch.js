@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial,
+  shouldAllowKrTrial, getCountry,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -14,6 +14,7 @@ export const MAS_MERCH_QUANTITY_SELECT = 'merch-quantity-select';
 export const MAS_MERCH_SECURE_TRANSACTION = 'merch-secure-transaction';
 export const MAS_MERCH_SIDENAV = 'merch-sidenav';
 export const MAS_MERCH_WHATS_INCLUDED = 'merch-whats-included';
+export const MAS_FIELD = 'mas-field';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
@@ -226,19 +227,7 @@ export function getMiloLocaleSettings(miloLocale) {
 
 export async function getGeoLocaleSettings(miloLocale) {
   const settings = getMiloLocaleSettings(miloLocale);
-  let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
-    || sessionStorage.getItem('akamai');
-  if (!country) {
-    try {
-      const { getAkamaiCode } = await import('../../utils/geo.js');
-      country = await getAkamaiCode(true);
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code (will go with default country): ${error}`, {
-        tags: 'merch',
-        severity: 'error',
-      });
-    }
-  }
+  let country = await getCountry();
   if (country) {
     country = country.toUpperCase();
     settings.country = country;
@@ -247,8 +236,10 @@ export async function getGeoLocaleSettings(miloLocale) {
 }
 
 export async function getLocaleSettings(miloLocale) {
-  const geoDetection = getMetadata('mas-geo-detection');
-  if (!geoDetection || !['on', 'true'].includes(geoDetection)) {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const metaValue = getMetadata('mas-geo-detection');
+  const geoDetection = queryParam ?? metaValue;
+  if (!geoDetection || !['on', 'true'].includes(geoDetection.toLowerCase())) {
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
   }
   return getGeoLocaleSettings(miloLocale);
@@ -385,15 +376,12 @@ export function getMasLibsBaseUrl() {
     return 'https://main--mas--adobecom.aem.live';
   }
 
-  const { hostname } = window.location;
-  const extension = hostname.endsWith('.page') ? 'page' : 'live';
-
   let branch = sanitized;
   if (!sanitized.includes('--')) {
     branch = `${sanitized}--mas--adobecom`;
   }
 
-  return `https://${branch}.aem.${extension}`;
+  return `https://${branch}.aem.live`;
 }
 
 /**
@@ -1375,6 +1363,60 @@ export async function addAriaLabelToCta(cta) {
   cta.setAttribute('aria-label', ariaLabel);
 }
 
+function escapeRegExp(value = '') {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function syncUpgradeAriaLabel(cta, originalText) {
+  if (!cta?.classList?.contains('upgrade')) return;
+
+  const resolvedText = cta.textContent?.trim();
+  const currentAriaLabel = cta.getAttribute('aria-label')?.trim();
+  const authoredText = originalText?.trim();
+  if (!resolvedText || !currentAriaLabel || !authoredText) return;
+
+  if (currentAriaLabel.toLowerCase().startsWith(resolvedText.toLowerCase())) return;
+
+  const authoredTextPrefix = new RegExp(`^${escapeRegExp(authoredText)}\\b`, 'i');
+  if (!authoredTextPrefix.test(currentAriaLabel)) return;
+
+  cta.setAttribute('aria-label', currentAriaLabel.replace(authoredTextPrefix, resolvedText));
+}
+
+function observeUpgradeAriaLabel(cta, originalText) {
+  let observer;
+  const trySync = () => {
+    syncUpgradeAriaLabel(cta, originalText);
+
+    const resolvedText = cta?.textContent?.trim();
+    const currentAriaLabel = cta?.getAttribute('aria-label')?.trim();
+    if (
+      cta?.classList?.contains('upgrade')
+      && resolvedText
+      && currentAriaLabel?.toLowerCase().startsWith(resolvedText.toLowerCase())
+    ) {
+      observer?.disconnect();
+    }
+  };
+
+  if (typeof MutationObserver === 'undefined') {
+    cta.onceSettled().then(trySync);
+    return;
+  }
+
+  observer = new MutationObserver(trySync);
+  observer.observe(cta, {
+    attributes: true,
+    attributeFilter: ['class', 'aria-label'],
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+
+  cta.onceSettled().then(trySync);
+  setTimeout(() => observer.disconnect(), 5000);
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG'
@@ -1421,6 +1463,7 @@ export async function buildCta(el, params) {
       await addAriaLabelToCta(cta);
     });
   }
+  observeUpgradeAriaLabel(cta, text);
 
   if (getMetadata('mas-ff-copy-cta') === 'on') {
     const { default: addCopyToClipboard } = await import(
@@ -1477,6 +1520,7 @@ export function getOptions(el) {
   for (const [key, value] of searchParams.entries()) {
     if (key === 'sidenav') options.sidenav = value === 'true';
     else if (key === 'fragment' || key === 'query') options.fragment = value;
+    else if (key === 'field') options.field = value;
   }
   return options;
 }

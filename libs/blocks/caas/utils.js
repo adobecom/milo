@@ -540,12 +540,15 @@ const getCategoryMappings = async (state) => {
   return {};
 };
 
-const isLocaleInRegionalSites = (regionalSites, locStr) => {
+const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
   if (!regionalSites) return false;
-  return regionalSites
+  const sites = regionalSites
     .split(',')
-    .map((site) => site.trim().replace(/^\//, ''))
-    .includes(locStr);
+    .map((site) => site.trim().replace(/^\//, ''));
+  return (
+    sites.includes(locStr)
+    || (Boolean(langStr) && sites.includes(`${locStr}_${langStr}`))
+  );
 };
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
@@ -570,20 +573,18 @@ async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com
       const baseLocale = baseSite?.split('/')[1];
       const matchesBase = country === baseLocale;
       const langMatchesBase = language === baseLocale;
-      const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
+      const matchesRegional = isLocaleInRegionalSites(regionalSites, country, language);
       return matchesBase || matchesRegional || langMatchesBase;
     });
 
     if (isKnownLingoSiteLocale) {
       // determine if the country is allowed to be used for the langauge
       const baseSiteLocale = language === 'en' ? '' : language;
-      const altLocale = `${country}_${language}`;
       siteLocalesData
         .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
         .forEach(({ baseSite, regionalSites }) => {
           if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
-            const regionalMap = regionalSites.split(',').map((site) => site.trim().replace(/^\//, ''));
-            if (country === 'xx' || regionalMap.includes(country) || regionalMap.includes(altLocale)) {
+            if (country === 'xx' || isLocaleInRegionalSites(regionalSites, country, language)) {
               isPermittedLingoSiteLocale = true;
             }
           }
@@ -742,12 +743,11 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
 
       if (countryStr === 'xx') {
         try {
-          geoCountry = getCountry()
+          geoCountry = await getCountry(true)
             || pageConfigHelper().mep?.countryIP;
 
           if (!geoCountry) {
-            const { default: getAkamaiCode } = await import('../../utils/geo.js');
-            geoCountry = await getAkamaiCode(true);
+            geoCountry = await getCountry();
           }
 
           if (geoCountry) {
@@ -1073,6 +1073,9 @@ export const getConfig = async (originalState, strs = {}) => {
           transparent: !!state.bladeCardTransparent,
         },
       }),
+      // Include editorialOpenVariant if necessary
+      ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
+        && { editorialOpenVariant: !!state.editorialCardOpenVariant }),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,

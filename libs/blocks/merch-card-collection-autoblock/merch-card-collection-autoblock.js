@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, localizeLinkAsync } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import {
@@ -28,6 +28,14 @@ const SINGLE_APP_FILTER_MAP = {
   incopy: 'design',
   lightroom_1tb: 'photography',
 };
+
+function hasOnlyTargetContent(parent, target) {
+  if (!parent || !target || target.parentElement !== parent) return false;
+  return [...parent.childNodes].every((node) => {
+    if (node === target) return true;
+    return node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '';
+  });
+}
 
 function getTimeoutPromise(timeout) {
   return new Promise((resolve) => {
@@ -115,13 +123,13 @@ function generateCheckboxGroups(checkboxGroups) {
   return groups;
 }
 
-function getSidenav(collection) {
+async function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders, sidenavSettings } = collection.data;
   if (!hierarchy?.length) return null;
 
   const titleKey = `${collection.variant}SidenavTitle`;
-  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '' });
+  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '', 'close-text': placeholders?.catalogSidenavClose || '' });
 
   /* Search */
   const searchText = sidenavSettings?.searchText;
@@ -190,6 +198,7 @@ function getSidenav(collection) {
 
   /* Resources List */
   if (sidenavSettings?.linksTitle && sidenavSettings?.link) {
+    const localizedLink = await localizeLinkAsync(sidenavSettings.link);
     const resourcesSpSidenav = createTag('sp-sidenav', { manageTabIndex: true, label: placeholders?.sidenavResources || '' });
     resourcesSpSidenav.classList.add('resources');
 
@@ -199,7 +208,7 @@ function getSidenav(collection) {
     }, resourcesSpSidenav);
 
     const resourceItem = createTag('sp-sidenav-item', {
-      href: sidenavSettings.link,
+      href: localizedLink,
       target: '_blank',
       'aria-label': placeholders?.catalogSpecialOffersAlt,
     });
@@ -302,10 +311,10 @@ export async function createCollection(el, options) {
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
-  let toReplace = el;
-  const contentParent = el.closest('.content');
-  const paragraph = contentParent?.querySelector(':scope > p');
-  if (paragraph) toReplace = paragraph;
+  const paragraph = el.parentElement;
+  const toReplace = paragraph?.tagName === 'P' && hasOnlyTargetContent(paragraph, el)
+    ? paragraph
+    : el;
   toReplace.replaceWith(container);
 
   const success = await collection.checkReady();
@@ -327,7 +336,7 @@ export async function createCollection(el, options) {
       const newUrl = `${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
       window.history.pushState({}, '', newUrl);
     }
-    const sidenav = getSidenav(collection);
+    const sidenav = await getSidenav(collection);
     if (sidenav) {
       collection.attachSidenav(sidenav);
     }

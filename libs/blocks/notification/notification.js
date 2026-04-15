@@ -93,7 +93,7 @@ function wrapCopy(foreground) {
   const texts = foreground.querySelectorAll('.text');
   if (!texts) return;
   texts.forEach((text) => {
-    const heading = text?.querySelector('h1, h2, h3, h4, h5, h6, p:not(.icon-area, .action-area)');
+    const heading = text?.querySelector(':scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > p:not(.icon-area, .action-area), :scope > mas-field');
     const icon = heading?.previousElementSibling;
     const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading?.nextElementSibling;
     const copy = createTag('div', { class: 'copy-wrap' }, [heading, body].filter(Boolean));

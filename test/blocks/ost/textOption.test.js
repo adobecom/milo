@@ -28,6 +28,8 @@ describe('test ctaTextOption', () => {
       { id: 'seven-day-trial', name: 'Start 7-day free trial' },
       { id: 'fourteen-day-trial', name: 'Start 14-day free trial' },
       { id: 'thirty-day-trial', name: 'Start 30-day free trial' },
+      { id: 'save-today', name: 'Save today' },
+      { id: 'six-month-free', name: 'Get 6-months Premium free' },
     ];
     const texts = ctaTextOption.getTexts();
     expect(EXPECTED_TEXTS).to.deep.equal(texts);
