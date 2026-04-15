@@ -250,6 +250,18 @@ async function openChatModal(initialMessage, el) {
   const { userAgent, language } = window.navigator;
 
   const onBeforeEventSend = (content) => {
+    const MEETING_EVENT_TYPES = [
+      'form-fetch',
+      'form-submit',
+      'calendar-fetch',
+      'calendar-submit',
+      'conversation-command',
+    ];
+
+    if (MEETING_EVENT_TYPES.has(content.data?.type)) {
+      return;
+    }
+
     if (!bcToken) {
       bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
     }
