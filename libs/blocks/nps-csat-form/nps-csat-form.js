@@ -563,6 +563,10 @@ const initKeyboardAccessibility = (form, sendMessage) => {
       e.preventDefault();
       const targetRadio = radioButtons[targetIndex];
       targetRadio.focus();
+      if (!isElevenPointForm) {
+        targetRadio.checked = true;
+        targetRadio.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     });
   });
 
