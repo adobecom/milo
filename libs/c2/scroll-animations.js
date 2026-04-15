@@ -116,7 +116,7 @@ function initGarageDoorReveal() {
       //   });
       // }
 
-      const innerT = viewRange(m, 'entry', 0.1, 'entry', 0.6);
+      const innerT = viewRange(m, 'entry', 0.1, 'entry', 0.4);
       if (foreground) {
         foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
       }
