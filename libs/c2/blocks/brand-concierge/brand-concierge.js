@@ -258,7 +258,7 @@ async function openChatModal(initialMessage, el) {
       'conversation-command',
     ];
 
-    if (MEETING_EVENT_TYPES.has(content.data?.type)) {
+    if (MEETING_EVENT_TYPES.includes(content.data?.type)) {
       return;
     }
 
