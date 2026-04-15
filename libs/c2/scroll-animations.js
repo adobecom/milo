@@ -409,6 +409,7 @@ export default function init() {
   // initElasticCarousel();
   // initCarouselC2();
 
+
   if (scrollTasks.length) {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
