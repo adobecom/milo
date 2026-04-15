@@ -110,13 +110,13 @@ function initGarageDoorReveal() {
       gdSection.style.transform = `translateY(${-80 * (1 - growT)}vh)`;
 
       if (bgImg.length) {
-        const scaleT = viewRange(m, 'entry', 0, 'entry', 0.8);
+        const scaleT = viewRange(m, 'entry', 0, 'entry', 0.6);
         bgImg.forEach((img) => {
           img.style.transform = `scale(${1 + 0.1 * scaleT})`;
         });
       }
 
-      const innerT = viewRange(m, 'entry', 0.3, 'entry', 0.7);
+      const innerT = viewRange(m, 'entry', 0.3, 'entry', 0.6);
       if (foreground) {
         foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
       }
