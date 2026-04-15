@@ -927,6 +927,43 @@ export async function getCountry(skipFallback = false) {
   }
 }
 
+export const getCookie = (name) => document.cookie
+  .split('; ')
+  .find((row) => row.startsWith(`${name}=`))
+  ?.split('=')[1];
+
+export function normCountryCode(country) {
+  if (country == null || typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+}
+
+export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo) {
+  const params = new URLSearchParams(search);
+  const countryParam = normCountryCode(params.get('country'));
+  const akamaiParam = normCountryCode(params.get('akamaiLocale'));
+  return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
+}
+
+export async function resolveDetectedMarketCountry() {
+  const cookieMarket = getCookie('country');
+  const countryFromGeo = await getCountry();
+  let detectedMarket = computeDetectedMarketCountry(
+    window.location.search,
+    cookieMarket,
+    countryFromGeo,
+  );
+  if (!detectedMarket) {
+    try {
+      const { default: getAkamaiCode } = await import('./geo.js');
+      detectedMarket = normCountryCode(await getAkamaiCode());
+    } catch (error) {
+      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
+    }
+  }
+  return detectedMarket;
+}
+
 export async function getMepLingoPrefix() {
   if (!lingoActive()) return null;
   const config = getConfig();
@@ -935,7 +972,7 @@ export async function getMepLingoPrefix() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = await getCountry();
+  const country = (await resolveDetectedMarketCountry())?.toLowerCase();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -2276,11 +2313,6 @@ function initSidekick() {
     });
   }
 }
-
-export const getCookie = (name) => document.cookie
-  .split('; ')
-  .find((row) => row.startsWith(`${name}=`))
-  ?.split('=')[1];
 
 export function getMarketsSourceKey() {
   const { env, marketsSource } = getConfig();

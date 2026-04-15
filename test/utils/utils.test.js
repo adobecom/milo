@@ -2646,4 +2646,18 @@ describe('Utils', () => {
       a.remove();
     });
   });
+
+  describe('computeDetectedMarketCountry', () => {
+    it('prefers country query param over country cookie', () => {
+      expect(utils.computeDetectedMarketCountry('?country=lu', 'be', null)).to.equal('lu');
+    });
+
+    it('prefers akamaiLocale query param over country cookie when country param absent', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', 'be', null)).to.equal('fr');
+    });
+
+    it('prefers country cookie over geo hint when no country/akamai params', () => {
+      expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
+    });
+  });
 });
