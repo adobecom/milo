@@ -125,7 +125,6 @@ class NpsPicker extends HTMLElement {
           this.#focusItemOnOpenIndex = this.#items.length - 1;
           this.#openPopover();
         }
-        return;
       }
     });
 
@@ -244,7 +243,7 @@ class NpsPicker extends HTMLElement {
     if (nextTarget instanceof Node && this.contains(nextTarget)) return;
 
     queueMicrotask(() => {
-      const activeElement = document.activeElement;
+      const { activeElement } = document;
       if (activeElement instanceof Node && this.contains(activeElement)) return;
       this.#closePopover();
     });
@@ -524,7 +523,7 @@ const initKeyboardAccessibility = (form, sendMessage) => {
 
   const onElevenPointFormEnterCapture = (event) => {
     if (event.key !== 'Enter') return;
-    const target = event.target;
+    const { target } = event;
     if (target instanceof HTMLTextAreaElement) return;
     if (target instanceof HTMLButtonElement && target.type === 'submit') return;
     if (target instanceof HTMLButtonElement && target.type === 'button') return;
@@ -541,9 +540,7 @@ const initKeyboardAccessibility = (form, sendMessage) => {
     if (target instanceof HTMLInputElement && target.type === 'checkbox' && target.id === 'contact-me') {
       event.preventDefault();
       target.checked = !target.checked;
-      return;
     }
-    if (target instanceof HTMLElement && target.classList.contains('nps-picker-trigger')) return;
   };
 
   const getTargetIndex = (key, index) => {
