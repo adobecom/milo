@@ -239,18 +239,52 @@ function initStagger() {
 function initElasticCarousel() {
   if (window.innerWidth < 768) return;
 
+  const isRtl = document.documentElement.dir === 'rtl';
+  const startMargin = isRtl ? -200 : 200;
   const initialized = new WeakSet();
+  let cssDisabled = false;
 
   const setupContainer = (container) => {
     if (initialized.has(container)) return;
     initialized.add(container);
+
+    if (!cssDisabled) {
+      cssDisabled = true;
+      const style = document.createElement('style');
+      style.textContent = '.elastic-carousel-container,'
+        + '.elastic-carousel-item { animation: none !important; }'
+        + '.elastic-carousel-item { flex-shrink: 0; }';
+      document.head.appendChild(style);
+    }
 
     const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
     const toNum = (s) => (s.includes('rem') ? parseFloat(s) * rootFontSize : parseFloat(s));
     container.querySelectorAll('.elastic-carousel-item').forEach((item) => {
       const endGap = toNum(getComputedStyle(item).getPropertyValue('--end-gap').trim());
       item.style.marginInline = `${endGap}px`;
-      item.style.flexShrink = '0';
+    });
+
+    container.style.willChange = 'margin-left, opacity';
+    container.style.opacity = '0';
+    container.style.marginLeft = `${startMargin}px`;
+    let top = null;
+    let total = null;
+
+    scrollTasks.push((scroll) => {
+      const elHeight = container.offsetHeight;
+      if (!elHeight) return;
+      if (top === null) {
+        top = getDocTop(container);
+        total = elHeight + vh;
+      }
+      const dist = (scroll + vh) - top;
+      const m = { elHeight, dist, total };
+
+      const slideT = viewRange(m, 'entry', 0.2, 'entry', 0.52);
+      const opacT = viewRange(m, 'entry', 0.0, 'entry', 0.16);
+
+      container.style.marginLeft = `${startMargin * (1 - slideT)}px`;
+      container.style.opacity = opacT;
     });
   };
 
