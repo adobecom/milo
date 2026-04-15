@@ -3,7 +3,15 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 import { restoreFetch, mockFetch } from './mocks/fetchMock.js';
-import { setFormData, getFormData, validatePhoneNumber, removePhoneNumberFormat, getPhoneFieldConfig, fetchConsentString, getPageLocale } from '../../../libs/blocks/email-collection/utils.js';
+import {
+  setFormData,
+  getFormData,
+  validatePhoneNumber,
+  removePhoneNumberFormat,
+  getPhoneFieldConfig,
+  fetchConsentString,
+  getPageLocale,
+} from '../../../libs/blocks/email-collection/utils.js';
 
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },

@@ -1,4 +1,11 @@
-import { createTag, getConfig, getFederatedUrl, localizeLinkAsync, loadIms, getLocale } from '../../utils/utils.js';
+import {
+  createTag,
+  getConfig,
+  getFederatedUrl,
+  localizeLinkAsync,
+  loadIms,
+  getLocale,
+} from '../../utils/utils.js';
 import { closeModal } from '../modal/modal.js';
 
 const API_ENDPOINTS = {
@@ -442,4 +449,3 @@ export async function isUserGuest() {
   const ims = await getIMS();
   return !ims?.isSignedInUser();
 }
-
