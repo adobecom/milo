@@ -273,7 +273,6 @@
           });
 
           it('should not submit and show error if no radio button is selected', async () => {
-            // Initialize form
             await npsCsatForm(block);
             const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
@@ -282,11 +281,12 @@
             const form = block.querySelector('#nps');
             const radioGroup = block.querySelector('.nps-radio-group');
 
-            // Try to submit without selecting radio
+            // Programmatically uncheck all radios to test validation
+            form.querySelectorAll('input[type="radio"]').forEach((r) => { r.checked = false; });
+
             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
             form.dispatchEvent(submitEvent);
 
-            // Should show error state
             expect(radioGroup.classList.contains('show-error')).to.be.true;
             expect(block.classList.contains('submit-clicked')).to.be.true;
           });
@@ -738,7 +738,6 @@
 
         describe('Radio Button Error State Management', () => {
           it('should remove error state when radio button is selected after submission attempt', async () => {
-            // Initialize form
             await npsCsatForm(block);
             const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
@@ -748,18 +747,18 @@
             const radioGroup = block.querySelector('.nps-radio-group');
             const radioButton = form.querySelector('input[type="radio"]');
 
-            // Try to submit without selecting radio (to trigger error)
+            // Programmatically uncheck all radios to test validation
+            form.querySelectorAll('input[type="radio"]').forEach((r) => { r.checked = false; });
+
             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
             form.dispatchEvent(submitEvent);
 
             expect(radioGroup.classList.contains('show-error')).to.be.true;
 
-            // Now select a radio button
             radioButton.checked = true;
             const changeEvent = new Event('change', { bubbles: true });
             radioButton.dispatchEvent(changeEvent);
 
-            // Error should be removed after radio button selection
             expect(radioGroup.classList.contains('show-error')).to.be.false;
           });
         });

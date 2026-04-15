@@ -568,6 +568,14 @@ const initKeyboardAccessibility = (form, sendMessage) => {
         targetRadio.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
+    if (!isElevenPointForm) {
+      button.addEventListener('focus', () => {
+        if (!button.checked) {
+          button.checked = true;
+          button.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    }
   });
 
   if (checkbox) {
