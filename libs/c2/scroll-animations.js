@@ -82,7 +82,7 @@ function initMoveUpFast() {
     const sectionTop = getDocTop(section);
     scrollTasks.push((scroll) => {
       const t = Math.max(0, Math.min(1, (scroll - sectionTop) / vh80px));
-      section.style.top = `${-35 * t}vh`;
+      // section.style.top = `${-35 * t}vh`;
       overlay.style.opacity = 0.75 * t;
     });
   });
@@ -106,17 +106,17 @@ function initGarageDoorReveal() {
       if (docTop === null) docTop = getDocTop(gdSection);
       const m = getScrollMetrics(scroll, elHeight, docTop);
 
-      const growT = viewRange(m, 'entry', 0, 'cover', 1);
+      const growT = viewRange(m, 'entry', 0, 'entry', 0.6);
       gdSection.style.transform = `translateY(${-80 * (1 - growT)}vh)`;
 
-      if (bgImg.length) {
-        const scaleT = viewRange(m, 'entry', 0, 'entry', 0.6);
-        bgImg.forEach((img) => {
-          img.style.transform = `scale(${1 + 0.1 * scaleT})`;
-        });
-      }
+      // if (bgImg.length) {
+      //   const scaleT = viewRange(m, 'entry', 0, 'entry', 0.5);
+      //   bgImg.forEach((img) => {
+      //     img.style.transform = `scale(${1 + 0.1 * scaleT})`;
+      //   });
+      // }
 
-      const innerT = viewRange(m, 'entry', 0.3, 'entry', 0.6);
+      const innerT = viewRange(m, 'entry', 0.1, 'entry', 0.6);
       if (foreground) {
         foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
       }
@@ -404,10 +404,10 @@ function initCarouselC2() {
 export default function init() {
   initMoveUpFast();
   initGarageDoorReveal();
-  initScaleDownGrid();
-  initStagger();
-  initElasticCarousel();
-  initCarouselC2();
+  // initScaleDownGrid();
+  // initStagger();
+  // initElasticCarousel();
+  // initCarouselC2();
 
   if (scrollTasks.length) {
     window.addEventListener('scroll', onScroll, { passive: true });
